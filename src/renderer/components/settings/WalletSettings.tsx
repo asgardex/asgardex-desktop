@@ -28,6 +28,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
@@ -229,7 +230,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [RadixChain]: 0,
     [SOLChain]: 0,
     [ADAChain]: 0,
-    [ZECChain]: 0
+    [ZECChain]: 0,
+    [XRPChain]: 0
   })
   const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
     [BTCChain]: 0,
@@ -249,7 +251,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [RadixChain]: 0,
     [SOLChain]: 0,
     [ADAChain]: 0,
-    [ZECChain]: 0
+    [ZECChain]: 0,
+    [XRPChain]: 0
   })
 
   const {
@@ -713,10 +716,10 @@ export const WalletSettings = (props: Props): JSX.Element => {
 
   const renderAddAddressForm = useCallback(
     () => (
-      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="flex items-center gap-3 mb-4">
         <Styled.AutoComplete
+          className="w-40 mr-2"
           key={newAddress.chain || 'autocomplete'}
-          style={{ width: 150, marginRight: 8 }}
           placeholder={intl.formatMessage({ id: 'common.chain' })}
           options={enabledChains.map((chain) => ({ value: chain }))}
           value={newAddress.chain}

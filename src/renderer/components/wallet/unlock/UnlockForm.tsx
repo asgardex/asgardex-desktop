@@ -162,8 +162,8 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
 
   return (
     <>
-      <div className="relative mb-30px flex justify-center">
-        <BackLinkButton className="absolute left-0 top-0" />
+      <div className="mb-4">
+        <BackLinkButton />
       </div>
       <form className="flex flex-1 flex-col" onSubmit={handleSubmit(submitForm)}>
         <div

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Popover } from '@headlessui/react'
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { Cog8ToothIcon } from '@heroicons/react/20/solid'
 import { array as A, function as FP } from 'fp-ts'
 
@@ -8,7 +8,7 @@ import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { SlipTolerance } from '../../types/asgardex'
 import { BaseButton } from '../uielements/button'
 
-const SLIP_PERCENTAGES: SlipTolerance[] = [0.5, 1, 3, 5, 10, 15, 20]
+const SLIP_PERCENTAGES: SlipTolerance[] = [1, 3, 5, 10, 15, 20]
 export const SLIP_TOLERANCE_KEY = 'asgdx-slip-tolerance'
 
 type Props = {
@@ -19,7 +19,6 @@ type Props = {
 export const SelectableSlipTolerance = ({ onChange, value }: Props): JSX.Element => {
   const changeSlipToleranceHandler = useCallback(
     (slipTolerance: SlipTolerance) => {
-      // TODO (@veado) Move storage to services/app, there is already a `changeSlipTolerance` state
       localStorage.setItem(SLIP_TOLERANCE_KEY, slipTolerance.toString())
       onChange(slipTolerance)
     },
@@ -28,11 +27,11 @@ export const SelectableSlipTolerance = ({ onChange, value }: Props): JSX.Element
 
   return (
     <Popover className="relative">
-      <Popover.Button className="group flex items-center">
+      <PopoverButton className="group flex items-center">
         {value.toString()} %
         <Cog8ToothIcon className="ease ml-5px h-[15px] w-[15px] text-gray2 group-hover:rotate-180 dark:text-gray2d" />
-      </Popover.Button>
-      <Popover.Panel className="absolute z-10 translate-x-[-50%] translate-y-[-100%] bg-bg0 shadow-full dark:bg-bg0d dark:shadow-fulld ">
+      </PopoverButton>
+      <PopoverPanel className="absolute z-10 translate-x-[-50%] translate-y-[-100%] bg-bg0 shadow-full dark:bg-bg0d dark:shadow-fulld ">
         {({ close }) => (
           <div>
             {FP.pipe(
@@ -52,7 +51,7 @@ export const SelectableSlipTolerance = ({ onChange, value }: Props): JSX.Element
             )}
           </div>
         )}
-      </Popover.Panel>
+      </PopoverPanel>
     </Popover>
   )
 }

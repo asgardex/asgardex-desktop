@@ -5,7 +5,6 @@ import { palette } from 'styled-theme'
 import { media } from '../../../../helpers/styleHelper'
 import { InnerForm } from '../../../shared/form'
 import { Menu as MenuUI } from '../../../shared/menu'
-import { AssetIcon as UIAssetIcon } from '../../../uielements/assets/assetIcon'
 import { Button as UIButton, ButtonProps as UIButtonProps } from '../../../uielements/button'
 import { WalletTypeLabel as WalletTypeLabelUI } from '../../../uielements/common/Common.styles'
 import { Fees as UIFees } from '../../../uielements/fees'
@@ -24,69 +23,9 @@ export const Container = styled('div')`
   `}
 `
 
-export const Header = styled('div')`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-
-  ${media.sm`
-    justify-content: flex-start;
-    flex-direction: row;
-  `}
-`
-
-export const AssetIcon = styled(UIAssetIcon).attrs({ size: 'big' })`
-  margin-bottom: 10px;
-
-  ${media.sm`
-    margin: 0 16px 0 0;
-  `}
-`
-
-export const HeaderTitleWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
-
-  ${media.sm`
-    justify-content: start;
-  `}
-`
-
 export const Input = styled(A.Input)`
   background: inherit !important;
   color: ${palette('text', 0)};
-`
-
-export const HeaderTitle = styled(UILabel)`
-  text-transform: uppercase;
-  font-size: 24px;
-  font-family: 'MainFontRegular';
-  color: ${palette('text', 0)};
-  padding: 0;
-  line-height: 1em;
-  text-align: center;
-  width: auto;
-
-  ${media.sm`
-    text-align: left;
-  `}
-`
-
-export const HeaderSubtitle = styled(UILabel)`
-  font-size: 14px;
-  text-transform: uppercase;
-  color: ${palette('text', 2)};
-  padding: 0;
-  line-height: 1em;
-  text-align: center;
-
-  ${media.sm`
-    text-align: left;
-  `}
 `
 
 export const WalletTypeLabel = styled(WalletTypeLabelUI)`

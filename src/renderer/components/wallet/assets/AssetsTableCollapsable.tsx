@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, QrCodeIcon } from '@heroicons/react/24/outline'
@@ -18,8 +18,7 @@ import {
   isSecuredAsset,
   isSynthAsset
 } from '@xchainjs/xchain-util'
-import { Collapse, Grid, Row } from 'antd'
-import { ScreenMap } from 'antd/lib/_util/responsiveObserve'
+import { Collapse, Row } from 'antd'
 import { ColumnType } from 'antd/lib/table'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -43,6 +42,7 @@ import { isEvmChain } from '../../../helpers/evmHelper'
 import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
+import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../hooks/useMayascanPrice'
 import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
@@ -130,7 +130,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   const { setProtocol } = useApp()
   const intl = useIntl()
   const navigate = useNavigate()
-  const screenMap: ScreenMap = Grid.useBreakpoint()
+  const screenMap = useBreakpoint()
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
 
@@ -166,11 +166,123 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
     setCollapseAll(!collapseAll)
   }, [allPanelKeys, collapseAll, openPanelKeys])
 
+  const getBalance = useCallback(
+    ({ asset, amount }: WalletBalance) => {
+      const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
+      let price: string = noDataString // Default to "no data" string
+
+      // Helper function to format price
+      const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
+        if (O.isSome(priceOption)) {
+          return formatAssetAmountCurrency({
+            amount: baseToAsset(priceOption.value),
+            asset: pricePoolAsset,
+            decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
+          })
+        }
+        return null
+      }
+
+      // Helper function to get price from pool details
+      const getPriceThor = (
+        getPoolPriceValueFn: GetPoolPriceValueFnThor,
+        poolDetails: PoolDetails,
+        pricePool: PricePool
+      ) => {
+        const priceOption = getPoolPriceValueFn({
+          balance: { asset, amount },
+          poolDetails,
+          pricePool
+        })
+        return formatPrice(priceOption, pricePool.asset)
+      }
+
+      const getPriceMaya = (
+        getPoolPriceValueFn: GetPoolPriceValueFnMaya,
+        poolDetails: PoolDetailsMaya,
+        pricePool: PricePool,
+        mayaPriceRD: MayaScanPriceRD
+      ) => {
+        const priceOption = getPoolPriceValueFn({
+          balance: { asset, amount },
+          poolDetails,
+          pricePool,
+          mayaPriceRD
+        })
+        return formatPrice(priceOption, pricePool.asset)
+      }
+
+      // USD Asset case
+      if (isUSDAsset(asset)) {
+        price = balance.toString()
+      } else {
+        const geckoPrice = geckoPriceData[GECKO_MAP?.[asset.symbol.toUpperCase()]]?.usd
+        const isThorchainNonEmpty = poolDetails.length !== 0
+        const isMayachainNonEmpty = poolDetailsMaya.length !== 0
+
+        if (isChainOfMaya(asset.chain) && isChainOfThor(asset.chain)) {
+          // Chain is supported by both MAYA and THOR, prioritize THOR
+          price =
+            (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
+            (isMayachainNonEmpty &&
+              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
+            (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+            price
+        } else if (isChainOfMaya(asset.chain)) {
+          // Chain is supported only by MAYA
+          price =
+            (isMayachainNonEmpty &&
+              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
+            (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+            price
+        } else if (isChainOfThor(asset.chain)) {
+          // Chain is supported only by THOR
+          price =
+            (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
+            (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+            price
+        } else {
+          // Handle pending pool details
+          const priceOptionFromPendingPoolDetails = getPoolPriceValue({
+            balance: { asset, amount },
+            poolDetails: pendingPoolDetails,
+            pricePool
+          })
+          price = formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) || price
+        }
+
+        // Special case for Maya assets
+        if (price === noDataString && isMayaAsset(asset)) {
+          const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
+          if (RD.isSuccess(mayaPrice)) {
+            price = formatAssetAmountCurrency({
+              amount: mayaPrice.value.assetAmount,
+              asset: mayaPrice.value.asset,
+              decimal: isUSDAsset(mayaPrice.value.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(mayaPrice.value.asset)
+            })
+          }
+        }
+      }
+      return {
+        balance,
+        price
+      }
+    },
+    [geckoPriceData, mayaPricePool, mayaScanPrice, pendingPoolDetails, poolDetails, poolDetailsMaya, pricePool]
+  )
+
   const onRowHandler = useCallback(
-    ({ asset, walletAddress, walletType, walletAccount, walletIndex, hdMode }: WalletBalance) => ({
-      onClick: () => selectAssetHandler({ asset, walletAddress, walletAccount, walletType, walletIndex, hdMode })
-    }),
-    [selectAssetHandler]
+    (walletBalance: WalletBalance) => {
+      const { price } = getBalance(walletBalance)
+      const { asset, walletAccount, walletAddress, walletIndex, walletType, hdMode } = walletBalance
+
+      return {
+        onClick: () =>
+          selectAssetHandler({ asset, walletAccount, walletAddress, walletIndex, walletType, hdMode, price })
+      }
+    },
+    [getBalance, selectAssetHandler]
   )
 
   const iconColumn: ColumnType<WalletBalance> = useMemo(
@@ -198,103 +310,8 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
   const balanceColumn: ColumnType<WalletBalance> = useMemo(
     () => ({
-      render: ({ asset, amount }: WalletBalance) => {
-        const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
-        let price: string = noDataString // Default to "no data" string
-
-        // Helper function to format price
-        const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
-          if (O.isSome(priceOption)) {
-            return formatAssetAmountCurrency({
-              amount: baseToAsset(priceOption.value),
-              asset: pricePoolAsset,
-              decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
-            })
-          }
-          return null
-        }
-
-        // Helper function to get price from pool details
-        const getPriceThor = (
-          getPoolPriceValueFn: GetPoolPriceValueFnThor,
-          poolDetails: PoolDetails,
-          pricePool: PricePool
-        ) => {
-          const priceOption = getPoolPriceValueFn({
-            balance: { asset, amount },
-            poolDetails,
-            pricePool
-          })
-          return formatPrice(priceOption, pricePool.asset)
-        }
-
-        const getPriceMaya = (
-          getPoolPriceValueFn: GetPoolPriceValueFnMaya,
-          poolDetails: PoolDetailsMaya,
-          pricePool: PricePool,
-          mayaPriceRD: MayaScanPriceRD
-        ) => {
-          const priceOption = getPoolPriceValueFn({
-            balance: { asset, amount },
-            poolDetails,
-            pricePool,
-            mayaPriceRD
-          })
-          return formatPrice(priceOption, pricePool.asset)
-        }
-
-        // USD Asset case
-        if (isUSDAsset(asset)) {
-          price = balance.toString()
-        } else {
-          const geckoPrice = geckoPriceData[GECKO_MAP?.[asset.symbol.toUpperCase()]]?.usd
-          const isThorchainNonEmpty = poolDetails.length !== 0
-          const isMayachainNonEmpty = poolDetailsMaya.length !== 0
-
-          if (isChainOfMaya(asset.chain) && isChainOfThor(asset.chain)) {
-            // Chain is supported by both MAYA and THOR, prioritize THOR
-            price =
-              (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
-              (isMayachainNonEmpty &&
-                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
-              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
-              price
-          } else if (isChainOfMaya(asset.chain)) {
-            // Chain is supported only by MAYA
-            price =
-              (isMayachainNonEmpty &&
-                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
-              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
-              price
-          } else if (isChainOfThor(asset.chain)) {
-            // Chain is supported only by THOR
-            price =
-              (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
-              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
-              price
-          } else {
-            // Handle pending pool details
-            const priceOptionFromPendingPoolDetails = getPoolPriceValue({
-              balance: { asset, amount },
-              poolDetails: pendingPoolDetails,
-              pricePool
-            })
-            price = formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) || price
-          }
-
-          // Special case for Maya assets
-          if (price === noDataString && isMayaAsset(asset)) {
-            const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
-            if (RD.isSuccess(mayaPrice)) {
-              price = formatAssetAmountCurrency({
-                amount: mayaPrice.value.assetAmount,
-                asset: mayaPrice.value.asset,
-                decimal: isUSDAsset(mayaPrice.value.asset) ? 2 : 6,
-                trimZeros: !isUSDAsset(mayaPrice.value.asset)
-              })
-            }
-          }
-        }
+      render: (walletBalance: WalletBalance) => {
+        const { balance, price } = getBalance(walletBalance)
 
         return (
           <div className="flex flex-col items-end justify-center font-main">
@@ -304,16 +321,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
     }),
-    [
-      hidePrivateData,
-      geckoPriceData,
-      poolDetails,
-      pricePool,
-      poolDetailsMaya,
-      mayaPricePool,
-      pendingPoolDetails,
-      mayaScanPrice
-    ]
+    [getBalance, hidePrivateData]
   )
 
   const renderActionColumn = useCallback(
@@ -591,7 +599,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             <Styled.HeaderLabel
               className="flex items-center space-x-2"
               color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
-              <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
+              <span>{assetsTxt}</span>
               {isEvmChain(chain) && (
                 <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
               )}
@@ -607,7 +615,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
                 disabled={disableRefresh}
                 onClick={(e) => {
                   e.stopPropagation()
-                  console.log('refresh', chain, walletType)
                   handleRefreshClick(chain, walletType)
                 }}>
                 <ArrowPathIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />

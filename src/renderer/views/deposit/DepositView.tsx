@@ -245,7 +245,7 @@ export const DepositView = () => {
   const poolDetailRD = protocol === THORChain ? poolDetailThorRD : poolDetailMayaRD
   const renderTopContent = useMemo(
     () => (
-      <div className="relative mb-20px flex items-center justify-between">
+      <div className="relative mb-4 flex items-center justify-between">
         <BackLinkButton className="absolute !m-0" />
         <h2 className="m-0 w-full text-center font-mainSemiBold text-16 uppercase text-turquoise">
           {intl.formatMessage({ id: 'common.liquidity' })}

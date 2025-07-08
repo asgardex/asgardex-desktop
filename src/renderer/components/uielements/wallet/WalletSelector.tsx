@@ -1,4 +1,4 @@
-import { Listbox } from '@headlessui/react'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -41,7 +41,7 @@ export const WalletSelector = ({
             onChange(id)
           }}>
           <div className={clsx('relative', className)}>
-            <Listbox.Button
+            <ListboxButton
               as="div"
               className={clsx(
                 'group flex cursor-pointer items-center',
@@ -60,8 +60,8 @@ export const WalletSelector = ({
                   />
                 </>
               )}
-            </Listbox.Button>
-            <Listbox.Options
+            </ListboxButton>
+            <ListboxOptions
               className={clsx(
                 'absolute z-[2000] mt-0 max-h-60 w-full overflow-auto',
                 'border border-gray0 bg-bg0 focus:outline-none dark:border-gray0d dark:bg-bg0d'
@@ -71,7 +71,7 @@ export const WalletSelector = ({
                 A.map((wallet) => {
                   const selected = wallet.id === selectedWallet.id
                   return (
-                    <Listbox.Option
+                    <ListboxOption
                       disabled={wallet.id === selectedWallet.id}
                       className={({ selected }) =>
                         clsx(
@@ -86,11 +86,11 @@ export const WalletSelector = ({
                       value={wallet}>
                       {wallet.name}
                       {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
-                    </Listbox.Option>
+                    </ListboxOption>
                   )
                 })
               )}
-            </Listbox.Options>
+            </ListboxOptions>
           </div>
         </Listbox>
       )

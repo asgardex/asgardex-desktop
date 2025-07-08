@@ -68,6 +68,7 @@ jobs:
           VITE_ANKR_API_KEY: ${{ secrets.REACT_APP_ANKR_API_KEY }}
           VITE_SOL_API_KEY: ${{ secrets.REACT_APP_SOL_API_KEY }}
           VITE_ADA_API_KEY: ${{ secrets.REACT_APP_ADA_API_KEY }}
+          VITE_NOWNODES_API_KEY: ${{ secrets.REACT_APP_NOWNODES_API_KEY }}
           OS_NAME: ${{ matrix.os-name }}
           OS_VERSION: ${{ matrix.os-version }}
           OS_VERSION_SUFFIX: '${{ matrix.os-version }}-${{ matrix.os-name }}'

@@ -14,7 +14,7 @@ export const HeaderSettings = (props: Props): JSX.Element => {
   const intl = useIntl()
 
   return (
-    <div className="flex items-center justify-between w-full px-4 lg:w-auto lg:px-0" onClick={onPress}>
+    <div className="flex items-center justify-between w-full px-6 lg:w-auto lg:px-0" onClick={onPress}>
       {!isDesktopView && (
         <Label size="large" textTransform="uppercase" weight="bold">
           {intl.formatMessage({ id: 'common.settings' })}{' '}

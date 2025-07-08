@@ -15,8 +15,10 @@ import { AssetsToSwap } from './Swap.types'
  * It's always `1e8` based (default by THORChain)
  */
 export const getSwapLimit1e8 = (memo: string): BaseAmount => {
-  const swapLimitFromMemo = baseAmount(memo.split(':')[3])
-  return swapLimitFromMemo
+  const parts = memo.split(':')
+  const swapLimitPart = parts[3]
+  const swapLimit = swapLimitPart.includes('/') ? swapLimitPart.split('/')[0] : swapLimitPart
+  return baseAmount(swapLimit)
 }
 
 export const pickPoolAsset = (assets: PoolAssetDetails, asset: AnyAsset): O.Option<PoolAssetDetail> =>

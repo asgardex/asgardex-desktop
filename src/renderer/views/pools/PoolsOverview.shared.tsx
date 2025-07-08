@@ -3,8 +3,8 @@ import { StarIcon as StarFilled } from '@heroicons/react/24/solid'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
-import styled from 'styled-components'
 
 import { ErrorView } from '../../components/shared/error'
 import { AssetIcon } from '../../components/uielements/assets/assetIcon'
@@ -14,18 +14,6 @@ import { Label } from '../../components/uielements/label'
 import { ordBaseAmount } from '../../helpers/fp/ord'
 import { sortByDepth } from '../../helpers/poolHelper'
 
-const RowContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-`
-
-const SyncIcon = styled(ArrowPathIcon)<{ icononly: 'true' | 'false' }>`
-  width: 16px;
-  height: 16px;
-  margin-right: ${({ icononly }) => (icononly === 'true' ? '0' : '8px')};
-`
 const renderWatchColumn = ({
   data: { watched },
   add,
@@ -81,9 +69,9 @@ export const assetColumn = <T extends { asset: AnyAsset }>(title: string): Colum
 })
 
 const renderPoolColumn = ({ asset, network }: { asset: AnyAsset; network: Network }) => (
-  <RowContainer>
+  <div className="flex items-center justify-center w-full">
     <AssetIcon asset={asset} network={network} />
-  </RowContainer>
+  </div>
 )
 
 export const poolColumn = <T extends { network: Network; asset: AnyAsset }>(title: string): ColumnType<T> => ({
@@ -94,16 +82,10 @@ export const poolColumn = <T extends { network: Network; asset: AnyAsset }>(titl
   render: renderPoolColumn
 })
 
-const renderPoolColumnMobile = ({ asset, network }: { network: Network; asset: AnyAsset }) => (
-  <RowContainer>
-    <AssetIcon asset={asset} network={network} />
-  </RowContainer>
-)
-
 export const poolColumnMobile = <T extends { network: Network; asset: AnyAsset }>(title: string): ColumnType<T> => ({
   key: 'pool',
   title,
-  render: renderPoolColumnMobile
+  render: renderPoolColumn
 })
 
 const renderPriceColumn =
@@ -181,7 +163,8 @@ export const renderRefreshBtnColTitle = ({
   <div className="flex items-center justify-center">
     <TextButton size={icononly ? 'large' : 'normal'} onClick={clickHandler} className="">
       <div className="flex items-center">
-        <SyncIcon icononly={icononly ? 'true' : 'false'} /> {!icononly && title}
+        <ArrowPathIcon className={clsx('w-4 h-4', { 'mr-2': !icononly })} />
+        {!icononly && title}
       </div>
     </TextButton>
   </div>

@@ -27,7 +27,7 @@ export default defineConfig(async ({ mode }) => {
       plugins: [
         typescript({ tsconfig: './tsconfig.main.json' }),
         externalizeDepsPlugin({
-          include: ['@ledgerhq/hw-transport-node-hid', '@ledgerhq/hw-transport', 'node-hid', 'usb']
+          include: ['@ledgerhq/hw-transport-node-hid-singleton', '@ledgerhq/hw-transport', 'node-hid', 'usb']
         })
       ],
       define: {
@@ -59,19 +59,7 @@ export default defineConfig(async ({ mode }) => {
           output: {
             manualChunks: {
               vendor: ['react', 'react-dom', 'react-router-dom'],
-              crypto: ['crypto-browserify', 'stream-browserify', 'readable-stream'],
-              xchain: [
-                '@xchainjs/xchain-wallet',
-                '@xchainjs/xchain-doge',
-                '@xchainjs/xchain-litecoin',
-                '@xchainjs/xchain-bitcoin',
-                '@xchainjs/xchain-ethereum',
-                '@xchainjs/xchain-cosmos',
-                '@xchainjs/xchain-thorchain',
-                '@xchainjs/xchain-client',
-                '@xchainjs/xchain-crypto',
-                '@xchainjs/xchain-util'
-              ]
+              crypto: ['crypto-browserify', 'stream-browserify', 'readable-stream']
             }
           },
           plugins: [
@@ -90,6 +78,7 @@ export default defineConfig(async ({ mode }) => {
           process: 'process/browser',
           stream: 'stream-browserify',
           crypto: 'crypto-browserify',
+          assert: 'assert',
           path: path.resolve(__dirname, 'empty.js'),
           url: path.resolve(__dirname, 'empty.js'),
           https: path.resolve(__dirname, 'empty.js'),
@@ -101,7 +90,7 @@ export default defineConfig(async ({ mode }) => {
         }
       },
       optimizeDeps: {
-        include: ['process', 'buffer', '@mayaprotocol/zcash-js'],
+        include: ['process', 'buffer', 'assert', '@mayaprotocol/zcash-js'],
         esbuildOptions: {
           inject: ['./src/shims/buffer-shim.js']
         }

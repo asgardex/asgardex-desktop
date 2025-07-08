@@ -12,7 +12,6 @@ import {
   formatAssetAmountCurrency,
   formatBN
 } from '@xchainjs/xchain-util'
-import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -35,6 +34,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { ordBaseAmount, ordNumber } from '../../helpers/fp/ord'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
@@ -98,9 +98,9 @@ export const ActivePools = (): JSX.Element => {
 
   const poolsRD = protocol === THORChain ? poolsThorRD : poolsMayaRD
 
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
-  const isLargeScreen = Grid.useBreakpoint()?.xl ?? false
-  const isXLargeScreen = Grid.useBreakpoint()?.xxl ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
+  const isLargeScreen = useBreakpoint()?.xl ?? false
+  const isXLargeScreen = useBreakpoint()?.xxl ?? false
 
   // store previous data of pools to render these while reloading
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)

@@ -2,8 +2,7 @@ import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as BSC from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
-import { ethers } from 'ethers'
+import { Contract } from 'ethers'
 import { either as E } from 'fp-ts'
 
 import { isBscAsset } from '../../../../renderer/helpers/assetHelper'
@@ -150,8 +149,8 @@ export const deposit = async ({
         : { gasPrice }
     ]
 
-    const routerContract = new ethers.Contract(router, BSC.abi.router)
-    const unsignedTx = await routerContract.populateTransaction.depositWithExpiry(...depositParams)
+    const routerContract = new Contract(router, BSC.abi.router)
+    const unsignedTx = await routerContract.getFunction('depositWithExpiry').populateTransaction(...depositParams)
     const nativeAsset = clientledger.getAssetInfo()
 
     const hash = await clientledger.transfer({
@@ -162,7 +161,7 @@ export const deposit = async ({
       recipient: router,
       gasPrice: gasPrices.fast,
       isMemoEncoded: true,
-      gasLimit: ethers.BigNumber.from(160000)
+      gasLimit: new BigNumber(160000)
     })
     return E.right(hash)
   } catch (error) {

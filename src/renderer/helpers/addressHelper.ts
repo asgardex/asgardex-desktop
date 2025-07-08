@@ -15,11 +15,12 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { getPrefix as getLitecoinPrefix, LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain, getPrefix as getMayachainPrefix } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { getPrefix as getThorchainPrefix, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import { getPrefix as getZcashPrefix, ZECChain } from '@xchainjs/xchain-zcash'
-import { ethers } from 'ethers'
+import { getAddress } from 'ethers'
 import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { isSupportedChain } from '../../shared/utils/chain'
@@ -50,7 +51,8 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [RadixChain]: () => 'account_'.length,
   [SOLChain]: () => 0,
   [ADAChain]: () => 'addr'.length,
-  [ZECChain]: (network: Network) => getZcashPrefix(network).length
+  [ZECChain]: (network: Network) => getZcashPrefix(network).length,
+  [XRPChain]: () => 'r'.length
 }
 
 export const getAddressPrefixLength = (chain: Chain, network: Network): number => {
@@ -77,7 +79,7 @@ export const removeAddressPrefix = (address: Address): Address => {
  * as ethers' getAddress function treats 0X as invalid.
  */
 export const getEVMChecksumAddress = (address: Address): O.Option<Address> =>
-  O.tryCatch(() => ethers.utils.getAddress(address.toLowerCase()))
+  O.tryCatch(() => getAddress(address.toLowerCase()))
 
 export const hasLedgerAddress = (addresses: LedgerAddresses, chain: Chain): boolean =>
   FP.pipe(

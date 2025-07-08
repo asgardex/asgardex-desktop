@@ -84,7 +84,7 @@ const SuccessRouteView = ({
   const navigate = useNavigate()
   const location = useLocation()
 
-  const { slipTolerance$, changeSlipTolerance } = useAppContext()
+  const { streamingSlipTolerance$, changeStreamingSlipTolerance } = useAppContext()
 
   const { network } = useNetwork()
 
@@ -319,20 +319,21 @@ const SuccessRouteView = ({
     reloadSelectedPoolDetailMaya
   ])
 
-  const getStoredSlipTolerance = (): SlipTolerance =>
+  const getStoredSlipTolerance = (key: string): SlipTolerance =>
     FP.pipe(
-      localStorage.getItem(SLIP_TOLERANCE_KEY),
+      localStorage.getItem(key),
       O.fromNullable,
       O.map((s) => {
         const itemAsNumber = Number(s)
-        const slipTolerance = isSlipTolerance(itemAsNumber) ? itemAsNumber : DEFAULT_SLIP_TOLERANCE
-        changeSlipTolerance(slipTolerance)
-        return slipTolerance
+        return isSlipTolerance(itemAsNumber) ? itemAsNumber : DEFAULT_SLIP_TOLERANCE
       }),
       O.getOrElse(() => DEFAULT_SLIP_TOLERANCE)
     )
 
-  const slipTolerance = useObservableState<SlipTolerance>(slipTolerance$, getStoredSlipTolerance())
+  const slipTolerance = useObservableState<SlipTolerance>(
+    streamingSlipTolerance$,
+    getStoredSlipTolerance(`${SLIP_TOLERANCE_KEY}_STREAMING`)
+  )
 
   const onChangeAssetHandler = useCallback(
     ({
@@ -427,7 +428,7 @@ const SuccessRouteView = ({
 
   return (
     <>
-      <div className="relative mb-20px flex items-center justify-between">
+      <div className="relative mb-4 flex items-center justify-between">
         <BackLinkButton className="absolute !m-0" />
         <h2 className="m-0 w-full text-center font-mainSemiBold text-16 uppercase text-turquoise">
           {intl.formatMessage({ id: 'common.swap' })}
@@ -494,7 +495,7 @@ const SuccessRouteView = ({
                   onChangeAsset={onChangeAssetHandler}
                   network={network}
                   slipTolerance={slipTolerance}
-                  changeSlipTolerance={changeSlipTolerance}
+                  changeSlipTolerance={changeStreamingSlipTolerance}
                   approveERC20Token$={approveERC20Token$}
                   isApprovedERC20Token$={isApprovedERC20Token$}
                   importWalletHandler={importWalletHandler}
@@ -597,7 +598,7 @@ const SuccessRouteView = ({
                   onChangeAsset={onChangeAssetHandler}
                   network={network}
                   slipTolerance={slipTolerance}
-                  changeSlipTolerance={changeSlipTolerance}
+                  changeSlipTolerance={changeStreamingSlipTolerance}
                   approveERC20Token$={approveERC20Token$}
                   isApprovedERC20Token$={isApprovedERC20Token$}
                   importWalletHandler={importWalletHandler}
@@ -650,7 +651,7 @@ const SuccessTradeRouteView = ({
   const pricePool = usePricePool()
   const { isPrivate } = useApp()
   const { thorchainQuery } = useThorchainQueryContext()
-  const { slipTolerance$, changeSlipTolerance } = useAppContext()
+  const { tradeSlipTolerance$, changeTradeSlipTolerance } = useAppContext()
 
   // all trades will be using THorchain
   const { chain: sourceChain } = AssetRuneNative
@@ -662,24 +663,25 @@ const SuccessTradeRouteView = ({
 
   const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$ } = useChainContext()
 
-  const getStoredSlipTolerance = (): SlipTolerance =>
+  const getStoredSlipTolerance = (key: string): SlipTolerance =>
     FP.pipe(
-      localStorage.getItem(SLIP_TOLERANCE_KEY),
+      localStorage.getItem(key),
       O.fromNullable,
       O.map((s) => {
         const itemAsNumber = Number(s)
-        const slipTolerance = isSlipTolerance(itemAsNumber) ? itemAsNumber : DEFAULT_SLIP_TOLERANCE
-        changeSlipTolerance(slipTolerance)
-        return slipTolerance
+        return isSlipTolerance(itemAsNumber) ? itemAsNumber : DEFAULT_SLIP_TOLERANCE
       }),
       O.getOrElse(() => DEFAULT_SLIP_TOLERANCE)
     )
 
-  const slipTolerance = useObservableState<SlipTolerance>(slipTolerance$, getStoredSlipTolerance())
+  const tradeSlipTolerance = useObservableState<SlipTolerance>(
+    tradeSlipTolerance$,
+    getStoredSlipTolerance(`${SLIP_TOLERANCE_KEY}_TRADE`)
+  )
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
     // Check the condition to skip fetching
-    if (sourceAsset.type === AssetType.SYNTH) {
+    if (sourceAsset.type === AssetType.TRADE) {
       // Resolve `getDecimal` and return the observable
       return Rx.from(getDecimal(AssetRuneNative)).pipe(
         RxOp.map((decimal) =>
@@ -898,7 +900,7 @@ const SuccessTradeRouteView = ({
   const { validateSwapAddress } = useValidateAddress(targetChain)
   return (
     <>
-      <div className="relative mb-20px flex items-center justify-between">
+      <div className="relative mb-4 flex items-center justify-between">
         <BackLinkButton className="absolute !m-0" />
         <h2 className="m-0 w-full text-center font-mainSemiBold text-16 uppercase text-turquoise">
           {intl.formatMessage({ id: 'common.swap' })}
@@ -960,8 +962,8 @@ const SuccessTradeRouteView = ({
                   hidePrivateData={isPrivate}
                   thorchainQuery={thorchainQuery}
                   reloadTxStatus={reloadSwapTxStatus}
-                  slipTolerance={slipTolerance}
-                  changeSlipTolerance={changeSlipTolerance}
+                  slipTolerance={tradeSlipTolerance}
+                  changeSlipTolerance={changeTradeSlipTolerance}
                   tradeAccountBalances={tradeAccountBalanceRD}
                 />
               )
@@ -1041,8 +1043,8 @@ const SuccessTradeRouteView = ({
                   hidePrivateData={isPrivate}
                   thorchainQuery={thorchainQuery}
                   reloadTxStatus={reloadSwapTxStatus}
-                  slipTolerance={slipTolerance}
-                  changeSlipTolerance={changeSlipTolerance}
+                  slipTolerance={tradeSlipTolerance}
+                  changeSlipTolerance={changeTradeSlipTolerance}
                   tradeAccountBalances={tradeAccountBalanceRD}
                 />
               )

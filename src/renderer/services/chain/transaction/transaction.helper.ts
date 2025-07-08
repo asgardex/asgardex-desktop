@@ -14,6 +14,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
+import { XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain, SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { RUNE_DECIMAL as THOR_DECIMAL, THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
@@ -79,6 +80,9 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
     case ZECChain:
       // 1000 zatoshi
       return baseAmount(1000, ZEC_DECIMAL)
+    case XRPChain:
+      // 1 drop
+      return baseAmount(1, XRP_DECIMAL)
     default:
       throw Error(`${chain} is not supported for 'smallestAmountToSent$'`)
   }

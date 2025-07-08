@@ -15,6 +15,7 @@ import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { AssetXRP, XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -296,6 +297,11 @@ export const getOutboundAssetFeeByChain = (
           return O.some({
             amount: baseAmount(value, ZEC_DECIMAL),
             asset: AssetZEC
+          })
+        case XRPChain:
+          return O.some({
+            amount: baseAmount(value, XRP_DECIMAL),
+            asset: AssetXRP
           })
         // 'THORChain can be ignored - fees for asset side only
         // Other chains can be ignored since they are for mayachain

@@ -1,5 +1,3 @@
-import { ArrowPathRoundedSquareIcon as SwapOutlined } from '@heroicons/react/20/solid'
-import { Typography } from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -18,22 +16,4 @@ export const Table = styled(UITable)`
   .ant-table-tbody > tr > td {
     border: none;
   }
-`
-
-export const Text = styled(Typography.Text)`
-  font-size: 16px;
-  text-transform: lowercase;
-  font-family: 'MainFontRegular';
-  color: ${palette('text', 1)};
-`
-
-export const TransferIcon = styled(SwapOutlined)`
-  height: 20px;
-  width: 20px;
-  stroke: ${palette('text', 1)};
-`
-
-export const OwnText = styled.div`
-  text-transform: uppercase;
-  color: inherit;
 `

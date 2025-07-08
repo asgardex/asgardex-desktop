@@ -117,7 +117,7 @@ export const SwapRoute = ({ isLoading, targetAsset, quote, quotes, onSelectQuote
     <div>
       {isLoading ? (
         <Spin spinning={isLoading} tip="Loading...">
-          <div style={{ minHeight: '100px' }} />
+          <div className="min-h-24" />
         </Spin>
       ) : activeQuote ? (
         <Collapse

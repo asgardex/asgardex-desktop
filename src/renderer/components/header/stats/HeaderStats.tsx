@@ -4,11 +4,12 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
 import { baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
-import { Grid, Row } from 'antd'
+import { Row } from 'antd'
 import { function as FP } from 'fp-ts'
 
 import { abbreviateNumber } from '../../../helpers/numberHelper'
 import { loadingString } from '../../../helpers/stringHelper'
+import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { PriceRD } from '../../../services/midgard/midgardTypes'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
@@ -41,9 +42,9 @@ export const HeaderStats = (props: Props): JSX.Element => {
     reloadVolume24PriceMaya
   } = props
 
-  const isSmallMobileView = Grid.useBreakpoint()?.xs ?? false
-  const isLargeMobileView = Grid.useBreakpoint()?.lg ?? false
-  const isXLargeMobileView = Grid.useBreakpoint()?.xl ?? false
+  const isSmallMobileView = useBreakpoint()?.xs ?? false
+  const isLargeMobileView = useBreakpoint()?.lg ?? false
+  const isXLargeMobileView = useBreakpoint()?.xl ?? false
 
   const { network } = useNetwork()
 

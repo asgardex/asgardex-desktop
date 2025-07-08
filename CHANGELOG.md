@@ -1,5 +1,53 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.4 (2025-7-3)
+
+## Add
+
+## Update/Fixes
+
+- Fix Ruji swaps [#808](https://github.com/asgardex/asgardex-desktop/pull/808)
+- Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
+
+# 1.40.3 (2025-6-28)
+
+## Add
+
+- Add Ripple [#781](https://github.com/asgardex/asgardex-desktop/pull/781)
+- Add tolerance adjustment to streaming params [#799](https://github.com/asgardex/asgardex-desktop/pull/799)
+- Add price of asset in Asset Detail [#787](https://github.com/asgardex/asgardex-desktop/pull/787)
+
+## Update/Fixes
+
+- Fix Ruji [#802](https://github.com/asgardex/asgardex-desktop/pull/802)
+- Fix target asset list [#803](https://github.com/asgardex/asgardex-desktop/pull/803)
+
+# 1.40.2 (2025-6-20)
+
+## Update/Fixes
+
+- Fix bundle conflict [#784](https://github.com/asgardex/asgardex-desktop/pull/784)
+- Update bonds route view [#783](https://github.com/asgardex/asgardex-desktop/pull/783)
+- update trade swap tolerance [#779](https://github.com/asgardex/asgardex-desktop/pull/779)
+- fix asset select and switch button [#777](https://github.com/asgardex/asgardex-desktop/pull/777)
+- headless migration [#772](https://github.com/asgardex/asgardex-desktop/pull/772)
+
+## Add
+
+- Add Zcash [#770](https://github.com/asgardex/asgardex-desktop/pull/770)
+
+# 1.40.1 (2025-6-28)
+
+## Update/Fixes
+
+- enhance wallet creation flow [#745](https://github.com/asgardex/asgardex-desktop/pull/745)
+- update to react 18 [#725](https://github.com/asgardex/asgardex-desktop/pull/725)
+- styled components removal [#756](https://github.com/asgardex/asgardex-desktop/pull/756)
+
+## Add
+
+- Added cardano package [#623](https://github.com/asgardex/asgardex-desktop/pull/623)
+
 # 1.40.0 (2025-5-28)
 
 ## Update/Fixes

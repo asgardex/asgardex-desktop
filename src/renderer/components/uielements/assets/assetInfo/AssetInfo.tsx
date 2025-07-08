@@ -12,6 +12,7 @@ import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { loadingString, emptyString } from '../../../../helpers/stringHelper'
 import { getAssetAmountByAsset } from '../../../../helpers/walletHelper'
 import { NonEmptyWalletBalances } from '../../../../services/wallet/types'
+import { Label } from '../../label'
 import { AssetIcon } from '../assetIcon'
 
 type Props = {
@@ -24,11 +25,12 @@ type Props = {
     walletType: WalletType
   }>
   network: Network
+  price?: string
 }
 
 export const AssetInfo = (props: Props): JSX.Element => {
   const intl = useIntl()
-  const { assetsWB = O.none, asset: oAsset, walletInfo: oWalletInfo = O.none, network } = props
+  const { assetsWB = O.none, asset: oAsset, walletInfo: oWalletInfo = O.none, network, price } = props
 
   const previousBalance = useRef<O.Option<AssetAmount>>(O.none)
 
@@ -98,13 +100,20 @@ export const AssetInfo = (props: Props): JSX.Element => {
           {renderLedgerWalletType ? `(${renderLedgerWalletType})` : ''}
         </div>
       </div>
-      <div className="p-0 font-main text-[20px] uppercase text-text0 dark:text-text0d">
-        {renderBalance}{' '}
-        {FP.pipe(
-          oAsset,
-          O.map(({ ticker }) => ticker),
-          O.getOrElse(() => loadingString)
+      <div className="mt-4 flex flex-col items-center">
+        {price && (
+          <Label className="!text-[24px]" align="center">
+            {price}
+          </Label>
         )}
+        <Label color="gray" size="big" textTransform="uppercase">
+          {renderBalance}{' '}
+          {FP.pipe(
+            oAsset,
+            O.map(({ ticker }) => ticker),
+            O.getOrElse(() => loadingString)
+          )}
+        </Label>
       </div>
     </div>
   )

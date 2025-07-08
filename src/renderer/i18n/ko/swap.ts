@@ -15,7 +15,6 @@ const swap: SwapMessages = {
   'swap.slip.tolerance': '슬리피지 허용 범위',
   'swap.slip.tolerance.info':
     '퍼센트가 높을수록 더 많은 슬리피지를 허용하게 됩니다. 더 큰 슬리피지 허용 범위는 스왑이 중단되지 않도록 예상 수수료를 포함한 더 넓은 범위를 포함합니다.',
-  'swap.slip.tolerance.ledger-disabled.info': 'Ledger와의 기술적 문제로 인해 슬리피지 허용 범위가 비활성화되었습니다.',
   'swap.streaming.interval': '간격',
   'swap.streaming.title': '스트리밍 상태',
   'swap.streaming.interval.info': '스왑 간의 간격, 10블록은 1분 간격입니다.',

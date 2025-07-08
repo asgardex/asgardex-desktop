@@ -14,6 +14,7 @@ import { isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { walletTypeToI18n } from '../../../../services/wallet/util'
 import { PricePoolAsset } from '../../../../views/pools/Pools.types'
+import { AssetIcon } from '../assetIcon'
 import * as Styled from './AssetData.styles'
 
 /**
@@ -59,7 +60,7 @@ export const AssetData = (props: Props): JSX.Element => {
   return (
     <Styled.Wrapper className={className}>
       <Styled.AssetIconContainer>
-        <Styled.AssetIcon asset={asset} size={size} network={network} />
+        <AssetIcon asset={asset} size={size} network={network} />
       </Styled.AssetIconContainer>
       {!noTicker && (
         <Styled.LabelContainer>

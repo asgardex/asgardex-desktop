@@ -116,6 +116,7 @@ export type SelectedWalletAsset = {
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
+  price?: string
 }
 
 export type SelectedWalletAssetRD = RD.RemoteData<Error, SelectedWalletAsset>

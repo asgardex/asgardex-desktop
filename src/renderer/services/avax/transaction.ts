@@ -3,7 +3,8 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { abi, isApproved } from '@xchainjs/xchain-evm'
 import { baseAmount, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
-import { ethers } from 'ethers'
+import BigNumber from 'bignumber.js'
+import { Contract, getAddress, ZeroAddress } from 'ethers'
 import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -68,8 +69,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
             RxOp.switchMap(({ gasPrices, blockTime }) => {
               const isERC20 = isEVMTokenAsset(params.asset as TokenAsset)
               const checkSummedContractAddress = isERC20
-                ? ethers.utils.getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
-                : ethers.constants.AddressZero
+                ? getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
+                : ZeroAddress
 
               const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
               const depositParams = [
@@ -80,10 +81,12 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                 expiration
               ]
 
-              const routerContract = new ethers.Contract(router, abi.router)
+              const routerContract = new Contract(router, abi.router)
               const nativeAsset = client.getAssetInfo()
 
-              return Rx.from(routerContract.populateTransaction.depositWithExpiry(...depositParams)).pipe(
+              return Rx.from(
+                routerContract.getFunction('depositWithExpiry').populateTransaction(...depositParams)
+              ).pipe(
                 RxOp.switchMap((unsignedTx) =>
                   Rx.from(
                     client.transfer({
@@ -93,7 +96,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                       recipient: router,
                       gasPrice: gasPrices[params.feeOption],
                       isMemoEncoded: true,
-                      gasLimit: ethers.BigNumber.from(160000)
+                      gasLimit: new BigNumber(160000)
                     })
                   )
                 )

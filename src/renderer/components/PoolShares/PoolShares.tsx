@@ -4,12 +4,13 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, baseAmount, baseToAsset, Chain, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
-import { Grid, Row } from 'antd'
+import { Row } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import * as PoolHelpers from '../../helpers/poolHelper'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { MimirHalt } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
 import { AssetLabel } from '../uielements/assets/assetLabel'
@@ -35,7 +36,7 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
   const protocolAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
   const protocolUrl = useMemo(() => (protocol === THORChain ? 'runescan.io' : 'Mayascan.com'), [protocol])
 
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
 
   const iconColumn: ColumnType<PoolShareTableRowData> = useMemo(
     () => ({

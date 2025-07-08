@@ -1,7 +1,7 @@
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
-import { Grid } from 'antd'
 import { useIntl } from 'react-intl'
 
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { Button } from '../uielements/button'
 import { ExternalLinkIcon } from '../uielements/common/Common.styles'
 
@@ -18,7 +18,7 @@ export type AppUpdateModalProps =
 
 export const AppUpdate = (props: AppUpdateModalProps) => {
   const intl = useIntl()
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
 
   if (props.isOpen) {
     return (

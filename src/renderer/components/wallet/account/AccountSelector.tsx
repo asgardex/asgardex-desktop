@@ -12,8 +12,9 @@ import { WalletBalance } from '../../../services/wallet/types'
 import { AssetData } from '../../uielements/assets/assetData'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { Size as IconSize } from '../../uielements/assets/assetIcon/AssetIcon.types'
+import { WalletTypeLabel } from '../../uielements/common/Common.styles'
 import { FilterMenu } from '../../uielements/filterMenu'
-import * as Styled from './AccountSelector.styles'
+import { Label } from '../../uielements/label'
 
 export type Props = {
   selectedWallet: WalletBalance
@@ -75,17 +76,21 @@ export const AccountSelector = (props: Props): JSX.Element => {
   )
 
   return (
-    <Styled.Card bordered={false}>
-      <Styled.AssetWrapper>
+    <div className="py-4">
+      <div className="flex items-center">
         <AssetIcon asset={selectedWallet.asset} size={size} network={network} />
-        <Styled.AssetInfoWrapper>
-          <Styled.AssetTitleWrapper>
-            <Styled.AssetTitle>{selectedWallet.asset.ticker}</Styled.AssetTitle>
+        <div className="flex flex-col justify-between ml-8">
+          <div className="flex items-center space-x-4">
+            <Label className="text-[36px] leading-10" textTransform="uppercase">
+              {selectedWallet.asset.ticker}
+            </Label>
             {isLedgerWallet(selectedWallet.walletType) && (
-              <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
+              <WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</WalletTypeLabel>
             )}
-          </Styled.AssetTitleWrapper>
-          <Styled.AssetSubTitle>{selectedWallet.asset.chain}</Styled.AssetSubTitle>
+          </div>
+          <Label color="light" size="large" textTransform="uppercase">
+            {selectedWallet.asset.chain}
+          </Label>
 
           {enableDropdown && (
             <Dropdown overlay={menu} trigger={['click']}>
@@ -94,12 +99,14 @@ export const AccountSelector = (props: Props): JSX.Element => {
                   such as "Function components cannot be given refs"
               */}
               <div>
-                <Styled.ChangeLabel>{intl.formatMessage({ id: 'common.change' })}</Styled.ChangeLabel>
+                <Label className="cursor-pointer" color="primary" textTransform="uppercase">
+                  {intl.formatMessage({ id: 'common.change' })}
+                </Label>
               </div>
             </Dropdown>
           )}
-        </Styled.AssetInfoWrapper>
-      </Styled.AssetWrapper>
-    </Styled.Card>
+        </div>
+      </div>
+    </div>
   )
 }

@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Grid } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { OpenExplorerTxUrl } from '../../services/clients'
 import { Action, ActionsPage, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
 import { ErrorView } from '../shared/error'
@@ -37,7 +37,7 @@ export const PoolActionsHistoryList = ({
   reloadHistory,
   className
 }: Props) => {
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
 
   const intl = useIntl()
 
