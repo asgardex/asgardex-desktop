@@ -45,7 +45,9 @@ const {
   getTradeAccount$,
   reloadTradeAccount,
   getTcyClaim$,
-  reloadTcyClaim
+  reloadTcyClaim,
+  getTcyStaker$,
+  reloadTcyStaker
 } = createThornodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
@@ -108,5 +110,7 @@ export {
   getTradeAccount$,
   reloadTradeAccount,
   getTcyClaim$,
-  reloadTcyClaim
+  reloadTcyClaim,
+  getTcyStaker$,
+  reloadTcyStaker
 }

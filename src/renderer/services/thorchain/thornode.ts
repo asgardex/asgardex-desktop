@@ -23,7 +23,8 @@ import {
   TradeAccountApi,
   TradeAccountResponse,
   TCYClaimersApi,
-  TCYClaimer
+  TCYStakersApi,
+  TCYStaker
 } from '@xchainjs/xchain-thornode'
 import {
   Address,
@@ -74,7 +75,10 @@ import {
   TradeAccountLD,
   LiquidityProvider,
   TcyClaimLD,
-  TcyClaim
+  TcyStakeLD,
+  TcyStake,
+  TcyClaim,
+  ApiTcyClaimResponse
 } from './types'
 
 const height: number | undefined = undefined
@@ -393,13 +397,13 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       ),
       RxOp.startWith(RD.pending)
     )
-  const apiGetTcyClaim$ = (address: Address): LiveData<Error, TCYClaimer> =>
+  const apiGetTcyClaim$ = (address: Address): LiveData<Error, ApiTcyClaimResponse> =>
     FP.pipe(
       thornodeUrl$,
       liveData.chain((basePath) =>
         FP.pipe(
           Rx.from(new TCYClaimersApi(getThornodeAPIConfiguration(basePath)).tcyClaimer(address)),
-          RxOp.map((response: AxiosResponse<TCYClaimer>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.map((response: AxiosResponse<unknown>) => RD.success(response.data as ApiTcyClaimResponse)),
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
       )
@@ -410,14 +414,47 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     FP.pipe(
       reloadTcyClaim$,
       RxOp.debounceTime(300),
-      RxOp.switchMap((_) => apiGetTcyClaim$(address)),
-      liveData.map((claim): TcyClaim => {
-        const asset = assetFromStringEx(claim.asset)
+      RxOp.switchMap((_) =>
+        apiGetTcyClaim$(address).pipe(
+          liveData.map((response): TcyClaim[] =>
+            response.tcy_claimer.map((item) => ({
+              asset: assetFromStringEx(item.asset),
+              amount: baseAmount(bnOrZero(item.amount), THORCHAIN_DECIMAL),
+              l1Address: item.l1_address
+            }))
+          ),
+          RxOp.catchError(
+            (err: unknown): Rx.Observable<RD.RemoteData<Error, TcyClaim[]>> =>
+              Rx.of(RD.failure(err instanceof Error ? err : new Error(`Unknown error for ${address}`)))
+          )
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const apiGetTcyStaker$ = (address: Address): LiveData<Error, TCYStaker> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new TCYStakersApi(getThornodeAPIConfiguration(basePath)).tcyStaker(address)),
+          RxOp.map((response: AxiosResponse<TCYStaker>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      )
+    )
+  const { stream$: reloadTcyStaker$, trigger: reloadTcyStaker } = triggerStream()
+
+  const getTcyStaker$ = (address: Address): TcyStakeLD =>
+    FP.pipe(
+      reloadTcyStaker$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetTcyStaker$(address)),
+      liveData.map((claim): TcyStake => {
         const amount = baseAmount(bnOrZero(claim.amount), THORCHAIN_DECIMAL)
-        const l1Address = claim.l1_address
-        return { asset, amount, l1Address }
+        const address = claim.address
+        return { address, amount }
       }),
-      RxOp.catchError((): TcyClaimLD => Rx.of(RD.failure(Error(`Failed to load claim info for ${address} `)))),
+      RxOp.catchError((): TcyStakeLD => Rx.of(RD.failure(Error(`Failed to load claim info for ${address} `)))),
       RxOp.startWith(RD.pending)
     )
 
@@ -705,6 +742,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     getTradeAccount$,
     reloadTradeAccount,
     getTcyClaim$,
-    reloadTcyClaim
+    reloadTcyClaim,
+    getTcyStaker$,
+    reloadTcyStaker
   }
 }

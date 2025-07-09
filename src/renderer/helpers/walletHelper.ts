@@ -178,7 +178,8 @@ export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, a
       (asset) =>
         asset.chain === balance.asset.chain &&
         asset.symbol.toUpperCase() === balance.asset.symbol.toUpperCase() && // Convert to uppercase for comparison
-        asset.ticker === balance.asset.ticker
+        asset.ticker === balance.asset.ticker &&
+        asset.type === balance.asset.type
     )
     return assetIndex >= 0
   })

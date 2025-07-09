@@ -10,4 +10,5 @@ export type TcyInfo = {
   asset: AnyAsset
   amount: BaseAmount
   isClaimed: boolean
+  memo: string
 }

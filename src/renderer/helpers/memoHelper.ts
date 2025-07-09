@@ -55,6 +55,36 @@ export const getBondMemo = (thorAddress: string, providerAddress?: string, nodeF
   mkMemo(['BOND', thorAddress, providerAddress, nodeFee])
 
 /**
+ * Memo to claim Tcy
+ *
+ * @param thorAddress THOR address to send amounts to
+ *
+ * Memo is based on definition in https://dev.thorchain.org/concepts/memos.html#claim-tcy
+ * @docs https://dev.thorchain.org/concepts/memos.html#claim-tcy
+ */
+export const getClaimMemo = (thorAddress: string) => mkMemo(['TCY', thorAddress])
+
+/**
+ * Memo to Stake Tcy
+ *
+ * @param thorAddress THOR address to send amounts to
+ *
+ * Memo is based on definition in https://dev.thorchain.org/concepts/memos.html#claim-tcy
+ * @docs https://dev.thorchain.org/concepts/memos.html#claim-tcy
+ */
+export const getStakeMemo = () => mkMemo(['TCY+'])
+
+/**
+ * Memo to Unstake Tcy
+ *
+ * @param thorAddress THOR address to send amounts to
+ *
+ * Memo is based on definition in https://dev.thorchain.org/concepts/memos.html#claim-tcy
+ * @docs https://dev.thorchain.org/concepts/memos.html#claim-tcy
+ */
+export const getUnstakeMemo = (basisPoints: string) => mkMemo(['TCY-', basisPoints])
+
+/**
  * Memo to bond Mayachain
  * @param assetPool asset string corresponding to the pool
  * @param lpUnits units to unbond
