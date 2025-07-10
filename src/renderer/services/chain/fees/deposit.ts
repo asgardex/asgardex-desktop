@@ -63,4 +63,34 @@ const symDepositFees$: SymDepositFeesHandler = (initialAsset, protocolAsset) => 
   )
 }
 
-export { symDepositFees$, reloadSymDepositFees }
+// State to reload deposit fees
+const {
+  get$: reloadDepositFees$,
+  get: reloadDepositFeesState,
+  set: _reloadDepositFees
+} = observableState<O.Option<AnyAsset>>(O.none)
+
+// Triggers reloading of deposit fees
+const reloadDepositFees = (asset: AnyAsset) => {
+  if (!eqOAsset.equals(O.some(asset), reloadDepositFeesState())) {
+    _reloadDepositFees(O.some(asset))
+  }
+  reloadInboundAddresses()
+}
+
+const depositFees$ = (initialAsset: AnyAsset) =>
+  FP.pipe(
+    reloadDepositFees$,
+    RxOp.debounceTime(300),
+    RxOp.switchMap((oAsset) =>
+      FP.pipe(O.getOrElse(() => initialAsset)(oAsset), (asset) =>
+        FP.pipe(
+          liveData.sequenceS({
+            inFee: poolInboundFee$(asset, '')
+          }),
+          liveData.map(({ inFee }) => inFee.amount) // Return BaseAmount
+        )
+      )
+    )
+  )
+export { symDepositFees$, reloadSymDepositFees, depositFees$, reloadDepositFees }

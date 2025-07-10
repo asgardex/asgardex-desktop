@@ -26,8 +26,8 @@ import { KUJI_DECIMAL } from '../../kuji/const'
 /**
  * Returns minimal amount (threshold) needed to send a tx on given chain
  */
-export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmount => {
-  if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'smallestAmountToSent$'`)
+export const smallestAmountToSend = (chain: Chain, _network: Network): BaseAmount => {
+  if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'smallestAmountToSend$'`)
 
   switch (chain) {
     case BTCChain:
@@ -43,20 +43,15 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
       // 0 cacao
       return baseAmount(0, CACAO_DECIMAL)
     case ETHChain:
-      // zero for ETH
-      return baseAmount(0, ETH_GAS_ASSET_DECIMAL)
+      return baseAmount(10000000000, ETH_GAS_ASSET_DECIMAL)
     case ARBChain:
-      // zero for Arb
-      return baseAmount(0, ARB_GAS_ASSET_DECIMAL)
+      return baseAmount(1000000000, ARB_GAS_ASSET_DECIMAL)
     case AVAXChain:
-      // zero for Avax
-      return baseAmount(0, AVAX_GAS_ASSET_DECIMAL)
+      return baseAmount(10000000000, AVAX_GAS_ASSET_DECIMAL)
     case BASEChain:
-      // zero for base
-      return baseAmount(0, BASE_GAS_ASSET_DECIMAL)
+      return baseAmount(10000000000, BASE_GAS_ASSET_DECIMAL)
     case BSCChain:
-      // zero for bsc
-      return baseAmount(0, BSC_GAS_ASSET_DECIMAL)
+      return baseAmount(10000000000, BSC_GAS_ASSET_DECIMAL)
     case GAIAChain:
       return baseAmount(1, COSMOS_DECIMAL)
     case DOGEChain:
@@ -74,7 +69,7 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
       // 1000 satoshi
       return baseAmount(1000, LTC_DECIMAL)
     case RadixChain:
-      return baseAmount(0, XRD_DECIMAL)
+      return baseAmount(100000000000000000, XRD_DECIMAL)
     case SOLChain:
       return baseAmount(1, SOL_DECIMALS)
     case ZECChain:
@@ -84,6 +79,6 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
       // 1 drop
       return baseAmount(1, XRP_DECIMAL)
     default:
-      throw Error(`${chain} is not supported for 'smallestAmountToSent$'`)
+      throw Error(`${chain} is not supported for 'smallestAmountToSend$'`)
   }
 }

@@ -1,4 +1,4 @@
-import { AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 
 export enum TcyOperation {
   Claim = 'Claim',
@@ -11,4 +11,5 @@ export type TcyInfo = {
   amount: BaseAmount
   isClaimed: boolean
   memo: string
+  l1Address: Address
 }

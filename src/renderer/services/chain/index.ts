@@ -4,6 +4,7 @@ import { assetWithDecimal$ } from './decimal'
 import {
   reloadSymDepositFees,
   symDepositFees$,
+  depositFees$,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
@@ -30,6 +31,7 @@ export {
   clientByChain$,
   reloadSymDepositFees,
   symDepositFees$,
+  depositFees$,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,

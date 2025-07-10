@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { formatAssetAmountCurrency, baseToAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
@@ -32,12 +31,12 @@ export const TcyClaimModal = (props: Props) => {
         feeRd,
         RD.map((fee) => [
           {
-            asset: AssetRuneNative,
+            asset: tcyInfo.asset,
             amount: fee
           }
         ])
       ),
-    [feeRd]
+    [feeRd, tcyInfo.asset]
   )
 
   return (
