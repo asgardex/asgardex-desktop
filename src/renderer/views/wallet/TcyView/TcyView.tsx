@@ -669,7 +669,7 @@ export const TcyView = () => {
                                   </div>
                                   <span className="text-text2 dark:text-text2d">
                                     {formatAssetAmountCurrency({
-                                      asset: tcyData.asset,
+                                      asset: AssetTCY,
                                       amount: baseToAsset(tcyData.amount),
                                       trimZeros: true,
                                       decimal: 2
