@@ -2,14 +2,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { InformationCircleIcon } from '@heroicons/react/20/solid'
-import { AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   assetToBase,
   BaseAmount,
   baseToAsset,
   formatAssetAmountCurrency,
-  assetAmount
+  assetAmount,
+  baseAmount,
+  AnyAsset,
+  assetFromStringEx
 } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP, option as O, nonEmptyArray as NEA } from 'fp-ts'
@@ -21,9 +24,10 @@ import { map, shareReplay, switchMap } from 'rxjs/operators'
 import { getChainsForDex } from '../../../../shared/utils/chain'
 import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
 import { TxModal } from '../../../components/modal/tx'
+import { ClaimAsset } from '../../../components/modal/tx/extra'
 import { SendAsset } from '../../../components/modal/tx/extra/SendAsset'
 import { AssetData } from '../../../components/uielements/assets/assetData'
-import { FlatButton, RefreshButton } from '../../../components/uielements/button'
+import { FlatButton, RefreshButton, ViewTxButton } from '../../../components/uielements/button'
 import { Tooltip } from '../../../components/uielements/common/Common.styles'
 import { InputBigNumber } from '../../../components/uielements/input'
 import { Slider } from '../../../components/uielements/slider'
@@ -41,6 +45,7 @@ import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
 import { getClaimMemo, getStakeMemo, getUnstakeMemo } from '../../../helpers/memoHelper'
 import { filterWalletBalancesByAssets, getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
+import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { INITIAL_WITHDRAW_STATE } from '../../../services/chain/const'
 import { smallestAmountToSend } from '../../../services/chain/transaction/transaction.helper'
@@ -104,6 +109,16 @@ export const TcyView = () => {
 
   const oPoolAddress: O.Option<PoolAddress> = useObservableState(selectedPoolAddress$, O.none)
 
+  const { openExplorerTxUrl: openRuneExplorerTxUrl, getExplorerTxUrl: getRuneExplorerTxUrl } = useOpenExplorerTxUrl(
+    O.some(protocol)
+  )
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(
+    FP.pipe(
+      oClaimAssetAmount,
+      O.map(({ asset }) => asset.chain),
+      O.alt(() => O.some(protocol))
+    )
+  )
   const intl = useIntl()
   const {
     keystoreService: { validatePassword$ }
@@ -448,7 +463,7 @@ export const TcyView = () => {
         () => 100
       )
     )
-    // const oTxHash = RD.toOption(txRD)
+    const oTxHash = RD.toOption(txRD)
     const txRDasBoolean = FP.pipe(
       txRD,
       RD.map((txHash) => !!txHash)
@@ -461,14 +476,14 @@ export const TcyView = () => {
         onFinish={reset}
         startTime={sendTxStartTime}
         txRD={txRDasBoolean}
-        // extraResult={
-        //   <ViewTxButton
-        //     txHash={oTxHash}
-        //     onClick={openExplorerTxUrl}
-        //     txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-        //     network={network}
-        //   />
-        // }
+        extraResult={
+          <ViewTxButton
+            txHash={oTxHash}
+            onClick={openRuneExplorerTxUrl}
+            txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
+            network={network}
+          />
+        }
         timerValue={timerValue}
         extra={
           <SendAsset
@@ -479,13 +494,56 @@ export const TcyView = () => {
         }
       />
     )
-  }, [interactState, intl, reset, sendTxStartTime, amountToSend, network])
+  }, [interactState, intl, reset, sendTxStartTime, openRuneExplorerTxUrl, getRuneExplorerTxUrl, network, amountToSend])
+
+  const txModalExtraContent = useMemo(() => {
+    // Extract asset and amount from oClaimAssetAmount
+    const { asset, amount1e8 } = FP.pipe(
+      oClaimAssetAmount,
+      O.getOrElse(() => ({
+        asset: AssetRuneNative as AnyAsset,
+        amount1e8: baseAmount(0, THORCHAIN_DECIMAL) // Fallback amount
+      }))
+    )
+
+    const stepDescriptions = [
+      intl.formatMessage({ id: 'common.tx.healthCheck' }),
+      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: asset.ticker }),
+      intl.formatMessage({ id: 'common.tx.checkResult' })
+    ]
+
+    const stepDescription = FP.pipe(
+      withdrawState.withdraw,
+      RD.fold(
+        () => '',
+        () =>
+          `${intl.formatMessage(
+            { id: 'common.step' },
+            { current: withdrawState.step, total: withdrawState.stepsTotal }
+          )}: ${stepDescriptions[withdrawState.step - 1]}`,
+        () => '',
+        () => `${intl.formatMessage({ id: 'common.done' })}!`
+      )
+    )
+
+    return (
+      <ClaimAsset source={O.some({ asset, amount: amount1e8 })} stepDescription={stepDescription} network={network} />
+    )
+  }, [intl, withdrawState.withdraw, withdrawState.step, withdrawState.stepsTotal, oClaimAssetAmount, network])
 
   const renderDepositTxModal = useMemo(() => {
-    const { withdraw: withdrawRD } = withdrawState
+    const { withdraw: withdrawRD, withdrawTx } = withdrawState
 
     // don't render TxModal in initial state
     if (RD.isInitial(withdrawRD)) return <></>
+
+    const { asset } = FP.pipe(
+      oClaimAssetAmount,
+      O.getOrElse(() => ({
+        asset: AssetRuneNative as AnyAsset,
+        amount1e8: baseAmount(0, THORCHAIN_DECIMAL) // Fallback amount
+      }))
+    )
 
     // Get timer value
     const timerValue = FP.pipe(
@@ -513,19 +571,19 @@ export const TcyView = () => {
       (id) => intl.formatMessage({ id })
     )
 
-    // const extraResult = (
-    //   <div className="flex flex-col items-center justify-between">
-    //     {FP.pipe(withdrawTx, RD.toOption, (oTxHash) => (
-    //       <ViewTxButton
-    //         className="pb-5"
-    //         txHash={oTxHash}
-    //         txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
-    //         label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: protocolAsset.ticker })}
-    //         onClick={openRuneExplorerTxUrl}
-    //       />
-    //     ))}
-    //   </div>
-    // )
+    const extraResult = (
+      <div className="flex flex-col items-center justify-between">
+        {FP.pipe(withdrawTx, RD.toOption, (oTxHash) => (
+          <ViewTxButton
+            className="pb-5"
+            txHash={oTxHash}
+            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.ticker })}
+            onClick={openExplorerTxUrl}
+          />
+        ))}
+      </div>
+    )
 
     return (
       <TxModal
@@ -535,9 +593,20 @@ export const TcyView = () => {
         startTime={depositStartTime}
         txRD={withdrawRD}
         timerValue={timerValue}
+        extra={txModalExtraContent}
+        extraResult={extraResult}
       />
     )
-  }, [withdrawState, reset, depositStartTime, intl])
+  }, [
+    withdrawState,
+    oClaimAssetAmount,
+    reset,
+    depositStartTime,
+    txModalExtraContent,
+    intl,
+    getExplorerTxUrl,
+    openExplorerTxUrl
+  ])
 
   return (
     <>
@@ -582,7 +651,14 @@ export const TcyView = () => {
                                 className="flex items-center justify-between px-4 py-2">
                                 <div className="flex items-center space-x-2">
                                   <div className="min-w-[120px]">
-                                    <AssetData asset={tcyData.asset} network={network} />
+                                    <AssetData
+                                      asset={
+                                        tcyData.l1Address === thorAddress && tcyData.asset.chain !== 'THOR'
+                                          ? assetFromStringEx(`${tcyData.asset.chain}/${tcyData.asset.symbol}`)
+                                          : tcyData.asset
+                                      }
+                                      network={network}
+                                    />
                                   </div>
                                   <span className="text-text2 dark:text-text2d">
                                     {formatAssetAmountCurrency({

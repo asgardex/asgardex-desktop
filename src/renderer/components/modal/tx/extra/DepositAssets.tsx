@@ -43,3 +43,34 @@ export const DepositAssets = (props: Props): JSX.Element => {
     </>
   )
 }
+
+export type claimProps = {
+  source: O.Option<C.AssetData>
+  stepDescription: string
+  network: Network
+}
+
+export const ClaimAsset = (props: claimProps): JSX.Element => {
+  const { source: oSource, stepDescription, network } = props
+
+  const renderSource = useMemo(
+    () =>
+      FP.pipe(
+        oSource,
+        O.map(({ asset, amount }) => (
+          <Styled.AssetData key="source-data" asset={asset} amount={amount} network={network} />
+        )),
+        O.getOrElse(() => <></>)
+      ),
+    [oSource, network]
+  )
+
+  return (
+    <>
+      <Styled.StepLabel>{stepDescription}</Styled.StepLabel>
+      <Styled.DataWrapper>
+        <Styled.AssetsContainer>{renderSource}</Styled.AssetsContainer>
+      </Styled.DataWrapper>
+    </>
+  )
+}
