@@ -684,7 +684,8 @@ export const TcyView = () => {
                                       amount: tcyData.amount,
                                       isClaimed: false,
                                       memo: getClaimMemo(thorAddress),
-                                      l1Address: tcyData.l1Address ?? ''
+                                      l1Address: tcyData.l1Address ?? '',
+                                      walletType: tcyData.walletType
                                     })
                                   }>
                                   {intl.formatMessage({ id: 'tcy.claim' })}

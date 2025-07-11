@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { AssetTCY } from '@xchainjs/xchain-thorchain'
 import { formatAssetAmountCurrency, baseToAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
@@ -61,13 +62,13 @@ export const TcyClaimModal = (props: Props) => {
           <div className="h-[1px] w-full bg-gray1 dark:bg-gray0d" />
           <div className="w-full px-4 space-y-1">
             <div className="w-full flex items-center justify-between">
-              <AssetData asset={tcyInfo.asset} network={network} />
+              <AssetData walletType={tcyInfo.walletType} asset={tcyInfo.asset} network={network} />
             </div>
             <div className="flex items-center justify-between">
               <span className="text-14 text-text2 dark:text-text2d">Claimable Amount:</span>
               <span className="text-14 text-text2 dark:text-text2d">
                 {formatAssetAmountCurrency({
-                  asset: tcyInfo.asset,
+                  asset: AssetTCY,
                   amount: baseToAsset(tcyInfo.amount),
                   trimZeros: true,
                   decimal: 2
