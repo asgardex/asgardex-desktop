@@ -236,6 +236,7 @@ export interface ApiTcyClaimResponse {
 export type TcyClaim = {
   asset: AnyAsset
   amount: BaseAmount
+  walletType: WalletType
   l1Address?: Address
 }
 

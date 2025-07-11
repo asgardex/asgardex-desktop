@@ -410,7 +410,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
   const { stream$: reloadTcyClaim$, trigger: reloadTcyClaim } = triggerStream()
 
-  const getTcyClaim$ = (address: Address): TcyClaimLD =>
+  const getTcyClaim$ = (address: Address, walletType: WalletType): TcyClaimLD =>
     FP.pipe(
       reloadTcyClaim$,
       RxOp.debounceTime(300),
@@ -420,6 +420,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             response.tcy_claimer.map((item) => ({
               asset: assetFromStringEx(item.asset),
               amount: baseAmount(bnOrZero(item.amount), THORCHAIN_DECIMAL),
+              walletType,
               l1Address: item.l1_address
             }))
           ),

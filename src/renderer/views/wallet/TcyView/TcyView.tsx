@@ -43,7 +43,11 @@ import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
 import { getClaimMemo, getStakeMemo, getUnstakeMemo } from '../../../helpers/memoHelper'
-import { filterWalletBalancesByAssets, getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
+import {
+  filterWalletBalancesByAssets,
+  filterWalletBalancesByAssetsClaimOnly,
+  getWalletBalanceByAddressAndAsset
+} from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
@@ -153,7 +157,7 @@ export const TcyView = () => {
   const allBalances: WalletBalances = useMemo(() => {
     return FP.pipe(
       oWalletBalances,
-      O.map((balances) => filterWalletBalancesByAssets(balances, chainList.map(getChainAsset))),
+      O.map((balances) => filterWalletBalancesByAssetsClaimOnly(balances, chainList.map(getChainAsset))),
       O.getOrElse<WalletBalances>(() => [])
     )
   }, [oWalletBalances, chainList])
@@ -172,7 +176,9 @@ export const TcyView = () => {
     const filteredBalances = allBalances.filter(({ asset }) => !['AVAX', 'BSC', 'BASE', 'XRP'].includes(asset.chain))
     const uniqueBalances = Array.from(new Map(filteredBalances.map((item) => [item.walletAddress, item])).values())
 
-    return combineLatest(uniqueBalances.map(({ walletAddress }) => getTcyClaim$(walletAddress))).pipe(
+    return combineLatest(
+      uniqueBalances.map(({ walletAddress, walletType }) => getTcyClaim$(walletAddress, walletType))
+    ).pipe(
       map((rds) => {
         const successes = rds
           .filter(RD.isSuccess)
@@ -639,7 +645,7 @@ export const TcyView = () => {
                     {RD.fold<Error, TcyClaim[], JSX.Element>(
                       () => <span className="text-text2 dark:text-text2d p-4">Loading claims...</span>,
                       () => <span className="text-text2 dark:text-text2d p-4">Fetching claims...</span>,
-                      (error) => <span className="text-error0 dark:text-error0d p-4">Error: {error.message}</span>,
+                      () => <span className="text-text2 dark:text-text2d p-4">Nothing to claim</span>,
                       (claims) => (
                         <div>
                           {claims.length === 0 ? (
@@ -657,6 +663,7 @@ export const TcyView = () => {
                                           ? assetFromStringEx(`${tcyData.asset.chain}/${tcyData.asset.symbol}`)
                                           : tcyData.asset
                                       }
+                                      walletType={tcyData.walletType}
                                       network={network}
                                     />
                                   </div>
