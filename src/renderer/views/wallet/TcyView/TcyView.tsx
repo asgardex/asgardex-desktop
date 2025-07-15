@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { InformationCircleIcon } from '@heroicons/react/20/solid'
-import { AssetRuneNative, AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   assetToBase,
@@ -21,13 +21,15 @@ import { useIntl } from 'react-intl'
 import { combineLatest, of } from 'rxjs'
 import { map, shareReplay, switchMap } from 'rxjs/operators'
 
-import { getChainsForDex } from '../../../../shared/utils/chain'
-import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
+import { chainToString, getChainsForDex } from '../../../../shared/utils/chain'
+import { WalletType } from '../../../../shared/wallet/types'
+import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
 import { TxModal } from '../../../components/modal/tx'
 import { ClaimAsset } from '../../../components/modal/tx/extra'
 import { SendAsset } from '../../../components/modal/tx/extra/SendAsset'
 import { AssetData } from '../../../components/uielements/assets/assetData'
 import { FlatButton, RefreshButton, ViewTxButton } from '../../../components/uielements/button'
+import { CheckButton } from '../../../components/uielements/button/CheckButton'
 import { Tooltip } from '../../../components/uielements/common/Common.styles'
 import { InputBigNumber } from '../../../components/uielements/input'
 import { Slider } from '../../../components/uielements/slider'
@@ -41,6 +43,7 @@ import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
+import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
 import { getClaimMemo, getStakeMemo, getUnstakeMemo } from '../../../helpers/memoHelper'
 import {
@@ -83,6 +86,11 @@ export const TcyView = () => {
   const { interact$, reloadTcyClaim, getTcyClaim$, getTcyStaker$, reloadTcyStaker } = useThorchainContext()
   const { depositFees$, poolWithdraw$ } = useChainContext()
   const [currentMemo, setCurrentMemo] = useState<string>('')
+  const [hasTcyOnLedger, setHasTcyOnLedger] = useState<boolean>(false)
+  const [ledgerIndex, setLedgerIndex] = useState<number>(0)
+  const [hasTcyOnKeystore, setHasTcyOnKeystore] = useState<boolean>(false)
+  const [keystoreIndex, setKeystoreIndex] = useState<number>(0)
+  const [useLedger, setUseLedger] = useState(false)
 
   const [thorAddress, setThorAddress] = useState<Address>('')
   const [oClaimAssetAmount, setClaimAssetAmount] = useState<O.Option<AssetWithAmount1e8>>(O.none)
@@ -165,7 +173,20 @@ export const TcyView = () => {
   const tcyBalance: WalletBalances = useMemo(() => {
     return FP.pipe(
       oWalletBalances,
-      O.map((balances) => filterWalletBalancesByAssets(balances, [AssetTCY])),
+      O.map((balances) => {
+        const bals = filterWalletBalancesByAssets(balances, [AssetTCY])
+        const ledgerHasTcy = bals.some((b) => b.walletType === WalletType.Ledger)
+        const ledgerIndex = bals.findIndex((b) => b.walletType === WalletType.Ledger)
+        const keystoreHasTcy = bals.some((b) => b.walletType === WalletType.Keystore)
+        const keyStoreIndex = bals.findIndex((b) => b.walletType === WalletType.Keystore)
+        setHasTcyOnLedger(ledgerHasTcy)
+        setLedgerIndex(ledgerIndex)
+        setHasTcyOnKeystore(keystoreHasTcy)
+        setKeystoreIndex(keyStoreIndex)
+        // Store boolean and index if needed, e.g., in state or context
+        // For now, just return the balances
+        return bals
+      }),
       O.getOrElse<WalletBalances>(() => [])
     )
   }, [oWalletBalances])
@@ -211,12 +232,12 @@ export const TcyView = () => {
   const selectedThorAddress = useMemo((): Address | undefined => {
     const thorBalances = allBalances.filter(({ asset }) => asset.chain === 'THOR')
     if (thorBalances.length > 0) {
-      const address = thorBalances[0].walletAddress
+      const address = useLedger ? thorBalances[ledgerIndex].walletAddress : thorBalances[keystoreIndex].walletAddress
       setThorAddress(address)
       return address
     }
     return undefined
-  }, [allBalances])
+  }, [allBalances, keystoreIndex, ledgerIndex, useLedger])
 
   const tcyStakerPos$ = useMemo((): TcyStakeLD => {
     if (!selectedThorAddress) {
@@ -232,7 +253,16 @@ export const TcyView = () => {
 
   const tcyStakePosRD = useObservableState(tcyStakerPos$, RD.initial)
 
-  const maxAmountToStake = tcyBalance.length > 0 ? tcyBalance[0].amount : ZERO_BASE_AMOUNT
+  const maxAmountToStake = useMemo(() => {
+    const wallet = useLedger
+      ? ledgerIndex >= 0 && ledgerIndex < tcyBalance.length
+        ? tcyBalance[ledgerIndex]
+        : null
+      : keystoreIndex >= 0 && keystoreIndex < tcyBalance.length
+      ? tcyBalance[keystoreIndex]
+      : null
+    return wallet ? wallet.amount : ZERO_BASE_AMOUNT
+  }, [tcyBalance, useLedger, ledgerIndex, keystoreIndex])
   const maxAmountToUnstake = RD.isSuccess(tcyStakePosRD) ? tcyStakePosRD.value.amount : ZERO_BASE_AMOUNT
 
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
@@ -354,9 +384,12 @@ export const TcyView = () => {
     poolWithdraw$
   ])
   const refreshHandler = useCallback(async () => {
-    reloadTcyClaim()
-    reloadTcyStaker()
-  }, [reloadTcyClaim, reloadTcyStaker])
+    if (activeTab === TcyOperation.Claim) {
+      reloadTcyClaim()
+    } else if (activeTab === TcyOperation.Stake || activeTab === TcyOperation.Unstake) {
+      reloadTcyStaker()
+    }
+  }, [activeTab, reloadTcyClaim, reloadTcyStaker])
 
   const handleClaim = useCallback((tcyInfo: TcyInfo) => {
     setSelectedAsset(tcyInfo)
@@ -364,6 +397,7 @@ export const TcyView = () => {
       asset: tcyInfo.asset,
       amount1e8: tcyInfo.amount
     }
+    setUseLedger(tcyInfo.walletType === WalletType.Ledger)
     setClaimAssetAmount(O.some(assetAmount))
     setClaimAddress(O.some(tcyInfo.l1Address))
     setClaimModalVisible(true)
@@ -374,11 +408,46 @@ export const TcyView = () => {
   // Deposit start time
   const [depositStartTime, setDepositStartTime] = useState<number>(0)
 
+  const [showLedgerModal, setShowLedgerModal] = useState<boolean>(false)
+
+  const getTxAssetAndAmount = (
+    activeTab: TcyOperation,
+    oClaimAssetAmount: O.Option<AssetWithAmount1e8>,
+    amountToSend: BaseAmount
+  ): { asset: AnyAsset; amount1e8: BaseAmount } => {
+    if (activeTab === TcyOperation.Claim) {
+      return FP.pipe(
+        oClaimAssetAmount,
+        O.getOrElse(() => ({
+          asset: AssetTCY as AnyAsset,
+          amount1e8: baseAmount(0, THORCHAIN_DECIMAL)
+        }))
+      )
+    }
+    return { asset: AssetTCY, amount1e8: amountToSend }
+  }
+
+  const { asset: sourceAsset, amount1e8: sourceAmount } = getTxAssetAndAmount(
+    activeTab,
+    oClaimAssetAmount,
+    amountToSend
+  )
+
   const submitTx = useCallback(
     (memo: string) => {
       if (tcyBalance.length === 0) return
 
-      const { walletType, walletIndex, walletAccount, hdMode } = tcyBalance[0]
+      const wallet = useLedger
+        ? ledgerIndex >= 0 && ledgerIndex < tcyBalance.length
+          ? tcyBalance[ledgerIndex]
+          : null
+        : keystoreIndex >= 0 && keystoreIndex < tcyBalance.length
+        ? tcyBalance[keystoreIndex]
+        : null
+
+      if (!wallet) return
+
+      const { walletType, walletIndex, walletAccount, hdMode } = wallet
 
       setSendTxStartTime(Date.now())
 
@@ -394,7 +463,7 @@ export const TcyView = () => {
         })
       )
     },
-    [tcyBalance, setSendTxStartTime, subscribeInteractState, interact$, amountToSend]
+    [tcyBalance, useLedger, ledgerIndex, keystoreIndex, subscribeInteractState, interact$, amountToSend]
   )
 
   const onSuccess = useCallback(() => {
@@ -442,13 +511,16 @@ export const TcyView = () => {
       />
     )
   }, [_amountToSend, isLoading, maxAmountToUnstake, tcyStakePosRD])
-
-  const reset = useCallback(() => {
+  // need to separate these
+  const resetStake = useCallback(() => {
     resetInteractState()
+    reloadTcyStaker()
+  }, [resetInteractState, reloadTcyStaker])
+
+  const resetClaim = useCallback(() => {
     resetWithdrawState()
     reloadTcyClaim()
-    reloadTcyStaker()
-  }, [resetInteractState, resetWithdrawState, reloadTcyClaim, reloadTcyStaker])
+  }, [resetWithdrawState, reloadTcyClaim])
 
   const renderTxModal = useMemo(() => {
     const { txRD } = interactState
@@ -478,8 +550,8 @@ export const TcyView = () => {
     return (
       <TxModal
         title={intl.formatMessage({ id: 'common.tx.sending' })}
-        onClose={reset}
-        onFinish={reset}
+        onClose={resetStake}
+        onFinish={resetStake}
         startTime={sendTxStartTime}
         txRD={txRDasBoolean}
         extraResult={
@@ -493,28 +565,29 @@ export const TcyView = () => {
         timerValue={timerValue}
         extra={
           <SendAsset
-            asset={{ asset: AssetTCY, amount: amountToSend }}
+            asset={{ asset: sourceAsset, amount: sourceAmount }}
             network={network}
             description={getInteractiveDescription({ state: interactState, intl })}
           />
         }
       />
     )
-  }, [interactState, intl, reset, sendTxStartTime, openRuneExplorerTxUrl, getRuneExplorerTxUrl, network, amountToSend])
+  }, [
+    interactState,
+    intl,
+    resetStake,
+    sendTxStartTime,
+    openRuneExplorerTxUrl,
+    getRuneExplorerTxUrl,
+    network,
+    sourceAsset,
+    sourceAmount
+  ])
 
   const txModalExtraContent = useMemo(() => {
-    // Extract asset and amount from oClaimAssetAmount
-    const { asset, amount1e8 } = FP.pipe(
-      oClaimAssetAmount,
-      O.getOrElse(() => ({
-        asset: AssetRuneNative as AnyAsset,
-        amount1e8: baseAmount(0, THORCHAIN_DECIMAL) // Fallback amount
-      }))
-    )
-
     const stepDescriptions = [
       intl.formatMessage({ id: 'common.tx.healthCheck' }),
-      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: asset.ticker }),
+      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: sourceAsset.ticker }),
       intl.formatMessage({ id: 'common.tx.checkResult' })
     ]
 
@@ -533,23 +606,19 @@ export const TcyView = () => {
     )
 
     return (
-      <ClaimAsset source={O.some({ asset, amount: amount1e8 })} stepDescription={stepDescription} network={network} />
+      <ClaimAsset
+        source={O.some({ asset: sourceAsset, amount: sourceAmount })}
+        stepDescription={stepDescription}
+        network={network}
+      />
     )
-  }, [intl, withdrawState.withdraw, withdrawState.step, withdrawState.stepsTotal, oClaimAssetAmount, network])
+  }, [intl, sourceAsset, withdrawState.withdraw, withdrawState.step, withdrawState.stepsTotal, sourceAmount, network])
 
   const renderDepositTxModal = useMemo(() => {
     const { withdraw: withdrawRD, withdrawTx } = withdrawState
 
     // don't render TxModal in initial state
     if (RD.isInitial(withdrawRD)) return <></>
-
-    const { asset } = FP.pipe(
-      oClaimAssetAmount,
-      O.getOrElse(() => ({
-        asset: AssetRuneNative as AnyAsset,
-        amount1e8: baseAmount(0, THORCHAIN_DECIMAL) // Fallback amount
-      }))
-    )
 
     // Get timer value
     const timerValue = FP.pipe(
@@ -584,7 +653,7 @@ export const TcyView = () => {
             className="pb-5"
             txHash={oTxHash}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.ticker })}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: sourceAsset.ticker })}
             onClick={openExplorerTxUrl}
           />
         ))}
@@ -594,8 +663,8 @@ export const TcyView = () => {
     return (
       <TxModal
         title={txModalTitle}
-        onClose={reset}
-        onFinish={reset}
+        onClose={resetClaim}
+        onFinish={resetClaim}
         startTime={depositStartTime}
         txRD={withdrawRD}
         timerValue={timerValue}
@@ -605,14 +674,68 @@ export const TcyView = () => {
     )
   }, [
     withdrawState,
-    oClaimAssetAmount,
-    reset,
+    resetClaim,
     depositStartTime,
     txModalExtraContent,
     intl,
     getExplorerTxUrl,
+    sourceAsset.ticker,
     openExplorerTxUrl
   ])
+
+  const renderLedgerConfirmationModal = useMemo(() => {
+    const visible = showLedgerModal
+
+    const onClose = () => {
+      setShowLedgerModal(false)
+    }
+
+    const onSucceess = () => {
+      onSuccess()
+      setShowLedgerModal(false)
+    }
+
+    const chainAsString = chainToString(sourceAsset.chain)
+    const txtNeedsConnected = intl.formatMessage(
+      {
+        id: 'ledger.needsconnected'
+      },
+      { chain: chainAsString }
+    )
+
+    const description1 =
+      // extra info for ERC20 assets only
+      isEvmChainToken(sourceAsset)
+        ? `${txtNeedsConnected} ${intl.formatMessage(
+            {
+              id: 'ledger.blindsign'
+            },
+            { chain: chainAsString }
+          )}`
+        : txtNeedsConnected
+
+    const description2 = intl.formatMessage({ id: 'ledger.sign' })
+
+    return (
+      <LedgerConfirmationModal
+        key="leder-conf-modal"
+        network={network}
+        onSuccess={onSucceess}
+        onClose={onClose}
+        visible={visible}
+        chain={sourceAsset.chain}
+        description1={description1}
+        description2={description2}
+        addresses={FP.pipe(
+          sequenceSOption({ oPoolAddress, claimAddress }),
+          O.map(({ oPoolAddress: poolAddress, claimAddress }) => ({
+            recipient: poolAddress.address,
+            sender: claimAddress
+          }))
+        )}
+      />
+    )
+  }, [showLedgerModal, sourceAsset, intl, network, oPoolAddress, claimAddress, onSuccess])
 
   return (
     <>
@@ -719,20 +842,36 @@ export const TcyView = () => {
                         {tcyBalance.length > 0
                           ? formatAssetAmountCurrency({
                               asset: AssetTCY,
-                              amount: baseToAsset(tcyBalance[0].amount),
+                              amount: baseToAsset(
+                                useLedger ? tcyBalance[ledgerIndex].amount : tcyBalance[keystoreIndex].amount
+                              ),
                               trimZeros: true,
                               decimal: 2
                             })
                           : 0}
                       </p>
+                      <div className="flex w-full justify-end">
+                        <CheckButton
+                          size="medium"
+                          color="neutral"
+                          className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
+                          checked={useLedger}
+                          clickHandler={() => setUseLedger(!useLedger)}>
+                          {intl.formatMessage({ id: 'ledger.title' })}
+                        </CheckButton>
+                      </div>
                     </div>
-                    <AssetData asset={AssetTCY} network={network} />
+                    <AssetData
+                      asset={AssetTCY}
+                      network={network}
+                      walletType={useLedger ? tcyBalance[ledgerIndex].walletType : tcyBalance[keystoreIndex].walletType}
+                    />
                   </div>
                   <FlatButton
                     className="my-30px min-w-[200px]"
                     size="large"
                     color="primary"
-                    onClick={() => setPasswordModalVisible(true)}>
+                    onClick={() => (useLedger ? setShowLedgerModal(true) : setPasswordModalVisible(true))}>
                     {intl.formatMessage({ id: 'tcy.stake' })}
                   </FlatButton>
                 </div>
@@ -764,15 +903,29 @@ export const TcyView = () => {
                             })
                           : 0}
                       </p>
+                      <div className="flex w-full justify-end">
+                        <CheckButton
+                          size="medium"
+                          color="neutral"
+                          className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
+                          checked={useLedger}
+                          clickHandler={() => setUseLedger(!useLedger)}>
+                          {intl.formatMessage({ id: 'ledger.title' })}
+                        </CheckButton>
+                      </div>
                     </div>
-                    <AssetData asset={AssetTCY} network={network} />
+                    <AssetData
+                      asset={AssetTCY}
+                      network={network}
+                      walletType={useLedger ? tcyBalance[ledgerIndex].walletType : tcyBalance[keystoreIndex].walletType}
+                    />
                   </div>
                   {renderSlider}
                   <FlatButton
                     className="my-30px min-w-[200px]"
                     size="large"
                     color="primary"
-                    onClick={() => setPasswordModalVisible(true)}>
+                    onClick={() => (useLedger ? setShowLedgerModal(true) : setPasswordModalVisible(true))}>
                     {intl.formatMessage({ id: 'tcy.unstake' })}
                   </FlatButton>
                 </div>
@@ -816,14 +969,32 @@ export const TcyView = () => {
               </div>
               <span className="text-turquoise">
                 <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
-                  {tcyBalance.length > 0
-                    ? formatAssetAmountCurrency({
-                        asset: AssetTCY,
-                        amount: baseToAsset(tcyBalance[0].amount),
-                        trimZeros: true,
-                        decimal: 2
-                      })
-                    : 0}
+                  {hasTcyOnLedger && (
+                    <>
+                      {tcyBalance.length > 0
+                        ? formatAssetAmountCurrency({
+                            asset: AssetTCY,
+                            amount: baseToAsset(tcyBalance[ledgerIndex].amount),
+                            trimZeros: true,
+                            decimal: 2
+                          })
+                        : 0}
+                      <AssetData asset={AssetTCY} network={network} walletType={tcyBalance[ledgerIndex].walletType} />
+                    </>
+                  )}
+                  {hasTcyOnKeystore && (
+                    <>
+                      {tcyBalance.length > 0
+                        ? formatAssetAmountCurrency({
+                            asset: AssetTCY,
+                            amount: baseToAsset(tcyBalance[keystoreIndex].amount),
+                            trimZeros: true,
+                            decimal: 2
+                          })
+                        : 0}
+                      <AssetData asset={AssetTCY} network={network} walletType={tcyBalance[keystoreIndex].walletType} />
+                    </>
+                  )}
                 </p>
               </span>
             </div>
@@ -836,7 +1007,7 @@ export const TcyView = () => {
           tcyInfo={selectedAsset}
           onClose={() => setClaimModalVisible(false)}
           feeRd={feeRD}
-          onClaim={() => setPasswordModalVisible(true)}
+          onClaim={() => (useLedger ? setShowLedgerModal(true) : setPasswordModalVisible(true))}
         />
       )}
       {isPasswordModalVisible && (
@@ -850,6 +1021,7 @@ export const TcyView = () => {
       )}
       {renderTxModal}
       {renderDepositTxModal}
+      {renderLedgerConfirmationModal}
     </>
   )
 }

@@ -10,7 +10,7 @@ import {
 } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 
-import { isLedgerWallet } from '../../../../../shared/utils/guard'
+import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { walletTypeToI18n } from '../../../../services/wallet/util'
 import { PricePoolAsset } from '../../../../views/pools/Pools.types'
@@ -71,6 +71,9 @@ export const AssetData = (props: Props): JSX.Element => {
             {isSecuredAsset(asset) && <Styled.AssetSecuredLabel>secured</Styled.AssetSecuredLabel>}
           </Styled.ChainLabelWrapper>
           {walletType && isLedgerWallet(walletType) && (
+            <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+          )}
+          {walletType && isKeystoreWallet(walletType) && (
             <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
           )}
         </Styled.LabelContainer>
