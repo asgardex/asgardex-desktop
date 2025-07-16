@@ -862,7 +862,7 @@ export const TcyView = () => {
                               color="neutral"
                               className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
                               checked={useLedger}
-                              clickHandler={() => setUseLedger(hasTcyOnLedger)}>
+                              clickHandler={() => setUseLedger(!useLedger)}>
                               {intl.formatMessage({ id: 'ledger.title' })}
                             </CheckButton>
                           </div>
@@ -920,7 +920,7 @@ export const TcyView = () => {
                               color="neutral"
                               className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
                               checked={useLedger}
-                              clickHandler={() => setUseLedger(hasTcyOnLedger)}>
+                              clickHandler={() => setUseLedger(!useLedger)}>
                               {intl.formatMessage({ id: 'ledger.title' })}
                             </CheckButton>
                           </div>
