@@ -231,12 +231,15 @@ export const TcyView = () => {
   )
   const selectedThorAddress = useMemo((): Address | undefined => {
     const thorBalances = allBalances.filter(({ asset }) => asset.chain === 'THOR')
-    if (thorBalances.length > 0) {
-      const address = useLedger ? thorBalances[ledgerIndex].walletAddress : thorBalances[keystoreIndex].walletAddress
-      setThorAddress(address)
-      return address
+    if (thorBalances.length === 0) {
+      return undefined
     }
-    return undefined
+    const address = useLedger ? thorBalances[ledgerIndex]?.walletAddress : thorBalances[keystoreIndex]?.walletAddress
+    if (!address) {
+      return undefined
+    }
+    setThorAddress(address)
+    return address
   }, [allBalances, keystoreIndex, ledgerIndex, useLedger])
 
   const tcyStakerPos$ = useMemo((): TcyStakeLD => {
@@ -850,16 +853,21 @@ export const TcyView = () => {
                             })
                           : 0}
                       </p>
-                      <div className="flex w-full justify-end">
-                        <CheckButton
-                          size="medium"
-                          color="neutral"
-                          className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
-                          checked={useLedger}
-                          clickHandler={() => setUseLedger(!useLedger)}>
-                          {intl.formatMessage({ id: 'ledger.title' })}
-                        </CheckButton>
-                      </div>
+                      {hasTcyOnLedger && (
+                        <>
+                          {' '}
+                          <div className="flex w-full justify-end">
+                            <CheckButton
+                              size="medium"
+                              color="neutral"
+                              className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
+                              checked={useLedger}
+                              clickHandler={() => setUseLedger(hasTcyOnLedger)}>
+                              {intl.formatMessage({ id: 'ledger.title' })}
+                            </CheckButton>
+                          </div>
+                        </>
+                      )}
                     </div>
                     <AssetData
                       asset={AssetTCY}
@@ -903,16 +911,21 @@ export const TcyView = () => {
                             })
                           : 0}
                       </p>
-                      <div className="flex w-full justify-end">
-                        <CheckButton
-                          size="medium"
-                          color="neutral"
-                          className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
-                          checked={useLedger}
-                          clickHandler={() => setUseLedger(!useLedger)}>
-                          {intl.formatMessage({ id: 'ledger.title' })}
-                        </CheckButton>
-                      </div>
+                      {hasTcyOnLedger && (
+                        <>
+                          {' '}
+                          <div className="flex w-full justify-end">
+                            <CheckButton
+                              size="medium"
+                              color="neutral"
+                              className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
+                              checked={useLedger}
+                              clickHandler={() => setUseLedger(hasTcyOnLedger)}>
+                              {intl.formatMessage({ id: 'ledger.title' })}
+                            </CheckButton>
+                          </div>
+                        </>
+                      )}
                     </div>
                     <AssetData
                       asset={AssetTCY}
@@ -968,7 +981,7 @@ export const TcyView = () => {
                 </Tooltip>
               </div>
               <span className="text-turquoise">
-                <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
+                <div className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
                   {hasTcyOnLedger && (
                     <>
                       {tcyBalance.length > 0
@@ -995,7 +1008,7 @@ export const TcyView = () => {
                       <AssetData asset={AssetTCY} network={network} walletType={tcyBalance[keystoreIndex].walletType} />
                     </>
                   )}
-                </p>
+                </div>
               </span>
             </div>
           </div>
