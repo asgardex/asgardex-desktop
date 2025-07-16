@@ -1,3 +1,3 @@
-const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid').default
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
 
-export const getTransport = async () => await TransportNodeHid.create()
+export const getTransport = async () => await TransportNodeHidSingleton.default.create()

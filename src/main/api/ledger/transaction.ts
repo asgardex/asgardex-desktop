@@ -36,7 +36,7 @@ import * as ETH from './ethereum/transaction'
 import * as LTC from './litecoin/transaction'
 import * as THOR from './thorchain/transaction'
 
-const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid').default
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
 
 const chainSendFunctions: Record<
   Chain,
@@ -256,7 +256,7 @@ export const sendTx = async ({
   apiKey
 }: IPCLedgerSendTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const transport = await TransportNodeHid.create()
+    const transport = await TransportNodeHidSingleton.default.create()
 
     if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
       return E.left({
@@ -582,7 +582,7 @@ export const deposit = async ({
   apiKey
 }: IPCLedgerDepositTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const transport = await TransportNodeHid.create()
+    const transport = await TransportNodeHidSingleton.default.create()
 
     if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
       return E.left({

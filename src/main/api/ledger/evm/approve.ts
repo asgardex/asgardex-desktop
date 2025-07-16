@@ -12,7 +12,7 @@ import { defaultBscParams } from '../../../../shared/bsc/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, createEthProviders } from '../ethereum/common'
 
-const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid').default
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
 
 const LOWER_FEE_BOUND = 1000000
 
@@ -27,7 +27,7 @@ export const approveLedgerERC20Token = async ({
   apiKey
 }: IPCLedgerApproveERC20TokenParams): Promise<TxHash> => {
   let clientParams
-  const transport = await TransportNodeHid.create()
+  const transport = await TransportNodeHidSingleton.default.create()
   switch (chain) {
     case 'ETH':
       clientParams = {
