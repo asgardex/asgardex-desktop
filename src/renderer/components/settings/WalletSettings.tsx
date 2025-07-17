@@ -415,7 +415,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.ledgerlive.info' },
                           {
-                            path: getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')
+                            path: `${getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')}{index}`
                           }
                         )}
                       />
@@ -427,7 +427,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.legacy.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], 'legacy') }
+                          { path: `${getEvmDerivationPath(walletAccountMap[chain], 'legacy')}{index}` }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>
@@ -438,7 +438,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.metamask.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], 'metamask') }
+                          { path: `${getEvmDerivationPath(walletAccountMap[chain], 'metamask')}{index}` }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>
@@ -502,7 +502,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         )
       }
       const renderAccount = (walletAddress: WalletAddress) => {
-        const { walletAccount, walletIndex } = walletAddress
+        const { walletAccount, walletIndex, chain } = walletAddress
         return (
           <>
             <div className="flex w-full space-x-4">
@@ -519,6 +519,12 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 {intl.formatMessage({ id: 'setting.wallet.index' })}
               </div>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletIndex}</div>
+              {isEvmChain(chain) && (
+                <div className="text-[12px] uppercase text-text2 dark:text-text2d">{`${getEvmDerivationPath(
+                  walletAccountMap[chain],
+                  `${evmHDMode}`
+                )}${walletIndex}`}</div>
+              )}
             </div>
           </>
         )
