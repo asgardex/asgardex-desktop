@@ -132,7 +132,7 @@ export const verifyLedgerAddress = async ({
   walletIndex,
   hdMode
 }: IPCLedgerAddressParams) => {
-  const transport = await TransportNodeHidSingleton.create()
+  const transport = await TransportNodeHidSingleton.default.create()
   let result = false
 
   if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'verifyAddress'`)
