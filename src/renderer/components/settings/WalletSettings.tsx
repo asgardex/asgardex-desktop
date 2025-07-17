@@ -366,22 +366,26 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   <PlusCircleIcon className="text-turquoise" width={20} height={20} />
                   {intl.formatMessage({ id: 'ledger.add.device' })}
                 </Styled.AddLedgerButton>
-                <>
-                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                    {intl.formatMessage({ id: 'setting.wallet.account' })}
-                  </div>
-                  <Styled.WalletIndexInput
-                    value={selectedAccountIndex.toString()}
-                    pattern="[0-9]+"
-                    onChange={(value) =>
-                      value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
-                    }
-                    style={{ width: 60 }}
-                    disabled={loading}
-                    onPressEnter={addLedgerAddressHandler}
-                  />
-                  <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
-                </>
+
+                {evmHDMode === 'ledgerlive' && (
+                  <>
+                    <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                      {intl.formatMessage({ id: 'setting.wallet.account' })}
+                    </div>
+                    <Styled.WalletIndexInput
+                      value={selectedAccountIndex.toString()}
+                      pattern="[0-9]+"
+                      onChange={(value) =>
+                        value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
+                      }
+                      style={{ width: 60 }}
+                      disabled={loading}
+                      onPressEnter={addLedgerAddressHandler}
+                    />
+                    <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
+                  </>
+                )}
+
                 <>
                   <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
                     {intl.formatMessage({ id: 'setting.wallet.index' })}
@@ -502,10 +506,15 @@ export const WalletSettings = (props: Props): JSX.Element => {
         return (
           <>
             <div className="flex w-full space-x-4">
-              <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
-              </div>
-              <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
+              {evmHDMode === 'ledgerlive' && (
+                <>
+                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                    <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
+                  </div>
+                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
+                </>
+              )}
+
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">
                 {intl.formatMessage({ id: 'setting.wallet.index' })}
               </div>
