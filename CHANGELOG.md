@@ -1,5 +1,19 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.5 (2025-7-19)
+
+## Add
+
+- Add Back button at no wallet view [#816](https://github.com/asgardex/asgardex-desktop/pull/816)
+- Complete Tcy claim / stake / unstake [#785](https://github.com/asgardex/asgardex-desktop/pull/785)
+
+## Update/Fixes
+
+- Fix Ledger Address verify function & HD deriv paths [#822](https://github.com/asgardex/asgardex-desktop/pull/822)
+- Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
+- Fix preview only swaps [#815](https://github.com/asgardex/asgardex-desktop/pull/815)
+- Migrate from antd to tanstack [#814](https://github.com/asgardex/asgardex-desktop/pull/814)
+
 # 1.40.4 (2025-7-3)
 
 ## Add
