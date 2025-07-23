@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
 
 import { IPCLedgerDepositTxParams, IPCLedgerSendTxParams } from '../../../shared/api/io'
@@ -36,7 +37,7 @@ import * as ETH from './ethereum/transaction'
 import * as LTC from './litecoin/transaction'
 import * as THOR from './thorchain/transaction'
 
-const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
 const chainSendFunctions: Record<
   Chain,
@@ -236,7 +237,7 @@ const chainSendFunctions: Record<
   }
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, 'ADA']
+const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
 
 export const sendTx = async ({
   chain,

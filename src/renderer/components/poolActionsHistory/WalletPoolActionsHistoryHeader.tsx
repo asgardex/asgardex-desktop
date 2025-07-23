@@ -5,9 +5,10 @@ import { function as FP, option as O } from 'fp-ts'
 
 import { WalletAddress, WalletAddresses } from '../../../shared/wallet/types'
 import { AccountAddressSelector } from '../AccountAddressSelector'
+import { ExternalLinkIcon } from '../uielements/common/Common.styles'
+import { Headline } from '../uielements/headline'
 import { PoolActionsHistoryFilter } from './PoolActionsHistoryFilter'
 import { Filter } from './types'
-import * as Styled from './WalletPoolActionsHistoryHeader.styles'
 
 type Props = {
   network: Network
@@ -38,7 +39,7 @@ export const WalletPoolActionsHistoryHeader = (props: Props) => {
 
   return (
     <>
-      <Styled.FilterContainer>
+      <div className="flex flex-col items-center justify-center gap-5 md:flex-row">
         <PoolActionsHistoryFilter
           availableFilters={availableFilters}
           currentFilter={currentFilter}
@@ -52,13 +53,13 @@ export const WalletPoolActionsHistoryHeader = (props: Props) => {
           onChangeAddress={onWalletAddressChanged}
           disabled={disabled}
         />
-      </Styled.FilterContainer>
-      <Styled.LinkContainer>
-        <Styled.Headline className="flex items-center" onClick={onClickAddressIcon}>
+      </div>
+      <div className="flex items-center justify-center pt-5 md:pt-0 md:grow md:justify-end">
+        <Headline className="flex items-center !w-auto" onClick={onClickAddressIcon}>
           {protocol === THORChain ? `RuneScan` : 'MayaScan'}
-          <Styled.ExplorerLinkIcon width={18} height={18} />
-        </Styled.Headline>
-      </Styled.LinkContainer>
+          <ExternalLinkIcon className="ml-2" width={18} height={18} />
+        </Headline>
+      </div>
     </>
   )
 }

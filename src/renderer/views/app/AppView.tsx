@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Grid } from 'antd'
 import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -16,6 +15,7 @@ import { BorderButton } from '../../components/uielements/button'
 import { useI18nContext } from '../../contexts/I18nContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedgerAddresses } from '../../hooks/useLedgerAddresses'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
@@ -48,7 +48,7 @@ export const AppView = (): JSX.Element => {
     return isNoWalletView || isCreateWalletView || isImportWalletView
   }, [location.pathname])
 
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
 
   // locale
   useEffect(() => {

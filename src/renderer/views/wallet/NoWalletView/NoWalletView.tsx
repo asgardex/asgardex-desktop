@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { KeyIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
@@ -10,11 +11,17 @@ import AsgardexLogo from '../../../assets/svg/logo-asgardex.svg?react'
 import SproutIcon from '../../../assets/svg/sprout.svg?react'
 import { HeaderTheme } from '../../../components/header/theme'
 import { LocaleDropdown } from '../../../components/LayoutlessWrapper/LocaleDropdown'
+import { BackLinkButton } from '../../../components/uielements/button'
+import { useWalletContext } from '../../../contexts/WalletContext'
 import * as walletRoutes from '../../../routes/wallet'
+import { hasImportedKeystore } from '../../../services/wallet/util'
 
 export const NoWalletView = () => {
   const navigate = useNavigate()
   const intl = useIntl()
+  const { keystoreService } = useWalletContext()
+
+  const keystore = useObservableState(keystoreService.keystoreState$, undefined)
 
   const createWalletHandler = useCallback(() => {
     navigate(walletRoutes.create.phrase.path())
@@ -30,6 +37,11 @@ export const NoWalletView = () => {
 
   return (
     <div className="relative flex flex-col h-full w-full items-center justify-center bg-bg1 dark:bg-bg1d gap-8">
+      {keystore && hasImportedKeystore(keystore) && (
+        <div className="absolute top-4 left-4 z-10">
+          <BackLinkButton />
+        </div>
+      )}
       <div className="flex items-center gap-2 absolute top-4 right-4 z-10">
         <LocaleDropdown />
         <HeaderTheme isDesktopView />

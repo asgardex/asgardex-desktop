@@ -28,9 +28,11 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { List, RadioChangeEvent, message } from 'antd'
 import clsx from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
@@ -227,7 +229,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [ARBChain]: 0,
     [RadixChain]: 0,
     [SOLChain]: 0,
-    [ADAChain]: 0
+    [ADAChain]: 0,
+    [ZECChain]: 0,
+    [XRPChain]: 0
   })
   const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
     [BTCChain]: 0,
@@ -246,7 +250,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [ARBChain]: 0,
     [RadixChain]: 0,
     [SOLChain]: 0,
-    [ADAChain]: 0
+    [ADAChain]: 0,
+    [ZECChain]: 0,
+    [XRPChain]: 0
   })
 
   const {
@@ -360,22 +366,26 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   <PlusCircleIcon className="text-turquoise" width={20} height={20} />
                   {intl.formatMessage({ id: 'ledger.add.device' })}
                 </Styled.AddLedgerButton>
-                <>
-                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                    {intl.formatMessage({ id: 'setting.wallet.account' })}
-                  </div>
-                  <Styled.WalletIndexInput
-                    value={selectedAccountIndex.toString()}
-                    pattern="[0-9]+"
-                    onChange={(value) =>
-                      value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
-                    }
-                    style={{ width: 60 }}
-                    disabled={loading}
-                    onPressEnter={addLedgerAddressHandler}
-                  />
-                  <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
-                </>
+
+                {evmHDMode === 'ledgerlive' && (
+                  <>
+                    <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                      {intl.formatMessage({ id: 'setting.wallet.account' })}
+                    </div>
+                    <Styled.WalletIndexInput
+                      value={selectedAccountIndex.toString()}
+                      pattern="[0-9]+"
+                      onChange={(value) =>
+                        value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
+                      }
+                      style={{ width: 60 }}
+                      disabled={loading}
+                      onPressEnter={addLedgerAddressHandler}
+                    />
+                    <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
+                  </>
+                )}
+
                 <>
                   <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
                     {intl.formatMessage({ id: 'setting.wallet.index' })}
@@ -405,7 +415,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.ledgerlive.info' },
                           {
-                            path: getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')
+                            path: `${getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')}{index}`
                           }
                         )}
                       />
@@ -417,7 +427,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.legacy.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], 'legacy') }
+                          { path: `${getEvmDerivationPath(walletAccountMap[chain], 'legacy')}{index}` }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>
@@ -428,7 +438,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.metamask.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], 'metamask') }
+                          { path: `${getEvmDerivationPath(walletAccountMap[chain], 'metamask')}{index}` }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>
@@ -492,18 +502,29 @@ export const WalletSettings = (props: Props): JSX.Element => {
         )
       }
       const renderAccount = (walletAddress: WalletAddress) => {
-        const { walletAccount, walletIndex } = walletAddress
+        const { walletAccount, walletIndex, chain } = walletAddress
         return (
           <>
             <div className="flex w-full space-x-4">
-              <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
-              </div>
-              <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
+              {evmHDMode === 'ledgerlive' && (
+                <>
+                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                    <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
+                  </div>
+                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
+                </>
+              )}
+
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">
                 {intl.formatMessage({ id: 'setting.wallet.index' })}
               </div>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletIndex}</div>
+              {isEvmChain(chain) && (
+                <div className="text-[12px] uppercase text-text2 dark:text-text2d">{`${getEvmDerivationPath(
+                  walletAccountMap[chain],
+                  `${evmHDMode}`
+                )}${walletIndex}`}</div>
+              )}
             </div>
           </>
         )
@@ -654,8 +675,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     () =>
       FP.pipe(
         oWalletAccounts,
-        O.map((walletAccounts) =>
-          FP.pipe(
+        O.map((walletAccounts) => {
+          return FP.pipe(
             walletAccounts,
             A.filter(({ chain }) =>
               accountFilter
@@ -664,7 +685,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 : true
             )
           )
-        )
+        })
       ),
     [accountFilter, oWalletAccounts]
   )
@@ -710,10 +731,10 @@ export const WalletSettings = (props: Props): JSX.Element => {
 
   const renderAddAddressForm = useCallback(
     () => (
-      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="flex items-center gap-3 mb-4">
         <Styled.AutoComplete
+          className="w-40 mr-2"
           key={newAddress.chain || 'autocomplete'}
-          style={{ width: 150, marginRight: 8 }}
           placeholder={intl.formatMessage({ id: 'common.chain' })}
           options={enabledChains.map((chain) => ({ value: chain }))}
           value={newAddress.chain}

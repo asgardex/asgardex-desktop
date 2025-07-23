@@ -53,7 +53,7 @@ const initialContext: AdaContextValue = {
 
 const AdaContext = createContext<AdaContextValue | null>(null)
 
-export const AdaProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const AdaProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <AdaContext.Provider value={initialContext}>{children}</AdaContext.Provider>
 }
 

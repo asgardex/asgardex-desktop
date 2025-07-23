@@ -246,7 +246,7 @@ export const InteractViewTHOR = () => {
       ),
       ([interactType, { walletType, walletAccount, walletIndex, hdMode }]) => (
         <>
-          <div className="relative mb-20px flex items-center justify-between">
+          <div className="relative mb-4 flex items-center justify-between">
             <Row justify="space-between">
               <Col>
                 <BackLinkButton />

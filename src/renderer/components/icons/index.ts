@@ -3,6 +3,8 @@ import dogeIcon from '../../assets/png/asset-doge.png'
 import kujiIcon from '../../assets/png/asset-kuji.png'
 import mayaIconT from '../../assets/png/asset-maya-T.png'
 import mayaIcon from '../../assets/png/asset-maya.png'
+import rujiIcon from '../../assets/png/asset-ruji.png'
+import tcyIcon from '../../assets/png/asset-tcy.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
 import usdpIcon from '../../assets/png/asset-usdp.png'
 import uskIcon from '../../assets/png/asset-usk.png'
@@ -16,9 +18,9 @@ import btcIcon from '../../assets/svg/asset-btc.svg?url'
 import dashIcon from '../../assets/svg/asset-dash.svg?url'
 import ethIcon from '../../assets/svg/asset-eth.svg?url'
 import xrdIcon from '../../assets/svg/asset-radix.svg?url'
+import xrpIcon from '../../assets/svg/asset-ripple.svg?url'
 import runeIcon from '../../assets/svg/asset-rune.svg'
 import solIcon from '../../assets/svg/asset-sol.svg?url'
-import tcyIcon from '../../assets/svg/asset-tcy.svg?url'
 import CurrencyIcon from '../../assets/svg/currency-icon.svg?react'
 import AttentionIcon from '../../assets/svg/icon-attention.svg?react'
 import DownIcon from '../../assets/svg/icon-down.svg?react'
@@ -39,6 +41,7 @@ export {
   dogeIcon,
   ethIcon,
   runeIcon,
+  rujiIcon,
   tcyIcon,
   tgtIcon,
   CurrencyIcon,
@@ -59,5 +62,6 @@ export {
   mayaIconT,
   xrdIcon,
   solIcon,
-  baseIcon
+  baseIcon,
+  xrpIcon
 }

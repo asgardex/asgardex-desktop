@@ -1,25 +1,27 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
+import { ArrowUpIcon } from '@heroicons/react/24/outline'
+import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, baseAmount, baseToAsset, Chain, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
-import { Grid, Row } from 'antd'
-import { ColumnsType, ColumnType } from 'antd/lib/table'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import * as PoolHelpers from '../../helpers/poolHelper'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { MimirHalt } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
-import { AssetLabel } from '../uielements/assets/assetLabel'
-import { Tooltip } from '../uielements/common/Common.styles'
+import { FixmeType } from '../../types/asgardex'
+import { Table } from '../table'
+import { AssetData } from '../uielements/assets/assetData'
+import { Button, ManageButton } from '../uielements/button'
 import { Label } from '../uielements/label'
-import * as Styled from './PoolShares.styles'
-import { PoolShareTableRowData, PoolShareTableData } from './PoolShares.types'
+import { PoolShareTableRowData } from './PoolShares.types'
 
 export type Props = {
-  data: PoolShareTableData
+  data: PoolShareTableRowData[]
   loading: boolean
   priceAsset: AnyAsset | undefined
   network: Network
@@ -35,162 +37,150 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
   const protocolAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
   const protocolUrl = useMemo(() => (protocol === THORChain ? 'runescan.io' : 'Mayascan.com'), [protocol])
 
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
+  const isXLargeScreen = useBreakpoint()?.xl ?? false
 
-  const iconColumn: ColumnType<PoolShareTableRowData> = useMemo(
-    () => ({
-      title: '',
-      width: 90,
-      render: ({ asset, type }: PoolShareTableRowData) => {
-        const titleId = type === 'asym' ? 'poolshares.single.info' : 'poolshares.both.info'
+  const columns: ColumnDef<PoolShareTableRowData, FixmeType>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'asset',
+        header: intl.formatMessage({ id: 'common.pool' }),
+        cell: ({ row }) => {
+          const { asset, type } = row.original
 
-        return (
-          <Row justify="center" align="middle">
-            <Tooltip title={intl.formatMessage({ id: titleId }, { asset: asset.ticker, rune: protocolAsset.ticker })}>
-              {/* div needed for tooltip */}
-              <div>
-                <Styled.AssetIcon asset={asset} size="normal" network={network} />
-                {type === 'asym' && <Styled.AssetIconLabel>{type}</Styled.AssetIconLabel>}
-              </div>
-            </Tooltip>
-          </Row>
-        )
+          return (
+            <div className="flex items-center justify-between">
+              <AssetData asset={asset} network={network} />
+              <Label className="hidden lg:flex bg-turquoise !w-auto px-1 rounded" color="white">
+                {type}
+              </Label>
+            </div>
+          )
+        },
+        enableSorting: false
+      },
+      ...(isXLargeScreen
+        ? ([
+            {
+              accessorKey: 'ownership',
+              header: () => <Label align="right">{intl.formatMessage({ id: 'poolshares.ownership' })}</Label>,
+              cell: ({ row }) => {
+                const { sharePercent } = row.original
+
+                return <Label align="right">{formatBN(sharePercent, 2)}%</Label>
+              },
+              size: 100,
+              enableSorting: false
+            },
+            {
+              accessorKey: 'assetCol',
+              header: () => <Label align="right">{intl.formatMessage({ id: 'common.asset' })}</Label>,
+              cell: ({ row }) => {
+                const { asset, assetShare } = row.original
+
+                return (
+                  <Label align="right">
+                    {formatAssetAmountCurrency({
+                      amount: baseToAsset(assetShare),
+                      asset,
+                      decimal: 2
+                    })}
+                  </Label>
+                )
+              },
+              size: 100,
+              enableSorting: false
+            },
+            {
+              accessorKey: 'runeCol',
+              header: () => <Label align="right">{protocolAsset.symbol}</Label>,
+              cell: ({ row }) => {
+                const { runeShare } = row.original
+
+                return (
+                  <Label align="right">
+                    {formatAssetAmountCurrency({
+                      amount: baseToAsset(runeShare),
+                      asset: protocolAsset,
+                      decimal: 2
+                    })}
+                  </Label>
+                )
+              },
+              size: 100,
+              enableSorting: false
+            }
+          ] as ColumnDef<PoolShareTableRowData, FixmeType>[])
+        : []),
+      {
+        accessorKey: 'value',
+        header: () => <Label align="right">{intl.formatMessage({ id: 'common.value' })}</Label>,
+        cell: ({ row }) => {
+          const { assetDepositPrice, runeDepositPrice } = row.original
+          const totalPrice = baseAmount(runeDepositPrice.amount().plus(assetDepositPrice.amount()))
+
+          return (
+            <Label align={isDesktopView ? 'right' : 'center'}>
+              {formatAssetAmountCurrency({ amount: baseToAsset(totalPrice), asset: priceAsset, decimal: 2 })}
+            </Label>
+          )
+        },
+        size: 100,
+        enableSorting: false
+      },
+      {
+        accessorKey: 'action',
+        header: '',
+        cell: ({ row }) => {
+          const { asset, type } = row.original
+          const disablePool = PoolHelpers.disableAllActions({ chain: asset.chain, haltedChains, mimirHalt })
+
+          return (
+            <div className="flex items-center justify-center">
+              <ManageButton
+                disabled={disablePool || type === 'asym'}
+                asset={asset}
+                variant="manage"
+                useBorderButton={false}
+                isTextView={isDesktopView}
+                title={intl.formatMessage(
+                  { id: 'poolshares.single.notsupported' },
+                  { asset: asset.ticker, rune: protocolAsset.ticker }
+                )}
+              />
+            </div>
+          )
+        },
+        enableSorting: false
       }
-    }),
-    [intl, protocolAsset.ticker, network]
+    ],
+    [haltedChains, intl, isDesktopView, isXLargeScreen, mimirHalt, network, priceAsset, protocolAsset]
   )
 
-  const poolColumn: ColumnType<PoolShareTableRowData> = useMemo(
-    () => ({
-      title: intl.formatMessage({ id: 'common.pool' }),
-      align: 'left',
-      responsive: ['md'],
-      render: ({ asset }: PoolShareTableRowData) => <AssetLabel asset={asset} />
-    }),
-    [intl]
-  )
-
-  const ownershipColumn: ColumnType<PoolShareTableRowData> = useMemo(
-    () => ({
-      title: intl.formatMessage({ id: 'poolshares.ownership' }),
-      align: 'center',
-      render: ({ sharePercent }: PoolShareTableRowData) => (
-        <Tooltip title={`${sharePercent} %`}>
-          {/* div needed for tooltip */}
-          <div>
-            <Styled.OwnershipLabel align="center">{formatBN(sharePercent, 2)}%</Styled.OwnershipLabel>
-          </div>
-        </Tooltip>
-      )
-    }),
-    [intl]
-  )
-
-  const valueColumn: ColumnType<PoolShareTableRowData> = useMemo(
-    () => ({
-      title: intl.formatMessage({ id: 'common.value' }),
-      align: isDesktopView ? 'right' : 'center',
-      render: ({ assetDepositPrice, runeDepositPrice }: PoolShareTableRowData) => {
-        const totalPrice = baseAmount(runeDepositPrice.amount().plus(assetDepositPrice.amount()))
-        return (
-          <Label align={isDesktopView ? 'right' : 'center'}>
-            {formatAssetAmountCurrency({ amount: baseToAsset(totalPrice), asset: priceAsset, decimal: 2 })}
-          </Label>
-        )
-      }
-    }),
-    [intl, priceAsset, isDesktopView]
-  )
-
-  const assetColumn: ColumnType<PoolShareTableRowData> = useMemo(
-    () => ({
-      title: intl.formatMessage({ id: 'common.asset' }),
-      align: 'right',
-      render: ({ asset, assetShare }: PoolShareTableRowData) => (
-        <Label align="right">
-          {formatAssetAmountCurrency({
-            amount: baseToAsset(assetShare),
-            asset,
-            decimal: 2
-          })}
-        </Label>
-      )
-    }),
-    [intl]
-  )
-
-  const runeColumn: ColumnType<PoolShareTableRowData> = useMemo(
-    () => ({
-      title: protocolAsset.symbol,
-      align: 'right',
-      render: ({ runeShare }: PoolShareTableRowData) => (
-        <Label align="right">
-          {formatAssetAmountCurrency({
-            amount: baseToAsset(runeShare),
-            asset: protocolAsset,
-            decimal: 2
-          })}
-        </Label>
-      )
-    }),
-    [protocolAsset]
-  )
-
-  const manageColumn: ColumnType<PoolShareTableRowData> = useMemo(
-    () => ({
-      title: '',
-      align: 'right',
-      render: ({ asset, type }: PoolShareTableRowData) => {
-        const disablePool = PoolHelpers.disableAllActions({ chain: asset.chain, haltedChains, mimirHalt })
-        return (
-          <Styled.ManageButton
-            disabled={disablePool || type === 'asym'}
-            asset={asset}
-            variant="manage"
-            useBorderButton={false}
-            isTextView={isDesktopView}
-            title={intl.formatMessage(
-              { id: 'poolshares.single.notsupported' },
-              { asset: asset.ticker, rune: protocolAsset.ticker }
-            )}
-          />
-        )
-      }
-    }),
-    [haltedChains, mimirHalt, isDesktopView, intl, protocolAsset.ticker]
-  )
-
-  const desktopColumns: ColumnsType<PoolShareTableRowData> = useMemo(
-    () => [iconColumn, poolColumn, ownershipColumn, assetColumn, runeColumn, valueColumn, manageColumn],
-    [iconColumn, poolColumn, ownershipColumn, assetColumn, runeColumn, valueColumn, manageColumn]
-  )
-
-  const mobileColumns: ColumnsType<PoolShareTableRowData> = useMemo(
-    () => [iconColumn, valueColumn, manageColumn],
-    [iconColumn, valueColumn, manageColumn]
-  )
   const renderAnalyticsInfo = useMemo(() => {
     return network !== Network.Testnet ? (
-      <>
-        <Styled.InfoButton onClick={openShareInfo}>
-          <Styled.TextLabel>{intl.formatMessage({ id: 'common.analytics' })}</Styled.TextLabel> <Styled.InfoArrow />
-        </Styled.InfoButton>
-        <Styled.InfoDescription>{protocolUrl}</Styled.InfoDescription>
-      </>
+      <div className="w-full flex justify-end mt-2 mb-4">
+        <div className="bg-turquoise/20 px-2 py-1 rounded-lg">
+          <Button className="w-full !p-0 !justify-between" size="large" typevalue="transparent" onClick={openShareInfo}>
+            <Label className="!w-auto" textTransform="uppercase">
+              {intl.formatMessage({ id: 'common.analytics' })}
+            </Label>
+            <ArrowUpIcon className="stroke-turquoise w-4 h-4 rotate-45" />
+          </Button>
+          <Label color="input" size="normal" textTransform="uppercase">
+            {protocolUrl}
+          </Label>
+        </div>
+      </div>
     ) : (
       <></>
     )
   }, [network, openShareInfo, intl, protocolUrl])
 
   return (
-    <Styled.Container>
-      <Styled.Table
-        loading={loading}
-        columns={isDesktopView ? desktopColumns : mobileColumns}
-        dataSource={data}
-        rowKey={({ asset }) => asset.symbol}
-      />
+    <div className="bg-bg0 dark:bg-bg0d px-2">
+      <Table loading={loading} columns={columns} data={data} />
       {renderAnalyticsInfo}
-    </Styled.Container>
+    </div>
   )
 }

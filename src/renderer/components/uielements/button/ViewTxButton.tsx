@@ -83,7 +83,7 @@ export const ViewTxButton = ({
 
   return (
     <div className="flex flex-col">
-      <Styled.Wrapper className={clsx('flex-col', className)}>
+      <div className={clsx('flex flex-col items-center', className)}>
         <Styled.ViewTxButton onClick={onClickHandler} disabled={O.isNone(oTxHash)}>
           {label || intl.formatMessage({ id: 'common.viewTransaction' })}
         </Styled.ViewTxButton>
@@ -124,7 +124,7 @@ export const ViewTxButton = ({
             />
           </div>
         </div>
-      </Styled.Wrapper>
+      </div>
     </div>
   )
 }

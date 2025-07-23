@@ -1,139 +1,178 @@
-import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { writeFileSync } from 'fs'
 import { AnyAsset, assetFromString } from '@xchainjs/xchain-util'
-import ansis from 'ansis'
 import axios from 'axios'
-import * as IO from 'fp-ts/IO'
-import * as A from 'fp-ts/lib/Array'
-import * as C from 'fp-ts/lib/Console'
-import * as E from 'fp-ts/lib/Either'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
-import * as TE from 'fp-ts/lib/TaskEither'
-import * as S from 'fp-ts/string'
-import * as T from 'fp-ts/Task'
-import { failure } from 'io-ts/lib/PathReporter'
-import prettier from 'prettier'
+import { format } from 'prettier'
+import { erc20WhitelistIO, ERC20Whitelist } from '../src/renderer/services/thorchain/types'
 
-import { writeFile, readFile } from '../src/main/utils/file'
-import { ERC20Whitelist, erc20WhitelistIO } from '../src/renderer/services/thorchain/types'
+type Chain = 'ARB' | 'AVAX' | 'BSC' | 'ETH' | 'BASE'
 
-const WHITELIST_URL =
-  'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/ethtokens/eth_mainnet_latest.json?ref_type=heads'
-
-const PATH = './src/renderer/types/generated/thorchain/erc20whitelist.ts'
-
-type AssetList = { asset: AnyAsset; iconUrl: O.Option<string> }[]
-
-const transformList = ({ tokens }: Pick<ERC20Whitelist, 'tokens'>): AssetList => {
-  const seenTokens = new Set<string>()
-
-  return FP.pipe(
-    tokens,
-    A.filterMap(({ address, symbol, logoURI }) => {
-      // Normalize both symbol and address to lowercase for consistent identifier
-      const identifier = `${symbol.toLowerCase()}-${address.toLowerCase()}`
-
-      if (seenTokens.has(identifier)) {
-        return O.none // Skip duplicate tokens
-      }
-
-      seenTokens.add(identifier) // Mark this token as seen
-
-      return FP.pipe(
-        assetFromString(`${ETHChain}.${symbol}-${address}`),
-        O.fromNullable,
-        O.map((asset) => ({ asset, iconUrl: O.fromNullable(logoURI) }))
-      )
-    })
-  )
+interface ChainConfig {
+  chain: string
+  import: string
+  whitelistUrl: string
+  outputPath: string
+  whitelistName: string
+  chainId?: number // Optional chainId for chains missing it in the data
 }
 
-const loadList = (): TE.TaskEither<Error, ERC20Whitelist> =>
-  FP.pipe(
-    TE.tryCatch(
-      () => axios.get<ERC20Whitelist>(WHITELIST_URL),
-      (e: unknown) => new Error(`${e}`)
-    ),
-    TE.chain((resp) =>
-      FP.pipe(
-        erc20WhitelistIO.decode(resp.data),
-        E.mapLeft((errors) => new Error(failure(errors).join('\n'))),
-        TE.fromEither
-      )
-    )
-  )
+function getChainConfig(chain: Chain): ChainConfig {
+  switch (chain) {
+    case 'ARB':
+      return {
+        chain: 'ARBChain',
+        import: "import { ARBChain } from '@xchainjs/xchain-arbitrum';",
+        whitelistUrl:
+          'https://gitlab.com/mayachain/mayanode/-/raw/mainnet/common/tokenlist/arbtokens/arb_mainnet_latest.json',
+        outputPath: './src/renderer/types/generated/mayachain/arberc20whitelist.ts',
+        whitelistName: 'ARB_TOKEN_WHITELIST'
+      }
+    case 'AVAX':
+      return {
+        chain: 'AVAXChain',
+        import: "import { AVAXChain } from '@xchainjs/xchain-avax';",
+        whitelistUrl:
+          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/avaxtokens/avax_mainnet_latest.json',
+        outputPath: './src/renderer/types/generated/thorchain/avaxerc20whitelist.ts',
+        whitelistName: 'AVAX_TOKEN_WHITELIST'
+      }
+    case 'BSC':
+      return {
+        chain: 'BSCChain',
+        import: "import { BSCChain } from '@xchainjs/xchain-bsc';",
+        whitelistUrl:
+          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/bsctokens/bsc_mainnet_latest.json',
+        outputPath: './src/renderer/types/generated/thorchain/bscerc20whitelist.ts',
+        whitelistName: 'BSC_TOKEN_WHITELIST'
+      }
+    case 'ETH':
+      return {
+        chain: 'ETHChain',
+        import: "import { ETHChain } from '@xchainjs/xchain-ethereum';",
+        whitelistUrl:
+          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/ethtokens/eth_mainnet_latest.json',
+        outputPath: './src/renderer/types/generated/thorchain/etherc20whitelist.ts',
+        whitelistName: 'ETH_TOKEN_WHITELIST'
+      }
+    case 'BASE':
+      return {
+        chain: 'BASEChain',
+        import: "import { BASEChain } from '@xchainjs/xchain-base';",
+        whitelistUrl:
+          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/basetokens/base_mainnet_latest.json',
+        outputPath: './src/renderer/types/generated/thorchain/baseErc20whitelist.ts',
+        whitelistName: 'BASE_TOKEN_WHITELIST',
+        chainId: 8453 // Base mainnet chain ID
+      }
+    default:
+      throw new Error(`Unsupported chain: ${chain}`)
+  }
+}
 
-const createTemplate = (list: AssetList): string => {
-  const listAsString = FP.pipe(
-    list,
-    A.map(({ asset, iconUrl }) => {
-      const iconUrlString = FP.pipe(
-        iconUrl,
-        O.fold(
-          () => 'O.none',
-          (iconUrl) => `O.some('${iconUrl}')`
-        )
-      )
-      return `{asset: ${JSON.stringify(asset)}, iconUrl: ${iconUrlString}}`
+type AssetList = { asset: AnyAsset; iconUrl: string | null }[]
+
+async function loadList(url: string, chain: Chain): Promise<ERC20Whitelist> {
+  try {
+    const { data } = await axios.get(url)
+    const config = getChainConfig(chain)
+    const wrappedData = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tokens: data.tokens.map((token: any) => ({
+        ...token,
+        chainId: token.chainId ?? config.chainId // Fallback chainId if missing
+      })),
+      version: { major: 1, minor: 0, patch: 0 },
+      name: data.name ?? 'Unknown',
+      timestamp: data.timestamp ?? new Date().toISOString(),
+      keywords: data.keywords ?? []
+    }
+    const decoded = erc20WhitelistIO.decode(wrappedData)
+    if ('_tag' in decoded && decoded._tag === 'Left') {
+      const errorMessages = decoded.left.map((e) => JSON.stringify(e, null, 2)).join('\n')
+      console.error('Validation errors:', errorMessages)
+      throw new Error(`Validation failed: ${errorMessages}`)
+    }
+    return decoded.right
+  } catch (error) {
+    console.error('Raw error:', error)
+    throw new Error(`Failed to load whitelist: ${error}`)
+  }
+}
+
+function transformList({ tokens }: ERC20Whitelist, chain: string): AssetList {
+  const seenTokens = new Set<string>()
+  if (!tokens) return []
+  return tokens
+    .map(({ address, symbol, logoURI }) => {
+      const identifier = `${symbol.toLowerCase()}-${address.toLowerCase()}`
+      if (seenTokens.has(identifier)) return null
+      seenTokens.add(identifier)
+
+      const asset = assetFromString(`${chain}.${symbol}-${address}`)
+      if (!asset) return null
+
+      return { asset, iconUrl: logoURI ?? null }
     })
-  )
+    .filter((item): item is NonNullable<typeof item> => item !== null)
+}
+
+function createTemplate(list: AssetList, config: ChainConfig): string {
+  const listAsString = list
+    .map(({ asset, iconUrl }) => {
+      const iconUrlString = iconUrl ? `O.some('${iconUrl}')` : 'O.none'
+      const assetString = `{ chain: ${config.chain}, symbol: "${asset.symbol}", ticker: "${asset.ticker}", type: ${asset.type} }`
+      return `{ asset: ${assetString}, iconUrl: ${iconUrlString} }`
+    })
+    .join(',\n  ')
 
   return `
     /**
-     * ERC20_WHITELIST
-     *
+     * ${config.whitelistName}
      * This file has been generated - don't edit.
-     *
      */
+    import { option as O } from 'fp-ts';
+    import { TokenAsset } from '@xchainjs/xchain-util';
+    ${config.import}
 
-    import * as O from 'fp-ts/lib/Option'
-    import {TokenAsset} from "@xchainjs/xchain-util";
-    import {ETHChain} from "@xchainjs/xchain-ethereum";
-
-    export const ERC20_WHITELIST: { asset: TokenAsset, iconUrl: O.Option<string> }[] = [${listAsString}]
+    export const ${config.whitelistName}: { asset: TokenAsset; iconUrl: O.Option<string> }[] = [
+      ${listAsString}
+    ];
   `
 }
 
-const writeList = (list: AssetList): TE.TaskEither<Error, void> =>
-  FP.pipe(
-    list,
-    createTemplate,
-    // "ETH" _> ETHChain
-    S.replace(/"chain":"ETH"/g, 'chain: ETHChain'),
-    (c) => writeFile(PATH, c)
-  )
+async function main() {
+  const chain = process.argv[2] as Chain
+  if (!chain) {
+    console.error('Chain argument is required (e.g., ARB, AVAX, BSC, ETH, BASE)')
+    process.exit(1)
+  }
 
-const formatList = () =>
-  FP.pipe(
-    readFile(PATH, 'utf8'),
-    TE.chain((content) => writeFile(PATH, prettier.format(content, { filepath: PATH })))
-  )
+  const config = getChainConfig(chain)
+  if (!config.outputPath || typeof config.outputPath !== 'string') {
+    console.error(`Invalid output path for chain ${chain}`)
+    process.exit(1)
+  }
 
-const onError = (e: Error): T.Task<void> =>
-  T.fromIO(
-    FP.pipe(
-      C.log(ansis.bold.red('Unexpected Error!')),
-      IO.chain(() => C.error(e))
-    )
-  )
+  console.log(`Generating whitelist for ${chain}...`)
+  try {
+    const whitelist = await loadList(config.whitelistUrl, chain)
+    const assetList = transformList(whitelist, config.chain.replace('Chain', ''))
+    const content = createTemplate(assetList, config).replace(/"chain":"[^"]*"/g, `chain: ${config.chain}`)
 
-const onSuccess = (): T.Task<void> =>
-  T.fromIO(
-    FP.pipe(
-      C.info(ansis.green.bold(`Created whitelist successfully!`)),
-      IO.chain(() => C.log(`Location: ${PATH}`))
-    )
-  )
+    // Format the content with Prettier
+    const formattedContent = await format(content, {
+      parser: 'typescript',
+      singleQuote: true,
+      trailingComma: 'es5',
+      tabWidth: 2
+    })
 
-const main = FP.pipe(
-  C.info(ansis.italic.gray(`Generate whitelist...`)),
-  TE.fromIO,
-  TE.mapLeft(E.toError),
-  TE.chain(loadList),
-  TE.map(transformList),
-  TE.chain(writeList),
-  TE.chain(formatList),
-  TE.fold(onError, onSuccess)
-)
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    writeFileSync(config.outputPath, formattedContent, 'utf8')
+    console.log(`Created and formatted whitelist successfully at ${config.outputPath}`)
+  } catch (error) {
+    console.error('Unexpected Error!', error)
+    process.exit(1)
+  }
+}
 
 main()

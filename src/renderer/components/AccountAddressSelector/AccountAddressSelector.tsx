@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { Dropdown } from 'antd'
 import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -16,7 +15,7 @@ import { walletTypeToI18n } from '../../services/wallet/util'
 import { AssetIcon } from '../uielements/assets/assetIcon/AssetIcon'
 import { Size as IconSize } from '../uielements/assets/assetIcon/AssetIcon.types'
 import { WalletTypeLabel } from '../uielements/common/Common.styles'
-import * as Styled from './AccountAddressSelector.styles'
+import { Dropdown } from '../uielements/dropdown'
 
 type Props = {
   selectedAddress: O.Option<WalletAddress>
@@ -33,8 +32,7 @@ export const AccountAddressSelector = (props: Props) => {
     addresses,
     size = 'small',
     network,
-    onChangeAddress = FP.constVoid,
-    disabled = false
+    onChangeAddress = FP.constVoid
   } = props
 
   const intl = useIntl()
@@ -49,38 +47,29 @@ export const AccountAddressSelector = (props: Props) => {
         )
       )
 
-    return (
-      <Styled.Menu
-        items={FP.pipe(
-          addresses,
-          A.map((walletAddress) => {
-            const { address, type, chain } = walletAddress
-            const selected = isSelected(walletAddress)
-            return {
-              label: (
-                <div
-                  className="flex items-center justify-between text-14 p-1"
-                  onClick={() => onChangeAddress(walletAddress)}>
-                  <div className="flex items-center">
-                    <AssetIcon className="m-0.5" asset={getChainAsset(chain)} size={size} network={network} />
-                    <div className="my-1 mx-4 text-text2 dark:text-text2d">{address}</div>
-                  </div>
-                  {isLedgerWallet(type) && (
-                    <WalletTypeLabel
-                      className={clsx(
-                        'leading-[14px]',
-                        selected ? 'bg-gray1 dark:bg-gray1d' : 'bg-gray0 dark:bg-gray0d'
-                      )}>
-                      {walletTypeToI18n(type, intl)}
-                    </WalletTypeLabel>
-                  )}
-                </div>
-              ),
-              key: `${chain}:${address}`
-            }
-          })
-        )}
-      />
+    return FP.pipe(
+      addresses,
+      A.map((walletAddress) => {
+        const { address, type, chain } = walletAddress
+        const selected = isSelected(walletAddress)
+        return (
+          <div
+            key={`${chain}-${walletAddress}`}
+            className="flex items-center justify-between text-14 p-1"
+            onClick={() => onChangeAddress(walletAddress)}>
+            <div className="flex items-center">
+              <AssetIcon className="m-0.5" asset={getChainAsset(chain)} size={size} network={network} />
+              <div className="my-1 mx-4 text-text2 dark:text-text2d">{address}</div>
+            </div>
+            {isLedgerWallet(type) && (
+              <WalletTypeLabel
+                className={clsx('leading-[14px]', selected ? 'bg-gray1 dark:bg-gray1d' : 'bg-gray0 dark:bg-gray0d')}>
+                {walletTypeToI18n(type, intl)}
+              </WalletTypeLabel>
+            )}
+          </div>
+        )
+      })
     )
   }, [addresses, intl, network, oSelectedAddress, onChangeAddress, size])
 
@@ -89,7 +78,7 @@ export const AccountAddressSelector = (props: Props) => {
     O.fold(
       () => <></>,
       ({ chain, type, address }) => (
-        <div className="flex items-center justify-between border border-solid border-turquoise rounded px-2 py-1">
+        <div className="flex items-center justify-between cursor-pointer border border-solid border-turquoise rounded px-2 py-1">
           <div className="flex items-center">
             <AssetIcon asset={getChainAsset(chain)} size="xsmall" network={network} />
             <div className="ml-1 text-14 text-turquoise">{truncateAddress(address, chain, network)}</div>
@@ -101,9 +90,5 @@ export const AccountAddressSelector = (props: Props) => {
     )
   )
 
-  return (
-    <Dropdown overlay={menu} trigger={['click']} disabled={disabled}>
-      <Styled.DropdownSelectorWrapper disabled={disabled}>{renderSelectedAddress}</Styled.DropdownSelectorWrapper>
-    </Dropdown>
-  )
+  return <Dropdown trigger={renderSelectedAddress} options={menu} />
 }

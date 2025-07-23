@@ -3,16 +3,15 @@ import { BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
 import { Fees, FeeType } from '@xchainjs/xchain-client'
 import { getFee, GasPrices, Client } from '@xchainjs/xchain-evm'
 import { Asset, baseAmount } from '@xchainjs/xchain-util'
-import { ethers } from 'ethers'
+import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isBASEAsset } from '../../helpers/assetHelper'
 import { observableState } from '../../helpers/stateHelper'
-import { FeeLD } from '../chain/types'
-import * as C from '../clients'
-import { FeesLD } from '../clients'
+import type { FeeLD } from '../chain/types'
+import type { FeesLD } from '../clients'
 import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT, EVMZeroAddress } from '../evm/const'
 import { FeesService, PoolInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams, Client$ } from '../evm/types'
 
@@ -64,19 +63,19 @@ export const createFeesService = (client$: Client$): FeesService => {
   /**
    * Fees for sending txs into pool on BASE
    **/
-  const poolInTxFees$ = ({ address, abi, func, params }: PoolInTxFeeParams): C.FeesLD =>
+  const poolInTxFees$ = ({ address, abi, func, params }: PoolInTxFeeParams): FeesLD =>
     client$.pipe(
       RxOp.switchMap((oClient) =>
         FP.pipe(
           oClient,
           O.fold(
             () => Rx.of(RD.initial),
-            (client) =>
+            (client): FeesLD =>
               Rx.combineLatest([
                 client.estimateCall({ contractAddress: address, abi, funcName: func, funcParams: params }),
                 client.estimateGasPrices()
               ]).pipe(
-                RxOp.map<[ethers.BigNumber, GasPrices], Fees>(([gasLimit, gasPrices]) => ({
+                RxOp.map<[BigNumber, GasPrices], Fees>(([gasLimit, gasPrices]) => ({
                   type: FeeType.PerByte,
                   average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: BASE_GAS_ASSET_DECIMAL }),
                   fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: BASE_GAS_ASSET_DECIMAL }),
@@ -94,14 +93,14 @@ export const createFeesService = (client$: Client$): FeesService => {
   /**
    * Fees for sending txs out of a pool on BASE
    **/
-  const poolOutTxFee$ = (asset: Asset): C.FeesLD =>
+  const poolOutTxFee$ = (asset: Asset): FeesLD =>
     client$.pipe(
       RxOp.switchMap((oClient) =>
         FP.pipe(
           oClient,
           O.fold(
             () => Rx.of(RD.initial),
-            (client) => {
+            (client): FeesLD => {
               const gasLimit = isBASEAsset(asset) ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
               return Rx.from(client.estimateGasPrices()).pipe(
                 RxOp.map<GasPrices, Fees>((gasPrices) => ({
@@ -130,7 +129,7 @@ export const createFeesService = (client$: Client$): FeesService => {
           oClient,
           O.fold(
             () => Rx.of(RD.initial),
-            (client) =>
+            (client): FeeLD =>
               Rx.combineLatest([
                 client.estimateApprove({ contractAddress, spenderAddress, fromAddress }),
                 client.estimateGasPrices()

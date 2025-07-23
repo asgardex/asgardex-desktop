@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
 
 import { IPCLedgerAddressParams, LedgerError, LedgerErrorId } from '../../../shared/api/types'
@@ -32,7 +33,7 @@ import { getEVMAddress, verifyEVMAddress } from './evm/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
 import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
 
-const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
 const handleEVMChain = (
   chain: Chain,
@@ -86,7 +87,7 @@ const chainAddressFunctions: Record<
   [GAIAChain]: getCOSMOSAddress
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, 'ADA']
+const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
 
 export const getAddress = async ({
   chain,

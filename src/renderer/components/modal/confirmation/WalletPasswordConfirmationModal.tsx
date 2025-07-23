@@ -1,16 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Form } from 'antd'
+import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
+import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
+import WalletIcon from '../../../assets/svg/icon-wallet.svg?react'
 import { ValidatePasswordLD } from '../../../services/wallet/types'
+import { BaseButton } from '../../uielements/button'
 import { InputPassword } from '../../uielements/input'
 import { Label } from '../../uielements/label'
-import * as Styled from './ConfirmationModal.styles'
-import * as CStyled from './WalletPasswordConfirmationModal.styles'
 
 type PasswordModalProps = {
   visible: boolean
@@ -62,32 +63,33 @@ const PasswordModal = (props: PasswordModalProps) => {
   return (
     // Note: We can't use `ConfirmationModal` here,
     // its `onOkHandler` does not support different `onOk` callbacks, but will always close the modal
-    <Styled.Modal
-      title={intl.formatMessage({ id: 'wallet.password.confirmation.title' })}
-      visible={visible}
-      onOk={onOkCb}
-      onCancel={onCancel}
-      maskClosable={false}
-      closable={false}
-      okText={intl.formatMessage({ id: 'common.confirm' })}
-      cancelText={intl.formatMessage({ id: 'common.cancel' })}>
-      <div className="flex flex-col">
-        <CStyled.WalletIcon />
-        <CStyled.Description>
-          {intl.formatMessage({ id: 'wallet.password.confirmation.description' })}
-        </CStyled.Description>
-        <Form autoComplete="off">
-          <Form.Item
-            className={invalidPassword ? 'has-error' : ''}
-            extra={
-              validatingPassword ? `${intl.formatMessage({ id: 'wallet.password.confirmation.pending' })}...` : ''
-            }>
+
+    <Dialog as="div" className="relative z-10" transition open={visible} onClose={onCancel}>
+      <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
+      {/* container to center the panel */}
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        {/* dialog panel animated  */}
+        <DialogPanel
+          className={clsx(
+            'mx-auto flex flex-col items-center p-6',
+            'w-full max-w-[360px]',
+            'bg-bg0 dark:bg-bg0d',
+            'rounded-lg border border-solid border-gray0 dark:border-gray0d'
+          )}>
+          <div className="flex flex-col w-full mb-2">
+            <WalletIcon className="self-center w-1/5 h-1/5 text-turquoise" />
+            <h1 className="mb-4 text-center text-xl uppercase text-text2 dark:text-text2d">
+              {intl.formatMessage({ id: 'wallet.password.confirmation.title' })}
+            </h1>
+            <Label className="mb-1" size="normal" color="gray">
+              {intl.formatMessage({ id: 'wallet.password.confirmation.description' })}
+            </Label>
+
             <InputPassword
               typevalue="normal"
               size="large"
               value={password}
               onChange={onChangePasswordHandler}
-              prefix={<Styled.LockOutlined />}
               autoComplete="off"
               autoFocus
               onPressEnter={onOkCb}
@@ -97,10 +99,27 @@ const PasswordModal = (props: PasswordModalProps) => {
                 {intl.formatMessage({ id: 'wallet.password.confirmation.error' })}!
               </Label>
             )}
-          </Form.Item>
-        </Form>
+          </div>
+          <div className="flex w-full items-center justify-end gap-2">
+            <BaseButton
+              className={clsx(
+                '!px-4 !py-2 rounded-md',
+                'border border-solid border-gray1/20 dark:border-gray1d/20',
+                'text-text0 dark:text-text0d',
+                'hover:bg-gray1/20 hover:dark:bg-gray1d/20'
+              )}
+              onClick={onCancel}>
+              {intl.formatMessage({ id: 'common.cancel' })}
+            </BaseButton>
+            <BaseButton
+              className="rounded-lg !px-4 !py-2 text-white bg-turquoise hover:bg-turquoise/80"
+              onClick={onOkCb}>
+              {intl.formatMessage({ id: 'common.confirm' })}
+            </BaseButton>
+          </div>
+        </DialogPanel>
       </div>
-    </Styled.Modal>
+    </Dialog>
   )
 }
 

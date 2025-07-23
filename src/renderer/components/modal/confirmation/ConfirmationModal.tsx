@@ -1,7 +1,6 @@
-import React, { Fragment, useCallback } from 'react'
+import React, { useCallback } from 'react'
 
-import { Dialog, Transition } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -26,66 +25,43 @@ export const ConfirmationModal = ({ visible, title, okText, content, onSuccess, 
   }, [onSuccess, onClose])
 
   return (
-    <Dialog as="div" className="relative z-10" open={visible} onClose={onClose}>
-      <Transition appear show={visible} as="div">
-        {/* backdrop animated */}
-        <Transition.Child
-          enter="ease"
-          enterFrom="opacity-0"
-          enterTo="opacity-70"
-          leave="ease"
-          leaveFrom="opacity-70"
-          leaveTo="opacity-0">
-          <div className="ease fixed inset-0 bg-bg0d dark:bg-bg0d" aria-hidden="true" />
-        </Transition.Child>
-
-        {/* container to center the panel */}
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          {/* dialog panel animated  */}
-          <Transition.Child
-            as={Fragment}
-            enter="ease"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="ease"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95">
-            <Dialog.Panel
+    <Dialog as="div" className="relative z-10" transition open={visible} onClose={onClose}>
+      <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
+      {/* container to center the panel */}
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        {/* dialog panel animated  */}
+        <DialogPanel
+          className={clsx(
+            'mx-auto flex flex-col items-center p-6',
+            'w-full max-w-[360px] md:max-w-[480px]',
+            'bg-bg0 dark:bg-bg0d',
+            'rounded-lg border border-solid border-gray0 dark:border-gray0d'
+          )}>
+          <div className="flex w-full items-center justify-between">
+            <h1 className="mb-4 text-center text-xl uppercase text-text2 dark:text-text2d">
+              {title || intl.formatMessage({ id: 'common.modal.confirmTitle' })}
+            </h1>
+          </div>
+          <div className="w-full mb-6">{content}</div>
+          <div className="flex w-full items-center justify-end gap-2">
+            <BaseButton
               className={clsx(
-                'mx-auto flex flex-col items-center pt-5 pb-2',
-                'w-full max-w-[360px] md:max-w-[480px]',
-                'bg-bg0 dark:bg-bg0d',
-                'rounded-lg border border-solid border-gray0 dark:border-gray0d'
-              )}>
-              <div className="flex w-full items-center justify-between px-5">
-                <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">
-                  {title || intl.formatMessage({ id: 'common.modal.confirmTitle' })}
-                </h1>
-                <BaseButton
-                  className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
-                  onClick={() => onClose()}>
-                  <XMarkIcon className="h-20px w-20px text-inherit" />
-                </BaseButton>
-              </div>
-              <div className="my-4 h-[1px] w-full bg-gray0 dark:bg-gray0d" />
-              <div className="w-full px-4">{content}</div>
-              <div className="mt-4 mb-2 h-[1px] w-full bg-gray0 dark:bg-gray0d" />
-              <div className="flex w-full items-center justify-end px-4">
-                <div className="flex items-center space-x-4">
-                  <BaseButton
-                    className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
-                    onClick={onClose}>
-                    {intl.formatMessage({ id: 'common.cancel' })}
-                  </BaseButton>
-                  <BaseButton className="rounded-xl !p-2 text-turquoise hover:bg-turquoise/10" onClick={onOkHandler}>
-                    {okText || intl.formatMessage({ id: 'common.confirm' })}
-                  </BaseButton>
-                </div>
-              </div>
-            </Dialog.Panel>
-          </Transition.Child>
-        </div>
-      </Transition>
+                '!px-4 !py-2 rounded-md',
+                'border border-solid border-gray1/20 dark:border-gray1d/20',
+                'text-text0 dark:text-text0d',
+                'hover:bg-gray1/20 hover:dark:bg-gray1d/20'
+              )}
+              onClick={onClose}>
+              {intl.formatMessage({ id: 'common.cancel' })}
+            </BaseButton>
+            <BaseButton
+              className="rounded-lg !px-4 !py-2 text-white bg-turquoise hover:bg-turquoise/80"
+              onClick={onOkHandler}>
+              {okText || intl.formatMessage({ id: 'common.confirm' })}
+            </BaseButton>
+          </div>
+        </DialogPanel>
+      </div>
     </Dialog>
   )
 }

@@ -15,6 +15,7 @@ import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { AssetXRP, XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -30,9 +31,10 @@ import {
   AnyAsset,
   Chain
 } from '@xchainjs/xchain-util'
+import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
-import { AssetATOM, AssetBCH, AssetBTC, AssetDOGE, AssetETH, AssetLTC } from '../../../../shared/utils/asset'
+import { AssetATOM, AssetBCH, AssetBTC, AssetDOGE, AssetETH, AssetLTC, AssetZEC } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
@@ -291,6 +293,16 @@ export const getOutboundAssetFeeByChain = (
             asset: AssetATOM
           })
         }
+        case ZECChain:
+          return O.some({
+            amount: baseAmount(value, ZEC_DECIMAL),
+            asset: AssetZEC
+          })
+        case XRPChain:
+          return O.some({
+            amount: baseAmount(value, XRP_DECIMAL),
+            asset: AssetXRP
+          })
         // 'THORChain can be ignored - fees for asset side only
         // Other chains can be ignored since they are for mayachain
         case THORChain:

@@ -279,9 +279,9 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
           (addresses) => (
             <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
               <Styled.CustomSelect
+                className="w-full"
                 placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
-                onChange={(value) => handleSavedAddressSelect(value as string)}
-                style={{ width: '100%' }}>
+                onChange={(value) => handleSavedAddressSelect(value as string)}>
                 {addresses.map((address) => (
                   <Styled.CustomSelect.Option key={address.address} value={address.address}>
                     {address.name}: {address.address}

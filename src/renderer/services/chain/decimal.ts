@@ -13,6 +13,7 @@ import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import { ThorchainCache } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset } from '@xchainjs/xchain-util'
+import { ZEC_DECIMAL } from '@xchainjs/xchain-zcash'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -28,7 +29,8 @@ import {
   isMayaChain,
   isSolChain,
   isThorChain,
-  isXrdChain
+  isXrdChain,
+  isZecChain
 } from '../../helpers/chainHelper'
 import { KUJI_DECIMAL } from '../kuji/const'
 import { AssetWithDecimalLD } from './types'
@@ -67,8 +69,14 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
   if (isSolChain(chain)) {
     return Promise.resolve(SOL_DECIMALS)
   }
+  if (isZecChain(chain)) {
+    return Promise.resolve(ZEC_DECIMAL)
+  }
   if (isAdaChain(chain)) {
     return Promise.resolve(ADA_DECIMALS)
+  }
+  if (isZecChain(chain)) {
+    return Promise.resolve(ZEC_DECIMAL)
   }
   if (isTCYAsset(asset)) {
     return Promise.resolve(THORCHAIN_DECIMAL)

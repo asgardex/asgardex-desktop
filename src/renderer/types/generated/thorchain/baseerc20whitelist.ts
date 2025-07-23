@@ -2,9 +2,9 @@
  * BASE_TOKEN_WHITELIST
  * This file has been generated - don't edit.
  */
-import * as O from "fp-ts/lib/Option";
-import { TokenAsset } from "@xchainjs/xchain-util";
-import { BASEChain } from "@xchainjs/xchain-base";
+import { option as O } from 'fp-ts';
+import { TokenAsset } from '@xchainjs/xchain-util';
+import { BASEChain } from '@xchainjs/xchain-base';
 
 export const BASE_TOKEN_WHITELIST: {
   asset: TokenAsset;
@@ -13,50 +13,41 @@ export const BASE_TOKEN_WHITELIST: {
   {
     asset: {
       chain: BASEChain,
-      symbol: "USDC-0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-      ticker: "USDC",
+      symbol: 'USDC-0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      ticker: 'USDC',
       type: 1,
     },
-    iconUrl: O.some(
+     iconUrl: O.some(
       "https://tokens.1inch.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png"
     ),
   },
   {
     asset: {
       chain: BASEChain,
-      symbol: "DAI-0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
-      ticker: "DAI",
+      symbol: 'DAI-0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
+      ticker: 'DAI',
       type: 1,
     },
-    iconUrl: O.some(
+     iconUrl: O.some(
       "https://tokens.1inch.io/0x6b175474e89094c44da98b954eedeac495271d0f.png"
     ),
   },
   {
     asset: {
       chain: BASEChain,
-      symbol: "WETH-0x4200000000000000000000000000000000000006",
-      ticker: "WETH",
+      symbol: 'WETH-0x4200000000000000000000000000000000000006',
+      ticker: 'WETH',
       type: 1,
     },
-    iconUrl: O.some(
+      iconUrl: O.some(
       "https://tokens.1inch.io/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2.png"
     ),
   },
   {
     asset: {
       chain: BASEChain,
-      symbol: "cbBTC-0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
-      ticker: "cbBTC",
-      type: 1,
-    },
-    iconUrl: O.some("https://etherscan.io/token/images/cbbtc_32.png"),
-  },
-  {
-    asset: {
-      chain: BASEChain,
-      symbol: "cbETH-0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
-      ticker: "cbETH",
+      symbol: 'cbBTC-0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
+      ticker: 'cbBTC',
       type: 1,
     },
     iconUrl: O.none,
@@ -64,8 +55,8 @@ export const BASE_TOKEN_WHITELIST: {
   {
     asset: {
       chain: BASEChain,
-      symbol: "USDbC-0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
-      ticker: "USDbC",
+      symbol: 'cbETH-0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22',
+      ticker: 'cbETH',
       type: 1,
     },
     iconUrl: O.none,
@@ -73,17 +64,8 @@ export const BASE_TOKEN_WHITELIST: {
   {
     asset: {
       chain: BASEChain,
-      symbol: "EURC-0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
-      ticker: "EURC",
-      type: 1,
-    },
-    iconUrl: O.some("https://etherscan.io/token/images/circleeurcoin_32.png"),
-  },
-  {
-    asset: {
-      chain: BASEChain,
-      symbol: "ZRO-0x6985884C4392D348587B19cb9eAAf157F13271cd",
-      ticker: "ZRO",
+      symbol: 'USDbC-0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA',
+      ticker: 'USDbC',
       type: 1,
     },
     iconUrl: O.none,
@@ -91,8 +73,26 @@ export const BASE_TOKEN_WHITELIST: {
   {
     asset: {
       chain: BASEChain,
-      symbol: "COMP-0x9e1028F5F1D5eDE59748FFceE5532509976840E0",
-      ticker: "COMP",
+      symbol: 'EURC-0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42',
+      ticker: 'EURC',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'ZRO-0x6985884C4392D348587B19cb9eAAf157F13271cd',
+      ticker: 'ZRO',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'COMP-0x9e1028F5F1D5eDE59748FFceE5532509976840E0',
+      ticker: 'COMP',
       type: 1,
     },
     iconUrl: O.some(
@@ -102,12 +102,93 @@ export const BASE_TOKEN_WHITELIST: {
   {
     asset: {
       chain: BASEChain,
-      symbol: "ZRX-0x3bB4445D30AC020a84c1b5A8A2C6248ebC9779D0",
-      ticker: "ZRX",
+      symbol: 'ZRX-0x3bB4445D30AC020a84c1b5A8A2C6248ebC9779D0',
+      ticker: 'ZRX',
       type: 1,
     },
     iconUrl: O.some(
       "https://tokens.1inch.io/0xe41d2489571d322189246dafa5ebde1f4699f498.png"
     ),
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'VVV-0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf',
+      ticker: 'VVV',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'TOSHI-0xAC1Bd2486aAf3B5C0fc3Fd868558b082a531B2B4',
+      ticker: 'TOSHI',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'BRETT-0x532f27101965dd16442E59d40670FaF5eBB142E4',
+      ticker: 'BRETT',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'KAITO-0x98d0baa52b2D063E780DE12F615f963Fe8537553',
+      ticker: 'KAITO',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'VIRTUAL-0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b',
+      ticker: 'VIRTUAL',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'DEGEN-0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed',
+      ticker: 'DEGEN',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'HIGHER-0x0578d8A44db98B23BF096A382e016e29a5Ce0ffe',
+      ticker: 'HIGHER',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'CLANKER-0x1bc0c42215582d5A085795f4baDbaC3ff36d1Bcb',
+      ticker: 'CLANKER',
+      type: 1,
+    },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: BASEChain,
+      symbol: 'AERO-0x940181a94A35A4569E4529A3CDfB74e38FD98631',
+      ticker: 'AERO',
+      type: 1,
+    },
+    iconUrl: O.none,
   },
 ];

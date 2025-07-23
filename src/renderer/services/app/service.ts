@@ -17,8 +17,6 @@ import {
 } from './types'
 
 // Check online status
-// https://www.electronjs.org/docs/tutorial/online-offline-events
-
 const online$ = Rx.fromEvent(window, 'online').pipe(mapTo(OnlineStatus.ON))
 const offline$ = Rx.fromEvent(window, 'offline').pipe(mapTo(OnlineStatus.OFF))
 const onlineStatus$ = Rx.merge(online$, offline$).pipe(startWith(navigator.onLine ? OnlineStatus.ON : OnlineStatus.OFF))
@@ -37,20 +35,21 @@ const {
   get: getCurrentPrivateDataState
 } = observableState<boolean>(false)
 
-// Since `network$` based on `observableState` and it takes an initial value,
-// it might emit same values, we don't interested in.
-// So we do need a simple "dirty check" to provide "real" changes of selected network
+// Network and private data streams
 const network$: Network$ = getNetwork$.pipe(distinctUntilChanged())
-
 const privateData$: PrivateData$ = getPrivateData$.pipe(distinctUntilChanged())
-
 const clientNetwork$: Rx.Observable<Client.Network> = network$.pipe()
 
 /**
- * State of `Slip` tolerance
+ * State of `Slip` tolerance for different swap types
  */
-const { get$: getSlipTolerance$, set: changeSlipTolerance } = observableState<SlipTolerance>(DEFAULT_SLIP_TOLERANCE)
-const slipTolerance$: SlipTolerance$ = getSlipTolerance$.pipe(distinctUntilChanged())
+const { get$: getStreamingSlipTolerance$, set: changeStreamingSlipTolerance } =
+  observableState<SlipTolerance>(DEFAULT_SLIP_TOLERANCE)
+const streamingSlipTolerance$: SlipTolerance$ = getStreamingSlipTolerance$.pipe(distinctUntilChanged())
+
+const { get$: getTradeSlipTolerance$, set: changeTradeSlipTolerance } =
+  observableState<SlipTolerance>(DEFAULT_SLIP_TOLERANCE)
+const tradeSlipTolerance$: SlipTolerance$ = getTradeSlipTolerance$.pipe(distinctUntilChanged())
 
 /**
  * State of `collapsed` settings
@@ -60,8 +59,8 @@ const {
   set: _setCollapsedSettings,
   get: getCollapsedSettings
 } = observableState<CollapsableSettings>({
-  wallet: false, // not collapsed === open by default
-  app: false // not collapsed === open by default
+  wallet: false,
+  app: false
 })
 
 const toggleCollapsedSetting: ToggleCollapsableSetting = (setting: SettingType) => {
@@ -79,8 +78,10 @@ export {
   changePrivateData,
   getCurrentPrivateDataState,
   clientNetwork$,
-  slipTolerance$,
-  changeSlipTolerance,
+  streamingSlipTolerance$,
+  changeStreamingSlipTolerance,
+  tradeSlipTolerance$,
+  changeTradeSlipTolerance,
   collapsedSettings$,
   toggleCollapsedSetting
 }

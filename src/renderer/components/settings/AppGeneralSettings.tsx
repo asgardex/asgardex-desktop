@@ -1,10 +1,7 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Dropdown } from 'antd'
-import { MenuProps } from 'antd/lib/menu'
-import { ItemType } from 'antd/lib/menu/hooks/useItems'
 import { clsx } from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -14,9 +11,9 @@ import { LOCALES } from '../../i18n'
 import { AVAILABLE_NETWORKS } from '../../services/const'
 import { useApp } from '../../store/app/hooks'
 import { DownIcon } from '../icons'
-import { Menu } from '../shared/menu'
 import { BorderButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
+import { Dropdown } from '../uielements/dropdown'
 import { Label } from '../uielements/label'
 import * as Styled from './AppSettings.styles'
 
@@ -68,54 +65,38 @@ export const AppGeneralSettings = (props: Props) => {
   const { isPrivate, changePrivateData } = useApp()
   const intl = useIntl()
 
-  const changeLang: MenuProps['onClick'] = useCallback(
-    ({ key }: { key: string }) => {
-      changeLocale(key as Locale)
-    },
-    [changeLocale]
-  )
-
   const langMenu = useMemo(
-    () => (
-      <Menu
-        onClick={changeLang}
-        items={FP.pipe(
-          LOCALES,
-          A.map<Locale, ItemType>((l: Locale) => ({
-            label: (
-              <div
-                className={clsx(
-                  'dark:text-1 flex items-center px-10px py-[8px] font-main text-16 uppercase text-text1 dark:text-text1d',
-                  l === locale ? 'font-mainSemiBold' : 'font-main'
-                )}>
-                {l}
-              </div>
-            ),
-            key: l
-          }))
-        )}
-      />
-    ),
-    [changeLang, locale]
+    () =>
+      FP.pipe(
+        LOCALES,
+        A.map((l: Locale) => (
+          <div
+            key={l}
+            className={clsx(
+              'dark:text-1 flex items-center min-w-[222px] px-10px py-2 font-main text-16 uppercase text-text1 dark:text-text1d',
+              l === locale ? 'font-mainSemiBold' : 'font-main'
+            )}
+            onClick={() => changeLocale(l)}>
+            {l}
+          </div>
+        ))
+      ),
+    [changeLocale, locale]
   )
 
   const renderLangMenu = useMemo(
     () => (
-      <Dropdown overlay={langMenu} trigger={['click']} placement="bottom">
-        <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-          <h3 className="m-0 font-main text-[16px] uppercase leading-5 text-text1 dark:text-text1d">{locale}</h3>
-          <DownIcon />
-        </div>
-      </Dropdown>
+      <Dropdown
+        trigger={
+          <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
+            <h3 className="m-0 font-main text-[16px] uppercase leading-5 text-text1 dark:text-text1d">{locale}</h3>
+            <DownIcon />
+          </div>
+        }
+        options={langMenu}
+      />
     ),
     [langMenu, locale]
-  )
-
-  const changeNetworkHandler: MenuProps['onClick'] = useCallback(
-    ({ key }: { key: string }) => {
-      changeNetwork(key as Network)
-    },
-    [changeNetwork]
   )
 
   const networkTextColor = useCallback((network: Network) => {
@@ -132,39 +113,36 @@ export const AppGeneralSettings = (props: Props) => {
   }, [])
 
   const networkMenu = useMemo(() => {
-    return (
-      <Menu
-        onClick={changeNetworkHandler}
-        items={FP.pipe(
-          AVAILABLE_NETWORKS,
-          A.map<Network, ItemType>((n: Network) => ({
-            label: (
-              <div
-                className={clsx(
-                  'flex items-center px-10px py-[8px] text-16 uppercase',
-                  n === network ? 'font-mainSemiBold' : 'font-main',
-                  networkTextColor(n)
-                )}>
-                {n}
-              </div>
-            ),
-            key: n
-          }))
-        )}
-      />
+    return FP.pipe(
+      AVAILABLE_NETWORKS,
+      A.map((n: Network) => (
+        <div
+          key={n}
+          className={clsx(
+            'flex items-center min-w-[222px] px-10px py-2 text-16 uppercase',
+            n === network ? 'font-mainSemiBold' : 'font-main',
+            networkTextColor(n)
+          )}
+          onClick={() => changeNetwork(n)}>
+          {n}
+        </div>
+      ))
     )
-  }, [changeNetworkHandler, network, networkTextColor])
+  }, [changeNetwork, network, networkTextColor])
 
   const renderNetworkMenu = useMemo(
     () => (
-      <Dropdown overlay={networkMenu} trigger={['click']} placement="bottom">
-        <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-          <h3 className={clsx('m-0 font-main text-[16px] uppercase leading-5', networkTextColor(network))}>
-            {network}
-          </h3>
-          <DownIcon />
-        </div>
-      </Dropdown>
+      <Dropdown
+        trigger={
+          <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
+            <h3 className={clsx('m-0 font-main text-[16px] uppercase leading-5', networkTextColor(network))}>
+              {network}
+            </h3>
+            <DownIcon />
+          </div>
+        }
+        options={networkMenu}
+      />
     ),
     [networkMenu, networkTextColor, network]
   )

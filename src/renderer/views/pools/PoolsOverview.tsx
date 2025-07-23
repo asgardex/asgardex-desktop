@@ -1,6 +1,6 @@
 import { Fragment, useMemo } from 'react'
 
-import { Tab } from '@headlessui/react'
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import clsx from 'clsx'
 import { function as FP, array as A } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -59,7 +59,7 @@ export const PoolsOverview = (): JSX.Element => {
   )
 
   return (
-    <Tab.Group
+    <TabGroup
       selectedIndex={selectedIndex}
       onChange={(index) => {
         switch (index) {
@@ -74,7 +74,7 @@ export const PoolsOverview = (): JSX.Element => {
         }
       }}>
       <div className="flex flex-col items-center justify-between sm:flex-row">
-        <Tab.List className="mb-10px flex w-full flex-col md:flex-row">
+        <TabList className="mb-10px flex w-full flex-col md:flex-row">
           {FP.pipe(
             tabs,
             A.map(({ index, label }) => (
@@ -100,15 +100,15 @@ export const PoolsOverview = (): JSX.Element => {
               </Tab>
             ))
           )}
-        </Tab.List>
+        </TabList>
         <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
       </div>
-      <Tab.Panels className="mt-2 w-full">
+      <TabPanels className="mt-2 w-full">
         {FP.pipe(
           tabs,
-          A.map(({ content, index }) => <Tab.Panel key={`content-${index}`}>{content}</Tab.Panel>)
+          A.map(({ content, index }) => <TabPanel key={`content-${index}`}>{content}</TabPanel>)
         )}
-      </Tab.Panels>
-    </Tab.Group>
+      </TabPanels>
+    </TabGroup>
   )
 }

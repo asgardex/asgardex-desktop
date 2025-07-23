@@ -11,6 +11,7 @@ import { chainToString } from '../../../../shared/utils/chain'
 import { getChainAsset, isBchChain } from '../../../helpers/chainHelper'
 import { AddressEllipsis } from '../../uielements/addressEllipsis'
 import { Button } from '../../uielements/button'
+import { Label } from '../../uielements/label'
 import { ConfirmationModal } from './ConfirmationModal'
 import * as Styled from './LedgerConfirmationModal.styles'
 
@@ -87,7 +88,7 @@ export const LedgerConfirmationModal = ({
               <AddressEllipsis network={network} chain={chain} address={toLegacyAddress(recipient)} enableCopy />
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="flex items-center justify-center">
             <Styled.CopyLabel label={'Copy all addresses'} textToCopy={textToCopy} />
           </div>
         </>
@@ -109,10 +110,14 @@ export const LedgerConfirmationModal = ({
             <Styled.LedgerConnect />
             <Styled.AssetIcon asset={asset} network={network} size="small" />
           </div>
-          <Styled.Description>
+          <Label align="center" color="gray" size="big">
             {description1 || intl.formatMessage({ id: 'ledger.needsconnected' }, { chain: chainToString(chain) })}
-          </Styled.Description>
-          {description2 && <Styled.Description>{description2}</Styled.Description>}
+          </Label>
+          {description2 && (
+            <Label align="center" color="gray" size="big">
+              {description2}
+            </Label>
+          )}
           {isBchChain(chain) &&
             FP.pipe(
               oAddresses,

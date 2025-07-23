@@ -1,15 +1,15 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
-import { Dropdown } from 'antd'
-import { MenuProps } from 'antd/lib/menu'
-import { ItemType } from 'antd/lib/menu/hooks/useItems'
+import clsx from 'clsx'
 import { array as A, function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import AllIcon from '../../assets/svg/filter-all.svg?react'
 import { getTxTypeI18n } from '../../helpers/actionsHelper'
-import { TxType as TxTypeUI } from '../uielements/txType'
-import * as Styled from './PoolActionsHistoryFilter.styles'
+import { Dropdown } from '../uielements/dropdown'
+import { Label } from '../uielements/label'
+import { TxType } from '../uielements/txType'
 import { Filter } from './types'
 
 type Props = {
@@ -20,61 +20,53 @@ type Props = {
   availableFilters: Filter[]
 }
 
-export const PoolActionsHistoryFilter = ({
-  currentFilter,
-  onFilterChanged,
-  className,
-  disabled,
-  availableFilters
-}: Props) => {
+export const PoolActionsHistoryFilter = ({ currentFilter, onFilterChanged, className, availableFilters }: Props) => {
   const intl = useIntl()
-  const activeFilterIndex = useMemo(() => {
-    const index = availableFilters.indexOf(currentFilter)
-    return index > -1 ? index : 0
-  }, [currentFilter, availableFilters])
 
   const allItemContent = useMemo(
     () => (
-      <Styled.AllContent>
-        <Styled.AllIcon /> {intl.formatMessage({ id: 'common.all' })}
-      </Styled.AllContent>
+      <div className="flex items-center">
+        <div className="w-8 h-8 flex items-center justify-center">
+          <AllIcon />
+        </div>
+        <Label className="!w-auto ml-10px " size="big" textTransform="uppercase">
+          {intl.formatMessage({ id: 'common.all' })}
+        </Label>
+      </div>
     ),
     [intl]
   )
 
-  const changeFilter: MenuProps['onClick'] = useCallback(
-    ({ key }: { key: string }) => {
-      onFilterChanged(key as Filter)
-    },
-    [onFilterChanged]
-  )
-
   const menu = useMemo(() => {
-    return (
-      <Styled.Menu
-        onClick={changeFilter}
-        selectedKeys={[availableFilters[activeFilterIndex]]}
-        items={FP.pipe(
-          availableFilters,
-          A.map<Filter, ItemType>((filter) => {
-            const content = filter === 'ALL' ? allItemContent : <TxTypeUI type={filter} showTypeIcon />
+    return FP.pipe(
+      availableFilters,
+      A.map((filter) => {
+        const content = filter === 'ALL' ? allItemContent : <TxType type={filter} showTypeIcon />
 
-            return {
-              label: <Styled.FilterItem>{content}</Styled.FilterItem>,
-              key: filter
-            }
-          })
-        )}
-      />
+        return (
+          <div key={filter} className="w-full pr-1" onClick={() => onFilterChanged(filter)}>
+            {content}
+          </div>
+        )
+      })
     )
-  }, [changeFilter, availableFilters, activeFilterIndex, allItemContent])
+  }, [availableFilters, allItemContent, onFilterChanged])
 
   return (
-    <Dropdown overlay={menu} trigger={['click']} disabled={disabled}>
-      <Styled.FilterButton className={className}>
-        {currentFilter === 'ALL' ? intl.formatMessage({ id: 'common.all' }) : getTxTypeI18n(currentFilter, intl)}
-        <ChevronRightIcon width={16} height={16} />
-      </Styled.FilterButton>
-    </Dropdown>
+    <Dropdown
+      trigger={
+        <div
+          className={clsx(
+            'flex items-center justify-between cursor-pointer border border-solid border-turquoise rounded px-2 py-1',
+            className
+          )}>
+          <Label className="!w-auto" color="primary" size="big">
+            {currentFilter === 'ALL' ? intl.formatMessage({ id: 'common.all' }) : getTxTypeI18n(currentFilter, intl)}
+          </Label>
+          <ChevronRightIcon className="ml-4 text-turquoise" width={16} height={16} />
+        </div>
+      }
+      options={menu}
+    />
   )
 }

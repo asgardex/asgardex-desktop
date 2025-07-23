@@ -16,10 +16,11 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType, baseAmount } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -126,6 +127,8 @@ export const SendView = (): JSX.Element => {
         case ADAChain:
         case DASHChain:
         case LTCChain:
+        case ZECChain:
+        case XRPChain:
           return (
             <SendViewUTXO
               asset={asset}
@@ -177,7 +180,7 @@ export const SendView = (): JSX.Element => {
       () => <></>,
       (selectedAsset) => (
         <div>
-          <Row justify="space-between">
+          <div className="flex items-center justify-between mb-4">
             <BackLinkButton />
             <RefreshButton
               onClick={reloadBalancesByChain(
@@ -187,9 +190,10 @@ export const SendView = (): JSX.Element => {
                   ? THORChain
                   : selectedAsset.asset.chain,
                 selectedAsset.walletType
-              )}></RefreshButton>
-          </Row>
-          <div className="flex flex-col justify-center"> {renderSendView(selectedAsset)}</div>
+              )}
+            />
+          </div>
+          <div className="flex flex-col justify-center">{renderSendView(selectedAsset)}</div>
         </div>
       )
     )

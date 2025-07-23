@@ -1,18 +1,21 @@
 import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
+import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
-import { Grid } from 'antd'
-import { ColumnsType, ColumnType } from 'antd/lib/table'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { OpenExplorerTxUrl } from '../../services/clients'
 import { ActionsPage, Action, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
 import { ApiError } from '../../services/wallet/types'
+import { FixmeType } from '../../types/asgardex'
 import { ErrorView } from '../shared/error'
+import { Table } from '../table'
 import { Button } from '../uielements/button'
-import * as CommonStyled from '../uielements/common/Common.styles'
+import { Label } from '../uielements/label'
 import { Pagination } from '../uielements/pagination'
 import { TxDetail } from '../uielements/txDetail'
 import { DEFAULT_PAGE_SIZE } from './PoolActionsHistory.const'
@@ -41,110 +44,61 @@ export const PoolActionsHistoryTable = ({
 }: Props) => {
   const intl = useIntl()
 
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
 
-  const actionTypeColumn: ColumnType<Action> = useMemo(
-    () => ({
-      key: 'txType',
-      align: 'left',
-      width: 180,
-      render: (_, { type }: Action) => <Styled.TxType type={type} showTypeIcon={isDesktopView} />
-    }),
-    [isDesktopView]
-  )
-
-  const renderDateColumn = useCallback((_: unknown, { date }: Action) => H.renderDate(date), [])
-
-  const dateColumn: ColumnType<Action> = useMemo(
-    () => ({
-      key: 'timeStamp',
-      align: 'center',
-      width: 150,
-      render: renderDateColumn
-    }),
-    [renderDateColumn]
-  )
-
-  const renderLinkColumn = useCallback(
-    (action: Action) =>
-      FP.pipe(
-        action,
-        H.getTxId,
-        O.map((txID) => (
-          <CommonStyled.ExternalLinkIcon
-            key="external link"
-            width={16}
-            height={16}
-            onClick={() => openExplorerTxUrl(txID)}
+  const columns: ColumnDef<Action, FixmeType>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'txType',
+        header: '',
+        cell: ({ row }) => <Styled.TxType type={row.original.type} showTypeIcon={isDesktopView} />,
+        size: 20
+      },
+      {
+        accessorKey: 'txDetail',
+        header: '',
+        cell: ({ row: { original: action } }) => (
+          <TxDetail
+            type={action.type}
+            date={H.renderDate(action.date)}
+            incomes={H.getValues(action.in)}
+            outgos={H.getValues(action.out)}
+            fees={action.fees}
+            slip={action.slip}
+            network={network}
+            isDesktopView={isDesktopView}
           />
-        )),
-        O.getOrElse(() => <></>)
-      ),
-    [openExplorerTxUrl]
-  )
-
-  const linkColumn: ColumnType<Action> = useMemo(
-    () => ({
-      key: 'txHash',
-      title: intl.formatMessage({ id: 'common.detail' }),
-      align: 'center',
-      width: 60,
-      render: renderLinkColumn
-    }),
-    [renderLinkColumn, intl]
-  )
-
-  const renderDetailColumn = useCallback(
-    (action: Action) => (
-      <TxDetail
-        type={action.type}
-        date={H.renderDate(action.date)}
-        incomes={H.getValues(action.in)}
-        outgos={H.getValues(action.out)}
-        fees={action.fees}
-        slip={action.slip}
-        network={network}
-        isDesktopView={isDesktopView}
-      />
-    ),
-    [isDesktopView, network]
-  )
-
-  const detailColumn: ColumnType<Action> = useMemo(
-    () => ({
-      key: 'txDetail',
-      align: 'left',
-      render: renderDetailColumn
-    }),
-    [renderDetailColumn]
-  )
-
-  const columns: ColumnsType<Action> = useMemo(
-    () => [actionTypeColumn, detailColumn, dateColumn, linkColumn],
-    [actionTypeColumn, detailColumn, dateColumn, linkColumn]
+        )
+      },
+      {
+        accessorKey: 'timeStamp',
+        header: '',
+        cell: ({ row }) =>
+          FP.pipe(
+            row.original,
+            H.getTxId,
+            O.map((txID) => (
+              <div key={txID} className="flex items-center justify-center">
+                <Label>{H.renderDate(row.original.date)}</Label>
+                <ArrowTopRightOnSquareIcon
+                  className="text-turquoise cursor-pointer w-4 h-4 min-w-4"
+                  onClick={() => openExplorerTxUrl(txID)}
+                />
+              </div>
+            )),
+            O.getOrElse(() => <></>)
+          ),
+        size: 50
+      }
+    ],
+    [isDesktopView, network, openExplorerTxUrl]
   )
 
   const renderTable = useCallback(
     ({ total, actions }: ActionsPage, loading = false) => {
-      const actionsWithIndex = actions.map((action, index) => ({
-        ...action,
-        uniqueIndex: index
-      }))
-
-      const logAndReturnRowKey = (action: Action & { uniqueIndex: number }) => {
-        // Use the uniqueIndex along with H.getRowKey to ensure uniqueness
-        const key = `${H.getRowKey(action)}-${action.uniqueIndex}`
-        return key
-      }
       return (
         <>
-          <Styled.Table
-            columns={columns}
-            dataSource={actionsWithIndex}
-            loading={loading}
-            rowKey={logAndReturnRowKey}
-            showHeader={false}
-          />
+          <Table columns={columns} data={actions} loading={loading} hideVerticalBorder hideHeader />
           {total > 0 && (
             <Pagination
               current={currentPage}

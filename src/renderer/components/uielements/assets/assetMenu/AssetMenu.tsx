@@ -1,6 +1,6 @@
-import React, { useCallback, useState, useMemo, useRef, Fragment } from 'react'
+import React, { useCallback, useState, useMemo, useRef } from 'react'
 
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
@@ -212,77 +212,55 @@ export const AssetMenu = (props: Props): JSX.Element => {
       as="div"
       className={`relative z-10 ${className}`}
       initialFocus={inputSearchRef}
+      transition
       open={open}
       onClose={onCloseMenu}>
-      <Transition appear show={open} as="div">
-        {/* backdrop animated */}
-        <Transition.Child
-          enter="ease"
-          enterFrom="opacity-0"
-          enterTo="opacity-70"
-          leave="ease"
-          leaveFrom="opacity-70"
-          leaveTo="opacity-0">
-          <div className="ease fixed inset-0 bg-bg0 dark:bg-bg0d" aria-hidden="true" />
-        </Transition.Child>
-
-        {/* container to center the panel */}
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          {/* dialog panel animated  */}
-          <Transition.Child
-            as={Fragment}
-            enter="ease"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="ease"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95">
-            <Dialog.Panel
-              className={clsx(
-                'mx-auto flex flex-col items-center py-5',
-                'h-3/4 max-h-[600px] min-h-[350px] w-full max-w-[360px] md:max-w-[480px]',
-                'bg-bg0 dark:bg-bg0d',
-                'rounded-lg border border-solid border-gray1 dark:border-gray0d'
-              )}>
-              <div className="flex w-full items-center justify-between px-5">
-                {headline && (
-                  <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">{headline}</h1>
-                )}
-                <BaseButton
-                  className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
-                  onClick={onCloseMenu}>
-                  <XMarkIcon className="h-20px w-20px text-inherit" />
-                </BaseButton>
-              </div>
-              <div className="my-4 h-[2px] w-full bg-gray1 dark:bg-gray0d" />
-              {asset.type !== AssetType.TRADE || (assets.some((a) => a.type !== AssetType.TRADE) && chainFilter)}
-              <div className="w-full px-4">
-                <InputSearch
-                  ref={inputSearchRef}
-                  className="w-full"
-                  classNameInput="rounded-lg !p-2"
-                  size="normal"
-                  onChange={searchHandler}
-                  onCancel={clearSearchValue}
-                  onEnter={onEnterHandler}
-                  placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
-                />
-              </div>
-              <div className="my-2 flex w-full px-4">
-                {filterButtons.map(({ type, text }) => (
-                  <FilterButton
-                    key={type}
-                    active={activeFilter === type ? 'true' : 'false'}
-                    onClick={() => setActiveFilter(type)}>
-                    {text}
-                  </FilterButton>
-                ))}
-              </div>
-              {renderAssets}
-            </Dialog.Panel>
-          </Transition.Child>
-        </div>
-      </Transition>
+      {/* container to center the panel */}
+      <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <DialogPanel
+          transition
+          className={clsx(
+            'mx-auto flex flex-col items-center py-5',
+            'h-3/4 max-h-[600px] min-h-[350px] w-full max-w-[360px] md:max-w-[480px]',
+            'bg-bg0 dark:bg-bg0d',
+            'rounded-lg border border-solid border-gray1 dark:border-gray0d'
+          )}>
+          <div className="flex w-full items-center justify-between px-5">
+            {headline && <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">{headline}</h1>}
+            <BaseButton
+              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
+              onClick={onCloseMenu}>
+              <XMarkIcon className="h-20px w-20px text-inherit" />
+            </BaseButton>
+          </div>
+          <div className="my-4 h-[2px] w-full bg-gray1 dark:bg-gray0d" />
+          {asset.type !== AssetType.TRADE || (assets.some((a) => a.type !== AssetType.TRADE) && chainFilter)}
+          <div className="w-full px-4">
+            <InputSearch
+              ref={inputSearchRef}
+              className="w-full"
+              classNameInput="rounded-lg !p-2"
+              size="normal"
+              onChange={searchHandler}
+              onCancel={clearSearchValue}
+              onEnter={onEnterHandler}
+              placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
+            />
+          </div>
+          <div className="my-2 flex w-full px-4">
+            {filterButtons.map(({ type, text }) => (
+              <FilterButton
+                key={type}
+                active={activeFilter === type ? 'true' : 'false'}
+                onClick={() => setActiveFilter(type)}>
+                {text}
+              </FilterButton>
+            ))}
+          </div>
+          {renderAssets}
+        </DialogPanel>
+      </div>
     </Dialog>
   )
 }

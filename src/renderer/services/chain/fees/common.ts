@@ -14,16 +14,18 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Asset, AssetType, baseAmount, isSecuredAsset, isSynthAsset } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isChainOfThor } from '../../../../shared/utils/chain'
-import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isRujiAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
@@ -42,9 +44,11 @@ import * as MAYA from '../../mayachain'
 import { service as midgardMayaService } from '../../midgard/mayaMigard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import * as XRD from '../../radix'
+import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
 import * as THOR from '../../thorchain'
 import { FeesWithRatesLD } from '../../utxo/types'
+import * as ZEC from '../../zcash'
 import { PoolFeeLD } from '../types'
 
 const {
@@ -96,7 +100,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
       liveData.map((fees) => ({ amount: fees.fast, asset: AssetRuneNative }))
     )
   }
-  if (isTCYAsset(asset)) {
+  if (isTCYAsset(asset) || isRujiAsset(asset)) {
     return FP.pipe(
       THOR.fees$(),
       liveData.map((fees) => ({ amount: fees.fast, asset: AssetRuneNative }))
@@ -302,6 +306,11 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         ADA.fees$(),
         liveData.map((fees) => ({ asset, amount: fees.fast }))
       )
+    case XRPChain:
+      return FP.pipe(
+        XRP.fees$(),
+        liveData.map((fees) => ({ asset, amount: fees.fast }))
+      )
     case RadixChain:
       return FP.pipe(
         XRD.fees$(),
@@ -316,6 +325,23 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
               (address) =>
                 FP.pipe(
                   DASH.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
+      )
+    case ZECChain:
+      return FP.pipe(
+        ZEC.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  ZEC.feesWithRates$(address.address, memo),
                   liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
                 )
             )
@@ -359,6 +385,8 @@ export const utxoFeesWithRates$ = (asset: Asset, address: string): FeesWithRates
         DASH.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
+    case ZECChain:
+      return FP.pipe(ZEC.feesWithRates$(address))
     case ADAChain:
       return FP.pipe(
         ADA.feesWithRates$(address),
@@ -384,6 +412,8 @@ export const reloadUtxoFeesWithRates$ = (asset: Asset) => {
       return FP.pipe(LTC.reloadFeesWithRates)
     case DASHChain:
       return FP.pipe(DASH.reloadFeesWithRates)
+    case ZECChain:
+      return FP.pipe(ZEC.reloadFeesWithRates)
     case ADAChain:
       return FP.pipe(ADA.reloadFeesWithRates)
     default:

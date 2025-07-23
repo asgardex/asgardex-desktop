@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -14,8 +15,7 @@ import {
   Chain,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
-import { ColumnType } from 'antd/lib/table'
+import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -33,6 +33,7 @@ import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { Action, getTradeMemo } from '../../../helpers/memoHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
+import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import * as poolsRoutes from '../../../routes/pools'
@@ -42,15 +43,19 @@ import { PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import { MimirHaltRD, TradeAccount } from '../../../services/thorchain/types'
 import { ChainBalances, SelectedWalletAsset, WalletBalance, WalletBalances } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
+import { FixmeType } from '../../../types/asgardex'
 import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
 import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
 import { Collapse as StyledCollapse } from '../../settings/Common.styles'
+import { Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { ViewTxButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { IconButton } from '../../uielements/button/IconButton'
+import { WalletTypeLabel } from '../../uielements/common/Common.styles'
+import { Label } from '../../uielements/label'
 import * as Styled from './AssetsTableCollapsable.styles'
 
 const { Panel } = StyledCollapse
@@ -78,12 +83,12 @@ export const TradeAssetsTableCollapsable = ({
   pricePool,
   poolsData,
   poolDetails,
-  selectAssetHandler,
   network,
   hidePrivateData
 }: Props) => {
   const intl = useIntl()
   const navigate = useNavigate()
+  const isXLargeView = useBreakpoint()?.xl ?? false
 
   const { tradeWithdraw$ } = useChainContext()
   const {
@@ -125,19 +130,6 @@ export const TradeAssetsTableCollapsable = ({
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
-
-  const iconColumn = useMemo(
-    () => ({
-      title: '',
-      width: 120,
-      render: ({ asset }: WalletBalance) => (
-        <Row className="relative" justify="center" align="middle">
-          <AssetIcon asset={asset} size="normal" network={network} />
-        </Row>
-      )
-    }),
-    [network]
-  )
 
   const { openExplorerTxUrl: openRuneExplorerTxUrl, getExplorerTxUrl: getRuneExplorerTxUrl } = useOpenExplorerTxUrl(
     O.some(THORChain)
@@ -390,23 +382,6 @@ export const TradeAssetsTableCollapsable = ({
     )
   }, [intl, network, showLedgerModal, submitTradeWithdrawTx])
 
-  const tickerColumn = useMemo(
-    () => ({
-      width: 80,
-      render: ({ asset }: WalletBalance) => (
-        <Styled.AssetTickerWrapper>
-          <Styled.Label nowrap>
-            <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
-            <Styled.ChainLabelWrapper>
-              <Styled.ChainLabel className="!text-turquoise">{THORChain}</Styled.ChainLabel>
-            </Styled.ChainLabelWrapper>
-          </Styled.Label>
-        </Styled.AssetTickerWrapper>
-      )
-    }),
-    []
-  )
-
   const renderPasswordConfirmationModal = useMemo(() => {
     if (showPasswordModal === 'none') return <></>
 
@@ -425,37 +400,7 @@ export const TradeAssetsTableCollapsable = ({
 
   const getAddressForAsset = (symbol: string, assetToAddress: AssetAddressMap): string =>
     O.getOrElse(() => 'Address not found')(assetToAddress[symbol] || O.none)
-  const balanceColumn = useMemo(
-    () => ({
-      render: ({ asset, amount }: WalletBalance) => {
-        const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
-        const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
-          if (O.isSome(priceOption)) {
-            return formatAssetAmountCurrency({
-              amount: baseToAsset(priceOption.value),
-              asset: pricePoolAsset,
-              decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
-            })
-          }
-          return null
-        }
-        const priceOption = getPoolPriceValue({
-          balance: { asset, amount },
-          poolDetails,
-          pricePool
-        })
-        const price = formatPrice(priceOption, pricePool.asset)
 
-        return (
-          <div className="flex flex-col items-end justify-center font-main">
-            <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
-            <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
-          </div>
-        )
-      }
-    }),
-    [hidePrivateData, poolDetails, pricePool]
-  )
   const renderActionColumn = useCallback(
     ({ asset, amount, walletType, walletAddress, walletAccount, walletIndex, hdMode }: WalletBalance) => {
       const normalizedAssetString = `${asset.chain}.${asset.symbol}`
@@ -533,24 +478,67 @@ export const TradeAssetsTableCollapsable = ({
     [poolsData, poolDetails, intl, navigate, network, assetToAddress]
   )
 
-  const actionColumn: ColumnType<WalletBalance> = useMemo(
-    () => ({
-      width: 150,
-      render: renderActionColumn
-    }),
-    [renderActionColumn]
-  )
+  const columns: ColumnDef<WalletBalance, FixmeType>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'asset',
+        header: '',
+        cell: ({ row }) => {
+          const { asset } = row.original
+          return (
+            <div className="flex items-center space-x-2">
+              <AssetIcon asset={asset} size="normal" network={network} />
+              <div className="flex flex-col">
+                <Label className="!text-16 !leading-[18px]" textTransform="uppercase" weight="bold">
+                  {asset.ticker}
+                </Label>
+                <Label color="primary" weight="bold">
+                  {THORChain}
+                </Label>
+              </div>
+            </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'balance',
+        header: '',
+        cell: ({ row }) => {
+          const { asset, amount } = row.original
+          const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
+          const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
+            if (O.isSome(priceOption)) {
+              return formatAssetAmountCurrency({
+                amount: baseToAsset(priceOption.value),
+                asset: pricePoolAsset,
+                decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
+              })
+            }
+            return null
+          }
+          const priceOption = getPoolPriceValue({
+            balance: { asset, amount },
+            poolDetails,
+            pricePool
+          })
+          const price = formatPrice(priceOption, pricePool.asset)
 
-  const columns = useMemo(
-    () => [iconColumn, tickerColumn, balanceColumn, actionColumn],
-    [iconColumn, tickerColumn, actionColumn, balanceColumn]
-  )
-
-  const onRowHandler = useCallback(
-    ({ asset, walletAddress, walletType, walletAccount, walletIndex, hdMode }: WalletBalance) => ({
-      onClick: () => selectAssetHandler({ asset, walletAddress, walletAccount, walletType, walletIndex, hdMode })
-    }),
-    [selectAssetHandler]
+          return (
+            <div className="flex flex-col items-end justify-center font-main">
+              <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
+              <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
+            </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'balance',
+        header: '',
+        cell: ({ row }) => renderActionColumn(row.original),
+        size: isXLargeView ? 120 : 250
+      }
+    ],
+    [hidePrivateData, isXLargeView, network, poolDetails, pricePool, renderActionColumn]
   )
 
   const renderAssetsTable = useCallback(
@@ -561,18 +549,9 @@ export const TradeAssetsTableCollapsable = ({
         return weightA - weightB
       })
 
-      return (
-        <Styled.Table
-          showHeader={false}
-          dataSource={sortedTableData}
-          loading={loading}
-          rowKey={({ asset, walletType }) => `${asset.chain}.${asset.symbol}.${walletType}`}
-          columns={columns}
-          onRow={onRowHandler}
-        />
-      )
+      return <Table columns={columns} data={sortedTableData} hideHeader hideVerticalBorder loading={loading} />
     },
-    [columns, onRowHandler]
+    [columns]
   )
 
   const renderGroupedBalances = useCallback(
@@ -644,21 +623,25 @@ export const TradeAssetsTableCollapsable = ({
       )
 
       return (
-        <Styled.HeaderRow className="flex w-full justify-between space-x-4">
+        <div className="flex w-full justify-between space-x-4">
           <div className="flex flex-row items-center space-x-2">
-            <Styled.HeaderLabel>{chainToString(THORChain)}</Styled.HeaderLabel>
+            <Label className="!w-auto" textTransform="uppercase">
+              {chainToString(THORChain)}
+            </Label>
             {!isKeystoreWallet(walletType) && (
-              <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+              <WalletTypeLabel className="bg-bg2 dark:bg-bg2d border border-solid border-gray0 dark:border-gray0d">
+                {walletTypeToI18n(walletType, intl)}
+              </WalletTypeLabel>
             )}
-            <Styled.HeaderLabel color="gray">
+            <Label className="!w-auto" color="gray" textTransform="uppercase">
               {`(${walletType === WalletType.Keystore ? keystoreBalances.length : ledgerBalances.length} Assets)`}
-            </Styled.HeaderLabel>
+            </Label>
           </div>
           <div className="flex items-center justify-end space-x-2">
-            <Styled.HeaderAddress className="flex items-center text-text0 dark:text-text0d">
+            <Label className="flex items-center text-text0 dark:text-text0d" color="gray" textTransform="none">
               {hidePrivateData ? hiddenString : truncateAddress(walletAddress, THORChain, network)}
               <Styled.CopyLabel copyable={{ text: walletAddress }} />
-            </Styled.HeaderAddress>
+            </Label>
             <div className="flex items-center justify-end space-x-2 pr-4">
               <IconButton
                 disabled={disableRefresh}
@@ -670,7 +653,7 @@ export const TradeAssetsTableCollapsable = ({
               </IconButton>
             </div>
           </div>
-        </Styled.HeaderRow>
+        </div>
       )
     }
 
@@ -694,7 +677,9 @@ export const TradeAssetsTableCollapsable = ({
   return (
     <div className="mt-2">
       <Styled.Collapse
-        expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
+        expandIcon={({ isActive }) => (
+          <ChevronRightIcon className={clsx('w-4 h-4 stroke-turquoise', isActive ? 'rotate-90' : 'rotate-0')} />
+        )}
         defaultActiveKey={['keystore']}
         expandIconPosition="end"
         ghost>

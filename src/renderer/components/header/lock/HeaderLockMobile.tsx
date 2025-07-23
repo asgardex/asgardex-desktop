@@ -6,8 +6,7 @@ import { useIntl } from 'react-intl'
 import { KeystoreState } from '../../../services/wallet/types'
 import * as WU from '../../../services/wallet/util'
 import { LockIcon, UnlockIcon } from '../../icons'
-import { HeaderIconWrapper } from '../HeaderIcon.styles'
-import * as Styled from '../theme/HeaderTheme.styles'
+import { Label } from '../../uielements/label'
 
 export type Props = {
   keystoreState: KeystoreState
@@ -29,9 +28,13 @@ export const HeaderLockMobile = (props: Props): JSX.Element => {
   }, [intl, isLocked, keystoreState])
 
   return (
-    <HeaderIconWrapper onClick={() => onPress()}>
-      <Styled.Label>{label}</Styled.Label>
-      {isLocked ? <LockIcon className="h-[28px] w-[28px]" /> : <UnlockIcon className="h-[28px] w-[28px]" />}
-    </HeaderIconWrapper>
+    <div className="flex items-center justify-between w-full px-6 lg:w-auto">
+      <Label size="large" textTransform="uppercase" weight="bold">
+        {label}
+      </Label>
+      <div onClick={() => onPress()}>
+        {isLocked ? <LockIcon className="h-[28px] w-[28px]" /> : <UnlockIcon className="h-[28px] w-[28px]" />}
+      </div>
+    </div>
   )
 }

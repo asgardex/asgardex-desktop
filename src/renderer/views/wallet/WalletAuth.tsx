@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { useObservableState } from 'observable-hooks'
 import { Navigate, useLocation } from 'react-router-dom'
 
