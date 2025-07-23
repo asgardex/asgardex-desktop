@@ -4,6 +4,7 @@ import {
   addressByChain$,
   clientByChain$,
   symDepositFees$,
+  depositFees$,
   reloadSymDepositFees,
   symWithdrawFee$,
   reloadWithdrawFees,
@@ -27,6 +28,7 @@ type ChainContextValue = {
   addressByChain$: typeof addressByChain$
   clientByChain$: typeof clientByChain$
   symDepositFees$: typeof symDepositFees$
+  depositFees$: typeof depositFees$
   reloadSymDepositFees: typeof reloadSymDepositFees
   symWithdrawFee$: typeof symWithdrawFee$
   reloadWithdrawFees: typeof reloadWithdrawFees
@@ -50,6 +52,7 @@ const initialContext: ChainContextValue = {
   addressByChain$,
   clientByChain$,
   symDepositFees$,
+  depositFees$,
   reloadSymDepositFees,
   symWithdrawFee$,
   reloadWithdrawFees,

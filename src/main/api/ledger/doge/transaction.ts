@@ -1,4 +1,4 @@
-import * as Transport from '@ledgerhq/hw-transport'
+import type Transport from '@ledgerhq/hw-transport'
 import { FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { AssetDOGE, BitgoProviders, ClientLedger, DOGEChain } from '@xchainjs/xchain-doge'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
@@ -25,7 +25,7 @@ export const send = async ({
   walletIndex,
   apiKey
 }: {
-  transport: Transport.default
+  transport: Transport
   network: Network
   sender?: Address
   recipient: Address

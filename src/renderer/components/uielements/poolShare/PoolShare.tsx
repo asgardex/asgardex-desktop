@@ -14,14 +14,14 @@ import {
   baseAmount,
   formatAssetAmount
 } from '@xchainjs/xchain-util'
-import { Col } from 'antd'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetWithDecimal } from '../../../types/asgardex'
+import { AssetLabel } from '../assets/assetLabel'
 import { TooltipAddress } from '../common/Common.styles'
-import * as Styled from './PoolShare.styles'
+import { Label } from '../label'
 import { PoolShareCard } from './PoolShareCard'
 
 export type Props = {
@@ -81,39 +81,35 @@ export const PoolShare = ({
 
   const renderRedemptionCol = useCallback(
     (amount: BaseAmount, price: BaseAmount, asset: AnyAsset) => (
-      <Col span={smallWidth ? 24 : 12}>
-        <Styled.LabelPrimary loading={loading}>
+      <div>
+        <Label className="!text-16 px-4" align="center" color="dark" loading={loading} weight="bold">
           {formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 2 })}
-        </Styled.LabelPrimary>
-        <Styled.LabelSecondary loading={loading}>
+        </Label>
+        <Label className="px-4" align="center" color="dark" size="big" textTransform="uppercase" loading={loading}>
           {formatAssetAmountCurrency({ amount: baseToAsset(price), asset: priceAsset, decimal: 2 })}
-        </Styled.LabelSecondary>
-      </Col>
+        </Label>
+      </div>
     ),
-    [loading, priceAsset, smallWidth]
+    [loading, priceAsset]
   )
 
   const renderRedemptionLarge = useMemo(
     () => (
       <>
-        <Styled.RedemptionHeader>
-          <Styled.CardRow>
+        <div className="border-b border-solid border-gray0 dark:border-gray0d grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 p-4">
             <TooltipAddress title={assetAddress}>
-              <Col span={12}>
-                <Styled.RedemptionAsset asset={asset} />
-              </Col>
+              <AssetLabel className="flex justify-center" asset={asset} />
             </TooltipAddress>
             <TooltipAddress title={runeAddress}>
-              <Col span={12}>
-                <Styled.RedemptionAsset asset={dexAsset} />
-              </Col>
+              <AssetLabel className="flex justify-center" asset={dexAsset} />
             </TooltipAddress>
-          </Styled.CardRow>
-        </Styled.RedemptionHeader>
-        <Styled.CardRow>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 p-4">
           {renderRedemptionCol(assetShare, assetPrice, asset)}
           {renderRedemptionCol(runeShare, runePrice, dexAsset)}
-        </Styled.CardRow>
+        </div>
       </>
     ),
     [assetAddress, asset, runeAddress, dexAsset, renderRedemptionCol, assetShare, assetPrice, runeShare, runePrice]
@@ -122,26 +118,26 @@ export const PoolShare = ({
   const renderRedemptionSmall = useMemo(
     () => (
       <>
-        <Styled.RedemptionHeader>
+        <div>
           <TooltipAddress title={assetAddress}>
-            <Styled.CardRow>
-              <Col span={24}>
-                <Styled.RedemptionAsset asset={asset} />
-              </Col>
-            </Styled.CardRow>
+            <div className="grid p-4 pb-0">
+              <AssetLabel className="flex justify-center" asset={asset} />
+            </div>
           </TooltipAddress>
-        </Styled.RedemptionHeader>
-        <Styled.CardRow>{renderRedemptionCol(runeShare, runePrice, dexAsset)}</Styled.CardRow>
-        <Styled.RedemptionHeader>
+        </div>
+        <div className="border-b border-solid border-gray0 dark:border-gray0d grid p-4">
+          {renderRedemptionCol(assetShare, assetPrice, asset)}
+        </div>
+        <div>
           <TooltipAddress title={runeAddress}>
-            <Styled.CardRow>
-              <Col span={24}>
-                <Styled.RedemptionAsset asset={dexAsset} />
-              </Col>
-            </Styled.CardRow>
+            <div className="grid p-4 pb-0">
+              <AssetLabel className="flex justify-center" asset={dexAsset} />
+            </div>
           </TooltipAddress>
-        </Styled.RedemptionHeader>
-        <Styled.CardRow>{renderRedemptionCol(assetShare, assetPrice, asset)}</Styled.CardRow>
+        </div>
+        <div className="border-b border-solid border-gray0 dark:border-gray0d grid p-4">
+          {renderRedemptionCol(runeShare, runePrice, dexAsset)}
+        </div>
       </>
     ),
     [assetAddress, asset, renderRedemptionCol, runeShare, runePrice, dexAsset, runeAddress, assetShare, assetPrice]
@@ -159,36 +155,38 @@ export const PoolShare = ({
   }, [depositUnits, dexAssetDecimal])
 
   return (
-    <Styled.PoolShareWrapper ref={ref}>
+    <div className="w-full" ref={ref}>
       <PoolShareCard title={intl.formatMessage({ id: 'deposit.share.title' })}>
-        <Styled.CardRow>
-          <Col span={smallWidth ? 24 : 12} style={{ paddingBottom: smallWidth ? '20px' : '0' }}>
-            <Styled.LabelSecondary textTransform="uppercase">
+        <div className="grid grid-cols-1 md:grid-cols-2 p-4">
+          <div className="space-y-2">
+            <Label className="px-4" align="center" color="dark" size="big" textTransform="uppercase">
               {intl.formatMessage({ id: 'deposit.share.units' })}
-            </Styled.LabelSecondary>
-            <Styled.LabelPrimary loading={loading}>{depositUnitsFormatted}</Styled.LabelPrimary>
-          </Col>
-          <Col span={smallWidth ? 24 : 12}>
-            <Styled.LabelSecondary textTransform="uppercase">
+            </Label>
+            <Label className="!text-16 px-4" align="center" color="dark" loading={loading} weight="bold">
+              {depositUnitsFormatted}
+            </Label>
+          </div>
+          <div className="space-y-2">
+            <Label className="px-4" align="center" color="dark" size="big" textTransform="uppercase">
               {intl.formatMessage({ id: 'deposit.share.poolshare' })}
-            </Styled.LabelSecondary>
-            <Styled.LabelPrimary loading={loading}>{`${formatBN(poolShare, 2)}%`}</Styled.LabelPrimary>
-          </Col>
-        </Styled.CardRow>
+            </Label>
+            <Label className="!text-16 px-4" align="center" color="dark" loading={loading} weight="bold">
+              {`${formatBN(poolShare, 2)}%`}
+            </Label>
+          </div>
+        </div>
       </PoolShareCard>
       <PoolShareCard title={intl.formatMessage({ id: 'deposit.redemption.title' })}>
         {renderRedemption}
-        <Styled.CardRow>
-          <Col span={24}>
-            <Styled.LabelSecondary textTransform="uppercase">
-              {intl.formatMessage({ id: 'deposit.share.total' })}
-            </Styled.LabelSecondary>
-            <Styled.LabelPrimary loading={loading}>
-              {formatAssetAmountCurrency({ amount: baseToAsset(totalDepositPrice), asset: priceAsset, decimal: 2 })}
-            </Styled.LabelPrimary>
-          </Col>
-        </Styled.CardRow>
+        <div className="flex flex-col items-center p-4">
+          <Label className="px-4" align="center" color="dark" size="big" textTransform="uppercase">
+            {intl.formatMessage({ id: 'deposit.share.total' })}
+          </Label>
+          <Label className="!text-16 px-4" align="center" color="dark" loading={loading} weight="bold">
+            {formatAssetAmountCurrency({ amount: baseToAsset(totalDepositPrice), asset: priceAsset, decimal: 2 })}
+          </Label>
+        </div>
       </PoolShareCard>
-    </Styled.PoolShareWrapper>
+    </div>
   )
 }

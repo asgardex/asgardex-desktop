@@ -2,7 +2,6 @@ import { useMemo, useCallback, useState, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Row } from 'antd'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
@@ -193,13 +192,13 @@ export const WalletHistoryView = () => {
 
   return (
     <>
-      <Row justify="space-between" style={{ marginBottom: '20px' }}>
+      <div className="flex items-center justify-between mb-5">
         <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
         <RefreshButton
           onClick={protocol === THORChain ? reloadHistory : reloadHistoryMaya}
           disabled={loadingHistory || loadingHistoryMaya}
         />
-      </Row>
+      </div>
       <AssetsNav />
       <PoolActionsHistory
         network={network}

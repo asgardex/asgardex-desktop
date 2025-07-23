@@ -24,18 +24,18 @@ import { isSupportedChain } from '../../../../shared/utils/chain'
 import { KUJI_DECIMAL } from '../../kuji/const'
 
 /**
- * Returns minimal amount (threshold) needed to send a tx on given chain
+ * Returns minimal amount (dust threshold) needed to send a tx for Thorchain to acknowledge
  */
-export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmount => {
-  if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'smallestAmountToSent$'`)
+export const smallestAmountToSend = (chain: Chain, _network: Network): BaseAmount => {
+  if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'smallestAmountToSend$'`)
 
   switch (chain) {
     case BTCChain:
-      // 1000 satoshi
-      return baseAmount(1000, BTC_DECIMAL)
+      // 10001 satoshi
+      return baseAmount(10001, BTC_DECIMAL)
     case DASHChain:
-      // 1000 duff
-      return baseAmount(1000, DASH_DECIMAL)
+      // 10001 duff
+      return baseAmount(10001, DASH_DECIMAL)
     case THORChain:
       // 0 thor
       return baseAmount(0, THOR_DECIMAL)
@@ -43,47 +43,42 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
       // 0 cacao
       return baseAmount(0, CACAO_DECIMAL)
     case ETHChain:
-      // zero for ETH
-      return baseAmount(0, ETH_GAS_ASSET_DECIMAL)
+      return baseAmount(10000000000, ETH_GAS_ASSET_DECIMAL)
     case ARBChain:
-      // zero for Arb
-      return baseAmount(0, ARB_GAS_ASSET_DECIMAL)
+      return baseAmount(1000000000, ARB_GAS_ASSET_DECIMAL)
     case AVAXChain:
-      // zero for Avax
-      return baseAmount(0, AVAX_GAS_ASSET_DECIMAL)
+      return baseAmount(10000000000, AVAX_GAS_ASSET_DECIMAL)
     case BASEChain:
-      // zero for base
-      return baseAmount(0, BASE_GAS_ASSET_DECIMAL)
+      return baseAmount(10000000000, BASE_GAS_ASSET_DECIMAL)
     case BSCChain:
-      // zero for bsc
-      return baseAmount(0, BSC_GAS_ASSET_DECIMAL)
+      return baseAmount(10000000000, BSC_GAS_ASSET_DECIMAL)
     case GAIAChain:
       return baseAmount(1, COSMOS_DECIMAL)
     case DOGEChain:
-      // 1000 satoshi
-      return baseAmount(1000, DOGE_DECIMAL)
+      // 100000000 satoshi
+      return baseAmount(100000000, DOGE_DECIMAL)
     case KUJIChain:
       return baseAmount(5000, KUJI_DECIMAL)
     case ADAChain:
       // 1170000 love lace
       return baseAmount(1170000, ADA_DECIMALS)
     case BCHChain:
-      // 1000 satoshi
-      return baseAmount(1000, BCH_DECIMAL)
+      // 10001 satoshi
+      return baseAmount(10001, BCH_DECIMAL)
     case LTCChain:
-      // 1000 satoshi
-      return baseAmount(1000, LTC_DECIMAL)
+      // 10001 satoshi
+      return baseAmount(10001, LTC_DECIMAL)
     case RadixChain:
-      return baseAmount(0, XRD_DECIMAL)
+      return baseAmount(100000000000000000, XRD_DECIMAL)
     case SOLChain:
       return baseAmount(1, SOL_DECIMALS)
     case ZECChain:
       // 1000 zatoshi
-      return baseAmount(1000, ZEC_DECIMAL)
+      return baseAmount(10001, ZEC_DECIMAL)
     case XRPChain:
       // 1 drop
-      return baseAmount(1, XRP_DECIMAL)
+      return baseAmount(1000000, XRP_DECIMAL)
     default:
-      throw Error(`${chain} is not supported for 'smallestAmountToSent$'`)
+      throw Error(`${chain} is not supported for 'smallestAmountToSend$'`)
   }
 }

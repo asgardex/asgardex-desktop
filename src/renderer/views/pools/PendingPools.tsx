@@ -1,28 +1,33 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Grid } from 'antd'
-import { ColumnsType, ColumnType } from 'antd/lib/table'
+import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { AssetsFilter } from '../../components/AssetsFilter'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
-import { ManageButton } from '../../components/uielements/button'
+import { Table } from '../../components/table'
+import { AssetData } from '../../components/uielements/assets/assetData'
+import { ManageButton, TextButton } from '../../components/uielements/button'
 import { Label } from '../../components/uielements/label'
-import { Table } from '../../components/uielements/table'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { ordBaseAmount } from '../../helpers/fp/ord'
 import { getPoolTableRowsData, isPoolDetails } from '../../helpers/poolHelper'
 import { getPoolTableRowsData as getPoolTableRowsDataMaya } from '../../helpers/poolHelperMaya'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
 import { usePoolCycle } from '../../hooks/usePoolCycle'
@@ -38,6 +43,7 @@ import { PendingPoolsState as PendingPoolsStateMaya } from '../../services/midga
 import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
 import { ThorchainLastblockRD } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
+import { FixmeType } from '../../types/asgardex'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import {
   filterTableData,
@@ -80,7 +86,8 @@ export const PendingPools = (): JSX.Element => {
 
   const incentivePendulumRD = protocol === THORChain ? incentivePendulumThorRD : incentivePendulumMayaRD
 
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
+  const isXLargeView = useBreakpoint()?.xl ?? false
 
   // store previous data of pending pools to render these while reloading
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
@@ -125,22 +132,8 @@ export const PendingPools = (): JSX.Element => {
     [isDesktopView]
   )
 
-  const btnPendingPoolsColumn: ColumnType<PoolTableRowData> = useMemo(
-    () => ({
-      key: 'btn',
-      title: Shared.renderRefreshBtnColTitle({
-        title: intl.formatMessage({ id: 'common.refresh' }),
-        clickHandler: refreshHandler,
-        icononly: !isDesktopView
-      }),
-      width: 200,
-      render: renderBtnPoolsColumn
-    }),
-    [intl, refreshHandler, isDesktopView, renderBtnPoolsColumn]
-  )
-
   const renderBlockLeftColumn = useCallback(
-    (_: string, record: PoolTableRowData) => {
+    (record: PoolTableRowData) => {
       const { deepest, asset } = record
 
       const blocksLeft: string = FP.pipe(
@@ -165,42 +158,116 @@ export const PendingPools = (): JSX.Element => {
     [thorchainLastblockRD, mayachainLastblockRD, protocol, oNewPoolCycle]
   )
 
-  const blockLeftColumn: ColumnType<PoolTableRowData> = useMemo(
-    () => ({
-      key: 'blocks',
-      title: intl.formatMessage({ id: 'pools.blocksleft' }),
-      align: 'right',
-      width: 80,
-      render: renderBlockLeftColumn
-    }),
-    [renderBlockLeftColumn, intl]
-  )
-
-  const desktopPoolsColumns: ColumnsType<PoolTableRowData> = useMemo(
+  const columns: ColumnDef<PoolTableRowData, FixmeType>[] = useMemo(
     () => [
-      Shared.watchColumn(addPoolToWatchlist, removePoolFromWatchlist),
-      Shared.poolColumn(intl.formatMessage({ id: 'common.pool' })),
-      Shared.assetColumn(intl.formatMessage({ id: 'common.asset' })),
-      Shared.priceColumn(intl.formatMessage({ id: 'common.price' }), pricePool.asset),
-      Shared.depthColumn(intl.formatMessage({ id: 'common.liquidity' }), pricePool.asset),
-      blockLeftColumn,
-      btnPendingPoolsColumn
+      {
+        accessorKey: 'watched',
+        header: '',
+        cell: ({ row }) => {
+          const { watched, asset } = row.original
+          return Shared.renderWatchColumn({
+            data: { watched },
+            add: () => addPoolToWatchlist(asset),
+            remove: () => removePoolFromWatchlist(asset)
+          })
+        },
+        size: 50,
+        sortingFn: 'basic'
+      },
+      {
+        accessorKey: 'asset',
+        header: intl.formatMessage({ id: 'common.pool' }),
+        cell: ({ row }) => (
+          <div className="flex items-center w-full">
+            <AssetData asset={row.original.asset} network={network} />
+          </div>
+        ),
+        sortingFn: (rowA, rowB) => rowA.original.asset.symbol.localeCompare(rowB.original.asset.symbol)
+      },
+      {
+        accessorKey: 'poolPrice',
+        header: intl.formatMessage({ id: 'common.price' }),
+        cell: (row) => (
+          <Label className="!text-16" align="right" nowrap>
+            {formatAssetAmountCurrency({
+              amount: baseToAsset(row.getValue()),
+              asset: pricePool.asset,
+              decimal: 3
+            })}
+          </Label>
+        ),
+        sortingFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.poolPrice, rowB.original.poolPrice)
+      },
+      ...(isXLargeView
+        ? ([
+            {
+              accessorKey: 'liquidity',
+              header: intl.formatMessage({ id: 'common.liquidity' }),
+              cell: ({ row }) => {
+                const { asset, depthAmount, depthPrice } = row.original
+                return (
+                  <div className="flex flex-col items-end justify-center font-main">
+                    <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">
+                      {formatAssetAmountCurrency({
+                        amount: baseToAsset(depthAmount),
+                        asset,
+                        decimal: 2
+                      })}
+                    </div>
+                    <div className="whitespace-nowrap text-14 text-gray2 dark:text-gray2d">
+                      {formatAssetAmountCurrency({
+                        amount: baseToAsset(depthPrice),
+                        asset: pricePool.asset,
+                        decimal: 2
+                      })}
+                    </div>
+                  </div>
+                )
+              },
+              sortingFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
+            },
+            {
+              accessorKey: 'blocks',
+              header: intl.formatMessage({ id: 'pools.blocksleft' }),
+              cell: ({ row }) => renderBlockLeftColumn(row.original),
+              sortingFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
+            }
+          ] as ColumnDef<PoolTableRowData, FixmeType>[])
+        : []),
+      {
+        accessorKey: 'actions',
+        header: () => (
+          <div className="flex items-center justify-center">
+            <TextButton size={isDesktopView ? 'normal' : 'large'} onClick={refreshHandler}>
+              <div className="flex items-center">
+                <ArrowPathIcon className={clsx('w-4 h-4', { 'mr-2': isDesktopView })} />
+                {isDesktopView && intl.formatMessage({ id: 'common.refresh' })}
+              </div>
+            </TextButton>
+          </div>
+        ),
+        cell: ({ row }) => {
+          return renderBtnPoolsColumn('', row.original)
+        },
+        enableSorting: false
+      }
     ],
-    [addPoolToWatchlist, removePoolFromWatchlist, intl, pricePool, blockLeftColumn, btnPendingPoolsColumn]
-  )
-
-  const mobilePoolsColumns: ColumnsType<PoolTableRowData> = useMemo(
-    () => [
-      Shared.poolColumnMobile(intl.formatMessage({ id: 'common.pool' })),
-      Shared.assetColumn(intl.formatMessage({ id: 'common.asset' })),
-      btnPendingPoolsColumn
-    ],
-    [btnPendingPoolsColumn, intl]
+    [
+      addPoolToWatchlist,
+      intl,
+      isDesktopView,
+      isXLargeView,
+      network,
+      pricePool.asset,
+      refreshHandler,
+      removePoolFromWatchlist,
+      renderBlockLeftColumn,
+      renderBtnPoolsColumn
+    ]
   )
 
   const renderPoolsTable = useCallback(
     (tableData: PoolTableRowData[], loading = false) => {
-      const columns = isDesktopView ? desktopPoolsColumns : mobilePoolsColumns
       const dataSource = FP.pipe(tableData, filterTableData(poolFilter))
 
       return (
@@ -213,20 +280,11 @@ export const PendingPools = (): JSX.Element => {
           />
           <ProtocolLimit limit={limitRD} />
           <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
-          <Table columns={columns} dataSource={dataSource} loading={loading} rowKey="key" />
+          <Table columns={columns} data={dataSource} loading={loading} />
         </>
       )
     },
-    [
-      isDesktopView,
-      desktopPoolsColumns,
-      mobilePoolsColumns,
-      poolFilter,
-      setPoolFilter,
-      limitRD,
-      incentivePendulumRD,
-      protocol
-    ]
+    [poolFilter, setPoolFilter, limitRD, incentivePendulumRD, protocol, columns]
   )
 
   return (

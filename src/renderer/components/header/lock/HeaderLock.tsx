@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Listbox } from '@headlessui/react'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon, PlusCircleIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -89,7 +89,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
               </div>
               <Listbox value={selectedWallet} onChange={changeWalletHandler}>
                 <div className="relative">
-                  <Listbox.Button
+                  <ListboxButton
                     as="div"
                     className={clsx(
                       'group flex cursor-pointer items-center',
@@ -107,8 +107,8 @@ export const HeaderLock = (props: Props): JSX.Element => {
                         />
                       </>
                     )}
-                  </Listbox.Button>
-                  <Listbox.Options
+                  </ListboxButton>
+                  <ListboxOptions
                     className={clsx(
                       'absolute left-[-100px] top-[35px]',
                       'z-[2000] mt-1 max-h-60 w-[200px]',
@@ -121,7 +121,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
                       A.map((wallet) => {
                         const selected = wallet.id === selectedWallet.id
                         return (
-                          <Listbox.Option
+                          <ListboxOption
                             disabled={selected}
                             className={({ selected }) =>
                               clsx(
@@ -137,11 +137,11 @@ export const HeaderLock = (props: Props): JSX.Element => {
                             value={wallet}>
                             {truncateMiddle(wallet.name, { start: 9, end: 9, max: 20 })}
                             {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
-                          </Listbox.Option>
+                          </ListboxOption>
                         )
                       })
                     )}
-                  </Listbox.Options>
+                  </ListboxOptions>
                 </div>
               </Listbox>
             </div>

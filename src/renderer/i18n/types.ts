@@ -472,7 +472,6 @@ type SwapMessageKey =
   | 'swap.aggregator.fasterReturn'
   | 'swap.slip.tolerance'
   | 'swap.slip.tolerance.info'
-  | 'swap.slip.tolerance.ledger-disabled.info'
   | 'swap.streaming.interval'
   | 'swap.streaming.title'
   | 'swap.streaming.interval.info'

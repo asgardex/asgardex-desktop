@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon, QrCodeIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, ChevronRightIcon, QrCodeIcon } from '@heroicons/react/24/outline'
+import { ColumnDef } from '@tanstack/react-table'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
@@ -18,9 +19,8 @@ import {
   isSecuredAsset,
   isSynthAsset
 } from '@xchainjs/xchain-util'
-import { Collapse, Grid, Row } from 'antd'
-import { ScreenMap } from 'antd/lib/_util/responsiveObserve'
-import { ColumnType } from 'antd/lib/table'
+import { Collapse, Row } from 'antd'
+import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
@@ -43,6 +43,7 @@ import { isEvmChain } from '../../../helpers/evmHelper'
 import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
+import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../hooks/useMayascanPrice'
 import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
@@ -60,12 +61,16 @@ import {
 } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
+import { FixmeType } from '../../../types/asgardex'
 import { GECKO_MAP } from '../../../types/generated/geckoMap'
 import { ErrorView } from '../../shared/error/'
+import { Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { IconButton } from '../../uielements/button/IconButton'
+import { WalletTypeLabel } from '../../uielements/common/Common.styles'
 import { InfoIcon } from '../../uielements/info'
+import { Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
 import * as Styled from './AssetsTableCollapsable.styles'
 
@@ -130,7 +135,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   const { setProtocol } = useApp()
   const intl = useIntl()
   const navigate = useNavigate()
-  const screenMap: ScreenMap = Grid.useBreakpoint()
+  const isXLargeView = useBreakpoint()?.xl ?? false
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
 
@@ -277,51 +282,9 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       const { price } = getBalance(walletBalance)
       const { asset, walletAccount, walletAddress, walletIndex, walletType, hdMode } = walletBalance
 
-      return {
-        onClick: () =>
-          selectAssetHandler({ asset, walletAccount, walletAddress, walletIndex, walletType, hdMode, price })
-      }
+      selectAssetHandler({ asset, walletAccount, walletAddress, walletIndex, walletType, hdMode, price })
     },
     [getBalance, selectAssetHandler]
-  )
-
-  const iconColumn: ColumnType<WalletBalance> = useMemo(
-    () => ({
-      title: '',
-      width: 180,
-      render: ({ asset }: WalletBalance) => (
-        <div className="flex items-center space-x-4 pl-4">
-          <AssetIcon asset={asset} size="normal" network={network} />
-          <div className="flex flex-row items-center">
-            <Styled.Label nowrap>
-              <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
-              <Styled.ChainLabelWrapper>
-                {!isSynthAsset(asset) && !isSecuredAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
-                {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}
-                {isSecuredAsset(asset) && <Styled.AssetSecuredLabel>secured</Styled.AssetSecuredLabel>}
-              </Styled.ChainLabelWrapper>
-            </Styled.Label>
-          </div>
-        </div>
-      )
-    }),
-    [network]
-  )
-
-  const balanceColumn: ColumnType<WalletBalance> = useMemo(
-    () => ({
-      render: (walletBalance: WalletBalance) => {
-        const { balance, price } = getBalance(walletBalance)
-
-        return (
-          <div className="flex flex-col items-end justify-center font-main">
-            <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
-            <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
-          </div>
-        )
-      }
-    }),
-    [getBalance, hidePrivateData]
   )
 
   const renderActionColumn = useCallback(
@@ -480,37 +443,66 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
     [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol]
   )
 
-  const actionColumn: ColumnType<WalletBalance> = useMemo(
-    () => ({
-      width: 150,
-      render: renderActionColumn
-    }),
-    [renderActionColumn]
-  )
+  const columns: ColumnDef<WalletBalance, FixmeType>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'asset',
+        header: intl.formatMessage({ id: 'common.pool' }),
+        cell: ({ row }) => {
+          const { asset } = row.original
+          return (
+            <div className="flex items-center space-x-4 pl-4">
+              <AssetIcon asset={asset} size="normal" network={network} />
+              <div className="flex flex-col">
+                <Label className="!text-16 !leading-[18px]" textTransform="uppercase" weight="bold">
+                  {asset.ticker}
+                </Label>
+                {!isSynthAsset(asset) && !isSecuredAsset(asset) && (
+                  <Label color="input" textTransform="uppercase" weight="bold">
+                    {asset.chain}
+                  </Label>
+                )}
+                {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}
+                {isSecuredAsset(asset) && <Styled.AssetSecuredLabel>secured</Styled.AssetSecuredLabel>}
+              </div>
+            </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'balance',
+        header: '',
+        cell: ({ row }) => {
+          const { balance, price } = getBalance(row.original)
 
-  const columns = useMemo(() => {
-    if (screenMap?.lg ?? false) {
-      return [iconColumn, balanceColumn, actionColumn]
-    }
-    if (screenMap?.sm ?? false) {
-      return [iconColumn, balanceColumn, actionColumn]
-    }
-    if (screenMap?.xs ?? false) {
-      return [iconColumn, balanceColumn, actionColumn]
-    }
-    return []
-  }, [actionColumn, balanceColumn, iconColumn, screenMap?.lg, screenMap?.sm, screenMap?.xs])
+          return (
+            <div className="flex flex-col items-end justify-center font-main">
+              <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
+              <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
+            </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'action',
+        header: '',
+        cell: ({ row }) => renderActionColumn(row.original),
+        size: isXLargeView ? 150 : 250
+      }
+    ],
+    [getBalance, hidePrivateData, intl, isXLargeView, network, renderActionColumn]
+  )
 
   const renderAssetsTable = useCallback(
     ({ tableData, loading = false }: { tableData: WalletBalances; loading?: boolean }) => {
       return (
-        <Styled.Table
-          showHeader={false}
-          dataSource={tableData}
-          loading={loading}
-          rowKey={({ asset }) => `${asset.chain}.${asset.symbol}`}
-          onRow={onRowHandler}
+        <Table
           columns={columns}
+          data={tableData}
+          hideHeader
+          hideVerticalBorder
+          loading={loading}
+          onClickRow={onRowHandler}
         />
       )
     },
@@ -590,26 +582,31 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       )
 
       const header = (
-        <Styled.HeaderRow className="flex w-full justify-between space-x-4 bg-bg0 py-1 dark:bg-bg0d">
+        <div className="flex w-full justify-between space-x-4 bg-bg0 py-1 dark:bg-bg0d">
           <div className="flex flex-row items-center space-x-2">
-            <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
+            <Label className="!w-auto" textTransform="uppercase">
+              {chainToString(chain)}
+            </Label>
             {!isKeystoreWallet(walletType) && (
-              <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+              <WalletTypeLabel className="bg-bg2 dark:bg-bg2d border border-solid border-gray0 dark:border-gray0d">
+                {walletTypeToI18n(walletType, intl)}
+              </WalletTypeLabel>
             )}
-            <Styled.HeaderLabel
-              className="flex items-center space-x-2"
-              color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
-              <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
+            <Label
+              className="!w-auto flex items-center space-x-2"
+              color={RD.isFailure(balancesRD) ? 'error' : 'gray'}
+              textTransform="uppercase">
+              <span>{assetsTxt}</span>
               {isEvmChain(chain) && (
                 <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
               )}
-            </Styled.HeaderLabel>
+            </Label>
           </div>
           <div className="flex items-center justify-end space-x-2">
-            <Styled.HeaderAddress className="flex items-center text-text0 dark:text-text0d">
+            <Label className="flex items-center text-text0 dark:text-text0d" color="gray" textTransform="none">
               {hidePrivateData ? hiddenString : truncateAddress(walletAddress, chain, network)}
               <Styled.CopyLabel copyable={{ text: walletAddress }} />
-            </Styled.HeaderAddress>
+            </Label>
             <div className="flex items-center justify-end space-x-2 pr-4">
               <IconButton
                 disabled={disableRefresh}
@@ -628,7 +625,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               </IconButton>
             </div>
           </div>
-        </Styled.HeaderRow>
+        </div>
       )
 
       return (
@@ -717,7 +714,9 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
       <Styled.Collapse
         className="space-y-2"
-        expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
+        expandIcon={({ isActive }) => (
+          <ChevronRightIcon className={clsx('w-4 h-4 stroke-turquoise', isActive ? 'rotate-90' : 'rotate-0')} />
+        )}
         defaultActiveKey={openPanelKeys}
         activeKey={openPanelKeys}
         expandIconPosition="end"

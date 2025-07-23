@@ -20,12 +20,12 @@ import { PoolDetails, PoolDetailsRD } from '../../../services/midgard/mayaMigard
 import { PricePool } from '../../../services/midgard/midgardTypes'
 import { NodeInfo, NodeStatusEnum } from '../../../services/thorchain/types'
 import { AddressEllipsis } from '../../uielements/addressEllipsis'
-import { Label } from '../../uielements/label'
+import { Color, Label } from '../../uielements/label'
 
 export const NodeAddress = ({ address, network }: { address: Address; network: Network }) => (
   <Col xs={18} lg={20} xl={24}>
     <AddressEllipsis
-      className="font-light text-16 text-text1 dark:text-text1d normal-case"
+      className="font-light text-[12px] tracking-[1px] text-text1 dark:text-text1d normal-case"
       address={address}
       chain={address.startsWith('thor') ? THORChain : MAYAChain}
       network={network}
@@ -35,7 +35,7 @@ export const NodeAddress = ({ address, network }: { address: Address; network: N
 
 export const BondValue = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
   <Col>
-    <Label align="right" nowrap size="big" textTransform="uppercase">
+    <Label align="right" nowrap textTransform="uppercase">
       {formatAssetAmountCurrency({
         asset: AssetRuneNative,
         amount: baseToAsset(data.bond),
@@ -47,7 +47,7 @@ export const BondValue = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
 )
 export const BondValueMaya = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
   <Col>
-    <Label align="right" nowrap size="big" textTransform="uppercase">
+    <Label align="right" nowrap textTransform="uppercase">
       {formatAssetAmountCurrency({
         asset: AssetCacao,
         amount: baseToAsset(data.bond),
@@ -60,7 +60,7 @@ export const BondValueMaya = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
 
 export const AwardValue = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
   <Col>
-    <Label align="right" nowrap size="big" textTransform="uppercase">
+    <Label align="right" nowrap textTransform="uppercase">
       {formatAssetAmountCurrency({
         asset: data.address.startsWith('thor') ? AssetRuneNative : AssetCacao,
         amount: baseToAsset(data.award),
@@ -97,8 +97,21 @@ export const Status = ({ data }: { data: NodeInfo | NodeInfoMaya }) => {
     }
   }
 
+  const getColor = (status: NodeStatusEnum): Color => {
+    switch (status) {
+      case NodeStatusEnum.Active:
+        return 'primary'
+      case NodeStatusEnum.Standby:
+        return 'warning'
+      case NodeStatusEnum.Disabled:
+        return 'error'
+      default:
+        return 'normal'
+    }
+  }
+
   return (
-    <Label align="center" size="big" textTransform="uppercase">
+    <Label className="!w-auto" align="center" color={getColor(data.status)} textTransform="uppercase">
       {intl.formatMessage({ id: getStatusMessageId(data.status) })}
     </Label>
   )

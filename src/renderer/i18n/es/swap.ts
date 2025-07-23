@@ -16,8 +16,6 @@ const swap: SwapMessages = {
   'swap.slip.tolerance': 'Bajada tolerancia',
   'swap.slip.tolerance.info':
     'Cuanto mayor sea el porcentaje, más deslizamiento aceptará. Más deslizamiento incluye también un rango más amplio para cubrir las comisiones estimadas para evitar swaps abortados.',
-  'swap.slip.tolerance.ledger-disabled.info':
-    'La tolerancia al deslizamiento se ha desactivado debido a problemas técnicos con Ledger.',
   'swap.streaming.interval': 'Intervalo',
   'swap.streaming.title': 'Estado del streaming',
   'swap.streaming.interval.info': 'Intervalo entre intercambios, 10 bloques es un intervalo de 1 minuto',

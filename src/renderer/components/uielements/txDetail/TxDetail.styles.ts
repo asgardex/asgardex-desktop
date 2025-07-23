@@ -23,20 +23,10 @@ export const ValuesContainer = styled.div`
   }
 `
 
-const CWD_SIDE_MARGIN = 10
 export const ContainerWithDelimeter = styled.div`
   display: inline-block;
   position: relative;
-  margin: 0 ${CWD_SIDE_MARGIN * 2}px 0 0;
-
-  &:after {
-    content: ' ';
-    height: 100%;
-    border-right: ${palette('gray', 2)} 1px solid;
-    position: absolute;
-    top: 0;
-    right: -${CWD_SIDE_MARGIN}px;
-  }
+  margin: 0 2px 0 0;
 
   &:first-child {
     margin-left: 0;
@@ -57,7 +47,6 @@ export const InOutContainer = styled(ContainerWithDelimeter)`
   text-transform: uppercase;
   padding: 3px 5px;
   line-height: 22px;
-  margin-bottom: 5px;
   background: ${palette('background', 2)};
   border: 1px solid ${palette('gray', 2)};
   color: ${palette('text', 0)};
@@ -89,38 +78,38 @@ export const InOutValueContainer = styled.div`
 
 export const InOutValue = styled(ContainerWithDelimeter)`
   white-space: nowrap;
-  padding: 0 5px 0 10px;
+  padding: 0 4px;
 
   ${media.lg`
-  padding: 0;
+    padding: 0;
   `}
 `
 
 export const AssetIcon = styled(AssetIconUI)`
-  margin: 0 5px 0 10px;
+  margin: 0 4px;
 `
 
 export const InOutText = styled.span`
-  font-size: 14px;
+  font-size: 12px;
   color: ${palette('text', 2)};
   text-transform: uppercase;
-  margin-right: 5px;
+  margin-right: 4px;
 
   &:first-child {
-    margin-right: 5px;
-    margin-left: 5px;
+    margin-right: 4px;
+    margin-left: 4px;
   }
   &:last-child {
-    margin-left: 10px;
+    margin-left: 4px;
   }
 
   ${media.md`
    &:first-child {
-    margin-right: 10px;
-    margin-left: 5px;
+    margin-right: 4px;
+    margin-left: 4px;
     }
     &:last-child {
-      margin-left: 15px;
+      margin-left: 4px;
     }
   `}
 

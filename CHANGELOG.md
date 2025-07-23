@@ -1,10 +1,40 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.5 (2025-7-19)
+
+## Add
+
+- Add Back button at no wallet view [#816](https://github.com/asgardex/asgardex-desktop/pull/816)
+- Complete Tcy claim / stake / unstake [#785](https://github.com/asgardex/asgardex-desktop/pull/785)
+
+## Update/Fixes
+
+- Fix Ledger Address verify function & HD deriv paths [#822](https://github.com/asgardex/asgardex-desktop/pull/822)
+- Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
+- Fix preview only swaps [#815](https://github.com/asgardex/asgardex-desktop/pull/815)
+- Migrate from antd to tanstack [#814](https://github.com/asgardex/asgardex-desktop/pull/814)
+
+# 1.40.4 (2025-7-3)
+
+## Add
+
+## Update/Fixes
+
+- Fix Ruji swaps [#808](https://github.com/asgardex/asgardex-desktop/pull/808)
+- Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
+
 # 1.40.3 (2025-6-28)
 
 ## Add
 
 - Add Ripple [#781](https://github.com/asgardex/asgardex-desktop/pull/781)
+- Add tolerance adjustment to streaming params [#799](https://github.com/asgardex/asgardex-desktop/pull/799)
+- Add price of asset in Asset Detail [#787](https://github.com/asgardex/asgardex-desktop/pull/787)
+
+## Update/Fixes
+
+- Fix Ruji [#802](https://github.com/asgardex/asgardex-desktop/pull/802)
+- Fix target asset list [#803](https://github.com/asgardex/asgardex-desktop/pull/803)
 
 # 1.40.2 (2025-6-20)
 

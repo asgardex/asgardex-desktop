@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 
-import { Listbox } from '@headlessui/react'
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -64,75 +64,59 @@ export const PoolsPeriodSelector = ({
           event.preventDefault()
           event.stopPropagation()
         }}>
-        <Listbox.Button
+        <ListboxButton
           as="div"
-          className={() => `group
-              flex
-              cursor-pointer items-center
-              bg-bg0
-              py-5px
-              pl-20px
-              pr-10px
-              font-main text-[12px]
-              text-text0
-              transition
-              duration-300
-              ease-in-out hover:shadow-full
-              hover:dark:shadow-fulld
-              ${disabled && 'opacity-70'}
-              whitespace-nowrap
-              dark:bg-bg0d
-              dark:text-text0d
-              `}>
+          className={clsx(
+            'group flex items-center cursor-pointer',
+            'bg-bg0 dark:bg-bg0d text-text0 dark:text-text0d',
+            'py-5px pl-10px pr-10px',
+            'font-main text-[12px] whitespace-nowrap',
+            'transition duration-300 ease-in-out hover:shadow-full hover:dark:shadow-fulld',
+            { 'opacity-70': disabled }
+          )}>
           {({ open }) => (
             <>
               <span className="w-full">{selectedItem.label}</span>
-              <ChevronDownIcon className={clsx('ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })} />
+              <ChevronDownIcon
+                className={clsx('ml-2 ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })}
+              />
             </>
           )}
-        </Listbox.Button>
-        <Listbox.Options
-          className="
-            absolute z-[2000]
-            mt-[0px]
-            max-h-60 w-full overflow-auto
-            border
-            border-gray0 bg-bg0 focus:outline-none
-            dark:border-gray0d  dark:bg-bg0d
-
-            ">
+        </ListboxButton>
+        <ListboxOptions
+          className={clsx(
+            'absolute z-[2000] mt-[0px] max-h-60 w-full overflow-auto',
+            'border border-gray0 bg-bg0 focus:outline-none dark:border-gray0d dark:bg-bg0d'
+          )}>
           {FP.pipe(
             listItems,
             A.map((item) => {
               const selected = item.value === selectedItem.value
               return (
-                <Listbox.Option
+                <ListboxOption
                   disabled={item.value === selectedItem.value}
                   className={({ selected }) =>
-                    `flex w-full
-                      select-none
-                      justify-center whitespace-nowrap
-                      py-[10px] pl-20px pr-10px
-                      ${selected && 'text-gray2 dark:text-gray2d'}
-                      ${selected ? 'cursor-disabled' : 'cursor-pointer'}
-                      font-main text-[12px]
-                      text-text0
-                      dark:text-text0d
-                      ${!selected && 'hover:bg-gray0 hover:text-gray2'}
-                      ${!selected && 'hover:dark:bg-gray0d hover:dark:text-gray2d'}
-                      `
+                    clsx(
+                      'flex w-full select-none justify-center whitespace-nowrap',
+                      'py-10px pl-20px pr-10px',
+                      'font-main text-[12px]',
+                      'text-text0 dark:text-text0d',
+                      selected
+                        ? 'cursor-disabled text-gray2 dark:text-gray2d'
+                        : 'cursor-pointer hover:bg-gray0 hover:text-gray2 hover:dark:bg-gray0d hover:dark:text-gray2d'
+                    )
                   }
                   key={item.value}
                   value={item}>
                   {item.label}
                   <CheckIcon
-                    className={clsx('ml-5px h-20px w-20px text-turquoise', selected ? 'visible' : 'invisible')}
+                    className={clsx('ml-1 h-20px w-20px text-turquoise', selected ? 'visible' : 'invisible')}
                   />
-                </Listbox.Option>
+                </ListboxOption>
               )
             })
           )}
-        </Listbox.Options>
+        </ListboxOptions>
       </div>
     </Listbox>
   )

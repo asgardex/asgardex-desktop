@@ -2,6 +2,7 @@ import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import { array as A, either as E, function as FP, option as O } from 'fp-ts'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
+import { ZERO_BASE_AMOUNT } from '../../const'
 import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
@@ -11,12 +12,33 @@ import { WalletBalances } from '../../services/wallet/types'
 import { AssetsToSwap } from './Swap.types'
 
 /**
- * Returns `BaseAmount` with asgardex identifier - is now a affiliate address/thorname
- * It's always `1e8` based (default by THORChain)
+ * Extracts the swap limit from a memo string in the format "=:asset:address:limit[/quantity/interval]:extra:extra".
+ * @param memo - The memo string containing the swap limit in the fourth part (e.g., "=:r:address:32099887789[/quantity/interval]:dx:0").
+ * @returns A BaseAmount representing the swap limit, or ZERO_BASE_AMOUNT if the memo or limit is invalid. i.e no quote or previewed quote
  */
 export const getSwapLimit1e8 = (memo: string): BaseAmount => {
-  const swapLimitFromMemo = baseAmount(memo.split(':')[3])
-  return swapLimitFromMemo
+  if (!memo?.trim()) {
+    return ZERO_BASE_AMOUNT
+  }
+
+  const parts = memo.split(':')
+  if (parts.length < 4) {
+    return ZERO_BASE_AMOUNT
+  }
+
+  const swapLimitPart = parts[3]
+  if (!swapLimitPart) {
+    return ZERO_BASE_AMOUNT
+  }
+
+  const swapLimit = swapLimitPart.includes('/') ? swapLimitPart.split('/')[0] : swapLimitPart
+
+  const swapLimitNum = Number(swapLimit)
+  if (isNaN(swapLimitNum) || swapLimitNum < 0) {
+    return ZERO_BASE_AMOUNT
+  }
+
+  return baseAmount(swapLimitNum)
 }
 
 export const pickPoolAsset = (assets: PoolAssetDetails, asset: AnyAsset): O.Option<PoolAssetDetail> =>

@@ -33,7 +33,7 @@ export const HeaderTheme = (props: Props): JSX.Element => {
     const label = intl.formatMessage({ id: isLightTheme ? 'common.theme.light' : 'common.theme.dark' })
 
     return (
-      <div className="flex items-center justify-between px-4 w-full">
+      <div className="flex items-center justify-between px-6 lg:px-4 w-full">
         <Label size="large" textTransform="uppercase" weight="bold">
           {label}
         </Label>

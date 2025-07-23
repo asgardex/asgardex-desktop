@@ -19,9 +19,10 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { Bonds } from '../../components/Bonds'
+import { Spin } from '../../components/shared/loading'
 import { BaseButton, RefreshButton } from '../../components/uielements/button'
+import { Label } from '../../components/uielements/label'
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
-import * as Styled from '../../components/wallet/assets/TotalValue.styles'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -266,12 +267,16 @@ export const BondsView = (): JSX.Element => {
     }
 
     const renderThorTotal = RD.fold(
-      () => <Styled.BalanceLabel>--</Styled.BalanceLabel>,
-      () => <Styled.Spin />,
+      () => (
+        <Label className="my-4 mx-10px text-[28px]" align="center" color="gray">
+          --
+        </Label>
+      ),
+      () => <Spin className="pt-4" />,
       (error: Error) => (
-        <Styled.BalanceLabel>
+        <Label className="my-4 mx-10px text-[28px]" align="center" color="gray">
           {intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message })}
-        </Styled.BalanceLabel>
+        </Label>
       ),
       (nodes: NodeInfoThor[]) => {
         const totals = calculateTotalBondThor(nodes, walletAddresses.THOR)
@@ -279,7 +284,7 @@ export const BondsView = (): JSX.Element => {
         const activeAmount = activeLabel === LabelView.Connected ? totals : totalMonitored
 
         return (
-          <Styled.BalanceLabel>
+          <Label className="my-4 mx-10px text-[28px]" align="center" color="gray">
             {isPrivate
               ? hiddenString
               : formatAssetAmountCurrency({
@@ -291,18 +296,22 @@ export const BondsView = (): JSX.Element => {
             {isPrivate
               ? hiddenString
               : `ᚱ ${new Intl.NumberFormat().format(parseFloat(baseToAsset(activeAmount).amount().toFixed(2)))}`}
-          </Styled.BalanceLabel>
+          </Label>
         )
       }
     )
 
     const renderMayaTotal = RD.fold(
-      () => <Styled.BalanceLabel>--</Styled.BalanceLabel>,
-      () => <Styled.Spin />,
+      () => (
+        <Label className="my-4 mx-10px text-[28px]" align="center" color="gray">
+          --
+        </Label>
+      ),
+      () => <Spin className="pt-4" />,
       (error: Error) => (
-        <Styled.BalanceLabel>
+        <Label className="my-4 mx-10px text-[28px]" align="center" color="gray">
           {intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message })}
-        </Styled.BalanceLabel>
+        </Label>
       ),
       (nodes: NodeInfoMaya[]) => {
         const totals = calculateTotalBondMaya(nodes, walletAddresses.MAYA)
@@ -310,7 +319,7 @@ export const BondsView = (): JSX.Element => {
         const activeAmount = activeLabel === LabelView.Connected ? totals : totalMonitored
 
         return (
-          <Styled.BalanceLabel>
+          <Label className="my-4 mx-10px text-[28px]" align="center" color="gray">
             {isPrivate
               ? hiddenString
               : formatAssetAmountCurrency({
@@ -322,7 +331,7 @@ export const BondsView = (): JSX.Element => {
             {isPrivate
               ? hiddenString
               : `${new Intl.NumberFormat().format(parseFloat(baseToAsset(activeAmount).amount().toFixed(2)))} CACAO`}
-          </Styled.BalanceLabel>
+          </Label>
         )
       }
     )
@@ -349,14 +358,14 @@ export const BondsView = (): JSX.Element => {
       <div className="flex w-full justify-end pb-10px">
         <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
       </div>
-      <Styled.Container className="rounded-t-lg">
+      <div className="flex flex-col items-center justify-center rounded-t-lg bg-bg1 dark:bg-bg1d px-4 pt-4 pb-8">
         <div className="relative flex w-full items-center justify-center">
-          <Styled.TitleContainer>
-            <Styled.BalanceTitle>
+          <div className="flex items-center">
+            <Label className="!w-auto" align="center" color="input" textTransform="uppercase">
               {activeLabel === LabelView.Monitored
                 ? 'Total Value Across Connected and Monitored Addresses'
                 : 'Total Connected Wallet Value'}
-            </Styled.BalanceTitle>
+            </Label>
             <BaseButton
               className="ml-2 !p-0 text-turquoise"
               onClick={() =>
@@ -364,13 +373,13 @@ export const BondsView = (): JSX.Element => {
               }>
               <SwapOutlined className="rounded-full border border-solid border-turquoise p-[2px] w-5 h-5" />
             </BaseButton>
-          </Styled.TitleContainer>
+          </div>
           <div className="absolute right-0 flex items-center">
             <RefreshButton onClick={reloadNodeInfos} disabled={RD.isPending(nodeInfosThor)} />
           </div>
         </div>
         {renderBondTotal}
-      </Styled.Container>
+      </div>
       <Bonds
         addressValidationThor={validateAddressThor}
         addressValidationMaya={validateAddressMaya}

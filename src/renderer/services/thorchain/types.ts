@@ -225,6 +225,32 @@ export type LiquidityProviderLD = LiveData<Error, O.Option<LiquidityProvider>>
 export type LiquidityProviderRD = RD.RemoteData<Error, O.Option<LiquidityProvider>>
 export type LiquidityProvidersRD = RD.RemoteData<Error, LiquidityProvider[]>
 
+export interface ApiTcyClaimResponse {
+  tcy_claimer: Array<{
+    asset: string
+    amount: string
+    l1_address: string
+  }>
+}
+
+export type TcyClaim = {
+  asset: AnyAsset
+  amount: BaseAmount
+  walletType: WalletType
+  l1Address?: Address
+}
+
+export type TcyClaimLD = LiveData<Error, TcyClaim[]>
+export type TcyClaimRD = RD.RemoteData<Error, TcyClaim[]>
+
+export type TcyStake = {
+  address?: Address
+  amount: BaseAmount
+}
+
+export type TcyStakeLD = LiveData<Error, TcyStake>
+export type TcyStakeRD = RD.RemoteData<Error, TcyStake>
+
 export type LiquidityProviderHasAsymAssets = { dexAsset: boolean; asset: boolean }
 export type LiquidityProviderHasAsymAssetsRD = RD.RemoteData<Error, LiquidityProviderHasAsymAssets>
 

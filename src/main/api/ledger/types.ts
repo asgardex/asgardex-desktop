@@ -1,8 +1,8 @@
-import * as Transport from '@ledgerhq/hw-transport'
+import type Transport from '@ledgerhq/hw-transport'
 import { Network } from '@xchainjs/xchain-client'
 
 export type VerifyAddressHandler = (params: {
-  transport: Transport.default
+  transport: Transport
   network: Network
   walletAccount: number
   walletIndex: number

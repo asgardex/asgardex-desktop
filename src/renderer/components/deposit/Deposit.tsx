@@ -2,12 +2,12 @@ import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Chain } from '@xchainjs/xchain-util'
-import { Grid } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqAddress, eqOAddress } from '../../helpers/fp/eq'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { PoolDetailRD as PoolDetailMayaRD } from '../../services/midgard/mayaMigard/types'
 import { PoolDetailRD, PoolShareRD, PoolSharesRD } from '../../services/midgard/midgardTypes'
 import { getSharesByAssetAndType } from '../../services/midgard/thorMidgard/utils'
@@ -68,7 +68,7 @@ export const Deposit = (props: Props) => {
   const { asset } = assetWD
   const intl = useIntl()
 
-  const isDesktopView = Grid.useBreakpoint()?.md ?? false
+  const isDesktopView = useBreakpoint()?.md ?? false
 
   const walletIsImported = useMemo(() => hasImportedKeystore(keystoreState), [keystoreState])
   const walletIsLocked = useMemo(() => isLocked(keystoreState), [keystoreState])

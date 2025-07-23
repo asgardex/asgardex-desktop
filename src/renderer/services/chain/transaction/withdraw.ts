@@ -27,7 +27,7 @@ import { service as midgardService } from '../../midgard/thorMidgard/service'
 import { INITIAL_WITHDRAW_STATE, ChainTxFeeOption } from '../const'
 import { PoolWithdrawParams, SymWithdrawParams, TradeWithdrawParams, WithdrawState, WithdrawState$ } from '../types'
 import { poolTxStatusByChain$, sendPoolTx$ } from './common'
-import { smallestAmountToSent } from './transaction.helper'
+import { smallestAmountToSend } from './transaction.helper'
 
 const { pools: midgardPoolsService, validateNode$: validateNodeThor$ } = midgardService
 const { validateNode$: validateNodeMaya$ } = mayaMidgardService
@@ -84,7 +84,7 @@ export const symWithdraw$ = ({
         router: O.none, // no router for RUNE/MAYA
         asset: protocol === THORChain ? AssetRuneNative : AssetCacao,
         recipient: '', // empty for RUNE/MAYA txs
-        amount: smallestAmountToSent(chain, network),
+        amount: smallestAmountToSend(chain, network),
         memo,
         feeOption: ChainTxFeeOption.WITHDRAW,
         protocol

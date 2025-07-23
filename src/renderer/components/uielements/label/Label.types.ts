@@ -44,6 +44,6 @@ export const colorMap: Record<Color, string> = {
   light: 'text-text2 dark:text-text2d',
   dark: 'text-text1 dark:text-text1d',
   gray: 'text-text2 dark:text-text2d',
-  input: 'text-text2 dark:text-text2d',
+  input: 'text-gray2 dark:text-gray2d',
   white: 'text-white'
 }

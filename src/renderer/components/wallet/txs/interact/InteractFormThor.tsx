@@ -960,13 +960,13 @@ export const InteractFormThor = ({
         {/** Rune Pool Only */}
         {interactType === InteractType.RunePool && (
           <div>
-            <span style={{ display: 'inline-block' }}>
+            <span className="inline-block">
               <SwitchButton
                 active={runePoolAction === Action.add}
                 onChange={(active) => setRunePoolAction(active ? Action.add : Action.withdraw)}
               />
             </span>
-            <span style={{ marginLeft: '10px', display: 'inline-block' }}>
+            <span className="inline-block ml-2">
               <Styled.InputLabel>
                 {runePoolAction === Action.add
                   ? intl.formatMessage({ id: 'runePool.detail.titleDeposit' })

@@ -28,7 +28,7 @@ export const HeaderLockMobile = (props: Props): JSX.Element => {
   }, [intl, isLocked, keystoreState])
 
   return (
-    <div className="flex items-center justify-between w-full px-4 lg:w-auto">
+    <div className="flex items-center justify-between w-full px-6 lg:w-auto">
       <Label size="large" textTransform="uppercase" weight="bold">
         {label}
       </Label>

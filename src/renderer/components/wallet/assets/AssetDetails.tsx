@@ -173,7 +173,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
   return (
     <>
       {renderQRCodeModal}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between mb-4">
         <BackLinkButton path={walletRoutes.assets.path()} />
         <RefreshButton onClick={refreshHandler} />
       </div>

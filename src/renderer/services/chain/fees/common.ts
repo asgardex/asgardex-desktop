@@ -25,7 +25,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isChainOfThor } from '../../../../shared/utils/chain'
-import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isRujiAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
@@ -100,7 +100,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
       liveData.map((fees) => ({ amount: fees.fast, asset: AssetRuneNative }))
     )
   }
-  if (isTCYAsset(asset)) {
+  if (isTCYAsset(asset) || isRujiAsset(asset)) {
     return FP.pipe(
       THOR.fees$(),
       liveData.map((fees) => ({ amount: fees.fast, asset: AssetRuneNative }))

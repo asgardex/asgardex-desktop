@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Row, Col, Grid } from 'antd'
+import { Row, Col } from 'antd'
 import clsx from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -14,7 +14,9 @@ import CloseIcon from '../../assets/svg/icon-close.svg?react'
 import MenuIcon from '../../assets/svg/icon-menu.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
+import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import { useThemeContext } from '../../contexts/ThemeContext'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import * as appRoutes from '../../routes/app'
 import * as poolsRoutes from '../../routes/pools'
 import * as walletRoutes from '../../routes/wallet'
@@ -32,6 +34,7 @@ import { MimirRD } from '../../services/thorchain/types'
 import { ChangeKeystoreWalletHandler, KeystoreState, KeystoreWalletsUI } from '../../services/wallet/types'
 import { isLocked } from '../../services/wallet/util'
 import { PricePoolAsset, PricePoolAssets } from '../../views/pools/Pools.types'
+import { Drawer } from '../uielements/drawer'
 import { Label } from '../uielements/label'
 import * as Styled from './HeaderComponent.styles'
 import { HeaderLock } from './lock/'
@@ -142,7 +145,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
 
   const [menuVisible, setMenuVisible] = useState(false)
 
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
 
   const toggleMenu = useCallback(() => {
     setMenuVisible(!menuVisible)
@@ -189,14 +192,15 @@ export const HeaderComponent = (props: Props): JSX.Element => {
 
   const links = useMemo(
     () =>
-      items.map(({ label, key, path, icon: Icon }) => (
+      items.map(({ label, key, path, icon: Icon }, index) => (
         <Link key={key} to={path} onClick={closeMenu}>
           <div
             className={clsx(
               'flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d',
-              activeKey === key ? 'text-turquoise' : 'text-text1 dark:text-text1d'
+              activeKey === key ? 'text-turquoise' : 'text-text1 dark:text-text1d',
+              { 'border-t': index === 0 }
             )}>
-            <Icon className="mx-3" />
+            <Icon className="ml-6 mr-3" />
             <Label color="dark" size="large" textTransform="uppercase" weight="bold">
               {label}
             </Label>
@@ -284,24 +288,6 @@ export const HeaderComponent = (props: Props): JSX.Element => {
     headerRef.current = O.fromNullable(ref)
   }, [])
 
-  /**
-   * To display HeaderDrawer component right(!) after the Header one
-   * we need to check Header's bottom-edge position. In case there is something
-   * above the Header component at the layout (e.g. AppUpdate component) relying
-   * just on the Header's height is not enough.
-   */
-  const getHeaderBottomPosition = useCallback(
-    () =>
-      FP.pipe(
-        headerRef.current,
-        O.map((header) => header.getBoundingClientRect().bottom),
-        // `headerHeight ` is styled-components based property and can contain "px" at the string value
-        // and parsingInt will get ONLY meaningful integer value
-        O.getOrElse(() => parseInt(headerHeight, 10))
-      ),
-    [headerHeight]
-  )
-
   return (
     <>
       <Styled.HeaderContainer className="!bg-bg3 dark:!bg-bg3d">
@@ -369,20 +355,10 @@ export const HeaderComponent = (props: Props): JSX.Element => {
           )}
         </Row>
         {!isDesktopView && (
-          <Styled.HeaderDrawer
-            style={{
-              marginTop: getHeaderBottomPosition(),
-              backgroundColor: 'transparent',
-              maxHeight: `calc(100% - ${getHeaderBottomPosition()}px)`,
-              overflow: 'auto'
-            }}
-            drawerStyle={{ backgroundColor: 'transparent' }}
-            maskStyle={{ backgroundColor: 'transparent' }}
-            placement="top"
-            closable={false}
-            height="auto"
-            visible={menuVisible}
-            key="top">
+          <Drawer
+            title={<AsgardexLogo className="text-text2 dark:text-text2d [&>*]:fill-current" />}
+            isOpen={menuVisible}
+            onClose={() => setMenuVisible(false)}>
             {links}
             <div className="flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d">
               {renderHeaderCurrency}
@@ -397,7 +373,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
               {renderHeaderSettings}
             </div>
             {renderHeaderNetStatus}
-          </Styled.HeaderDrawer>
+          </Drawer>
         )}
       </Styled.HeaderContainer>
     </>

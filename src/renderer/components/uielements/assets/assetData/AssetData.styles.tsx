@@ -8,7 +8,6 @@ import {
   AssetSecuredLabel as AssetSecuredLabelUI
 } from '../../common/Common.styles'
 import { Label as UILabel } from '../../label'
-import { AssetIcon as UIAssetIcon } from '../assetIcon'
 
 export type AssetDataSize = 'small' | 'big'
 
@@ -23,14 +22,12 @@ export const Wrapper = styled(A.Row).attrs({
   }
 `
 
-export const AssetIcon = styled(UIAssetIcon)``
-
 export const TickerLabel = styled(UILabel).attrs({
   textTransform: 'uppercase',
   weight: 'bold'
 })`
   height: 18px;
-  padding: 0px 16px 0px 11px;
+  padding: 0px 16px 0px 8px;
   font-size: 16px;
   line-height: 18px;
 `

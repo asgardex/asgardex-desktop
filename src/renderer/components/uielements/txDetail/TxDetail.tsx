@@ -20,7 +20,7 @@ export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network,
             {isDesktopView && <Styled.AssetIcon size="xsmall" asset={asset} network={network} />}
             <Styled.InOutValue>
               {formatAssetAmountCurrency({
-                trimZeros: false,
+                trimZeros: true,
                 amount: baseToAsset(
                   isCacaoAsset(asset) ? baseAmount(amount.amount().toNumber(), CACAO_DECIMAL) : amount
                 ),
@@ -43,7 +43,7 @@ export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network,
               {isDesktopView && <Styled.AssetIcon size="xsmall" asset={asset} network={network} />}
               <Styled.InOutValue>
                 {formatAssetAmountCurrency({
-                  trimZeros: false,
+                  trimZeros: true,
                   amount: baseToAsset(
                     isCacaoAsset(asset) ? baseAmount(amount.amount().toNumber(), CACAO_DECIMAL) : amount
                   ),

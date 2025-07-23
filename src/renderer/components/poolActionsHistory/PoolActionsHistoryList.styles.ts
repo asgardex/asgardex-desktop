@@ -19,10 +19,8 @@ export const ListItem = styled(A.List.Item)`
   }
 
   &.ant-list-item {
-    padding: 0;
-    border: 0;
-    border-color: ${palette('gray', 1)};
-    border-bottom: 1px solid ${palette('gray', 1)};
+    padding: 4px;
+    border-bottom: 1px solid ${palette('gray', 2)};
   }
 `
 
