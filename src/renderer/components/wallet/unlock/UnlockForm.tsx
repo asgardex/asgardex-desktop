@@ -43,7 +43,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  //const params = useParams()
+
   const intl = useIntl()
   const {
     register,
@@ -66,7 +66,6 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
         // Redirect to /assets for swap screen
         navigate(walletRoutes.assets.template)
       } else {
-        // Existing logic for other cases
         FP.pipe(
           getUrlSearchParam(location.search, walletRoutes.REDIRECT_PARAMETER_NAME),
           O.alt(() => O.some((location.state as ReferrerState)?.referrer || walletRoutes.assets.template)),
