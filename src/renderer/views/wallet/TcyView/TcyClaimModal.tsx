@@ -62,7 +62,7 @@ export const TcyClaimModal = (props: Props) => {
           <div className="h-[1px] w-full bg-gray1 dark:bg-gray0d" />
           <div className="w-full px-4 space-y-1">
             <div className="w-full flex items-center justify-between">
-              <AssetData walletType={tcyInfo.walletType} asset={tcyInfo.asset} network={network} />
+              <AssetData asset={tcyInfo.asset} network={network} />
             </div>
             <div className="flex items-center justify-between">
               <span className="text-14 text-text2 dark:text-text2d">Claimable Amount:</span>

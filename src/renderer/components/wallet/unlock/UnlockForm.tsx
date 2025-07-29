@@ -5,7 +5,7 @@ import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
 import { useIntl } from 'react-intl'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { KeystoreId } from '../../../../shared/api/types'
 import { emptyString } from '../../../helpers/stringHelper'
@@ -43,7 +43,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const params = useParams()
+
   const intl = useIntl()
   const {
     register,
@@ -59,13 +59,21 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
   // Re-direct to previous view after unlocking the wallet
   useEffect(() => {
     if (!isLocked(keystore) && validPassword) {
-      FP.pipe(
-        getUrlSearchParam(location.search, walletRoutes.REDIRECT_PARAMETER_NAME),
-        O.alt(() => O.some((location.state as ReferrerState)?.referrer || walletRoutes.assets.template)),
-        O.map((path) => navigate(path))
-      )
+      // Check if the current location is related to the swap screen (e.g., tradeAssets or interact with swap type)
+      const isFromAssetScreen = (location.state as ReferrerState)?.referrer.includes('wallet/assets')
+
+      if (isFromAssetScreen) {
+        // Redirect to /assets for swap screen
+        navigate(walletRoutes.assets.template)
+      } else {
+        FP.pipe(
+          getUrlSearchParam(location.search, walletRoutes.REDIRECT_PARAMETER_NAME),
+          O.alt(() => O.some((location.state as ReferrerState)?.referrer || walletRoutes.assets.template)),
+          O.map((path) => navigate(path))
+        )
+      }
     }
-  }, [keystore, location, navigate, params, validPassword])
+  }, [keystore, location, navigate, validPassword])
 
   const submitForm = useCallback(
     async ({ password }: FormData) => {

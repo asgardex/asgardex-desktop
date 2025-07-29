@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { InformationCircleIcon } from '@heroicons/react/20/solid'
+import { ArchiveBoxXMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -28,10 +29,12 @@ import { TxModal } from '../../../components/modal/tx'
 import { ClaimAsset } from '../../../components/modal/tx/extra'
 import { SendAsset } from '../../../components/modal/tx/extra/SendAsset'
 import { AssetData } from '../../../components/uielements/assets/assetData'
+import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { FlatButton, RefreshButton, ViewTxButton } from '../../../components/uielements/button'
 import { CheckButton } from '../../../components/uielements/button/CheckButton'
-import { Tooltip } from '../../../components/uielements/common/Common.styles'
+import { Tooltip, WalletTypeLabel, WalletTypeTinyLabel } from '../../../components/uielements/common/Common.styles'
 import { InputBigNumber } from '../../../components/uielements/input'
+import { Label } from '../../../components/uielements/label'
 import { Slider } from '../../../components/uielements/slider'
 import { AssetsNav } from '../../../components/wallet/assets'
 import { getInteractiveDescription } from '../../../components/wallet/txs/interact/Interact.helpers'
@@ -64,6 +67,7 @@ import { InteractState, TcyClaim, TcyStakeLD } from '../../../services/thorchain
 import { balancesState$ } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { WalletBalance } from '../../../services/wallet/types'
+import { walletTypeToI18n } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
 import { AssetWithAmount1e8 } from '../../../types/asgardex'
 import { TcyClaimModal } from './TcyClaimModal'
@@ -767,11 +771,26 @@ export const TcyView = () => {
                   <span className="text-text2 dark:text-text2d text-16">
                     {intl.formatMessage({ id: 'tcy.claimNotice' })}
                   </span>
-                  <div className="mt-4 border border-solid border-gray0 dark:border-gray0d rounded-lg">
+                  <div className="mt-4">
                     {RD.fold<Error, TcyClaim[], JSX.Element>(
-                      () => <span className="text-text2 dark:text-text2d p-4">Loading claims...</span>,
-                      () => <span className="text-text2 dark:text-text2d p-4">Fetching claims...</span>,
-                      () => <span className="text-text2 dark:text-text2d p-4">Nothing to claim</span>,
+                      () => (
+                        <div className="flex flex-col items-center w-full p-4 space-y-2">
+                          <ArrowPathIcon className="animate-spin w-8 h-8" />
+                          <span className="text-text2 dark:text-text2d px-4">Loading claims...</span>
+                        </div>
+                      ),
+                      () => (
+                        <div className="flex flex-col items-center w-full p-4 space-y-2">
+                          <ArrowPathIcon className="animate-spin w-8 h-8" />
+                          <span className="text-text2 dark:text-text2d px-4">Fetching claims...</span>
+                        </div>
+                      ),
+                      () => (
+                        <div className="flex flex-col items-center w-full border border-solid border-warning0 dark:border-warning0d bg-warning0/5 dark:bg-warning0d/5 rounded-lg p-4 space-y-2">
+                          <ArchiveBoxXMarkIcon className="text-warning0 dark:text-warning0d w-8 h-8" />
+                          <span className="text-text2 dark:text-text2d px-4">Nothing to claim</span>
+                        </div>
+                      ),
                       (claims) => (
                         <div>
                           {claims.length === 0 ? (
@@ -780,7 +799,7 @@ export const TcyView = () => {
                             claims.map((tcyData, index) => (
                               <div
                                 key={`${tcyData.l1Address || 'claim'}-${index}`}
-                                className="flex items-center justify-between px-4 py-2">
+                                className="flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
                                   <div className="min-w-[120px]">
                                     <AssetData
@@ -789,18 +808,22 @@ export const TcyView = () => {
                                           ? assetFromStringEx(`${tcyData.asset.chain}/${tcyData.asset.symbol}`)
                                           : tcyData.asset
                                       }
-                                      walletType={tcyData.walletType}
                                       network={network}
                                     />
                                   </div>
-                                  <span className="text-text2 dark:text-text2d">
-                                    {formatAssetAmountCurrency({
-                                      asset: AssetTCY,
-                                      amount: baseToAsset(tcyData.amount),
-                                      trimZeros: true,
-                                      decimal: 2
-                                    })}
-                                  </span>
+                                  <div className="flex flex-col">
+                                    <span className="text-text2 dark:text-text2d">
+                                      {formatAssetAmountCurrency({
+                                        asset: AssetTCY,
+                                        amount: baseToAsset(tcyData.amount),
+                                        trimZeros: true,
+                                        decimal: 2
+                                      })}
+                                    </span>
+                                    <WalletTypeTinyLabel>
+                                      {walletTypeToI18n(tcyData.walletType, intl)}
+                                    </WalletTypeTinyLabel>
+                                  </div>
                                 </div>
                                 <FlatButton
                                   className="p-2 bg-turquoise text-white cursor-pointer rounded-lg text-11 uppercase"
@@ -833,13 +856,12 @@ export const TcyView = () => {
                   <div className="flex items-center justify-between rounded-lg py-2 px-4 border border-gray0 dark:border-gray0d">
                     <div className="flex flex-col">
                       <InputBigNumber
+                        className="w-full !px-0 leading-none text-text0 !opacity-100 dark:text-text0d"
                         value={baseToAsset(_amountToSend).amount()}
                         size="xlarge"
                         ghost
                         decimal={THORCHAIN_DECIMAL}
                         onChange={onChangeInput}
-                        // override text style of input for acting as label only
-                        className={clsx('w-full !px-0 leading-none text-text0 !opacity-100 dark:text-text0d')}
                       />
                       <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
                         {tcyBalance.length > 0
@@ -853,34 +875,38 @@ export const TcyView = () => {
                             })
                           : 0}
                       </p>
-                      {hasTcyOnLedger && (
-                        <>
-                          {' '}
-                          <div className="flex w-full justify-end">
-                            <CheckButton
-                              size="medium"
-                              color="neutral"
-                              className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
-                              checked={useLedger}
-                              clickHandler={() => setUseLedger(!useLedger)}>
-                              {intl.formatMessage({ id: 'ledger.title' })}
-                            </CheckButton>
-                          </div>
-                        </>
-                      )}
                     </div>
-                    <AssetData
-                      asset={AssetTCY}
-                      network={network}
-                      walletType={
-                        useLedger
-                          ? tcyBalance[ledgerIndex].walletType
-                          : tcyBalance.length > 0
-                          ? tcyBalance[keystoreIndex].walletType
-                          : DEFAULT_WALLET_TYPE
-                      }
-                    />
+                    <div className="flex items-center space-x-2">
+                      <AssetIcon asset={AssetTCY} network={network} />
+                      <div className="flex flex-col">
+                        <Label size="big" textTransform="uppercase" weight="bold">
+                          TCY
+                        </Label>
+                        <WalletTypeTinyLabel textTransform="uppercase" weight="bold">
+                          {walletTypeToI18n(
+                            useLedger
+                              ? tcyBalance[ledgerIndex].walletType
+                              : tcyBalance.length > 0
+                              ? tcyBalance[keystoreIndex].walletType
+                              : DEFAULT_WALLET_TYPE,
+                            intl
+                          )}
+                        </WalletTypeTinyLabel>
+                      </div>
+                    </div>
                   </div>
+                  {hasTcyOnLedger && (
+                    <div className="flex w-full justify-end">
+                      <CheckButton
+                        size="medium"
+                        color="neutral"
+                        className="rounded-lg bg-gray0 !px-2 py-1 dark:bg-gray0d"
+                        checked={useLedger}
+                        clickHandler={() => setUseLedger(!useLedger)}>
+                        {intl.formatMessage({ id: 'ledger.title' })}
+                      </CheckButton>
+                    </div>
+                  )}
                   <FlatButton
                     className="my-30px min-w-[200px]"
                     size="large"
@@ -918,34 +944,38 @@ export const TcyView = () => {
                             })
                           : 0}
                       </p>
-                      {hasTcyOnLedger && (
-                        <>
-                          {' '}
-                          <div className="flex w-full justify-end">
-                            <CheckButton
-                              size="medium"
-                              color="neutral"
-                              className={clsx('rounded-b-lg bg-gray0 py-5px dark:bg-gray0d')}
-                              checked={useLedger}
-                              clickHandler={() => setUseLedger(!useLedger)}>
-                              {intl.formatMessage({ id: 'ledger.title' })}
-                            </CheckButton>
-                          </div>
-                        </>
-                      )}
                     </div>
-                    <AssetData
-                      asset={AssetTCY}
-                      network={network}
-                      walletType={
-                        useLedger
-                          ? tcyBalance[ledgerIndex].walletType
-                          : tcyBalance.length > 0
-                          ? tcyBalance[keystoreIndex].walletType
-                          : DEFAULT_WALLET_TYPE
-                      }
-                    />
+                    <div className="flex items-center space-x-2">
+                      <AssetIcon asset={AssetTCY} network={network} />
+                      <div className="flex flex-col">
+                        <Label size="big" textTransform="uppercase" weight="bold">
+                          TCY
+                        </Label>
+                        <WalletTypeTinyLabel textTransform="uppercase" weight="bold">
+                          {walletTypeToI18n(
+                            useLedger
+                              ? tcyBalance[ledgerIndex].walletType
+                              : tcyBalance.length > 0
+                              ? tcyBalance[keystoreIndex].walletType
+                              : DEFAULT_WALLET_TYPE,
+                            intl
+                          )}
+                        </WalletTypeTinyLabel>
+                      </div>
+                    </div>
                   </div>
+                  {hasTcyOnLedger && (
+                    <div className="flex w-full justify-end">
+                      <CheckButton
+                        size="medium"
+                        color="neutral"
+                        className="rounded-lg bg-gray0 !px-2 py-1 dark:bg-gray0d"
+                        checked={useLedger}
+                        clickHandler={() => setUseLedger(!useLedger)}>
+                        {intl.formatMessage({ id: 'ledger.title' })}
+                      </CheckButton>
+                    </div>
+                  )}
                   {renderSlider}
                   <FlatButton
                     className="my-30px min-w-[200px]"
@@ -968,14 +998,14 @@ export const TcyView = () => {
 
             <div className="flex flex-col space-y-2 px-4">
               <div className="flex items-center space-x-2">
-                <span className="text-16 text-text2 dark:text-text2d">
+                <Label className="!w-auto" color="gray" size="big">
                   {intl.formatMessage({ id: 'tcy.stakedAmount' })}
-                </span>
+                </Label>
                 <Tooltip title={intl.formatMessage({ id: 'tcy.stakedAmountTooltip' })}>
                   <InformationCircleIcon className="cursor-pointer text-turquoise w-4 h-4" />
                 </Tooltip>
               </div>
-              <span className="text-turquoise">
+              <Label size="large">
                 {RD.isSuccess(tcyStakePosRD)
                   ? formatAssetAmountCurrency({
                       asset: AssetTCY,
@@ -983,13 +1013,15 @@ export const TcyView = () => {
                       trimZeros: true,
                       decimal: 2
                     })
-                  : 0}
-              </span>
+                  : '0 TCY'}
+              </Label>
             </div>
 
-            <div className="flex flex-col space-y-2 px-4">
+            <div className="mt-4 flex flex-col space-y-2 px-4">
               <div className="flex items-center space-x-2">
-                <span className="text-16 text-text2 dark:text-text2d">Wallet Balance</span>
+                <Label className="!w-auto" color="gray" size="big">
+                  Wallet Balance
+                </Label>
                 <Tooltip title={intl.formatMessage({ id: 'tcy.walletBalanceTooltip' })}>
                   <InformationCircleIcon className="cursor-pointer text-turquoise w-4 h-4" />
                 </Tooltip>
@@ -997,15 +1029,13 @@ export const TcyView = () => {
 
               {/* Warning Message */}
               {!hasTcyOnLedger && !hasTcyOnKeystore ? (
-                <div className="text-gray1 dark:text-gray1d p-2 rounded">
-                  {intl.formatMessage({ id: 'deposit.add.error.nobalances' })}
-                </div>
+                <Label size="large">{intl.formatMessage({ id: 'deposit.add.error.nobalances' })}</Label>
               ) : null}
 
-              <span className="text-turquoise">
-                <div className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
-                  {hasTcyOnLedger && (
-                    <>
+              <div className="flex flex-col space-y-1">
+                {hasTcyOnLedger && (
+                  <div className="flex items-center justify-between">
+                    <Label size="large">
                       {tcyBalance.length > 0
                         ? formatAssetAmountCurrency({
                             asset: AssetTCY,
@@ -1013,12 +1043,14 @@ export const TcyView = () => {
                             trimZeros: true,
                             decimal: 2
                           })
-                        : 0}
-                      <AssetData asset={AssetTCY} network={network} walletType={tcyBalance[ledgerIndex].walletType} />
-                    </>
-                  )}
-                  {hasTcyOnKeystore && (
-                    <>
+                        : '0 TCY'}
+                    </Label>
+                    <WalletTypeLabel>{walletTypeToI18n(tcyBalance[ledgerIndex].walletType, intl)}</WalletTypeLabel>
+                  </div>
+                )}
+                {hasTcyOnKeystore && (
+                  <div className="flex items-center justify-between">
+                    <Label size="large">
                       {tcyBalance.length > 0
                         ? formatAssetAmountCurrency({
                             asset: AssetTCY,
@@ -1026,12 +1058,12 @@ export const TcyView = () => {
                             trimZeros: true,
                             decimal: 2
                           })
-                        : 0}
-                      <AssetData asset={AssetTCY} network={network} walletType={tcyBalance[keystoreIndex].walletType} />
-                    </>
-                  )}
-                </div>
-              </span>
+                        : '0 TCY'}
+                    </Label>
+                    <WalletTypeLabel>{walletTypeToI18n(tcyBalance[keystoreIndex].walletType, intl)}</WalletTypeLabel>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
