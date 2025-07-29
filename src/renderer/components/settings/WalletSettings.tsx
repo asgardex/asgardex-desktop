@@ -158,6 +158,28 @@ type Props = {
 
 type AddressToVerify = O.Option<{ address: Address; chain: Chain }>
 
+const initialMap = {
+  [BTCChain]: 0,
+  [BCHChain]: 0,
+  [LTCChain]: 0,
+  [THORChain]: 0,
+  [ETHChain]: 0,
+  [GAIAChain]: 0,
+  [DOGEChain]: 0,
+  [AVAXChain]: 0,
+  [BASEChain]: 0,
+  [BSCChain]: 0,
+  [MAYAChain]: 0,
+  [DASHChain]: 0,
+  [KUJIChain]: 0,
+  [ARBChain]: 0,
+  [RadixChain]: 0,
+  [SOLChain]: 0,
+  [ADAChain]: 0,
+  [ZECChain]: 0,
+  [XRPChain]: 0
+}
+
 export const WalletSettings = (props: Props): JSX.Element => {
   const {
     network,
@@ -222,69 +244,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
     )
   }, [showQRModal, network, closeQrModal])
 
-  const [walletIndexMap, setWalletIndexMap] = useState<Record<EnabledChain, number>>({
-    [BTCChain]: 0,
-    [BCHChain]: 0,
-    [LTCChain]: 0,
-    [THORChain]: 0,
-    [ETHChain]: 0,
-    [GAIAChain]: 0,
-    [DOGEChain]: 0,
-    [AVAXChain]: 0,
-    [BASEChain]: 0,
-    [BSCChain]: 0,
-    [MAYAChain]: 0,
-    [DASHChain]: 0,
-    [KUJIChain]: 0,
-    [ARBChain]: 0,
-    [RadixChain]: 0,
-    [SOLChain]: 0,
-    [ADAChain]: 0,
-    [ZECChain]: 0,
-    [XRPChain]: 0
-  })
-  const [derivationPathIndex, setDerivationPathIndex] = useState<Record<EnabledChain, number>>({
-    [BTCChain]: 0,
-    [BCHChain]: 0,
-    [LTCChain]: 0,
-    [THORChain]: 0,
-    [ETHChain]: 0,
-    [GAIAChain]: 0,
-    [DOGEChain]: 0,
-    [AVAXChain]: 0,
-    [BASEChain]: 0,
-    [BSCChain]: 0,
-    [MAYAChain]: 0,
-    [DASHChain]: 0,
-    [KUJIChain]: 0,
-    [ARBChain]: 0,
-    [RadixChain]: 0,
-    [SOLChain]: 0,
-    [ADAChain]: 0,
-    [ZECChain]: 0,
-    [XRPChain]: 0
-  })
-  const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
-    [BTCChain]: 0,
-    [BCHChain]: 0,
-    [LTCChain]: 0,
-    [THORChain]: 0,
-    [ETHChain]: 0,
-    [GAIAChain]: 0,
-    [DOGEChain]: 0,
-    [AVAXChain]: 0,
-    [BASEChain]: 0,
-    [BSCChain]: 0,
-    [MAYAChain]: 0,
-    [DASHChain]: 0,
-    [KUJIChain]: 0,
-    [ARBChain]: 0,
-    [RadixChain]: 0,
-    [SOLChain]: 0,
-    [ADAChain]: 0,
-    [ZECChain]: 0,
-    [XRPChain]: 0
-  })
+  const [walletIndexMap, setWalletIndexMap] = useState<Record<EnabledChain, number>>(initialMap)
+  const [derivationPathIndex, setDerivationPathIndex] = useState<Record<EnabledChain, number>>(initialMap)
+  const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>(initialMap)
 
   const {
     state: verifyLedgerAddressRD,
