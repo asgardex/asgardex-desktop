@@ -1,18 +1,19 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
-# 1.40.6 (2025-7-29)
+# 1.40.6 (2025-07-29)
 
 ## Add
 
 - Enhance TCY screen [#829](https://github.com/asgardex/asgardex-desktop/pull/829)
 - Update route logic on swap page [#830](https://github.com/asgardex/asgardex-desktop/pull/830)
+- Update default slip tolerance to 5% [#834](https://github.com/asgardex/asgardex-desktop/pull/834)
 
 ## Update/Fixes
 
 - Fix white screen issues [#829](https://github.com/asgardex/asgardex-desktop/pull/829)
 - Update xchainjs deps [#831](https://github.com/asgardex/asgardex-desktop/pull/831)
 
-# 1.40.5 (2025-7-19)
+# 1.40.5 (2025-07-19)
 
 ## Add
 
@@ -26,7 +27,7 @@
 - Fix preview only swaps [#815](https://github.com/asgardex/asgardex-desktop/pull/815)
 - Migrate from antd to tanstack [#814](https://github.com/asgardex/asgardex-desktop/pull/814)
 
-# 1.40.4 (2025-7-3)
+# 1.40.4 (2025-07-3)
 
 ## Add
 
@@ -35,7 +36,7 @@
 - Fix Ruji swaps [#808](https://github.com/asgardex/asgardex-desktop/pull/808)
 - Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
 
-# 1.40.3 (2025-6-28)
+# 1.40.3 (2025-06-28)
 
 ## Add
 
@@ -48,7 +49,7 @@
 - Fix Ruji [#802](https://github.com/asgardex/asgardex-desktop/pull/802)
 - Fix target asset list [#803](https://github.com/asgardex/asgardex-desktop/pull/803)
 
-# 1.40.2 (2025-6-20)
+# 1.40.2 (2025-06-20)
 
 ## Update/Fixes
 
@@ -62,7 +63,7 @@
 
 - Add Zcash [#770](https://github.com/asgardex/asgardex-desktop/pull/770)
 
-# 1.40.1 (2025-6-28)
+# 1.40.1 (2025-06-28)
 
 ## Update/Fixes
 
