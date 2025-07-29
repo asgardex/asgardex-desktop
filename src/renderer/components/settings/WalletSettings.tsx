@@ -51,6 +51,7 @@ import { RemoveWalletConfirmationModal } from '../../components/modal/confirmati
 import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIcon'
 import { QRCodeModal } from '../../components/uielements/qrCodeModal/QRCodeModal'
 import { PhraseCopyModal } from '../../components/wallet/phrase/PhraseCopyModal'
+import { isUtxoAssetChain } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { eqChain, eqString } from '../../helpers/fp/eq'
@@ -82,12 +83,21 @@ import * as StyledR from '../shared/form/Radio.styles'
 import { FlatButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import { Tooltip, WalletTypeLabel } from '../uielements/common/Common.styles'
+import { Dropdown } from '../uielements/dropdown'
 import { InfoIcon } from '../uielements/info'
+import { Label } from '../uielements/label'
 import { Modal } from '../uielements/modal'
 import { WalletSelector } from '../uielements/wallet'
 import { EditableWalletName } from '../uielements/wallet/EditableWalletName'
 import * as Styled from './WalletSettings.styles'
 import { WhitelistModal } from './WhitelistModal'
+
+const utxoPaths = [
+  "Native Segwit (m/84'/0'/0'/0/{index})",
+  "Native Segwit (m/84'/0'/{index}'/0/0)",
+  "Segwit (m/49'/0'/0'/0/{index})",
+  "Legacy (m/44'/0'/0'/0/{index})"
+]
 
 const ActionButton = ({
   className,
@@ -213,6 +223,27 @@ export const WalletSettings = (props: Props): JSX.Element => {
   }, [showQRModal, network, closeQrModal])
 
   const [walletIndexMap, setWalletIndexMap] = useState<Record<EnabledChain, number>>({
+    [BTCChain]: 0,
+    [BCHChain]: 0,
+    [LTCChain]: 0,
+    [THORChain]: 0,
+    [ETHChain]: 0,
+    [GAIAChain]: 0,
+    [DOGEChain]: 0,
+    [AVAXChain]: 0,
+    [BASEChain]: 0,
+    [BSCChain]: 0,
+    [MAYAChain]: 0,
+    [DASHChain]: 0,
+    [KUJIChain]: 0,
+    [ARBChain]: 0,
+    [RadixChain]: 0,
+    [SOLChain]: 0,
+    [ADAChain]: 0,
+    [ZECChain]: 0,
+    [XRPChain]: 0
+  })
+  const [derivationPathIndex, setDerivationPathIndex] = useState<Record<EnabledChain, number>>({
     [BTCChain]: 0,
     [BCHChain]: 0,
     [LTCChain]: 0,
@@ -386,22 +417,42 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   </>
                 )}
 
-                <>
-                  <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
-                    {intl.formatMessage({ id: 'setting.wallet.index' })}
+                <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
+                  {intl.formatMessage({ id: 'setting.wallet.index' })}
+                </div>
+                <Styled.WalletIndexInput
+                  className="border border-solid border-bg2 dark:border-bg2d"
+                  value={selectedWalletIndex.toString()}
+                  pattern="[0-9]+"
+                  onChange={(value) =>
+                    value !== null && +value >= 0 && setWalletIndexMap({ ...walletIndexMap, [chain]: +value })
+                  }
+                  style={{ width: 60 }}
+                  disabled={loading}
+                  onPressEnter={addLedgerAddressHandler}
+                />
+                <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.index.info' })} />
+
+                {isUtxoAssetChain(getChainAsset(chain)) && (
+                  <div className="ml-2">
+                    <Dropdown
+                      trigger={
+                        <Label className="rounded-lg p-2 border border-solid border-bg2 dark:border-bg2d">
+                          {utxoPaths[derivationPathIndex[chain]]}
+                        </Label>
+                      }
+                      options={utxoPaths.map((item, index) => (
+                        <Label
+                          key={item}
+                          className="px-1"
+                          size="normal"
+                          onClick={() => setDerivationPathIndex({ ...derivationPathIndex, [chain]: index })}>
+                          {item}
+                        </Label>
+                      ))}
+                    />
                   </div>
-                  <Styled.WalletIndexInput
-                    value={selectedWalletIndex.toString()}
-                    pattern="[0-9]+"
-                    onChange={(value) =>
-                      value !== null && +value >= 0 && setWalletIndexMap({ ...walletIndexMap, [chain]: +value })
-                    }
-                    style={{ width: 60 }}
-                    disabled={loading}
-                    onPressEnter={addLedgerAddressHandler}
-                  />
-                  <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.index.info' })} />
-                </>
+                )}
               </div>
               {isEvmChain(chain) && (
                 <StyledR.Radio.Group
@@ -548,10 +599,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
     },
     [
       intl,
-      walletIndexMap,
       walletAccountMap,
+      walletIndexMap,
       ledgerChainToAdd,
       addLedgerAddressRD,
+      derivationPathIndex,
       evmHDMode,
       updateEvmHDMode,
       addLedgerAddress,
