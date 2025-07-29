@@ -1,5 +1,17 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.6 (2025-7-29)
+
+## Add
+
+- Enhance TCY screen [#829](https://github.com/asgardex/asgardex-desktop/pull/829)
+- Update route logic on swap page [#830](https://github.com/asgardex/asgardex-desktop/pull/830)
+
+## Update/Fixes
+
+- Fix white screen issues [#829](https://github.com/asgardex/asgardex-desktop/pull/829)
+- Update xchainjs deps [#831](https://github.com/asgardex/asgardex-desktop/pull/831)
+
 # 1.40.5 (2025-7-19)
 
 ## Add
