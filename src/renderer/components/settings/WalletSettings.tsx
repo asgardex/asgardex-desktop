@@ -262,14 +262,10 @@ export const WalletSettings = (props: Props): JSX.Element => {
   } = useSubscriptionState<VerifiedLedgerAddressRD>(RD.initial)
 
   useEffect(() => {
-    FP.pipe(
-      verifyLedgerAddressRD,
-      RD.map(() => {
-        setLedgerAddressToVerify(O.none) // close modal
-        resetVerifyLedgerAddressRD() // reset state
-        return true
-      })
-    )
+    if (RD.isSuccess(verifyLedgerAddressRD)) {
+      setLedgerAddressToVerify(O.none)
+      resetVerifyLedgerAddressRD()
+    }
   }, [verifyLedgerAddressRD, resetVerifyLedgerAddressRD])
 
   const [ledgerAddressToVerify, setLedgerAddressToVerify] = useState<AddressToVerify>(O.none)
@@ -367,24 +363,22 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   {intl.formatMessage({ id: 'ledger.add.device' })}
                 </Styled.AddLedgerButton>
 
-                {evmHDMode === 'ledgerlive' && (
-                  <>
-                    <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                      {intl.formatMessage({ id: 'setting.wallet.account' })}
-                    </div>
-                    <Styled.WalletIndexInput
-                      value={selectedAccountIndex.toString()}
-                      pattern="[0-9]+"
-                      onChange={(value) =>
-                        value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
-                      }
-                      style={{ width: 60 }}
-                      disabled={loading}
-                      onPressEnter={addLedgerAddressHandler}
-                    />
-                    <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
-                  </>
-                )}
+                <>
+                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                    {intl.formatMessage({ id: 'setting.wallet.account' })}
+                  </div>
+                  <Styled.WalletIndexInput
+                    value={selectedAccountIndex.toString()}
+                    pattern="[0-9]+"
+                    onChange={(value) =>
+                      value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
+                    }
+                    style={{ width: 60 }}
+                    disabled={loading}
+                    onPressEnter={addLedgerAddressHandler}
+                  />
+                  <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
+                </>
 
                 <>
                   <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
@@ -1019,8 +1013,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         </div>
         <div className="mt-10px border-b border-solid border-bg2 px-4 dark:border-bg2d">{renderAddAddressForm()}</div>
         <div className="flex items-center justify-center">
-          {/* TODO: locale */}
-          <Styled.Subtitle>Chain Management</Styled.Subtitle>
+          <Styled.Subtitle>{intl.formatMessage({ id: 'common.chainManagement' })}</Styled.Subtitle>
           <ActionButton className="mt-5 mr-5" text="Whitelist" onClick={() => setIsWhitelistModalOpen(true)} />
         </div>
         {renderAccounts}

@@ -7,34 +7,22 @@ import esES from 'antd/lib/locale/es_ES'
 import frFR from 'antd/lib/locale/fr_FR'
 import hiHI from 'antd/lib/locale/hi_IN'
 import ruRU from 'antd/lib/locale/ru_RU'
-import { function as FP, option as O } from 'fp-ts'
+import { option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { IntlProvider } from 'react-intl'
 import * as Rx from 'rxjs'
-import * as RxOp from 'rxjs/operators'
 
 import { DEFAULT_LOCALE } from '../../shared/i18n/const'
 import { Locale } from '../../shared/i18n/types'
 import { getMessagesByLocale } from '../i18n'
 import { common } from '../services/storage'
 
-const { getStorageState$, modifyStorage } = common
+const { locale$, modifyStorage } = common
 
 type I18nContextValue = {
   locale$: Rx.Observable<Locale>
   changeLocale: (l: Locale) => void
 }
-
-export const locale$ = FP.pipe(
-  getStorageState$,
-  RxOp.map(
-    FP.flow(
-      O.map(({ locale }) => locale),
-      O.getOrElse(() => DEFAULT_LOCALE)
-    )
-  ),
-  RxOp.distinctUntilChanged()
-)
 
 export const changeLocale = (locale: Locale) => {
   modifyStorage(O.some({ locale }))

@@ -111,6 +111,7 @@ const common: CommonMessages = {
   'common.min': 'Мин.',
   'common.half': 'половина',
   'common.search': 'Поиск',
+  'common.chainManagement': 'Управление цепочкой',
   'common.searchAsset': 'Поиск актива',
   'common.addAsset': 'Токен не отображается? Добавить вручную',
   'common.removeAsset': 'Удалить актив из вида кошелька',

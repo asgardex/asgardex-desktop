@@ -112,6 +112,7 @@ const common: CommonMessages = {
   'common.min': 'Min',
   'common.half': 'Half',
   'common.search': 'Suche',
+  'common.chainManagement': 'Kettenmanagement',
   'common.searchAsset': 'Suche Asset',
   'common.addAsset': 'Token wird nicht angezeigt? Manuell hinzufügen',
   'common.removeAsset': 'Asset aus der Wallet-Ansicht entfernen',

@@ -109,6 +109,7 @@ const common: CommonMessages = {
   'common.min': 'Minimum',
   'common.half': 'Moitié',
   'common.search': 'Rechercher',
+  'common.chainManagement': 'Gestion de la chaîne',
   'common.searchAsset': 'Rechercher un actif',
   'common.addAsset': `Le jeton ne s'affiche pas ? Ajouter manuellement`,
   'common.removeAsset': "Supprimer l'actif de la vue du portefeuille",

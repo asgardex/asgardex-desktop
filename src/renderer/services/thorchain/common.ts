@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Network } from '@xchainjs/xchain-client'
+import { Network as ClientNetwork, Network } from '@xchainjs/xchain-client'
 import { Client, getChainId, THORChain } from '@xchainjs/xchain-thorchain'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -11,10 +11,9 @@ import { isError } from '../../../shared/utils/guard'
 import { triggerStream } from '../../helpers/stateHelper'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
-import { getStorageState, getStorageState$, modifyStorage } from '../storage/common'
+import { getStorageState, thornodeApi$, modifyStorage, thornodeRpc$ } from '../storage/common'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
-import { DEFAULT_CLIENT_URL } from './const'
 import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 
 // `TriggerStream` to reload ClientUrl
@@ -24,27 +23,22 @@ const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
  * Stream of ClientUrl (from storage)
  */
 const clientUrl$: ClientUrl$ = FP.pipe(
-  Rx.combineLatest([getStorageState$, reloadClientUrl$]),
-  RxOp.map(([storage]) =>
-    FP.pipe(
-      storage,
-      O.map(({ thornodeApi, thornodeRpc }) => ({
-        [Network.Testnet]: {
-          node: thornodeApi.testnet,
-          rpc: thornodeRpc.testnet
-        },
-        [Network.Stagenet]: {
-          node: thornodeApi.stagenet,
-          rpc: thornodeRpc.stagenet
-        },
-        [Network.Mainnet]: {
-          node: thornodeApi.mainnet,
-          rpc: thornodeRpc.mainnet
-        }
-      })),
-      O.getOrElse(() => DEFAULT_CLIENT_URL)
-    )
-  )
+  Rx.combineLatest([thornodeApi$, thornodeRpc$, reloadClientUrl$]),
+  RxOp.map(([thornodeApi, thornodeRpc, _]) => ({
+    [ClientNetwork.Testnet]: {
+      node: thornodeApi.testnet,
+      rpc: thornodeRpc.testnet
+    },
+    [ClientNetwork.Stagenet]: {
+      node: thornodeApi.stagenet,
+      rpc: thornodeRpc.stagenet
+    },
+    [ClientNetwork.Mainnet]: {
+      node: thornodeApi.mainnet,
+      rpc: thornodeRpc.mainnet
+    }
+  })),
+  RxOp.distinctUntilChanged()
 )
 
 const setThornodeRpcUrl = (url: string, network: Network) => {

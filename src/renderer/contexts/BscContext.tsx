@@ -1,10 +1,9 @@
 import React, { createContext, useContext } from 'react'
 
-import { function as FP, option as O } from 'fp-ts'
+import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
-import * as RxOp from 'rxjs/operators'
 
-import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../shared/evm/types'
+import { EvmHDMode } from '../../shared/evm/types'
 import {
   client$,
   clientState$,
@@ -24,7 +23,7 @@ import {
   approveFee$,
   reloadApproveFee
 } from '../services/bsc'
-import { getStorageState$, modifyStorage } from '../services/storage/common'
+import { evmHDMode$, modifyStorage } from '../services/storage/common'
 
 type BscContextValue = {
   client$: typeof client$
@@ -48,16 +47,7 @@ type BscContextValue = {
   updateEvmHDMode: (m: EvmHDMode) => void
 }
 
-const bscHDMode$ = FP.pipe(
-  getStorageState$,
-  RxOp.map(
-    FP.flow(
-      O.map(({ evmDerivationMode }) => evmDerivationMode),
-      O.getOrElse(() => DEFAULT_EVM_HD_MODE)
-    )
-  ),
-  RxOp.distinctUntilChanged()
-)
+const bscHDMode$ = evmHDMode$
 
 const updateEvmHDMode = (mode: EvmHDMode) => {
   modifyStorage(O.some({ evmDerivationMode: mode }))

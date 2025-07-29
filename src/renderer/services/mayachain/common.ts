@@ -11,10 +11,9 @@ import { isError } from '../../../shared/utils/guard'
 import { triggerStream } from '../../helpers/stateHelper'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
-import { getStorageState, getStorageState$, modifyStorage } from '../storage/common'
+import { getStorageState, modifyStorage, mayanodeApi$, mayanodeRpc$ } from '../storage/common'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
-import { DEFAULT_CLIENT_URL } from './const'
 import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 
 // `TriggerStream` to reload ClientUrl
@@ -24,27 +23,22 @@ const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
  * Stream of ClientUrl (from storage)
  */
 const clientUrl$: ClientUrl$ = FP.pipe(
-  Rx.combineLatest([getStorageState$, reloadClientUrl$]),
-  RxOp.map(([storage]) =>
-    FP.pipe(
-      storage,
-      O.map(({ mayanodeApi, mayanodeRpc }) => ({
-        [ClientNetwork.Testnet]: {
-          node: mayanodeApi.testnet,
-          rpc: mayanodeRpc.testnet
-        },
-        [ClientNetwork.Stagenet]: {
-          node: mayanodeApi.stagenet,
-          rpc: mayanodeRpc.stagenet
-        },
-        [ClientNetwork.Mainnet]: {
-          node: mayanodeApi.mainnet,
-          rpc: mayanodeRpc.mainnet
-        }
-      })),
-      O.getOrElse(() => DEFAULT_CLIENT_URL)
-    )
-  )
+  Rx.combineLatest([mayanodeApi$, mayanodeRpc$, reloadClientUrl$]),
+  RxOp.map(([mayanodeApi, mayanodeRpc, _]) => ({
+    [ClientNetwork.Testnet]: {
+      node: mayanodeApi.testnet,
+      rpc: mayanodeRpc.testnet
+    },
+    [ClientNetwork.Stagenet]: {
+      node: mayanodeApi.stagenet,
+      rpc: mayanodeRpc.stagenet
+    },
+    [ClientNetwork.Mainnet]: {
+      node: mayanodeApi.mainnet,
+      rpc: mayanodeRpc.mainnet
+    }
+  })),
+  RxOp.distinctUntilChanged()
 )
 
 const setMayanodeRpcUrl = (url: string, network: Network) => {
