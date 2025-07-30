@@ -8,13 +8,14 @@ import { useIntl } from 'react-intl'
 import { chainToString, DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { Alert } from '../../components/uielements/alert'
 import { unionChains } from '../../helpers/fp/array'
-import { rdAltOnPending } from '../../helpers/fpHelpers'
+import { OnlineStatus } from '../../services/app/types'
 import { MimirHalt } from '../../services/thorchain/types'
 
 type HaltedChainsWarningProps = {
   haltedChainsRD: RD.RemoteData<Error, Chain[]>
   mimirHaltRD: RD.RemoteData<Error, MimirHalt>
   protocol: Chain
+  midgardStatusRD: RD.RemoteData<Error, boolean>
 }
 
 type HaltedChainsState = {
@@ -25,7 +26,7 @@ type HaltedChainsState = {
   pausedLPDeposit: boolean
 }
 
-const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedChainsWarningProps) => {
+const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardStatusRD }: HaltedChainsWarningProps) => {
   const intl = useIntl()
   const prevHaltedChains = useRef<Chain[]>([])
   const prevMimirHalt = useRef<MimirHalt>({
@@ -33,36 +34,48 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
     haltGlobalTrading: false,
     pauseGlobalLp: false
   })
-  const renderWarning = FP.pipe(
-    RD.combine(haltedChainsRD, mimirHaltRD),
 
-    RD.map(([inboundHaltedChains, mimirHalt]) => {
+  const prevMidgardStatus = useRef<OnlineStatus>(OnlineStatus.OFF)
+
+  const renderWarning = FP.pipe(
+    RD.combine(haltedChainsRD, mimirHaltRD, midgardStatusRD),
+    RD.map(([inboundHaltedChains, mimirHalt, midgard]) => {
       prevHaltedChains.current = inboundHaltedChains
       prevMimirHalt.current = mimirHalt
-      return { inboundHaltedChains, mimirHalt }
+      prevMidgardStatus.current = midgard ? OnlineStatus.ON : OnlineStatus.OFF
+      return { inboundHaltedChains, mimirHalt, midgard }
     }),
-    rdAltOnPending<Error, { inboundHaltedChains: Chain[]; mimirHalt: MimirHalt }>(() =>
-      RD.success({
-        inboundHaltedChains: prevHaltedChains.current,
-        mimirHalt: prevMimirHalt.current
-      })
+    RD.fold(
+      () =>
+        RD.success({
+          inboundHaltedChains: prevHaltedChains.current,
+          mimirHalt: prevMimirHalt.current,
+          midgard: prevMidgardStatus.current === OnlineStatus.ON
+        }),
+      () =>
+        RD.success({
+          inboundHaltedChains: prevHaltedChains.current,
+          mimirHalt: prevMimirHalt.current,
+          midgard: prevMidgardStatus.current === OnlineStatus.ON
+        }),
+      () =>
+        RD.success({ inboundHaltedChains: prevHaltedChains.current, mimirHalt: prevMimirHalt.current, midgard: false }),
+      (data) => RD.success(data)
     ),
     RD.toOption,
-    O.map(({ inboundHaltedChains, mimirHalt }) => {
+    O.map(({ inboundHaltedChains, mimirHalt, midgard }) => {
       let msg = ''
       msg = mimirHalt.haltGlobalTrading ? intl.formatMessage({ id: 'halt.trading' }) : msg
       msg = mimirHalt.HALTTHORCHAIN ? intl.formatMessage({ id: 'halt.thorchain' }) : msg
 
       if (!mimirHalt.HALTTHORCHAIN && !mimirHalt.haltGlobalTrading) {
-        const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS).map((chain) => {
-          return {
-            chain,
-            haltedChain: mimirHalt[`HALT${chain}CHAIN`],
-            haltedTrading: mimirHalt[`HALT${chain}TRADING`],
-            pausedLP: mimirHalt[`PAUSELP${chain}`],
-            pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`]
-          }
-        })
+        const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS).map((chain) => ({
+          chain,
+          haltedChain: mimirHalt[`HALT${chain}CHAIN`] || false,
+          haltedTrading: mimirHalt[`HALT${chain}TRADING`] || false,
+          pausedLP: mimirHalt[`PAUSELP${chain}`] || false,
+          pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`] || false
+        }))
 
         const haltedChains = FP.pipe(
           haltedChainsState,
@@ -79,7 +92,7 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
                 { id: 'halt.chains' },
                 { chains: haltedChains.join(', '), protocol: protocol }
               )}`
-            : `${msg}`
+            : msg
 
         const haltedTradingChains = haltedChainsState
           .filter(({ haltedTrading }) => haltedTrading)
@@ -87,7 +100,7 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
         msg =
           haltedTradingChains.length > 0
             ? `${msg} ${intl.formatMessage({ id: 'halt.chain.trading' }, { chains: haltedTradingChains.join(', ') })}`
-            : `${msg}`
+            : msg
 
         const pausedLPs = haltedChainsState.filter(({ pausedLP }) => pausedLP).map(({ chain }) => chain)
         const pausedLPsDeposits = haltedChainsState
@@ -104,9 +117,15 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
                 { id: 'halt.chain.pauseDeposits' },
                 { chains: pausedLPsDeposits.join(', '), protocol: chainToString(protocol) }
               )}`
-            : `${msg}`
+            : msg
       }
-      return msg ? <Alert key={'halted warning'} type="warning" message={msg} /> : <></>
+
+      // Append Midgard offline message if the endpoint is down
+      msg = !midgard
+        ? `${msg} ${intl.formatMessage({ id: 'midgard.status.offline' }, { protocol: protocol })}`.trim()
+        : msg
+
+      return msg ? <Alert key={`halted-warning-${protocol}`} type="warning" message={msg} /> : <></>
     }),
     O.getOrElse(() => <></>)
   )

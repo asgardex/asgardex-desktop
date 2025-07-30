@@ -69,19 +69,24 @@ export const AppView = (): JSX.Element => {
     service: {
       apiEndpoint$,
       reloadApiEndpoint,
-      pools: { haltedChains$ }
+      pools: { haltedChains$ },
+      healthStatus$
     }
   } = useMidgardContext()
   const {
     service: {
       apiEndpoint$: apiEndpointMaya$,
       reloadApiEndpoint: reloadApiEndpointMaya,
-      pools: { haltedChains$: haltedChainsMaya$ }
+      pools: { haltedChains$: haltedChainsMaya$ },
+      healthStatus$: healthStatusMaya$
     }
   } = useMidgardMayaContext()
 
   const apiEndpointThor = useObservableState(apiEndpoint$, RD.initial)
   const apiEndpointMaya = useObservableState(apiEndpointMaya$, RD.initial)
+
+  const midgardStatusRD = useObservableState(healthStatus$, RD.initial)
+  const midgardMayaStatusRD = useObservableState(healthStatusMaya$, RD.initial)
 
   const haltedChainsThorRD = useObservableState(haltedChains$, RD.initial)
   const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
@@ -176,11 +181,13 @@ export const AppView = (): JSX.Element => {
                   haltedChainsRD={haltedChainsThorRD}
                   mimirHaltRD={mimirHaltThorRD}
                   protocol={THORChain}
+                  midgardStatusRD={midgardStatusRD}
                 />
                 <HaltedChainsWarning
                   haltedChainsRD={haltedChainsMayaRD}
                   mimirHaltRD={mimirHaltMayaRD}
                   protocol={MayaChain}
+                  midgardStatusRD={midgardMayaStatusRD}
                 />
               </div>
               <ViewRoutes />

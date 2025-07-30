@@ -374,7 +374,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
                     }
                     style={{ width: 60 }}
-                    disabled={loading}
+                    disabled={loading || (isEvmChain(chain) && evmHDMode !== 'ledgerlive')}
                     onPressEnter={addLedgerAddressHandler}
                   />
                   <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
@@ -500,15 +500,12 @@ export const WalletSettings = (props: Props): JSX.Element => {
         return (
           <>
             <div className="flex w-full space-x-4">
-              {evmHDMode === 'ledgerlive' && (
-                <>
-                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                    <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
-                  </div>
-                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
-                </>
-              )}
-
+              <>
+                <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                  <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
+                </div>
+                <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
+              </>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">
                 {intl.formatMessage({ id: 'setting.wallet.index' })}
               </div>

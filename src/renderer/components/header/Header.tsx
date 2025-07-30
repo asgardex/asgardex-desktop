@@ -50,6 +50,7 @@ export const Header = (): JSX.Element => {
 
   const midgardUrlRD = useObservableState(apiEndpoint$, RD.initial)
   const midgardMayaUrlRD = useObservableState(apiEndpointMaya$, RD.initial)
+
   const { node: thorchainNodeUrl, rpc: thorchainRpcUrl } = useThorchainClientUrl()
   const { node: mayachainNodeUrl, rpc: mayachainRpcUrl } = useMayachainClientUrl()
 

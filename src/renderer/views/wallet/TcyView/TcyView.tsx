@@ -187,6 +187,7 @@ export const TcyView = () => {
         setLedgerIndex(ledgerIndex)
         setHasTcyOnKeystore(keystoreHasTcy)
         setKeystoreIndex(keyStoreIndex)
+        setUseLedger(ledgerHasTcy && !keystoreHasTcy)
         // Store boolean and index if needed, e.g., in state or context
         // For now, just return the balances
         return bals

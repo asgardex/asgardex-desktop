@@ -462,6 +462,7 @@ type MidgardMessageKey =
   | 'midgard.url.error.invalid'
   | 'midgard.url.error.unhealthy'
   | 'midgard.url.valid'
+  | 'midgard.status.offline'
 
 export type MidgardMessages = { [key in MidgardMessageKey]: string }
 
