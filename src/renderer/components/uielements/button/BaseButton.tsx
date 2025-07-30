@@ -67,7 +67,7 @@ export const BaseButton = (props: BaseButtonProps): JSX.Element => {
       )}
       {...restProps}>
       {loading && (
-        <LoadingIcon className={`${iconSize[size]} ${iconMargin[size]} animate-spin group-hover:opacity-70`} />
+        <LoadingIcon className={clsx(iconSize[size], iconMargin[size], 'animate-spin group-hover:opacity-70')} />
       )}
       {children}
     </button>

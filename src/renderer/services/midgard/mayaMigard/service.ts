@@ -13,7 +13,7 @@ import { triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
 import { network$ } from '../../app/service'
 import { MIDGARD_MAX_RETRY } from '../../const'
 import { inboundAddressesShared$, loadInboundAddresses$ } from '../../mayachain'
-import { getStorageState$, modifyStorage, getStorageState } from '../../storage/common'
+import { modifyStorage, getStorageState, midgardMaya$ } from '../../storage/common'
 import { ErrorId } from '../../wallet/types'
 import {
   NetworkInfoRD,
@@ -37,19 +37,10 @@ const { stream$: reloadMayaMidgardUrl$, trigger: reloadMayaMidgardUrl } = trigge
  * Stream of Midgard urls (from storage)
  */
 const getMidgardUrl$ = FP.pipe(
-  Rx.combineLatest([getStorageState$, reloadMayaMidgardUrl$]),
-  RxOp.map(([storage]) =>
-    FP.pipe(
-      storage,
-      O.map(({ midgardMaya: midgardUrls }) => {
-        return midgardUrls
-      }),
-      O.getOrElse(() => DEFAULT_MIDGARD_MAYA_URLS)
-    )
-  ),
+  Rx.combineLatest([midgardMaya$, reloadMayaMidgardUrl$]),
+  RxOp.map(([midgardMaya, _]) => midgardMaya),
   RxOp.distinctUntilChanged(eqApiUrls.equals)
 )
-
 /**
  * Current value of Midgard urls (from storage)
  */

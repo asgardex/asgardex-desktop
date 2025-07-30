@@ -474,10 +474,6 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
         key={'Send percentage slider'}
         value={percentage}
         onChange={setAmountToSendFromPercentValue}
-        tooltipVisible
-        tipFormatter={(value) => `${value}%`}
-        withLabel
-        tooltipPlacement={'top'}
         disabled={isLoading}
       />
     )

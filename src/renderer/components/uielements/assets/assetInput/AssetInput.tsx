@@ -168,7 +168,7 @@ export const AssetInput = (props: Props): JSX.Element => {
 
         <div className="flex flex-col">
           <AssetSelect
-            className={`h-full ${ASSET_SELECT_BUTTON_WIDTH}`}
+            className={clsx('h-full', ASSET_SELECT_BUTTON_WIDTH)}
             onSelect={onChangeAsset}
             asset={asset}
             assets={assets}

@@ -111,6 +111,7 @@ const common: CommonMessages = {
   'common.min': '최소',
   'common.half': '반',
   'common.search': '검색',
+  'common.chainManagement': '체인 관리',
   'common.searchAsset': '자산 검색',
   'common.addAsset': '토큰이 표시되지 않나요? 수동으로 추가하세요',
   'common.removeAsset': '지갑 보기에서 자산 제거',

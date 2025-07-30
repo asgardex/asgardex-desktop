@@ -210,7 +210,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
   return (
     <Dialog
       as="div"
-      className={`relative z-10 ${className}`}
+      className={clsx('relative z-10', className)}
       initialFocus={inputSearchRef}
       transition
       open={open}

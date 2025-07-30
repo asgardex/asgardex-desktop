@@ -510,10 +510,7 @@ export const TcyView = () => {
         key={'Tcy Unstake percentage slider'}
         value={percentage}
         onChange={setAmountToSendFromPercentValue}
-        tooltipVisible
-        tipFormatter={(value) => `${value}%`}
         max={100}
-        tooltipPlacement={'top'}
         disabled={isLoading || !RD.isSuccess(tcyStakePosRD) || maxAmountToUnstake.eq(ZERO_BASE_AMOUNT)}
       />
     )

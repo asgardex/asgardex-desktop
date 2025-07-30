@@ -51,6 +51,7 @@ import { FlatButton, ViewTxButton } from '../../uielements/button'
 import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
+import { Slider } from '../../uielements/slider'
 import * as Helper from './Withdraw.helper'
 import * as Styled from './Withdraw.styles'
 
@@ -517,14 +518,16 @@ export const Withdraw = ({
         </Label>
         )
       </Label>
-      <Styled.Slider
-        key="asset amount slider"
-        value={withdrawPercent}
-        onChange={setWithdrawPercent}
-        onAfterChange={reloadFeesHandler}
-        disabled={disabled || disableWithdrawAction}
-        error={minRuneAmountError}
-      />
+      <div className="mb-10">
+        <Slider
+          key="asset amount slider"
+          value={withdrawPercent}
+          onChange={setWithdrawPercent}
+          onAfterChange={reloadFeesHandler}
+          disabled={disabled || disableWithdrawAction}
+          error={minRuneAmountError}
+        />
+      </div>
       <Styled.AssetOutputContainer>
         <TooltipAddress title={runeAddress}>
           <div className="flex items-center">

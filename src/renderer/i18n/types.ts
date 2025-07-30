@@ -203,6 +203,7 @@ export type CommonMessageKey =
   | 'common.featureUnderDevelopment'
   | 'common.comingSoon'
   | 'common.watchlist'
+  | 'common.chainManagement'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string

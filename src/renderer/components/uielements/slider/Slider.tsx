@@ -1,59 +1,64 @@
-import { useCallback, useMemo, useRef } from 'react'
+import clsx from 'clsx'
 
-import { SliderMarks, SliderSingleProps } from 'antd/lib/slider'
-import { TooltipPlacement } from 'antd/lib/tooltip'
-
-import { SliderWrapper, SliderLabel } from './Slider.styles'
-
-type CustomProps = {
-  tooltipPlacement?: TooltipPlacement
-  withLabel?: boolean
-  labelPosition?: 'top' | 'bottom'
+type Props = {
+  min?: number
+  max?: number
+  step?: number
+  value?: number
+  defaultValue?: number
+  disabled?: boolean
+  labels?: string[]
   error?: boolean
-  labels?: string[] // New prop for custom labels
-  marks?: SliderMarks
+  onChange?: (value: number) => void
+  onAfterChange?: (value?: number) => void
 }
 
-type Props = CustomProps & SliderSingleProps
-
 export const Slider = ({
-  tooltipPlacement = 'bottom',
-  withLabel = true,
-  tipFormatter = (value) => `${value}`,
-  labelPosition,
-  tooltipVisible,
-  error = false,
+  min,
+  max,
+  step,
+  value,
+  defaultValue,
   disabled = false,
-  labels = ['0%', '50%', '100%'], // Default labels, you can modify them
-  ...rest
-}: Props): JSX.Element => {
-  const ref = useRef()
-  const getTooltipPopupContainer = useCallback((container: HTMLElement) => container, [])
-
-  const percentLabels = useMemo(
-    () => (
-      <SliderLabel>
-        {labels.map((label, index) => (
-          <span key={index}>{label}</span>
-        ))}
-      </SliderLabel>
-    ),
-    [labels]
-  )
-
+  labels = ['0%', '50%', '100%'],
+  error = false,
+  onChange,
+  onAfterChange
+}: Props) => {
   return (
-    <>
-      {withLabel && labelPosition === 'top' && percentLabels}
-      <SliderWrapper
-        ref={ref}
-        tooltipPlacement={tooltipPlacement}
-        getTooltipPopupContainer={tooltipVisible ? getTooltipPopupContainer : undefined}
-        tipFormatter={tipFormatter}
-        error={error}
+    <div className="relative">
+      <input
+        id="minmax-range"
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        defaultValue={defaultValue}
         disabled={disabled}
-        {...rest}
+        className={clsx(
+          'w-full h-2 rounded-lg appearance-none cursor-pointer',
+          error ? 'bg-error0/40' : 'bg-gray0 dark:bg-gray0d'
+        )}
+        onChange={(e) => onChange?.(parseInt(e.target.value))}
+        onMouseUp={() => onAfterChange?.()}
+        onTouchEnd={() => onAfterChange?.()}
       />
-      {withLabel && labelPosition !== 'top' && percentLabels}
-    </>
+
+      <div className="flex items-center justify-between mt-2">
+        {labels.map((label, idx) => {
+          const leftPercent = labels.length === 1 ? 0 : (idx / (labels.length - 1)) * 100
+
+          return (
+            <span
+              key={idx}
+              className="text-sm text-gray-500 dark:text-gray-400 -bottom-6"
+              style={{ left: `${leftPercent}%` }}>
+              {label}
+            </span>
+          )
+        })}
+      </div>
+    </div>
   )
 }

@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { BaseButton, BaseButtonProps } from './BaseButton'
 import * as S from './Button.shared'
 import type { Color } from './Button.types'
@@ -29,18 +30,16 @@ export const FlatButton = (props: Props): JSX.Element => {
     <BaseButton
       size={size}
       disabled={disabled}
-      className={`
-      rounded-full
-        ${textColor[color]}
-        ${bgColor[color]}
-        ${S.borderSize[size]}
-        ${textColor[color]}
-        ${borderColor[color]}
-        ${!disabled && `hover:${S.dropShadow[size]}`}
-        ${!disabled && 'hover:border-opacity-85'}
-        ${!disabled && 'hover:scale-105'}
-        ${className}
-      `}
+      className={clsx(
+        'rounded-full',
+        textColor[color],
+        bgColor[color],
+        S.borderSize[size],
+        textColor[color],
+        borderColor[color],
+        !disabled ? `hover:${S.dropShadow[size]} hover:border-opacity-85 hover:scale-105` : '',
+        className
+      )}
       {...restProps}>
       {children}
     </BaseButton>

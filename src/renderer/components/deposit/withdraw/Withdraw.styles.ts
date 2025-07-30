@@ -5,7 +5,6 @@ import { media } from '../../../helpers/styleHelper'
 import { AssetLabel as AssetLabelUI } from '../../uielements/assets/assetLabel'
 import { WalletTypeLabel as WalletTypeLabelUI } from '../../uielements/common/Common.styles'
 import { Label as UILabel } from '../../uielements/label'
-import { Slider as BaseSlider } from '../../uielements/slider'
 
 export const Container = styled('div')`
   .sliderLabel {
@@ -27,15 +26,6 @@ export const AssetOutputContainer = styled.div`
   > div:first-child {
     margin-right: 10px;
   }
-`
-
-export const Slider = styled(BaseSlider).attrs({
-  useMiddleLabel: true,
-  tooltipPlacement: 'bottom',
-  withLabel: true,
-  labelPosition: 'top'
-})`
-  margin-bottom: 40px;
 `
 
 export const OutputLabel = styled(UILabel)`

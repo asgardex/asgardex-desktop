@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 
 import { Color, Size } from './Button.types'
@@ -60,13 +61,13 @@ export const CheckButton = (props: Props): JSX.Element => {
       size={size}
       onClick={onClickHandler}
       disabled={disabled}
-      className={`w-min-auto !px-0 ${className}`}>
+      className={clsx('w-min-auto !px-0', className)}>
       <div className="flex items-center justify-between">
-        <div className={`${iconSize[size]} mr-5px`}>
+        <div className={clsx(iconSize[size], 'mr-5px')}>
           {checked ? (
-            <CheckCircleIcon className={`h-full w-full`} />
+            <CheckCircleIcon className="h-full w-full" />
           ) : (
-            <div className={`h-full w-full rounded-full border ${borderColor[color]}`}></div>
+            <div className={clsx('h-full w-full rounded-full border', borderColor[color])}></div>
           )}
         </div>
         {children}

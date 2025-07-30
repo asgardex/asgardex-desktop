@@ -110,6 +110,7 @@ const common: CommonMessages = {
   'common.min': 'Mín',
   'common.half': 'Mitad',
   'common.search': 'Buscar en',
+  'common.chainManagement': 'Gestión de la cadena',
   'common.searchAsset': 'Buscar Activo',
   'common.addAsset': '¿El token no aparece? Añadir manualmente',
   'common.removeAsset': 'Eliminar activo de la vista de la billetera',

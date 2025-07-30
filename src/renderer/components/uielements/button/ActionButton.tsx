@@ -31,7 +31,7 @@ export const ActionButton = ({
       <div className={clsx('flex w-full justify-start space-x-2', className)}>
         {actions.map(({ label, callback, disabled = false }, index) => (
           <FlatButton
-            className={`group ${btnClassName}`} // Use FlatButton or TextButton as needed
+            className={clsx('group', btnClassName)} // Use FlatButton or TextButton as needed
             size={size}
             disabled={disabled}
             key={index}

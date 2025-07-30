@@ -22,7 +22,7 @@ export const AssetAddress = (props: Props) => {
       <AssetIcon asset={asset} size={size} network={network} />
       <div className="w-full overflow-hidden">
         <Styled.AddressEllipsis
-          className={`${classNameAddress}`}
+          className={classNameAddress}
           address={address}
           iconSize={size}
           chain={asset.chain}
