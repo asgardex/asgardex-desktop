@@ -12,6 +12,8 @@
 
 - Fix white screen issues [#829](https://github.com/asgardex/asgardex-desktop/pull/829)
 - Update xchainjs deps [#831](https://github.com/asgardex/asgardex-desktop/pull/831)
+- Antd and styled componenets removal [#842](https://github.com/asgardex/asgardex-desktop/pull/842)
+- Enhanced error handling and messaging [#841](https://github.com/asgardex/asgardex-desktop/pull/841)
 
 # 1.40.5 (2025-07-19)
 
