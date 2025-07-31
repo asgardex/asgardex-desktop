@@ -161,7 +161,9 @@ export const Swap = ({
   approveFee$,
   importWalletHandler,
   addressValidator,
-  hidePrivateData
+  hidePrivateData,
+  midgardStatusRD,
+  midgardStatusMayaRD
 }: SwapProps) => {
   const { estimateSwap } = useAggregator()
   const intl = useIntl()
@@ -2378,7 +2380,7 @@ export const Swap = ({
               onClick={quoteOnlyButton}>
               {quoteOnly ? 'Preview Only' : 'Preview & Swap'}
             </FlatButton>
-            <ProviderModal />
+            <ProviderModal midgardStatusRD={midgardStatusRD} midgardStatusMayaRD={midgardStatusMayaRD} />
           </div>
           {disabledChains.length > 0 ? (
             <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
