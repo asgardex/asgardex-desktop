@@ -39,7 +39,6 @@ export const ProviderModalContent = ({ open, onClose, midgardStatusRD, midgardSt
       setAggProtocol('Thorchain', false)
     }
     if (RD.isFailure(midgardStatusMayaRD)) {
-      console.log(RD.isFailure(midgardStatusMayaRD))
       setAggProtocol('Mayachain', false)
     }
   }, [midgardStatusRD, midgardStatusMayaRD, setAggProtocol])
