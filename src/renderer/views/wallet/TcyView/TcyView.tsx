@@ -49,11 +49,7 @@ import { getChainAsset } from '../../../helpers/chainHelper'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
 import { getClaimMemo, getStakeMemo, getUnstakeMemo } from '../../../helpers/memoHelper'
-import {
-  filterWalletBalancesByAssets,
-  filterWalletBalancesByAssetsClaimOnly,
-  getWalletBalanceByAddressAndAsset
-} from '../../../helpers/walletHelper'
+import { filterWalletBalancesByAssetsClaimOnly, getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
@@ -90,10 +86,6 @@ export const TcyView = () => {
   const { interact$, reloadTcyClaim, getTcyClaim$, getTcyStaker$, reloadTcyStaker } = useThorchainContext()
   const { depositFees$, poolWithdraw$ } = useChainContext()
   const [currentMemo, setCurrentMemo] = useState<string>('')
-  const [hasTcyOnLedger, setHasTcyOnLedger] = useState<boolean>(false)
-  const [ledgerIndex, setLedgerIndex] = useState<number>(0)
-  const [hasTcyOnKeystore, setHasTcyOnKeystore] = useState<boolean>(false)
-  const [keystoreIndex, setKeystoreIndex] = useState<number>(0)
   const [useLedger, setUseLedger] = useState(false)
 
   const [thorAddress, setThorAddress] = useState<Address>('')
@@ -174,36 +166,61 @@ export const TcyView = () => {
     )
   }, [oWalletBalances, chainList])
 
-  const tcyBalance: WalletBalances = useMemo(() => {
+  const tcyKeystoreBalance: O.Option<WalletBalance> = useMemo(() => {
     return FP.pipe(
       oWalletBalances,
-      O.map((balances) => {
-        const bals = filterWalletBalancesByAssets(balances, [AssetTCY])
-        const ledgerHasTcy = bals.some((b) => b.walletType === WalletType.Ledger)
-        const ledgerIndex = bals.findIndex((b) => b.walletType === WalletType.Ledger)
-        const keystoreHasTcy = bals.some((b) => b.walletType === WalletType.Keystore)
-        const keyStoreIndex = bals.findIndex((b) => b.walletType === WalletType.Keystore)
-        setHasTcyOnLedger(ledgerHasTcy)
-        setLedgerIndex(ledgerIndex)
-        setHasTcyOnKeystore(keystoreHasTcy)
-        setKeystoreIndex(keyStoreIndex)
-        setUseLedger(ledgerHasTcy && !keystoreHasTcy)
-        // Store boolean and index if needed, e.g., in state or context
-        // For now, just return the balances
-        return bals
-      }),
-      O.getOrElse<WalletBalances>(() => [])
+      O.chain((balances) =>
+        O.fromNullable(
+          balances.find(
+            ({ asset, walletType }) =>
+              asset.chain === 'THOR' && walletType === WalletType.Keystore && asset.symbol === 'TCY'
+          )
+        )
+      )
     )
   }, [oWalletBalances])
 
+  const tcyLedgerBalance: O.Option<WalletBalance> = useMemo(() => {
+    return FP.pipe(
+      oWalletBalances,
+      O.chain((balances) =>
+        O.fromNullable(
+          balances.find(
+            ({ asset, walletType }) =>
+              asset.chain === 'THOR' && walletType === WalletType.Ledger && asset.symbol === 'TCY'
+          )
+        )
+      )
+    )
+  }, [oWalletBalances])
+
+  const walletType = useMemo(
+    () =>
+      useLedger
+        ? O.isSome(tcyLedgerBalance)
+          ? tcyLedgerBalance.value.walletType
+          : DEFAULT_WALLET_TYPE
+        : O.isSome(tcyKeystoreBalance)
+        ? tcyKeystoreBalance.value.walletType
+        : DEFAULT_WALLET_TYPE,
+    [useLedger, tcyLedgerBalance, tcyKeystoreBalance]
+  )
+
   const tcyClaims$ = useMemo(() => {
+    // Early return if no balances
     if (allBalances.length === 0) return of(RD.initial)
 
     const filteredBalances = allBalances.filter(({ asset }) => !['AVAX', 'BSC', 'BASE', 'XRP'].includes(asset.chain))
     const uniqueBalances = Array.from(new Map(filteredBalances.map((item) => [item.walletAddress, item])).values())
 
+    // Return early if no balances to check
+    if (uniqueBalances.length === 0) return of(RD.initial)
+
+    // Share the inner observables before combineLatest
+    const sharedClaims$ = (address: Address, type: WalletType) => getTcyClaim$(address, type).pipe(shareReplay(1))
+
     return combineLatest(
-      uniqueBalances.map(({ walletAddress, walletType }) => getTcyClaim$(walletAddress, walletType))
+      uniqueBalances.map(({ walletAddress, walletType }) => sharedClaims$(walletAddress, walletType))
     ).pipe(
       map((rds) => {
         const successes = rds
@@ -236,16 +253,22 @@ export const TcyView = () => {
   )
   const selectedThorAddress = useMemo((): Address | undefined => {
     const thorBalances = allBalances.filter(({ asset }) => asset.chain === 'THOR')
+
     if (thorBalances.length === 0) {
       return undefined
     }
-    const address = useLedger ? thorBalances[ledgerIndex]?.walletAddress : thorBalances[keystoreIndex]?.walletAddress
+
+    const address = useLedger
+      ? thorBalances.find(({ walletType }) => walletType === WalletType.Ledger)?.walletAddress
+      : thorBalances.find(({ walletType }) => walletType === WalletType.Keystore)?.walletAddress
+
     if (!address) {
       return undefined
     }
+
     setThorAddress(address)
     return address
-  }, [allBalances, keystoreIndex, ledgerIndex, useLedger])
+  }, [allBalances, useLedger])
 
   const tcyStakerPos$ = useMemo((): TcyStakeLD => {
     if (!selectedThorAddress) {
@@ -262,15 +285,10 @@ export const TcyView = () => {
   const tcyStakePosRD = useObservableState(tcyStakerPos$, RD.initial)
 
   const maxAmountToStake = useMemo(() => {
-    const wallet = useLedger
-      ? ledgerIndex >= 0 && ledgerIndex < tcyBalance.length
-        ? tcyBalance[ledgerIndex]
-        : null
-      : keystoreIndex >= 0 && keystoreIndex < tcyBalance.length
-      ? tcyBalance[keystoreIndex]
-      : null
-    return wallet ? wallet.amount : ZERO_BASE_AMOUNT
-  }, [tcyBalance, useLedger, ledgerIndex, keystoreIndex])
+    const walletBalance = useLedger ? tcyLedgerBalance : tcyKeystoreBalance
+    return O.isSome(walletBalance) ? walletBalance.value.amount : ZERO_BASE_AMOUNT
+  }, [useLedger, tcyLedgerBalance, tcyKeystoreBalance])
+
   const maxAmountToUnstake = RD.isSuccess(tcyStakePosRD) ? tcyStakePosRD.value.amount : ZERO_BASE_AMOUNT
 
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
@@ -443,19 +461,11 @@ export const TcyView = () => {
 
   const submitTx = useCallback(
     (memo: string) => {
-      if (tcyBalance.length === 0) return
+      const walletBalance = useLedger ? tcyLedgerBalance : tcyKeystoreBalance
 
-      const wallet = useLedger
-        ? ledgerIndex >= 0 && ledgerIndex < tcyBalance.length
-          ? tcyBalance[ledgerIndex]
-          : null
-        : keystoreIndex >= 0 && keystoreIndex < tcyBalance.length
-        ? tcyBalance[keystoreIndex]
-        : null
+      if (O.isNone(walletBalance)) return
 
-      if (!wallet) return
-
-      const { walletType, walletIndex, walletAccount, hdMode } = wallet
+      const { walletType, walletIndex, walletAccount, hdMode } = walletBalance.value
 
       setSendTxStartTime(Date.now())
 
@@ -471,7 +481,7 @@ export const TcyView = () => {
         })
       )
     },
-    [tcyBalance, useLedger, ledgerIndex, keystoreIndex, subscribeInteractState, interact$, amountToSend]
+    [useLedger, tcyLedgerBalance, tcyKeystoreBalance, subscribeInteractState, interact$, amountToSend]
   )
 
   const onSuccess = useCallback(() => {
@@ -862,16 +872,19 @@ export const TcyView = () => {
                         onChange={onChangeInput}
                       />
                       <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
-                        {tcyBalance.length > 0
-                          ? formatAssetAmountCurrency({
-                              asset: AssetTCY,
-                              amount: baseToAsset(
-                                useLedger ? tcyBalance[ledgerIndex].amount : tcyBalance[keystoreIndex].amount
-                              ),
-                              trimZeros: true,
-                              decimal: 2
-                            })
-                          : 0}
+                        {FP.pipe(
+                          useLedger ? tcyLedgerBalance : tcyKeystoreBalance,
+                          O.fold(
+                            () => '0',
+                            (balance) =>
+                              formatAssetAmountCurrency({
+                                asset: AssetTCY,
+                                amount: baseToAsset(balance.amount),
+                                trimZeros: true,
+                                decimal: 2
+                              })
+                          )
+                        )}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -881,19 +894,12 @@ export const TcyView = () => {
                           TCY
                         </Label>
                         <WalletTypeTinyLabel textTransform="uppercase" weight="bold">
-                          {walletTypeToI18n(
-                            useLedger
-                              ? tcyBalance[ledgerIndex].walletType
-                              : tcyBalance.length > 0
-                              ? tcyBalance[keystoreIndex].walletType
-                              : DEFAULT_WALLET_TYPE,
-                            intl
-                          )}
+                          {walletTypeToI18n(walletType, intl)}
                         </WalletTypeTinyLabel>
                       </div>
                     </div>
                   </div>
-                  {hasTcyOnLedger && (
+                  {O.isSome(tcyLedgerBalance) && (
                     <div className="flex w-full justify-end">
                       <CheckButton
                         size="medium"
@@ -909,7 +915,7 @@ export const TcyView = () => {
                     className="my-30px min-w-[200px]"
                     size="large"
                     color="primary"
-                    disabled={isLoading || tcyBalance.length === 0}
+                    disabled={isLoading}
                     onClick={() => (useLedger ? setShowLedgerModal(true) : setPasswordModalVisible(true))}>
                     {intl.formatMessage({ id: 'tcy.stake' })}
                   </FlatButton>
@@ -950,19 +956,12 @@ export const TcyView = () => {
                           TCY
                         </Label>
                         <WalletTypeTinyLabel textTransform="uppercase" weight="bold">
-                          {walletTypeToI18n(
-                            useLedger
-                              ? tcyBalance[ledgerIndex].walletType
-                              : tcyBalance.length > 0
-                              ? tcyBalance[keystoreIndex].walletType
-                              : DEFAULT_WALLET_TYPE,
-                            intl
-                          )}
+                          {walletTypeToI18n(walletType, intl)}
                         </WalletTypeTinyLabel>
                       </div>
                     </div>
                   </div>
-                  {hasTcyOnLedger && (
+                  {O.isSome(tcyLedgerBalance) && (
                     <div className="flex w-full justify-end">
                       <CheckButton
                         size="medium"
@@ -1026,39 +1025,35 @@ export const TcyView = () => {
               </div>
 
               {/* Warning Message */}
-              {!hasTcyOnLedger && !hasTcyOnKeystore ? (
+              {O.isNone(tcyLedgerBalance) && O.isNone(tcyKeystoreBalance) ? (
                 <Label size="large">{intl.formatMessage({ id: 'deposit.add.error.nobalances' })}</Label>
               ) : null}
 
               <div className="flex flex-col space-y-1">
-                {hasTcyOnLedger && (
+                {O.isSome(tcyLedgerBalance) && (
                   <div className="flex items-center justify-between">
                     <Label size="large">
-                      {tcyBalance.length > 0
-                        ? formatAssetAmountCurrency({
-                            asset: AssetTCY,
-                            amount: baseToAsset(tcyBalance[ledgerIndex].amount),
-                            trimZeros: true,
-                            decimal: 2
-                          })
-                        : '0 TCY'}
+                      {formatAssetAmountCurrency({
+                        asset: AssetTCY,
+                        amount: baseToAsset(tcyLedgerBalance.value.amount),
+                        trimZeros: true,
+                        decimal: 2
+                      })}
                     </Label>
-                    <WalletTypeLabel>{walletTypeToI18n(tcyBalance[ledgerIndex].walletType, intl)}</WalletTypeLabel>
+                    <WalletTypeLabel>{walletTypeToI18n(tcyLedgerBalance.value.walletType, intl)}</WalletTypeLabel>
                   </div>
                 )}
-                {hasTcyOnKeystore && (
+                {O.isSome(tcyKeystoreBalance) && (
                   <div className="flex items-center justify-between">
                     <Label size="large">
-                      {tcyBalance.length > 0
-                        ? formatAssetAmountCurrency({
-                            asset: AssetTCY,
-                            amount: baseToAsset(tcyBalance[keystoreIndex].amount),
-                            trimZeros: true,
-                            decimal: 2
-                          })
-                        : '0 TCY'}
+                      {formatAssetAmountCurrency({
+                        asset: AssetTCY,
+                        amount: baseToAsset(tcyKeystoreBalance.value.amount),
+                        trimZeros: true,
+                        decimal: 2
+                      })}
                     </Label>
-                    <WalletTypeLabel>{walletTypeToI18n(tcyBalance[keystoreIndex].walletType, intl)}</WalletTypeLabel>
+                    <WalletTypeLabel>{walletTypeToI18n(tcyKeystoreBalance.value.walletType, intl)}</WalletTypeLabel>
                   </div>
                 )}
               </div>
