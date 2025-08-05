@@ -91,7 +91,6 @@ async function loadList(urls: string[], chain: Chain): Promise<ERC20Whitelist> {
       }))
       allTokens.push(...tokens) // Append tokens to the combined list
     } catch (error) {
-      console.error(`Failed to load whitelist from ${url}:`, error)
       throw new Error(`Failed to load whitelist: ${error}`)
     }
   }
