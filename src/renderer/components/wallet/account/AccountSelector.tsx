@@ -41,7 +41,7 @@ export const AccountSelector = (props: Props): JSX.Element => {
       ),
     [selectedWallet.asset.symbol, walletBalances]
   )
-  const enableDropdown = filteredWalletBalances.length > 0
+  const enableDropdown = filteredWalletBalances.length >= 0
 
   const cellRenderer = useCallback(
     ({ asset, amount, walletAddress, walletType, walletIndex }: WalletBalance) => {

@@ -243,6 +243,18 @@ export type SaverProvider = {
 export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
 export type SaverProviderLD = LiveData<Error, SaverProvider>
 
+export type TradeAccount = {
+  asset: AnyAsset
+  units: BaseAmount
+  owner: Address
+  lastAddHeight: O.Option<number>
+  lastWithdrawHeight: O.Option<number>
+  walletType: WalletType
+}
+
+export type TradeAccountRD = RD.RemoteData<Error, TradeAccount[]>
+export type TradeAccountLD = LiveData<Error, TradeAccount[]>
+
 export type MayanodePool = {
   balanceCacao: BaseAmount
   balanceAsset: BaseAmount

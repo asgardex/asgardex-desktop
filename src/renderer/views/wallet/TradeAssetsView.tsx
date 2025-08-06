@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -31,7 +32,8 @@ export const TradeAssetsView = (): JSX.Element => {
   const intl = useIntl()
 
   const { balancesState$, setSelectedAsset } = useWalletContext()
-  const { getTradeAccount$, reloadTradeAccount } = useThorchainContext()
+  const { getTradeAccount$: getTradeAcccountThor, reloadTradeAccount: reloadTradeAccountThor } = useThorchainContext()
+  const { reloadTradeAccount: reloadTradeAccountMaya } = useThorchainContext()
   const { chainBalances$ } = useWalletContext()
   const { network } = useNetwork()
   const { isPrivate } = useApp()
@@ -42,11 +44,13 @@ export const TradeAssetsView = (): JSX.Element => {
     }
   } = useMidgardContext()
 
-  const thorchainBalance$ = useMemo(() => {
+  const tradeBalance$ = useMemo(() => {
     return FP.pipe(
       chainBalances$,
       RxOp.map((chainBalances) => {
-        return chainBalances.filter((chainBalance: ChainBalance) => chainBalance.chain === THORChain)
+        return chainBalances.filter(
+          (chainBalance: ChainBalance) => chainBalance.chain === THORChain || chainBalance.chain === MayaChain
+        )
       }),
       RxOp.map(O.fromNullable)
     )
@@ -55,7 +59,7 @@ export const TradeAssetsView = (): JSX.Element => {
   const useTradeAccountBalanceRD = (walletType: WalletType) => {
     return useObservableState(() => {
       return FP.pipe(
-        thorchainBalance$,
+        tradeBalance$,
         RxOp.switchMap(
           O.fold(
             () => Rx.of(RD.initial),
@@ -70,7 +74,7 @@ export const TradeAssetsView = (): JSX.Element => {
                       walletAddress,
                       O.fold(
                         () => Rx.of(RD.initial),
-                        (address) => getTradeAccount$(address, walletType) // Fetch trade account based on address and walletType
+                        (address) => getTradeAcccountThor(address, walletType) // Fetch trade account based on address and walletType
                       )
                     )
                 )
@@ -108,8 +112,9 @@ export const TradeAssetsView = (): JSX.Element => {
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
   const refreshHandler = useCallback(async () => {
-    reloadTradeAccount()
-  }, [reloadTradeAccount])
+    reloadTradeAccountThor()
+    reloadTradeAccountMaya()
+  }, [reloadTradeAccountMaya, reloadTradeAccountThor])
 
   const combinedTradeAccountBalances: TradeAccount[] = [
     ...FP.pipe(
