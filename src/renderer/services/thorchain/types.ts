@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { Network } from '@xchainjs/xchain-client'
 import { Client, CompatibleAsset, DepositParam } from '@xchainjs/xchain-thorchain'
 import type * as TN from '@xchainjs/xchain-thornode'
@@ -291,6 +292,7 @@ export type TradeAccount = {
   lastAddHeight: O.Option<number>
   lastWithdrawHeight: O.Option<number>
   walletType: WalletType
+  protocol: Protocol
 }
 
 export type TradeAccountRD = RD.RemoteData<Error, TradeAccount[]>

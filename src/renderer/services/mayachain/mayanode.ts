@@ -552,7 +552,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
             units: tradeAssetUnits,
             lastAddHeight: FP.pipe(last_add_height, O.fromPredicate(N.isNumber)),
             lastWithdrawHeight: FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber)),
-            walletType
+            walletType,
+            protocol: 'Mayachain'
           }
         })
       ),

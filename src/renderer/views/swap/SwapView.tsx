@@ -745,7 +745,7 @@ const SuccessTradeRouteView = ({
   const { thorchainQuery } = useThorchainQueryContext()
   const { tradeSlipTolerance$, changeTradeSlipTolerance } = useAppContext()
 
-  // all trades will be using THorchain
+  //
   const { chain: sourceChain } = AssetRuneNative
   const { chain: targetChain } = AssetRuneNative
 

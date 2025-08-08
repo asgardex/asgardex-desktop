@@ -361,6 +361,20 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           )
         )
       }
+      if (isCacaoAsset(asset) && deepestPoolAsset) {
+        actions.push(
+          createAction('common.trade', () =>
+            navigate(
+              poolsRoutes.swap.path({
+                source: assetToString(asset),
+                target: `${deepestPoolAsset.chain}~${deepestPoolAsset.symbol}`,
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          )
+        )
+      }
 
       if (isSynthAsset(asset) && deepestPoolAsset) {
         actions.push(
