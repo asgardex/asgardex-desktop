@@ -26,9 +26,6 @@ export const AppWrapper = styled.div`
     &-table-tbody > tr > td {
       transition: none;
     }
-    &-spin-dot-item {
-      background-color: ${palette('primary', 2)};
-    }
     &-form-item-explain {
       text-transform: uppercase;
     }

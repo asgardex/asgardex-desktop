@@ -13,9 +13,9 @@ import { defaultWalletName } from '../../../../shared/utils/wallet'
 import { KeystoreClientStates } from '../../../hooks/useKeystoreClientStates'
 import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
 import { AddKeystoreParams } from '../../../services/wallet/types'
-import { Spin } from '../../shared/loading'
 import { FlatButton } from '../../uielements/button'
 import { InputPassword, InputTextArea, Input } from '../../uielements/input'
+import { Spin } from '../../uielements/spin'
 
 /* css import is needed to override antd */
 import '../../uielements/input/overrides.css'

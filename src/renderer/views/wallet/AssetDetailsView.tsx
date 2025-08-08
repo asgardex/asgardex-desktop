@@ -9,7 +9,7 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { LoadingView } from '../../components/shared/loading'
+import { Spin } from '../../components/uielements/spin'
 import { AssetDetails } from '../../components/wallet/assets'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
@@ -142,7 +142,7 @@ export const AssetDetailsView = (): JSX.Element => {
   return FP.pipe(
     oSelectedAsset,
     O.fold(
-      () => <LoadingView size="large" />,
+      () => <Spin />,
       ({ asset, walletAddress, walletType, price }) => (
         <AssetDetails
           walletType={walletType}

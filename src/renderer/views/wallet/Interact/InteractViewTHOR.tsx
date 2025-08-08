@@ -9,8 +9,8 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ErrorView } from '../../../components/shared/error'
-import { LoadingView } from '../../../components/shared/loading'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
+import { Spin } from '../../../components/uielements/spin'
 import { Interact } from '../../../components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from '../../../components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
@@ -236,8 +236,8 @@ export const InteractViewTHOR = () => {
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),
     RD.fold(
-      () => <LoadingView size="large" />,
-      () => <LoadingView size="large" />,
+      () => <Spin />,
+      () => <Spin />,
       (error) => (
         <div>
           <BackLinkButton />
@@ -259,7 +259,7 @@ export const InteractViewTHOR = () => {
             {FP.pipe(
               oWalletBalance,
               O.fold(
-                () => <LoadingView size="large" />,
+                () => <Spin />,
                 (walletBalance) => (
                   <Interact
                     interactType={interactType}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { Balance, Network } from '@xchainjs/xchain-client'
@@ -17,7 +17,6 @@ import {
   baseToAsset,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -54,18 +53,16 @@ import { FixmeType } from '../../../types/asgardex'
 import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
 import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
-import { Collapse as StyledCollapse } from '../../settings/Common.styles'
 import { Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { ViewTxButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { IconButton } from '../../uielements/button/IconButton'
+import { Collapse } from '../../uielements/collapse'
 import { WalletTypeLabel } from '../../uielements/common/Common.styles'
 import { Label } from '../../uielements/label'
 import * as Styled from './AssetsTableCollapsable.styles'
-
-const { Panel } = StyledCollapse
 
 export type TradeWalletBalance = Balance & {
   walletAddress: Address
@@ -381,28 +378,29 @@ export const TradeAssetsTableCollapsable = ({
       setShowLedgerModal('none')
     }
 
-    const chainAsString = chainToString(THORChain)
-    const txtNeedsConnected = intl.formatMessage(
-      {
-        id: 'ledger.needsconnected'
-      },
-      { chain: chainAsString }
+    const chainAsString = FP.pipe(
+      oTradeWithdrawParams,
+      O.map((params) => chainToString(params.protocol === 'Thorchain' ? THORChain : MAYAChain)),
+      O.getOrElse(() => chainToString(THORChain))
     )
-
-    const description1 = txtNeedsConnected
+    const txtNeedsConnected = intl.formatMessage({ id: 'ledger.needsconnected' }, { chain: chainAsString })
 
     return (
       <LedgerConfirmationModal
         onSuccess={onSuccess}
         onClose={onClose}
         visible
-        chain={THORChain}
+        chain={FP.pipe(
+          oTradeWithdrawParams,
+          O.map((params) => (params.protocol === 'Thorchain' ? THORChain : MAYAChain)),
+          O.getOrElse(() => '')
+        )}
         network={network}
-        description1={description1}
+        description1={txtNeedsConnected}
         addresses={O.none}
       />
     )
-  }, [intl, network, showLedgerModal, submitTradeWithdrawTx])
+  }, [intl, network, showLedgerModal, submitTradeWithdrawTx, oTradeWithdrawParams])
 
   const renderPasswordConfirmationModal = useMemo(() => {
     if (showPasswordModal === 'none') return <></>
@@ -541,8 +539,7 @@ export const TradeAssetsTableCollapsable = ({
         accessorKey: 'balance',
         header: '',
         cell: ({ row }) => {
-          const { asset, amount } = row.original
-
+          const { asset, amount, protocol } = row.original
           const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
           const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
             if (O.isSome(priceOption)) {
@@ -555,7 +552,7 @@ export const TradeAssetsTableCollapsable = ({
             return null
           }
           const priceOption =
-            asset.chain === MAYAChain
+            protocol === 'Mayachain'
               ? getPoolPriceValueMaya({
                   balance: { asset, amount },
                   poolDetails: poolDetailsMaya,
@@ -564,11 +561,10 @@ export const TradeAssetsTableCollapsable = ({
                 })
               : getPoolPriceValue({
                   balance: { asset, amount },
-                  poolDetails: poolDetails,
-                  pricePool: pricePool
+                  poolDetails,
+                  pricePool
                 })
-          const price = formatPrice(priceOption, pricePool.asset)
-
+          const price = formatPrice(priceOption, protocol === 'Mayachain' ? pricePoolMaya.asset : pricePool.asset)
           return (
             <div className="flex flex-col items-end justify-center font-main">
               <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
@@ -668,12 +664,11 @@ export const TradeAssetsTableCollapsable = ({
     [renderAssetsTable]
   )
 
-  const renderPanel = useCallback(() => {
+  const renderContent = useCallback(() => {
     if (!tradeAccountBalances || tradeAccountBalances.length === 0) {
       return null
     }
 
-    // Group balances by chain and wallet type
     const balancesByChainAndWalletType: Record<string, TradeAccount[]> = tradeAccountBalances.reduce((acc, account) => {
       const key = `${account.protocol}.${account.walletType}`
       acc[key] = [...(acc[key] || []), account]
@@ -724,28 +719,20 @@ export const TradeAssetsTableCollapsable = ({
       )
 
       return (
-        <Panel header={renderHeader()} key={key}>
+        <Collapse className="bg-bg0 dark:bg-bg0d" isOpen header={renderHeader()} key={key}>
           {renderGroupedBalances({ balances })}
-        </Panel>
+        </Collapse>
       )
     })
   }, [tradeAccountBalances, renderGroupedBalances, intl, hidePrivateData, disableRefresh, network, refreshHandler])
 
   return (
     <div className="mt-2">
-      <Styled.Collapse
-        expandIcon={({ isActive }) => (
-          <ChevronRightIcon className={clsx('w-4 h-4 stroke-turquoise', isActive ? 'rotate-90' : 'rotate-0')} />
-        )}
-        defaultActiveKey={['keystore']}
-        expandIconPosition="end"
-        ghost>
-        {renderPanel()}
-        {renderWithdrawConfirm}
-        {renderPasswordConfirmationModal}
-        {renderWithdrawTxModal}
-        {renderLedgerConfirmationModal}
-      </Styled.Collapse>
+      {renderContent()}
+      {renderWithdrawConfirm}
+      {renderPasswordConfirmationModal}
+      {renderWithdrawTxModal}
+      {renderLedgerConfirmationModal}
     </div>
   )
 }

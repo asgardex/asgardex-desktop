@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Spin } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import QRCodeLib from 'qrcode'
 import { createRoot } from 'react-dom/client'
 import { useIntl } from 'react-intl'
+import { Spin } from '../spin'
 
 import * as Styled from './QRCode.styles'
 

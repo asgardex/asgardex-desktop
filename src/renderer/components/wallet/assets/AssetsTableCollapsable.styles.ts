@@ -7,33 +7,6 @@ import {
   AssetSecuredLabel as AssetSecuredLabelUI
 } from '../../uielements/common/Common.styles'
 
-export const Collapse = styled(A.Collapse)`
-  &.ant-collapse > .ant-collapse-item {
-    border: 1px solid ${palette('gray', 0)};
-    border-radius: 8px;
-  }
-
-  &.ant-collapse > .ant-collapse-item > .ant-collapse-header {
-    background-color: ${palette('background', 0)};
-    padding: 5px 20px;
-    transition: none;
-    border-radius: 8px;
-  }
-
-  &.ant-collapse > .ant-collapse-item-active > .ant-collapse-header {
-    border-bottom: 1px solid ${palette('gray', 0)};
-    border-radius: 8px 8px 0px 0px;
-  }
-
-  &.ant-collapse > .ant-collapse-item > .ant-collapse-header .ant-collapse-header-text {
-    width: 100%;
-  }
-
-  &.ant-collapse-ghost > .ant-collapse-item > .ant-collapse-content > .ant-collapse-content-box {
-    padding: 0;
-  }
-`
-
 export const CopyLabel = styled(A.Typography.Text)`
   text-transform: uppercase;
   color: ${palette('primary', 2)};

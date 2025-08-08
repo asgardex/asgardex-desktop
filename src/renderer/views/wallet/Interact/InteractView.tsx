@@ -7,7 +7,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
-import { LoadingView } from '../../../components/shared/loading'
+import { Spin } from '../../../components/uielements/spin'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import { InteractViewMAYA } from './InteractViewMAYA'
@@ -48,7 +48,7 @@ export const InteractView = () => {
   return FP.pipe(
     oSelectedAsset,
     O.fold(
-      () => <LoadingView size="large" />,
+      () => <Spin />,
       (selectedAsset) => <div>{renderSendView(selectedAsset)}</div>
     )
   )
