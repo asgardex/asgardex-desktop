@@ -544,8 +544,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
       liveData.map((tradeAccounts) =>
         tradeAccounts.map((tradeAccount): TradeAccount => {
           const { owner, units, asset, last_add_height, last_withdraw_height } = tradeAccount
-          /* 1e10 decimal by default, which is default decimal for ALL accepts at MAYChain  */
-          const tradeAssetUnits = baseAmount(units, CACAO_DECIMAL)
+          /* 1e10 decimal by default, which is default decimal for ALL assets at MAYChain  */
+          const tradeAssetUnits = baseAmount(units)
           return {
             owner,
             asset: assetFromStringEx(asset),

@@ -11,8 +11,8 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { WalletType } from '../../../shared/wallet/types'
-import { Spin } from '../../components/shared/loading'
 import { RefreshButton } from '../../components/uielements/button'
+import { Spin } from '../../components/uielements/spin'
 import { AssetsNav } from '../../components/wallet/assets'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
 import { TradeAssetsTableCollapsable } from '../../components/wallet/assets/TradeAssetsTableCollapsable'
@@ -186,8 +186,8 @@ export const TradeAssetsView = (): JSX.Element => {
   const balances: Record<string, BaseAmount> = FP.pipe(
     combinedTradeAccountBalances,
     A.reduce({} as Record<string, BaseAmount>, (acc, account) => {
-      const chainKey = `${account.asset.chain}:${account.walletType}`
-      const isMayaChain = account.asset.chain === MAYAChain
+      const chainKey = `${account.asset.chain}:${account.walletType}:${account.protocol}`
+      const isMayaChain = account.protocol === 'Mayachain'
 
       const value = isMayaChain
         ? getPoolPriceValueMaya({

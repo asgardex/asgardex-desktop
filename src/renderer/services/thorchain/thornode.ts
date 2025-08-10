@@ -700,7 +700,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       liveData.map((tradeAccounts) =>
         tradeAccounts.map((tradeAccount): TradeAccount => {
           const { owner, units, asset, last_add_height, last_withdraw_height } = tradeAccount
-          /* 1e8 decimal by default, which is default decimal for ALL accepts at THORChain  */
+          /* 1e8 decimal by default, which is default decimal for ALL assets at THORChain  */
           const tradeAssetUnits = baseAmount(units, THORCHAIN_DECIMAL)
           return {
             owner,

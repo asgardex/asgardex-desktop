@@ -622,46 +622,63 @@ export const TradeAssetsTableCollapsable = ({
       const keystoreAccounts = balances.filter((account) => account.walletType === WalletType.Keystore)
       const ledgerAccounts = balances.filter((account) => account.walletType === WalletType.Ledger)
 
+      // Group accounts by protocol for each wallet type
+      const groupByProtocol = (accounts: TradeAccount[]): Record<string, TradeAccount[]> =>
+        accounts.reduce((acc, account) => {
+          const protocol = account.protocol.toLowerCase()
+          acc[protocol] = [...(acc[protocol] || []), account]
+          return acc
+        }, {} as Record<string, TradeAccount[]>)
+
+      const keystoreByProtocol = groupByProtocol(keystoreAccounts)
+      const ledgerByProtocol = groupByProtocol(ledgerAccounts)
+
       return (
         <>
-          {keystoreAccounts.length > 0 && (
-            <div key="keystore">
-              {renderAssetsTable({
-                tableData: keystoreAccounts.map((account) => ({
-                  asset: account.asset,
-                  amount: account.units,
-                  walletAddress: account.owner,
-                  walletType: account.walletType,
-                  walletIndex: 0,
-                  walletAccount: 0,
-                  hdMode: DEFAULT_EVM_HD_MODE,
-                  protocol: account.protocol
-                })),
-                loading: false
-              })}
-            </div>
+          {Object.entries(keystoreByProtocol).map(
+            ([protocol, accounts]) =>
+              accounts.length > 0 && (
+                <div key={`keystore-${protocol}`}>
+                  {renderAssetsTable({
+                    tableData: accounts.map((account) => ({
+                      asset: account.asset,
+                      amount: account.units,
+                      walletAddress: account.owner,
+                      walletType: account.walletType,
+                      walletIndex: 0,
+                      walletAccount: 0,
+                      hdMode: DEFAULT_EVM_HD_MODE,
+                      protocol: account.protocol
+                    })),
+                    loading: isRefreshing
+                  })}
+                </div>
+              )
           )}
-          {ledgerAccounts.length > 0 && (
-            <div key="ledger">
-              {renderAssetsTable({
-                tableData: ledgerAccounts.map((account) => ({
-                  asset: account.asset,
-                  amount: account.units,
-                  walletAddress: account.owner,
-                  walletType: account.walletType,
-                  walletIndex: 0,
-                  walletAccount: 0,
-                  hdMode: DEFAULT_EVM_HD_MODE,
-                  protocol: account.protocol
-                })),
-                loading: false
-              })}
-            </div>
+          {Object.entries(ledgerByProtocol).map(
+            ([protocol, accounts]) =>
+              accounts.length > 0 && (
+                <div key={`ledger-${protocol}`}>
+                  {renderAssetsTable({
+                    tableData: accounts.map((account) => ({
+                      asset: account.asset,
+                      amount: account.units,
+                      walletAddress: account.owner,
+                      walletType: account.walletType,
+                      walletIndex: 0,
+                      walletAccount: 0,
+                      hdMode: DEFAULT_EVM_HD_MODE,
+                      protocol: account.protocol
+                    })),
+                    loading: isRefreshing
+                  })}
+                </div>
+              )
           )}
         </>
       )
     },
-    [renderAssetsTable]
+    [renderAssetsTable, isRefreshing]
   )
 
   const renderContent = useCallback(() => {
