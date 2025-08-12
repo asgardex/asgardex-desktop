@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { ThorChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, bn, Chain, baseAmount, AnyAsset, AssetType } from '@xchainjs/xchain-util'
@@ -32,6 +33,7 @@ import { useChainContext } from '../../contexts/ChainContext'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useEvmContext } from '../../contexts/EvmContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
+import { useMayachainQueryContext } from '../../contexts/MayachainQueryContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
@@ -707,17 +709,24 @@ const SuccessTradeRouteView = ({
   const location = useLocation()
   const { network } = useNetwork()
   const { service: midgardService } = useMidgardContext()
+  const { service: midgardMayaService } = useMidgardMayaContext()
+  const { protocol } = useApp()
+
   const {
-    pools: {
-      poolsState$,
-      reloadPools,
-      reloadSelectedPoolDetail,
-      selectedPoolAddress$,
-      haltedChains$,
-      pendingPoolsState$
-    },
+    pools: { poolsState$, reloadPools, reloadSelectedPoolDetail, selectedPoolAddress$, haltedChains$ },
     setSelectedPoolAsset
   } = midgardService
+
+  const {
+    pools: {
+      poolsState$: poolStateMaya$,
+      reloadPools: reloadPoolsMaya,
+      reloadSelectedPoolDetail: reloadSelectedPoolDetailMaya,
+      selectedPoolAddress$: selectedPoolAddressMaya$,
+      haltedChains$: haltedChainsMaya$
+    },
+    setSelectedPoolAsset: setSelectedPoolAssetMaya
+  } = midgardMayaService
 
   const {
     balancesState$,
@@ -726,20 +735,28 @@ const SuccessTradeRouteView = ({
     keystoreService: { keystoreState$, validatePassword$ }
   } = useWalletContext()
   const { reloadTxStatus, getTradeAccount$ } = useThorchainContext()
-  const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
+  const { getTradeAccount$: getTradeAccountMaya$ } = useMayachainContext()
+  const [haltedChains] = useObservableState(
+    () =>
+      FP.pipe(protocol === THORChain ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    []
+  )
   const { mimirHalt } = useThorchainMimirHalt()
   const pricePool = usePricePool()
   const { isPrivate } = useApp()
   const { thorchainQuery } = useThorchainQueryContext()
+  const { mayachainQuery } = useMayachainQueryContext()
   const { tradeSlipTolerance$, changeTradeSlipTolerance } = useAppContext()
 
-  //
-  const { chain: sourceChain } = AssetRuneNative
-  const { chain: targetChain } = AssetRuneNative
+  const { chain: sourceChain } = protocol === THORChain ? AssetRuneNative : AssetCacao
+  const { chain: targetChain } = protocol === THORChain ? AssetRuneNative : AssetCacao
 
-  const selectedPoolAddress = useObservableState(selectedPoolAddress$, O.none)
+  const selectedPoolAddressThor = useObservableState(selectedPoolAddress$, O.none)
+  const selectedPoolAddressMaya = useObservableState(selectedPoolAddressMaya$, O.none)
 
-  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(ThorChain))
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(
+    O.some(protocol === THORChain ? ThorChain : MAYAChain)
+  )
 
   const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$ } = useChainContext()
 
@@ -845,25 +862,41 @@ const SuccessTradeRouteView = ({
     // Source asset is the asset of the pool we need to interact with
     // Store it in global state, all depending streams will be updated then
     setSelectedPoolAsset(O.some(sourceAsset))
+    setSelectedPoolAssetMaya(O.some(sourceAsset))
     // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
     return () => {
       setSelectedPoolAsset(O.none)
     }
-  }, [sourceAsset, setSelectedPoolAsset])
+  }, [sourceAsset, setSelectedPoolAsset, targetAsset, setSelectedPoolAssetMaya])
 
   const keystore = useObservableState(keystoreState$, O.none)
 
   const poolsStateRD = useObservableState(poolsState$, RD.initial)
-  const pendingPoolsStateRD = useObservableState(pendingPoolsState$, RD.initial)
+  const poolsStateMayaRD = useObservableState(poolStateMaya$, RD.initial)
+
   const importWalletHandler = useCallback(() => {
     navigate(walletRoutes.base.path(location.pathname))
   }, [location.pathname, navigate])
 
   const reloadHandler = useCallback(() => {
-    reloadBalancesByChain(THORChain, sourceWalletType)
-    reloadPools()
-    reloadSelectedPoolDetail()
-  }, [reloadBalancesByChain, reloadPools, reloadSelectedPoolDetail, sourceWalletType])
+    if (protocol === THORChain) {
+      reloadBalancesByChain(THORChain, sourceWalletType)
+      reloadPools()
+      reloadSelectedPoolDetail()
+    } else {
+      reloadBalancesByChain(MAYAChain, sourceWalletType)
+      reloadPoolsMaya()
+      reloadSelectedPoolDetailMaya()
+    }
+  }, [
+    protocol,
+    reloadBalancesByChain,
+    reloadPools,
+    reloadPoolsMaya,
+    reloadSelectedPoolDetail,
+    reloadSelectedPoolDetailMaya,
+    sourceWalletType
+  ])
 
   const [oTargetLedgerAddress, updateTargetLedgerAddress$] = useObservableState<O.Option<Address>, UpdateLedgerAddress>(
     (targetLedgerAddressChain$) =>
@@ -969,13 +1002,19 @@ const SuccessTradeRouteView = ({
         () => setTradeAccountBalanceRD(RD.initial),
         (sourceAddress) => {
           setTradeAccountBalanceRD(RD.pending)
-          getTradeAccount$(sourceAddress, sourceWalletType).subscribe((result) => {
-            setTradeAccountBalanceRD(result)
-          })
+          if (protocol === THORChain) {
+            getTradeAccount$(sourceAddress, sourceWalletType).subscribe((result) => {
+              setTradeAccountBalanceRD(result)
+            })
+          } else {
+            getTradeAccountMaya$(sourceAddress, sourceWalletType).subscribe((result) => {
+              setTradeAccountBalanceRD(result)
+            })
+          }
         }
       )
     )
-  }, [getTradeAccount$, oSourceKeystoreAddress, oSourceLedgerAddress, sourceWalletType])
+  }, [getTradeAccount$, getTradeAccountMaya$, oSourceKeystoreAddress, oSourceLedgerAddress, protocol, sourceWalletType])
 
   const { validateSwapAddress } = useValidateAddress(targetChain)
   return (
@@ -987,151 +1026,331 @@ const SuccessTradeRouteView = ({
         </h2>
         <RefreshButton className="absolute right-0" onClick={reloadHandler} />
       </div>
+      {RD.isSuccess(poolsStateMayaRD) ? (
+        <div className="flex justify-center bg-bg0 dark:bg-bg0d">
+          {FP.pipe(
+            sequenceTRD(poolsStateRD, poolsStateMayaRD, sourceAssetRD, targetAssetRD),
+            RD.fold(
+              () => <></>,
+              () => {
+                const mockAssetSource: SwapAsset = {
+                  asset: sourceAsset,
+                  decimal: 18,
+                  price: baseAmount(0).amount()
+                }
 
-      <div className="flex justify-center bg-bg0 dark:bg-bg0d">
-        {FP.pipe(
-          sequenceTRD(poolsStateRD, sourceAssetRD, targetAssetRD, pendingPoolsStateRD),
-          RD.fold(
-            () => <></>,
-            () => {
-              const mockAssetSource: SwapAsset = {
-                asset: sourceAsset,
-                decimal: 18,
-                price: baseAmount(0).amount()
-              }
+                const mockAssetTarget: SwapAsset = {
+                  asset: targetAsset,
+                  decimal: 18,
+                  price: baseAmount(0).amount()
+                }
 
-              const mockAssetTarget: SwapAsset = {
-                asset: targetAsset,
-                decimal: 18,
-                price: baseAmount(0).amount()
-              }
-
-              return (
-                <TradeSwap
-                  disableSwapAction={true}
-                  keystore={keystore}
-                  validatePassword$={validatePassword$}
-                  goToTransaction={openExplorerTxUrl}
-                  getExplorerTxUrl={getExplorerTxUrl}
-                  assets={{
-                    source: mockAssetSource,
-
-                    target: mockAssetTarget
-                  }}
-                  sourceKeystoreAddress={oSourceKeystoreAddress}
-                  sourceLedgerAddress={oSourceLedgerAddress}
-                  sourceWalletType={sourceWalletType}
-                  targetWalletType={oTargetWalletType}
-                  poolAddress={selectedPoolAddress}
-                  poolAssets={[]}
-                  poolsData={{}}
-                  pricePool={pricePool}
-                  poolDetails={[]}
-                  walletBalances={balancesState}
-                  reloadFees={reloadSwapFees}
-                  fees$={swapFees$}
-                  targetKeystoreAddress={oTargetKeystoreAddress}
-                  targetLedgerAddress={oTargetLedgerAddress}
-                  recipientAddress={oRecipient}
-                  swap$={swap$}
-                  reloadBalances={reloadBalances}
-                  onChangeAsset={onChangeAssetHandler}
-                  network={network}
-                  importWalletHandler={importWalletHandler}
-                  addressValidator={validateSwapAddress}
-                  hidePrivateData={isPrivate}
-                  thorchainQuery={thorchainQuery}
-                  reloadTxStatus={reloadSwapTxStatus}
-                  slipTolerance={tradeSlipTolerance}
-                  changeSlipTolerance={changeTradeSlipTolerance}
-                  tradeAccountBalances={tradeAccountBalanceRD}
-                />
-              )
-            },
-            renderError,
-            ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset, pendingPools]) => {
-              const combinedAssetDetails = [...assetDetails, ...pendingPools.assetDetails]
-
-              const hasRuneAsset = FP.pipe(
-                combinedAssetDetails,
-                A.map(({ asset }) => asset),
-                assetInList(AssetRuneNative)
-              )
-              if (!hasRuneAsset) {
-                assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...combinedAssetDetails]
-              }
-              const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
-              // Make sure sourceAsset is available in pools
-              if (!sourceAssetDetail)
-                return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
-              const targetAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, targetAsset.asset), O.toNullable)
-              // Make sure targetAsset is available in pools
-              if (!targetAssetDetail)
-                return renderError(Error(`Missing pool for target asset ${assetToString(targetAsset.asset)}`))
-
-              const poolAssets: AnyAsset[] = FP.pipe(
-                assetDetails,
-                A.map(({ asset }) => asset)
-              )
-              const disableAllPoolActions = (chain: Chain) =>
-                PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
-
-              const disableTradingPoolActions = (chain: Chain) =>
-                PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
-
-              const checkDisableSwapAction = () => {
                 return (
-                  disableAllPoolActions(sourceAsset.asset.chain) ||
-                  disableTradingPoolActions(sourceAsset.asset.chain) ||
-                  disableAllPoolActions(targetAsset.asset.chain) ||
-                  disableTradingPoolActions(targetAsset.asset.chain)
+                  <TradeSwap
+                    disableSwapAction={true}
+                    keystore={keystore}
+                    validatePassword$={validatePassword$}
+                    goToTransaction={openExplorerTxUrl}
+                    getExplorerTxUrl={getExplorerTxUrl}
+                    assets={{
+                      source: mockAssetSource,
+
+                      target: mockAssetTarget
+                    }}
+                    sourceKeystoreAddress={oSourceKeystoreAddress}
+                    sourceLedgerAddress={oSourceLedgerAddress}
+                    sourceWalletType={sourceWalletType}
+                    targetWalletType={oTargetWalletType}
+                    poolAddressThor={selectedPoolAddressThor}
+                    poolAddressMaya={selectedPoolAddressMaya}
+                    poolAssets={[]}
+                    poolsData={{}}
+                    poolsDataMaya={{}}
+                    pricePool={pricePool}
+                    poolDetails={[]}
+                    poolDetailsMaya={[]}
+                    walletBalances={balancesState}
+                    reloadFees={reloadSwapFees}
+                    fees$={swapFees$}
+                    targetKeystoreAddress={oTargetKeystoreAddress}
+                    targetLedgerAddress={oTargetLedgerAddress}
+                    recipientAddress={oRecipient}
+                    swap$={swap$}
+                    reloadBalances={reloadBalances}
+                    onChangeAsset={onChangeAssetHandler}
+                    network={network}
+                    importWalletHandler={importWalletHandler}
+                    addressValidator={validateSwapAddress}
+                    hidePrivateData={isPrivate}
+                    thorchainQuery={thorchainQuery}
+                    mayachainQuery={mayachainQuery}
+                    reloadTxStatus={reloadSwapTxStatus}
+                    slipTolerance={tradeSlipTolerance}
+                    changeSlipTolerance={changeTradeSlipTolerance}
+                    tradeAccountBalances={tradeAccountBalanceRD}
+                    protocol={protocol}
+                  />
+                )
+              },
+              renderError,
+              ([
+                { assetDetails, poolsData, poolDetails },
+                { assetDetails: assetDetailsMaya, poolsData: poolsDataMaya, poolDetails: poolDetailsMaya },
+                sourceAsset,
+                targetAsset
+              ]) => {
+                const combinedAssetDetails = protocol === THORChain ? [...assetDetails] : [...assetDetailsMaya]
+
+                const hasRuneAsset = FP.pipe(
+                  combinedAssetDetails,
+                  A.map(({ asset }) => asset),
+                  assetInList(AssetRuneNative)
+                )
+                const hasCacaoAsset = FP.pipe(
+                  combinedAssetDetails,
+                  A.map(({ asset }) => asset),
+                  assetInList(AssetCacao)
+                )
+
+                if (!hasRuneAsset) {
+                  assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...combinedAssetDetails]
+                }
+                if (!hasCacaoAsset) {
+                  assetDetails = [{ asset: AssetCacao, assetPrice: bn(1) }, ...combinedAssetDetails]
+                }
+                const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
+                // Make sure sourceAsset is available in pools
+                if (!sourceAssetDetail)
+                  return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
+                const targetAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, targetAsset.asset), O.toNullable)
+                // Make sure targetAsset is available in pools
+                if (!targetAssetDetail)
+                  return renderError(Error(`Missing pool for target asset ${assetToString(targetAsset.asset)}`))
+
+                const poolAssets: AnyAsset[] = FP.pipe(
+                  assetDetails,
+                  A.map(({ asset }) => asset)
+                )
+                const disableAllPoolActions = (chain: Chain) =>
+                  PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
+
+                const disableTradingPoolActions = (chain: Chain) =>
+                  PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
+
+                const checkDisableSwapAction = () => {
+                  return (
+                    disableAllPoolActions(sourceAsset.asset.chain) ||
+                    disableTradingPoolActions(sourceAsset.asset.chain) ||
+                    disableAllPoolActions(targetAsset.asset.chain) ||
+                    disableTradingPoolActions(targetAsset.asset.chain)
+                  )
+                }
+
+                return (
+                  <TradeSwap
+                    disableSwapAction={checkDisableSwapAction()}
+                    keystore={keystore}
+                    validatePassword$={validatePassword$}
+                    goToTransaction={openExplorerTxUrl}
+                    getExplorerTxUrl={getExplorerTxUrl}
+                    assets={{
+                      source: { ...sourceAsset, price: sourceAssetDetail.assetPrice },
+                      target: { ...targetAsset, price: targetAssetDetail.assetPrice }
+                    }}
+                    sourceKeystoreAddress={oSourceKeystoreAddress}
+                    sourceLedgerAddress={oSourceLedgerAddress}
+                    sourceWalletType={sourceWalletType}
+                    targetWalletType={oTargetWalletType}
+                    poolAddressThor={selectedPoolAddressThor}
+                    poolAddressMaya={selectedPoolAddressMaya}
+                    poolAssets={poolAssets}
+                    poolsData={poolsData}
+                    poolsDataMaya={poolsDataMaya}
+                    pricePool={pricePool}
+                    poolDetails={poolDetails}
+                    poolDetailsMaya={poolDetailsMaya}
+                    walletBalances={balancesState}
+                    reloadFees={reloadSwapFees}
+                    fees$={swapFees$}
+                    targetKeystoreAddress={oTargetKeystoreAddress}
+                    targetLedgerAddress={oTargetLedgerAddress}
+                    recipientAddress={oRecipient}
+                    swap$={swap$}
+                    reloadBalances={reloadBalances}
+                    onChangeAsset={onChangeAssetHandler}
+                    network={network}
+                    importWalletHandler={importWalletHandler}
+                    addressValidator={validateSwapAddress}
+                    hidePrivateData={isPrivate}
+                    thorchainQuery={thorchainQuery}
+                    mayachainQuery={mayachainQuery}
+                    reloadTxStatus={reloadSwapTxStatus}
+                    slipTolerance={tradeSlipTolerance}
+                    changeSlipTolerance={changeTradeSlipTolerance}
+                    tradeAccountBalances={tradeAccountBalanceRD}
+                    protocol={protocol}
+                  />
                 )
               }
+            )
+          )}
+        </div>
+      ) : (
+        <div className="flex justify-center bg-bg0 dark:bg-bg0d">
+          {FP.pipe(
+            sequenceTRD(poolsStateRD, sourceAssetRD, targetAssetRD),
+            RD.fold(
+              () => <></>,
+              () => {
+                const mockAssetSource: SwapAsset = {
+                  asset: sourceAsset,
+                  decimal: 18,
+                  price: baseAmount(0).amount()
+                }
 
-              return (
-                <TradeSwap
-                  disableSwapAction={checkDisableSwapAction()}
-                  keystore={keystore}
-                  validatePassword$={validatePassword$}
-                  goToTransaction={openExplorerTxUrl}
-                  getExplorerTxUrl={getExplorerTxUrl}
-                  assets={{
-                    source: { ...sourceAsset, price: sourceAssetDetail.assetPrice },
-                    target: { ...targetAsset, price: targetAssetDetail.assetPrice }
-                  }}
-                  sourceKeystoreAddress={oSourceKeystoreAddress}
-                  sourceLedgerAddress={oSourceLedgerAddress}
-                  sourceWalletType={sourceWalletType}
-                  targetWalletType={oTargetWalletType}
-                  poolAddress={selectedPoolAddress}
-                  poolAssets={poolAssets}
-                  poolsData={poolsData}
-                  pricePool={pricePool}
-                  poolDetails={poolDetails}
-                  walletBalances={balancesState}
-                  reloadFees={reloadSwapFees}
-                  fees$={swapFees$}
-                  targetKeystoreAddress={oTargetKeystoreAddress}
-                  targetLedgerAddress={oTargetLedgerAddress}
-                  recipientAddress={oRecipient}
-                  swap$={swap$}
-                  reloadBalances={reloadBalances}
-                  onChangeAsset={onChangeAssetHandler}
-                  network={network}
-                  importWalletHandler={importWalletHandler}
-                  addressValidator={validateSwapAddress}
-                  hidePrivateData={isPrivate}
-                  thorchainQuery={thorchainQuery}
-                  reloadTxStatus={reloadSwapTxStatus}
-                  slipTolerance={tradeSlipTolerance}
-                  changeSlipTolerance={changeTradeSlipTolerance}
-                  tradeAccountBalances={tradeAccountBalanceRD}
-                />
-              )
-            }
-          )
-        )}
-      </div>
+                const mockAssetTarget: SwapAsset = {
+                  asset: targetAsset,
+                  decimal: 18,
+                  price: baseAmount(0).amount()
+                }
+
+                return (
+                  <TradeSwap
+                    disableSwapAction={true}
+                    keystore={keystore}
+                    validatePassword$={validatePassword$}
+                    goToTransaction={openExplorerTxUrl}
+                    getExplorerTxUrl={getExplorerTxUrl}
+                    assets={{
+                      source: mockAssetSource,
+
+                      target: mockAssetTarget
+                    }}
+                    sourceKeystoreAddress={oSourceKeystoreAddress}
+                    sourceLedgerAddress={oSourceLedgerAddress}
+                    sourceWalletType={sourceWalletType}
+                    targetWalletType={oTargetWalletType}
+                    poolAddressThor={selectedPoolAddressThor}
+                    poolAddressMaya={selectedPoolAddressMaya}
+                    poolAssets={[]}
+                    poolsData={{}}
+                    poolsDataMaya={{}}
+                    pricePool={pricePool}
+                    poolDetails={[]}
+                    poolDetailsMaya={[]}
+                    walletBalances={balancesState}
+                    reloadFees={reloadSwapFees}
+                    fees$={swapFees$}
+                    targetKeystoreAddress={oTargetKeystoreAddress}
+                    targetLedgerAddress={oTargetLedgerAddress}
+                    recipientAddress={oRecipient}
+                    swap$={swap$}
+                    reloadBalances={reloadBalances}
+                    onChangeAsset={onChangeAssetHandler}
+                    network={network}
+                    importWalletHandler={importWalletHandler}
+                    addressValidator={validateSwapAddress}
+                    hidePrivateData={isPrivate}
+                    thorchainQuery={thorchainQuery}
+                    mayachainQuery={mayachainQuery}
+                    reloadTxStatus={reloadSwapTxStatus}
+                    slipTolerance={tradeSlipTolerance}
+                    changeSlipTolerance={changeTradeSlipTolerance}
+                    tradeAccountBalances={tradeAccountBalanceRD}
+                    protocol={protocol}
+                  />
+                )
+              },
+              renderError,
+              ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset]) => {
+                const combinedAssetDetails = [...assetDetails]
+
+                const hasRuneAsset = FP.pipe(
+                  combinedAssetDetails,
+                  A.map(({ asset }) => asset),
+                  assetInList(AssetRuneNative)
+                )
+                if (!hasRuneAsset) {
+                  assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...combinedAssetDetails]
+                }
+                const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
+                // Make sure sourceAsset is available in pools
+                if (!sourceAssetDetail)
+                  return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
+                const targetAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, targetAsset.asset), O.toNullable)
+                // Make sure targetAsset is available in pools
+                if (!targetAssetDetail)
+                  return renderError(Error(`Missing pool for target asset ${assetToString(targetAsset.asset)}`))
+
+                const poolAssets: AnyAsset[] = FP.pipe(
+                  assetDetails,
+                  A.map(({ asset }) => asset)
+                )
+                const disableAllPoolActions = (chain: Chain) =>
+                  PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
+
+                const disableTradingPoolActions = (chain: Chain) =>
+                  PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
+
+                const checkDisableSwapAction = () => {
+                  return (
+                    disableAllPoolActions(sourceAsset.asset.chain) ||
+                    disableTradingPoolActions(sourceAsset.asset.chain) ||
+                    disableAllPoolActions(targetAsset.asset.chain) ||
+                    disableTradingPoolActions(targetAsset.asset.chain)
+                  )
+                }
+
+                return (
+                  <TradeSwap
+                    disableSwapAction={checkDisableSwapAction()}
+                    keystore={keystore}
+                    validatePassword$={validatePassword$}
+                    goToTransaction={openExplorerTxUrl}
+                    getExplorerTxUrl={getExplorerTxUrl}
+                    assets={{
+                      source: { ...sourceAsset, price: sourceAssetDetail.assetPrice },
+                      target: { ...targetAsset, price: targetAssetDetail.assetPrice }
+                    }}
+                    sourceKeystoreAddress={oSourceKeystoreAddress}
+                    sourceLedgerAddress={oSourceLedgerAddress}
+                    sourceWalletType={sourceWalletType}
+                    targetWalletType={oTargetWalletType}
+                    poolAddressThor={selectedPoolAddressThor}
+                    poolAddressMaya={selectedPoolAddressMaya}
+                    poolAssets={poolAssets}
+                    poolsData={poolsData}
+                    poolsDataMaya={{}}
+                    pricePool={pricePool}
+                    poolDetails={poolDetails}
+                    poolDetailsMaya={[]}
+                    walletBalances={balancesState}
+                    reloadFees={reloadSwapFees}
+                    fees$={swapFees$}
+                    targetKeystoreAddress={oTargetKeystoreAddress}
+                    targetLedgerAddress={oTargetLedgerAddress}
+                    recipientAddress={oRecipient}
+                    swap$={swap$}
+                    reloadBalances={reloadBalances}
+                    onChangeAsset={onChangeAssetHandler}
+                    network={network}
+                    importWalletHandler={importWalletHandler}
+                    addressValidator={validateSwapAddress}
+                    hidePrivateData={isPrivate}
+                    thorchainQuery={thorchainQuery}
+                    mayachainQuery={mayachainQuery}
+                    reloadTxStatus={reloadSwapTxStatus}
+                    slipTolerance={tradeSlipTolerance}
+                    changeSlipTolerance={changeTradeSlipTolerance}
+                    tradeAccountBalances={tradeAccountBalanceRD}
+                    protocol={protocol}
+                  />
+                )
+              }
+            )
+          )}
+        </div>
+      )}
     </>
   )
 }

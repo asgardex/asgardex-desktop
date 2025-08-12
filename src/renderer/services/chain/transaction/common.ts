@@ -17,7 +17,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AssetType, Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
@@ -323,10 +323,14 @@ export const sendPoolTx$ = ({
   protocol
 }: SendPoolTxParams): TxHashLD => {
   const { chain } =
-    asset.type === AssetType.SYNTH
-      ? AssetCacao
-      : asset.type === AssetType.TRADE || asset.type === AssetType.SECURED
-      ? { chain: THORChain }
+    protocol === THORChain
+      ? asset.type === AssetType.TRADE || asset.type === AssetType.SECURED
+        ? AssetRuneNative
+        : asset
+      : protocol === MAYAChain
+      ? asset.type === AssetType.SYNTH || asset.type === AssetType.TRADE
+        ? AssetCacao
+        : asset
       : asset
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 

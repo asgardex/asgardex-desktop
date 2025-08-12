@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails as PoolDetailsMaya } from '@xchainjs/xchain-mayamidgard'
@@ -15,6 +14,7 @@ import {
   assetToString,
   BaseAmount,
   baseToAsset,
+  Chain,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
@@ -49,6 +49,7 @@ import { PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import { MimirHaltRD, TradeAccount } from '../../../services/thorchain/types'
 import { ChainBalances, SelectedWalletAsset } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
+import { useApp } from '../../../store/app/hooks'
 import { FixmeType } from '../../../types/asgardex'
 import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
@@ -70,7 +71,7 @@ export type TradeWalletBalance = Balance & {
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-  protocol: Protocol
+  protocol: Chain
 }
 export type TradeWalletBalances = TradeWalletBalance[]
 
@@ -90,7 +91,7 @@ type Props = {
   mimirHalt: MimirHaltRD
   network: Network
   hidePrivateData: boolean
-  refreshHandler: (protocol?: Protocol) => void
+  refreshHandler: (protocol?: Chain) => void
   isRefreshing: boolean
 }
 
@@ -115,6 +116,7 @@ export const TradeAssetsTableCollapsable = ({
   const navigate = useNavigate()
   const isXLargeView = useBreakpoint()?.xl ?? false
   const { mayaScanPriceRD } = useObserveMayaScanPrice()
+  const { setProtocol } = useApp()
 
   const { tradeWithdraw$ } = useChainContext()
   const {
@@ -336,7 +338,7 @@ export const TradeAssetsTableCollapsable = ({
             txHash={oTxHash}
             onClick={FP.pipe(
               oProtocol,
-              O.map((protocol) => (protocol === 'Thorchain' ? openRuneExplorerTxUrl : openMayaExplorerTxUrl)),
+              O.map((protocol) => (protocol === THORChain ? openRuneExplorerTxUrl : openMayaExplorerTxUrl)),
               O.getOrElse(() => openRuneExplorerTxUrl)
             )}
             txUrl={FP.pipe(
@@ -344,7 +346,7 @@ export const TradeAssetsTableCollapsable = ({
               O.chain((txHash) =>
                 FP.pipe(
                   oProtocol,
-                  O.map((protocol) => (protocol === 'Thorchain' ? getRuneExplorerTxUrl : getMayaExplorerTxUrl)(txHash)),
+                  O.map((protocol) => (protocol === MAYAChain ? getRuneExplorerTxUrl : getMayaExplorerTxUrl)(txHash)),
                   O.getOrElse(() => getRuneExplorerTxUrl(txHash))
                 )
               )
@@ -380,7 +382,7 @@ export const TradeAssetsTableCollapsable = ({
 
     const chainAsString = FP.pipe(
       oTradeWithdrawParams,
-      O.map((params) => chainToString(params.protocol === 'Thorchain' ? THORChain : MAYAChain)),
+      O.map((params) => chainToString(params.protocol === THORChain ? THORChain : MAYAChain)),
       O.getOrElse(() => chainToString(THORChain))
     )
     const txtNeedsConnected = intl.formatMessage({ id: 'ledger.needsconnected' }, { chain: chainAsString })
@@ -392,8 +394,8 @@ export const TradeAssetsTableCollapsable = ({
         visible
         chain={FP.pipe(
           oTradeWithdrawParams,
-          O.map((params) => (params.protocol === 'Thorchain' ? THORChain : MAYAChain)),
-          O.getOrElse(() => '')
+          O.map((params) => (params.protocol === THORChain ? THORChain : MAYAChain)),
+          O.getOrElse(() => chainToString(THORChain))
         )}
         network={network}
         description1={txtNeedsConnected}
@@ -431,11 +433,11 @@ export const TradeAssetsTableCollapsable = ({
       protocol
     }: TradeWalletBalance) => {
       const normalizedAssetString = `${asset.chain}.${asset.symbol}`
-      const poolsDataToUse = protocol === 'Mayachain' ? poolsDataMaya : poolsData
+      const poolsDataToUse = protocol === MAYAChain ? poolsDataMaya : poolsData
       const hasActivePool = FP.pipe(O.fromNullable(poolsDataToUse[normalizedAssetString]), O.isSome)
 
       const deepestPoolAsset =
-        protocol === 'Mayachain'
+        protocol === MAYAChain
           ? FP.pipe(
               getDeepestPoolM(poolDetailsMaya),
               O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
@@ -449,12 +451,15 @@ export const TradeAssetsTableCollapsable = ({
 
       const createAction = (labelId: string, callback: () => void) => ({
         label: intl.formatMessage({ id: labelId }),
-        callback
+        callback: () => {
+          setProtocol(protocol)
+          callback()
+        }
       })
 
       const targetAsset =
         deepestPoolAsset && deepestPoolAsset.chain === asset.chain && deepestPoolAsset.symbol === asset.symbol
-          ? protocol === 'Mayachain'
+          ? protocol === MAYAChain
             ? AssetCacao
             : AssetRuneNative
           : deepestPoolAsset
@@ -510,7 +515,7 @@ export const TradeAssetsTableCollapsable = ({
         </div>
       )
     },
-    [poolsData, poolsDataMaya, poolDetails, poolDetailsMaya, intl, navigate, network, assetToAddress]
+    [poolsDataMaya, poolsData, poolDetailsMaya, poolDetails, intl, setProtocol, navigate, network, assetToAddress]
   )
 
   const columns: ColumnDef<TradeWalletBalance, FixmeType>[] = useMemo(
@@ -552,7 +557,7 @@ export const TradeAssetsTableCollapsable = ({
             return null
           }
           const priceOption =
-            protocol === 'Mayachain'
+            protocol === MAYAChain
               ? getPoolPriceValueMaya({
                   balance: { asset, amount },
                   poolDetails: poolDetailsMaya,
@@ -564,7 +569,7 @@ export const TradeAssetsTableCollapsable = ({
                   poolDetails,
                   pricePool
                 })
-          const price = formatPrice(priceOption, protocol === 'Mayachain' ? pricePoolMaya.asset : pricePool.asset)
+          const price = formatPrice(priceOption, protocol === MAYAChain ? pricePoolMaya.asset : pricePool.asset)
           return (
             <div className="flex flex-col items-end justify-center font-main">
               <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
@@ -574,7 +579,7 @@ export const TradeAssetsTableCollapsable = ({
         }
       },
       {
-        accessorKey: 'balance',
+        accessorKey: 'actions',
         header: '',
         cell: ({ row }) => renderActionColumn(row.original),
         size: isXLargeView ? 120 : 250
@@ -695,8 +700,14 @@ export const TradeAssetsTableCollapsable = ({
     return Object.entries(balancesByChainAndWalletType).map(([key, balances]) => {
       const [protocol, walletType] = key.split('.')
       const chain = protocol === 'Thorchain' ? THORChain : MAYAChain
-      const walletAddress = FP.pipe(
-        O.fromNullable(balances[0]),
+      const firstAccount = balances[0]
+      const fullWalletAddress = FP.pipe(
+        O.fromNullable(firstAccount),
+        O.map((account) => account.owner),
+        O.getOrElse(() => '')
+      )
+      const truncatedWalletAddress = FP.pipe(
+        O.fromNullable(firstAccount),
         O.map((account) => truncateAddress(account.owner, chain, network)),
         O.getOrElse(() => '')
       )
@@ -718,15 +729,15 @@ export const TradeAssetsTableCollapsable = ({
           </div>
           <div className="flex items-center justify-end space-x-2">
             <Label className="flex items-center text-text0 dark:text-text0d" color="gray" textTransform="none">
-              {hidePrivateData ? hiddenString : truncateAddress(walletAddress, chain, network)}
-              <Styled.CopyLabel copyable={{ text: walletAddress }} />
+              {hidePrivateData ? hiddenString : truncatedWalletAddress}
+              <Styled.CopyLabel copyable={{ text: fullWalletAddress }} />
             </Label>
             <div className="flex items-center justify-end space-x-2 pr-4">
               <IconButton
                 disabled={disableRefresh}
                 onClick={(e) => {
                   e.stopPropagation()
-                  refreshHandler(protocol as Protocol)
+                  refreshHandler(protocol)
                 }}>
                 <ArrowPathIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />
               </IconButton>

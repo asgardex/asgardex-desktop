@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Address, AnyAsset, Asset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Asset, CryptoAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 
@@ -82,4 +82,16 @@ export type SwapProps = {
   hidePrivateData: boolean
   midgardStatusRD: RD.RemoteData<Error, boolean>
   midgardStatusMayaRD: RD.RemoteData<Error, boolean>
+}
+
+export type QuoteData = {
+  canSwap: boolean
+  slipBasisPoints: number
+  streamingSlipBasisPoints: number
+  expectedAmountOut: CryptoAmount<AnyAsset>
+  expiry: Date
+  maxStreamingQuantity: number
+  errors: string[] // Use string[] to match SwapEstimate
+  recommendedMinAmountIn: CryptoAmount<AnyAsset>
+  memo: string
 }

@@ -43,6 +43,7 @@ import * as RxOp from 'rxjs/operators'
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
+import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
@@ -709,7 +710,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             lastAddHeight: FP.pipe(last_add_height, O.fromPredicate(N.isNumber)),
             lastWithdrawHeight: FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber)),
             walletType,
-            protocol: 'Thorchain'
+            protocol: Protocol.THORChain
           }
         })
       ),

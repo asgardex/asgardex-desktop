@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { FeeOption, Fees, Network, Tx } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -294,7 +293,7 @@ export type TradeWithdrawParams = {
   readonly walletAccount: number
   readonly walletIndex: number
   readonly hdMode: HDMode
-  readonly protocol: Protocol
+  readonly protocol: Chain
 }
 
 export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$

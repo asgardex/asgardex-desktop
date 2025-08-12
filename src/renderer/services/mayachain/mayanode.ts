@@ -38,6 +38,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
+import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
@@ -553,7 +554,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
             lastAddHeight: FP.pipe(last_add_height, O.fromPredicate(N.isNumber)),
             lastWithdrawHeight: FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber)),
             walletType,
-            protocol: 'Mayachain'
+            protocol: Protocol.MAYAChain
           }
         })
       ),

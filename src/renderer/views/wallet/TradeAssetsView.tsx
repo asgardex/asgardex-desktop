@@ -1,9 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { BaseAmount } from '@xchainjs/xchain-util'
+import { BaseAmount, Chain } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -149,12 +148,12 @@ export const TradeAssetsView = (): JSX.Element => {
   )
 
   const refreshHandler = useCallback(
-    async (protocol?: Protocol) => {
+    async (protocol?: Chain) => {
       setIsRefreshing(true)
       try {
-        if (protocol === 'Thorchain') {
+        if (protocol === THORChain) {
           await reloadTradeAccountThor()
-        } else if (protocol === 'Mayachain') {
+        } else if (protocol === MAYAChain) {
           await reloadTradeAccountMaya()
         } else {
           await Promise.all([reloadTradeAccountThor(), reloadTradeAccountMaya()])
@@ -187,7 +186,7 @@ export const TradeAssetsView = (): JSX.Element => {
     combinedTradeAccountBalances,
     A.reduce({} as Record<string, BaseAmount>, (acc, account) => {
       const chainKey = `${account.asset.chain}:${account.walletType}:${account.protocol}`
-      const isMayaChain = account.protocol === 'Mayachain'
+      const isMayaChain = account.protocol === MAYAChain
 
       const value = isMayaChain
         ? getPoolPriceValueMaya({
