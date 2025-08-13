@@ -20,7 +20,7 @@ import {
   isDogeAsset,
   isEthAsset,
   isLtcAsset,
-  isRuneNativeAsset,
+  isRuneAsset,
   isTgtERC20Asset,
   isAtomAsset,
   isArbAsset,
@@ -105,7 +105,7 @@ const chainIconMap = (asset: AnyAsset): string | null => {
     case SOLChain:
       return solIcon
     case THORChain:
-      if (asset.type === AssetType.NATIVE) return null
+      if (asset.type === AssetType.NATIVE || asset.type === AssetType.TRADE) return null
       return runeIcon
     default:
       return null // return null if no chain matches
@@ -136,7 +136,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
       return bscIcon
     }
     // RUNE
-    if (isRuneNativeAsset(asset)) {
+    if (isRuneAsset(asset)) {
       return runeIcon
     }
     // RUJI

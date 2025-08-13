@@ -83,8 +83,8 @@ export const isRujiAsset = (asset: AnyAsset): boolean =>
 /**
  * Checks whether an asset is a Rune (native or non-native) asset
  */
-export const isRuneAsset = (asset: AnyAsset): boolean => isRuneNativeAsset(asset)
-
+export const isRuneAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetRuneNative.chain && asset.symbol.toUpperCase() === AssetRuneNative.symbol.toUpperCase()
 /**
  * Checks whether an asset is a LTC asset
  */
