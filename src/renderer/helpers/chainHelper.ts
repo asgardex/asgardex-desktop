@@ -52,7 +52,7 @@ export const getChainAsset = (chain: Chain): Asset => {
   return asset
 }
 
-export const getAssetChain = (asset: AnyAsset, protocol: string) => {
+export const getAssetChain = (asset: AnyAsset, protocol: Chain) => {
   if (protocol === THORChain) {
     return asset.type === AssetType.TRADE || asset.type === AssetType.SECURED ? AssetRuneNative : asset
   }
