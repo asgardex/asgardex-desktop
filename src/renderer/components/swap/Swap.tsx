@@ -107,7 +107,7 @@ import { Collapse } from '../uielements/collapse'
 import { Tooltip, TooltipAddress, WalletTypeLabel } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
 import { InfoIcon } from '../uielements/info'
-import { CopyLabel } from '../uielements/label'
+import { CopyLabel } from '../uielements/label/CopyLabel'
 import { Slider } from '../uielements/slider'
 import { Spin } from '../uielements/spin'
 import { EditableAddress } from './EditableAddress'
@@ -2285,9 +2285,8 @@ export const Swap = ({
         O.getOrElse(() => emptyString),
         (memo: string) => (
           <CopyLabel
-            className="pl-0 !font-mainBold text-[14px] uppercase text-gray2 dark:text-gray2d"
+            className="!font-mainBold text-[14px] text-gray2 dark:text-gray2d"
             label={intl.formatMessage({ id: 'common.memo' })}
-            key="memo-copy"
             textToCopy={memo}
           />
         )

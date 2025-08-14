@@ -1107,7 +1107,7 @@ export const SymDeposit = (props: Props) => {
 
     const title = intl.formatMessage({ id: 'deposit.add.error.nobalances' })
 
-    return <Alert className="m-0 w-full xl:mr-20px" type="warning" message={title} description={msg} />
+    return <Alert className="m-0 w-full" type="warning" title={title} description={msg} />
   }, [asset.ticker, protocolAsset, hasAssetBalance, hasDexAssetBalance, intl])
 
   const updateRuneAmount = useCallback(
@@ -2147,12 +2147,13 @@ export const SymDeposit = (props: Props) => {
       <div className="mb-4 flex w-full max-w-[500px] items-center justify-start">
         <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
       </div>
-      {hasPendingAssets && <div className="w-full pb-20px xl:px-20px">{renderPendingAssets}</div>}
-      {hasAsymDeposits && <div className="w-full pb-20px xl:px-20px">{renderAsymDepositWarning}</div>}
-      {hasAssetMismatch && <div className="w-full pb-20px xl:px-20px">{renderAssetMismatch}</div>}
-      {showBalanceError && <div className="w-full pb-20px xl:px-20px">{renderBalanceError}</div>}
 
       <div className="flex max-w-[500px] flex-col">
+        {hasPendingAssets && <div className="w-full pb-20px">{renderPendingAssets}</div>}
+        {hasAsymDeposits && <div className="w-full pb-20px">{renderAsymDepositWarning}</div>}
+        {hasAssetMismatch && <div className="w-full pb-20px">{renderAssetMismatch}</div>}
+        {showBalanceError && <div className="w-full pb-20px">{renderBalanceError}</div>}
+
         {!hasPendingAssets && (
           <div className="mb-1">
             <AssetInput
@@ -2342,12 +2343,11 @@ export const SymDeposit = (props: Props) => {
                       O.getOrElse(() => emptyString),
                       (memo) => (
                         <CopyLabel
-                          className="whitespace-nowrap pl-0 uppercase text-gray2 dark:text-gray2d"
+                          className="whitespace-nowrap text-gray2 dark:text-gray2d"
                           label={intl.formatMessage(
                             { id: 'common.transaction.short.rune' },
                             { dex: protocolAsset.chain }
                           )}
-                          key="memo-copy"
                           textToCopy={memo}
                         />
                       )
@@ -2375,9 +2375,8 @@ export const SymDeposit = (props: Props) => {
                       O.getOrElse(() => emptyString),
                       (memo) => (
                         <CopyLabel
-                          className="whitespace-nowrap pl-0 uppercase text-gray2 dark:text-gray2d"
+                          className="whitespace-nowrap text-gray2 dark:text-gray2d"
                           label={intl.formatMessage({ id: 'common.transaction.short.asset' })}
-                          key="memo-copy"
                           textToCopy={memo}
                         />
                       )

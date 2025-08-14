@@ -74,7 +74,7 @@ export const AsymAssetsWarning = (props: AsymAssetsWarningProps): JSX.Element =>
     <Alert
       className={className}
       type="warning"
-      message={intl.formatMessage({ id: 'deposit.add.asymAssets.title' })}
+      title={intl.formatMessage({ id: 'deposit.add.asymAssets.title' })}
       description={subContent}
     />
   )

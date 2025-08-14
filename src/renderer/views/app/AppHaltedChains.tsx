@@ -125,12 +125,12 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardSta
         ? `${msg} ${intl.formatMessage({ id: 'midgard.status.offline' }, { protocol: protocol })}`.trim()
         : msg
 
-      return msg ? <Alert key={`halted-warning-${protocol}`} type="warning" message={msg} /> : <></>
+      return msg ? <Alert key={`halted-warning-${protocol}`} type="warning" description={msg} /> : <></>
     }),
     O.getOrElse(() => <></>)
   )
 
-  return <>{renderWarning}</>
+  return renderWarning
 }
 
 export default HaltedChainsWarning

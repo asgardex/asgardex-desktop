@@ -714,9 +714,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       <div className="space-y-2">
         {chainBalances.map((chainBalance, index) => (
           <Collapse
-            key={`${chainBalance.chain}-${chainBalance.walletType}-${
-              chainBalance.walletAddress || 'no-address'
-            }-${index}`}
+            key={`${chainBalance.chain}${index}${openPanelKeys.includes(index)}`}
             className="bg-bg0 dark:bg-bg0d"
             header={renderHeader(chainBalance)}
             isOpen={openPanelKeys.includes(index)}

@@ -1942,9 +1942,8 @@ export const TradeSwap = ({
         O.getOrElse(() => emptyString),
         (memo: string) => (
           <CopyLabel
-            className="pl-0 !font-mainBold text-[14px] uppercase text-text2 dark:text-text2d"
+            className="!font-mainBold text-[14px] text-text2 dark:text-text2d"
             label={intl.formatMessage({ id: 'common.memo' })}
-            key="memo-copy"
             textToCopy={memo}
           />
         )

@@ -106,7 +106,7 @@ export const AppView = (): JSX.Element => {
         (e) => (
           <Styled.Alert
             type="warning"
-            message={intl.formatMessage({ id: 'wallet.imports.error.keystore.import' })}
+            title={intl.formatMessage({ id: 'wallet.imports.error.keystore.import' })}
             description={e?.message ?? e.toString()}
             action={
               <BorderButton color="warning" size="medium" onClick={reloadPersistentWallets}>
@@ -130,7 +130,7 @@ export const AppView = (): JSX.Element => {
         (e) => (
           <Styled.Alert
             type="warning"
-            message={intl.formatMessage({ id: 'wallet.imports.error.ledger.import' })}
+            title={intl.formatMessage({ id: 'wallet.imports.error.ledger.import' })}
             description={e?.message ?? e.toString()}
             action={
               <BorderButton color="warning" size="medium" onClick={reloadPersistentLedgerAddresses}>

@@ -1,4 +1,3 @@
-import { Row } from 'antd'
 import styled from 'styled-components'
 
 import { media } from '../../../helpers/styleHelper'
@@ -6,7 +5,7 @@ import { AssetLabel as AssetLabelUI } from '../../uielements/assets/assetLabel'
 import { WalletTypeLabel as WalletTypeLabelUI } from '../../uielements/common/Common.styles'
 import { Label as UILabel } from '../../uielements/label'
 
-export const Container = styled('div')`
+export const Container = styled.div`
   .sliderLabel {
     font-size: 21px;
     font-family: 'MainFontSemiBold';
@@ -35,9 +34,9 @@ export const OutputLabel = styled(UILabel)`
   line-height: 25px;
 
   ${media.md`
-  font-size: 27px;
-  line-height: 29px;
-`}
+    font-size: 27px;
+    line-height: 29px;
+  `}
 `
 
 export const OutputUSDLabel = styled(UILabel)`
@@ -48,33 +47,9 @@ export const OutputUSDLabel = styled(UILabel)`
   white-space: normal;
 
   ${media.md`
-  font-size: 13px;
-  line-height: 13px;
-`}
-`
-export const FeesRow = styled(Row)`
-  width: 100%;
-`
-
-export const FeeRow = styled(Row).attrs({
-  align: 'middle'
-})`
-  padding-bottom: 20px;
-
-  ${media.xl`
-    padding-bottom: 0px;
-`}
-`
-
-export const FeeErrorRow = styled(Row).attrs({
-  align: 'middle'
-})`
-  padding-bottom: 20px;
-
-  ${media.xl`
-    padding-top: 20px;
-    padding-bottom: 0px;
-`}
+    font-size: 13px;
+    line-height: 13px;
+  `}
 `
 
 export const AssetLabel = styled(AssetLabelUI)`
@@ -88,6 +63,6 @@ export const WalletTypeLabel = styled(WalletTypeLabelUI)`
   margin-right: 10px;
 
   ${media.md`
-  font-size: 10px;
-`}
+    font-size: 10px;
+  `}
 `

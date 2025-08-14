@@ -23,7 +23,7 @@ const MidgardErrorAlert = ({ apiEndpoint, reloadHandler }: ErrorAlertProps) => {
       (e) => (
         <Styled.Alert
           type="error"
-          message={intl.formatMessage({ id: 'midgard.error.endpoint.title' })}
+          title={intl.formatMessage({ id: 'midgard.error.endpoint.title' })}
           description={e?.message ?? e.toString()}
           action={
             <BorderButton onClick={reloadHandler} color="error" size="medium">
