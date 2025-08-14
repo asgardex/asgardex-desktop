@@ -17,7 +17,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AssetType, Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
@@ -25,6 +25,7 @@ import * as Rx from 'rxjs'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
+import { getAssetChain } from '../../../helpers/chainHelper'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
@@ -322,16 +323,7 @@ export const sendPoolTx$ = ({
   feeOption = DEFAULT_FEE_OPTION,
   protocol
 }: SendPoolTxParams): TxHashLD => {
-  const { chain } =
-    protocol === THORChain
-      ? asset.type === AssetType.TRADE || asset.type === AssetType.SECURED
-        ? AssetRuneNative
-        : asset
-      : protocol === MAYAChain
-      ? asset.type === AssetType.SYNTH || asset.type === AssetType.TRADE
-        ? AssetCacao
-        : asset
-      : asset
+  const { chain } = getAssetChain(asset, protocol)
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 
   switch (chain) {

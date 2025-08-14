@@ -325,6 +325,11 @@ export const TradeAssetsTableCollapsable = ({
       oTradeWithdrawParams,
       O.map((params) => params.protocol)
     )
+    const protocolAsset = FP.pipe(
+      oProtocol,
+      O.map((protocol) => (protocol === THORChain ? AssetRuneNative : AssetCacao)),
+      O.getOrElse(() => AssetRuneNative)
+    )
     return (
       <TxModal
         title={txModalTitle}
@@ -346,12 +351,12 @@ export const TradeAssetsTableCollapsable = ({
               O.chain((txHash) =>
                 FP.pipe(
                   oProtocol,
-                  O.map((protocol) => (protocol === MAYAChain ? getRuneExplorerTxUrl : getMayaExplorerTxUrl)(txHash)),
+                  O.map((protocol) => (protocol === THORChain ? getRuneExplorerTxUrl : getMayaExplorerTxUrl)(txHash)),
                   O.getOrElse(() => getRuneExplorerTxUrl(txHash))
                 )
               )
             )}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: AssetRuneNative.ticker })}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: protocolAsset.ticker })}
           />
         }
         extra={txModalExtraContentAsym}

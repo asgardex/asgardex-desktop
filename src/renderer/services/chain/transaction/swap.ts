@@ -1,11 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { AssetType, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
+import { THORChain } from '@xchainjs/xchain-thorchain'
+import { isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { getAssetChain } from '../../../helpers/chainHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { service as mayaMidgardService } from '../../midgard/mayaMigard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
@@ -35,19 +35,7 @@ export const swap$ = ({
   hdMode,
   protocol
 }: SwapTxParams): SwapTxState$ => {
-  const { chain } =
-    protocol === THORChain
-      ? asset.type === AssetType.TRADE || asset.type === AssetType.SECURED
-        ? AssetRuneNative
-        : asset
-      : protocol === MAYAChain
-      ? asset.type === AssetType.SYNTH || asset.type === AssetType.TRADE
-        ? AssetCacao
-        : asset
-      : asset
-
-  console.log(chain)
-
+  const { chain } = getAssetChain(asset, protocol)
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validate pool address or node
     RxOp.switchMap((poolAddresses) =>

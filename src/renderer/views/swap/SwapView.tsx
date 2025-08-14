@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { ThorChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, bn, Chain, baseAmount, AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import { function as FP, array as A, eq as Eq, option as O } from 'fp-ts'
@@ -47,7 +46,6 @@ import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } 
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
-import { usePricePool } from '../../hooks/usePricePool'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
 import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/swap'
@@ -710,7 +708,7 @@ const SuccessTradeRouteView = ({
   const { network } = useNetwork()
   const { service: midgardService } = useMidgardContext()
   const { service: midgardMayaService } = useMidgardMayaContext()
-  const { protocol } = useApp()
+  const { protocol, setProtocol } = useApp()
 
   const {
     pools: { poolsState$, reloadPools, reloadSelectedPoolDetail, selectedPoolAddress$, haltedChains$ },
@@ -742,7 +740,6 @@ const SuccessTradeRouteView = ({
     []
   )
   const { mimirHalt } = useThorchainMimirHalt()
-  const pricePool = usePricePool()
   const { isPrivate } = useApp()
   const { thorchainQuery } = useThorchainQueryContext()
   const { mayachainQuery } = useMayachainQueryContext()
@@ -755,7 +752,7 @@ const SuccessTradeRouteView = ({
   const selectedPoolAddressMaya = useObservableState(selectedPoolAddressMaya$, O.none)
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(
-    O.some(protocol === THORChain ? ThorChain : MAYAChain)
+    O.some(protocol === THORChain ? THORChain : MAYAChain)
   )
 
   const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$ } = useChainContext()
@@ -819,13 +816,21 @@ const SuccessTradeRouteView = ({
 
   const targetAssetRD: AssetWithDecimalRD = useObservableState(targetAssetDecimal$, RD.initial)
 
-  const [balancesState] = useObservableState(
+  const [balancesStateThor] = useObservableState(
     () =>
       balancesState$({
-        [ThorChain]: 'all'
+        [THORChain]: 'all'
       }),
     INITIAL_BALANCES_STATE
   )
+  const [balancesStateMaya] = useObservableState(
+    () =>
+      balancesState$({
+        [MAYAChain]: 'all'
+      }),
+    INITIAL_BALANCES_STATE
+  )
+  const balancesState = protocol === THORChain ? balancesStateThor : balancesStateMaya
 
   const onChangeAssetHandler = useCallback(
     ({
@@ -861,13 +866,20 @@ const SuccessTradeRouteView = ({
   useEffect(() => {
     // Source asset is the asset of the pool we need to interact with
     // Store it in global state, all depending streams will be updated then
+    if (sourceAsset === AssetRuneNative && protocol === MAYAChain) {
+      setProtocol(THORChain)
+    }
+    if (sourceAsset === AssetCacao && protocol === THORChain) {
+      setProtocol(MAYAChain)
+    }
+
     setSelectedPoolAsset(O.some(sourceAsset))
     setSelectedPoolAssetMaya(O.some(sourceAsset))
     // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
     return () => {
       setSelectedPoolAsset(O.none)
     }
-  }, [sourceAsset, setSelectedPoolAsset, targetAsset, setSelectedPoolAssetMaya])
+  }, [sourceAsset, setSelectedPoolAsset, targetAsset, setSelectedPoolAssetMaya, protocol, setProtocol])
 
   const keystore = useObservableState(keystoreState$, O.none)
 
@@ -1066,7 +1078,6 @@ const SuccessTradeRouteView = ({
                     poolAssets={[]}
                     poolsData={{}}
                     poolsDataMaya={{}}
-                    pricePool={pricePool}
                     poolDetails={[]}
                     poolDetailsMaya={[]}
                     walletBalances={balancesState}
@@ -1101,34 +1112,37 @@ const SuccessTradeRouteView = ({
               ]) => {
                 const combinedAssetDetails = protocol === THORChain ? [...assetDetails] : [...assetDetailsMaya]
 
-                const hasRuneAsset = FP.pipe(
+                const assets = FP.pipe(
                   combinedAssetDetails,
-                  A.map(({ asset }) => asset),
-                  assetInList(AssetRuneNative)
-                )
-                const hasCacaoAsset = FP.pipe(
-                  combinedAssetDetails,
-                  A.map(({ asset }) => asset),
-                  assetInList(AssetCacao)
+                  A.map(({ asset }) => asset)
                 )
 
-                if (!hasRuneAsset) {
-                  assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...combinedAssetDetails]
-                }
-                if (!hasCacaoAsset) {
-                  assetDetails = [{ asset: AssetCacao, assetPrice: bn(1) }, ...combinedAssetDetails]
-                }
-                const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
+                const hasRuneAsset = assetInList(AssetRuneNative)(assets)
+                const hasCacaoAsset = assetInList(AssetCacao)(assets)
+
+                // Create updated assetDetails immutably
+                const updatedAssetDetails = [
+                  ...(!hasRuneAsset ? [{ asset: AssetRuneNative, assetPrice: bn(1) }] : []),
+                  ...(!hasCacaoAsset ? [{ asset: AssetCacao, assetPrice: bn(1) }] : []),
+                  ...combinedAssetDetails
+                ]
+                const sourceAssetDetail = FP.pipe(
+                  Utils.pickPoolAsset(updatedAssetDetails, sourceAsset.asset),
+                  O.toNullable
+                )
                 // Make sure sourceAsset is available in pools
                 if (!sourceAssetDetail)
                   return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
-                const targetAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, targetAsset.asset), O.toNullable)
+                const targetAssetDetail = FP.pipe(
+                  Utils.pickPoolAsset(updatedAssetDetails, targetAsset.asset),
+                  O.toNullable
+                )
                 // Make sure targetAsset is available in pools
                 if (!targetAssetDetail)
                   return renderError(Error(`Missing pool for target asset ${assetToString(targetAsset.asset)}`))
 
                 const poolAssets: AnyAsset[] = FP.pipe(
-                  assetDetails,
+                  updatedAssetDetails,
                   A.map(({ asset }) => asset)
                 )
                 const disableAllPoolActions = (chain: Chain) =>
@@ -1166,7 +1180,6 @@ const SuccessTradeRouteView = ({
                     poolAssets={poolAssets}
                     poolsData={poolsData}
                     poolsDataMaya={poolsDataMaya}
-                    pricePool={pricePool}
                     poolDetails={poolDetails}
                     poolDetailsMaya={poolDetailsMaya}
                     walletBalances={balancesState}
@@ -1235,7 +1248,6 @@ const SuccessTradeRouteView = ({
                     poolAssets={[]}
                     poolsData={{}}
                     poolsDataMaya={{}}
-                    pricePool={pricePool}
                     poolDetails={[]}
                     poolDetailsMaya={[]}
                     walletBalances={balancesState}
@@ -1321,7 +1333,6 @@ const SuccessTradeRouteView = ({
                     poolAssets={poolAssets}
                     poolsData={poolsData}
                     poolsDataMaya={{}}
-                    pricePool={pricePool}
                     poolDetails={poolDetails}
                     poolDetailsMaya={[]}
                     walletBalances={balancesState}
