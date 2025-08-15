@@ -1,5 +1,22 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.7 (2025-08-15)
+
+## Add
+
+- add mayachain trade assets [#855](https://github.com/asgardex/asgardex-desktop/pull/855)
+
+## Update/Fixes
+
+- copy label migration [#857](https://github.com/asgardex/asgardex-desktop/pull/857)
+- alert migration [#856](https://github.com/asgardex/asgardex-desktop/pull/856)
+- collapse migration [#854](https://github.com/asgardex/asgardex-desktop/pull/854)
+- spin migration [#853](https://github.com/asgardex/asgardex-desktop/pull/853)
+- filter menu removal [#852](https://github.com/asgardex/asgardex-desktop/pull/852)
+- Update Yarn Version [#851](https://github.com/asgardex/asgardex-desktop/pull/851)
+- merge maya eth and tc whitelist [#847](https://github.com/asgardex/asgardex-desktop/pull/847)
+- update warning and error view [#844](https://github.com/asgardex/asgardex-desktop/pull/844)
+
 # 1.40.6 (2025-07-29)
 
 ## Add
