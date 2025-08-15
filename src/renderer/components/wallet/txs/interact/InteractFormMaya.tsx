@@ -20,7 +20,7 @@ import {
   bn,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Form, RadioChangeEvent, Tooltip } from 'antd'
+import { Form, Tooltip } from 'antd'
 import { FormInstance } from 'antd/es/form/Form'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
@@ -59,7 +59,6 @@ import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wal
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
-import * as StyledR from '../../../shared/form/Radio.styles'
 import { AssetIcon } from '../../../uielements/assets/assetIcon'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { CheckButton } from '../../../uielements/button/CheckButton'
@@ -69,6 +68,7 @@ import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
+import { RadioGroup, Radio } from '../../../uielements/radio'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
@@ -84,7 +84,7 @@ type FormValues = {
   chainAddress: string
   chain: string
   preferredAsset: string
-  expiry: number
+  expiry: string
   bondLpUnits: string
   assetPool: string
 }
@@ -372,7 +372,7 @@ export const InteractFormMaya = (props: Props) => {
     form.validateFields()
     const mayaname = form.getFieldValue('mayaname')
     const chain = mayanameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
-    const yearsToAdd = form.getFieldValue('expiry')
+    const yearsToAdd = parseInt(form.getFieldValue('expiry'))
     const expirity =
       yearsToAdd === 1
         ? undefined
@@ -404,9 +404,8 @@ export const InteractFormMaya = (props: Props) => {
     }
   }, [balance.walletAddress, form, isOwner, mayachainQuery, mayanameRegister, mayanameUpdate])
 
-  const handleRadioChainChange = useCallback((e: RadioChangeEvent) => {
-    const chain = e.target.value
-    setAliasChain(chain)
+  const handleRadioChainChange = useCallback((radioChain: string) => {
+    setAliasChain(radioChain)
   }, [])
 
   const addMaxAmountHandler = useCallback(
@@ -628,20 +627,20 @@ export const InteractFormMaya = (props: Props) => {
   )
   const renderRadioGroup = useMemo(
     () => (
-      <StyledR.Radio.Group onChange={() => estimateMayanameHandler()}>
-        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={1}>
+      <RadioGroup className="flex flex-col lg:flex-row lg:space-x-2" onChange={() => estimateMayanameHandler()}>
+        <Radio className="text-gray2 dark:text-gray2d" value="1">
           1 year
-        </StyledR.Radio>
-        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={2}>
+        </Radio>
+        <Radio className="text-gray2 dark:text-gray2d" value="2">
           2 years
-        </StyledR.Radio>
-        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={3}>
+        </Radio>
+        <Radio className="text-gray2 dark:text-gray2d" value="3">
           3 years
-        </StyledR.Radio>
-        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={5}>
+        </Radio>
+        <Radio className="text-gray2 dark:text-gray2d" value="5">
           5 years
-        </StyledR.Radio>
-      </StyledR.Radio.Group>
+        </Radio>
+      </RadioGroup>
     ),
     [estimateMayanameHandler]
   )
@@ -1049,20 +1048,20 @@ export const InteractFormMaya = (props: Props) => {
                       message: 'Please provide an alias chain.'
                     }
                   ]}>
-                  <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
-                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetAETH.chain}>
+                  <RadioGroup value={aliasChain} onChange={handleRadioChainChange}>
+                    <Radio className="text-gray2 dark:text-gray2d" value={AssetAETH.chain}>
                       ARB
-                    </StyledR.Radio>
-                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
+                    </Radio>
+                    <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
                       BTC
-                    </StyledR.Radio>
-                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
+                    </Radio>
+                    <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
                       ETH
-                    </StyledR.Radio>
-                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
+                    </Radio>
+                    <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
                       RUNE
-                    </StyledR.Radio>
-                  </StyledR.Radio.Group>
+                    </Radio>
+                  </RadioGroup>
                 </Styled.FormItem>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
                 <Styled.FormItem
@@ -1098,11 +1097,11 @@ export const InteractFormMaya = (props: Props) => {
                       message: 'Please provide an alias chain.'
                     }
                   ]}>
-                  <StyledR.Radio.Group>
-                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetCacao.chain}>
+                  <RadioGroup>
+                    <Radio className="text-gray2 dark:text-gray2d" value={AssetCacao.chain}>
                       MAYA
-                    </StyledR.Radio>
-                  </StyledR.Radio.Group>
+                    </Radio>
+                  </RadioGroup>
                 </Styled.FormItem>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
                 <Styled.FormItem
