@@ -16,7 +16,6 @@ import {
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
-import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -43,11 +42,12 @@ import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTy
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
+import { Label } from '../../../uielements/label'
+import { RadioGroup, Radio } from '../../../uielements/radio'
 import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
@@ -307,15 +307,19 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
 
   const renderFeeOptionsRadioGroup = useCallback(
     ({ rates }: FeesWithRates) => {
-      const onChangeHandler = (e: RadioChangeEvent) => setSelectedFeeOptionKey(e.target.value)
+      const onChangeHandler = (e: string) => setSelectedFeeOptionKey(e as FeeOption)
       return (
-        <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOptionKey} disabled={isLoading}>
+        <RadioGroup
+          className="flex flex-col lg:flex-row lg:space-x-2"
+          onChange={onChangeHandler}
+          value={selectedFeeOptionKey}
+          disabled={isLoading}>
           {Object.keys(rates).map((key) => (
-            <StyledR.Radio value={key as FeeOption} key={key}>
-              <StyledR.RadioLabel>{feeOptionsLabel[key as FeeOption]}</StyledR.RadioLabel>
-            </StyledR.Radio>
+            <Radio value={key as FeeOption} key={key}>
+              <Label textTransform="uppercase">{feeOptionsLabel[key as FeeOption]}</Label>
+            </Radio>
           ))}
-        </StyledR.Radio.Group>
+        </RadioGroup>
       )
     },
 

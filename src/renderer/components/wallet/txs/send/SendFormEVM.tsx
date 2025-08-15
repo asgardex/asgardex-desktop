@@ -20,7 +20,6 @@ import {
   Chain
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
-import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
@@ -50,12 +49,13 @@ import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/may
 import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
 import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
 import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
+import { Label } from '../../../uielements/label'
+import { RadioGroup, Radio } from '../../../uielements/radio'
 import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
@@ -881,23 +881,33 @@ export const SendFormEVM = (props: Props): JSX.Element => {
   const addMaxAmountHandler = useCallback(() => setAmountToSend(O.some(maxAmount)), [maxAmount])
 
   const renderFeeOptions = useMemo(() => {
-    const onChangeHandler = (e: RadioChangeEvent) => {
-      setSelectedFeeOption(e.target.value)
+    const onChangeHandler = (e: string) => {
+      setSelectedFeeOption(e as FeeOption)
     }
     const disabled = !feesAvailable || isLoading
 
     return (
-      <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOption} disabled={disabled}>
-        <StyledR.Radio value="average" key="average">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['average']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-        <StyledR.Radio value="fast" key="fast">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fast']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-        <StyledR.Radio value="fastest" key="fastest">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fastest']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-      </StyledR.Radio.Group>
+      <RadioGroup
+        className="flex flex-col lg:flex-row lg:space-x-2"
+        onChange={onChangeHandler}
+        value={selectedFeeOption}
+        disabled={disabled}>
+        <Radio value="average" key="average">
+          <Label disabled={disabled} textTransform="uppercase">
+            {feeOptionsLabel['average']}
+          </Label>
+        </Radio>
+        <Radio value="fast" key="fast">
+          <Label disabled={disabled} textTransform="uppercase">
+            {feeOptionsLabel['fast']}
+          </Label>
+        </Radio>
+        <Radio value="fastest" key="fastest">
+          <Label disabled={disabled} textTransform="uppercase">
+            {feeOptionsLabel['fastest']}
+          </Label>
+        </Radio>
+      </RadioGroup>
     )
   }, [feeOptionsLabel, feesAvailable, isLoading, selectedFeeOption])
 
