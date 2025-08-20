@@ -415,6 +415,19 @@ type LedgerMessageKey =
   | 'ledger.legacyformat.note'
   | 'ledger.legacyformat.show'
   | 'ledger.legacyformat.hide'
+  | 'ledger.connect.title'
+  | 'ledger.connect.instruction'
+  | 'ledger.connect.success.title'
+  | 'ledger.connect.success.description'
+  | 'ledger.connect.success.redirect'
+  | 'ledger.connect.button.continue'
+  | 'ledger.detect.title'
+  | 'ledger.detect.checking'
+  | 'ledger.derivation.path'
+  | 'ledger.derivation.legacy'
+  | 'ledger.derivation.metamask'
+  | 'ledger.connect.chain'
+  | 'ledger.connect.select'
 
 export type LedgerMessages = { [key in LedgerMessageKey]: string }
 

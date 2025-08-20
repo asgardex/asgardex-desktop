@@ -28,7 +28,7 @@ const enhancedClient$ = FP.pipe(
     // Otherwise, no client available
     return O.none
   }),
-  RxOp.distinctUntilChanged((a, b) => O.getEq({ equals: (x: any, y: any) => x === y }).equals(a, b)),
+  RxOp.distinctUntilChanged(),
   RxOp.shareReplay(1)
 )
 

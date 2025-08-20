@@ -21,6 +21,7 @@ import { WalletHistoryView } from './wallet/history'
 import { ImportKeystoreView } from './wallet/ImportKeystoreView'
 import { ImportPhraseView } from './wallet/ImportPhraseView'
 import { InteractView } from './wallet/Interact'
+import { LedgerChainSelectView } from './wallet/LedgerChainSelectView'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
 import { RunepoolView } from './wallet/RunepoolView'
@@ -29,7 +30,6 @@ import { TcyView } from './wallet/TcyView'
 import { TradeAssetsView } from './wallet/TradeAssetsView'
 import { UnlockView } from './wallet/UnlockView'
 import { WalletAuth } from './wallet/WalletAuth'
-import { LedgerChainSelectView } from './wallet/LedgerChainSelectView'
 
 export const ViewRoutes = (): JSX.Element => {
   const location = useLocation()

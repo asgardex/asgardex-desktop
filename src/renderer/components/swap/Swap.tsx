@@ -227,11 +227,11 @@ export const Swap = ({
             setStandaloneLedgerTargetAddress(O.some(walletAddress.address))
             console.log('Successfully fetched address for chain:', chain, 'address:', walletAddress.address)
           } else {
-            console.warn(`Failed to fetch ${chain} address:`, addressResult)
+            console.warn('Failed to fetch address for chain:', chain, addressResult)
             setStandaloneLedgerTargetAddress(O.none)
           }
         } catch (error) {
-          console.error(`Error fetching ${chain} address for standalone ledger:`, error)
+          console.error('Error fetching address for standalone ledger:', chain, error)
           setStandaloneLedgerTargetAddress(O.none)
         } finally {
           setIsFetchingStandaloneLedgerAddress(false)

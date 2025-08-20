@@ -22,13 +22,12 @@ import {
 const supportedChains: Chain[] = [
   'BTC',
   'ETH',
-  'BNB',
   'THOR',
   'LTC',
   'BCH',
   'DASH',
   'DOGE',
-  'ATOM',
+  'GAIA',
   'AVAX',
   'BSC',
   'ARB',
@@ -124,7 +123,7 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
       }
     } catch (error) {
       // Device not connected for this chain
-      console.error(`Failed to detect chain ${chainToDetect}:`, error)
+      console.error('Failed to detect chain:', chainToDetect, error)
     }
 
     // Update state with failure
