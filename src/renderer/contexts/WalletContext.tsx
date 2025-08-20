@@ -23,7 +23,8 @@ import {
   verifyLedgerAddress$,
   ledgerAddresses$,
   reloadPersistentLedgerAddresses,
-  persistentLedgerAddresses$
+  persistentLedgerAddresses$,
+  appWalletService
 } from '../services/wallet'
 
 type WalletContextValue = {
@@ -45,6 +46,7 @@ type WalletContextValue = {
   removeLedgerAddress: typeof removeLedgerAddress
   reloadPersistentLedgerAddresses: typeof reloadPersistentLedgerAddresses
   persistentLedgerAddresses$: typeof persistentLedgerAddresses$
+  appWalletService: typeof appWalletService
 }
 
 const initialContext: WalletContextValue = {
@@ -65,7 +67,8 @@ const initialContext: WalletContextValue = {
   verifyLedgerAddress$,
   removeLedgerAddress,
   reloadPersistentLedgerAddresses,
-  persistentLedgerAddresses$
+  persistentLedgerAddresses$,
+  appWalletService
 }
 const WalletContext = createContext<Option<WalletContextValue>>(none)
 

@@ -4,27 +4,29 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { ReferrerState } from '../../routes/types'
 import * as walletRoutes from '../../routes/wallet'
+import { isStandaloneLedgerMode } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 
 export const WalletAuth = ({ children }: { children: JSX.Element }): JSX.Element => {
-  const { keystoreService } = useWalletContext()
+  const { appWalletService } = useWalletContext()
 
   const location = useLocation()
 
-  // Important note:
-  // DON'T set `INITIAL_KEYSTORE_STATE` as default value
-  // Since `useObservableState` is set after first render (but not before)
-  // and Route.render is called before first render,
-  // we have to add 'undefined'  as default value
-  const keystore = useObservableState(keystoreService.keystoreState$, undefined)
+  // Use the new app wallet state that can be either keystore or standalone ledger
+  const appWalletState = useObservableState(appWalletService.appWalletState$, undefined)
 
-  // Redirect if  an user has not a phrase imported or wallet has been locked
-  // Special case: keystore can be `undefined` (see comment at its definition using `useObservableState`)
-  if (keystore === undefined) {
+  // Special case: app wallet state can be `undefined` during initialization
+  if (appWalletState === undefined) {
     return <></>
   }
 
-  if (!hasImportedKeystore(keystore)) {
+  // If we're in standalone ledger mode, no authentication is required
+  if (isStandaloneLedgerMode(appWalletState)) {
+    return children
+  }
+
+  // For keystore mode, apply existing authentication logic
+  if (!hasImportedKeystore(appWalletState)) {
     return (
       <Navigate
         to={{
@@ -35,8 +37,8 @@ export const WalletAuth = ({ children }: { children: JSX.Element }): JSX.Element
     )
   }
 
-  // check lock status
-  if (isLocked(keystore)) {
+  // check lock status for keystore
+  if (isLocked(appWalletState)) {
     return (
       <Navigate
         to={{

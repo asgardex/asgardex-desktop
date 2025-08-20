@@ -30,6 +30,13 @@ export const locked: Route<RedirectUrl | void> = {
   }
 }
 
+export const ledgerChainSelect: Route<void> = {
+  template: `${base.template}/ledger-chains`,
+  path() {
+    return this.template
+  }
+}
+
 export const assets: Route<void> = {
   template: `${base.template}/assets`,
   path() {

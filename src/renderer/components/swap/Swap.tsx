@@ -30,7 +30,8 @@ import {
   isTokenAsset,
   isTradeAsset,
   isSecuredAsset,
-  SecuredAsset
+  SecuredAsset,
+  Chain
 } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
@@ -53,6 +54,7 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
+import { useWalletContext } from '../../contexts/WalletContext'
 import {
   max1e8BaseAmount,
   convertBaseAmountDecimal,
@@ -94,7 +96,7 @@ import { PoolAddress } from '../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { addAsset } from '../../services/storage/userChainTokens'
-import { TxHashRD, WalletBalance, WalletBalances } from '../../services/wallet/types'
+import { TxHashRD, WalletBalance, WalletBalances, isStandaloneLedgerMode } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { useAggregator } from '../../store/aggregator/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
@@ -166,6 +168,14 @@ export const Swap = ({
 }: SwapProps) => {
   const { estimateSwap } = useAggregator()
   const intl = useIntl()
+  const { appWalletService } = useWalletContext()
+
+  // Get app wallet state to check for standalone ledger mode
+  const appWalletState = useObservableState(appWalletService.appWalletState$)
+
+  // State for dynamically fetched target address in standalone ledger mode
+  const [standaloneLedgerTargetAddress, setStandaloneLedgerTargetAddress] = useState<O.Option<Address>>(O.none)
+  const [isFetchingStandaloneLedgerAddress, setIsFetchingStandaloneLedgerAddress] = useState(false)
 
   const { chain: sourceChain } =
     sourceAsset.type === AssetType.SYNTH
@@ -180,16 +190,129 @@ export const Swap = ({
       ? AssetRuneNative
       : targetAsset
 
-  const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
+  const lockedWallet: boolean = useMemo(() => {
+    // In standalone ledger mode, bypass keystore authentication
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      return false
+    }
+
+    // Normal keystore authentication logic
+    return isLocked(keystore) || !hasImportedKeystore(keystore)
+  }, [keystore, appWalletState])
+
+  // Function to fetch target address for standalone ledger mode
+  const fetchStandaloneLedgerTargetAddress = useCallback(
+    async (chain: Chain) => {
+      console.log('fetchStandaloneLedgerTargetAddress called with chain:', chain)
+      console.log('appWalletState:', appWalletState)
+      console.log('isStandaloneLedgerMode:', appWalletState && isStandaloneLedgerMode(appWalletState))
+
+      if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+        setIsFetchingStandaloneLedgerAddress(true)
+        try {
+          console.log('Fetching address for standalone ledger target, chain:', chain)
+          console.log('standaloneLedgerService:', appWalletService.standaloneLedgerService)
+
+          // Connect to the target chain to get its address
+          const addressResult = await appWalletService.standaloneLedgerService
+            .connectLedgerChain(chain)
+            .pipe()
+            .toPromise()
+
+          console.log('addressResult:', addressResult)
+
+          // Handle RemoteData result
+          if (RD.isSuccess(addressResult)) {
+            const walletAddress = addressResult.value
+            setStandaloneLedgerTargetAddress(O.some(walletAddress.address))
+            console.log('Successfully fetched address for chain:', chain, 'address:', walletAddress.address)
+          } else {
+            console.warn(`Failed to fetch ${chain} address:`, addressResult)
+            setStandaloneLedgerTargetAddress(O.none)
+          }
+        } catch (error) {
+          console.error(`Error fetching ${chain} address for standalone ledger:`, error)
+          setStandaloneLedgerTargetAddress(O.none)
+        } finally {
+          setIsFetchingStandaloneLedgerAddress(false)
+        }
+      } else {
+        console.log('Not in standalone ledger mode, skipping address fetch')
+      }
+    },
+    [appWalletState, appWalletService]
+  )
+
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
   const [isFetchingEstimate, setIsFetchingEstimate] = useState(false)
 
   const { isAssetSupported$ } = useChainflipContext()
 
-  const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
+  const useSourceAssetLedger = useMemo(() => {
+    // In standalone ledger mode, always use ledger for source asset
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      console.log('🔧 Swap Debug: In standalone ledger mode, using Ledger for source asset', {
+        appWalletState,
+        sourceAsset: sourceAsset.symbol,
+        sourceChain: sourceAsset.chain
+      })
+      return true
+    }
+    // Otherwise, check the initial wallet type
+    const useLedger = isLedgerWallet(initialSourceWalletType)
+    console.log('🔧 Swap Debug: Source asset ledger decision', {
+      isStandaloneLedgerMode: false,
+      initialSourceWalletType,
+      useLedger
+    })
+    return useLedger
+  }, [appWalletState, initialSourceWalletType, sourceAsset])
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
 
   const oSourceWalletAddress = useSourceAssetLedger ? oSourceLedgerAddress : oInitialSourceKeystoreAddress
+
+  // Debug wallet address resolution and auto-select chain for standalone ledger
+  useEffect(() => {
+    console.log('🔧 Swap Debug: Wallet address resolution', {
+      useSourceAssetLedger,
+      oSourceLedgerAddress,
+      oInitialSourceKeystoreAddress,
+      resolvedAddress: oSourceWalletAddress,
+      appWalletState:
+        appWalletState && isStandaloneLedgerMode(appWalletState)
+          ? {
+              mode: appWalletState.mode,
+              connectedChain: appWalletState.connectedChain,
+              address: appWalletState.address
+                ? {
+                    chain: appWalletState.address.chain,
+                    address: appWalletState.address.address,
+                    type: appWalletState.address.type
+                  }
+                : undefined
+            }
+          : 'not-standalone-ledger'
+    })
+
+    // Auto-select the source asset's chain in standalone ledger mode (only if state is available)
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      const sourceChain = sourceAsset.chain
+      const isChainConnected = appWalletState.connectedChain === sourceChain
+
+      if (isChainConnected && appWalletState.connectedChain !== sourceChain) {
+        // Use ref to avoid dependency loop
+        appWalletService.standaloneLedgerService.setSelectedChain(sourceChain)
+      }
+    }
+  }, [
+    useSourceAssetLedger,
+    oSourceLedgerAddress,
+    oInitialSourceKeystoreAddress,
+    oSourceWalletAddress,
+    sourceAsset.chain,
+    appWalletState,
+    appWalletService.standaloneLedgerService
+  ])
 
   const useTargetAssetLedger = FP.pipe(
     oInitialTargetWalletType,
@@ -233,6 +356,20 @@ export const Swap = ({
   useEffect(() => {
     setTargetWalletType(oInitialTargetWalletType)
   }, [oInitialTargetWalletType])
+
+  // Reset target address for standalone ledger mode when target asset changes
+  // Note: We don't auto-fetch here anymore to avoid loops - user must manually fetch
+  const prevTargetChainRef = useRef<Chain | undefined>()
+  useEffect(() => {
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      // Only reset if the target chain actually changed (not just a re-render)
+      if (prevTargetChainRef.current && prevTargetChainRef.current !== targetChain) {
+        console.log('Target chain changed from', prevTargetChainRef.current, 'to', targetChain, ', resetting address')
+        setStandaloneLedgerTargetAddress(O.none)
+      }
+      prevTargetChainRef.current = targetChain
+    }
+  }, [appWalletState, targetChain])
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -334,11 +471,34 @@ export const Swap = ({
   // `AssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
   const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
     const oWalletBalances = NEA.fromArray(allBalances)
-    return getWalletBalanceByAssetAndWalletType({
+    const result = getWalletBalanceByAssetAndWalletType({
       oWalletBalances,
       asset: sourceAsset,
       walletType: sourceWalletType
     })
+
+    console.log('🔧 Swap Debug: Source asset wallet balance lookup', {
+      sourceAsset: sourceAsset.symbol,
+      sourceWalletType,
+      allBalancesCount: allBalances.length,
+      foundBalance: O.isSome(result),
+      balanceDetails: O.isSome(result)
+        ? {
+            amount: O.toNullable(result)?.amount.amount().toString(),
+            address: O.toNullable(result)?.walletAddress,
+            walletType: O.toNullable(result)?.walletType
+          }
+        : null,
+      availableBalances: allBalances.map((balance) => ({
+        asset: balance.asset.symbol,
+        chain: balance.asset.chain,
+        walletType: balance.walletType,
+        amount: balance.amount.amount().toString(),
+        address: balance.walletAddress
+      }))
+    })
+
+    return result
   }, [sourceAsset, allBalances, sourceWalletType])
 
   // User balance for source asset
@@ -423,6 +583,16 @@ export const Swap = ({
     return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
   }, [sourceAsset, targetAsset])
 
+  // Compute effective recipient address: use standalone ledger address when available, otherwise use provided recipient address
+  const effectiveRecipientAddress: O.Option<Address> = useMemo(() => {
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      // In standalone ledger mode, use the fetched target address
+      return standaloneLedgerTargetAddress
+    }
+    // In normal mode, use the provided recipient address
+    return oRecipientAddress
+  }, [appWalletState, standaloneLedgerTargetAddress, oRecipientAddress])
+
   // PlaceHolder memo just to calc fees better
   const swapMemo = useMemo(() => {
     return O.fold(
@@ -442,8 +612,8 @@ export const Swap = ({
           affiliateBps: affiliateName ? affiliateBps ?? 0 : undefined
         })
       }
-    )(oRecipientAddress)
-  }, [oRecipientAddress, slipTolerance, network, targetAsset, streamingInterval, streamingQuantity])
+    )(effectiveRecipientAddress)
+  }, [effectiveRecipientAddress, slipTolerance, network, targetAsset, streamingInterval, streamingQuantity])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
@@ -1108,7 +1278,22 @@ export const Swap = ({
       })
     )
 
-    return FP.pipe(
+    console.log('🔧 Swap Debug: SwapParams construction dependencies', {
+      oPoolAddress: O.isSome(oPoolAddress),
+      oSourceAssetWB: O.isSome(oSourceAssetWB),
+      oQuoteProtocol: O.isSome(oQuoteProtocol),
+      poolAddressDetails: O.isSome(oPoolAddress) ? O.toNullable(oPoolAddress) : null,
+      sourceWalletBalance: O.isSome(oSourceAssetWB)
+        ? {
+            walletType: O.toNullable(oSourceAssetWB)?.walletType,
+            address: O.toNullable(oSourceAssetWB)?.walletAddress,
+            amount: O.toNullable(oSourceAssetWB)?.amount.amount().toString()
+          }
+        : null,
+      quoteProtocol: O.isSome(oQuoteProtocol) ? O.toNullable(oQuoteProtocol)?.protocol : null
+    })
+
+    const result = FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteProtocol),
       O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
         let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
@@ -1139,6 +1324,20 @@ export const Swap = ({
         }
       })
     )
+
+    console.log('🔧 Swap Debug: SwapParams result', {
+      hasResult: O.isSome(result),
+      swapParams: O.isSome(result)
+        ? {
+            amount: O.toNullable(result)?.amount.amount().toString(),
+            walletType: O.toNullable(result)?.walletType,
+            sender: O.toNullable(result)?.sender,
+            protocol: O.toNullable(result)?.protocol
+          }
+        : null
+    })
+
+    return result
   }, [
     oPoolAddressThor,
     oPoolAddressMaya,
@@ -2188,7 +2387,7 @@ export const Swap = ({
         RD.isPending(approveState) ||
         isCausedSlippage ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax1e8) ||
-        O.isNone(oRecipientAddress) ||
+        O.isNone(effectiveRecipientAddress) ||
         !canSwap ||
         customAddressEditActive ||
         isTargetChainDisabled ||
@@ -2206,7 +2405,7 @@ export const Swap = ({
       isCausedSlippage,
       swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax1e8,
-      oRecipientAddress,
+      effectiveRecipientAddress,
       canSwap,
       customAddressEditActive,
       isTargetChainDisabled,
@@ -2483,7 +2682,7 @@ export const Swap = ({
                 </span>
               </div>
             }>
-            {!isLocked(keystore) ? (
+            {!lockedWallet ? (
               <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                 <BaseButton
                   className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
@@ -2647,7 +2846,7 @@ export const Swap = ({
                         </div>
                         <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
-                            oRecipientAddress,
+                            effectiveRecipientAddress,
                             O.map((address) => (
                               <TooltipAddress title={address} key="tooltip-target-addr">
                                 {hidePrivateData ? hiddenString : address}
@@ -2788,34 +2987,154 @@ export const Swap = ({
             )}
           </Collapse>
           {!lockedWallet &&
-            FP.pipe(
-              oRecipientAddress,
-              O.map((address) => (
-                <div
-                  className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
-                  key="edit-address">
-                  <div className="flex items-center">
-                    <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
-                      {intl.formatMessage({ id: 'common.recipient' })}
-                    </h3>
-                    <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>
+            (() => {
+              // In standalone ledger mode, handle recipient address differently
+              if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+                return (
+                  <div
+                    className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
+                    key="standalone-recipient-address">
+                    <div className="flex items-center">
+                      <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
+                        {intl.formatMessage({ id: 'common.recipient' })}
+                      </h3>
+                      <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
+                    </div>
+
+                    {/* Show current address if available, otherwise show options */}
+                    {FP.pipe(
+                      standaloneLedgerTargetAddress,
+                      O.fold(
+                        () => (
+                          <div className="mt-2 space-y-2">
+                            <div className="text-[14px] text-text2 dark:text-text2d">
+                              Choose how to set the recipient address:
+                            </div>
+                            <div className="flex space-x-2">
+                              <BaseButton
+                                size="small"
+                                loading={isFetchingStandaloneLedgerAddress}
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `Please make sure the ${targetAsset.chain} app is open on your Ledger device before proceeding.`
+                                    )
+                                  ) {
+                                    fetchStandaloneLedgerTargetAddress(targetAsset.chain)
+                                  }
+                                }}>
+                                Fetch from Ledger
+                              </BaseButton>
+                              <BaseButton
+                                size="small"
+                                onClick={() => {
+                                  // Set a placeholder to trigger EditableAddress component
+                                  setStandaloneLedgerTargetAddress(O.some('MANUAL_ENTRY'))
+                                }}>
+                                Enter Manually
+                              </BaseButton>
+                            </div>
+                          </div>
+                        ),
+                        (address) => (
+                          <div className="mt-2">
+                            {address === 'MANUAL_ENTRY' ? (
+                              <div className="space-y-2">
+                                <div className="text-[14px] text-text2 dark:text-text2d">Enter recipient address:</div>
+                                <EditableAddress
+                                  key="manual-entry"
+                                  asset={targetAsset}
+                                  network={network}
+                                  address=""
+                                  onChangeAddress={(newAddress) => {
+                                    if (newAddress.trim()) {
+                                      setStandaloneLedgerTargetAddress(O.some(newAddress))
+                                      onChangeRecipientAddress(newAddress)
+                                    } else {
+                                      setStandaloneLedgerTargetAddress(O.none)
+                                    }
+                                  }}
+                                  onChangeEditableAddress={onChangeEditableRecipientAddress}
+                                  onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
+                                  addressValidator={addressValidator}
+                                  hidePrivateData={hidePrivateData}
+                                />
+                              </div>
+                            ) : (
+                              <EditableAddress
+                                key={address}
+                                asset={targetAsset}
+                                network={network}
+                                address={address}
+                                onChangeAddress={(newAddress) => {
+                                  setStandaloneLedgerTargetAddress(O.some(newAddress))
+                                  onChangeRecipientAddress(newAddress)
+                                }}
+                                onChangeEditableAddress={onChangeEditableRecipientAddress}
+                                onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
+                                addressValidator={addressValidator}
+                                hidePrivateData={hidePrivateData}
+                              />
+                            )}
+                            <div className="mt-2 flex space-x-2">
+                              <BaseButton
+                                size="small"
+                                loading={isFetchingStandaloneLedgerAddress}
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `Please make sure the ${targetAsset.chain} app is open on your Ledger device before proceeding.`
+                                    )
+                                  ) {
+                                    fetchStandaloneLedgerTargetAddress(targetAsset.chain)
+                                  }
+                                }}>
+                                Refresh from Ledger
+                              </BaseButton>
+                              <BaseButton size="small" onClick={() => setStandaloneLedgerTargetAddress(O.none)}>
+                                Clear Address
+                              </BaseButton>
+                            </div>
+                          </div>
+                        )
+                      )
+                    )}
                   </div>
-                  <EditableAddress
-                    key={address}
-                    asset={targetAsset}
-                    network={network}
-                    address={address}
-                    onChangeAddress={onChangeRecipientAddress}
-                    onChangeEditableAddress={onChangeEditableRecipientAddress}
-                    onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
-                    addressValidator={addressValidator}
-                    hidePrivateData={hidePrivateData}
-                  />
-                </div>
-              )),
-              O.toNullable
-            )}
-          {!isLocked(keystore) && amountToSwapMax1e8.gt(0) && (
+                )
+              }
+
+              // Normal keystore mode
+              return FP.pipe(
+                oRecipientAddress,
+                O.map((address) => (
+                  <div
+                    className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
+                    key="edit-address">
+                    <div className="flex items-center">
+                      <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
+                        {intl.formatMessage({ id: 'common.recipient' })}
+                      </h3>
+                      <WalletTypeLabel key="target-w-type">
+                        {getWalletTypeLabel(oTargetWalletType, intl)}
+                      </WalletTypeLabel>
+                    </div>
+                    <EditableAddress
+                      key={address}
+                      asset={targetAsset}
+                      network={network}
+                      address={address}
+                      onChangeAddress={onChangeRecipientAddress}
+                      onChangeEditableAddress={onChangeEditableRecipientAddress}
+                      onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
+                      addressValidator={addressValidator}
+                      hidePrivateData={hidePrivateData}
+                    />
+                  </div>
+                )),
+                O.toNullable
+              )
+            })()}
+          {!lockedWallet && amountToSwapMax1e8.gt(0) && (
             <div>{<SwapExpiryProgressBar oQuoteProtocol={oQuoteProtocol} swapExpiry={swapExpiry} />}</div>
           )}
         </div>
@@ -2834,7 +3153,7 @@ export const Swap = ({
         />
       )}
       <div className="flex flex-col items-center justify-center">
-        {!isLocked(keystore) ? (
+        {!lockedWallet ? (
           <>
             {isApproved ? (
               <>
@@ -2873,16 +3192,21 @@ export const Swap = ({
           </>
         ) : (
           <>
-            <p className="center mb-0 mt-30px font-main text-[12px] uppercase text-text2 dark:text-text2d">
-              {!hasImportedKeystore(keystore)
-                ? intl.formatMessage({ id: 'swap.note.nowallet' })
-                : isLocked(keystore) && intl.formatMessage({ id: 'swap.note.lockedWallet' })}
-            </p>
-            <FlatButton className="my-30px min-w-[200px]" size="large" onClick={importWalletHandler}>
-              {!hasImportedKeystore(keystore)
-                ? intl.formatMessage({ id: 'wallet.add.label' })
-                : isLocked(keystore) && intl.formatMessage({ id: 'wallet.unlock.label' })}
-            </FlatButton>
+            {/* Only show wallet messages in keystore mode - standalone ledger shouldn't reach here */}
+            {!(appWalletState && isStandaloneLedgerMode(appWalletState)) && (
+              <>
+                <p className="center mb-0 mt-30px font-main text-[12px] uppercase text-text2 dark:text-text2d">
+                  {!hasImportedKeystore(keystore)
+                    ? intl.formatMessage({ id: 'swap.note.nowallet' })
+                    : isLocked(keystore) && intl.formatMessage({ id: 'swap.note.lockedWallet' })}
+                </p>
+                <FlatButton className="my-30px min-w-[200px]" size="large" onClick={importWalletHandler}>
+                  {!hasImportedKeystore(keystore)
+                    ? intl.formatMessage({ id: 'wallet.add.label' })
+                    : isLocked(keystore) && intl.formatMessage({ id: 'wallet.unlock.label' })}
+                </FlatButton>
+              </>
+            )}
           </>
         )}
       </div>

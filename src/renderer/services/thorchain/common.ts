@@ -109,6 +109,50 @@ const clientState$: ClientState$ = FP.pipe(
   RxOp.shareReplay(1)
 )
 
+/**
+ * Read-only client for fetching data without requiring keystore phrase
+ * This client can fetch balances but cannot send transactions
+ */
+const readOnlyClientState$: ClientState$ = FP.pipe(
+  Rx.combineLatest([clientNetwork$, clientUrl$]),
+  RxOp.switchMap(
+    ([network, clientUrl]): ClientState$ =>
+      FP.pipe(
+        // request chain id from node whenever network changes
+        Rx.from(getChainId(clientUrl[network].node)),
+        RxOp.switchMap(() =>
+          Rx.of(
+            (() => {
+              const getDefaultClientUrls = (): Record<Network, string[]> => {
+                return {
+                  [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
+                  [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
+                  [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+                }
+              }
+              try {
+                // Create client without phrase for read-only operations
+                const readOnlyClient = new Client({
+                  clientUrls: getDefaultClientUrls(),
+                  network
+                  // No phrase - this limits functionality to read-only operations
+                })
+                return RD.success(readOnlyClient)
+              } catch (error) {
+                return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only THOR client'))
+              }
+            })()
+          )
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))))
+      )
+  ),
+  RxOp.startWith(RD.initial),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$ = readOnlyClientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
+
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
@@ -129,6 +173,7 @@ const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 export {
   client$,
   clientState$,
+  readOnlyClient$,
   clientUrl$,
   reloadClientUrl,
   setThornodeRpcUrl,

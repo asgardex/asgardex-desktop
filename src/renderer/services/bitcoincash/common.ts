@@ -52,6 +52,35 @@ const clientState$: ClientState$ = FP.pipe(
 const client$: Observable<O.Option<BitcoinCashClient>> = clientState$.pipe(map(RD.toOption), shareReplay(1))
 
 /**
+ * Read-only BCH client for balance queries without requiring keystore
+ * This client can be used for standalone ledger mode to query balances
+ */
+const readOnlyClientState$: ClientState$ = FP.pipe(
+  clientNetwork$,
+  RxOp.map((network) => {
+    try {
+      // Create client without phrase - only for balance queries
+      const bchInitParams = {
+        ...defaultBchParams,
+        network: network
+        // No phrase - this limits functionality to read-only operations
+      }
+      const client = new BitcoinCashClient(bchInitParams)
+      return RD.success(client)
+    } catch (error) {
+      return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only BCH client'))
+    }
+  }),
+  RxOp.startWith<ClientState>(RD.pending),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$: Observable<O.Option<BitcoinCashClient>> = readOnlyClientState$.pipe(
+  RxOp.map(RD.toOption),
+  RxOp.shareReplay(1)
+)
+
+/**
  * BCH `Address`
  */
 const address$: C.WalletAddress$ = C.address$(client$, BCHChain)
@@ -66,4 +95,4 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, BCHChain)
  */
 const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }

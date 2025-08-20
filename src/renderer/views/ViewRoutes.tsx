@@ -29,6 +29,7 @@ import { TcyView } from './wallet/TcyView'
 import { TradeAssetsView } from './wallet/TradeAssetsView'
 import { UnlockView } from './wallet/UnlockView'
 import { WalletAuth } from './wallet/WalletAuth'
+import { LedgerChainSelectView } from './wallet/LedgerChainSelectView'
 
 export const ViewRoutes = (): JSX.Element => {
   const location = useLocation()
@@ -70,6 +71,7 @@ export const ViewRoutes = (): JSX.Element => {
       />
       {/* wallet routes */}
       <Route path={walletRoutes.noWallet.template} element={<NoWalletView />} />
+      <Route path={walletRoutes.ledgerChainSelect.template} element={<LedgerChainSelectView />} />
       <Route path={`${walletRoutes.create.base.template}/*`} element={<CreateView />} />
       <Route path={walletRoutes.locked.template} element={<UnlockView />} />
       <Route path={walletRoutes.imports.keystore.template} element={<ImportKeystoreView />} />

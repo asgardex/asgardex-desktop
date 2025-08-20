@@ -51,6 +51,31 @@ const clientState$: ClientState$ = FP.pipe(
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
+ * Read-only BSC client for balance queries without requiring keystore
+ * This client can be used for standalone ledger mode to query balances
+ */
+const readOnlyClientState$: ClientState$ = FP.pipe(
+  clientNetwork$,
+  RxOp.map((network): ClientState => {
+    try {
+      // Create client without phrase - only for balance queries
+      const client = new Client({
+        ...defaultBscParams,
+        network: network
+        // No phrase - this limits functionality to read-only operations
+      })
+      return RD.success(client)
+    } catch (error) {
+      return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only BSC client'))
+    }
+  }),
+  RxOp.startWith<ClientState>(RD.pending),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$: Client$ = readOnlyClientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
+
+/**
  * Current `Address` depending on selected network
  */
 const address$: WalletAddress$ = C.address$(client$, BSCChain)
@@ -65,4 +90,4 @@ const addressUI$: WalletAddress$ = C.addressUI$(client$, BSCChain)
  */
 const explorerUrl$: ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }
