@@ -34,7 +34,7 @@ const FormValidation = () => {
     }
     return Promise.reject('Value must be greater than 10!')
   }
-  const onFinish = (values: {}) => {
+  const onFinish = (values: Record<string, unknown>) => {
     console.log('onFinish: ', values)
   }
 

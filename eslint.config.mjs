@@ -118,6 +118,7 @@ export default [
       ],
 
       '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
       'security/detect-object-injection': 'off',
       'import/no-anonymous-default-export': 'off',
 
