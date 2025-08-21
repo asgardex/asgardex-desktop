@@ -195,6 +195,49 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
     )
 
   /**
+   * Gets address for a chain without updating the global state
+   * Useful for fetching target addresses without affecting source balance
+   */
+  const getAddressWithoutStateChange = (chain: Chain, hdMode: HDMode = getHDModeForChain(chain)) =>
+    FP.pipe(
+      Rx.combineLatest([network$, Rx.of(chain)]),
+      RxOp.take(1),
+      RxOp.switchMap(([network, selectedChain]) =>
+        FP.pipe(
+          Rx.from(
+            window.apiHDWallet.getLedgerAddress({
+              chain: selectedChain,
+              network,
+              walletAccount: 0,
+              walletIndex: 0,
+              hdMode
+            })
+          ),
+          RxOp.map(RD.fromEither),
+          RxOp.catchError((error) =>
+            Rx.of(
+              RD.failure({
+                errorId: LedgerErrorId.GET_ADDRESS_FAILED,
+                msg: isError(error) ? error?.message ?? error.toString() : `${error}`
+              })
+            )
+          ),
+          liveData.map<WalletAddress, WalletAddress>((walletAddress) => {
+            // Create the ledger address without updating global state
+            const ledgerAddress: WalletAddress = {
+              ...walletAddress,
+              type: WalletType.Ledger,
+              chain: selectedChain
+            }
+
+            return ledgerAddress
+          })
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+
+  /**
    * Disconnects the current chain from standalone ledger mode
    */
   const disconnectLedgerChain: DisconnectLedgerChainHandler = async (chain: Chain) => {
@@ -280,6 +323,7 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
   return {
     standaloneLedgerState$,
     connectLedgerChain,
+    getAddressWithoutStateChange,
     disconnectLedgerChain,
     detectLedgerDevices,
     setSelectedChain,

@@ -128,6 +128,7 @@ export type DetectLedgerDevicesHandler = () => Promise<Chain | undefined>
 export type StandaloneLedgerService = {
   standaloneLedgerState$: StandaloneLedgerState$
   connectLedgerChain: ConnectLedgerChainHandler
+  getAddressWithoutStateChange: ConnectLedgerChainHandler
   disconnectLedgerChain: DisconnectLedgerChainHandler
   detectLedgerDevices: DetectLedgerDevicesHandler
   setSelectedChain: (chain?: Chain) => void
