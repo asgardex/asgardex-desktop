@@ -2282,7 +2282,10 @@ export const SymDeposit = (props: Props) => {
                     {FP.pipe(
                       oAssetWB,
                       O.map(({ walletAddress: address }) => (
-                        <Tooltip title={address} size="big" key="tooltip-asset-sender-addr">
+                        <Tooltip
+                          title={hidePrivateData ? hiddenString : address}
+                          size="big"
+                          key="tooltip-asset-sender-addr">
                           {hidePrivateData ? hiddenString : address}
                         </Tooltip>
                       )),

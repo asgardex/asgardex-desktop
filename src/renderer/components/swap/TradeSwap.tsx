@@ -2277,7 +2277,10 @@ export const TradeSwap = ({
                           {FP.pipe(
                             oSourceWalletAddress,
                             O.map((address) => (
-                              <Tooltip size="big" title={address} key="tooltip-sender-addr">
+                              <Tooltip
+                                key="tooltip-sender-addr"
+                                size="big"
+                                title={hidePrivateData ? hiddenString : address}>
                                 {hidePrivateData ? hiddenString : address}
                               </Tooltip>
                             )),
@@ -2294,7 +2297,10 @@ export const TradeSwap = ({
                           {FP.pipe(
                             oRecipientAddress,
                             O.map((address) => (
-                              <Tooltip size="big" title={address} key="tooltip-target-addr">
+                              <Tooltip
+                                key="tooltip-target-addr"
+                                size="big"
+                                title={hidePrivateData ? hiddenString : address}>
                                 {hidePrivateData ? hiddenString : address}
                               </Tooltip>
                             )),
