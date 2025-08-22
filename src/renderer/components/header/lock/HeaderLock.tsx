@@ -21,7 +21,7 @@ import {
 import * as WU from '../../../services/wallet/util'
 import { LockIcon, UnlockIcon } from '../../icons'
 import { BaseButton } from '../../uielements/button'
-import { Tooltip } from '../../uielements/common/Common.styles'
+import { Tooltip } from '../../uielements/tooltip'
 
 type WalletData = { id: KeystoreId; name: string }
 

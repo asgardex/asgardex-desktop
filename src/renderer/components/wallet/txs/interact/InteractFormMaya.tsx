@@ -20,7 +20,7 @@ import {
   bn,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Form, Tooltip } from 'antd'
+import { Form } from 'antd'
 import { FormInstance } from 'antd/es/form/Form'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
@@ -69,6 +69,7 @@ import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
 import { RadioGroup, Radio } from '../../../uielements/radio'
+import { Tooltip } from '../../../uielements/tooltip'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'

@@ -15,12 +15,11 @@ import {
   formatAssetAmount
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import { function as FP, option as O } from 'fp-ts'
+import { option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { AssetLabel } from '../assets/assetLabel'
-import { TooltipAddress } from '../common/Common.styles'
 import { Label } from '../label'
 import { PoolShareCard } from './PoolShareCard'
 
@@ -44,7 +43,6 @@ export type Props = {
 
 export const PoolShare = ({
   asset: assetWD,
-  addresses: { rune: oRuneAddress, asset: oAssetAddress },
   runePrice,
   loading,
   priceAsset,
@@ -60,16 +58,6 @@ export const PoolShare = ({
   const dexAssetDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
 
   const { asset } = assetWD
-
-  const runeAddress = FP.pipe(
-    oRuneAddress,
-    O.getOrElse(() => '')
-  )
-
-  const assetAddress = FP.pipe(
-    oAssetAddress,
-    O.getOrElse(() => '')
-  )
 
   const totalDepositPrice = useMemo(
     () => baseAmount(runePrice.amount().plus(assetPrice.amount())),
@@ -96,20 +84,16 @@ export const PoolShare = ({
     () => (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <div className="flex flex-col bg-turquoise/20 rounded-lg p-2 space-y-2">
-          <TooltipAddress title={assetAddress}>
-            <AssetLabel className="flex justify-center" asset={asset} />
-          </TooltipAddress>
+          <AssetLabel className="flex justify-center" asset={asset} />
           {renderRedemptionCol(assetShare, assetPrice, asset)}
         </div>
         <div className="flex flex-col bg-turquoise/20 rounded-lg p-2 space-y-2">
-          <TooltipAddress title={runeAddress}>
-            <AssetLabel className="flex justify-center" asset={dexAsset} />
-          </TooltipAddress>
+          <AssetLabel className="flex justify-center" asset={dexAsset} />
           {renderRedemptionCol(runeShare, runePrice, dexAsset)}
         </div>
       </div>
     ),
-    [assetAddress, asset, renderRedemptionCol, runeShare, runePrice, dexAsset, runeAddress, assetShare, assetPrice]
+    [asset, renderRedemptionCol, runeShare, runePrice, dexAsset, assetShare, assetPrice]
   )
 
   const depositUnitsFormatted = useMemo(() => {

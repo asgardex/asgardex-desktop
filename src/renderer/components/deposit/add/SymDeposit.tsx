@@ -104,10 +104,10 @@ import { AssetInput } from '../../uielements/assets/assetInput'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { BaseButton, FlatButton, ViewTxButton } from '../../uielements/button'
 import { Collapse } from '../../uielements/collapse'
-import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
 import { ProtocolSwitch } from '../../uielements/protocolSwitch'
+import { Tooltip } from '../../uielements/tooltip'
 import { AssetMissmatchWarning } from './AssetMissmatchWarning'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
 import * as Helper from './Deposit.helper'
@@ -2267,9 +2267,9 @@ export const SymDeposit = (props: Props) => {
                     {FP.pipe(
                       oDexAssetWB,
                       O.map(({ walletAddress: address }) => (
-                        <TooltipAddress title={address} key="tooltip-asset-sender-addr">
+                        <Tooltip title={address} size="big" key="tooltip-asset-sender-addr">
                           {hidePrivateData ? hiddenString : address}
-                        </TooltipAddress>
+                        </Tooltip>
                       )),
                       O.getOrElse(() => <>{noDataString}</>)
                     )}
@@ -2282,9 +2282,9 @@ export const SymDeposit = (props: Props) => {
                     {FP.pipe(
                       oAssetWB,
                       O.map(({ walletAddress: address }) => (
-                        <TooltipAddress title={address} key="tooltip-asset-sender-addr">
+                        <Tooltip title={address} size="big" key="tooltip-asset-sender-addr">
                           {hidePrivateData ? hiddenString : address}
-                        </TooltipAddress>
+                        </Tooltip>
                       )),
                       O.getOrElse(() => <>{noDataString}</>)
                     )}
@@ -2297,9 +2297,9 @@ export const SymDeposit = (props: Props) => {
                     address ? (
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
                         <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
-                        <TooltipAddress title={address}>
+                        <Tooltip title={address} size="big">
                           <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
-                        </TooltipAddress>
+                        </Tooltip>
                       </div>
                     ) : null
                   ),
