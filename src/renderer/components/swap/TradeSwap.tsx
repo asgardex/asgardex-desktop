@@ -2276,14 +2276,14 @@ export const TradeSwap = ({
                         <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
                             oSourceWalletAddress,
-                            O.map((address) => (
-                              <Tooltip
-                                key="tooltip-sender-addr"
-                                size="big"
-                                title={hidePrivateData ? hiddenString : address}>
-                                {hidePrivateData ? hiddenString : address}
-                              </Tooltip>
-                            )),
+                            O.map((address) => {
+                              const displayedAddress = hidePrivateData ? hiddenString : address
+                              return (
+                                <Tooltip key="tooltip-sender-addr" size="big" title={displayedAddress}>
+                                  {displayedAddress}
+                                </Tooltip>
+                              )
+                            }),
                             O.getOrElse(() => <>{noDataString}</>)
                           )}
                         </div>
@@ -2296,14 +2296,14 @@ export const TradeSwap = ({
                         <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
                             oRecipientAddress,
-                            O.map((address) => (
-                              <Tooltip
-                                key="tooltip-target-addr"
-                                size="big"
-                                title={hidePrivateData ? hiddenString : address}>
-                                {hidePrivateData ? hiddenString : address}
-                              </Tooltip>
-                            )),
+                            O.map((address) => {
+                              const displayedAddress = hidePrivateData ? hiddenString : address
+                              return (
+                                <Tooltip key="tooltip-target-addr" size="big" title={displayedAddress}>
+                                  {displayedAddress}
+                                </Tooltip>
+                              )
+                            }),
                             O.getOrElse(() => <>{noDataString}</>)
                           )}
                         </div>

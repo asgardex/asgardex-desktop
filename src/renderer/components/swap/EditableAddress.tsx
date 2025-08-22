@@ -92,16 +92,18 @@ export const EditableAddress = ({
   )
 
   const renderAddress = useMemo(() => {
+    const displayedAddress = hidePrivateData ? hiddenString : truncatedAddress
+
     return (
       <div className="flex items-center overflow-hidden font-main text-[16px] normal-case text-text2 dark:text-text2d">
-        <Tooltip title={hidePrivateData ? hiddenString : truncatedAddress} size="big">
+        <Tooltip title={displayedAddress} size="big">
           <BaseButton
             className="!px-0 normal-case !text-text2 dark:!text-text2d"
             onClick={() => {
               setEditableAddress(O.fromNullable(address))
               onChangeEditableMode(true)
             }}>
-            {hidePrivateData ? hiddenString : truncatedAddress}
+            {displayedAddress}
           </BaseButton>
         </Tooltip>
         <div className="flex flex-row items-center">

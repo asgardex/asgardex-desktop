@@ -2266,11 +2266,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                     {FP.pipe(
                       oDexAssetWB,
-                      O.map(({ walletAddress: address }) => (
-                        <Tooltip title={address} size="big" key="tooltip-asset-sender-addr">
-                          {hidePrivateData ? hiddenString : address}
-                        </Tooltip>
-                      )),
+                      O.map(({ walletAddress: address }) => {
+                        const displayedAddress = hidePrivateData ? hiddenString : address
+                        return (
+                          <Tooltip title={displayedAddress} size="big" key="tooltip-asset-sender-addr">
+                            {displayedAddress}
+                          </Tooltip>
+                        )
+                      }),
                       O.getOrElse(() => <>{noDataString}</>)
                     )}
                   </div>
@@ -2281,14 +2284,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                     {FP.pipe(
                       oAssetWB,
-                      O.map(({ walletAddress: address }) => (
-                        <Tooltip
-                          title={hidePrivateData ? hiddenString : address}
-                          size="big"
-                          key="tooltip-asset-sender-addr">
-                          {hidePrivateData ? hiddenString : address}
-                        </Tooltip>
-                      )),
+                      O.map(({ walletAddress: address }) => {
+                        const displayedAddress = hidePrivateData ? hiddenString : address
+                        return (
+                          <Tooltip title={displayedAddress} size="big" key="tooltip-asset-sender-addr">
+                            {displayedAddress}
+                          </Tooltip>
+                        )
+                      }),
                       O.getOrElse(() => <>{noDataString}</>)
                     )}
                   </div>
@@ -2360,11 +2363,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-10px font-main text-[12px]">
                     {FP.pipe(
                       oDepositParams,
-                      O.map(({ memos: { rune: memo } }) => (
-                        <Tooltip title={memo} key={`tooltip-${protocolAsset.symbol}-memo`}>
-                          {hidePrivateData ? hiddenString : memo}
-                        </Tooltip>
-                      )),
+                      O.map(({ memos: { rune: memo } }) => {
+                        const displayedMemo = hidePrivateData ? hiddenString : memo
+                        return (
+                          <Tooltip title={displayedMemo} key={`tooltip-${protocolAsset.symbol}-memo`}>
+                            {displayedMemo}
+                          </Tooltip>
+                        )
+                      }),
                       O.toNullable
                     )}
                   </div>
@@ -2389,11 +2395,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-10px font-main text-[12px]">
                     {FP.pipe(
                       oDepositParams,
-                      O.map(({ memos: { asset: memo } }) => (
-                        <Tooltip title={memo} key="tooltip-asset-memo">
-                          {hidePrivateData ? hiddenString : memo}
-                        </Tooltip>
-                      )),
+                      O.map(({ memos: { asset: memo } }) => {
+                        const displayedMemo = hidePrivateData ? hiddenString : memo
+                        return (
+                          <Tooltip title={displayedMemo} key="tooltip-asset-memo">
+                            {displayedMemo}
+                          </Tooltip>
+                        )
+                      }),
                       O.toNullable
                     )}
                   </div>
