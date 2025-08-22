@@ -5,15 +5,12 @@ import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ADA_DECIMALS } from '@xchainjs/xchain-cardano'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
-import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { EthChain } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetail as MayaPoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
-import { ThorchainCache } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { ZEC_DECIMAL } from '@xchainjs/xchain-zcash'
 import * as Rx from 'rxjs'
@@ -21,20 +18,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import {
-  isAdaChain,
-  isArbChain,
-  isBchChain,
-  isBscChain,
-  isBtcChain,
-  isDashChain,
-  isKujiChain,
-  isMayaChain,
-  isSolChain,
-  isThorChain,
-  isXrdChain,
-  isZecChain
-} from '../../helpers/chainHelper'
 import { KUJI_DECIMAL } from '../kuji/const'
 import { AssetWithDecimalLD } from './types'
 
@@ -45,6 +28,22 @@ import { AssetWithDecimalLD } from './types'
  * @param mayaPoolDetails - MAYAChain pool details (optional)
  * @returns Promise<number> - The decimal count for the asset
  */
+// Chain decimal lookup map for better performance
+const CHAIN_DECIMAL_MAP = new Map([
+  ['ARB', ARB_GAS_ASSET_DECIMAL],
+  ['BSC', BSC_GAS_ASSET_DECIMAL],
+  ['THOR', THORCHAIN_DECIMAL],
+  ['MAYA', CACAO_DECIMAL],
+  ['DASH', DASH_DECIMAL],
+  ['KUJI', KUJI_DECIMAL],
+  ['XRD', XRD_DECIMAL],
+  ['BTC', BTC_DECIMAL],
+  ['BCH', BCH_DECIMAL],
+  ['SOL', SOL_DECIMALS],
+  ['ZEC', ZEC_DECIMAL],
+  ['ADA', ADA_DECIMALS]
+])
+
 export const getDecimal = (
   asset: AnyAsset,
   thorPoolDetails?: PoolDetail[],
@@ -53,54 +52,13 @@ export const getDecimal = (
   const { chain } = asset
 
   // Check hardcoded decimals first for native chain assets
-  if (isArbChain(chain)) {
-    return Promise.resolve(ARB_GAS_ASSET_DECIMAL)
+  const chainDecimal = CHAIN_DECIMAL_MAP.get(chain)
+  if (chainDecimal !== undefined) {
+    return Promise.resolve(chainDecimal)
   }
-  if (isBscChain(chain)) {
-    return Promise.resolve(BSC_GAS_ASSET_DECIMAL)
-  }
-  if (isThorChain(chain)) {
-    return Promise.resolve(THORCHAIN_DECIMAL)
-  }
-  if (isMayaChain(chain)) {
-    return Promise.resolve(CACAO_DECIMAL)
-  }
-  if (isDashChain(chain)) {
-    return Promise.resolve(DASH_DECIMAL)
-  }
-  if (isKujiChain(chain)) {
-    return Promise.resolve(KUJI_DECIMAL)
-  }
-  if (isXrdChain(chain)) {
-    return Promise.resolve(XRD_DECIMAL)
-  }
-  if (isBtcChain(chain)) {
-    return Promise.resolve(BTC_DECIMAL)
-  }
-  if (isBchChain(chain)) {
-    return Promise.resolve(BCH_DECIMAL)
-  }
-  if (isSolChain(chain)) {
-    return Promise.resolve(SOL_DECIMALS)
-  }
-  if (isZecChain(chain)) {
-    return Promise.resolve(ZEC_DECIMAL)
-  }
-  if (isAdaChain(chain)) {
-    return Promise.resolve(ADA_DECIMALS)
-  }
-  if (isZecChain(chain)) {
-    return Promise.resolve(ZEC_DECIMAL)
-  }
+
   if (isTCYAsset(asset)) {
     return Promise.resolve(THORCHAIN_DECIMAL)
-  }
-  // Fix until Decimals for maya midgard is completed.
-  if (
-    asset.chain === EthChain &&
-    asset.symbol.toLowerCase() === String('PEPE-0x6982508145454Ce325dDbE47a25d4ec3d2311933').toLowerCase()
-  ) {
-    return Promise.resolve(ETH_GAS_ASSET_DECIMAL)
   }
 
   // Try to find the asset in MAYAChain pool details first
@@ -116,7 +74,7 @@ export const getDecimal = (
     })
 
     if (mayaPoolDetail && mayaPoolDetail.nativeDecimal && mayaPoolDetail.nativeDecimal !== '-1') {
-      return Promise.resolve(parseInt(mayaPoolDetail.nativeDecimal, 10))
+      return Promise.resolve(parseInt(mayaPoolDetail.nativeDecimal, 18))
     }
   }
 
@@ -133,33 +91,12 @@ export const getDecimal = (
     })
 
     if (thorPoolDetail && thorPoolDetail.nativeDecimal && thorPoolDetail.nativeDecimal !== '-1') {
-      return Promise.resolve(parseInt(thorPoolDetail.nativeDecimal, 10))
+      return Promise.resolve(parseInt(thorPoolDetail.nativeDecimal, 18))
     }
   }
 
-  // Fallback to the original implementation with proper error handling
-  try {
-    const thorchainCache = new ThorchainCache()
-
-    return Rx.from(
-      thorchainCache.midgardQuery.getDecimalForAsset({
-        chain: asset.chain,
-        ticker: asset.ticker,
-        symbol: asset.symbol.toUpperCase(),
-        type: asset.type
-      })
-    )
-      .toPromise()
-      .catch((error) => {
-        console.warn(`Failed to get decimal for asset ${assetToString(asset)}:`, error)
-        // Return a sensible default - most tokens use 18 decimals
-        return 18
-      })
-  } catch (error) {
-    console.warn(`Failed to get decimal for asset ${assetToString(asset)}:`, error)
-    // Return a sensible default - most tokens use 18 decimals
-    return Promise.resolve(18)
-  }
+  // Return a sensible default - most tokens use 18 decimals
+  return Promise.resolve(18)
 }
 
 export const assetWithDecimal$ = (
