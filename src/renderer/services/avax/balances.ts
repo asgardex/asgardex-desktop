@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import { of } from 'rxjs'

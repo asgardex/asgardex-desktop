@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { BASEChain } from '@xchainjs/xchain-base'
 import { Network } from '@xchainjs/xchain-client'
-import { AnyAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import { of } from 'rxjs'
