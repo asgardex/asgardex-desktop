@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { baseAmount } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
@@ -12,7 +12,7 @@ import { useChainContext } from '../../../contexts/ChainContext'
 import { useEvmContext } from '../../../contexts/EvmContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getChainAsset } from '../../../helpers/chainHelper'
-import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
+import { getWalletBalanceByAssetAndWalletType } from '../../../helpers/walletHelper'
 import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
@@ -34,7 +34,6 @@ type Props = {
 
 export const SendViewEVM = (props: Props): JSX.Element => {
   const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
-
   const { network } = useNetwork()
   const { mayaScanPriceRD } = useObserveMayaScanPrice()
 
@@ -51,17 +50,29 @@ export const SendViewEVM = (props: Props): JSX.Element => {
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(asset.asset.chain))
 
   const oWalletBalance = useMemo(() => {
-    return FP.pipe(
-      oBalances,
-      O.chain((balances) =>
-        getWalletBalanceByAddressAndAsset({ balances, address: asset.walletAddress, asset: asset.asset })
-      )
-    )
-  }, [asset.asset, asset.walletAddress, oBalances])
+    const result = getWalletBalanceByAssetAndWalletType({
+      oWalletBalances: oBalances,
+      asset: asset.asset,
+      walletType: asset.walletType
+    })
 
-  const { transfer$, poolDeposit$: deposit$ } = useChainContext()
+    return result
+  }, [asset.asset, asset.walletType, oBalances])
 
-  const { fees$, reloadFees } = useEvmContext(asset.asset.chain)
+  const { transfer$, poolDeposit$: deposit$, evmFees$ } = useChainContext()
+
+  // Use centralized EVM fees that support standalone ledger mode
+  const fees$ = (params: { asset: AnyAsset; amount: BaseAmount; recipient: string; from: string }) =>
+    evmFees$({
+      chain: asset.asset.chain,
+      asset: params.asset,
+      amount: params.amount,
+      recipient: params.recipient,
+      from: params.from
+    })
+
+  // Get reload function from individual context for now
+  const { reloadFees } = useEvmContext(asset.asset.chain)
 
   const [feesRD] = useObservableState<FeesRD>(
     // First fees are based on "default" values

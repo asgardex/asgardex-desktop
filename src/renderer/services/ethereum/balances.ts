@@ -23,13 +23,15 @@ import { client$, readOnlyClient$ } from './common'
 const enhancedClient$ = FP.pipe(
   Rx.combineLatest([client$, readOnlyClient$, appWalletService.appWalletState$]),
   RxOp.map(([keystoreClient, readOnlyClient, appWalletState]) => {
+    const isStandalone = appWalletState && isStandaloneLedgerMode(appWalletState)
+
     // If keystore client is available, use it
     if (O.isSome(keystoreClient)) {
       return keystoreClient
     }
 
     // If keystore is locked but we're in standalone ledger mode, use read-only client
-    if (appWalletState && isStandaloneLedgerMode(appWalletState) && O.isSome(readOnlyClient)) {
+    if (isStandalone && O.isSome(readOnlyClient)) {
       return readOnlyClient
     }
 
@@ -111,6 +113,7 @@ const balances$: ({
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
   const assets: TokenAsset[] | undefined = network === Network.Testnet ? ETHAssetsTestnet : ETHAssetsFallBack
+
   return C.balancesByAddress$({
     client$: enhancedClient$,
     trigger$: reloadLedgerBalances$,
@@ -119,4 +122,4 @@ const getBalanceByAddress$ = (network: Network) => {
   })
 }
 
-export { reloadBalances, balances$, reloadBalances$, resetReloadBalances, getBalanceByAddress$ }
+export { reloadBalances, balances$, reloadBalances$, resetReloadBalances, getBalanceByAddress$, enhancedClient$ }

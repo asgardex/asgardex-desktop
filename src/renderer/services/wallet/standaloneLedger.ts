@@ -47,8 +47,8 @@ const INITIAL_STANDALONE_LEDGER_STATE: StandaloneLedgerState = {
  * Get the correct HD mode for a specific chain
  */
 const getHDModeForChain = (chain: Chain): HDMode => {
-  // EVM chains (ETH, AVAX, BSC) need EVM HD mode
-  if (['ETH', 'AVAX', 'BSC'].includes(chain)) {
+  // EVM chains (ETH, AVAX, BSC, ARB, BASE) need EVM HD mode
+  if (['ETH', 'AVAX', 'BSC', 'ARB', 'BASE'].includes(chain)) {
     return DEFAULT_EVM_HD_MODE
   }
   // All other chains use default HD mode

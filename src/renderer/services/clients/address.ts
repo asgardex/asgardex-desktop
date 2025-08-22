@@ -21,12 +21,6 @@ export const addressUI$: (client$: XChainClient$, chain: Chain) => WalletAddress
             : undefined
 
         if (standaloneLedgerAddress) {
-          console.log(
-            'addressUI$ returning standalone ledger address for chain:',
-            chain,
-            'address:',
-            standaloneLedgerAddress.address
-          )
           // Return standalone ledger address with full WalletAddress data
           return Rx.of<O.Option<WalletAddress>>(
             O.some({

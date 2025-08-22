@@ -95,9 +95,6 @@ export const LedgerChainSelectView: React.FC = () => {
     if (!selectedChain) return
 
     try {
-      console.log('Starting single chain detection for:', selectedChain)
-      console.log('HD Mode:', selectedHDMode)
-
       // Set the selected chain and HD mode
       appWalletService.standaloneLedgerService.setSelectedChainForDetection(selectedChain)
       // TODO: Pass HD mode to the detection service when implemented
@@ -106,7 +103,7 @@ export const LedgerChainSelectView: React.FC = () => {
     } catch (error) {
       console.error('Error during single chain detection for chain:', selectedChain, error)
     }
-  }, [selectedChain, selectedHDMode, appWalletService.standaloneLedgerService])
+  }, [selectedChain, appWalletService.standaloneLedgerService])
 
   const handleDetectionComplete = useCallback(async () => {
     try {
@@ -116,13 +113,10 @@ export const LedgerChainSelectView: React.FC = () => {
         appWalletService.standaloneLedgerService.setSelectedChain(connectedChain)
 
         // Trigger balance reload for the detected chain
-        console.log(`Triggering balance reload for chain: ${connectedChain}`)
         reloadBalancesByChain(connectedChain, WalletType.Ledger)()
 
         // Also trigger a general balance reload to ensure all balances are refreshed
         reloadBalances()
-
-        console.log('Balance reload triggered for connected chain')
       }
 
       // Navigate to assets page without any URL parameters

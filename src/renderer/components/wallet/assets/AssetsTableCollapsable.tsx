@@ -20,6 +20,7 @@ import {
   isSynthAsset
 } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
@@ -27,6 +28,7 @@ import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../..
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
+import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import {
   isBtcAsset,
@@ -53,6 +55,7 @@ import {
   ApiError,
   ChainBalance,
   ChainBalances,
+  isStandaloneLedgerMode,
   SelectedWalletAsset,
   WalletBalance,
   WalletBalances
@@ -133,6 +136,11 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   const intl = useIntl()
   const navigate = useNavigate()
   const isXLargeView = useBreakpoint()?.xl ?? false
+
+  // Get app wallet state to check for standalone ledger mode
+  const { appWalletService } = useWalletContext()
+  const appWalletState = useObservableState(appWalletService.appWalletState$)
+  const isStandaloneLedger = appWalletState && isStandaloneLedgerMode(appWalletState)
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
 
@@ -340,7 +348,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           )
         )
       }
-      if (isRuneNativeAsset(asset) && deepestPoolAsset) {
+      if (isRuneNativeAsset(asset) && deepestPoolAsset && !isStandaloneLedger) {
         actions.push(
           createAction('common.trade', () => {
             setProtocol(THORChain)
@@ -370,7 +378,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           )
         )
       }
-      if (isCacaoAsset(asset) && deepestPoolAsset) {
+      if (isCacaoAsset(asset) && deepestPoolAsset && !isStandaloneLedger) {
         actions.push(
           createAction('common.trade', () => {
             setProtocol(MAYAChain)
@@ -439,7 +447,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (hasActivePool) {
+      if (hasActivePool && !isStandaloneLedger) {
         actions.push(
           createAction('common.add', () => {
             setProtocol(isChainOfThor(asset.chain) && !isRuneNativeAsset(asset) ? THORChain : MAYAChain)
@@ -454,7 +462,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (isRuneNativeAsset(asset) || isCacaoAsset(asset) || isTCYAsset(asset)) {
+      if ((isRuneNativeAsset(asset) || isCacaoAsset(asset) || isTCYAsset(asset)) && !isStandaloneLedger) {
         actions.push(createAction('wallet.action.deposit', () => assetHandler(walletAsset, 'deposit')))
       }
 
@@ -464,7 +472,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         </div>
       )
     },
-    [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol]
+    [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol, isStandaloneLedger]
   )
 
   const columns: ColumnDef<WalletBalance, FixmeType>[] = useMemo(

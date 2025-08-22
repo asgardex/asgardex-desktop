@@ -456,16 +456,19 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
   )
 
   const renderSlider = useMemo(() => {
-    const percentage = amountToSend
-      .amount()
-      .dividedBy(maxAmount.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
+    const maxAmountValue = maxAmount.amount()
+    const percentage = maxAmountValue.gt(0)
+      ? amountToSend
+          .amount()
+          .dividedBy(maxAmountValue)
+          .multipliedBy(100)
+          // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+          .decimalPlaces(0, BigNumber.ROUND_DOWN)
+          .toNumber()
+      : 0
 
     const setAmountToSendFromPercentValue = (percents: number) => {
-      const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
+      const amountFromPercentage = maxAmountValue.multipliedBy(percents / 100)
       return setAmountToSend(baseAmount(amountFromPercentage, maxAmount.decimal))
     }
 

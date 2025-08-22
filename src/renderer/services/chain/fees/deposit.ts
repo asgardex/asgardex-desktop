@@ -26,7 +26,7 @@ const reloadSymDepositFees = (asset: AnyAsset, protocolAsset: AnyAsset) => {
     _reloadSymDepositFees(O.some(asset))
   }
   // (2) Reload fees for RUNE
-  protocolAsset.chain === THORChain ? THOR.reloadFees() : MAYA.reloadFees()
+  protocolAsset.chain === THORChain ? THOR.reloadFees(true) : MAYA.reloadFees()
   // (3) Reload fees for asset, which are provided via `inbound_addresses` endpoint
   reloadInboundAddresses()
 }

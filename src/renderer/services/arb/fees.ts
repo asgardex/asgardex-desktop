@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
-import { Fees, FeeType } from '@xchainjs/xchain-client'
+import { Fees, FeeType, Protocol } from '@xchainjs/xchain-client'
 import { getFee, GasPrices, Client } from '@xchainjs/xchain-evm'
 import { Asset, baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -39,17 +39,30 @@ export const createFeesService = (client$: Client$): FeesService => {
 
   async function estimateAndCalculateFees(client: Client, params: TxParams) {
     // Estimate gas prices
-    const gasPrices = await client.estimateGasPrices()
+    const gasPrices = await client.estimateGasPrices(Protocol.THORCHAIN)
     const { fast: fastGP, fastest: fastestGP, average: averageGP } = gasPrices
 
-    // Estimate gas limit
-    const gasLimit = await client.estimateGasLimit({
-      from: params.from,
-      asset: params.asset as Asset,
-      amount: params.amount,
-      recipient: params.recipient,
-      memo: params.memo
-    })
+    // Estimate gas limit - with fallback for standalone ledger mode
+    let gasLimit: BigNumber
+    try {
+      gasLimit = await client.estimateGasLimit({
+        from: params.from,
+        asset: params.asset as Asset,
+        amount: params.amount,
+        recipient: params.recipient,
+        memo: params.memo
+      })
+    } catch (error) {
+      // Fallback gas limits for standalone ledger mode
+      if (params.asset && isAethAsset(params.asset as Asset)) {
+        // ARB native transfer
+        gasLimit = new BigNumber(ETH_OUT_TX_GAS_LIMIT)
+      } else {
+        // ERC20 token transfer (or asset is undefined - assume ERC20 for safety)
+        gasLimit = new BigNumber(ERC20_OUT_TX_GAS_LIMIT)
+      }
+    }
+
     const fees: Fees = {
       type: FeeType.PerByte,
       average: getFee({ gasPrice: averageGP, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL }),

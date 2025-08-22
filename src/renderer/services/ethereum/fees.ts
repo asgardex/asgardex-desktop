@@ -23,17 +23,15 @@ export const createFeesService = (client$: Client$): FeesService => {
 
   const fees$ = (params: TxParams): FeesLD =>
     Rx.combineLatest([reloadFees$, client$]).pipe(
-      RxOp.switchMap(([reloadFeesParams, oClient]) =>
-        FP.pipe(
+      RxOp.switchMap(([reloadFeesParams, oClient]) => {
+        return FP.pipe(
           oClient,
           O.fold(
             () => Rx.EMPTY,
-            (client) => {
-              return Rx.from(estimateAndCalculateFees(client, reloadFeesParams || params))
-            }
+            (client) => Rx.from(estimateAndCalculateFees(client, reloadFeesParams || params))
           )
         )
-      ),
+      }),
       RxOp.map(RD.success),
       RxOp.catchError((error) => Rx.of(RD.failure(error))),
       RxOp.startWith(RD.pending)
@@ -43,14 +41,28 @@ export const createFeesService = (client$: Client$): FeesService => {
     // Estimate gas prices
     const gasPrices = await client.estimateGasPrices(Protocol.THORCHAIN)
     const { fast: fastGP, fastest: fastestGP, average: averageGP } = gasPrices
-    // Estimate gas limit
-    const gasLimit = await client.estimateGasLimit({
-      from: params.from,
-      asset: params.asset as Asset,
-      amount: params.amount,
-      recipient: params.recipient,
-      memo: params.memo
-    })
+
+    // Estimate gas limit - with fallback for standalone ledger mode
+    let gasLimit: BigNumber
+    try {
+      gasLimit = await client.estimateGasLimit({
+        from: params.from,
+        asset: params.asset as Asset,
+        amount: params.amount,
+        recipient: params.recipient,
+        memo: params.memo
+      })
+    } catch (error) {
+      // Fallback gas limits for standalone ledger mode
+      if (params.asset && isEthAsset(params.asset as Asset)) {
+        // ETH native transfer
+        gasLimit = new BigNumber(ETH_OUT_TX_GAS_LIMIT)
+      } else {
+        // ERC20 token transfer (or asset is undefined - assume ERC20 for safety)
+        gasLimit = new BigNumber(ERC20_OUT_TX_GAS_LIMIT)
+      }
+    }
+
     const fees: Fees = {
       type: FeeType.PerByte,
       average: getFee({ gasPrice: averageGP, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),

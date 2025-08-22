@@ -34,6 +34,18 @@ export const createAppWalletService = (): AppWalletService => {
   keystoreService.keystoreState$.subscribe((keystoreState: KeystoreState) => {
     const currentAppState = appWalletState()
 
+    // If keystore becomes unlocked and we're in standalone ledger mode, switch to keystore mode
+    if (O.isSome(keystoreState) && isStandaloneLedgerMode(currentAppState)) {
+      // Check if keystore is actually unlocked (has phrase)
+      const keystoreData = keystoreState.value
+      if ('phrase' in keystoreData && keystoreData.phrase) {
+        // Exit standalone ledger mode and switch to keystore
+        standaloneLedgerService.exitStandaloneMode()
+        setAppWalletState(keystoreState)
+        return
+      }
+    }
+
     // Only update if we're in keystore mode or transitioning to it
     if (isKeystoreMode(currentAppState) || O.isSome(keystoreState)) {
       setAppWalletState(keystoreState)

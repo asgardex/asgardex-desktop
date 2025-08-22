@@ -279,7 +279,7 @@ export const InteractViewTHOR = () => {
                       getExplorerTxUrl={getExplorerTxUrl}
                       addressValidation={validateAddress}
                       fee={feeRD}
-                      reloadFeesHandler={reloadFees}
+                      reloadFeesHandler={() => reloadFees(true)}
                       validatePassword$={validatePassword$}
                       thorchainQuery={thorchainQuery}
                       network={network}

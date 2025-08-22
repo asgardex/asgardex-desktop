@@ -113,7 +113,7 @@ const balances$: ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const assets: Asset[] | undefined = network === Network.Testnet ? AvaxAssetsTestnet : undefined
+  const assets = network === Network.Testnet ? AvaxAssetsTestnet : AVAXAssetsFallback
   return C.balancesByAddress$({
     client$: enhancedClient$,
     trigger$: reloadLedgerBalances$,
@@ -122,4 +122,4 @@ const getBalanceByAddress$ = (network: Network) => {
   })
 }
 
-export { reloadBalances, balances$, reloadBalances$, resetReloadBalances, getBalanceByAddress$ }
+export { reloadBalances, balances$, reloadBalances$, resetReloadBalances, getBalanceByAddress$, enhancedClient$ }

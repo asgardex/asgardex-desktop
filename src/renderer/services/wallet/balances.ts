@@ -61,7 +61,8 @@ import {
   KeystoreState$,
   KeystoreState,
   ChainBalance,
-  GetLedgerAddressHandler
+  GetLedgerAddressHandler,
+  StandaloneLedgerState
 } from './types'
 import { hasImportedKeystore } from './util'
 
@@ -1259,9 +1260,15 @@ export const createBalancesService = ({
       let observablesToUse: Record<Chain, ChainBalance$[]>
 
       if (isStandaloneMode) {
-        // In standalone ledger mode, only show ledger balances
-        console.log('Standalone ledger mode: filtering to show only ledger balances')
-        observablesToUse = ledgerBalanceObservables
+        // In standalone ledger mode, only show balances for the connected chain
+        const standaloneLedgerState = appWalletState as StandaloneLedgerState
+        const connectedChain = standaloneLedgerState.connectedChain
+
+        // Only use observables for the connected chain
+        observablesToUse =
+          connectedChain && ledgerBalanceObservables[connectedChain]
+            ? { [connectedChain]: ledgerBalanceObservables[connectedChain] }
+            : {}
       } else {
         // In normal mode, show all balances (keystore + ledger)
         observablesToUse = chainBalanceObservables
