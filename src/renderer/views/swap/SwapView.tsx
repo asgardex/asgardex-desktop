@@ -175,10 +175,14 @@ const SuccessRouteView = ({
   const pendingPoolsStateMayaRD = useObservableState(pendingPoolsStateMaya$, RD.initial)
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
+    // Extract pool details from RemoteData
+    const thorPoolDetails = RD.isSuccess(poolsStateThorRD) ? poolsStateThorRD.value.poolDetails : undefined
+    const mayaPoolDetails = RD.isSuccess(poolsStateMayaRD) ? poolsStateMayaRD.value.poolDetails : undefined
+
     // Check the condition to skip fetching
     if (sourceAsset.type === AssetType.SECURED) {
       // Resolve `getDecimal` and return the observable
-      return Rx.from(getDecimal(AssetRuneNative)).pipe(
+      return Rx.from(getDecimal(AssetRuneNative, thorPoolDetails, mayaPoolDetails)).pipe(
         RxOp.map((decimal) =>
           RD.success({
             asset: sourceAsset,
@@ -192,7 +196,7 @@ const SuccessRouteView = ({
     // Check the condition to skip fetching
     if (sourceAsset.type === AssetType.SYNTH) {
       // Resolve `getDecimal` and return the observable
-      return Rx.from(getDecimal(AssetCacao)).pipe(
+      return Rx.from(getDecimal(AssetCacao, thorPoolDetails, mayaPoolDetails)).pipe(
         RxOp.map((decimal) =>
           RD.success({
             asset: sourceAsset,
@@ -218,16 +222,20 @@ const SuccessRouteView = ({
         )
       }
     }
-    // Use the existing `assetWithDecimal$` function for fetching
-    return assetWithDecimal$(sourceAsset)
-  }, [assetWithDecimal$, chainFlipAssets, sourceAsset])
+    // Use the existing `assetWithDecimal$` function for fetching with pool details
+    return assetWithDecimal$(sourceAsset, thorPoolDetails, mayaPoolDetails)
+  }, [assetWithDecimal$, chainFlipAssets, sourceAsset, poolsStateThorRD, poolsStateMayaRD])
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
   const targetAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
+    // Extract pool details from RemoteData
+    const thorPoolDetails = RD.isSuccess(poolsStateThorRD) ? poolsStateThorRD.value.poolDetails : undefined
+    const mayaPoolDetails = RD.isSuccess(poolsStateMayaRD) ? poolsStateMayaRD.value.poolDetails : undefined
+
     if (targetAsset.type === AssetType.SYNTH) {
       // Return a default `LiveData` if the condition is met
-      return Rx.from(getDecimal(AssetCacao)).pipe(
+      return Rx.from(getDecimal(AssetCacao, thorPoolDetails, mayaPoolDetails)).pipe(
         RxOp.map((decimal) =>
           RD.success({
             asset: targetAsset,
@@ -240,7 +248,7 @@ const SuccessRouteView = ({
     }
     if (targetAsset.type === AssetType.SECURED) {
       // Return a default `LiveData` if the condition is met
-      return Rx.from(getDecimal(AssetRuneNative)).pipe(
+      return Rx.from(getDecimal(AssetRuneNative, thorPoolDetails, mayaPoolDetails)).pipe(
         RxOp.map((decimal) =>
           RD.success({
             asset: targetAsset,
@@ -252,9 +260,9 @@ const SuccessRouteView = ({
       )
     }
 
-    // Otherwise, fetch the actual assetWithDecimal
-    return assetWithDecimal$(targetAsset)
-  }, [assetWithDecimal$, targetAsset])
+    // Otherwise, fetch the actual assetWithDecimal with pool details
+    return assetWithDecimal$(targetAsset, thorPoolDetails, mayaPoolDetails)
+  }, [assetWithDecimal$, targetAsset, poolsStateThorRD, poolsStateMayaRD])
 
   const targetAssetRD: AssetWithDecimalRD = useObservableState(targetAssetDecimal$, RD.initial)
 
@@ -773,11 +781,18 @@ const SuccessTradeRouteView = ({
     getStoredSlipTolerance(`${SLIP_TOLERANCE_KEY}_TRADE`)
   )
 
+  const poolsStateRD = useObservableState(poolsState$, RD.initial)
+  const poolsStateMayaRD = useObservableState(poolStateMaya$, RD.initial)
+
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
+    // Extract pool details from RemoteData
+    const thorPoolDetails = RD.isSuccess(poolsStateRD) ? poolsStateRD.value.poolDetails : undefined
+    const mayaPoolDetails = RD.isSuccess(poolsStateMayaRD) ? poolsStateMayaRD.value.poolDetails : undefined
+
     // Check the condition to skip fetching
     if (sourceAsset.type === AssetType.TRADE) {
       // Resolve `getDecimal` and return the observable
-      return Rx.from(getDecimal(AssetRuneNative)).pipe(
+      return Rx.from(getDecimal(AssetRuneNative, thorPoolDetails, mayaPoolDetails)).pipe(
         RxOp.map((decimal) =>
           RD.success({
             asset: sourceAsset,
@@ -789,9 +804,9 @@ const SuccessTradeRouteView = ({
       )
     }
 
-    // Use the existing `assetWithDecimal$` function for fetching
-    return assetWithDecimal$(sourceAsset)
-  }, [assetWithDecimal$, sourceAsset])
+    // Use the existing `assetWithDecimal$` function for fetching with pool details
+    return assetWithDecimal$(sourceAsset, thorPoolDetails, mayaPoolDetails)
+  }, [assetWithDecimal$, sourceAsset, poolsStateRD, poolsStateMayaRD])
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
@@ -882,9 +897,6 @@ const SuccessTradeRouteView = ({
   }, [sourceAsset, setSelectedPoolAsset, targetAsset, setSelectedPoolAssetMaya, protocol, setProtocol])
 
   const keystore = useObservableState(keystoreState$, O.none)
-
-  const poolsStateRD = useObservableState(poolsState$, RD.initial)
-  const poolsStateMayaRD = useObservableState(poolStateMaya$, RD.initial)
 
   const importWalletHandler = useCallback(() => {
     navigate(walletRoutes.base.path(location.pathname))
