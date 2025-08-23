@@ -44,6 +44,32 @@ const CHAIN_DECIMAL_MAP = new Map([
   ['ADA', ADA_DECIMALS]
 ])
 
+/**
+ * Validates and parses nativeDecimal string from pool details
+ * @param nativeDecimal - The nativeDecimal string from pool details
+ * @returns Validated decimal number or null if invalid
+ */
+const validateAndParseDecimal = (nativeDecimal: string | undefined | null): number | null => {
+  if (!nativeDecimal) return null
+
+  // Trim whitespace and check for special values
+  const trimmed = nativeDecimal.trim()
+  if (trimmed === '' || trimmed === '-1') return null
+
+  // Validate format: only digits
+  if (!/^\d+$/.test(trimmed)) return null
+
+  // Parse as base 10
+  const parsed = parseInt(trimmed, 10)
+
+  // Check for NaN and ensure it's a safe integer in reasonable range (0-30)
+  if (isNaN(parsed) || !Number.isSafeInteger(parsed) || parsed < 0 || parsed > 30) {
+    return null
+  }
+
+  return parsed
+}
+
 export const getDecimal = (
   asset: AnyAsset,
   thorPoolDetails?: PoolDetail[],
@@ -73,8 +99,11 @@ export const getDecimal = (
       )
     })
 
-    if (mayaPoolDetail && mayaPoolDetail.nativeDecimal && mayaPoolDetail.nativeDecimal !== '-1') {
-      return Promise.resolve(parseInt(mayaPoolDetail.nativeDecimal, 18))
+    if (mayaPoolDetail) {
+      const validatedDecimal = validateAndParseDecimal(mayaPoolDetail.nativeDecimal)
+      if (validatedDecimal !== null) {
+        return Promise.resolve(validatedDecimal)
+      }
     }
   }
 
@@ -90,8 +119,11 @@ export const getDecimal = (
       )
     })
 
-    if (thorPoolDetail && thorPoolDetail.nativeDecimal && thorPoolDetail.nativeDecimal !== '-1') {
-      return Promise.resolve(parseInt(thorPoolDetail.nativeDecimal, 18))
+    if (thorPoolDetail) {
+      const validatedDecimal = validateAndParseDecimal(thorPoolDetail.nativeDecimal)
+      if (validatedDecimal !== null) {
+        return Promise.resolve(validatedDecimal)
+      }
     }
   }
 

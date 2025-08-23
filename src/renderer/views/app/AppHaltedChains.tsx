@@ -33,8 +33,9 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardSta
   const [hasRendered, setHasRendered] = useState(false)
 
   // Small delay to prevent flashing on data updates
+  const RENDER_DELAY_MS = 200
   useEffect(() => {
-    const timer = setTimeout(() => setHasRendered(true), 100)
+    const timer = setTimeout(() => setHasRendered(true), RENDER_DELAY_MS)
     return () => clearTimeout(timer)
   }, [])
 
