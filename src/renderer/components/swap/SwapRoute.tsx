@@ -6,6 +6,7 @@ import { option as O } from 'fp-ts'
 
 import Amount from '../../assets/svg/amount.svg?react'
 import StopWatch from '../../assets/svg/stopwatch.svg?react'
+import { protocolMapping } from '../../helpers/protocolHelper'
 import { Collapse } from '../uielements/collapse'
 import { ProviderIcon } from './ProviderIcon'
 
@@ -14,12 +15,6 @@ type Props = {
   quote: O.Option<QuoteSwap>
   quotes: O.Option<QuoteSwap[]>
   onSelectQuote: (selectedQuote: QuoteSwap) => void // Callback for quote selection
-}
-
-const protocolMapping = {
-  Thorchain: 'THORChain',
-  Mayachain: 'MAYAChain',
-  Chainflip: 'Chainflip'
 }
 
 const formatTime = (seconds: number): string => {

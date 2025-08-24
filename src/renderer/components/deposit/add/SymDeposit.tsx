@@ -104,10 +104,10 @@ import { AssetInput } from '../../uielements/assets/assetInput'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { BaseButton, FlatButton, ViewTxButton } from '../../uielements/button'
 import { Collapse } from '../../uielements/collapse'
-import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
 import { ProtocolSwitch } from '../../uielements/protocolSwitch'
+import { Tooltip } from '../../uielements/tooltip'
 import { AssetMissmatchWarning } from './AssetMissmatchWarning'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
 import * as Helper from './Deposit.helper'
@@ -2266,11 +2266,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                     {FP.pipe(
                       oDexAssetWB,
-                      O.map(({ walletAddress: address }) => (
-                        <TooltipAddress title={address} key="tooltip-asset-sender-addr">
-                          {hidePrivateData ? hiddenString : address}
-                        </TooltipAddress>
-                      )),
+                      O.map(({ walletAddress: address }) => {
+                        const displayedAddress = hidePrivateData ? hiddenString : address
+                        return (
+                          <Tooltip title={displayedAddress} size="big" key="tooltip-asset-sender-addr">
+                            {displayedAddress}
+                          </Tooltip>
+                        )
+                      }),
                       O.getOrElse(() => <>{noDataString}</>)
                     )}
                   </div>
@@ -2281,11 +2284,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                     {FP.pipe(
                       oAssetWB,
-                      O.map(({ walletAddress: address }) => (
-                        <TooltipAddress title={address} key="tooltip-asset-sender-addr">
-                          {hidePrivateData ? hiddenString : address}
-                        </TooltipAddress>
-                      )),
+                      O.map(({ walletAddress: address }) => {
+                        const displayedAddress = hidePrivateData ? hiddenString : address
+                        return (
+                          <Tooltip title={displayedAddress} size="big" key="tooltip-asset-sender-addr">
+                            {displayedAddress}
+                          </Tooltip>
+                        )
+                      }),
                       O.getOrElse(() => <>{noDataString}</>)
                     )}
                   </div>
@@ -2297,9 +2303,9 @@ export const SymDeposit = (props: Props) => {
                     address ? (
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
                         <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
-                        <TooltipAddress title={address}>
+                        <Tooltip title={address} size="big">
                           <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
-                        </TooltipAddress>
+                        </Tooltip>
                       </div>
                     ) : null
                   ),
@@ -2357,11 +2363,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-10px font-main text-[12px]">
                     {FP.pipe(
                       oDepositParams,
-                      O.map(({ memos: { rune: memo } }) => (
-                        <Tooltip title={memo} key={`tooltip-${protocolAsset.symbol}-memo`}>
-                          {hidePrivateData ? hiddenString : memo}
-                        </Tooltip>
-                      )),
+                      O.map(({ memos: { rune: memo } }) => {
+                        const displayedMemo = hidePrivateData ? hiddenString : memo
+                        return (
+                          <Tooltip title={displayedMemo} key={`tooltip-${protocolAsset.symbol}-memo`}>
+                            {displayedMemo}
+                          </Tooltip>
+                        )
+                      }),
                       O.toNullable
                     )}
                   </div>
@@ -2386,11 +2395,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-10px font-main text-[12px]">
                     {FP.pipe(
                       oDepositParams,
-                      O.map(({ memos: { asset: memo } }) => (
-                        <Tooltip title={memo} key="tooltip-asset-memo">
-                          {hidePrivateData ? hiddenString : memo}
-                        </Tooltip>
-                      )),
+                      O.map(({ memos: { asset: memo } }) => {
+                        const displayedMemo = hidePrivateData ? hiddenString : memo
+                        return (
+                          <Tooltip title={displayedMemo} key="tooltip-asset-memo">
+                            {displayedMemo}
+                          </Tooltip>
+                        )
+                      }),
                       O.toNullable
                     )}
                   </div>

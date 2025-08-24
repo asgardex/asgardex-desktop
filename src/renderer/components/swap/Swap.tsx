@@ -106,12 +106,13 @@ import { SwapAssets } from '../modal/tx/extra'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton } from '../uielements/button'
 import { Collapse } from '../uielements/collapse'
-import { Tooltip, TooltipAddress, WalletTypeLabel } from '../uielements/common/Common.styles'
+import { WalletTypeLabel } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
 import { InfoIcon } from '../uielements/info'
 import { CopyLabel } from '../uielements/label/CopyLabel'
 import { Slider } from '../uielements/slider'
 import { Spin } from '../uielements/spin'
+import { Tooltip } from '../uielements/tooltip'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
 import { ModalState, RateDirection, SwapProps } from './Swap.types'
@@ -1782,13 +1783,13 @@ export const Swap = ({
           <div>{renderStreamerQuantity}</div>
         </div>
         <div className="flex justify-end">
-          <TooltipAddress title="Reset to streaming default">
+          <Tooltip title="Reset to streaming default">
             <BaseButton
               onClick={resetToDefault}
               className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
               <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
             </BaseButton>
-          </TooltipAddress>
+          </Tooltip>
         </div>
       </div>
     </Collapse>
@@ -2743,11 +2744,15 @@ export const Swap = ({
                         <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
                             oSourceWalletAddress,
-                            O.map((address) => (
-                              <TooltipAddress title={address} key="tooltip-sender-addr">
-                                {hidePrivateData ? hiddenString : address}
-                              </TooltipAddress>
-                            )),
+                            O.map((address) => {
+                              const displayedAddress = hidePrivateData ? hiddenString : address
+
+                              return (
+                                <Tooltip size="big" title={displayedAddress} key="tooltip-sender-addr">
+                                  {displayedAddress}
+                                </Tooltip>
+                              )
+                            }),
                             O.getOrElse(() => <>{noDataString}</>)
                           )}
                         </div>
@@ -2760,11 +2765,15 @@ export const Swap = ({
                         <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
                             effectiveRecipientAddress,
-                            O.map((address) => (
-                              <TooltipAddress title={address} key="tooltip-target-addr">
-                                {hidePrivateData ? hiddenString : address}
-                              </TooltipAddress>
-                            )),
+                            O.map((address) => {
+                              const displayedAddress = hidePrivateData ? hiddenString : address
+
+                              return (
+                                <Tooltip size="big" title={displayedAddress} key="tooltip-target-addr">
+                                  {displayedAddress}
+                                </Tooltip>
+                              )
+                            }),
                             O.getOrElse(() => <>{noDataString}</>)
                           )}
                         </div>
@@ -2778,9 +2787,9 @@ export const Swap = ({
                               className="flex w-full items-center justify-between pl-10px text-[12px]"
                               key="pool-addr">
                               <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
-                              <TooltipAddress title={address}>
+                              <Tooltip size="big" title={address}>
                                 <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
-                              </TooltipAddress>
+                              </Tooltip>
                             </div>
                           ) : null
                         ),

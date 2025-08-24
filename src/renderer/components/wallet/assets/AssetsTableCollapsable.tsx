@@ -72,7 +72,7 @@ import { IconButton } from '../../uielements/button/IconButton'
 import { Collapse } from '../../uielements/collapse'
 import { WalletTypeLabel } from '../../uielements/common/Common.styles'
 import { InfoIcon } from '../../uielements/info'
-import { Label } from '../../uielements/label'
+import { CopyLabel, Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
 import * as Styled from './AssetsTableCollapsable.styles'
 
@@ -632,9 +632,14 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           <div className="flex items-center justify-end space-x-2">
             <Label className="flex items-center text-text0 dark:text-text0d" color="gray" textTransform="none">
               {hidePrivateData ? hiddenString : truncateAddress(walletAddress, chain, network)}
-              <Styled.CopyLabel copyable={{ text: walletAddress }} />
             </Label>
             <div className="flex items-center justify-end space-x-2 pr-4">
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}>
+                <CopyLabel iconClassName="!text-text2 dark:!text-text2d" textToCopy={walletAddress} />
+              </IconButton>
               <IconButton
                 disabled={disableRefresh}
                 onClick={(e) => {

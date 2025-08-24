@@ -3,36 +3,24 @@ import {
   BaseAmount,
   formatAssetAmountCurrency,
   baseToAsset,
-  baseAmount,
   AnyAsset,
   isSynthAsset,
   isSecuredAsset
 } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { walletTypeToI18n } from '../../../../services/wallet/util'
-import { PricePoolAsset } from '../../../../views/pools/Pools.types'
 import { AssetIcon } from '../assetIcon'
 import * as Styled from './AssetData.styles'
-
-/**
- * AssetData - Component to show data of an asset:
- *
- * |------|---------|-------------------|------------------|------------------------|
- * | icon | ticker  | amount (optional) | price (optional) | wallet type (optional) |
- * |------|---------|-------------------|------------------|------------------------|
- *
- */
 
 type Props = {
   asset: AnyAsset
   walletType?: WalletType
   noTicker?: boolean
   amount?: BaseAmount
-  price?: BaseAmount
-  priceAsset?: PricePoolAsset
   size?: Styled.AssetDataSize
   // `className` is needed by `styled components`
   className?: string
@@ -40,25 +28,12 @@ type Props = {
 }
 
 export const AssetData = (props: Props): JSX.Element => {
-  const {
-    asset,
-    walletType,
-    amount: assetAmount,
-    noTicker = false,
-    price = baseAmount(0),
-    priceAsset,
-    size = 'small',
-    className,
-    network
-  } = props
+  const { asset, walletType, amount: assetAmount, noTicker = false, size = 'small', className, network } = props
 
   const intl = useIntl()
-  const priceLabel = priceAsset
-    ? formatAssetAmountCurrency({ amount: baseToAsset(price), asset: priceAsset, trimZeros: true })
-    : ''
 
   return (
-    <Styled.Wrapper className={className}>
+    <div className={clsx('flex items-center flex-wrap py-1 mr-2 last:m-0', className)}>
       <Styled.AssetIconContainer>
         <AssetIcon asset={asset} size={size} network={network} />
       </Styled.AssetIconContainer>
@@ -79,18 +54,12 @@ export const AssetData = (props: Props): JSX.Element => {
         </Styled.LabelContainer>
       )}
       {assetAmount && (
-        <Styled.Col>
+        <div className="mr-2 last:m-0">
           <Styled.AmountLabel size={size}>
             {formatAssetAmountCurrency({ amount: baseToAsset(assetAmount), asset, trimZeros: true })}
           </Styled.AmountLabel>
-        </Styled.Col>
+        </div>
       )}
-
-      {!!priceLabel && (
-        <Styled.Col>
-          <Styled.PriceLabel size={size}>{priceLabel}</Styled.PriceLabel>
-        </Styled.Col>
-      )}
-    </Styled.Wrapper>
+    </div>
   )
 }

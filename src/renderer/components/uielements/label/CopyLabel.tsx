@@ -36,7 +36,9 @@ export const CopyLabel = ({ label, textToCopy, className = '', iconClassName = '
       {copied ? (
         <CheckIcon className={clsx('h-5 w-5 text-turquoise', iconClassName)} />
       ) : (
-        <DocumentDuplicateIcon className={clsx('h-5 w-5 text-gray-500 group-hover:text-inherit', iconClassName)} />
+        <DocumentDuplicateIcon
+          className={clsx('h-5 w-5 text-text2 dark:text-text2d group-hover:text-inherit', iconClassName)}
+        />
       )}
     </button>
   )

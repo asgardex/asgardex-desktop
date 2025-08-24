@@ -1,8 +1,8 @@
 import { Cog8ToothIcon } from '@heroicons/react/20/solid'
 import { useIntl } from 'react-intl'
 
-import { Tooltip } from '../../uielements/common/Common.styles'
 import { Label } from '../../uielements/label'
+import { Tooltip } from '../../uielements/tooltip'
 
 export type Props = {
   onPress?: () => void
@@ -17,7 +17,7 @@ export const HeaderSettings = (props: Props): JSX.Element => {
     <div className="flex items-center justify-between w-full px-6 lg:w-auto lg:px-0" onClick={onPress}>
       {!isDesktopView && (
         <Label size="large" textTransform="uppercase" weight="bold">
-          {intl.formatMessage({ id: 'common.settings' })}{' '}
+          {intl.formatMessage({ id: 'common.settings' })}
         </Label>
       )}
       <Tooltip title={intl.formatMessage({ id: 'common.settings' })}>

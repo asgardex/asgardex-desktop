@@ -47,10 +47,10 @@ import { TxModal } from '../../modal/tx'
 import { DepositAssets } from '../../modal/tx/extra'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { FlatButton, ViewTxButton } from '../../uielements/button'
-import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
 import { Slider } from '../../uielements/slider'
+import { Tooltip } from '../../uielements/tooltip'
 import * as Helper from './Withdraw.helper'
 import * as Styled from './Withdraw.styles'
 
@@ -528,7 +528,7 @@ export const Withdraw = ({
         />
       </div>
       <Styled.AssetOutputContainer>
-        <TooltipAddress title={runeAddress}>
+        <Tooltip title={runeAddress} size="big">
           <div className="flex items-center">
             <AssetIcon className="mr-10px" asset={protocolAsset} network={network} />
             <Styled.AssetLabel asset={protocolAsset} />
@@ -536,7 +536,7 @@ export const Withdraw = ({
               <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
             )}
           </div>
-        </TooltipAddress>
+        </Tooltip>
         <div className="flex flex-col">
           <Styled.OutputLabel>
             {formatAssetAmount({
@@ -561,7 +561,7 @@ export const Withdraw = ({
       </Styled.AssetOutputContainer>
 
       <Styled.AssetOutputContainer>
-        <TooltipAddress title={assetAddress}>
+        <Tooltip title={assetAddress} size="big">
           <div className="flex items-center">
             <AssetIcon className="mr-10px" asset={asset} network={network} />
             <Styled.AssetLabel asset={asset} />
@@ -569,7 +569,7 @@ export const Withdraw = ({
               <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
             )}
           </div>
-        </TooltipAddress>
+        </Tooltip>
         <div className="flex flex-col">
           <Styled.OutputLabel>
             {formatAssetAmount({

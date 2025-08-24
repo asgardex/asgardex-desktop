@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { ADAChain } from '@xchainjs/xchain-cardano'
@@ -11,7 +9,7 @@ import { AnyAsset } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { useIntl } from 'react-intl'
 
-import { TooltipAddress } from '../common/Common.styles'
+import { Tooltip } from '../tooltip'
 
 type Props = {
   amountLabel: string
@@ -89,9 +87,9 @@ export const ShowDetails = ({
 
       <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
         {intl.formatMessage({ id: 'common.memo' })}
-        <TooltipAddress title={currentMemo}>
+        <Tooltip size="big" title={currentMemo}>
           <div className="truncate pl-10px font-main text-[12px] leading-normal">{currentMemo}</div>
-        </TooltipAddress>
+        </Tooltip>
       </div>
     </>
   )

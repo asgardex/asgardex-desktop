@@ -35,7 +35,6 @@ export const FlatButton = (props: Props): JSX.Element => {
         textColor[color],
         bgColor[color],
         S.borderSize[size],
-        textColor[color],
         borderColor[color],
         !disabled ? `hover:${S.dropShadow[size]} hover:border-opacity-85 hover:scale-105` : '',
         className

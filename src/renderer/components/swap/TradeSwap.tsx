@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import {
@@ -112,20 +112,18 @@ import { SwapAssets } from '../modal/tx/extra'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
 import { Collapse } from '../uielements/collapse'
-import { Tooltip, TooltipAddress, WalletTypeLabel } from '../uielements/common/Common.styles'
+import { WalletTypeLabel } from '../uielements/common/Common.styles'
 import { InfoIcon } from '../uielements/info'
 import { CopyLabel } from '../uielements/label'
 import { ProgressBar } from '../uielements/progressBar'
 import { Slider } from '../uielements/slider'
+import { Tooltip } from '../uielements/tooltip'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
 import { SwapAsset } from './Swap.types'
 import * as Utils from './Swap.utils'
 
-const ErrorLabel: React.FC<{
-  children: React.ReactNode
-  className?: string
-}> = ({ children, className }): JSX.Element => (
+const ErrorLabel = ({ children, className }: { children: ReactNode; className?: string }): JSX.Element => (
   <div
     className={clsx('mb-[14px] text-center font-main uppercase text-error0 dark:text-error0d text-[12px]', className)}>
     {children}
@@ -1312,8 +1310,8 @@ export const TradeSwap = ({
         poolAssets,
         A.map(
           (asset) =>
-            (protocol === 'MAYA' && eqAsset.equals(asset, AssetCacao)) ||
-            (protocol === 'THOR' && eqAsset.equals(asset, AssetRuneNative))
+            (protocol === MAYAChain && eqAsset.equals(asset, AssetCacao)) ||
+            (protocol === THORChain && eqAsset.equals(asset, AssetRuneNative))
               ? asset // Keep AssetCacao unchanged for MAYA, AssetRuneNative for THOR
               : ({ ...asset, type: AssetType.TRADE } as TradeAsset) // Convert other assets to TradeAsset
         ),
@@ -1464,11 +1462,11 @@ export const TradeSwap = ({
 
     return (
       <ProgressBar
-        key={'Streamer Interval progress bar'}
+        key="Streamer Interval progress bar"
         percent={percentageDifference}
-        withLabel={true}
+        withLabel
         labels={[`${streamerComparison}`, ``]}
-        tooltipPlacement={'top'}
+        tooltipPlacement="top"
         hasError={!isStreaming}
       />
     )
@@ -2069,6 +2067,7 @@ export const TradeSwap = ({
             assets={selectableTargetAssets}
             network={network}
             asLabel
+            protocol={protocol}
             useLedger={useTargetAssetLedger}
             useLedgerHandler={onClickUseTargetAssetLedger}
             hasLedger={hasTargetAssetLedger}
@@ -2101,13 +2100,13 @@ export const TradeSwap = ({
                 <div>{renderStreamerReturns}</div>
               </div>
               <div className="flex justify-end">
-                <TooltipAddress title="Reset to streaming default">
+                <Tooltip title="Reset to streaming default">
                   <BaseButton
                     onClick={resetToDefault}
                     className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
                     <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
                   </BaseButton>
-                </TooltipAddress>
+                </Tooltip>
               </div>
             </div>
           </Collapse>
@@ -2277,11 +2276,14 @@ export const TradeSwap = ({
                         <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
                             oSourceWalletAddress,
-                            O.map((address) => (
-                              <TooltipAddress title={address} key="tooltip-sender-addr">
-                                {hidePrivateData ? hiddenString : address}
-                              </TooltipAddress>
-                            )),
+                            O.map((address) => {
+                              const displayedAddress = hidePrivateData ? hiddenString : address
+                              return (
+                                <Tooltip key="tooltip-sender-addr" size="big" title={displayedAddress}>
+                                  {displayedAddress}
+                                </Tooltip>
+                              )
+                            }),
                             O.getOrElse(() => <>{noDataString}</>)
                           )}
                         </div>
@@ -2294,11 +2296,14 @@ export const TradeSwap = ({
                         <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
                             oRecipientAddress,
-                            O.map((address) => (
-                              <TooltipAddress title={address} key="tooltip-target-addr">
-                                {hidePrivateData ? hiddenString : address}
-                              </TooltipAddress>
-                            )),
+                            O.map((address) => {
+                              const displayedAddress = hidePrivateData ? hiddenString : address
+                              return (
+                                <Tooltip key="tooltip-target-addr" size="big" title={displayedAddress}>
+                                  {displayedAddress}
+                                </Tooltip>
+                              )
+                            }),
                             O.getOrElse(() => <>{noDataString}</>)
                           )}
                         </div>

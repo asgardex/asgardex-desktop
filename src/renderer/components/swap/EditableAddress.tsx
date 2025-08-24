@@ -3,7 +3,7 @@ import React, { useState, useMemo, useCallback } from 'react'
 import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset } from '@xchainjs/xchain-util'
-import { Form, Tooltip } from 'antd'
+import { Form } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
@@ -14,6 +14,7 @@ import { InnerForm } from '../shared/form'
 import { BaseButton } from '../uielements/button'
 import { Input } from '../uielements/input/Input'
 import { CopyLabel } from '../uielements/label'
+import { Tooltip } from '../uielements/tooltip'
 
 export type EditableAddressProps = {
   asset: AnyAsset
@@ -91,16 +92,18 @@ export const EditableAddress = ({
   )
 
   const renderAddress = useMemo(() => {
+    const displayedAddress = hidePrivateData ? hiddenString : truncatedAddress
+
     return (
       <div className="flex items-center overflow-hidden font-main text-[16px] normal-case text-text2 dark:text-text2d">
-        <Tooltip overlayStyle={{ maxWidth: '100%', whiteSpace: 'nowrap' }} title={address}>
+        <Tooltip title={displayedAddress} size="big">
           <BaseButton
             className="!px-0 normal-case !text-text2 dark:!text-text2d"
             onClick={() => {
               setEditableAddress(O.fromNullable(address))
               onChangeEditableMode(true)
             }}>
-            {hidePrivateData ? hiddenString : truncatedAddress}
+            {displayedAddress}
           </BaseButton>
         </Tooltip>
         <div className="flex flex-row items-center">

@@ -33,8 +33,8 @@ import * as poolsRoutes from '../../routes/pools'
 import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
-import { Tooltip } from '../uielements/common/Common.styles'
 import { Label } from '../uielements/label'
+import { Tooltip } from '../uielements/tooltip'
 
 type IconProps = {
   className?: string

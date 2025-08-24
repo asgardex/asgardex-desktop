@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Button } from '@headlessui/react'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
-import { Button } from 'antd'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
@@ -56,21 +56,26 @@ export const PlaygroundView = (): JSX.Element => {
   )
 
   return (
-    <>
+    <div className="bg-bg0 dark:bg-bg0d p-4 rounded-lg">
       <h1>Playground</h1>
       <h1>i18n</h1>
       <h2>{intl.formatMessage({ id: 'common.greeting' }, { name: 'ASGARDEX' })}</h2>
       <h1>Pools</h1>
       <h2>Raw data: {JSON.stringify(poolState)}</h2>
-      <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
+      <div className="flex items-center justify-end">
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
+      </div>
       {renderPools}
-      <Button
-        onClick={() => {
-          midgardService.pools.reloadPools()
-          midgardMayaService.pools.reloadPools()
-        }}>
-        Reload pools
-      </Button>
-    </>
+      <div className="flex items-center justify-center">
+        <Button
+          className="bg-turquoise rounded-lg px-4 py-2 text-white"
+          onClick={() => {
+            midgardService.pools.reloadPools()
+            midgardMayaService.pools.reloadPools()
+          }}>
+          Reload pools
+        </Button>
+      </div>
+    </div>
   )
 }

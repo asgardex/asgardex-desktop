@@ -1,5 +1,4 @@
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
-import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -66,21 +65,3 @@ export const AssetSecuredLabel = styled(UILabel).attrs({
   padding: 1px 7px;
   width: auto;
 `
-
-export const Tooltip = styled(A.Tooltip).attrs({
-  overlayStyle: {
-    fontSize: 11,
-    maxWidth: '330px',
-    fontFamily: 'MainFontRegular',
-    textTransform: 'uppercase'
-  }
-})``
-
-export const TooltipAddress = styled(A.Tooltip).attrs({
-  overlayStyle: {
-    textTransform: 'none',
-    fontSize: 14,
-    maxWidth: '400px',
-    fontFamily: 'MainFontRegular'
-  }
-})``

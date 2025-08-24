@@ -1,4 +1,3 @@
-import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -33,12 +32,6 @@ export const AppWrapper = styled.div`
       color: ${palette('error', 0)};
     }
   }
-`
-
-export const AppLayout = styled(A.Layout)`
-  display: flex;
-  flex-direction: row;
-  height: 100%;
 `
 
 export const Alert = styled(UIAlert)`

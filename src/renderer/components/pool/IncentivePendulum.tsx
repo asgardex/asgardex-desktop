@@ -10,7 +10,8 @@ import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { IncentivePendulumRD } from '../../hooks/useIncentivePendulum'
-import { Tooltip } from '../uielements/common/Common.styles'
+import { Label } from '../uielements/label'
+import { Tooltip } from '../uielements/tooltip'
 
 export type Props = {
   incentivePendulum: IncentivePendulumRD
@@ -73,12 +74,16 @@ export const IncentivePendulum = (props: Props): JSX.Element => {
         )
 
         return (
-          <Tooltip title={tooltip}>
-            <div className="flex items-center justify-center w-full text-text2 dark:text-text2d px-2 pb-1 uppercase font-main text-xs">
-              {intl.formatMessage({ id: 'pools.incentivependulum.info' }, { percentage: incentivePendulum })}
-              <ScaleIcon className={clsx('ml-1', getColor())} width={20} height={20} />
-            </div>
-          </Tooltip>
+          <div className="flex items-center justify-center w-full pb-1">
+            <Tooltip title={tooltip}>
+              <div className="flex items-center justify-center">
+                <Label color="gray" size="small" textTransform="uppercase">
+                  {intl.formatMessage({ id: 'pools.incentivependulum.info' }, { percentage: incentivePendulum })}
+                </Label>
+                <ScaleIcon className={clsx('ml-1', getColor())} width={20} height={20} />
+              </div>
+            </Tooltip>
+          </div>
         )
       }
     )

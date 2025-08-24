@@ -1,4 +1,3 @@
-import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -10,17 +9,6 @@ import {
 import { Label as UILabel } from '../../label'
 
 export type AssetDataSize = 'small' | 'big'
-
-export const Wrapper = styled(A.Row).attrs({
-  align: 'middle'
-})`
-  padding: 5px 0px;
-  margin-right: 8px;
-
-  &:last-child {
-    margin: 0;
-  }
-`
 
 export const TickerLabel = styled(UILabel).attrs({
   textTransform: 'uppercase',
@@ -53,14 +41,6 @@ export const PriceLabel = styled(UILabel).attrs({
 })`
   padding-left: 10px;
   font-family: 'MainFontRegular';
-`
-
-export const Col = styled(A.Col)`
-  margin-right: 8px;
-
-  &:last-child {
-    margin: 0;
-  }
 `
 
 export const AssetIconContainer = styled.div`

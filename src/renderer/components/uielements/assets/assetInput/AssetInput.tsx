@@ -7,6 +7,7 @@ import {
   assetToBase,
   BaseAmount,
   baseToAsset,
+  Chain,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -16,10 +17,13 @@ import { useIntl } from 'react-intl'
 
 import WalletIcon from '../../../../assets/svg/icon-wallet.svg?react'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
+import { chainToProtocol } from '../../../../helpers/protocolHelper'
 import { AssetWithAmount, FixmeType } from '../../../../types/asgardex'
+import { ProviderIcon } from '../../../swap/ProviderIcon'
 import { Button } from '../../button'
 import { CheckButton } from '../../button/CheckButton'
 import { InputBigNumber } from '../../input'
+import { Label } from '../../label'
 import { AssetSelect } from '../assetSelect'
 
 const ASSET_SELECT_BUTTON_WIDTH = 'w-[190px]'
@@ -34,6 +38,7 @@ export type Props = {
   disabled?: boolean
   showError?: boolean
   hasAmountShortcut?: boolean
+  protocol?: Chain
   onChangeAsset: (asset: AnyAsset) => void
   onChange?: (value: BaseAmount) => void
   onBlur?: FP.Lazy<void>
@@ -58,10 +63,6 @@ export type Props = {
  */
 
 const amountShortcuts = [
-  {
-    textId: 'common.min',
-    amount: 0
-  },
   {
     textId: 'common.half',
     amount: 50
@@ -91,6 +92,7 @@ export const AssetInput = (props: Props): JSX.Element => {
     useLedger,
     hasLedger,
     useLedgerHandler,
+    protocol,
     className = '',
     classNameInput = ''
   } = props
@@ -136,6 +138,14 @@ export const AssetInput = (props: Props): JSX.Element => {
                 {intl.formatMessage({ id: textId })}
               </Button>
             ))}
+          </div>
+        )}
+        {!hasAmountShortcut && protocol && (
+          <div className="flex items-center space-x-1">
+            <ProviderIcon protocol={protocol} />
+            <Label textTransform="uppercase" color="gray" size="small">
+              {chainToProtocol[protocol as keyof typeof chainToProtocol]}
+            </Label>
           </div>
         )}
       </div>
