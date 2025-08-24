@@ -1457,7 +1457,7 @@ export const Swap = ({
       O.fold(
         () => false,
         (quoteSwap) => {
-          return quoteSwap.dustThreshold.baseAmount.gt(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal))
+          return quoteSwap.dustThreshold.baseAmount.gte(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal))
         }
       )
     )
