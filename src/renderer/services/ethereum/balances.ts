@@ -39,7 +39,7 @@ const enhancedClient$ = FP.pipe(
     return O.none
   }),
   RxOp.distinctUntilChanged(),
-  RxOp.shareReplay(1)
+  RxOp.shareReplay({ bufferSize: 1, refCount: true })
 )
 
 /**

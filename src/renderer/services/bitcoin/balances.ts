@@ -36,7 +36,7 @@ const enhancedClient$ = Rx.combineLatest([client$, readOnlyClient$, appWalletSer
     return O.none
   }),
   RxOp.distinctUntilChanged(),
-  RxOp.shareReplay(1)
+  RxOp.shareReplay({ bufferSize: 1, refCount: true })
 )
 
 const resetReloadBalances = (walletType: WalletType) => {

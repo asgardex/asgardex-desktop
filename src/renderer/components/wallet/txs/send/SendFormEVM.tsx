@@ -575,13 +575,16 @@ export const SendFormEVM = (props: Props): JSX.Element => {
 
   const renderSlider = useMemo(() => {
     const amountValue = O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend)
-    const percentage = amountValue
-      .amount()
-      .dividedBy(maxAmount.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
+    const maxAmountValue = maxAmount.amount()
+    const percentage = maxAmountValue.isZero()
+      ? 0
+      : amountValue
+          .amount()
+          .dividedBy(maxAmountValue)
+          .multipliedBy(100)
+          // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+          .decimalPlaces(0, BigNumber.ROUND_DOWN)
+          .toNumber()
 
     const setAmountToSendFromPercentValue = (percents: number) => {
       const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)

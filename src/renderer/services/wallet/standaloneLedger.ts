@@ -65,7 +65,7 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
 
   /**
    * Detects if the selected chain is connected to a Ledger device
-   * Since Ledger can only handle one chain at a time
+   * Retries with delays to give user time to open the correct app
    */
   const detectLedgerDevices: DetectLedgerDevicesHandler = async () => {
     const currentState = standaloneLedgerState()
@@ -88,54 +88,80 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
     })
 
     const currentNetwork = await network$.pipe(RxOp.take(1)).toPromise()
+    const maxRetries = 30 // 30 attempts = ~30 seconds with 1 second intervals
+    let retryCount = 0
 
-    try {
-      // Attempt to get address - if successful, device is connected for this chain
-      const result = await window.apiHDWallet.getLedgerAddress({
-        chain: chainToDetect,
-        network: currentNetwork || 'mainnet',
-        walletAccount: 0,
-        walletIndex: 0,
-        hdMode: getHDModeForChain(chainToDetect)
-      })
-
-      if (result && !('left' in result)) {
-        // Create wallet address for the connected chain
-        const walletAddress = {
-          address: result.right.address,
+    const attemptDetection = async (): Promise<Chain | undefined> => {
+      try {
+        // Attempt to get address - if successful, device is connected for this chain
+        const result = await window.apiHDWallet.getLedgerAddress({
           chain: chainToDetect,
-          walletAccount: result.right.walletAccount,
-          walletIndex: result.right.walletIndex,
-          hdMode: result.right.hdMode,
-          type: WalletType.Ledger as const
-        }
-
-        // Update state with success
-        setStandaloneLedgerState({
-          ...standaloneLedgerState(),
-          detectionPhase: 'completed',
-          connectedChain: chainToDetect,
-          address: walletAddress,
-          detectionProgress: undefined
+          network: currentNetwork || 'mainnet',
+          walletAccount: 0,
+          walletIndex: 0,
+          hdMode: getHDModeForChain(chainToDetect)
         })
 
-        return chainToDetect
+        if (result && !('left' in result)) {
+          // Create wallet address for the connected chain
+          const walletAddress = {
+            address: result.right.address,
+            chain: chainToDetect,
+            walletAccount: result.right.walletAccount,
+            walletIndex: result.right.walletIndex,
+            hdMode: result.right.hdMode,
+            type: WalletType.Ledger as const
+          }
+
+          // Update state with success
+          setStandaloneLedgerState({
+            ...standaloneLedgerState(),
+            detectionPhase: 'completed',
+            connectedChain: chainToDetect,
+            address: walletAddress,
+            detectionProgress: undefined
+          })
+
+          return chainToDetect
+        }
+      } catch (error) {
+        // Continue retrying unless we've exceeded max retries
+        console.log(`Detection attempt ${retryCount + 1}/${maxRetries} failed for chain ${chainToDetect}:`, error)
       }
-    } catch (error) {
-      // Device not connected for this chain
-      console.error('Failed to detect chain:', chainToDetect, error)
+
+      retryCount++
+
+      // If we haven't exceeded retries, wait and try again
+      if (retryCount < maxRetries) {
+        // Check if detection is still in progress (user hasn't navigated away)
+        const state = standaloneLedgerState()
+        if (state.detectionPhase === 'detecting') {
+          await new Promise((resolve) => setTimeout(resolve, 1000)) // Wait 1 second
+          return attemptDetection()
+        }
+      }
+
+      // All attempts failed or detection was cancelled
+      return undefined
     }
 
-    // Update state with failure
-    setStandaloneLedgerState({
-      ...standaloneLedgerState(),
-      detectionPhase: 'completed',
-      connectedChain: undefined,
-      address: undefined,
-      detectionProgress: undefined
-    })
+    const result = await attemptDetection()
 
-    return undefined
+    if (!result) {
+      // Update state with failure only if still in detecting phase
+      const state = standaloneLedgerState()
+      if (state.detectionPhase === 'detecting') {
+        setStandaloneLedgerState({
+          ...state,
+          detectionPhase: 'completed',
+          connectedChain: undefined,
+          address: undefined,
+          detectionProgress: undefined
+        })
+      }
+    }
+
+    return result
   }
 
   /**

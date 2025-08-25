@@ -25,6 +25,7 @@ export type EditableAddressProps = {
   onChangeEditableMode: (editModeActive: boolean) => void
   addressValidator: AddressValidationAsync
   hidePrivateData: boolean
+  startInEditMode?: boolean
 }
 export const EditableAddress = ({
   asset,
@@ -34,11 +35,21 @@ export const EditableAddress = ({
   onChangeEditableMode,
   addressValidator,
   network,
-  hidePrivateData
+  hidePrivateData,
+  startInEditMode = false
 }: EditableAddressProps) => {
   const RECIPIENT_FIELD = 'recipient'
   const intl = useIntl()
-  const [editableAddress, setEditableAddress] = useState<O.Option<Address>>(O.none)
+  const [editableAddress, setEditableAddress] = useState<O.Option<Address>>(startInEditMode ? O.some(address) : O.none)
+
+  // Handle startInEditMode prop changes
+  React.useEffect(() => {
+    if (startInEditMode) {
+      setEditableAddress(O.some(address))
+      onChangeEditableMode(true)
+    }
+  }, [startInEditMode, address, onChangeEditableMode])
+
   const truncatedAddress = useMemo(
     () => truncateAddress(address, asset.chain, network),
     [address, asset.chain, network]

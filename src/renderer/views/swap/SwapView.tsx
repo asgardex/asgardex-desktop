@@ -126,7 +126,17 @@ const SuccessRouteView = ({
 
   const { getAssetsData$ } = useChainflipContext()
 
-  const [chainFlipAssets] = useObservableState(() => getAssetsData$(), RD.pending)
+  const [chainFlipAssets] = useObservableState(
+    () =>
+      getAssetsData$().pipe(
+        RxOp.catchError(() => {
+          // If Chainflip fails (429 or other errors), return empty array instead of failing
+          console.warn('Chainflip assets unavailable, continuing without Chainflip support')
+          return Rx.of(RD.success([]))
+        })
+      ),
+    RD.pending
+  )
 
   const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$, swapCF$ } = useChainContext()
 

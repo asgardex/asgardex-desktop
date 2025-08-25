@@ -6,7 +6,8 @@ import {
   ArrowsRightLeftIcon,
   ArrowsUpDownIcon,
   MagnifyingGlassMinusIcon,
-  MagnifyingGlassPlusIcon
+  MagnifyingGlassPlusIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline'
 import { QuoteSwap } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
@@ -321,7 +322,6 @@ export const Swap = ({
     if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
       // Only reset if the target chain actually changed (not just a re-render)
       if (prevTargetChainRef.current && prevTargetChainRef.current !== targetChain) {
-        console.log('Target chain changed from', prevTargetChainRef.current, 'to', targetChain, ', resetting address')
         setStandaloneLedgerTargetAddress(O.none)
       }
       prevTargetChainRef.current = targetChain
@@ -529,6 +529,13 @@ export const Swap = ({
       ),
     [effectiveRecipientAddress]
   )
+
+  // Auto-switch from "Preview Only" to "Preview & Swap" when recipient address is available
+  useEffect(() => {
+    if (quoteOnly && O.isSome(effectiveRecipientAddress)) {
+      setQuoteOnly(false)
+    }
+  }, [effectiveRecipientAddress, quoteOnly])
 
   // PlaceHolder memo just to calc fees better
   const swapMemo = useMemo(() => {
@@ -1081,7 +1088,17 @@ export const Swap = ({
       oErrorProtocol,
       O.fold(
         () => [],
-        (error) => [error.message]
+        (error) => {
+          // Check if this is a memo undefined error and we're in swap mode without a recipient address
+          if (
+            !quoteOnly &&
+            O.isNone(effectiveRecipientAddress) &&
+            (error.message.toLowerCase().includes('memo') || error.message.toLowerCase().includes('parsing'))
+          ) {
+            return ['Please enter a recipient address to proceed with the swap']
+          }
+          return [error.message]
+        }
       )
     )
 
@@ -1096,7 +1113,7 @@ export const Swap = ({
         ))}
       </ErrorLabel>
     )
-  }, [oErrorProtocol])
+  }, [oErrorProtocol, quoteOnly, effectiveRecipientAddress])
 
   /**
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
@@ -2252,15 +2269,18 @@ export const Swap = ({
   useEffect(() => {
     // reset data whenever source asset has been changed
     if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
-      reloadFeesHandler()
+      reloadFees({
+        inAsset: sourceAsset,
+        memo: swapMemo,
+        outAsset: targetAsset
+      })
       resetApproveState()
-    } else {
-      prevSourceAsset.current = O.some(sourceAsset)
     }
+    prevSourceAsset.current = O.some(sourceAsset)
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
       prevTargetAsset.current = O.some(targetAsset)
     }
-  }, [reloadFeesHandler, resetApproveState, resetSwapState, sourceAsset, targetAsset])
+  }, [reloadFees, resetApproveState, resetSwapState, sourceAsset, targetAsset, swapMemo])
 
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching
@@ -2916,11 +2936,35 @@ export const Swap = ({
                   <div
                     className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                     key="standalone-recipient-address">
-                    <div className="flex items-center">
-                      <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
-                        {intl.formatMessage({ id: 'common.recipient' })}
-                      </h3>
-                      <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
+                          {intl.formatMessage({ id: 'common.recipient' })}
+                        </h3>
+                        <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
+                      </div>
+                      {/* Refresh from Ledger button - only show if address was fetched from Ledger */}
+                      {FP.pipe(
+                        standaloneLedgerTargetAddress,
+                        O.filter((addr) => addr !== 'MANUAL_ENTRY'),
+                        O.isSome
+                      ) && (
+                        <BaseButton
+                          size="small"
+                          className="hover:shadow-full dark:hover:shadow-fulld"
+                          loading={isFetchingStandaloneLedgerAddress}
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                `Please make sure the ${targetAsset.chain} app is open on your Ledger device before proceeding.`
+                              )
+                            ) {
+                              fetchStandaloneLedgerTargetAddress(targetAsset.chain)
+                            }
+                          }}>
+                          Refresh from Ledger
+                        </BaseButton>
+                      )}
                     </div>
 
                     {/* Show current address if available, otherwise show options */}
@@ -2928,14 +2972,11 @@ export const Swap = ({
                       standaloneLedgerTargetAddress,
                       O.fold(
                         () => (
-                          <div className="mt-2 space-y-2">
-                            <div className="text-[14px] text-text2 dark:text-text2d">
-                              Choose how to set the recipient address:
-                            </div>
-                            <div className="flex space-x-2">
-                              <BaseButton
-                                size="small"
-                                loading={isFetchingStandaloneLedgerAddress}
+                          <div className="mt-3 space-y-3">
+                            <div className="grid grid-cols-1 gap-3">
+                              <button
+                                className="group flex items-center justify-between p-4 border border-gray0 dark:border-gray0d rounded-lg hover:border-turquoise hover:bg-bg1 dark:hover:bg-bg1d transition-all duration-200"
+                                disabled={isFetchingStandaloneLedgerAddress}
                                 onClick={() => {
                                   if (
                                     window.confirm(
@@ -2945,16 +2986,43 @@ export const Swap = ({
                                     fetchStandaloneLedgerTargetAddress(targetChain)
                                   }
                                 }}>
-                                Fetch from Ledger
-                              </BaseButton>
-                              <BaseButton
-                                size="small"
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 rounded-full bg-turquoise/10 flex items-center justify-center">
+                                    <div className="w-4 h-4 bg-turquoise rounded-sm"></div>
+                                  </div>
+                                  <div className="text-left">
+                                    <div className="font-medium text-text0 dark:text-text0d">Fetch from Ledger</div>
+                                    <div className="text-[12px] text-text2 dark:text-text2d">
+                                      Get address from your hardware wallet
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-turquoise group-hover:translate-x-1 transition-transform duration-200">
+                                  →
+                                </div>
+                              </button>
+
+                              <button
+                                className="group flex items-center justify-between p-4 border border-gray0 dark:border-gray0d rounded-lg hover:border-turquoise hover:bg-bg1 dark:hover:bg-bg1d transition-all duration-200"
                                 onClick={() => {
-                                  // Set a placeholder to trigger EditableAddress component
                                   setStandaloneLedgerTargetAddress(O.some('MANUAL_ENTRY'))
+                                  setCustomAddressEditActive(true)
                                 }}>
-                                Enter Manually
-                              </BaseButton>
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 rounded-full bg-warning0/10 flex items-center justify-center">
+                                    <div className="w-4 h-4 border-2 border-warning0 rounded-sm"></div>
+                                  </div>
+                                  <div className="text-left">
+                                    <div className="font-medium text-text0 dark:text-text0d">Enter Manually</div>
+                                    <div className="text-[12px] text-text2 dark:text-text2d">
+                                      Type or paste the recipient address
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-turquoise group-hover:translate-x-1 transition-transform duration-200">
+                                  →
+                                </div>
+                              </button>
                             </div>
                           </div>
                         ),
@@ -2963,60 +3031,68 @@ export const Swap = ({
                             {address === 'MANUAL_ENTRY' ? (
                               <div className="space-y-2">
                                 <div className="text-[14px] text-text2 dark:text-text2d">Enter recipient address:</div>
-                                <EditableAddress
-                                  key="manual-entry"
-                                  asset={targetAsset}
-                                  network={network}
-                                  address=""
-                                  onChangeAddress={(newAddress) => {
-                                    if (newAddress.trim()) {
-                                      setStandaloneLedgerTargetAddress(O.some(newAddress))
-                                      onChangeRecipientAddress(newAddress)
-                                    } else {
-                                      setStandaloneLedgerTargetAddress(O.none)
-                                    }
-                                  }}
-                                  onChangeEditableAddress={onChangeEditableRecipientAddress}
-                                  onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
-                                  addressValidator={addressValidator}
-                                  hidePrivateData={hidePrivateData}
-                                />
+                                <div className="flex items-center space-x-2">
+                                  <div className="flex-1">
+                                    <EditableAddress
+                                      key="manual-entry"
+                                      asset={targetAsset}
+                                      network={network}
+                                      address=""
+                                      startInEditMode={customAddressEditActive}
+                                      onChangeAddress={(newAddress) => {
+                                        if (newAddress.trim()) {
+                                          setStandaloneLedgerTargetAddress(O.some(newAddress))
+                                          onChangeRecipientAddress(newAddress)
+                                        } else {
+                                          setStandaloneLedgerTargetAddress(O.none)
+                                        }
+                                      }}
+                                      onChangeEditableAddress={onChangeEditableRecipientAddress}
+                                      onChangeEditableMode={(editModeActive) =>
+                                        setCustomAddressEditActive(editModeActive)
+                                      }
+                                      addressValidator={addressValidator}
+                                      hidePrivateData={hidePrivateData}
+                                    />
+                                  </div>
+                                  {!customAddressEditActive && (
+                                    <BaseButton
+                                      size="small"
+                                      className="!p-1"
+                                      onClick={() => setStandaloneLedgerTargetAddress(O.none)}>
+                                      <XCircleIcon className="ml-5px h-[30px] w-[30px] cursor-pointer text-gray2 dark:text-gray2d" />
+                                    </BaseButton>
+                                  )}
+                                </div>
                               </div>
                             ) : (
-                              <EditableAddress
-                                key={address}
-                                asset={targetAsset}
-                                network={network}
-                                address={address}
-                                onChangeAddress={(newAddress) => {
-                                  setStandaloneLedgerTargetAddress(O.some(newAddress))
-                                  onChangeRecipientAddress(newAddress)
-                                }}
-                                onChangeEditableAddress={onChangeEditableRecipientAddress}
-                                onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
-                                addressValidator={addressValidator}
-                                hidePrivateData={hidePrivateData}
-                              />
+                              <div className="flex items-center space-x-2">
+                                <div className="flex-1">
+                                  <EditableAddress
+                                    key={address}
+                                    asset={targetAsset}
+                                    network={network}
+                                    address={address}
+                                    onChangeAddress={(newAddress) => {
+                                      setStandaloneLedgerTargetAddress(O.some(newAddress))
+                                      onChangeRecipientAddress(newAddress)
+                                    }}
+                                    onChangeEditableAddress={onChangeEditableRecipientAddress}
+                                    onChangeEditableMode={(editModeActive) =>
+                                      setCustomAddressEditActive(editModeActive)
+                                    }
+                                    addressValidator={addressValidator}
+                                    hidePrivateData={hidePrivateData}
+                                  />
+                                </div>
+                                <BaseButton
+                                  size="small"
+                                  className="!p-1"
+                                  onClick={() => setStandaloneLedgerTargetAddress(O.none)}>
+                                  <XCircleIcon className="ml-5px h-[30px] w-[30px] cursor-pointer text-gray2 dark:text-gray2d" />
+                                </BaseButton>
+                              </div>
                             )}
-                            <div className="mt-2 flex space-x-2">
-                              <BaseButton
-                                size="small"
-                                loading={isFetchingStandaloneLedgerAddress}
-                                onClick={() => {
-                                  if (
-                                    window.confirm(
-                                      `Please make sure the ${targetAsset.chain} app is open on your Ledger device before proceeding.`
-                                    )
-                                  ) {
-                                    fetchStandaloneLedgerTargetAddress(targetAsset.chain)
-                                  }
-                                }}>
-                                Refresh from Ledger
-                              </BaseButton>
-                              <BaseButton size="small" onClick={() => setStandaloneLedgerTargetAddress(O.none)}>
-                                Clear Address
-                              </BaseButton>
-                            </div>
                           </div>
                         )
                       )

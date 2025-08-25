@@ -50,7 +50,8 @@ const enhancedClient$ = Rx.combineLatest([client$, readOnlyClient$, appWalletSer
     // Otherwise, no client available
     return O.none
   }),
-  RxOp.distinctUntilChanged()
+  RxOp.distinctUntilChanged(),
+  RxOp.shareReplay({ bufferSize: 1, refCount: true })
 )
 
 // State of balances loaded by Client

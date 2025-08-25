@@ -6,7 +6,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { AssetIcon } from '../../components/uielements/assets/assetIcon'
-import { BaseButton } from '../../components/uielements/button'
+import { FlatButton } from '../../components/uielements/button'
 import { BackLinkButton } from '../../components/uielements/button/BackLinkButton'
 import { Headline } from '../../components/uielements/headline'
 import { Spin } from '../../components/uielements/spin'
@@ -59,7 +59,6 @@ export const LedgerChainSelectView: React.FC = () => {
 
   const [selectedChain, setSelectedChain] = useState<Chain | undefined>(undefined)
   const [selectedHDMode, setSelectedHDMode] = useState<HDMode>('default')
-  const [redirectCountdown, setRedirectCountdown] = useState<number>(3)
 
   // Get current app wallet state and standalone ledger state
   const appWalletState = useObservableState(appWalletService.appWalletState$)
@@ -75,13 +74,6 @@ export const LedgerChainSelectView: React.FC = () => {
       appWalletService.switchToStandaloneLedgerMode()
     }
   }, [appWalletService, appWalletState])
-
-  const _handleBackToNoWallet = useCallback(() => {
-    // Reset standalone ledger service and go back to no wallet view
-    appWalletService.standaloneLedgerService.resetToChainSelection()
-    appWalletService.switchToKeystoreMode() // Switch back to initial state
-    navigate(walletRoutes.noWallet.path())
-  }, [appWalletService, navigate])
 
   const handleChainSelect = useCallback((chain: Chain) => {
     setSelectedChain(chain)
@@ -126,23 +118,11 @@ export const LedgerChainSelectView: React.FC = () => {
     }
   }, [appWalletService, navigate, standaloneLedgerState?.connectedChain, reloadBalancesByChain, reloadBalances])
 
-  // Auto-redirect countdown effect for completed detection
+  // Auto-redirect immediately when detection is completed
   useEffect(() => {
     if (standaloneLedgerState?.detectionPhase === 'completed' && standaloneLedgerState?.connectedChain) {
-      const interval = setInterval(() => {
-        setRedirectCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval)
-            handleDetectionComplete()
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-
-      return () => clearInterval(interval)
-    } else {
-      setRedirectCountdown(3) // Reset countdown when not in completed state
+      // Redirect immediately without timer
+      handleDetectionComplete()
     }
   }, [standaloneLedgerState?.detectionPhase, standaloneLedgerState?.connectedChain, handleDetectionComplete])
 
@@ -163,48 +143,6 @@ export const LedgerChainSelectView: React.FC = () => {
     return null // Or a loading indicator
   }
 
-  // Detection completed state
-  if (standaloneLedgerState.detectionPhase === 'completed' && standaloneLedgerState.connectedChain) {
-    return (
-      <div className="flex flex-col min-h-screen bg-bg0 dark:bg-bg0d">
-        <div className="px-6 py-4">
-          <BackLinkButton path={walletRoutes.assets.path()} />
-        </div>
-
-        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-8">
-              <div className="text-turquoise text-64 mb-4">✓</div>
-              <Headline size="large" color="primary" className="mb-4">
-                {intl.formatMessage({ id: 'ledger.connect.success.title' })}
-              </Headline>
-              <p className="text-text2 dark:text-text2d text-16 mb-4">
-                {intl.formatMessage(
-                  { id: 'ledger.connect.success.description' },
-                  { chain: standaloneLedgerState.connectedChain }
-                )}
-              </p>
-              <p className="text-text2 dark:text-text2d text-14">
-                {intl.formatMessage({ id: 'ledger.connect.success.redirect' }, { countdown: redirectCountdown })}
-              </p>
-            </div>
-
-            <div className="flex justify-center">
-              <BaseButton
-                type="button"
-                size="large"
-                color="primary"
-                onClick={handleDetectionComplete}
-                className="min-w-[200px]">
-                {intl.formatMessage({ id: 'ledger.connect.button.continue' })}
-              </BaseButton>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   // Detection in progress state
   if (standaloneLedgerState.detectionPhase === 'detecting') {
     return (
@@ -213,8 +151,8 @@ export const LedgerChainSelectView: React.FC = () => {
           <BackLinkButton />
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
-          <div className="w-full max-w-md">
+        <div className="flex-1 px-6 pt-8">
+          <div className="w-full max-w-2xl mx-auto">
             <Headline size="large" color="primary" className="mb-8 text-center">
               {intl.formatMessage({ id: 'ledger.detect.title' })}
             </Headline>
@@ -232,9 +170,20 @@ export const LedgerChainSelectView: React.FC = () => {
               }
             />
 
-            <p className="text-center text-text2 dark:text-text2d text-14">
-              {intl.formatMessage({ id: 'ledger.needsconnected' }, { chain: '' })}
-            </p>
+            <div className="text-center space-y-3">
+              <p className="text-text2 dark:text-text2d text-14">
+                {standaloneLedgerState.detectionProgress?.currentChain
+                  ? intl.formatMessage(
+                      { id: 'ledger.needsconnected' },
+                      { chain: standaloneLedgerState.detectionProgress.currentChain }
+                    )
+                  : intl.formatMessage({ id: 'ledger.connect.instructions' })}
+              </p>
+              <p className="text-text2 dark:text-text2d text-12 opacity-75">
+                Make sure to open the {standaloneLedgerState.detectionProgress?.currentChain || 'required'} app on your
+                Ledger device
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -245,7 +194,7 @@ export const LedgerChainSelectView: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-bg0 dark:bg-bg0d">
       <div className="px-6 py-4">
-        <BackLinkButton path={walletRoutes.noWallet.path()} />
+        <BackLinkButton />
       </div>
 
       <div className="flex-1 flex flex-col items-center px-6 pb-6">
@@ -305,7 +254,7 @@ export const LedgerChainSelectView: React.FC = () => {
 
           {/* Connect button */}
           <div className="flex justify-center">
-            <BaseButton
+            <FlatButton
               type="button"
               size="large"
               color="primary"
@@ -315,7 +264,7 @@ export const LedgerChainSelectView: React.FC = () => {
               {selectedChain
                 ? intl.formatMessage({ id: 'ledger.connect.chain' }, { chain: selectedChain })
                 : intl.formatMessage({ id: 'ledger.connect.select' })}
-            </BaseButton>
+            </FlatButton>
           </div>
         </div>
       </div>
