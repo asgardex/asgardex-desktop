@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Fees, FeeType, Protocol } from '@xchainjs/xchain-client'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { getFee, GasPrices, Client } from '@xchainjs/xchain-evm'
-import { Asset, baseAmount } from '@xchainjs/xchain-util'
+import { Asset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -12,14 +12,11 @@ import { isEthAsset } from '../../helpers/assetHelper'
 import { observableState } from '../../helpers/stateHelper'
 import type { FeeLD } from '../chain/types'
 import type { FeesLD } from '../clients'
-import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT, EVMZeroAddress } from '../evm/const'
+import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT } from '../evm/const'
 import { FeesService, PoolInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams, Client$ } from '../evm/types'
 
 export const createFeesService = (client$: Client$): FeesService => {
-  const { get$: reloadFees$, set: reloadFees } = observableState<TxParams>({
-    amount: baseAmount(1),
-    recipient: EVMZeroAddress
-  })
+  const { get$: reloadFees$, set: reloadFees } = observableState<TxParams | undefined>(undefined)
 
   const fees$ = (params: TxParams): FeesLD =>
     Rx.combineLatest([reloadFees$, client$]).pipe(
@@ -28,7 +25,7 @@ export const createFeesService = (client$: Client$): FeesService => {
           oClient,
           O.fold(
             () => Rx.EMPTY,
-            (client) => Rx.from(estimateAndCalculateFees(client, reloadFeesParams || params))
+            (client) => Rx.from(estimateAndCalculateFees(client, reloadFeesParams ?? params))
           )
         )
       }),

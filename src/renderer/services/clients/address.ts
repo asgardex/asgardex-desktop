@@ -59,7 +59,10 @@ export const addressUI$: (client$: XChainClient$, chain: Chain) => WalletAddress
       )
     }),
     RxOp.distinctUntilChanged((a, b) => {
-      return O.getEq({ equals: (x: WalletAddress, y: WalletAddress) => x.address === y.address }).equals(a, b)
+      return O.getEq({
+        equals: (x: WalletAddress, y: WalletAddress) =>
+          x.address === y.address && x.type === y.type && x.chain === y.chain
+      }).equals(a, b)
     }),
     RxOp.shareReplay(1)
   )
