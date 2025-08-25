@@ -151,6 +151,10 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
     navigate(walletRoutes.imports.keystore.path())
   }, [navigate])
 
+  const importPhraseHandler = useCallback(() => {
+    navigate(walletRoutes.imports.phrase.path())
+  }, [navigate])
+
   const useLedgerOnlyHandler = useCallback(() => {
     navigate(walletRoutes.ledgerChainSelect.path())
   }, [navigate])
@@ -258,7 +262,15 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
                   color="primary"
                   onClick={importWalletHandler}
                   disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.import' })}
+                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.keystore' })}
+                </BorderButton>
+                <BorderButton
+                  className="mr-20px w-full min-w-[200px] sm:mb-0"
+                  size="normal"
+                  color="primary"
+                  onClick={importPhraseHandler}
+                  disabled={unlocking}>
+                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
                 </BorderButton>
               </div>
 
