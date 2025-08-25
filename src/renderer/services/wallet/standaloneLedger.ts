@@ -126,7 +126,6 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
         }
       } catch (error) {
         // Continue retrying unless we've exceeded max retries
-        console.log(`Detection attempt ${retryCount + 1}/${maxRetries} failed for chain ${chainToDetect}:`, error)
       }
 
       retryCount++

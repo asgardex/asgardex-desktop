@@ -7,8 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import * as walletRoutes from '../../routes/wallet'
 import { KeystoreState } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
-import { FlatButton } from '../uielements/button'
-import { BorderButton } from '../uielements/button'
+import { FlatButton, BorderButton } from '../uielements/button'
 
 type Props = {
   keystoreState: KeystoreState
