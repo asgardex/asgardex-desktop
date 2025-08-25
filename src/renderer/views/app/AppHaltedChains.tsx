@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
@@ -39,21 +39,45 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardSta
     return () => clearTimeout(timer)
   }, [])
 
+  // Keep track of the last successful values to avoid flashing during refetch
+  const lastSuccessfulMimirRef = useRef<MimirHalt>({
+    HALTTHORCHAIN: false,
+    haltGlobalTrading: false,
+    pauseGlobalLp: false
+  } as MimirHalt)
+
+  const lastSuccessfulHaltedChainsRef = useRef<Chain[]>([])
+  const lastSuccessfulMidgardRef = useRef<boolean>(false)
+
   // Memoize data extraction to prevent unnecessary re-calculations
-  const { inboundHaltedChains, mimirHalt, midgard, isInitialState } = useMemo(() => {
-    const isInitial = RD.isInitial(haltedChainsRD) && RD.isInitial(mimirHaltRD) && RD.isInitial(midgardStatusRD)
+  const { inboundHaltedChains, mimirHalt, midgard, hasAnyData } = useMemo(() => {
+    const hasData = !RD.isInitial(haltedChainsRD) || !RD.isInitial(mimirHaltRD) || !RD.isInitial(midgardStatusRD)
+
+    // Update refs with successful values and use them during pending states
+    if (RD.isSuccess(haltedChainsRD)) {
+      lastSuccessfulHaltedChainsRef.current = haltedChainsRD.value
+    }
+    if (RD.isSuccess(mimirHaltRD)) {
+      lastSuccessfulMimirRef.current = mimirHaltRD.value
+    }
+    if (RD.isSuccess(midgardStatusRD)) {
+      lastSuccessfulMidgardRef.current = midgardStatusRD.value
+    }
+
     return {
-      inboundHaltedChains: RD.getOrElse(() => [] as Chain[])(haltedChainsRD),
-      mimirHalt: RD.getOrElse(
-        () =>
-          ({
-            HALTTHORCHAIN: false,
-            haltGlobalTrading: false,
-            pauseGlobalLp: false
-          } as MimirHalt)
-      )(mimirHaltRD),
-      midgard: RD.getOrElse(() => false)(midgardStatusRD),
-      isInitialState: isInitial
+      inboundHaltedChains:
+        RD.isSuccess(haltedChainsRD) || RD.isPending(haltedChainsRD) ? lastSuccessfulHaltedChainsRef.current : [],
+      mimirHalt:
+        RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD)
+          ? lastSuccessfulMimirRef.current
+          : ({
+              HALTTHORCHAIN: false,
+              haltGlobalTrading: false,
+              pauseGlobalLp: false
+            } as MimirHalt),
+      midgard:
+        RD.isSuccess(midgardStatusRD) || RD.isPending(midgardStatusRD) ? lastSuccessfulMidgardRef.current : false,
+      hasAnyData: hasData
     }
   }, [haltedChainsRD, mimirHaltRD, midgardStatusRD])
 
@@ -124,12 +148,12 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardSta
   }, [inboundHaltedChains, mimirHalt, midgard, intl, protocol])
 
   // Don't show warnings until we have actual data from at least one source
-  if (!hasRendered || isInitialState) {
-    return <></>
+  if (!hasRendered || !hasAnyData) {
+    return <div className="h-0" />
   }
 
   if (!warningMessage) {
-    return <></>
+    return <div className="h-0" />
   }
 
   if (isCollapsed) {
