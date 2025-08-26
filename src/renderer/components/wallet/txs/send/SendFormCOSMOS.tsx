@@ -5,6 +5,7 @@ import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/re
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -151,21 +152,18 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
+  // Balance of the asset being sent (e.g., USDC, ATOM, etc.)
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
-    // return balance of current asset
-    if (isChainAsset) {
-      return O.some(balance.amount)
-    }
-    // or check list of other assets to get balance
-    return FP.pipe(getAmountFromBalances(balances, balance.walletType, getChainAsset(asset.chain)), O.map(assetToBase))
-  }, [asset.chain, balance.amount, balance.walletType, balances, isChainAsset])
+    return O.some(balance.amount)
+  }, [balance.amount])
 
+  // Balance of the chain's native asset (used for paying transaction fees)
   const oChainAssetAmount: O.Option<BaseAmount> = useMemo(() => {
-    // return balance of current asset
     if (isChainAsset) {
+      // If sending the chain asset itself, use the same balance
       return O.some(balance.amount)
     }
-    // or check list of other assets to get balance
+    // Otherwise, get the chain asset balance from balances list
     return FP.pipe(getAmountFromBalances(balances, balance.walletType, chainAsset), O.map(assetToBase))
   }, [balance.amount, balance.walletType, balances, chainAsset, isChainAsset])
 
@@ -310,19 +308,41 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
   }, [form, oSavedAddresses])
   // max amount for asset
   const maxAmount: BaseAmount = useMemo(() => {
-    const maxAmount = FP.pipe(
+    // Some chains require minimum account reserves that cannot be spent
+    const getMinimumAccountReserve = (): BaseAmount => {
+      switch (asset.chain) {
+        case XRPChain:
+          // XRP requires 1 minimum reserve
+          return assetToBase(assetAmount(1, 6))
+        default:
+          return baseAmount(0, balance.amount.decimal)
+      }
+    }
+
+    const accountReserve = getMinimumAccountReserve()
+
+    // If we have both fee and asset amount, calculate precise max
+    return FP.pipe(
       sequenceTOption(oFee, oAssetAmount),
       O.fold(
-        () => ZERO_BASE_AMOUNT,
+        () => {
+          // Fallback: if fee is unavailable, use balance minus a conservative fee estimate
+          // This prevents max amount from being zero while fees are loading
+          const conservativeFee = baseAmount(1000, balance.amount.decimal) // Conservative estimate
+          const fallbackMax = isChainAsset
+            ? balance.amount.minus(conservativeFee).minus(accountReserve)
+            : balance.amount
+          const zero = baseAmount(0, balance.amount.decimal)
+          return fallbackMax.gt(zero) ? fallbackMax : zero
+        },
         ([fee, assetAmount]) => {
-          const max = isChainAsset ? assetAmount.minus(fee) : balance.amount
+          const max = isChainAsset ? assetAmount.minus(fee).minus(accountReserve) : balance.amount
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }
       )
     )
-    return maxAmount
-  }, [oFee, oAssetAmount, isChainAsset, balance.amount])
+  }, [oFee, oAssetAmount, isChainAsset, balance.amount, asset.chain])
 
   // store maxAmountValue wrong CryptoAmount
   const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(

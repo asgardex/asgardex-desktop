@@ -365,7 +365,8 @@ describe('components/swap/utils', () => {
         feeAmount: baseAmount(100)
       }
       const result = maxAmountToSwapMax1e8(params)
-      expect(eqBaseAmount.equals(result, baseAmount(4000))).toBeTruthy()
+      // Expect accurate calculation: 5000 - 100 = 4900 (no more 1000-unit rounding)
+      expect(eqBaseAmount.equals(result, baseAmount(4900))).toBeTruthy()
     })
 
     it('balance to swap - with 1e18 based estimated fees', () => {
@@ -375,7 +376,9 @@ describe('components/swap/utils', () => {
         feeAmount: baseAmount(100000000000, 18)
       }
       const result = maxAmountToSwapMax1e8(params)
-      expect(eqBaseAmount.equals(result, baseAmount(4000))).toBeTruthy()
+      // 100000000000 with 18 decimals = 10 sats when converted to max1e8
+      // So: 5000 - 10 = 4990 (no more 1000-unit rounding)
+      expect(eqBaseAmount.equals(result, baseAmount(4990))).toBeTruthy()
     })
 
     it('balance is less than fee - with 1e18 based estimated fees', () => {

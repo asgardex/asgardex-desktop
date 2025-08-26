@@ -508,7 +508,8 @@ type SwapMessageKey =
   | 'swap.note.nowallet'
   | 'swap.min.amount.info'
   | 'swap.min.result.info'
-  | `swap.min.result.protected`
+  | 'swap.min.result.protected'
+  | 'swap.address.evm.warning'
 
 export type SwapMessages = { [key in SwapMessageKey]: string }
 

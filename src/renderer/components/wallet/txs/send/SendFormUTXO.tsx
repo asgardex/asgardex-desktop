@@ -241,15 +241,15 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
         O.map(({ fees, rates }) => {
           const feeAmount = fees[selectedFeeOptionKey]
           const feeRate = rates[selectedFeeOptionKey]
-          const transactionSize = feeAmount.amount().toNumber() / feeRate
+
+          // Use the precise fee from getFeesWithRates instead of arbitrary rounding
+          // Only round up the fee rate for transaction building, but use original fee amount
           const roundedFeeRate = Math.ceil(feeRate)
-          const adjustedFee = baseAmount(roundedFeeRate * transactionSize, feeAmount.decimal)
-          const feeValue = adjustedFee.amount().toNumber()
-          const roundedFeeValue = Math.ceil(feeValue / 1000) * 1000
-          const roundedAdjustedFee = baseAmount(roundedFeeValue, feeAmount.decimal)
-          prevSelectedFeeRef.current = O.some(roundedAdjustedFee)
           setFeeRate(roundedFeeRate)
-          return roundedAdjustedFee
+
+          // Use the precise fee amount calculated by xchain-js
+          prevSelectedFeeRef.current = O.some(feeAmount)
+          return feeAmount
         })
       ),
     [oFeesWithRates, selectedFeeOptionKey]
@@ -371,15 +371,11 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
         O.map((fee) => {
           const max = balance.amount.minus(fee)
           const zero = baseAmount(0, max.decimal)
-
-          const roundedMax = Math.floor(max.amount().toNumber() / 1000) * 1000
-          const roundedMaxBase = baseAmount(roundedMax, max.decimal)
-          return roundedMaxBase.gt(zero.amount()) ? roundedMaxBase : zero
+          return max.gt(zero) ? max : zero
         }),
-        // Set maxAmount to zero as long as we don't have a feeRate
         O.getOrElse(() => ZERO_BASE_AMOUNT)
       ),
-    [balance.amount, selectedFee]
+    [balance, selectedFee]
   )
 
   // store maxAmountValue

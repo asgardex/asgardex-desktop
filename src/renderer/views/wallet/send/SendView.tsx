@@ -128,7 +128,6 @@ export const SendView = (): JSX.Element => {
         case DASHChain:
         case LTCChain:
         case ZECChain:
-        case XRPChain:
           return (
             <SendViewUTXO
               asset={asset}
@@ -158,6 +157,7 @@ export const SendView = (): JSX.Element => {
         case MAYAChain:
         case KUJIChain:
         case GAIAChain:
+        case XRPChain:
         case RadixChain:
         case SOLChain:
           return (

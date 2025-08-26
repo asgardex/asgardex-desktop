@@ -35,7 +35,8 @@ const swap: SwapMessages = {
     'Valor mínimo a intercambiar para cubrir todas las comisiones de las transacciones entrantes y salientes.',
   'swap.min.result.info':
     'Su swap está protegido por este valor mínimo basado en el {tolerance}% de tolerancia de deslizamiento seleccionado. En caso de que el precio cambie desfavorablemente más del {tolerance}%, su operación de swap se revertirá antes de la confirmación.',
-  'swap.min.result.protected': 'Resultado del swap protegido'
+  'swap.min.result.protected': 'Resultado del swap protegido',
+  'swap.address.evm.warning': 'NO intercambiar a direcciones de Smart Contract'
 }
 
 export default swap
