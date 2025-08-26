@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Chain } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
@@ -36,15 +37,13 @@ const ChainItem: React.FC<ChainItemProps> = ({ chain, isSelected, onSelect }) =>
   return (
     <button
       onClick={handleClick}
-      className={`
-        flex items-center gap-3 p-4 rounded-lg border transition-all cursor-pointer
-        hover:border-turquoise hover:bg-gray0/10 dark:hover:bg-gray0d/10
-        ${
-          isSelected
-            ? 'border-turquoise bg-turquoise/10 dark:bg-turquoise/5'
-            : 'border-gray0 dark:border-gray0d bg-bg1 dark:bg-bg1d'
-        }
-      `}>
+      className={clsx(
+        'flex items-center gap-3 p-4 rounded-lg border transition-all cursor-pointer',
+        'hover:border-turquoise hover:bg-gray0/10 dark:hover:bg-gray0d/10',
+        isSelected
+          ? 'border-turquoise bg-turquoise/10 dark:bg-turquoise/5'
+          : 'border-gray0 dark:border-gray0d bg-bg1 dark:bg-bg1d'
+      )}>
       <AssetIcon asset={getChainAsset(chain)} network={network} size="small" />
       <span className="text-text1 dark:text-text1d font-medium text-16">{chain}</span>
     </button>
@@ -223,29 +222,32 @@ export const LedgerChainSelectView: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setSelectedHDMode('ledgerlive')}
-                  className={`px-4 py-2 rounded-lg text-14 transition-all ${
+                  className={clsx(
+                    'px-4 py-2 rounded-lg text-14 transition-all',
                     selectedHDMode === 'ledgerlive'
                       ? 'bg-turquoise text-white'
                       : 'bg-gray0 dark:bg-gray0d text-text2 dark:text-text2d hover:bg-gray0/80'
-                  }`}>
+                  )}>
                   {intl.formatMessage({ id: 'common.ledgerlive' })}
                 </button>
                 <button
                   onClick={() => setSelectedHDMode('legacy')}
-                  className={`px-4 py-2 rounded-lg text-14 transition-all ${
+                  className={clsx(
+                    'px-4 py-2 rounded-lg text-14 transition-all',
                     selectedHDMode === 'legacy'
                       ? 'bg-turquoise text-white'
                       : 'bg-gray0 dark:bg-gray0d text-text2 dark:text-text2d hover:bg-gray0/80'
-                  }`}>
+                  )}>
                   {intl.formatMessage({ id: 'ledger.derivation.legacy' })}
                 </button>
                 <button
                   onClick={() => setSelectedHDMode('metamask')}
-                  className={`px-4 py-2 rounded-lg text-14 transition-all ${
+                  className={clsx(
+                    'px-4 py-2 rounded-lg text-14 transition-all',
                     selectedHDMode === 'metamask'
                       ? 'bg-turquoise text-white'
                       : 'bg-gray0 dark:bg-gray0d text-text2 dark:text-text2d hover:bg-gray0/80'
-                  }`}>
+                  )}>
                   {intl.formatMessage({ id: 'ledger.derivation.metamask' })}
                 </button>
               </div>

@@ -226,39 +226,13 @@ export const SendFormEVM = (props: Props): JSX.Element => {
   )
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
-    console.log('🔧 SendFormEVM Balance Debug: Calculating asset amount', {
-      isChainAsset,
-      asset: asset.symbol,
-      chain: asset.chain,
-      balanceAmount: balance.amount.amount().toString(),
-      balanceAsset: balance.asset.symbol,
-      balanceWalletType: balance.walletType,
-      balanceWalletAddress: balance.walletAddress
-    })
-
     // return balance of current asset
-    if (isChainAsset) {
-      console.log('🔧 SendFormEVM Balance Debug: Using chain asset balance')
-      return O.some(balance.amount)
-    }
+    if (isChainAsset) return O.some(balance.amount)
+
     // or check list of other assets to get eth balance
-    console.log('🔧 SendFormEVM Balance Debug: Looking for balance in balances array')
     const result = FP.pipe(getEVMAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
-    console.log('🔧 SendFormEVM Balance Debug: Balances array lookup result', {
-      found: O.isSome(result),
-      amount: O.isSome(result) ? result.value.amount().toString() : 'none'
-    })
     return result
-  }, [
-    asset.chain,
-    asset.symbol,
-    balance.amount,
-    balance.asset.symbol,
-    balance.walletAddress,
-    balance.walletType,
-    balances,
-    isChainAsset
-  ])
+  }, [asset.chain, balance.amount, balances, isChainAsset])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
