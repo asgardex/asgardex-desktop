@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { ArrowPathIcon, PlayIcon } from '@heroicons/react/24/outline'
 import { Chain } from '@xchainjs/xchain-util'
 
+import clsx from 'clsx'
 import { BaseButton } from '../uielements/button'
 import { Headline } from '../uielements/headline'
 
@@ -12,7 +13,7 @@ interface ChainItemProps {
   onDetectSingle: (chain: Chain) => void
 }
 
-const ChainItem: React.FC<ChainItemProps> = ({ chain, selected, onSelect, onDetectSingle }) => {
+const ChainItem = ({ chain, selected, onSelect, onDetectSingle }: ChainItemProps) => {
   const handleSelect = useCallback(() => {
     onSelect(chain)
   }, [chain, onSelect])
@@ -27,11 +28,12 @@ const ChainItem: React.FC<ChainItemProps> = ({ chain, selected, onSelect, onDete
 
   return (
     <div
-      className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:border-turquoise ${
+      className={clsx(
+        'p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:border-turquoise',
         selected
           ? 'border-turquoise bg-turquoise/10 dark:bg-turquoise/5'
           : 'border-gray0 dark:border-gray0d bg-bg1 dark:bg-bg1d'
-      }`}
+      )}
       onClick={handleSelect}>
       <div className="flex items-center justify-between">
         <div className="flex items-center">
@@ -48,9 +50,10 @@ const ChainItem: React.FC<ChainItemProps> = ({ chain, selected, onSelect, onDete
             Go
           </BaseButton>
           <div
-            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+            className={clsx(
+              'w-5 h-5 rounded-full border-2 flex items-center justify-center',
               selected ? 'border-turquoise bg-turquoise' : 'border-gray0 dark:border-gray0d bg-transparent'
-            }`}>
+            )}>
             {selected && <div className="w-2 h-2 bg-white rounded-full" />}
           </div>
         </div>
@@ -63,7 +66,7 @@ interface ProgressIndicatorProps {
   currentChain?: Chain
 }
 
-const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ currentChain }) => {
+const ProgressIndicator = ({ currentChain }: ProgressIndicatorProps) => {
   return (
     <div className="w-full bg-bg2 dark:bg-bg2d rounded-lg p-4">
       <div className="flex items-center justify-center mb-4">
@@ -92,7 +95,7 @@ interface ChainSelectorProps {
   detectionPhase?: string
 }
 
-export const ChainSelector: React.FC<ChainSelectorProps> = ({
+export const ChainSelector = ({
   availableChains,
   selectedChain,
   onSelectionChange,
@@ -103,7 +106,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   detectionProgress,
   connectedChain,
   detectionPhase
-}) => {
+}: ChainSelectorProps) => {
   const handleChainSelect = useCallback(
     (chain: Chain) => {
       // If this chain is already selected, deselect it; otherwise select it

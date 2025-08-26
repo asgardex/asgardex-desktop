@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 
 import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
@@ -43,7 +43,7 @@ export const EditableAddress = ({
   const [editableAddress, setEditableAddress] = useState<O.Option<Address>>(startInEditMode ? O.some(address) : O.none)
 
   // Handle startInEditMode prop changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (startInEditMode) {
       setEditableAddress(O.some(address))
       onChangeEditableMode(true)
