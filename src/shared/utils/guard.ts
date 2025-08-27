@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js'
 import * as IOG from 'io-ts/Guard'
 
 import { EvmHDMode } from '../evm/types'
+import { UtxoHDMode } from '../utxo/types'
 import { HDMode, WalletType } from '../wallet/types'
 import { EnabledChain, isSupportedChain } from './chain'
 
@@ -38,7 +39,9 @@ export const isKeystoreWallet = (walletType: WalletType): boolean => walletType 
 
 export const isEvmHDMode = (u: unknown): u is EvmHDMode => u === 'legacy' || u === 'ledgerlive' || u === 'metamask'
 
-export const isHDMode = (u: unknown): u is HDMode => u === 'default' || isEvmHDMode(u)
+export const isUtxoHDMode = (u: unknown): u is UtxoHDMode => u === 'p2wpkh' || u === 'p2tr'
+
+export const isHDMode = (u: unknown): u is HDMode => u === 'default' || isEvmHDMode(u) || isUtxoHDMode(u)
 
 const assetGuard = IOG.struct({ symbol: nonEmptyStringGuard, ticker: nonEmptyStringGuard, chain: chainGuard })
 

@@ -1,6 +1,7 @@
 import { Address, Chain } from '@xchainjs/xchain-util'
 
 import { EvmHDMode } from '../evm/types'
+import { UtxoHDMode } from '../utxo/types'
 
 export enum WalletType {
   Keystore = 'keystore',
@@ -9,7 +10,7 @@ export enum WalletType {
 
 export type WalletBalanceType = 'all' | 'confirmed'
 
-export type HDMode = 'default' | EvmHDMode
+export type HDMode = 'default' | EvmHDMode | UtxoHDMode
 
 export type WalletAddress = {
   address: Address

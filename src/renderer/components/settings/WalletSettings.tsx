@@ -43,6 +43,7 @@ import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/l
 import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
 import { isError } from '../../../shared/utils/guard'
+import { UtxoHDMode } from '../../../shared/utxo/types'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
 import RemoveIcon from '../../assets/svg/icon-remove.svg?react'
 import { WalletPasswordConfirmationModal } from '../../components/modal/confirmation'
@@ -51,7 +52,6 @@ import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIco
 import { QRCodeModal } from '../../components/uielements/qrCodeModal/QRCodeModal'
 import { RadioGroup, Radio } from '../../components/uielements/radio'
 import { PhraseCopyModal } from '../../components/wallet/phrase/PhraseCopyModal'
-import { isUtxoAssetChain } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { eqChain, eqString } from '../../helpers/fp/eq'
@@ -93,12 +93,23 @@ import { EditableWalletName } from '../uielements/wallet/EditableWalletName'
 import * as Styled from './WalletSettings.styles'
 import { WhitelistModal } from './WhitelistModal'
 
-const utxoPaths = [
-  "Native Segwit (m/84'/0'/0'/0/{index})",
-  "Native Segwit (m/84'/0'/{index}'/0/0)",
-  "Segwit (m/49'/0'/0'/0/{index})",
-  "Legacy (m/44'/0'/0'/0/{index})"
+// Bitcoin derivation path templates - will be filled with actual account/index values
+const getBitcoinDerivationPaths = (account: number, index: number) => [
+  `Native Segwit P2WPKH (m/84'/0'/${account}'/${index})`,
+  `Taproot P2TR (m/86'/0'/${account}'/${index})`
 ]
+
+// Convert derivation path index to UtxoHDMode for Bitcoin
+const derivationIndexToHDMode = (index: number): UtxoHDMode => {
+  switch (index) {
+    case 0:
+      return 'p2wpkh'
+    case 1:
+      return 'p2tr'
+    default:
+      return 'p2wpkh'
+  }
+}
 
 const ActionButton = ({
   className,
@@ -289,16 +300,25 @@ export const WalletSettings = (props: Props): JSX.Element => {
     (chain: Chain, walletAccount: number, walletIndex: number) => {
       resetAddLedgerAddressRD()
       setLedgerChainToAdd(O.some(chain))
+
+      let hdMode: HDMode = 'default'
+      if (isEvmChain(chain)) {
+        hdMode = evmHDMode
+      } else if (chain === BTCChain) {
+        // Only Bitcoin supports multiple derivation path options
+        hdMode = derivationIndexToHDMode(derivationPathIndex[chain])
+      }
+
       subscribeAddLedgerAddressRD(
         addLedgerAddress$({
           chain,
           walletAccount,
           walletIndex,
-          hdMode: isEvmChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path
+          hdMode
         })
       )
     },
-    [resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, addLedgerAddress$, evmHDMode]
+    [resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, addLedgerAddress$, evmHDMode, derivationPathIndex]
   )
 
   const verifyLedgerAddressHandler = useCallback(
@@ -390,23 +410,29 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 />
                 <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.index.info' })} />
 
-                {isUtxoAssetChain(getChainAsset(chain)) && (
+                {chain === BTCChain && (
                   <div className="ml-2">
                     <Dropdown
                       trigger={
                         <Label className="rounded-lg p-2 border border-solid border-bg2 dark:border-bg2d">
-                          {utxoPaths[derivationPathIndex[chain]]}
+                          {
+                            getBitcoinDerivationPaths(selectedAccountIndex, selectedWalletIndex)[
+                              derivationPathIndex[chain]
+                            ]
+                          }
                         </Label>
                       }
-                      options={utxoPaths.map((item, index) => (
-                        <Label
-                          key={item}
-                          className="px-1"
-                          size="normal"
-                          onClick={() => setDerivationPathIndex({ ...derivationPathIndex, [chain]: index })}>
-                          {item}
-                        </Label>
-                      ))}
+                      options={getBitcoinDerivationPaths(selectedAccountIndex, selectedWalletIndex).map(
+                        (item: string, index: number) => (
+                          <Label
+                            key={item}
+                            className="px-1"
+                            size="normal"
+                            onClick={() => setDerivationPathIndex({ ...derivationPathIndex, [chain]: index })}>
+                            {item}
+                          </Label>
+                        )
+                      )}
                     />
                   </div>
                 )}

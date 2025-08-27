@@ -11,9 +11,9 @@ import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
-import { WalletAddress, WalletType } from '../../../../shared/wallet/types'
+import { HDMode, WalletAddress, WalletType } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
-import { getDerivationPaths } from './common'
+import { getDerivationPaths, hdModeToDerivationPathType } from './common'
 
 export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletAccount, walletIndex }) => {
   const clientLedger = new ClientLedger({
@@ -31,17 +31,26 @@ export const getAddress = async (
   network: Network,
   walletAccount: number,
   walletIndex: number,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _: any,
-  addressFormat: AddressFormat = AddressFormat.P2WPKH
+  hdMode?: HDMode,
+  addressFormat?: AddressFormat
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
+    // Determine address format based on hdMode if not explicitly provided
+    let finalAddressFormat: AddressFormat = AddressFormat.P2WPKH
+    if (addressFormat !== undefined) {
+      finalAddressFormat = addressFormat
+    } else if (hdMode === 'p2tr') {
+      finalAddressFormat = AddressFormat.P2TR
+    }
+
     const clientLedger = new ClientLedger({
       transport,
       ...defaultBTCParams,
-      addressFormat,
+      addressFormat: finalAddressFormat,
       rootDerivationPaths:
-        addressFormat === AddressFormat.P2TR ? tapRootDerivationPaths : getDerivationPaths(walletAccount, network),
+        finalAddressFormat === AddressFormat.P2TR
+          ? tapRootDerivationPaths
+          : getDerivationPaths(walletAccount, network, hdModeToDerivationPathType(hdMode)),
       network: network
     })
     const address = await clientLedger.getAddressAsync(walletIndex)
@@ -51,7 +60,7 @@ export const getAddress = async (
       type: WalletType.Ledger,
       walletAccount,
       walletIndex,
-      hdMode: 'default'
+      hdMode: hdMode || 'default'
     })
   } catch (error) {
     return E.left({

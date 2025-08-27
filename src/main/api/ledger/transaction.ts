@@ -23,7 +23,7 @@ import { either as E } from 'fp-ts'
 import { IPCLedgerDepositTxParams, IPCLedgerSendTxParams } from '../../../shared/api/io'
 import { LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { chainToString, isSupportedChain } from '../../../shared/utils/chain'
-import { isError, isEvmHDMode } from '../../../shared/utils/guard'
+import { isError, isEvmHDMode, isUtxoHDMode } from '../../../shared/utils/guard'
 import * as ARB from './arb/transaction'
 import * as AVAX from './avax/transaction'
 import * as BASE from './base/transaction'
@@ -65,7 +65,14 @@ const chainSendFunctions: Record<
         msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(params.asset.chain)}`
       })
     }
-    return BTC.send({ ...params, feeOption: params.feeOption, apiKey: params.apiKey })
+    // Check if hdMode is valid for Bitcoin (optional for backward compatibility)
+    if (params.hdMode && !isUtxoHDMode(params.hdMode) && params.hdMode !== 'default') {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Invalid UtxoHDMode set for Bitcoin transaction: ${params.hdMode}`
+      })
+    }
+    return BTC.send({ ...params, feeOption: params.feeOption, hdMode: params.hdMode, apiKey: params.apiKey })
   },
   [LTCChain]: async (params) => {
     if (!params.feeOption) {
