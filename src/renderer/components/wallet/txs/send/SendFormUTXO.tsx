@@ -25,7 +25,7 @@ import { isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
-import { isUSDAsset } from '../../../../helpers/assetHelper'
+import { isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
 import { getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
@@ -117,14 +117,8 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
     (value: string) => {
       form.setFieldsValue({ recipient: value })
       setRecipientAddress(value)
-      if (value) {
-        const matched = FP.pipe(
-          oSavedAddresses,
-          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
-        )
-        setMatchedAddresses(matched)
-      }
+      const matched = Shared.filterMatchedAddresses(oSavedAddresses, value)
+      setMatchedAddresses(matched)
     },
     [form, oSavedAddresses]
   )
@@ -369,48 +363,49 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       FP.pipe(
         selectedFee,
         O.map((fee) => {
-          const max = balance.amount.minus(fee)
+          // Add UTXO safety buffer to prevent dust issues (0.0001 BTC equivalent)
+          const utxoSafetyBuffer = isUtxoAssetChain(asset)
+            ? baseAmount(10000, balance.amount.decimal)
+            : ZERO_BASE_AMOUNT
+          const max = balance.amount.minus(fee).minus(utxoSafetyBuffer)
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }),
         O.getOrElse(() => ZERO_BASE_AMOUNT)
       ),
-    [balance, selectedFee]
+    [balance, selectedFee, asset]
   )
 
   // store maxAmountValue
-  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-  const isPoolDetails = (poolDetails: PoolDetails | PoolDetailsMaya): poolDetails is PoolDetails => {
-    return (poolDetails as PoolDetails) !== undefined
-  }
+  const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   // useEffect to fetch data from query
   useEffect(() => {
     const maxAmountPrice = FP.pipe(
-      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
+      isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: maxAmount },
-            poolDetails,
+            poolDetails: poolDetails as PoolDetails,
             pricePool
           })
         : getPoolPriceValueM({
             balance: { asset, amount: maxAmount },
-            poolDetails,
+            poolDetails: poolDetails as PoolDetailsMaya,
             pricePool,
             mayaPriceRD: mayaScanPrice
           })
     )
 
     const amountPrice = FP.pipe(
-      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
+      isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: amountToSend },
-            poolDetails,
+            poolDetails: poolDetails as PoolDetails,
             pricePool
           })
         : getPoolPriceValueM({
             balance: { asset, amount: amountToSend },
-            poolDetails,
+            poolDetails: poolDetails as PoolDetailsMaya,
             pricePool,
             mayaPriceRD: mayaScanPrice
           })
@@ -421,15 +416,15 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       O.fold(
         () => O.none, // Return `O.none` if `selectedFee` is `None`
         (fee) =>
-          isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
+          isChainOfThor(asset.chain)
             ? getPoolPriceValue({
                 balance: { asset, amount: fee },
-                poolDetails,
+                poolDetails: poolDetails as PoolDetails,
                 pricePool
               })
             : getPoolPriceValueM({
                 balance: { asset, amount: fee },
-                poolDetails,
+                poolDetails: poolDetails as PoolDetailsMaya,
                 pricePool,
                 mayaPriceRD: mayaScanPrice
               })
@@ -717,15 +712,8 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
   const handleOnKeyUp = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
     setRecipientAddress(recipient)
-
-    if (recipient) {
-      const matched = FP.pipe(
-        oSavedAddresses,
-        O.map((addresses) => addresses.filter((address) => address.address.includes(recipient))),
-        O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
-      )
-      setMatchedAddresses(matched)
-    }
+    const matched = Shared.filterMatchedAddresses(oSavedAddresses, recipient)
+    setMatchedAddresses(matched)
   }, [form, oSavedAddresses])
   const oMatchedWalletType: O.Option<WalletType> = useMemo(
     () => matchedWalletType(balances, recipientAddress),
@@ -775,7 +763,7 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
               className="mb-10px"
               color="neutral"
               balance={{ amount: maxAmount, asset: asset }}
-              maxDollarValue={maxAmmountPriceValue}
+              maxDollarValue={maxAmountPriceValue}
               onClick={addMaxAmountHandler}
               disabled={isMaxButtonDisabled}
             />

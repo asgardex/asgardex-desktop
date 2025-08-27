@@ -311,14 +311,8 @@ export const SendFormEVM = (props: Props): JSX.Element => {
     (value: string) => {
       form.setFieldsValue({ recipient: value })
       setRecipientAddress(O.fromNullable(value))
-      if (value) {
-        const matched = FP.pipe(
-          oSavedAddresses,
-          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
-        )
-        setMatchedAddresses(matched)
-      }
+      const matched = Shared.filterMatchedAddresses(oSavedAddresses, value)
+      setMatchedAddresses(matched)
       addressValidator(undefined, value).catch(() => {})
     },
     [addressValidator, form, oSavedAddresses]
@@ -365,7 +359,7 @@ export const SendFormEVM = (props: Props): JSX.Element => {
   }, [selectedFee, oAssetAmount, isChainAsset, balance.amount])
 
   // store maxAmountValue
-  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const isPoolDetails = (poolDetails: PoolDetails | PoolDetailsMaya): poolDetails is PoolDetails => {
     return (poolDetails as PoolDetails) !== undefined
@@ -599,11 +593,7 @@ export const SendFormEVM = (props: Props): JSX.Element => {
       const address = target.value
 
       if (address) {
-        const matched = FP.pipe(
-          oSavedAddresses,
-          O.map((addresses) => addresses.filter((addr) => addr.address.toLowerCase().includes(address.toLowerCase()))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
-        )
+        const matched = Shared.filterMatchedAddresses(oSavedAddresses, address, false) // case-insensitive
         setMatchedAddresses(matched)
 
         // Validate the address
@@ -969,7 +959,7 @@ export const SendFormEVM = (props: Props): JSX.Element => {
               className="mb-10px"
               color="neutral"
               balance={{ amount: maxAmount, asset }}
-              maxDollarValue={maxAmmountPriceValue}
+              maxDollarValue={maxAmountPriceValue}
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />

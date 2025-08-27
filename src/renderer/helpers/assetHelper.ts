@@ -53,7 +53,16 @@ import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitel
 import { ETH_TOKEN_WHITELIST } from '../types/generated/thorchain/etherc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
 import { getEVMChecksumAddress } from './addressHelper'
-import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
+import {
+  getChainAsset,
+  isBchChain,
+  isBtcChain,
+  isDashChain,
+  isDogeChain,
+  isEthChain,
+  isLtcChain,
+  isZecChain
+} from './chainHelper'
 import { isEvmChain, isEvmChainAsset } from './evmHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'
@@ -475,7 +484,12 @@ export const isUSDAsset = ({ ticker }: AnyAsset): boolean =>
   ticker.includes('USD') || ticker.includes('UST') || ticker.includes('DAI') || ticker.includes('usdt')
 
 export const isUtxoAssetChain = ({ chain }: AnyAsset) =>
-  isBtcChain(chain) || isBchChain(chain) || isLtcChain(chain) || isDogeChain(chain)
+  isBtcChain(chain) ||
+  isBchChain(chain) ||
+  isLtcChain(chain) ||
+  isDogeChain(chain) ||
+  isDashChain(chain) ||
+  isZecChain(chain)
 
 // Assuming you have an appropriate `isTokenAsset` predicate function
 export const isTokenAsset = (asset: AnyAsset): asset is TokenAsset => asset.type === AssetType.TOKEN

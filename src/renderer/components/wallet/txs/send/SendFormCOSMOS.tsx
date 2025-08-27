@@ -248,24 +248,22 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
 
   const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
 
+  const updateMatchedAddresses = useCallback(
+    (value: string) => {
+      const matched = Shared.filterMatchedAddresses(oSavedAddresses, value)
+      setMatchedAddresses(matched)
+    },
+    [oSavedAddresses]
+  )
+
   const handleSavedAddressSelect = useCallback(
     (value: string) => {
       form.setFieldsValue({ recipient: value })
-
       setRecipientAddress(value)
-
-      if (value) {
-        const matched = FP.pipe(
-          oSavedAddresses,
-          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
-        )
-        setMatchedAddresses(matched)
-      }
-
+      updateMatchedAddresses(value)
       addressValidator(undefined, value).catch(() => {})
     },
-    [form, addressValidator, oSavedAddresses]
+    [form, addressValidator, updateMatchedAddresses]
   )
 
   const renderSavedAddressesDropdown = useMemo(
@@ -296,16 +294,8 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
   const handleAddressInput = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
     setRecipientAddress(recipient)
-
-    if (recipient) {
-      const matched = FP.pipe(
-        oSavedAddresses,
-        O.map((addresses) => addresses.filter((address) => address.address.includes(recipient))),
-        O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
-      )
-      setMatchedAddresses(matched)
-    }
-  }, [form, oSavedAddresses])
+    updateMatchedAddresses(recipient)
+  }, [form, updateMatchedAddresses])
   // max amount for asset
   const maxAmount: BaseAmount = useMemo(() => {
     // Some chains require minimum account reserves that cannot be spent
@@ -669,11 +659,7 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
               color="neutral"
               balance={{ amount: maxAmount, asset: asset }}
               maxDollarValue={
-                isMayaAsset(asset)
-                  ? RD.isSuccess(mayascanPriceInUsd)
-                    ? mayascanPriceInUsd.value
-                    : maxAmountPriceValue
-                  : maxAmountPriceValue
+                isMayaAsset(asset) && RD.isSuccess(mayascanPriceInUsd) ? mayascanPriceInUsd.value : maxAmountPriceValue
               }
               onClick={addMaxAmountHandler}
               disabled={isLoading}

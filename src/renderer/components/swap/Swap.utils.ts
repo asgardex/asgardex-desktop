@@ -145,10 +145,9 @@ export const maxAmountToSwapMax1e8 = ({
 
   const estimatedFee = max1e8BaseAmount(feeAmount)
 
-  // Simple and accurate calculation: balance - fee
-  // Remove the arbitrary 1000-unit rounding that was causing precision loss
-  const maxAmountToSwap = balanceAmountMax1e8.minus(estimatedFee)
-  return maxAmountToSwap.gt(baseAmount(0)) ? maxAmountToSwap : baseAmount(0)
+  const utxoSafetyBuffer = isUtxoAssetChain(asset) ? baseAmount(10000) : ZERO_BASE_AMOUNT // 0.0001 BTC in 1e8 units
+  const maxAmountToSwap = balanceAmountMax1e8.minus(estimatedFee).minus(utxoSafetyBuffer)
+  return maxAmountToSwap.gt(ZERO_BASE_AMOUNT) ? maxAmountToSwap : ZERO_BASE_AMOUNT
 }
 
 export const assetsInWallet: (_: WalletBalances) => AnyAsset[] = FP.flow(A.map(({ asset }) => asset))

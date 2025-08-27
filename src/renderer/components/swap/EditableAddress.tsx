@@ -13,6 +13,7 @@ import { hiddenString } from '../../helpers/stringHelper'
 import { AddressValidationAsync } from '../../services/clients'
 import { InnerForm } from '../shared/form'
 import { BaseButton } from '../uielements/button'
+import { InfoIcon } from '../uielements/info'
 import { Input } from '../uielements/input'
 import { CopyLabel } from '../uielements/label'
 import { Tooltip } from '../uielements/tooltip'
@@ -162,8 +163,15 @@ export const EditableAddress = ({
 
           {/* EVM Smart Contract Warning */}
           {isEvmChain(asset.chain) && (
-            <div className="mt-2 text-[12px] text-warning0 dark:text-warning0d">
-              ⚠️ {intl.formatMessage({ id: 'swap.address.evm.warning' })}
+            <div
+              className="mt-2 flex items-center text-[12px] text-warning0 dark:text-warning0d"
+              role="alert"
+              aria-live="polite">
+              <InfoIcon
+                tooltip={intl.formatMessage({ id: 'swap.address.evm.warning' })}
+                className="mr-1 h-[14px] w-[14px]"
+              />
+              {intl.formatMessage({ id: 'swap.address.evm.warning' })}
             </div>
           )}
         </div>

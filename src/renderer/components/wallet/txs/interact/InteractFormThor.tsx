@@ -380,7 +380,7 @@ export const InteractFormThor = ({
     [oFee, interactType, runePoolAction, userNodeInfo, runePoolProvider, balance.amount]
   )
 
-  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
+  const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
 
   useEffect(() => {
     const maxAmountPrice = getPoolPriceValue({
@@ -1082,7 +1082,7 @@ export const InteractFormThor = ({
                     className="mb-10px"
                     color="neutral"
                     balance={{ amount: maxAmount, asset: asset }}
-                    maxDollarValue={maxAmmountPriceValue}
+                    maxDollarValue={maxAmountPriceValue}
                     onClick={() => addMaxAmountHandler(maxAmount)}
                     disabled={isLoading}
                     onChange={() => getMemo()}
