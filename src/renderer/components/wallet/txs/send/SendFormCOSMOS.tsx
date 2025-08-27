@@ -302,8 +302,8 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
     const getMinimumAccountReserve = (): BaseAmount => {
       switch (asset.chain) {
         case XRPChain:
-          // XRP requires 1 minimum reserve
-          return assetToBase(assetAmount(1, 6))
+          // XRP requires 1 minimum reserve - use correct decimal precision
+          return assetToBase(assetAmount(1, balance.amount.decimal))
         default:
           return baseAmount(0, balance.amount.decimal)
       }
@@ -316,12 +316,9 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
       sequenceTOption(oFee, oAssetAmount),
       O.fold(
         () => {
-          // Fallback: if fee is unavailable, use balance minus a conservative fee estimate
-          // This prevents max amount from being zero while fees are loading
-          const conservativeFee = baseAmount(1000, balance.amount.decimal) // Conservative estimate
-          const fallbackMax = isChainAsset
-            ? balance.amount.minus(conservativeFee).minus(accountReserve)
-            : balance.amount
+          // Fallback: if fee is unavailable, only subtract account reserve for chain assets
+          // Don't subtract arbitrary fee estimates to avoid mixing units
+          const fallbackMax = isChainAsset ? balance.amount.minus(accountReserve) : balance.amount
           const zero = baseAmount(0, balance.amount.decimal)
           return fallbackMax.gt(zero) ? fallbackMax : zero
         },
