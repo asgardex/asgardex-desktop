@@ -1,5 +1,26 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.8 (2025-08-27)
+
+## Add
+
+- add restore wallet from phrase option [#872](https://github.com/asgardex/asgardex-desktop/pull/872)
+- add provider icon for trade assets [#862](https://github.com/asgardex/asgardex-desktop/pull/862)
+- add ledger only mode [#864](https://github.com/asgardex/asgardex-desktop/pull/864)
+
+## Update/Fixes
+
+- minor fixes and improvements [#876](https://github.com/asgardex/asgardex-desktop/pull/876)
+- cleanup for ledger only mode [#875](https://github.com/asgardex/asgardex-desktop/pull/875)
+- input migration [#873](https://github.com/asgardex/asgardex-desktop/pull/873)
+- fixed banner issue [#871](https://github.com/asgardex/asgardex-desktop/pull/871)
+- fix off-by-one error in dust threshold [#870](https://github.com/asgardex/asgardex-desktop/pull/870)
+- fix get pool [#868](https://github.com/asgardex/asgardex-desktop/pull/868)
+- tooltip migration [#867](https://github.com/asgardex/asgardex-desktop/pull/867)
+- antd row/col removal [#863](https://github.com/asgardex/asgardex-desktop/pull/863)
+- ui improvements [#862](https://github.com/asgardex/asgardex-desktop/pull/862)
+- radio migration [#861](https://github.com/asgardex/asgardex-desktop/pull/861)
+
 # 1.40.7 (2025-08-15)
 
 ## Add
