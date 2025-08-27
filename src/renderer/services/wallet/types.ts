@@ -18,6 +18,30 @@ import { LoadTxsParams, WalletBalancesLD, WalletBalancesRD } from '../clients'
 
 export type Phrase = string
 
+// Standalone Ledger Mode Types
+export type StandaloneLedgerDetectionPhase = 'chain-selection' | 'detecting' | 'completed'
+
+export type StandaloneLedgerState = {
+  mode: 'standalone-ledger'
+  detectionPhase: StandaloneLedgerDetectionPhase
+  availableChains: Chain[] // All chains that could be detected
+  selectedChainForDetection?: Chain // Single chain user wants to detect
+  connectedChain?: Chain // The currently connected chain (only one at a time)
+  address?: WalletAddress // Single address for the connected chain
+  detectionProgress?: {
+    currentChain?: Chain
+  }
+}
+
+// Application-level wallet state that can be either keystore-based or standalone ledger
+export type AppWalletState = KeystoreState | StandaloneLedgerState
+
+// Type guards for wallet state
+export const isStandaloneLedgerMode = (state: AppWalletState): state is StandaloneLedgerState =>
+  typeof state === 'object' && state !== null && 'mode' in state && state.mode === 'standalone-ledger'
+
+export const isKeystoreMode = (state: AppWalletState): state is KeystoreState => !isStandaloneLedgerMode(state)
+
 export type KeystoreLocked = { id: KeystoreId; name: string }
 export type KeystoreUnlocked = KeystoreLocked & { phrase: Phrase }
 export type KeystoreContent = KeystoreLocked | KeystoreUnlocked
@@ -91,6 +115,37 @@ export type KeystoreService = {
   keystoreWalletsUI$: KeystoreWalletsUI$
   importingKeystoreState$: ImportingKeystoreStateLD
   resetImportingKeystoreState: FP.Lazy<void>
+}
+
+// Standalone Ledger Service Types
+export type StandaloneLedgerState$ = Rx.Observable<StandaloneLedgerState>
+export type AppWalletState$ = Rx.Observable<AppWalletState>
+
+export type ConnectLedgerChainHandler = (chain: Chain, hdMode?: HDMode) => LiveData<LedgerError, WalletAddress>
+export type DisconnectLedgerChainHandler = (chain: Chain) => Promise<void>
+export type DetectLedgerDevicesHandler = () => Promise<Chain | undefined>
+
+export type StandaloneLedgerService = {
+  standaloneLedgerState$: StandaloneLedgerState$
+  connectLedgerChain: ConnectLedgerChainHandler
+  getAddressWithoutStateChange: ConnectLedgerChainHandler
+  disconnectLedgerChain: DisconnectLedgerChainHandler
+  detectLedgerDevices: DetectLedgerDevicesHandler
+  setSelectedChain: (chain?: Chain) => void
+  setSelectedChainForDetection: (chain?: Chain) => void
+  startDetection: () => Promise<Chain | undefined>
+  resetToChainSelection: () => void
+  enterStandaloneMode: () => void
+  exitStandaloneMode: () => void
+}
+
+// Combined app wallet service that manages both keystore and standalone ledger modes
+export type AppWalletService = {
+  appWalletState$: AppWalletState$
+  keystoreService: KeystoreService
+  standaloneLedgerService: StandaloneLedgerService
+  switchToKeystoreMode: () => void
+  switchToStandaloneLedgerMode: () => void
 }
 
 export type WalletAccount = {

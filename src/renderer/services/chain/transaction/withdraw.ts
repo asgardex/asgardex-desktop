@@ -4,7 +4,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
@@ -334,8 +334,8 @@ export const tradeWithdraw$ = ({
     // we start with  a small progress
     withdraw: RD.progress({ loaded: 25, total })
   })
-  const validateNode$ = protocol === THORChain ? validateNodeThor$ : validateNodeMaya$
-  const chain = protocol
+  const validateNode$ = protocol === 'Thorchain' ? validateNodeThor$ : validateNodeMaya$
+  const chain = protocol === 'Thorchain' ? THORChain : MAYAChain
   // All requests will be done in a sequence
   // to update `TradeWithdrawState` step by step
   // 1. validate node

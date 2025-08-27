@@ -18,8 +18,8 @@ import { AssetWithDecimal } from '../../types/asgardex'
 import { Props as SymDepositContentProps } from '../../views/deposit/add/SymDepositView.types'
 import { ShareViewProps } from '../../views/deposit/share/ShareView'
 import { Props as WidthdrawContentProps } from '../../views/deposit/withdraw/WithdrawDepositView.types'
+import { Tabs } from '../tabs'
 import { AddWallet } from '../wallet/add'
-import * as Styled from './Deposit.styles'
 
 type TabKey = 'deposit-sym' | 'deposit-saver' | 'withdraw-sym' | 'withdraw-saver-asset'
 
@@ -160,15 +160,15 @@ export const Deposit = (props: Props) => {
   )
 
   return (
-    <Styled.Container>
-      <Styled.ContentContainer>
+    <div className="flex flex-col flex-1 w-full">
+      <div className="flex flex-wrap w-full min-h-full">
         {walletIsImported && !walletIsLocked ? (
-          <>
-            <Styled.DepositContentCol xs={24} xl={15}>
-              <Styled.Tabs destroyInactiveTabPane tabs={tabs} centered defaultActiveKey="deposit-sym" />
-            </Styled.DepositContentCol>
-            <Styled.ShareContentCol xs={24} xl={9}>
-              <Styled.ShareContentWrapper alignTop={hasSymPoolShare}>
+          <div className="w-full grid grid-cols-8 gap-4">
+            <div className="col-span-8 xl:col-span-5 bg-bg1 dark:bg-bg1d">
+              <Tabs className="flex items-center justify-center" tabs={tabs} hasPadding defaultIndex={0} />
+            </div>
+            <div className="col-span-8 xl:col-span-3">
+              <div className="flex justify-center bg-bg0 dark:bg-bg0d min-h-[300px] xl:min-h-full">
                 <ShareContent
                   protocol={protocol}
                   poolDetail={poolDetailRD}
@@ -176,13 +176,13 @@ export const Deposit = (props: Props) => {
                   poolShare={symPoolShare}
                   smallWidth={!isDesktopView}
                 />
-              </Styled.ShareContentWrapper>
-            </Styled.ShareContentCol>
-          </>
+              </div>
+            </div>
+          </div>
         ) : (
           <AddWallet isLocked={walletIsImported && walletIsLocked} />
         )}
-      </Styled.ContentContainer>
-    </Styled.Container>
+      </div>
+    </div>
   )
 }

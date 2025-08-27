@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 
 import { useIntl } from 'react-intl'
 
+import { Tabs } from '../../components/tabs'
 import { WalletSettingsAuth } from '../wallet/WalletSettingsAuth'
 import { AppDexSettingsView } from './AppDexSettingsView'
 import { AppExpertModeView } from './AppExpertModeView'
 import { AppGeneralSettingsView } from './AppGeneralSettingsView'
-import * as Styled from './AppSettings.styles'
 
 export const AppSettings = () => {
   const intl = useIntl()
@@ -44,7 +44,7 @@ export const AppSettings = () => {
 
   return (
     <div className="flex-row rounded-lg bg-bg0 dark:bg-bg0d">
-      <Styled.Tabs className="rounded-lg" destroyInactiveTabPane tabs={tabs} defaultActiveKey="settings-general" />
+      <Tabs className="rounded-lg" tabs={tabs} defaultIndex={0} />
     </div>
   )
 }

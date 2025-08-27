@@ -43,6 +43,7 @@ import * as RxOp from 'rxjs/operators'
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
+import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
@@ -700,7 +701,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       liveData.map((tradeAccounts) =>
         tradeAccounts.map((tradeAccount): TradeAccount => {
           const { owner, units, asset, last_add_height, last_withdraw_height } = tradeAccount
-          /* 1e8 decimal by default, which is default decimal for ALL accepts at THORChain  */
+          /* 1e8 decimal by default, which is default decimal for ALL assets at THORChain  */
           const tradeAssetUnits = baseAmount(units, THORCHAIN_DECIMAL)
           return {
             owner,
@@ -708,7 +709,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             units: tradeAssetUnits,
             lastAddHeight: FP.pipe(last_add_height, O.fromPredicate(N.isNumber)),
             lastWithdrawHeight: FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber)),
-            walletType
+            walletType,
+            protocol: Protocol.THORChain
           }
         })
       ),

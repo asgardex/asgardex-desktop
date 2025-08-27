@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
@@ -7,7 +7,6 @@ import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { THORCHAIN_DECIMAL } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
-import { Spin } from 'antd'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -15,6 +14,7 @@ import { useIntl } from 'react-intl'
 
 import { EmptyResult } from '../../../components/shared/result/EmptyResult'
 import { PoolShare as PoolShareUI } from '../../../components/uielements/poolShare'
+import { Spin } from '../../../components/uielements/spin'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { to1e8BaseAmount } from '../../../helpers/assetHelper'
@@ -124,7 +124,7 @@ export const ShareView = ({
         RD.combine(poolShareRD, poolDetailRD),
         RD.fold(
           () => renderNoShare,
-          () => <Spin size="large" />,
+          () => <Spin />,
           () => renderNoShare,
           ([oPoolShare, pool]) =>
             FP.pipe(

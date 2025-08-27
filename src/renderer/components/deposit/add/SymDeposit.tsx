@@ -15,7 +15,6 @@ import {
   formatAssetAmountCurrency,
   TokenAsset
 } from '@xchainjs/xchain-util'
-import { Spin } from 'antd'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -27,6 +26,7 @@ import { AssetBTC, AssetCacao, AssetRuneNative } from '../../../../shared/utils/
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
+import { Spin } from '../../../components/uielements/spin'
 import { ZERO_ASSET_AMOUNT, ZERO_BASE_AMOUNT } from '../../../const'
 import {
   convertBaseAmountDecimal,
@@ -98,17 +98,16 @@ import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationM
 import { TxModal } from '../../modal/tx'
 import { DepositAssets } from '../../modal/tx/extra'
 import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
-import { LoadingView } from '../../shared/loading'
 import { Alert } from '../../uielements/alert'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetInput } from '../../uielements/assets/assetInput'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { BaseButton, FlatButton, ViewTxButton } from '../../uielements/button'
 import { Collapse } from '../../uielements/collapse'
-import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
 import { ProtocolSwitch } from '../../uielements/protocolSwitch'
+import { Tooltip } from '../../uielements/tooltip'
 import { AssetMissmatchWarning } from './AssetMissmatchWarning'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
 import * as Helper from './Deposit.helper'
@@ -1108,7 +1107,7 @@ export const SymDeposit = (props: Props) => {
 
     const title = intl.formatMessage({ id: 'deposit.add.error.nobalances' })
 
-    return <Alert className="m-0 w-full xl:mr-20px" type="warning" message={title} description={msg} />
+    return <Alert className="m-0 w-full" type="warning" title={title} description={msg} />
   }, [asset.ticker, protocolAsset, hasAssetBalance, hasDexAssetBalance, intl])
 
   const updateRuneAmount = useCallback(
@@ -1783,11 +1782,7 @@ export const SymDeposit = (props: Props) => {
       RD.fold(
         () => <></>,
         () => render(prevPendingAssets.current, prevPendingAssets.current, true),
-        () => (
-          <>
-            <Spin />
-          </>
-        ),
+        () => <Spin />,
         (pendingAssets) => {
           prevPendingAssets.current = pendingAssets
           const missingAssets: AssetsWithAmount1e8 = pendingAssets.map((assetWB): AssetWithAmount1e8 => {
@@ -2152,12 +2147,13 @@ export const SymDeposit = (props: Props) => {
       <div className="mb-4 flex w-full max-w-[500px] items-center justify-start">
         <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
       </div>
-      {hasPendingAssets && <div className="w-full pb-20px xl:px-20px">{renderPendingAssets}</div>}
-      {hasAsymDeposits && <div className="w-full pb-20px xl:px-20px">{renderAsymDepositWarning}</div>}
-      {hasAssetMismatch && <div className="w-full pb-20px xl:px-20px">{renderAssetMismatch}</div>}
-      {showBalanceError && <div className="w-full pb-20px xl:px-20px">{renderBalanceError}</div>}
 
       <div className="flex max-w-[500px] flex-col">
+        {hasPendingAssets && <div className="w-full pb-20px">{renderPendingAssets}</div>}
+        {hasAsymDeposits && <div className="w-full pb-20px">{renderAsymDepositWarning}</div>}
+        {hasAssetMismatch && <div className="w-full pb-20px">{renderAssetMismatch}</div>}
+        {showBalanceError && <div className="w-full pb-20px">{renderBalanceError}</div>}
+
         {!hasPendingAssets && (
           <div className="mb-1">
             <AssetInput
@@ -2270,11 +2266,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                     {FP.pipe(
                       oDexAssetWB,
-                      O.map(({ walletAddress: address }) => (
-                        <TooltipAddress title={address} key="tooltip-asset-sender-addr">
-                          {hidePrivateData ? hiddenString : address}
-                        </TooltipAddress>
-                      )),
+                      O.map(({ walletAddress: address }) => {
+                        const displayedAddress = hidePrivateData ? hiddenString : address
+                        return (
+                          <Tooltip title={displayedAddress} size="big" key="tooltip-asset-sender-addr">
+                            {displayedAddress}
+                          </Tooltip>
+                        )
+                      }),
                       O.getOrElse(() => <>{noDataString}</>)
                     )}
                   </div>
@@ -2285,11 +2284,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                     {FP.pipe(
                       oAssetWB,
-                      O.map(({ walletAddress: address }) => (
-                        <TooltipAddress title={address} key="tooltip-asset-sender-addr">
-                          {hidePrivateData ? hiddenString : address}
-                        </TooltipAddress>
-                      )),
+                      O.map(({ walletAddress: address }) => {
+                        const displayedAddress = hidePrivateData ? hiddenString : address
+                        return (
+                          <Tooltip title={displayedAddress} size="big" key="tooltip-asset-sender-addr">
+                            {displayedAddress}
+                          </Tooltip>
+                        )
+                      }),
                       O.getOrElse(() => <>{noDataString}</>)
                     )}
                   </div>
@@ -2301,9 +2303,9 @@ export const SymDeposit = (props: Props) => {
                     address ? (
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
                         <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
-                        <TooltipAddress title={address}>
+                        <Tooltip title={address} size="big">
                           <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
-                        </TooltipAddress>
+                        </Tooltip>
                       </div>
                     ) : null
                   ),
@@ -2347,12 +2349,11 @@ export const SymDeposit = (props: Props) => {
                       O.getOrElse(() => emptyString),
                       (memo) => (
                         <CopyLabel
-                          className="whitespace-nowrap pl-0 uppercase text-gray2 dark:text-gray2d"
+                          className="whitespace-nowrap text-gray2 dark:text-gray2d"
                           label={intl.formatMessage(
                             { id: 'common.transaction.short.rune' },
                             { dex: protocolAsset.chain }
                           )}
-                          key="memo-copy"
                           textToCopy={memo}
                         />
                       )
@@ -2362,11 +2363,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-10px font-main text-[12px]">
                     {FP.pipe(
                       oDepositParams,
-                      O.map(({ memos: { rune: memo } }) => (
-                        <Tooltip title={memo} key={`tooltip-${protocolAsset.symbol}-memo`}>
-                          {hidePrivateData ? hiddenString : memo}
-                        </Tooltip>
-                      )),
+                      O.map(({ memos: { rune: memo } }) => {
+                        const displayedMemo = hidePrivateData ? hiddenString : memo
+                        return (
+                          <Tooltip title={displayedMemo} key={`tooltip-${protocolAsset.symbol}-memo`}>
+                            {displayedMemo}
+                          </Tooltip>
+                        )
+                      }),
                       O.toNullable
                     )}
                   </div>
@@ -2380,9 +2384,8 @@ export const SymDeposit = (props: Props) => {
                       O.getOrElse(() => emptyString),
                       (memo) => (
                         <CopyLabel
-                          className="whitespace-nowrap pl-0 uppercase text-gray2 dark:text-gray2d"
+                          className="whitespace-nowrap text-gray2 dark:text-gray2d"
                           label={intl.formatMessage({ id: 'common.transaction.short.asset' })}
-                          key="memo-copy"
                           textToCopy={memo}
                         />
                       )
@@ -2392,11 +2395,14 @@ export const SymDeposit = (props: Props) => {
                   <div className="truncate pl-10px font-main text-[12px]">
                     {FP.pipe(
                       oDepositParams,
-                      O.map(({ memos: { asset: memo } }) => (
-                        <Tooltip title={memo} key="tooltip-asset-memo">
-                          {hidePrivateData ? hiddenString : memo}
-                        </Tooltip>
-                      )),
+                      O.map(({ memos: { asset: memo } }) => {
+                        const displayedMemo = hidePrivateData ? hiddenString : memo
+                        return (
+                          <Tooltip title={displayedMemo} key="tooltip-asset-memo">
+                            {displayedMemo}
+                          </Tooltip>
+                        )
+                      }),
                       O.toNullable
                     )}
                   </div>
@@ -2409,9 +2415,9 @@ export const SymDeposit = (props: Props) => {
         <div className="flex flex-col items-center justify-between py-30px">
           {renderIsApprovedError}
           {(walletBalancesLoading || checkIsApproved) && (
-            <LoadingView
+            <Spin
               className="mb-20px"
-              label={
+              tip={
                 // We show only one loading state at time
                 // Order matters: Show states with shortest loading time before others
                 // (approve state takes just a short time to load, but needs to be displayed)

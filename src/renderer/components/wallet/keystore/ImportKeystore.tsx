@@ -138,10 +138,7 @@ export const ImportKeystore = (props: Props): JSX.Element => {
             label={intl.formatMessage({ id: 'common.keystorePassword' })}
             validateTrigger={['onSubmit', 'onBlur']}
             rules={[{ required: true, message: intl.formatMessage({ id: 'wallet.password.empty' }) }]}>
-            <InputPassword
-              className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
-              size="large"
-            />
+            <InputPassword size="large" />
           </Form.Item>
           {/* name */}
           <Form.Item
@@ -156,12 +153,7 @@ export const ImportKeystore = (props: Props): JSX.Element => {
                 </span>
               </div>
             }>
-            <Input
-              className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
-              size="large"
-              maxLength={MAX_WALLET_NAME_CHARS}
-              placeholder={defaultWalletName(walletId)}
-            />
+            <Input size="large" maxLength={MAX_WALLET_NAME_CHARS} placeholder={defaultWalletName(walletId)} />
           </Form.Item>
           {/* submit button */}
           <FlatButton

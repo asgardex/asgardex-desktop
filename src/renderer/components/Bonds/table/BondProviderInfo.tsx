@@ -11,8 +11,8 @@ import { getLiquidityProvider } from '../../../services/mayachain'
 import { Providers as MayaProviders, LiquidityProviderForPoolRD } from '../../../services/mayachain/types'
 import { PoolDetailsRD } from '../../../services/midgard/mayaMigard/types'
 import { PricePool } from '../../../services/midgard/midgardTypes'
-import { Tooltip } from '../../uielements/common/Common.styles'
 import { Label } from '../../uielements/label'
+import { Tooltip } from '../../uielements/tooltip'
 import * as H from './helpers'
 
 type Props = {

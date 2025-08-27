@@ -156,8 +156,16 @@ const healthInterval$ = Rx.timer(0 /* no delay for first value */, 5 * 60 * 1000
 const healthStatus$: MidgardStatusLD = FP.pipe(
   Rx.combineLatest([midgardUrl$, healthInterval$]),
   RxOp.map(([urlRD, _]) => urlRD),
-  liveData.chain((url) => checkMidgardUrl$(url)),
-  liveData.map((_) => true)
+  liveData.chain((url) =>
+    FP.pipe(
+      Rx.from(getMidgardDefaultApi(url).getHealth()),
+      RxOp.map((result) => {
+        const { database, inSync } = result.data
+        return RD.success(database && inSync) // Emit true if healthy, false if unhealthy
+      }),
+      RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+    )
+  )
 )
 
 export type MidgardService = {

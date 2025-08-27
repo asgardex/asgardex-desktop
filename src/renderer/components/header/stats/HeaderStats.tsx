@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
 import { baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
 import { function as FP } from 'fp-ts'
 
 import { abbreviateNumber } from '../../../helpers/numberHelper'
@@ -206,7 +205,7 @@ export const HeaderStats = (props: Props): JSX.Element => {
   }, [mayaPriceRD, reloadMayaPrice, reloadVolume24PriceMaya, volume24PriceMayaRD])
 
   return (
-    <Row className="space-x-2">
+    <div className="flex items-center space-x-2">
       <div
         className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadThorStats}>
@@ -216,7 +215,7 @@ export const HeaderStats = (props: Props): JSX.Element => {
 
         {!isSmallMobileView && (
           <>
-            <div className="h-full w-[1px] bg-gray2 dark:bg-gray2d" />
+            <div className="w-[1px] h-5 bg-gray2 dark:bg-gray2d" />
             <Styled.Label loading={RD.isPending(volume24PriceRuneRD) ? 'true' : 'false'}>
               {volume24PriceRuneLabel}
             </Styled.Label>
@@ -244,13 +243,13 @@ export const HeaderStats = (props: Props): JSX.Element => {
 
         {!isSmallMobileView && (
           <>
-            <div className="h-full w-[1px] bg-gray2 dark:bg-gray2d" />
+            <div className="h-5 w-[1px] bg-gray2 dark:bg-gray2d" />
             <Styled.Label loading={RD.isPending(volume24PriceMayaRD) ? 'true' : 'false'}>
               {volume24PriceMayaLabel}
             </Styled.Label>
           </>
         )}
       </div>
-    </Row>
+    </div>
   )
 }

@@ -1,10 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
+import * as RD from '@devexperts/remote-data-ts'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
-
 import { useAggregator } from '../../../store/aggregator/hooks'
 import { ProviderIcon } from '../../swap/ProviderIcon'
 import { BaseButton } from '../../uielements/button'
@@ -13,12 +13,13 @@ import { SwitchButton } from '../../uielements/button/SwitchButton'
 export type Props = {
   open: boolean
   onClose: FP.Lazy<void>
+  midgardStatusRD: RD.RemoteData<Error, boolean>
+  midgardStatusMayaRD: RD.RemoteData<Error, boolean>
 }
 
 const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
 
-export const ProviderModalContent = (props: Props) => {
-  const { open, onClose } = props
+export const ProviderModalContent = ({ open, onClose, midgardStatusRD, midgardStatusMayaRD }: Props) => {
   const { protocols, setAggProtocol } = useAggregator()
 
   const onToggleSwitch = useCallback(
@@ -31,6 +32,16 @@ export const ProviderModalContent = (props: Props) => {
   const onCloseMenu = useCallback(() => {
     onClose()
   }, [onClose])
+
+  // Programmatically toggle protocols off if API is offline or failed
+  useEffect(() => {
+    if (RD.isFailure(midgardStatusRD)) {
+      setAggProtocol('Thorchain', false)
+    }
+    if (RD.isFailure(midgardStatusMayaRD)) {
+      setAggProtocol('Mayachain', false)
+    }
+  }, [midgardStatusRD, midgardStatusMayaRD, setAggProtocol])
 
   return (
     <Dialog as="div" className="relative z-10" open={open} onClose={onCloseMenu}>
@@ -56,7 +67,7 @@ export const ProviderModalContent = (props: Props) => {
           </span>
           <div className="mt-4 flex flex-col w-full px-4 gap-2">
             {AllProtocols.map((protocol) => (
-              <div key={protocol} className="flex itesm-center justify-between">
+              <div key={protocol} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ProviderIcon className="w-8 h-8" protocol={protocol} />
                   <span className="text-text2 dark:text-text2d">{protocol}</span>

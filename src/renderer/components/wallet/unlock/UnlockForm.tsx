@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { CpuChipIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
@@ -24,7 +25,7 @@ import {
 import { isLocked, getWalletName } from '../../../services/wallet/util'
 import { RemoveWalletConfirmationModal } from '../../modal/confirmation/RemoveWalletConfirmationModal'
 import { BackLinkButton, BorderButton, FlatButton } from '../../uielements/button'
-import { InputPasswordTW } from '../../uielements/input'
+import { InputPassword } from '../../uielements/input'
 import { WalletSelector } from '../../uielements/wallet'
 
 type FormData = {
@@ -45,6 +46,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
   const location = useLocation()
 
   const intl = useIntl()
+
   const {
     register,
     formState: { errors },
@@ -149,6 +151,14 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
     navigate(walletRoutes.imports.keystore.path())
   }, [navigate])
 
+  const importPhraseHandler = useCallback(() => {
+    navigate(walletRoutes.imports.phrase.path())
+  }, [navigate])
+
+  const useLedgerOnlyHandler = useCallback(() => {
+    navigate(walletRoutes.ledgerChainSelect.path())
+  }, [navigate])
+
   const renderChangeWalletError = useMemo(
     () =>
       FP.pipe(
@@ -194,12 +204,12 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
               wallets={wallets}
               onChange={changeWalletHandler}
               disabled={RD.isPending(changeWalletState)}
-              className="mb-2 min-w-[200px] rounded-lg border border-solid border-gray1 dark:border-gray0d"
-              buttonClassName="rounded-lg !shadow-none !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
+              className="mb-2 min-w-[200px] rounded-lg"
+              buttonClassName="!shadow-none !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
             />
-            <InputPasswordTW
+            <InputPassword
               id="password"
-              className="mx-auto mb-20px flex h-10 w-full items-center justify-between rounded-lg border border-solid !border-gray1 pl-2 dark:!border-gray0d"
+              className="mx-auto mb-20px flex h-10 w-full items-center justify-between rounded-lg border border-solid !border-gray0 dark:!border-gray0d"
               inputClassName="!ring-0 w-full"
               {...register('password', { required: true })}
               placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
@@ -227,6 +237,15 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
             </BorderButton>
             <div className="flex w-full flex-col items-center border-t border-solid border-gray1 dark:border-gray0d">
               <div className="flex w-full flex-col justify-between space-y-3 pt-4">
+                <BorderButton
+                  className="w-full min-w-[200px] flex items-center justify-center gap-2"
+                  size="normal"
+                  color="primary"
+                  onClick={useLedgerOnlyHandler}
+                  disabled={unlocking}>
+                  <CpuChipIcon width={16} height={16} />
+                  Use Only Ledger
+                </BorderButton>
                 {/* TODO: update locale */}
                 <h2 className="mb-2 w-full text-11 text-text2 dark:text-text2d">Don&apos;t you have a wallet yet?</h2>
                 <BorderButton
@@ -243,7 +262,15 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
                   color="primary"
                   onClick={importWalletHandler}
                   disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.import' })}
+                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.keystore' })}
+                </BorderButton>
+                <BorderButton
+                  className="mr-20px w-full min-w-[200px] sm:mb-0"
+                  size="normal"
+                  color="primary"
+                  onClick={importPhraseHandler}
+                  disabled={unlocking}>
+                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
                 </BorderButton>
               </div>
 

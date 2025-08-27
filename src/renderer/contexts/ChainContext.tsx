@@ -21,7 +21,10 @@ import {
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,
-  reloadUtxoFeesWithRates$
+  reloadUtxoFeesWithRates$,
+  evmFees$,
+  standaloneLedgerFees$,
+  reloadStandaloneLedgerFees
 } from '../services/chain'
 
 type ChainContextValue = {
@@ -46,6 +49,9 @@ type ChainContextValue = {
   assetWithDecimal$: typeof assetWithDecimal$
   utxoFeesWithRates$: typeof utxoFeesWithRates$
   reloadUtxoFeesWithRates$: typeof reloadUtxoFeesWithRates$
+  evmFees$: typeof evmFees$
+  standaloneLedgerFees$: typeof standaloneLedgerFees$
+  reloadStandaloneLedgerFees: typeof reloadStandaloneLedgerFees
 }
 
 const initialContext: ChainContextValue = {
@@ -69,7 +75,10 @@ const initialContext: ChainContextValue = {
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,
-  reloadUtxoFeesWithRates$
+  reloadUtxoFeesWithRates$,
+  evmFees$,
+  standaloneLedgerFees$,
+  reloadStandaloneLedgerFees
 }
 const ChainContext = createContext<ChainContextValue | null>(null)
 

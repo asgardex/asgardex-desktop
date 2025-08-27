@@ -93,6 +93,35 @@ const clientState$: ClientState$ = FP.pipe(
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
+ * Read-only ZEC client for balance queries without requiring keystore
+ * This client can be used for standalone ledger mode to query balances
+ */
+const readOnlyClientState$: Rx.Observable<RD.RemoteData<Error, Client>> = FP.pipe(
+  clientNetwork$,
+  RxOp.map((network) => {
+    try {
+      // Create client without phrase - only for balance queries
+      const zecInitParams = {
+        ...defaultZECParams,
+        network: network
+      }
+      const client = new Client(zecInitParams)
+      return RD.success(client)
+    } catch (error) {
+      console.error('Failed to create read-only ZEC client', error)
+      return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+    }
+  }),
+  RxOp.startWith<RD.RemoteData<Error, Client>>(RD.pending),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$: Rx.Observable<O.Option<Client>> = readOnlyClientState$.pipe(
+  RxOp.map(RD.toOption),
+  RxOp.shareReplay(1)
+)
+
+/**
  * ZEC `Address`
  */
 const address$: C.WalletAddress$ = C.address$(client$, ZECChain)
@@ -107,4 +136,4 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, ZECChain)
  */
 const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }

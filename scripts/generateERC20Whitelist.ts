@@ -9,10 +9,10 @@ type Chain = 'ARB' | 'AVAX' | 'BSC' | 'ETH' | 'BASE'
 interface ChainConfig {
   chain: string
   import: string
-  whitelistUrl: string
+  whitelistUrls: string[] // Changed to array to support multiple URLs
   outputPath: string
   whitelistName: string
-  chainId?: number // Optional chainId for chains missing it in the data
+  chainId?: number
 }
 
 function getChainConfig(chain: Chain): ChainConfig {
@@ -21,8 +21,9 @@ function getChainConfig(chain: Chain): ChainConfig {
       return {
         chain: 'ARBChain',
         import: "import { ARBChain } from '@xchainjs/xchain-arbitrum';",
-        whitelistUrl:
-          'https://gitlab.com/mayachain/mayanode/-/raw/mainnet/common/tokenlist/arbtokens/arb_mainnet_latest.json',
+        whitelistUrls: [
+          'https://gitlab.com/mayachain/mayanode/-/raw/mainnet/common/tokenlist/arbtokens/arb_mainnet_latest.json'
+        ],
         outputPath: './src/renderer/types/generated/mayachain/arberc20whitelist.ts',
         whitelistName: 'ARB_TOKEN_WHITELIST'
       }
@@ -30,8 +31,9 @@ function getChainConfig(chain: Chain): ChainConfig {
       return {
         chain: 'AVAXChain',
         import: "import { AVAXChain } from '@xchainjs/xchain-avax';",
-        whitelistUrl:
-          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/avaxtokens/avax_mainnet_latest.json',
+        whitelistUrls: [
+          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/avaxtokens/avax_mainnet_latest.json'
+        ],
         outputPath: './src/renderer/types/generated/thorchain/avaxerc20whitelist.ts',
         whitelistName: 'AVAX_TOKEN_WHITELIST'
       }
@@ -39,8 +41,9 @@ function getChainConfig(chain: Chain): ChainConfig {
       return {
         chain: 'BSCChain',
         import: "import { BSCChain } from '@xchainjs/xchain-bsc';",
-        whitelistUrl:
-          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/bsctokens/bsc_mainnet_latest.json',
+        whitelistUrls: [
+          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/bsctokens/bsc_mainnet_latest.json'
+        ],
         outputPath: './src/renderer/types/generated/thorchain/bscerc20whitelist.ts',
         whitelistName: 'BSC_TOKEN_WHITELIST'
       }
@@ -48,8 +51,10 @@ function getChainConfig(chain: Chain): ChainConfig {
       return {
         chain: 'ETHChain',
         import: "import { ETHChain } from '@xchainjs/xchain-ethereum';",
-        whitelistUrl:
+        whitelistUrls: [
           'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/ethtokens/eth_mainnet_latest.json',
+          'https://gitlab.com/mayachain/mayanode/-/raw/mainnet/common/tokenlist/ethtokens/eth_mainnet_latest.json'
+        ],
         outputPath: './src/renderer/types/generated/thorchain/etherc20whitelist.ts',
         whitelistName: 'ETH_TOKEN_WHITELIST'
       }
@@ -57,11 +62,12 @@ function getChainConfig(chain: Chain): ChainConfig {
       return {
         chain: 'BASEChain',
         import: "import { BASEChain } from '@xchainjs/xchain-base';",
-        whitelistUrl:
-          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/basetokens/base_mainnet_latest.json',
+        whitelistUrls: [
+          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/basetokens/base_mainnet_latest.json'
+        ],
         outputPath: './src/renderer/types/generated/thorchain/baseErc20whitelist.ts',
         whitelistName: 'BASE_TOKEN_WHITELIST',
-        chainId: 8453 // Base mainnet chain ID
+        chainId: 8453
       }
     default:
       throw new Error(`Unsupported chain: ${chain}`)
@@ -70,32 +76,41 @@ function getChainConfig(chain: Chain): ChainConfig {
 
 type AssetList = { asset: AnyAsset; iconUrl: string | null }[]
 
-async function loadList(url: string, chain: Chain): Promise<ERC20Whitelist> {
-  try {
-    const { data } = await axios.get(url)
-    const config = getChainConfig(chain)
-    const wrappedData = {
+async function loadList(urls: string[], chain: Chain): Promise<ERC20Whitelist> {
+  const config = getChainConfig(chain)
+  const allTokens: AnyAsset[] = []
+
+  // Fetch tokens from all provided URLs
+  for (const url of urls) {
+    try {
+      const { data } = await axios.get(url)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tokens: data.tokens.map((token: any) => ({
+      const tokens = data.tokens.map((token: any) => ({
         ...token,
-        chainId: token.chainId ?? config.chainId // Fallback chainId if missing
-      })),
-      version: { major: 1, minor: 0, patch: 0 },
-      name: data.name ?? 'Unknown',
-      timestamp: data.timestamp ?? new Date().toISOString(),
-      keywords: data.keywords ?? []
+        chainId: token.chainId ?? config.chainId // Use token.chainId or fallback to config.chainId
+      }))
+      allTokens.push(...tokens) // Append tokens to the combined list
+    } catch (error) {
+      throw new Error(`Failed to load whitelist: ${error}`)
     }
-    const decoded = erc20WhitelistIO.decode(wrappedData)
-    if ('_tag' in decoded && decoded._tag === 'Left') {
-      const errorMessages = decoded.left.map((e) => JSON.stringify(e, null, 2)).join('\n')
-      console.error('Validation errors:', errorMessages)
-      throw new Error(`Validation failed: ${errorMessages}`)
-    }
-    return decoded.right
-  } catch (error) {
-    console.error('Raw error:', error)
-    throw new Error(`Failed to load whitelist: ${error}`)
   }
+
+  // Wrap the combined token list
+  const wrappedData = {
+    tokens: allTokens,
+    version: { major: 1, minor: 0, patch: 0 },
+    name: 'Merged Token List',
+    timestamp: new Date().toISOString(),
+    keywords: ['erc20', chain.toLowerCase()]
+  }
+
+  const decoded = erc20WhitelistIO.decode(wrappedData)
+  if ('_tag' in decoded && decoded._tag === 'Left') {
+    const errorMessages = decoded.left.map((e) => JSON.stringify(e, null, 2)).join('\n')
+    console.error('Validation errors:', errorMessages)
+    throw new Error(`Validation failed: ${errorMessages}`)
+  }
+  return decoded.right
 }
 
 function transformList({ tokens }: ERC20Whitelist, chain: string): AssetList {
@@ -154,11 +169,10 @@ async function main() {
 
   console.log(`Generating whitelist for ${chain}...`)
   try {
-    const whitelist = await loadList(config.whitelistUrl, chain)
+    const whitelist = await loadList(config.whitelistUrls, chain)
     const assetList = transformList(whitelist, config.chain.replace('Chain', ''))
     const content = createTemplate(assetList, config).replace(/"chain":"[^"]*"/g, `chain: ${config.chain}`)
 
-    // Format the content with Prettier
     const formattedContent = await format(content, {
       parser: 'typescript',
       singleQuote: true,

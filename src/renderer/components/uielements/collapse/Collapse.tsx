@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 
@@ -7,28 +6,27 @@ type Props = {
   className?: string
   header: React.ReactNode
   children: React.ReactNode
+  isOpen?: boolean
+  onToggle?: () => void
 }
 
-export const Collapse = ({ className, header, children }: Props): JSX.Element => {
-  const [isShowing, setIsShowing] = useState(false)
-
+export const Collapse = ({ className, header, children, isOpen, onToggle }: Props): JSX.Element => {
   return (
-    <div
-      className={clsx(
-        'flex flex-col overflow-hidden rounded-lg border border-solid border-gray0 dark:border-gray0d',
-        className
-      )}>
-      <div
-        className="flex cursor-pointer flex-row items-center justify-between py-2 px-4"
-        onClick={() => {
-          setIsShowing((prev) => !prev)
-        }}>
-        {header}
-        <ChevronDownIcon className={clsx('ease h-20px w-20px text-turquoise', isShowing ? 'rotate-180' : 'rotate-0')} />
-      </div>
-      <div className={clsx('content transition-all duration-300 ease-in-out', isShowing ? 'max-h-[540px]' : 'max-h-0')}>
-        {children}
-      </div>
-    </div>
+    <Disclosure
+      as="div"
+      {...(isOpen !== undefined ? { defaultOpen: isOpen } : {})}
+      className={clsx('flex flex-col rounded-lg border border-solid border-gray0 dark:border-gray0d', className)}>
+      {({ open }) => (
+        <>
+          <DisclosureButton
+            className="flex cursor-pointer flex-row items-center justify-between rounded-lg py-2 px-4"
+            onClick={onToggle}>
+            {header}
+            <ChevronDownIcon className={clsx('size-5 text-turquoise', { 'rotate-180': open })} />
+          </DisclosureButton>
+          <DisclosurePanel className="rounded-b-lg">{children}</DisclosurePanel>
+        </>
+      )}
+    </Disclosure>
   )
 }

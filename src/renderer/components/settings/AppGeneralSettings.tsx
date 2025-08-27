@@ -1,14 +1,20 @@
 import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { CpuChipIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { clsx } from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { useNavigate } from 'react-router-dom'
 
 import { Locale } from '../../../shared/i18n/types'
+import { useWalletContext } from '../../contexts/WalletContext'
 import { LOCALES } from '../../i18n'
+import * as walletRoutes from '../../routes/wallet'
 import { AVAILABLE_NETWORKS } from '../../services/const'
+import { isStandaloneLedgerMode } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 import { DownIcon } from '../icons'
 import { BorderButton } from '../uielements/button'
@@ -64,6 +70,29 @@ export const AppGeneralSettings = (props: Props) => {
 
   const { isPrivate, changePrivateData } = useApp()
   const intl = useIntl()
+  const navigate = useNavigate()
+  const { appWalletService } = useWalletContext()
+
+  // Get current wallet mode
+  const appWalletState = useObservableState(appWalletService.appWalletState$)
+  const isInStandaloneLedgerMode = appWalletState && isStandaloneLedgerMode(appWalletState)
+
+  const handleLedgerModeClick = useCallback(() => {
+    if (isInStandaloneLedgerMode) {
+      // Switch back to keystore mode
+      appWalletService.switchToKeystoreMode()
+    } else {
+      // Navigate to ledger chain selector
+      navigate(walletRoutes.ledgerChainSelect.path())
+    }
+  }, [isInStandaloneLedgerMode, appWalletService, navigate])
+
+  const handleChangeChainClick = useCallback(() => {
+    // Reset to chain selection phase
+    appWalletService.standaloneLedgerService.resetToChainSelection()
+    // Navigate to ledger chain selector with a parameter to force chain selection
+    navigate(walletRoutes.ledgerChainSelect.path() + '?changeChain=true')
+  }, [appWalletService, navigate])
 
   const langMenu = useMemo(
     () =>
@@ -228,6 +257,20 @@ export const AppGeneralSettings = (props: Props) => {
       </Section>
       <Section title={intl.formatMessage({ id: 'common.privateData' })} subtitle="Stay hidden, stay secure">
         <SwitchButton active={isPrivate} onChange={changePrivateData} />
+      </Section>
+      <Section title="Ledger Mode" subtitle="Use hardware wallet without keystore setup">
+        <div className="flex flex-col gap-2">
+          {isInStandaloneLedgerMode && (
+            <BorderButton size="normal" onClick={handleChangeChainClick} className="flex items-center gap-2">
+              <CpuChipIcon width={16} height={16} />
+              Change Chain
+            </BorderButton>
+          )}
+          <BorderButton size="normal" onClick={handleLedgerModeClick} className="flex items-center gap-2">
+            <CpuChipIcon width={16} height={16} />
+            {isInStandaloneLedgerMode ? 'Exit Ledger Mode' : 'Enter Ledger Mode'}
+          </BorderButton>
+        </div>
       </Section>
       <Section title={intl.formatMessage({ id: 'setting.version' })} subtitle="Asgardex Software Version">
         <div className="flex max-w-[240px] flex-col space-y-1">

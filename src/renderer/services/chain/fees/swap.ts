@@ -51,9 +51,16 @@ const reloadSwapFees = (params: SwapFeesParams) => {
 
   // (1) Check reload of fees for RUNE
   if (isRuneNativeAsset(inAsset) || isRuneNativeAsset(outAsset) || isTradeAsset(inAsset) || isTradeAsset(outAsset)) {
-    THOR.reloadFees()
+    THOR.reloadFees(true)
   }
-  if (isCacaoAsset(inAsset) || isCacaoAsset(outAsset) || isSynthAsset(inAsset) || isSynthAsset(outAsset)) {
+  if (
+    isCacaoAsset(inAsset) ||
+    isCacaoAsset(outAsset) ||
+    isSynthAsset(inAsset) ||
+    isSynthAsset(outAsset) ||
+    isTradeAsset(inAsset) ||
+    isTradeAsset(outAsset)
+  ) {
     MAYA.reloadFees()
   }
 

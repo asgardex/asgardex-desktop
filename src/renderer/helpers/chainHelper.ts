@@ -16,7 +16,7 @@ import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
 import { AssetXRP, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, AssetType, Chain } from '@xchainjs/xchain-util'
 import { AssetZEC, ZECChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDZEC } from '@xchainjs/xchain-zcash'
 
 import { isSupportedChain } from '../../shared/utils/chain'
@@ -49,6 +49,16 @@ export const getChainAsset = (chain: Chain): Asset => {
   const asset = chainAssets[chain]
   if (!asset) throw new Error(`No asset found for chain ${chain}`)
 
+  return asset
+}
+
+export const getAssetChain = (asset: AnyAsset, protocol: Chain) => {
+  if (protocol === THORChain) {
+    return asset.type === AssetType.TRADE || asset.type === AssetType.SECURED ? AssetRuneNative : asset
+  }
+  if (protocol === MAYAChain) {
+    return asset.type === AssetType.SYNTH || asset.type === AssetType.TRADE ? AssetCacao : asset
+  }
   return asset
 }
 // TODO (@veado) Return Maybe<Asset> instead of throwing an error

@@ -10,7 +10,10 @@ import {
   reloadSwapFees,
   swapFees$,
   utxoFeesWithRates$,
-  reloadUtxoFeesWithRates$
+  reloadUtxoFeesWithRates$,
+  evmFees$,
+  standaloneLedgerFees$,
+  reloadStandaloneLedgerFees
 } from './fees'
 import {
   swap$,
@@ -47,5 +50,8 @@ export {
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,
-  reloadUtxoFeesWithRates$
+  reloadUtxoFeesWithRates$,
+  evmFees$,
+  standaloneLedgerFees$,
+  reloadStandaloneLedgerFees
 }

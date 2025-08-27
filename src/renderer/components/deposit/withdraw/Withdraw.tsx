@@ -14,7 +14,6 @@ import {
   formatAssetAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Col } from 'antd'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -48,10 +47,10 @@ import { TxModal } from '../../modal/tx'
 import { DepositAssets } from '../../modal/tx/extra'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { FlatButton, ViewTxButton } from '../../uielements/button'
-import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
 import { Slider } from '../../uielements/slider'
+import { Tooltip } from '../../uielements/tooltip'
 import * as Helper from './Withdraw.helper'
 import * as Styled from './Withdraw.styles'
 
@@ -529,7 +528,7 @@ export const Withdraw = ({
         />
       </div>
       <Styled.AssetOutputContainer>
-        <TooltipAddress title={runeAddress}>
+        <Tooltip title={runeAddress} size="big">
           <div className="flex items-center">
             <AssetIcon className="mr-10px" asset={protocolAsset} network={network} />
             <Styled.AssetLabel asset={protocolAsset} />
@@ -537,7 +536,7 @@ export const Withdraw = ({
               <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
             )}
           </div>
-        </TooltipAddress>
+        </Tooltip>
         <div className="flex flex-col">
           <Styled.OutputLabel>
             {formatAssetAmount({
@@ -562,7 +561,7 @@ export const Withdraw = ({
       </Styled.AssetOutputContainer>
 
       <Styled.AssetOutputContainer>
-        <TooltipAddress title={assetAddress}>
+        <Tooltip title={assetAddress} size="big">
           <div className="flex items-center">
             <AssetIcon className="mr-10px" asset={asset} network={network} />
             <Styled.AssetLabel asset={asset} />
@@ -570,7 +569,7 @@ export const Withdraw = ({
               <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
             )}
           </div>
-        </TooltipAddress>
+        </Tooltip>
         <div className="flex flex-col">
           <Styled.OutputLabel>
             {formatAssetAmount({
@@ -592,18 +591,12 @@ export const Withdraw = ({
         </div>
       </Styled.AssetOutputContainer>
 
-      <Styled.FeesRow gutter={{ lg: 32 }}>
-        <Col>
-          <Styled.FeeRow>
-            <Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} />
-          </Styled.FeeRow>
-          <Styled.FeeErrorRow>
-            <Col>
-              <>{renderInboundChainFeeError}</>
-            </Col>
-          </Styled.FeeErrorRow>
-        </Col>
-      </Styled.FeesRow>
+      <div className="flex flex-col space-y-4 pb-4 xl:pb-0">
+        <div className="flex items-center">
+          <Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} />
+        </div>
+        <div className="flex items-center">{renderInboundChainFeeError}</div>
+      </div>
       <div className="flex flex-col items-center justify-center py-20px">
         <FlatButton className="mb-30px min-w-[200px] px-20px" size="large" onClick={onSubmit} disabled={disabledSubmit}>
           {intl.formatMessage({ id: 'common.withdraw' })}
@@ -615,9 +608,8 @@ export const Withdraw = ({
       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
         <div className="">
           <CopyLabel
-            className="whitespace-nowrap pl-0 uppercase text-gray2 dark:text-gray2d"
+            className="whitespace-nowrap pl-0 text-gray2 dark:text-gray2d"
             label={intl.formatMessage({ id: 'common.transaction.short.rune' }, { dex: protocolAsset.chain })}
-            key="memo-copy"
             textToCopy={memo}
           />
         </div>

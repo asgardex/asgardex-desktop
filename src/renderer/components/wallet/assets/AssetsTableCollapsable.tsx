@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon, ChevronRightIcon, QrCodeIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, QrCodeIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
+import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   AnyAsset,
@@ -19,9 +19,8 @@ import {
   isSecuredAsset,
   isSynthAsset
 } from '@xchainjs/xchain-util'
-import { Collapse, Row } from 'antd'
-import clsx from 'clsx'
-import { array as A, function as FP, option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
@@ -29,6 +28,7 @@ import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../..
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
+import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import {
   isBtcAsset,
@@ -55,6 +55,7 @@ import {
   ApiError,
   ChainBalance,
   ChainBalances,
+  isStandaloneLedgerMode,
   SelectedWalletAsset,
   WalletBalance,
   WalletBalances
@@ -68,13 +69,12 @@ import { Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { IconButton } from '../../uielements/button/IconButton'
+import { Collapse } from '../../uielements/collapse'
 import { WalletTypeLabel } from '../../uielements/common/Common.styles'
 import { InfoIcon } from '../../uielements/info'
-import { Label } from '../../uielements/label'
+import { CopyLabel, Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
 import * as Styled from './AssetsTableCollapsable.styles'
-
-const { Panel } = Collapse
 
 export type AssetAction = 'send' | 'deposit'
 
@@ -137,20 +137,31 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   const navigate = useNavigate()
   const isXLargeView = useBreakpoint()?.xl ?? false
 
+  // Get app wallet state to check for standalone ledger mode
+  const { appWalletService } = useWalletContext()
+  const appWalletState = useObservableState(appWalletService.appWalletState$)
+  const isStandaloneLedger = appWalletState && isStandaloneLedgerMode(appWalletState)
+
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
 
-  const [openPanelKeys, setOpenPanelKeys] = useState<string[]>(() => {
+  const [openPanelKeys, setOpenPanelKeys] = useState<number[]>(() => {
     const cachedKeys = localStorage.getItem('openPanelKeys')
-    return cachedKeys ? JSON.parse(cachedKeys) : []
+    try {
+      return cachedKeys ? JSON.parse(cachedKeys).map((item: string) => parseInt(item)) : []
+    } catch (error) {
+      console.error('Failed to parse openPanelKeys from localStorage:', error)
+      return []
+    }
   })
 
-  useEffect(() => {
-    localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
-  }, [openPanelKeys])
-
-  const [allPanelKeys, setAllPanelKeys] = useState<string[]>()
-  const [collapseChangedByUser, setCollapseChangedByUser] = useState(false)
   const [collapseAll, setCollapseAll] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (openPanelKeys.length === 0) setCollapseAll(true)
+    if (openPanelKeys.length === chainBalances.length) setCollapseAll(false)
+
+    localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
+  }, [openPanelKeys, chainBalances.length])
 
   const handleRefreshClick = (chain: Chain, walletType: WalletType) => {
     const lazyReload = reloadBalancesByChain(chain, walletType)
@@ -160,16 +171,21 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   // store previous data of asset data to render these while reloading
   const previousAssetsTableData = useRef<WalletBalances[]>([])
 
+  const toggleOne = useCallback((key: number) => {
+    setOpenPanelKeys((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]))
+  }, [])
+
   const handleCollapseAll = useCallback(() => {
     if (collapseAll) {
-      localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
-      setOpenPanelKeys([])
+      const keys = Array.from({ length: chainBalances.length }, (_, i) => i)
+      setOpenPanelKeys(keys)
+      localStorage.setItem('openPanelKeys', JSON.stringify(keys))
     } else {
-      const previousOpenKeys = allPanelKeys ? allPanelKeys : ['0', '1', '2']
-      setOpenPanelKeys(previousOpenKeys)
+      setOpenPanelKeys([])
+      localStorage.setItem('openPanelKeys', JSON.stringify([]))
     }
-    setCollapseAll(!collapseAll)
-  }, [allPanelKeys, collapseAll, openPanelKeys])
+    setCollapseAll((prev) => !prev)
+  }, [chainBalances.length, collapseAll])
 
   const getBalance = useCallback(
     ({ asset, amount }: WalletBalance) => {
@@ -332,9 +348,10 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           )
         )
       }
-      if (isRuneNativeAsset(asset) && deepestPoolAsset) {
+      if (isRuneNativeAsset(asset) && deepestPoolAsset && !isStandaloneLedger) {
         actions.push(
-          createAction('common.trade', () =>
+          createAction('common.trade', () => {
+            setProtocol(THORChain)
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
@@ -343,7 +360,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
             )
-          )
+          })
         )
       }
 
@@ -361,6 +378,21 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           )
         )
       }
+      if (isCacaoAsset(asset) && deepestPoolAsset && !isStandaloneLedger) {
+        actions.push(
+          createAction('common.trade', () => {
+            setProtocol(MAYAChain)
+            navigate(
+              poolsRoutes.swap.path({
+                source: assetToString(asset),
+                target: `${deepestPoolAsset.chain}~${deepestPoolAsset.symbol}`,
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          })
+        )
+      }
 
       if (isSynthAsset(asset) && deepestPoolAsset) {
         actions.push(
@@ -368,7 +400,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             navigate(
               poolsRoutes.swap.path({
                 source: `${asset.chain}/${asset.symbol}`,
-                target: assetToString(isChainOfMaya(asset.chain) ? AssetCacao : AssetRuneNative),
+                target: assetToString(AssetCacao),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -415,7 +447,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (hasActivePool) {
+      if (hasActivePool && !isStandaloneLedger) {
         actions.push(
           createAction('common.add', () => {
             setProtocol(isChainOfThor(asset.chain) && !isRuneNativeAsset(asset) ? THORChain : MAYAChain)
@@ -430,7 +462,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (isRuneNativeAsset(asset) || isCacaoAsset(asset) || isTCYAsset(asset)) {
+      if ((isRuneNativeAsset(asset) || isCacaoAsset(asset) || isTCYAsset(asset)) && !isStandaloneLedger) {
         actions.push(createAction('wallet.action.deposit', () => assetHandler(walletAsset, 'deposit')))
       }
 
@@ -440,7 +472,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         </div>
       )
     },
-    [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol]
+    [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol, isStandaloneLedger]
   )
 
   const columns: ColumnDef<WalletBalance, FixmeType>[] = useMemo(
@@ -523,7 +555,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             })
           },
           ({ msg }: ApiError) => {
-            return <ErrorView title={msg} />
+            return <ErrorView className="rounded-none border-t border-gray0/40 dark:border-gray0d/40" title={msg} />
           },
           (balances) => {
             // Check if balances array is empty
@@ -555,12 +587,8 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
     [renderAssetsTable]
   )
 
-  const renderPanel = useCallback(
-    ({ chain, walletType, walletAddress: oWalletAddress, balances: balancesRD }: ChainBalance, key: number) => {
-      if (O.isNone(oWalletAddress) && RD.isInitial(balancesRD)) {
-        return null
-      }
-
+  const renderHeader = useCallback(
+    ({ chain, walletType, walletAddress: oWalletAddress, balances: balancesRD }: ChainBalance) => {
       const walletAddress = FP.pipe(
         oWalletAddress,
         O.getOrElse(() => intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
@@ -580,8 +608,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           }
         )
       )
-
-      const header = (
+      return (
         <div className="flex w-full justify-between space-x-4 bg-bg0 py-1 dark:bg-bg0d">
           <div className="flex flex-row items-center space-x-2">
             <Label className="!w-auto" textTransform="uppercase">
@@ -605,9 +632,14 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           <div className="flex items-center justify-end space-x-2">
             <Label className="flex items-center text-text0 dark:text-text0d" color="gray" textTransform="none">
               {hidePrivateData ? hiddenString : truncateAddress(walletAddress, chain, network)}
-              <Styled.CopyLabel copyable={{ text: walletAddress }} />
             </Label>
             <div className="flex items-center justify-end space-x-2 pr-4">
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}>
+                <CopyLabel iconClassName="!text-text2 dark:!text-text2d" textToCopy={walletAddress} />
+              </IconButton>
               <IconButton
                 disabled={disableRefresh}
                 onClick={(e) => {
@@ -627,44 +659,24 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           </div>
         </div>
       )
-
-      return (
-        <Panel key={key} header={header}>
-          {renderBalances({
-            balancesRD,
-            index: key,
-            chain
-          })}
-        </Panel>
-      )
     },
-    [disableRefresh, hidePrivateData, intl, network, renderBalances]
+    [disableRefresh, hidePrivateData, intl, network]
   )
 
-  useEffect(() => {
-    if (!collapseChangedByUser) {
-      const keys = FP.pipe(
-        chainBalances,
-        A.map(({ balances }) => balances),
-        A.map(RD.getOrElse((): WalletBalances => [])),
-        A.filterMapWithIndex((i, balances) =>
-          balances.length > 0 || (previousAssetsTableData.current[i] && previousAssetsTableData.current[i].length !== 0)
-            ? O.some(i.toString())
-            : O.none
-        )
-      )
-      setAllPanelKeys(keys)
-    }
-  }, [chainBalances, collapseChangedByUser])
+  const renderPanel = useCallback(
+    ({ chain, walletAddress: oWalletAddress, balances: balancesRD }: ChainBalance, key: number) => {
+      if (O.isNone(oWalletAddress) && RD.isInitial(balancesRD)) {
+        return null
+      }
 
-  const onChangeCollapseHandler = useCallback((key: string | string[]) => {
-    if (Array.isArray(key)) {
-      setOpenPanelKeys(key)
-    } else {
-      setOpenPanelKeys([key])
-    }
-    setCollapseChangedByUser(true)
-  }, [])
+      return renderBalances({
+        balancesRD,
+        index: key,
+        chain
+      })
+    },
+    [renderBalances]
+  )
 
   const closeQrModal = useCallback(() => setShowQRModal(O.none), [setShowQRModal])
 
@@ -688,13 +700,13 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
   return (
     <>
-      <Row className="items-center space-x-2">
+      <div className="flex items-center space-x-2">
         <div
           className="my-2 cursor-pointer rounded-md border border-solid border-turquoise bg-bg0 py-1 px-2 text-14 text-text2 dark:border-gray1d dark:bg-bg0d dark:text-text2d"
           onClick={handleCollapseAll}>
-          {collapseAll
-            ? intl.formatMessage({ id: 'common.collapseAll' })
-            : intl.formatMessage({ id: 'common.expandAll' })}
+          {openPanelKeys.length === 0
+            ? intl.formatMessage({ id: 'common.expandAll' })
+            : intl.formatMessage({ id: 'common.collapseAll' })}
         </div>
         {disabledChains.length > 0 ? (
           <div className="flex items-center text-14 text-text2 dark:border-gray1d dark:text-text2d">
@@ -710,21 +722,21 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         ) : (
           <></>
         )}
-      </Row>
+      </div>
 
-      <Styled.Collapse
-        className="space-y-2"
-        expandIcon={({ isActive }) => (
-          <ChevronRightIcon className={clsx('w-4 h-4 stroke-turquoise', isActive ? 'rotate-90' : 'rotate-0')} />
-        )}
-        defaultActiveKey={openPanelKeys}
-        activeKey={openPanelKeys}
-        expandIconPosition="end"
-        onChange={onChangeCollapseHandler}
-        ghost>
-        {chainBalances.map(renderPanel)}
-        {renderQRCodeModal}
-      </Styled.Collapse>
+      <div className="space-y-2">
+        {chainBalances.map((chainBalance, index) => (
+          <Collapse
+            key={`${chainBalance.chain}${index}${openPanelKeys.includes(index)}`}
+            className="bg-bg0 dark:bg-bg0d"
+            header={renderHeader(chainBalance)}
+            isOpen={openPanelKeys.includes(index)}
+            onToggle={() => toggleOne(index)}>
+            {renderPanel(chainBalance, index)}
+            {renderQRCodeModal}
+          </Collapse>
+        ))}
+      </div>
     </>
   )
 }

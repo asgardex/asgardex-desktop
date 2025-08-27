@@ -66,14 +66,20 @@ export const ActionButton = ({
       <Dropdown
         anchor={{ to: 'bottom end', gap: 4, padding: 8 }}
         trigger={
-          <FlatButton
-            size={size}
+          <div
+            className={clsx(
+              'rounded-full bg-turquoise hover:drop-shadow-lg',
+              'px-4 py-1 cursor-pointer',
+              'transition duration-300 ease-in-out'
+            )}
             onClick={(event: React.MouseEvent<HTMLElement, MouseEvent>) => {
               event.preventDefault()
               event.stopPropagation()
             }}>
-            <span>...</span>
-          </FlatButton>
+            <Label size="big" color="white">
+              ...
+            </Label>
+          </div>
         }
         options={actions.slice(2).map((action) => (
           <div

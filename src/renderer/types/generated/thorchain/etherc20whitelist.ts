@@ -10279,17 +10279,6 @@ export const ETH_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ETHChain,
-      symbol: 'TONCOIN-0x582d872A1B094FC48F5DE31D3B73F2D9bE47def1',
-      ticker: 'TONCOIN',
-      type: 1,
-    },
-    iconUrl: O.some(
-      'https://tokens.1inch.io/0x582d872a1b094fc48f5de31d3b73f2d9be47def1.png'
-    ),
-  },
-  {
-    asset: {
-      chain: ETHChain,
       symbol: 'HOKK-0xe87e15B9c7d989474Cb6d8c56b3DB4eFAD5b21E8',
       ticker: 'HOKK',
       type: 1,
@@ -11118,6 +11107,15 @@ export const ETH_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ETHChain,
+      symbol: 'TONCOIN-0x582d872A1B094FC48F5DE31D3B73F2D9bE47def1',
+      ticker: 'TONCOIN',
+      type: 1,
+    },
+    iconUrl: O.some('https://etherscan.io/token/images/rollbitcoin_32.png'),
+  },
+  {
+    asset: {
+      chain: ETHChain,
       symbol: 'vTHOR-0x815C23eCA83261b6Ec689b60Cc4a58b54BC24D8D',
       ticker: 'vTHOR',
       type: 1,
@@ -11147,5 +11145,1203 @@ export const ETH_TOKEN_WHITELIST: {
     iconUrl: O.some(
       'https://app.lends.so/tokens/eth.lends-0x2c06ba9e7f0daccbc1f6a33ea67e85bb68fbee3a.svg'
     ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'WLEO-0x73a9fb46e228628f8f9bb9004eca4f4f529d3998',
+      ticker: 'WLEO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://img.inleo.io/DQmZhBmRaQx5tozZLZai579SjktJDigtmoXNP73jHmh6nWK/leoLogo.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'YUM-0xcE682c89C63d2850Cb2ca898E44D6c7c30d897a6',
+      ticker: 'YUM',
+      type: 1,
+    },
+    iconUrl: O.some('https://i.ibb.co/D1FNt8V/IMG-9250.png'),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'XAUT-0x68749665FF8D2d112Fa859AA293F07A622782F38',
+      ticker: 'XAUT',
+      type: 1,
+    },
+    iconUrl: O.some('https://etherscan.io/token/images/tethergoldnew_32.png'),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'TRUMP-0x576e2BeD8F7b46D34016198911Cdf9886f78bea7',
+      ticker: 'TRUMP',
+      type: 1,
+    },
+    iconUrl: O.some('https://etherscan.io/token/images/magatrump_32.png'),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'APU-0x594DaaD7D77592a2b97b725A7AD59D7E188b5bFa',
+      ticker: 'APU',
+      type: 1,
+    },
+    iconUrl: O.some('https://etherscan.io/token/images/apuclub_32.png'),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'OXT-0x4575f41308EC1483f3d399aa9a2826d74Da13Deb',
+      ticker: 'OXT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x4575f41308EC1483f3d399aa9a2826d74Da13Deb/logo.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'REP-0x1985365e9f78359a9B6AD760e32412f4a445E862',
+      ticker: 'REP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x1985365e9f78359a9B6AD760e32412f4a445E862/logo.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'tBTC-0x18084fbA666a33d37592fA2633fD49a74DD93a88',
+      ticker: 'tBTC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://raw.githubusercontent.com/uniswap/assets/master/blockchains/ethereum/assets/0x18084fbA666a33d37592fA2633fD49a74DD93a88/logo.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'AERGO-0x91Af0fBB28ABA7E31403Cb457106Ce79397FD4E6',
+      ticker: 'AERGO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/4490/thumb/aergo.png?1647696770'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'AVT-0x845576c64f9754CF09d87e45B720E82F3EeF522C',
+      ticker: 'AVT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/19727/thumb/ewnektoB_400x400.png?1635767094'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'AGLD-0x32353A6C91143bfd6C7d363B546e62a9A2489A20',
+      ticker: 'AGLD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18125/thumb/lpgblc4h_400x400.jpg?1630570955'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ARPA-0xBA50933C268F567BDC86E1aC131BE072C6B0b71a',
+      ticker: 'ARPA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/8506/thumb/9u0a23XY_400x400.jpg?1559027357'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ASM-0x2565ae0385659badCada1031DB704442E1b69982',
+      ticker: 'ASM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/11605/thumb/gpvrlkSq_400x400_%281%29.jpg?1591775789'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'CLV-0x80C62FE4487E1351b47Ba49809EBD60ED085bf52',
+      ticker: 'CLV',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/15278/thumb/clover.png?1645084454'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'BICO-0xF17e65822b568B3903685a7c9F496CF7656Cc6C2',
+      ticker: 'BICO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/21061/thumb/biconomy_logo.jpg?1638269749'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'BTRST-0x799ebfABE77a6E34311eeEe9825190B9ECe32824',
+      ticker: 'BTRST',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18100/thumb/braintrust.PNG?1630475394'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'NCT-0x9E46A38F5DaaBe8683E10793b06749EEF7D733d1',
+      ticker: 'NCT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/2843/thumb/ImcYCVfX_400x400.jpg?1628519767'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'SOL-0xD31a59c85aE9D8edEFeC411D448f90841571b89c',
+      ticker: 'SOL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/22876/thumb/SOL_wh_small.png?1644224316'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'CRPT-0x08389495D7456E1951ddF7c3a1314A4bfb646d8B',
+      ticker: 'CRPT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/1901/thumb/crypt.png?1547036205'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'RARE-0xba5BDe662c17e2aDFF1075610382B9B691296350',
+      ticker: 'RARE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17753/thumb/RARE.jpg?1629220534'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'FX-0x8c15Ef5b4B21951d50E53E4fbdA8298FFAD25057',
+      ticker: 'FX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/8186/thumb/47271330_590071468072434_707260356350705664_n.jpg?1556096683'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'GODS-0xccC8cb5229B0ac8069C51fd58367Fd1e622aFD97',
+      ticker: 'GODS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17139/thumb/10631.png?1635718182'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'GFI-0xdab396cCF3d84Cf2D07C4454e10C8A6F5b008D2b',
+      ticker: 'GFI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/19081/thumb/GOLDFINCH.png?1634369662'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'HIGH-0x71Ab77b7dbB4fa7e017BC15090b2163221420282',
+      ticker: 'HIGH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18973/thumb/logosq200200Coingecko.png?1634090470'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'JASMY-0x7420B4b9a0110cdC71fB720908340C03F9Bc03EC',
+      ticker: 'JASMY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/13876/thumb/JASMY200x200.jpg?1612473259'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'KRL-0x464eBE77c293E473B48cFe96dDCf88fcF7bFDAC0',
+      ticker: 'KRL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/2807/thumb/krl.png?1547036979'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'MCO2-0xfC98e825A2264D890F9a1e68ed50E1526abCcacD',
+      ticker: 'MCO2',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14414/thumb/ENtxnThA_400x400.jpg?1615948522'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'IOTX-0x6fB3e0A217407EFFf7Ca062D46c26E5d60a14d69',
+      ticker: 'IOTX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://s2.coinmarketcap.com/static/img/coins/64x64/2777.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'PRO-0x226bb599a12C826476e3A771454697EA52E9E220',
+      ticker: 'PRO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/869/thumb/propy.png?1548332100'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'QSP-0x99ea4dB9EE77ACD40B119BD1dC4E33e1C070b80d',
+      ticker: 'QSP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/1219/thumb/0_E0kZjb4dG4hUnoDD_.png?1604815917'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'RBN-0x6123B0049F904d730dB3C36a31167D9d4121fA6B',
+      ticker: 'RBN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/15823/thumb/RBN_64x64.png?1633529723'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'SHPING-0x7C84e62859D0715eb77d1b1C4154Ecd6aBB21BEC',
+      ticker: 'SHPING',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/2588/thumb/r_yabKKi_400x400.jpg?1639470164'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ORCA-0x6F59e0461Ae5E2799F1fB3847f05a63B16d0DbF8',
+      ticker: 'ORCA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://s2.coinmarketcap.com/static/img/coins/64x64/5183.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'PAX-0xc1D204d77861dEf49b6E769347a883B15EC397Ff',
+      ticker: 'PAX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/1601/thumb/pax.png?1547035800'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'SUKU-0x0763fdCCF1aE541A5961815C0872A8c5Bc6DE4d7',
+      ticker: 'SUKU',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/11969/thumb/UmfW5S6f_400x400.jpg?1596602238'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'UNFI-0x441761326490cACF7aF299725B6292597EE822c2',
+      ticker: 'UNFI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/13152/thumb/logo-2.png?1605748967'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'MULTI-0x65Ef703f5594D2573eb71Aaf55BC0CB548492df4',
+      ticker: 'MULTI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/22087/thumb/1_Wyot-SDGZuxbjdkaOeT2-A.png?1640764238'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ACH-0xEd04915c23f00A313a544955524EB7DBD823143d',
+      ticker: 'ACH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12390/thumb/ACH_%281%29.png?1599691266'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ASH-0x64D91f12Ece7362F91A6f8E7940Cd55F05060b92',
+      ticker: 'ASH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/15714/thumb/omnPqaTY.png?1622820503'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'CUBE-0xDf801468a808a32656D2eD2D2d80B72A129739f4',
+      ticker: 'CUBE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/10687/thumb/CUBE_icon.png?1617026861'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ABT-0xB98d4C97425d9908E66E53A6fDf673ACcA0BE986',
+      ticker: 'ABT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/2341/thumb/arcblock.png?1547036543'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ALI-0x6B0b3a982b4634aC68dD83a4DBF02311cE324181',
+      ticker: 'ALI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/22062/thumb/alethea-logo-transparent-colored.png?1642748848'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ATA-0xA2120b9e674d3fC3875f415A7DF52e382F141225',
+      ticker: 'ATA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/15985/thumb/ATA.jpg?1622535745'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'BIT-0x1A4b46696b2bB4794Eb3D4c26f1c55F9170fa4C5',
+      ticker: 'BIT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17627/thumb/rI_YptK8.png?1653983088'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'BOBA-0x42bBFa2e77757C645eeaAd1655E0911a7553Efbc',
+      ticker: 'BOBA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20285/thumb/BOBA.png?1636811576'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'C98-0xAE12C5930881c53715B369ceC7606B70d8EB229f',
+      ticker: 'C98',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17117/thumb/logo.png?1626412904'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'CELR-0x4F9254C83EB525f9FCf346490bbb3ed28a81C667',
+      ticker: 'CELR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/4379/thumb/Celr.png?1554705437'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'CHR-0x8A2279d4A90B6fe1C4B30fa660cC9f926797bAA2',
+      ticker: 'CHR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/5000/thumb/Chromia.png?1559038018'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'CQT-0xD417144312DbF50465b1C641d016962017Ef6240',
+      ticker: 'CQT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14168/thumb/covalent-cqt.png?1624545218'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'DAR-0x081131434f93063751813C619Ecca9C4dC7862a3',
+      ticker: 'DAR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/19837/thumb/dar.png?1636014223'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'DREP-0x3Ab6Ed69Ef663bd986Ee59205CCaD8A20F98b4c2',
+      ticker: 'DREP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14578/thumb/KotgsCgS_400x400.jpg?1617094445'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ELA-0xe6fd75ff38Adca4B97FBCD938c86b98772431867',
+      ticker: 'ELA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/2780/thumb/Elastos.png?1597048112'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'EUL-0xd9Fcd98c322942075A5C3860693e9f4f03AAE07b',
+      ticker: 'EUL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26149/thumb/YCvKDfl8_400x400.jpeg?1656041509'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'FORT-0x41545f8b9472D758bB669ed8EaEEEcD7a9C4Ec29',
+      ticker: 'FORT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/25060/thumb/Forta_lgo_%281%29.png?1655353696'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'GAL-0x5fAa989Af96Af85384b8a938c2EdE4A7378D9875',
+      ticker: 'GAL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/24530/thumb/GAL-Token-Icon.png?1651483533'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'JAM-0x23894DC9da6c94ECb439911cAF7d337746575A72',
+      ticker: 'JAM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/24648/thumb/ey40AzBN_400x400.jpg?1648507272'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'KEY-0x4CC19356f2D37338b9802aa8E8fc58B0373296E7',
+      ticker: 'KEY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/2034/thumb/selfkey.png?1548608934'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'LOKA-0x61E90A50137E1F645c9eF4a0d3A4f01477738406',
+      ticker: 'LOKA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/22572/thumb/loka_64pix.png?1642643271'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'MV-0xAE788F80F2756A86aa2F410C651F2aF83639B95b',
+      ticker: 'MV',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://s2.coinmarketcap.com/static/img/coins/64x64/17704.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'MXC-0x5Ca381bBfb58f0092df149bD3D243b08B9a8386e',
+      ticker: 'MXC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/4604/thumb/mxc.png?1655534336'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'NEST-0x04abEdA201850aC0124161F037Efd70c74ddC74C',
+      ticker: 'NEST',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/11284/thumb/52954052.png?1589868539'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'PSTAKE-0xfB5c6815cA3AC72Ce9F5006869AE67f18bF77006',
+      ticker: 'PSTAKE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/23931/thumb/PSTAKE_Dark.png?1645709930'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'QRDO-0x4123a133ae3c521FD134D7b13A2dEC35b56c2463',
+      ticker: 'QRDO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17541/thumb/qrdo.png?1630637735'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'SWFTC-0x0bb217E40F8a5Cb79Adf04E1aAb60E5abd0dfC1e',
+      ticker: 'SWFTC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/2346/thumb/SWFTCoin.jpg?1618392022'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'TLM-0x888888848B652B3E3a0f34c96E00EEC0F3a23F72',
+      ticker: 'TLM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14676/thumb/kY-C4o7RThfWrDQsLCAG4q4clZhBDDfJQVhWUEKxXAzyQYMj4Jmq1zmFwpRqxhAJFPOa0AsW_PTSshoPuMnXNwq3rU7Imp15QimXTjlXMx0nC088mt1rIwRs75GnLLugWjSllxgzvQ9YrP4tBgclK4_rb17hjnusGj_c0u2fx0AvVokjSNB-v2poTj0xT9BZRCbzRE3-lF1.jpg?1617700061'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'WAMPL-0xEDB171C18cE90B633DB442f2A6F72874093b49Ef',
+      ticker: 'WAMPL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20825/thumb/photo_2021-11-25_02-05-11.jpg?1637811951'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'XCN-0xA2cd3D43c775978A96BdBf12d733D5A1ED94fb18',
+      ticker: 'XCN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/24210/thumb/Chain_icon_200x200.png?1646895054'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'YGG-0x25f8087EAD173b73D6e8B84329989A8eEA16CF73',
+      ticker: 'YGG',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17358/thumb/le1nzlO6_400x400.jpg?1632465691'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'AXL-0x467719aD09025FcC6cF6F8311755809d45a5E5f3',
+      ticker: 'AXL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27277/large/V-65_xQ1_400x400.jpeg'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'HFT-0xb3999F658C0391d94A37f7FF328F3feC942BcADC',
+      ticker: 'HFT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26136/large/hashflow-icon-cmc.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ARB-0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
+      ticker: 'ARB',
+      type: 1,
+    },
+    iconUrl: O.some('https://arbitrum.foundation/logo.png'),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'cbETH-0xBe9895146f7AF43049ca1c1AE358B0541Ea49704',
+      ticker: 'cbETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27008/large/cbeth.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'PRIME-0xb23d80f5FefcDDaa212212F028021B41DEd428CF',
+      ticker: 'PRIME',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29053/large/PRIMELOGOOO.png?1676976222'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'CELO-0x3294395e62F4eB6aF3f1Fcf89f5602D90Fb3Ef69',
+      ticker: 'CELO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://raw.githubusercontent.com/wormhole-foundation/wormhole-token-list/main/assets/celo_wh.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'BIGTIME-0x64Bc2cA1Be492bE7185FAA2c8835d9b824c8a194',
+      ticker: 'BIGTIME',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32251/standard/-6136155493475923781_121.jpg?1696998691'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'GALA-0xd1d2Eb1B1e90B638588728b4130137D262C87cae',
+      ticker: 'GALA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12493/standard/GALA-COINGECKO.png?1696512310'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ONDO-0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3',
+      ticker: 'ONDO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26580/standard/ONDO.png?1696525656'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'Zeta-0xf091867EC603A6628eD83D274E835539D82e9cc8',
+      ticker: 'Zeta',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26718/standard/Twitter_icon.png?1696525788'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'STRK-0xCa14007Eff0dB1f8135f4C25B34De49AB0d42766',
+      ticker: 'STRK',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26433/standard/starknet.png?1696525507'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ARKM-0x6E2a43be0B1d33b726f0CA3b8de60b3482b8b050',
+      ticker: 'ARKM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30929/standard/Arkham_Logo_CG.png?1696529771'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'BEAM-0x62D0A8458eD7719FDAF978fe5929C6D342B0bFcE',
+      ticker: 'BEAM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32417/standard/chain-logo.png?1698114384'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'OMNI-0x36E66fbBce51e4cD5bd3C62B637Eb411b18949D4',
+      ticker: 'OMNI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/36465/standard/Symbol-Color.png?1711511095'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'SAFE-0x5aFE3855358E112B5647B952709E6165e1c1eEEe',
+      ticker: 'SAFE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27032/standard/Artboard_1_copy_8circle-1.png?1696526084'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ENA-0x57e114B691Db790C35207b2e685D4A43181e6061',
+      ticker: 'ENA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/36530/standard/ethena.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ETHFI-0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB',
+      ticker: 'ETHFI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/35958/standard/etherfi.jpeg'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ALT-0x8457CA5040ad67fdebbCC8EdCE889A335Bc0fbFB',
+      ticker: 'ALT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34608/standard/Logomark_200x200.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'AEVO-0xB528edBef013aff855ac3c50b381f253aF13b997',
+      ticker: 'AEVO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/35893/standard/aevo.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'PDA-0x0D3CbED3f69EE050668ADF3D9Ea57241cBa33A2B',
+      ticker: 'PDA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14316/standard/PDA-symbol.png?1710234068'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'PORTAL-0x1Bbe973BeF3a977Fc51CbED703E8ffDEfE001Fed',
+      ticker: 'PORTAL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/35436/standard/portal.jpeg'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ZRO-0x6985884C4392D348587B19cb9eAAf157F13271cd',
+      ticker: 'ZRO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28206/standard/ftxG9_TJ_400x400.jpeg?1696527208'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'KUJI-0x96543ef8d2C75C26387c1a319ae69c0BEE6f3fe7',
+      ticker: 'KUJI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20685/standard/kuji-200x200.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'PIRATE-0x7613C48E0cd50E42dD9Bf0f6c235063145f6f8DC',
+      ticker: 'PIRATE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/38524/standard/_Pirate_Transparent_200x200.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'REZ-0x3B50805453023a91a8bf641e279401a0b23FA6F9',
+      ticker: 'REZ',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/37327/standard/renzo_200x200.png?1714025012'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'A8-0x3E5A19c91266aD8cE2477B91585d1856B84062dF',
+      ticker: 'A8',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/39170/standard/A8_Token-04_200x200.png?1720798300'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'LRDS-0xd0a6053f087E87a25dC60701ba6E663b1a548E85',
+      ticker: 'LRDS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34775/standard/LRDS_PNG.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'SD-0x30D20208d987713f46DFD34EF128Bb16C404D10f',
+      ticker: 'SD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20658/standard/SD_Token_Logo.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'L3-0x88909D489678dD17aA6D9609F89B0419Bf78FD9a',
+      ticker: 'L3',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/37768/large/Square.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'CXT-0x7ABc8A5768E6bE61A6c693a6e4EAcb5B60602C4D',
+      ticker: 'CXT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/39177/large/CXT_Ticker.png?1720829918'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'G-0x9C7BEBa8F6eF6643aBd725e45a4E8387eF260649',
+      ticker: 'G',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/39200/large/gravity.jpg?1721020647'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'TURBO-0xA35923162C49cF95e6BF26623385eb431ad920D3',
+      ticker: 'TURBO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30117/large/TurboMark-QL_200.png?1708079597'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'CPOOL-0x66761Fa41377003622aEE3c7675Fc7b5c1C2FaC5',
+      ticker: 'CPOOL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/19252/large/photo_2022-08-31_12.45.02.jpeg?1696518697'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'ACX-0x44108f0223A3C3028F5Fe7AEC7f9bb2E66beF82F',
+      ticker: 'ACX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28161/large/across-200x200.png?1696527165'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'MEME-0xb131f4A55907B10d1F0A50d8ab8FA09EC342cd74',
+      ticker: 'MEME',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32528/large/memecoin_(2).png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'POL-0x455e53CBB86018Ac2B8092FdCd39d8444aFFC3F6',
+      ticker: 'POL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32440/large/polygon.png?1698233684'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'USDS-0xdC035D45d973E3EC169d2276DDab16f1e407384F',
+      ticker: 'USDS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/39926/large/usds.webp?1726666683'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'SKY-0x56072C95FAA701256059aa122697B133aDEd9279',
+      ticker: 'SKY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/39925/large/sky.jpg?1724827980'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'EIGEN-0xec53bF9167f50cDEB3Ae105f56099aaaB9061F83',
+      ticker: 'EIGEN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/37441/large/eigen.jpg?1728023974'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'PUFFER-0x4d1C297d39C5c1277964D0E3f8Aa901493664530',
+      ticker: 'PUFFER',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/50630/large/puffer.jpg?1728545297'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'LLD-0x054c9D4C6F4EA4E14391addD1812106c97D05690',
+      ticker: 'LLD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33625/standard/Liberland_Dollar_Square_200px.png'
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: 'Moca-0x53312F85Bba24C8cb99CFFc13BF82420157230d3',
+      ticker: 'Moca',
+      type: 1,
+    },
+    iconUrl: O.some('https://etherscan.io/token/images/mocaapp_32.png'),
   },
 ];

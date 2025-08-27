@@ -8,7 +8,7 @@ import { useIntl } from 'react-intl'
 
 import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
 import { BaseButton, TextButton } from '../button'
-import { Input } from '../input/Input'
+import { Input } from '../input'
 
 export type Props = {
   name: string

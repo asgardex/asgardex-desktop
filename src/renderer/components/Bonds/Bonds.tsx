@@ -6,7 +6,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
-import { Form, Input } from 'antd'
+import { Form } from 'antd'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -21,6 +21,7 @@ import { WalletAddressInfo } from '../../views/bonds/types'
 import { ErrorView } from '../shared/error'
 import { InnerForm } from '../shared/form'
 import { Button, FilterButton, ReloadButton } from '../uielements/button'
+import { Input } from '../uielements/input'
 import { BondsTable } from './table'
 
 type Props = {
@@ -290,7 +291,8 @@ export const Bonds = ({
           <div className="flex items-center space-x-2">
             <Form.Item className="!m-0" name="address" rules={[{ required: true, validator: addressValidator }]}>
               <Input
-                className="!bg-inherit text-text0 dark:text-text0d border border-solid border-gray0 dark:border-gray0d !rounded-lg"
+                className="border border-solid border-gray0 dark:border-gray0d"
+                uppercase={false}
                 type="text"
                 placeholder={intl.formatMessage({ id: 'bonds.node.enterMessage' })}
                 disabled={disableForm}

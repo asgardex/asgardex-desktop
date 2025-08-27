@@ -29,7 +29,20 @@ const ledger: LedgerMessages = {
   'ledger.deposit.oneside': 'Ledger फिलहाल केवल एकतरफा एसेट जोड़ने का समर्थन करता है।',
   'ledger.legacyformat.note': 'Ledger "लेगेसी" फॉर्मेट में सभी आउटपुट पते दिखाता है, "CashAddr" फॉर्मेट में नहीं।',
   'ledger.legacyformat.show': 'पते दिखाएं',
-  'ledger.legacyformat.hide': 'पते छुपाएं'
+  'ledger.legacyformat.hide': 'पते छुपाएं',
+  'ledger.connect.title': 'अपना लेजर कनेक्ट करें',
+  'ledger.connect.instruction': 'अपने लेजर डिवाइस से कनेक्ट करने के लिए ब्लॉकचेन नेटवर्क का चयन करें',
+  'ledger.connect.success.title': 'लेजर कनेक्ट हो गया',
+  'ledger.connect.success.description': '{chain} से सफलतापूर्वक कनेक्ट हो गया',
+  'ledger.connect.success.redirect': '{countdown} सेकंड में वॉलेट पर रीडायरेक्ट हो रहा है...',
+  'ledger.connect.button.continue': 'अभी जारी रखें',
+  'ledger.detect.title': 'लेजर डिवाइस का पता लगाया जा रहा है',
+  'ledger.detect.checking': '{chain} की जांच की जा रही है...',
+  'ledger.derivation.path': 'डेरिवेशन पाथ',
+  'ledger.derivation.legacy': 'लेगेसी (MEW)',
+  'ledger.derivation.metamask': 'मेटामास्क',
+  'ledger.connect.chain': '{chain} कनेक्ट करें',
+  'ledger.connect.select': 'एक चेन चुनें'
 }
 
 export default ledger

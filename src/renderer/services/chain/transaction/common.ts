@@ -25,6 +25,7 @@ import * as Rx from 'rxjs'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
+import { getAssetChain } from '../../../helpers/chainHelper'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
@@ -322,12 +323,7 @@ export const sendPoolTx$ = ({
   feeOption = DEFAULT_FEE_OPTION,
   protocol
 }: SendPoolTxParams): TxHashLD => {
-  const { chain } =
-    asset.type === AssetType.SYNTH
-      ? AssetCacao
-      : asset.type === AssetType.TRADE || asset.type === AssetType.SECURED
-      ? { chain: THORChain }
-      : asset
+  const { chain } = getAssetChain(asset, protocol)
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 
   switch (chain) {

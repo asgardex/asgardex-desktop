@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { BanknotesIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { BanknotesIcon } from '@heroicons/react/24/outline'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
@@ -56,13 +56,10 @@ export const ManageButton = ({
   )
 
   const ButtonComponent = useBorderButton ? BorderButton : FlatButton
-  const IconComponent = variant === 'manage' ? PlusIcon : BanknotesIcon
 
   return (
     <ButtonComponent onClick={onClick} {...otherProps}>
-      <IconComponent
-        className={clsx('h-[16px] w-[16px] text-inherit lg:h-20px lg:w-20px', { 'mr-[8px]': isTextView })}
-      />
+      <BanknotesIcon className={clsx('h-4 w-4 text-inherit lg:h-5 lg:w-5', { 'mr-2': isTextView })} />
       <span className={isTextView ? 'mr-10px' : 'hidden'}>{intl.formatMessage({ id: 'common.manage' })}</span>
     </ButtonComponent>
   )

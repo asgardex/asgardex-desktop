@@ -25,7 +25,7 @@ const meta: Meta<typeof Component> = {
   title: 'Components/Alert',
   decorators: [
     (Story) => (
-      <div style={{ padding: '15px' }}>
+      <div className="p-4">
         <Story />
       </div>
     )
@@ -35,10 +35,10 @@ const meta: Meta<typeof Component> = {
       name: 'type',
       control: {
         type: 'select',
-        options: ['success', 'info', 'warning', 'error']
+        options: ['info', 'warning', 'error']
       }
     },
-    message: {
+    title: {
       options: ['text', 'jsx'],
       mapping: {
         text: description,
@@ -47,8 +47,8 @@ const meta: Meta<typeof Component> = {
     }
   },
   args: {
-    type: 'success',
-    message: description
+    type: 'info',
+    description
   }
 }
 

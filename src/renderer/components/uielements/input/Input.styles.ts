@@ -88,32 +88,6 @@ const inputStyle = css<InputProps>`
   }
 `
 
-/**
- * Input (Legacy)
- * @deprecated Use Input.txs instead
- */
-export const Input = styled(A.Input)<InputProps>`
-  ${inputStyle}
-`
-
-/**
- * InputPassword (Legacy)
- * @deprecated Use InputPassword.txs instead
- */
-export const InputPassword = styled(A.Input.Password).attrs({
-  type: 'password'
-})<InputProps>`
-  ${inputStyle}
-  & .ant-input-password-icon,
-  & .ant-input-password-icon:hover {
-    color: ${colors.primary};
-  }
-`
-
-export const InputTextArea = styled(A.Input.TextArea)<InputProps>`
-  ${inputStyle}
-`
-
 export const InputBigNumber = styled(A.Input)<InputProps>`
   ${inputStyle}
 `

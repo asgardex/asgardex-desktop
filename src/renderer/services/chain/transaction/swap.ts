@@ -1,11 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AssetType, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
+import { isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { getAssetChain } from '../../../helpers/chainHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { service as mayaMidgardService } from '../../midgard/mayaMigard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
@@ -35,15 +35,7 @@ export const swap$ = ({
   hdMode,
   protocol
 }: SwapTxParams): SwapTxState$ => {
-  const { chain } =
-    asset.type === AssetType.SYNTH
-      ? AssetCacao
-      : asset.type === AssetType.TRADE
-      ? { chain: THORChain }
-      : asset.type === AssetType.SECURED
-      ? { chain: THORChain }
-      : asset
-
+  const { chain } = getAssetChain(asset, protocol)
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validate pool address or node
     RxOp.switchMap((poolAddresses) =>
@@ -52,7 +44,7 @@ export const swap$ = ({
         () =>
           protocol === THORChain
             ? isRuneNativeAsset(asset) || isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)
-            : isCacaoAsset(asset) || isSynthAsset(asset),
+            : isCacaoAsset(asset) || isSynthAsset(asset) || isTradeAsset(asset),
 
         // If the condition is true, validate the node based on the chain type
         protocol === THORChain ? validateNode$() : mayaValidateNode$(),

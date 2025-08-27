@@ -39,7 +39,9 @@ const {
   getSaverProvider$,
   reloadSaverProvider,
   getMayanodePools,
-  reloadMayanodePools
+  reloadMayanodePools,
+  getTradeAccount$,
+  reloadTradeAccount
 } = createMayanodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
@@ -96,5 +98,7 @@ export {
   getSaverProvider$,
   reloadSaverProvider,
   getMayanodePools,
-  reloadMayanodePools
+  reloadMayanodePools,
+  getTradeAccount$,
+  reloadTradeAccount
 }

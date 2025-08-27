@@ -77,6 +77,57 @@ const clientState$: ClientState$ = FP.pipe(
 const client$: Observable<O.Option<DogeClient>> = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
+ * Read-only DOGE client for balance queries without requiring keystore
+ * This client can be used for standalone ledger mode to query balances
+ */
+const readOnlyClientState$: ClientState$ = FP.pipe(
+  clientNetwork$,
+  RxOp.map((network) => {
+    try {
+      const testnetBlockcypherProvider = new BlockcypherProvider(
+        blockcypherUrl,
+        DOGEChain,
+        AssetDOGE,
+        8,
+        BlockcypherNetwork.DOGE,
+        blockcypherApiKey || ''
+      )
+      const mainnetBlockcypherProvider = new BlockcypherProvider(
+        blockcypherUrl,
+        DOGEChain,
+        AssetDOGE,
+        8,
+        BlockcypherNetwork.DOGE,
+        blockcypherApiKey || ''
+      )
+      const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+        [Network.Testnet]: testnetBlockcypherProvider,
+        [Network.Stagenet]: mainnetBlockcypherProvider,
+        [Network.Mainnet]: mainnetBlockcypherProvider
+      }
+      // Create client without phrase - only for balance queries
+      const dogeInitParams = {
+        ...defaultDogeParams,
+        network: network,
+        dataProviders: [BlockcypherDataProviders, BitgoProviders]
+        // No phrase - this limits functionality to read-only operations
+      }
+      const client = new DogeClient(dogeInitParams)
+      return RD.success(client)
+    } catch (error) {
+      return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only DOGE client'))
+    }
+  }),
+  RxOp.startWith<ClientState>(RD.pending),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$: Observable<O.Option<DogeClient>> = readOnlyClientState$.pipe(
+  RxOp.map(RD.toOption),
+  RxOp.shareReplay(1)
+)
+
+/**
  * DOGE `Address`
  */
 const address$: C.WalletAddress$ = C.address$(client$, DOGEChain)
@@ -91,4 +142,4 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, DOGEChain)
  */
 const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }

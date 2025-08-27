@@ -41,7 +41,7 @@ export const ProtocolLimit = ({ limit: limitRD }: Props) => {
             }
           )
 
-          return reached ? <Alert className="mb-[10px] lg:mb-5" type="error" message={msg} /> : empty
+          return reached ? <Alert className="mb-[10px] lg:mb-5" type="error" description={msg} /> : empty
         }
       )
     )

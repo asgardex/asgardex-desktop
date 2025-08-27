@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Asset, Chain } from '@xchainjs/xchain-util'
-import { Spin } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -15,6 +14,7 @@ import * as RxOp from 'rxjs/operators'
 import { Deposit } from '../../components/deposit'
 import { ErrorView } from '../../components/shared/error'
 import { BackLinkButton, RefreshButton } from '../../components/uielements/button'
+import { Spin } from '../../components/uielements/spin'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
@@ -259,7 +259,7 @@ export const DepositView = () => {
   const renderLoadingContent = useMemo(
     () => (
       <div className="flex h-screen w-full items-center justify-center bg-bg0 dark:bg-bg0d">
-        <Spin size="large" />
+        <Spin />
       </div>
     ),
     []

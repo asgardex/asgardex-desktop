@@ -1,61 +1,52 @@
-import React, { useMemo, useState } from 'react'
+import React, { Fragment } from 'react'
 
-import { Tabs as ATabs } from 'antd'
-import { TabsProps } from 'antd/lib/tabs'
+import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/react'
 
-import * as Styled from './Tabs.styles'
+import clsx from 'clsx'
+import { Label } from '../uielements/label'
 
-type Props = TabsProps & {
-  defaultTabIndex?: number
+type Props = {
+  className?: string
   tabs: { label: React.ReactNode; key: string; content: React.ReactNode; disabled?: boolean }[]
-  centerContent?: boolean
-  activeTabKey?: string
-  onChange?: (tabKey: string) => void
+  hasPadding?: boolean
+  defaultIndex?: number
+  onChange?: (tabKey: number) => void
 }
 
 export const Tabs = ({
   tabs,
-  defaultTabIndex,
-  defaultActiveKey,
-  centerContent,
-  activeTabKey: activeTabKeyProp,
-  centered = true,
+  defaultIndex = 0,
+  hasPadding = false,
   className,
-  tabBarExtraContent,
-  destroyInactiveTabPane,
-  onChange = (_: string) => {}
+  onChange = (_: number) => {}
 }: Props): JSX.Element => {
-  const [activeTabKey, setActiveTabKey] = useState(defaultActiveKey || tabs[defaultTabIndex || 0].key)
-
-  const content = useMemo(
-    () =>
-      tabs.map(({ label, key, content, disabled = false }) => (
-        <ATabs.TabPane
-          tab={
-            <Styled.TabLabel
-              active={activeTabKey === key}
-              onClick={!disabled ? () => setActiveTabKey(key) : undefined}
-              disabled={disabled}>
-              {label}
-            </Styled.TabLabel>
-          }
-          key={key}
-          disabled={disabled}>
-          <Styled.ContentWrapper centerContent={centerContent}>{content}</Styled.ContentWrapper>
-        </ATabs.TabPane>
-      )),
-    [tabs, activeTabKey, centerContent]
-  )
-
   return (
-    <Styled.Tabs
-      destroyInactiveTabPane={destroyInactiveTabPane}
-      tabBarExtraContent={tabBarExtraContent}
-      className={className}
-      centered={centered}
-      onChange={onChange}
-      activeKey={activeTabKeyProp || activeTabKey}>
-      {content}
-    </Styled.Tabs>
+    <TabGroup defaultIndex={defaultIndex} onChange={onChange}>
+      <TabList className={clsx('flex gap-4 border-b border-solid border-gray0 dark:border-gray0d', className)}>
+        {tabs.map(({ key, label, disabled }) => (
+          <Tab key={key} as={Fragment} disabled={disabled}>
+            {({ hover, selected }) => (
+              <div className={clsx('flex flex-col outline-none', disabled ? 'cursor-not-allowed' : 'cursor-pointer')}>
+                <Label
+                  className="!w-auto p-6 !text-16 !leading-5"
+                  color={hover || selected ? 'primary' : 'dark'}
+                  weight="bold"
+                  textTransform="uppercase">
+                  {label}
+                </Label>
+                {selected && <div className="w-full bg-turquoise h-0.5" />}
+              </div>
+            )}
+          </Tab>
+        ))}
+      </TabList>
+      <TabPanels>
+        {tabs.map(({ key, content }) => (
+          <TabPanel key={key}>
+            <div className={hasPadding ? 'p-8' : 'p-0'}>{content}</div>
+          </TabPanel>
+        ))}
+      </TabPanels>
+    </TabGroup>
   )
 }

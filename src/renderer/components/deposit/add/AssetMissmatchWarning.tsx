@@ -59,7 +59,7 @@ export const AssetMissmatchWarning = (props: Props): JSX.Element => {
     <Alert
       className={className}
       type="warning"
-      message={intl.formatMessage({ id: 'deposit.add.assetMissmatch.title' })}
+      title={intl.formatMessage({ id: 'deposit.add.assetMissmatch.title' })}
       description={subContent}
     />
   )

@@ -16,7 +16,6 @@ import {
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
-import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -43,11 +42,12 @@ import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTy
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
-import { InputBigNumber } from '../../../uielements/input'
+import { Input, InputBigNumber } from '../../../uielements/input'
+import { Label } from '../../../uielements/label'
+import { RadioGroup, Radio } from '../../../uielements/radio'
 import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
@@ -307,15 +307,19 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
 
   const renderFeeOptionsRadioGroup = useCallback(
     ({ rates }: FeesWithRates) => {
-      const onChangeHandler = (e: RadioChangeEvent) => setSelectedFeeOptionKey(e.target.value)
+      const onChangeHandler = (e: string) => setSelectedFeeOptionKey(e as FeeOption)
       return (
-        <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOptionKey} disabled={isLoading}>
+        <RadioGroup
+          className="flex flex-col lg:flex-row lg:space-x-2"
+          onChange={onChangeHandler}
+          value={selectedFeeOptionKey}
+          disabled={isLoading}>
           {Object.keys(rates).map((key) => (
-            <StyledR.Radio value={key as FeeOption} key={key}>
-              <StyledR.RadioLabel>{feeOptionsLabel[key as FeeOption]}</StyledR.RadioLabel>
-            </StyledR.Radio>
+            <Radio value={key as FeeOption} key={key}>
+              <Label textTransform="uppercase">{feeOptionsLabel[key as FeeOption]}</Label>
+            </Radio>
           ))}
-        </StyledR.Radio.Group>
+        </RadioGroup>
       )
     },
 
@@ -543,13 +547,16 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
   )
 
   const renderSlider = useMemo(() => {
-    const percentage = amountToSend
-      .amount()
-      .dividedBy(maxAmount.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
+    const maxAmountValue = maxAmount.amount()
+    const percentage = maxAmountValue.isZero()
+      ? 0
+      : amountToSend
+          .amount()
+          .dividedBy(maxAmountValue)
+          .multipliedBy(100)
+          // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+          .decimalPlaces(0, BigNumber.ROUND_DOWN)
+          .toNumber()
 
     const setAmountToSendFromPercentValue = (percents: number) => {
       const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
@@ -755,7 +762,7 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
               {renderWalletType}
             </Styled.CustomLabel>
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+              <Input size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
             </Form.Item>
             {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
@@ -776,12 +783,12 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
               onClick={addMaxAmountHandler}
               disabled={isMaxButtonDisabled}
             />
-            <div className="w-full px-20px pb-10px">{renderSlider}</div>
+            <div className="w-full py-2">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} onBlur={handleMemo} />
+              <Input size="large" disabled={isLoading} onBlur={handleMemo} />
             </Form.Item>
             <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>

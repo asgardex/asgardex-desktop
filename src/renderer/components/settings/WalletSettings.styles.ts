@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { media } from '../../helpers/styleHelper'
-import * as StyledR from '../shared/form/Radio.styles'
 import { AddressEllipsis as AddressEllipsisUI } from '../uielements/addressEllipsis'
 import { Button as UIButton } from '../uielements/button'
 import { WalletTypeLabel as WalletTypeLabelUI } from '../uielements/common/Common.styles'
@@ -14,21 +13,6 @@ export const AutoComplete = styled(A.AutoComplete)`
     border-color: ${palette('gray', 1)} !important;
     background-color: ${palette('background', 0)} !important;
     color: ${palette('text', 0)};
-  }
-`
-
-export const Input = styled(A.Input)`
-  border-color: ${palette('gray', 1)};
-  max-width: 300px;
-
-  .ant-input {
-    background-color: ${palette('background', 0)} !important;
-    color: ${palette('text', 0)};
-  }
-
-  .ant-input-prefix svg,
-  .anticon-close-circle svg {
-    color: ${palette('gray', 1)};
   }
 `
 
@@ -94,15 +78,6 @@ export const AddLedgerButton = styled(UIButton).attrs({
   padding-left: 0;
   font-size: 17px;
   cursor: pointer;
-`
-
-export const EthDerivationModeRadioLabel = styled(StyledR.RadioLabel)`
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-  ${media.lg`
-  margin-top: 0;
-  `}
 `
 
 export const WalletIndexInput = styled(A.InputNumber)`

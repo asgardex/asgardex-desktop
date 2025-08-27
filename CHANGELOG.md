@@ -1,6 +1,38 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
-# 1.40.5 (2025-7-19)
+# 1.40.7 (2025-08-15)
+
+## Add
+
+- add mayachain trade assets [#855](https://github.com/asgardex/asgardex-desktop/pull/855)
+
+## Update/Fixes
+
+- copy label migration [#857](https://github.com/asgardex/asgardex-desktop/pull/857)
+- alert migration [#856](https://github.com/asgardex/asgardex-desktop/pull/856)
+- collapse migration [#854](https://github.com/asgardex/asgardex-desktop/pull/854)
+- spin migration [#853](https://github.com/asgardex/asgardex-desktop/pull/853)
+- filter menu removal [#852](https://github.com/asgardex/asgardex-desktop/pull/852)
+- Update Yarn Version [#851](https://github.com/asgardex/asgardex-desktop/pull/851)
+- merge maya eth and tc whitelist [#847](https://github.com/asgardex/asgardex-desktop/pull/847)
+- update warning and error view [#844](https://github.com/asgardex/asgardex-desktop/pull/844)
+
+# 1.40.6 (2025-07-29)
+
+## Add
+
+- Enhance TCY screen [#829](https://github.com/asgardex/asgardex-desktop/pull/829)
+- Update route logic on swap page [#830](https://github.com/asgardex/asgardex-desktop/pull/830)
+- Update default slip tolerance to 5% [#834](https://github.com/asgardex/asgardex-desktop/pull/834)
+
+## Update/Fixes
+
+- Fix white screen issues [#829](https://github.com/asgardex/asgardex-desktop/pull/829)
+- Update xchainjs deps [#831](https://github.com/asgardex/asgardex-desktop/pull/831)
+- Antd and styled components removal [#842](https://github.com/asgardex/asgardex-desktop/pull/842)
+- Enhanced error handling and messaging [#841](https://github.com/asgardex/asgardex-desktop/pull/841)
+
+# 1.40.5 (2025-07-19)
 
 ## Add
 
@@ -14,7 +46,7 @@
 - Fix preview only swaps [#815](https://github.com/asgardex/asgardex-desktop/pull/815)
 - Migrate from antd to tanstack [#814](https://github.com/asgardex/asgardex-desktop/pull/814)
 
-# 1.40.4 (2025-7-3)
+# 1.40.4 (2025-07-3)
 
 ## Add
 
@@ -23,7 +55,7 @@
 - Fix Ruji swaps [#808](https://github.com/asgardex/asgardex-desktop/pull/808)
 - Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
 
-# 1.40.3 (2025-6-28)
+# 1.40.3 (2025-06-28)
 
 ## Add
 
@@ -36,7 +68,7 @@
 - Fix Ruji [#802](https://github.com/asgardex/asgardex-desktop/pull/802)
 - Fix target asset list [#803](https://github.com/asgardex/asgardex-desktop/pull/803)
 
-# 1.40.2 (2025-6-20)
+# 1.40.2 (2025-06-20)
 
 ## Update/Fixes
 
@@ -50,7 +82,7 @@
 
 - Add Zcash [#770](https://github.com/asgardex/asgardex-desktop/pull/770)
 
-# 1.40.1 (2025-6-28)
+# 1.40.1 (2025-06-28)
 
 ## Update/Fixes
 

@@ -13,6 +13,6 @@ const tcy: TcyMessages = {
   'tcy.claimNotice': '청구 가능한 TCY 토큰이 지갑에 있습니다.',
   'tcy.stakeNotice': '스테이킹하여 RUNE을 획득할 수 있습니다.',
   'tcy.unstakeNotice': 'TCY를 지갑으로 옮기려면 언스테이킹하세요.'
-};
+}
 
 export default tcy

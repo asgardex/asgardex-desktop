@@ -219,7 +219,7 @@ export const SymDepositView = (props: Props) => {
     (error?: Error) => (
       <>
         {error && (
-          <Alert type="error" message={intl.formatMessage({ id: 'common.error' })} description={error.toString()} />
+          <Alert type="error" title={intl.formatMessage({ id: 'common.error' })} description={error.toString()} />
         )}
         <SymDeposit
           disableDepositAction

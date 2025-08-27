@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
@@ -10,7 +10,7 @@ import { useIntl } from 'react-intl'
 import WalletIcon from '../../../assets/svg/icon-wallet.svg?react'
 import { ValidatePasswordLD } from '../../../services/wallet/types'
 import { BaseButton } from '../../uielements/button'
-import { InputPassword } from '../../uielements/input'
+import { InputPassword } from '../../uielements/input/InputPassword'
 import { Label } from '../../uielements/label'
 
 type PasswordModalProps = {
@@ -35,6 +35,7 @@ const PasswordModal = (props: PasswordModalProps) => {
   } = props
 
   const intl = useIntl()
+  const passwordRef = useRef<HTMLInputElement>(null)
 
   /**
    * Call onOk on success only
@@ -44,6 +45,10 @@ const PasswordModal = (props: PasswordModalProps) => {
       onOk()
     }
   }, [isSuccess, onOk])
+
+  useEffect(() => {
+    passwordRef.current?.focus()
+  }, [])
 
   const [password, setPassword] = useState('')
 
@@ -86,13 +91,13 @@ const PasswordModal = (props: PasswordModalProps) => {
             </Label>
 
             <InputPassword
-              typevalue="normal"
+              // typevalue="normal"
+              ref={passwordRef}
               size="large"
               value={password}
               onChange={onChangePasswordHandler}
               autoComplete="off"
-              autoFocus
-              onPressEnter={onOkCb}
+              onEnter={onOkCb}
             />
             {invalidPassword && (
               <Label color="error" textTransform="uppercase">

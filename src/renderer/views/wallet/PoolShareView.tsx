@@ -5,7 +5,6 @@ import { ArrowPathIcon as SyncOutlined } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AnyAsset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -232,10 +231,10 @@ export const PoolShareView = (): JSX.Element => {
 
   return (
     <>
-      <Row justify="space-between" className="pb-20px">
+      <div className="flex items-center justify-between pb-20px">
         <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
         <RefreshButton onClick={refreshHandler} disabled={disableRefresh} />
-      </Row>
+      </div>
 
       <AssetsNav />
 

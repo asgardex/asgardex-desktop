@@ -202,8 +202,8 @@ const themes: ButtonThemes = getThemes()
 
 const getThemeValue = (color: ButtonColor, typeValue: ButtonType) => {
   const theme = themes[color]
-  const themValue = theme && theme[typeValue]
-  return themValue
+  const themeValue = theme && theme[typeValue]
+  return themeValue
 }
 
 type ButtonWrapperProps = {

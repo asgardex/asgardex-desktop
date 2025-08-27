@@ -106,7 +106,7 @@ export const AssetInfo = (props: Props): JSX.Element => {
             {price}
           </Label>
         )}
-        <Label color="gray" size="big" textTransform="uppercase">
+        <Label align="center" color="gray" size="big" textTransform="uppercase">
           {renderBalance}{' '}
           {FP.pipe(
             oAsset,

@@ -51,6 +51,31 @@ const clientState$: ClientState$ = FP.pipe(
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
+ * Read-only COSMOS client for balance queries without requiring keystore
+ * This client can be used for standalone ledger mode to query balances
+ */
+const readOnlyClientState$: ClientState$ = FP.pipe(
+  clientNetwork$,
+  RxOp.map((network) => {
+    try {
+      // Create client without phrase - only for balance queries
+      const client = new Client({
+        ...defaultClientConfig,
+        network
+        // No phrase - this limits functionality to read-only operations
+      })
+      return RD.success(client)
+    } catch (error) {
+      return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only COSMOS client'))
+    }
+  }),
+  RxOp.startWith<ClientState>(RD.pending),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$: Client$ = readOnlyClientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
+
+/**
  * `Address`
  */
 const address$: C.WalletAddress$ = C.address$(client$, GAIAChain)
@@ -65,4 +90,4 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, GAIAChain)
  */
 const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }

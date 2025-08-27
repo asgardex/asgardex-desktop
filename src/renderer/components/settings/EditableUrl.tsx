@@ -10,7 +10,7 @@ import { IntlShape, useIntl } from 'react-intl'
 import { LiveData } from '../../helpers/rx/liveData'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { BaseButton, BorderButton, TextButton } from '../uielements/button'
-import { Input } from '../uielements/input/Input'
+import { Input } from '../uielements/input'
 
 type FormData = {
   url: string

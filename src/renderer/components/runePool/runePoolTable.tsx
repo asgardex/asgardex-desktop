@@ -55,18 +55,21 @@ export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
       {
         header: intl.formatMessage({ id: 'runePool.detail.current.title' }),
         accessorKey: 'priceDepositLabel',
+        cell: ({ row }) => <Label align="center">{row.original.priceDepositLabel}</Label>,
         enableSorting: false,
         size: 120
       },
       {
         header: intl.formatMessage({ id: 'runePool.detail.assetAmount' }),
         accessorKey: 'depositValueLabel',
+        cell: ({ row }) => <Label align="center">{row.original.depositValueLabel}</Label>,
         enableSorting: false,
         size: 120
       },
       {
         header: intl.formatMessage({ id: 'runePool.detail.redeem.title' }),
         accessorKey: 'withdrawValueLabel',
+        cell: ({ row }) => <Label align="center">{row.original.withdrawValueLabel}</Label>,
         enableSorting: false,
         size: 120
       },
@@ -75,12 +78,14 @@ export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
             {
               header: intl.formatMessage({ id: 'runePool.detail.totalGrowth' }),
               accessorKey: 'withdrawDepositLabel',
+              cell: ({ row }) => <Label align="center">{row.original.withdrawDepositLabel}</Label>,
               enableSorting: false,
               size: 120
             },
             {
               header: intl.formatMessage({ id: 'runePool.detail.percent' }),
               accessorKey: 'growthValueLabel',
+              cell: ({ row }) => <Label align="center">{row.original.growthValueLabel}</Label>,
               enableSorting: false,
               size: 120
             }
@@ -95,6 +100,7 @@ export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
                 </Label>
               ),
               accessorKey: 'walletType',
+              cell: ({ row }) => <Label align="center">{row.original.walletType}</Label>,
               enableSorting: false,
               size: 100
             }
@@ -114,12 +120,11 @@ export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
                 variant="runePool"
                 interactType={InteractType.RunePool}
                 useBorderButton={false}
-                isTextView={false}
+                isTextView={isXLargeScreen}
               />
             </div>
           )
         },
-        size: 80,
         enableSorting: false
       }
     ],

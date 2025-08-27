@@ -1,4 +1,6 @@
-import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
+import { QuoteSwap } from '@xchainjs/xchain-mayachain-query'
+import { THORChain, TxDetails } from '@xchainjs/xchain-thorchain-query'
+import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import { array as A, either as E, function as FP, option as O } from 'fp-ts'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -9,7 +11,7 @@ import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
 import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/midgardTypes'
 import { WalletBalances } from '../../services/wallet/types'
-import { AssetsToSwap } from './Swap.types'
+import { AssetsToSwap, QuoteData } from './Swap.types'
 
 /**
  * Extracts the swap limit from a memo string in the format "=:asset:address:limit[/quantity/interval]:extra:extra".
@@ -184,3 +186,63 @@ export const hasLedgerInBalancesByChain = (chain: Chain, balances: WalletBalance
       () => true
     )
   )
+
+export const getQuoteData = (
+  protocol: Chain,
+  oQuote: O.Option<TxDetails>,
+  oQuoteMaya: O.Option<QuoteSwap>,
+  sourceAsset: AnyAsset,
+  targetAsset: AnyAsset,
+  sourceAssetDecimal: number,
+  targetAssetDecimal: number
+): QuoteData => {
+  const defaultQuoteData: QuoteData = {
+    canSwap: false,
+    slipBasisPoints: 0,
+    streamingSlipBasisPoints: 0,
+    expectedAmountOut: new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset),
+    expiry: new Date(Date.now() + 15 * 60 * 1000), // Default to 15 minutes from now
+    maxStreamingQuantity: 0,
+    errors: [],
+    recommendedMinAmountIn: new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset),
+    memo: ''
+  }
+
+  const mapQuote = <T>(oQuote: O.Option<T>, mapper: (quote: T) => QuoteData): QuoteData =>
+    FP.pipe(
+      oQuote,
+      O.map(mapper),
+      O.getOrElse(() => defaultQuoteData)
+    )
+
+  if (protocol === THORChain) {
+    return mapQuote(oQuote, (txDetails) => ({
+      canSwap: txDetails.txEstimate.canSwap,
+      slipBasisPoints: txDetails.txEstimate.slipBasisPoints,
+      streamingSlipBasisPoints: txDetails.txEstimate.streamingSlipBasisPoints,
+      expectedAmountOut: txDetails.txEstimate.netOutputStreaming,
+      expiry: txDetails.expiry,
+      maxStreamingQuantity: txDetails.txEstimate.maxStreamingQuantity,
+      errors: txDetails.txEstimate.errors,
+      recommendedMinAmountIn: new CryptoAmount(
+        baseAmount(txDetails.txEstimate.recommendedMinAmountIn, sourceAssetDecimal),
+        sourceAsset
+      ),
+      memo: txDetails.memo
+    }))
+  } else {
+    return mapQuote(oQuoteMaya, (quoteSwap) => ({
+      canSwap: quoteSwap.canSwap,
+      slipBasisPoints: quoteSwap.slipBasisPoints,
+      streamingSlipBasisPoints: quoteSwap.slipBasisPoints,
+      expectedAmountOut: quoteSwap.expectedAmount,
+      expiry: new Date(quoteSwap.expiry * 1000),
+      maxStreamingQuantity: quoteSwap.maxStreamingQuantity ? quoteSwap.maxStreamingQuantity : 0,
+      errors: quoteSwap.errors,
+      recommendedMinAmountIn: quoteSwap.recommendedMinAmountIn
+        ? quoteSwap.recommendedMinAmountIn
+        : new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset),
+      memo: quoteSwap.memo
+    }))
+  }
+}

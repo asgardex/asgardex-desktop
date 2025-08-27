@@ -1,1 +1,0 @@
-export { FilterMenu } from './FilterMenu'

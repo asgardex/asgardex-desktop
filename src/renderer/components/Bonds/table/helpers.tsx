@@ -4,7 +4,6 @@ import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, BaseAmount, baseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
-import { Col } from 'antd'
 import { option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
@@ -23,52 +22,44 @@ import { AddressEllipsis } from '../../uielements/addressEllipsis'
 import { Color, Label } from '../../uielements/label'
 
 export const NodeAddress = ({ address, network }: { address: Address; network: Network }) => (
-  <Col xs={18} lg={20} xl={24}>
-    <AddressEllipsis
-      className="font-light text-[12px] tracking-[1px] text-text1 dark:text-text1d normal-case"
-      address={address}
-      chain={address.startsWith('thor') ? THORChain : MAYAChain}
-      network={network}
-    />
-  </Col>
+  <AddressEllipsis
+    className="font-light text-[12px] tracking-[1px] text-text1 dark:text-text1d normal-case"
+    address={address}
+    chain={address.startsWith('thor') ? THORChain : MAYAChain}
+    network={network}
+  />
 )
 
 export const BondValue = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
-  <Col>
-    <Label align="right" nowrap textTransform="uppercase">
-      {formatAssetAmountCurrency({
-        asset: AssetRuneNative,
-        amount: baseToAsset(data.bond),
-        trimZeros: true,
-        decimal: 0
-      })}
-    </Label>
-  </Col>
+  <Label align="right" nowrap textTransform="uppercase">
+    {formatAssetAmountCurrency({
+      asset: AssetRuneNative,
+      amount: baseToAsset(data.bond),
+      trimZeros: true,
+      decimal: 0
+    })}
+  </Label>
 )
 export const BondValueMaya = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
-  <Col>
-    <Label align="right" nowrap textTransform="uppercase">
-      {formatAssetAmountCurrency({
-        asset: AssetCacao,
-        amount: baseToAsset(data.bond),
-        trimZeros: true,
-        decimal: 0
-      })}
-    </Label>
-  </Col>
+  <Label align="right" nowrap textTransform="uppercase">
+    {formatAssetAmountCurrency({
+      asset: AssetCacao,
+      amount: baseToAsset(data.bond),
+      trimZeros: true,
+      decimal: 0
+    })}
+  </Label>
 )
 
 export const AwardValue = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
-  <Col>
-    <Label align="right" nowrap textTransform="uppercase">
-      {formatAssetAmountCurrency({
-        asset: data.address.startsWith('thor') ? AssetRuneNative : AssetCacao,
-        amount: baseToAsset(data.award),
-        trimZeros: true,
-        decimal: 0
-      })}
-    </Label>
-  </Col>
+  <Label align="right" nowrap textTransform="uppercase">
+    {formatAssetAmountCurrency({
+      asset: data.address.startsWith('thor') ? AssetRuneNative : AssetCacao,
+      amount: baseToAsset(data.award),
+      trimZeros: true,
+      decimal: 0
+    })}
+  </Label>
 )
 
 export const Status = ({ data }: { data: NodeInfo | NodeInfoMaya }) => {

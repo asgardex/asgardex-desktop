@@ -10,7 +10,7 @@ import * as RxOp from 'rxjs/operators'
 import { defaultWalletName } from '../../../../shared/utils/wallet'
 import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
 import { FlatButton, RefreshButton } from '../../uielements/button'
-import { Input, InputPassword } from '../../uielements/input'
+import { InputPassword, Input } from '../../uielements/input'
 import { CopyLabel } from '../../uielements/label'
 import type { WordType } from './NewPhraseConfirm.types'
 import { PhraseInfo } from './Phrase.types'
@@ -122,7 +122,7 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
             validateTrigger={['onSubmit', 'onBlur']}
             rules={passwordRules}
             label={intl.formatMessage({ id: 'common.password' })}>
-            <InputPassword className="!text-lg" size="large" />
+            <InputPassword size="large" />
           </Form.Item>
           {/* repeat password */}
           <Form.Item
@@ -132,7 +132,7 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
             validateTrigger={['onSubmit', 'onBlur']}
             rules={passwordRules}
             label={intl.formatMessage({ id: 'wallet.password.repeat' })}>
-            <InputPassword className="!text-lg" size="large" />
+            <InputPassword size="large" />
           </Form.Item>
           {/* name */}
           <Form.Item
@@ -147,12 +147,7 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
                 </span>
               </div>
             }>
-            <Input
-              className="!text-lg"
-              size="large"
-              maxLength={MAX_WALLET_NAME_CHARS}
-              placeholder={initialWalletName}
-            />
+            <Input size="large" maxLength={MAX_WALLET_NAME_CHARS} placeholder={initialWalletName} />
           </Form.Item>
           <FlatButton
             className="mt-20px"

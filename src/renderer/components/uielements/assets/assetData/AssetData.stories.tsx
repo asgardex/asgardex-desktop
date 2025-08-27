@@ -2,7 +2,7 @@ import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
-import { AssetBSC, AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetBSC } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
 import * as AT from '../../../../storybook/argTypes'
 import { AssetData } from './AssetData'
@@ -16,18 +16,14 @@ type Args = {
   walletType: WalletType | undefined
 }
 
-const Template = ({ network, size, noTicker, noPrice, walletType }: Args) => {
+const Template = ({ network, size, noTicker, walletType }: Args) => {
   const amount = assetToBase(assetAmount(2.49274))
-  const price = noPrice ? undefined : assetToBase(assetAmount(217.92))
-  const priceAsset = noPrice ? undefined : AssetRuneNative
 
   return (
     <AssetData
       asset={AssetBSC}
       noTicker={noTicker}
       amount={amount}
-      price={price}
-      priceAsset={priceAsset}
       size={size}
       network={network}
       walletType={walletType}
@@ -66,7 +62,6 @@ const meta: Meta<typeof Template> = {
     network: Network.Mainnet,
     walletType: WalletType.Ledger,
     size: 'small',
-    noPrice: true,
     noTicker: false
   },
   decorators: [

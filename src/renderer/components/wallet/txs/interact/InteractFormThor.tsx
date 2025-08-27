@@ -7,6 +7,7 @@ import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { QuoteTHORNameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import {
+  AnyAsset,
   Asset,
   assetAmount,
   assetToBase,
@@ -17,8 +18,7 @@ import {
   CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Form, Tooltip } from 'antd'
-import { RadioChangeEvent } from 'antd/lib/radio'
+import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
 import { debounce } from 'lodash'
@@ -61,15 +61,16 @@ import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wal
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
-import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
 import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
-import { InputBigNumber } from '../../../uielements/input'
+import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
+import { RadioGroup, Radio } from '../../../uielements/radio'
+import { Tooltip } from '../../../uielements/tooltip'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
@@ -85,7 +86,7 @@ type FormValues = {
   chainAddress: string
   chain: string
   preferredAsset: string
-  expiry: number
+  expiry: string
 }
 type UserNodeInfo = {
   nodeAddress: string
@@ -115,6 +116,13 @@ type Props = {
   runePoolProvider: RunePoolProviderRD
   thorchainLastblock: ThorchainLastblockRD
 }
+
+const preferredAssetMap: Record<string, AnyAsset> = {
+  [AssetBTC.symbol]: AssetBTC,
+  [AssetETH.symbol]: AssetETH,
+  [AssetUSDTDAC.symbol]: AssetUSDTDAC
+}
+
 export const InteractFormThor = ({
   interactType,
   poolDetails,
@@ -289,7 +297,7 @@ export const InteractFormThor = ({
   const [thornameRegister, setThornameRegister] = useState<boolean>(false) // allow to update
   const [thornameQuoteValid, setThornameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
   const [isOwner, setIsOwner] = useState<boolean>(false) // if the thorname.owner is the wallet address then allow to update
-  const [preferredAsset, setPreferredAsset] = useState<Asset>()
+  const [preferredAsset, setPreferredAsset] = useState<string>()
   const [aliasChain, setAliasChain] = useState<string>('')
 
   const [currentMemo, setCurrentMemo] = useState('')
@@ -481,7 +489,7 @@ export const InteractFormThor = ({
     form.validateFields()
     const name = form.getFieldValue('thorname')
     const chain = thornameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
-    const yearsToAdd = form.getFieldValue('expiry')
+    const yearsToAdd = parseInt(form.getFieldValue('expiry'))
     const expiry =
       yearsToAdd === 1
         ? undefined
@@ -496,7 +504,7 @@ export const InteractFormThor = ({
             chain,
             chainAddress,
             owner,
-            preferredAsset,
+            preferredAsset: preferredAsset ? (preferredAssetMap[preferredAsset] as Asset) : undefined,
             expiry,
             isUpdate: thornameUpdate || isOwner
           }
@@ -516,13 +524,11 @@ export const InteractFormThor = ({
     }
   }, [balance.walletAddress, form, isOwner, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
 
-  const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
-    const asset = e.target.value
+  const handleRadioAssetChange = useCallback((asset: string) => {
     setPreferredAsset(asset)
   }, [])
 
-  const handleRadioChainChange = useCallback((e: RadioChangeEvent) => {
-    const chain = e.target.value
+  const handleRadioChainChange = useCallback((chain: string) => {
     setAliasChain(chain)
   }, [])
 
@@ -763,20 +769,20 @@ export const InteractFormThor = ({
 
   const renderRadioGroup = useMemo(
     () => (
-      <StyledR.Radio.Group onChange={() => estimateThornameHandler()}>
-        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={1}>
+      <RadioGroup onChange={() => estimateThornameHandler()}>
+        <Radio className="text-gray2 dark:text-gray2d" value="1">
           1 year
-        </StyledR.Radio>
-        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={2}>
+        </Radio>
+        <Radio className="text-gray2 dark:text-gray2d" value="2">
           2 years
-        </StyledR.Radio>
-        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={3}>
+        </Radio>
+        <Radio className="text-gray2 dark:text-gray2d" value="3">
           3 years
-        </StyledR.Radio>
-        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={5}>
+        </Radio>
+        <Radio className="text-gray2 dark:text-gray2d" value="5">
           5 years
-        </StyledR.Radio>
-      </StyledR.Radio.Group>
+        </Radio>
+      </RadioGroup>
     ),
     [estimateThornameHandler]
   )
@@ -932,7 +938,7 @@ export const InteractFormThor = ({
                   message: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
                 }
               ]}>
-              <Styled.Input disabled={isLoading} onChange={handleMemo} size="large" />
+              <Input disabled={isLoading} onChange={handleMemo} size="large" />
             </Form.Item>
             {/* Display example memos */}
             <div className="mt-4">
@@ -1000,7 +1006,7 @@ export const InteractFormThor = ({
                   validator: addressValidator
                 }
               ]}>
-              <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
+              <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
             </Form.Item>
           </Styled.InputContainer>
         )}
@@ -1018,7 +1024,7 @@ export const InteractFormThor = ({
                       validator: addressValidator
                     }
                   ]}>
-                  <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
+                  <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
                 </Form.Item>
               </>
             }
@@ -1034,7 +1040,7 @@ export const InteractFormThor = ({
                   required: false
                 }
               ]}>
-              <Styled.Input
+              <Input
                 placeholder="Enter a % value, memo will populate with Basis Points automatically"
                 disabled={isLoading}
                 size="large"
@@ -1125,7 +1131,7 @@ export const InteractFormThor = ({
                       required: false
                     }
                   ]}>
-                  <Styled.Input
+                  <Input
                     placeholder="Enter a % value, memo will populate with Basis Points automatically"
                     disabled={isLoading}
                     size="large"
@@ -1156,7 +1162,7 @@ export const InteractFormThor = ({
                     required: true
                   }
                 ]}>
-                <Styled.Input disabled={isLoading} size="large" onChange={() => thornameHandler()} />
+                <Input disabled={isLoading} size="large" onChange={() => thornameHandler()} />
               </Styled.FormItem>
               {O.isSome(oThorname) && !thornameAvailable && !isOwner && renderThornameError}
             </Styled.InputContainer>
@@ -1186,17 +1192,17 @@ export const InteractFormThor = ({
                         required: false
                       }
                     ]}>
-                    <StyledR.Radio.Group onChange={handleRadioAssetChange} value={preferredAsset}>
-                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBTC}>
+                    <RadioGroup onChange={handleRadioAssetChange} value={preferredAsset}>
+                      <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.symbol}>
                         BTC
-                      </StyledR.Radio>
-                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH}>
+                      </Radio>
+                      <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.symbol}>
                         ETH
-                      </StyledR.Radio>
-                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetUSDTDAC}>
+                      </Radio>
+                      <Radio className="text-gray2 dark:text-gray2d" value={AssetUSDTDAC.symbol}>
                         USDT
-                      </StyledR.Radio>
-                    </StyledR.Radio.Group>
+                      </Radio>
+                    </RadioGroup>
                   </Styled.FormItem>
                   {/* Add input fields for aliasChain, aliasAddress, and expiry */}
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
@@ -1208,20 +1214,20 @@ export const InteractFormThor = ({
                         message: 'Please provide an alias chain.'
                       }
                     ]}>
-                    <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
-                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetAVAX.chain}>
+                    <RadioGroup onChange={handleRadioChainChange} value={aliasChain}>
+                      <Radio className="text-gray2 dark:text-gray2d" value={AssetAVAX.chain}>
                         AVAX
-                      </StyledR.Radio>
-                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
+                      </Radio>
+                      <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
                         BTC
-                      </StyledR.Radio>
-                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
+                      </Radio>
+                      <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
                         ETH
-                      </StyledR.Radio>
-                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetDOGE}>
+                      </Radio>
+                      <Radio className="text-gray2 dark:text-gray2d" value={AssetDOGE.chain}>
                         DOGE
-                      </StyledR.Radio>
-                    </StyledR.Radio.Group>
+                      </Radio>
+                    </RadioGroup>
                   </Styled.FormItem>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
                   <Styled.FormItem
@@ -1232,7 +1238,7 @@ export const InteractFormThor = ({
                         message: 'Please provide an alias address.'
                       }
                     ]}>
-                    <Styled.Input disabled={isLoading} size="middle" />
+                    <Input disabled={isLoading} size="large" />
                   </Styled.FormItem>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
                   <Styled.FormItem
@@ -1257,11 +1263,11 @@ export const InteractFormThor = ({
                         message: 'Please provide an alias chain.'
                       }
                     ]}>
-                    <StyledR.Radio.Group>
-                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
+                    <RadioGroup>
+                      <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
                         THOR
-                      </StyledR.Radio>
-                    </StyledR.Radio.Group>
+                      </Radio>
+                    </RadioGroup>
                   </Styled.FormItem>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
                   <Styled.FormItem
@@ -1272,7 +1278,7 @@ export const InteractFormThor = ({
                         message: 'Please provide an alias address.'
                       }
                     ]}>
-                    <Styled.Input disabled={isLoading} size="middle" />
+                    <Input disabled={isLoading} size="large" />
                   </Styled.FormItem>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
                   <Styled.FormItem

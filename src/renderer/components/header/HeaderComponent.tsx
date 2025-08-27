@@ -2,20 +2,16 @@ import { useMemo, useState, useCallback, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Row, Col } from 'antd'
 import clsx from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
-import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useMatch, Link, useNavigate, useLocation } from 'react-router-dom'
-import { palette, size } from 'styled-theme'
 
 import CloseIcon from '../../assets/svg/icon-close.svg?react'
 import MenuIcon from '../../assets/svg/icon-menu.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
 import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
-import { useThemeContext } from '../../contexts/ThemeContext'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import * as appRoutes from '../../routes/app'
 import * as poolsRoutes from '../../routes/pools'
@@ -36,7 +32,6 @@ import { isLocked } from '../../services/wallet/util'
 import { PricePoolAsset, PricePoolAssets } from '../../views/pools/Pools.types'
 import { Drawer } from '../uielements/drawer'
 import { Label } from '../uielements/label'
-import * as Styled from './HeaderComponent.styles'
 import { HeaderLock } from './lock/'
 import { HeaderLockMobile } from './lock/HeaderLockMobile'
 import { HeaderNetStatus } from './netstatus'
@@ -123,9 +118,6 @@ export const HeaderComponent = (props: Props): JSX.Element => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const { theme$ } = useThemeContext()
-  const theme = useObservableState(theme$)
-
   // store previous data to render it while reloading new data
   const prevPricePoolAssets = useRef<PricePoolAssets>()
 
@@ -187,8 +179,6 @@ export const HeaderComponent = (props: Props): JSX.Element => {
     ],
     [intl]
   )
-
-  const headerHeight = useMemo(() => size('headerHeight', '70px')({ theme }), [theme])
 
   const links = useMemo(
     () =>
@@ -280,102 +270,70 @@ export const HeaderComponent = (props: Props): JSX.Element => {
     ]
   )
 
-  const iconStyle = { fontSize: '1.5em', marginRight: '20px' }
-  const color = useMemo(() => palette('text', 0)({ theme }), [theme])
-
   const headerRef = useRef<O.Option<HTMLElement>>(O.none)
   const setHeaderRef = useCallback((ref: HTMLElement | null) => {
     headerRef.current = O.fromNullable(ref)
   }, [])
 
   return (
-    <>
-      <Styled.HeaderContainer className="!bg-bg3 dark:!bg-bg3d">
-        <Row justify="space-between" align="middle" style={{ height: headerHeight }} ref={setHeaderRef}>
-          {isDesktopView && (
-            <>
-              <Col>
-                <Row align="middle" style={{ height: headerHeight }}>
-                  <HeaderStats
-                    runePrice={runePriceRD}
-                    tcyPrice={tcyPriceRD}
-                    mayaPrice={mayaPriceRD}
-                    reloadRunePrice={reloadRunePrice}
-                    reloadTcyPrice={reloadTcyPrice}
-                    reloadMayaPrice={reloadMayaPrice}
-                    volume24PriceRune={volume24PriceRD}
-                    volume24PriceMaya={volume24PriceMayaRD}
-                    reloadVolume24PriceRune={reloadVolume24PriceRune}
-                    reloadVolume24PriceMaya={reloadVolume24PriceMaya}
-                  />
-                </Row>
-              </Col>
-              <Col>
-                <Row className="space-x-2" align="middle">
-                  {renderHeaderNetStatus}
-                  <HeaderTheme isDesktopView={isDesktopView} />
-                  {renderHeaderCurrency}
-                  <HeaderLock
-                    keystoreState={keystore}
-                    wallets={wallets}
-                    lockHandler={clickLockHandler}
-                    changeWalletHandler$={changeWalletHandler$}
-                  />
-                  {renderHeaderSettings}
-                </Row>
-              </Col>
-            </>
-          )}
-          {!isDesktopView && (
-            <>
-              <Row align="middle">
-                <HeaderStats
-                  runePrice={runePriceRD}
-                  tcyPrice={tcyPriceRD}
-                  mayaPrice={mayaPriceRD}
-                  reloadRunePrice={reloadRunePrice}
-                  reloadTcyPrice={reloadTcyPrice}
-                  reloadMayaPrice={reloadMayaPrice}
-                  volume24PriceRune={volume24PriceRD}
-                  volume24PriceMaya={volume24PriceMayaRD}
-                  reloadVolume24PriceRune={reloadVolume24PriceRune}
-                  reloadVolume24PriceMaya={reloadVolume24PriceMaya}
-                />
-              </Row>
-              <Col>
-                <Row align="middle" style={{ height: headerHeight, cursor: 'pointer' }} onClick={toggleMenu}>
-                  {menuVisible ? (
-                    <CloseIcon style={{ color, ...iconStyle }} />
-                  ) : (
-                    <MenuIcon style={{ color, ...iconStyle }} />
-                  )}
-                </Row>
-              </Col>
-            </>
-          )}
-        </Row>
-        {!isDesktopView && (
-          <Drawer
-            title={<AsgardexLogo className="text-text2 dark:text-text2d [&>*]:fill-current" />}
-            isOpen={menuVisible}
-            onClose={() => setMenuVisible(false)}>
-            {links}
-            <div className="flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d">
-              {renderHeaderCurrency}
-            </div>
-            <div className="flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d">
-              <HeaderTheme isDesktopView={isDesktopView} />
-            </div>
-            <div className="flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d">
-              <HeaderLockMobile keystoreState={keystore} onPress={clickLockHandler} />
-            </div>
-            <div className="flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d">
-              {renderHeaderSettings}
-            </div>
+    <div className="!bg-bg3 dark:!bg-bg3d">
+      <div className="flex items-center justify-between h-[70px]" ref={setHeaderRef}>
+        <HeaderStats
+          runePrice={runePriceRD}
+          tcyPrice={tcyPriceRD}
+          mayaPrice={mayaPriceRD}
+          reloadRunePrice={reloadRunePrice}
+          reloadTcyPrice={reloadTcyPrice}
+          reloadMayaPrice={reloadMayaPrice}
+          volume24PriceRune={volume24PriceRD}
+          volume24PriceMaya={volume24PriceMayaRD}
+          reloadVolume24PriceRune={reloadVolume24PriceRune}
+          reloadVolume24PriceMaya={reloadVolume24PriceMaya}
+        />
+        {isDesktopView ? (
+          <div className="flex items-center space-x-2">
             {renderHeaderNetStatus}
-          </Drawer>
+            <HeaderTheme isDesktopView={isDesktopView} />
+            {renderHeaderCurrency}
+            <HeaderLock
+              keystoreState={keystore}
+              wallets={wallets}
+              lockHandler={clickLockHandler}
+              changeWalletHandler$={changeWalletHandler$}
+            />
+            {renderHeaderSettings}
+          </div>
+        ) : (
+          <div className="flex items-center h-[70px] cursor-pointer" onClick={toggleMenu}>
+            {menuVisible ? (
+              <CloseIcon className="[&>*]:fill-text0 [&>*]:dark:fill-text0d text-[24px] mr-5" />
+            ) : (
+              <MenuIcon className="[&>*]:fill-text0 [&>*]:dark:fill-text0d text-[24px] mr-5" />
+            )}
+          </div>
         )}
-      </Styled.HeaderContainer>
-    </>
+      </div>
+      {!isDesktopView && (
+        <Drawer
+          title={<AsgardexLogo className="text-text2 dark:text-text2d [&>*]:fill-current" />}
+          isOpen={menuVisible}
+          onClose={() => setMenuVisible(false)}>
+          {links}
+          <div className="flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d">
+            {renderHeaderCurrency}
+          </div>
+          <div className="flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d">
+            <HeaderTheme isDesktopView={isDesktopView} />
+          </div>
+          <div className="flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d">
+            <HeaderLockMobile keystoreState={keystore} onPress={clickLockHandler} />
+          </div>
+          <div className="flex items-center h-[60px] border-b border-solid border-bg2 dark:border-bg2d">
+            {renderHeaderSettings}
+          </div>
+          {renderHeaderNetStatus}
+        </Drawer>
+      )}
+    </div>
   )
 }

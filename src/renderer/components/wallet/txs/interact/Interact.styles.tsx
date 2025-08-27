@@ -5,7 +5,7 @@ import { palette } from 'styled-theme'
 import { media } from '../../../../helpers/styleHelper'
 import { InnerForm } from '../../../shared/form'
 import { Menu as MenuUI } from '../../../shared/menu'
-import { Button as UIButton, ButtonProps as UIButtonProps } from '../../../uielements/button'
+import { Button as UIButton } from '../../../uielements/button'
 import { WalletTypeLabel as WalletTypeLabelUI } from '../../../uielements/common/Common.styles'
 import { Fees as UIFees } from '../../../uielements/fees'
 import { Label as UILabel } from '../../../uielements/label'
@@ -23,11 +23,6 @@ export const Container = styled('div')`
   `}
 `
 
-export const Input = styled(A.Input)`
-  background: inherit !important;
-  color: ${palette('text', 0)};
-`
-
 export const WalletTypeLabel = styled(WalletTypeLabelUI)`
   margin-left: 10px;
 `
@@ -38,53 +33,11 @@ export const FormWrapper = styled('div')`
   flex-grow: 1;
 `
 
-export const Tabs = styled(A.Tabs)`
-  ${media.sm`
-    flex-grow: 1;
-
-    & .ant-tabs-content-holder {
-      display: flex;
-    }
-  `}
-`
-
 export const TabButtonsContainer = styled('div')`
   display: flex;
   flex-direction: row;
   margin-bottom: 40px;
 `
-
-type TabButtonProps = UIButtonProps & { selected: boolean }
-
-export const TabButton = styled(UIButton).attrs<TabButtonProps>(({ selected }) => ({
-  typevalue: 'transparent',
-  weight: selected ? 'bold' : 'normal'
-}))<TabButtonProps>`
-  border: none !important;
-  padding: 0 10px;
-  font-size: 16px !important;
-  color: ${({ selected }) => palette('text', selected ? 1 : 0)} !important;
-  border-radius: 0;
-  min-width: auto !important;
-
-  &:first-child {
-    padding-left: 0;
-  }
-
-  &:last-child {
-    padding-right: 0;
-  }
-
-  &.ant-btn {
-    span {
-      border-bottom: 2px solid transparent;
-      border-bottom-color: ${({ selected }) => selected && palette('primary', 2)};
-    }
-  }
-`
-
-export const TabPane = styled(A.Tabs.TabPane)``
-
 export const Form = styled(InnerForm)`
   display: flex;
   height: 100%;

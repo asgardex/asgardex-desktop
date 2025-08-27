@@ -109,7 +109,7 @@ export const PendingAssetsWarning = (props: PendingAssetsProps): JSX.Element => 
     <Alert
       className={className}
       type="warning"
-      message={intl.formatMessage({ id: 'deposit.add.pendingAssets.title' })}
+      title={intl.formatMessage({ id: 'deposit.add.pendingAssets.title' })}
       description={subContent}
     />
   )
