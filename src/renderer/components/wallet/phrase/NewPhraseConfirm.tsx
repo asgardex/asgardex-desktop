@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { TrashIcon as DeleteOutlined, ArrowUturnRightIcon as RedoOutlined } from '@heroicons/react/24/outline'
-import { Form } from 'antd'
 import shuffleArray from 'lodash.shuffle'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -12,7 +11,6 @@ import { isSelectedFactory, sortedSelected } from '../../../helpers/array'
 import * as walletRoutes from '../../../routes/wallet'
 import { FlatButton, TextButton } from '../../uielements/button'
 import { Phrase } from './index'
-import * as NewPhraseStyled from './NewPhrase.styles'
 import { checkPhraseConfirmWordsFactory } from './NewPhraseConfirm.helper'
 import { WordType } from './NewPhraseConfirm.types'
 
@@ -32,7 +30,6 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
     },
     [setWordsList, setMnemonicError]
   )
-
   const shuffledWords = useCallback<(array: WordType[]) => WordType[]>(shuffleArray, [])
 
   const init = useCallback(() => {
@@ -103,43 +100,47 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
     },
     [wordsList, updateWordList]
   )
-  const handleFormSubmit = useCallback(() => {
-    const checkwords = checkPhraseConfirmWords(wordsList, sortedSelectedWords)
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault()
+      const checkwords = checkPhraseConfirmWords(wordsList, sortedSelectedWords)
 
-    if (checkwords && !loading) {
-      setLoading(true)
-      onConfirm()
-        .then(() => {
-          navigate(walletRoutes.base.path())
-        })
-        .catch((error) => {
-          setLoading(false)
-          const errorMsg = `${intl.formatMessage({ id: 'wallet.create.error' })} (error: ${
-            isError(error) ? error?.message ?? error.toString() : `${error}`
-          })`
-          setMnemonicError(errorMsg)
-        })
-    }
-    // In case ALL words were entered in a wrong set error
-    else if (wordsList.length === sortedSelectedWords.length) {
-      setMnemonicError(intl.formatMessage({ id: 'wallet.create.error.phrase' }))
-    }
-  }, [checkPhraseConfirmWords, wordsList, sortedSelectedWords, loading, onConfirm, navigate, intl])
+      if (checkwords && !loading) {
+        setLoading(true)
+        onConfirm()
+          .then(() => {
+            navigate(walletRoutes.base.path())
+          })
+          .catch((error) => {
+            setLoading(false)
+            const errorMsg = `${intl.formatMessage({ id: 'wallet.create.error' })} (error: ${
+              isError(error) ? error?.message ?? error.toString() : `${error}`
+            })`
+            setMnemonicError(errorMsg)
+          })
+      }
+      // In case ALL words were entered in a wrong set error
+      else if (wordsList.length === sortedSelectedWords.length) {
+        setMnemonicError(intl.formatMessage({ id: 'wallet.create.error.phrase' }))
+      }
+    },
+    [checkPhraseConfirmWords, wordsList, sortedSelectedWords, loading, onConfirm, navigate, intl]
+  )
 
   return (
     <div className="flex flex-col w-full">
-      <Form labelCol={{ span: 24 }} onFinish={handleFormSubmit}>
+      <form onSubmit={handleFormSubmit}>
         <h2 className="mb-20px font-mainSemiBold text-sm text-text0 dark:text-text0d">
           {intl.formatMessage({ id: 'wallet.create.enter.phrase' })}
         </h2>
         <div className="flex w-full flex-col items-center justify-center">
-          <NewPhraseStyled.FormItem className="w-full !mb-2" name="mnemonic">
+          <div className="w-full !mb-2">
             <Phrase
               wordIcon={<DeleteOutlined className="w-4 h-4 text-red" />}
               words={sortedSelectedWords}
               onWordClick={handleRemoveWord}
             />
-          </NewPhraseStyled.FormItem>
+          </div>
 
           <span className="text-red text-xs px-2">{mnemonicError}</span>
 
@@ -165,7 +166,7 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
             ))}
           </div>
           <FlatButton
-            className="mt-20px"
+            className="mt-4 min-w-40"
             size="large"
             color="primary"
             type="submit"
@@ -174,7 +175,7 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
             {intl.formatMessage({ id: 'common.finish' })}
           </FlatButton>
         </div>
-      </Form>
+      </form>
     </div>
   )
 }

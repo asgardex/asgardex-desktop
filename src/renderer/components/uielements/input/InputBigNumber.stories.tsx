@@ -2,9 +2,8 @@ import React, { useCallback } from 'react'
 
 import { Meta } from '@storybook/react'
 import { bn } from '@xchainjs/xchain-util'
-import { Form, Row } from 'antd'
-import { Rule } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import { useForm } from 'react-hook-form'
 
 import { Button } from '../button'
 import { InputBigNumber, InputBigNumber as Component } from './InputBigNumber'
@@ -26,39 +25,46 @@ type FormValues = {
 }
 
 const FormValidation = () => {
-  const [form] = Form.useForm<FormValues>()
-  const checkValue = (_: Rule, value?: BigNumber) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<FormValues>({
+    defaultValues: {
+      amount: bn('1')
+    }
+  })
+
+  const checkValue = (value?: BigNumber) => {
     console.log('checkValue ', value?.toString() ?? 'undefined value')
     if (value && value.isGreaterThan(bn(10))) {
-      return Promise.resolve()
+      return true
     }
-    return Promise.reject('Value must be greater than 10!')
+    return 'Value must be greater than 10!'
   }
-  const onFinish = (values: {}) => {
+
+  const onFinish = (values: FormValues) => {
     console.log('onFinish: ', values)
   }
 
   return (
-    <Form
-      form={form}
-      onFinish={onFinish}
-      initialValues={{
-        // initial value for amount
-        amount: bn('1')
-      }}>
-      <Form.Item name="amount" label="Amount" rules={[{ validator: checkValue }]}>
+    <form onSubmit={handleSubmit(onFinish)}>
+      <div className="mb-4">
+        <label className="block mb-2 text-sm font-medium">Amount</label>
         <InputBigNumber
+          {...register('amount', {
+            validate: checkValue
+          })}
           onChange={(value) => {
             console.log('onChange ', value?.toString() ?? 'undefined value')
           }}
         />
-      </Form.Item>
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-      </Form.Item>
-    </Form>
+        {errors.amount && <p className="mt-1 text-xs text-red-500">{errors.amount.message}</p>}
+      </div>
+      <Button type="primary" htmlType="submit">
+        Submit
+      </Button>
+    </form>
   )
 }
 
@@ -74,12 +80,12 @@ const SetValue = () => {
     setValue(v)
   }, [])
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="p-4">
       <InputBigNumber value={value} onChange={handleChange} />
-      <Row>
+      <div className="flex gap-2 mt-2">
         <Button onClick={() => setValue(bn(40000))}>Set 40k</Button>
         <Button onClick={() => setValue(bn(2000))}>Set 2k</Button>
-      </Row>
+      </div>
     </div>
   )
 }
@@ -95,7 +101,7 @@ const SetDecimal = ({ decimal }: { decimal: number }) => {
     setValue(v)
   }, [])
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="p-4">
       <InputBigNumber value={value} onChange={handleChange} decimal={decimal} />
     </div>
   )

@@ -27,7 +27,9 @@ export const CopyLabel = ({ label, textToCopy, className = '', iconClassName = '
   }, [textToCopy])
 
   return (
-    <div className={clsx('flex items-center text-turquoise group transition-colors', className)} onClick={handleCopy}>
+    <div
+      className={clsx('flex items-center cursor-pointer text-turquoise group transition-colors', className)}
+      onClick={handleCopy}>
       {label && <span className={clsx('mr-1 font-main uppercase text-inherit', className)}>{label}</span>}
       {copied ? (
         <CheckIcon className={clsx('h-5 w-5 text-turquoise', iconClassName)} />
