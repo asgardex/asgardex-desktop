@@ -6,9 +6,9 @@ import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
-import { Form } from 'antd'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
+import { useForm } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { ExtendedNodeInfoThor } from '../../hooks/useNodeInfos'
@@ -19,7 +19,6 @@ import { NodeInfos } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
 import { WalletAddressInfo } from '../../views/bonds/types'
 import { ErrorView } from '../shared/error'
-import { InnerForm } from '../shared/form'
 import { Button, FilterButton, ReloadButton } from '../uielements/button'
 import { Input } from '../uielements/input'
 import { BondsTable } from './table'
@@ -47,6 +46,10 @@ enum BondsViewMode {
   Watchlist = 'watchlist'
 }
 
+type FormValues = {
+  address: string
+}
+
 export const Bonds = ({
   addressValidationThor,
   addressValidationMaya,
@@ -67,7 +70,19 @@ export const Bonds = ({
   const [viewMode, setViewMode] = useState(BondsViewMode.All)
   const { protocol } = useApp()
   const intl = useIntl()
-  const [form] = Form.useForm()
+
+  // Initialize react-hook-form
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm<FormValues>({
+    defaultValues: {
+      address: ''
+    }
+  })
+
   const prevNodesThor = useRef<O.Option<ExtendedNodeInfoThor[]>>(O.none)
   const prevNodesMaya = useRef<O.Option<ExtendedNodeInfoMaya[]>>(O.none)
 
@@ -91,17 +106,18 @@ export const Bonds = ({
 
   const nodes = protocol === THORChain ? nodesThor : nodesMaya
 
+  // Validation function for react-hook-form
   const addressValidator = useCallback(
-    async (_: unknown, value: string) => {
+    (value: string) => {
       if (!value) {
-        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
+        return intl.formatMessage({ id: 'wallet.errors.address.empty' })
       }
       const loweredCaseValue = value.toLowerCase()
       const validAddress =
         protocol === THORChain ? addressValidationThor(loweredCaseValue) : addressValidationMaya(loweredCaseValue)
 
       if (!validAddress) {
-        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
+        return intl.formatMessage({ id: 'wallet.errors.address.invalid' })
       }
 
       if (
@@ -110,18 +126,20 @@ export const Bonds = ({
             address.toLowerCase() === loweredCaseValue && isUserStoredNodeAddress
         ) > -1
       ) {
-        return Promise.reject(intl.formatMessage({ id: 'bonds.validations.nodeAlreadyAdded' }))
+        return intl.formatMessage({ id: 'bonds.validations.nodeAlreadyAdded' })
       }
+
+      return true
     },
     [addressValidationMaya, addressValidationThor, intl, nodes, protocol]
   )
 
   const onSubmit = useCallback(
-    ({ address }: { address: string }) => {
+    ({ address }: FormValues) => {
       addNode(address, network)
-      form.resetFields()
+      reset()
     },
-    [addNode, form, network]
+    [addNode, network, reset]
   )
 
   const renderTable = useCallback(
@@ -286,18 +304,26 @@ export const Bonds = ({
 
   return (
     <div className={clsx('bg-bg0 dark:bg-bg0d', className)}>
-      <InnerForm className="flex items-center" onFinish={onSubmit} form={form} disabled={disableForm}>
+      <form className="flex items-center" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex w-full flex-row items-center justify-between px-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <Form.Item className="!m-0" name="address" rules={[{ required: true, validator: addressValidator }]}>
+          <div className="flex items-start space-x-2">
+            <div className="flex flex-col">
               <Input
                 className="border border-solid border-gray0 dark:border-gray0d"
                 uppercase={false}
                 type="text"
                 placeholder={intl.formatMessage({ id: 'bonds.node.enterMessage' })}
+                {...register('address', {
+                  required: true,
+                  validate: addressValidator
+                })}
+                error={!!errors.address}
                 disabled={disableForm}
               />
-            </Form.Item>
+              {errors.address && (
+                <span className="text-error0 dark:text-error0d text-xs mt-1">{errors.address.message}</span>
+              )}
+            </div>
             <Button className="space-x-1" htmlType="submit" disabled={disableForm} typevalue="transparent">
               <PlusIcon className="bg-turquoise rounded-full w-4 h-4 stroke-text3 dark:stroke-text3d" />
               {intl.formatMessage({ id: 'bonds.node.add' })}
@@ -316,7 +342,7 @@ export const Bonds = ({
             </FilterButton>
           </div>
         </div>
-      </InnerForm>
+      </form>
       {protocol === THORChain ? renderNodeInfos : renderNodeInfosMaya}
     </div>
   )
