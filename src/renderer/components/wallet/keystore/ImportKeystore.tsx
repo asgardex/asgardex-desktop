@@ -138,7 +138,11 @@ export const ImportKeystore = (props: Props): JSX.Element => {
       {renderClientError}
       <div className="flex flex-col items-center">
         {/* import button */}
-        <BorderButton className="mb-2 cursor-pointer !rounded-lg w-full" size="large" onClick={uploadKeystore}>
+        <BorderButton
+          className="mb-2 cursor-pointer !rounded-lg w-full"
+          type="button"
+          size="large"
+          onClick={uploadKeystore}>
           {RD.isSuccess(loadKeystoreState) ? (
             <CheckCircleIcon className="w-4 h-4 text-turquoise" />
           ) : (

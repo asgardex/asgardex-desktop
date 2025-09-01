@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 import { Meta } from '@storybook/react'
 import { bn } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 
 import { Button } from '../button'
 import { InputBigNumber, InputBigNumber as Component } from './InputBigNumber'
@@ -26,7 +26,7 @@ type FormValues = {
 
 const FormValidation = () => {
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors }
   } = useForm<FormValues>({
@@ -51,13 +51,13 @@ const FormValidation = () => {
     <form onSubmit={handleSubmit(onFinish)}>
       <div className="mb-4">
         <label className="block mb-2 text-sm font-medium">Amount</label>
-        <InputBigNumber
-          {...register('amount', {
-            validate: checkValue
-          })}
-          onChange={(value) => {
-            console.log('onChange ', value?.toString() ?? 'undefined value')
-          }}
+        <Controller
+          name="amount"
+          control={control}
+          rules={{ validate: checkValue }}
+          render={({ field: { value, onChange } }) => (
+            <InputBigNumber value={value} onChange={onChange as unknown as (v: BigNumber) => void} />
+          )}
         />
         {errors.amount && <p className="mt-1 text-xs text-red-500">{errors.amount.message}</p>}
       </div>

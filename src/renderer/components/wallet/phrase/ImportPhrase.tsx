@@ -16,9 +16,6 @@ import { FlatButton } from '../../uielements/button'
 import { InputPassword, Input } from '../../uielements/input'
 import { Spin } from '../../uielements/spin'
 
-/* css import is needed to override antd */
-import '../../uielements/input/overrides.css'
-
 type FormValues = {
   phrase: string
   password: string
@@ -41,9 +38,10 @@ export const ImportPhrase = (props: Props): JSX.Element => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     watch
   } = useForm<FormValues>({
+    mode: 'onChange',
     defaultValues: {
       phrase: '',
       password: '',
@@ -53,11 +51,9 @@ export const ImportPhrase = (props: Props): JSX.Element => {
   })
 
   const password = watch('password')
-  const phrase = watch('phrase')
 
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState<O.Option<Error>>(O.none)
-  const [validPhrase, setValidPhrase] = useState(false)
 
   useEffect(() => {
     FP.pipe(
@@ -78,16 +74,6 @@ export const ImportPhrase = (props: Props): JSX.Element => {
       )
     )
   }, [clientStates])
-
-  // Validate phrase when it changes
-  useEffect(() => {
-    if (phrase) {
-      const valid = crypto.validatePhrase(phrase)
-      setValidPhrase(valid)
-    } else {
-      setValidPhrase(false)
-    }
-  }, [phrase])
 
   const submitForm = useCallback(
     async ({ phrase: newPhrase, password, name }: FormValues) => {
@@ -228,7 +214,7 @@ export const ImportPhrase = (props: Props): JSX.Element => {
             size="large"
             color="primary"
             type="submit"
-            disabled={!validPhrase || importing}>
+            disabled={!isValid || importing}>
             {intl.formatMessage({ id: 'wallet.action.import' })}
           </FlatButton>
         </div>

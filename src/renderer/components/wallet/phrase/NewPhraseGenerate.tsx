@@ -48,6 +48,7 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
     formState: { errors },
     watch
   } = useForm<FormValues>({
+    mode: 'onChange',
     defaultValues: {
       password: '',
       repeatPassword: '',
