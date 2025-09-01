@@ -55,12 +55,18 @@ export const ImportKeystore = (props: Props): JSX.Element => {
 
   const submitForm = useCallback(
     async ({ password, name }: FormValues) => {
-      FP.pipe(
-        loadKeystoreState,
-        RD.map(async (keystore) => {
-          await importKeystore({ keystore, password, id: walletId, name: name || defaultWalletName(walletId) })
-        })
-      )
+      if (RD.isSuccess(loadKeystoreState)) {
+        try {
+          await importKeystore({
+            keystore: loadKeystoreState.value,
+            password,
+            id: walletId,
+            name: name || defaultWalletName(walletId)
+          })
+        } catch {
+          console.error('Error importing keystore')
+        }
+      }
     },
     [importKeystore, loadKeystoreState, walletId]
   )

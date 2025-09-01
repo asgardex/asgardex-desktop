@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { TrashIcon as DeleteOutlined, ArrowUturnRightIcon as RedoOutlined } from '@heroicons/react/24/outline'
 import shuffleArray from 'lodash.shuffle'
@@ -49,7 +49,9 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
     return sortedSelected(wordsList, 'sequence')
   }, [wordsList])
 
-  init()
+  useEffect(() => {
+    init()
+  }, [init])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const isSelected = useCallback(isSelectedFactory(wordsList, '_id'), [wordsList])
@@ -155,6 +157,7 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
               <div key={word._id} className="text-center">
                 <TextButton
                   className="w-full rounded-xl border border-solid border-gray0 dark:border-gray0d"
+                  type="button"
                   uppercase={false}
                   size="large"
                   color="neutral"
