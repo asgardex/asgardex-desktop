@@ -142,7 +142,7 @@ export const verifyLedgerAddress = async ({
       result = await verifyTHORAddress({ transport, network, walletAccount, walletIndex })
       break
     case BTCChain:
-      result = await verifyBTCAddress({ transport, network, walletAccount, walletIndex })
+      result = await verifyBTCAddress({ transport, network, walletAccount, walletIndex, hdMode })
       break
     case LTCChain:
       result = await verifyLTCAddress({ transport, network, walletAccount, walletIndex })

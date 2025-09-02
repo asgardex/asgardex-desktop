@@ -20,7 +20,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const common = C.createTransactionService(client$)
 
   const sendLedgerTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD => {
-    const { amount, sender, recipient, memo, walletIndex, feeRate, walletAccount } = params
+    const { amount, sender, recipient, memo, walletIndex, feeRate, walletAccount, hdMode } = params
     const sendLedgerTxParams: IPCLedgerSendTxParams = {
       chain: DOGEChain,
       asset: AssetDOGE,
@@ -36,7 +36,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       walletIndex,
       walletAccount,
       nodeUrl: undefined,
-      hdMode: 'default',
+      hdMode,
       apiKey: blockcypherApiKey
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(sendLedgerTxParams)

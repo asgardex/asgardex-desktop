@@ -31,6 +31,10 @@ export type StandaloneLedgerState = {
   detectionProgress?: {
     currentChain?: Chain
   }
+  // Detection parameters
+  selectedHDMode?: HDMode // HD mode selected by user for detection
+  selectedWalletAccount?: number // Wallet account selected by user
+  selectedWalletIndex?: number // Wallet index selected by user
 }
 
 // Application-level wallet state that can be either keystore-based or standalone ledger
@@ -121,7 +125,12 @@ export type KeystoreService = {
 export type StandaloneLedgerState$ = Rx.Observable<StandaloneLedgerState>
 export type AppWalletState$ = Rx.Observable<AppWalletState>
 
-export type ConnectLedgerChainHandler = (chain: Chain, hdMode?: HDMode) => LiveData<LedgerError, WalletAddress>
+export type ConnectLedgerChainHandler = (
+  chain: Chain,
+  hdMode?: HDMode,
+  walletAccount?: number,
+  walletIndex?: number
+) => LiveData<LedgerError, WalletAddress>
 export type DisconnectLedgerChainHandler = (chain: Chain) => Promise<void>
 export type DetectLedgerDevicesHandler = () => Promise<Chain | undefined>
 
@@ -137,6 +146,8 @@ export type StandaloneLedgerService = {
   resetToChainSelection: () => void
   enterStandaloneMode: () => void
   exitStandaloneMode: () => void
+  setDetectionHDMode: (hdMode: HDMode) => void
+  setDetectionWalletParams: (walletAccount: number, walletIndex: number) => void
 }
 
 // Combined app wallet service that manages both keystore and standalone ledger modes

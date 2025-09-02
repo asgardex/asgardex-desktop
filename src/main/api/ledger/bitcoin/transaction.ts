@@ -33,7 +33,7 @@ export const send = async ({
   walletAccount,
   walletIndex,
   hdMode,
-  addressFormat = AddressFormat.P2WPKH,
+  addressFormat,
   apiKey
 }: {
   transport: Transport

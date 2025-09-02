@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
@@ -9,7 +10,10 @@ import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { AssetIcon } from '../../components/uielements/assets/assetIcon'
 import { FlatButton } from '../../components/uielements/button'
 import { BackLinkButton } from '../../components/uielements/button/BackLinkButton'
+import { Dropdown } from '../../components/uielements/dropdown'
 import { Headline } from '../../components/uielements/headline'
+import { Input } from '../../components/uielements/input'
+import { Label } from '../../components/uielements/label'
 import { Spin } from '../../components/uielements/spin'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { getChainAsset } from '../../helpers/chainHelper'
@@ -19,7 +23,23 @@ import { isStandaloneLedgerMode } from '../../services/wallet/types'
 
 // Check if chain supports HD modes
 const chainSupportsHDModes = (chain: Chain): boolean => {
-  return ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(chain)
+  return ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE', 'BTC'].includes(chain)
+}
+
+// Helper functions for derivation paths
+const getBitcoinDerivationPaths = (account: number, index: number) => [
+  `Native SegWit P2WPKH (m/84'/0'/${account}'/${index})`,
+  `Taproot P2TR (m/86'/0'/${account}'/${index})`
+]
+
+const getEvmDerivationPaths = (hdMode: string, account: number, index: number) => {
+  if (hdMode === 'ledgerlive') {
+    return `Ledger Live (m/44'/60'/${account}'/0/${index})`
+  } else if (hdMode === 'metamask') {
+    return `MetaMask (m/44'/60'/0'/0/${index})`
+  } else {
+    return `Legacy (m/44'/60'/0'/${index})`
+  }
 }
 
 interface ChainItemProps {
@@ -58,6 +78,8 @@ export const LedgerChainSelectView: React.FC = () => {
 
   const [selectedChain, setSelectedChain] = useState<Chain | undefined>(undefined)
   const [selectedHDMode, setSelectedHDMode] = useState<HDMode>('default')
+  const [walletAccount, setWalletAccount] = useState<number>(0)
+  const [walletIndex, setWalletIndex] = useState<number>(0)
 
   // Get current app wallet state and standalone ledger state
   const appWalletState = useObservableState(appWalletService.appWalletState$)
@@ -76,9 +98,15 @@ export const LedgerChainSelectView: React.FC = () => {
 
   const handleChainSelect = useCallback((chain: Chain) => {
     setSelectedChain(chain)
-    // If chain doesn't support HD modes, reset to default
+    // Set appropriate default HD mode based on chain
     if (!chainSupportsHDModes(chain)) {
       setSelectedHDMode('default')
+    } else if (chain === BTCChain) {
+      // Default to Native SegWit for Bitcoin
+      setSelectedHDMode('p2wpkh')
+    } else {
+      // Default to Ledger Live for EVM chains
+      setSelectedHDMode('ledgerlive')
     }
   }, [])
 
@@ -86,15 +114,16 @@ export const LedgerChainSelectView: React.FC = () => {
     if (!selectedChain) return
 
     try {
-      // Set the selected chain and HD mode
+      // Set the selected chain, HD mode, and wallet parameters
       appWalletService.standaloneLedgerService.setSelectedChainForDetection(selectedChain)
-      // TODO: Pass HD mode to the detection service when implemented
+      appWalletService.standaloneLedgerService.setDetectionHDMode(selectedHDMode)
+      appWalletService.standaloneLedgerService.setDetectionWalletParams(walletAccount, walletIndex)
 
       await appWalletService.standaloneLedgerService.startDetection()
     } catch (error) {
       console.error('Error during single chain detection for chain:', selectedChain, error)
     }
-  }, [selectedChain, appWalletService.standaloneLedgerService])
+  }, [selectedChain, selectedHDMode, walletAccount, walletIndex, appWalletService.standaloneLedgerService])
 
   const handleDetectionComplete = useCallback(async () => {
     try {
@@ -213,43 +242,79 @@ export const LedgerChainSelectView: React.FC = () => {
             ))}
           </div>
 
-          {/* HD Mode selection for EVM chains */}
+          {/* Wallet configuration for chains that support HD modes */}
           {selectedChain && chainSupportsHDModes(selectedChain) && (
-            <div className="bg-bg1 dark:bg-bg1d rounded-lg p-4 mb-8">
-              <h3 className="text-text1 dark:text-text1d font-medium text-14 mb-3">
-                {intl.formatMessage({ id: 'ledger.derivation.path' })}
-              </h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelectedHDMode('ledgerlive')}
-                  className={clsx(
-                    'px-4 py-2 rounded-lg text-14 transition-all',
-                    selectedHDMode === 'ledgerlive'
-                      ? 'bg-turquoise text-white'
-                      : 'bg-gray0 dark:bg-gray0d text-text2 dark:text-text2d hover:bg-gray0/80'
-                  )}>
-                  {intl.formatMessage({ id: 'common.ledgerlive' })}
-                </button>
-                <button
-                  onClick={() => setSelectedHDMode('legacy')}
-                  className={clsx(
-                    'px-4 py-2 rounded-lg text-14 transition-all',
-                    selectedHDMode === 'legacy'
-                      ? 'bg-turquoise text-white'
-                      : 'bg-gray0 dark:bg-gray0d text-text2 dark:text-text2d hover:bg-gray0/80'
-                  )}>
-                  {intl.formatMessage({ id: 'ledger.derivation.legacy' })}
-                </button>
-                <button
-                  onClick={() => setSelectedHDMode('metamask')}
-                  className={clsx(
-                    'px-4 py-2 rounded-lg text-14 transition-all',
-                    selectedHDMode === 'metamask'
-                      ? 'bg-turquoise text-white'
-                      : 'bg-gray0 dark:bg-gray0d text-text2 dark:text-text2d hover:bg-gray0/80'
-                  )}>
-                  {intl.formatMessage({ id: 'ledger.derivation.metamask' })}
-                </button>
+            <div className="bg-bg1 dark:bg-bg1d rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-3">
+                {/* Account input */}
+                <div className="flex items-center gap-2">
+                  <Label size="small" className="text-12 uppercase text-gray2 dark:text-gray2d">
+                    {intl.formatMessage({ id: 'setting.wallet.account' })}
+                  </Label>
+                  <Input
+                    type="number"
+                    value={walletAccount.toString()}
+                    onChange={(e) => setWalletAccount(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-14 h-8 text-13 px-2 text-center border border-gray0 dark:border-gray0d rounded"
+                    min="0"
+                  />
+                </div>
+
+                {/* Index input */}
+                <div className="flex items-center gap-2">
+                  <Label size="small" className="text-12 uppercase text-gray2 dark:text-gray2d">
+                    {intl.formatMessage({ id: 'setting.wallet.index' })}
+                  </Label>
+                  <Input
+                    type="number"
+                    value={walletIndex.toString()}
+                    onChange={(e) => setWalletIndex(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-14 h-8 text-13 px-2 text-center border border-gray0 dark:border-gray0d rounded"
+                    min="0"
+                  />
+                </div>
+
+                {/* Derivation path dropdown for Bitcoin */}
+                {selectedChain === BTCChain && (
+                  <Dropdown
+                    trigger={
+                      <Label className="rounded-lg px-3 py-2 border border-solid border-bg2 dark:border-bg2d cursor-pointer hover:bg-gray0/10 dark:hover:bg-gray0d/10">
+                        {getBitcoinDerivationPaths(walletAccount, walletIndex)[selectedHDMode === 'p2tr' ? 1 : 0]}
+                      </Label>
+                    }
+                    options={getBitcoinDerivationPaths(walletAccount, walletIndex).map(
+                      (item: string, index: number) => (
+                        <Label
+                          key={item}
+                          className="px-3 py-2 cursor-pointer hover:bg-gray0/10 dark:hover:bg-gray0d/10"
+                          size="normal"
+                          onClick={() => setSelectedHDMode(index === 0 ? 'p2wpkh' : 'p2tr')}>
+                          {item}
+                        </Label>
+                      )
+                    )}
+                  />
+                )}
+
+                {/* Derivation path dropdown for EVM chains */}
+                {selectedChain && selectedChain !== BTCChain && (
+                  <Dropdown
+                    trigger={
+                      <Label className="rounded-lg px-3 py-2 border border-solid border-bg2 dark:border-bg2d cursor-pointer hover:bg-gray0/10 dark:hover:bg-gray0d/10">
+                        {getEvmDerivationPaths(selectedHDMode, walletAccount, walletIndex)}
+                      </Label>
+                    }
+                    options={['ledgerlive', 'legacy', 'metamask'].map((mode: string) => (
+                      <Label
+                        key={mode}
+                        className="px-3 py-2 cursor-pointer hover:bg-gray0/10 dark:hover:bg-gray0d/10"
+                        size="normal"
+                        onClick={() => setSelectedHDMode(mode as HDMode)}>
+                        {getEvmDerivationPaths(mode, walletAccount, walletIndex)}
+                      </Label>
+                    ))}
+                  />
+                )}
               </div>
             </div>
           )}

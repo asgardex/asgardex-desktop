@@ -42,13 +42,13 @@ export const getDerivationPath = (
 
 export const getDerivationPaths = (
   walletAccount: number,
-  network: Network,
+  _network: Network,
   pathType: UtxoDerivationPathType = 0
 ): RootDerivationPaths => {
   const paths: RootDerivationPaths = {
-    [Network.Mainnet]: `${getDerivationPath(walletAccount, network, pathType)}`,
-    [Network.Testnet]: `${getDerivationPath(walletAccount, network, pathType)}`,
-    [Network.Stagenet]: `${getDerivationPath(walletAccount, network, pathType)}`
+    [Network.Mainnet]: `${getDerivationPath(walletAccount, Network.Mainnet, pathType)}`,
+    [Network.Testnet]: `${getDerivationPath(walletAccount, Network.Testnet, pathType)}`,
+    [Network.Stagenet]: `${getDerivationPath(walletAccount, Network.Stagenet, pathType)}`
   }
   return paths
 }

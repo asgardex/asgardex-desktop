@@ -12,14 +12,39 @@ import { either as E } from 'fp-ts'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { HDMode, WalletAddress, WalletType } from '../../../../shared/wallet/types'
-import { VerifyAddressHandler } from '../types'
 import { getDerivationPaths, hdModeToDerivationPathType } from './common'
 
-export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletAccount, walletIndex }) => {
+export const verifyAddress = async ({
+  transport,
+  network,
+  walletAccount,
+  walletIndex,
+  hdMode,
+  addressFormat
+}: {
+  transport: Transport
+  network: Network
+  walletAccount: number
+  walletIndex: number
+  hdMode?: HDMode
+  addressFormat?: AddressFormat
+}) => {
+  // Determine address format based on hdMode if not explicitly provided
+  let finalAddressFormat: AddressFormat = AddressFormat.P2WPKH
+  if (addressFormat !== undefined) {
+    finalAddressFormat = addressFormat
+  } else if (hdMode === 'p2tr') {
+    finalAddressFormat = AddressFormat.P2TR
+  }
+
   const clientLedger = new ClientLedger({
     transport,
     ...defaultBTCParams,
-    rootDerivationPaths: getDerivationPaths(walletAccount, network),
+    addressFormat: finalAddressFormat,
+    rootDerivationPaths:
+      finalAddressFormat === AddressFormat.P2TR
+        ? tapRootDerivationPaths
+        : getDerivationPaths(walletAccount, network, hdModeToDerivationPathType(hdMode)),
     network: network
   })
   const _ = await clientLedger.getAddressAsync(walletIndex, true)
