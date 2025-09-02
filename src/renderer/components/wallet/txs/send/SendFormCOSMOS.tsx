@@ -721,7 +721,7 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
             </div>
           </Styled.SubForm>
           <FlatButton
-            className="mt-40px min-w-[200px]"
+            className="mt-40px min-w-[200px] w-full"
             loading={isLoading}
             disabled={isFeeError}
             type="submit"
