@@ -20,9 +20,9 @@ import {
   BaseAmount,
   baseToAsset
 } from '@xchainjs/xchain-util'
-import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O } from 'fp-ts'
+import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
@@ -61,7 +61,7 @@ import * as Shared from './Send.shared'
 type FormValues = {
   recipient: string
   amount: BigNumber
-  memo?: string
+  memo: string
 }
 
 type Props = {
@@ -131,7 +131,23 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
   const isChainAsset = asset === chainAsset
   const [warningMessage, setWarningMessage] = useState<string>('')
-  const [form] = Form.useForm<FormValues>()
+
+  const {
+    handleSubmit,
+    setValue,
+    watch,
+    register,
+    control,
+    formState: { errors }
+  } = useForm<FormValues>({
+    defaultValues: {
+      recipient: '',
+      amount: bn(0),
+      memo: ''
+    },
+    mode: 'onChange'
+  })
+
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const [currentMemo, setCurrentMemo] = useState<string>('')
 
@@ -144,11 +160,15 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
     [trustedAddresses?.addresses, chainAsset.chain]
   )
 
-  const handleMemo = useCallback(() => {
-    const memoValue = form.getFieldValue('memo') as string
-    // Update the state with the adjusted memo value
-    setCurrentMemo(memoValue)
-  }, [form])
+  const handleMemo = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const memoValue = e.target.value
+      setValue('memo', memoValue)
+      // Update the state with the adjusted memo value
+      setCurrentMemo(memoValue)
+    },
+    [setValue]
+  )
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
@@ -228,13 +248,13 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
   }, [oPoolAddress])
 
   const addressValidator = useCallback(
-    async (_: unknown, value: string) => {
+    (value: string) => {
       if (!value) {
         setWarningMessage('')
-        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
+        return intl.formatMessage({ id: 'wallet.errors.address.empty' })
       }
       if (!addressValidation(value)) {
-        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
+        return intl.formatMessage({ id: 'wallet.errors.address.invalid' })
       }
       if (inboundAddress.THOR === value) {
         const type = 'Inbound'
@@ -242,6 +262,7 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
       } else {
         setWarningMessage('')
       }
+      return true
     },
     [inboundAddress, addressValidation, intl]
   )
@@ -258,12 +279,11 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
 
   const handleSavedAddressSelect = useCallback(
     (value: string) => {
-      form.setFieldsValue({ recipient: value })
+      setValue('recipient', value)
       setRecipientAddress(value)
       updateMatchedAddresses(value)
-      addressValidator(undefined, value).catch(() => {})
     },
-    [form, addressValidator, updateMatchedAddresses]
+    [setValue, updateMatchedAddresses]
   )
 
   const renderSavedAddressesDropdown = useMemo(
@@ -273,7 +293,8 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
         O.fold(
           () => null,
           (addresses) => (
-            <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
+            <div>
+              <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.savedAddresses' })}</Styled.CustomLabel>
               <Styled.CustomSelect
                 className="w-full"
                 placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
@@ -284,18 +305,13 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
                   </Styled.CustomSelect.Option>
                 ))}
               </Styled.CustomSelect>
-            </Form.Item>
+            </div>
           )
         )
       ),
     [oSavedAddresses, intl, handleSavedAddressSelect]
   )
 
-  const handleAddressInput = useCallback(async () => {
-    const recipient = form.getFieldValue('recipient')
-    setRecipientAddress(recipient)
-    updateMatchedAddresses(recipient)
-  }, [form, updateMatchedAddresses])
   // max amount for asset
   const maxAmount: BaseAmount = useMemo(() => {
     // Some chains require minimum account reserves that cannot be spent
@@ -442,13 +458,11 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
-    form.setFieldsValue({
-      amount: baseToAsset(amountToSend).amount()
-    })
-  }, [amountToSend, form])
+    setValue('amount', baseToAsset(amountToSend).amount())
+  }, [amountToSend, setValue])
 
   const amountValidator = useCallback(
-    async (_: unknown, value: BigNumber) => {
+    async (value: BigNumber) => {
       // error messages
       const errors = {
         msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
@@ -457,7 +471,12 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
           ? intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
           : intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalanceAndFee' })
       }
-      return validateTxAmountInput({ input: value, maxAmount: baseToAsset(maxAmount), errors })
+      try {
+        await validateTxAmountInput({ input: value, maxAmount: baseToAsset(maxAmount), errors })
+        return true
+      } catch (error) {
+        return error as string
+      }
     },
     [asset, intl, maxAmount]
   )
@@ -505,7 +524,7 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
         sender,
         asset,
         amount: amountToSend,
-        memo: form.getFieldValue('memo'),
+        memo: watch('memo'),
         hdMode
       })
     )
@@ -519,7 +538,7 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
     sender,
     asset,
     amountToSend,
-    form,
+    watch,
     hdMode
   ])
 
@@ -600,14 +619,16 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
+      // Update the form value
+      setValue('amount', value)
       // we have to validate input before storing into the state
-      amountValidator(undefined, value)
+      amountValidator(value)
         .then(() => {
           setAmountToSend(assetToBase(assetAmount(value, balance.amount.decimal)))
         })
-        .catch(() => {}) // do nothing, Ant' form does the job for us to show an error message
+        .catch(() => {}) // do nothing, React Hook Form will handle validation
     },
-    [amountValidator, balance.amount.decimal]
+    [amountValidator, balance.amount.decimal, setValue]
   )
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
@@ -625,34 +646,64 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
     <>
       <Styled.Container>
         <AccountSelector selectedWallet={balance} network={network} />
-        <Styled.Form
-          form={form}
-          initialValues={{ amount: bn(0) }}
-          onFinish={() => setShowConfirmationModal(true)}
-          labelCol={{ span: 24 }}>
+        <form
+          onSubmit={handleSubmit((data) => {
+            setRecipientAddress(data.recipient)
+            updateMatchedAddresses(data.recipient)
+            setShowConfirmationModal(true)
+          })}>
           <Styled.SubForm>
             {renderSavedAddressesDropdown}
-            <Styled.CustomLabel size="big">
+            <Styled.CustomLabel className="mt-2" size="big">
               {intl.formatMessage({ id: 'common.address' })}
               {renderWalletType}
             </Styled.CustomLabel>
 
-            <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Input size="large" disabled={isLoading} onChange={handleAddressInput} />
-            </Form.Item>
-            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
-            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
-            <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
-              <InputBigNumber
-                min={0}
+            <div className="flex flex-col">
+              <Input
                 size="large"
                 disabled={isLoading}
-                decimal={balance.amount.decimal}
-                onChange={onChangeInput}
+                error={!!errors.recipient}
+                {...register('recipient', {
+                  required: intl.formatMessage({ id: 'wallet.errors.address.empty' }),
+                  validate: addressValidator
+                })}
               />
-            </Styled.FormItem>
+              {errors.recipient && (
+                <span className="text-error0 dark:text-error0d text-xs mt-1">{errors.recipient.message}</span>
+              )}
+            </div>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
+            <Styled.CustomLabel className="mt-2" size="big">
+              {intl.formatMessage({ id: 'common.amount' })}
+            </Styled.CustomLabel>
+            <div className="flex flex-col">
+              <Controller
+                name="amount"
+                control={control}
+                rules={{
+                  required: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                  validate: amountValidator
+                }}
+                render={({ field }) => (
+                  <InputBigNumber
+                    min={0}
+                    size="large"
+                    disabled={isLoading}
+                    decimal={balance.amount.decimal}
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value)
+                      onChangeInput(value)
+                    }}
+                    error={!!errors.amount}
+                  />
+                )}
+              />
+              {errors.amount && <span className="text-error0d text-xs mt-1">{errors.amount.message}</span>}
+            </div>
             <MaxBalanceButton
-              className="mb-10px "
+              className="mt-1 mb-2"
               color="neutral"
               balance={{ amount: maxAmount, asset: asset }}
               maxDollarValue={
@@ -665,9 +716,9 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
-            <Form.Item name="memo">
+            <div className="flex flex-col">
               <Input size="large" disabled={isLoading} onChange={handleMemo} />
-            </Form.Item>
+            </div>
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"
@@ -701,7 +752,7 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
               )}
             </div>
           </div>
-        </Styled.Form>
+        </form>
       </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
