@@ -20,11 +20,10 @@ import {
   bn,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Form } from 'antd'
-import { FormInstance } from 'antd/es/form/Form'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
 import { debounce } from 'lodash'
+import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { ONE_CACAO_BASE_AMOUNT } from '../../../../../shared/mock/amount'
@@ -88,6 +87,8 @@ type FormValues = {
   expiry: string
   bondLpUnits: string
   assetPool: string
+  aliasChain: string
+  aliasAddress: string
 }
 type UserNodeInfo = {
   nodeAddress: string
@@ -202,7 +203,34 @@ export const InteractFormMaya = (props: Props) => {
 
   const isLoading = useMemo(() => RD.isPending(interactState.txRD), [interactState.txRD])
 
-  const [form] = Form.useForm<FormValues>()
+  const {
+    control,
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isValid }
+  } = useForm<FormValues>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      mayaAddress: '',
+      amount: bn(0),
+      chain: MAYAChain,
+      chainAddress: balance.walletAddress,
+      expiry: '1',
+      memo: '',
+      providerAddress: '',
+      operatorFee: 0,
+      mayaname: '',
+      preferredAsset: '',
+      bondLpUnits: '',
+      assetPool: '',
+      aliasChain: '',
+      aliasAddress: ''
+    }
+  })
   const [currentMemo, setCurrentMemo] = useState('')
   const [whitelisting, setWhitelisting] = useState<boolean>(true)
 
@@ -230,11 +258,11 @@ export const InteractFormMaya = (props: Props) => {
       ),
     [balance, oFee]
   )
-  const handleMemo = useCallback(() => {
-    const memoValue = form.getFieldValue('memo') as string
+  const _handleMemo = useCallback(() => {
+    const memoValue = watch('memo')
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form])
+  }, [watch])
 
   const renderFeeError = useMemo(
     () => (
@@ -294,37 +322,46 @@ export const InteractFormMaya = (props: Props) => {
   }, [asset, interactType, maxAmount, mayachainQuery, network, poolDetails, pricePool])
 
   const amountValidator = useCallback(
-    async (_: unknown, value: BigNumber) => {
-      switch (interactType) {
-        case InteractType.Bond:
-          // similar to any other form for sending any amount
-          return validateTxAmountInput({
-            input: value,
-            maxAmount: baseToAsset(maxAmount),
-            errors: {
-              msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
-              msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
-              msg3: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
-            }
-          })
-        case InteractType.Unbond:
-          return H.validateUnboundAmountInput({
-            input: value,
-            errors: {
-              msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
-              msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' })
-            }
-          })
-        case InteractType.Custom:
-          return H.validateCustomAmountInput({
-            input: value,
-            errors: {
-              msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
-              msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
-            }
-          })
-        case InteractType.Leave:
-          return Promise.resolve(true)
+    async (value: BigNumber) => {
+      try {
+        switch (interactType) {
+          case InteractType.Bond:
+            // similar to any other form for sending any amount
+            await validateTxAmountInput({
+              input: value,
+              maxAmount: baseToAsset(maxAmount),
+              errors: {
+                msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
+                msg3: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
+              }
+            })
+            return true
+          case InteractType.Unbond:
+            await H.validateUnboundAmountInput({
+              input: value,
+              errors: {
+                msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' })
+              }
+            })
+            return true
+          case InteractType.Custom:
+            await H.validateCustomAmountInput({
+              input: value,
+              errors: {
+                msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
+              }
+            })
+            return true
+          case InteractType.Leave:
+            return true
+          default:
+            return true
+        }
+      } catch (error) {
+        return String(error)
       }
     },
     [interactType, intl, maxAmount]
@@ -353,7 +390,7 @@ export const InteractFormMaya = (props: Props) => {
   )
 
   const mayanameHandler = useCallback(() => {
-    const mayaname = form.getFieldValue('mayaname')
+    const mayaname = watch('mayaname')
     setMemo('')
     if (mayaname !== '') {
       debouncedFetch(
@@ -365,20 +402,19 @@ export const InteractFormMaya = (props: Props) => {
         mayachainQuery
       )
     }
-  }, [debouncedFetch, form, mayachainQuery])
+  }, [debouncedFetch, watch, mayachainQuery])
 
   const estimateMayanameHandler = useCallback(() => {
     const currentDate = new Date()
 
-    form.validateFields()
-    const mayaname = form.getFieldValue('mayaname')
-    const chain = mayanameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
-    const yearsToAdd = parseInt(form.getFieldValue('expiry'))
+    const mayaname = watch('mayaname')
+    const chain = mayanameRegister ? watch('chain') : watch('aliasChain')
+    const yearsToAdd = parseInt(watch('expiry'))
     const expirity =
       yearsToAdd === 1
         ? undefined
         : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
-    const chainAddress = mayanameRegister ? form.getFieldValue('chainAddress') : form.getFieldValue('aliasAddress')
+    const chainAddress = mayanameRegister ? watch('chainAddress') : watch('aliasAddress')
     const owner = balance.walletAddress
     if (mayaname !== undefined && chain !== undefined && chainAddress !== undefined) {
       const fetchMayanameQuote = async () => {
@@ -403,7 +439,7 @@ export const InteractFormMaya = (props: Props) => {
       }
       fetchMayanameQuote()
     }
-  }, [balance.walletAddress, form, isOwner, mayachainQuery, mayanameRegister, mayanameUpdate])
+  }, [balance.walletAddress, watch, isOwner, mayachainQuery, mayanameRegister, mayanameUpdate])
 
   const handleRadioChainChange = useCallback((radioChain: string) => {
     setAliasChain(radioChain)
@@ -417,19 +453,19 @@ export const InteractFormMaya = (props: Props) => {
   )
 
   const addressValidator = useCallback(
-    async (_: unknown, value: string) =>
-      FP.pipe(
-        value,
-        validateAddress(
-          addressValidation,
-          intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
-          intl.formatMessage({ id: 'wallet.errors.address.invalid' })
-        ),
-        E.fold(
-          (e) => Promise.reject(e),
-          () => Promise.resolve()
-        )
-      ),
+    async (value: string) => {
+      const validationResult = validateAddress(
+        addressValidation,
+        intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+        intl.formatMessage({ id: 'wallet.errors.address.invalid' })
+      )(value)
+
+      if (E.isLeft(validationResult)) {
+        return validationResult.left
+      } else {
+        return true
+      }
+    },
     [addressValidation, intl]
   )
 
@@ -437,11 +473,11 @@ export const InteractFormMaya = (props: Props) => {
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
 
   const getMemo = useCallback(() => {
-    const mayaNodeAddress = form.getFieldValue('mayaAddress')
-    const whitelistAdd = form.getFieldValue('providerAddress')
-    const nodeOperatorFee = form.getFieldValue('operatorFee')
-    const assetPool = form.getFieldValue('assetPool')
-    const lpUnits = form.getFieldValue('bondLpUnits')
+    const mayaNodeAddress = watch('mayaAddress')
+    const whitelistAdd = watch('providerAddress')
+    const nodeOperatorFee = watch('operatorFee')
+    const assetPool = watch('assetPool')
+    const lpUnits = watch('bondLpUnits')
     const feeInBasisPoints = nodeOperatorFee ? nodeOperatorFee * 100 : undefined
     let createMemo = ''
     switch (interactType) {
@@ -472,20 +508,23 @@ export const InteractFormMaya = (props: Props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [currentMemo, form, interactType, memo, whitelisting])
+  }, [currentMemo, watch, interactType, memo, whitelisting])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
       // we have to validate input before storing into the state
-      amountValidator(undefined, value)
-        .then(() => {
-          const newAmountToSend = assetToBase(assetAmount(value, CACAO_DECIMAL))
-          setAmountToSend(newAmountToSend)
+      amountValidator(value)
+        .then((isValid) => {
+          if (isValid) {
+            const newAmountToSend = assetToBase(assetAmount(value, CACAO_DECIMAL))
+            setAmountToSend(newAmountToSend)
+            setValue('amount', value)
+          }
         })
         .catch(() => {})
-      // do nothing, Ant' form does the job for us to show an error message
+      // do nothing, react-hook-form handles validation
     },
-    [amountValidator]
+    [amountValidator, setValue]
   )
 
   useEffect(() => {
@@ -521,9 +560,24 @@ export const InteractFormMaya = (props: Props) => {
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
-  const reset = useCallback(() => {
+  const resetForm = useCallback(() => {
     resetInteractState()
-    form.resetFields()
+    reset({
+      mayaAddress: '',
+      amount: bn(0),
+      chain: MAYAChain,
+      chainAddress: balance.walletAddress,
+      expiry: '1',
+      memo: '',
+      providerAddress: '',
+      operatorFee: 0,
+      mayaname: '',
+      preferredAsset: '',
+      bondLpUnits: '',
+      assetPool: '',
+      aliasChain: '',
+      aliasAddress: ''
+    })
     setMemo('')
     setAmountToSend(ONE_CACAO_BASE_AMOUNT)
     setMayaname(O.none)
@@ -531,7 +585,7 @@ export const InteractFormMaya = (props: Props) => {
     setMayanameQuoteValid(false)
     setMayanameUpdate(false)
     setMayanameAvailable(false)
-  }, [form, resetInteractState])
+  }, [reset, resetInteractState, balance.walletAddress])
 
   const renderConfirmationModal = useMemo(() => {
     const onSuccessHandler = () => {
@@ -584,8 +638,8 @@ export const InteractFormMaya = (props: Props) => {
     return (
       <TxModal
         title={intl.formatMessage({ id: 'common.tx.sending' })}
-        onClose={reset}
-        onFinish={reset}
+        onClose={resetForm}
+        onFinish={resetForm}
         startTime={sendTxStartTime}
         txRD={txRDasBoolean}
         extraResult={
@@ -616,7 +670,17 @@ export const InteractFormMaya = (props: Props) => {
         }
       />
     )
-  }, [interactState, intl, reset, sendTxStartTime, openExplorerTxUrl, getExplorerTxUrl, asset, amountToSend, network])
+  }, [
+    interactState,
+    intl,
+    resetForm,
+    sendTxStartTime,
+    openExplorerTxUrl,
+    getExplorerTxUrl,
+    asset,
+    amountToSend,
+    network
+  ])
 
   const memoLabel = useMemo(
     () => (
@@ -625,25 +689,6 @@ export const InteractFormMaya = (props: Props) => {
       </Tooltip>
     ),
     [memo]
-  )
-  const renderRadioGroup = useMemo(
-    () => (
-      <RadioGroup className="flex flex-col lg:flex-row lg:space-x-2" onChange={() => estimateMayanameHandler()}>
-        <Radio className="text-gray2 dark:text-gray2d" value="1">
-          1 year
-        </Radio>
-        <Radio className="text-gray2 dark:text-gray2d" value="2">
-          2 years
-        </Radio>
-        <Radio className="text-gray2 dark:text-gray2d" value="3">
-          3 years
-        </Radio>
-        <Radio className="text-gray2 dark:text-gray2d" value="5">
-          5 years
-        </Radio>
-      </RadioGroup>
-    ),
-    [estimateMayanameHandler]
   )
 
   const submitLabel = useMemo(() => {
@@ -688,9 +733,9 @@ export const InteractFormMaya = (props: Props) => {
   const handleUnbond = (nodeAddress: string, pool: MayaLpUnits) => {
     const unitsToUnbond = pool.units.toString()
     const asset = assetToString(pool.asset)
-    form.setFieldValue('mayaAddress', nodeAddress)
-    form.setFieldValue('bondLpUnits', unitsToUnbond)
-    form.setFieldValue('assetPool', asset)
+    setValue('mayaAddress', nodeAddress)
+    setValue('bondLpUnits', unitsToUnbond)
+    setValue('assetPool', asset)
     getMemo()
   }
 
@@ -700,10 +745,8 @@ export const InteractFormMaya = (props: Props) => {
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
-    form.setFieldsValue({
-      amount: baseToAsset(_amountToSend).amount()
-    })
-  }, [_amountToSend, form])
+    setValue('amount', baseToAsset(_amountToSend).amount())
+  }, [_amountToSend, setValue])
 
   const mayaNamefees: UIFeesRD = useMemo(() => {
     const fees: UIFees = [{ asset: AssetCacao, amount: _amountToSend }]
@@ -712,9 +755,16 @@ export const InteractFormMaya = (props: Props) => {
 
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
-    reset()
+    resetForm()
     setMemo('')
-  }, [interactType, reset])
+  }, [interactType, resetForm])
+
+  // Call estimate handler when mayaname becomes available
+  useEffect(() => {
+    if (mayanameAvailable && interactType === InteractType.MAYAName) {
+      estimateMayanameHandler()
+    }
+  }, [mayanameAvailable, interactType, estimateMayanameHandler])
 
   // Updated renderPoolShares
   const renderPoolShares = useMemo(() => {
@@ -761,7 +811,7 @@ export const InteractFormMaya = (props: Props) => {
                   key={`${assetToString(share.asset)}-${share.units.toString()}`}
                   share={share}
                   isLoading={isLoading}
-                  form={form}
+                  setValue={setValue}
                   getMemo={getMemo}
                 />
               ))
@@ -770,7 +820,7 @@ export const InteractFormMaya = (props: Props) => {
         )
       )
     )
-  }, [poolShares, intl, isLoading, form, getMemo])
+  }, [poolShares, intl, isLoading, setValue, getMemo])
 
   const [showDetails, setShowDetails] = useState<boolean>(true)
 
@@ -784,32 +834,76 @@ export const InteractFormMaya = (props: Props) => {
     { type: 'Withdraw Lp', memo: 'WITHDRAW:POOL:10000' }
   ]
 
+  const onSubmit = (data: FormValues) => {
+    console.log('Form submitted with data:', data)
+    console.log('Form errors:', errors)
+    console.log('Form isValid:', isValid)
+
+    // Manual validation check for required fields based on interactType
+    let hasErrors = false
+
+    if (interactType === InteractType.Custom && !data.memo) {
+      console.error('Memo is required for Custom type')
+      hasErrors = true
+    }
+
+    if (
+      (interactType === InteractType.Bond ||
+        interactType === InteractType.Unbond ||
+        interactType === InteractType.Whitelist ||
+        interactType === InteractType.Leave) &&
+      !data.mayaAddress
+    ) {
+      console.error('Maya address is required')
+      hasErrors = true
+    }
+
+    if (interactType === InteractType.Whitelist && !data.providerAddress) {
+      console.error('Provider address is required for Whitelist')
+      hasErrors = true
+    }
+
+    if (interactType === InteractType.Custom && !data.amount) {
+      console.error('Amount is required for Custom type')
+      hasErrors = true
+    }
+
+    if (interactType === InteractType.MAYAName && !data.mayaname) {
+      console.error('Mayaname is required')
+      hasErrors = true
+    }
+
+    if (hasErrors) {
+      console.error('Form has validation errors, not submitting')
+      return
+    }
+
+    setShowConfirmationModal(true)
+  }
+
   return (
-    <Styled.Form
-      form={form}
-      onFinish={() => setShowConfirmationModal(true)}
-      initialValues={{
-        mayaAddress: '',
-        amount: bn(0),
-        chain: MAYAChain,
-        chainAddress: balance.walletAddress,
-        expiry: 0
-      }}>
-      <>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="flex flex-col space-y-2">
         {/* Memo input (CUSTOM only) */}
         {interactType === InteractType.Custom && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.memo' })}</Styled.InputLabel>
-            <Form.Item
-              name="memo"
-              rules={[
-                {
-                  required: true,
-                  message: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
-                }
-              ]}>
-              <Input disabled={isLoading} onChange={handleMemo} size="large" />
-            </Form.Item>
+            <div>
+              <Input
+                {...register('memo', {
+                  required:
+                    interactType === InteractType.Custom
+                      ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                      : false,
+                  onChange: (e) => {
+                    setCurrentMemo(e.target.value)
+                  }
+                })}
+                disabled={isLoading}
+                size="large"
+              />
+              {errors.memo && <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.memo.message}</div>}
+            </div>
             {/* Display example memos */}
             <div className="mt-4">
               <Styled.InputLabel>{intl.formatMessage({ id: 'common.examples' }, { name: 'Memos' })}</Styled.InputLabel>
@@ -848,16 +942,26 @@ export const InteractFormMaya = (props: Props) => {
           interactType === InteractType.Leave) && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.nodeAddress' })}</Styled.InputLabel>
-            <Form.Item
-              name="mayaAddress"
-              rules={[
-                {
-                  required: true,
-                  validator: addressValidator
-                }
-              ]}>
-              <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
-            </Form.Item>
+            <div>
+              <Input
+                {...register('mayaAddress', {
+                  required:
+                    interactType === InteractType.Bond ||
+                    interactType === InteractType.Unbond ||
+                    interactType === InteractType.Whitelist ||
+                    interactType === InteractType.Leave
+                      ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                      : false,
+                  validate: addressValidator,
+                  onChange: () => getMemo()
+                })}
+                disabled={isLoading}
+                size="large"
+              />
+              {errors.mayaAddress && (
+                <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.mayaAddress.message}</div>
+              )}
+            </div>
           </Styled.InputContainer>
         )}
 
@@ -865,38 +969,40 @@ export const InteractFormMaya = (props: Props) => {
         {interactType === InteractType.Whitelist && (
           <>
             <Styled.InputContainer>
-              {
-                <>
-                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.providerAddress' })}</Styled.InputLabel>
-                  <Form.Item
-                    name="providerAddress"
-                    rules={[
-                      {
-                        required: true,
-                        validator: addressValidator
-                      }
-                    ]}>
-                    <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
-                  </Form.Item>
-                </>
-              }
+              <Styled.InputLabel>{intl.formatMessage({ id: 'common.providerAddress' })}</Styled.InputLabel>
+              <div>
+                <Input
+                  {...register('providerAddress', {
+                    required:
+                      interactType === InteractType.Whitelist
+                        ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                        : false,
+                    validate: addressValidator,
+                    onChange: () => getMemo()
+                  })}
+                  disabled={isLoading}
+                  size="large"
+                />
+                {errors.providerAddress && (
+                  <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.providerAddress.message}</div>
+                )}
+              </div>
             </Styled.InputContainer>
             <Styled.InputContainer>
               <Styled.InputLabel>{intl.formatMessage({ id: 'common.fee.nodeOperator' })}</Styled.InputLabel>
-              <Styled.FormItem
-                name="operatorFee"
-                rules={[
-                  {
-                    required: false
-                  }
-                ]}>
+              <div>
                 <Input
+                  {...register('operatorFee', {
+                    onChange: () => getMemo()
+                  })}
                   placeholder="Enter a % value, memo will populate with Basis Points automatically"
                   disabled={isLoading}
                   size="large"
-                  onChange={() => getMemo()}
                 />
-              </Styled.FormItem>
+                {errors.operatorFee && (
+                  <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.operatorFee.message}</div>
+                )}
+              </div>
             </Styled.InputContainer>
           </>
         )}
@@ -905,16 +1011,34 @@ export const InteractFormMaya = (props: Props) => {
         {interactType === InteractType.Custom && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
-            <Styled.FormItem
-              name="amount"
-              rules={[
-                {
-                  required: true,
-                  validator: amountValidator
-                }
-              ]}>
-              <InputBigNumber disabled={isLoading} size="large" decimal={CACAO_DECIMAL} onChange={onChangeInput} />
-            </Styled.FormItem>
+            <div>
+              <Controller
+                name="amount"
+                control={control}
+                rules={{
+                  required:
+                    interactType === InteractType.Custom
+                      ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                      : false,
+                  validate: amountValidator
+                }}
+                render={({ field }) => (
+                  <InputBigNumber
+                    {...field}
+                    disabled={isLoading}
+                    size="large"
+                    decimal={CACAO_DECIMAL}
+                    onChange={(value) => {
+                      field.onChange(value)
+                      onChangeInput(value)
+                    }}
+                  />
+                )}
+              />
+              {errors.amount && (
+                <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.amount.message}</div>
+              )}
+            </div>
             {/* max. amount button (BOND/CUSTOM only) */}
             {interactType === InteractType.Custom && (
               <MaxBalanceButton
@@ -1009,15 +1133,22 @@ export const InteractFormMaya = (props: Props) => {
               />
             </div>
 
-            <Styled.FormItem
-              name="mayaname"
-              rules={[
-                {
-                  required: true
-                }
-              ]}>
-              <Input disabled={isLoading} size="large" onChange={() => mayanameHandler()} />
-            </Styled.FormItem>
+            <div>
+              <Input
+                {...register('mayaname', {
+                  required:
+                    interactType === InteractType.MAYAName
+                      ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                      : false,
+                  onChange: () => mayanameHandler()
+                })}
+                disabled={isLoading}
+                size="large"
+              />
+              {errors.mayaname && (
+                <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.mayaname.message}</div>
+              )}
+            </div>
             {O.isSome(oMayaname) && !mayanameAvailable && !isOwner && renderMayanameError}
           </Styled.InputContainer>
         )}
@@ -1038,102 +1169,175 @@ export const InteractFormMaya = (props: Props) => {
               <>
                 {/* Add input fields for aliasChain, aliasAddress, and expiry */}
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
-                <Styled.FormItem
-                  name="aliasChain"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please provide an alias chain.'
-                    }
-                  ]}>
-                  <RadioGroup value={aliasChain} onChange={handleRadioChainChange}>
-                    <Radio className="text-gray2 dark:text-gray2d" value={AssetAETH.chain}>
-                      ARB
-                    </Radio>
-                    <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
-                      BTC
-                    </Radio>
-                    <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
-                      ETH
-                    </Radio>
-                    <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
-                      RUNE
-                    </Radio>
-                  </RadioGroup>
-                </Styled.FormItem>
+                <div>
+                  <Controller
+                    name="aliasChain"
+                    control={control}
+                    rules={{
+                      required: interactType === InteractType.MAYAName ? 'Please provide an alias chain.' : false
+                    }}
+                    render={({ field }) => (
+                      <RadioGroup
+                        {...field}
+                        value={aliasChain}
+                        onChange={(value) => {
+                          field.onChange(value)
+                          handleRadioChainChange(value)
+                          estimateMayanameHandler()
+                        }}>
+                        <Radio className="text-gray2 dark:text-gray2d" value={AssetAETH.chain}>
+                          ARB
+                        </Radio>
+                        <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
+                          BTC
+                        </Radio>
+                        <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
+                          ETH
+                        </Radio>
+                        <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
+                          RUNE
+                        </Radio>
+                      </RadioGroup>
+                    )}
+                  />
+                  {errors.aliasChain && (
+                    <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.aliasChain.message}</div>
+                  )}
+                </div>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
-                <Styled.FormItem
-                  name="aliasAddress"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please provide an alias address.'
-                    }
-                  ]}>
-                  <Input disabled={isLoading} size="large" />
-                </Styled.FormItem>
+                <div>
+                  <Input
+                    {...register('aliasAddress', {
+                      required: interactType === InteractType.MAYAName ? 'Please provide an alias address.' : false,
+                      onChange: () => estimateMayanameHandler()
+                    })}
+                    disabled={isLoading}
+                    size="large"
+                  />
+                  {errors.aliasAddress && (
+                    <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.aliasAddress.message}</div>
+                  )}
+                </div>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
-                <Styled.FormItem
-                  name="expiry"
-                  rules={[
-                    {
-                      required: false
-                    }
-                  ]}>
-                  {renderRadioGroup}
-                </Styled.FormItem>
+                <div>
+                  <Controller
+                    name="expiry"
+                    control={control}
+                    render={({ field }) => (
+                      <RadioGroup
+                        {...field}
+                        onChange={(value) => {
+                          field.onChange(value)
+                          estimateMayanameHandler()
+                        }}>
+                        <Radio className="text-gray2 dark:text-gray2d" value="1">
+                          1 year
+                        </Radio>
+                        <Radio className="text-gray2 dark:text-gray2d" value="2">
+                          2 years
+                        </Radio>
+                        <Radio className="text-gray2 dark:text-gray2d" value="3">
+                          3 years
+                        </Radio>
+                        <Radio className="text-gray2 dark:text-gray2d" value="5">
+                          5 years
+                        </Radio>
+                      </RadioGroup>
+                    )}
+                  />
+                  {errors.expiry && (
+                    <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.expiry.message}</div>
+                  )}
+                </div>
               </>
             ) : (
               <>
                 {/* Initial values needed for tns or mns register */}
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
-                <Styled.FormItem
-                  name="chain"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please provide an alias chain.'
-                    }
-                  ]}>
-                  <RadioGroup>
-                    <Radio className="text-gray2 dark:text-gray2d" value={AssetCacao.chain}>
-                      MAYA
-                    </Radio>
-                  </RadioGroup>
-                </Styled.FormItem>
+                <div>
+                  <Controller
+                    name="chain"
+                    control={control}
+                    rules={{
+                      required: interactType === InteractType.MAYAName ? 'Please provide an alias chain.' : false
+                    }}
+                    render={({ field }) => (
+                      <RadioGroup
+                        {...field}
+                        onChange={(value) => {
+                          field.onChange(value)
+                          estimateMayanameHandler()
+                        }}>
+                        <Radio className="text-gray2 dark:text-gray2d" value={AssetCacao.chain}>
+                          MAYA
+                        </Radio>
+                      </RadioGroup>
+                    )}
+                  />
+                  {errors.chain && (
+                    <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.chain.message}</div>
+                  )}
+                </div>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
-                <Styled.FormItem
-                  name="chainAddress"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please provide an alias address.'
-                    }
-                  ]}>
-                  <Input disabled={isLoading} size="large" />
-                </Styled.FormItem>
+                <div>
+                  <Input
+                    {...register('chainAddress', {
+                      required: interactType === InteractType.MAYAName ? 'Please provide an alias address.' : false,
+                      onChange: () => estimateMayanameHandler()
+                    })}
+                    disabled={isLoading}
+                    size="large"
+                  />
+                  {errors.chainAddress && (
+                    <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.chainAddress.message}</div>
+                  )}
+                </div>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
-                <Styled.FormItem
-                  name="expiry"
-                  rules={[
-                    {
-                      required: true
-                    }
-                  ]}>
-                  {renderRadioGroup}
-                </Styled.FormItem>
+                <div>
+                  <Controller
+                    name="expiry"
+                    control={control}
+                    rules={{
+                      required: interactType === InteractType.MAYAName ? true : false
+                    }}
+                    render={({ field }) => (
+                      <RadioGroup
+                        {...field}
+                        onChange={(value) => {
+                          field.onChange(value)
+                          estimateMayanameHandler()
+                        }}>
+                        <Radio className="text-gray2 dark:text-gray2d" value="1">
+                          1 year
+                        </Radio>
+                        <Radio className="text-gray2 dark:text-gray2d" value="2">
+                          2 years
+                        </Radio>
+                        <Radio className="text-gray2 dark:text-gray2d" value="3">
+                          3 years
+                        </Radio>
+                        <Radio className="text-gray2 dark:text-gray2d" value="5">
+                          5 years
+                        </Radio>
+                      </RadioGroup>
+                    )}
+                  />
+                  {errors.expiry && (
+                    <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.expiry.message}</div>
+                  )}
+                </div>
               </>
             )}
             <Styled.Fees className="mt-10px" fees={mayaNamefees} disabled={isLoading} />
           </Styled.InputContainer>
         )}
-      </>
+      </div>
       <div className="flex items-center justify-center">
         {mayanameQuoteValid && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
-            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            disabled={isLoading}
             type="submit"
             size="large">
             {submitLabel}
@@ -1143,7 +1347,7 @@ export const InteractFormMaya = (props: Props) => {
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
-            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            disabled={isLoading}
             type="submit"
             size="large">
             {submitLabel}
@@ -1222,19 +1426,19 @@ export const InteractFormMaya = (props: Props) => {
       </div>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
-    </Styled.Form>
+    </form>
   )
 }
 
 const PoolShareItem = ({
   share,
   isLoading,
-  form,
+  setValue,
   getMemo
 }: {
   share: PoolShare
   isLoading: boolean
-  form: FormInstance
+  setValue: (name: keyof FormValues, value: string | number | BigNumber) => void
   getMemo: () => string
 }) => {
   const [mode, setMode] = useState<'half' | 'max' | 'custom'>('max')
@@ -1246,8 +1450,8 @@ const PoolShareItem = ({
   const isBondable = bondableAssets.includes(assetString)
 
   const handleBondClick = (unitsToBond: string, asset: string) => {
-    form.setFieldValue('bondLpUnits', unitsToBond)
-    form.setFieldValue('assetPool', asset)
+    setValue('bondLpUnits', unitsToBond)
+    setValue('assetPool', asset)
     getMemo()
   }
 
@@ -1320,30 +1524,18 @@ const PoolShareItem = ({
       </div>
 
       {mode === 'custom' && (
-        <Form.Item
-          className="!m-0"
-          name={`unitsToBond-${assetString}`}
-          rules={[
-            {
-              required: true,
-              message: 'Please enter a percentage'
-            },
-            {
-              validator: (_, value) =>
-                value && (parseFloat(value) <= 0 || parseFloat(value) > 100)
-                  ? Promise.reject('Percentage must be between 0 and 100')
-                  : Promise.resolve()
-            }
-          ]}>
+        <div className="mt-2">
           <Input
-            className="mt-2"
             size="small"
             disabled={isLoading || bondableAssets.length === 0 || !isBondable}
             value={customPercentage}
             onChange={handleCustomPercentageChange}
             placeholder="Enter percentage (0-100)"
           />
-        </Form.Item>
+          {customPercentage && (parseFloat(customPercentage) <= 0 || parseFloat(customPercentage) > 100) && (
+            <div className="text-error0 dark:text-error0d text-sm mt-1">Percentage must be between 0 and 100</div>
+          )}
+        </div>
       )}
     </div>
   )
