@@ -18,10 +18,10 @@ import {
   CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
 import { debounce } from 'lodash'
+import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../../../../shared/mock/amount'
@@ -87,6 +87,8 @@ type FormValues = {
   chain: string
   preferredAsset: string
   expiry: string
+  aliasChain: string
+  aliasAddress: string
 }
 type UserNodeInfo = {
   nodeAddress: string
@@ -286,7 +288,32 @@ export const InteractFormThor = ({
 
   const isLoading = useMemo(() => RD.isPending(interactState.txRD), [interactState.txRD])
 
-  const [form] = Form.useForm<FormValues>()
+  const {
+    control,
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isValid }
+  } = useForm<FormValues>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      memo: '',
+      thorAddress: '',
+      providerAddress: '',
+      operatorFee: 0,
+      amount: bn(0),
+      thorname: '',
+      chainAddress: balance.walletAddress,
+      chain: THORChain,
+      preferredAsset: '',
+      expiry: '1',
+      aliasChain: '',
+      aliasAddress: ''
+    }
+  })
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
@@ -316,10 +343,10 @@ export const InteractFormThor = ({
   )
 
   const handleMemo = useCallback(() => {
-    const memoValue = form.getFieldValue('memo') as string
+    const memoValue = watch('memo')
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form])
+  }, [watch])
 
   const renderFeeError = useMemo(
     () => (
@@ -402,45 +429,55 @@ export const InteractFormThor = ({
   }, [asset, interactType, maxAmount, network, poolDetails, pricePool])
 
   const amountValidator = useCallback(
-    async (_: unknown, value: BigNumber) => {
-      switch (interactType) {
-        case InteractType.Bond:
-          // similar to any other form for sending any amount
-          return validateTxAmountInput({
-            input: value,
-            maxAmount: baseToAsset(maxAmount),
-            errors: {
-              msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
-              msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
-              msg3: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
-            }
-          })
-        case InteractType.Unbond:
-          return H.validateUnboundAmountInput({
-            input: value,
-            errors: {
-              msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
-              msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' })
-            }
-          })
-        case InteractType.Custom:
-          return H.validateCustomAmountInput({
-            input: value,
-            errors: {
-              msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
-              msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
-            }
-          })
-        case InteractType.RunePool:
-          return H.validateCustomAmountInput({
-            input: value,
-            errors: {
-              msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
-              msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
-            }
-          })
-        case InteractType.Leave:
-          return Promise.resolve(true)
+    async (value: BigNumber) => {
+      try {
+        switch (interactType) {
+          case InteractType.Bond:
+            // similar to any other form for sending any amount
+            await validateTxAmountInput({
+              input: value,
+              maxAmount: baseToAsset(maxAmount),
+              errors: {
+                msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
+                msg3: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
+              }
+            })
+            return true
+          case InteractType.Unbond:
+            await H.validateUnboundAmountInput({
+              input: value,
+              errors: {
+                msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' })
+              }
+            })
+            return true
+          case InteractType.Custom:
+            await H.validateCustomAmountInput({
+              input: value,
+              errors: {
+                msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
+              }
+            })
+            return true
+          case InteractType.RunePool:
+            await H.validateCustomAmountInput({
+              input: value,
+              errors: {
+                msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
+              }
+            })
+            return true
+          case InteractType.Leave:
+            return true
+          default:
+            return true
+        }
+      } catch (error) {
+        return String(error)
       }
     },
     [interactType, intl, maxAmount]
@@ -467,7 +504,7 @@ export const InteractFormThor = ({
   )
 
   const thornameHandler = useCallback(() => {
-    const thorname = form.getFieldValue('thorname')
+    const thorname = watch('thorname')
     setThornameQuoteValid(false)
     setMemo('')
     if (thorname !== '') {
@@ -481,20 +518,19 @@ export const InteractFormThor = ({
         balance
       )
     }
-  }, [balance, debouncedFetch, form, thorchainQuery])
+  }, [balance, debouncedFetch, watch, thorchainQuery])
 
   const estimateThornameHandler = useCallback(() => {
     const currentDate = new Date()
 
-    form.validateFields()
-    const name = form.getFieldValue('thorname')
-    const chain = thornameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
-    const yearsToAdd = parseInt(form.getFieldValue('expiry'))
+    const name = watch('thorname')
+    const chain = thornameRegister ? watch('chain') : watch('aliasChain')
+    const yearsToAdd = parseInt(watch('expiry') || '1')
     const expiry =
       yearsToAdd === 1
         ? undefined
         : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
-    const chainAddress = thornameRegister ? form.getFieldValue('chainAddress') : form.getFieldValue('aliasAddress')
+    const chainAddress = thornameRegister ? watch('chainAddress') : watch('aliasAddress')
     const owner = balance.walletAddress
     if (name !== undefined && chain !== undefined && chainAddress !== undefined) {
       const fetchThornameQuote = async () => {
@@ -522,7 +558,7 @@ export const InteractFormThor = ({
       }
       fetchThornameQuote()
     }
-  }, [balance.walletAddress, form, isOwner, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
+  }, [balance.walletAddress, watch, isOwner, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
 
   const handleRadioAssetChange = useCallback((asset: string) => {
     setPreferredAsset(asset)
@@ -540,24 +576,23 @@ export const InteractFormThor = ({
   )
 
   const addressValidator = useCallback(
-    async (_: unknown, value: string) => {
+    async (value: string) => {
       const inputAddres = value.toLowerCase()
       const nodeIndex = H.findNodeIndex(nodes, inputAddres)
       if (interactType === InteractType.Unbond && nodeIndex > -1) {
-        return Promise.reject(intl.formatMessage({ id: 'bonds.validations.bondStatusActive' }))
+        return intl.formatMessage({ id: 'bonds.validations.bondStatusActive' })
       }
-      return FP.pipe(
-        value,
-        validateAddress(
-          addressValidation,
-          intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
-          intl.formatMessage({ id: 'wallet.errors.address.invalid' })
-        ),
-        E.fold(
-          (e) => Promise.reject(e),
-          () => Promise.resolve()
-        )
-      )
+      const validationResult = validateAddress(
+        addressValidation,
+        intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+        intl.formatMessage({ id: 'wallet.errors.address.invalid' })
+      )(value)
+
+      if (E.isLeft(validationResult)) {
+        return validationResult.left
+      } else {
+        return true
+      }
     },
     [addressValidation, interactType, intl, nodes]
   )
@@ -566,9 +601,9 @@ export const InteractFormThor = ({
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
 
   const getMemo = useCallback(() => {
-    const thorAddress = form.getFieldValue('thorAddress')
-    const whitelistAdd = form.getFieldValue('providerAddress')
-    const nodeOperatorFee = form.getFieldValue('operatorFee')
+    const thorAddress = watch('thorAddress')
+    const whitelistAdd = watch('providerAddress')
+    const nodeOperatorFee = watch('operatorFee')
     const feeInBasisPoints = nodeOperatorFee ? nodeOperatorFee * 100 : undefined
 
     let createMemo = ''
@@ -611,7 +646,7 @@ export const InteractFormThor = ({
   }, [
     _amountToSend,
     currentMemo,
-    form,
+    watch,
     interactType,
     memo,
     network,
@@ -621,17 +656,13 @@ export const InteractFormThor = ({
   ])
 
   const onChangeInput = useCallback(
-    async (value: BigNumber) => {
-      // we have to validate input before storing into the state
-      amountValidator(undefined, value)
-        .then(() => {
-          const newAmountToSend = assetToBase(assetAmount(value, THORCHAIN_DECIMAL))
-          setAmountToSend(newAmountToSend)
-        })
-        .catch(() => {})
-      // do nothing, Ant' form does the job for us to show an error message
+    (value: BigNumber) => {
+      // Update the amount to send state for memo generation
+      const newAmountToSend = assetToBase(assetAmount(value, THORCHAIN_DECIMAL))
+      setAmountToSend(newAmountToSend)
+      // Let react-hook-form handle validation
     },
-    [amountValidator]
+    [setAmountToSend]
   )
   useEffect(() => {
     // This code will run after the state has been updated
@@ -656,11 +687,22 @@ export const InteractFormThor = ({
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
-  const reset = useCallback(() => {
+  const resetForm = useCallback(() => {
     resetInteractState()
-    const allFields = form.getFieldsValue()
-    const fieldsToReset = Object.keys(allFields).filter((field) => field !== 'thorAddress')
-    form.resetFields(fieldsToReset)
+    reset({
+      memo: '',
+      thorAddress: watch('thorAddress'), // Keep thorAddress value
+      providerAddress: '',
+      operatorFee: 0,
+      amount: bn(0),
+      thorname: '',
+      chainAddress: balance.walletAddress,
+      chain: THORChain,
+      preferredAsset: '',
+      expiry: '1',
+      aliasChain: '',
+      aliasAddress: ''
+    })
     setHasProviderAddress(false)
     setMemo('')
     setAmountToSend(ZERO_BASE_AMOUNT)
@@ -669,7 +711,7 @@ export const InteractFormThor = ({
     setThornameQuoteValid(false)
     setThornameUpdate(false)
     setThornameAvailable(false)
-  }, [form, resetInteractState])
+  }, [reset, resetInteractState, watch, balance.walletAddress])
 
   const renderConfirmationModal = useMemo(() => {
     const onSuccessHandler = () => {
@@ -734,8 +776,8 @@ export const InteractFormThor = ({
     return (
       <TxModal
         title={intl.formatMessage({ id: 'common.tx.sending' })}
-        onClose={reset}
-        onFinish={reset}
+        onClose={resetForm}
+        onFinish={resetForm}
         startTime={sendTxStartTime}
         txRD={txRDasBoolean}
         extraResult={
@@ -756,7 +798,17 @@ export const InteractFormThor = ({
         }
       />
     )
-  }, [interactState, intl, reset, sendTxStartTime, openExplorerTxUrl, getExplorerTxUrl, asset, amountToSend, network])
+  }, [
+    interactState,
+    intl,
+    resetForm,
+    sendTxStartTime,
+    openExplorerTxUrl,
+    getExplorerTxUrl,
+    asset,
+    amountToSend,
+    network
+  ])
 
   const memoLabel = useMemo(
     () => (
@@ -765,26 +817,6 @@ export const InteractFormThor = ({
       </Tooltip>
     ),
     [memo]
-  )
-
-  const renderRadioGroup = useMemo(
-    () => (
-      <RadioGroup onChange={() => estimateThornameHandler()}>
-        <Radio className="text-gray2 dark:text-gray2d" value="1">
-          1 year
-        </Radio>
-        <Radio className="text-gray2 dark:text-gray2d" value="2">
-          2 years
-        </Radio>
-        <Radio className="text-gray2 dark:text-gray2d" value="3">
-          3 years
-        </Radio>
-        <Radio className="text-gray2 dark:text-gray2d" value="5">
-          5 years
-        </Radio>
-      </RadioGroup>
-    ),
-    [estimateThornameHandler]
   )
 
   const amountLabel = useMemo(() => {
@@ -881,10 +913,8 @@ export const InteractFormThor = ({
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
-    form.setFieldsValue({
-      amount: baseToAsset(_amountToSend).amount()
-    })
-  }, [_amountToSend, form])
+    setValue('amount', baseToAsset(_amountToSend).amount())
+  }, [_amountToSend, setValue])
 
   const thorNamefees: UIFeesRD = useMemo(() => {
     const fees: UIFees = [{ asset: AssetRuneNative, amount: _amountToSend }]
@@ -893,13 +923,11 @@ export const InteractFormThor = ({
 
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
-    reset()
+    resetForm()
     setMemo('')
-  }, [interactType, reset])
+  }, [interactType, resetForm])
 
   const [showDetails, setShowDetails] = useState<boolean>(true)
-  const address = ''
-  const amount = bn(0)
   const bondBaseAmount = userNodeInfo?.bondAmount ? userNodeInfo.bondAmount : baseAmount(0)
 
   const exampleMemos = [
@@ -914,32 +942,38 @@ export const InteractFormThor = ({
     { type: 'Withdraw Lp', memo: 'WITHDRAW:POOL:BASISPOINTS' }
   ]
 
+  const onSubmit = (data: FormValues) => {
+    console.log('Form submitted with data:', data)
+    console.log('Form errors:', errors)
+    console.log('Form isValid:', isValid)
+
+    // React Hook Form already handles validation, so we can trust isValid
+    if (!isValid) {
+      console.error('Form has validation errors, not submitting')
+      return
+    }
+
+    setShowConfirmationModal(true)
+  }
+
   return (
-    <Styled.Form
-      form={form}
-      onFinish={() => setShowConfirmationModal(true)}
-      initialValues={{
-        thorAddress: address,
-        amount: amount,
-        chain: THORChain,
-        chainAddress: balance.walletAddress,
-        expiry: 0
-      }}>
-      <>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="flex flex-col space-y-2">
         {/* Memo input (CUSTOM only) */}
         {interactType === InteractType.Custom && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.memo' })}</Styled.InputLabel>
-            <Form.Item
-              name="memo"
-              rules={[
-                {
-                  required: true,
-                  message: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
-                }
-              ]}>
-              <Input disabled={isLoading} onChange={handleMemo} size="large" />
-            </Form.Item>
+            <div>
+              <Input
+                {...register('memo', {
+                  required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                  onChange: handleMemo
+                })}
+                disabled={isLoading}
+                size="large"
+              />
+              {errors.memo && <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.memo.message}</div>}
+            </div>
             {/* Display example memos */}
             <div className="mt-4">
               <Styled.InputLabel>{intl.formatMessage({ id: 'common.examples' }, { name: 'Memos' })}</Styled.InputLabel>
@@ -998,55 +1032,58 @@ export const InteractFormThor = ({
           interactType === InteractType.Leave) && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.nodeAddress' })}</Styled.InputLabel>
-            <Form.Item
-              name="thorAddress"
-              rules={[
-                {
-                  required: true,
-                  validator: addressValidator
-                }
-              ]}>
-              <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
-            </Form.Item>
+            <div>
+              <Input
+                {...register('thorAddress', {
+                  required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                  validate: addressValidator,
+                  onChange: () => getMemo()
+                })}
+                disabled={isLoading}
+                size="large"
+              />
+              {errors.thorAddress && (
+                <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.thorAddress.message}</div>
+              )}
+            </div>
           </Styled.InputContainer>
         )}
         {/* Provider address input (whitelist only) */}
         {interactType === InteractType.Whitelist && (
           <Styled.InputContainer>
-            {
-              <>
-                <Styled.InputLabel>{intl.formatMessage({ id: 'common.providerAddress' })}</Styled.InputLabel>
-                <Form.Item
-                  name="providerAddress"
-                  rules={[
-                    {
-                      required: true,
-                      validator: addressValidator
-                    }
-                  ]}>
-                  <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
-                </Form.Item>
-              </>
-            }
+            <Styled.InputLabel>{intl.formatMessage({ id: 'common.providerAddress' })}</Styled.InputLabel>
+            <div>
+              <Input
+                {...register('providerAddress', {
+                  required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                  validate: addressValidator,
+                  onChange: () => getMemo()
+                })}
+                disabled={isLoading}
+                size="large"
+              />
+              {errors.providerAddress && (
+                <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.providerAddress.message}</div>
+              )}
+            </div>
           </Styled.InputContainer>
         )}
         {interactType === InteractType.Whitelist && whitelisting && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.fee.nodeOperator' })}</Styled.InputLabel>
-            <Styled.FormItem
-              name="operatorFee"
-              rules={[
-                {
-                  required: false
-                }
-              ]}>
+            <div>
               <Input
+                {...register('operatorFee', {
+                  onChange: () => getMemo()
+                })}
                 placeholder="Enter a % value, memo will populate with Basis Points automatically"
                 disabled={isLoading}
                 size="large"
-                onChange={() => getMemo()}
               />
-            </Styled.FormItem>
+              {errors.operatorFee && (
+                <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.operatorFee.message}</div>
+              )}
+            </div>
           </Styled.InputContainer>
         )}
         {/* Amount input (BOND/UNBOND/CUSTOM only) */}
@@ -1058,21 +1095,31 @@ export const InteractFormThor = ({
               interactType === InteractType.RunePool) && (
               <Styled.InputContainer>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
-                <Styled.FormItem
-                  name="amount"
-                  rules={[
-                    {
-                      required: true,
-                      validator: amountValidator
-                    }
-                  ]}>
-                  <InputBigNumber
-                    disabled={isLoading}
-                    size="large"
-                    decimal={THORCHAIN_DECIMAL}
-                    onChange={onChangeInput}
+                <div>
+                  <Controller
+                    name="amount"
+                    control={control}
+                    rules={{
+                      required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                      validate: amountValidator
+                    }}
+                    render={({ field }) => (
+                      <InputBigNumber
+                        {...field}
+                        disabled={isLoading}
+                        size="large"
+                        decimal={THORCHAIN_DECIMAL}
+                        onChange={(value) => {
+                          field.onChange(value)
+                          onChangeInput(value)
+                        }}
+                      />
+                    )}
                   />
-                </Styled.FormItem>
+                  {errors.amount && (
+                    <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.amount.message}</div>
+                  )}
+                </div>
                 {/* max. amount button (BOND/CUSTOM/UNBOND only) */}
                 {(interactType === InteractType.Bond ||
                   interactType === InteractType.Custom ||
@@ -1124,20 +1171,19 @@ export const InteractFormThor = ({
             {interactType === InteractType.Bond && (
               <Styled.InputContainer>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.fee.nodeOperator' })}</Styled.InputLabel>
-                <Styled.FormItem
-                  name="operatorFee"
-                  rules={[
-                    {
-                      required: false
-                    }
-                  ]}>
+                <div>
                   <Input
+                    {...register('operatorFee', {
+                      onChange: () => getMemo()
+                    })}
                     placeholder="Enter a % value, memo will populate with Basis Points automatically"
                     disabled={isLoading}
                     size="large"
-                    onChange={() => getMemo()}
                   />
-                </Styled.FormItem>
+                  {errors.operatorFee && (
+                    <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.operatorFee.message}</div>
+                  )}
+                </div>
               </Styled.InputContainer>
             )}
           </>
@@ -1155,15 +1201,19 @@ export const InteractFormThor = ({
                 />
               </div>
 
-              <Styled.FormItem
-                name="thorname"
-                rules={[
-                  {
-                    required: true
-                  }
-                ]}>
-                <Input disabled={isLoading} size="large" onChange={() => thornameHandler()} />
-              </Styled.FormItem>
+              <div>
+                <Input
+                  {...register('thorname', {
+                    required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                    onChange: () => thornameHandler()
+                  })}
+                  disabled={isLoading}
+                  size="large"
+                />
+                {errors.thorname && (
+                  <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.thorname.message}</div>
+                )}
+              </div>
               {O.isSome(oThorname) && !thornameAvailable && !isOwner && renderThornameError}
             </Styled.InputContainer>
           )}
@@ -1185,124 +1235,205 @@ export const InteractFormThor = ({
                   <div className="flex w-full items-center text-[12px]">
                     <Styled.InputLabel>{intl.formatMessage({ id: 'common.preferredAsset' })}</Styled.InputLabel>
                   </div>
-                  <Styled.FormItem
-                    name="preferredAsset"
-                    rules={[
-                      {
-                        required: false
-                      }
-                    ]}>
-                    <RadioGroup onChange={handleRadioAssetChange} value={preferredAsset}>
-                      <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.symbol}>
-                        BTC
-                      </Radio>
-                      <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.symbol}>
-                        ETH
-                      </Radio>
-                      <Radio className="text-gray2 dark:text-gray2d" value={AssetUSDTDAC.symbol}>
-                        USDT
-                      </Radio>
-                    </RadioGroup>
-                  </Styled.FormItem>
+                  <div>
+                    <Controller
+                      name="preferredAsset"
+                      control={control}
+                      render={({ field }) => (
+                        <RadioGroup
+                          {...field}
+                          value={preferredAsset}
+                          onChange={(value) => {
+                            field.onChange(value)
+                            handleRadioAssetChange(value)
+                          }}>
+                          <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.symbol}>
+                            BTC
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.symbol}>
+                            ETH
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value={AssetUSDTDAC.symbol}>
+                            USDT
+                          </Radio>
+                        </RadioGroup>
+                      )}
+                    />
+                    {errors.preferredAsset && (
+                      <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.preferredAsset.message}</div>
+                    )}
+                  </div>
                   {/* Add input fields for aliasChain, aliasAddress, and expiry */}
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
-                  <Styled.FormItem
-                    name="aliasChain"
-                    rules={[
-                      {
-                        required: true,
-                        message: 'Please provide an alias chain.'
-                      }
-                    ]}>
-                    <RadioGroup onChange={handleRadioChainChange} value={aliasChain}>
-                      <Radio className="text-gray2 dark:text-gray2d" value={AssetAVAX.chain}>
-                        AVAX
-                      </Radio>
-                      <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
-                        BTC
-                      </Radio>
-                      <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
-                        ETH
-                      </Radio>
-                      <Radio className="text-gray2 dark:text-gray2d" value={AssetDOGE.chain}>
-                        DOGE
-                      </Radio>
-                    </RadioGroup>
-                  </Styled.FormItem>
+                  <div>
+                    <Controller
+                      name="aliasChain"
+                      control={control}
+                      rules={{
+                        required: 'Please provide an alias chain.'
+                      }}
+                      render={({ field }) => (
+                        <RadioGroup
+                          {...field}
+                          value={aliasChain}
+                          onChange={(value) => {
+                            field.onChange(value)
+                            handleRadioChainChange(value)
+                          }}>
+                          <Radio className="text-gray2 dark:text-gray2d" value={AssetAVAX.chain}>
+                            AVAX
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
+                            BTC
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
+                            ETH
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value={AssetDOGE.chain}>
+                            DOGE
+                          </Radio>
+                        </RadioGroup>
+                      )}
+                    />
+                    {errors.aliasChain && (
+                      <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.aliasChain.message}</div>
+                    )}
+                  </div>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
-                  <Styled.FormItem
-                    name="aliasAddress"
-                    rules={[
-                      {
-                        required: true,
-                        message: 'Please provide an alias address.'
-                      }
-                    ]}>
-                    <Input disabled={isLoading} size="large" />
-                  </Styled.FormItem>
+                  <div>
+                    <Input
+                      {...register('aliasAddress', {
+                        required: 'Please provide an alias address.',
+                        onChange: () => estimateThornameHandler()
+                      })}
+                      disabled={isLoading}
+                      size="large"
+                    />
+                    {errors.aliasAddress && (
+                      <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.aliasAddress.message}</div>
+                    )}
+                  </div>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
-                  <Styled.FormItem
-                    name="expiry"
-                    rules={[
-                      {
-                        required: false
-                      }
-                    ]}>
-                    {renderRadioGroup}
-                  </Styled.FormItem>
+                  <div>
+                    <Controller
+                      name="expiry"
+                      control={control}
+                      render={({ field }) => (
+                        <RadioGroup
+                          {...field}
+                          onChange={(value) => {
+                            field.onChange(value)
+                            estimateThornameHandler()
+                          }}>
+                          <Radio className="text-gray2 dark:text-gray2d" value="1">
+                            1 year
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value="2">
+                            2 years
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value="3">
+                            3 years
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value="5">
+                            5 years
+                          </Radio>
+                        </RadioGroup>
+                      )}
+                    />
+                    {errors.expiry && (
+                      <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.expiry.message}</div>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>
                   {/* Initial values needed for tns register */}
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
-                  <Styled.FormItem
-                    name="chain"
-                    rules={[
-                      {
-                        required: true,
-                        message: 'Please provide an alias chain.'
-                      }
-                    ]}>
-                    <RadioGroup>
-                      <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
-                        THOR
-                      </Radio>
-                    </RadioGroup>
-                  </Styled.FormItem>
+                  <div>
+                    <Controller
+                      name="chain"
+                      control={control}
+                      rules={{
+                        required: 'Please provide an alias chain.'
+                      }}
+                      render={({ field }) => (
+                        <RadioGroup
+                          {...field}
+                          onChange={(value) => {
+                            field.onChange(value)
+                            estimateThornameHandler()
+                          }}>
+                          <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
+                            THOR
+                          </Radio>
+                        </RadioGroup>
+                      )}
+                    />
+                    {errors.chain && (
+                      <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.chain.message}</div>
+                    )}
+                  </div>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
-                  <Styled.FormItem
-                    name="chainAddress"
-                    rules={[
-                      {
-                        required: true,
-                        message: 'Please provide an alias address.'
-                      }
-                    ]}>
-                    <Input disabled={isLoading} size="large" />
-                  </Styled.FormItem>
+                  <div>
+                    <Input
+                      {...register('chainAddress', {
+                        required: 'Please provide an alias address.',
+                        onChange: () => estimateThornameHandler()
+                      })}
+                      disabled={isLoading}
+                      size="large"
+                    />
+                    {errors.chainAddress && (
+                      <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.chainAddress.message}</div>
+                    )}
+                  </div>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
-                  <Styled.FormItem
-                    name="expiry"
-                    rules={[
-                      {
+                  <div>
+                    <Controller
+                      name="expiry"
+                      control={control}
+                      rules={{
                         required: true
-                      }
-                    ]}>
-                    {renderRadioGroup}
-                  </Styled.FormItem>
+                      }}
+                      render={({ field }) => (
+                        <RadioGroup
+                          {...field}
+                          onChange={(value) => {
+                            field.onChange(value)
+                            estimateThornameHandler()
+                          }}>
+                          <Radio className="text-gray2 dark:text-gray2d" value="1">
+                            1 year
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value="2">
+                            2 years
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value="3">
+                            3 years
+                          </Radio>
+                          <Radio className="text-gray2 dark:text-gray2d" value="5">
+                            5 years
+                          </Radio>
+                        </RadioGroup>
+                      )}
+                    />
+                    {errors.expiry && (
+                      <div className="text-error0 dark:text-error0d text-sm mt-1">{errors.expiry.message}</div>
+                    )}
+                  </div>
                 </>
               )}
               <Styled.Fees className="mt-10px" fees={thorNamefees} disabled={isLoading} />
             </Styled.InputContainer>
           )}
         </>
-      </>
+      </div>
       <div className="flex items-center justify-center">
         {thornameQuoteValid && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
-            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            disabled={isLoading || !isValid}
             type="submit"
             size="large">
             {submitLabel}
@@ -1320,7 +1451,7 @@ export const InteractFormThor = ({
                 runePoolData &&
                 RD.isSuccess(runePoolData) &&
                 runePoolData.value.blocksLeft > 0) ||
-              !!form.getFieldsError().filter(({ errors }) => errors.length).length
+              !isValid
             }
             type="submit"
             size="large">
@@ -1442,6 +1573,6 @@ export const InteractFormThor = ({
       </div>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
-    </Styled.Form>
+    </form>
   )
 }
