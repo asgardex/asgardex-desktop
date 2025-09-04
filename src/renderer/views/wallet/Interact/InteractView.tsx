@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -7,15 +7,13 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
-import { LoadingView } from '../../../components/shared/loading'
+import { Spin } from '../../../components/uielements/spin'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import { InteractViewMAYA } from './InteractViewMAYA'
 import { InteractViewTHOR } from './InteractViewTHOR'
 
-type Props = {}
-
-export const InteractView: React.FC<Props> = (): JSX.Element => {
+export const InteractView = () => {
   const intl = useIntl()
 
   const { selectedAsset$ } = useWalletContext()
@@ -50,7 +48,7 @@ export const InteractView: React.FC<Props> = (): JSX.Element => {
   return FP.pipe(
     oSelectedAsset,
     O.fold(
-      () => <LoadingView size="large" />,
+      () => <Spin />,
       (selectedAsset) => <div>{renderSendView(selectedAsset)}</div>
     )
   )

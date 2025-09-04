@@ -1,7 +1,12 @@
+import { option as O } from 'fp-ts'
+import * as Rx from 'rxjs'
+import * as RxOp from 'rxjs/operators'
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
-import { client$ } from './common'
+import { appWalletService } from '../wallet/appWallet'
+import { isStandaloneLedgerMode } from '../wallet/types'
+import { client$, readOnlyClient$ } from './common'
 
 /**
  * `ObservableState` to reload `Balances`
@@ -10,6 +15,29 @@ import { client$ } from './common'
  */
 const { get$: reloadBalances$, set: setReloadBalances } = observableState<boolean>(false)
 const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observableState<boolean>(false)
+
+/**
+ * Enhanced client that falls back to read-only client for standalone ledger mode
+ * When keystore is locked but we're in standalone ledger mode, use read-only client for balance queries
+ */
+const enhancedClient$ = Rx.combineLatest([client$, readOnlyClient$, appWalletService.appWalletState$]).pipe(
+  RxOp.map(([keystoreClient, readOnlyClient, appWalletState]) => {
+    // If we have a keystore client (unlocked wallet), use it
+    if (O.isSome(keystoreClient)) {
+      return keystoreClient
+    }
+
+    // If keystore is locked but we're in standalone ledger mode, use read-only client
+    if (appWalletState && isStandaloneLedgerMode(appWalletState) && O.isSome(readOnlyClient)) {
+      return readOnlyClient
+    }
+
+    // Otherwise, no client available
+    return O.none
+  }),
+  RxOp.distinctUntilChanged(),
+  RxOp.shareReplay({ bufferSize: 1, refCount: true })
+)
 
 const resetReloadBalances = (walletType: WalletType) => {
   if (walletType === WalletType.Keystore) {
@@ -40,10 +68,18 @@ const balances$ = ({
   walletBalanceType: WalletBalanceType
   hdMode: HDMode
 }): C.WalletBalancesLD =>
-  C.balances$({ client$, trigger$: reloadBalances$, walletType, walletAccount, walletIndex, hdMode, walletBalanceType })
+  C.balances$({
+    client$: enhancedClient$,
+    trigger$: reloadBalances$,
+    walletType,
+    walletAccount,
+    walletIndex,
+    hdMode,
+    walletBalanceType
+  })
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (walletBalanceType: WalletBalanceType) =>
-  C.balancesByAddress$({ client$, trigger$: reloadLedgerBalances$, walletBalanceType })
+  C.balancesByAddress$({ client$: enhancedClient$, trigger$: reloadLedgerBalances$, walletBalanceType })
 
 export { balances$, reloadBalances, getBalanceByAddress$, reloadBalances$, resetReloadBalances }

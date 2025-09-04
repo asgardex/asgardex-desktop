@@ -101,6 +101,42 @@ const clientState$: ClientState$ = FP.pipe(
 const client$: Observable<O.Option<BitcoinClient>> = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
+ * Read-only BTC client for balance queries without requiring keystore
+ * This client can be used for standalone ledger mode to query balances
+ */
+const readOnlyClientState$: Observable<RD.RemoteData<Error, BitcoinClient>> = FP.pipe(
+  clientNetwork$,
+  RxOp.map((network) => {
+    try {
+      // Create client without phrase - only for balance queries
+      const btcInitParams = {
+        ...defaultBTCParams,
+        network: network,
+        dataProviders: [BlockcypherDataProviders, HaskoinDataProviders, BitgoProviders],
+        addressFormat: AddressFormat.P2WPKH,
+        rootDerivationPaths: defaultBTCParams.rootDerivationPaths,
+        feeBounds: {
+          lower: LOWER_FEE_BOUND,
+          upper: UPPER_FEE_BOUND
+        }
+      }
+      const client = new BitcoinClient(btcInitParams)
+      return RD.success(client)
+    } catch (error) {
+      console.error('Failed to create read-only BTC client', error)
+      return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+    }
+  }),
+  RxOp.startWith<RD.RemoteData<Error, BitcoinClient>>(RD.pending),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$: Observable<O.Option<BitcoinClient>> = readOnlyClientState$.pipe(
+  RxOp.map(RD.toOption),
+  RxOp.shareReplay(1)
+)
+
+/**
  * BTC `Address`
  */
 const address$: C.WalletAddress$ = C.address$(client$, BTCChain)
@@ -115,4 +151,4 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, BTCChain)
  */
 const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }

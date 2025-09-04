@@ -30,7 +30,20 @@ const ledger: LedgerMessages = {
   'ledger.deposit.oneside': 'Пока что Ledger поддерживается только для одностороннего добавления активов.',
   'ledger.legacyformat.note': 'Ledger отображает все выходные адреса в формате "legacy", но не в формате "CashAddr".',
   'ledger.legacyformat.show': 'Показать адреса',
-  'ledger.legacyformat.hide': 'Скрыть адреса'
+  'ledger.legacyformat.hide': 'Скрыть адреса',
+  'ledger.connect.title': 'Подключить ваш Ledger',
+  'ledger.connect.instruction': 'Выберите блокчейн сеть для подключения вашего устройства Ledger',
+  'ledger.connect.success.title': 'Ledger подключен',
+  'ledger.connect.success.description': 'Успешно подключен к {chain}',
+  'ledger.connect.success.redirect': 'Перенаправление в кошелек через {countdown} секунд...',
+  'ledger.connect.button.continue': 'Продолжить сейчас',
+  'ledger.detect.title': 'Обнаружение устройства Ledger',
+  'ledger.detect.checking': 'Проверка {chain}...',
+  'ledger.derivation.path': 'Путь деривации',
+  'ledger.derivation.legacy': 'Устаревший (MEW)',
+  'ledger.derivation.metamask': 'MetaMask',
+  'ledger.connect.chain': 'Подключить {chain}',
+  'ledger.connect.select': 'Выберите сеть'
 }
 
 export default ledger

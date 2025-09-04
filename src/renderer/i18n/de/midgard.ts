@@ -4,7 +4,8 @@ const midgard: MidgardMessages = {
   'midgard.error.endpoint.title': 'Midgard Endpoint Fehler',
   'midgard.url.error.invalid': 'Ungültige Midgard URL. Bitte überprüfe diese und versuche es erneut.',
   'midgard.url.error.unhealthy': 'Midgard scheint "unhealthy" zu sein beim Überprüfen von "{endpoint}".',
-  'midgard.url.valid': 'Gültige Midgard URL'
+  'midgard.url.valid': 'Gültige Midgard URL',
+  'midgard.status.offline': 'Midgard für {protocol} ist offline'
 }
 
 export default midgard

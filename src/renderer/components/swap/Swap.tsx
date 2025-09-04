@@ -6,7 +6,8 @@ import {
   ArrowsRightLeftIcon,
   ArrowsUpDownIcon,
   MagnifyingGlassMinusIcon,
-  MagnifyingGlassPlusIcon
+  MagnifyingGlassPlusIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline'
 import { QuoteSwap } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
@@ -30,9 +31,9 @@ import {
   isTokenAsset,
   isTradeAsset,
   isSecuredAsset,
-  SecuredAsset
+  SecuredAsset,
+  Chain
 } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
 import clsx from 'clsx'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import { debounce } from 'lodash'
@@ -54,6 +55,7 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
+import { useWalletContext } from '../../contexts/WalletContext'
 import {
   max1e8BaseAmount,
   convertBaseAmountDecimal,
@@ -63,9 +65,10 @@ import {
   isRuneNativeAsset,
   isCacaoAsset,
   isEVMTokenAsset,
-  getEVMTokenAddressForChain
+  getEVMTokenAddressForChain,
+  isRujiAsset
 } from '../../helpers/assetHelper'
-import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
+import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '../../helpers/fp/eq'
@@ -94,22 +97,23 @@ import { PoolAddress } from '../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { addAsset } from '../../services/storage/userChainTokens'
-import { TxHashRD, WalletBalance, WalletBalances } from '../../services/wallet/types'
+import { TxHashRD, WalletBalance, WalletBalances, isStandaloneLedgerMode } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { useAggregator } from '../../store/aggregator/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { ProviderModal } from '../modal/provider'
 import { SwapAssets } from '../modal/tx/extra'
-import { LoadingView, Spin } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton } from '../uielements/button'
 import { Collapse } from '../uielements/collapse'
-import { Tooltip, TooltipAddress, WalletTypeLabel } from '../uielements/common/Common.styles'
+import { WalletTypeLabel } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
 import { InfoIcon } from '../uielements/info'
-import { CopyLabel } from '../uielements/label'
+import { CopyLabel } from '../uielements/label/CopyLabel'
 import { Slider } from '../uielements/slider'
+import { Spin } from '../uielements/spin'
+import { Tooltip } from '../uielements/tooltip'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
 import { ModalState, RateDirection, SwapProps } from './Swap.types'
@@ -118,10 +122,7 @@ import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
 import { SwapTxModal } from './SwapTxModal'
 
-const ErrorLabel: React.FC<{
-  children: React.ReactNode
-  className?: string
-}> = ({ children, className }): JSX.Element => (
+const ErrorLabel = ({ children, className }: { children: React.ReactNode; className?: string }): JSX.Element => (
   <div
     className={clsx('mb-[14px] text-center font-main text-[12px] uppercase text-error0 dark:text-error0d', className)}>
     {children}
@@ -163,10 +164,20 @@ export const Swap = ({
   approveFee$,
   importWalletHandler,
   addressValidator,
-  hidePrivateData
+  hidePrivateData,
+  midgardStatusRD,
+  midgardStatusMayaRD
 }: SwapProps) => {
   const { estimateSwap } = useAggregator()
   const intl = useIntl()
+  const { appWalletService } = useWalletContext()
+
+  // Get app wallet state to check for standalone ledger mode
+  const appWalletState = useObservableState(appWalletService.appWalletState$)
+
+  // State for dynamically fetched target address in standalone ledger mode
+  const [standaloneLedgerTargetAddress, setStandaloneLedgerTargetAddress] = useState<O.Option<Address>>(O.none)
+  const [isFetchingStandaloneLedgerAddress, setIsFetchingStandaloneLedgerAddress] = useState(false)
 
   const { chain: sourceChain } =
     sourceAsset.type === AssetType.SYNTH
@@ -181,16 +192,85 @@ export const Swap = ({
       ? AssetRuneNative
       : targetAsset
 
-  const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
+  const lockedWallet: boolean = useMemo(() => {
+    // In standalone ledger mode, bypass keystore authentication
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      return false
+    }
+
+    // Normal keystore authentication logic
+    return isLocked(keystore) || !hasImportedKeystore(keystore)
+  }, [keystore, appWalletState])
+
+  // Function to fetch target address for standalone ledger mode
+  const fetchStandaloneLedgerTargetAddress = useCallback(
+    async (chain: Chain) => {
+      if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+        setIsFetchingStandaloneLedgerAddress(true)
+
+        try {
+          // Get the target chain address without changing global state
+          const addressResult = await appWalletService.standaloneLedgerService
+            .getAddressWithoutStateChange(chain)
+            .pipe()
+            .toPromise()
+
+          // Handle RemoteData result
+          if (RD.isSuccess(addressResult)) {
+            const walletAddress = addressResult.value
+            setStandaloneLedgerTargetAddress(O.some(walletAddress.address))
+          } else {
+            setStandaloneLedgerTargetAddress(O.none)
+          }
+        } catch (error) {
+          setStandaloneLedgerTargetAddress(O.none)
+        } finally {
+          setIsFetchingStandaloneLedgerAddress(false)
+        }
+      }
+    },
+    [appWalletState, appWalletService]
+  )
+
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
   const [isFetchingEstimate, setIsFetchingEstimate] = useState(false)
 
   const { isAssetSupported$ } = useChainflipContext()
 
-  const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
+  const useSourceAssetLedger = useMemo(() => {
+    // In standalone ledger mode, always use ledger for source asset
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      return true
+    }
+    // Otherwise, check the initial wallet type
+    const useLedger = isLedgerWallet(initialSourceWalletType)
+    return useLedger
+  }, [appWalletState, initialSourceWalletType])
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
 
   const oSourceWalletAddress = useSourceAssetLedger ? oSourceLedgerAddress : oInitialSourceKeystoreAddress
+
+  // Auto-select chain for standalone ledger
+  useEffect(() => {
+    // Auto-select the source asset's chain in standalone ledger mode (only if state is available)
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      const sourceChain = sourceAsset.chain
+      const isChainConnected = appWalletState.connectedChain === sourceChain
+
+      if (isChainConnected && appWalletState.connectedChain !== sourceChain) {
+        // Use ref to avoid dependency loop
+        appWalletService.standaloneLedgerService.setSelectedChain(sourceChain)
+      }
+    }
+  }, [
+    useSourceAssetLedger,
+    oSourceLedgerAddress,
+    oInitialSourceKeystoreAddress,
+    oSourceWalletAddress,
+    sourceAsset.chain,
+    appWalletState,
+    appWalletService.standaloneLedgerService
+  ])
 
   const useTargetAssetLedger = FP.pipe(
     oInitialTargetWalletType,
@@ -210,7 +290,7 @@ export const Swap = ({
   // Default Streaming quantity set to 0, network computes the optimum
   const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
   // Slide use state
-  const [slider, setSlider] = useState<number>(26)
+  const [slider, setSlider] = useState(26)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
@@ -234,6 +314,19 @@ export const Swap = ({
   useEffect(() => {
     setTargetWalletType(oInitialTargetWalletType)
   }, [oInitialTargetWalletType])
+
+  // Reset target address for standalone ledger mode when target asset changes
+  // Note: We don't auto-fetch here anymore to avoid loops - user must manually fetch
+  const prevTargetChainRef = useRef<Chain | undefined>()
+  useEffect(() => {
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      // Only reset if the target chain actually changed (not just a re-render)
+      if (prevTargetChainRef.current && prevTargetChainRef.current !== targetChain) {
+        setStandaloneLedgerTargetAddress(O.none)
+      }
+      prevTargetChainRef.current = targetChain
+    }
+  }, [appWalletState, targetChain])
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -277,18 +370,6 @@ export const Swap = ({
       )
     )
   }, [oSourceWalletAddress])
-
-  const destinationWalletAddress = useMemo(
-    () =>
-      FP.pipe(
-        oRecipientAddress,
-        O.fold(
-          () => '', // Fallback
-          (destinationAddress) => destinationAddress // Return t
-        )
-      ),
-    [oRecipientAddress]
-  )
 
   /**
    * All balances based on available assets to swap
@@ -335,11 +416,13 @@ export const Swap = ({
   // `AssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
   const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
     const oWalletBalances = NEA.fromArray(allBalances)
-    return getWalletBalanceByAssetAndWalletType({
+    const result = getWalletBalanceByAssetAndWalletType({
       oWalletBalances,
       asset: sourceAsset,
       walletType: sourceWalletType
     })
+
+    return result
   }, [sourceAsset, allBalances, sourceWalletType])
 
   // User balance for source asset
@@ -424,12 +507,42 @@ export const Swap = ({
     return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
   }, [sourceAsset, targetAsset])
 
+  // Compute effective recipient address: use standalone ledger address when available, otherwise use provided recipient address
+  const effectiveRecipientAddress: O.Option<Address> = useMemo(() => {
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      // In standalone ledger mode, use the fetched target address
+      return standaloneLedgerTargetAddress
+    }
+    // In normal mode, use the provided recipient address
+    return oRecipientAddress
+  }, [appWalletState, standaloneLedgerTargetAddress, oRecipientAddress])
+
+  // Helper to get effective recipient address as string (single source of truth)
+  const effectiveRecipientAddressString = useMemo(
+    () =>
+      FP.pipe(
+        effectiveRecipientAddress,
+        O.fold(
+          () => '', // Fallback
+          (address) => address
+        )
+      ),
+    [effectiveRecipientAddress]
+  )
+
+  // Auto-switch from "Preview Only" to "Preview & Swap" when recipient address is available
+  useEffect(() => {
+    if (quoteOnly && O.isSome(effectiveRecipientAddress)) {
+      setQuoteOnly(false)
+    }
+  }, [effectiveRecipientAddress, quoteOnly])
+
   // PlaceHolder memo just to calc fees better
   const swapMemo = useMemo(() => {
     return O.fold(
       () => '',
       (recipientAddress: string) => {
-        const toleranceBps = undefined
+        const toleranceBps = slipTolerance * 100
         const affiliateName = getAsgardexThorname(network)
         const affiliateBps = getAsgardexAffiliateFee(network)
 
@@ -443,8 +556,8 @@ export const Swap = ({
           affiliateBps: affiliateName ? affiliateBps ?? 0 : undefined
         })
       }
-    )(oRecipientAddress)
-  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity, network])
+    )(effectiveRecipientAddress)
+  }, [effectiveRecipientAddress, slipTolerance, network, targetAsset, streamingInterval, streamingQuantity])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
@@ -479,13 +592,11 @@ export const Swap = ({
     if (lockedWallet || quoteOnly) {
       return lockedAssetAmount.baseAmount
     }
-    const feeAmount = swapFees.inFee.amount.amount().toNumber()
-    const roundedFee = Math.ceil(feeAmount / 1000) * 1000
-    const roundedFeebaseAmount = baseAmount(roundedFee, swapFees.inFee.amount.decimal)
+    // Use precise fee amount instead of arbitrary 1000-unit rounding
     return Utils.maxAmountToSwapMax1e8({
       asset: sourceAsset,
       balanceAmountMax1e8: sourceAssetAmountMax1e8,
-      feeAmount: roundedFeebaseAmount
+      feeAmount: swapFees.inFee.amount
     })
   }, [
     lockedAssetAmount.baseAmount,
@@ -845,10 +956,10 @@ export const Swap = ({
               symbol: sourceAsset.symbol.toUpperCase()
             }),
             fromAddress: isSecuredAsset(sourceAsset) ? undefined : sourceWalletAddress,
-            destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
+            destinationAddress: quoteOnly ? undefined : effectiveRecipientAddressString,
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100
+            toleranceBps: slipTolerance * 100
           },
           applyBps
         )
@@ -884,11 +995,10 @@ export const Swap = ({
       targetAsset,
       sourceAssetDecimal,
       sourceWalletAddress,
-      destinationWalletAddress,
+      effectiveRecipientAddressString,
       isStreaming,
       streamingInterval,
       streamingQuantity,
-      network,
       slipTolerance,
       applyBps,
       quoteOnly
@@ -976,7 +1086,17 @@ export const Swap = ({
       oErrorProtocol,
       O.fold(
         () => [],
-        (error) => [error.message]
+        (error) => {
+          // Check if this is a memo undefined error and we're in swap mode without a recipient address
+          if (
+            !quoteOnly &&
+            O.isNone(effectiveRecipientAddress) &&
+            (error.message.toLowerCase().includes('memo') || error.message.toLowerCase().includes('parsing'))
+          ) {
+            return ['Please enter a recipient address to proceed with the swap']
+          }
+          return [error.message]
+        }
       )
     )
 
@@ -991,7 +1111,7 @@ export const Swap = ({
         ))}
       </ErrorLabel>
     )
-  }, [oErrorProtocol])
+  }, [oErrorProtocol, quoteOnly, effectiveRecipientAddress])
 
   /**
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
@@ -1081,25 +1201,16 @@ export const Swap = ({
     )
   }, [oPriceSwapFees1e8])
 
-  // Disable slippage selection temporary for Ledger/BTC (see https://github.com/thorchain/asgardex-electron/issues/2068)
-  const disableSlippage = useMemo(
-    () =>
-      (isBtcChain(sourceChain) || isLtcChain(sourceChain) || isBchChain(sourceChain) || isDogeChain(sourceChain)) &&
-      useSourceAssetLedger,
-    [useSourceAssetLedger, sourceChain]
-  )
-
   const swapLimit1e8: O.Option<BaseAmount> = useMemo(() => {
     return FP.pipe(
       oQuoteProtocol,
       O.chain((txDetails) => {
-        // Disable slippage protection temporary for Ledger/BTC (see https://github.com/thorchain/asgardex-electron/issues/2068)
-        return !disableSlippage && swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8)
+        return swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8)
           ? O.some(Utils.getSwapLimit1e8(txDetails.memo))
           : O.none
       })
     )
-  }, [oQuoteProtocol, disableSlippage, swapResultAmountMax, zeroTargetBaseAmountMax1e8])
+  }, [oQuoteProtocol, swapResultAmountMax.baseAmount, zeroTargetBaseAmountMax1e8])
 
   const oSwapParams: O.Option<SwapTxParams> = useMemo(() => {
     const oPoolAddress: O.Option<PoolAddress> = FP.pipe(
@@ -1119,7 +1230,7 @@ export const Swap = ({
       })
     )
 
-    return FP.pipe(
+    const result = FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteProtocol),
       O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
         let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
@@ -1129,7 +1240,8 @@ export const Swap = ({
           !isTradeAsset(sourceAsset) &&
           !isSynthAsset(sourceAsset) &&
           !isSecuredAsset(sourceAsset) &&
-          !isTCYAsset(sourceAsset)
+          !isTCYAsset(sourceAsset) &&
+          !isRujiAsset(sourceAsset)
         ) {
           if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
             amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
@@ -1149,6 +1261,8 @@ export const Swap = ({
         }
       })
     )
+
+    return result
   }, [
     oPoolAddressThor,
     oPoolAddressMaya,
@@ -1205,9 +1319,9 @@ export const Swap = ({
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
-    const result = isStreaming ? false : swapSlippage > slipTolerance
+    const result = swapSlippage > slipTolerance
     return result
-  }, [swapSlippage, slipTolerance, isStreaming])
+  }, [swapSlippage, slipTolerance])
 
   const [rateDirection, setRateDirection] = useState(RateDirection.Source)
 
@@ -1370,8 +1484,8 @@ export const Swap = ({
         (quoteSwap) => quoteSwap.errors
       )
     )
-    return errors.some((error) => error.includes('router has not been approved to spend this amount'))
-  }, [oQuoteProtocol])
+    return !quoteOnly && errors.some((error) => error.includes('router has not been approved to spend this amount'))
+  }, [oQuoteProtocol, quoteOnly])
 
   const reloadApproveFeesHandler = useCallback(() => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
@@ -1391,12 +1505,12 @@ export const Swap = ({
         sourceWalletType: WalletType.Keystore,
         target: targetAsset,
         targetWalletType: oTargetWalletType,
-        recipientAddress: oRecipientAddress
+        recipientAddress: effectiveRecipientAddress
       })
     },
     [
       initialAmountToSwapMax1e8,
-      oRecipientAddress,
+      effectiveRecipientAddress,
       oTargetWalletType,
       onChangeAsset,
       resetIsApprovedState,
@@ -1466,7 +1580,9 @@ export const Swap = ({
       O.fold(
         () => false,
         (quoteSwap) => {
-          return quoteSwap.dustThreshold.baseAmount.gt(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal))
+          return quoteSwap.dustThreshold.baseAmount.gte(
+            convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal)
+          )
         }
       )
     )
@@ -1563,28 +1679,27 @@ export const Swap = ({
             // Keep native Rune or Cacao assets as is
             return [asset]
           }
-          if (isMayaSupportedAsset(asset, poolDetailsMaya) && isMayaSupportedAsset(sourceAsset, poolDetailsMaya)) {
-            // Synthesize MAYAChain assets
-            return [
-              asset,
-              {
-                ...asset,
-                type: AssetType.SYNTH,
-                synth: true
-              } as SynthAsset
-            ]
-          }
+
+          const assets: AnyAsset[] = [asset] // Start with base asset
+
+          // Add SECURED asset for ThorChain if supported
           if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
-            // Create secured assets for ThorChain
-            return [
-              asset,
-              {
-                ...asset,
-                type: AssetType.SECURED
-              } as SecuredAsset
-            ]
+            assets.push({
+              ...asset,
+              type: AssetType.SECURED
+            } as SecuredAsset)
           }
-          return [asset]
+
+          // Add SYNTH asset for MAYAChain if supported
+          if (isMayaSupportedAsset(asset, poolDetailsMaya) && isMayaSupportedAsset(sourceAsset, poolDetailsMaya)) {
+            assets.push({
+              ...asset,
+              type: AssetType.SYNTH,
+              synth: true
+            } as SynthAsset)
+          }
+
+          return assets
         }),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
@@ -1614,6 +1729,7 @@ export const Swap = ({
   const quoteOnlyButton = () => {
     setQuoteOnly(!quoteOnly)
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+    setQuoteProtocol(O.none)
   }
 
   const labelMin = useMemo(
@@ -1636,8 +1752,6 @@ export const Swap = ({
       setStreamingQuantity(0)
       setIsStreaming(streamingIntervalValue !== 0)
     }
-    const tipFormatter =
-      slider === 0 ? 'Caution tx could be refunded' : `${streamingIntervalValue} Block interval between swaps`
 
     return (
       <div>
@@ -1645,12 +1759,8 @@ export const Swap = ({
           key={'Streamer Interval slider'}
           value={slider}
           onChange={setInterval}
-          included={false}
           max={100}
-          tooltipVisible
-          tipFormatter={() => `${tipFormatter} `}
           labels={[`${labelMin}`, `${streamingInterval}`]}
-          tooltipPlacement={'top'}
         />
       </div>
     )
@@ -1663,26 +1773,14 @@ export const Swap = ({
       setStreamingQuantity(quantity)
     }
     let quantityLabel: string[]
-    let toolTip: string
     if (streamingInterval === 0) {
       quantityLabel = [`Limit swap`]
-      toolTip = `No Streaming interval set`
     } else {
       quantityLabel = quantity === 0 ? [`Auto swap count`] : [`Sub swaps`, `${quantity}`]
-      toolTip = `Protocol decides the swap count`
     }
     return (
       <div>
-        <Slider
-          key={'Streamer Quantity slider'}
-          value={quantity}
-          onChange={setQuantity}
-          tooltipVisible
-          tipFormatter={() => `${toolTip}`}
-          included={false}
-          labels={quantityLabel}
-          tooltipPlacement={'top'}
-        />
+        <Slider key={'Streamer Quantity slider'} value={quantity} onChange={setQuantity} labels={quantityLabel} />
       </div>
     )
   }, [streamingQuantity, streamingInterval])
@@ -1702,13 +1800,13 @@ export const Swap = ({
           <div>{renderStreamerQuantity}</div>
         </div>
         <div className="flex justify-end">
-          <TooltipAddress title="Reset to streaming default">
+          <Tooltip title="Reset to streaming default">
             <BaseButton
               onClick={resetToDefault}
               className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
               <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
             </BaseButton>
-          </TooltipAddress>
+          </Tooltip>
         </div>
       </div>
     </Collapse>
@@ -1846,8 +1944,12 @@ export const Swap = ({
     }
 
     const onSucceess = () => {
-      if (showLedgerModal === ModalState.Swap) submitSwapTx()
-      if (showLedgerModal === ModalState.Approve) submitApproveTx()
+      if (showLedgerModal === ModalState.Swap) {
+        submitSwapTx()
+      }
+      if (showLedgerModal === ModalState.Approve) {
+        submitApproveTx()
+      }
       setShowLedgerModal(ModalState.None)
     }
 
@@ -1996,14 +2098,12 @@ export const Swap = ({
 
     const amountMax1e8 = max1e8BaseAmount(amount)
 
-    return disableSlippage
-      ? noDataString
-      : `${formatAssetAmountCurrency({
-          asset: targetAsset,
-          amount: baseToAsset(amountMax1e8),
-          trimZeros: true
-        })}`
-  }, [swapLimit1e8, disableSlippage, targetAsset, targetAssetDecimal])
+    return `${formatAssetAmountCurrency({
+      asset: targetAsset,
+      amount: baseToAsset(amountMax1e8),
+      trimZeros: true
+    })}`
+  }, [swapLimit1e8, targetAsset, targetAssetDecimal])
 
   const uiApproveFeesRD: UIFeesRD = useMemo(
     () =>
@@ -2169,15 +2269,18 @@ export const Swap = ({
   useEffect(() => {
     // reset data whenever source asset has been changed
     if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
-      reloadFeesHandler()
+      reloadFees({
+        inAsset: sourceAsset,
+        memo: swapMemo,
+        outAsset: targetAsset
+      })
       resetApproveState()
-    } else {
-      prevSourceAsset.current = O.some(sourceAsset)
     }
+    prevSourceAsset.current = O.some(sourceAsset)
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
       prevTargetAsset.current = O.some(targetAsset)
     }
-  }, [reloadFeesHandler, resetApproveState, resetSwapState, sourceAsset, targetAsset])
+  }, [reloadFees, resetApproveState, resetSwapState, sourceAsset, targetAsset, swapMemo])
 
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching
@@ -2218,7 +2321,7 @@ export const Swap = ({
         RD.isPending(approveState) ||
         isCausedSlippage ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax1e8) ||
-        O.isNone(oRecipientAddress) ||
+        O.isNone(effectiveRecipientAddress) ||
         !canSwap ||
         customAddressEditActive ||
         isTargetChainDisabled ||
@@ -2236,7 +2339,7 @@ export const Swap = ({
       isCausedSlippage,
       swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax1e8,
-      oRecipientAddress,
+      effectiveRecipientAddress,
       canSwap,
       customAddressEditActive,
       isTargetChainDisabled,
@@ -2280,12 +2383,12 @@ export const Swap = ({
         target: targetAsset,
         sourceWalletType: useLedger ? WalletType.Ledger : WalletType.Keystore,
         targetWalletType: oTargetWalletType,
-        recipientAddress: oRecipientAddress
+        recipientAddress: effectiveRecipientAddress
       })
     },
     [
       initialAmountToSwapMax1e8,
-      oRecipientAddress,
+      effectiveRecipientAddress,
       oTargetWalletType,
       onChangeAsset,
       setAmountToSwapMax1e8,
@@ -2315,9 +2418,8 @@ export const Swap = ({
         O.getOrElse(() => emptyString),
         (memo: string) => (
           <CopyLabel
-            className="pl-0 !font-mainBold text-[14px] uppercase text-gray2 dark:text-gray2d"
+            className="!font-mainBold text-[14px] text-gray2 dark:text-gray2d"
             label={intl.formatMessage({ id: 'common.memo' })}
-            key="memo-copy"
             textToCopy={memo}
           />
         )
@@ -2356,7 +2458,7 @@ export const Swap = ({
 
     return (
       <>
-        <div className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+        <div className={clsx('flex w-full justify-between font-mainBold text-[14px]', { 'pt-10px': showDetails })}>
           <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.time.title' })}</div>
           <div className="text-text2 dark:text-text2d">{formatSwapTime(transactionTime)}</div>
         </div>
@@ -2400,7 +2502,7 @@ export const Swap = ({
     <div className="my-20px flex w-full max-w-[500px] flex-col justify-between">
       <div>
         {/* Note: Input value is shown as AssetAmount */}
-        <Row>
+        <div className="flex flex-wrap">
           <div className="mb-3 w-full flex items-center justify-between">
             <FlatButton
               className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld"
@@ -2409,7 +2511,7 @@ export const Swap = ({
               onClick={quoteOnlyButton}>
               {quoteOnly ? 'Preview Only' : 'Preview & Swap'}
             </FlatButton>
-            <ProviderModal />
+            <ProviderModal midgardStatusRD={midgardStatusRD} midgardStatusMayaRD={midgardStatusMayaRD} />
           </div>
           {disabledChains.length > 0 ? (
             <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
@@ -2429,7 +2531,7 @@ export const Swap = ({
           ) : (
             <></>
           )}
-        </Row>
+        </div>
         <AssetInput
           className="w-full"
           title={intl.formatMessage({ id: 'swap.input' })}
@@ -2466,7 +2568,7 @@ export const Swap = ({
             useLedgerHandler={onClickUseTargetAssetLedger}
             hasLedger={hasTargetAssetLedger}
           />
-          <div className="absolute -top-[32px] left-[calc(50%-30px)] flex w-full flex-col justify-center">
+          <div className="absolute -top-[32px] left-[calc(50%-30px)] flex flex-col justify-center">
             <div className="w-60px h-60px">
               <BaseButton
                 size="small"
@@ -2479,14 +2581,15 @@ export const Swap = ({
         </div>
         <div className="mt-1 space-y-1">
           {isFetchingEstimate ? (
-            <Spin spinning={isFetchingEstimate} tip="Loading...">
-              <div style={{ minHeight: '100px' }} />
-            </Spin>
+            <Spin
+              className="min-h-24 border border-gray0 dark:border-gray0d rounded-lg"
+              spinning={isFetchingEstimate}
+              tip={intl.formatMessage({ id: 'common.loading' })}
+            />
           ) : O.isNone(oQuoteProcotols) ? (
             <></>
           ) : (
             <SwapRoute
-              isLoading={isFetchingEstimate}
               targetAsset={targetAsset.ticker}
               quote={oQuoteProtocol}
               quotes={oQuoteProcotols}
@@ -2513,7 +2616,7 @@ export const Swap = ({
                 </span>
               </div>
             }>
-            {!isLocked(keystore) ? (
+            {!lockedWallet ? (
               <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                 <BaseButton
                   className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
@@ -2579,121 +2682,74 @@ export const Swap = ({
                     </>
                   )}
                   {/* Slippage */}
-                  {!isStreaming ? (
-                    <>
-                      <div
-                        className={`flex w-full justify-between ${
-                          showDetails ? 'pt-10px' : ''
-                        } font-mainBold text-[14px] ${isCausedSlippage ? 'text-error0 dark:text-error0d' : ''}`}>
-                        <div className="text-text2 dark:text-text2d">
-                          {intl.formatMessage({ id: 'swap.slip.title' })}
-                        </div>
-                        <div className="text-text2 dark:text-text2d">
-                          {formatAssetAmountCurrency({
-                            amount: priceAmountToSwapMax1e8.assetAmount.times(
-                              (swapSlippage > 0 ? swapSlippage : slipTolerance) / 100
-                            ), // Find the value of swap slippage
-                            asset: priceAmountToSwapMax1e8.asset,
-                            decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
-                            trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                          }) + ` (${swapSlippage.toFixed(2)}%)`}
-                        </div>
+                  <>
+                    <div
+                      className={clsx(
+                        'flex w-full justify-between font-mainBold text-[14px]',
+                        { 'pt-10px': showDetails },
+                        { 'text-error0 dark:text-error0d': isCausedSlippage }
+                      )}>
+                      <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'swap.slip.title' })}</div>
+                      <div className="text-text2 dark:text-text2d">
+                        {formatAssetAmountCurrency({
+                          amount: priceAmountToSwapMax1e8.assetAmount.times(
+                            (swapSlippage > 0 ? swapSlippage : slipTolerance) / 100
+                          ), // Find the value of swap slippage
+                          asset: priceAmountToSwapMax1e8.asset,
+                          decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
+                          trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
+                        }) + ` (${swapSlippage.toFixed(2)}%)`}
                       </div>
+                    </div>
 
-                      {showDetails && (
-                        <>
-                          <div className="flex w-full justify-between pl-10px text-[12px]">
-                            <div
-                              className={`flex items-center ${
-                                disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
-                              }`}>
-                              {intl.formatMessage({ id: 'swap.slip.tolerance' })}
-                              {disableSlippage ? (
-                                <InfoIcon
-                                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                  tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })}
-                                  color="warning"
-                                />
-                              ) : (
-                                <InfoIcon
-                                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                  tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
-                                />
-                              )}
-                            </div>
-                            <div>
-                              {/* we don't show slippage tolerance whenever slippage is disabled (e.g. due memo restriction for Ledger BTC) */}
-                              {disableSlippage ? (
-                                <>{noDataString}</>
-                              ) : (
-                                <SelectableSlipTolerance value={slipTolerance} onChange={changeSlipTolerance} />
-                              )}
-                            </div>
+                    {showDetails && (
+                      <>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className="flex items-center">
+                            {intl.formatMessage({ id: 'swap.slip.tolerance' })}
+
+                            <InfoIcon
+                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
+                            />
                           </div>
-                          <div className="flex w-full justify-between pl-10px text-[12px]">
-                            <div
-                              className={`flex items-center ${
-                                disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
-                              }`}>
-                              {intl.formatMessage({ id: 'swap.min.result.protected' })}
-                              <InfoIcon
-                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                tooltip={
-                                  disableSlippage
-                                    ? intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })
-                                    : intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })
-                                }
-                              />
-                            </div>
-                            <div>{swapMinResultLabel}</div>
+                          <div>
+                            <SelectableSlipTolerance value={slipTolerance} onChange={changeSlipTolerance} />
                           </div>
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div
-                        className={`flex w-full justify-between ${
-                          showDetails ? 'pt-10px' : ''
-                        } font-mainBold text-[14px] ${isCausedSlippage ? 'text-error0 dark:text-error0d' : ''}`}>
-                        <div className="text-text2 dark:text-text2d">
-                          {intl.formatMessage({ id: 'swap.slip.title' })}
                         </div>
-                        <div className="text-text2 dark:text-text2d">
-                          {formatAssetAmountCurrency({
-                            amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
-                            asset: priceAmountToSwapMax1e8.asset,
-                            decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
-                            trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                          }) + ` (${swapSlippage.toFixed(2)}%)`}
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className="flex items-center">
+                            {intl.formatMessage({ id: 'swap.min.result.protected' })}
+                            <InfoIcon
+                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              tooltip={intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })}
+                            />
+                          </div>
+                          <div>{swapMinResultLabel}</div>
                         </div>
-                      </div>
-                      {showDetails && (
-                        <>
-                          <div className="flex w-full justify-between pl-10px text-[12px]">
-                            <div className="flex items-center text-text2 dark:text-text2d">
-                              {intl.formatMessage({ id: 'swap.streaming.interval' })}
-                              <InfoIcon
-                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                tooltip={intl.formatMessage({ id: 'swap.streaming.interval.info' })}
-                              />
-                            </div>
-                            <div className="text-text2 dark:text-text2d">{streamingInterval}</div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className="flex items-center text-text2 dark:text-text2d">
+                            {intl.formatMessage({ id: 'swap.streaming.interval' })}
+                            <InfoIcon
+                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              tooltip={intl.formatMessage({ id: 'swap.streaming.interval.info' })}
+                            />
                           </div>
-                          <div className="flex w-full justify-between pl-10px text-[12px]">
-                            <div className="flex items-center text-text2 dark:text-text2d">
-                              {intl.formatMessage({ id: 'swap.streaming.quantity' })}
-                              <InfoIcon
-                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                tooltip={intl.formatMessage({ id: 'swap.streaming.quantity.info' })}
-                              />
-                            </div>
-                            <div className="text-text2 dark:text-text2d">{streamingQuantity}</div>
+                          <div className="text-text2 dark:text-text2d">{streamingInterval}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className="flex items-center text-text2 dark:text-text2d">
+                            {intl.formatMessage({ id: 'swap.streaming.quantity' })}
+                            <InfoIcon
+                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              tooltip={intl.formatMessage({ id: 'swap.streaming.quantity.info' })}
+                            />
                           </div>
-                        </>
-                      )}
-                    </>
-                  )}
+                          <div className="text-text2 dark:text-text2d">{streamingQuantity}</div>
+                        </div>
+                      </>
+                    )}
+                  </>
                   {/* Swap Time Inbound / swap / Outbound */}
                   <TransactionTime />
                   {/* addresses */}
@@ -2708,11 +2764,15 @@ export const Swap = ({
                         <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
                             oSourceWalletAddress,
-                            O.map((address) => (
-                              <TooltipAddress title={address} key="tooltip-sender-addr">
-                                {hidePrivateData ? hiddenString : address}
-                              </TooltipAddress>
-                            )),
+                            O.map((address) => {
+                              const displayedAddress = hidePrivateData ? hiddenString : address
+
+                              return (
+                                <Tooltip size="big" title={displayedAddress} key="tooltip-sender-addr">
+                                  {displayedAddress}
+                                </Tooltip>
+                              )
+                            }),
                             O.getOrElse(() => <>{noDataString}</>)
                           )}
                         </div>
@@ -2724,12 +2784,16 @@ export const Swap = ({
                         </div>
                         <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
-                            oRecipientAddress,
-                            O.map((address) => (
-                              <TooltipAddress title={address} key="tooltip-target-addr">
-                                {hidePrivateData ? hiddenString : address}
-                              </TooltipAddress>
-                            )),
+                            effectiveRecipientAddress,
+                            O.map((address) => {
+                              const displayedAddress = hidePrivateData ? hiddenString : address
+
+                              return (
+                                <Tooltip size="big" title={displayedAddress} key="tooltip-target-addr">
+                                  {displayedAddress}
+                                </Tooltip>
+                              )
+                            }),
                             O.getOrElse(() => <>{noDataString}</>)
                           )}
                         </div>
@@ -2743,9 +2807,9 @@ export const Swap = ({
                               className="flex w-full items-center justify-between pl-10px text-[12px]"
                               key="pool-addr">
                               <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
-                              <TooltipAddress title={address}>
+                              <Tooltip size="big" title={address}>
                                 <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
-                              </TooltipAddress>
+                              </Tooltip>
                             </div>
                           ) : null
                         ),
@@ -2757,7 +2821,7 @@ export const Swap = ({
                   {/* balances */}
                   {showDetails && (
                     <>
-                      <div className={`w-full pt-10px text-[14px]`}>
+                      <div className="w-full pt-10px text-[14px]">
                         <BaseButton
                           disabled={walletBalancesLoading}
                           className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
@@ -2801,7 +2865,7 @@ export const Swap = ({
               <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                 <div className="font-main text-[14px] text-gray2 dark:text-gray2d">
                   {/* Rate */}
-                  <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
+                  <div className="flex w-full justify-between font-mainBold text-[14px]">
                     <BaseButton
                       className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
                       onClick={() =>
@@ -2865,43 +2929,219 @@ export const Swap = ({
             )}
           </Collapse>
           {!lockedWallet &&
-            FP.pipe(
-              oRecipientAddress,
-              O.map((address) => (
-                <div
-                  className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
-                  key="edit-address">
-                  <div className="flex items-center">
-                    <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
-                      {intl.formatMessage({ id: 'common.recipient' })}
-                    </h3>
-                    <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>
+            (() => {
+              // In standalone ledger mode, handle recipient address differently
+              if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+                return (
+                  <div
+                    className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
+                    key="standalone-recipient-address">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
+                          {intl.formatMessage({ id: 'common.recipient' })}
+                        </h3>
+                        <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
+                      </div>
+                      {/* Refresh from Ledger button - only show if address was fetched from Ledger */}
+                      {FP.pipe(
+                        standaloneLedgerTargetAddress,
+                        O.filter((addr) => addr !== 'MANUAL_ENTRY'),
+                        O.isSome
+                      ) && (
+                        <BaseButton
+                          size="small"
+                          className="hover:shadow-full dark:hover:shadow-fulld"
+                          loading={isFetchingStandaloneLedgerAddress}
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                `Please make sure the ${targetAsset.chain} app is open on your Ledger device before proceeding.`
+                              )
+                            ) {
+                              fetchStandaloneLedgerTargetAddress(targetAsset.chain)
+                            }
+                          }}>
+                          Refresh from Ledger
+                        </BaseButton>
+                      )}
+                    </div>
+
+                    {/* Show current address if available, otherwise show options */}
+                    {FP.pipe(
+                      standaloneLedgerTargetAddress,
+                      O.fold(
+                        () => (
+                          <div className="mt-3 space-y-3">
+                            <div className="grid grid-cols-1 gap-3">
+                              <button
+                                className="group flex items-center justify-between p-4 border border-gray0 dark:border-gray0d rounded-lg hover:border-turquoise hover:bg-bg1 dark:hover:bg-bg1d transition-all duration-200"
+                                disabled={isFetchingStandaloneLedgerAddress}
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `Please make sure the ${targetChain} app is open on your Ledger device before proceeding.`
+                                    )
+                                  ) {
+                                    fetchStandaloneLedgerTargetAddress(targetChain)
+                                  }
+                                }}>
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 rounded-full bg-turquoise/10 flex items-center justify-center">
+                                    <div className="w-4 h-4 bg-turquoise rounded-sm"></div>
+                                  </div>
+                                  <div className="text-left">
+                                    <div className="font-medium text-text0 dark:text-text0d">Fetch from Ledger</div>
+                                    <div className="text-[12px] text-text2 dark:text-text2d">
+                                      Get address from your hardware wallet
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-turquoise group-hover:translate-x-1 transition-transform duration-200">
+                                  →
+                                </div>
+                              </button>
+
+                              <button
+                                className="group flex items-center justify-between p-4 border border-gray0 dark:border-gray0d rounded-lg hover:border-turquoise hover:bg-bg1 dark:hover:bg-bg1d transition-all duration-200"
+                                onClick={() => {
+                                  setStandaloneLedgerTargetAddress(O.some('MANUAL_ENTRY'))
+                                  setCustomAddressEditActive(true)
+                                }}>
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 rounded-full bg-warning0/10 flex items-center justify-center">
+                                    <div className="w-4 h-4 border-2 border-warning0 rounded-sm"></div>
+                                  </div>
+                                  <div className="text-left">
+                                    <div className="font-medium text-text0 dark:text-text0d">Enter Manually</div>
+                                    <div className="text-[12px] text-text2 dark:text-text2d">
+                                      Type or paste the recipient address
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-turquoise group-hover:translate-x-1 transition-transform duration-200">
+                                  →
+                                </div>
+                              </button>
+                            </div>
+                          </div>
+                        ),
+                        (address) => (
+                          <div className="mt-2">
+                            {address === 'MANUAL_ENTRY' ? (
+                              <div className="space-y-2">
+                                <div className="text-[14px] text-text2 dark:text-text2d">Enter recipient address:</div>
+                                <div className="flex items-center space-x-2">
+                                  <div className="flex-1">
+                                    <EditableAddress
+                                      key="manual-entry"
+                                      asset={targetAsset}
+                                      network={network}
+                                      address=""
+                                      startInEditMode={customAddressEditActive}
+                                      onChangeAddress={(newAddress) => {
+                                        if (newAddress.trim()) {
+                                          setStandaloneLedgerTargetAddress(O.some(newAddress))
+                                          onChangeRecipientAddress(newAddress)
+                                        } else {
+                                          setStandaloneLedgerTargetAddress(O.none)
+                                        }
+                                      }}
+                                      onChangeEditableAddress={onChangeEditableRecipientAddress}
+                                      onChangeEditableMode={(editModeActive) =>
+                                        setCustomAddressEditActive(editModeActive)
+                                      }
+                                      addressValidator={addressValidator}
+                                      hidePrivateData={hidePrivateData}
+                                    />
+                                  </div>
+                                  {!customAddressEditActive && (
+                                    <BaseButton
+                                      size="small"
+                                      className="!p-1"
+                                      onClick={() => setStandaloneLedgerTargetAddress(O.none)}>
+                                      <XCircleIcon className="ml-5px h-[30px] w-[30px] cursor-pointer text-gray2 dark:text-gray2d" />
+                                    </BaseButton>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center space-x-2">
+                                <div className="flex-1">
+                                  <EditableAddress
+                                    key={address}
+                                    asset={targetAsset}
+                                    network={network}
+                                    address={address}
+                                    onChangeAddress={(newAddress) => {
+                                      setStandaloneLedgerTargetAddress(O.some(newAddress))
+                                      onChangeRecipientAddress(newAddress)
+                                    }}
+                                    onChangeEditableAddress={onChangeEditableRecipientAddress}
+                                    onChangeEditableMode={(editModeActive) =>
+                                      setCustomAddressEditActive(editModeActive)
+                                    }
+                                    addressValidator={addressValidator}
+                                    hidePrivateData={hidePrivateData}
+                                  />
+                                </div>
+                                <BaseButton
+                                  size="small"
+                                  className="!p-1"
+                                  onClick={() => setStandaloneLedgerTargetAddress(O.none)}>
+                                  <XCircleIcon className="ml-5px h-[30px] w-[30px] cursor-pointer text-gray2 dark:text-gray2d" />
+                                </BaseButton>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      )
+                    )}
                   </div>
-                  <EditableAddress
-                    key={address}
-                    asset={targetAsset}
-                    network={network}
-                    address={address}
-                    onChangeAddress={onChangeRecipientAddress}
-                    onChangeEditableAddress={onChangeEditableRecipientAddress}
-                    onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
-                    addressValidator={addressValidator}
-                    hidePrivateData={hidePrivateData}
-                  />
-                </div>
-              )),
-              O.toNullable
-            )}
-          {!isLocked(keystore) && amountToSwapMax1e8.gt(0) && (
+                )
+              }
+
+              // Normal keystore mode
+              return FP.pipe(
+                effectiveRecipientAddress,
+                O.map((address) => (
+                  <div
+                    className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
+                    key="edit-address">
+                    <div className="flex items-center">
+                      <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
+                        {intl.formatMessage({ id: 'common.recipient' })}
+                      </h3>
+                      <WalletTypeLabel key="target-w-type">
+                        {getWalletTypeLabel(oTargetWalletType, intl)}
+                      </WalletTypeLabel>
+                    </div>
+                    <EditableAddress
+                      key={address}
+                      asset={targetAsset}
+                      network={network}
+                      address={address}
+                      onChangeAddress={onChangeRecipientAddress}
+                      onChangeEditableAddress={onChangeEditableRecipientAddress}
+                      onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
+                      addressValidator={addressValidator}
+                      hidePrivateData={hidePrivateData}
+                    />
+                  </div>
+                )),
+                O.toNullable
+              )
+            })()}
+          {!lockedWallet && amountToSwapMax1e8.gt(0) && (
             <div>{<SwapExpiryProgressBar oQuoteProtocol={oQuoteProtocol} swapExpiry={swapExpiry} />}</div>
           )}
         </div>
       </div>
 
       {(walletBalancesLoading || isFetchingEstimate) && (
-        <LoadingView
+        <Spin
           className="w-full pt-10px"
-          label={
+          tip={
             isFetchingEstimate
               ? intl.formatMessage({ id: 'common.loading' })
               : walletBalancesLoading
@@ -2911,7 +3151,7 @@ export const Swap = ({
         />
       )}
       <div className="flex flex-col items-center justify-center">
-        {!isLocked(keystore) ? (
+        {!lockedWallet ? (
           <>
             {isApproved ? (
               <>
@@ -2950,16 +3190,21 @@ export const Swap = ({
           </>
         ) : (
           <>
-            <p className="center mb-0 mt-30px font-main text-[12px] uppercase text-text2 dark:text-text2d">
-              {!hasImportedKeystore(keystore)
-                ? intl.formatMessage({ id: 'swap.note.nowallet' })
-                : isLocked(keystore) && intl.formatMessage({ id: 'swap.note.lockedWallet' })}
-            </p>
-            <FlatButton className="my-30px min-w-[200px]" size="large" onClick={importWalletHandler}>
-              {!hasImportedKeystore(keystore)
-                ? intl.formatMessage({ id: 'wallet.add.label' })
-                : isLocked(keystore) && intl.formatMessage({ id: 'wallet.unlock.label' })}
-            </FlatButton>
+            {/* Only show wallet messages in keystore mode - standalone ledger shouldn't reach here */}
+            {!(appWalletState && isStandaloneLedgerMode(appWalletState)) && (
+              <>
+                <p className="center mb-0 mt-30px font-main text-[12px] uppercase text-text2 dark:text-text2d">
+                  {!hasImportedKeystore(keystore)
+                    ? intl.formatMessage({ id: 'swap.note.nowallet' })
+                    : isLocked(keystore) && intl.formatMessage({ id: 'swap.note.lockedWallet' })}
+                </p>
+                <FlatButton className="my-30px min-w-[200px]" size="large" onClick={importWalletHandler}>
+                  {!hasImportedKeystore(keystore)
+                    ? intl.formatMessage({ id: 'wallet.add.label' })
+                    : isLocked(keystore) && intl.formatMessage({ id: 'wallet.unlock.label' })}
+                </FlatButton>
+              </>
+            )}
           </>
         )}
       </div>

@@ -40,6 +40,7 @@ import { useThorNodeInfos } from '../../../hooks/useNodeInfos'
 import { useMayaNodeInfos } from '../../../hooks/useNodeInfosMaya'
 import { usePoolShares } from '../../../hooks/usePoolShares'
 import { useTotalWalletBalance } from '../../../hooks/useWalletBalance'
+import * as bondsRoutes from '../../../routes/bonds'
 import * as walletRoutes from '../../../routes/wallet'
 import { addressByChain$ } from '../../../services/chain'
 import { WalletBalances } from '../../../services/clients'
@@ -90,7 +91,7 @@ const CardItem = ({
   )
 }
 
-export const PortfolioView: React.FC = (): JSX.Element => {
+export const PortfolioView = (): JSX.Element => {
   const [activeIndex, setActiveIndex] = useState(PortfolioTabKey.ChartView)
   const [protocol, setProtocol] = useState<string>(Protocol.All)
 
@@ -477,7 +478,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       {
         title: intl.formatMessage({ id: 'wallet.nav.bonds' }),
         value: renderBondTotal,
-        route: walletRoutes.bonds.path()
+        route: bondsRoutes.base.path()
       }
     ],
     [intl, totalBalanceDisplay, renderSharesTotal, renderBondTotal, renderRunePoolTotal]

@@ -15,8 +15,6 @@ const swap: SwapMessages = {
   'swap.slip.tolerance': 'Slippage-Toleranz',
   'swap.slip.tolerance.info':
     'Je höher die Prozentangabe, desto höher akzeptierst Du ein Slippage. Mehr Slippage bedeutet zugleich ein größerer Spielraum zur Abdeckung der geschätzten Gebühren, um fehlgeschlagene Swaps zu vermeiden.',
-  'swap.slip.tolerance.ledger-disabled.info':
-    'Slippage-Toleranz ist deaktiviert aufgrund technischer Probleme mit Ledger.',
   'swap.streaming.title': 'Streamingstatus',
   'swap.streaming.interval': 'Intervall',
   'swap.streaming.interval.info': 'Intervall zwischen Swaps, 10 Blöcke entsprechen einem Intervall von 1 Minute',
@@ -36,7 +34,8 @@ const swap: SwapMessages = {
     'Erforderlicher Mindestwert für einen Swap, um die Gebühren der Ein- und Auszahlungstransaktionen zu decken.',
   'swap.min.result.info':
     'Dein Swap ist mit diesem Mindestwert basierend auf der ausgewählten {tolerance}% Slippage-Toleranz abgesichert. Falls eine Preisänderung vor der Transaktions-Bestätigung mehr als {tolerance}% zu Deinem Nachteil beträgt, wird Deine Swap-Transaktion zurücküberwiesen.',
-  'swap.min.result.protected': 'Gesichertes Swap-Ergebnis'
+  'swap.min.result.protected': 'Gesichertes Swap-Ergebnis',
+  'swap.address.evm.warning': 'NICHT zu Smart Contract Adressen tauschen'
 }
 
 export default swap

@@ -6,22 +6,15 @@ import { option as O } from 'fp-ts'
 
 import Amount from '../../assets/svg/amount.svg?react'
 import StopWatch from '../../assets/svg/stopwatch.svg?react'
-import { Spin } from '../shared/loading'
+import { protocolMapping } from '../../helpers/protocolHelper'
 import { Collapse } from '../uielements/collapse'
 import { ProviderIcon } from './ProviderIcon'
 
 type Props = {
-  isLoading: boolean // Use this prop to determine if quotes are loading
   targetAsset: string
   quote: O.Option<QuoteSwap>
   quotes: O.Option<QuoteSwap[]>
   onSelectQuote: (selectedQuote: QuoteSwap) => void // Callback for quote selection
-}
-
-const protocolMapping = {
-  Thorchain: 'THORChain',
-  Mayachain: 'MAYAChain',
-  Chainflip: 'Chainflip'
 }
 
 const formatTime = (seconds: number): string => {
@@ -78,7 +71,7 @@ const Route = ({
   )
 }
 
-export const SwapRoute = ({ isLoading, targetAsset, quote, quotes, onSelectQuote }: Props) => {
+export const SwapRoute = ({ targetAsset, quote, quotes, onSelectQuote }: Props) => {
   const availableQuotes = useMemo(() => {
     if (O.isNone(quotes)) return []
     return quotes.value
@@ -115,11 +108,7 @@ export const SwapRoute = ({ isLoading, targetAsset, quote, quotes, onSelectQuote
 
   return (
     <div>
-      {isLoading ? (
-        <Spin spinning={isLoading} tip="Loading...">
-          <div style={{ minHeight: '100px' }} />
-        </Spin>
-      ) : activeQuote ? (
+      {activeQuote ? (
         <Collapse
           header={
             <Route

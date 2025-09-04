@@ -11,6 +11,7 @@ import * as Rx from 'rxjs'
 import { NodeUrl } from '../../../shared/api/types'
 import { EnabledChain } from '../../../shared/utils/chain'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
+import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetsWithAmount1e8, AssetWithAmount1e8 } from '../../types/asgardex'
 import * as C from '../clients'
@@ -242,6 +243,19 @@ export type SaverProvider = {
 
 export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
 export type SaverProviderLD = LiveData<Error, SaverProvider>
+
+export type TradeAccount = {
+  asset: AnyAsset
+  units: BaseAmount
+  owner: Address
+  lastAddHeight: O.Option<number>
+  lastWithdrawHeight: O.Option<number>
+  walletType: WalletType
+  protocol: Protocol
+}
+
+export type TradeAccountRD = RD.RemoteData<Error, TradeAccount[]>
+export type TradeAccountLD = LiveData<Error, TradeAccount[]>
 
 export type MayanodePool = {
   balanceCacao: BaseAmount

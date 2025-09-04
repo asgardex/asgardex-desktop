@@ -31,7 +31,20 @@ const ledger: LedgerMessages = {
   'ledger.legacyformat.note':
     'Ledger muestra todas las direcciones de salida en formato "legacy", pero no en formato "CashAddr".',
   'ledger.legacyformat.show': 'Mostrar direcciones',
-  'ledger.legacyformat.hide': 'Ocultar direcciones'
+  'ledger.legacyformat.hide': 'Ocultar direcciones',
+  'ledger.connect.title': 'Conectar tu Ledger',
+  'ledger.connect.instruction': 'Selecciona la red blockchain para conectar con tu dispositivo Ledger',
+  'ledger.connect.success.title': 'Ledger Conectado',
+  'ledger.connect.success.description': 'Conectado exitosamente a {chain}',
+  'ledger.connect.success.redirect': 'Redirigiendo a la billetera en {countdown} segundos...',
+  'ledger.connect.button.continue': 'Continuar Ahora',
+  'ledger.detect.title': 'Detectando Dispositivo Ledger',
+  'ledger.detect.checking': 'Verificando {chain}...',
+  'ledger.derivation.path': 'Ruta de Derivación',
+  'ledger.derivation.legacy': 'Legacy (MEW)',
+  'ledger.derivation.metamask': 'MetaMask',
+  'ledger.connect.chain': 'Conectar {chain}',
+  'ledger.connect.select': 'Seleccionar una Chain'
 }
 
 export default ledger

@@ -3,7 +3,7 @@ import { FeeOption, Network, Protocol, TxHash } from '@xchainjs/xchain-client'
 import * as ETH from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import { ethers } from 'ethers'
+import { JsonRpcProvider, EtherscanProvider, Contract } from 'ethers'
 import { either as E } from 'fp-ts'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
@@ -55,14 +55,14 @@ export const send = async ({
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
       providers: {
-        mainnet: new ethers.providers.JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
+        mainnet: new JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
         testnet: ETH_TESTNET_ETHERS_PROVIDER,
         stagenet: ETH_MAINNET_ETHERS_PROVIDER
       },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: new ethers.providers.JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
+        provider: new JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -140,14 +140,14 @@ export const deposit = async ({
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
       providers: {
-        mainnet: new ethers.providers.EtherscanProvider('homestead', apiKey),
+        mainnet: new EtherscanProvider('homestead', apiKey),
         testnet: ETH_TESTNET_ETHERS_PROVIDER,
         stagenet: ETH_MAINNET_ETHERS_PROVIDER
       },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: new ethers.providers.EtherscanProvider('homestead', apiKey),
+        provider: new EtherscanProvider('homestead', apiKey),
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -174,8 +174,8 @@ export const deposit = async ({
         : { gasPrice }
     ]
 
-    const routerContract = new ethers.Contract(router, ETH.abi.router)
-    const unsignedTx = await routerContract.populateTransaction.depositWithExpiry(...depositParams)
+    const routerContract = new Contract(router, ETH.abi.router)
+    const unsignedTx = await routerContract.getFunction('depositWithExpiry').populateTransaction(...depositParams)
     const nativeAsset = ledgerClient.getAssetInfo()
 
     const hash = await ledgerClient.transfer({
@@ -186,7 +186,7 @@ export const deposit = async ({
       recipient: router,
       gasPrice: gasPrices.fast,
       isMemoEncoded: true,
-      gasLimit: ethers.BigNumber.from(160000)
+      gasLimit: new BigNumber(160000)
     })
 
     return E.right(hash)

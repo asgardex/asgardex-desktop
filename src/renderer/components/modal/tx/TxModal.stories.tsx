@@ -2,7 +2,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Meta, StoryFn } from '@storybook/react'
 import { TxHash } from '@xchainjs/xchain-client'
-import { Row } from 'antd'
 import { option as O } from 'fp-ts'
 
 import { ErrorId } from '../../../services/wallet/types'
@@ -46,7 +45,7 @@ export const StoryFailure: StoryFn = () => (
 StoryFailure.storyName = 'failure'
 
 const extraContent = (): JSX.Element => (
-  <Row align="middle" justify="center">
+  <div className="flex items-center justify-center gap-2">
     <Label align="center" color="warning" textTransform="uppercase">
       Extra Content
     </Label>
@@ -54,7 +53,7 @@ const extraContent = (): JSX.Element => (
       <ArrowPathIcon />
       Extra Button
     </Button>
-  </Row>
+  </div>
 )
 
 const extraResult = (): JSX.Element => (

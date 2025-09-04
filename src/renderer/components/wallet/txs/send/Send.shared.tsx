@@ -4,6 +4,7 @@ import { AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 
+import { TrustedAddress } from '../../../../../shared/api/types'
 import { isEvmChain } from '../../../../helpers/evmHelper'
 import { DepositState, SendTxState } from '../../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
@@ -11,6 +12,33 @@ import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
 import { ViewTxButton } from '../../../uielements/button'
 import * as H from '../TxForm.helpers'
+
+/**
+ * Utility function to filter matched addresses from saved addresses
+ * @param oSavedAddresses - Option of saved addresses array
+ * @param searchValue - The value to search for in addresses
+ * @param caseSensitive - Whether to perform case-sensitive search (default: true)
+ * @returns Option of matched addresses or O.none if no matches
+ */
+export const filterMatchedAddresses = (
+  oSavedAddresses: O.Option<TrustedAddress[]>,
+  searchValue: string,
+  caseSensitive: boolean = true
+): O.Option<TrustedAddress[]> => {
+  if (!searchValue) return O.none
+
+  return FP.pipe(
+    oSavedAddresses,
+    O.map((addresses) =>
+      addresses.filter((address) =>
+        caseSensitive
+          ? address.address.includes(searchValue)
+          : address.address.toLowerCase().includes(searchValue.toLowerCase())
+      )
+    ),
+    O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
+  )
+}
 
 export const renderTxModal = ({
   asset,

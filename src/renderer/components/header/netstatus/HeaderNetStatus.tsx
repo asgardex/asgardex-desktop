@@ -1,8 +1,6 @@
-import React, { useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Dropdown, Row, Col } from 'antd'
-import { ItemType } from 'antd/lib/menu/hooks/useItems'
 import { function as FP, array as A, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -18,10 +16,9 @@ import {
 import { MimirRD } from '../../../services/thorchain/types'
 import { DownIcon } from '../../icons'
 import { ConnectionStatus } from '../../shared/icons'
-import { Menu } from '../../shared/menu/Menu'
+import { Dropdown } from '../../uielements/dropdown'
+import { Label } from '../../uielements/label'
 import { headerNetStatusSubheadline, headerNetStatusColor, HeaderNetStatusColor } from '../Header.util'
-import { HeaderDrawerItem } from '../HeaderComponent.styles'
-import * as Styled from './HeaderNetStatus.styles'
 
 type MenuItem = {
   key: string
@@ -44,7 +41,7 @@ export type Props = {
   mayachainRpcUrl: string
 }
 
-export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
+export const HeaderNetStatus = (props: Props) => {
   const {
     isDesktopView,
     midgardStatus: midgardStatusRD,
@@ -256,67 +253,75 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
   ])
 
   const desktopMenu = useMemo(() => {
-    return (
-      <Menu
-        items={FP.pipe(
-          menuItems,
-          A.map<MenuItem, ItemType>((item) => {
-            const { headline, key, subheadline, color, url } = item
-            return {
-              label: (
-                <Row align="middle" onClick={() => window.apiUrl.openExternal(url)}>
-                  <Col span={4}>
-                    <ConnectionStatus color={color} />
-                  </Col>
-                  <Col span={20}>
-                    <Styled.MenuItemHeadline nowrap>{headline}</Styled.MenuItemHeadline>
-                    <Styled.MenuItemSubHeadline nowrap>{subheadline}</Styled.MenuItemSubHeadline>
-                  </Col>
-                </Row>
-              ),
-              key
-            }
-          })
-        )}
-      />
+    return FP.pipe(
+      menuItems,
+      A.map((item) => {
+        const { headline, key, subheadline, color, url } = item
+        return (
+          <div
+            key={key}
+            className="flex items-center space-x-4 px-2 py-1"
+            onClick={() => window.apiUrl.openExternal(url)}>
+            <ConnectionStatus color={color} />
+            <div className="flex flex-col">
+              <Label
+                className="pr-5 tracking-tight"
+                color="normal"
+                size="big"
+                weight="bold"
+                textTransform="uppercase"
+                nowrap>
+                {headline}
+              </Label>
+              <Label className="pr-5" size="small" textTransform="lowercase" nowrap>
+                {subheadline}
+              </Label>
+            </div>
+          </div>
+        )
+      })
     )
   }, [menuItems])
 
   const menuMobile = useMemo(() => {
-    return menuItems.map((item, i) => {
+    return menuItems.map((item) => {
       const { headline, key, subheadline, color } = item
+
       return (
-        <HeaderDrawerItem key={key} className={i === menuItems.length - 1 ? 'last' : 'headerdraweritem'}>
-          <Row align="middle" style={{ marginLeft: '15px', marginRight: '15px' }}>
-            <ConnectionStatus color={color} />
-          </Row>
-          <Row>
-            <Col>
-              <Styled.MenuItemHeadline nowrap>{headline}</Styled.MenuItemHeadline>
-              <Styled.MenuItemSubHeadline nowrap>{subheadline}</Styled.MenuItemSubHeadline>
-            </Col>
-          </Row>
-        </HeaderDrawerItem>
+        <div
+          key={key}
+          className="flex items-center space-x-4 px-6 h-[60px] border-b border-solid border-bg2 dark:border-bg2d last:border-none">
+          <ConnectionStatus color={color} />
+          <div className="flex flex-col">
+            <Label className="pr-5" color="normal" size="big" weight="bold" textTransform="uppercase" nowrap>
+              {headline}
+            </Label>
+            <Label className="pr-5" size="small" textTransform="lowercase" nowrap>
+              {subheadline}
+            </Label>
+          </div>
+        </div>
       )
     })
   }, [menuItems])
 
   return (
-    <Styled.Wrapper>
+    <div className="flex flex-wrap">
       {isDesktopView && (
-        <Col span={24}>
-          <Dropdown overlay={desktopMenu} trigger={['click']} placement="bottom">
-            {}
-            <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
-              <Row justify="space-between" align="middle">
+        <Dropdown
+          anchor={{ to: 'bottom', gap: 4, padding: 8 }}
+          trigger={
+            <a onClick={(e) => e.preventDefault()}>
+              <div className="flex items-center">
                 <ConnectionStatus color={appOnlineStatusColor} />
                 <DownIcon />
-              </Row>
+              </div>
             </a>
-          </Dropdown>
-        </Col>
+          }
+          options={desktopMenu}
+        />
       )}
-      {!isDesktopView && <Col span={24}>{menuMobile}</Col>}
-    </Styled.Wrapper>
+      {!isDesktopView && <div className="w-full">{menuMobile}</div>}
+    </div>
   )
 }

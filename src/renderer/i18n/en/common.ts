@@ -111,6 +111,7 @@ const common: CommonMessages = {
   'common.min': 'Min',
   'common.half': 'Half',
   'common.search': 'Search',
+  'common.chainManagement': 'Chain Management',
   'common.searchAsset': 'Search Asset',
   'common.addAsset': 'Token not showing? add manually',
   'common.removeAsset': 'Remove asset from wallet view',

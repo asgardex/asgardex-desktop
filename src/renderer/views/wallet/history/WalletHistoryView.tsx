@@ -1,8 +1,7 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react'
+import { useMemo, useCallback, useState, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Row } from 'antd'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
@@ -32,7 +31,7 @@ import { useApp } from '../../../store/app/hooks'
 
 const HISTORY_FILTERS: Filter[] = ['ALL', 'SEND', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND', 'RUNEPOOLDEPOSIT']
 
-export const WalletHistoryView: React.FC = () => {
+export const WalletHistoryView = () => {
   const { protocol, setProtocol } = useApp()
   const { network } = useNetwork()
 
@@ -193,13 +192,13 @@ export const WalletHistoryView: React.FC = () => {
 
   return (
     <>
-      <Row justify="space-between" style={{ marginBottom: '20px' }}>
+      <div className="flex items-center justify-between mb-5">
         <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
         <RefreshButton
           onClick={protocol === THORChain ? reloadHistory : reloadHistoryMaya}
           disabled={loadingHistory || loadingHistoryMaya}
         />
-      </Row>
+      </div>
       <AssetsNav />
       <PoolActionsHistory
         network={network}

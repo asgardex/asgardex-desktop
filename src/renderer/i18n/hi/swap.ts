@@ -16,7 +16,6 @@ const swap: SwapMessages = {
   'swap.slip.tolerance.info':
     'प्रतिशत जितना अधिक होगा, उतनी अधिक स्लिपेज स्वीकार करेंगे। अधिक स्लिपेज में रद्द स्वैप्स से बचने के लिए अनुमानित शुल्कों को कवर करने के लिए भी व्यापक रेंज शामिल है।',
   'swap.streaming.title': 'स्ट्रीमिंग स्थिति',
-  'swap.slip.tolerance.ledger-disabled.info': 'तकनीकी समस्याओं के कारण Ledger के साथ स्लिपेज सहिष्णुता अक्षम की गई है।',
   'swap.streaming.interval': 'अंतराल',
   'swap.streaming.interval.info': 'स्वैप्स के बीच का अंतराल, 10 ब्लॉक 1 मिनट का अंतराल है',
   'swap.streaming.quantity': 'मात्रा',
@@ -34,6 +33,7 @@ const swap: SwapMessages = {
   'swap.min.amount.info': 'इनबाउंड और आउटबाउंड लेन-देन के सभी शुल्कों को कवर करने के लिए न्यूनतम स्वैप मूल्य।',
   'swap.min.result.info':
     'चुने गए {tolerance}% स्लिपेज सहिष्णुता के आधार पर आपके स्वैप को इस न्यूनतम मूल्य द्वारा सुरक्षित किया जाता है। यदि मूल्य {tolerance}% से अधिक अनुकूल नहीं बदलता है तो आपका स्वैप लेन-देन पुष्टि से पहले वापस कर दिया जाएगा।',
-  'swap.min.result.protected': 'सुरक्षित स्वैप परिणाम'
+  'swap.min.result.protected': 'सुरक्षित स्वैप परिणाम',
+  'swap.address.evm.warning': 'स्मार्ट कॉन्ट्रैक्ट पतों पर स्वैप न करें'
 }
 export default swap

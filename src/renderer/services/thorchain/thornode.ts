@@ -21,7 +21,10 @@ import {
   RUNEPoolApi,
   RUNEProvider,
   TradeAccountApi,
-  TradeAccountResponse
+  TradeAccountResponse,
+  TCYClaimersApi,
+  TCYStakersApi,
+  TCYStaker
 } from '@xchainjs/xchain-thornode'
 import {
   Address,
@@ -40,6 +43,7 @@ import * as RxOp from 'rxjs/operators'
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
+import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
@@ -70,7 +74,12 @@ import {
   RunePoolProvider,
   TradeAccount,
   TradeAccountLD,
-  LiquidityProvider
+  LiquidityProvider,
+  TcyClaimLD,
+  TcyStakeLD,
+  TcyStake,
+  TcyClaim,
+  ApiTcyClaimResponse
 } from './types'
 
 const height: number | undefined = undefined
@@ -389,6 +398,67 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       ),
       RxOp.startWith(RD.pending)
     )
+  const apiGetTcyClaim$ = (address: Address): LiveData<Error, ApiTcyClaimResponse> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new TCYClaimersApi(getThornodeAPIConfiguration(basePath)).tcyClaimer(address)),
+          RxOp.map((response: AxiosResponse<unknown>) => RD.success(response.data as ApiTcyClaimResponse)),
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      )
+    )
+  const { stream$: reloadTcyClaim$, trigger: reloadTcyClaim } = triggerStream()
+
+  const getTcyClaim$ = (address: Address, walletType: WalletType): TcyClaimLD =>
+    FP.pipe(
+      reloadTcyClaim$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) =>
+        apiGetTcyClaim$(address).pipe(
+          liveData.map((response): TcyClaim[] =>
+            response.tcy_claimer.map((item) => ({
+              asset: assetFromStringEx(item.asset),
+              amount: baseAmount(bnOrZero(item.amount), THORCHAIN_DECIMAL),
+              walletType,
+              l1Address: item.l1_address
+            }))
+          ),
+          RxOp.catchError(
+            (err: unknown): Rx.Observable<RD.RemoteData<Error, TcyClaim[]>> =>
+              Rx.of(RD.failure(err instanceof Error ? err : new Error(`Unknown error for ${address}`)))
+          )
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const apiGetTcyStaker$ = (address: Address): LiveData<Error, TCYStaker> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new TCYStakersApi(getThornodeAPIConfiguration(basePath)).tcyStaker(address)),
+          RxOp.map((response: AxiosResponse<TCYStaker>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      )
+    )
+  const { stream$: reloadTcyStaker$, trigger: reloadTcyStaker } = triggerStream()
+
+  const getTcyStaker$ = (address: Address): TcyStakeLD =>
+    FP.pipe(
+      reloadTcyStaker$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetTcyStaker$(address)),
+      liveData.map((claim): TcyStake => {
+        const amount = baseAmount(bnOrZero(claim.amount), THORCHAIN_DECIMAL)
+        const address = claim.address
+        return { address, amount }
+      }),
+      RxOp.catchError((): TcyStakeLD => Rx.of(RD.failure(Error(`Failed to load claim info for ${address} `)))),
+      RxOp.startWith(RD.pending)
+    )
 
   const apiGetMimir$: MimirLD = FP.pipe(
     thornodeUrl$,
@@ -631,7 +701,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       liveData.map((tradeAccounts) =>
         tradeAccounts.map((tradeAccount): TradeAccount => {
           const { owner, units, asset, last_add_height, last_withdraw_height } = tradeAccount
-          /* 1e8 decimal by default, which is default decimal for ALL accepts at THORChain  */
+          /* 1e8 decimal by default, which is default decimal for ALL assets at THORChain  */
           const tradeAssetUnits = baseAmount(units, THORCHAIN_DECIMAL)
           return {
             owner,
@@ -639,7 +709,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             units: tradeAssetUnits,
             lastAddHeight: FP.pipe(last_add_height, O.fromPredicate(N.isNumber)),
             lastWithdrawHeight: FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber)),
-            walletType
+            walletType,
+            protocol: Protocol.THORChain
           }
         })
       ),
@@ -672,6 +743,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     getThorchainPool$,
     reloadThorchainPool,
     getTradeAccount$,
-    reloadTradeAccount
+    reloadTradeAccount,
+    getTcyClaim$,
+    reloadTcyClaim,
+    getTcyStaker$,
+    reloadTcyStaker
   }
 }

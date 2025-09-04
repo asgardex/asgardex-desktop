@@ -1,13 +1,11 @@
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
-import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
-import { ASSETS_MAINNET, ERC20_TESTNET } from '../../../shared/mock/assets'
-import { AssetAVAX, AssetBCH, AssetBTC, AssetETH, AssetLTC } from '../../../shared/utils/asset'
-import { AssetUSDC, AssetUSDT62E, AssetUSDTDAC } from '../../const'
+import { ASSETS_MAINNET } from '../../../shared/mock/assets'
+import { AssetBTC } from '../../../shared/utils/asset'
 import { GetPoolsStatusEnum, PoolData } from '../../services/midgard/midgardTypes'
 import { LastblockItems } from '../../services/thorchain/types'
 import { PoolTableRowData } from './Pools.types'
@@ -15,10 +13,8 @@ import {
   getPoolTableRowData,
   getBlocksLeftForPendingPool,
   getBlocksLeftForPendingPoolAsString,
-  filterTableData,
   stringToGetPoolsStatus,
-  isEmptyPool,
-  FilterTableData
+  isEmptyPool
 } from './Pools.utils'
 
 describe('views/pools/utils', () => {
@@ -120,81 +116,6 @@ describe('views/pools/utils', () => {
       const lastblock2: LastblockItems = []
       const result = getBlocksLeftForPendingPoolAsString(lastblock2, AssetBTC, oNewPoolCycle)
       expect(result).toEqual('')
-    })
-  })
-
-  describe('filterTableData', () => {
-    const tableData: FilterTableData[] = [
-      {
-        asset: AssetAVAX
-      },
-      {
-        asset: AssetLTC
-      },
-      {
-        asset: AssetBTC
-      },
-      {
-        asset: AssetBCH
-      },
-      {
-        asset: AssetUSDTDAC // ETH.USDT mainnet
-      },
-      {
-        asset: AssetUSDT62E // ETH.USDT testnet
-      },
-      {
-        asset: AssetUSDC // ETH.USDC mainnet
-      },
-      {
-        asset: ERC20_TESTNET.USDT // Same as AssetUSDT62E
-      },
-      {
-        asset: AssetETH
-      },
-      {
-        asset: {
-          chain: BSCChain,
-          symbol: 'USDT-0x55d398326f99059fF775485246999027B3197955',
-          ticker: 'USDT',
-          synth: false
-        }
-      }
-    ] as PoolTableRowData[]
-
-    it('should not filter anything', () => {
-      expect(filterTableData()(tableData)).toEqual(tableData)
-      expect(filterTableData(O.none)(tableData)).toEqual(tableData)
-    })
-
-    it('base', () => {
-      expect(filterTableData(O.some('__native__'))(tableData)).toEqual([
-        tableData[0],
-        tableData[1],
-        tableData[2],
-        tableData[3],
-        tableData[8]
-      ])
-    })
-
-    it('avax', () => {
-      const result = filterTableData(O.some('__avax__'))(tableData)
-      expect(result).toEqual([tableData[0]])
-    })
-
-    it('erc20', () => {
-      const result = filterTableData(O.some('__erc20__'))(tableData)
-      expect(result).toEqual([tableData[4], tableData[5], tableData[6], tableData[7]])
-    })
-
-    it('usd', () => {
-      expect(filterTableData(O.some('__usd__'))(tableData)).toEqual([
-        tableData[4],
-        tableData[5],
-        tableData[6],
-        tableData[7],
-        tableData[9]
-      ])
     })
   })
 

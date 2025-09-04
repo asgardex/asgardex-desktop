@@ -1,5 +1,4 @@
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
-import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -12,6 +11,20 @@ export const ExternalLinkIcon = styled(ArrowTopRightOnSquareIcon)`
     transform: scale(-1, 1) translateX(5px);
     color: ${palette('text', 1)};
   }
+`
+
+export const WalletTypeTinyLabel = styled(UILabel).attrs({
+  textTransform: 'uppercase',
+  size: 'tiny'
+})`
+  font-family: 'MainFontRegular';
+  color: ${palette('text', 2)};
+
+  background: ${palette('gray', 0)};
+  text-shadow: 1px 1px 1px ${palette('background', 1)};
+  border-radius: 5px;
+  padding: 1px 7px;
+  width: auto;
 `
 
 export const WalletTypeLabel = styled(UILabel).attrs({
@@ -52,21 +65,3 @@ export const AssetSecuredLabel = styled(UILabel).attrs({
   padding: 1px 7px;
   width: auto;
 `
-
-export const Tooltip = styled(A.Tooltip).attrs({
-  overlayStyle: {
-    fontSize: 11,
-    maxWidth: '330px',
-    fontFamily: 'MainFontRegular',
-    textTransform: 'uppercase'
-  }
-})``
-
-export const TooltipAddress = styled(A.Tooltip).attrs({
-  overlayStyle: {
-    textTransform: 'none',
-    fontSize: 14,
-    maxWidth: '400px',
-    fontFamily: 'MainFontRegular'
-  }
-})``

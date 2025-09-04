@@ -1,4 +1,5 @@
-import { AnyAsset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
+import { WalletType } from '../../../../shared/wallet/types'
 
 export enum TcyOperation {
   Claim = 'Claim',
@@ -8,6 +9,9 @@ export enum TcyOperation {
 
 export type TcyInfo = {
   asset: AnyAsset
-  amount: number
+  amount: BaseAmount
   isClaimed: boolean
+  memo: string
+  l1Address: Address
+  walletType: WalletType
 }

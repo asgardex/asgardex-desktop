@@ -1,5 +1,6 @@
 import React from 'react'
 
+import clsx from 'clsx'
 import { ButtonWrapper } from './Button.styles'
 import type { ButtonProps } from './Button.types'
 
@@ -23,7 +24,7 @@ export const Button: React.ForwardRefExoticComponent<ButtonProps> = React.forwar
     return (
       <ButtonWrapper
         ref={ref}
-        className={`${className} btn-wrapper ${focusedStyle}`}
+        className={clsx(className, 'btn-wrapper', focusedStyle)}
         type="primary"
         weight={weight}
         color={color}

@@ -16,7 +16,9 @@ import {
   Saver,
   LiquidityProvider,
   PoolsApi,
-  PoolsResponse
+  PoolsResponse,
+  TradeAccountResponse,
+  TradeAccountApi
 } from '@xchainjs/xchain-mayanode'
 import { SaversApi } from '@xchainjs/xchain-thornode'
 import {
@@ -36,6 +38,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
+import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
@@ -61,7 +64,9 @@ import {
   InboundAddresses,
   InboundAddress,
   SaverProviderLD,
-  SaverProvider
+  SaverProvider,
+  TradeAccountLD,
+  TradeAccount
 } from './types'
 
 const height: number | undefined = undefined
@@ -514,6 +519,49 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
 
+  const apiGetTradeAccount$ = (address: Address): LiveData<Error, TradeAccountResponse[]> =>
+    FP.pipe(
+      mayanodeUrl$, // Fetch the base URL
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new TradeAccountApi(getMayanodeAPIConfiguration(basePath)).tradeAccount(address)), // Call the API
+          RxOp.map(
+            (response: AxiosResponse<TradeAccountResponse>) =>
+              RD.success(Array.isArray(response.data) ? response.data : [response.data]) // Handle single object as array
+          ),
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e))) // Handle errors
+        )
+      ),
+      RxOp.startWith(RD.pending) // Start with pending state
+    )
+
+  const { stream$: reloadTradeAccount$, trigger: reloadTradeAccount } = triggerStream()
+
+  const getTradeAccount$ = (address: Address, walletType: WalletType): TradeAccountLD =>
+    FP.pipe(
+      reloadTradeAccount$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetTradeAccount$(address)),
+      liveData.map((tradeAccounts) =>
+        tradeAccounts.map((tradeAccount): TradeAccount => {
+          const { owner, units, asset, last_add_height, last_withdraw_height } = tradeAccount
+          /* 1e10 decimal by default, which is default decimal for ALL assets at MAYChain  */
+          const tradeAssetUnits = baseAmount(units)
+          return {
+            owner,
+            asset: assetFromStringEx(asset),
+            units: tradeAssetUnits,
+            lastAddHeight: FP.pipe(last_add_height, O.fromPredicate(N.isNumber)),
+            lastWithdrawHeight: FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber)),
+            walletType,
+            protocol: Protocol.MAYAChain
+          }
+        })
+      ),
+      RxOp.catchError((): TradeAccountLD => Rx.of(RD.failure(Error(`Failed to load info for ${address} owner`)))),
+      RxOp.startWith(RD.pending)
+    )
+
   return {
     mayanodeUrl$,
     reloadMayanodeUrl,
@@ -535,6 +583,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     getSaverProvider$,
     reloadSaverProvider,
     getMayanodePools,
-    reloadMayanodePools
+    reloadMayanodePools,
+    getTradeAccount$,
+    reloadTradeAccount
   }
 }

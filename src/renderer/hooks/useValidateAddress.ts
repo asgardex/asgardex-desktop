@@ -32,23 +32,35 @@ export const useValidateAddress = (
     (address: Address) =>
       FP.pipe(
         oClient,
-        O.map((client) => client.validateAddress(address)),
+        O.map((client) => {
+          // Check if client has validateAddress method
+          if (client && typeof client.validateAddress === 'function') {
+            return client.validateAddress(address)
+          }
+          console.warn(`Client for chain ${chain} does not have validateAddress method`)
+          return true
+        }),
         // In case client is not available (it should never happen), skip validation by returning always `true`
         O.getOrElse<boolean>(() => true)
       ),
-    [oClient]
+    [oClient, chain]
   )
   const validateSwapAddress = useCallback(
     async (address: Address) =>
       FP.pipe(
         oClient,
         O.map(async (client) => {
-          return client.validateAddress(address)
+          // Check if client has validateAddress method
+          if (client && typeof client.validateAddress === 'function') {
+            return client.validateAddress(address)
+          }
+          console.warn(`Client for chain ${chain} does not have validateAddress method`)
+          return true
         }),
         // In case client is not available (it should never happen), skip validation by returning always `true`
         O.getOrElse<Promise<boolean>>(() => Promise.resolve(true))
       ),
-    [oClient]
+    [oClient, chain]
   )
 
   return { validateAddress, validateSwapAddress }

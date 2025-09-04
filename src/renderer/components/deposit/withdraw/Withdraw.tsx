@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -14,7 +14,6 @@ import {
   formatAssetAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Col } from 'antd'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -46,10 +45,12 @@ import { AssetWithDecimal } from '../../../types/asgardex'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
 import { DepositAssets } from '../../modal/tx/extra'
-import { FlatButton } from '../../uielements/button'
-import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
+import { AssetIcon } from '../../uielements/assets/assetIcon'
+import { FlatButton, ViewTxButton } from '../../uielements/button'
 import { Fees, UIFeesRD } from '../../uielements/fees'
-import { CopyLabel } from '../../uielements/label'
+import { CopyLabel, Label } from '../../uielements/label'
+import { Slider } from '../../uielements/slider'
+import { Tooltip } from '../../uielements/tooltip'
 import * as Helper from './Withdraw.helper'
 import * as Styled from './Withdraw.styles'
 
@@ -92,7 +93,7 @@ export type Props = {
  * Note: It supports sym. withdraw only
  *
  * */
-export const Withdraw: React.FC<Props> = ({
+export const Withdraw = ({
   asset: assetWD,
   assetWalletAddress,
   dexPrice,
@@ -113,7 +114,7 @@ export const Withdraw: React.FC<Props> = ({
   poolsData,
   haltedChains,
   mimirHalt
-}) => {
+}: Props) => {
   const intl = useIntl()
 
   const { asset, decimal: assetDecimal } = assetWD
@@ -240,7 +241,11 @@ export const Withdraw: React.FC<Props> = ({
         })
       }
     )
-    return <Styled.FeeErrorLabel key="fee-error">{msg}</Styled.FeeErrorLabel>
+    return (
+      <Label className="mb-10px" color="error" textTransform="uppercase">
+        {msg}
+      </Label>
+    )
   }, [isInboundChainFeeError, oDexBalance, intl, withdrawFees.rune, protocolAsset])
 
   const minRuneAmountToWithdraw = useMemo(() => Helper.minRuneAmountToWithdraw(withdrawFees.rune), [withdrawFees.rune])
@@ -342,16 +347,17 @@ export const Withdraw: React.FC<Props> = ({
     )
 
     const extraResult = (
-      <Styled.ExtraContainer>
+      <div className="flex flex-col items-center justify-between">
         {FP.pipe(withdrawTx, RD.toOption, (oTxHash) => (
-          <Styled.ViewTxButtonTop
+          <ViewTxButton
+            className="pb-5"
             txHash={oTxHash}
-            onClick={openRuneExplorerTxUrl}
             txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
             label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: protocolAsset.ticker })}
+            onClick={openRuneExplorerTxUrl}
           />
         ))}
-      </Styled.ExtraContainer>
+      </div>
     )
 
     return (
@@ -486,48 +492,52 @@ export const Withdraw: React.FC<Props> = ({
 
   return (
     <Styled.Container>
-      <Styled.Title>{intl.formatMessage({ id: 'deposit.withdraw.sym.title' })}</Styled.Title>
-      <Styled.Description>
+      <Label className="!text-16" textTransform="uppercase">
+        {intl.formatMessage({ id: 'deposit.withdraw.sym.title' })}
+      </Label>
+      <Label className="mt-2" size="big" textTransform="uppercase">
         {intl.formatMessage({ id: 'deposit.withdraw.choseText' })} (
-        <Styled.MinLabel color={minRuneAmountError ? 'error' : 'normal'}>
+        <Label className="inline" color={minRuneAmountError ? 'error' : 'normal'}>
           {intl.formatMessage({ id: 'common.min' })}:
-        </Styled.MinLabel>
-        <Styled.MinLabel color={minRuneAmountError ? 'error' : 'normal'}>
+        </Label>
+        <Label className="inline" color={minRuneAmountError ? 'error' : 'normal'}>
           {formatAssetAmountCurrency({
             amount: getTwoSigfigAssetAmount(baseToAsset(minRuneAmountToWithdraw)),
             asset: protocolAsset,
             trimZeros: true
           })}
-        </Styled.MinLabel>{' '}
+        </Label>{' '}
         /{' '}
-        <Styled.MinLabel color={'normal'}>
+        <Label className="inline" color="normal">
           {formatAssetAmountCurrency({
             amount: baseToAsset(minAssetAmountToWithdrawMax1e8),
             asset,
             trimZeros: true
           })}
-        </Styled.MinLabel>
+        </Label>
         )
-      </Styled.Description>
-      <Styled.Slider
-        key="asset amount slider"
-        value={withdrawPercent}
-        onChange={setWithdrawPercent}
-        onAfterChange={reloadFeesHandler}
-        disabled={disabled || disableWithdrawAction}
-        error={minRuneAmountError}
-      />
+      </Label>
+      <div className="mb-10">
+        <Slider
+          key="asset amount slider"
+          value={withdrawPercent}
+          onChange={setWithdrawPercent}
+          onAfterChange={reloadFeesHandler}
+          disabled={disabled || disableWithdrawAction}
+          error={minRuneAmountError}
+        />
+      </div>
       <Styled.AssetOutputContainer>
-        <TooltipAddress title={runeAddress}>
-          <Styled.AssetContainer>
-            <Styled.AssetIcon asset={protocolAsset} network={network} />
+        <Tooltip title={runeAddress} size="big">
+          <div className="flex items-center">
+            <AssetIcon className="mr-10px" asset={protocolAsset} network={network} />
             <Styled.AssetLabel asset={protocolAsset} />
             {isLedgerWallet(runeWalletType) && (
               <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
             )}
-          </Styled.AssetContainer>
-        </TooltipAddress>
-        <Styled.OutputContainer>
+          </div>
+        </Tooltip>
+        <div className="flex flex-col">
           <Styled.OutputLabel>
             {formatAssetAmount({
               amount: getTwoSigfigAssetAmount(baseToAsset(runeAmountToWithdraw)),
@@ -547,20 +557,20 @@ export const Withdraw: React.FC<Props> = ({
               })}
             </Styled.OutputUSDLabel>
           )}
-        </Styled.OutputContainer>
+        </div>
       </Styled.AssetOutputContainer>
 
       <Styled.AssetOutputContainer>
-        <TooltipAddress title={assetAddress}>
-          <Styled.AssetContainer>
-            <Styled.AssetIcon asset={asset} network={network} />
+        <Tooltip title={assetAddress} size="big">
+          <div className="flex items-center">
+            <AssetIcon className="mr-10px" asset={asset} network={network} />
             <Styled.AssetLabel asset={asset} />
             {isLedgerWallet(assetWalletType) && (
               <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
             )}
-          </Styled.AssetContainer>
-        </TooltipAddress>
-        <Styled.OutputContainer>
+          </div>
+        </Tooltip>
+        <div className="flex flex-col">
           <Styled.OutputLabel>
             {formatAssetAmount({
               amount: getTwoSigfigAssetAmount(baseToAsset(assetAmountToWithdraw)),
@@ -578,21 +588,15 @@ export const Withdraw: React.FC<Props> = ({
               </Styled.OutputUSDLabel>
             )}
           </Styled.OutputLabel>
-        </Styled.OutputContainer>
+        </div>
       </Styled.AssetOutputContainer>
 
-      <Styled.FeesRow gutter={{ lg: 32 }}>
-        <Col>
-          <Styled.FeeRow>
-            <Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} />
-          </Styled.FeeRow>
-          <Styled.FeeErrorRow>
-            <Col>
-              <>{renderInboundChainFeeError}</>
-            </Col>
-          </Styled.FeeErrorRow>
-        </Col>
-      </Styled.FeesRow>
+      <div className="flex flex-col space-y-4 pb-4 xl:pb-0">
+        <div className="flex items-center">
+          <Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} />
+        </div>
+        <div className="flex items-center">{renderInboundChainFeeError}</div>
+      </div>
       <div className="flex flex-col items-center justify-center py-20px">
         <FlatButton className="mb-30px min-w-[200px] px-20px" size="large" onClick={onSubmit} disabled={disabledSubmit}>
           {intl.formatMessage({ id: 'common.withdraw' })}
@@ -604,9 +608,8 @@ export const Withdraw: React.FC<Props> = ({
       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
         <div className="">
           <CopyLabel
-            className="whitespace-nowrap pl-0 uppercase text-gray2 dark:text-gray2d"
+            className="whitespace-nowrap pl-0 text-gray2 dark:text-gray2d"
             label={intl.formatMessage({ id: 'common.transaction.short.rune' }, { dex: protocolAsset.chain })}
-            key="memo-copy"
             textToCopy={memo}
           />
         </div>

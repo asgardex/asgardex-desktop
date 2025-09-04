@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { useObservableState } from 'observable-hooks'
@@ -10,7 +10,7 @@ import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
 
-export const AppExpertModeView: React.FC = (): JSX.Element => {
+export const AppExpertModeView = (): JSX.Element => {
   const { network } = useNetwork()
   const {
     service: { apiEndpoint$, setMidgardUrl, checkMidgardUrl$ }

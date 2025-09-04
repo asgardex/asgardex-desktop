@@ -1,14 +1,14 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
 import { baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
-import { Grid, Row } from 'antd'
 import { function as FP } from 'fp-ts'
 
 import { abbreviateNumber } from '../../../helpers/numberHelper'
 import { loadingString } from '../../../helpers/stringHelper'
+import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { PriceRD } from '../../../services/midgard/midgardTypes'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
@@ -27,7 +27,7 @@ export type Props = {
   reloadVolume24PriceMaya: FP.Lazy<void>
 }
 
-export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
+export const HeaderStats = (props: Props): JSX.Element => {
   const {
     runePrice: runePriceRD,
     tcyPrice: tcyPriceRD,
@@ -41,9 +41,9 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
     reloadVolume24PriceMaya
   } = props
 
-  const isSmallMobileView = Grid.useBreakpoint()?.xs ?? false
-  const isLargeMobileView = Grid.useBreakpoint()?.lg ?? false
-  const isXLargeMobileView = Grid.useBreakpoint()?.xl ?? false
+  const isSmallMobileView = useBreakpoint()?.xs ?? false
+  const isLargeMobileView = useBreakpoint()?.lg ?? false
+  const isXLargeMobileView = useBreakpoint()?.xl ?? false
 
   const { network } = useNetwork()
 
@@ -205,7 +205,7 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
   }, [mayaPriceRD, reloadMayaPrice, reloadVolume24PriceMaya, volume24PriceMayaRD])
 
   return (
-    <Row className="space-x-2">
+    <div className="flex items-center space-x-2">
       <div
         className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadThorStats}>
@@ -215,7 +215,7 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
 
         {!isSmallMobileView && (
           <>
-            <div className="h-full w-[1px] bg-gray2 dark:bg-gray2d" />
+            <div className="w-[1px] h-5 bg-gray2 dark:bg-gray2d" />
             <Styled.Label loading={RD.isPending(volume24PriceRuneRD) ? 'true' : 'false'}>
               {volume24PriceRuneLabel}
             </Styled.Label>
@@ -243,13 +243,13 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
 
         {!isSmallMobileView && (
           <>
-            <div className="h-full w-[1px] bg-gray2 dark:bg-gray2d" />
+            <div className="h-5 w-[1px] bg-gray2 dark:bg-gray2d" />
             <Styled.Label loading={RD.isPending(volume24PriceMayaRD) ? 'true' : 'false'}>
               {volume24PriceMayaLabel}
             </Styled.Label>
           </>
         )}
       </div>
-    </Row>
+    </div>
   )
 }

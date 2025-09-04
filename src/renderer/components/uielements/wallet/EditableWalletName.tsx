@@ -8,7 +8,7 @@ import { useIntl } from 'react-intl'
 
 import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
 import { BaseButton, TextButton } from '../button'
-import { Input } from '../input/Input'
+import { Input } from '../input'
 
 export type Props = {
   name: string
@@ -22,9 +22,13 @@ type FormData = {
   name: string
 }
 
-export const EditableWalletName: React.FC<Props> = (props): JSX.Element => {
-  const { name: initialName, names, onChange, loading = false, className = '' } = props
-
+export const EditableWalletName = ({
+  name: initialName,
+  names,
+  onChange,
+  loading = false,
+  className = ''
+}: Props): JSX.Element => {
   const [editableName, setEditableName] = useState<O.Option<string>>(O.none)
   const [name, setName] = useState<string>(initialName)
 

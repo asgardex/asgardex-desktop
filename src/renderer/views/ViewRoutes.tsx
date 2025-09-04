@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import * as appRoutes from '../routes/app'
@@ -23,6 +21,7 @@ import { WalletHistoryView } from './wallet/history'
 import { ImportKeystoreView } from './wallet/ImportKeystoreView'
 import { ImportPhraseView } from './wallet/ImportPhraseView'
 import { InteractView } from './wallet/Interact'
+import { LedgerChainSelectView } from './wallet/LedgerChainSelectView'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
 import { RunepoolView } from './wallet/RunepoolView'
@@ -32,7 +31,7 @@ import { TradeAssetsView } from './wallet/TradeAssetsView'
 import { UnlockView } from './wallet/UnlockView'
 import { WalletAuth } from './wallet/WalletAuth'
 
-export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
+export const ViewRoutes = (): JSX.Element => {
   const location = useLocation()
   return (
     <Routes>
@@ -72,6 +71,7 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
       />
       {/* wallet routes */}
       <Route path={walletRoutes.noWallet.template} element={<NoWalletView />} />
+      <Route path={walletRoutes.ledgerChainSelect.template} element={<LedgerChainSelectView />} />
       <Route path={`${walletRoutes.create.base.template}/*`} element={<CreateView />} />
       <Route path={walletRoutes.locked.template} element={<UnlockView />} />
       <Route path={walletRoutes.imports.keystore.template} element={<ImportKeystoreView />} />

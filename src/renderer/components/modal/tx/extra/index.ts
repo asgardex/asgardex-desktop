@@ -1,2 +1,2 @@
 export { SwapAssets } from './SwapAssets'
-export { DepositAssets } from './DepositAssets'
+export { DepositAssets, ClaimAsset } from './DepositAssets'

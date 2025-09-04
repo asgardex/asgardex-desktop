@@ -1,17 +1,17 @@
-import React from 'react'
-
-import * as Styled from './PoolShareCard.styles'
+import { Label } from '../label'
 
 export type Props = {
   title: string
   children: React.ReactNode
 }
 
-export const PoolShareCard: React.FC<Props> = ({ title, children }) => {
+export const PoolShareCard = ({ title, children }: Props) => {
   return (
-    <Styled.Wrapper>
-      <Styled.Title>{title}</Styled.Title>
-      <Styled.Content>{children}</Styled.Content>
-    </Styled.Wrapper>
+    <div className="border border-solid border-gray0 dark:border-gray0d rounded-lg bg-bg1 dark:bg-bg1d p-4">
+      <Label className="text-[16px] px-4 pb-4" align="center" textTransform="uppercase" weight="bold">
+        {title}
+      </Label>
+      <div>{children}</div>
+    </div>
   )
 }

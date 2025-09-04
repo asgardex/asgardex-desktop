@@ -1,42 +1,31 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { RadixChain } from '@xchainjs/xchain-radix'
-import { SOLChain } from '@xchainjs/xchain-solana'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { AssetType, baseAmount } from '@xchainjs/xchain-util'
 import { TxParams } from '@xchainjs/xchain-utxo'
-import { Spin } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
+import { Spin } from '../../../components/uielements/spin'
 import { SendFormCOSMOS } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
-import { useCosmosContext } from '../../../contexts/CosmosContext'
-import { useKujiContext } from '../../../contexts/KujiContext'
-import { useMayachainContext } from '../../../contexts/MayachainContext'
-import { useSolContext } from '../../../contexts/SolContext'
-import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
-import { useXrdContext } from '../../../contexts/XrdContext'
 import { liveData } from '../../../helpers/rx/liveData'
-import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
+import { getWalletBalanceByAssetAndWalletType } from '../../../helpers/walletHelper'
 import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { FeeRD } from '../../../services/chain/types'
-import { FeesLD, WalletBalances } from '../../../services/clients'
+import { WalletBalances } from '../../../services/clients'
 import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMigard/types'
 import { PoolAddress } from '../../../services/midgard/midgardTypes'
 import { ZERO_ADDRESS } from '../../../services/solana/fees'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
-import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -46,7 +35,7 @@ type Props = {
   oPoolAddress: O.Option<PoolAddress>
 }
 
-export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
+export const SendViewCOSMOS = (props: Props): JSX.Element => {
   const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress } = props
 
   const { chain } =
@@ -71,62 +60,26 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(chain))
 
-  const oWalletBalance = useMemo(
-    () =>
-      FP.pipe(
-        oBalances,
-        O.chain((balances) =>
-          getWalletBalanceByAddressAndAsset({ balances, address: asset.walletAddress, asset: asset.asset })
-        )
-      ),
-    [asset, oBalances]
-  )
-
-  const { transfer$ } = useChainContext()
-
-  const kujiContext = useKujiContext()
-  const mayachainContext = useMayachainContext()
-  const gaiaContext = useCosmosContext()
-  const thorContext = useThorchainContext()
-  const xrdContext = useXrdContext()
-  const solContext = useSolContext()
-  let fees$: (params: TxParams) => FeesLD
-  let reloadFees: (params: TxParams) => void
-
-  switch (chain) {
-    case KUJIChain:
-      fees$ = kujiContext.fees$
-      reloadFees = kujiContext.reloadFees
-      break
-    case MAYAChain:
-      fees$ = mayachainContext.fees$
-      reloadFees = mayachainContext.reloadFees
-      break
-    case GAIAChain:
-      fees$ = gaiaContext.fees$
-      reloadFees = gaiaContext.reloadFees
-      break
-    case THORChain:
-      fees$ = thorContext.fees$
-      reloadFees = thorContext.reloadFees
-      break
-    case RadixChain:
-      fees$ = xrdContext.fees$
-      reloadFees = xrdContext.reloadFees
-      break
-    case SOLChain:
-      fees$ = solContext.fees$
-      reloadFees = solContext.reloadFees
-      break
-    default:
-      throw new Error('Unsupported chain')
-  }
-
-  const reloadFeesHandler = () =>
-    reloadFees({
-      amount: baseAmount(1),
-      recipient: ZERO_ADDRESS
+  const oWalletBalance = useMemo(() => {
+    return getWalletBalanceByAssetAndWalletType({
+      oWalletBalances: oBalances,
+      asset: asset.asset,
+      walletType: asset.walletType
     })
+  }, [asset.asset, asset.walletType, oBalances])
+
+  const { transfer$, standaloneLedgerFees$, reloadStandaloneLedgerFees } = useChainContext()
+
+  // Use centralized fees that support standalone ledger mode
+  const fees$ = (params: TxParams) =>
+    standaloneLedgerFees$({
+      chain,
+      amount: params.amount,
+      recipient: params.recipient
+    })
+
+  // Use centralized reload function that works with standaloneLedgerFees$
+  const reloadFeesHandler = () => reloadStandaloneLedgerFees(chain)
 
   const [feeRD] = useObservableState<FeeRD>(
     () =>
@@ -149,7 +102,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => (
         <Spin>
-          <Styled.Container>
+          <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
             <SendFormCOSMOS
               asset={asset}
               trustedAddresses={trustedAddresses}
@@ -170,11 +123,11 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
               mayaScanPrice={mayaScanPriceRD}
               oPoolAddress={oPoolAddress}
             />
-          </Styled.Container>
+          </div>
         </Spin>
       ),
       (walletBalance) => (
-        <Styled.Container>
+        <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
           <SendFormCOSMOS
             asset={asset}
             trustedAddresses={trustedAddresses}
@@ -195,7 +148,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
             mayaScanPrice={mayaScanPriceRD}
             oPoolAddress={oPoolAddress}
           />
-        </Styled.Container>
+        </div>
       )
     )
   )

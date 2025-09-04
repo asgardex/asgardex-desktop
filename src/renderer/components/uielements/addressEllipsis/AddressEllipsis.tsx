@@ -4,12 +4,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { Address, Chain } from '@xchainjs/xchain-util'
 
 import { truncateAddress } from '../../../helpers/addressHelper'
-import * as Styled from './AddressEllipsis.styles'
-
-/**
- * Custom address ellipsis component
- * Based on https://github.com/bluepeter/react-middle-ellipsis/
- */
+import { CopyLabel } from '../label'
 
 export type Props = {
   address: Address
@@ -17,11 +12,10 @@ export type Props = {
   network: Network
   className?: string
   enableCopy?: boolean
-  linkIcon?: React.ReactElement
 }
 
-export const AddressEllipsis = (props: Props): JSX.Element => {
-  const { address, chain, network, className, enableCopy = false, linkIcon } = props
+export const AddressEllipsis = (props: Props) => {
+  const { address, chain, network, className, enableCopy = false } = props
   const prepEllipse = useCallback(
     (node: HTMLElement, txtToEllipse: HTMLElement, copyIcon: HTMLElement) => {
       const parent = node.parentElement
@@ -71,13 +65,12 @@ export const AddressEllipsis = (props: Props): JSX.Element => {
   }, [])
 
   return (
-    <Styled.Container className={className}>
-      <Styled.AddressContainer ref={measuredParent}>
-        <Styled.Address>{address}</Styled.Address>
-        {linkIcon}
-        <Styled.CopyLabel copyable={{ text: address }} />
-      </Styled.AddressContainer>
-    </Styled.Container>
+    <div className={className}>
+      <div className="flex items-center break-keep break-normal space-x-1" ref={measuredParent}>
+        <span className="text-text2 dark:text-text2d font-main">{address}</span>
+        <CopyLabel iconClassName="!w-4 !h-4 text-turquoise" textToCopy={address} />
+      </div>
+    </div>
   )
 }
 

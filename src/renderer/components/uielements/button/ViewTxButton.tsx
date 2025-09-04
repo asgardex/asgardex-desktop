@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { TxHash } from '@xchainjs/xchain-client'
 import clsx from 'clsx'
@@ -20,7 +20,7 @@ type Props = {
   channelId?: O.Option<string>
 }
 
-export const ViewTxButton: React.FC<Props> = ({
+export const ViewTxButton = ({
   onClick,
   txHash: oTxHash,
   txUrl: oTxUrl,
@@ -30,7 +30,7 @@ export const ViewTxButton: React.FC<Props> = ({
   trackable = false,
   protocol = O.none,
   channelId = O.none
-}): JSX.Element => {
+}: Props): JSX.Element => {
   const intl = useIntl()
 
   const onClickHandler = useCallback(() => {
@@ -83,7 +83,7 @@ export const ViewTxButton: React.FC<Props> = ({
 
   return (
     <div className="flex flex-col">
-      <Styled.Wrapper className={clsx('flex-col', className)}>
+      <div className={clsx('flex flex-col items-center', className)}>
         <Styled.ViewTxButton onClick={onClickHandler} disabled={O.isNone(oTxHash)}>
           {label || intl.formatMessage({ id: 'common.viewTransaction' })}
         </Styled.ViewTxButton>
@@ -124,7 +124,7 @@ export const ViewTxButton: React.FC<Props> = ({
             />
           </div>
         </div>
-      </Styled.Wrapper>
+      </div>
     </div>
   )
 }

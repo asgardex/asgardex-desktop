@@ -5,6 +5,7 @@ import { AssetBETH, BASE_GAS_ASSET_DECIMAL, BASEChain } from '@xchainjs/xchain-b
 import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL, BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSC_GAS_ASSET_DECIMAL, BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGE_DECIMAL, DOGEChain } from '@xchainjs/xchain-doge'
@@ -14,6 +15,7 @@ import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { AssetXRP, XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -29,9 +31,10 @@ import {
   AnyAsset,
   Chain
 } from '@xchainjs/xchain-util'
+import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
-import { AssetATOM, AssetBCH, AssetBTC, AssetDOGE, AssetETH, AssetLTC } from '../../../../shared/utils/asset'
+import { AssetATOM, AssetBCH, AssetBTC, AssetDOGE, AssetETH, AssetLTC, AssetZEC } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
@@ -290,12 +293,23 @@ export const getOutboundAssetFeeByChain = (
             asset: AssetATOM
           })
         }
+        case ZECChain:
+          return O.some({
+            amount: baseAmount(value, ZEC_DECIMAL),
+            asset: AssetZEC
+          })
+        case XRPChain:
+          return O.some({
+            amount: baseAmount(value, XRP_DECIMAL),
+            asset: AssetXRP
+          })
         // 'THORChain can be ignored - fees for asset side only
         // Other chains can be ignored since they are for mayachain
         case THORChain:
         case DASHChain:
         case MAYAChain:
         case KUJIChain:
+        case ADAChain:
         case ARBChain:
         case RadixChain:
         case SOLChain:

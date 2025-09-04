@@ -16,8 +16,6 @@ const swap: SwapMessages = {
   'swap.slip.tolerance': 'Bajada tolerancia',
   'swap.slip.tolerance.info':
     'Cuanto mayor sea el porcentaje, más deslizamiento aceptará. Más deslizamiento incluye también un rango más amplio para cubrir las comisiones estimadas para evitar swaps abortados.',
-  'swap.slip.tolerance.ledger-disabled.info':
-    'La tolerancia al deslizamiento se ha desactivado debido a problemas técnicos con Ledger.',
   'swap.streaming.interval': 'Intervalo',
   'swap.streaming.title': 'Estado del streaming',
   'swap.streaming.interval.info': 'Intervalo entre intercambios, 10 bloques es un intervalo de 1 minuto',
@@ -37,7 +35,8 @@ const swap: SwapMessages = {
     'Valor mínimo a intercambiar para cubrir todas las comisiones de las transacciones entrantes y salientes.',
   'swap.min.result.info':
     'Su swap está protegido por este valor mínimo basado en el {tolerance}% de tolerancia de deslizamiento seleccionado. En caso de que el precio cambie desfavorablemente más del {tolerance}%, su operación de swap se revertirá antes de la confirmación.',
-  'swap.min.result.protected': 'Resultado del swap protegido'
+  'swap.min.result.protected': 'Resultado del swap protegido',
+  'swap.address.evm.warning': 'NO intercambiar a direcciones de Smart Contract'
 }
 
 export default swap

@@ -7,6 +7,7 @@ import {
   assetToBase,
   BaseAmount,
   baseToAsset,
+  Chain,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -16,10 +17,13 @@ import { useIntl } from 'react-intl'
 
 import WalletIcon from '../../../../assets/svg/icon-wallet.svg?react'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
+import { chainToProtocol } from '../../../../helpers/protocolHelper'
 import { AssetWithAmount, FixmeType } from '../../../../types/asgardex'
+import { ProviderIcon } from '../../../swap/ProviderIcon'
 import { Button } from '../../button'
 import { CheckButton } from '../../button/CheckButton'
 import { InputBigNumber } from '../../input'
+import { Label } from '../../label'
 import { AssetSelect } from '../assetSelect'
 
 const ASSET_SELECT_BUTTON_WIDTH = 'w-[190px]'
@@ -34,6 +38,7 @@ export type Props = {
   disabled?: boolean
   showError?: boolean
   hasAmountShortcut?: boolean
+  protocol?: Chain
   onChangeAsset: (asset: AnyAsset) => void
   onChange?: (value: BaseAmount) => void
   onBlur?: FP.Lazy<void>
@@ -59,10 +64,6 @@ export type Props = {
 
 const amountShortcuts = [
   {
-    textId: 'common.min',
-    amount: 0
-  },
-  {
     textId: 'common.half',
     amount: 50
   },
@@ -72,7 +73,7 @@ const amountShortcuts = [
   }
 ]
 
-export const AssetInput: React.FC<Props> = (props): JSX.Element => {
+export const AssetInput = (props: Props): JSX.Element => {
   const {
     title,
     amount: { amount, asset },
@@ -91,6 +92,7 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
     useLedger,
     hasLedger,
     useLedgerHandler,
+    protocol,
     className = '',
     classNameInput = ''
   } = props
@@ -138,6 +140,14 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
             ))}
           </div>
         )}
+        {!hasAmountShortcut && protocol && (
+          <div className="flex items-center space-x-1">
+            <ProviderIcon protocol={protocol} />
+            <Label textTransform="uppercase" color="gray" size="small">
+              {chainToProtocol[protocol as keyof typeof chainToProtocol]}
+            </Label>
+          </div>
+        )}
       </div>
       <div
         className={clsx('ease flex uppercase', { 'border-error0 dark:border-error0d': showError }, classNameInput)}
@@ -168,7 +178,7 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
 
         <div className="flex flex-col">
           <AssetSelect
-            className={`h-full ${ASSET_SELECT_BUTTON_WIDTH}`}
+            className={clsx('h-full', ASSET_SELECT_BUTTON_WIDTH)}
             onSelect={onChangeAsset}
             asset={asset}
             assets={assets}

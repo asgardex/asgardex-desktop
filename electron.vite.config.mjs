@@ -6,6 +6,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import simpleGit from 'simple-git'
 import svgr from 'vite-plugin-svgr'
+import wasm from 'vite-plugin-wasm'
 
 import pkg from './package.json'
 
@@ -26,7 +27,7 @@ export default defineConfig(async ({ mode }) => {
       plugins: [
         typescript({ tsconfig: './tsconfig.main.json' }),
         externalizeDepsPlugin({
-          include: ['@ledgerhq/hw-transport-node-hid', '@ledgerhq/hw-transport', 'node-hid', 'usb']
+          include: ['@ledgerhq/hw-transport-node-hid-singleton', '@ledgerhq/hw-transport', 'node-hid', 'usb']
         })
       ],
       define: {
@@ -50,6 +51,7 @@ export default defineConfig(async ({ mode }) => {
 
     renderer: {
       input: 'src/renderer/index.html',
+      assetsInclude: ['**/*.wasm'],
       build: {
         sourcemap: mode === 'development',
         outDir: 'build/renderer',
@@ -57,19 +59,7 @@ export default defineConfig(async ({ mode }) => {
           output: {
             manualChunks: {
               vendor: ['react', 'react-dom', 'react-router-dom'],
-              crypto: ['crypto-browserify', 'stream-browserify', 'readable-stream'],
-              xchain: [
-                '@xchainjs/xchain-wallet',
-                '@xchainjs/xchain-doge',
-                '@xchainjs/xchain-litecoin',
-                '@xchainjs/xchain-bitcoin',
-                '@xchainjs/xchain-ethereum',
-                '@xchainjs/xchain-cosmos',
-                '@xchainjs/xchain-thorchain',
-                '@xchainjs/xchain-client',
-                '@xchainjs/xchain-crypto',
-                '@xchainjs/xchain-util'
-              ]
+              crypto: ['crypto-browserify', 'stream-browserify', 'readable-stream']
             }
           },
           plugins: [
@@ -79,7 +69,8 @@ export default defineConfig(async ({ mode }) => {
           ]
         },
         commonjsOptions: {
-          transformMixedEsModules: false
+          transformMixedEsModules: true,
+          include: [/node_modules/, /@mayaprotocol\/zcash-js/]
         }
       },
       resolve: {
@@ -87,21 +78,24 @@ export default defineConfig(async ({ mode }) => {
           process: 'process/browser',
           stream: 'stream-browserify',
           crypto: 'crypto-browserify',
+          assert: 'assert',
           path: path.resolve(__dirname, 'empty.js'),
           url: path.resolve(__dirname, 'empty.js'),
           https: path.resolve(__dirname, 'empty.js'),
           http: path.resolve(__dirname, 'empty.js'),
           zlib: path.resolve(__dirname, 'empty.js'),
-          fs: path.resolve(__dirname, 'empty.js')
+          fs: path.resolve(__dirname, 'empty.js'),
+          // Force @mayaprotocol/zcash-js to use CommonJS build instead of browser bundle
+          '@mayaprotocol/zcash-js': path.resolve(__dirname, 'node_modules/@mayaprotocol/zcash-js/dist/src/index.js')
         }
       },
       optimizeDeps: {
-        include: ['process', 'buffer'],
+        include: ['process', 'buffer', 'assert', '@mayaprotocol/zcash-js'],
         esbuildOptions: {
           inject: ['./src/shims/buffer-shim.js']
         }
       },
-      plugins: [react(), svgr(), typescript()],
+      plugins: [wasm(), react(), svgr(), typescript()],
       define: {
         'process.env': {}, // TODO: Fix from xchain
         global: 'globalThis',

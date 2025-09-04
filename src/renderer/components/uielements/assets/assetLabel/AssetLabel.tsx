@@ -1,34 +1,26 @@
-import React from 'react'
-
 import { AnyAsset } from '@xchainjs/xchain-util'
 
-import * as Styled from './AssetLabel.styles'
-
-/**
- * AssetLabel - Component to show data of an asset:
- *
- * |--------|
- * | ticker |
- * | chain  |
- * |--------|
- *
- */
+import clsx from 'clsx'
+import { Label } from '../../label'
 
 type Props = {
   asset: AnyAsset
-  // `className` is needed by `styled components`
   className?: string
 }
 
-export const AssetLabel: React.FC<Props> = (props): JSX.Element => {
+export const AssetLabel = (props: Props) => {
   const { asset, className } = props
 
   return (
-    <Styled.Wrapper className={className}>
-      <Styled.Col>
-        <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
-        <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>
-      </Styled.Col>
-    </Styled.Wrapper>
+    <div className={clsx('py-1', className)}>
+      <div>
+        <Label className="!w-auto" size="big" textTransform="uppercase" weight="bold">
+          {asset.ticker}
+        </Label>
+        <Label className="!w-auto" color="gray">
+          {asset.chain}
+        </Label>
+      </div>
+    </div>
   )
 }

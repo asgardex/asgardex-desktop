@@ -13,7 +13,7 @@ import { triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
 import { network$ } from '../../app/service'
 import { MIDGARD_MAX_RETRY } from '../../const'
 import { inboundAddressesShared$, loadInboundAddresses$ } from '../../mayachain'
-import { getStorageState$, modifyStorage, getStorageState } from '../../storage/common'
+import { modifyStorage, getStorageState, midgardMaya$ } from '../../storage/common'
 import { ErrorId } from '../../wallet/types'
 import {
   NetworkInfoRD,
@@ -37,19 +37,10 @@ const { stream$: reloadMayaMidgardUrl$, trigger: reloadMayaMidgardUrl } = trigge
  * Stream of Midgard urls (from storage)
  */
 const getMidgardUrl$ = FP.pipe(
-  Rx.combineLatest([getStorageState$, reloadMayaMidgardUrl$]),
-  RxOp.map(([storage]) =>
-    FP.pipe(
-      storage,
-      O.map(({ midgardMaya: midgardUrls }) => {
-        return midgardUrls
-      }),
-      O.getOrElse(() => DEFAULT_MIDGARD_MAYA_URLS)
-    )
-  ),
+  Rx.combineLatest([midgardMaya$, reloadMayaMidgardUrl$]),
+  RxOp.map(([midgardMaya, _]) => midgardMaya),
   RxOp.distinctUntilChanged(eqApiUrls.equals)
 )
-
 /**
  * Current value of Midgard urls (from storage)
  */
@@ -165,8 +156,16 @@ const healthInterval$ = Rx.timer(0 /* no delay for first value */, 5 * 60 * 1000
 const healthStatus$: MidgardStatusLD = FP.pipe(
   Rx.combineLatest([midgardUrl$, healthInterval$]),
   RxOp.map(([urlRD, _]) => urlRD),
-  liveData.chain((url) => checkMidgardUrl$(url)),
-  liveData.map((_) => true)
+  liveData.chain((url) =>
+    FP.pipe(
+      Rx.from(getMidgardDefaultApi(url).getHealth()),
+      RxOp.map((result) => {
+        const { database, inSync } = result.data
+        return RD.success(database && inSync) // Emit true if healthy, false if unhealthy
+      }),
+      RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+    )
+  )
 )
 
 export type MidgardService = {

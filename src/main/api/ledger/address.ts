@@ -1,4 +1,4 @@
-import * as Transport from '@ledgerhq/hw-transport'
+import type Transport from '@ledgerhq/hw-transport'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
 
 import { IPCLedgerAddressParams, LedgerError, LedgerErrorId } from '../../../shared/api/types'
@@ -32,11 +33,11 @@ import { getEVMAddress, verifyEVMAddress } from './evm/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
 import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
 
-const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
 const handleEVMChain = (
   chain: Chain,
-  transport: Transport.default,
+  transport: Transport,
   network: Network,
   walletAccount: number,
   walletIndex: number,
@@ -57,7 +58,7 @@ const handleEVMChain = (
 const chainAddressFunctions: Record<
   Chain,
   (
-    transport: Transport.default,
+    transport: Transport,
     network: Network,
     walletAccount: number,
     walletIndex: number,
@@ -86,7 +87,7 @@ const chainAddressFunctions: Record<
   [GAIAChain]: getCOSMOSAddress
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain]
+const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
 
 export const getAddress = async ({
   chain,
@@ -131,7 +132,7 @@ export const verifyLedgerAddress = async ({
   walletIndex,
   hdMode
 }: IPCLedgerAddressParams) => {
-  const transport = await TransportNodeHidSingleton.create()
+  const transport = await TransportNodeHidSingleton.default.create()
   let result = false
 
   if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'verifyAddress'`)

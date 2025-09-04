@@ -29,7 +29,20 @@ const ledger: LedgerMessages = {
   'ledger.deposit.oneside': 'Ledger wird aktuell nur für eine Assetseite unterstützt.',
   'ledger.legacyformat.note': 'Ledger zeigt alle Output-Adressen im "Legacy", aber nicht im "CashAddr" Format an.',
   'ledger.legacyformat.show': 'Adressenformate zeigen',
-  'ledger.legacyformat.hide': 'Adressenformate verbergen'
+  'ledger.legacyformat.hide': 'Adressenformate verbergen',
+  'ledger.connect.title': 'Ledger verbinden',
+  'ledger.connect.instruction': 'Wählen Sie das Blockchain-Netzwerk aus, um Ihr Ledger-Gerät zu verbinden',
+  'ledger.connect.success.title': 'Ledger verbunden',
+  'ledger.connect.success.description': 'Erfolgreich mit {chain} verbunden',
+  'ledger.connect.success.redirect': 'Weiterleitung zur Wallet in {countdown} Sekunden...',
+  'ledger.connect.button.continue': 'Jetzt fortfahren',
+  'ledger.detect.title': 'Ledger-Gerät erkennen',
+  'ledger.detect.checking': 'Überprüfe {chain}...',
+  'ledger.derivation.path': 'Ableitungspfad',
+  'ledger.derivation.legacy': 'Legacy (MEW)',
+  'ledger.derivation.metamask': 'MetaMask',
+  'ledger.connect.chain': '{chain} verbinden',
+  'ledger.connect.select': 'Chain auswählen'
 }
 
 export default ledger

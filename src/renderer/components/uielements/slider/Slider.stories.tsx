@@ -4,11 +4,6 @@ import { Meta } from '@storybook/react'
 
 import { Slider as Component } from './index'
 
-const marks = {
-  0: '0%',
-  100: '100%'
-}
-
 const style: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -21,8 +16,7 @@ const Template = () => {
     <div style={style}>
       <p>currentValue {currentValue}</p>
       <Component defaultValue={currentValue} onChange={setCurrentValue} />
-      <Component value={currentValue} withLabel />
-      <Component value={currentValue} marks={marks} />
+      <Component value={currentValue} />
     </div>
   )
 }

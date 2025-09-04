@@ -6,7 +6,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "eslint.validate": ["typescript", "javascript"],
+  "eslint.validate": ["javascript", "typescript", "typescriptreact", "javascriptreact"],
   "prettier.requireConfig": true,
   "editor.formatOnSave": true,
   "[javascript]": {

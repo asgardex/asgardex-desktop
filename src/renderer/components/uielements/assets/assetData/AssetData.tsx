@@ -1,67 +1,41 @@
-import React from 'react'
-
 import { Network } from '@xchainjs/xchain-client'
 import {
   BaseAmount,
   formatAssetAmountCurrency,
   baseToAsset,
-  baseAmount,
   AnyAsset,
   isSynthAsset,
   isSecuredAsset
 } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
-import { isLedgerWallet } from '../../../../../shared/utils/guard'
+import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { walletTypeToI18n } from '../../../../services/wallet/util'
-import { PricePoolAsset } from '../../../../views/pools/Pools.types'
+import { AssetIcon } from '../assetIcon'
 import * as Styled from './AssetData.styles'
-
-/**
- * AssetData - Component to show data of an asset:
- *
- * |------|---------|-------------------|------------------|------------------------|
- * | icon | ticker  | amount (optional) | price (optional) | wallet type (optional) |
- * |------|---------|-------------------|------------------|------------------------|
- *
- */
 
 type Props = {
   asset: AnyAsset
   walletType?: WalletType
   noTicker?: boolean
   amount?: BaseAmount
-  price?: BaseAmount
-  priceAsset?: PricePoolAsset
   size?: Styled.AssetDataSize
   // `className` is needed by `styled components`
   className?: string
   network: Network
 }
 
-export const AssetData: React.FC<Props> = (props): JSX.Element => {
-  const {
-    asset,
-    walletType,
-    amount: assetAmount,
-    noTicker = false,
-    price = baseAmount(0),
-    priceAsset,
-    size = 'small',
-    className,
-    network
-  } = props
+export const AssetData = (props: Props): JSX.Element => {
+  const { asset, walletType, amount: assetAmount, noTicker = false, size = 'small', className, network } = props
 
   const intl = useIntl()
-  const priceLabel = priceAsset
-    ? formatAssetAmountCurrency({ amount: baseToAsset(price), asset: priceAsset, trimZeros: true })
-    : ''
 
   return (
-    <Styled.Wrapper className={className}>
+    <div className={clsx('flex items-center flex-wrap py-1 mr-2 last:m-0', className)}>
       <Styled.AssetIconContainer>
-        <Styled.AssetIcon asset={asset} size={size} network={network} />
+        <AssetIcon asset={asset} size={size} network={network} />
       </Styled.AssetIconContainer>
       {!noTicker && (
         <Styled.LabelContainer>
@@ -74,21 +48,18 @@ export const AssetData: React.FC<Props> = (props): JSX.Element => {
           {walletType && isLedgerWallet(walletType) && (
             <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
           )}
+          {walletType && isKeystoreWallet(walletType) && (
+            <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+          )}
         </Styled.LabelContainer>
       )}
       {assetAmount && (
-        <Styled.Col>
+        <div className="mr-2 last:m-0">
           <Styled.AmountLabel size={size}>
             {formatAssetAmountCurrency({ amount: baseToAsset(assetAmount), asset, trimZeros: true })}
           </Styled.AmountLabel>
-        </Styled.Col>
+        </div>
       )}
-
-      {!!priceLabel && (
-        <Styled.Col>
-          <Styled.PriceLabel size={size}>{priceLabel}</Styled.PriceLabel>
-        </Styled.Col>
-      )}
-    </Styled.Wrapper>
+    </div>
   )
 }

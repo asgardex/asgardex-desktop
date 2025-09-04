@@ -30,7 +30,20 @@ const ledger: LedgerMessages = {
   'ledger.legacyformat.note':
     '원장은 모든 출력 주소를 "레거시" 형식으로 표시하지만 "CashAddr" 형식으로는 표시하지 않습니다.',
   'ledger.legacyformat.show': '주소 표시',
-  'ledger.legacyformat.hide': '주소 숨기기'
+  'ledger.legacyformat.hide': '주소 숨기기',
+  'ledger.connect.title': '레저 연결',
+  'ledger.connect.instruction': '레저 장치와 연결할 블록체인 네트워크를 선택하세요',
+  'ledger.connect.success.title': '레저 연결됨',
+  'ledger.connect.success.description': '{chain}에 성공적으로 연결되었습니다',
+  'ledger.connect.success.redirect': '{countdown}초 후 지갑으로 리디렉션됩니다...',
+  'ledger.connect.button.continue': '지금 계속',
+  'ledger.detect.title': '레저 장치 감지 중',
+  'ledger.detect.checking': '{chain} 확인 중...',
+  'ledger.derivation.path': '파생 경로',
+  'ledger.derivation.legacy': '레거시 (MEW)',
+  'ledger.derivation.metamask': '메타마스크',
+  'ledger.connect.chain': '{chain} 연결',
+  'ledger.connect.select': '체인 선택'
 }
 
 export default ledger

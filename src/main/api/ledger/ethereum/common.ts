@@ -1,7 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 import { AssetETH, ETHChain, ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { EtherscanProviderV2 } from '@xchainjs/xchain-evm-providers'
-import { ethers } from 'ethers'
+import { JsonRpcProvider, Network as EthersNetwork } from 'ethers'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
@@ -9,12 +9,9 @@ export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 
 export const ETHAddress = '0x0000000000000000000000000000000000000000'
 
-export const ETH_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
-const network = ethers.providers.getNetwork('sepolia')
-export const ETH_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(
-  'https://ethereum-sepolia-rpc.publicnode.com',
-  network
-)
+export const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
+const network = EthersNetwork.from('sepolia')
+export const ETH_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com', network)
 
 // Helper function to create ethProviders
 export const createEthProviders = (apiKey: string | undefined) => {

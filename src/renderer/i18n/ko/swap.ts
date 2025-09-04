@@ -15,7 +15,6 @@ const swap: SwapMessages = {
   'swap.slip.tolerance': '슬리피지 허용 범위',
   'swap.slip.tolerance.info':
     '퍼센트가 높을수록 더 많은 슬리피지를 허용하게 됩니다. 더 큰 슬리피지 허용 범위는 스왑이 중단되지 않도록 예상 수수료를 포함한 더 넓은 범위를 포함합니다.',
-  'swap.slip.tolerance.ledger-disabled.info': 'Ledger와의 기술적 문제로 인해 슬리피지 허용 범위가 비활성화되었습니다.',
   'swap.streaming.interval': '간격',
   'swap.streaming.title': '스트리밍 상태',
   'swap.streaming.interval.info': '스왑 간의 간격, 10블록은 1분 간격입니다.',
@@ -34,7 +33,8 @@ const swap: SwapMessages = {
   'swap.min.amount.info': '인바운드 및 아웃바운드 트랜잭션의 모든 수수료를 충당하기 위한 최소 스왑 금액입니다.',
   'swap.min.result.info':
     '선택한 {tolerance}% 슬리피지 허용 범위를 기반으로 스왑이 보호됩니다. 가격이 {tolerance}% 이상 불리하게 변할 경우 스왑 트랜잭션은 확인 전에 되돌려집니다.',
-  'swap.min.result.protected': '보호된 스왑 결과'
+  'swap.min.result.protected': '보호된 스왑 결과',
+  'swap.address.evm.warning': '스마트 컨트랙트 주소로 스왑하지 마세요'
 }
 
 export default swap

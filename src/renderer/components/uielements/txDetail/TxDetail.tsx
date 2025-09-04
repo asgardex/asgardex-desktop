@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
@@ -10,15 +10,7 @@ import { Fees } from '../fees'
 import * as Styled from './TxDetail.styles'
 import { ActionProps } from './types'
 
-export const TxDetail: React.FC<ActionProps> = ({
-  className,
-  outgos,
-  incomes,
-  fees = [],
-  slip,
-  network,
-  isDesktopView
-}) => {
+export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network, isDesktopView }: ActionProps) => {
   const renderIncomes = useMemo(
     () =>
       FP.pipe(
@@ -28,7 +20,7 @@ export const TxDetail: React.FC<ActionProps> = ({
             {isDesktopView && <Styled.AssetIcon size="xsmall" asset={asset} network={network} />}
             <Styled.InOutValue>
               {formatAssetAmountCurrency({
-                trimZeros: false,
+                trimZeros: true,
                 amount: baseToAsset(
                   isCacaoAsset(asset) ? baseAmount(amount.amount().toNumber(), CACAO_DECIMAL) : amount
                 ),
@@ -51,7 +43,7 @@ export const TxDetail: React.FC<ActionProps> = ({
               {isDesktopView && <Styled.AssetIcon size="xsmall" asset={asset} network={network} />}
               <Styled.InOutValue>
                 {formatAssetAmountCurrency({
-                  trimZeros: false,
+                  trimZeros: true,
                   amount: baseToAsset(
                     isCacaoAsset(asset) ? baseAmount(amount.amount().toNumber(), CACAO_DECIMAL) : amount
                   ),

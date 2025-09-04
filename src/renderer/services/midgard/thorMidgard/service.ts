@@ -12,7 +12,7 @@ import { liveData } from '../../../helpers/rx/liveData'
 import { triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
 import { network$ } from '../../app/service'
 import { MIDGARD_MAX_RETRY } from '../../const'
-import { getStorageState$, modifyStorage, getStorageState } from '../../storage/common'
+import { midgard$, modifyStorage, getStorageState } from '../../storage/common'
 import { inboundAddressesShared$, loadInboundAddresses$ } from '../../thorchain'
 import { ErrorId } from '../../wallet/types'
 import {
@@ -37,14 +37,8 @@ const { stream$: reloadMidgardUrl$, trigger: reloadMidgardUrl } = triggerStream(
  * Stream of Midgard urls (from storage)
  */
 const getMidgardUrl$ = FP.pipe(
-  Rx.combineLatest([getStorageState$, reloadMidgardUrl$]),
-  RxOp.map(([storage]) =>
-    FP.pipe(
-      storage,
-      O.map(({ midgard: midgardUrls }) => midgardUrls),
-      O.getOrElse(() => DEFAULT_MIDGARD_URLS)
-    )
-  ),
+  Rx.combineLatest([midgard$, reloadMidgardUrl$]),
+  RxOp.map(([midgard, _]) => midgard),
   RxOp.distinctUntilChanged(eqApiUrls.equals)
 )
 

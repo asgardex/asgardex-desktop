@@ -8,8 +8,8 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { SOLChain } from '@xchainjs/xchain-solana'
-import { isTCYAsset } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
+import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
+import { AnyAsset, AssetType, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
 import { AssetSOLUSDC } from '../../../../const'
@@ -20,7 +20,7 @@ import {
   isDogeAsset,
   isEthAsset,
   isLtcAsset,
-  isRuneNativeAsset,
+  isRuneAsset,
   isTgtERC20Asset,
   isAtomAsset,
   isArbAsset,
@@ -29,16 +29,20 @@ import {
   iconUrlInAVAXERC20Whitelist,
   iconUrlInBSCERC20Whitelist,
   isCacaoAsset,
+  isRujiAsset,
   isMayaAsset,
   isDashAsset,
   isKujiAsset,
   isXrdAsset,
+  isZecAsset,
   isUskAsset,
   iconUrlInARBERC20Whitelist,
   isAethAsset,
   isSolAsset,
   isBaseAsset,
-  iconUrlInBASEERC20Whitelist
+  iconUrlInBASEERC20Whitelist,
+  isAdaAsset,
+  isXrpAsset
 } from '../../../../helpers/assetHelper'
 import {
   isArbChain,
@@ -66,11 +70,14 @@ import {
   usdpIcon,
   dashIcon,
   kujiIcon,
+  adaIcon,
   uskIcon,
   xrdIcon,
   solIcon,
   baseIcon,
-  tcyIcon
+  tcyIcon,
+  xrpIcon,
+  rujiIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -97,12 +104,15 @@ const chainIconMap = (asset: AnyAsset): string | null => {
       return bscIcon
     case SOLChain:
       return solIcon
+    case THORChain:
+      if (asset.type === AssetType.NATIVE || asset.type === AssetType.TRADE) return null
+      return runeIcon
     default:
       return null // return null if no chain matches
   }
 }
 
-export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = '', network }): JSX.Element => {
+export const AssetIcon = ({ asset, size = 'small', className = '', network }: Props): JSX.Element => {
   const imgUrl = useMemo(() => {
     // BTC
     if (isBtcAsset(asset)) {
@@ -126,8 +136,12 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       return bscIcon
     }
     // RUNE
-    if (isRuneNativeAsset(asset)) {
+    if (isRuneAsset(asset)) {
       return runeIcon
+    }
+    // RUJI
+    if (isRujiAsset(asset)) {
+      return rujiIcon
     }
     // TCY
     if (isTCYAsset(asset)) {
@@ -140,6 +154,14 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // Dash
     if (isDashAsset(asset)) {
       return dashIcon
+    }
+    // XRP
+    if (isXrpAsset(asset)) {
+      return xrpIcon
+    }
+    // ZEC
+    if (isZecAsset(asset)) {
+      return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/zcash/info/logo.png`
     }
     // LTC
     if (isLtcAsset(asset)) {
@@ -162,6 +184,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // KUJI
     if (isKujiAsset(asset)) {
       return kujiIcon
+    }
+    // ADA
+    if (isAdaAsset(asset)) {
+      return adaIcon
     }
     // XRD
     if (isXrdAsset(asset)) {

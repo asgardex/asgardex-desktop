@@ -7,8 +7,10 @@ import {
   privateData$,
   changePrivateData,
   clientNetwork$,
-  slipTolerance$,
-  changeSlipTolerance,
+  streamingSlipTolerance$,
+  changeStreamingSlipTolerance,
+  tradeSlipTolerance$,
+  changeTradeSlipTolerance,
   toggleCollapsedSetting,
   collapsedSettings$
 } from '../services/app/service'
@@ -21,8 +23,10 @@ type AppContextValue = {
   changePrivateData: (value: boolean) => void
   changeNetwork: ChangeNetworkHandler
   clientNetwork$: typeof clientNetwork$
-  slipTolerance$: typeof slipTolerance$
-  changeSlipTolerance: ChangeSlipToleranceHandler
+  streamingSlipTolerance$: typeof streamingSlipTolerance$
+  changeStreamingSlipTolerance: ChangeSlipToleranceHandler
+  tradeSlipTolerance$: typeof tradeSlipTolerance$
+  changeTradeSlipTolerance: ChangeSlipToleranceHandler
   collapsedSettings$: typeof collapsedSettings$
   toggleCollapsedSetting: ToggleCollapsableSetting
 }
@@ -33,15 +37,17 @@ const initialContext: AppContextValue = {
   changePrivateData,
   changeNetwork,
   clientNetwork$,
-  slipTolerance$,
-  changeSlipTolerance,
+  streamingSlipTolerance$,
+  changeStreamingSlipTolerance,
+  tradeSlipTolerance$,
+  changeTradeSlipTolerance,
   collapsedSettings$,
   toggleCollapsedSetting
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
 
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => (
+export const AppProvider = ({ children }: { children: React.ReactNode }): JSX.Element => (
   <AppContext.Provider value={initialContext}>{children}</AppContext.Provider>
 )
 

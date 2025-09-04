@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
 import { function as FP, option as O } from 'fp-ts'
@@ -13,7 +13,7 @@ export type Props = {
   network: Network
 }
 
-export const DepositAssets: React.FC<Props> = (props): JSX.Element => {
+export const DepositAssets = (props: Props): JSX.Element => {
   const { source: oSource, target, stepDescription, network } = props
 
   const hasSource = useMemo(() => FP.pipe(oSource, O.isSome), [oSource])
@@ -39,6 +39,37 @@ export const DepositAssets: React.FC<Props> = (props): JSX.Element => {
           {renderSource}
           <Styled.AssetData asset={target.asset} amount={target.amount} network={network} />
         </Styled.AssetsContainer>
+      </Styled.DataWrapper>
+    </>
+  )
+}
+
+export type claimProps = {
+  source: O.Option<C.AssetData>
+  stepDescription: string
+  network: Network
+}
+
+export const ClaimAsset = (props: claimProps): JSX.Element => {
+  const { source: oSource, stepDescription, network } = props
+
+  const renderSource = useMemo(
+    () =>
+      FP.pipe(
+        oSource,
+        O.map(({ asset, amount }) => (
+          <Styled.AssetData key="source-data" asset={asset} amount={amount} network={network} />
+        )),
+        O.getOrElse(() => <></>)
+      ),
+    [oSource, network]
+  )
+
+  return (
+    <>
+      <Styled.StepLabel>{stepDescription}</Styled.StepLabel>
+      <Styled.DataWrapper>
+        <Styled.AssetsContainer>{renderSource}</Styled.AssetsContainer>
       </Styled.DataWrapper>
     </>
   )

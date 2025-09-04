@@ -1,7 +1,7 @@
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { InformationCircleIcon } from '@heroicons/react/20/solid'
 import clsx from 'clsx'
 
-import { Tooltip } from '../common/Common.styles'
+import { Tooltip } from '../tooltip'
 
 type Color = 'primary' | 'warning' | 'error' | 'neutral'
 
@@ -18,8 +18,8 @@ export type Props = {
   className?: string
 }
 
-export const InfoIcon: React.FC<Props> = ({ tooltip, color = 'primary', className = '' }) => (
+export const InfoIcon = ({ tooltip, color = 'primary', className = '' }: Props) => (
   <Tooltip title={tooltip}>
-    <InformationCircleIcon className={clsx(iconColor[color], 'h-[20px] w-[20px]', className)} />
+    <InformationCircleIcon className={clsx(iconColor[color], 'h-4 w-4', className)} />
   </Tooltip>
 )

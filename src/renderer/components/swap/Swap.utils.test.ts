@@ -360,12 +360,13 @@ describe('components/swap/utils', () => {
   describe('maxAmountToSwapMax1e8', () => {
     it('balance to swap - with estimated fees', () => {
       const params = {
-        balanceAmountMax1e8: baseAmount(5000),
+        balanceAmountMax1e8: baseAmount(50000), // Increased to account for UTXO safety buffer
         asset: AssetBTC,
         feeAmount: baseAmount(100)
       }
       const result = maxAmountToSwapMax1e8(params)
-      expect(eqBaseAmount.equals(result, baseAmount(4000))).toBeTruthy()
+      // Expect accurate calculation: 50000 - 100 - 10000 (UTXO safety buffer) = 39900
+      expect(eqBaseAmount.equals(result, baseAmount(39900))).toBeTruthy()
     })
 
     it('balance to swap - with 1e18 based estimated fees', () => {
@@ -375,7 +376,9 @@ describe('components/swap/utils', () => {
         feeAmount: baseAmount(100000000000, 18)
       }
       const result = maxAmountToSwapMax1e8(params)
-      expect(eqBaseAmount.equals(result, baseAmount(4000))).toBeTruthy()
+      // 100000000000 with 18 decimals = 10 sats when converted to max1e8
+      // So: 5000 - 10 = 4990 (no more 1000-unit rounding)
+      expect(eqBaseAmount.equals(result, baseAmount(4990))).toBeTruthy()
     })
 
     it('balance is less than fee - with 1e18 based estimated fees', () => {
@@ -386,6 +389,17 @@ describe('components/swap/utils', () => {
       }
       const result = maxAmountToSwapMax1e8(params)
       expect(eqBaseAmount.equals(result, baseAmount(0))).toBeTruthy()
+    })
+
+    it('non-UTXO asset should not have safety buffer applied', () => {
+      const params = {
+        balanceAmountMax1e8: baseAmount(5000),
+        asset: AssetETH, // Non-UTXO chain
+        feeAmount: baseAmount(100)
+      }
+      const result = maxAmountToSwapMax1e8(params)
+      // Expect calculation without safety buffer: 5000 - 100 = 4900
+      expect(eqBaseAmount.equals(result, baseAmount(4900))).toBeTruthy()
     })
 
     it('no chain asset - no change', () => {

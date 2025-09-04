@@ -1,0 +1,19 @@
+name: Notify Website on Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read # Restrict to read-only access for repo contents
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger website update
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PAT }}
+          repository: asgardex/asgardex-website
+          event-type: desktop-release

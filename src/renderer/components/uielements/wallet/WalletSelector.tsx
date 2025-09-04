@@ -1,6 +1,4 @@
-import React from 'react'
-
-import { Listbox } from '@headlessui/react'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -16,9 +14,13 @@ export type Props = {
   disabled?: boolean
 }
 
-export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
-  const { wallets, onChange, disabled = false, className = '', buttonClassName = '' } = props
-
+export const WalletSelector = ({
+  wallets,
+  onChange,
+  disabled = false,
+  className = '',
+  buttonClassName = ''
+}: Props): JSX.Element => {
   const oSelectedWallet = FP.pipe(
     wallets,
     // get selected wallet
@@ -39,10 +41,10 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
             onChange(id)
           }}>
           <div className={clsx('relative', className)}>
-            <Listbox.Button
+            <ListboxButton
               as="div"
               className={clsx(
-                'group flex cursor-pointer items-center',
+                'group flex cursor-pointer items-center rounded-lg',
                 'bg-bg0 py-2 pl-3 pr-10px dark:bg-bg0d',
                 'border border-solid border-gray0 dark:border-gray0d',
                 'font-main text-14 text-text0 dark:text-text0d',
@@ -58,10 +60,10 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
                   />
                 </>
               )}
-            </Listbox.Button>
-            <Listbox.Options
+            </ListboxButton>
+            <ListboxOptions
               className={clsx(
-                'absolute z-[2000] mt-0 max-h-60 w-full overflow-auto',
+                'absolute z-[2000] mt-0.5 max-h-60 w-full overflow-auto rounded-lg',
                 'border border-gray0 bg-bg0 focus:outline-none dark:border-gray0d dark:bg-bg0d'
               )}>
               {FP.pipe(
@@ -69,7 +71,7 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
                 A.map((wallet) => {
                   const selected = wallet.id === selectedWallet.id
                   return (
-                    <Listbox.Option
+                    <ListboxOption
                       disabled={wallet.id === selectedWallet.id}
                       className={({ selected }) =>
                         clsx(
@@ -84,11 +86,11 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
                       value={wallet}>
                       {wallet.name}
                       {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
-                    </Listbox.Option>
+                    </ListboxOption>
                   )
                 })
               )}
-            </Listbox.Options>
+            </ListboxOptions>
           </div>
         </Listbox>
       )

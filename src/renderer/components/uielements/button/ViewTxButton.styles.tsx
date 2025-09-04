@@ -1,5 +1,3 @@
-import React from 'react'
-
 import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
@@ -35,10 +33,4 @@ export const CopyLabel = styled(A.Typography.Text)`
     height: ${ICON_SIZE}px;
     width: ${ICON_SIZE}px;
   }
-`
-
-export const Text = styled(A.Typography.Text)`
-  color: ${palette('primary', 2)};
-  padding-right: 5px;
-  margin-left: 10px;
 `

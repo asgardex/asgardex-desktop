@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -48,7 +49,7 @@ import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
-import { InputBigNumber } from '../../../uielements/input'
+import { Input, InputBigNumber } from '../../../uielements/input'
 import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
@@ -81,7 +82,7 @@ type Props = {
   oPoolAddress: O.Option<PoolAddress>
 }
 
-export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
+export const SendFormCOSMOS = (props: Props): JSX.Element => {
   const {
     asset: { walletType, walletAccount, walletIndex, hdMode },
     trustedAddresses,
@@ -151,21 +152,18 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
+  // Balance of the asset being sent (e.g., USDC, ATOM, etc.)
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
-    // return balance of current asset
-    if (isChainAsset) {
-      return O.some(balance.amount)
-    }
-    // or check list of other assets to get balance
-    return FP.pipe(getAmountFromBalances(balances, balance.walletType, getChainAsset(asset.chain)), O.map(assetToBase))
-  }, [asset.chain, balance.amount, balance.walletType, balances, isChainAsset])
+    return O.some(balance.amount)
+  }, [balance.amount])
 
+  // Balance of the chain's native asset (used for paying transaction fees)
   const oChainAssetAmount: O.Option<BaseAmount> = useMemo(() => {
-    // return balance of current asset
     if (isChainAsset) {
+      // If sending the chain asset itself, use the same balance
       return O.some(balance.amount)
     }
-    // or check list of other assets to get balance
+    // Otherwise, get the chain asset balance from balances list
     return FP.pipe(getAmountFromBalances(balances, balance.walletType, chainAsset), O.map(assetToBase))
   }, [balance.amount, balance.walletType, balances, chainAsset, isChainAsset])
 
@@ -250,24 +248,22 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
 
+  const updateMatchedAddresses = useCallback(
+    (value: string) => {
+      const matched = Shared.filterMatchedAddresses(oSavedAddresses, value)
+      setMatchedAddresses(matched)
+    },
+    [oSavedAddresses]
+  )
+
   const handleSavedAddressSelect = useCallback(
     (value: string) => {
       form.setFieldsValue({ recipient: value })
-
       setRecipientAddress(value)
-
-      if (value) {
-        const matched = FP.pipe(
-          oSavedAddresses,
-          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
-        )
-        setMatchedAddresses(matched)
-      }
-
+      updateMatchedAddresses(value)
       addressValidator(undefined, value).catch(() => {})
     },
-    [form, addressValidator, oSavedAddresses]
+    [form, addressValidator, updateMatchedAddresses]
   )
 
   const renderSavedAddressesDropdown = useMemo(
@@ -279,9 +275,9 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
           (addresses) => (
             <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
               <Styled.CustomSelect
+                className="w-full"
                 placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
-                onChange={(value) => handleSavedAddressSelect(value as string)}
-                style={{ width: '100%' }}>
+                onChange={(value) => handleSavedAddressSelect(value as string)}>
                 {addresses.map((address) => (
                   <Styled.CustomSelect.Option key={address.address} value={address.address}>
                     {address.name}: {address.address}
@@ -298,31 +294,42 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const handleAddressInput = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
     setRecipientAddress(recipient)
-
-    if (recipient) {
-      const matched = FP.pipe(
-        oSavedAddresses,
-        O.map((addresses) => addresses.filter((address) => address.address.includes(recipient))),
-        O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
-      )
-      setMatchedAddresses(matched)
-    }
-  }, [form, oSavedAddresses])
+    updateMatchedAddresses(recipient)
+  }, [form, updateMatchedAddresses])
   // max amount for asset
   const maxAmount: BaseAmount = useMemo(() => {
-    const maxAmount = FP.pipe(
+    // Some chains require minimum account reserves that cannot be spent
+    const getMinimumAccountReserve = (): BaseAmount => {
+      switch (asset.chain) {
+        case XRPChain:
+          // XRP requires 1 minimum reserve - use correct decimal precision
+          return assetToBase(assetAmount(1, balance.amount.decimal))
+        default:
+          return baseAmount(0, balance.amount.decimal)
+      }
+    }
+
+    const accountReserve = getMinimumAccountReserve()
+
+    // If we have both fee and asset amount, calculate precise max
+    return FP.pipe(
       sequenceTOption(oFee, oAssetAmount),
       O.fold(
-        () => ZERO_BASE_AMOUNT,
+        () => {
+          // Fallback: if fee is unavailable, only subtract account reserve for chain assets
+          // Don't subtract arbitrary fee estimates to avoid mixing units
+          const fallbackMax = isChainAsset ? balance.amount.minus(accountReserve) : balance.amount
+          const zero = baseAmount(0, balance.amount.decimal)
+          return fallbackMax.gt(zero) ? fallbackMax : zero
+        },
         ([fee, assetAmount]) => {
-          const max = isChainAsset ? assetAmount.minus(fee) : balance.amount
+          const max = isChainAsset ? assetAmount.minus(fee).minus(accountReserve) : balance.amount
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }
       )
     )
-    return maxAmount
-  }, [oFee, oAssetAmount, isChainAsset, balance.amount])
+  }, [oFee, oAssetAmount, isChainAsset, balance.amount, asset.chain])
 
   // store maxAmountValue wrong CryptoAmount
   const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
@@ -456,16 +463,19 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderSlider = useMemo(() => {
-    const percentage = amountToSend
-      .amount()
-      .dividedBy(maxAmount.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
+    const maxAmountValue = maxAmount.amount()
+    const percentage = maxAmountValue.gt(0)
+      ? amountToSend
+          .amount()
+          .dividedBy(maxAmountValue)
+          .multipliedBy(100)
+          // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+          .decimalPlaces(0, BigNumber.ROUND_DOWN)
+          .toNumber()
+      : 0
 
     const setAmountToSendFromPercentValue = (percents: number) => {
-      const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
+      const amountFromPercentage = maxAmountValue.multipliedBy(percents / 100)
       return setAmountToSend(baseAmount(amountFromPercentage, maxAmount.decimal))
     }
 
@@ -474,10 +484,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         key={'Send percentage slider'}
         value={percentage}
         onChange={setAmountToSendFromPercentValue}
-        tooltipVisible
-        tipFormatter={(value) => `${value}%`}
-        withLabel
-        tooltipPlacement={'top'}
         disabled={isLoading}
       />
     )
@@ -632,7 +638,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             </Styled.CustomLabel>
 
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Styled.Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
+              <Input size="large" disabled={isLoading} onChange={handleAddressInput} />
             </Form.Item>
             {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
@@ -650,21 +656,17 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
               color="neutral"
               balance={{ amount: maxAmount, asset: asset }}
               maxDollarValue={
-                isMayaAsset(asset)
-                  ? RD.isSuccess(mayascanPriceInUsd)
-                    ? mayascanPriceInUsd.value
-                    : maxAmountPriceValue
-                  : maxAmountPriceValue
+                isMayaAsset(asset) && RD.isSuccess(mayascanPriceInUsd) ? mayascanPriceInUsd.value : maxAmountPriceValue
               }
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />
-            <div className="w-full px-20px pb-10px">{renderSlider}</div>
+            <div className="w-full py-2">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
+              <Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
           </Styled.SubForm>
           <FlatButton
@@ -689,15 +691,13 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
               </BaseButton>
 
               {showDetails && (
-                <>
-                  <ShowDetails
-                    recipient={recipientAddress}
-                    amountLabel={amountLabel}
-                    priceFeeLabel={priceFeeLabel}
-                    currentMemo={currentMemo}
-                    asset={asset}
-                  />
-                </>
+                <ShowDetails
+                  recipient={recipientAddress}
+                  amountLabel={amountLabel}
+                  priceFeeLabel={priceFeeLabel}
+                  currentMemo={currentMemo}
+                  asset={asset}
+                />
               )}
             </div>
           </div>

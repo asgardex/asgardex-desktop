@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
@@ -18,9 +16,14 @@ export type Props = {
   onOk?: FP.Lazy<void>
 }
 
-export const QRCodeModal: React.FC<Props> = (props): JSX.Element => {
-  const { asset, address, network, onOk = FP.constVoid, onCancel = FP.constVoid, visible = false } = props
-
+export const QRCodeModal = ({
+  asset,
+  address,
+  network,
+  visible = false,
+  onOk = FP.constVoid,
+  onCancel = FP.constVoid
+}: Props): JSX.Element => {
   const intl = useIntl()
 
   return (

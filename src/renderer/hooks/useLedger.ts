@@ -26,7 +26,7 @@ export const useLedger = (chain: Chain, id: KeystoreId) => {
     () => removeLedgerAddress({ id, chain, network }),
     [removeLedgerAddress, chain, network, id]
   )
-  const [address] = useObservableState<O.Option<WalletAddress>>(
+  const [address] = useObservableState(
     () =>
       FP.pipe(
         getLedgerAddress$(chain),

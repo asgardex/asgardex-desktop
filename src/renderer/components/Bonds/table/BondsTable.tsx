@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { TvIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ColumnDef, ExpandedState } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
-import { ColumnType } from 'antd/lib/table'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -24,13 +24,16 @@ import {
   Providers as MayaProviders
 } from '../../../services/mayachain/types'
 import { NodeInfo as ThorNodeInfo, NodeInfos as ThorNodeInfos, Providers } from '../../../services/thorchain/types'
+import { FixmeType } from '../../../types/asgardex'
 import { WalletAddressInfo } from '../../../views/bonds/types'
 import { ConfirmationModal } from '../../modal/confirmation'
+import { Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton, TextButton } from '../../uielements/button'
-import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
+import { ExternalLinkIcon } from '../../uielements/common/Common.styles'
+import { Label } from '../../uielements/label'
+import { Tooltip } from '../../uielements/tooltip'
 import { BondProviderInfo } from './BondProviderInfo'
-import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
 
 type Props = {
@@ -48,13 +51,7 @@ type Props = {
   walletAddresses: Record<'THOR' | 'MAYA', WalletAddressInfo[]>
 }
 
-interface CustomExpandIconProps {
-  expanded: boolean
-  onExpand: (record: string, event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void
-  record: string
-}
-
-export const BondsTable: React.FC<Props> = ({
+export const BondsTable = ({
   nodes,
   protocol,
   watchlist = [],
@@ -65,9 +62,8 @@ export const BondsTable: React.FC<Props> = ({
   goToNode,
   goToAction,
   walletAddresses,
-  loading = false,
-  className
-}) => {
+  loading = false
+}: Props) => {
   const intl = useIntl()
   const { MINIMUMBONDINRUNE: minBondInRune } = useMimirConstants(['MINIMUMBONDINRUNE'])
   const [nodeToRemove, setNodeToRemove] = useState<O.Option<Address>>(O.none)
@@ -88,124 +84,131 @@ export const BondsTable: React.FC<Props> = ({
     [walletAddresses]
   )
 
-  // Common columns for both THORChain and MayaChain
-  const baseColumns: ColumnType<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
+  const baseColumns: ColumnDef<ThorNodeInfo | MayaNodeInfo, FixmeType>[] = useMemo(
     () => [
       {
-        key: 'watch',
-        width: 40,
-        title: '',
-        render: (_, { address }) => (
-          <H.Watchlist
-            addWatchlist={() => {
-              addWatchlist(address, network)
-            }}
-          />
+        accessorKey: 'watch',
+        header: '',
+        cell: ({ row }) => {
+          return (
+            <div className="flex items-center justify-around space-x-2">
+              {row.original.bondProviders.providers.length > 0 && (
+                <div className="flex items-center justify-center" onClick={() => row.toggleExpanded()}>
+                  <ChevronRightIcon
+                    className={clsx(
+                      'mt-0 w-5 h-5 stroke-turquoise cursor-pointer',
+                      row.getIsExpanded() ? 'rotate-90' : 'rotate-0'
+                    )}
+                  />
+                </div>
+              )}
+              <H.Watchlist
+                addWatchlist={() => {
+                  addWatchlist(row.original.address, network)
+                }}
+              />
+              <H.Delete
+                deleteNode={() => {
+                  setNodeToRemove(O.some(row.original.address))
+                }}
+              />
+            </div>
+          )
+        },
+        enableSorting: false,
+        size: 90
+      },
+      {
+        accessorKey: 'node',
+        header: intl.formatMessage({ id: 'bonds.node' }),
+        cell: ({ row }) => <H.NodeAddress network={network} address={row.original.address} />,
+        size: 140,
+        enableSorting: false
+      },
+      {
+        accessorKey: 'status',
+        size: 100,
+        header: () => (
+          <Label align="center" color="gray">
+            {intl.formatMessage({ id: 'bonds.status' })}
+          </Label>
         ),
-        align: 'right'
-      },
-      {
-        key: 'remove',
-        width: 40,
-        title: '',
-        render: (_, { address }) => (
-          <H.Delete
-            deleteNode={() => {
-              setNodeToRemove(O.some(address))
-            }}
-          />
+        cell: ({ row }) => (
+          <div className="flex items-center justify-between">
+            <H.Status data={row.original} />
+            <ExternalLinkIcon
+              className="w-5 h-5 text-text1 dark:text-text1d"
+              onClick={() => goToNode(row.original.address)}
+            />
+          </div>
         ),
-        align: 'right'
-      },
-      {
-        key: 'node',
-        title: intl.formatMessage({ id: 'bonds.node' }),
-        dataIndex: 'address',
-        render: (_, { address }) => <H.NodeAddress network={network} address={address} />,
-        align: 'left'
-      },
-      {
-        key: 'status',
-        width: 100,
-        title: intl.formatMessage({ id: 'bonds.status' }),
-        render: (_, data) => <H.Status data={data} />,
-        responsive: ['sm'],
-        align: 'center'
-      },
-      {
-        key: 'info',
-        width: 40,
-        title: '',
-        render: (_, { address }) => <ExternalLinkIcon onClick={() => goToNode(address)} />,
-        responsive: ['md'],
-        align: 'center'
+        enableSorting: false
       }
     ],
-    [intl, network, addWatchlist, goToNode]
+    [addWatchlist, goToNode, intl, network]
   )
 
-  // THORChain-specific columns
-  const thorColumns: ColumnType<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
+  const thorColumns: ColumnDef<ThorNodeInfo | MayaNodeInfo, FixmeType>[] = useMemo(
     () => [
       ...baseColumns,
       {
-        key: 'bond',
-        width: 150,
-        title: intl.formatMessage({ id: 'bonds.bond' }),
-        render: (_, data) => <H.BondValue data={data} />,
-        align: 'right'
+        accessorKey: 'bond',
+        size: 100,
+        header: intl.formatMessage({ id: 'bonds.bond' }),
+        cell: ({ row }) => <H.BondValue data={row.original} />,
+        enableSorting: false
       },
       {
-        key: 'award',
-        width: 150,
-        title: intl.formatMessage({ id: 'bonds.award' }),
-        align: 'right',
-        render: (_, data) => <H.AwardValue data={data} />
+        accessorKey: 'award',
+        size: 100,
+        header: intl.formatMessage({ id: 'bonds.award' }),
+        cell: ({ row }) => <H.AwardValue data={row.original} />,
+        enableSorting: false
       }
     ],
     [baseColumns, intl]
   )
 
-  // MayaChain-specific columns with nested Pools
-  const mayaColumns: ColumnType<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
+  const mayaColumns: ColumnDef<ThorNodeInfo | MayaNodeInfo, FixmeType>[] = useMemo(
     () => [
       ...baseColumns,
       {
-        key: 'bond',
-        width: 150,
-        title: intl.formatMessage({ id: 'bonds.bond' }),
-        render: (_, data) => <H.BondValueMaya data={data} />,
-        align: 'right'
+        accessorKey: 'bond',
+        size: 150,
+        header: intl.formatMessage({ id: 'bonds.bond' }),
+        cell: ({ row }) => <H.BondValueMaya data={row.original} />,
+        enableSorting: false
       },
       {
-        key: 'pools',
-        width: 200,
-        title: 'Bonded Pools',
-        render: (_, { bondProviders }: ThorNodeInfo | MayaNodeInfo) => {
+        accessorKey: 'pools',
+        size: 160,
+        header: 'Bonded Pools',
+        cell: ({ row }) => {
           // Collect all pools from all providers and deduplicate them
-          const allPools = (bondProviders.providers as MayaProviders[]).flatMap((provider) =>
+          const allPools = (row.original.bondProviders.providers as MayaProviders[]).flatMap((provider) =>
             provider.pools.map((pool) => assetToString(pool.asset))
           )
           const uniquePools = [...new Set(allPools)]
 
           return (
-            <div className="flex flex-row items-center justify-end space-x-2">
+            <div className="flex flex-row items-center justify-end space-x-1">
               {uniquePools.map((assetPool) => (
                 <AssetIcon
                   key={assetPool}
                   asset={getChainAsset(assetPool.split('.')[0])}
-                  size="small"
+                  size="xsmall"
                   network={network}
                 />
               ))}
             </div>
           )
         },
-        align: 'right'
+        enableSorting: false
       }
     ],
     [baseColumns, intl, network]
   )
+
   const columns = protocol === THORChain ? thorColumns : mayaColumns
 
   const networkPrefix = network === 'mainnet' ? '' : 's'
@@ -220,15 +223,21 @@ export const BondsTable: React.FC<Props> = ({
   )
 
   const [matchedNodeAddress, setMatchedNodeAddress] = useState<string[]>([])
-  const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([])
+  const [expanded, setExpanded] = useState<ExpandedState>({})
   const [collapseAll, setCollapseAll] = useState(false)
 
   const handleCollapseAll = useCallback(() => {
     if (collapseAll) {
-      setExpandedRowKeys([])
+      setExpanded({})
     } else {
-      const nodeAddy = nodes.map((node) => node.address)
-      setExpandedRowKeys(nodeAddy)
+      const expandKeys = nodes.reduce(
+        (acc, node) => ({
+          ...acc,
+          [node.address]: true
+        }),
+        {}
+      )
+      setExpanded(expandKeys)
     }
     setCollapseAll(!collapseAll)
   }, [collapseAll, nodes])
@@ -256,7 +265,14 @@ export const BondsTable: React.FC<Props> = ({
       }
 
       setMatchedNodeAddress(matchedKeys)
-      setExpandedRowKeys(matchedKeys)
+      const expandKeys = matchedKeys.reduce(
+        (acc, addy) => ({
+          ...acc,
+          [addy]: true
+        }),
+        {}
+      )
+      setExpanded(expandKeys)
     }
 
     updateMatchedNodes(nodes)
@@ -271,26 +287,18 @@ export const BondsTable: React.FC<Props> = ({
       onClose: () => setNodeToRemove(O.none),
       onSuccess: () => removeNode(nodeAddress),
       content: (
-        <Styled.ConfirmationModalText>
+        <Label size="big">
           <FormattedMessage
             id="bonds.node.removeMessage"
             values={{
-              node: <Styled.ConfirmationModalAddress>{nodeAddress}</Styled.ConfirmationModalAddress>
+              node: <span className="text-16 font-bold font-mainBold">{nodeAddress}</span>
             }}
           />
-        </Styled.ConfirmationModalText>
+        </Label>
       ),
       visible: !!nodeAddress
     }
   }, [nodeToRemove, removeNode])
-
-  const CustomExpandIcon: React.FC<CustomExpandIconProps> = ({ expanded, onExpand, record }) => (
-    <div className="flex items-center justify-center" onClick={(e) => onExpand(record, e)}>
-      <ChevronRightIcon
-        className={clsx('mt-0 w-5 h-5 stroke-turquoise cursor-pointer', expanded ? 'rotate-90' : 'rotate-0')}
-      />
-    </div>
-  )
 
   const renderSubWalletType = useCallback(
     (bondAddress: string) => {
@@ -307,11 +315,17 @@ export const BondsTable: React.FC<Props> = ({
         <div className="flex w-full justify-between !text-11 text-text2 dark:text-text2d">
           {walletTypeLabel !== 'Not a wallet address' ? (
             <>
-              <Styled.TextLabel className="!text-11">{intl.formatMessage({ id: 'common.owner' })}</Styled.TextLabel>
-              <Styled.TextLabel className="!text-end !text-11">{walletTypeLabel}</Styled.TextLabel>
+              <Label size="small" textTransform="uppercase">
+                {intl.formatMessage({ id: 'common.owner' })}
+              </Label>
+              <Label size="small" align="right" textTransform="uppercase">
+                {walletTypeLabel}
+              </Label>
             </>
           ) : (
-            <Styled.TextLabel className="!text-11">{walletTypeLabel}</Styled.TextLabel>
+            <Label size="small" textTransform="uppercase">
+              {walletTypeLabel}
+            </Label>
           )}
         </div>
       )
@@ -342,13 +356,13 @@ export const BondsTable: React.FC<Props> = ({
       return (
         <div className="flex flex-grow flex-col">
           <div className="mt-4 w-full">
-            <div className="mt-2 flex items-center justify-between">
-              <Styled.TextLabel className="!text-11">
+            <div className="flex items-center justify-between">
+              <Label size="small" textTransform="uppercase">
                 {intl.formatMessage({ id: 'bonds.bondProvider' })}
-              </Styled.TextLabel>
-              <span className="!text-14 lowercase text-text2 dark:text-text2d">
+              </Label>
+              <Label className="!w-auto" textTransform="lowercase" color="gray">
                 {truncateAddress(bondAddress, protocol, network)}
-              </span>
+              </Label>
             </div>
             <div className="mt-2 flex items-center justify-between">{renderSubWalletType(bondAddress)}</div>
           </div>
@@ -401,17 +415,20 @@ export const BondsTable: React.FC<Props> = ({
             : intl.formatMessage({ id: 'common.expandAll' })}
         </BaseButton>
       </div>
-      <Styled.Table
-        className={className}
-        columns={columns}
-        dataSource={nodes.map((node) => ({ ...node, key: node.address }))}
-        loading={loading}
-        expandable={{
-          expandedRowRender: (record) => {
+      <div className="p-2">
+        <Table
+          loading={loading}
+          columns={columns}
+          data={nodes}
+          expandable
+          expanded={expanded}
+          setExpanded={setExpanded}
+          getRowId={(row) => row.address}
+          renderSubRow={(record) => {
             if (protocol === THORChain) {
               const thorRecord = record as ThorNodeInfo
               return (
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                <div className="p-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                   {thorRecord.bondProviders.providers.map((provider: Providers, index: number) => {
                     const isMonitoring = watchlist.includes(provider.bondAddress)
                     const isMyAddy = isMyAddress(provider.bondAddress)
@@ -426,14 +443,14 @@ export const BondsTable: React.FC<Props> = ({
                           { 'bg-turquoise/20': isMyAddy }
                         )}>
                         <div className="flex items-center justify-between">
-                          <Styled.TextLabel className="!text-18">
+                          <Label size="large" textTransform="uppercase">
                             {formatAssetAmountCurrency({
                               asset: AssetRuneNative,
                               amount: baseToAsset(provider.bond),
                               trimZeros: true,
                               decimal: 0
                             })}
-                          </Styled.TextLabel>
+                          </Label>
                           {isMonitoring ? (
                             <Tooltip title="Remove this bond provider from the watch list">
                               <RemoveIcon
@@ -467,7 +484,7 @@ export const BondsTable: React.FC<Props> = ({
             } else {
               const mayaRecord = record as MayaNodeInfo
               return (
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                <div className="p-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                   {mayaRecord.bondProviders.providers.map((provider: MayaProviders, index: number) => (
                     <BondProviderInfo
                       key={`${record.address}-${index}`}
@@ -489,20 +506,9 @@ export const BondsTable: React.FC<Props> = ({
                 </div>
               )
             }
-          },
-          rowExpandable: (record) => record.bondProviders.providers.length > 0,
-          expandedRowKeys: expandedRowKeys,
-          expandIcon: ({ expanded, onExpand, record }) =>
-            CustomExpandIcon({ expanded, onExpand, record: record.address }),
-          onExpand: (_, record) => {
-            if (expandedRowKeys.includes(record)) {
-              setExpandedRowKeys((prevKeys) => prevKeys.filter((key) => key !== record))
-            } else {
-              setExpandedRowKeys((prevKeys) => [...prevKeys, record])
-            }
-          }
-        }}
-      />
+          }}
+        />
+      </div>
       <ConfirmationModal {...removeConfirmationProps} />
     </>
   )

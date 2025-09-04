@@ -1,11 +1,12 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { CpuChipIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
 import { useIntl } from 'react-intl'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { KeystoreId } from '../../../../shared/api/types'
 import { emptyString } from '../../../helpers/stringHelper'
@@ -24,7 +25,7 @@ import {
 import { isLocked, getWalletName } from '../../../services/wallet/util'
 import { RemoveWalletConfirmationModal } from '../../modal/confirmation/RemoveWalletConfirmationModal'
 import { BackLinkButton, BorderButton, FlatButton } from '../../uielements/button'
-import { InputPasswordTW } from '../../uielements/input'
+import { InputPassword } from '../../uielements/input'
 import { WalletSelector } from '../../uielements/wallet'
 
 type FormData = {
@@ -39,14 +40,13 @@ export type Props = {
   wallets: KeystoreWalletsUI
 }
 
-export const UnlockForm = (props: Props): JSX.Element => {
-  const { keystore, unlock, removeKeystore, changeKeystore$, wallets } = props
-
+export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, wallets }: Props) => {
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const params = useParams()
+
   const intl = useIntl()
+
   const {
     register,
     formState: { errors },
@@ -61,13 +61,21 @@ export const UnlockForm = (props: Props): JSX.Element => {
   // Re-direct to previous view after unlocking the wallet
   useEffect(() => {
     if (!isLocked(keystore) && validPassword) {
-      FP.pipe(
-        getUrlSearchParam(location.search, walletRoutes.REDIRECT_PARAMETER_NAME),
-        O.alt(() => O.some((location.state as ReferrerState)?.referrer || walletRoutes.assets.template)),
-        O.map((path) => navigate(path))
-      )
+      // Check if the current location is related to the swap screen (e.g., tradeAssets or interact with swap type)
+      const isFromAssetScreen = (location.state as ReferrerState)?.referrer.includes('wallet/assets')
+
+      if (isFromAssetScreen) {
+        // Redirect to /assets for swap screen
+        navigate(walletRoutes.assets.template)
+      } else {
+        FP.pipe(
+          getUrlSearchParam(location.search, walletRoutes.REDIRECT_PARAMETER_NAME),
+          O.alt(() => O.some((location.state as ReferrerState)?.referrer || walletRoutes.assets.template)),
+          O.map((path) => navigate(path))
+        )
+      }
     }
-  }, [keystore, location, navigate, params, validPassword])
+  }, [keystore, location, navigate, validPassword])
 
   const submitForm = useCallback(
     async ({ password }: FormData) => {
@@ -140,7 +148,15 @@ export const UnlockForm = (props: Props): JSX.Element => {
   }, [navigate])
 
   const importWalletHandler = useCallback(() => {
-    navigate(walletRoutes.imports.base.path())
+    navigate(walletRoutes.imports.keystore.path())
+  }, [navigate])
+
+  const importPhraseHandler = useCallback(() => {
+    navigate(walletRoutes.imports.phrase.path())
+  }, [navigate])
+
+  const useLedgerOnlyHandler = useCallback(() => {
+    navigate(walletRoutes.ledgerChainSelect.path())
   }, [navigate])
 
   const renderChangeWalletError = useMemo(
@@ -164,15 +180,15 @@ export const UnlockForm = (props: Props): JSX.Element => {
 
   return (
     <>
-      <div className="relative mb-30px flex justify-center">
-        <BackLinkButton className="absolute left-0 top-0" />
+      <div className="mb-4">
+        <BackLinkButton />
       </div>
       <form className="flex flex-1 flex-col" onSubmit={handleSubmit(submitForm)}>
         <div
           className={clsx(
             'flex h-full flex-col items-center justify-between',
-            'bg-bg0 dark:bg-bg0d',
-            'pl-30px pr-30px pt-[45px] pb-[35px] sm:pb-[70px] sm:pl-[60px] sm:pr-[60px] sm:pt-[90px]'
+            'bg-bg0 dark:bg-bg0d rounded-lg',
+            'px-30px pt-[45px] pb-[35px] sm:pb-[70px] sm:px-[60px] sm:pt-[90px]'
           )}>
           <div className="w-full max-w-[320px] space-y-3">
             <div className="flex flex-col">
@@ -188,12 +204,12 @@ export const UnlockForm = (props: Props): JSX.Element => {
               wallets={wallets}
               onChange={changeWalletHandler}
               disabled={RD.isPending(changeWalletState)}
-              className="mb-2 min-w-[200px] rounded-lg border border-solid border-gray1 dark:border-gray0d"
-              buttonClassName="rounded-lg !shadow-none !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
+              className="mb-2 min-w-[200px] rounded-lg"
+              buttonClassName="!shadow-none !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
             />
-            <InputPasswordTW
+            <InputPassword
               id="password"
-              className="mx-auto mb-20px flex h-10 w-full items-center justify-between rounded-lg border border-solid !border-gray1 pl-2 dark:!border-gray0d"
+              className="mx-auto mb-20px flex h-10 w-full items-center justify-between rounded-lg border border-solid !border-gray0 dark:!border-gray0d"
               inputClassName="!ring-0 w-full"
               {...register('password', { required: true })}
               placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
@@ -221,6 +237,15 @@ export const UnlockForm = (props: Props): JSX.Element => {
             </BorderButton>
             <div className="flex w-full flex-col items-center border-t border-solid border-gray1 dark:border-gray0d">
               <div className="flex w-full flex-col justify-between space-y-3 pt-4">
+                <BorderButton
+                  className="w-full min-w-[200px] flex items-center justify-center gap-2"
+                  size="normal"
+                  color="primary"
+                  onClick={useLedgerOnlyHandler}
+                  disabled={unlocking}>
+                  <CpuChipIcon width={16} height={16} />
+                  Use Only Ledger
+                </BorderButton>
                 {/* TODO: update locale */}
                 <h2 className="mb-2 w-full text-11 text-text2 dark:text-text2d">Don&apos;t you have a wallet yet?</h2>
                 <BorderButton
@@ -237,7 +262,15 @@ export const UnlockForm = (props: Props): JSX.Element => {
                   color="primary"
                   onClick={importWalletHandler}
                   disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.import' })}
+                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.keystore' })}
+                </BorderButton>
+                <BorderButton
+                  className="mr-20px w-full min-w-[200px] sm:mb-0"
+                  size="normal"
+                  color="primary"
+                  onClick={importPhraseHandler}
+                  disabled={unlocking}>
+                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
                 </BorderButton>
               </div>
 

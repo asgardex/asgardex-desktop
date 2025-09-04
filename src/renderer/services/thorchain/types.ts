@@ -5,12 +5,14 @@ import type * as TN from '@xchainjs/xchain-thornode'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { option as O } from 'fp-ts'
+import * as t from 'io-ts'
 import { IntlShape } from 'react-intl'
 import * as Rx from 'rxjs'
 
 import { NodeUrl } from '../../../shared/api/types'
 import { EnabledChain } from '../../../shared/utils/chain'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
+import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetsWithAmount1e8, AssetWithAmount1e8 } from '../../types/asgardex'
 import * as C from '../clients'
@@ -224,6 +226,32 @@ export type LiquidityProviderLD = LiveData<Error, O.Option<LiquidityProvider>>
 export type LiquidityProviderRD = RD.RemoteData<Error, O.Option<LiquidityProvider>>
 export type LiquidityProvidersRD = RD.RemoteData<Error, LiquidityProvider[]>
 
+export interface ApiTcyClaimResponse {
+  tcy_claimer: Array<{
+    asset: string
+    amount: string
+    l1_address: string
+  }>
+}
+
+export type TcyClaim = {
+  asset: AnyAsset
+  amount: BaseAmount
+  walletType: WalletType
+  l1Address?: Address
+}
+
+export type TcyClaimLD = LiveData<Error, TcyClaim[]>
+export type TcyClaimRD = RD.RemoteData<Error, TcyClaim[]>
+
+export type TcyStake = {
+  address?: Address
+  amount: BaseAmount
+}
+
+export type TcyStakeLD = LiveData<Error, TcyStake>
+export type TcyStakeRD = RD.RemoteData<Error, TcyStake>
+
 export type LiquidityProviderHasAsymAssets = { dexAsset: boolean; asset: boolean }
 export type LiquidityProviderHasAsymAssetsRD = RD.RemoteData<Error, LiquidityProviderHasAsymAssets>
 
@@ -264,6 +292,7 @@ export type TradeAccount = {
   lastAddHeight: O.Option<number>
   lastWithdrawHeight: O.Option<number>
   walletType: WalletType
+  protocol: Protocol
 }
 
 export type TradeAccountRD = RD.RemoteData<Error, TradeAccount[]>
@@ -332,3 +361,28 @@ export enum NodeStatusEnum {
   Ready = 'Ready',
   Disabled = 'Disabled'
 }
+
+export const erc20WhitelistTokenIO = t.type({
+  chainId: t.number,
+  address: t.string,
+  symbol: t.string,
+  name: t.string,
+  decimals: t.number,
+  logoURI: t.union([t.string, t.undefined, t.null])
+})
+
+export type ERC20WhitelistToken = t.TypeOf<typeof erc20WhitelistTokenIO>
+
+export const erc20WhitelistIO = t.partial({
+  tokens: t.array(erc20WhitelistTokenIO),
+  version: t.type({
+    major: t.number,
+    minor: t.number,
+    patch: t.number
+  }),
+  name: t.string,
+  timestamp: t.string,
+  keywords: t.array(t.string)
+})
+
+export type ERC20Whitelist = t.TypeOf<typeof erc20WhitelistIO>

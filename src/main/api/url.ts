@@ -35,6 +35,7 @@ const EXTERNALS_WHITELIST = [
   'testnet-rpc.ninerealms.com',
   'stagenet-rpc.ninerealms.com',
   'rpc.ninerealms.com',
+  'mayanode.mayachain.info',
   'testnet.thornode.thorchain.info',
   'stagenet-thornode.ninerealms.com',
   'stagenet-rpc.ninerealms.com',
@@ -51,11 +52,13 @@ const EXTERNALS_WHITELIST = [
   'insight.dash.org',
   'finder.kujira.network',
   'midgard.ninerealms.com',
+  'midgard.mayachain.com',
   'asgardex.com',
   'arbiscan.io',
   'mainnet.radixdlt.com',
   'dashboard.radixdlt.com',
-  'explorer.solana.com'
+  'explorer.solana.com',
+  'adastat.net'
 ]
 
 export const openExternal = (target: string) => {

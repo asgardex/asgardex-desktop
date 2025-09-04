@@ -1,5 +1,120 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.8 (2025-08-15)
+
+## Add
+
+- add restore wallet from phrase option [#872](https://github.com/asgardex/asgardex-desktop/pull/872)
+- add provider icon for trade assets [#862](https://github.com/asgardex/asgardex-desktop/pull/862)
+- add ledger only mode [#864](https://github.com/asgardex/asgardex-desktop/pull/864)
+
+## Update/Fixes
+
+- minor fixes and improvements [#876](https://github.com/asgardex/asgardex-desktop/pull/876)
+- cleanup for ledger only mode [#875](https://github.com/asgardex/asgardex-desktop/pull/875)
+- input migration [#873](https://github.com/asgardex/asgardex-desktop/pull/873)
+- fixed banner issue [#871](https://github.com/asgardex/asgardex-desktop/pull/871)
+- fix off-by-one error in dust threshold [#870](https://github.com/asgardex/asgardex-desktop/pull/870)
+- fix get pool [#868](https://github.com/asgardex/asgardex-desktop/pull/868)
+- tooltip migration [#867](https://github.com/asgardex/asgardex-desktop/pull/867)
+- antd row/col removal [#863](https://github.com/asgardex/asgardex-desktop/pull/863)
+- ui improvements [#862](https://github.com/asgardex/asgardex-desktop/pull/862)
+- radio migration [#861](https://github.com/asgardex/asgardex-desktop/pull/861)
+
+# 1.40.7 (2025-08-15)
+
+## Add
+
+- add mayachain trade assets [#855](https://github.com/asgardex/asgardex-desktop/pull/855)
+
+## Update/Fixes
+
+- copy label migration [#857](https://github.com/asgardex/asgardex-desktop/pull/857)
+- alert migration [#856](https://github.com/asgardex/asgardex-desktop/pull/856)
+- collapse migration [#854](https://github.com/asgardex/asgardex-desktop/pull/854)
+- spin migration [#853](https://github.com/asgardex/asgardex-desktop/pull/853)
+- filter menu removal [#852](https://github.com/asgardex/asgardex-desktop/pull/852)
+- Update Yarn Version [#851](https://github.com/asgardex/asgardex-desktop/pull/851)
+- merge maya eth and tc whitelist [#847](https://github.com/asgardex/asgardex-desktop/pull/847)
+- update warning and error view [#844](https://github.com/asgardex/asgardex-desktop/pull/844)
+
+# 1.40.6 (2025-07-29)
+
+## Add
+
+- Enhance TCY screen [#829](https://github.com/asgardex/asgardex-desktop/pull/829)
+- Update route logic on swap page [#830](https://github.com/asgardex/asgardex-desktop/pull/830)
+- Update default slip tolerance to 5% [#834](https://github.com/asgardex/asgardex-desktop/pull/834)
+
+## Update/Fixes
+
+- Fix white screen issues [#829](https://github.com/asgardex/asgardex-desktop/pull/829)
+- Update xchainjs deps [#831](https://github.com/asgardex/asgardex-desktop/pull/831)
+- Antd and styled components removal [#842](https://github.com/asgardex/asgardex-desktop/pull/842)
+- Enhanced error handling and messaging [#841](https://github.com/asgardex/asgardex-desktop/pull/841)
+
+# 1.40.5 (2025-07-19)
+
+## Add
+
+- Add Back button at no wallet view [#816](https://github.com/asgardex/asgardex-desktop/pull/816)
+- Complete Tcy claim / stake / unstake [#785](https://github.com/asgardex/asgardex-desktop/pull/785)
+
+## Update/Fixes
+
+- Fix Ledger Address verify function & HD deriv paths [#822](https://github.com/asgardex/asgardex-desktop/pull/822)
+- Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
+- Fix preview only swaps [#815](https://github.com/asgardex/asgardex-desktop/pull/815)
+- Migrate from antd to tanstack [#814](https://github.com/asgardex/asgardex-desktop/pull/814)
+
+# 1.40.4 (2025-07-3)
+
+## Add
+
+## Update/Fixes
+
+- Fix Ruji swaps [#808](https://github.com/asgardex/asgardex-desktop/pull/808)
+- Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
+
+# 1.40.3 (2025-06-28)
+
+## Add
+
+- Add Ripple [#781](https://github.com/asgardex/asgardex-desktop/pull/781)
+- Add tolerance adjustment to streaming params [#799](https://github.com/asgardex/asgardex-desktop/pull/799)
+- Add price of asset in Asset Detail [#787](https://github.com/asgardex/asgardex-desktop/pull/787)
+
+## Update/Fixes
+
+- Fix Ruji [#802](https://github.com/asgardex/asgardex-desktop/pull/802)
+- Fix target asset list [#803](https://github.com/asgardex/asgardex-desktop/pull/803)
+
+# 1.40.2 (2025-06-20)
+
+## Update/Fixes
+
+- Fix bundle conflict [#784](https://github.com/asgardex/asgardex-desktop/pull/784)
+- Update bonds route view [#783](https://github.com/asgardex/asgardex-desktop/pull/783)
+- update trade swap tolerance [#779](https://github.com/asgardex/asgardex-desktop/pull/779)
+- fix asset select and switch button [#777](https://github.com/asgardex/asgardex-desktop/pull/777)
+- headless migration [#772](https://github.com/asgardex/asgardex-desktop/pull/772)
+
+## Add
+
+- Add Zcash [#770](https://github.com/asgardex/asgardex-desktop/pull/770)
+
+# 1.40.1 (2025-06-28)
+
+## Update/Fixes
+
+- enhance wallet creation flow [#745](https://github.com/asgardex/asgardex-desktop/pull/745)
+- update to react 18 [#725](https://github.com/asgardex/asgardex-desktop/pull/725)
+- styled components removal [#756](https://github.com/asgardex/asgardex-desktop/pull/756)
+
+## Add
+
+- Added cardano package [#623](https://github.com/asgardex/asgardex-desktop/pull/623)
+
 # 1.40.0 (2025-5-28)
 
 ## Update/Fixes

@@ -4,8 +4,8 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { useIntl } from 'react-intl'
 
-import { Tooltip } from '../common/Common.styles'
 import { RadioGroup } from '../radioGroup'
+import { Tooltip } from '../tooltip'
 import { Props, Protocol, Protocols, ProtocolsWithAll } from './types'
 
 export const ProtocolSwitch = ({ protocol, setProtocol, withAll = false }: Props) => {

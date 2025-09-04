@@ -111,6 +111,7 @@ const common: CommonMessages = {
   'common.min': 'न्यूनतम',
   'common.half': 'आधा',
   'common.search': 'खोज',
+  'common.chainManagement': 'चेन प्रबंधन',
   'common.searchAsset': 'एसेट खोजें',
   'common.addAsset': 'टोकन नहीं दिख रहा? मैन्युअल रूप से जोड़ें',
   'common.removeAsset': 'वॉलेट दृश्य से संपत्ति हटाएं',

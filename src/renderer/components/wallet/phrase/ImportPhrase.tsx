@@ -1,11 +1,13 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Textarea } from '@headlessui/react'
 import * as crypto from '@xchainjs/xchain-crypto'
 import { Form } from 'antd'
 import { Rule } from 'antd/lib/form'
 import { Store } from 'antd/lib/form/interface'
 import Paragraph from 'antd/lib/typography/Paragraph'
+import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
@@ -13,9 +15,9 @@ import { defaultWalletName } from '../../../../shared/utils/wallet'
 import { KeystoreClientStates } from '../../../hooks/useKeystoreClientStates'
 import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
 import { AddKeystoreParams } from '../../../services/wallet/types'
-import { Spin } from '../../shared/loading'
 import { FlatButton } from '../../uielements/button'
-import { InputPassword, InputTextArea, Input } from '../../uielements/input'
+import { InputPassword, Input } from '../../uielements/input'
+import { Spin } from '../../uielements/spin'
 
 /* css import is needed to override antd */
 import '../../uielements/input/overrides.css'
@@ -27,7 +29,7 @@ type Props = {
   clientStates: KeystoreClientStates
 }
 
-export const ImportPhrase: React.FC<Props> = (props): JSX.Element => {
+export const ImportPhrase = (props: Props): JSX.Element => {
   const { addKeystore, clientStates, walletId, walletNames } = props
   const [form] = Form.useForm()
 
@@ -126,84 +128,79 @@ export const ImportPhrase: React.FC<Props> = (props): JSX.Element => {
   )
 
   return (
-    <>
-      <Form form={form} onFinish={submitForm} labelCol={{ span: 24 }} className="w-full p-30px pt-15px">
-        <Spin spinning={importing} tip={intl.formatMessage({ id: 'common.loading' })}>
-          <div className="flex flex-col items-center">
-            {/* phrase */}
-            <Form.Item
-              className="w-full"
-              name="phrase"
-              rules={[{ required: true, validator: phraseValidator }]}
-              validateTrigger={['onSubmit', 'onChange']}>
-              <InputTextArea
-                className="!p-2 !text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
-                color="primary"
-                typevalue="normal"
-                placeholder={intl.formatMessage({ id: 'wallet.imports.enterphrase' })}
-                rows={5}
-              />
-            </Form.Item>
-            {renderImportError}
-            {/* password */}
-            <Form.Item
-              name="password"
-              className="w-full"
-              validateTrigger={['onSubmit', 'onBlur']}
-              rules={passwordRules}
-              label={intl.formatMessage({ id: 'common.password' })}>
-              <InputPassword
-                className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
-                size="large"
-              />
-            </Form.Item>
+    <Form form={form} onFinish={submitForm} labelCol={{ span: 24 }} className="w-full p-30px pt-15px">
+      <Spin spinning={importing} tip={intl.formatMessage({ id: 'common.loading' })}>
+        <div className="flex flex-col items-center">
+          {/* phrase */}
+          <Form.Item
+            className="w-full"
+            name="phrase"
+            rules={[{ required: true, validator: phraseValidator }]}
+            validateTrigger={['onSubmit', 'onChange']}>
+            <Textarea
+              className={clsx(
+                'w-full p-2 text-14 bg-bg0 dark:bg-bg0d rounded-lg',
+                'border border-solid border-gray0 dark:border-gray0d',
+                'placeholder:text-gray-300 dark:placeholder:text-gray-400',
+                'text-text0 dark:text-text0d',
+                'font-main focus:outline-none'
+              )}
+              placeholder={intl.formatMessage({ id: 'wallet.imports.enterphrase' })}
+              rows={5}
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              inputMode="text"
+            />
+          </Form.Item>
+          {renderImportError}
+          {/* password */}
+          <Form.Item
+            name="password"
+            className="w-full"
+            validateTrigger={['onSubmit', 'onBlur']}
+            rules={passwordRules}
+            label={intl.formatMessage({ id: 'common.password' })}>
+            <InputPassword size="large" />
+          </Form.Item>
 
-            {/* repeat password */}
-            <Form.Item
-              name="repeatPassword"
-              className="w-full"
-              dependencies={['password']}
-              validateTrigger={['onSubmit', 'onBlur']}
-              rules={passwordRules}
-              label={intl.formatMessage({ id: 'wallet.password.repeat' })}>
-              <InputPassword
-                className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
-                size="large"
-              />
-            </Form.Item>
+          {/* repeat password */}
+          <Form.Item
+            name="repeatPassword"
+            className="w-full"
+            dependencies={['password']}
+            validateTrigger={['onSubmit', 'onBlur']}
+            rules={passwordRules}
+            label={intl.formatMessage({ id: 'wallet.password.repeat' })}>
+            <InputPassword size="large" />
+          </Form.Item>
 
-            {/* name */}
-            <Form.Item
-              name="name"
-              className="w-full"
-              rules={[{ validator: walletNameValidator }]}
-              label={
-                <div>
-                  {intl.formatMessage({ id: 'wallet.name' })}
-                  <span className="pl-5px text-[12px] text-gray1 dark:text-gray1d">
-                    ({intl.formatMessage({ id: 'wallet.name.maxChars' }, { max: MAX_WALLET_NAME_CHARS })})
-                  </span>
-                </div>
-              }>
-              <Input
-                className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
-                size="large"
-                maxLength={MAX_WALLET_NAME_CHARS}
-                placeholder={defaultWalletName(walletId)}
-              />
-            </Form.Item>
+          {/* name */}
+          <Form.Item
+            name="name"
+            className="w-full"
+            rules={[{ validator: walletNameValidator }]}
+            label={
+              <div>
+                {intl.formatMessage({ id: 'wallet.name' })}
+                <span className="pl-5px text-[12px] text-gray1 dark:text-gray1d">
+                  ({intl.formatMessage({ id: 'wallet.name.maxChars' }, { max: MAX_WALLET_NAME_CHARS })})
+                </span>
+              </div>
+            }>
+            <Input size="large" maxLength={MAX_WALLET_NAME_CHARS} placeholder={defaultWalletName(walletId)} />
+          </Form.Item>
 
-            <FlatButton
-              className="mt-20px min-w-[150px]"
-              size="large"
-              color="primary"
-              type="submit"
-              disabled={!validPhrase || importing}>
-              {intl.formatMessage({ id: 'wallet.action.import' })}
-            </FlatButton>
-          </div>
-        </Spin>
-      </Form>
-    </>
+          <FlatButton
+            className="mt-20px min-w-[150px]"
+            size="large"
+            color="primary"
+            type="submit"
+            disabled={!validPhrase || importing}>
+            {intl.formatMessage({ id: 'wallet.action.import' })}
+          </FlatButton>
+        </div>
+      </Spin>
+    </Form>
   )
 }

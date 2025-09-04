@@ -45,7 +45,7 @@ const reloadWithdrawFees = (asset: AnyAsset) => {
 
   if (isRuneNativeAsset(asset)) {
     // Reload fees for RUNE
-    THOR.reloadFees()
+    THOR.reloadFees(true)
   } else if (isCacaoAsset(asset)) {
     MAYA.reloadFees()
   } else {

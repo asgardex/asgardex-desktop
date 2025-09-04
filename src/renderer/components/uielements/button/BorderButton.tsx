@@ -1,5 +1,4 @@
-import React from 'react'
-
+import clsx from 'clsx'
 import { BaseButton, BaseButtonProps } from './BaseButton'
 import { borderSize, dropShadow, borderColor } from './Button.shared'
 import type { Color } from './Button.types'
@@ -9,7 +8,7 @@ export type Props = BaseButtonProps & {
   transparent?: boolean
 }
 
-export const BorderButton: React.FC<Props> = (props): JSX.Element => {
+export const BorderButton = (props: Props): JSX.Element => {
   const {
     color = 'primary',
     size = 'normal',
@@ -31,18 +30,18 @@ export const BorderButton: React.FC<Props> = (props): JSX.Element => {
     <BaseButton
       size={size}
       disabled={disabled}
-      className={`
-      rounded-full
-      ${borderSize[size]}
-      bg-bg0 dark:bg-bg0d
-        ${textColor[color]}
-        ${borderColor[color]}
-        ${transparent && 'bg-tranparent'}
-        ${!disabled && `hover:${dropShadow[size]}`}
-        ${!disabled && 'hover:border-opacity-85'}
-        ${!disabled && 'hover:scale-105'}
-        ${className}
-      `}
+      className={clsx(
+        'rounded-full',
+        borderSize[size],
+        'bg-bg0 dark:bg-bg0d',
+        textColor[color],
+        borderColor[color],
+        !disabled ? `hover:${dropShadow[size]}` : '',
+        { 'bg-transparent': transparent },
+        { 'hover:border-opacity-85': !disabled },
+        { 'hover:scale-105': !disabled },
+        className
+      )}
       {...restProps}>
       {children}
     </BaseButton>

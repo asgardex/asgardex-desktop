@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Asset, Chain } from '@xchainjs/xchain-util'
-import { Spin } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -15,6 +14,7 @@ import * as RxOp from 'rxjs/operators'
 import { Deposit } from '../../components/deposit'
 import { ErrorView } from '../../components/shared/error'
 import { BackLinkButton, RefreshButton } from '../../components/uielements/button'
+import { Spin } from '../../components/uielements/spin'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
@@ -35,9 +35,7 @@ import { SymDepositView } from './add/SymDepositView'
 import { ShareView } from './share/ShareView'
 import { WithdrawDepositView } from './withdraw/WithdrawDepositView'
 
-type Props = {}
-
-export const DepositView: React.FC<Props> = () => {
+export const DepositView = () => {
   const { protocol } = useApp()
   const intl = useIntl()
 
@@ -247,7 +245,7 @@ export const DepositView: React.FC<Props> = () => {
   const poolDetailRD = protocol === THORChain ? poolDetailThorRD : poolDetailMayaRD
   const renderTopContent = useMemo(
     () => (
-      <div className="relative mb-20px flex items-center justify-between">
+      <div className="relative mb-4 flex items-center justify-between">
         <BackLinkButton className="absolute !m-0" />
         <h2 className="m-0 w-full text-center font-mainSemiBold text-16 uppercase text-turquoise">
           {intl.formatMessage({ id: 'common.liquidity' })}
@@ -261,7 +259,7 @@ export const DepositView: React.FC<Props> = () => {
   const renderLoadingContent = useMemo(
     () => (
       <div className="flex h-screen w-full items-center justify-center bg-bg0 dark:bg-bg0d">
-        <Spin size="large" />
+        <Spin />
       </div>
     ),
     []

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
@@ -16,7 +16,6 @@ import {
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
-import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -26,7 +25,7 @@ import { isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
-import { isUSDAsset } from '../../../../helpers/assetHelper'
+import { isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
 import { getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
@@ -43,11 +42,12 @@ import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTy
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
-import { InputBigNumber } from '../../../uielements/input'
+import { Input, InputBigNumber } from '../../../uielements/input'
+import { Label } from '../../../uielements/label'
+import { RadioGroup, Radio } from '../../../uielements/radio'
 import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
@@ -83,7 +83,7 @@ type Props = {
   mayaScanPrice: MayaScanPriceRD
 }
 
-export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
+export const SendFormUTXO = (props: Props): JSX.Element => {
   const {
     asset: { walletType, walletAccount, walletIndex, hdMode, walletAddress },
     trustedAddresses,
@@ -117,14 +117,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     (value: string) => {
       form.setFieldsValue({ recipient: value })
       setRecipientAddress(value)
-      if (value) {
-        const matched = FP.pipe(
-          oSavedAddresses,
-          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
-        )
-        setMatchedAddresses(matched)
-      }
+      const matched = Shared.filterMatchedAddresses(oSavedAddresses, value)
+      setMatchedAddresses(matched)
     },
     [form, oSavedAddresses]
   )
@@ -138,9 +132,9 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
           (addresses) => (
             <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
               <Styled.CustomSelect
+                className="w-full"
                 placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
-                onChange={(value) => handleSavedAddressSelect(value as string)}
-                style={{ width: '100%' }}>
+                onChange={(value) => handleSavedAddressSelect(value as string)}>
                 {addresses.map((address) => (
                   <Styled.CustomSelect.Option key={address.address} value={address.address}>
                     {address.name}: {address.address}
@@ -241,15 +235,15 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
         O.map(({ fees, rates }) => {
           const feeAmount = fees[selectedFeeOptionKey]
           const feeRate = rates[selectedFeeOptionKey]
-          const transactionSize = feeAmount.amount().toNumber() / feeRate
+
+          // Use the precise fee from getFeesWithRates instead of arbitrary rounding
+          // Only round up the fee rate for transaction building, but use original fee amount
           const roundedFeeRate = Math.ceil(feeRate)
-          const adjustedFee = baseAmount(roundedFeeRate * transactionSize)
-          const feeValue = adjustedFee.amount().toNumber()
-          const roundedFeeValue = Math.ceil(feeValue / 1000) * 1000
-          const roundedAdjustedFee = baseAmount(roundedFeeValue)
-          prevSelectedFeeRef.current = O.some(roundedAdjustedFee)
           setFeeRate(roundedFeeRate)
-          return roundedAdjustedFee
+
+          // Use the precise fee amount calculated by xchain-js
+          prevSelectedFeeRef.current = O.some(feeAmount)
+          return feeAmount
         })
       ),
     [oFeesWithRates, selectedFeeOptionKey]
@@ -307,15 +301,19 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   const renderFeeOptionsRadioGroup = useCallback(
     ({ rates }: FeesWithRates) => {
-      const onChangeHandler = (e: RadioChangeEvent) => setSelectedFeeOptionKey(e.target.value)
+      const onChangeHandler = (e: string) => setSelectedFeeOptionKey(e as FeeOption)
       return (
-        <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOptionKey} disabled={isLoading}>
+        <RadioGroup
+          className="flex flex-col lg:flex-row lg:space-x-2"
+          onChange={onChangeHandler}
+          value={selectedFeeOptionKey}
+          disabled={isLoading}>
           {Object.keys(rates).map((key) => (
-            <StyledR.Radio value={key as FeeOption} key={key}>
-              <StyledR.RadioLabel>{feeOptionsLabel[key as FeeOption]}</StyledR.RadioLabel>
-            </StyledR.Radio>
+            <Radio value={key as FeeOption} key={key}>
+              <Label textTransform="uppercase">{feeOptionsLabel[key as FeeOption]}</Label>
+            </Radio>
           ))}
-        </StyledR.Radio.Group>
+        </RadioGroup>
       )
     },
 
@@ -365,52 +363,49 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         selectedFee,
         O.map((fee) => {
-          const max = balance.amount.minus(fee)
+          // Add UTXO safety buffer to prevent dust issues (0.0001 BTC equivalent)
+          const utxoSafetyBuffer = isUtxoAssetChain(asset)
+            ? baseAmount(10000, balance.amount.decimal)
+            : ZERO_BASE_AMOUNT
+          const max = balance.amount.minus(fee).minus(utxoSafetyBuffer)
           const zero = baseAmount(0, max.decimal)
-
-          const roundedMax = Math.floor(max.amount().toNumber() / 1000) * 1000
-          const roundedMaxBase = baseAmount(roundedMax, max.decimal)
-          return roundedMaxBase.gt(zero.amount()) ? roundedMaxBase : zero
+          return max.gt(zero) ? max : zero
         }),
-        // Set maxAmount to zero as long as we don't have a feeRate
         O.getOrElse(() => ZERO_BASE_AMOUNT)
       ),
-    [balance.amount, selectedFee]
+    [balance, selectedFee, asset]
   )
 
   // store maxAmountValue
-  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-  const isPoolDetails = (poolDetails: PoolDetails | PoolDetailsMaya): poolDetails is PoolDetails => {
-    return (poolDetails as PoolDetails) !== undefined
-  }
+  const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   // useEffect to fetch data from query
   useEffect(() => {
     const maxAmountPrice = FP.pipe(
-      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
+      isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: maxAmount },
-            poolDetails,
+            poolDetails: poolDetails as PoolDetails,
             pricePool
           })
         : getPoolPriceValueM({
             balance: { asset, amount: maxAmount },
-            poolDetails,
+            poolDetails: poolDetails as PoolDetailsMaya,
             pricePool,
             mayaPriceRD: mayaScanPrice
           })
     )
 
     const amountPrice = FP.pipe(
-      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
+      isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: amountToSend },
-            poolDetails,
+            poolDetails: poolDetails as PoolDetails,
             pricePool
           })
         : getPoolPriceValueM({
             balance: { asset, amount: amountToSend },
-            poolDetails,
+            poolDetails: poolDetails as PoolDetailsMaya,
             pricePool,
             mayaPriceRD: mayaScanPrice
           })
@@ -421,15 +416,15 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       O.fold(
         () => O.none, // Return `O.none` if `selectedFee` is `None`
         (fee) =>
-          isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
+          isChainOfThor(asset.chain)
             ? getPoolPriceValue({
                 balance: { asset, amount: fee },
-                poolDetails,
+                poolDetails: poolDetails as PoolDetails,
                 pricePool
               })
             : getPoolPriceValueM({
                 balance: { asset, amount: fee },
-                poolDetails,
+                poolDetails: poolDetails as PoolDetailsMaya,
                 pricePool,
                 mayaPriceRD: mayaScanPrice
               })
@@ -543,13 +538,16 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderSlider = useMemo(() => {
-    const percentage = amountToSend
-      .amount()
-      .dividedBy(maxAmount.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
+    const maxAmountValue = maxAmount.amount()
+    const percentage = maxAmountValue.isZero()
+      ? 0
+      : amountToSend
+          .amount()
+          .dividedBy(maxAmountValue)
+          .multipliedBy(100)
+          // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+          .decimalPlaces(0, BigNumber.ROUND_DOWN)
+          .toNumber()
 
     const setAmountToSendFromPercentValue = (percents: number) => {
       const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
@@ -561,10 +559,6 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
         key={'Send percentage slider'}
         value={percentage}
         onChange={setAmountToSendFromPercentValue}
-        tooltipVisible
-        tipFormatter={(value) => `${value}%`}
-        withLabel
-        tooltipPlacement={'top'}
         disabled={isLoading}
       />
     )
@@ -718,15 +712,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const handleOnKeyUp = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
     setRecipientAddress(recipient)
-
-    if (recipient) {
-      const matched = FP.pipe(
-        oSavedAddresses,
-        O.map((addresses) => addresses.filter((address) => address.address.includes(recipient))),
-        O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
-      )
-      setMatchedAddresses(matched)
-    }
+    const matched = Shared.filterMatchedAddresses(oSavedAddresses, recipient)
+    setMatchedAddresses(matched)
   }, [form, oSavedAddresses])
   const oMatchedWalletType: O.Option<WalletType> = useMemo(
     () => matchedWalletType(balances, recipientAddress),
@@ -759,7 +746,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
               {renderWalletType}
             </Styled.CustomLabel>
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+              <Input size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
             </Form.Item>
             {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
@@ -776,16 +763,16 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
               className="mb-10px"
               color="neutral"
               balance={{ amount: maxAmount, asset: asset }}
-              maxDollarValue={maxAmmountPriceValue}
+              maxDollarValue={maxAmountPriceValue}
               onClick={addMaxAmountHandler}
               disabled={isMaxButtonDisabled}
             />
-            <div className="w-full px-20px pb-10px">{renderSlider}</div>
+            <div className="w-full py-2">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} onBlur={handleMemo} />
+              <Input size="large" disabled={isLoading} onBlur={handleMemo} />
             </Form.Item>
             <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>

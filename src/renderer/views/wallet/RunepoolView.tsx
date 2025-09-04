@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -13,7 +13,6 @@ import {
   assetAmount,
   bnOrZero
 } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
 import BigNumber from 'bignumber.js'
 import { function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -22,8 +21,8 @@ import { useIntl } from 'react-intl'
 import { WalletType } from '../../../shared/wallet/types'
 import { RunePoolTable } from '../../components/runePool/runePoolTable'
 import { RefreshButton } from '../../components/uielements/button'
+import { Label } from '../../components/uielements/label'
 import { AssetsNav } from '../../components/wallet/assets'
-import * as Styled from '../../components/wallet/assets/TotalValue.styles'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -60,7 +59,7 @@ export type ParentProps = {
   assetDetails: AssetProps[]
 }
 
-export const RunepoolView: React.FC = (): JSX.Element => {
+export const RunepoolView = (): JSX.Element => {
   const intl = useIntl()
 
   const { isPrivate } = useApp()
@@ -184,14 +183,14 @@ export const RunepoolView: React.FC = (): JSX.Element => {
 
   const renderRunePoolTotal = useMemo(() => {
     return (
-      <Styled.Container>
-        <Styled.TitleContainer>
-          <Styled.BalanceTitle>{intl.formatMessage({ id: 'wallet.shares.total' })}</Styled.BalanceTitle>
-        </Styled.TitleContainer>
-        <Styled.BalanceLabel className="!font-mainSemiBold">
+      <div className="flex flex-col items-center justify-center bg-bg1 dark:bg-bg1d px-4 pt-4 pb-8">
+        <Label className="!w-auto" align="center" color="input" textTransform="uppercase">
+          {intl.formatMessage({ id: 'wallet.shares.total' })}
+        </Label>
+        <Label className="mt-4 mx-10px text-[28px]" align="center" color="gray">
           {isPrivate ? hiddenString : totalRedeemPrice}
-        </Styled.BalanceLabel>
-      </Styled.Container>
+        </Label>
+      </div>
     )
   }, [intl, isPrivate, totalRedeemPrice])
 
@@ -201,12 +200,14 @@ export const RunepoolView: React.FC = (): JSX.Element => {
   }, [reloadAllPools, reloadRunePoolProvider])
   return (
     <div>
-      <Row justify="end" style={{ marginBottom: '20px' }}>
+      <div className="flex justify-end mb-5">
         <RefreshButton onClick={refreshHandler} disabled={false} />
-      </Row>
+      </div>
       <AssetsNav />
       {renderRunePoolTotal}
-      <RunePoolTable assetDetails={assetDetailsArray} />
+      <div className="bg-bg1 dark:bg-bg1d p-2">
+        <RunePoolTable assetDetails={assetDetailsArray} />
+      </div>
     </div>
   )
 }

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Network } from '@xchainjs/xchain-client'
 
 import * as Styled from './Common.styles'
@@ -12,7 +10,7 @@ export type Props = {
   network: Network
 }
 
-export const SwapAssets: React.FC<Props> = (props): JSX.Element => {
+export const SwapAssets = (props: Props): JSX.Element => {
   const { source, target, stepDescription, network } = props
   return (
     <>

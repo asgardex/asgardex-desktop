@@ -1,22 +1,46 @@
-import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
+import { QuoteSwap } from '@xchainjs/xchain-mayachain-query'
+import { THORChain, TxDetails } from '@xchainjs/xchain-thorchain-query'
+import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import { array as A, either as E, function as FP, option as O } from 'fp-ts'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
+import { ZERO_BASE_AMOUNT } from '../../const'
 import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
 import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/midgardTypes'
 import { WalletBalances } from '../../services/wallet/types'
-import { AssetsToSwap } from './Swap.types'
+import { AssetsToSwap, QuoteData } from './Swap.types'
 
 /**
- * Returns `BaseAmount` with asgardex identifier - is now a affiliate address/thorname
- * It's always `1e8` based (default by THORChain)
+ * Extracts the swap limit from a memo string in the format "=:asset:address:limit[/quantity/interval]:extra:extra".
+ * @param memo - The memo string containing the swap limit in the fourth part (e.g., "=:r:address:32099887789[/quantity/interval]:dx:0").
+ * @returns A BaseAmount representing the swap limit, or ZERO_BASE_AMOUNT if the memo or limit is invalid. i.e no quote or previewed quote
  */
 export const getSwapLimit1e8 = (memo: string): BaseAmount => {
-  const swapLimitFromMemo = baseAmount(memo.split(':')[3])
-  return swapLimitFromMemo
+  if (!memo?.trim()) {
+    return ZERO_BASE_AMOUNT
+  }
+
+  const parts = memo.split(':')
+  if (parts.length < 4) {
+    return ZERO_BASE_AMOUNT
+  }
+
+  const swapLimitPart = parts[3]
+  if (!swapLimitPart) {
+    return ZERO_BASE_AMOUNT
+  }
+
+  const swapLimit = swapLimitPart.includes('/') ? swapLimitPart.split('/')[0] : swapLimitPart
+
+  const swapLimitNum = Number(swapLimit)
+  if (isNaN(swapLimitNum) || swapLimitNum < 0) {
+    return ZERO_BASE_AMOUNT
+  }
+
+  return baseAmount(swapLimitNum)
 }
 
 export const pickPoolAsset = (assets: PoolAssetDetails, asset: AnyAsset): O.Option<PoolAssetDetail> =>
@@ -102,6 +126,8 @@ export const minAmountToSwapMax1e8 = ({
  * Calculates max. balance available to swap
  * In some cases fees needs to be deducted from given amount
  *
+ * Removes arbitrary 1000-unit rounding that was causing precision loss
+ *
  * assetAmountMax1e8 => balances of source asset (max 1e8)
  * feeAmount => fee of inbound tx
  */
@@ -118,10 +144,10 @@ export const maxAmountToSwapMax1e8 = ({
   if (!isChainAsset(asset)) return balanceAmountMax1e8
 
   const estimatedFee = max1e8BaseAmount(feeAmount)
-  const maxAmountToSwap = balanceAmountMax1e8.minus(estimatedFee)
-  const maxAmountRounded = Math.floor(maxAmountToSwap.amount().toNumber() / 1000) * 1000
-  const maxAmountRoundedBase = baseAmount(maxAmountRounded, maxAmountToSwap.decimal)
-  return maxAmountRoundedBase.gt(baseAmount(0)) ? maxAmountRoundedBase : baseAmount(0)
+
+  const utxoSafetyBuffer = isUtxoAssetChain(asset) ? baseAmount(10000) : ZERO_BASE_AMOUNT // 0.0001 BTC in 1e8 units
+  const maxAmountToSwap = balanceAmountMax1e8.minus(estimatedFee).minus(utxoSafetyBuffer)
+  return maxAmountToSwap.gt(ZERO_BASE_AMOUNT) ? maxAmountToSwap : ZERO_BASE_AMOUNT
 }
 
 export const assetsInWallet: (_: WalletBalances) => AnyAsset[] = FP.flow(A.map(({ asset }) => asset))
@@ -162,3 +188,63 @@ export const hasLedgerInBalancesByChain = (chain: Chain, balances: WalletBalance
       () => true
     )
   )
+
+export const getQuoteData = (
+  protocol: Chain,
+  oQuote: O.Option<TxDetails>,
+  oQuoteMaya: O.Option<QuoteSwap>,
+  sourceAsset: AnyAsset,
+  targetAsset: AnyAsset,
+  sourceAssetDecimal: number,
+  targetAssetDecimal: number
+): QuoteData => {
+  const defaultQuoteData: QuoteData = {
+    canSwap: false,
+    slipBasisPoints: 0,
+    streamingSlipBasisPoints: 0,
+    expectedAmountOut: new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset),
+    expiry: new Date(Date.now() + 15 * 60 * 1000), // Default to 15 minutes from now
+    maxStreamingQuantity: 0,
+    errors: [],
+    recommendedMinAmountIn: new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset),
+    memo: ''
+  }
+
+  const mapQuote = <T>(oQuote: O.Option<T>, mapper: (quote: T) => QuoteData): QuoteData =>
+    FP.pipe(
+      oQuote,
+      O.map(mapper),
+      O.getOrElse(() => defaultQuoteData)
+    )
+
+  if (protocol === THORChain) {
+    return mapQuote(oQuote, (txDetails) => ({
+      canSwap: txDetails.txEstimate.canSwap,
+      slipBasisPoints: txDetails.txEstimate.slipBasisPoints,
+      streamingSlipBasisPoints: txDetails.txEstimate.streamingSlipBasisPoints,
+      expectedAmountOut: txDetails.txEstimate.netOutputStreaming,
+      expiry: txDetails.expiry,
+      maxStreamingQuantity: txDetails.txEstimate.maxStreamingQuantity,
+      errors: txDetails.txEstimate.errors,
+      recommendedMinAmountIn: new CryptoAmount(
+        baseAmount(txDetails.txEstimate.recommendedMinAmountIn, sourceAssetDecimal),
+        sourceAsset
+      ),
+      memo: txDetails.memo
+    }))
+  } else {
+    return mapQuote(oQuoteMaya, (quoteSwap) => ({
+      canSwap: quoteSwap.canSwap,
+      slipBasisPoints: quoteSwap.slipBasisPoints,
+      streamingSlipBasisPoints: quoteSwap.slipBasisPoints,
+      expectedAmountOut: quoteSwap.expectedAmount,
+      expiry: new Date(quoteSwap.expiry * 1000),
+      maxStreamingQuantity: quoteSwap.maxStreamingQuantity ? quoteSwap.maxStreamingQuantity : 0,
+      errors: quoteSwap.errors,
+      recommendedMinAmountIn: quoteSwap.recommendedMinAmountIn
+        ? quoteSwap.recommendedMinAmountIn
+        : new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset),
+      memo: quoteSwap.memo
+    }))
+  }
+}

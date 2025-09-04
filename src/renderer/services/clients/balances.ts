@@ -161,7 +161,8 @@ export const balances$: Balances$ = ({
             })
         )
       )
-    })
+    }),
+    shareReplay(1) // Prevent duplicate balance requests for the same parameters
   )
 
 type BalancesByAddress$ = ({

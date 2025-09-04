@@ -6,7 +6,7 @@ import { envOrDefault } from '../../shared/utils/env'
 import { isNetwork } from '../../shared/utils/guard'
 import { SlipTolerance } from '../types/asgardex'
 
-export const DEFAULT_SLIP_TOLERANCE: SlipTolerance = 3
+export const DEFAULT_SLIP_TOLERANCE: SlipTolerance = 5
 export const DEFAULT_CLIENT_NETWORK: Client.Network = Client.Network.Mainnet
 
 /**

@@ -130,10 +130,6 @@ export const WalletTypeLabelWrapper = styled(`div`)`
   margin-left: 5px;
 `
 
-export const Input = styled(A.Input)`
-  background: inherit !important;
-  color: ${palette('text', 0)};
-`
 export const SwitchWrapper = styled('div')`
   display: flex;
   align-items: center;
@@ -172,6 +168,7 @@ export const CustomSelect = styled(A.Select)`
 
   .ant-select-selector {
     background: inherit !important;
+    border-radius: 8px !important;
     border: none;
   }
   .ant-select-arrow {

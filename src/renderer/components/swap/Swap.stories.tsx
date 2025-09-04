@@ -133,7 +133,9 @@ const defaultProps: SwapProps = {
   importWalletHandler: () => console.log('import wallet'),
   addressValidator: () => Promise.resolve(true),
   hidePrivateData: false,
-  reloadTxStatus: () => console.log('reloadBalances')
+  reloadTxStatus: () => console.log('reloadBalances'),
+  midgardStatusRD: RD.success(true),
+  midgardStatusMayaRD: RD.success(true)
 }
 
 export const Default: StoryFn = () => <Component {...defaultProps} />

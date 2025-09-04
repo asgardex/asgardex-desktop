@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, QrCodeIcon } from '@heroicons/react/24/outline'
+import { ColumnDef } from '@tanstack/react-table'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
+import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   AnyAsset,
@@ -18,10 +19,8 @@ import {
   isSecuredAsset,
   isSynthAsset
 } from '@xchainjs/xchain-util'
-import { Collapse, Grid, Row } from 'antd'
-import { ScreenMap } from 'antd/lib/_util/responsiveObserve'
-import { ColumnType } from 'antd/lib/table'
-import { array as A, function as FP, option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
@@ -29,6 +28,7 @@ import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../..
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
+import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import {
   isBtcAsset,
@@ -43,6 +43,7 @@ import { isEvmChain } from '../../../helpers/evmHelper'
 import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
+import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../hooks/useMayascanPrice'
 import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
@@ -54,22 +55,26 @@ import {
   ApiError,
   ChainBalance,
   ChainBalances,
+  isStandaloneLedgerMode,
   SelectedWalletAsset,
   WalletBalance,
   WalletBalances
 } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
+import { FixmeType } from '../../../types/asgardex'
 import { GECKO_MAP } from '../../../types/generated/geckoMap'
 import { ErrorView } from '../../shared/error/'
+import { Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { IconButton } from '../../uielements/button/IconButton'
+import { Collapse } from '../../uielements/collapse'
+import { WalletTypeLabel } from '../../uielements/common/Common.styles'
 import { InfoIcon } from '../../uielements/info'
+import { CopyLabel, Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
 import * as Styled from './AssetsTableCollapsable.styles'
-
-const { Panel } = Collapse
 
 export type AssetAction = 'send' | 'deposit'
 
@@ -130,22 +135,33 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   const { setProtocol } = useApp()
   const intl = useIntl()
   const navigate = useNavigate()
-  const screenMap: ScreenMap = Grid.useBreakpoint()
+  const isXLargeView = useBreakpoint()?.xl ?? false
+
+  // Get app wallet state to check for standalone ledger mode
+  const { appWalletService } = useWalletContext()
+  const appWalletState = useObservableState(appWalletService.appWalletState$)
+  const isStandaloneLedger = appWalletState && isStandaloneLedgerMode(appWalletState)
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
 
-  const [openPanelKeys, setOpenPanelKeys] = useState<string[]>(() => {
+  const [openPanelKeys, setOpenPanelKeys] = useState<number[]>(() => {
     const cachedKeys = localStorage.getItem('openPanelKeys')
-    return cachedKeys ? JSON.parse(cachedKeys) : []
+    try {
+      return cachedKeys ? JSON.parse(cachedKeys).map((item: string) => parseInt(item)) : []
+    } catch (error) {
+      console.error('Failed to parse openPanelKeys from localStorage:', error)
+      return []
+    }
   })
 
-  useEffect(() => {
-    localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
-  }, [openPanelKeys])
-
-  const [allPanelKeys, setAllPanelKeys] = useState<string[]>()
-  const [collapseChangedByUser, setCollapseChangedByUser] = useState(false)
   const [collapseAll, setCollapseAll] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (openPanelKeys.length === 0) setCollapseAll(true)
+    if (openPanelKeys.length === chainBalances.length) setCollapseAll(false)
+
+    localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
+  }, [openPanelKeys, chainBalances.length])
 
   const handleRefreshClick = (chain: Chain, walletType: WalletType) => {
     const lazyReload = reloadBalancesByChain(chain, walletType)
@@ -155,165 +171,136 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   // store previous data of asset data to render these while reloading
   const previousAssetsTableData = useRef<WalletBalances[]>([])
 
+  const toggleOne = useCallback((key: number) => {
+    setOpenPanelKeys((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]))
+  }, [])
+
   const handleCollapseAll = useCallback(() => {
     if (collapseAll) {
-      localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
-      setOpenPanelKeys([])
+      const keys = Array.from({ length: chainBalances.length }, (_, i) => i)
+      setOpenPanelKeys(keys)
+      localStorage.setItem('openPanelKeys', JSON.stringify(keys))
     } else {
-      const previousOpenKeys = allPanelKeys ? allPanelKeys : ['0', '1', '2']
-      setOpenPanelKeys(previousOpenKeys)
+      setOpenPanelKeys([])
+      localStorage.setItem('openPanelKeys', JSON.stringify([]))
     }
-    setCollapseAll(!collapseAll)
-  }, [allPanelKeys, collapseAll, openPanelKeys])
+    setCollapseAll((prev) => !prev)
+  }, [chainBalances.length, collapseAll])
 
-  const onRowHandler = useCallback(
-    ({ asset, walletAddress, walletType, walletAccount, walletIndex, hdMode }: WalletBalance) => ({
-      onClick: () => selectAssetHandler({ asset, walletAddress, walletAccount, walletType, walletIndex, hdMode })
-    }),
-    [selectAssetHandler]
-  )
+  const getBalance = useCallback(
+    ({ asset, amount }: WalletBalance) => {
+      const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
+      let price: string = noDataString // Default to "no data" string
 
-  const iconColumn: ColumnType<WalletBalance> = useMemo(
-    () => ({
-      title: '',
-      width: 180,
-      render: ({ asset }: WalletBalance) => (
-        <div className="flex items-center space-x-4 pl-4">
-          <AssetIcon asset={asset} size="normal" network={network} />
-          <div className="flex flex-row items-center">
-            <Styled.Label nowrap>
-              <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
-              <Styled.ChainLabelWrapper>
-                {!isSynthAsset(asset) && !isSecuredAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
-                {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}
-                {isSecuredAsset(asset) && <Styled.AssetSecuredLabel>secured</Styled.AssetSecuredLabel>}
-              </Styled.ChainLabelWrapper>
-            </Styled.Label>
-          </div>
-        </div>
-      )
-    }),
-    [network]
-  )
-
-  const balanceColumn: ColumnType<WalletBalance> = useMemo(
-    () => ({
-      render: ({ asset, amount }: WalletBalance) => {
-        const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
-        let price: string = noDataString // Default to "no data" string
-
-        // Helper function to format price
-        const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
-          if (O.isSome(priceOption)) {
-            return formatAssetAmountCurrency({
-              amount: baseToAsset(priceOption.value),
-              asset: pricePoolAsset,
-              decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
-            })
-          }
-          return null
+      // Helper function to format price
+      const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
+        if (O.isSome(priceOption)) {
+          return formatAssetAmountCurrency({
+            amount: baseToAsset(priceOption.value),
+            asset: pricePoolAsset,
+            decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
+          })
         }
+        return null
+      }
 
-        // Helper function to get price from pool details
-        const getPriceThor = (
-          getPoolPriceValueFn: GetPoolPriceValueFnThor,
-          poolDetails: PoolDetails,
-          pricePool: PricePool
-        ) => {
-          const priceOption = getPoolPriceValueFn({
+      // Helper function to get price from pool details
+      const getPriceThor = (
+        getPoolPriceValueFn: GetPoolPriceValueFnThor,
+        poolDetails: PoolDetails,
+        pricePool: PricePool
+      ) => {
+        const priceOption = getPoolPriceValueFn({
+          balance: { asset, amount },
+          poolDetails,
+          pricePool
+        })
+        return formatPrice(priceOption, pricePool.asset)
+      }
+
+      const getPriceMaya = (
+        getPoolPriceValueFn: GetPoolPriceValueFnMaya,
+        poolDetails: PoolDetailsMaya,
+        pricePool: PricePool,
+        mayaPriceRD: MayaScanPriceRD
+      ) => {
+        const priceOption = getPoolPriceValueFn({
+          balance: { asset, amount },
+          poolDetails,
+          pricePool,
+          mayaPriceRD
+        })
+        return formatPrice(priceOption, pricePool.asset)
+      }
+
+      // USD Asset case
+      if (isUSDAsset(asset)) {
+        price = balance.toString()
+      } else {
+        const geckoPrice = geckoPriceData[GECKO_MAP?.[asset.symbol.toUpperCase()]]?.usd
+        const isThorchainNonEmpty = poolDetails.length !== 0
+        const isMayachainNonEmpty = poolDetailsMaya.length !== 0
+
+        if (isChainOfMaya(asset.chain) && isChainOfThor(asset.chain)) {
+          // Chain is supported by both MAYA and THOR, prioritize THOR
+          price =
+            (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
+            (isMayachainNonEmpty &&
+              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
+            (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+            price
+        } else if (isChainOfMaya(asset.chain)) {
+          // Chain is supported only by MAYA
+          price =
+            (isMayachainNonEmpty &&
+              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
+            (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+            price
+        } else if (isChainOfThor(asset.chain)) {
+          // Chain is supported only by THOR
+          price =
+            (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
+            (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+            price
+        } else {
+          // Handle pending pool details
+          const priceOptionFromPendingPoolDetails = getPoolPriceValue({
             balance: { asset, amount },
-            poolDetails,
+            poolDetails: pendingPoolDetails,
             pricePool
           })
-          return formatPrice(priceOption, pricePool.asset)
+          price = formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) || price
         }
 
-        const getPriceMaya = (
-          getPoolPriceValueFn: GetPoolPriceValueFnMaya,
-          poolDetails: PoolDetailsMaya,
-          pricePool: PricePool,
-          mayaPriceRD: MayaScanPriceRD
-        ) => {
-          const priceOption = getPoolPriceValueFn({
-            balance: { asset, amount },
-            poolDetails,
-            pricePool,
-            mayaPriceRD
-          })
-          return formatPrice(priceOption, pricePool.asset)
-        }
-
-        // USD Asset case
-        if (isUSDAsset(asset)) {
-          price = balance.toString()
-        } else {
-          const geckoPrice = geckoPriceData[GECKO_MAP?.[asset.symbol.toUpperCase()]]?.usd
-          const isThorchainNonEmpty = poolDetails.length !== 0
-          const isMayachainNonEmpty = poolDetailsMaya.length !== 0
-
-          if (isChainOfMaya(asset.chain) && isChainOfThor(asset.chain)) {
-            // Chain is supported by both MAYA and THOR, prioritize THOR
-            price =
-              (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
-              (isMayachainNonEmpty &&
-                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
-              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
-              price
-          } else if (isChainOfMaya(asset.chain)) {
-            // Chain is supported only by MAYA
-            price =
-              (isMayachainNonEmpty &&
-                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
-              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
-              price
-          } else if (isChainOfThor(asset.chain)) {
-            // Chain is supported only by THOR
-            price =
-              (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
-              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
-              price
-          } else {
-            // Handle pending pool details
-            const priceOptionFromPendingPoolDetails = getPoolPriceValue({
-              balance: { asset, amount },
-              poolDetails: pendingPoolDetails,
-              pricePool
+        // Special case for Maya assets
+        if (price === noDataString && isMayaAsset(asset)) {
+          const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
+          if (RD.isSuccess(mayaPrice)) {
+            price = formatAssetAmountCurrency({
+              amount: mayaPrice.value.assetAmount,
+              asset: mayaPrice.value.asset,
+              decimal: isUSDAsset(mayaPrice.value.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(mayaPrice.value.asset)
             })
-            price = formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) || price
-          }
-
-          // Special case for Maya assets
-          if (price === noDataString && isMayaAsset(asset)) {
-            const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
-            if (RD.isSuccess(mayaPrice)) {
-              price = formatAssetAmountCurrency({
-                amount: mayaPrice.value.assetAmount,
-                asset: mayaPrice.value.asset,
-                decimal: isUSDAsset(mayaPrice.value.asset) ? 2 : 6,
-                trimZeros: !isUSDAsset(mayaPrice.value.asset)
-              })
-            }
           }
         }
-
-        return (
-          <div className="flex flex-col items-end justify-center font-main">
-            <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
-            <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
-          </div>
-        )
       }
-    }),
-    [
-      hidePrivateData,
-      geckoPriceData,
-      poolDetails,
-      pricePool,
-      poolDetailsMaya,
-      mayaPricePool,
-      pendingPoolDetails,
-      mayaScanPrice
-    ]
+      return {
+        balance,
+        price
+      }
+    },
+    [geckoPriceData, mayaPricePool, mayaScanPrice, pendingPoolDetails, poolDetails, poolDetailsMaya, pricePool]
+  )
+
+  const onRowHandler = useCallback(
+    (walletBalance: WalletBalance) => {
+      const { price } = getBalance(walletBalance)
+      const { asset, walletAccount, walletAddress, walletIndex, walletType, hdMode } = walletBalance
+
+      selectAssetHandler({ asset, walletAccount, walletAddress, walletIndex, walletType, hdMode, price })
+    },
+    [getBalance, selectAssetHandler]
   )
 
   const renderActionColumn = useCallback(
@@ -361,9 +348,10 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           )
         )
       }
-      if (isRuneNativeAsset(asset) && deepestPoolAsset) {
+      if (isRuneNativeAsset(asset) && deepestPoolAsset && !isStandaloneLedger) {
         actions.push(
-          createAction('common.trade', () =>
+          createAction('common.trade', () => {
+            setProtocol(THORChain)
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
@@ -372,7 +360,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
             )
-          )
+          })
         )
       }
 
@@ -390,6 +378,21 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           )
         )
       }
+      if (isCacaoAsset(asset) && deepestPoolAsset && !isStandaloneLedger) {
+        actions.push(
+          createAction('common.trade', () => {
+            setProtocol(MAYAChain)
+            navigate(
+              poolsRoutes.swap.path({
+                source: assetToString(asset),
+                target: `${deepestPoolAsset.chain}~${deepestPoolAsset.symbol}`,
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          })
+        )
+      }
 
       if (isSynthAsset(asset) && deepestPoolAsset) {
         actions.push(
@@ -397,7 +400,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             navigate(
               poolsRoutes.swap.path({
                 source: `${asset.chain}/${asset.symbol}`,
-                target: assetToString(isChainOfMaya(asset.chain) ? AssetCacao : AssetRuneNative),
+                target: assetToString(AssetCacao),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -444,7 +447,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (hasActivePool) {
+      if (hasActivePool && !isStandaloneLedger) {
         actions.push(
           createAction('common.add', () => {
             setProtocol(isChainOfThor(asset.chain) && !isRuneNativeAsset(asset) ? THORChain : MAYAChain)
@@ -459,7 +462,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (isRuneNativeAsset(asset) || isCacaoAsset(asset) || isTCYAsset(asset)) {
+      if ((isRuneNativeAsset(asset) || isCacaoAsset(asset) || isTCYAsset(asset)) && !isStandaloneLedger) {
         actions.push(createAction('wallet.action.deposit', () => assetHandler(walletAsset, 'deposit')))
       }
 
@@ -469,40 +472,69 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         </div>
       )
     },
-    [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol]
+    [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol, isStandaloneLedger]
   )
 
-  const actionColumn: ColumnType<WalletBalance> = useMemo(
-    () => ({
-      width: 150,
-      render: renderActionColumn
-    }),
-    [renderActionColumn]
-  )
+  const columns: ColumnDef<WalletBalance, FixmeType>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'asset',
+        header: intl.formatMessage({ id: 'common.pool' }),
+        cell: ({ row }) => {
+          const { asset } = row.original
+          return (
+            <div className="flex items-center space-x-4 pl-4">
+              <AssetIcon asset={asset} size="normal" network={network} />
+              <div className="flex flex-col">
+                <Label className="!text-16 !leading-[18px]" textTransform="uppercase" weight="bold">
+                  {asset.ticker}
+                </Label>
+                {!isSynthAsset(asset) && !isSecuredAsset(asset) && (
+                  <Label color="input" textTransform="uppercase" weight="bold">
+                    {asset.chain}
+                  </Label>
+                )}
+                {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}
+                {isSecuredAsset(asset) && <Styled.AssetSecuredLabel>secured</Styled.AssetSecuredLabel>}
+              </div>
+            </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'balance',
+        header: '',
+        cell: ({ row }) => {
+          const { balance, price } = getBalance(row.original)
 
-  const columns = useMemo(() => {
-    if (screenMap?.lg ?? false) {
-      return [iconColumn, balanceColumn, actionColumn]
-    }
-    if (screenMap?.sm ?? false) {
-      return [iconColumn, balanceColumn, actionColumn]
-    }
-    if (screenMap?.xs ?? false) {
-      return [iconColumn, balanceColumn, actionColumn]
-    }
-    return []
-  }, [actionColumn, balanceColumn, iconColumn, screenMap?.lg, screenMap?.sm, screenMap?.xs])
+          return (
+            <div className="flex flex-col items-end justify-center font-main">
+              <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
+              <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
+            </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'action',
+        header: '',
+        cell: ({ row }) => renderActionColumn(row.original),
+        size: isXLargeView ? 150 : 250
+      }
+    ],
+    [getBalance, hidePrivateData, intl, isXLargeView, network, renderActionColumn]
+  )
 
   const renderAssetsTable = useCallback(
     ({ tableData, loading = false }: { tableData: WalletBalances; loading?: boolean }) => {
       return (
-        <Styled.Table
-          showHeader={false}
-          dataSource={tableData}
-          loading={loading}
-          rowKey={({ asset }) => `${asset.chain}.${asset.symbol}`}
-          onRow={onRowHandler}
+        <Table
           columns={columns}
+          data={tableData}
+          hideHeader
+          hideVerticalBorder
+          loading={loading}
+          onClickRow={onRowHandler}
         />
       )
     },
@@ -523,7 +555,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             })
           },
           ({ msg }: ApiError) => {
-            return <ErrorView title={msg} />
+            return <ErrorView className="rounded-none border-t border-gray0/40 dark:border-gray0d/40" title={msg} />
           },
           (balances) => {
             // Check if balances array is empty
@@ -555,12 +587,8 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
     [renderAssetsTable]
   )
 
-  const renderPanel = useCallback(
-    ({ chain, walletType, walletAddress: oWalletAddress, balances: balancesRD }: ChainBalance, key: number) => {
-      if (O.isNone(oWalletAddress) && RD.isInitial(balancesRD)) {
-        return null
-      }
-
+  const renderHeader = useCallback(
+    ({ chain, walletType, walletAddress: oWalletAddress, balances: balancesRD }: ChainBalance) => {
       const walletAddress = FP.pipe(
         oWalletAddress,
         O.getOrElse(() => intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
@@ -580,29 +608,38 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           }
         )
       )
-
-      const header = (
-        <Styled.HeaderRow className="flex w-full justify-between space-x-4 bg-bg0 py-1 dark:bg-bg0d">
+      return (
+        <div className="flex w-full justify-between space-x-4 bg-bg0 py-1 dark:bg-bg0d">
           <div className="flex flex-row items-center space-x-2">
-            <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
+            <Label className="!w-auto" textTransform="uppercase">
+              {chainToString(chain)}
+            </Label>
             {!isKeystoreWallet(walletType) && (
-              <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+              <WalletTypeLabel className="bg-bg2 dark:bg-bg2d border border-solid border-gray0 dark:border-gray0d">
+                {walletTypeToI18n(walletType, intl)}
+              </WalletTypeLabel>
             )}
-            <Styled.HeaderLabel
-              className="flex items-center space-x-2"
-              color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
-              <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
+            <Label
+              className="!w-auto flex items-center space-x-2"
+              color={RD.isFailure(balancesRD) ? 'error' : 'gray'}
+              textTransform="uppercase">
+              <span>{assetsTxt}</span>
               {isEvmChain(chain) && (
                 <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
               )}
-            </Styled.HeaderLabel>
+            </Label>
           </div>
           <div className="flex items-center justify-end space-x-2">
-            <Styled.HeaderAddress className="flex items-center text-text0 dark:text-text0d">
+            <Label className="flex items-center text-text0 dark:text-text0d" color="gray" textTransform="none">
               {hidePrivateData ? hiddenString : truncateAddress(walletAddress, chain, network)}
-              <Styled.CopyLabel copyable={{ text: walletAddress }} />
-            </Styled.HeaderAddress>
+            </Label>
             <div className="flex items-center justify-end space-x-2 pr-4">
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}>
+                <CopyLabel iconClassName="!text-text2 dark:!text-text2d" textToCopy={walletAddress} />
+              </IconButton>
               <IconButton
                 disabled={disableRefresh}
                 onClick={(e) => {
@@ -620,46 +657,26 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               </IconButton>
             </div>
           </div>
-        </Styled.HeaderRow>
-      )
-
-      return (
-        <Panel key={key} header={header}>
-          {renderBalances({
-            balancesRD,
-            index: key,
-            chain
-          })}
-        </Panel>
+        </div>
       )
     },
-    [disableRefresh, hidePrivateData, intl, network, renderBalances]
+    [disableRefresh, hidePrivateData, intl, network]
   )
 
-  useEffect(() => {
-    if (!collapseChangedByUser) {
-      const keys = FP.pipe(
-        chainBalances,
-        A.map(({ balances }) => balances),
-        A.map(RD.getOrElse((): WalletBalances => [])),
-        A.filterMapWithIndex((i, balances) =>
-          balances.length > 0 || (previousAssetsTableData.current[i] && previousAssetsTableData.current[i].length !== 0)
-            ? O.some(i.toString())
-            : O.none
-        )
-      )
-      setAllPanelKeys(keys)
-    }
-  }, [chainBalances, collapseChangedByUser])
+  const renderPanel = useCallback(
+    ({ chain, walletAddress: oWalletAddress, balances: balancesRD }: ChainBalance, key: number) => {
+      if (O.isNone(oWalletAddress) && RD.isInitial(balancesRD)) {
+        return null
+      }
 
-  const onChangeCollapseHandler = useCallback((key: string | string[]) => {
-    if (Array.isArray(key)) {
-      setOpenPanelKeys(key)
-    } else {
-      setOpenPanelKeys([key])
-    }
-    setCollapseChangedByUser(true)
-  }, [])
+      return renderBalances({
+        balancesRD,
+        index: key,
+        chain
+      })
+    },
+    [renderBalances]
+  )
 
   const closeQrModal = useCallback(() => setShowQRModal(O.none), [setShowQRModal])
 
@@ -683,13 +700,13 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
   return (
     <>
-      <Row className="items-center space-x-2">
+      <div className="flex items-center space-x-2">
         <div
           className="my-2 cursor-pointer rounded-md border border-solid border-turquoise bg-bg0 py-1 px-2 text-14 text-text2 dark:border-gray1d dark:bg-bg0d dark:text-text2d"
           onClick={handleCollapseAll}>
-          {collapseAll
-            ? intl.formatMessage({ id: 'common.collapseAll' })
-            : intl.formatMessage({ id: 'common.expandAll' })}
+          {openPanelKeys.length === 0
+            ? intl.formatMessage({ id: 'common.expandAll' })
+            : intl.formatMessage({ id: 'common.collapseAll' })}
         </div>
         {disabledChains.length > 0 ? (
           <div className="flex items-center text-14 text-text2 dark:border-gray1d dark:text-text2d">
@@ -705,19 +722,21 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         ) : (
           <></>
         )}
-      </Row>
+      </div>
 
-      <Styled.Collapse
-        className="space-y-2"
-        expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
-        defaultActiveKey={openPanelKeys}
-        activeKey={openPanelKeys}
-        expandIconPosition="end"
-        onChange={onChangeCollapseHandler}
-        ghost>
-        {chainBalances.map(renderPanel)}
-        {renderQRCodeModal}
-      </Styled.Collapse>
+      <div className="space-y-2">
+        {chainBalances.map((chainBalance, index) => (
+          <Collapse
+            key={`${chainBalance.chain}${index}${openPanelKeys.includes(index)}`}
+            className="bg-bg0 dark:bg-bg0d"
+            header={renderHeader(chainBalance)}
+            isOpen={openPanelKeys.includes(index)}
+            onToggle={() => toggleOne(index)}>
+            {renderPanel(chainBalance, index)}
+            {renderQRCodeModal}
+          </Collapse>
+        ))}
+      </div>
     </>
   )
 }

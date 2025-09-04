@@ -1,6 +1,6 @@
-import React from 'react'
-
+import { useCallback } from 'react'
 import { ChevronLeftIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
@@ -14,20 +14,21 @@ export type Props = {
   className?: string
 }
 
-export const BackLinkButton: React.FC<Props> = ({ label, path, size = 'normal', className = '' }): JSX.Element => {
+export const BackLinkButton = ({ label, path, size = 'normal', className = '' }: Props): JSX.Element => {
   const navigate = useNavigate()
   const intl = useIntl()
 
-  const clickHandler = () => {
+  const clickHandler = useCallback(() => {
     if (path) {
       navigate(path)
     } else {
       // go back
       navigate(-1)
     }
-  }
+  }, [path, navigate])
+
   return (
-    <TextButton size={size} onClick={clickHandler} className={`mb-10px !p-0 sm:mb-20px ${className}`}>
+    <TextButton className={clsx('!p-0', className)} size={size} onClick={clickHandler}>
       <ChevronLeftIcon className="h-20px w-20px text-inherit" />
       <span className="hidden sm:inline-block">{label || intl.formatMessage({ id: 'common.back' })}</span>
     </TextButton>

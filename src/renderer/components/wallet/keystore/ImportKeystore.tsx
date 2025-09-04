@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { CheckCircleIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
@@ -30,7 +30,7 @@ export type Props = {
   importingKeystoreState: ImportingKeystoreStateRD
 }
 
-export const ImportKeystore: React.FC<Props> = (props): JSX.Element => {
+export const ImportKeystore = (props: Props): JSX.Element => {
   const { importKeystore, importingKeystoreState, loadKeystore$, clientStates, walletId, walletNames } = props
 
   const [form] = Form.useForm()
@@ -138,10 +138,7 @@ export const ImportKeystore: React.FC<Props> = (props): JSX.Element => {
             label={intl.formatMessage({ id: 'common.keystorePassword' })}
             validateTrigger={['onSubmit', 'onBlur']}
             rules={[{ required: true, message: intl.formatMessage({ id: 'wallet.password.empty' }) }]}>
-            <InputPassword
-              className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
-              size="large"
-            />
+            <InputPassword size="large" />
           </Form.Item>
           {/* name */}
           <Form.Item
@@ -156,12 +153,7 @@ export const ImportKeystore: React.FC<Props> = (props): JSX.Element => {
                 </span>
               </div>
             }>
-            <Input
-              className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
-              size="large"
-              maxLength={MAX_WALLET_NAME_CHARS}
-              placeholder={defaultWalletName(walletId)}
-            />
+            <Input size="large" maxLength={MAX_WALLET_NAME_CHARS} placeholder={defaultWalletName(walletId)} />
           </Form.Item>
           {/* submit button */}
           <FlatButton

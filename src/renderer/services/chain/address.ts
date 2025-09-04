@@ -4,6 +4,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -12,9 +13,11 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
@@ -25,6 +28,7 @@ import * as BASE from '../base'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
+import * as ADA from '../cardano'
 import { address$, WalletAddress$ } from '../clients'
 import * as COSMOS from '../cosmos'
 import * as DASH from '../dash'
@@ -34,8 +38,10 @@ import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
+import * as XRP from '../ripple'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
+import * as ZEC from '../zcash'
 import { client$ } from './client'
 
 /**
@@ -77,6 +83,12 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return XRD.address$
     case SOLChain:
       return SOL.address$
+    case ZECChain:
+      return ZEC.address$
+    case ADAChain:
+      return ADA.address$
+    case XRPChain:
+      return XRP.address$
     default:
       return Rx.of(O.none)
   }

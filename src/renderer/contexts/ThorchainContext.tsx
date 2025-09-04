@@ -38,7 +38,11 @@ import {
   getTxStatus$,
   reloadTxStatus,
   getTradeAccount$,
-  reloadTradeAccount
+  reloadTradeAccount,
+  getTcyClaim$,
+  reloadTcyClaim,
+  getTcyStaker$,
+  reloadTcyStaker
 } from '../services/thorchain'
 
 type ThorchainContextValue = {
@@ -80,6 +84,10 @@ type ThorchainContextValue = {
   reloadTxStatus: typeof reloadTxStatus
   getTradeAccount$: typeof getTradeAccount$
   reloadTradeAccount: typeof reloadTradeAccount
+  getTcyClaim$: typeof getTcyClaim$
+  reloadTcyClaim: typeof reloadTcyClaim
+  getTcyStaker$: typeof getTcyStaker$
+  reloadTcyStaker: typeof reloadTcyClaim
 }
 
 const initialContext: ThorchainContextValue = {
@@ -120,12 +128,16 @@ const initialContext: ThorchainContextValue = {
   getTxStatus$,
   reloadTxStatus,
   getTradeAccount$,
-  reloadTradeAccount
+  reloadTradeAccount,
+  getTcyClaim$,
+  reloadTcyClaim,
+  getTcyStaker$,
+  reloadTcyStaker
 }
 
 const ThorchainContext = createContext<ThorchainContextValue | null>(null)
 
-export const ThorchainProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const ThorchainProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <ThorchainContext.Provider value={initialContext}>{children}</ThorchainContext.Provider>
 }
 

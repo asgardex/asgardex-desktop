@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Grid } from 'antd'
 import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -16,6 +15,7 @@ import { BorderButton } from '../../components/uielements/button'
 import { useI18nContext } from '../../contexts/I18nContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedgerAddresses } from '../../hooks/useLedgerAddresses'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
@@ -24,7 +24,6 @@ import { useTheme } from '../../hooks/useTheme'
 import { noWallet } from '../../routes/wallet'
 import { base as createWalletBase } from '../../routes/wallet/create'
 import { base as importWalletBase } from '../../routes/wallet/imports'
-import { View } from '../View'
 import { ViewRoutes } from '../ViewRoutes'
 import HaltedChainsWarning from './AppHaltedChains'
 import MidgardErrorAlert from './AppMidgardError'
@@ -48,7 +47,7 @@ export const AppView = (): JSX.Element => {
     return isNoWalletView || isCreateWalletView || isImportWalletView
   }, [location.pathname])
 
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
+  const isDesktopView = useBreakpoint()?.lg ?? false
 
   // locale
   useEffect(() => {
@@ -69,19 +68,24 @@ export const AppView = (): JSX.Element => {
     service: {
       apiEndpoint$,
       reloadApiEndpoint,
-      pools: { haltedChains$ }
+      pools: { haltedChains$ },
+      healthStatus$
     }
   } = useMidgardContext()
   const {
     service: {
       apiEndpoint$: apiEndpointMaya$,
       reloadApiEndpoint: reloadApiEndpointMaya,
-      pools: { haltedChains$: haltedChainsMaya$ }
+      pools: { haltedChains$: haltedChainsMaya$ },
+      healthStatus$: healthStatusMaya$
     }
   } = useMidgardMayaContext()
 
   const apiEndpointThor = useObservableState(apiEndpoint$, RD.initial)
   const apiEndpointMaya = useObservableState(apiEndpointMaya$, RD.initial)
+
+  const midgardStatusRD = useObservableState(healthStatus$, RD.initial)
+  const midgardMayaStatusRD = useObservableState(healthStatusMaya$, RD.initial)
 
   const haltedChainsThorRD = useObservableState(haltedChains$, RD.initial)
   const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
@@ -102,7 +106,7 @@ export const AppView = (): JSX.Element => {
         (e) => (
           <Styled.Alert
             type="warning"
-            message={intl.formatMessage({ id: 'wallet.imports.error.keystore.import' })}
+            title={intl.formatMessage({ id: 'wallet.imports.error.keystore.import' })}
             description={e?.message ?? e.toString()}
             action={
               <BorderButton color="warning" size="medium" onClick={reloadPersistentWallets}>
@@ -126,7 +130,7 @@ export const AppView = (): JSX.Element => {
         (e) => (
           <Styled.Alert
             type="warning"
-            message={intl.formatMessage({ id: 'wallet.imports.error.ledger.import' })}
+            title={intl.formatMessage({ id: 'wallet.imports.error.ledger.import' })}
             description={e?.message ?? e.toString()}
             action={
               <BorderButton color="warning" size="medium" onClick={reloadPersistentLedgerAddresses}>
@@ -160,12 +164,12 @@ export const AppView = (): JSX.Element => {
         <ViewRoutes />
       ) : (
         <div className="flex h-full flex-col">
-          <AppUpdateView />
-          <Styled.AppLayout className="!bg-bg3 dark:!bg-bg3d">
+          <div className="flex flex-row h-full bg-bg3 dark:bg-bg3d">
             {isDesktopView && (
               <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />
             )}
-            <View>
+            <div className="flex flex-col w-full overflow-auto p-4 lg:w-[calc(100vw-240px)] lg:py-8 lg:px-12">
+              <AppUpdateView />
               <Header />
               <MidgardErrorAlert apiEndpoint={apiEndpointThor} reloadHandler={reloadApiEndpoint} />
               <MidgardErrorAlert apiEndpoint={apiEndpointMaya} reloadHandler={reloadApiEndpointMaya} />
@@ -176,16 +180,18 @@ export const AppView = (): JSX.Element => {
                   haltedChainsRD={haltedChainsThorRD}
                   mimirHaltRD={mimirHaltThorRD}
                   protocol={THORChain}
+                  midgardStatusRD={midgardStatusRD}
                 />
                 <HaltedChainsWarning
                   haltedChainsRD={haltedChainsMayaRD}
                   mimirHaltRD={mimirHaltMayaRD}
                   protocol={MayaChain}
+                  midgardStatusRD={midgardMayaStatusRD}
                 />
               </div>
               <ViewRoutes />
-            </View>
-          </Styled.AppLayout>
+            </div>
+          </div>
         </div>
       )}
     </Styled.AppWrapper>

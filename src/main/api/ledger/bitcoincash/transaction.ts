@@ -1,4 +1,4 @@
-import * as Transport from '@ledgerhq/hw-transport'
+import type Transport from '@ledgerhq/hw-transport'
 import { AssetBCH, ClientLedger, defaultBchParams } from '@xchainjs/xchain-bitcoincash'
 import { FeeOption, FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
@@ -22,7 +22,7 @@ export const send = async ({
   walletAccount,
   walletIndex
 }: {
-  transport: Transport.default
+  transport: Transport
   network: Network
   sender?: Address
   recipient: Address

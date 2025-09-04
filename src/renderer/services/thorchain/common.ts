@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Network } from '@xchainjs/xchain-client'
+import { Network as ClientNetwork, Network } from '@xchainjs/xchain-client'
 import { Client, getChainId, THORChain } from '@xchainjs/xchain-thorchain'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -11,10 +11,9 @@ import { isError } from '../../../shared/utils/guard'
 import { triggerStream } from '../../helpers/stateHelper'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
-import { getStorageState, getStorageState$, modifyStorage } from '../storage/common'
+import { getStorageState, thornodeApi$, modifyStorage, thornodeRpc$ } from '../storage/common'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
-import { DEFAULT_CLIENT_URL } from './const'
 import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 
 // `TriggerStream` to reload ClientUrl
@@ -24,27 +23,22 @@ const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
  * Stream of ClientUrl (from storage)
  */
 const clientUrl$: ClientUrl$ = FP.pipe(
-  Rx.combineLatest([getStorageState$, reloadClientUrl$]),
-  RxOp.map(([storage]) =>
-    FP.pipe(
-      storage,
-      O.map(({ thornodeApi, thornodeRpc }) => ({
-        [Network.Testnet]: {
-          node: thornodeApi.testnet,
-          rpc: thornodeRpc.testnet
-        },
-        [Network.Stagenet]: {
-          node: thornodeApi.stagenet,
-          rpc: thornodeRpc.stagenet
-        },
-        [Network.Mainnet]: {
-          node: thornodeApi.mainnet,
-          rpc: thornodeRpc.mainnet
-        }
-      })),
-      O.getOrElse(() => DEFAULT_CLIENT_URL)
-    )
-  )
+  Rx.combineLatest([thornodeApi$, thornodeRpc$, reloadClientUrl$]),
+  RxOp.map(([thornodeApi, thornodeRpc, _]) => ({
+    [ClientNetwork.Testnet]: {
+      node: thornodeApi.testnet,
+      rpc: thornodeRpc.testnet
+    },
+    [ClientNetwork.Stagenet]: {
+      node: thornodeApi.stagenet,
+      rpc: thornodeRpc.stagenet
+    },
+    [ClientNetwork.Mainnet]: {
+      node: thornodeApi.mainnet,
+      rpc: thornodeRpc.mainnet
+    }
+  })),
+  RxOp.distinctUntilChanged()
 )
 
 const setThornodeRpcUrl = (url: string, network: Network) => {
@@ -115,6 +109,50 @@ const clientState$: ClientState$ = FP.pipe(
   RxOp.shareReplay(1)
 )
 
+/**
+ * Read-only client for fetching data without requiring keystore phrase
+ * This client can fetch balances but cannot send transactions
+ */
+const readOnlyClientState$: ClientState$ = FP.pipe(
+  Rx.combineLatest([clientNetwork$, clientUrl$]),
+  RxOp.switchMap(
+    ([network, clientUrl]): ClientState$ =>
+      FP.pipe(
+        // request chain id from node whenever network changes
+        Rx.from(getChainId(clientUrl[network].node)),
+        RxOp.switchMap(() =>
+          Rx.of(
+            (() => {
+              const getDefaultClientUrls = (): Record<Network, string[]> => {
+                return {
+                  [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
+                  [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
+                  [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+                }
+              }
+              try {
+                // Create client without phrase for read-only operations
+                const readOnlyClient = new Client({
+                  clientUrls: getDefaultClientUrls(),
+                  network
+                  // No phrase - this limits functionality to read-only operations
+                })
+                return RD.success(readOnlyClient)
+              } catch (error) {
+                return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only THOR client'))
+              }
+            })()
+          )
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))))
+      )
+  ),
+  RxOp.startWith(RD.initial),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$ = readOnlyClientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
+
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
@@ -135,6 +173,7 @@ const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 export {
   client$,
   clientState$,
+  readOnlyClient$,
   clientUrl$,
   reloadClientUrl,
   setThornodeRpcUrl,

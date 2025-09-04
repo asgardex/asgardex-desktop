@@ -1,8 +1,7 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { Col, Row } from 'antd'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -10,8 +9,8 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ErrorView } from '../../../components/shared/error'
-import { LoadingView } from '../../../components/shared/loading'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
+import { Spin } from '../../../components/uielements/spin'
 import { Interact } from '../../../components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from '../../../components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
@@ -37,9 +36,8 @@ import { userNodes$ } from '../../../services/storage/userNodes'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
-import * as Styled from './InteractView.styles'
 
-export const InteractViewMAYA: React.FC = () => {
+export const InteractViewMAYA = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.InteractParams>()
 
   const { selectedAsset$ } = useWalletContext()
@@ -167,8 +165,8 @@ export const InteractViewMAYA: React.FC = () => {
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),
     RD.fold(
-      () => <LoadingView size="large" />,
-      () => <LoadingView size="large" />,
+      () => <Spin />,
+      () => <Spin />,
       (error) => (
         <div>
           <BackLinkButton />
@@ -177,21 +175,18 @@ export const InteractViewMAYA: React.FC = () => {
       ),
       ([interactType, { walletType, walletAccount, walletIndex, hdMode }]) => (
         <>
-          <div className="relative mb-20px flex items-center justify-between">
-            {' '}
-            <Row justify="space-between">
-              <Col>
-                <BackLinkButton />
-              </Col>
+          <div className="relative mb-4 flex items-center justify-between">
+            <div className="flex items-start justify-between">
+              <BackLinkButton />
               <RefreshButton className="absolute right-0" onClick={reloadHandler} />
-            </Row>
+            </div>
           </div>
 
-          <Styled.Container>
+          <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
             {FP.pipe(
               oWalletBalance,
               O.fold(
-                () => <LoadingView size="large" />,
+                () => <Spin />,
                 (walletBalance) => (
                   <Interact
                     interactType={interactType}
@@ -223,7 +218,7 @@ export const InteractViewMAYA: React.FC = () => {
                 )
               )
             )}
-          </Styled.Container>
+          </div>
         </>
       )
     )

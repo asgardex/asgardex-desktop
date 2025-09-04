@@ -1,4 +1,3 @@
-import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -8,29 +7,15 @@ import {
   AssetSecuredLabel as AssetSecuredLabelUI
 } from '../../common/Common.styles'
 import { Label as UILabel } from '../../label'
-import { AssetIcon as UIAssetIcon } from '../assetIcon'
 
 export type AssetDataSize = 'small' | 'big'
-
-export const Wrapper = styled(A.Row).attrs({
-  align: 'middle'
-})`
-  padding: 5px 0px;
-  margin-right: 8px;
-
-  &:last-child {
-    margin: 0;
-  }
-`
-
-export const AssetIcon = styled(UIAssetIcon)``
 
 export const TickerLabel = styled(UILabel).attrs({
   textTransform: 'uppercase',
   weight: 'bold'
 })`
   height: 18px;
-  padding: 0px 16px 0px 11px;
+  padding: 0px 16px 0px 8px;
   font-size: 16px;
   line-height: 18px;
 `
@@ -56,14 +41,6 @@ export const PriceLabel = styled(UILabel).attrs({
 })`
   padding-left: 10px;
   font-family: 'MainFontRegular';
-`
-
-export const Col = styled(A.Col)`
-  margin-right: 8px;
-
-  &:last-child {
-    margin: 0;
-  }
 `
 
 export const AssetIconContainer = styled.div`

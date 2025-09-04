@@ -4,12 +4,16 @@ import { assetWithDecimal$ } from './decimal'
 import {
   reloadSymDepositFees,
   symDepositFees$,
+  depositFees$,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
   swapFees$,
   utxoFeesWithRates$,
-  reloadUtxoFeesWithRates$
+  reloadUtxoFeesWithRates$,
+  evmFees$,
+  standaloneLedgerFees$,
+  reloadStandaloneLedgerFees
 } from './fees'
 import {
   swap$,
@@ -30,6 +34,7 @@ export {
   clientByChain$,
   reloadSymDepositFees,
   symDepositFees$,
+  depositFees$,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
@@ -45,5 +50,8 @@ export {
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,
-  reloadUtxoFeesWithRates$
+  reloadUtxoFeesWithRates$,
+  evmFees$,
+  standaloneLedgerFees$,
+  reloadStandaloneLedgerFees
 }

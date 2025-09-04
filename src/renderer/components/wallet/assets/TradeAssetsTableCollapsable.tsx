@@ -1,11 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
-import { Network } from '@xchainjs/xchain-client'
+import { ColumnDef } from '@tanstack/react-table'
+import { Balance, Network } from '@xchainjs/xchain-client'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { PoolDetails as PoolDetailsMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
+  Address,
   AnyAsset,
   assetFromString,
   assetToString,
@@ -14,8 +17,6 @@ import {
   Chain,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
-import { ColumnType } from 'antd/lib/table'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -24,15 +25,21 @@ import * as Rx from 'rxjs'
 import { DEFAULT_EVM_HD_MODE } from '../../../../shared/evm/types'
 import { chainToString, EnabledChain } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
-import { WalletType } from '../../../../shared/wallet/types'
+import { HDMode, WalletType } from '../../../../shared/wallet/types'
 import { CHAIN_WEIGHTS_THOR, ZERO_BASE_AMOUNT } from '../../../const'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
-import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { Action, getTradeMemo } from '../../../helpers/memoHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
+import {
+  getPoolPriceValue as getPoolPriceValueMaya,
+  getDeepestPool as getDeepestPoolM
+} from '../../../helpers/poolHelperMaya'
 import { hiddenString } from '../../../helpers/stringHelper'
+import { useBreakpoint } from '../../../hooks/useBreakpoint'
+import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import * as poolsRoutes from '../../../routes/pools'
@@ -40,85 +47,96 @@ import { INITIAL_WITHDRAW_STATE } from '../../../services/chain/const'
 import { TradeWithdrawParams, WithdrawState } from '../../../services/chain/types'
 import { PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import { MimirHaltRD, TradeAccount } from '../../../services/thorchain/types'
-import { ChainBalances, SelectedWalletAsset, WalletBalance, WalletBalances } from '../../../services/wallet/types'
+import { ChainBalances, SelectedWalletAsset } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
+import { useApp } from '../../../store/app/hooks'
+import { FixmeType } from '../../../types/asgardex'
 import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
 import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
-import { Collapse as StyledCollapse } from '../../settings/Common.styles'
+import { Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { ViewTxButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { IconButton } from '../../uielements/button/IconButton'
-import * as Styled from './AssetsTableCollapsable.styles'
+import { Collapse } from '../../uielements/collapse'
+import { WalletTypeLabel } from '../../uielements/common/Common.styles'
+import { CopyLabel, Label } from '../../uielements/label'
 
-const { Panel } = StyledCollapse
+export type TradeWalletBalance = Balance & {
+  walletAddress: Address
+  walletType: WalletType
+  walletAccount: number
+  walletIndex: number
+  hdMode: HDMode
+  protocol: Chain
+}
+export type TradeWalletBalances = TradeWalletBalance[]
 
 type Props = {
   chainBalances: Rx.Observable<ChainBalances>
   disableRefresh: boolean
   tradeAccountBalances: TradeAccount[]
   pricePool: PricePool
+  pricePoolMaya: PricePool
   poolsData: PoolsDataMap
+  poolsDataMaya: PoolsDataMap
   poolDetails: PoolDetails
+  poolDetailsMaya: PoolDetailsMaya
   pendingPoolDetails: PoolDetails
+  pendingPoolDetailsMaya: PoolDetailsMaya
   selectAssetHandler: (asset: SelectedWalletAsset) => void
   mimirHalt: MimirHaltRD
   network: Network
   hidePrivateData: boolean
+  refreshHandler: (protocol?: Chain) => void
+  isRefreshing: boolean
 }
 
 type AssetAddressMap = Record<string, O.Option<string>>
 
-export const TradeAssetsTableCollapsable: React.FC<Props> = ({
+export const TradeAssetsTableCollapsable = ({
   chainBalances: chainBalances$,
   disableRefresh,
   tradeAccountBalances,
   pricePool,
+  pricePoolMaya,
   poolsData,
+  poolsDataMaya,
   poolDetails,
-  selectAssetHandler,
+  poolDetailsMaya,
   network,
-  hidePrivateData
-}) => {
+  hidePrivateData,
+  refreshHandler,
+  isRefreshing
+}: Props) => {
   const intl = useIntl()
   const navigate = useNavigate()
+  const isXLargeView = useBreakpoint()?.xl ?? false
+  const { mayaScanPriceRD } = useObserveMayaScanPrice()
+  const { setProtocol } = useApp()
 
   const { tradeWithdraw$ } = useChainContext()
   const {
-    keystoreService: { validatePassword$ },
-    reloadBalancesByChain
+    keystoreService: { validatePassword$ }
   } = useWalletContext()
-
-  const handleRefreshClick = useCallback(
-    (chain: Chain, walletType: WalletType) => {
-      const lazyReload = reloadBalancesByChain(chain, walletType)
-      lazyReload()
-    },
-    [reloadBalancesByChain]
-  )
 
   const [assetToAddress, setAssetToAddress] = useState<AssetAddressMap>({})
 
   useEffect(() => {
     const subscription = chainBalances$.subscribe((chainBalances) => {
       const addressMap: AssetAddressMap = {}
-
       chainBalances.forEach(({ balances, walletAddress, walletType }) => {
         if (balances._tag === 'RemoteSuccess') {
           balances.value.forEach(({ asset }) => {
-            addressMap[`${asset.chain.toUpperCase()}.${walletType}`] = walletAddress // Map symbol to address
+            addressMap[`${asset.chain.toUpperCase()}.${walletType}`] = walletAddress
           })
         }
       })
-
       setAssetToAddress(addressMap)
     })
-
-    return () => {
-      subscription.unsubscribe() // Cleanup subscription on unmount
-    }
+    return () => subscription.unsubscribe()
   }, [chainBalances$])
 
   type ModalState = 'confirm' | 'deposit' | 'none'
@@ -126,21 +144,11 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
 
-  const iconColumn = useMemo(
-    () => ({
-      title: '',
-      width: 120,
-      render: ({ asset }: WalletBalance) => (
-        <Row className="relative" justify="center" align="middle">
-          <AssetIcon asset={asset} size="normal" network={network} />
-        </Row>
-      )
-    }),
-    [network]
-  )
-
   const { openExplorerTxUrl: openRuneExplorerTxUrl, getExplorerTxUrl: getRuneExplorerTxUrl } = useOpenExplorerTxUrl(
     O.some(THORChain)
+  )
+  const { openExplorerTxUrl: openMayaExplorerTxUrl, getExplorerTxUrl: getMayaExplorerTxUrl } = useOpenExplorerTxUrl(
+    O.some(MAYAChain)
   )
 
   const {
@@ -159,22 +167,19 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     onCloseTxModal()
   }, [onCloseTxModal])
 
-  // Withdraw start time
   const [withdrawStartTime, setWithdrawStartTime] = useState<number>(0)
 
   const renderWithdrawConfirm = useMemo(() => {
     if (showWithdrawConfirm === 'none') return <></>
 
-    const onClose = () => {
-      setShowWithdrawConfirm('none')
-    }
+    const onClose = () => setShowWithdrawConfirm('none')
 
     const onSuccess = () => {
       FP.pipe(
         oTradeWithdrawParams,
         O.map((params) => params.walletType),
         O.fold(
-          () => console.warn('No wallet type available'), // Fallback for None
+          () => console.warn('No wallet type available'),
           (walletType) => {
             if (walletType === WalletType.Ledger) {
               setShowLedgerModal('deposit')
@@ -186,8 +191,8 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       )
     }
 
-    const content = () => {
-      return FP.pipe(
+    const content = () =>
+      FP.pipe(
         oTradeWithdrawParams,
         O.map((params) => (
           <div key={params.walletAddress}>
@@ -205,7 +210,6 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
                   })}
                 </span>
               </div>
-
               <div className="mx-3 mt-5 flex flex-col">
                 <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.memo' })}
@@ -217,7 +221,6 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
         )),
         O.toNullable
       )
-    }
 
     return (
       <ConfirmationModal
@@ -234,9 +237,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     const assetWithAmount = FP.pipe(
       oTradeWithdrawParams,
       O.fold(
-        // None case
         () => ({ asset: AssetRuneNative, amount: ZERO_BASE_AMOUNT }),
-        // Some case
         (params) => ({ asset: params.asset, amount: params.amount })
       )
     )
@@ -279,11 +280,8 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     FP.pipe(
       oTradeWithdrawParams,
       O.map((params) => {
-        // set start time
         setWithdrawStartTime(Date.now())
-        // subscribe to tradeWithdraw$
         subscribeTradeWithdrawState(tradeWithdraw$(params))
-
         return true
       })
     )
@@ -291,11 +289,8 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
 
   const renderWithdrawTxModal = useMemo(() => {
     const { withdraw: withdrawRD, withdrawTx } = tradeWithdrawState
-
-    // don't render TxModal in initial state
     if (RD.isInitial(withdrawRD)) return <></>
 
-    // Get timer value
     const timerValue = FP.pipe(
       withdrawRD,
       RD.fold(
@@ -309,7 +304,6 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       )
     )
 
-    // title
     const txModalTitle = FP.pipe(
       withdrawRD,
       RD.fold(
@@ -326,6 +320,15 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       O.map((txHash) => txHash)
     )
 
+    const oProtocol = FP.pipe(
+      oTradeWithdrawParams,
+      O.map((params) => params.protocol)
+    )
+    const protocolAsset = FP.pipe(
+      oProtocol,
+      O.map((protocol) => (protocol === THORChain ? AssetRuneNative : AssetCacao)),
+      O.getOrElse(() => AssetRuneNative)
+    )
     return (
       <TxModal
         title={txModalTitle}
@@ -337,9 +340,22 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
         extraResult={
           <ViewTxButton
             txHash={oTxHash}
-            onClick={openRuneExplorerTxUrl}
-            txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: AssetRuneNative.ticker })}
+            onClick={FP.pipe(
+              oProtocol,
+              O.map((protocol) => (protocol === THORChain ? openRuneExplorerTxUrl : openMayaExplorerTxUrl)),
+              O.getOrElse(() => openRuneExplorerTxUrl)
+            )}
+            txUrl={FP.pipe(
+              oTxHash,
+              O.chain((txHash) =>
+                FP.pipe(
+                  oProtocol,
+                  O.map((protocol) => (protocol === THORChain ? getRuneExplorerTxUrl : getMayaExplorerTxUrl)(txHash)),
+                  O.getOrElse(() => getRuneExplorerTxUrl(txHash))
+                )
+              )
+            )}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: protocolAsset.ticker })}
           />
         }
         extra={txModalExtraContentAsym}
@@ -347,65 +363,50 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     )
   }, [
     tradeWithdrawState,
+    oTradeWithdrawParams,
     onCloseTxModal,
     onFinishTxModal,
     withdrawStartTime,
-    openRuneExplorerTxUrl,
-    getRuneExplorerTxUrl,
     intl,
-    txModalExtraContentAsym
+    txModalExtraContentAsym,
+    openRuneExplorerTxUrl,
+    openMayaExplorerTxUrl,
+    getRuneExplorerTxUrl,
+    getMayaExplorerTxUrl
   ])
 
   const renderLedgerConfirmationModal = useMemo(() => {
     if (showLedgerModal === 'none') return <></>
 
-    const onClose = () => {
-      setShowLedgerModal('none')
-    }
+    const onClose = () => setShowLedgerModal('none')
     const onSuccess = () => {
       if (showLedgerModal === 'deposit') submitTradeWithdrawTx()
       setShowLedgerModal('none')
     }
 
-    const chainAsString = chainToString(THORChain)
-    const txtNeedsConnected = intl.formatMessage(
-      {
-        id: 'ledger.needsconnected'
-      },
-      { chain: chainAsString }
+    const chainAsString = FP.pipe(
+      oTradeWithdrawParams,
+      O.map((params) => chainToString(params.protocol === THORChain ? THORChain : MAYAChain)),
+      O.getOrElse(() => chainToString(THORChain))
     )
-
-    const description1 = txtNeedsConnected
+    const txtNeedsConnected = intl.formatMessage({ id: 'ledger.needsconnected' }, { chain: chainAsString })
 
     return (
       <LedgerConfirmationModal
         onSuccess={onSuccess}
         onClose={onClose}
         visible
-        chain={THORChain}
+        chain={FP.pipe(
+          oTradeWithdrawParams,
+          O.map((params) => (params.protocol === THORChain ? THORChain : MAYAChain)),
+          O.getOrElse(() => chainToString(THORChain))
+        )}
         network={network}
-        description1={description1}
+        description1={txtNeedsConnected}
         addresses={O.none}
       />
     )
-  }, [intl, network, showLedgerModal, submitTradeWithdrawTx])
-
-  const tickerColumn = useMemo(
-    () => ({
-      width: 80,
-      render: ({ asset }: WalletBalance) => (
-        <Styled.AssetTickerWrapper>
-          <Styled.Label nowrap>
-            <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
-            <Styled.ChainLabelWrapper>
-              <Styled.ChainLabel className="!text-turquoise">{THORChain}</Styled.ChainLabel>
-            </Styled.ChainLabelWrapper>
-          </Styled.Label>
-        </Styled.AssetTickerWrapper>
-      )
-    }),
-    []
-  )
+  }, [intl, network, showLedgerModal, submitTradeWithdrawTx, oTradeWithdrawParams])
 
   const renderPasswordConfirmationModal = useMemo(() => {
     if (showPasswordModal === 'none') return <></>
@@ -414,9 +415,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       if (showPasswordModal === 'deposit') submitTradeWithdrawTx()
       setShowPasswordModal('none')
     }
-    const onClose = () => {
-      setShowPasswordModal('none')
-    }
+    const onClose = () => setShowPasswordModal('none')
 
     return (
       <WalletPasswordConfirmationModal onSuccess={onSuccess} onClose={onClose} validatePassword$={validatePassword$} />
@@ -425,56 +424,48 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
 
   const getAddressForAsset = (symbol: string, assetToAddress: AssetAddressMap): string =>
     O.getOrElse(() => 'Address not found')(assetToAddress[symbol] || O.none)
-  const balanceColumn = useMemo(
-    () => ({
-      render: ({ asset, amount }: WalletBalance) => {
-        const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
-        const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
-          if (O.isSome(priceOption)) {
-            return formatAssetAmountCurrency({
-              amount: baseToAsset(priceOption.value),
-              asset: pricePoolAsset,
-              decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
-            })
-          }
-          return null
-        }
-        const priceOption = getPoolPriceValue({
-          balance: { asset, amount },
-          poolDetails,
-          pricePool
-        })
-        const price = formatPrice(priceOption, pricePool.asset)
 
-        return (
-          <div className="flex flex-col items-end justify-center font-main">
-            <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
-            <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
-          </div>
-        )
-      }
-    }),
-    [hidePrivateData, poolDetails, pricePool]
-  )
   const renderActionColumn = useCallback(
-    ({ asset, amount, walletType, walletAddress, walletAccount, walletIndex, hdMode }: WalletBalance) => {
+    ({
+      asset,
+      amount,
+      walletType,
+      walletAddress,
+      walletAccount,
+      walletIndex,
+      hdMode,
+      protocol
+    }: TradeWalletBalance) => {
       const normalizedAssetString = `${asset.chain}.${asset.symbol}`
-      const hasActivePool: boolean = FP.pipe(O.fromNullable(poolsData[normalizedAssetString]), O.isSome)
+      const poolsDataToUse = protocol === MAYAChain ? poolsDataMaya : poolsData
+      const hasActivePool = FP.pipe(O.fromNullable(poolsDataToUse[normalizedAssetString]), O.isSome)
 
-      const deepestPoolAsset = FP.pipe(
-        getDeepestPool(poolDetails),
-        O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
-        O.toNullable
-      )
+      const deepestPoolAsset =
+        protocol === MAYAChain
+          ? FP.pipe(
+              getDeepestPoolM(poolDetailsMaya),
+              O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
+              O.toNullable
+            )
+          : FP.pipe(
+              getDeepestPool(poolDetails),
+              O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
+              O.toNullable
+            )
 
       const createAction = (labelId: string, callback: () => void) => ({
         label: intl.formatMessage({ id: labelId }),
-        callback
+        callback: () => {
+          setProtocol(protocol)
+          callback()
+        }
       })
 
       const targetAsset =
         deepestPoolAsset && deepestPoolAsset.chain === asset.chain && deepestPoolAsset.symbol === asset.symbol
-          ? AssetRuneNative
+          ? protocol === MAYAChain
+            ? AssetCacao
+            : AssetRuneNative
           : deepestPoolAsset
 
       const actions: ActionButtonAction[] = []
@@ -485,9 +476,10 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: isRuneNativeAsset(targetAsset)
-                  ? assetToString(targetAsset)
-                  : `${targetAsset.chain}~${targetAsset.symbol}`,
+                target:
+                  isRuneNativeAsset(targetAsset) || isCacaoAsset(targetAsset)
+                    ? assetToString(targetAsset)
+                    : `${targetAsset.chain}~${targetAsset.symbol}`,
                 sourceWalletType: walletType,
                 targetWalletType: walletType,
                 recipient: walletAddress
@@ -499,7 +491,6 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       if (targetAsset && hasActivePool) {
         actions.push(
           createAction('common.withdraw', () => {
-            // Set withdraw parameters
             setTradeWithdrawParams(
               O.some({
                 asset,
@@ -513,12 +504,10 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
                   Action.withdraw,
                   getAddressForAsset(`${asset.chain.toUpperCase()}.${walletType}`, assetToAddress)
                 ),
-                protocol: THORChain,
+                protocol,
                 hdMode
               })
             )
-
-            // Show the confirm modal
             setShowWithdrawConfirm('confirm')
           })
         )
@@ -530,180 +519,257 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
         </div>
       )
     },
-    [poolsData, poolDetails, intl, navigate, network, assetToAddress]
+    [poolsDataMaya, poolsData, poolDetailsMaya, poolDetails, intl, setProtocol, navigate, network, assetToAddress]
   )
 
-  const actionColumn: ColumnType<WalletBalance> = useMemo(
-    () => ({
-      width: 150,
-      render: renderActionColumn
-    }),
-    [renderActionColumn]
-  )
-
-  const columns = useMemo(
-    () => [iconColumn, tickerColumn, balanceColumn, actionColumn],
-    [iconColumn, tickerColumn, actionColumn, balanceColumn]
-  )
-
-  const onRowHandler = useCallback(
-    ({ asset, walletAddress, walletType, walletAccount, walletIndex, hdMode }: WalletBalance) => ({
-      onClick: () => selectAssetHandler({ asset, walletAddress, walletAccount, walletType, walletIndex, hdMode })
-    }),
-    [selectAssetHandler]
+  const columns: ColumnDef<TradeWalletBalance, FixmeType>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'asset',
+        header: '',
+        cell: ({ row }) => {
+          const { asset, protocol } = row.original
+          return (
+            <div className="flex items-center space-x-2 mx-2">
+              <AssetIcon asset={asset} size="normal" network={network} />
+              <div className="flex flex-col">
+                <Label className="!text-16 !leading-[18px]" textTransform="uppercase" weight="bold">
+                  {asset.ticker}
+                </Label>
+                <Label color="primary" weight="bold">
+                  {protocol}
+                </Label>
+              </div>
+            </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'balance',
+        header: '',
+        cell: ({ row }) => {
+          const { asset, amount, protocol } = row.original
+          const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
+          const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
+            if (O.isSome(priceOption)) {
+              return formatAssetAmountCurrency({
+                amount: baseToAsset(priceOption.value),
+                asset: pricePoolAsset,
+                decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
+              })
+            }
+            return null
+          }
+          const priceOption =
+            protocol === MAYAChain
+              ? getPoolPriceValueMaya({
+                  balance: { asset, amount },
+                  poolDetails: poolDetailsMaya,
+                  pricePool: pricePoolMaya,
+                  mayaPriceRD: mayaScanPriceRD
+                })
+              : getPoolPriceValue({
+                  balance: { asset, amount },
+                  poolDetails,
+                  pricePool
+                })
+          const price = formatPrice(priceOption, protocol === MAYAChain ? pricePoolMaya.asset : pricePool.asset)
+          return (
+            <div className="flex flex-col items-end justify-center font-main">
+              <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
+              <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
+            </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'actions',
+        header: '',
+        cell: ({ row }) => renderActionColumn(row.original),
+        size: isXLargeView ? 120 : 250
+      }
+    ],
+    [
+      hidePrivateData,
+      isXLargeView,
+      mayaScanPriceRD,
+      network,
+      poolDetails,
+      poolDetailsMaya,
+      pricePool,
+      pricePoolMaya,
+      renderActionColumn
+    ]
   )
 
   const renderAssetsTable = useCallback(
-    ({ tableData, loading }: { tableData: WalletBalances; loading?: boolean }) => {
+    ({ tableData, loading }: { tableData: TradeWalletBalances; loading?: boolean }) => {
       const sortedTableData = [...tableData].sort((a, b) => {
         const weightA = CHAIN_WEIGHTS_THOR[a.asset.chain as EnabledChain] ?? Infinity
         const weightB = CHAIN_WEIGHTS_THOR[b.asset.chain as EnabledChain] ?? Infinity
         return weightA - weightB
       })
-
       return (
-        <Styled.Table
-          showHeader={false}
-          dataSource={sortedTableData}
-          loading={loading}
-          rowKey={({ asset, walletType }) => `${asset.chain}.${asset.symbol}.${walletType}`}
+        <Table
           columns={columns}
-          onRow={onRowHandler}
+          data={sortedTableData}
+          hideHeader
+          hideVerticalBorder
+          loading={loading || isRefreshing}
         />
       )
     },
-    [columns, onRowHandler]
+    [columns, isRefreshing]
   )
 
   const renderGroupedBalances = useCallback(
     ({ balances }: { balances: TradeAccount[] }) => {
       if (!balances || balances.length === 0) {
-        return renderAssetsTable({ tableData: [], loading: true }) // No balances, render empty table
+        return renderAssetsTable({ tableData: [], loading: true })
       }
 
-      // Filter accounts by walletType
       const keystoreAccounts = balances.filter((account) => account.walletType === WalletType.Keystore)
       const ledgerAccounts = balances.filter((account) => account.walletType === WalletType.Ledger)
 
+      // Group accounts by protocol for each wallet type
+      const groupByProtocol = (accounts: TradeAccount[]): Record<string, TradeAccount[]> =>
+        accounts.reduce((acc, account) => {
+          const protocol = account.protocol.toLowerCase()
+          acc[protocol] = [...(acc[protocol] || []), account]
+          return acc
+        }, {} as Record<string, TradeAccount[]>)
+
+      const keystoreByProtocol = groupByProtocol(keystoreAccounts)
+      const ledgerByProtocol = groupByProtocol(ledgerAccounts)
+
       return (
         <>
-          {keystoreAccounts.length > 0 && (
-            <div key="keystore">
-              {renderAssetsTable({
-                tableData: keystoreAccounts.map((account) => ({
-                  asset: account.asset,
-                  amount: account.units,
-                  walletAddress: account.owner,
-                  walletType: account.walletType,
-                  walletIndex: 0,
-                  walletAccount: 0,
-                  hdMode: DEFAULT_EVM_HD_MODE
-                })),
-                loading: false
-              })}
-            </div>
+          {Object.entries(keystoreByProtocol).map(
+            ([protocol, accounts]) =>
+              accounts.length > 0 && (
+                <div key={`keystore-${protocol}`}>
+                  {renderAssetsTable({
+                    tableData: accounts.map((account) => ({
+                      asset: account.asset,
+                      amount: account.units,
+                      walletAddress: account.owner,
+                      walletType: account.walletType,
+                      walletIndex: 0,
+                      walletAccount: 0,
+                      hdMode: DEFAULT_EVM_HD_MODE,
+                      protocol: account.protocol
+                    })),
+                    loading: isRefreshing
+                  })}
+                </div>
+              )
           )}
-
-          {ledgerAccounts.length > 0 && (
-            <div key="ledger">
-              {renderAssetsTable({
-                tableData: ledgerAccounts.map((account) => ({
-                  asset: account.asset,
-                  amount: account.units,
-                  walletAddress: account.owner,
-                  walletType: account.walletType,
-                  walletIndex: 0,
-                  walletAccount: 0,
-                  hdMode: DEFAULT_EVM_HD_MODE
-                })),
-                loading: false
-              })}
-            </div>
+          {Object.entries(ledgerByProtocol).map(
+            ([protocol, accounts]) =>
+              accounts.length > 0 && (
+                <div key={`ledger-${protocol}`}>
+                  {renderAssetsTable({
+                    tableData: accounts.map((account) => ({
+                      asset: account.asset,
+                      amount: account.units,
+                      walletAddress: account.owner,
+                      walletType: account.walletType,
+                      walletIndex: 0,
+                      walletAccount: 0,
+                      hdMode: DEFAULT_EVM_HD_MODE,
+                      protocol: account.protocol
+                    })),
+                    loading: isRefreshing
+                  })}
+                </div>
+              )
           )}
         </>
       )
     },
-    [renderAssetsTable]
+    [renderAssetsTable, isRefreshing]
   )
 
-  const renderPanel = useCallback(() => {
-    // If tradeAccountBalances is empty, don't render anything
+  const renderContent = useCallback(() => {
     if (!tradeAccountBalances || tradeAccountBalances.length === 0) {
       return null
     }
 
-    // Group the balances by wallet type
-    const keystoreBalances = tradeAccountBalances.filter((account) => account.walletType === WalletType.Keystore)
-    const ledgerBalances = tradeAccountBalances.filter((account) => account.walletType === WalletType.Ledger)
+    const balancesByChainAndWalletType: Record<string, TradeAccount[]> = tradeAccountBalances.reduce((acc, account) => {
+      const key = `${account.protocol}.${account.walletType}`
+      acc[key] = [...(acc[key] || []), account]
+      return acc
+    }, {} as Record<string, TradeAccount[]>)
 
-    const renderHeader = (walletType: WalletType, firstAccount: O.Option<TradeAccount>) => {
-      const walletAddress = FP.pipe(
-        firstAccount,
-        O.map((account) => truncateAddress(account.owner, THORChain, network)),
+    return Object.entries(balancesByChainAndWalletType).map(([key, balances]) => {
+      const [protocol, walletType] = key.split('.')
+      const chain = protocol === 'Thorchain' ? THORChain : MAYAChain
+      const firstAccount = balances[0]
+      const fullWalletAddress = FP.pipe(
+        O.fromNullable(firstAccount),
+        O.map((account) => account.owner),
+        O.getOrElse(() => '')
+      )
+      const truncatedWalletAddress = FP.pipe(
+        O.fromNullable(firstAccount),
+        O.map((account) => truncateAddress(account.owner, chain, network)),
         O.getOrElse(() => '')
       )
 
-      return (
-        <Styled.HeaderRow className="flex w-full justify-between space-x-4">
+      const renderHeader = () => (
+        <div className="flex w-full justify-between space-x-4">
           <div className="flex flex-row items-center space-x-2">
-            <Styled.HeaderLabel>{chainToString(THORChain)}</Styled.HeaderLabel>
-            {!isKeystoreWallet(walletType) && (
-              <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+            <Label className="!w-auto" textTransform="uppercase">
+              {protocol}
+            </Label>
+            {!isKeystoreWallet(walletType as WalletType) && (
+              <WalletTypeLabel className="bg-bg2 dark:bg-bg2d border border-solid border-gray0 dark:border-gray0d">
+                {walletTypeToI18n(walletType as WalletType, intl)}
+              </WalletTypeLabel>
             )}
-            <Styled.HeaderLabel color="gray">
-              {`(${walletType === WalletType.Keystore ? keystoreBalances.length : ledgerBalances.length} Assets)`}
-            </Styled.HeaderLabel>
+            <Label className="!w-auto" color="gray" textTransform="uppercase">
+              {`(${balances.length} Assets)`}
+            </Label>
           </div>
           <div className="flex items-center justify-end space-x-2">
-            <Styled.HeaderAddress className="flex items-center text-text0 dark:text-text0d">
-              {hidePrivateData ? hiddenString : truncateAddress(walletAddress, THORChain, network)}
-              <Styled.CopyLabel copyable={{ text: walletAddress }} />
-            </Styled.HeaderAddress>
+            <Label className="flex items-center text-text0 dark:text-text0d" color="gray" textTransform="none">
+              {hidePrivateData ? hiddenString : truncatedWalletAddress}
+            </Label>
             <div className="flex items-center justify-end space-x-2 pr-4">
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}>
+                <CopyLabel iconClassName="!text-text2 dark:!text-text2d" textToCopy={fullWalletAddress} />
+              </IconButton>
               <IconButton
                 disabled={disableRefresh}
                 onClick={(e) => {
                   e.stopPropagation()
-                  handleRefreshClick(THORChain, walletType)
+                  refreshHandler(protocol)
                 }}>
                 <ArrowPathIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />
               </IconButton>
             </div>
           </div>
-        </Styled.HeaderRow>
+        </div>
       )
-    }
 
-    return (
-      <>
-        {keystoreBalances.length > 0 && (
-          <Panel header={renderHeader(WalletType.Keystore, O.fromNullable(keystoreBalances[0]))} key="keystore">
-            {renderGroupedBalances({ balances: keystoreBalances })}
-          </Panel>
-        )}
-
-        {ledgerBalances.length > 0 && (
-          <Panel header={renderHeader(WalletType.Ledger, O.fromNullable(ledgerBalances[0]))} key="ledger">
-            {renderGroupedBalances({ balances: ledgerBalances })}
-          </Panel>
-        )}
-      </>
-    )
-  }, [tradeAccountBalances, renderGroupedBalances, intl, hidePrivateData, disableRefresh, network, handleRefreshClick])
+      return (
+        <Collapse className="bg-bg0 dark:bg-bg0d" isOpen header={renderHeader()} key={key}>
+          {renderGroupedBalances({ balances })}
+        </Collapse>
+      )
+    })
+  }, [tradeAccountBalances, renderGroupedBalances, intl, hidePrivateData, disableRefresh, network, refreshHandler])
 
   return (
-    <div className="mt-2">
-      <Styled.Collapse
-        expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
-        defaultActiveKey={['keystore']}
-        expandIconPosition="end"
-        ghost>
-        {renderPanel()}
-        {renderWithdrawConfirm}
-        {renderPasswordConfirmationModal}
-        {renderWithdrawTxModal}
-        {renderLedgerConfirmationModal}
-      </Styled.Collapse>
+    <div className="mt-2 space-y-2">
+      {renderContent()}
+      {renderWithdrawConfirm}
+      {renderPasswordConfirmationModal}
+      {renderWithdrawTxModal}
+      {renderLedgerConfirmationModal}
     </div>
   )
 }

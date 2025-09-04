@@ -10,6 +10,8 @@ import { useIntl } from 'react-intl'
 import { chainToString } from '../../../../shared/utils/chain'
 import { getChainAsset, isBchChain } from '../../../helpers/chainHelper'
 import { AddressEllipsis } from '../../uielements/addressEllipsis'
+import { Button } from '../../uielements/button'
+import { Label } from '../../uielements/label'
 import { ConfirmationModal } from './ConfirmationModal'
 import * as Styled from './LedgerConfirmationModal.styles'
 
@@ -26,7 +28,7 @@ type Props = {
   addresses: O.Option<Addresses>
 }
 
-export const LedgerConfirmationModal: React.FC<Props> = ({
+export const LedgerConfirmationModal = ({
   visible,
   onClose,
   onSuccess,
@@ -35,7 +37,7 @@ export const LedgerConfirmationModal: React.FC<Props> = ({
   description1,
   description2 = '',
   addresses: oAddresses
-}) => {
+}: Props) => {
   const intl = useIntl()
 
   const asset = getChainAsset(chain)
@@ -55,8 +57,8 @@ export const LedgerConfirmationModal: React.FC<Props> = ({
       return (
         <>
           {/* Sender */}
-          <Styled.AddressWrapper>
-            <Styled.AddressContainer>
+          <div className="flex flex-col pt-5">
+            <div className="flex flex-col items-center normal-case">
               <Styled.AddressTitle>{intl.formatMessage({ id: 'common.sender' })} (CashAddr)</Styled.AddressTitle>
               <AddressEllipsis
                 network={network}
@@ -64,15 +66,15 @@ export const LedgerConfirmationModal: React.FC<Props> = ({
                 address={isCashAddress(sender) ? sender : toCashAddress(sender)}
                 enableCopy
               />
-            </Styled.AddressContainer>
-            <Styled.AddressContainer>
+            </div>
+            <div className="flex flex-col items-center normal-case">
               <Styled.AddressTitle>{intl.formatMessage({ id: 'common.sender' })} (Legacy)</Styled.AddressTitle>
               <AddressEllipsis network={network} chain={chain} address={toLegacyAddress(sender)} enableCopy />
-            </Styled.AddressContainer>
-          </Styled.AddressWrapper>
+            </div>
+          </div>
           {/* Recipient */}
-          <Styled.AddressWrapper>
-            <Styled.AddressContainer>
+          <div className="flex flex-col pt-5">
+            <div className="flex flex-col items-center normal-case">
               <Styled.AddressTitle>{intl.formatMessage({ id: 'common.recipient' })} (CashAddr)</Styled.AddressTitle>
               <AddressEllipsis
                 network={network}
@@ -80,13 +82,13 @@ export const LedgerConfirmationModal: React.FC<Props> = ({
                 address={isCashAddress(recipient) ? recipient : toCashAddress(recipient)}
                 enableCopy
               />
-            </Styled.AddressContainer>
-            <Styled.AddressContainer>
+            </div>
+            <div className="flex flex-col items-center normal-case">
               <Styled.AddressTitle>{intl.formatMessage({ id: 'common.recipient' })} (Legacy)</Styled.AddressTitle>
               <AddressEllipsis network={network} chain={chain} address={toLegacyAddress(recipient)} enableCopy />
-            </Styled.AddressContainer>
-          </Styled.AddressWrapper>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            </div>
+          </div>
+          <div className="flex items-center justify-center">
             <Styled.CopyLabel label={'Copy all addresses'} textToCopy={textToCopy} />
           </div>
         </>
@@ -103,15 +105,19 @@ export const LedgerConfirmationModal: React.FC<Props> = ({
       title={intl.formatMessage({ id: 'ledger.title.sign' })}
       okText={intl.formatMessage({ id: 'common.next' })}
       content={
-        <Styled.Content>
-          <Styled.LedgerContainer>
+        <div className="flex flex-col">
+          <div className="relative flex flex-col items-center mb-5">
             <Styled.LedgerConnect />
             <Styled.AssetIcon asset={asset} network={network} size="small" />
-          </Styled.LedgerContainer>
-          <Styled.Description>
+          </div>
+          <Label align="center" color="gray" size="big">
             {description1 || intl.formatMessage({ id: 'ledger.needsconnected' }, { chain: chainToString(chain) })}
-          </Styled.Description>
-          {description2 && <Styled.Description>{description2}</Styled.Description>}
+          </Label>
+          {description2 && (
+            <Label align="center" color="gray" size="big">
+              {description2}
+            </Label>
+          )}
           {isBchChain(chain) &&
             FP.pipe(
               oAddresses,
@@ -119,13 +125,14 @@ export const LedgerConfirmationModal: React.FC<Props> = ({
                 () => <></>,
                 (bchAddresses) => (
                   <>
-                    <Styled.NoteBCH>
+                    <p className="text-11 text-center font-main">
                       <ExclamationTriangleIcon />
                       {intl.formatMessage({ id: 'ledger.legacyformat.note' }, { url: 'ulr' })}
-                    </Styled.NoteBCH>
+                    </p>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Styled.CompareAddressButton
+                    <div className="flex items-center justify-center">
+                      <Button
+                        className="shadow-none"
                         typevalue="transparent"
                         type="text"
                         onClick={() => setShowAddresses((current) => !current)}>
@@ -133,7 +140,7 @@ export const LedgerConfirmationModal: React.FC<Props> = ({
                           id: showAddresses ? 'ledger.legacyformat.hide' : 'ledger.legacyformat.show'
                         })}
                         <Styled.ExpandIcon rotate={showAddresses ? 270 : 90} />
-                      </Styled.CompareAddressButton>
+                      </Button>
                     </div>
 
                     {showAddresses && renderBchAddresses(bchAddresses)}
@@ -141,7 +148,7 @@ export const LedgerConfirmationModal: React.FC<Props> = ({
                 )
               )
             )}
-        </Styled.Content>
+        </div>
       }
     />
   )

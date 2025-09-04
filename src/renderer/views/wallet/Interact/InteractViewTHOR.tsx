@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Col, Row } from 'antd'
@@ -9,8 +9,8 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ErrorView } from '../../../components/shared/error'
-import { LoadingView } from '../../../components/shared/loading'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
+import { Spin } from '../../../components/uielements/spin'
 import { Interact } from '../../../components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from '../../../components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
@@ -33,9 +33,8 @@ import { NodeInfosRD, RunePoolProviderRD, ThorchainLastblockRD } from '../../../
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
-import * as Styled from './InteractView.styles'
 
-export const InteractViewTHOR: React.FC = () => {
+export const InteractViewTHOR = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.BondParams>()
 
   const { selectedAsset$ } = useWalletContext()
@@ -237,8 +236,8 @@ export const InteractViewTHOR: React.FC = () => {
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),
     RD.fold(
-      () => <LoadingView size="large" />,
-      () => <LoadingView size="large" />,
+      () => <Spin />,
+      () => <Spin />,
       (error) => (
         <div>
           <BackLinkButton />
@@ -247,7 +246,7 @@ export const InteractViewTHOR: React.FC = () => {
       ),
       ([interactType, { walletType, walletAccount, walletIndex, hdMode }]) => (
         <>
-          <div className="relative mb-20px flex items-center justify-between">
+          <div className="relative mb-4 flex items-center justify-between">
             <Row justify="space-between">
               <Col>
                 <BackLinkButton />
@@ -256,11 +255,11 @@ export const InteractViewTHOR: React.FC = () => {
             </Row>
           </div>
 
-          <Styled.Container>
+          <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
             {FP.pipe(
               oWalletBalance,
               O.fold(
-                () => <LoadingView size="large" />,
+                () => <Spin />,
                 (walletBalance) => (
                   <Interact
                     interactType={interactType}
@@ -280,7 +279,7 @@ export const InteractViewTHOR: React.FC = () => {
                       getExplorerTxUrl={getExplorerTxUrl}
                       addressValidation={validateAddress}
                       fee={feeRD}
-                      reloadFeesHandler={reloadFees}
+                      reloadFeesHandler={() => reloadFees(true)}
                       validatePassword$={validatePassword$}
                       thorchainQuery={thorchainQuery}
                       network={network}
@@ -293,7 +292,7 @@ export const InteractViewTHOR: React.FC = () => {
                 )
               )
             )}
-          </Styled.Container>
+          </div>
         </>
       )
     )

@@ -23,6 +23,7 @@ import PortfolioIcon from '../../assets/svg/icon-portfolio.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import TwitterIcon from '../../assets/svg/icon-twitter.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
+import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import * as appRoutes from '../../routes/app'
@@ -32,8 +33,8 @@ import * as poolsRoutes from '../../routes/pools'
 import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
-import { Tooltip } from '../uielements/common/Common.styles'
-import * as Styled from './SidebarComponent.styles'
+import { Label } from '../uielements/label'
+import { Tooltip } from '../uielements/tooltip'
 
 type IconProps = {
   className?: string
@@ -50,9 +51,14 @@ const FooterIcon = (props: IconProps): JSX.Element => {
   }, [url, onClick])
 
   return (
-    <Styled.IconWrapper className={className} onClick={clickHandler}>
+    <div
+      className={clsx(
+        'inline text-text1 dark:text-text1d cursor-pointer ml-3 first:ml-0 [&>svg]:text-text1 [&>svg]:dark:text-text1d',
+        className
+      )}
+      onClick={clickHandler}>
       {children}
-    </Styled.IconWrapper>
+    </div>
   )
 }
 
@@ -111,6 +117,13 @@ export const SidebarComponent = (props: Props): JSX.Element => {
       return TabKey.UNKNOWN
     }
   }, [matchBondsRoute, matchPoolsRoute, matchPortfolioRoute, matchWalletRoute, matchSettingsRoute, matchSwapRoute])
+
+  const networkBgCn = useMemo(() => {
+    if (network === Network.Mainnet) return 'bg-turquoise'
+    else if (network === Network.Stagenet) return 'bg-error0 dark:bg-error0d'
+    else if (network === Network.Testnet) return 'bg-warning0 dark:bg-warning0d'
+    return 'bg-text2 dark:bg-text2d'
+  }, [network])
 
   const items: Tab[] = useMemo(
     () => [
@@ -196,12 +209,18 @@ export const SidebarComponent = (props: Props): JSX.Element => {
 
   const renderLogo = useMemo(
     () => (
-      <Styled.LogoWrapper>
-        <Styled.AsgardexLogo />
-        <Styled.NetworkLabel network={network}>{network}</Styled.NetworkLabel>
-      </Styled.LogoWrapper>
+      <div className="flex flex-col items-center justify-center mt-4">
+        <AsgardexLogo className="[&>*]:fill-text1 [&>*]:dark:fill-text1d" />
+        <Label
+          className={clsx('-mt-3 !w-auto rounded-full px-2', networkBgCn)}
+          color="white"
+          size="small"
+          textTransform="uppercase">
+          {network}
+        </Label>
+      </div>
     ),
-    [network]
+    [network, networkBgCn]
   )
 
   const clickIconHandler = useCallback((url: string) => {
@@ -211,26 +230,24 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const gotoPlayground = useCallback(() => navigate(playgroundRoutes.base.path()), [navigate])
 
   return (
-    <Styled.HeaderContainer className="border-r border-none border-gray0 !bg-bg0 dark:border-gray0d dark:!bg-bg0d">
+    <div className="w-60 h-full py-5 border-r border-none border-gray0 !bg-bg0 dark:border-gray0d dark:!bg-bg0d">
       <div className="flex h-full flex-col justify-between" ref={setHeaderRef}>
         <div>
-          <Styled.LogoWrapper>{renderLogo}</Styled.LogoWrapper>
+          {renderLogo}
           {renderMainNav}
         </div>
         <div className="flex flex-col items-center justify-center">
           <FooterIcon url={ExternalUrl.DOCSTHOR} onClick={clickIconHandler}>
             <div className="flex h-12 flex-row items-center">
-              <ThorChainIcon />
+              <ThorChainIcon className="[&>*:not(:first-child)]:fill-text1 [&>*:not(:first-child)]:dark:fill-text1d" />
             </div>
           </FooterIcon>
           <FooterIcon className="!ml-0" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
-            <div className="flex h-12 flex-row items-center">
-              <div className="mr-2">
-                <Styled.Icon src={mayaIconT} />
-              </div>
-              <div>
-                <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
-              </div>
+            <div className="flex h-12 flex-row items-center space-x-2">
+              <img className="rounded-full w-8 h-8" src={mayaIconT} />
+              <Label size="big" textTransform="uppercase">
+                MAYACHAIN
+              </Label>
             </div>
           </FooterIcon>
           {publicIP && (
@@ -274,15 +291,17 @@ export const SidebarComponent = (props: Props): JSX.Element => {
             )}
             {/* hidden in production build */}
             {isDev && (
-              <Styled.IconWrapper onClick={gotoPlayground}>
+              <div
+                className="inline text-text1 dark:text-text1d cursor-pointer ml-3 [&>svg]:text-text1 [&>svg]:dark:text-text1d"
+                onClick={gotoPlayground}>
                 <Tooltip title="Playground">
                   <BugIcon className="w-5 h-5" />
                 </Tooltip>
-              </Styled.IconWrapper>
+              </div>
             )}
           </div>
         </div>
       </div>
-    </Styled.HeaderContainer>
+    </div>
   )
 }

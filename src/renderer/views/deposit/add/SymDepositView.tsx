@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -42,7 +42,7 @@ import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../servic
 import { useApp } from '../../../store/app/hooks'
 import { Props } from './SymDepositView.types'
 
-export const SymDepositView: React.FC<Props> = (props) => {
+export const SymDepositView = (props: Props) => {
   const {
     asset: assetWD,
     poolDetail: poolDetailRD,
@@ -219,7 +219,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
     (error?: Error) => (
       <>
         {error && (
-          <Alert type="error" message={intl.formatMessage({ id: 'common.error' })} description={error.toString()} />
+          <Alert type="error" title={intl.formatMessage({ id: 'common.error' })} description={error.toString()} />
         )}
         <SymDeposit
           disableDepositAction

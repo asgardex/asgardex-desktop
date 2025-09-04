@@ -1,7 +1,12 @@
+import { option as O } from 'fp-ts'
+import * as Rx from 'rxjs'
+import * as RxOp from 'rxjs/operators'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
-import { client$ } from './common'
+import { appWalletService } from '../wallet/appWallet'
+import { isStandaloneLedgerMode } from '../wallet/types'
+import { client$, readOnlyClient$ } from './common'
 
 /**
  * `ObservableState` to reload `Balances`
@@ -27,6 +32,28 @@ const reloadBalances = (walletType: WalletType) => {
   }
 }
 
+/**
+ * Enhanced client that falls back to read-only client for standalone ledger mode
+ */
+const enhancedClient$ = Rx.combineLatest([client$, readOnlyClient$, appWalletService.appWalletState$]).pipe(
+  RxOp.map(([client, readOnlyClient, appWalletState]) => {
+    // If we have a regular client, use it
+    if (O.isSome(client)) {
+      return client
+    }
+
+    // If we're in standalone ledger mode and have read-only client, use read-only
+    if (appWalletState && isStandaloneLedgerMode(appWalletState) && O.isSome(readOnlyClient)) {
+      return readOnlyClient
+    }
+
+    // Otherwise, no client available
+    return O.none
+  }),
+  RxOp.distinctUntilChanged(),
+  RxOp.shareReplay({ bufferSize: 1, refCount: true })
+)
+
 // State of balances loaded by Client
 // Removed this list
 const balances$ = ({
@@ -41,7 +68,7 @@ const balances$ = ({
   hdMode: HDMode
 }): C.WalletBalancesLD =>
   C.balances$({
-    client$,
+    client$: enhancedClient$,
     trigger$: reloadBalances$,
     walletType,
     walletAccount,
@@ -52,9 +79,9 @@ const balances$ = ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = C.balancesByAddress$({
-  client$,
+  client$: enhancedClient$,
   trigger$: reloadLedgerBalances$,
   walletBalanceType: 'all'
 })
 
-export { balances$, getBalanceByAddress$, reloadBalances, reloadBalances$, resetReloadBalances }
+export { balances$, getBalanceByAddress$, reloadBalances, reloadBalances$, resetReloadBalances, enhancedClient$ }

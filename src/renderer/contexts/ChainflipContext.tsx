@@ -14,7 +14,7 @@ const initialContext: ChainFlipContextValue = {
 }
 
 const ChainflipContext = createContext<ChainFlipContextValue | null>(null)
-export const ChainflipProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const ChainflipProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <ChainflipContext.Provider value={initialContext}>{children}</ChainflipContext.Provider>
 }
 

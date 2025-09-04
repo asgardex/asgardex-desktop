@@ -2,8 +2,10 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset } from '@xchainjs/xchain-util'
-import { array as A, function as FP } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
+import * as Rx from 'rxjs'
 import { of } from 'rxjs'
+import * as RxOp from 'rxjs/operators'
 import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
@@ -12,8 +14,32 @@ import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { getUserAssetsByChain$ } from '../storage/userChainTokens'
-import { WalletBalance } from '../wallet/types'
-import { client$ } from './common'
+import { appWalletService } from '../wallet/appWallet'
+import { isStandaloneLedgerMode, WalletBalance } from '../wallet/types'
+import { client$, readOnlyClient$ } from './common'
+
+/**
+ * Enhanced client that switches between keystore and read-only client for standalone ledger mode
+ */
+const enhancedClient$ = FP.pipe(
+  Rx.combineLatest([client$, readOnlyClient$, appWalletService.appWalletState$]),
+  RxOp.map(([keystoreClient, readOnlyClient, appWalletState]) => {
+    // If keystore client is available, use it
+    if (O.isSome(keystoreClient)) {
+      return keystoreClient
+    }
+
+    // If keystore is locked but we're in standalone ledger mode, use read-only client
+    if (appWalletState && isStandaloneLedgerMode(appWalletState) && O.isSome(readOnlyClient)) {
+      return readOnlyClient
+    }
+
+    // Otherwise, no client available
+    return O.none
+  }),
+  RxOp.distinctUntilChanged(),
+  RxOp.shareReplay({ bufferSize: 1, refCount: true })
+)
 
 /**
  * `ObservableState` to reload `Balances`
@@ -68,7 +94,7 @@ const balances$: ({
     getUserAssetsByChain$(BSCChain),
     switchMap((assets) => {
       return C.balances$({
-        client$,
+        client$: enhancedClient$,
         trigger$: reloadBalances$,
         assets: assets,
         walletType,
@@ -84,7 +110,7 @@ const balances$: ({
       if (RD.isFailure(balanceResult)) {
         // Retry with fallback assets
         return C.balances$({
-          client$,
+          client$: enhancedClient$,
           trigger$: reloadBalances$,
           assets: BSCAssetsFallBack,
           walletType,
@@ -111,8 +137,13 @@ const balances$: ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const assets: AnyAsset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
-  return C.balancesByAddress$({ client$, trigger$: reloadLedgerBalances$, assets, walletBalanceType: 'all' })
+  const assets = network === Network.Testnet ? BscAssetsTestnet : BSCAssetsFallBack
+  return C.balancesByAddress$({
+    client$: enhancedClient$,
+    trigger$: reloadLedgerBalances$,
+    assets,
+    walletBalanceType: 'all'
+  })
 }
 
-export { reloadBalances, balances$, reloadBalances$, resetReloadBalances, getBalanceByAddress$ }
+export { reloadBalances, balances$, reloadBalances$, resetReloadBalances, getBalanceByAddress$, enhancedClient$ }

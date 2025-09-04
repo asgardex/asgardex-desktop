@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import {
@@ -15,7 +15,7 @@ import { hiddenString } from '../../../helpers/stringHelper'
 import { BaseButton } from '../../uielements/button'
 import { PieChart } from '../../uielements/charts'
 import { InfoIcon } from '../../uielements/info'
-import * as Styled from './TotalValue.styles'
+import { Label } from '../../uielements/label'
 
 type Props = {
   balancesByChain: Record<string, BaseAmount>
@@ -25,7 +25,7 @@ type Props = {
   hidePrivateData: boolean
 }
 
-export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
+export const TotalAssetValue = (props: Props): JSX.Element => {
   const { balancesByChain, title, info, hidePrivateData, errorsByChain } = props
   const [showDetails, setShowDetails] = useState<boolean>(false)
   const chartData = useMemo(
@@ -75,11 +75,13 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
   const filteredChartData = chartData.filter((entry) => entry.value !== 0.0)
 
   return (
-    <Styled.Container>
-      <Styled.TitleContainer>
-        <Styled.BalanceTitle>{title}</Styled.BalanceTitle>
+    <div className="flex flex-col items-center justify-center px-4 pt-4 pb-8 bg-bg1 dark:bg-bg1d">
+      <div className="flex items-center">
+        <Label className="!w-auto" align="center" color="input" textTransform="uppercase">
+          {title}
+        </Label>
         {info && <InfoIcon tooltip={info} color="primary" />}
-      </Styled.TitleContainer>
+      </div>
 
       <BaseButton
         className="flex justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
@@ -94,6 +96,6 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
       </BaseButton>
       {hasErrors && chainErrors}
       {isChartVisible && showDetails && <PieChart chartData={filteredChartData} isLegendHidden showLabelLine />}
-    </Styled.Container>
+    </div>
   )
 }

@@ -2,12 +2,12 @@ import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Chain } from '@xchainjs/xchain-util'
-import { Grid } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqAddress, eqOAddress } from '../../helpers/fp/eq'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { PoolDetailRD as PoolDetailMayaRD } from '../../services/midgard/mayaMigard/types'
 import { PoolDetailRD, PoolShareRD, PoolSharesRD } from '../../services/midgard/midgardTypes'
 import { getSharesByAssetAndType } from '../../services/midgard/thorMidgard/utils'
@@ -18,8 +18,8 @@ import { AssetWithDecimal } from '../../types/asgardex'
 import { Props as SymDepositContentProps } from '../../views/deposit/add/SymDepositView.types'
 import { ShareViewProps } from '../../views/deposit/share/ShareView'
 import { Props as WidthdrawContentProps } from '../../views/deposit/withdraw/WithdrawDepositView.types'
+import { Tabs } from '../tabs'
 import { AddWallet } from '../wallet/add'
-import * as Styled from './Deposit.styles'
 
 type TabKey = 'deposit-sym' | 'deposit-saver' | 'withdraw-sym' | 'withdraw-saver-asset'
 
@@ -47,7 +47,7 @@ export type Props = {
   dexWalletType: WalletType
 }
 
-export const Deposit: React.FC<Props> = (props) => {
+export const Deposit = (props: Props) => {
   const {
     protocol,
     asset: assetWD,
@@ -68,7 +68,7 @@ export const Deposit: React.FC<Props> = (props) => {
   const { asset } = assetWD
   const intl = useIntl()
 
-  const isDesktopView = Grid.useBreakpoint()?.md ?? false
+  const isDesktopView = useBreakpoint()?.md ?? false
 
   const walletIsImported = useMemo(() => hasImportedKeystore(keystoreState), [keystoreState])
   const walletIsLocked = useMemo(() => isLocked(keystoreState), [keystoreState])
@@ -160,15 +160,15 @@ export const Deposit: React.FC<Props> = (props) => {
   )
 
   return (
-    <Styled.Container>
-      <Styled.ContentContainer>
+    <div className="flex flex-col flex-1 w-full">
+      <div className="flex flex-wrap w-full min-h-full">
         {walletIsImported && !walletIsLocked ? (
-          <>
-            <Styled.DepositContentCol xs={24} xl={15}>
-              <Styled.Tabs destroyInactiveTabPane tabs={tabs} centered defaultActiveKey="deposit-sym" />
-            </Styled.DepositContentCol>
-            <Styled.ShareContentCol xs={24} xl={9}>
-              <Styled.ShareContentWrapper alignTop={hasSymPoolShare}>
+          <div className="w-full grid grid-cols-8 gap-4">
+            <div className="col-span-8 xl:col-span-5 bg-bg1 dark:bg-bg1d">
+              <Tabs className="flex items-center justify-center" tabs={tabs} hasPadding defaultIndex={0} />
+            </div>
+            <div className="col-span-8 xl:col-span-3">
+              <div className="flex justify-center bg-bg0 dark:bg-bg0d min-h-[300px] xl:min-h-full">
                 <ShareContent
                   protocol={protocol}
                   poolDetail={poolDetailRD}
@@ -176,13 +176,13 @@ export const Deposit: React.FC<Props> = (props) => {
                   poolShare={symPoolShare}
                   smallWidth={!isDesktopView}
                 />
-              </Styled.ShareContentWrapper>
-            </Styled.ShareContentCol>
-          </>
+              </div>
+            </div>
+          </div>
         ) : (
           <AddWallet isLocked={walletIsImported && walletIsLocked} />
         )}
-      </Styled.ContentContainer>
-    </Styled.Container>
+      </div>
+    </div>
   )
 }

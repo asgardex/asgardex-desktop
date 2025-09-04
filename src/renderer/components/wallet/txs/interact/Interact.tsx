@@ -10,6 +10,8 @@ import { useIntl } from 'react-intl'
 import { isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { getChainAsset, isThorChain } from '../../../../helpers/chainHelper'
+import { AssetIcon } from '../../../uielements/assets/assetIcon'
+import { Label } from '../../../uielements/label'
 import * as Styled from './Interact.styles'
 import { InteractType } from './Interact.types'
 
@@ -52,20 +54,22 @@ export const Interact = ({ interactType, interactTypeChanged, network, walletTyp
 
   return (
     <Styled.Container>
-      <Styled.Header>
-        <Styled.AssetIcon network={network} asset={asset} />
+      <div className="flex flex-col items-center justify-center mb-5 sm:justify-start sm:flex-row">
+        <AssetIcon className="mr-0 mb-10px sm:mr-4 sm:mb-0" network={network} asset={asset} size="big" />
         <div>
-          <Styled.HeaderTitleWrapper>
-            <Styled.HeaderTitle>{intl.formatMessage({ id: 'deposit.interact.title' })}</Styled.HeaderTitle>
+          <div className="flex items-center justify-center sm:justify-start">
+            <Label className="w-auto text-center sm:text-left text-[24px]" textTransform="uppercase">
+              {intl.formatMessage({ id: 'deposit.interact.title' })}
+            </Label>
             {isLedgerWallet(walletType) && (
               <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
             )}
-          </Styled.HeaderTitleWrapper>
-          <Styled.HeaderSubtitle>
+          </div>
+          <Label className="w-auto text-center sm:text-left" color="gray" size="big" textTransform="uppercase">
             {intl.formatMessage({ id: 'deposit.interact.subtitle' }, { chain: chain })}
-          </Styled.HeaderSubtitle>
+          </Label>
         </div>
-      </Styled.Header>
+      </div>
 
       <Styled.MenuDropdownGlobalStyles />
       <Styled.Menu

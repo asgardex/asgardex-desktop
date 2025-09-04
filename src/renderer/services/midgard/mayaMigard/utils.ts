@@ -5,6 +5,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain, ADA_DECIMALS, ADAAsset } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASH_DECIMAL, DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -14,6 +15,7 @@ import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { AssetXRD, RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -29,9 +31,10 @@ import {
   AnyAsset,
   Chain
 } from '@xchainjs/xchain-util'
+import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
-import { AssetBTC, AssetETH, AssetKUJI, AssetDASH, AssetAETH } from '../../../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetKUJI, AssetDASH, AssetAETH, AssetZEC } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
@@ -239,6 +242,7 @@ export const getOutboundAssetFeeByChain = (
         case AVAXChain:
         case BASEChain:
         case LTCChain:
+        case XRPChain:
           return O.none
         case BTCChain:
           return O.some({
@@ -267,6 +271,11 @@ export const getOutboundAssetFeeByChain = (
             amount: baseAmount(value, KUJI_DECIMAL),
             asset: AssetKUJI
           })
+        case ADAChain:
+          return O.some({
+            amount: baseAmount(value, ADA_DECIMALS),
+            asset: ADAAsset
+          })
         case RadixChain:
           return O.some({
             amount: baseAmount(value, XRD_DECIMAL),
@@ -284,6 +293,11 @@ export const getOutboundAssetFeeByChain = (
             asset: AssetAETH
           })
         }
+        case ZECChain:
+          return O.some({
+            amount: baseAmount(value, ZEC_DECIMAL),
+            asset: AssetZEC
+          })
         // 'MAYAChain can be ignored - fees for asset side only
         case MAYAChain:
           return O.none

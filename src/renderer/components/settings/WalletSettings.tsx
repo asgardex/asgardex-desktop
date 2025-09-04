@@ -7,7 +7,6 @@ import {
   EyeIcon,
   ExclamationTriangleIcon,
   LockClosedIcon,
-  MagnifyingGlassIcon,
   QrCodeIcon,
   ArrowUpRightIcon,
   PlusCircleIcon
@@ -18,6 +17,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
@@ -27,10 +27,12 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
-import { List, RadioChangeEvent, message } from 'antd'
+import { ZECChain } from '@xchainjs/xchain-zcash'
+import { List, message } from 'antd'
 import clsx from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
@@ -47,6 +49,7 @@ import { WalletPasswordConfirmationModal } from '../../components/modal/confirma
 import { RemoveWalletConfirmationModal } from '../../components/modal/confirmation/RemoveWalletConfirmationModal'
 import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIcon'
 import { QRCodeModal } from '../../components/uielements/qrCodeModal/QRCodeModal'
+import { RadioGroup, Radio } from '../../components/uielements/radio'
 import { PhraseCopyModal } from '../../components/wallet/phrase/PhraseCopyModal'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
@@ -75,12 +78,14 @@ import {
 } from '../../services/wallet/types'
 import { walletTypeToI18n } from '../../services/wallet/util'
 import { useApp } from '../../store/app/hooks'
-import * as StyledR from '../shared/form/Radio.styles'
 import { FlatButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
-import { Tooltip, WalletTypeLabel } from '../uielements/common/Common.styles'
+import { WalletTypeLabel } from '../uielements/common/Common.styles'
 import { InfoIcon } from '../uielements/info'
+import { Input, InputSearch } from '../uielements/input'
+import { Label } from '../uielements/label'
 import { Modal } from '../uielements/modal'
+import { Tooltip } from '../uielements/tooltip'
 import { WalletSelector } from '../uielements/wallet'
 import { EditableWalletName } from '../uielements/wallet/EditableWalletName'
 import * as Styled from './WalletSettings.styles'
@@ -145,7 +150,7 @@ type Props = {
 
 type AddressToVerify = O.Option<{ address: Address; chain: Chain }>
 
-export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
+export const WalletSettings = (props: Props): JSX.Element => {
   const {
     network,
     walletAccounts: oWalletAccounts,
@@ -225,7 +230,10 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [KUJIChain]: 0,
     [ARBChain]: 0,
     [RadixChain]: 0,
-    [SOLChain]: 0
+    [SOLChain]: 0,
+    [ADAChain]: 0,
+    [ZECChain]: 0,
+    [XRPChain]: 0
   })
   const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
     [BTCChain]: 0,
@@ -243,7 +251,10 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [KUJIChain]: 0,
     [ARBChain]: 0,
     [RadixChain]: 0,
-    [SOLChain]: 0
+    [SOLChain]: 0,
+    [ADAChain]: 0,
+    [ZECChain]: 0,
+    [XRPChain]: 0
   })
 
   const {
@@ -253,14 +264,10 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   } = useSubscriptionState<VerifiedLedgerAddressRD>(RD.initial)
 
   useEffect(() => {
-    FP.pipe(
-      verifyLedgerAddressRD,
-      RD.map(() => {
-        setLedgerAddressToVerify(O.none) // close modal
-        resetVerifyLedgerAddressRD() // reset state
-        return true
-      })
-    )
+    if (RD.isSuccess(verifyLedgerAddressRD)) {
+      setLedgerAddressToVerify(O.none)
+      resetVerifyLedgerAddressRD()
+    }
   }, [verifyLedgerAddressRD, resetVerifyLedgerAddressRD])
 
   const [ledgerAddressToVerify, setLedgerAddressToVerify] = useState<AddressToVerify>(O.none)
@@ -321,8 +328,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   const renderLedgerAddress = useCallback(
     (chain: EnabledChain, oAddress: O.Option<WalletAddress>) => {
       const renderAddAddress = () => {
-        const onChangeEvmDerivationMode = (e: RadioChangeEvent) => {
-          updateEvmHDMode(e.target.value as EvmHDMode)
+        const onChangeEvmDerivationMode = (evmMode: EvmHDMode) => {
+          updateEvmHDMode(evmMode)
         }
         const selectedAccountIndex = walletAccountMap[chain]
         const selectedWalletIndex = walletIndexMap[chain]
@@ -357,6 +364,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   <PlusCircleIcon className="text-turquoise" width={20} height={20} />
                   {intl.formatMessage({ id: 'ledger.add.device' })}
                 </Styled.AddLedgerButton>
+
                 <>
                   <div className="text-[12px] uppercase text-text2 dark:text-text2d">
                     {intl.formatMessage({ id: 'setting.wallet.account' })}
@@ -368,11 +376,12 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
                     }
                     style={{ width: 60 }}
-                    disabled={loading}
+                    disabled={loading || (isEvmChain(chain) && evmHDMode !== 'ledgerlive')}
                     onPressEnter={addLedgerAddressHandler}
                   />
                   <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
                 </>
+
                 <>
                   <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
                     {intl.formatMessage({ id: 'setting.wallet.index' })}
@@ -391,46 +400,46 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                 </>
               </div>
               {isEvmChain(chain) && (
-                <StyledR.Radio.Group
-                  className="!flex flex-col items-start lg:flex-row lg:items-center lg:!pl-30px"
+                <RadioGroup
+                  className="flex flex-col items-start lg:flex-row lg:items-center lg:pl-30px lg:space-x-2"
                   onChange={onChangeEvmDerivationMode}
                   value={evmHDMode}>
-                  <StyledR.Radio value="ledgerlive" key="ledgerlive">
-                    <Styled.EthDerivationModeRadioLabel>
+                  <Radio value="ledgerlive" key="ledgerlive">
+                    <Label className="flex items-center mt-10px lg:mt-0" textTransform="uppercase">
                       {intl.formatMessage({ id: 'common.ledgerlive' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.ledgerlive.info' },
                           {
-                            path: getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')
+                            path: `${getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')}{index}`
                           }
                         )}
                       />
-                    </Styled.EthDerivationModeRadioLabel>
-                  </StyledR.Radio>
-                  <StyledR.Radio value="legacy" key="legacy">
-                    <Styled.EthDerivationModeRadioLabel>
+                    </Label>
+                  </Radio>
+                  <Radio value="legacy" key="legacy">
+                    <Label className="flex items-center mt-10px lg:mt-0" textTransform="uppercase">
                       {intl.formatMessage({ id: 'common.legacy' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.legacy.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], 'legacy') }
+                          { path: `${getEvmDerivationPath(walletAccountMap[chain], 'legacy')}{index}` }
                         )}
                       />
-                    </Styled.EthDerivationModeRadioLabel>
-                  </StyledR.Radio>
-                  <StyledR.Radio value="metamask" key="metamask">
-                    <Styled.EthDerivationModeRadioLabel>
+                    </Label>
+                  </Radio>
+                  <Radio value="metamask" key="metamask">
+                    <Label className="flex items-center mt-10px lg:mt-0" textTransform="uppercase">
                       {intl.formatMessage({ id: 'common.metamask' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.metamask.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], 'metamask') }
+                          { path: `${getEvmDerivationPath(walletAccountMap[chain], 'metamask')}{index}` }
                         )}
                       />
-                    </Styled.EthDerivationModeRadioLabel>
-                  </StyledR.Radio>
-                </StyledR.Radio.Group>
+                    </Label>
+                  </Radio>
+                </RadioGroup>
               )}
             </div>
             {currentLedgerToAdd && renderError}
@@ -489,18 +498,26 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         )
       }
       const renderAccount = (walletAddress: WalletAddress) => {
-        const { walletAccount, walletIndex } = walletAddress
+        const { walletAccount, walletIndex, chain } = walletAddress
         return (
           <>
             <div className="flex w-full space-x-4">
-              <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
-              </div>
-              <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
+              <>
+                <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                  <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
+                </div>
+                <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
+              </>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">
                 {intl.formatMessage({ id: 'setting.wallet.index' })}
               </div>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletIndex}</div>
+              {isEvmChain(chain) && (
+                <div className="text-[12px] uppercase text-text2 dark:text-text2d">{`${getEvmDerivationPath(
+                  walletAccountMap[chain],
+                  `${evmHDMode}`
+                )}${walletIndex}`}</div>
+              )}
             </div>
           </>
         )
@@ -651,8 +668,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         oWalletAccounts,
-        O.map((walletAccounts) =>
-          FP.pipe(
+        O.map((walletAccounts) => {
+          return FP.pipe(
             walletAccounts,
             A.filter(({ chain }) =>
               accountFilter
@@ -661,7 +678,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                 : true
             )
           )
-        )
+        })
       ),
     [accountFilter, oWalletAccounts]
   )
@@ -707,10 +724,10 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
 
   const renderAddAddressForm = useCallback(
     () => (
-      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="flex items-center gap-3 mb-4">
         <Styled.AutoComplete
+          className="w-40 mr-2"
           key={newAddress.chain || 'autocomplete'}
-          style={{ width: 150, marginRight: 8 }}
           placeholder={intl.formatMessage({ id: 'common.chain' })}
           options={enabledChains.map((chain) => ({ value: chain }))}
           value={newAddress.chain}
@@ -719,14 +736,16 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
             option ? option.value.toLowerCase().includes(inputValue.toLowerCase()) : false
           }
         />
-        <Styled.Input
-          className="rounded-lg border border-solid border-bg2 bg-bg0 text-text0d dark:border-bg2d dark:bg-bg0d dark:text-text0d"
+        <Input
+          className="border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
+          uppercase={false}
           placeholder={intl.formatMessage({ id: 'common.address' })}
           value={newAddress.address}
           onChange={(e) => setNewAddress((prev) => ({ ...prev, address: e.target.value }))}
         />
-        <Styled.Input
-          className="rounded-lg border border-solid border-bg2 bg-bg0 text-text0d dark:border-bg2d dark:bg-bg0d dark:text-text0d"
+        <Input
+          className="border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
+          uppercase={false}
           placeholder={intl.formatMessage({ id: 'wallet.column.name' })}
           value={newAddress.name}
           onChange={(e) => setNewAddress((prev) => ({ ...prev, name: e.target.value }))}
@@ -984,19 +1003,15 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       <div key="accounts" className="mt-4 w-full border-t border-solid border-bg2 dark:border-bg2d">
         <Styled.Subtitle>{intl.formatMessage({ id: 'setting.accounts' })}</Styled.Subtitle>
         <div className="mt-30px flex justify-center md:ml-4 md:justify-start">
-          <Styled.Input
-            className="rounded-lg border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
-            prefix={<MagnifyingGlassIcon />}
-            onChange={filterAccounts}
-            allowClear
+          <InputSearch
             placeholder={intl.formatMessage({ id: 'common.search' }).toUpperCase()}
             size="large"
+            onChange={filterAccounts}
           />
         </div>
         <div className="mt-10px border-b border-solid border-bg2 px-4 dark:border-bg2d">{renderAddAddressForm()}</div>
         <div className="flex items-center justify-center">
-          {/* TODO: locale */}
-          <Styled.Subtitle>Chain Management</Styled.Subtitle>
+          <Styled.Subtitle>{intl.formatMessage({ id: 'common.chainManagement' })}</Styled.Subtitle>
           <ActionButton className="mt-5 mr-5" text="Whitelist" onClick={() => setIsWhitelistModalOpen(true)} />
         </div>
         {renderAccounts}

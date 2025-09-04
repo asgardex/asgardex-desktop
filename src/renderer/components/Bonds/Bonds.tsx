@@ -1,11 +1,13 @@
-import React, { useCallback, useMemo, useState, useRef } from 'react'
+import { useCallback, useMemo, useState, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
+import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
@@ -17,8 +19,9 @@ import { NodeInfos } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
 import { WalletAddressInfo } from '../../views/bonds/types'
 import { ErrorView } from '../shared/error'
-import { FilterButton, ReloadButton } from '../uielements/button'
-import * as Styled from './Bonds.styles'
+import { InnerForm } from '../shared/form'
+import { Button, FilterButton, ReloadButton } from '../uielements/button'
+import { Input } from '../uielements/input'
 import { BondsTable } from './table'
 
 type Props = {
@@ -44,7 +47,7 @@ enum BondsViewMode {
   Watchlist = 'watchlist'
 }
 
-export const Bonds: React.FC<Props> = ({
+export const Bonds = ({
   addressValidationThor,
   addressValidationMaya,
   nodesThor: nodesThorRD,
@@ -60,7 +63,7 @@ export const Bonds: React.FC<Props> = ({
   walletAddresses,
   className,
   watchList
-}) => {
+}: Props) => {
   const [viewMode, setViewMode] = useState(BondsViewMode.All)
   const { protocol } = useApp()
   const intl = useIntl()
@@ -282,20 +285,23 @@ export const Bonds: React.FC<Props> = ({
   )
 
   return (
-    <Styled.Container className={className}>
-      <Styled.Form onFinish={onSubmit} form={form} disabled={disableForm}>
+    <div className={clsx('bg-bg0 dark:bg-bg0d', className)}>
+      <InnerForm className="flex items-center" onFinish={onSubmit} form={form} disabled={disableForm}>
         <div className="flex w-full flex-row items-center justify-between px-4 pb-2">
           <div className="flex items-center space-x-2">
             <Form.Item className="!m-0" name="address" rules={[{ required: true, validator: addressValidator }]}>
-              <Styled.Input
+              <Input
+                className="border border-solid border-gray0 dark:border-gray0d"
+                uppercase={false}
                 type="text"
                 placeholder={intl.formatMessage({ id: 'bonds.node.enterMessage' })}
                 disabled={disableForm}
               />
             </Form.Item>
-            <Styled.SubmitButton className="space-x-2" htmlType="submit" disabled={disableForm}>
-              <Styled.AddIcon /> {intl.formatMessage({ id: 'bonds.node.add' })}
-            </Styled.SubmitButton>
+            <Button className="space-x-1" htmlType="submit" disabled={disableForm} typevalue="transparent">
+              <PlusIcon className="bg-turquoise rounded-full w-4 h-4 stroke-text3 dark:stroke-text3d" />
+              {intl.formatMessage({ id: 'bonds.node.add' })}
+            </Button>
           </div>
           <div className="flex items-center">
             <FilterButton
@@ -310,8 +316,8 @@ export const Bonds: React.FC<Props> = ({
             </FilterButton>
           </div>
         </div>
-      </Styled.Form>
+      </InnerForm>
       {protocol === THORChain ? renderNodeInfos : renderNodeInfosMaya}
-    </Styled.Container>
+    </div>
   )
 }

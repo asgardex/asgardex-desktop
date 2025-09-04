@@ -4,6 +4,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -12,8 +13,10 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { option as O } from 'fp-ts'
 
 import { LoadTxsParams } from '../clients'
@@ -48,7 +51,10 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [KUJIChain]: 'all',
   [RadixChain]: 'all',
   [SOLChain]: 'all',
-  [BASEChain]: 'all'
+  [BASEChain]: 'all',
+  [ADAChain]: 'all',
+  [ZECChain]: 'all',
+  [XRPChain]: 'all'
 }
 
 export const INITIAL_LOAD_TXS_PROPS: LoadTxsParams = {

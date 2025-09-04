@@ -203,6 +203,7 @@ export type CommonMessageKey =
   | 'common.featureUnderDevelopment'
   | 'common.comingSoon'
   | 'common.watchlist'
+  | 'common.chainManagement'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string
@@ -414,6 +415,19 @@ type LedgerMessageKey =
   | 'ledger.legacyformat.note'
   | 'ledger.legacyformat.show'
   | 'ledger.legacyformat.hide'
+  | 'ledger.connect.title'
+  | 'ledger.connect.instruction'
+  | 'ledger.connect.success.title'
+  | 'ledger.connect.success.description'
+  | 'ledger.connect.success.redirect'
+  | 'ledger.connect.button.continue'
+  | 'ledger.detect.title'
+  | 'ledger.detect.checking'
+  | 'ledger.derivation.path'
+  | 'ledger.derivation.legacy'
+  | 'ledger.derivation.metamask'
+  | 'ledger.connect.chain'
+  | 'ledger.connect.select'
 
 export type LedgerMessages = { [key in LedgerMessageKey]: string }
 
@@ -461,6 +475,7 @@ type MidgardMessageKey =
   | 'midgard.url.error.invalid'
   | 'midgard.url.error.unhealthy'
   | 'midgard.url.valid'
+  | 'midgard.status.offline'
 
 export type MidgardMessages = { [key in MidgardMessageKey]: string }
 
@@ -472,7 +487,6 @@ type SwapMessageKey =
   | 'swap.aggregator.fasterReturn'
   | 'swap.slip.tolerance'
   | 'swap.slip.tolerance.info'
-  | 'swap.slip.tolerance.ledger-disabled.info'
   | 'swap.streaming.interval'
   | 'swap.streaming.title'
   | 'swap.streaming.interval.info'
@@ -494,7 +508,8 @@ type SwapMessageKey =
   | 'swap.note.nowallet'
   | 'swap.min.amount.info'
   | 'swap.min.result.info'
-  | `swap.min.result.protected`
+  | 'swap.min.result.protected'
+  | 'swap.address.evm.warning'
 
 export type SwapMessages = { [key in SwapMessageKey]: string }
 

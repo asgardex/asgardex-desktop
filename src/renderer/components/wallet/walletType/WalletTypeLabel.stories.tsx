@@ -21,7 +21,7 @@ const meta: Meta<typeof Component> = {
     }
   },
   decorators: [
-    (Story: React.FC) => (
+    (Story) => (
       <div style={{ display: 'flex', alignItems: 'center', padding: '20px', backgroundColor: '#fff' }}>
         <Story />
       </div>

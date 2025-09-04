@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Asset } from '@xchainjs/xchain-util'
-import { Spin } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
+import { Spin } from '../../../components/uielements/spin'
 import { SendFormUTXO } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -21,7 +21,6 @@ import { PoolAddress, PoolDetails } from '../../../services/midgard/midgardTypes
 import { FeesWithRatesLD } from '../../../services/utxo/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
-import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -31,7 +30,7 @@ type Props = {
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddress>
 }
-export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
+export const SendViewUTXO = (props: Props): JSX.Element => {
   const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
@@ -72,7 +71,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => (
         <Spin>
-          <Styled.Container>
+          <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
             <SendFormUTXO
               asset={asset}
               trustedAddresses={trustedAddresses}
@@ -94,11 +93,11 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
               oPoolAddressMaya={oPoolAddressMaya}
               mayaScanPrice={mayaScanPriceRD}
             />
-          </Styled.Container>
+          </div>
         </Spin>
       ),
       (walletBalance) => (
-        <Styled.Container>
+        <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
           <SendFormUTXO
             asset={asset}
             balances={FP.pipe(
@@ -120,7 +119,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
             oPoolAddressMaya={oPoolAddressMaya}
             mayaScanPrice={mayaScanPriceRD}
           />
-        </Styled.Container>
+        </div>
       )
     )
   )

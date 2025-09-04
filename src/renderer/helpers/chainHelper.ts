@@ -4,6 +4,7 @@ import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
 import { AssetBTC, BTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH, BCHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain, ADAAsset, UPPER_FEE_BOUND as UPPER_FEE_BOUNDADA } from '@xchainjs/xchain-cardano'
 import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { AssetDASH, DASHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDASH } from '@xchainjs/xchain-dash'
 import { AssetDOGE, DOGEChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDOGE } from '@xchainjs/xchain-doge'
@@ -12,9 +13,11 @@ import { AssetKUJI, KUJIChain } from '@xchainjs/xchain-kujira'
 import { AssetLTC, LTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
+import { AssetXRP, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, AssetType, Chain } from '@xchainjs/xchain-util'
+import { AssetZEC, ZECChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDZEC } from '@xchainjs/xchain-zcash'
 
 import { isSupportedChain } from '../../shared/utils/chain'
 import { eqChain } from './fp/eq'
@@ -36,13 +39,26 @@ const chainAssets: Record<Chain, Asset> = {
   ARB: AssetAETH,
   XRD: AssetXRD,
   SOL: SOLAsset,
-  BASE: AssetBETH
+  BASE: AssetBETH,
+  ADA: ADAAsset,
+  ZEC: AssetZEC,
+  XRP: AssetXRP
 }
 
 export const getChainAsset = (chain: Chain): Asset => {
   const asset = chainAssets[chain]
   if (!asset) throw new Error(`No asset found for chain ${chain}`)
 
+  return asset
+}
+
+export const getAssetChain = (asset: AnyAsset, protocol: Chain) => {
+  if (protocol === THORChain) {
+    return asset.type === AssetType.TRADE || asset.type === AssetType.SECURED ? AssetRuneNative : asset
+  }
+  if (protocol === MAYAChain) {
+    return asset.type === AssetType.SYNTH || asset.type === AssetType.TRADE ? AssetCacao : asset
+  }
   return asset
 }
 // TODO (@veado) Return Maybe<Asset> instead of throwing an error
@@ -59,6 +75,10 @@ export const getChainFeeBounds = (chain: Chain): number => {
       return UPPER_FEE_BOUNDDOGE
     case DASHChain:
       return UPPER_FEE_BOUNDDASH
+    case ZECChain:
+      return UPPER_FEE_BOUNDZEC
+    case ADAChain:
+      return UPPER_FEE_BOUNDADA
     default:
       return 0
   }
@@ -68,6 +88,10 @@ export const getChainFeeBounds = (chain: Chain): number => {
  * Check whether chain is BTC chain
  */
 export const isBtcChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), BTCChain)
+/**
+ * Check whether chain is XRP chain
+ */
+export const isXrpChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), XRPChain)
 
 /**
  * Check whether chain is LTC chain
@@ -85,6 +109,11 @@ export const isThorChain = (chain: Chain): boolean => eqChain.equals(chain.toUpp
 export const isMayaChain = (chain: Chain): boolean => eqChain.equals(chain, MAYAChain)
 
 export const isDashChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), DASHChain)
+
+/**
+ * Check whether chain is ZEC chain
+ */
+export const isZecChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), ZECChain)
 
 /**
  * Check whether chain is ETH chain
@@ -126,6 +155,10 @@ export const isDogeChain = (chain: Chain): boolean => eqChain.equals(chain, DOGE
  * Check whether chain is KUJI chain
  */
 export const isKujiChain = (chain: Chain): boolean => eqChain.equals(chain, KUJIChain)
+/**
+ * Check whether chain is ADA chain
+ */
+export const isAdaChain = (chain: Chain): boolean => eqChain.equals(chain, ADAChain)
 /**
  * Check whether chain is KUJI chain
  */
@@ -183,6 +216,12 @@ export const getChain = (chain: string): Chain => {
       return SOLChain
     case 'BASE':
       return BASEChain
+    case 'ZEC':
+      return ZECChain
+    case 'ADA':
+      return ADAChain
+    case 'XRP':
+      return XRPChain
     default:
       throw Error('Unknown chain')
   }

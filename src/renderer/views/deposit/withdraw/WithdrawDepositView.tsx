@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -33,7 +33,7 @@ import { DEFAULT_BALANCES_FILTER } from '../../../services/wallet/const'
 import { getBalanceByAsset } from '../../../services/wallet/util'
 import { Props } from './WithdrawDepositView.types'
 
-export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
+export const WithdrawDepositView = (props: Props): JSX.Element => {
   const {
     protocol,
     asset: assetWD,

@@ -4,6 +4,7 @@ import {
   addressByChain$,
   clientByChain$,
   symDepositFees$,
+  depositFees$,
   reloadSymDepositFees,
   symWithdrawFee$,
   reloadWithdrawFees,
@@ -20,13 +21,17 @@ import {
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,
-  reloadUtxoFeesWithRates$
+  reloadUtxoFeesWithRates$,
+  evmFees$,
+  standaloneLedgerFees$,
+  reloadStandaloneLedgerFees
 } from '../services/chain'
 
 type ChainContextValue = {
   addressByChain$: typeof addressByChain$
   clientByChain$: typeof clientByChain$
   symDepositFees$: typeof symDepositFees$
+  depositFees$: typeof depositFees$
   reloadSymDepositFees: typeof reloadSymDepositFees
   symWithdrawFee$: typeof symWithdrawFee$
   reloadWithdrawFees: typeof reloadWithdrawFees
@@ -44,12 +49,16 @@ type ChainContextValue = {
   assetWithDecimal$: typeof assetWithDecimal$
   utxoFeesWithRates$: typeof utxoFeesWithRates$
   reloadUtxoFeesWithRates$: typeof reloadUtxoFeesWithRates$
+  evmFees$: typeof evmFees$
+  standaloneLedgerFees$: typeof standaloneLedgerFees$
+  reloadStandaloneLedgerFees: typeof reloadStandaloneLedgerFees
 }
 
 const initialContext: ChainContextValue = {
   addressByChain$,
   clientByChain$,
   symDepositFees$,
+  depositFees$,
   reloadSymDepositFees,
   symWithdrawFee$,
   reloadWithdrawFees,
@@ -66,11 +75,14 @@ const initialContext: ChainContextValue = {
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,
-  reloadUtxoFeesWithRates$
+  reloadUtxoFeesWithRates$,
+  evmFees$,
+  standaloneLedgerFees$,
+  reloadStandaloneLedgerFees
 }
 const ChainContext = createContext<ChainContextValue | null>(null)
 
-export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const ChainProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <ChainContext.Provider value={initialContext}>{children}</ChainContext.Provider>
 }
 

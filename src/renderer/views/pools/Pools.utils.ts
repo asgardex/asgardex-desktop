@@ -248,7 +248,7 @@ export type FilterTableData = Pick<PoolTableRowData, 'asset' | 'watched'>
  */
 export const filterTableData =
   (oFilter: O.Option<PoolFilter> = O.none) =>
-  (tableData: FilterTableData[]): FilterTableData[] => {
+  (tableData: PoolTableRowData[]): PoolTableRowData[] => {
     return FP.pipe(
       oFilter,
       O.map((filter) =>

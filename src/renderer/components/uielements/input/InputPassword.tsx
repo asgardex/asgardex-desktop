@@ -1,14 +1,14 @@
-import React, { forwardRef, useState } from 'react'
+import { forwardRef, useState } from 'react'
 
 import clsx from 'clsx'
 
 import { EyeHideIcon, EyeIcon } from '../../icons'
 import { Input, InputProps } from './Input'
 
-export type PasswordProps = { inputClassName?: string; error: string } & Omit<InputProps, 'error' | 'uppercase'>
+export type PasswordProps = { inputClassName?: string; error?: string } & Omit<InputProps, 'error' | 'uppercase'>
 
 export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props, ref): JSX.Element => {
-  const { id = 'input-pw', disabled = false, error = false, className = '', inputClassName = '', ...otherProps } = props
+  const { id = 'input-pw', disabled = false, error, className = '', inputClassName = '', ...otherProps } = props
 
   const [showPw, setShowPw] = useState(false)
 

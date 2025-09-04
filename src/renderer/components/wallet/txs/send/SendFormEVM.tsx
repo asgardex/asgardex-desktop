@@ -20,7 +20,6 @@ import {
   Chain
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
-import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
@@ -50,12 +49,13 @@ import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/may
 import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
 import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
 import { UIFeesRD } from '../../../uielements/fees'
-import { InputBigNumber } from '../../../uielements/input'
+import { Input, InputBigNumber } from '../../../uielements/input'
+import { Label } from '../../../uielements/label'
+import { RadioGroup, Radio } from '../../../uielements/radio'
 import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
@@ -90,7 +90,7 @@ export type Props = {
   mayaScanPrice: MayaScanPriceRD
 }
 
-export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
+export const SendFormEVM = (props: Props): JSX.Element => {
   const {
     asset: { walletType, walletAccount, walletIndex, hdMode, walletAddress },
     trustedAddresses,
@@ -227,11 +227,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset
-    if (isChainAsset) {
-      return O.some(balance.amount)
-    }
+    if (isChainAsset) return O.some(balance.amount)
+
     // or check list of other assets to get eth balance
-    return FP.pipe(getEVMAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
+    const result = FP.pipe(getEVMAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
+    return result
   }, [asset.chain, balance.amount, balances, isChainAsset])
 
   const isFeeError = useMemo(() => {
@@ -311,14 +311,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     (value: string) => {
       form.setFieldsValue({ recipient: value })
       setRecipientAddress(O.fromNullable(value))
-      if (value) {
-        const matched = FP.pipe(
-          oSavedAddresses,
-          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
-        )
-        setMatchedAddresses(matched)
-      }
+      const matched = Shared.filterMatchedAddresses(oSavedAddresses, value)
+      setMatchedAddresses(matched)
       addressValidator(undefined, value).catch(() => {})
     },
     [addressValidator, form, oSavedAddresses]
@@ -332,9 +326,9 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
           (addresses) => (
             <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
               <Styled.CustomSelect
+                className="w-full"
                 placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
-                onChange={(value) => handleSavedAddressSelect(value as string)}
-                style={{ width: '100%' }}>
+                onChange={(value) => handleSavedAddressSelect(value as string)}>
                 {addresses.map((address) => (
                   <Styled.CustomSelect.Option key={address.address} value={address.address}>
                     {address.name}: {address.address}
@@ -365,7 +359,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   }, [selectedFee, oAssetAmount, isChainAsset, balance.amount])
 
   // store maxAmountValue
-  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const isPoolDetails = (poolDetails: PoolDetails | PoolDetailsMaya): poolDetails is PoolDetails => {
     return (poolDetails as PoolDetails) !== undefined
@@ -549,13 +543,16 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const renderSlider = useMemo(() => {
     const amountValue = O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend)
-    const percentage = amountValue
-      .amount()
-      .dividedBy(maxAmount.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
+    const maxAmountValue = maxAmount.amount()
+    const percentage = maxAmountValue.isZero()
+      ? 0
+      : amountValue
+          .amount()
+          .dividedBy(maxAmountValue)
+          .multipliedBy(100)
+          // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+          .decimalPlaces(0, BigNumber.ROUND_DOWN)
+          .toNumber()
 
     const setAmountToSendFromPercentValue = (percents: number) => {
       const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
@@ -567,10 +564,6 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         key={'Send percentage slider'}
         value={percentage}
         onChange={setAmountToSendFromPercentValue}
-        tooltipVisible
-        tipFormatter={(value) => `${value}%`}
-        withLabel
-        tooltipPlacement={'top'}
         disabled={isLoading}
       />
     )
@@ -600,11 +593,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       const address = target.value
 
       if (address) {
-        const matched = FP.pipe(
-          oSavedAddresses,
-          O.map((addresses) => addresses.filter((addr) => addr.address.toLowerCase().includes(address.toLowerCase()))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
-        )
+        const matched = Shared.filterMatchedAddresses(oSavedAddresses, address, false) // case-insensitive
         setMatchedAddresses(matched)
 
         // Validate the address
@@ -649,7 +638,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       <>
         <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
         <Form.Item name="memo">
-          <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} onChange={handleMemo} />
+          <Input size="large" disabled={isLoading} onBlur={reloadFees} onChange={handleMemo} />
         </Form.Item>
       </>
     )
@@ -885,23 +874,33 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const addMaxAmountHandler = useCallback(() => setAmountToSend(O.some(maxAmount)), [maxAmount])
 
   const renderFeeOptions = useMemo(() => {
-    const onChangeHandler = (e: RadioChangeEvent) => {
-      setSelectedFeeOption(e.target.value)
+    const onChangeHandler = (e: string) => {
+      setSelectedFeeOption(e as FeeOption)
     }
     const disabled = !feesAvailable || isLoading
 
     return (
-      <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOption} disabled={disabled}>
-        <StyledR.Radio value="average" key="average">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['average']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-        <StyledR.Radio value="fast" key="fast">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fast']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-        <StyledR.Radio value="fastest" key="fastest">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fastest']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-      </StyledR.Radio.Group>
+      <RadioGroup
+        className="flex flex-col lg:flex-row lg:space-x-2"
+        onChange={onChangeHandler}
+        value={selectedFeeOption}
+        disabled={disabled}>
+        <Radio value="average" key="average">
+          <Label disabled={disabled} textTransform="uppercase">
+            {feeOptionsLabel['average']}
+          </Label>
+        </Radio>
+        <Radio value="fast" key="fast">
+          <Label disabled={disabled} textTransform="uppercase">
+            {feeOptionsLabel['fast']}
+          </Label>
+        </Radio>
+        <Radio value="fastest" key="fastest">
+          <Label disabled={disabled} textTransform="uppercase">
+            {feeOptionsLabel['fastest']}
+          </Label>
+        </Radio>
+      </RadioGroup>
     )
   }, [feeOptionsLabel, feesAvailable, isLoading, selectedFeeOption])
 
@@ -943,13 +942,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               {renderWalletType}
             </Styled.CustomLabel>
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Styled.Input
-                color="primary"
-                size="large"
-                disabled={isLoading}
-                onChange={onChangeAddress}
-                onKeyUp={handleOnKeyUp}
-              />
+              <Input size="large" disabled={isLoading} onChange={onChangeAddress} onKeyUp={handleOnKeyUp} />
             </Form.Item>
             {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
@@ -966,11 +959,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               className="mb-10px"
               color="neutral"
               balance={{ amount: maxAmount, asset }}
-              maxDollarValue={maxAmmountPriceValue}
+              maxDollarValue={maxAmountPriceValue}
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />
-            <div className="w-full px-20px pb-10px">{renderSlider}</div>
+            <div className="w-full py-2">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>

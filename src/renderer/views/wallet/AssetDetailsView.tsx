@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
@@ -9,7 +9,7 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { LoadingView } from '../../components/shared/loading'
+import { Spin } from '../../components/uielements/spin'
 import { AssetDetails } from '../../components/wallet/assets'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
@@ -26,7 +26,7 @@ import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/
 import { SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 
-export const AssetDetailsView: React.FC = (): JSX.Element => {
+export const AssetDetailsView = (): JSX.Element => {
   const { mimirHalt } = useThorchainMimirHalt()
   const {
     service: {
@@ -142,8 +142,8 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
   return FP.pipe(
     oSelectedAsset,
     O.fold(
-      () => <LoadingView size="large" />,
-      ({ asset, walletAddress, walletType }) => (
+      () => <Spin />,
+      ({ asset, walletAddress, walletType, price }) => (
         <AssetDetails
           walletType={walletType}
           txsPageRD={txsRD}
@@ -161,6 +161,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
           network={network}
           haltedChainsThor={haltedChainsThor}
           haltedChainsMaya={haltedChainsMaya}
+          price={price}
         />
       )
     )

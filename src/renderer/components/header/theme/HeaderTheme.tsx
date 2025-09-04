@@ -1,9 +1,10 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { useTheme } from '../../../hooks/useTheme'
+import { Label } from '../../uielements/label'
 import * as Styled from './HeaderTheme.styles'
 
 export type Props = {
@@ -11,7 +12,7 @@ export type Props = {
   isDesktopView: boolean
 }
 
-export const HeaderTheme: React.FC<Props> = (props): JSX.Element => {
+export const HeaderTheme = (props: Props): JSX.Element => {
   const { onPress = FP.constVoid, isDesktopView } = props
 
   const intl = useIntl()
@@ -32,12 +33,18 @@ export const HeaderTheme: React.FC<Props> = (props): JSX.Element => {
     const label = intl.formatMessage({ id: isLightTheme ? 'common.theme.light' : 'common.theme.dark' })
 
     return (
-      <>
-        <Styled.Label>{label}</Styled.Label>
+      <div className="flex items-center justify-between px-6 lg:px-4 w-full">
+        <Label size="large" textTransform="uppercase" weight="bold">
+          {label}
+        </Label>
         {isLightTheme ? <Styled.DayThemeIcon /> : <Styled.NightThemeIcon />}
-      </>
+      </div>
     )
   }, [intl, isLightTheme])
 
-  return <div onClick={() => clickSwitchThemeHandler()}>{isDesktopView ? desktopView : mobileView}</div>
+  return (
+    <div className="w-full lg:w-auto" onClick={() => clickSwitchThemeHandler()}>
+      {isDesktopView ? desktopView : mobileView}
+    </div>
+  )
 }

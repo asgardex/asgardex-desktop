@@ -4,6 +4,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -12,9 +13,11 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -26,6 +29,7 @@ import * as BASE from '../base'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
+import * as ADA from '../cardano'
 import { XChainClient$ } from '../clients'
 import * as COSMOS from '../cosmos'
 import * as DASH from '../dash'
@@ -36,8 +40,10 @@ import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import { selectedPoolChain$ } from '../midgard/thorMidgard/common'
 import * as XRD from '../radix'
+import * as XRP from '../ripple'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
+import * as ZEC from '../zcash'
 import type { Chain$ } from './types'
 
 export const clientByChain$ = (chain: Chain): XChainClient$ => {
@@ -76,6 +82,12 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return XRD.client$
     case SOLChain:
       return SOL.client$
+    case ZECChain:
+      return ZEC.client$
+    case ADAChain:
+      return ADA.client$
+    case XRPChain:
+      return XRP.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
@@ -124,6 +136,12 @@ export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ 
       return XRD.client$
     case SOLChain:
       return SOL.client$
+    case ZECChain:
+      return ZEC.client$
+    case ADAChain:
+      return ADA.client$
+    case XRPChain:
+      return XRP.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }

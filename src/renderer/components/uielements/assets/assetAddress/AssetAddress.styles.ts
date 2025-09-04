@@ -3,10 +3,6 @@ import styled from 'styled-components'
 import { AddressEllipsis as UIAddressEllipsis, Props as UIAddressEllipsisProps } from '../../addressEllipsis'
 import { Size as UIAssetIconSize, FontSizes } from '../assetIcon'
 
-export const Wrapper = styled.div`
-  display: flex;
-  align-items: center;
-`
 const fontSizes: FontSizes = {
   large: 21,
   big: 19,
@@ -14,11 +10,6 @@ const fontSizes: FontSizes = {
   small: 14,
   xsmall: 11
 }
-
-export const AddressWrapper = styled.div`
-  overflow: none;
-  width: 100%;
-`
 
 type AddressEllipsisProps = UIAddressEllipsisProps & { iconSize: UIAssetIconSize }
 export const AddressEllipsis = styled(UIAddressEllipsis)<AddressEllipsisProps>`

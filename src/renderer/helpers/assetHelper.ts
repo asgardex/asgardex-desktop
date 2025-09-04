@@ -1,6 +1,8 @@
 import { Network } from '@xchainjs/xchain-client'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { AssetXRP } from '@xchainjs/xchain-ripple'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   AnyAsset,
@@ -32,12 +34,14 @@ import {
   AssetMaya,
   AssetKUJI,
   AssetBETH,
+  ADAAsset,
   AssetARB,
   AssetAETH,
   AssetDASH,
   SOLAsset,
   AssetUSK,
-  AssetXRD
+  AssetXRD,
+  AssetZEC
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
@@ -46,10 +50,19 @@ import { ARB_TOKEN_WHITELIST } from '../types/generated/mayachain/arberc20whitel
 import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whitelist'
 import { BASE_TOKEN_WHITELIST } from '../types/generated/thorchain/baseerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitelist'
-import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
+import { ETH_TOKEN_WHITELIST } from '../types/generated/thorchain/etherc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
 import { getEVMChecksumAddress } from './addressHelper'
-import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
+import {
+  getChainAsset,
+  isBchChain,
+  isBtcChain,
+  isDashChain,
+  isDogeChain,
+  isEthChain,
+  isLtcChain,
+  isZecChain
+} from './chainHelper'
 import { isEvmChain, isEvmChainAsset } from './evmHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'
@@ -71,10 +84,16 @@ export const THORCHAIN_DECIMAL = 8
 export const isRuneNativeAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetRuneNative)
 
 /**
+ * Checks whether an asset is an RUJI asset
+ */
+export const isRujiAsset = (asset: AnyAsset): boolean =>
+  asset.chain === THORChain && asset.symbol.toUpperCase() === 'RUJI'
+
+/**
  * Checks whether an asset is a Rune (native or non-native) asset
  */
-export const isRuneAsset = (asset: AnyAsset): boolean => isRuneNativeAsset(asset)
-
+export const isRuneAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetRuneNative.chain && asset.symbol.toUpperCase() === AssetRuneNative.symbol.toUpperCase()
 /**
  * Checks whether an asset is a LTC asset
  */
@@ -92,6 +111,12 @@ export const isBchAsset = (asset: AnyAsset): boolean =>
  */
 export const isDashAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetDASH.chain && asset.symbol.toUpperCase() === AssetDASH.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is a ZEC asset
+ */
+export const isZecAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetZEC.chain && asset.symbol.toUpperCase() === AssetZEC.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a native | synth | trade Cacao asset
@@ -168,11 +193,23 @@ export const isDogeAsset = (asset: AnyAsset): boolean =>
  */
 export const isKujiAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetKUJI.chain && asset.symbol.toUpperCase() === AssetKUJI.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is a Ada asset
+ */
+export const isAdaAsset = (asset: AnyAsset): boolean =>
+  asset.chain === ADAAsset.chain && asset.symbol.toUpperCase() === ADAAsset.symbol.toUpperCase()
 /**
  * Checks whether an asset is a Radix asset
  */
 export const isXrdAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetXRD.chain && asset.symbol.toUpperCase() === AssetXRD.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is a Ripple asset
+ */
+export const isXrpAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetXRP.chain && asset.symbol.toUpperCase() === AssetXRP.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a Solana asset
@@ -208,7 +245,7 @@ export const assetInList =
  */
 export const assetInERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
-    ERC20_WHITELIST,
+    ETH_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
     assetInList(asset)
   )
@@ -218,7 +255,7 @@ export const assetInERC20Whitelist = (asset: AnyAsset): boolean =>
  */
 export const iconUrlInERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
-    ERC20_WHITELIST,
+    ETH_TOKEN_WHITELIST,
     A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
     O.chain(({ iconUrl }) => iconUrl)
   )
@@ -356,7 +393,7 @@ const addressInList = (address: Address, list: TokenAsset[]): boolean => {
 }
 
 const erc20WhiteListAssetOnly = FP.pipe(
-  ERC20_WHITELIST,
+  ETH_TOKEN_WHITELIST,
   A.map(({ asset }) => asset)
 )
 
@@ -447,7 +484,12 @@ export const isUSDAsset = ({ ticker }: AnyAsset): boolean =>
   ticker.includes('USD') || ticker.includes('UST') || ticker.includes('DAI') || ticker.includes('usdt')
 
 export const isUtxoAssetChain = ({ chain }: AnyAsset) =>
-  isBtcChain(chain) || isBchChain(chain) || isLtcChain(chain) || isDogeChain(chain)
+  isBtcChain(chain) ||
+  isBchChain(chain) ||
+  isLtcChain(chain) ||
+  isDogeChain(chain) ||
+  isDashChain(chain) ||
+  isZecChain(chain)
 
 // Assuming you have an appropriate `isTokenAsset` predicate function
 export const isTokenAsset = (asset: AnyAsset): asset is TokenAsset => asset.type === AssetType.TOKEN
