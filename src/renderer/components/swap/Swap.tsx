@@ -695,11 +695,11 @@ export const Swap = ({
         () =>
           new CryptoAmount(
             swapFees.outFee.amount,
-            targetAsset.type === AssetType.SYNTH
+            swapFees.outFee.asset.type === AssetType.SYNTH
               ? AssetCacao
-              : targetAsset.type === AssetType.SECURED
+              : swapFees.outFee.asset.type === AssetType.SECURED
               ? AssetRuneNative
-              : targetAsset
+              : swapFees.outFee.asset
           ),
         (txDetails) => {
           const txOutFee = txDetails.fees.outboundFee
@@ -708,7 +708,7 @@ export const Swap = ({
       )
     )
     return swapOutFee
-  }, [oQuoteProtocol, swapFees.outFee.amount, targetAsset])
+  }, [oQuoteProtocol, swapFees.outFee.amount, swapFees.outFee.asset])
   const [outFeePriceValue, setOutFeePriceValue] = useState<CryptoAmount>(
     new CryptoAmount(swapFees.outFee.amount, targetAsset)
   )

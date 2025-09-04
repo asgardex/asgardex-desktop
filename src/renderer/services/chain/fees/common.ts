@@ -36,6 +36,7 @@ import * as RxOp from 'rxjs/operators'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isChainOfThor } from '../../../../shared/utils/chain'
 import { isCacaoAsset, isRujiAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { getChainAsset } from '../../../helpers/chainHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
@@ -81,14 +82,14 @@ const {
 /**
  * Helper to get address address for a chain from inbound addresses
  */
-const getInboundAddress = (
+const getRouterAddress = (
   inboundAddresses: (ThorInboundAddress | MayaInboundAddress)[],
   chain: Chain
 ): O.Option<Address> => {
   return FP.pipe(
     inboundAddresses,
     A.findFirst((item) => item.chain === chain),
-    O.chain((item) => O.fromNullable(item.address))
+    O.chain((item) => O.fromNullable(item.router))
   )
 }
 
@@ -134,7 +135,11 @@ export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
       RxOp.catchError(() => {
         // Fallback to midgard if nodeapi or getDecimal fails
         const outboundFee = isChainOfThor(chain) ? outboundAssetFeeByChain$(chain) : outboundAssetFeeByChainMaya$(chain)
-        return outboundFee
+        // Ensure the returned fee uses the correct asset (the one we requested)
+        return FP.pipe(
+          outboundFee,
+          liveData.map((fee) => ({ amount: fee.amount, asset: getChainAsset(asset.chain) }))
+        )
       }),
       RxOp.startWith(RD.pending)
     )
@@ -210,7 +215,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getInboundAddress(inboundAddressesRD.value, ETHChain),
+                getRouterAddress(inboundAddressesRD.value, ETHChain),
                 O.fold(
                   // Fallback to zero address if address not found
                   () =>
@@ -221,7 +226,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: '0x0000000000000000000000000000000000000000',
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
                   // Use actual address address for better estimation
                   (address) =>
@@ -232,7 +237,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: address,
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     )
                 )
               )
@@ -244,7 +249,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                   recipient: '0x0000000000000000000000000000000000000000',
                   memo
                 }),
-                liveData.map((fees) => ({ asset, amount: fees.fast }))
+                liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
               )
         ),
         RxOp.catchError((error) => Rx.of(RD.failure(error))),
@@ -257,7 +262,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getInboundAddress(inboundAddressesRD.value, ARBChain),
+                getRouterAddress(inboundAddressesRD.value, ARBChain),
                 O.fold(
                   // Fallback to zero address if address not found
                   () =>
@@ -268,7 +273,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: '0x0000000000000000000000000000000000000000',
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
                   // Use actual address address for better estimation
                   (address) =>
@@ -279,7 +284,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: address,
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     )
                 )
               )
@@ -291,7 +296,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                   recipient: '0x0000000000000000000000000000000000000000',
                   memo
                 }),
-                liveData.map((fees) => ({ asset, amount: fees.fast }))
+                liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
               )
         ),
         RxOp.catchError((error) => Rx.of(RD.failure(error))),
@@ -304,7 +309,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getInboundAddress(inboundAddressesRD.value, BASEChain),
+                getRouterAddress(inboundAddressesRD.value, BASEChain),
                 O.fold(
                   // Fallback to zero address if not found
                   () =>
@@ -315,7 +320,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: '0x0000000000000000000000000000000000000000',
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
                   // Use actual address address for better estimation
                   (address) =>
@@ -326,7 +331,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: address,
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     )
                 )
               )
@@ -338,7 +343,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                   recipient: '0x0000000000000000000000000000000000000000',
                   memo
                 }),
-                liveData.map((fees) => ({ asset, amount: fees.fast }))
+                liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
               )
         ),
         RxOp.catchError((error) => Rx.of(RD.failure(error))),
@@ -351,7 +356,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getInboundAddress(inboundAddressesRD.value, AVAXChain),
+                getRouterAddress(inboundAddressesRD.value, AVAXChain),
                 O.fold(
                   // Fallback to zero address if address not found
                   () =>
@@ -362,7 +367,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: '0x0000000000000000000000000000000000000000',
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
                   // Use actual address address for better estimation
                   (address) =>
@@ -373,7 +378,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: address,
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     )
                 )
               )
@@ -385,7 +390,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                   recipient: '0x0000000000000000000000000000000000000000',
                   memo
                 }),
-                liveData.map((fees) => ({ asset, amount: fees.fast }))
+                liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
               )
         ),
         RxOp.catchError((error) => Rx.of(RD.failure(error))),
@@ -398,7 +403,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getInboundAddress(inboundAddressesRD.value, BSCChain),
+                getRouterAddress(inboundAddressesRD.value, BSCChain),
                 O.fold(
                   // Fallback to zero address if address not found
                   () =>
@@ -409,7 +414,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: '0x0000000000000000000000000000000000000000',
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
                   // Use actual address address for better estimation
                   (address) =>
@@ -420,7 +425,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                         recipient: address,
                         memo
                       }),
-                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                      liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     )
                 )
               )
@@ -432,7 +437,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                   recipient: '0x0000000000000000000000000000000000000000',
                   memo
                 }),
-                liveData.map((fees) => ({ asset, amount: fees.fast }))
+                liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
               )
         ),
         RxOp.catchError((error) => Rx.of(RD.failure(error))),

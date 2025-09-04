@@ -85,13 +85,25 @@ export const createFeesService = (client$: Client$): FeesService => {
           O.fold(
             () => Rx.of(RD.initial),
             (client): FeesLD => {
-              // Get gas limit estimation
-              const gasLimit$ = client.estimateGasLimit({
-                asset: params.asset as CompatibleAsset,
-                amount: params.amount,
-                recipient: params.recipient,
-                memo: params.memo
-              })
+              // Get gas limit estimation with fallback for standalone Ledger or flaky RPCs
+              const gasLimit$ = Rx.from(
+                client.estimateGasLimit({
+                  asset: params.asset as CompatibleAsset,
+                  amount: params.amount,
+                  recipient: params.recipient,
+                  memo: params.memo
+                })
+              ).pipe(
+                RxOp.catchError((error) => {
+                  console.error('Gas limit estimation failed, using fallback:', error)
+                  // Use same fallback logic as in estimateAndCalculateFees
+                  const fallbackGasLimit =
+                    params.asset && isAvaxAsset(params.asset as Asset)
+                      ? new BigNumber(ETH_OUT_TX_GAS_LIMIT) // AVAX native transfer
+                      : new BigNumber(ERC20_OUT_TX_GAS_LIMIT) // ERC20 token transfer
+                  return Rx.of(fallbackGasLimit)
+                })
+              )
 
               // Get gas prices - try THORNode first, fallback to client
               const gasPrices$: Rx.Observable<RD.RemoteData<Error, GasPrices>> = FP.pipe(
