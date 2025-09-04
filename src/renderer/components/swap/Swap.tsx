@@ -629,33 +629,23 @@ export const Swap = ({
   // Price of swap IN fee
   const oPriceSwapInFee: O.Option<CryptoAmount> = useMemo(() => {
     const assetAmount = new CryptoAmount(swapFees.inFee.amount, swapFees.inFee.asset)
-    const result = FP.pipe(
-      isChainOfThor(assetAmount.asset.chain)
-        ? PoolHelpers.getUSDValue({
-            balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-            poolDetails: poolDetailsThor,
-            pricePool: pricePoolThor
-          })
-        : FP.pipe(
-            PoolHelpersMaya.getUSDValue({
-              balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-              poolDetails: poolDetailsMaya,
-              pricePool: pricePoolMaya
-            })
-          ),
-      O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
-    )
+    const usdValueOption = isChainOfThor(assetAmount.asset.chain)
+      ? PoolHelpers.getUSDValue({
+          balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+          poolDetails: poolDetailsThor,
+          pricePool: pricePoolThor
+        })
+      : PoolHelpersMaya.getUSDValue({
+          balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+          poolDetails: poolDetailsMaya,
+          pricePool: pricePoolMaya
+        })
 
-    return O.some(new CryptoAmount(result, pricePoolThor.asset))
-  }, [
-    amountToSwapMax1e8.decimal,
-    poolDetailsMaya,
-    poolDetailsThor,
-    pricePoolMaya,
-    pricePoolThor,
-    swapFees.inFee.amount,
-    swapFees.inFee.asset
-  ])
+    return FP.pipe(
+      usdValueOption,
+      O.map((result) => new CryptoAmount(result, pricePoolThor.asset))
+    )
+  }, [poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor, swapFees.inFee.amount, swapFees.inFee.asset])
 
   const priceSwapInFeeLabel = useMemo(() => {
     // Ensure swapFees is defined before proceeding
@@ -676,19 +666,24 @@ export const Swap = ({
 
     const price = FP.pipe(
       oPriceSwapInFee,
-      O.map(({ assetAmount, asset }) =>
-        eqAsset.equals(feeAsset, asset)
-          ? emptyString
-          : formatAssetAmountCurrency({
-              amount: assetAmount,
-              asset: asset,
-              decimal: isUSDAsset(asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(asset)
-            })
-      ),
+      O.map(({ assetAmount, asset }) => {
+        if (eqAsset.equals(feeAsset, asset)) {
+          return emptyString
+        }
+
+        // Use more decimals for very small USD amounts to avoid showing $0.00
+        const isVerySmallUSDAmount = isUSDAsset(asset) && assetAmount.amount().lt(0.01)
+        const decimalPlaces = isUSDAsset(asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+
+        return formatAssetAmountCurrency({
+          amount: assetAmount,
+          asset: asset,
+          decimal: decimalPlaces,
+          trimZeros: !isUSDAsset(asset) || isVerySmallUSDAmount
+        })
+      }),
       O.getOrElse(() => emptyString)
     )
-
     return price ? `${price} (${fee})` : fee
   }, [oPriceSwapInFee, swapFees])
 

@@ -29,7 +29,7 @@ import {
   isSynthAsset
 } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
-import { function as FP, option as O } from 'fp-ts'
+import { function as FP, option as O, array as A } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -52,6 +52,8 @@ import * as ETH from '../../ethereum'
 import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
+import { inboundAddressesShared$ as mayaInboundAddresses$ } from '../../mayachain'
+import { InboundAddress as MayaInboundAddress } from '../../mayachain/types'
 import { service as midgardMayaService } from '../../midgard/mayaMigard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import * as XRD from '../../radix'
@@ -59,9 +61,13 @@ import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
 import { ZERO_ADDRESS } from '../../solana/fees'
 import * as THOR from '../../thorchain'
+import { inboundAddressesShared$ as thorInboundAddresses$ } from '../../thorchain'
+import { InboundAddress as ThorInboundAddress } from '../../thorchain/types'
 import { FeesWithRatesLD } from '../../utxo/types'
 import * as ZEC from '../../zcash'
+import { getDecimal } from '../decimal'
 import { PoolFeeLD } from '../types'
+import { getChainOutboundFee$, getChainNodeProtocol, NodeProtocol } from './nodeapi'
 
 const {
   pools: { outboundAssetFeeByChain$ }
@@ -69,6 +75,30 @@ const {
 const {
   pools: { outboundAssetFeeByChain$: outboundAssetFeeByChainMaya$ }
 } = midgardMayaService
+
+// Import inbound addresses observables
+
+/**
+ * Helper to get address address for a chain from inbound addresses
+ */
+const getInboundAddress = (
+  inboundAddresses: (ThorInboundAddress | MayaInboundAddress)[],
+  chain: Chain
+): O.Option<Address> => {
+  return FP.pipe(
+    inboundAddresses,
+    A.findFirst((item) => item.chain === chain),
+    O.chain((item) => O.fromNullable(item.address))
+  )
+}
+
+/**
+ * Get inbound addresses observable based on chain protocol
+ */
+const getInboundAddresses$ = (chain: Chain) => {
+  const protocol = getChainNodeProtocol(chain)
+  return protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$
+}
 
 /**
  * Fees for pool outbound txs (swap/deposit/withdraw/earn) tobefixed
@@ -92,8 +122,22 @@ export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
     )
   } else {
     const { chain } = asset
-    const outboundFee = isChainOfThor(chain) ? outboundAssetFeeByChain$(chain) : outboundAssetFeeByChainMaya$(chain)
-    return outboundFee
+    // First try to get authoritative fee from THORNode/MAYANode
+    return FP.pipe(
+      Rx.from(getDecimal(asset)),
+      RxOp.switchMap((decimal) =>
+        FP.pipe(
+          getChainOutboundFee$(chain, decimal),
+          liveData.map((amount) => ({ amount, asset }))
+        )
+      ),
+      RxOp.catchError(() => {
+        // Fallback to midgard if nodeapi or getDecimal fails
+        const outboundFee = isChainOfThor(chain) ? outboundAssetFeeByChain$(chain) : outboundAssetFeeByChainMaya$(chain)
+        return outboundFee
+      }),
+      RxOp.startWith(RD.pending)
+    )
   }
 }
 /**
@@ -160,89 +204,239 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         liveData.map((fees) => ({ asset, amount: fees.fast }))
       )
     case ETHChain:
+      // Use poolInTxFees$ with actual address address for accurate gas estimation
       return FP.pipe(
-        ETH.address$.pipe(
-          RxOp.switchMap(
-            O.fold(
-              () => Rx.of(RD.failure(new Error('No address available'))),
-              (address) =>
-                FP.pipe(
-                  ETH.fees$({ amount: baseAmount(1), recipient: address.address }),
-                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+        Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(ETHChain)]),
+        RxOp.switchMap(([decimal, inboundAddressesRD]) =>
+          RD.isSuccess(inboundAddressesRD)
+            ? FP.pipe(
+                getInboundAddress(inboundAddressesRD.value, ETHChain),
+                O.fold(
+                  // Fallback to zero address if address not found
+                  () =>
+                    FP.pipe(
+                      ETH.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: '0x0000000000000000000000000000000000000000',
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    ),
+                  // Use actual address address for better estimation
+                  (address) =>
+                    FP.pipe(
+                      ETH.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: address,
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    )
                 )
-            )
-          ),
-          RxOp.catchError((error) => Rx.of(RD.failure(error))),
-          RxOp.startWith(RD.pending)
-        )
+              )
+            : // If inbound addresses not loaded, use fallback
+              FP.pipe(
+                ETH.poolInTxFees$({
+                  asset,
+                  amount: baseAmount(1, decimal),
+                  recipient: '0x0000000000000000000000000000000000000000',
+                  memo
+                }),
+                liveData.map((fees) => ({ asset, amount: fees.fast }))
+              )
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error))),
+        RxOp.startWith(RD.pending)
       )
     case ARBChain:
+      // Use poolInTxFees$ with actual address address for accurate gas estimation
       return FP.pipe(
-        ARB.address$.pipe(
-          RxOp.switchMap(
-            O.fold(
-              () => Rx.of(RD.failure(new Error('No address available'))),
-              (address) =>
-                FP.pipe(
-                  ARB.fees$({ amount: baseAmount(1), recipient: address.address }),
-                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+        Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(ARBChain)]),
+        RxOp.switchMap(([decimal, inboundAddressesRD]) =>
+          RD.isSuccess(inboundAddressesRD)
+            ? FP.pipe(
+                getInboundAddress(inboundAddressesRD.value, ARBChain),
+                O.fold(
+                  // Fallback to zero address if address not found
+                  () =>
+                    FP.pipe(
+                      ARB.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: '0x0000000000000000000000000000000000000000',
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    ),
+                  // Use actual address address for better estimation
+                  (address) =>
+                    FP.pipe(
+                      ARB.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: address,
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    )
                 )
-            )
-          ),
-          RxOp.catchError((error) => Rx.of(RD.failure(error))),
-          RxOp.startWith(RD.pending)
-        )
+              )
+            : // If inbound addresses not loaded, use fallback
+              FP.pipe(
+                ARB.poolInTxFees$({
+                  asset,
+                  amount: baseAmount(1, decimal),
+                  recipient: '0x0000000000000000000000000000000000000000',
+                  memo
+                }),
+                liveData.map((fees) => ({ asset, amount: fees.fast }))
+              )
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error))),
+        RxOp.startWith(RD.pending)
       )
     case BASEChain:
+      // Use poolInTxFees$ with actual address for accurate gas estimation
       return FP.pipe(
-        BASE.address$.pipe(
-          RxOp.switchMap(
-            O.fold(
-              () => Rx.of(RD.failure(new Error('No address available'))),
-              (address) =>
-                FP.pipe(
-                  BASE.fees$({ amount: baseAmount(1), recipient: address.address }),
-                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+        Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(BASEChain)]),
+        RxOp.switchMap(([decimal, inboundAddressesRD]) =>
+          RD.isSuccess(inboundAddressesRD)
+            ? FP.pipe(
+                getInboundAddress(inboundAddressesRD.value, BASEChain),
+                O.fold(
+                  // Fallback to zero address if not found
+                  () =>
+                    FP.pipe(
+                      BASE.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: '0x0000000000000000000000000000000000000000',
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    ),
+                  // Use actual address address for better estimation
+                  (address) =>
+                    FP.pipe(
+                      BASE.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: address,
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    )
                 )
-            )
-          ),
-          RxOp.catchError((error) => Rx.of(RD.failure(error))),
-          RxOp.startWith(RD.pending)
-        )
+              )
+            : // If inbound addresses not loaded, use fallback
+              FP.pipe(
+                BASE.poolInTxFees$({
+                  asset,
+                  amount: baseAmount(1, decimal),
+                  recipient: '0x0000000000000000000000000000000000000000',
+                  memo
+                }),
+                liveData.map((fees) => ({ asset, amount: fees.fast }))
+              )
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error))),
+        RxOp.startWith(RD.pending)
       )
     case AVAXChain:
+      // Use poolInTxFees$ with actual address address for accurate gas estimation
       return FP.pipe(
-        AVAX.address$.pipe(
-          RxOp.switchMap(
-            O.fold(
-              () => Rx.of(RD.failure(new Error('No address available'))),
-              (address) =>
-                FP.pipe(
-                  AVAX.fees$({ amount: baseAmount(1), recipient: address.address }),
-                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+        Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(AVAXChain)]),
+        RxOp.switchMap(([decimal, inboundAddressesRD]) =>
+          RD.isSuccess(inboundAddressesRD)
+            ? FP.pipe(
+                getInboundAddress(inboundAddressesRD.value, AVAXChain),
+                O.fold(
+                  // Fallback to zero address if address not found
+                  () =>
+                    FP.pipe(
+                      AVAX.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: '0x0000000000000000000000000000000000000000',
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    ),
+                  // Use actual address address for better estimation
+                  (address) =>
+                    FP.pipe(
+                      AVAX.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: address,
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    )
                 )
-            )
-          ),
-          RxOp.catchError((error) => Rx.of(RD.failure(error))),
-          RxOp.startWith(RD.pending)
-        )
+              )
+            : // If inbound addresses not loaded, use fallback
+              FP.pipe(
+                AVAX.poolInTxFees$({
+                  asset,
+                  amount: baseAmount(1, decimal),
+                  recipient: '0x0000000000000000000000000000000000000000',
+                  memo
+                }),
+                liveData.map((fees) => ({ asset, amount: fees.fast }))
+              )
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error))),
+        RxOp.startWith(RD.pending)
       )
     case BSCChain:
+      // Use poolInTxFees$ with actual address address for accurate gas estimation
       return FP.pipe(
-        BSC.address$.pipe(
-          RxOp.switchMap(
-            O.fold(
-              () => Rx.of(RD.failure(new Error('No address available'))),
-              (address) =>
-                FP.pipe(
-                  BSC.fees$({ amount: baseAmount(1), recipient: address.address }),
-                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+        Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(BSCChain)]),
+        RxOp.switchMap(([decimal, inboundAddressesRD]) =>
+          RD.isSuccess(inboundAddressesRD)
+            ? FP.pipe(
+                getInboundAddress(inboundAddressesRD.value, BSCChain),
+                O.fold(
+                  // Fallback to zero address if address not found
+                  () =>
+                    FP.pipe(
+                      BSC.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: '0x0000000000000000000000000000000000000000',
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    ),
+                  // Use actual address address for better estimation
+                  (address) =>
+                    FP.pipe(
+                      BSC.poolInTxFees$({
+                        asset,
+                        amount: baseAmount(1, decimal),
+                        recipient: address,
+                        memo
+                      }),
+                      liveData.map((fees) => ({ asset, amount: fees.fast }))
+                    )
                 )
-            )
-          ),
-          RxOp.catchError((error) => Rx.of(RD.failure(error))),
-          RxOp.startWith(RD.pending)
-        )
+              )
+            : // If inbound addresses not loaded, use fallback
+              FP.pipe(
+                BSC.poolInTxFees$({
+                  asset,
+                  amount: baseAmount(1, decimal),
+                  recipient: '0x0000000000000000000000000000000000000000',
+                  memo
+                }),
+                liveData.map((fees) => ({ asset, amount: fees.fast }))
+              )
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error))),
+        RxOp.startWith(RD.pending)
       )
     case BTCChain:
       return FP.pipe(

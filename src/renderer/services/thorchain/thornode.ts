@@ -129,7 +129,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
               chain_lp_actions_paused: item.chain_lp_actions_paused,
               outbound_fee: item.outbound_fee,
               dust_threshold: item.dust_threshold,
-              halted: item.halted || false // provide a default value if halted is undefined
+              halted: item.halted || false, // provide a default value if halted is undefined
+              gas_rate: item.gas_rate,
+              gas_rate_units: item.gas_rate_units,
+              outbound_tx_size: item.outbound_tx_size
             }))
             return RD.success(data)
           }),

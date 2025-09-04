@@ -5,7 +5,7 @@ import { array as A, either as E, function as FP, option as O } from 'fp-ts'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../const'
-import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'
+import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount, convertBaseAmountDecimal } from '../../helpers/assetHelper'
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
@@ -129,7 +129,7 @@ export const minAmountToSwapMax1e8 = ({
  * Removes arbitrary 1000-unit rounding that was causing precision loss
  *
  * assetAmountMax1e8 => balances of source asset (max 1e8)
- * feeAmount => fee of inbound tx
+ * feeAmount => fee of inbound tx (in native asset decimal)
  */
 export const maxAmountToSwapMax1e8 = ({
   asset,
@@ -143,10 +143,20 @@ export const maxAmountToSwapMax1e8 = ({
   // Ignore non-chain assets
   if (!isChainAsset(asset)) return balanceAmountMax1e8
 
-  const estimatedFee = max1e8BaseAmount(feeAmount)
+  // Convert fee to match balance decimal (max 1e8)
+  // This ensures both amounts have the same decimal before subtraction
+  const estimatedFeeMax1e8 = max1e8BaseAmount(feeAmount)
 
-  const utxoSafetyBuffer = isUtxoAssetChain(asset) ? baseAmount(10000) : ZERO_BASE_AMOUNT // 0.0001 BTC in 1e8 units
-  const maxAmountToSwap = balanceAmountMax1e8.minus(estimatedFee).minus(utxoSafetyBuffer)
+  // Ensure fee has same decimal as balance for proper subtraction
+  const feeInBalanceDecimal =
+    estimatedFeeMax1e8.decimal !== balanceAmountMax1e8.decimal
+      ? convertBaseAmountDecimal(estimatedFeeMax1e8, balanceAmountMax1e8.decimal)
+      : estimatedFeeMax1e8
+
+  const utxoSafetyBuffer = isUtxoAssetChain(asset)
+    ? baseAmount(10000, balanceAmountMax1e8.decimal)
+    : baseAmount(0, balanceAmountMax1e8.decimal)
+  const maxAmountToSwap = balanceAmountMax1e8.minus(feeInBalanceDecimal).minus(utxoSafetyBuffer)
   return maxAmountToSwap.gt(ZERO_BASE_AMOUNT) ? maxAmountToSwap : ZERO_BASE_AMOUNT
 }
 

@@ -2,7 +2,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Network, XChainClient } from '@xchainjs/xchain-client'
 import ClientKeystore, { TxParams as BaseEvmTxParams } from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
-import { InterfaceAbi } from 'ethers'
 import { option as O } from 'fp-ts'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
@@ -57,10 +56,10 @@ export type ApproveParams = {
 export type IsApproveParams = { contractAddress: Address; spenderAddress: Address; fromAddress: Address }
 
 export type PoolInTxFeeParams = {
-  address: Address
-  abi: InterfaceAbi
-  func: string
-  params: Array<unknown>
+  asset: AnyAsset
+  amount: BaseAmount
+  recipient: Address
+  memo?: string
 }
 
 export type IsApprovedRD = RD.RemoteData<ApiError, boolean>
@@ -83,7 +82,6 @@ export type TxParams = {
 
 export type FeesService = {
   poolInTxFees$: (params: PoolInTxFeeParams) => C.FeesLD
-  poolOutTxFee$: (asset: Asset) => C.FeesLD
   approveFee$: ApproveFeeHandler
   reloadApproveFee: LoadApproveFeeHandler
   reloadFees: (params: TxParams) => void
