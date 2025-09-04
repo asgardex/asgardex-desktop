@@ -456,15 +456,20 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       selectedFee,
       O.fold(
         () => O.none, // Return `O.none` if `selectedFee` is `None`
-        (fee) =>
-          O.some(
+        (fee) => {
+          // Use more decimals for very small USD amounts to avoid showing $0.00
+          const feeAmount = baseToAsset(fee)
+          const isVerySmallUSDAmount = isUSDAsset(asset) && feeAmount.amount().lt(0.01)
+          const decimalPlaces = isUSDAsset(asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+          return O.some(
             formatAssetAmountCurrency({
-              amount: baseToAsset(fee),
+              amount: feeAmount,
               asset: asset,
-              decimal: isUSDAsset(asset) ? 2 : 6,
+              decimal: decimalPlaces,
               trimZeros: !isUSDAsset(asset)
             })
           )
+        }
       ),
       O.getOrElse(() => '')
     )
@@ -474,12 +479,17 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       O.map((cryptoAmount: CryptoAmount) =>
         eqAsset(asset, cryptoAmount.asset)
           ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
+          : (() => {
+              // Use more decimals for very small USD amounts to avoid showing $0.00
+              const isVerySmallUSDAmount = isUSDAsset(cryptoAmount.asset) && cryptoAmount.assetAmount.amount().lt(0.01)
+              const decimalPlaces = isUSDAsset(cryptoAmount.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+              return formatAssetAmountCurrency({
+                amount: cryptoAmount.assetAmount,
+                asset: cryptoAmount.asset,
+                decimal: decimalPlaces,
+                trimZeros: !isUSDAsset(cryptoAmount.asset)
+              })
+            })()
       ),
       O.getOrElse(() => '')
     )
@@ -492,10 +502,14 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       return loadingString // or noDataString, depending on your needs
     }
 
+    // Use more decimals for very small USD amounts to avoid showing $0.00
+    const assetAmount = baseToAsset(amountToSend)
+    const isVerySmallUSDAmount = isUSDAsset(asset) && assetAmount.amount().lt(0.01)
+    const decimalPlaces = isUSDAsset(asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
     const amount = formatAssetAmountCurrency({
-      amount: baseToAsset(amountToSend), // Find the value of swap slippage
+      amount: assetAmount, // Find the value of swap slippage
       asset: asset,
-      decimal: isUSDAsset(asset) ? 2 : 6,
+      decimal: decimalPlaces,
       trimZeros: !isUSDAsset(asset)
     })
 
@@ -504,12 +518,17 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       O.map((cryptoAmount: CryptoAmount) =>
         eqAsset(asset, cryptoAmount.asset)
           ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
+          : (() => {
+              // Use more decimals for very small USD amounts to avoid showing $0.00
+              const isVerySmallUSDAmount = isUSDAsset(cryptoAmount.asset) && cryptoAmount.assetAmount.amount().lt(0.01)
+              const decimalPlaces = isUSDAsset(cryptoAmount.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+              return formatAssetAmountCurrency({
+                amount: cryptoAmount.assetAmount,
+                asset: cryptoAmount.asset,
+                decimal: decimalPlaces,
+                trimZeros: !isUSDAsset(cryptoAmount.asset)
+              })
+            })()
       ),
       O.getOrElse(() => '')
     )

@@ -376,10 +376,13 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
       return loadingString // or noDataString, depending on your needs
     }
 
+    // Use more decimals for very small USD amounts to avoid showing $0.00
+    const isFeeVerySmallUSDAmount = isUSDAsset(assetFee.asset) && assetFee.assetAmount.amount().lt(0.01)
+    const feeDecimalPlaces = isUSDAsset(assetFee.asset) ? (isFeeVerySmallUSDAmount ? 6 : 2) : 6
     const fee = formatAssetAmountCurrency({
       amount: assetFee.assetAmount,
       asset: assetFee.asset,
-      decimal: isUSDAsset(assetFee.asset) ? 2 : 6,
+      decimal: feeDecimalPlaces,
       trimZeros: !isUSDAsset(assetFee.asset)
     })
 
@@ -388,12 +391,17 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
       O.map((cryptoAmount: CryptoAmount) =>
         eqAsset(asset, cryptoAmount.asset)
           ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
+          : (() => {
+              // Use more decimals for very small USD amounts to avoid showing $0.00
+              const isVerySmallUSDAmount = isUSDAsset(cryptoAmount.asset) && cryptoAmount.assetAmount.amount().lt(0.01)
+              const decimalPlaces = isUSDAsset(cryptoAmount.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+              return formatAssetAmountCurrency({
+                amount: cryptoAmount.assetAmount,
+                asset: cryptoAmount.asset,
+                decimal: decimalPlaces,
+                trimZeros: !isUSDAsset(cryptoAmount.asset)
+              })
+            })()
       ),
       O.getOrElse(() => '')
     )
@@ -406,33 +414,49 @@ export const SendFormCOSMOS = (props: Props): JSX.Element => {
       return loadingString // or noDataString, depending on your needs
     }
 
+    // Use more decimals for very small USD amounts to avoid showing $0.00
+    const assetAmount = baseToAsset(amountToSend)
+    const isVerySmallUSDAmount = isUSDAsset(asset) && assetAmount.amount().lt(0.01)
+    const decimalPlaces = isUSDAsset(asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
     const amount = formatAssetAmountCurrency({
-      amount: baseToAsset(amountToSend), // Find the value of swap slippage
+      amount: assetAmount, // Find the value of swap slippage
       asset: asset,
-      decimal: isUSDAsset(asset) ? 2 : 6,
+      decimal: decimalPlaces,
       trimZeros: !isUSDAsset(asset)
     })
 
     const price = isMayaAsset(asset)
       ? RD.isSuccess(amountToSendMayaPrice)
-        ? formatAssetAmountCurrency({
-            amount: amountToSendMayaPrice.value.assetAmount,
-            asset: amountToSendMayaPrice.value.asset,
-            decimal: isUSDAsset(amountToSendMayaPrice.value.asset) ? 2 : 6,
-            trimZeros: !isUSDAsset(amountToSendMayaPrice.value.asset)
-          })
+        ? (() => {
+            // Use more decimals for very small USD amounts to avoid showing $0.00
+            const isVerySmallUSDAmount =
+              isUSDAsset(amountToSendMayaPrice.value.asset) && amountToSendMayaPrice.value.assetAmount.amount().lt(0.01)
+            const decimalPlaces = isUSDAsset(amountToSendMayaPrice.value.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+            return formatAssetAmountCurrency({
+              amount: amountToSendMayaPrice.value.assetAmount,
+              asset: amountToSendMayaPrice.value.asset,
+              decimal: decimalPlaces,
+              trimZeros: !isUSDAsset(amountToSendMayaPrice.value.asset)
+            })
+          })()
         : ''
       : FP.pipe(
           O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
           O.map((cryptoAmount: CryptoAmount) =>
             eqAsset(asset, cryptoAmount.asset)
               ? ''
-              : formatAssetAmountCurrency({
-                  amount: cryptoAmount.assetAmount,
-                  asset: cryptoAmount.asset,
-                  decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-                  trimZeros: !isUSDAsset(cryptoAmount.asset)
-                })
+              : (() => {
+                  // Use more decimals for very small USD amounts to avoid showing $0.00
+                  const isVerySmallUSDAmount =
+                    isUSDAsset(cryptoAmount.asset) && cryptoAmount.assetAmount.amount().lt(0.01)
+                  const decimalPlaces = isUSDAsset(cryptoAmount.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+                  return formatAssetAmountCurrency({
+                    amount: cryptoAmount.assetAmount,
+                    asset: cryptoAmount.asset,
+                    decimal: decimalPlaces,
+                    trimZeros: !isUSDAsset(cryptoAmount.asset)
+                  })
+                })()
           ),
           O.getOrElse(() => '')
         )
