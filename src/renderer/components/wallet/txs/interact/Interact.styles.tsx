@@ -1,9 +1,7 @@
-import * as A from 'antd'
 import styled, { createGlobalStyle } from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { media } from '../../../../helpers/styleHelper'
-import { InnerForm } from '../../../shared/form'
 import { Menu as MenuUI } from '../../../shared/menu'
 import { Button as UIButton } from '../../../uielements/button'
 import { WalletTypeLabel as WalletTypeLabelUI } from '../../../uielements/common/Common.styles'
@@ -37,38 +35,6 @@ export const TabButtonsContainer = styled('div')`
   display: flex;
   flex-direction: row;
   margin-bottom: 40px;
-`
-export const Form = styled(InnerForm)`
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-`
-
-export const FormItem = styled(A.Form.Item)`
-  margin-bottom: 5px;
-`
-
-export const SubmitButtonContainer = styled(A.Form.Item).attrs({
-  shouldUpdate: true
-})`
-  width: 100%;
-  margin-top: 30px;
-
-  & .ant-form-item-control-input-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  ${media.sm`
-    width: auto;
-    margin-top: 0px;
-    align-self: flex-end;
-
-    & .ant-form-item-control-input-content {
-      align-items: flex-end;
-    }
-  `}
 `
 
 export const SubmitButton = styled(UIButton).attrs({

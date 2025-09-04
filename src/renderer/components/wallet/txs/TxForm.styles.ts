@@ -4,7 +4,6 @@ import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { media } from '../../../helpers/styleHelper'
-import { InnerForm } from '../../shared/form/Form.styles'
 import { Button as UIButton } from '../../uielements/button/Button'
 import { Fees as UIFees } from '../../uielements/fees'
 import { Label as UILabel } from '../../uielements/label'
@@ -22,18 +21,8 @@ export const Container = styled('div')`
   `}
 `
 
-export const Form = styled(InnerForm)`
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-`
-
 export const SubForm = styled.div`
   max-width: 630px;
-`
-
-export const FormItem = styled(A.Form.Item)`
-  margin-bottom: 0;
 `
 
 export const CustomLabel = styled(UILabel)`
@@ -54,13 +43,6 @@ export const Label = styled(UILabel)`
 
 export const Fees = styled(UIFees)`
   padding: 0 0 20px 0;
-`
-
-export const SubmitItem = styled(A.Form.Item)`
-  .ant-form-item-control-input-content {
-    display: flex;
-    justify-content: flex-end;
-  }
 `
 
 export const BackLabel = styled(UILabel)`
