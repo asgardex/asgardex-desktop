@@ -129,11 +129,22 @@ export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
       RxOp.switchMap((decimal) =>
         FP.pipe(
           getChainOutboundFee$(chain, decimal),
-          liveData.map((amount) => ({ amount, asset }))
+          liveData.map((amount) => ({ amount, asset: getChainAsset(asset.chain) })),
+          liveData.chainOnError(() => {
+            // Fallback to midgard if nodeapi fails with RD.failure
+            const outboundFee = isChainOfThor(chain)
+              ? outboundAssetFeeByChain$(chain)
+              : outboundAssetFeeByChainMaya$(chain)
+            // Ensure the returned fee uses the correct asset (the one we requested)
+            return FP.pipe(
+              outboundFee,
+              liveData.map((fee) => ({ amount: fee.amount, asset: getChainAsset(asset.chain) }))
+            )
+          })
         )
       ),
       RxOp.catchError(() => {
-        // Fallback to midgard if nodeapi or getDecimal fails
+        // Fallback to midgard if getDecimal fails (thrown error)
         const outboundFee = isChainOfThor(chain) ? outboundAssetFeeByChain$(chain) : outboundAssetFeeByChainMaya$(chain)
         // Ensure the returned fee uses the correct asset (the one we requested)
         return FP.pipe(
