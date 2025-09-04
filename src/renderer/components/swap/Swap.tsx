@@ -2985,8 +2985,8 @@ export const Swap = ({
                         </h3>
                         <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
                       </div>
-                      {/* Derivation path controls - only show when no address is fetched yet */}
-                      {FP.pipe(standaloneLedgerTargetAddress, O.isNone) && (
+                      {/* Derivation path controls - only show when no address is fetched yet and not in manual entry mode */}
+                      {FP.pipe(standaloneLedgerTargetAddress, O.isNone) && !customAddressEditActive && (
                         <div className="flex items-center gap-2">
                           {(['BTC', 'LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) ||
                             ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain)) && (
@@ -3044,11 +3044,7 @@ export const Swap = ({
                       )}
 
                       {/* Refresh from Ledger button - only show if address was fetched from Ledger */}
-                      {FP.pipe(
-                        standaloneLedgerTargetAddress,
-                        O.filter((addr) => addr !== 'MANUAL_ENTRY'),
-                        O.isSome
-                      ) && (
+                      {FP.pipe(standaloneLedgerTargetAddress, O.isSome) && !customAddressEditActive && (
                         <BaseButton
                           size="small"
                           className="hover:shadow-full dark:hover:shadow-fulld"
@@ -3105,7 +3101,7 @@ export const Swap = ({
                               <button
                                 className="group flex items-center justify-between p-4 border border-gray0 dark:border-gray0d rounded-lg hover:border-turquoise hover:bg-bg1 dark:hover:bg-bg1d transition-all duration-200"
                                 onClick={() => {
-                                  setStandaloneLedgerTargetAddress(O.some('MANUAL_ENTRY'))
+                                  setStandaloneLedgerTargetAddress(O.none)
                                   setCustomAddressEditActive(true)
                                 }}>
                                 <div className="flex items-center space-x-3">
@@ -3128,7 +3124,7 @@ export const Swap = ({
                         ),
                         (address) => (
                           <div className="mt-2">
-                            {address === 'MANUAL_ENTRY' ? (
+                            {customAddressEditActive ? (
                               <div className="space-y-2">
                                 <div className="text-[14px] text-text2 dark:text-text2d">Enter recipient address:</div>
                                 <div className="flex items-center space-x-2">

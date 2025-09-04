@@ -28,17 +28,25 @@ const chainSupportsHDModes = (chain: Chain): boolean => {
 
 // Helper functions for derivation paths
 const getBitcoinDerivationPaths = (account: number, index: number) => [
-  `Native SegWit P2WPKH (m/84'/0'/${account}'/${index})`,
-  `Taproot P2TR (m/86'/0'/${account}'/${index})`
+  `Native SegWit P2WPKH (m/84'/0'/${account}'/0/${index})`,
+  `Taproot P2TR (m/86'/0'/${account}'/0/${index})`
 ]
 
-const getEvmDerivationPaths = (hdMode: string, account: number, index: number) => {
-  if (hdMode === 'ledgerlive') {
+const getEvmDerivationPaths = (
+  hdMode: 'default' | 'ledgerlive' | 'metamask' | 'legacy' | 'p2wpkh' | 'p2tr',
+  account: number,
+  index: number
+) => {
+  // Handle Bitcoin HD modes by defaulting to Ledger Live display
+  if (hdMode === 'p2wpkh' || hdMode === 'p2tr') {
+    return `Ledger Live (m/44'/60'/${account}'/0/${index})`
+  }
+  if (hdMode === 'ledgerlive' || hdMode === 'default') {
     return `Ledger Live (m/44'/60'/${account}'/0/${index})`
   } else if (hdMode === 'metamask') {
     return `MetaMask (m/44'/60'/0'/0/${index})`
   } else {
-    return `Legacy (m/44'/60'/0'/${index})`
+    return `Legacy (m/44'/60'/0'/0/${index})`
   }
 }
 
@@ -304,7 +312,7 @@ export const LedgerChainSelectView: React.FC = () => {
                         {getEvmDerivationPaths(selectedHDMode, walletAccount, walletIndex)}
                       </Label>
                     }
-                    options={['ledgerlive', 'legacy', 'metamask'].map((mode: string) => (
+                    options={(['ledgerlive', 'legacy', 'metamask'] as const).map((mode) => (
                       <Label
                         key={mode}
                         className="px-3 py-2 cursor-pointer hover:bg-gray0/10 dark:hover:bg-gray0d/10"
