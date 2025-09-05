@@ -152,7 +152,7 @@ export const HeaderNetStatus = (props: Props) => {
   }, [onlineStatus, midgardStatus, thorchainStatus, mayachainStatus, midgardMayaStatus])
 
   const menuItems = useMemo((): MenuItem[] => {
-    const notConnectedTxt = intl.formatMessage({ id: 'setting.notconnected' })
+    const notConnectedTxt = intl.formatMessage({ id: 'settings.notconnected.title' })
     const midgardUrl = FP.pipe(
       midgardUrlRD,
       RD.getOrElse(() => '')

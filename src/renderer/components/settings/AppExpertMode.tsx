@@ -163,7 +163,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               url={thornodeNodeUrl}
               onChange={onChangeThornodeNodeUrl}
               checkUrl$={checkThornodeNodeUrl$}
-              successMsg={intl.formatMessage({ id: 'setting.thornode.node.valid' })}
+              successMsg={intl.formatMessage({ id: 'settings.thornode.node.valid' })}
             />
           </SubSection>
           <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeRpc.title' })}>
@@ -172,7 +172,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               url={thornodeRpcUrl}
               onChange={onChangeThornodeRpcUrl}
               checkUrl$={checkThornodeRpcUrl$}
-              successMsg={intl.formatMessage({ id: 'setting.thornode.rpc.valid' })}
+              successMsg={intl.formatMessage({ id: 'settings.thornode.rpc.valid' })}
             />
           </SubSection>
         </div>
@@ -216,7 +216,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               url={mayanodeNodeUrl}
               onChange={onChangeMayanodeNodeUrl}
               checkUrl$={checkMayanodeNodeUrl$}
-              successMsg={intl.formatMessage({ id: 'setting.mayanode.node.valid' })}
+              successMsg={intl.formatMessage({ id: 'settings.mayanode.node.valid' })}
             />
           </SubSection>
           <SubSection title="MAYANode RPC">
@@ -225,7 +225,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               url={mayanodeRpcUrl}
               onChange={onChangeMayanodeRpcUrl}
               checkUrl$={checkMayanodeRpcUrl$}
-              successMsg={intl.formatMessage({ id: 'setting.mayanode.rpc.valid' })}
+              successMsg={intl.formatMessage({ id: 'settings.mayanode.rpc.valid' })}
             />
           </SubSection>
         </div>

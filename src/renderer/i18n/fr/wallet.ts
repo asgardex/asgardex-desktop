@@ -116,7 +116,7 @@ const wallet: WalletMessages = {
     'Vous ne trouvez pas votre token ? Allez dans les paramètres et ajoutez-le manuellement à la liste blanche.',
   'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
   'wallet.derivationPath.taproot': 'Taproot P2TR',
-  'wallet.ledger.fetchDescription': 'Obtenir l\'adresse de votre portefeuille matériel'
+  'wallet.ledger.fetchDescription': "Obtenir l'adresse de votre portefeuille matériel"
 }
 
 export default wallet

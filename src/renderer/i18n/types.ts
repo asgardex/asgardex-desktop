@@ -215,11 +215,7 @@ export type CommonMessages = {
   [key in CommonMessageKey]: string
 }
 
-type UpdateMessagesKeys =
-  | 'update.description'
-  | 'update.link'
-  | 'update.checkFailed'
-  | 'update.noUpdate'
+type UpdateMessagesKeys = 'update.description' | 'update.link' | 'update.checkFailed' | 'update.noUpdate'
 
 export type UpdateMessages = { [key in UpdateMessagesKeys]: string }
 
@@ -438,41 +434,41 @@ type LedgerMessageKey =
 export type LedgerMessages = { [key in LedgerMessageKey]: string }
 
 type SettingMessageKey =
-  | 'setting.app.title'
-  | 'setting.wallet.title'
-  | 'setting.wallet.management'
-  | 'setting.multiwallet.management'
-  | 'setting.client'
-  | 'setting.accounts'
-  | 'setting.export'
-  | 'setting.lock'
-  | 'setting.view.phrase'
-  | 'setting.version'
-  | 'setting.language'
-  | 'setting.notconnected'
-  | 'setting.connected'
-  | 'setting.add.device'
-  | 'setting.wallet.whitelist.modal'
-  | 'setting.wallet.index'
-  | 'setting.wallet.account'
-  | 'setting.wallet.index.info'
-  | 'setting.wallet.account.info'
-  | 'setting.wallet.hdpath.legacy.info'
-  | 'setting.wallet.hdpath.ledgerlive.info'
-  | 'setting.wallet.hdpath.metamask.info'
-  | 'setting.wallet.storeAddress.info'
-  | 'setting.thornode.node.error.url'
-  | 'setting.thornode.node.error.unhealthy'
-  | 'setting.thornode.rpc.error.url'
-  | 'setting.thornode.rpc.error.unhealthy'
-  | 'setting.thornode.node.valid'
-  | 'setting.thornode.rpc.valid'
-  | 'setting.mayanode.node.error.url'
-  | 'setting.mayanode.node.error.unhealthy'
-  | 'setting.mayanode.rpc.error.url'
-  | 'setting.mayanode.rpc.error.unhealthy'
-  | 'setting.mayanode.node.valid'
-  | 'setting.mayanode.rpc.valid'
+  | 'settings.app.title'
+  | 'settings.wallet.title'
+  | 'settings.wallet.management'
+  | 'settings.multiwallet.management'
+  | 'settings.client.title'
+  | 'settings.accounts.title'
+  | 'settings.export.title'
+  | 'settings.lock.title'
+  | 'settings.view.phrase.title'
+  | 'settings.version.title'
+  | 'settings.language.title'
+  | 'settings.notconnected.title'
+  | 'settings.connected.title'
+  | 'settings.add.device.title'
+  | 'settings.wallet.whitelist.modal'
+  | 'settings.wallet.index'
+  | 'settings.wallet.account'
+  | 'settings.wallet.index.info'
+  | 'settings.wallet.account.info'
+  | 'settings.wallet.hdpath.legacy.info'
+  | 'settings.wallet.hdpath.ledgerlive.info'
+  | 'settings.wallet.hdpath.metamask.info'
+  | 'settings.wallet.storeAddress.info'
+  | 'settings.thornode.node.error.url'
+  | 'settings.thornode.node.error.unhealthy'
+  | 'settings.thornode.rpc.error.url'
+  | 'settings.thornode.rpc.error.unhealthy'
+  | 'settings.thornode.node.valid'
+  | 'settings.thornode.rpc.valid'
+  | 'settings.mayanode.node.error.url'
+  | 'settings.mayanode.node.error.unhealthy'
+  | 'settings.mayanode.rpc.error.url'
+  | 'settings.mayanode.rpc.error.unhealthy'
+  | 'settings.mayanode.node.valid'
+  | 'settings.mayanode.rpc.valid'
   | 'settings.network.subtitle'
   | 'settings.language.subtitle'
   | 'settings.privateData.subtitle'
@@ -683,20 +679,15 @@ type SidebarMessageKey =
 
 export type SidebarMessages = { [key in SidebarMessageKey]: string }
 
-type ErrorMessageKey =
-  | 'error.chainflip.channelIdRequired'
-  | 'error.interact.missingData.title'
+type ErrorMessageKey = 'error.chainflip.channelIdRequired' | 'error.interact.missingData.title'
 
 export type ErrorMessages = { [key in ErrorMessageKey]: string }
 
-type NetstatusMessageKey =
-  | 'netstatus.midgard.title'
-  | 'netstatus.midgardMaya.title'
+type NetstatusMessageKey = 'netstatus.midgard.title' | 'netstatus.midgardMaya.title'
 
 export type NetstatusMessages = { [key in NetstatusMessageKey]: string }
 
-type ModalMessageKey =
-  | 'modal.provider.selectProtocols.title'
+type ModalMessageKey = 'modal.provider.selectProtocols.title'
 
 export type ModalMessages = { [key in ModalMessageKey]: string }
 

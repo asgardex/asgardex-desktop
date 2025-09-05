@@ -379,7 +379,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
 
                 <>
                   <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                    {intl.formatMessage({ id: 'setting.wallet.account' })}
+                    {intl.formatMessage({ id: 'settings.wallet.account' })}
                   </div>
                   <Styled.WalletIndexInput
                     value={selectedAccountIndex.toString()}
@@ -391,11 +391,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
                     disabled={loading || (isEvmChain(chain) && evmHDMode !== 'ledgerlive')}
                     onPressEnter={addLedgerAddressHandler}
                   />
-                  <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
+                  <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.account.info' })} />
                 </>
 
                 <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
-                  {intl.formatMessage({ id: 'setting.wallet.index' })}
+                  {intl.formatMessage({ id: 'settings.wallet.index' })}
                 </div>
                 <Styled.WalletIndexInput
                   className="border border-solid border-bg2 dark:border-bg2d"
@@ -408,7 +408,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   disabled={loading}
                   onPressEnter={addLedgerAddressHandler}
                 />
-                <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.index.info' })} />
+                <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.index.info' })} />
 
                 {chain === BTCChain && (
                   <div className="ml-2">
@@ -447,7 +447,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       {intl.formatMessage({ id: 'common.ledgerlive' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
-                          { id: 'setting.wallet.hdpath.ledgerlive.info' },
+                          { id: 'settings.wallet.hdpath.ledgerlive.info' },
                           {
                             path: `${getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')}{index}`
                           }
@@ -460,7 +460,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       {intl.formatMessage({ id: 'common.legacy' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
-                          { id: 'setting.wallet.hdpath.legacy.info' },
+                          { id: 'settings.wallet.hdpath.legacy.info' },
                           { path: `${getEvmDerivationPath(walletAccountMap[chain], 'legacy')}{index}` }
                         )}
                       />
@@ -471,7 +471,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       {intl.formatMessage({ id: 'common.metamask' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
-                          { id: 'setting.wallet.hdpath.metamask.info' },
+                          { id: 'settings.wallet.hdpath.metamask.info' },
                           { path: `${getEvmDerivationPath(walletAccountMap[chain], 'metamask')}{index}` }
                         )}
                       />
@@ -542,12 +542,12 @@ export const WalletSettings = (props: Props): JSX.Element => {
             <div className="flex w-full space-x-4">
               <>
                 <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                  <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
+                  <div>{intl.formatMessage({ id: 'settings.wallet.account' })}</div>
                 </div>
                 <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
               </>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                {intl.formatMessage({ id: 'setting.wallet.index' })}
+                {intl.formatMessage({ id: 'settings.wallet.index' })}
               </div>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletIndex}</div>
               {isEvmChain(chain) && (
@@ -795,7 +795,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
             <PlusCircleIcon className="text-turquoise" width={20} height={20} />
             {intl.formatMessage({ id: 'common.store' })}
           </Styled.AddLedgerButton>
-          <InfoIcon className="ml-10px" tooltip={intl.formatMessage({ id: 'setting.wallet.storeAddress.info' })} />
+          <InfoIcon className="ml-10px" tooltip={intl.formatMessage({ id: 'settings.wallet.storeAddress.info' })} />
         </div>
       </div>
     ),
@@ -992,7 +992,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
       <div className="w-full px-4">
         <div className="flex flex-row items-center justify-between">
           <h1 className="font-main text-16 uppercase text-text0 dark:text-text0d">
-            {intl.formatMessage({ id: 'setting.wallet.management' })}
+            {intl.formatMessage({ id: 'settings.wallet.management' })}
           </h1>
           <div className="flex flex-row items-center space-x-2">
             <WalletSelector
@@ -1019,17 +1019,17 @@ export const WalletSettings = (props: Props): JSX.Element => {
         <div className="mt-10 flex flex-row items-center justify-center space-x-2">
           <ActionButton
             icon={<ArrowUpTrayIcon width={24} height={24} />}
-            text={intl.formatMessage({ id: 'setting.export' })}
+            text={intl.formatMessage({ id: 'settings.export.title' })}
             onClick={exportKeystoreHandler}
           />
           <ActionButton
             icon={<LockClosedIcon width={24} height={24} />}
-            text={intl.formatMessage({ id: 'setting.lock' })}
+            text={intl.formatMessage({ id: 'settings.lock.title' })}
             onClick={lockWallet}
           />
           <ActionButton
             icon={<EyeIcon width={24} height={24} />}
-            text={intl.formatMessage({ id: 'setting.view.phrase' })}
+            text={intl.formatMessage({ id: 'settings.view.phrase.title' })}
             onClick={() => setShowPasswordModal(true)}
           />
           <ActionButton
@@ -1040,7 +1040,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         </div>
       </div>
       <div key="accounts" className="mt-4 w-full border-t border-solid border-bg2 dark:border-bg2d">
-        <Styled.Subtitle>{intl.formatMessage({ id: 'setting.accounts' })}</Styled.Subtitle>
+        <Styled.Subtitle>{intl.formatMessage({ id: 'settings.accounts.title' })}</Styled.Subtitle>
         <div className="mt-30px flex justify-center md:ml-4 md:justify-start">
           <InputSearch
             placeholder={intl.formatMessage({ id: 'common.search' }).toUpperCase()}

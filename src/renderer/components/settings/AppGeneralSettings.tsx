@@ -253,7 +253,7 @@ export const AppGeneralSettings = (props: Props) => {
         {renderNetworkMenu}
       </Section>
       <Section
-        title={intl.formatMessage({ id: 'setting.language' })}
+        title={intl.formatMessage({ id: 'settings.language.title' })}
         subtitle={intl.formatMessage({ id: 'settings.language.subtitle' })}>
         {renderLangMenu}
       </Section>
@@ -279,7 +279,7 @@ export const AppGeneralSettings = (props: Props) => {
         </div>
       </Section>
       <Section
-        title={intl.formatMessage({ id: 'setting.version' })}
+        title={intl.formatMessage({ id: 'settings.version.title' })}
         subtitle={intl.formatMessage({ id: 'settings.version.subtitle' })}>
         <div className="flex max-w-[240px] flex-col space-y-1">
           <div className="flex min-w-[240px] items-center justify-between">

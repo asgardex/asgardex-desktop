@@ -142,7 +142,7 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
 
   return (
     <HeadlessModal
-      title={intl.formatMessage({ id: 'setting.wallet.whitelist.modal' })}
+      title={intl.formatMessage({ id: 'settings.wallet.whitelist.modal' })}
       initialFocus={inputSearchRef}
       isOpen={open}
       onClose={onClose}>
