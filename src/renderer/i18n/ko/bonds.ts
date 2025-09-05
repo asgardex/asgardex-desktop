@@ -17,7 +17,10 @@ const bonds: BondsMessages = {
   'bonds.node.enterMessage': '추적할 노드를 입력하세요',
   'bonds.validations.nodeAlreadyAdded': '노드가 이미 추가되었습니다',
   'bonds.node.removeMessage': '{node} 노드를 삭제하시겠습니까?',
-  'bonds.validations.bondStatusActive': '활성 노드와의 연결 해제는 허용되지 않습니다'
+  'bonds.validations.bondStatusActive': '활성 노드와의 연결 해제는 허용되지 않습니다',
+  // TODO: Need Korean translation by native speaker
+  'bonds.tooltip.removeFromWatchlist': 'Remove this bond provider from the watch list',
+  'bonds.tooltip.addToWatchlist': 'Add this bond provider to the watch list'
 }
 
 export default bonds

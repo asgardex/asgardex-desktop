@@ -452,14 +452,14 @@ export const BondsTable = ({
                             })}
                           </Label>
                           {isMonitoring ? (
-                            <Tooltip title="Remove this bond provider from the watch list">
+                            <Tooltip title={intl.formatMessage({ id: 'bonds.tooltip.removeFromWatchlist' })}>
                               <RemoveIcon
                                 className="w-4 h-4 cursor-pointer"
                                 onClick={() => removeWatchlist(provider.bondAddress, network)}
                               />
                             </Tooltip>
                           ) : (
-                            <Tooltip title="Add this bond provider to the watch list">
+                            <Tooltip title={intl.formatMessage({ id: 'bonds.tooltip.addToWatchlist' })}>
                               <TvIcon
                                 className="cursor-pointer text-turquoise"
                                 width={16}

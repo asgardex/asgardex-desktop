@@ -1536,7 +1536,11 @@ export const InteractFormThor = ({
                       {RD.fold(
                         () => <p>{emptyString}</p>,
                         () => <p>{emptyString}</p>,
-                        (error: Error) => <p>Error: {error.message}</p>,
+                        (error: Error) => (
+                          <p>
+                            {intl.formatMessage({ id: 'common.error' })}: {error.message}
+                          </p>
+                        ),
                         (data: { daysLeft: number; blocksLeft: number }) => (
                           <div>
                             <p>

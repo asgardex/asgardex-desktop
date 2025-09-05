@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Col, Row } from 'antd'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
+import { useIntl } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -92,6 +93,7 @@ export const InteractViewTHOR = () => {
   } = useMidgardContext()
   const poolsRD = useObservableState(poolsState$, RD.pending)
   const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
+  const intl = useIntl()
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(assetChain))
 
@@ -241,7 +243,10 @@ export const InteractViewTHOR = () => {
       (error) => (
         <div>
           <BackLinkButton />
-          <ErrorView title="Missing data for InteractiveView" subTitle={error?.message ?? error.toString()} />
+          <ErrorView
+            title={intl.formatMessage({ id: 'error.interact.missingData.title' })}
+            subTitle={error?.message ?? error.toString()}
+          />
         </div>
       ),
       ([interactType, { walletType, walletAccount, walletIndex, hdMode }]) => (

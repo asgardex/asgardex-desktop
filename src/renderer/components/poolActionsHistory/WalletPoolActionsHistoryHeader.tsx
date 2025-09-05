@@ -2,6 +2,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
+import { useIntl } from 'react-intl'
 
 import { WalletAddress, WalletAddresses } from '../../../shared/wallet/types'
 import { AccountAddressSelector } from '../AccountAddressSelector'
@@ -24,6 +25,7 @@ type Props = {
 }
 
 export const WalletPoolActionsHistoryHeader = (props: Props) => {
+  const intl = useIntl()
   const {
     network,
     addresses,
@@ -56,7 +58,9 @@ export const WalletPoolActionsHistoryHeader = (props: Props) => {
       </div>
       <div className="flex items-center justify-center pt-5 md:pt-0 md:grow md:justify-end">
         <Headline className="flex items-center !w-auto" onClick={onClickAddressIcon}>
-          {protocol === THORChain ? `RuneScan` : 'MayaScan'}
+          {protocol === THORChain
+            ? intl.formatMessage({ id: 'common.runeScan' })
+            : intl.formatMessage({ id: 'common.mayaScan' })}
           <ExternalLinkIcon className="ml-2" width={18} height={18} />
         </Headline>
       </div>

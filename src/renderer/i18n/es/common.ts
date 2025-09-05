@@ -2,13 +2,10 @@ import { CommonMessages } from '../types'
 
 const common: CommonMessages = {
   'common.welcome': 'Bienvenido',
-  'common.stats': 'Estadísticas',
   'common.network': 'Red',
   'common.dex': 'IDE',
-  'common.faqs': 'PF',
   'common.greeting': 'Hola {name}',
   'common.examples': 'Ejemplo {name}',
-  'common.copyright': '©',
   'common.type': 'Tipo',
   'common.store': 'Almacenar',
   'common.chain': 'Cadena',
@@ -205,8 +202,17 @@ const common: CommonMessages = {
   'common.completeLp': 'Completar Lp',
   'common.asset.quickSelect': 'Selección Rápida L1',
   'common.asset.chooseAsset': 'Elige un activo',
-  'common.comingSoon': 'Próximamente',
-  'common.watchlist': 'Lista de seguimiento'
+  'common.watchlist': 'Lista de seguimiento',
+  'common.txUrl': 'URL',
+  'common.txHash': 'HASH',
+  'common.runeScan': 'RuneScan',
+  'common.mayaScan': 'MayaScan',
+  'common.whitelist': 'Whitelist',
+  'common.fetchFromLedger': 'Obtener de Ledger',
+  'common.nativeSegwit': 'Native Segwit',
+  'common.taproot': 'Taproot',
+  'common.protocols': 'Protocolos',
+  'common.resetToDefault': 'Restablecer al valor por defecto'
 }
 
 export default common

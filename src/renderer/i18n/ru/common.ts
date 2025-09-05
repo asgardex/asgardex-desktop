@@ -2,13 +2,10 @@ import { CommonMessages } from '../types'
 
 const common: CommonMessages = {
   'common.welcome': 'Добро пожаловать',
-  'common.stats': 'Статистика',
   'common.network': 'Сеть',
   'common.dex': 'Dex',
-  'common.faqs': 'ЧаВо',
   'common.greeting': 'Добро пожаловать, {name}',
   'common.examples': 'Пример {name}',
-  'common.copyright': '©',
   'common.type': 'Тип',
   'common.chain': 'Цепь',
   'common.store': 'Хранить',
@@ -204,8 +201,18 @@ const common: CommonMessages = {
   'common.metamask': 'MetaMask',
   'common.unknown': 'Неизвестен',
   'common.featureUnderDevelopment': 'Функция в разработке, не использовать',
-  'common.comingSoon': 'Скоро будет',
-  'common.watchlist': 'Список наблюдения'
+  'common.watchlist': 'Список наблюдения',
+  'common.txUrl': 'URL',
+  'common.txHash': 'HASH',
+  'common.runeScan': 'RuneScan',
+  'common.mayaScan': 'MayaScan',
+  'common.whitelist': 'Whitelist',
+  // TODO: Need Russian translation by native speaker
+  'common.fetchFromLedger': 'Fetch from Ledger',
+  'common.nativeSegwit': 'Native Segwit',
+  'common.taproot': 'Taproot',
+  'common.protocols': 'Protocols',
+  'common.resetToDefault': 'Reset to streaming default'
 }
 
 export default common

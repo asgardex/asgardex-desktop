@@ -1051,7 +1051,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
         <div className="mt-10px border-b border-solid border-bg2 px-4 dark:border-bg2d">{renderAddAddressForm()}</div>
         <div className="flex items-center justify-center">
           <Styled.Subtitle>{intl.formatMessage({ id: 'common.chainManagement' })}</Styled.Subtitle>
-          <ActionButton className="mt-5 mr-5" text="Whitelist" onClick={() => setIsWhitelistModalOpen(true)} />
+          <ActionButton
+            className="mt-5 mr-5"
+            text={intl.formatMessage({ id: 'common.whitelist' })}
+            onClick={() => setIsWhitelistModalOpen(true)}
+          />
         </div>
         {renderAccounts}
       </div>

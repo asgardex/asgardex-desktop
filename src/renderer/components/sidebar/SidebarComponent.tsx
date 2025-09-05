@@ -257,34 +257,34 @@ export const SidebarComponent = (props: Props): JSX.Element => {
           )}
           <div className="mt-6 flex items-center justify-center">
             <FooterIcon url={ExternalUrl.ASGARDEX} onClick={clickIconHandler}>
-              <Tooltip title="Asgardex Website">
+              <Tooltip title={intl.formatMessage({ id: 'sidebar.tooltip.website' })}>
                 <GlobeIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.GITHUB_REPO} onClick={clickIconHandler}>
-              <Tooltip title="Asgardex GitHub">
+              <Tooltip title={intl.formatMessage({ id: 'sidebar.tooltip.github' })}>
                 <GithubIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.DISCORD} onClick={clickIconHandler}>
-              <Tooltip title="Asgardex Discord">
+              <Tooltip title={intl.formatMessage({ id: 'sidebar.tooltip.discord' })}>
                 <DiscordIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.TWITTER} onClick={clickIconHandler}>
-              <Tooltip title="Asgardex X">
+              <Tooltip title={intl.formatMessage({ id: 'sidebar.tooltip.twitter' })}>
                 <TwitterIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.LICENSE} onClick={clickIconHandler}>
-              <Tooltip title="MIT License">
+              <Tooltip title={intl.formatMessage({ id: 'sidebar.tooltip.license' })}>
                 <FileIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             {/* hidden in production build */}
             {isDev && commitHash && (
               <FooterIcon url={`${ExternalUrl.GITHUB_REPO}/commit/${commitHash}`} onClick={clickIconHandler}>
-                <Tooltip title="Commit Hash">
+                <Tooltip title={intl.formatMessage({ id: 'sidebar.tooltip.commitHash' })}>
                   <BranchIcon className="w-5 h-5" />
                 </Tooltip>
               </FooterIcon>
@@ -294,7 +294,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
               <div
                 className="inline text-text1 dark:text-text1d cursor-pointer ml-3 [&>svg]:text-text1 [&>svg]:dark:text-text1d"
                 onClick={gotoPlayground}>
-                <Tooltip title="Playground">
+                <Tooltip title={intl.formatMessage({ id: 'sidebar.tooltip.playground' })}>
                   <BugIcon className="w-5 h-5" />
                 </Tooltip>
               </div>

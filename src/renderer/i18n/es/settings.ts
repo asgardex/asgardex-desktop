@@ -37,7 +37,23 @@ const settings: SettingMessages = {
   'setting.mayanode.rpc.error.url': 'No válido MAYANodo RPC URL.  Vuelva a comprobarlo e inténtelo de nuevo',
   'setting.mayanode.rpc.error.unhealthy': 'MAYANodo RPC parece no ser saludable comprobando "{endpoint}"',
   'setting.mayanode.node.valid': 'Válido MAYANodo API URL',
-  'setting.mayanode.rpc.valid': 'Válido MAYANodo RPC URL'
+  'setting.mayanode.rpc.valid': 'Válido MAYANodo RPC URL',
+  'settings.network.subtitle': 'Red a la que conectarse. Se recomienda Mainnet',
+  'settings.language.subtitle': 'Idioma preferido',
+  'settings.privateData.subtitle': 'Mantente oculto, mantente seguro',
+  'settings.ledgerMode.title': 'Modo Ledger',
+  'settings.ledgerMode.subtitle': 'Usar billetera de hardware sin configuración de keystore',
+  'settings.version.subtitle': 'Versión del software Asgardex',
+  'settings.chain.changeButton': 'Cambiar cadena',
+  'settings.protocols.title': 'Protocolos',
+  'settings.protocols.subtitle': 'Seleccionar protocolos para enrutamiento óptimo de intercambios',
+  'settings.expert.thorchain.title': 'URLs de Thorchain',
+  'settings.expert.midgard.title': 'Midgard',
+  'settings.expert.thornodeApi.title': 'API de THORNode',
+  'settings.expert.thornodeRpc.title': 'RPC de THORNode',
+  'settings.expert.mayachain.title': 'URLs de Mayachain',
+  'settings.expert.midgardMaya.title': 'Midgard Mayachain',
+  'settings.expert.mayanodeApi.title': 'API de MayaNode'
 }
 
 export default settings

@@ -125,7 +125,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
   return (
     <div className="flex flex-col">
       <Section
-        title="Thorchain URLs"
+        title={intl.formatMessage({ id: 'settings.expert.thorchain.title' })}
         toggleHandler={
           <div className="flex items-center justify-end px-4 py-6">
             <TextButton
@@ -147,7 +147,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
             'flex-col transition-all duration-300 ease-in-out',
             advancedActive.thorchain ? 'flex' : 'hidden'
           )}>
-          <SubSection title="Midgard">
+          <SubSection title={intl.formatMessage({ id: 'settings.expert.midgard.title' })}>
             <EditableUrl
               className="w-full xl:w-3/4"
               url={midgardUrl}
@@ -157,7 +157,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
             />
           </SubSection>
-          <SubSection title="THORNode API">
+          <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeApi.title' })}>
             <EditableUrl
               className="w-full xl:w-3/4"
               url={thornodeNodeUrl}
@@ -166,7 +166,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               successMsg={intl.formatMessage({ id: 'setting.thornode.node.valid' })}
             />
           </SubSection>
-          <SubSection title="THORNode RPC">
+          <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeRpc.title' })}>
             <EditableUrl
               className="w-full xl:w-3/4"
               url={thornodeRpcUrl}
@@ -178,7 +178,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
         </div>
       </Section>
       <Section
-        title="Mayachain URLs"
+        title={intl.formatMessage({ id: 'settings.expert.mayachain.title' })}
         toggleHandler={
           <div className="flex items-center justify-end px-4 py-6">
             <TextButton
@@ -200,7 +200,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
             'flex-col transition-all duration-300 ease-in-out',
             advancedActive.mayachain ? 'flex' : 'hidden'
           )}>
-          <SubSection title="Midgard Mayachain">
+          <SubSection title={intl.formatMessage({ id: 'settings.expert.midgardMaya.title' })}>
             <EditableUrl
               className="w-full"
               url={midgardMayaUrl}
@@ -210,7 +210,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
             />
           </SubSection>
-          <SubSection title="MayaNode API">
+          <SubSection title={intl.formatMessage({ id: 'settings.expert.mayanodeApi.title' })}>
             <EditableUrl
               className="w-full xl:w-3/4"
               url={mayanodeNodeUrl}

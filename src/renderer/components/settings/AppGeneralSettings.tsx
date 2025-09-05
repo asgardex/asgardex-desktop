@@ -249,21 +249,27 @@ export const AppGeneralSettings = (props: Props) => {
       {/* // TODO: locale for subtitle */}
       <Section
         title={intl.formatMessage({ id: 'common.network' })}
-        subtitle="Network to connect to. Mainnet is Recommended">
+        subtitle={intl.formatMessage({ id: 'settings.network.subtitle' })}>
         {renderNetworkMenu}
       </Section>
-      <Section title={intl.formatMessage({ id: 'setting.language' })} subtitle="Preferred language">
+      <Section
+        title={intl.formatMessage({ id: 'setting.language' })}
+        subtitle={intl.formatMessage({ id: 'settings.language.subtitle' })}>
         {renderLangMenu}
       </Section>
-      <Section title={intl.formatMessage({ id: 'common.privateData' })} subtitle="Stay hidden, stay secure">
+      <Section
+        title={intl.formatMessage({ id: 'common.privateData' })}
+        subtitle={intl.formatMessage({ id: 'settings.privateData.subtitle' })}>
         <SwitchButton active={isPrivate} onChange={changePrivateData} />
       </Section>
-      <Section title="Ledger Mode" subtitle="Use hardware wallet without keystore setup">
+      <Section
+        title={intl.formatMessage({ id: 'settings.ledgerMode.title' })}
+        subtitle={intl.formatMessage({ id: 'settings.ledgerMode.subtitle' })}>
         <div className="flex flex-col gap-2">
           {isInStandaloneLedgerMode && (
             <BorderButton size="normal" onClick={handleChangeChainClick} className="flex items-center gap-2">
               <CpuChipIcon width={16} height={16} />
-              Change Chain
+              {intl.formatMessage({ id: 'settings.chain.changeButton' })}
             </BorderButton>
           )}
           <BorderButton size="normal" onClick={handleLedgerModeClick} className="flex items-center gap-2">
@@ -272,7 +278,9 @@ export const AppGeneralSettings = (props: Props) => {
           </BorderButton>
         </div>
       </Section>
-      <Section title={intl.formatMessage({ id: 'setting.version' })} subtitle="Asgardex Software Version">
+      <Section
+        title={intl.formatMessage({ id: 'setting.version' })}
+        subtitle={intl.formatMessage({ id: 'settings.version.subtitle' })}>
         <div className="flex max-w-[240px] flex-col space-y-1">
           <div className="flex min-w-[240px] items-center justify-between">
             <Label color="dark" size="big" textTransform="uppercase">

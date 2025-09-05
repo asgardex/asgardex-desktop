@@ -2100,7 +2100,7 @@ export const TradeSwap = ({
                 <div>{renderStreamerReturns}</div>
               </div>
               <div className="flex justify-end">
-                <Tooltip title="Reset to streaming default">
+                <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>
                   <BaseButton
                     onClick={resetToDefault}
                     className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">

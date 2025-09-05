@@ -16,7 +16,6 @@ const ledger: LedgerMessages = {
   'ledger.error.getaddressfailed': 'Добавление адреса из Ledger не удалось',
   'ledger.error.signfailed': 'Подпись транзакции с помощью Ledger не удалась',
   'ledger.error.sendfailed': 'Отправка транзакции с помощью Ledger не удалась',
-  'ledger.error.depositfailed': 'Отправка транзакции добавления средств с помощью Ledger не удалась',
   'ledger.error.invalidpubkey': 'Недействительный открытый ключ для использования Ledger.',
   'ledger.error.invaliddata': 'Неверные данные.',
   'ledger.error.invalidresponse': 'Неверный ответ после отправки транзакции с помощью Ledger.',
@@ -40,7 +39,6 @@ const ledger: LedgerMessages = {
   'ledger.detect.title': 'Обнаружение устройства Ledger',
   'ledger.detect.checking': 'Проверка {chain}...',
   'ledger.derivation.path': 'Путь деривации',
-  'ledger.derivation.legacy': 'Устаревший (MEW)',
   'ledger.derivation.metamask': 'MetaMask',
   'ledger.connect.chain': 'Подключить {chain}',
   'ledger.connect.select': 'Выберите сеть'

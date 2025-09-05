@@ -94,7 +94,7 @@ export const ViewTxButton = ({
         )}
         <div className="flex space-x-6">
           <div className="flex items-center justify-center">
-            <span className="mt-1 text-text2 dark:text-text1d">URL : </span>
+            <span className="mt-1 text-text2 dark:text-text1d">{intl.formatMessage({ id: 'common.txUrl' })} : </span>
             <Styled.CopyLabel
               copyable={
                 FP.pipe(
@@ -109,7 +109,7 @@ export const ViewTxButton = ({
             />
           </div>
           <div className="flex items-center justify-center">
-            <span className="mt-1 text-text2 dark:text-text1d">HASH : </span>
+            <span className="mt-1 text-text2 dark:text-text1d">{intl.formatMessage({ id: 'common.txHash' })} : </span>
             <Styled.CopyLabel
               copyable={
                 FP.pipe(

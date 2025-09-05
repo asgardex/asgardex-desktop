@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 
 import { useObservableState } from 'observable-hooks'
+import { useIntl } from 'react-intl'
 import { ProviderIcon } from '../../components/swap/ProviderIcon'
 import { SLIP_TOLERANCE_KEY } from '../../components/swap/SelectableSlipTolerance'
 import { SwitchButton } from '../../components/uielements/button/SwitchButton'
@@ -43,6 +44,8 @@ export const AppDexSettingsView = (): JSX.Element => {
   const { protocols, setAggProtocol } = useAggregator()
   const { streamingSlipTolerance$, changeStreamingSlipTolerance, tradeSlipTolerance$, changeTradeSlipTolerance } =
     useAppContext()
+
+  const intl = useIntl()
 
   const getStoredSlipTolerance = (key: string): SlipTolerance =>
     FP.pipe(
@@ -92,7 +95,9 @@ export const AppDexSettingsView = (): JSX.Element => {
 
   return (
     <div>
-      <Section title="Protocols" subtitle="Select protocols for optimal swap routing.">
+      <Section
+        title={intl.formatMessage({ id: 'settings.protocols.title' })}
+        subtitle={intl.formatMessage({ id: 'settings.protocols.subtitle' })}>
         <div className="flex flex-col w-full gap-2">
           {AllProtocols.map((protocol) => (
             <div key={protocol} className="flex items-center justify-between">

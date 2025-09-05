@@ -166,7 +166,7 @@ export const HeaderNetStatus = (props: Props) => {
     return [
       {
         key: 'midgard',
-        headline: 'Midgard API',
+        headline: intl.formatMessage({ id: 'netstatus.midgard.title' }),
         url: `${midgardUrl}/v2/doc`,
         subheadline: headerNetStatusSubheadline({
           url: O.some(midgardUrl),
@@ -202,7 +202,7 @@ export const HeaderNetStatus = (props: Props) => {
       },
       {
         key: 'midgardMaya',
-        headline: 'Midgard Mayachain API',
+        headline: intl.formatMessage({ id: 'netstatus.midgardMaya.title' }),
         url: `${midgardMayaUrl}/v2/doc`,
         subheadline: headerNetStatusSubheadline({
           url: O.some(midgardMayaUrl),

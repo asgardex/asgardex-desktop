@@ -5,6 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
+import { useIntl } from 'react-intl'
 import { useAggregator } from '../../../store/aggregator/hooks'
 import { ProviderIcon } from '../../swap/ProviderIcon'
 import { BaseButton } from '../../uielements/button'
@@ -21,6 +22,7 @@ const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
 
 export const ProviderModalContent = ({ open, onClose, midgardStatusRD, midgardStatusMayaRD }: Props) => {
   const { protocols, setAggProtocol } = useAggregator()
+  const intl = useIntl()
 
   const onToggleSwitch = useCallback(
     (protocol: Protocol, isActive: boolean) => {
@@ -55,7 +57,9 @@ export const ProviderModalContent = ({ open, onClose, midgardStatusRD, midgardSt
             'rounded-lg border border-solid border-gray1 dark:border-gray0d'
           )}>
           <div className="flex w-full items-center justify-between px-5">
-            <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">Select Protocols</h1>
+            <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">
+              {intl.formatMessage({ id: 'modal.provider.selectProtocols.title' })}
+            </h1>
             <BaseButton
               className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d focus:outline-none focus:ring-0"
               onClick={onCloseMenu}>

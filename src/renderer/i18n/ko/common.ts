@@ -2,13 +2,10 @@ import { CommonMessages } from '../types'
 
 const common: CommonMessages = {
   'common.welcome': '환영합니다',
-  'common.stats': '통계',
   'common.network': '네트워크',
   'common.dex': 'Dex',
-  'common.faqs': '자주 묻는 질문',
   'common.greeting': '{name}님, 안녕하세요',
   'common.examples': '예시 {name}',
-  'common.copyright': '©',
   'common.type': '유형',
   'common.chain': '체인',
   'common.store': '저장',
@@ -203,8 +200,18 @@ const common: CommonMessages = {
   'common.metamask': 'MetaMask',
   'common.unknown': '알 수 없음',
   'common.featureUnderDevelopment': '개발 중인 기능, 사용하지 마세요',
-  'common.comingSoon': '곧 출시',
-  'common.watchlist': '관심 목록'
+  'common.watchlist': '관심 목록',
+  'common.txUrl': 'URL',
+  'common.txHash': 'HASH',
+  'common.runeScan': 'RuneScan',
+  'common.mayaScan': 'MayaScan',
+  'common.whitelist': 'Whitelist',
+  // TODO: Need Korean translation by native speaker
+  'common.fetchFromLedger': 'Fetch from Ledger',
+  'common.nativeSegwit': 'Native Segwit',
+  'common.taproot': 'Taproot',
+  'common.protocols': 'Protocols',
+  'common.resetToDefault': 'Reset to streaming default'
 }
 
 export default common

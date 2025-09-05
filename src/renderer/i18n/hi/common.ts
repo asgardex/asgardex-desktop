@@ -2,13 +2,10 @@ import { CommonMessages } from '../types'
 
 const common: CommonMessages = {
   'common.welcome': 'स्वागत है',
-  'common.stats': 'आँकड़े',
   'common.network': 'नेटवर्क',
   'common.dex': 'Dex',
-  'common.faqs': 'सामान्य प्रश्न',
   'common.greeting': 'स्वागत है, {name}',
   'common.examples': 'उदाहरण {name}',
-  'common.copyright': '©',
   'common.type': 'प्रकार',
   'common.chain': 'श्रृंखला',
   'common.store': 'भंडारण',
@@ -203,7 +200,17 @@ const common: CommonMessages = {
   'common.metamask': 'मेटामास्क',
   'common.unknown': 'अज्ञात',
   'common.featureUnderDevelopment': 'विकासाधीन सुविधा, उपयोग न करें',
-  'common.comingSoon': 'जल्द ही आ रहा है',
-  'common.watchlist': 'वॉचलिस्ट'
+  'common.watchlist': 'वॉचलिस्ट',
+  'common.txUrl': 'URL',
+  'common.txHash': 'HASH',
+  'common.runeScan': 'RuneScan',
+  'common.mayaScan': 'MayaScan',
+  'common.whitelist': 'Whitelist',
+  // TODO: Need Hindi translation by native speaker
+  'common.fetchFromLedger': 'Fetch from Ledger',
+  'common.nativeSegwit': 'Native Segwit',
+  'common.taproot': 'Taproot',
+  'common.protocols': 'Protocols',
+  'common.resetToDefault': 'Reset to streaming default'
 }
 export default common

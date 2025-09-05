@@ -4,7 +4,6 @@ const update: UpdateMessages = {
   'update.description': 'Neue Version {version} verfügbar',
   'update.link': 'Release-Webseite',
   'update.checkFailed': 'Fehler beim Updatecheck: {error}',
-  'update.checkForUpdates': 'Suche neues Update',
   'update.noUpdate': 'Kein Update verfügbar'
 }
 

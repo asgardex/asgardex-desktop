@@ -1835,7 +1835,7 @@ export const Swap = ({
           <div>{renderStreamerQuantity}</div>
         </div>
         <div className="flex justify-end">
-          <Tooltip title="Reset to streaming default">
+          <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>
             <BaseButton
               onClick={resetToDefault}
               className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
@@ -3009,8 +3009,8 @@ export const Swap = ({
                                   value={targetHDMode}
                                   onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
                                   className="text-10 px-2 py-1 bg-bg0 dark:bg-bg0d border border-gray1 dark:border-gray1d rounded">
-                                  <option value="p2wpkh">Native Segwit</option>
-                                  <option value="p2tr">Taproot</option>
+                                  <option value="p2wpkh">{intl.formatMessage({ id: 'common.nativeSegwit' })}</option>
+                                  <option value="p2tr">{intl.formatMessage({ id: 'common.taproot' })}</option>
                                 </select>
                               )}
                               {['LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) && (
@@ -3080,9 +3080,11 @@ export const Swap = ({
                                     <div className="w-4 h-4 bg-turquoise rounded-sm"></div>
                                   </div>
                                   <div className="text-left">
-                                    <div className="font-medium text-text0 dark:text-text0d">Fetch from Ledger</div>
+                                    <div className="font-medium text-text0 dark:text-text0d">
+                                      {intl.formatMessage({ id: 'common.fetchFromLedger' })}
+                                    </div>
                                     <div className="text-[12px] text-text2 dark:text-text2d">
-                                      Get address from your hardware wallet
+                                      {intl.formatMessage({ id: 'wallet.ledger.fetchDescription' })}
                                     </div>
                                   </div>
                                 </div>

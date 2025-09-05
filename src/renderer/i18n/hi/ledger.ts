@@ -15,7 +15,6 @@ const ledger: LedgerMessages = {
   'ledger.error.getaddressfailed': 'Ledger से पता जोड़ने में विफल',
   'ledger.error.signfailed': 'Ledger का उपयोग करके लेन-देन हस्ताक्षरित करने में विफल',
   'ledger.error.sendfailed': 'Ledger का उपयोग करके लेन-देन भेजने में विफल',
-  'ledger.error.depositfailed': 'Ledger का उपयोग करके फंड जमा करने के लेन-देन में विफल',
   'ledger.error.invalidpubkey': 'Ledger का उपयोग करने के लिए अवैध पब्लिक की।',
   'ledger.error.invaliddata': 'अवैध डेटा।',
   'ledger.error.invalidresponse': 'Ledger का उपयोग करके लेन-देन भेजने के बाद अवैध प्रतिक्रिया।',
@@ -39,7 +38,6 @@ const ledger: LedgerMessages = {
   'ledger.detect.title': 'लेजर डिवाइस का पता लगाया जा रहा है',
   'ledger.detect.checking': '{chain} की जांच की जा रही है...',
   'ledger.derivation.path': 'डेरिवेशन पाथ',
-  'ledger.derivation.legacy': 'लेगेसी (MEW)',
   'ledger.derivation.metamask': 'मेटामास्क',
   'ledger.connect.chain': '{chain} कनेक्ट करें',
   'ledger.connect.select': 'एक चेन चुनें'

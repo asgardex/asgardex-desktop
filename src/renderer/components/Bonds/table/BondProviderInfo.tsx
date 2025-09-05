@@ -6,6 +6,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { Address, BaseAmount, assetToString, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 
+import { useIntl } from 'react-intl'
 import RemoveIcon from '../../../assets/svg/icon-remove.svg?react'
 import { getLiquidityProvider } from '../../../services/mayachain'
 import { Providers as MayaProviders, LiquidityProviderForPoolRD } from '../../../services/mayachain/types'
@@ -53,7 +54,7 @@ export const BondProviderInfo = ({
   pricePoolData
 }: Props) => {
   const [lpDataMap, setLpDataMap] = useState<Record<string, LiquidityProviderForPoolRD>>({})
-
+  const intl = useIntl()
   // Fetch LP data for this provider’s pools
   useEffect(() => {
     const subscriptions: Array<() => void> = []
@@ -116,14 +117,14 @@ export const BondProviderInfo = ({
           )}
         </div>
         {isMonitoring ? (
-          <Tooltip title="Remove this bond provider from the watch list">
+          <Tooltip title={intl.formatMessage({ id: 'bonds.tooltip.removeFromWatchlist' })}>
             <RemoveIcon
               className="w-4 h-4 cursor-pointer"
               onClick={() => removeWatchlist(provider.bondAddress, network)}
             />
           </Tooltip>
         ) : (
-          <Tooltip title="Add this bond provider to the watch list">
+          <Tooltip title={intl.formatMessage({ id: 'bonds.tooltip.addToWatchlist' })}>
             <TvIcon
               className="cursor-pointer text-turquoise"
               width={16}

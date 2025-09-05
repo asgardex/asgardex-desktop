@@ -17,7 +17,10 @@ const bonds: BondsMessages = {
   'bonds.node.enterMessage': 'Введите узел для отслеживания',
   'bonds.validations.nodeAlreadyAdded': 'Узел уже добавлен',
   'bonds.node.removeMessage': 'Вы уверены, что хотите удалить узел с адресом {node}?',
-  'bonds.validations.bondStatusActive': 'Расставание с активным узлом не допускается'
+  'bonds.validations.bondStatusActive': 'Расставание с активным узлом не допускается',
+  // TODO: Need Russian translation by native speaker
+  'bonds.tooltip.removeFromWatchlist': 'Remove this bond provider from the watch list',
+  'bonds.tooltip.addToWatchlist': 'Add this bond provider to the watch list'
 }
 
 export default bonds

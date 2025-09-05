@@ -3,12 +3,9 @@ import { Locale } from '../../shared/i18n/types'
 export type CommonMessageKey =
   | 'common.greeting'
   | 'common.examples'
-  | 'common.copyright'
   | 'common.welcome'
-  | 'common.stats'
   | 'common.network'
   | 'common.dex'
-  | 'common.faqs'
   | 'common.type'
   | 'common.chain'
   | 'common.address'
@@ -201,9 +198,18 @@ export type CommonMessageKey =
   | 'common.metamask'
   | 'common.unknown'
   | 'common.featureUnderDevelopment'
-  | 'common.comingSoon'
   | 'common.watchlist'
   | 'common.chainManagement'
+  | 'common.txUrl'
+  | 'common.txHash'
+  | 'common.runeScan'
+  | 'common.mayaScan'
+  | 'common.whitelist'
+  | 'common.fetchFromLedger'
+  | 'common.nativeSegwit'
+  | 'common.taproot'
+  | 'common.protocols'
+  | 'common.resetToDefault'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string
@@ -213,12 +219,11 @@ type UpdateMessagesKeys =
   | 'update.description'
   | 'update.link'
   | 'update.checkFailed'
-  | 'update.checkForUpdates'
   | 'update.noUpdate'
 
 export type UpdateMessages = { [key in UpdateMessagesKeys]: string }
 
-type RoutesMessageKey = 'routes.invalid.asset' | 'routes.invalid.params'
+type RoutesMessageKey = 'routes.invalid.params'
 
 export type RoutesMessages = { [key in RoutesMessageKey]: string }
 
@@ -320,10 +325,8 @@ type WalletMessageKey =
   | 'wallet.send.success'
   | 'wallet.send.fastest'
   | 'wallet.send.fast'
-  | 'wallet.send.notAllowed'
   | 'wallet.send.average'
   | 'wallet.send.max.doge'
-  | 'wallet.send.fundsLoss'
   | 'wallet.password.confirmation.title'
   | 'wallet.password.confirmation.description'
   | 'wallet.password.confirmation.pending'
@@ -354,6 +357,9 @@ type WalletMessageKey =
   | 'wallet.ledger.removeAddress'
   | 'wallet.ledger.viewAddress'
   | 'wallet.evmToken.tooltip'
+  | 'wallet.derivationPath.nativeSegwit'
+  | 'wallet.derivationPath.taproot'
+  | 'wallet.ledger.fetchDescription'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }
 
@@ -375,6 +381,8 @@ type BondsMessageKey =
   | 'bonds.bondProvider'
   | 'bonds.validations.nodeAlreadyAdded'
   | 'bonds.validations.bondStatusActive'
+  | 'bonds.tooltip.removeFromWatchlist'
+  | 'bonds.tooltip.addToWatchlist'
 
 export type BondsMessages = { [key in BondsMessageKey]: string }
 
@@ -400,7 +408,6 @@ type LedgerMessageKey =
   | 'ledger.error.getaddressfailed'
   | 'ledger.error.signfailed'
   | 'ledger.error.sendfailed'
-  | 'ledger.error.depositfailed'
   | 'ledger.error.invalidpubkey'
   | 'ledger.error.invaliddata'
   | 'ledger.error.rejected'
@@ -424,7 +431,6 @@ type LedgerMessageKey =
   | 'ledger.detect.title'
   | 'ledger.detect.checking'
   | 'ledger.derivation.path'
-  | 'ledger.derivation.legacy'
   | 'ledger.derivation.metamask'
   | 'ledger.connect.chain'
   | 'ledger.connect.select'
@@ -467,6 +473,22 @@ type SettingMessageKey =
   | 'setting.mayanode.rpc.error.unhealthy'
   | 'setting.mayanode.node.valid'
   | 'setting.mayanode.rpc.valid'
+  | 'settings.network.subtitle'
+  | 'settings.language.subtitle'
+  | 'settings.privateData.subtitle'
+  | 'settings.ledgerMode.title'
+  | 'settings.ledgerMode.subtitle'
+  | 'settings.version.subtitle'
+  | 'settings.chain.changeButton'
+  | 'settings.protocols.title'
+  | 'settings.protocols.subtitle'
+  | 'settings.expert.thorchain.title'
+  | 'settings.expert.midgard.title'
+  | 'settings.expert.thornodeApi.title'
+  | 'settings.expert.thornodeRpc.title'
+  | 'settings.expert.mayachain.title'
+  | 'settings.expert.midgardMaya.title'
+  | 'settings.expert.mayanodeApi.title'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 
@@ -531,7 +553,6 @@ type DepositMessageKey =
   | 'deposit.share.poolshare'
   | 'deposit.share.total'
   | 'deposit.redemption.title'
-  | 'deposit.totalEarnings'
   | 'deposit.add.sym'
   | 'deposit.add.asym'
   | 'deposit.add.runeSide'
@@ -568,10 +589,8 @@ type DepositMessageKey =
   | 'deposit.poolDetails.24hvol'
   | 'deposit.poolDetails.allTimeVal'
   | 'deposit.poolDetails.totalSwaps'
-  | 'deposit.poolDetails.totalUsers'
   | 'deposit.poolDetails.volumeTotal'
   | 'deposit.poolDetails.earnings'
-  | 'deposit.poolDetails.ilpPaid'
   | 'deposit.poolDetails.totalTx'
   | 'deposit.poolDetails.totalFees'
   | 'deposit.poolDetails.members'
@@ -653,6 +672,34 @@ type HaltMessageKey =
 
 export type HaltMessages = { [key in HaltMessageKey]: string }
 
+type SidebarMessageKey =
+  | 'sidebar.tooltip.website'
+  | 'sidebar.tooltip.github'
+  | 'sidebar.tooltip.discord'
+  | 'sidebar.tooltip.twitter'
+  | 'sidebar.tooltip.license'
+  | 'sidebar.tooltip.commitHash'
+  | 'sidebar.tooltip.playground'
+
+export type SidebarMessages = { [key in SidebarMessageKey]: string }
+
+type ErrorMessageKey =
+  | 'error.chainflip.channelIdRequired'
+  | 'error.interact.missingData.title'
+
+export type ErrorMessages = { [key in ErrorMessageKey]: string }
+
+type NetstatusMessageKey =
+  | 'netstatus.midgard.title'
+  | 'netstatus.midgardMaya.title'
+
+export type NetstatusMessages = { [key in NetstatusMessageKey]: string }
+
+type ModalMessageKey =
+  | 'modal.provider.selectProtocols.title'
+
+export type ModalMessages = { [key in ModalMessageKey]: string }
+
 export type Messages = CommonMessages &
   RoutesMessages &
   PoolsMessages &
@@ -666,7 +713,11 @@ export type Messages = CommonMessages &
   BondsMessages &
   PoolSharesMessage &
   UpdateMessages &
-  HaltMessages
+  HaltMessages &
+  SidebarMessages &
+  ErrorMessages &
+  NetstatusMessages &
+  ModalMessages
 
 export type Translation = {
   locale: Locale

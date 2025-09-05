@@ -36,7 +36,23 @@ const settings: SettingMessages = {
   'setting.mayanode.rpc.error.url': 'Invalid MAYANode RPC URL. Please double check and try again',
   'setting.mayanode.rpc.error.unhealthy': 'MAYANode RPC seems to be unhealthy by checking "{endpoint}"',
   'setting.mayanode.node.valid': 'Valid MAYANode API URL',
-  'setting.mayanode.rpc.valid': 'Valid MAYANode RPC URL'
+  'setting.mayanode.rpc.valid': 'Valid MAYANode RPC URL',
+  'settings.network.subtitle': 'Network to connect to. Mainnet is Recommended',
+  'settings.language.subtitle': 'Preferred language',
+  'settings.privateData.subtitle': 'Stay hidden, stay secure',
+  'settings.ledgerMode.title': 'Ledger Mode',
+  'settings.ledgerMode.subtitle': 'Use hardware wallet without keystore setup',
+  'settings.version.subtitle': 'Asgardex Software Version',
+  'settings.chain.changeButton': 'Change Chain',
+  'settings.protocols.title': 'Protocols',
+  'settings.protocols.subtitle': 'Select protocols for optimal swap routing.',
+  'settings.expert.thorchain.title': 'Thorchain URLs',
+  'settings.expert.midgard.title': 'Midgard',
+  'settings.expert.thornodeApi.title': 'THORNode API',
+  'settings.expert.thornodeRpc.title': 'THORNode RPC',
+  'settings.expert.mayachain.title': 'Mayachain URLs',
+  'settings.expert.midgardMaya.title': 'Midgard Mayachain',
+  'settings.expert.mayanodeApi.title': 'MayaNode API'
 }
 
 export default settings
