@@ -1,14 +1,13 @@
 import { SidebarMessages } from '../types'
 
 const sidebar: SidebarMessages = {
-  // TODO: Need Hindi translation by native speaker
-  'sidebar.tooltip.website': 'Asgardex Website',
+  'sidebar.tooltip.website': 'Asgardex वेबसाइट',
   'sidebar.tooltip.github': 'Asgardex GitHub',
   'sidebar.tooltip.discord': 'Asgardex Discord',
   'sidebar.tooltip.twitter': 'Asgardex X',
-  'sidebar.tooltip.license': 'MIT License',
-  'sidebar.tooltip.commitHash': 'Commit Hash',
-  'sidebar.tooltip.playground': 'Playground'
+  'sidebar.tooltip.license': 'MIT लाइसेंस',
+  'sidebar.tooltip.commitHash': 'कमिट हैश',
+  'sidebar.tooltip.playground': 'खेल का मैदान'
 }
 
 export default sidebar
