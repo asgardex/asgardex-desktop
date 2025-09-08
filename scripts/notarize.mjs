@@ -98,7 +98,7 @@ export default async function notarizing(context) {
         return
       } catch (error) {
         lastError = error
-        console.error(`Notarization attempt ${attempt} failed:`, error.message)
+        console.error(`Notarization attempt ${attempt} failed: %s`, error.message)
 
         if (attempt < maxRetries) {
           const delay = Math.pow(2, attempt) * 1000 // Exponential backoff
