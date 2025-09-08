@@ -53,6 +53,7 @@ export default async function notarizing(context) {
 
     // Decode base64 and write to temp file
     const keyContent = Buffer.from(APPLE_API_KEY, 'base64').toString('utf-8')
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     writeFileSync(tempKeyPath, keyContent)
 
     options = {
@@ -114,6 +115,7 @@ export default async function notarizing(context) {
     // Clean up temporary key file if it was created
     if (tempKeyPath) {
       try {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         unlinkSync(tempKeyPath)
         console.log('Cleaned up temporary API key file')
       } catch (cleanupError) {
