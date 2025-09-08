@@ -1,8 +1,16 @@
 import 'dotenv/config'
+import { writeFileSync, unlinkSync, mkdtempSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import { notarize } from '@electron/notarize'
 
 /*
  Pre-requisites: https://github.com/electron/electron-notarize#prerequisites
+    App Store Connect API (recommended):
+    1. Create an API key in App Store Connect
+    2. Provide APPLE_API_KEY (base64 encoded .p8 file), APPLE_API_KEY_ID, APPLE_API_ISSUER as env's
+
+    Legacy method (deprecated):
     1. Generate an app specific password
     2. Provide SIGNING_APPLE_ID, SIGNING_APP_PASSWORD, SIGNING_TEAM_ID as env's
 */
@@ -12,6 +20,8 @@ import { notarize } from '@electron/notarize'
 */
 
 const isEmpty = (v) => !v || v.length === 0
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export default async function notarizing(context) {
   const { electronPlatformName, appOutDir } = context
@@ -23,27 +33,92 @@ export default async function notarizing(context) {
   console.log('Notarizing mac application')
 
   const appName = context.packager.appInfo.productFilename
-  const { SIGNING_APPLE_ID, SIGNING_APP_PASSWORD, SIGNING_TEAM_ID } = process.env
+  const { APPLE_API_KEY, APPLE_API_KEY_ID, APPLE_API_ISSUER, SIGNING_APPLE_ID, SIGNING_APP_PASSWORD, SIGNING_TEAM_ID } =
+    process.env
 
-  if (isEmpty(SIGNING_APPLE_ID) || isEmpty(SIGNING_APP_PASSWORD)) {
-    console.log('SIGNING_APPLE_ID or SIGNING_APP_PASSWORD not set. Terminating notarization.')
-    return
+  let options = {
+    appBundleId: 'org.thorchain.asgardex',
+    appPath: `${appOutDir}/${appName}.app`
   }
 
-  const options = {
-    appBundleId: 'org.thorchain.asgardex',
-    appPath: `${appOutDir}/${appName}.app`,
-    appleId: SIGNING_APPLE_ID,
-    appleIdPassword: SIGNING_APP_PASSWORD,
-    teamId: SIGNING_TEAM_ID
+  let tempKeyPath = null
+
+  // Prefer App Store Connect API key method (modern)
+  if (!isEmpty(APPLE_API_KEY) && !isEmpty(APPLE_API_KEY_ID) && !isEmpty(APPLE_API_ISSUER)) {
+    console.log('Using App Store Connect API key authentication')
+
+    // Create a temporary file for the API key
+    const tempDir = mkdtempSync(join(tmpdir(), 'notarize-'))
+    tempKeyPath = join(tempDir, 'AuthKey.p8')
+
+    // Decode base64 and write to temp file
+    const keyContent = Buffer.from(APPLE_API_KEY, 'base64').toString('utf-8')
+    writeFileSync(tempKeyPath, keyContent)
+
+    options = {
+      ...options,
+      appleApiKey: tempKeyPath,
+      appleApiKeyId: APPLE_API_KEY_ID,
+      appleApiIssuer: APPLE_API_ISSUER
+    }
+  }
+  // Fallback to legacy method (deprecated but still supported)
+  else if (!isEmpty(SIGNING_APPLE_ID) && !isEmpty(SIGNING_APP_PASSWORD)) {
+    console.log('Using legacy Apple ID authentication (deprecated - consider migrating to API keys)')
+    options = {
+      ...options,
+      appleId: SIGNING_APPLE_ID,
+      appleIdPassword: SIGNING_APP_PASSWORD,
+      teamId: SIGNING_TEAM_ID
+    }
+  }
+  // No valid credentials found
+  else {
+    const errorMessage =
+      'Missing required notarization credentials. Provide either:\n' +
+      '1. APPLE_API_KEY, APPLE_API_KEY_ID, APPLE_API_ISSUER (recommended), or\n' +
+      '2. SIGNING_APPLE_ID, SIGNING_APP_PASSWORD, SIGNING_TEAM_ID (legacy)'
+    console.error(errorMessage)
+    throw new Error(errorMessage)
   }
 
   console.log(`appPath: ${options.appPath}`)
 
+  // Retry logic for notarization reliability
+  const maxRetries = 3
+  let lastError
+
   try {
-    await notarize(options)
-    console.log('Notarization successful')
-  } catch (error) {
-    console.error('Notarization failed:', error)
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Notarization attempt ${attempt}/${maxRetries}`)
+        await notarize(options)
+        console.log('Notarization successful')
+        return
+      } catch (error) {
+        lastError = error
+        console.error(`Notarization attempt ${attempt} failed:`, error.message)
+
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt) * 1000 // Exponential backoff
+          console.log(`Retrying in ${delay / 1000} seconds...`)
+          await sleep(delay)
+        }
+      }
+    }
+
+    // All retries failed
+    console.error(`Notarization failed after ${maxRetries} attempts`)
+    throw new Error(`Notarization failed: ${lastError.message}`)
+  } finally {
+    // Clean up temporary key file if it was created
+    if (tempKeyPath) {
+      try {
+        unlinkSync(tempKeyPath)
+        console.log('Cleaned up temporary API key file')
+      } catch (cleanupError) {
+        console.warn('Failed to clean up temporary key file:', cleanupError.message)
+      }
+    }
   }
 }

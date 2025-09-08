@@ -24,7 +24,8 @@ module.exports = {
     hardenedRuntime: true,
     gatekeeperAssess: false,
     entitlements: 'resources/mac/entitlements.mac.plist',
-    entitlementsInherit: 'resources/mac/entitlements.mac.plist'
+    entitlementsInherit: 'resources/mac/entitlements.mac.plist',
+    notarize: false // Explicitly disable built-in notarization (we use afterSign instead)
   },
   dmg: {
     contents: [
