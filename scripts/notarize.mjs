@@ -1,8 +1,8 @@
 import 'dotenv/config'
-import { writeFileSync, unlinkSync, mkdtempSync } from 'fs'
+import { writeFileSync, mkdtempSync, chmodSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { notarize } from '@electron/notarize'
+import { notarize, stapleApp } from '@electron/notarize'
 
 /*
  Pre-requisites: https://github.com/electron/electron-notarize#prerequisites
@@ -42,19 +42,23 @@ export default async function notarizing(context) {
   }
 
   let tempKeyPath = null
+  let tempDir = null
 
   // Prefer App Store Connect API key method (modern)
   if (!isEmpty(APPLE_API_KEY) && !isEmpty(APPLE_API_KEY_ID) && !isEmpty(APPLE_API_ISSUER)) {
     console.log('Using App Store Connect API key authentication')
 
-    // Create a temporary file for the API key
-    const tempDir = mkdtempSync(join(tmpdir(), 'notarize-'))
+    // Create a temporary directory with restricted permissions
+    tempDir = mkdtempSync(join(tmpdir(), 'notarize-'))
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    chmodSync(tempDir, 0o700) // Only owner can read/write/execute
+
     tempKeyPath = join(tempDir, 'AuthKey.p8')
 
-    // Decode base64 and write to temp file
+    // Decode base64 and write to temp file with restricted permissions
     const keyContent = Buffer.from(APPLE_API_KEY, 'base64').toString('utf-8')
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    writeFileSync(tempKeyPath, keyContent)
+    writeFileSync(tempKeyPath, keyContent, { mode: 0o600 }) // Only owner can read/write
 
     options = {
       ...options,
@@ -64,7 +68,7 @@ export default async function notarizing(context) {
     }
   }
   // Fallback to legacy method (deprecated but still supported)
-  else if (!isEmpty(SIGNING_APPLE_ID) && !isEmpty(SIGNING_APP_PASSWORD)) {
+  else if (!isEmpty(SIGNING_APPLE_ID) && !isEmpty(SIGNING_TEAM_ID) && !isEmpty(SIGNING_APP_PASSWORD)) {
     console.log('Using legacy Apple ID authentication (deprecated - consider migrating to API keys)')
     options = {
       ...options,
@@ -95,6 +99,13 @@ export default async function notarizing(context) {
         console.log(`Notarization attempt ${attempt}/${maxRetries}`)
         await notarize(options)
         console.log('Notarization successful')
+
+        // Staple the notarization ticket to the app
+        console.log('Stapling notarization ticket to app...')
+        await stapleApp({
+          appPath: options.appPath
+        })
+        console.log('App stapling successful')
         return
       } catch (error) {
         lastError = error
@@ -113,14 +124,15 @@ export default async function notarizing(context) {
     console.error(`Notarization failed after ${maxRetries} attempts`)
     throw new Error(`Notarization failed: ${lastError.message}`)
   } finally {
-    // Clean up temporary key file if it was created
-    if (tempKeyPath) {
+    // Clean up temporary directory and all contents if created
+    if (tempDir) {
       try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        unlinkSync(tempKeyPath)
-        console.log('Cleaned up temporary API key file')
+        rmSync(tempDir, { recursive: true, force: true })
+        console.log('Cleaned up temporary notarization directory')
       } catch (cleanupError) {
-        console.warn('Failed to clean up temporary key file:', cleanupError.message)
+        console.warn('Failed to clean up temporary directory:')
+        console.warn(cleanupError.message)
       }
     }
   }
