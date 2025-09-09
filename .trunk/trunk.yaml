@@ -30,10 +30,10 @@ lint:
     # - oxipng@9.1.4              # Optimize PNGs
 
     # 🔐 Security
-    # - osv-scanner@2.0.1         # Open source vuln scanner
-    - checkov@3.2.407           # IaC security scanning
-    - trufflehog@3.88.25        # Secrets detection
-    - semgrep@1.120.0             # Static analysis tool that detects security issues, bugs, and code quality problems
+    - osv-scanner@2.2.2 # Open source vuln scanner
+    - checkov@3.2.470 # IaC security scanning
+    - trufflehog@3.90.6 # Secrets detection
+    - semgrep@1.135.0 # Static analysis tool that detects security issues, bugs, and code quality problems
 
     # 📦 Project Hygiene
     - git-diff-check           # Restrict to changed files
