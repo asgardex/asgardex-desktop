@@ -1,5 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { DASHChain } from '@xchainjs/xchain-dash'
+import { DOGEChain } from '@xchainjs/xchain-doge'
+import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
@@ -21,9 +25,9 @@ import { useNetwork } from '../../hooks/useNetwork'
 import * as walletRoutes from '../../routes/wallet'
 import { isStandaloneLedgerMode } from '../../services/wallet/types'
 
-// Check if chain supports HD modes
+// Check if chain supports HD modes or wallet index/account configuration
 const chainSupportsHDModes = (chain: Chain): boolean => {
-  return ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE', 'BTC'].includes(chain)
+  return ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE', 'BTC', 'BCH', 'DOGE', 'LTC', 'DASH', 'GAIA', 'THOR'].includes(chain)
 }
 
 // Helper functions for derivation paths
@@ -31,6 +35,32 @@ const getBitcoinDerivationPaths = (account: number, index: number) => [
   `Native SegWit P2WPKH (m/84'/0'/${account}'/0/${index})`,
   `Taproot P2TR (m/86'/0'/${account}'/0/${index})`
 ]
+
+const getUtxoDerivationPath = (chain: Chain, account: number, index: number): string => {
+  switch (chain) {
+    case 'BCH':
+      return `Legacy P2PKH (m/44'/145'/${account}'/0/${index})`
+    case 'LTC':
+      return `Native SegWit P2WPKH (m/84'/2'/${account}'/0/${index})`
+    case 'DOGE':
+      return `Legacy P2PKH (m/44'/3'/${account}'/0/${index})`
+    case 'DASH':
+      return `Legacy P2PKH (m/44'/5'/${account}'/0/${index})`
+    default:
+      return ''
+  }
+}
+
+const getCosmosDerivationPath = (chain: Chain, account: number, index: number): string => {
+  switch (chain) {
+    case 'GAIA':
+      return `Cosmos (m/44'/118'/${account}'/0/${index})`
+    case 'THOR':
+      return `THORChain (m/44'/931'/${account}'/0/${index})`
+    default:
+      return ''
+  }
+}
 
 const getEvmDerivationPaths = (
   hdMode: 'default' | 'ledgerlive' | 'metamask' | 'legacy' | 'p2wpkh' | 'p2tr',
@@ -112,6 +142,12 @@ export const LedgerChainSelectView: React.FC = () => {
     } else if (chain === BTCChain) {
       // Default to Native SegWit for Bitcoin
       setSelectedHDMode('p2wpkh')
+    } else if (chain === BCHChain || chain === LTCChain || chain === DOGEChain || chain === DASHChain) {
+      // Other UTXO chains use default mode
+      setSelectedHDMode('default')
+    } else if (chain === 'GAIA' || chain === 'THOR') {
+      // Cosmos chains use default mode
+      setSelectedHDMode('default')
     } else {
       // Default to Ledger Live for EVM chains
       setSelectedHDMode('ledgerlive')
@@ -304,8 +340,26 @@ export const LedgerChainSelectView: React.FC = () => {
                   />
                 )}
 
+                {/* Derivation path display for other UTXO chains */}
+                {selectedChain &&
+                  (selectedChain === BCHChain ||
+                    selectedChain === LTCChain ||
+                    selectedChain === DOGEChain ||
+                    selectedChain === DASHChain) && (
+                    <Label className="rounded-lg px-3 py-2 border border-solid border-bg2 dark:border-bg2d">
+                      {getUtxoDerivationPath(selectedChain, walletAccount, walletIndex)}
+                    </Label>
+                  )}
+
+                {/* Derivation path display for Cosmos chains */}
+                {selectedChain && (selectedChain === 'GAIA' || selectedChain === 'THOR') && (
+                  <Label className="rounded-lg px-3 py-2 border border-solid border-bg2 dark:border-bg2d">
+                    {getCosmosDerivationPath(selectedChain, walletAccount, walletIndex)}
+                  </Label>
+                )}
+
                 {/* Derivation path dropdown for EVM chains */}
-                {selectedChain && selectedChain !== BTCChain && (
+                {selectedChain && !['BTC', 'BCH', 'LTC', 'DOGE', 'DASH', 'GAIA', 'THOR'].includes(selectedChain) && (
                   <Dropdown
                     trigger={
                       <Label className="rounded-lg px-3 py-2 border border-solid border-bg2 dark:border-bg2d cursor-pointer hover:bg-gray0/10 dark:hover:bg-gray0d/10">

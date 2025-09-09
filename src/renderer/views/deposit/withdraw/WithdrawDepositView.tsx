@@ -138,8 +138,8 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
     }
   }, [protocol, reloadBalances, reloadShares, reloadSharesMaya])
 
-  const renderEmptyForm = useCallback(
-    () => (
+  const renderEmptyForm = useCallback(() => {
+    return (
       <Withdraw
         haltedChains={haltedChains}
         mimirHalt={mimirHalt}
@@ -162,25 +162,24 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
         network={network}
         poolsData={{}}
       />
-    ),
-    [
-      haltedChains,
-      mimirHalt,
-      symWithdrawFee$,
-      assetWalletAddress,
-      dexPrice,
-      dexWalletAddress,
-      dexBalance,
-      assetWD,
-      reloadWithdrawFees,
-      validatePassword$,
-      openRuneExplorerTxUrl,
-      getRuneExplorerTxUrl,
-      reloadBalancesAndShares,
-      symWithdraw$,
-      network
-    ]
-  )
+    )
+  }, [
+    haltedChains,
+    mimirHalt,
+    symWithdrawFee$,
+    assetWalletAddress,
+    dexPrice,
+    dexWalletAddress,
+    dexBalance,
+    assetWD,
+    reloadWithdrawFees,
+    validatePassword$,
+    openRuneExplorerTxUrl,
+    getRuneExplorerTxUrl,
+    reloadBalancesAndShares,
+    symWithdraw$,
+    network
+  ])
 
   const renderWithdrawReady = useCallback(
     ({
@@ -195,36 +194,38 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
       poolDetail: PoolDetail | PoolDetailMaya
       selectedPriceAsset: AnyAsset
       poolsData: PoolsDataMap
-    }) => (
-      <Withdraw
-        haltedChains={haltedChains}
-        mimirHalt={mimirHalt}
-        assetPrice={assetPrice}
-        assetWalletAddress={assetWalletAddress}
-        dexPrice={dexPrice}
-        dexWalletAddress={dexWalletAddress}
-        dexBalance={dexBalance}
-        selectedPriceAsset={selectedPriceAsset}
-        shares={{
-          rune: ShareHelpers.getRuneShare(
-            liquidityUnits,
-            poolDetail,
-            protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
-          ),
-          asset: ShareHelpers.getAssetShare({ liquidityUnits, detail: poolDetail, assetDecimal })
-        }}
-        asset={assetWD}
-        fees$={symWithdrawFee$}
-        reloadFees={reloadWithdrawFees}
-        validatePassword$={validatePassword$}
-        openRuneExplorerTxUrl={openRuneExplorerTxUrl}
-        getRuneExplorerTxUrl={getRuneExplorerTxUrl}
-        reloadBalances={reloadBalancesAndShares}
-        withdraw$={symWithdraw$}
-        network={network}
-        poolsData={poolsData}
-      />
-    ),
+    }) => {
+      return (
+        <Withdraw
+          haltedChains={haltedChains}
+          mimirHalt={mimirHalt}
+          assetPrice={assetPrice}
+          assetWalletAddress={assetWalletAddress}
+          dexPrice={dexPrice}
+          dexWalletAddress={dexWalletAddress}
+          dexBalance={dexBalance}
+          selectedPriceAsset={selectedPriceAsset}
+          shares={{
+            rune: ShareHelpers.getRuneShare(
+              liquidityUnits,
+              poolDetail,
+              protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+            ),
+            asset: ShareHelpers.getAssetShare({ liquidityUnits, detail: poolDetail, assetDecimal })
+          }}
+          asset={assetWD}
+          fees$={symWithdrawFee$}
+          reloadFees={reloadWithdrawFees}
+          validatePassword$={validatePassword$}
+          openRuneExplorerTxUrl={openRuneExplorerTxUrl}
+          getRuneExplorerTxUrl={getRuneExplorerTxUrl}
+          reloadBalances={reloadBalancesAndShares}
+          withdraw$={symWithdraw$}
+          network={network}
+          poolsData={poolsData}
+        />
+      )
+    },
     [
       haltedChains,
       mimirHalt,
@@ -249,17 +250,18 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
   return FP.pipe(
     RD.combine(assetPriceRD, poolShareRD, poolDetailRD, selectedPriceAssetRD, poolsDataRD),
     RD.fold(
-      renderEmptyForm,
-      renderEmptyForm,
-      renderEmptyForm,
-      ([assetPrice, oPoolShare, poolDetail, selectedPriceAsset, poolsData]) =>
-        FP.pipe(
+      () => renderEmptyForm(),
+      () => renderEmptyForm(),
+      () => renderEmptyForm(),
+      ([assetPrice, oPoolShare, poolDetail, selectedPriceAsset, poolsData]) => {
+        return FP.pipe(
           oPoolShare,
           O.fold(
             () => renderEmptyForm(),
             (poolShare) => renderWithdrawReady({ assetPrice, poolShare, poolDetail, selectedPriceAsset, poolsData })
           )
         )
+      }
     )
   )
 }

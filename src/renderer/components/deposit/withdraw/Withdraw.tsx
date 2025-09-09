@@ -132,13 +132,12 @@ export const Withdraw = ({
   } = dexWalletAddress
   const { type: assetWalletType, address: assetAddress } = assetWalletAddress
 
-  // Disable withdraw in case all or pool actions are disabled
-  const disableWithdrawAction = useMemo(
-    () =>
-      PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt }) ||
-      PoolHelpers.disablePoolActions({ chain, haltedChains, mimirHalt }),
-    [chain, haltedChains, mimirHalt]
-  )
+  // Disable withdraw in case all or withdraw actions are disabled
+  const disableWithdrawAction = useMemo(() => {
+    const disableAll = PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
+    const disableWithdraw = PoolHelpers.disableWithdrawActions({ chain, haltedChains, mimirHalt })
+    return disableAll || disableWithdraw
+  }, [chain, haltedChains, mimirHalt])
 
   const [withdrawPercent, setWithdrawPercent] = useState(disabled ? 0 : 50)
 
