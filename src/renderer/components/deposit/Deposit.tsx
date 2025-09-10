@@ -85,7 +85,13 @@ export const Deposit = (props: Props) => {
             oPoolShare,
             O.filter(({ runeAddress, assetAddress: oAssetAddress }) => {
               // use shares of current selected addresses only
-              const runeAddressMatch = eqOAddress.equals(runeAddress, O.some(dexWalletAddress.address))
+              const runeAddressMatch = eqOAddress.equals(
+                FP.pipe(
+                  runeAddress,
+                  O.map((addr) => addr.toLowerCase())
+                ),
+                O.some(dexWalletAddress.address.toLowerCase())
+              )
               const assetAddressMatch = FP.pipe(
                 oAssetAddress,
                 O.map((assetAddress) => {

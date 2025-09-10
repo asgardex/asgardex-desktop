@@ -11,7 +11,8 @@ import {
   KeystoreState,
   StandaloneLedgerState,
   isStandaloneLedgerMode,
-  isKeystoreMode
+  isKeystoreMode,
+  isKeystoreUnlocked
 } from './types'
 
 const INITIAL_APP_WALLET_STATE: AppWalletState = O.none // Start with no keystore (empty state)
@@ -36,9 +37,8 @@ export const createAppWalletService = (): AppWalletService => {
 
     // If keystore becomes unlocked and we're in standalone ledger mode, switch to keystore mode
     if (O.isSome(keystoreState) && isStandaloneLedgerMode(currentAppState)) {
-      // Check if keystore is actually unlocked (has phrase)
-      const keystoreData = keystoreState.value
-      if ('phrase' in keystoreData && keystoreData.phrase) {
+      // Check if keystore is actually unlocked
+      if (isKeystoreUnlocked(keystoreState.value)) {
         // Exit standalone ledger mode and switch to keystore
         standaloneLedgerService.exitStandaloneMode()
         setAppWalletState(keystoreState)
@@ -78,8 +78,30 @@ export const createAppWalletService = (): AppWalletService => {
 
   /**
    * Switch to standalone ledger mode - doesn't affect keystore but changes app state
+   * @param autoLock - if true, will automatically lock the keystore before switching to ledger mode
    */
-  const switchToStandaloneLedgerMode = () => {
+  const switchToStandaloneLedgerMode = (autoLock = false) => {
+    // Check if keystore is currently unlocked using the synchronous getter
+    const currentKeystoreState = keystoreService.keystoreState()
+
+    // Prevent switching to ledger-only mode if keystore is unlocked
+    if (
+      FP.pipe(
+        currentKeystoreState,
+        O.map(isKeystoreUnlocked),
+        O.getOrElse(() => false)
+      )
+    ) {
+      if (autoLock) {
+        // Lock the keystore first
+        keystoreService.lock()
+      } else {
+        // This shouldn't happen if UI is properly disabled, but keep as safety check
+        console.warn('Cannot switch to ledger-only mode while keystore is unlocked')
+        return
+      }
+    }
+
     // Enter standalone ledger mode
     standaloneLedgerService.enterStandaloneMode()
 

@@ -42,8 +42,12 @@ import { KeystoreId, TrustedAddress, TrustedAddresses } from '../../../shared/ap
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
+import {
+  getChainDerivationPath,
+  getChainDerivationOptions,
+  chainSupportsMultipleDerivationPaths
+} from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
-import { UtxoHDMode } from '../../../shared/utxo/types'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
 import RemoveIcon from '../../assets/svg/icon-remove.svg?react'
 import { WalletPasswordConfirmationModal } from '../../components/modal/confirmation'
@@ -93,22 +97,24 @@ import { EditableWalletName } from '../uielements/wallet/EditableWalletName'
 import * as Styled from './WalletSettings.styles'
 import { WhitelistModal } from './WhitelistModal'
 
-// Bitcoin derivation path templates - will be filled with actual account/index values
-const getBitcoinDerivationPaths = (account: number, index: number) => [
-  `Native Segwit P2WPKH (m/84'/0'/${account}'/${index})`,
-  `Taproot P2TR (m/86'/0'/${account}'/${index})`
-]
-
-// Convert derivation path index to UtxoHDMode for Bitcoin
-const derivationIndexToHDMode = (index: number): UtxoHDMode => {
-  switch (index) {
-    case 0:
-      return 'p2wpkh'
-    case 1:
-      return 'p2tr'
-    default:
-      return 'p2wpkh'
+// Convert derivation path index to HDMode for chains that support multiple paths
+const derivationIndexToHDMode = (chain: Chain, index: number): HDMode => {
+  if (chain === BTCChain) {
+    switch (index) {
+      case 0:
+        return 'p2wpkh'
+      case 1:
+        return 'p2tr'
+      default:
+        return 'p2wpkh'
+    }
   }
+  // For EVM chains, the HDMode is handled separately via evmHDMode
+  // For other UTXO chains, default to p2wpkh
+  if (chain === BCHChain || chain === LTCChain || chain === DOGEChain || chain === DASHChain) {
+    return 'p2wpkh'
+  }
+  return 'default'
 }
 
 const ActionButton = ({
@@ -304,9 +310,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
       let hdMode: HDMode = 'default'
       if (isEvmChain(chain)) {
         hdMode = evmHDMode
-      } else if (chain === BTCChain) {
-        // Only Bitcoin supports multiple derivation path options
-        hdMode = derivationIndexToHDMode(derivationPathIndex[chain])
+      } else if (chainSupportsMultipleDerivationPaths(chain)) {
+        hdMode = derivationIndexToHDMode(chain, derivationPathIndex[chain])
       }
 
       subscribeAddLedgerAddressRD(
@@ -410,30 +415,36 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 />
                 <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.index.info' })} />
 
-                {chain === BTCChain && (
+                {/* Show derivation path for chains with multiple options (non-EVM) */}
+                {chainSupportsMultipleDerivationPaths(chain) && !isEvmChain(chain) && (
                   <div className="ml-2">
                     <Dropdown
                       trigger={
                         <Label className="rounded-lg p-2 border border-solid border-bg2 dark:border-bg2d">
-                          {
-                            getBitcoinDerivationPaths(selectedAccountIndex, selectedWalletIndex)[
-                              derivationPathIndex[chain]
-                            ]
-                          }
+                          {getChainDerivationOptions(chain, selectedAccountIndex, selectedWalletIndex, network)[
+                            derivationPathIndex[chain]
+                          ]?.description || 'Default'}
                         </Label>
                       }
-                      options={getBitcoinDerivationPaths(selectedAccountIndex, selectedWalletIndex).map(
-                        (item: string, index: number) => (
+                      options={getChainDerivationOptions(chain, selectedAccountIndex, selectedWalletIndex, network).map(
+                        (option, index: number) => (
                           <Label
-                            key={item}
+                            key={option.path}
                             className="px-1"
                             size="normal"
                             onClick={() => setDerivationPathIndex({ ...derivationPathIndex, [chain]: index })}>
-                            {item}
+                            {option.description}
                           </Label>
                         )
                       )}
                     />
+                  </div>
+                )}
+
+                {/* Show derivation path for chains with single path */}
+                {!chainSupportsMultipleDerivationPaths(chain) && !isEvmChain(chain) && (
+                  <div className="ml-2 text-[12px] text-text2 dark:text-text2d">
+                    {getChainDerivationPath(chain, selectedAccountIndex, selectedWalletIndex, network).description}
                   </div>
                 )}
               </div>
@@ -550,12 +561,12 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 {intl.formatMessage({ id: 'settings.wallet.index' })}
               </div>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletIndex}</div>
-              {isEvmChain(chain) && (
-                <div className="text-[12px] uppercase text-text2 dark:text-text2d">{`${getEvmDerivationPath(
-                  walletAccountMap[chain],
-                  `${evmHDMode}`
-                )}${walletIndex}`}</div>
-              )}
+              {/* Show derivation path for all chains */}
+              <div className="text-[12px] text-text2 dark:text-text2d">
+                {isEvmChain(chain)
+                  ? `${getEvmDerivationPath(walletAccountMap[chain], evmHDMode)}${walletIndex}`
+                  : getChainDerivationPath(chain, walletAccount, walletIndex, network, walletAddress.hdMode).path}
+              </div>
             </div>
           </>
         )

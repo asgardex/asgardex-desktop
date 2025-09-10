@@ -100,6 +100,7 @@ export type ChangeKeystoreWalletHandler = (id: KeystoreId) => ChangeKeystoreWall
 
 export type KeystoreService = {
   keystoreState$: KeystoreState$
+  keystoreState: () => KeystoreState
   addKeystoreWallet: (params: AddKeystoreParams) => Promise<void>
   removeKeystoreWallet: RemoveKeystoreWalletHandler
   changeKeystoreWallet: ChangeKeystoreWalletHandler
