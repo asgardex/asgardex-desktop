@@ -307,12 +307,12 @@ export const LedgerChainSelectView: React.FC = () => {
                     <Dropdown
                       trigger={
                         <Label className="rounded-lg px-3 py-2 border border-solid border-bg2 dark:border-bg2d cursor-pointer hover:bg-gray0/10 dark:hover:bg-gray0d/10">
-                          {getChainDerivationOptions(selectedChain, walletAccount, walletIndex)[
+                          {getChainDerivationOptions(selectedChain, walletAccount, walletIndex, network)[
                             selectedHDMode === 'p2tr' ? 1 : 0
                           ]?.description || 'Default'}
                         </Label>
                       }
-                      options={getChainDerivationOptions(selectedChain, walletAccount, walletIndex).map(
+                      options={getChainDerivationOptions(selectedChain, walletAccount, walletIndex, network).map(
                         (option, index: number) => (
                           <Label
                             key={option.path}
@@ -331,7 +331,7 @@ export const LedgerChainSelectView: React.FC = () => {
                 {!chainSupportsMultipleDerivationPaths(selectedChain) && !isEvmChain(selectedChain) && (
                   <div className="min-w-[280px] text-center">
                     <Label className="rounded-lg px-3 py-2 border border-solid border-bg2 dark:border-bg2d text-12 inline-block">
-                      {getChainDerivationPath(selectedChain, walletAccount, walletIndex).description}
+                      {getChainDerivationPath(selectedChain, walletAccount, walletIndex, network).description}
                     </Label>
                   </div>
                 )}

@@ -564,7 +564,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
               {/* Show derivation path for all chains */}
               <div className="text-[12px] text-text2 dark:text-text2d">
                 {isEvmChain(chain)
-                  ? `${getEvmDerivationPath(walletAccountMap[chain], evmHDMode)}${walletIndex}`
+                  ? `${getEvmDerivationPath(walletAddress.walletAccount, walletAddress.hdMode as EvmHDMode)}${
+                      walletAddress.walletIndex
+                    }`
                   : getChainDerivationPath(chain, walletAccount, walletIndex, network, walletAddress.hdMode).path}
               </div>
             </div>

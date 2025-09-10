@@ -49,18 +49,18 @@ export const getChainDerivationPath = (
       switch (utxoMode) {
         case 'p2wpkh':
           return {
-            path: `m/84'/${coinType}/${account}'/${index}`,
-            description: `Native Segwit P2WPKH (m/84'/${coinType}/${account}'/${index})`
+            path: `m/84'/${coinType}/${account}'/0/${index}`,
+            description: `Native Segwit P2WPKH (m/84'/${coinType}/${account}'/0/${index})`
           }
         case 'p2tr':
           return {
-            path: `m/86'/${coinType}/${account}'/${index}`,
-            description: `Taproot P2TR (m/86'/${coinType}/${account}'/${index})`
+            path: `m/86'/${coinType}/${account}'/0/${index}`,
+            description: `Taproot P2TR (m/86'/${coinType}/${account}'/0/${index})`
           }
         default:
           return {
-            path: `m/84'/${coinType}/${account}'/${index}`,
-            description: `Native Segwit P2WPKH (m/84'/${coinType}/${account}'/${index})`
+            path: `m/84'/${coinType}/${account}'/0/${index}`,
+            description: `Native Segwit P2WPKH (m/84'/${coinType}/${account}'/0/${index})`
           }
       }
     }
@@ -68,23 +68,23 @@ export const getChainDerivationPath = (
     // Other UTXO chains - they typically use P2WPKH derivation
     case BCHChain:
       return {
-        path: `m/84'/${coinType}/${account}'/${index}`,
-        description: `P2WPKH (m/84'/${coinType}/${account}'/${index})`
+        path: `m/44'/145'/${account}'/0/${index}`,
+        description: `BIP44 (m/44'/145'/${account}'/0/${index})`
       }
     case LTCChain:
       return {
-        path: `m/84'/2'/${account}'/${index}`,
-        description: `P2WPKH (m/84'/2'/${account}'/${index})`
+        path: `m/84'/2'/${account}'/0/${index}`,
+        description: `P2WPKH (m/84'/2'/${account}'/0/${index})`
       }
     case DASHChain:
       return {
-        path: `m/84'/5'/${account}'/${index}`,
-        description: `P2WPKH (m/84'/5'/${account}'/${index})`
+        path: `m/44'/5'/${account}'/0/${index}`,
+        description: `BIP44 (m/44'/5'/${account}'/0/${index})`
       }
     case DOGEChain:
       return {
-        path: `m/84'/3'/${account}'/${index}`,
-        description: `P2WPKH (m/84'/3'/${account}'/${index})`
+        path: `m/44'/3'/${account}'/0/${index}`,
+        description: `BIP44 (m/44'/3'/${account}'/0/${index})`
       }
 
     // Ethereum family (EVM chains with multiple derivation modes)
