@@ -26,34 +26,36 @@ import { Input } from '../../components/uielements/input'
 import { Label } from '../../components/uielements/label'
 import { Spin } from '../../components/uielements/spin'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { getChainAsset } from '../../helpers/chainHelper'
+import {
+  getChainAsset,
+  isBtcChain,
+  isBchChain,
+  isLtcChain,
+  isDogeChain,
+  isDashChain,
+  isCosmosChain,
+  isThorChain,
+  isMayaChain,
+  isKujiChain
+} from '../../helpers/chainHelper'
+import { isEvmChain } from '../../helpers/evmHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import * as walletRoutes from '../../routes/wallet'
 import { isStandaloneLedgerMode } from '../../services/wallet/types'
 
 // Check if chain supports HD modes or wallet index/account configuration
 const chainSupportsHDModes = (chain: Chain): boolean => {
-  return [
-    'ETH',
-    'BSC',
-    'AVAX',
-    'ARB',
-    'BASE',
-    'BTC',
-    'BCH',
-    'DOGE',
-    'LTC',
-    'DASH',
-    'GAIA',
-    'THOR',
-    'MAYA',
-    'KUJI'
-  ].includes(chain)
-}
+  // EVM chains support HD modes
+  if (isEvmChain(chain)) return true
 
-// Check if chain is an EVM chain
-const isEvmChain = (chain: Chain): boolean => {
-  return ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(chain)
+  // UTXO chains support HD modes
+  if (isBtcChain(chain) || isBchChain(chain) || isLtcChain(chain) || isDogeChain(chain) || isDashChain(chain))
+    return true
+
+  // Cosmos-based chains support HD modes
+  if (isCosmosChain(chain) || isThorChain(chain) || isMayaChain(chain) || isKujiChain(chain)) return true
+
+  return false
 }
 
 interface ChainItemProps {

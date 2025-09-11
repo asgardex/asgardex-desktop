@@ -8,6 +8,7 @@ import { LedgerErrorId } from '../../../shared/api/types'
 import { DEFAULT_EVM_HD_MODE } from '../../../shared/evm/types'
 import { isError } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
+import { isEvmChain } from '../../helpers/evmHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import { Network$ } from '../app/types'
@@ -50,8 +51,8 @@ const INITIAL_STANDALONE_LEDGER_STATE: StandaloneLedgerState = {
  * Get the correct HD mode for a specific chain
  */
 const getHDModeForChain = (chain: Chain): HDMode => {
-  // EVM chains (ETH, AVAX, BSC, ARB, BASE) need EVM HD mode
-  if (['ETH', 'AVAX', 'BSC', 'ARB', 'BASE'].includes(chain)) {
+  // EVM chains need EVM HD mode
+  if (isEvmChain(chain)) {
     return DEFAULT_EVM_HD_MODE
   }
   // All other chains use default HD mode
