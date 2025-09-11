@@ -293,7 +293,7 @@ export const AppGeneralSettings = (props: Props) => {
           </BorderButton>
           {!isInStandaloneLedgerMode && isUnlocked && (
             <span className="text-warning0 dark:text-warning0d text-xs mt-1">
-              Lock wallet first to enter Ledger mode
+              {intl.formatMessage({ id: 'settings.ledgerMode.lockWalletWarning' })}
             </span>
           )}
         </div>

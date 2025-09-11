@@ -485,6 +485,7 @@ type SettingMessageKey =
   | 'settings.expert.mayachain.title'
   | 'settings.expert.midgardMaya.title'
   | 'settings.expert.mayanodeApi.title'
+  | 'settings.ledgerMode.lockWalletWarning'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 

@@ -53,7 +53,8 @@ const settings: SettingMessages = {
   'settings.expert.thornodeRpc.title': 'RPC de THORNode',
   'settings.expert.mayachain.title': 'URLs de Mayachain',
   'settings.expert.midgardMaya.title': 'Midgard Mayachain',
-  'settings.expert.mayanodeApi.title': 'API de MayaNode'
+  'settings.expert.mayanodeApi.title': 'API de MayaNode',
+  'settings.ledgerMode.lockWalletWarning': 'Bloquea la cartera primero para entrar en el modo Ledger'
 }
 
 export default settings

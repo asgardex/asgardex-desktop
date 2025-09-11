@@ -63,7 +63,9 @@ export const UnlockWalletSettings = ({ keystoreState, unlockHandler }: Props): J
           Enter Ledger Mode
         </BorderButton>
         {isUnlocked && (
-          <span className="text-warning0 dark:text-warning0d text-xs">Lock wallet first to enter Ledger mode</span>
+          <span className="text-warning0 dark:text-warning0d text-xs">
+            {intl.formatMessage({ id: 'settings.ledgerMode.lockWalletWarning' })}
+          </span>
         )}
       </div>
     </div>
