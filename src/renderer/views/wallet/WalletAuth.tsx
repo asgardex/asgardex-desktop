@@ -4,7 +4,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { ReferrerState } from '../../routes/types'
 import * as walletRoutes from '../../routes/wallet'
-import { isStandaloneLedgerMode } from '../../services/wallet/types'
+import { isStandaloneLedgerMode, isWatchOnlyMode, isKeystoreMode } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 
 export const WalletAuth = ({ children }: { children: JSX.Element }): JSX.Element => {
@@ -25,30 +25,37 @@ export const WalletAuth = ({ children }: { children: JSX.Element }): JSX.Element
     return children
   }
 
-  // For keystore mode, apply existing authentication logic
-  if (!hasImportedKeystore(appWalletState)) {
-    return (
-      <Navigate
-        to={{
-          pathname: walletRoutes.noWallet.path()
-        }}
-        replace
-      />
-    )
+  // If we're in watch-only mode, no authentication is required
+  if (isWatchOnlyMode(appWalletState)) {
+    return children
   }
 
-  // check lock status for keystore
-  if (isLocked(appWalletState)) {
-    return (
-      <Navigate
-        to={{
-          pathname: walletRoutes.locked.path(),
-          search: location.search
-        }}
-        state={{ referrer: (location.state as ReferrerState)?.referrer ?? location.pathname }}
-        replace
-      />
-    )
+  // For keystore mode, apply existing authentication logic
+  if (isKeystoreMode(appWalletState)) {
+    if (!hasImportedKeystore(appWalletState)) {
+      return (
+        <Navigate
+          to={{
+            pathname: walletRoutes.noWallet.path()
+          }}
+          replace
+        />
+      )
+    }
+
+    // check lock status for keystore
+    if (isLocked(appWalletState)) {
+      return (
+        <Navigate
+          to={{
+            pathname: walletRoutes.locked.path(),
+            search: location.search
+          }}
+          state={{ referrer: (location.state as ReferrerState)?.referrer ?? location.pathname }}
+          replace
+        />
+      )
+    }
   }
 
   return children

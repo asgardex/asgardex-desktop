@@ -20,6 +20,7 @@ import { CreateView } from './wallet/CreateView'
 import { WalletHistoryView } from './wallet/history'
 import { ImportKeystoreView } from './wallet/ImportKeystoreView'
 import { ImportPhraseView } from './wallet/ImportPhraseView'
+import { ImportWatchOnlyView } from './wallet/ImportWatchOnlyView'
 import { InteractView } from './wallet/Interact'
 import { LedgerChainSelectView } from './wallet/LedgerChainSelectView'
 import { NoWalletView } from './wallet/NoWalletView'
@@ -76,6 +77,7 @@ export const ViewRoutes = (): JSX.Element => {
       <Route path={walletRoutes.locked.template} element={<UnlockView />} />
       <Route path={walletRoutes.imports.keystore.template} element={<ImportKeystoreView />} />
       <Route path={walletRoutes.imports.phrase.template} element={<ImportPhraseView />} />
+      <Route path={walletRoutes.imports.watchOnly.template} element={<ImportWatchOnlyView />} />
       <Route
         path={walletRoutes.base.template}
         element={<Navigate to={{ pathname: walletRoutes.assets.path(), search: location.search }} />}

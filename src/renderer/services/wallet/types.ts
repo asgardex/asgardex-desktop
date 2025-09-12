@@ -37,14 +37,33 @@ export type StandaloneLedgerState = {
   selectedWalletIndex?: number // Wallet index selected by user
 }
 
-// Application-level wallet state that can be either keystore-based or standalone ledger
-export type AppWalletState = KeystoreState | StandaloneLedgerState
+// Watch-Only Mode Types
+export type WatchOnlyWallet = {
+  address: string
+  publicKey?: string // Optional, some chains don't need it
+  chain: Chain
+  walletIndex: number
+  hdPath?: string
+}
+
+export type WatchOnlyState = {
+  mode: 'watch-only'
+  wallets: WatchOnlyWallet[] // Multiple watch wallets for different chains
+  setupComplete: boolean
+}
+
+// Application-level wallet state that can be keystore-based, standalone ledger, or watch-only
+export type AppWalletState = KeystoreState | StandaloneLedgerState | WatchOnlyState
 
 // Type guards for wallet state
 export const isStandaloneLedgerMode = (state: AppWalletState): state is StandaloneLedgerState =>
   typeof state === 'object' && state !== null && 'mode' in state && state.mode === 'standalone-ledger'
 
-export const isKeystoreMode = (state: AppWalletState): state is KeystoreState => !isStandaloneLedgerMode(state)
+export const isWatchOnlyMode = (state: AppWalletState): state is WatchOnlyState =>
+  typeof state === 'object' && state !== null && 'mode' in state && state.mode === 'watch-only'
+
+export const isKeystoreMode = (state: AppWalletState): state is KeystoreState =>
+  !isStandaloneLedgerMode(state) && !isWatchOnlyMode(state)
 
 export type KeystoreLocked = { id: KeystoreId; name: string }
 export type KeystoreUnlocked = KeystoreLocked & { phrase: Phrase }
@@ -151,13 +170,28 @@ export type StandaloneLedgerService = {
   setDetectionWalletParams: (walletAccount: number, walletIndex: number) => void
 }
 
-// Combined app wallet service that manages both keystore and standalone ledger modes
+// Watch-Only Service Types
+export interface WatchOnlyWalletService {
+  watchOnlyState$: any // Will be properly typed from watchOnly service
+  enterWatchOnlyMode: (wallets: WatchOnlyWallet[]) => void
+  exitWatchOnlyMode: () => void
+  addWatchWallet: (wallet: WatchOnlyWallet) => void
+  removeWatchWallet: (address: string, chain: Chain) => void
+  getWatchWallet: (address: string, chain: Chain) => WatchOnlyWallet | undefined
+  exportWatchWallets: () => Promise<any>
+  importWatchWallets: () => Promise<any>
+  clearWatchWallets: () => void
+}
+
+// Combined app wallet service that manages keystore, standalone ledger, and watch-only modes
 export type AppWalletService = {
   appWalletState$: AppWalletState$
   keystoreService: KeystoreService
   standaloneLedgerService: StandaloneLedgerService
+  watchOnlyService: WatchOnlyWalletService
   switchToKeystoreMode: () => void
   switchToStandaloneLedgerMode: () => void
+  switchToWatchOnlyMode: () => void
 }
 
 export type WalletAccount = {

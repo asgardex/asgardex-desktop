@@ -62,7 +62,10 @@ import {
   KeystoreState,
   ChainBalance,
   GetLedgerAddressHandler,
-  StandaloneLedgerState
+  StandaloneLedgerState,
+  WatchOnlyState,
+  WatchOnlyWallet,
+  isWatchOnlyMode
 } from './types'
 import { hasImportedKeystore } from './util'
 
@@ -1250,16 +1253,123 @@ export const createBalancesService = ({
     XRP: [xrpLedgerChainBalance$]
   }
 
+  /**
+   * Creates a ChainBalance observable for watch-only addresses
+   * Fetches balance data using read-only clients for the specified address
+   * Uses the same pattern as ledger balance observables but with a specific address
+   */
+  const createWatchOnlyChainBalance = (
+    chain: Chain,
+    watchWallet: WatchOnlyWallet,
+    walletBalanceType: WalletBalanceType
+  ): ChainBalance$ => {
+    // Create a watch-only balance observable that displays as keystore type
+    const createWatchOnlyBalanceObservable = (
+      chain: Chain,
+      getBalanceByAddressFn: (params: {
+        address: Address
+        walletType: WalletType
+        walletAccount: number
+        walletIndex: number
+        hdMode: HDMode
+        walletBalanceType: WalletBalanceType
+      }) => WalletBalancesLD
+    ): ChainBalance$ => {
+      // Call the balance function directly with the watch wallet's address
+      const balances$ = getBalanceByAddressFn({
+        address: watchWallet.address,
+        walletType: WalletType.Keystore, // Use keystore for read-only operations
+        walletAccount: 0,
+        walletIndex: watchWallet.walletIndex,
+        hdMode: 'default' as HDMode,
+        walletBalanceType
+      })
+
+      // Map to ChainBalance format with correct wallet type
+      return balances$.pipe(
+        RxOp.map<WalletBalancesRD, ChainBalance>((balances) => ({
+          walletType: WalletType.Keystore, // Display as keystore, not ledger
+          chain,
+          walletAddress: O.some(watchWallet.address),
+          balances,
+          balancesType: walletBalanceType,
+          hdMode: 'default' as HDMode
+        }))
+      )
+    }
+
+    // Get the appropriate balance function for this chain
+    const createBalanceObservable = (chain: Chain): ChainBalance$ | null => {
+      switch (chain) {
+        case BTCChain:
+          return createWatchOnlyBalanceObservable(chain, BTC.getBalanceByAddress$(walletBalanceType))
+        case THORChain:
+          return createWatchOnlyBalanceObservable(chain, THOR.getBalanceByAddress$)
+        case MAYAChain:
+          return createWatchOnlyBalanceObservable(chain, MAYA.getBalanceByAddress$)
+        case LTCChain:
+          return createWatchOnlyBalanceObservable(chain, LTC.getBalanceByAddress$)
+        case DOGEChain:
+          return createWatchOnlyBalanceObservable(chain, DOGE.getBalanceByAddress$)
+        case DASHChain:
+          return createWatchOnlyBalanceObservable(chain, DASH.getBalanceByAddress$)
+        case BCHChain:
+          return createWatchOnlyBalanceObservable(chain, BCH.getBalanceByAddress$)
+        case GAIAChain:
+          return createWatchOnlyBalanceObservable(chain, COSMOS.getBalanceByAddress$)
+        default:
+          // For EVM chains and other unsupported chains, use a simpler approach
+          return Rx.of({
+            walletType: WalletType.Keystore,
+            walletAddress: O.some(watchWallet.address),
+            chain,
+            balances: RD.success([]), // Empty balances for unsupported chains
+            balancesType: walletBalanceType
+          })
+      }
+    }
+
+    const balanceObservable = createBalanceObservable(chain)
+
+    if (!balanceObservable) {
+      // Fallback for completely unsupported chains
+      return Rx.of({
+        walletType: WalletType.Keystore,
+        walletAddress: O.some(watchWallet.address),
+        chain,
+        balances: RD.success([]),
+        balancesType: walletBalanceType
+      })
+    }
+
+    return balanceObservable
+  }
+
   // Combine enabled chains with their corresponding balance observables
   // Filter based on wallet mode - in standalone ledger mode, only show ledger balances
   const chainBalances$: ChainBalances$ = FP.pipe(
     Rx.combineLatest([userChains$, appWalletService.appWalletState$]),
     RxOp.switchMap(([enabledChains, appWalletState]) => {
       const isStandaloneMode = appWalletState && isStandaloneLedgerMode(appWalletState)
+      const isWatchOnly = appWalletState && isWatchOnlyMode(appWalletState)
 
       let observablesToUse: Record<Chain, ChainBalance$[]>
 
-      if (isStandaloneMode) {
+      if (isWatchOnly) {
+        // In watch-only mode, create observables for watch-only addresses
+        const watchOnlyState = appWalletState as WatchOnlyState
+        observablesToUse = {}
+
+        // Create balance observables for each watch-only wallet
+        watchOnlyState.wallets.forEach((watchWallet) => {
+          const { chain } = watchWallet
+          if (!observablesToUse[chain]) {
+            observablesToUse[chain] = []
+          }
+          // Add watch-only balance observable for this address
+          observablesToUse[chain].push(createWatchOnlyChainBalance(chain, watchWallet, 'all'))
+        })
+      } else if (isStandaloneMode) {
         // In standalone ledger mode, only show balances for the connected chain
         const standaloneLedgerState = appWalletState as StandaloneLedgerState
         const connectedChain = standaloneLedgerState.connectedChain

@@ -1,3 +1,4 @@
+import { Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as RxOp from 'rxjs/operators'
 
@@ -7,20 +8,22 @@ import { keystoreService } from './keystore'
 import { createStandaloneLedgerService } from './standaloneLedger'
 import {
   AppWalletState,
-  AppWalletService,
   KeystoreState,
   StandaloneLedgerState,
+  WatchOnlyState,
   isStandaloneLedgerMode,
+  isWatchOnlyMode,
   isKeystoreMode,
   isKeystoreUnlocked
 } from './types'
+import { watchOnlyService } from './watchOnly'
 
 const INITIAL_APP_WALLET_STATE: AppWalletState = O.none // Start with no keystore (empty state)
 
 /**
  * Combined application wallet service that manages both keystore and standalone ledger modes
  */
-export const createAppWalletService = (): AppWalletService => {
+export const createAppWalletService = () => {
   // Create standalone ledger service
   const standaloneLedgerService = createStandaloneLedgerService({ network$ })
 
@@ -59,6 +62,22 @@ export const createAppWalletService = (): AppWalletService => {
     // Only update if we're in standalone ledger mode
     if (isStandaloneLedgerMode(currentAppState)) {
       setAppWalletState(standaloneLedgerState)
+    }
+  })
+
+  // Listen to watch-only state changes and update app wallet state accordingly
+  watchOnlyService.watchOnlyState$.subscribe((watchOnlyState: WatchOnlyState | null) => {
+    const currentAppState = appWalletState()
+
+    // If watch-only state exists, update app state to watch-only mode
+    if (watchOnlyState) {
+      setAppWalletState(watchOnlyState)
+    }
+    // If watch-only state is null and we're currently in watch-only mode, exit to keystore mode
+    else if (!watchOnlyState && isWatchOnlyMode(currentAppState)) {
+      // Switch back to keystore mode
+      const currentKeystoreState = keystoreService.keystoreState()
+      setAppWalletState(currentKeystoreState)
     }
   })
 
@@ -112,12 +131,33 @@ export const createAppWalletService = (): AppWalletService => {
     })
   }
 
+  /**
+   * Switch to watch-only mode - allows viewing addresses without private keys
+   */
+  const switchToWatchOnlyMode = () => {
+    // Exit standalone mode if active
+    standaloneLedgerService.exitStandaloneMode()
+
+    // The watch-only subscription will handle state updates
+    // If no watch wallets are loaded, the state will remain null
+  }
+
+  /**
+   * Export keystore addresses as watch-only wallets
+   */
+  const exportKeystoreAsWatchOnly = (walletAccounts?: Array<{ chain: Chain; address: string }>) => {
+    return watchOnlyService.exportKeystoreAsWatchOnly(walletAccounts)
+  }
+
   return {
     appWalletState$,
     keystoreService,
     standaloneLedgerService,
+    watchOnlyService,
     switchToKeystoreMode,
-    switchToStandaloneLedgerMode
+    switchToStandaloneLedgerMode,
+    switchToWatchOnlyMode,
+    exportKeystoreAsWatchOnly
   }
 }
 

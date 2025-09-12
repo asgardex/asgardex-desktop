@@ -46,6 +46,11 @@ const wallet: WalletMessages = {
   'wallet.imports.phrase.title':
     'Bitte gib die Phrase Deiner Wallet ein, jeweils mit einem Leerzeichen zwischen den Wörtern',
   'wallet.imports.phrase.description': 'Eine vorhandene Wallet mit Seed-Phrase importieren',
+  'wallet.imports.watchOnly.title': 'Watch-Only Wallets importieren',
+  'wallet.imports.watchOnly.description': 'Öffentliche Schlüssel von einem Offline-Computer importieren, um Guthaben ohne private Schlüssel zu überwachen',
+  'wallet.imports.watchOnly.selectFile': 'Watch-Wallets-Datei auswählen',
+  'wallet.imports.watchOnly.success': 'Watch-Only Wallets erfolgreich importiert!',
+  'wallet.imports.watchOnly.imported.count': '{count} Wallets importiert',
   'wallet.imports.wallet': 'Importiere eine bestehende Wallet',
   'wallet.imports.enterphrase': 'Phrase eingeben',
   'wallet.imports.error.instance': 'Es konnte keine Instanz vom Client erstellt werden',

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { KeyIcon, CpuChipIcon } from '@heroicons/react/24/outline'
+import { KeyIcon, CpuChipIcon, EyeIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -38,6 +38,10 @@ export const NoWalletView = () => {
   const useLedgerHandler = useCallback(() => {
     // Navigate directly to ledger chain selection
     navigate(walletRoutes.ledgerChainSelect.path())
+  }, [navigate])
+
+  const importWatchOnlyHandler = useCallback(() => {
+    navigate(walletRoutes.imports.watchOnly.path())
   }, [navigate])
 
   return (
@@ -115,6 +119,22 @@ export const NoWalletView = () => {
           <div className="flex flex-col items-start">
             <span className="text-text1 dark:text-text1d text-lg">Use Ledger Device</span>
             <span className="text-gray-500">Connect your hardware wallet for secure trading</span>
+          </div>
+        </div>
+
+        <div
+          className={clsx(
+            'flex items-center gap-4',
+            'bg-bg2/50 dark:bg-bg2d/20 hover:bg-bg2 hover:dark:bg-bg2d/40',
+            'cursor-pointer rounded-lg p-6 text-center transition duration-300 ease-in-out'
+          )}
+          onClick={importWatchOnlyHandler}>
+          <EyeIcon className="text-gray-500" width={40} height={40} />
+          <div className="flex flex-col items-start">
+            <span className="text-text1 dark:text-text1d text-lg">
+              {intl.formatMessage({ id: 'wallet.imports.watchOnly.title' })}
+            </span>
+            <span className="text-gray-500">{intl.formatMessage({ id: 'wallet.imports.watchOnly.description' })}</span>
           </div>
         </div>
       </div>

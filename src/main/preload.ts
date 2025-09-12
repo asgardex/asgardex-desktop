@@ -9,6 +9,7 @@ import type {
   StoreFileData,
   StoreFileName
 } from '../shared/api/types'
+import type { OfflineTxBundle, SignedTxBundle, WatchOnlyWallet } from '../shared/api/offlineTx'
 import { getStoreFilesIPCMessages } from '../shared/ipc/fileStore'
 import { apiHDWallet } from './api/hdwallet'
 import { apiLang } from './api/lang'
@@ -84,3 +85,17 @@ const apiAppUpdate = {
   checkForAppUpdates: (): Promise<AppUpdateRD> => ipcRenderer.invoke(IPCMessages.APP_CHECK_FOR_UPDATE)
 }
 contextBridge.exposeInMainWorld('apiAppUpdate', apiAppUpdate)
+
+//
+// api for offline transactions
+//
+const apiOfflineTransaction = {
+  exportUnsignedTx: (bundle: OfflineTxBundle) => ipcRenderer.invoke(IPCMessages.EXPORT_UNSIGNED_TX, bundle),
+  importUnsignedTx: () => ipcRenderer.invoke(IPCMessages.IMPORT_UNSIGNED_TX),
+  exportSignedTx: (bundle: SignedTxBundle) => ipcRenderer.invoke(IPCMessages.EXPORT_SIGNED_TX, bundle),
+  importSignedTx: () => ipcRenderer.invoke(IPCMessages.IMPORT_SIGNED_TX),
+  clearTxFiles: (path?: string) => ipcRenderer.invoke(IPCMessages.CLEAR_TX_FILES, path),
+  exportWatchWallets: (wallets: WatchOnlyWallet[]) => ipcRenderer.invoke(IPCMessages.EXPORT_WATCH_WALLETS, wallets),
+  importWatchWallets: () => ipcRenderer.invoke(IPCMessages.IMPORT_WATCH_WALLETS)
+}
+contextBridge.exposeInMainWorld('apiOfflineTransaction', apiOfflineTransaction)

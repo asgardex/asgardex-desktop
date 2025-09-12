@@ -21,6 +21,15 @@ import { registerAppCheckUpdatedHandler } from './api/appUpdate'
 import { getFileStoreService } from './api/fileStore'
 import { exportKeystore, initKeystoreWallets, loadKeystore, saveKeystoreWallets } from './api/keystore'
 import {
+  exportUnsignedTx,
+  importUnsignedTx,
+  exportSignedTx,
+  importSignedTx,
+  clearTransactionFiles,
+  exportWatchWallets,
+  importWatchWallets
+} from './api/offlineTransaction'
+import {
   getAddress as getLedgerAddress,
   sendTx as sendLedgerTx,
   deposit as depositLedgerTx,
@@ -182,6 +191,14 @@ const initIPC = () => {
   ipcMain.handle(IPCMessages.INIT_KEYSTORE_WALLETS, async () => initKeystoreWallets())
   // Url
   ipcMain.handle(IPCMessages.OPEN_EXTERNAL_URL, async (_, url) => openExternal(url))
+  // Offline Transactions
+  ipcMain.handle(IPCMessages.EXPORT_UNSIGNED_TX, async (_, bundle) => exportUnsignedTx(bundle))
+  ipcMain.handle(IPCMessages.IMPORT_UNSIGNED_TX, async () => importUnsignedTx())
+  ipcMain.handle(IPCMessages.EXPORT_SIGNED_TX, async (_, bundle) => exportSignedTx(bundle))
+  ipcMain.handle(IPCMessages.IMPORT_SIGNED_TX, async () => importSignedTx())
+  ipcMain.handle(IPCMessages.CLEAR_TX_FILES, async (_, path) => clearTransactionFiles(path))
+  ipcMain.handle(IPCMessages.EXPORT_WATCH_WALLETS, async (_, wallets) => exportWatchWallets(wallets))
+  ipcMain.handle(IPCMessages.IMPORT_WATCH_WALLETS, async () => importWatchWallets())
   // Ledger
   ipcMain.handle(IPCMessages.GET_LEDGER_ADDRESS, async (_, params: IPCLedgerAddressParams) => getLedgerAddress(params))
   ipcMain.handle(IPCMessages.VERIFY_LEDGER_ADDRESS, async (_, params: IPCLedgerAddressParams) =>

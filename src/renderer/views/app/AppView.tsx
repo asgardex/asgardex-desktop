@@ -43,8 +43,10 @@ export const AppView = (): JSX.Element => {
     const isNoWalletView = location.pathname === noWallet.path()
     const isCreateWalletView = location.pathname.includes(createWalletBase.path())
     const isImportWalletView = location.pathname.includes(importWalletBase.path())
+    // Don't hide layout for watch-only import when accessed from wallet settings
+    const isWatchOnlyImportFromSettings = location.pathname.includes('/wallet/import/watch-only')
 
-    return isNoWalletView || isCreateWalletView || isImportWalletView
+    return (isNoWalletView || isCreateWalletView || isImportWalletView) && !isWatchOnlyImportFromSettings
   }, [location.pathname])
 
   const isDesktopView = useBreakpoint()?.lg ?? false

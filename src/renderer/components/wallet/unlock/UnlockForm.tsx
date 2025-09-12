@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { CpuChipIcon } from '@heroicons/react/24/outline'
+import { CpuChipIcon, EyeIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
@@ -159,6 +159,10 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
     navigate(walletRoutes.ledgerChainSelect.path())
   }, [navigate])
 
+  const importWatchOnlyHandler = useCallback(() => {
+    navigate(walletRoutes.imports.watchOnly.path())
+  }, [navigate])
+
   const renderChangeWalletError = useMemo(
     () =>
       FP.pipe(
@@ -245,6 +249,15 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
                   disabled={unlocking}>
                   <CpuChipIcon width={16} height={16} />
                   Use Only Ledger
+                </BorderButton>
+                <BorderButton
+                  className="w-full min-w-[200px] flex items-center justify-center gap-2"
+                  size="normal"
+                  color="primary"
+                  onClick={importWatchOnlyHandler}
+                  disabled={unlocking}>
+                  <EyeIcon width={16} height={16} />
+                  {intl.formatMessage({ id: 'wallet.imports.watchOnly.title' })}
                 </BorderButton>
                 {/* TODO: update locale */}
                 <h2 className="mb-2 w-full text-11 text-text2 dark:text-text2d">Don&apos;t you have a wallet yet?</h2>

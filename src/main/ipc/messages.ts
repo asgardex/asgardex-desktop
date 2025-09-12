@@ -19,6 +19,14 @@ enum IPCMessages {
   // Update
   UPDATE_AVAILABLE = 'UPDATE_AVAILABLE',
   APP_CHECK_FOR_UPDATE = 'APP_CHECK_FOR_UPDATE',
+  // Offline Transactions
+  EXPORT_UNSIGNED_TX = 'EXPORT_UNSIGNED_TX',
+  IMPORT_UNSIGNED_TX = 'IMPORT_UNSIGNED_TX',
+  EXPORT_SIGNED_TX = 'EXPORT_SIGNED_TX',
+  IMPORT_SIGNED_TX = 'IMPORT_SIGNED_TX',
+  CLEAR_TX_FILES = 'CLEAR_TX_FILES',
+  EXPORT_WATCH_WALLETS = 'EXPORT_WATCH_WALLETS',
+  IMPORT_WATCH_WALLETS = 'IMPORT_WATCH_WALLETS',
   /**
    * IPC File interaction messages templates
    * @see getStoreFilesIPCMessages at /src/shared/ipc/fileStore.ts to check final results

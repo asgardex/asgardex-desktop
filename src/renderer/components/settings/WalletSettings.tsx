@@ -62,6 +62,7 @@ import { eqChain, eqString } from '../../helpers/fp/eq'
 import { emptyString } from '../../helpers/stringHelper'
 import { getWalletNamesFromKeystoreWallets, isEnabledLedger } from '../../helpers/walletHelper'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
+import { useWalletContext } from '../../contexts/WalletContext'
 import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
 import { userAddresses$, addAddress, removeAddress } from '../../services/storage/userAddresses'
@@ -221,6 +222,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
 
   const intl = useIntl()
   const navigate = useNavigate()
+  const { appWalletService } = useWalletContext()
 
   const [showPhraseModal, setShowPhraseModal] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
@@ -748,6 +750,33 @@ export const WalletSettings = (props: Props): JSX.Element => {
     }
   }, [exportKeystore, setExportKeystoreErrorMsg])
 
+  const exportWatchOnlyHandler = useCallback(async () => {
+    try {
+      // Extract addresses from wallet accounts
+      if (!oWalletAccounts || O.isNone(oWalletAccounts)) {
+        message.error('No wallet accounts found to export')
+        return
+      }
+
+      const walletAccounts = oWalletAccounts.value
+      const addressesToExport = walletAccounts.map(({ chain, accounts }) => ({
+        chain,
+        address: accounts.keystore.address
+      }))
+
+      const result = await appWalletService.exportKeystoreAsWatchOnly(addressesToExport)
+
+      if (result._tag === 'Right') {
+        message.success('Watch-only wallets exported successfully')
+      } else {
+        message.error(`Export failed: ${result.left.message}`)
+      }
+    } catch (error) {
+      const errorMsg = isError(error) ? error?.message ?? error.toString() : `${error}`
+      message.error(`Export failed: ${errorMsg}`)
+    }
+  }, [oWalletAccounts, appWalletService])
+
   const [trustedAddresses, setTrustedAddresses] = useState<TrustedAddresses>()
   const [newAddress, setNewAddress] = useState<Partial<TrustedAddress>>({})
 
@@ -1044,6 +1073,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
             icon={<EyeIcon width={24} height={24} />}
             text={intl.formatMessage({ id: 'settings.view.phrase.title' })}
             onClick={() => setShowPasswordModal(true)}
+          />
+          <ActionButton
+            icon={<ArrowUpTrayIcon width={24} height={24} />}
+            text="Export for Watch-Only"
+            onClick={exportWatchOnlyHandler}
           />
           <ActionButton
             icon={<TrashIcon width={24} height={24} />}

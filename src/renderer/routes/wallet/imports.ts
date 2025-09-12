@@ -20,3 +20,10 @@ export const phrase: Route<void> = {
     return this.template
   }
 }
+
+export const watchOnly: Route<void> = {
+  template: `${base.template}/watch-only`,
+  path() {
+    return this.template
+  }
+}
