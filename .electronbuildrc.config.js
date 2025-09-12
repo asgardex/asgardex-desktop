@@ -12,7 +12,7 @@ module.exports = {
     'node_modules/**/*',
     'package.json'
   ],
-  afterSign: 'scripts/notarize.mjs',
+  afterSign: 'scripts/notarize.js',
   directories: {
     buildResources: 'resources',
     output: 'release'

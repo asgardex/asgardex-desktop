@@ -1,8 +1,8 @@
-import 'dotenv/config'
-import { writeFileSync, mkdtempSync, chmodSync, rmSync } from 'fs'
-import { tmpdir } from 'os'
-import { join } from 'path'
-import { notarize, stapleApp } from '@electron/notarize'
+require('dotenv/config')
+const { writeFileSync, mkdtempSync, chmodSync, rmSync } = require('fs')
+const { tmpdir } = require('os')
+const { join } = require('path')
+const { notarize } = require('@electron/notarize')
 
 /*
  Pre-requisites: https://github.com/electron/electron-notarize#prerequisites
@@ -23,7 +23,7 @@ const isEmpty = (v) => !v || v.length === 0
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export default async function notarizing(context) {
+module.exports = async function notarizing(context) {
   const { electronPlatformName, appOutDir } = context
   if (electronPlatformName !== 'darwin') {
     console.log(`No need to notarize app on ${electronPlatformName}`)
@@ -98,14 +98,7 @@ export default async function notarizing(context) {
       try {
         console.log(`Notarization attempt ${attempt}/${maxRetries}`)
         await notarize(options)
-        console.log('Notarization successful')
-
-        // Staple the notarization ticket to the app
-        console.log('Stapling notarization ticket to app...')
-        await stapleApp({
-          appPath: options.appPath
-        })
-        console.log('App stapling successful')
+        console.log('Notarization and stapling successful')
         return
       } catch (error) {
         lastError = error
