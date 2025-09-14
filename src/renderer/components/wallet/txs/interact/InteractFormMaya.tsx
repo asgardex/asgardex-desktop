@@ -835,10 +835,6 @@ export const InteractFormMaya = (props: Props) => {
   ]
 
   const onSubmit = (data: FormValues) => {
-    console.log('Form submitted with data:', data)
-    console.log('Form errors:', errors)
-    console.log('Form isValid:', isValid)
-
     // Manual validation check for required fields based on interactType
     let hasErrors = false
 
@@ -873,7 +869,7 @@ export const InteractFormMaya = (props: Props) => {
       hasErrors = true
     }
 
-    if (hasErrors) {
+    if (!isValid || hasErrors) {
       console.error('Form has validation errors, not submitting')
       return
     }
