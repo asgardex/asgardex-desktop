@@ -210,7 +210,7 @@ export const InteractFormMaya = (props: Props) => {
     watch,
     setValue,
     reset,
-    formState: { errors, isValid }
+    formState: { errors }
   } = useForm<FormValues>({
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -834,50 +834,7 @@ export const InteractFormMaya = (props: Props) => {
     { type: 'Withdraw Lp', memo: 'WITHDRAW:POOL:10000' }
   ]
 
-  const onSubmit = (data: FormValues) => {
-    console.log('Form submitted with data:', data)
-    console.log('Form errors:', errors)
-    console.log('Form isValid:', isValid)
-
-    // Manual validation check for required fields based on interactType
-    let hasErrors = false
-
-    if (interactType === InteractType.Custom && !data.memo) {
-      console.error('Memo is required for Custom type')
-      hasErrors = true
-    }
-
-    if (
-      (interactType === InteractType.Bond ||
-        interactType === InteractType.Unbond ||
-        interactType === InteractType.Whitelist ||
-        interactType === InteractType.Leave) &&
-      !data.mayaAddress
-    ) {
-      console.error('Maya address is required')
-      hasErrors = true
-    }
-
-    if (interactType === InteractType.Whitelist && !data.providerAddress) {
-      console.error('Provider address is required for Whitelist')
-      hasErrors = true
-    }
-
-    if (interactType === InteractType.Custom && !data.amount) {
-      console.error('Amount is required for Custom type')
-      hasErrors = true
-    }
-
-    if (interactType === InteractType.MAYAName && !data.mayaname) {
-      console.error('Mayaname is required')
-      hasErrors = true
-    }
-
-    if (hasErrors) {
-      console.error('Form has validation errors, not submitting')
-      return
-    }
-
+  const onSubmit = () => {
     setShowConfirmationModal(true)
   }
 
