@@ -942,46 +942,7 @@ export const InteractFormThor = ({
     { type: 'Withdraw Lp', memo: 'WITHDRAW:POOL:BASISPOINTS' }
   ]
 
-  const onSubmit = (data: FormValues) => {
-    // Manual validation check for required fields based on interactType
-    let hasErrors = false
-
-    if (interactType === InteractType.Custom && !data.memo) {
-      console.error('Memo is required for Custom type')
-      hasErrors = true
-    }
-
-    if (
-      (interactType === InteractType.Bond ||
-        interactType === InteractType.Unbond ||
-        interactType === InteractType.Whitelist ||
-        interactType === InteractType.Leave) &&
-      !data.thorname
-    ) {
-      console.error('Thor address is required')
-      hasErrors = true
-    }
-
-    if (interactType === InteractType.Whitelist && !data.providerAddress) {
-      console.error('Provider address is required for Whitelist')
-      hasErrors = true
-    }
-
-    if (interactType === InteractType.Custom && !data.amount) {
-      console.error('Amount is required for Custom type')
-      hasErrors = true
-    }
-
-    if (interactType === InteractType.THORName && !data.thorname) {
-      console.error('Thorname is required')
-      hasErrors = true
-    }
-
-    if (hasErrors) {
-      console.error('Form has validation errors, not submitting')
-      return
-    }
-
+  const onSubmit = () => {
     setShowConfirmationModal(true)
   }
 
@@ -995,7 +956,10 @@ export const InteractFormThor = ({
             <div>
               <Input
                 {...register('memo', {
-                  required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                  required:
+                    interactType === InteractType.Custom
+                      ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                      : false,
                   onChange: handleMemo
                 })}
                 disabled={isLoading}
@@ -1064,7 +1028,13 @@ export const InteractFormThor = ({
             <div>
               <Input
                 {...register('thorAddress', {
-                  required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                  required:
+                    interactType === InteractType.Bond ||
+                    interactType === InteractType.Unbond ||
+                    interactType === InteractType.Whitelist ||
+                    interactType === InteractType.Leave
+                      ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                      : false,
                   validate: addressValidator,
                   onChange: () => getMemo()
                 })}
@@ -1084,7 +1054,10 @@ export const InteractFormThor = ({
             <div>
               <Input
                 {...register('providerAddress', {
-                  required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                  required:
+                    interactType === InteractType.Whitelist
+                      ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                      : false,
                   validate: addressValidator,
                   onChange: () => getMemo()
                 })}
@@ -1129,7 +1102,10 @@ export const InteractFormThor = ({
                     name="amount"
                     control={control}
                     rules={{
-                      required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                      required:
+                        interactType === InteractType.Custom
+                          ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                          : false,
                       validate: amountValidator
                     }}
                     render={({ field }) => (
@@ -1233,7 +1209,10 @@ export const InteractFormThor = ({
               <div>
                 <Input
                   {...register('thorname', {
-                    required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                    required:
+                      interactType === InteractType.THORName
+                        ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                        : false,
                     onChange: () => thornameHandler()
                   })}
                   disabled={isLoading}
