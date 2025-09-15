@@ -61,9 +61,7 @@ const FormValidation = () => {
         />
         {errors.amount && <p className="mt-1 text-xs text-red-500">{errors.amount.message}</p>}
       </div>
-      <Button type="primary" htmlType="submit">
-        Submit
-      </Button>
+      <Button type="submit">Submit</Button>
     </form>
   )
 }

@@ -32,7 +32,6 @@ import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
-import { List, message } from 'antd'
 import clsx from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
@@ -95,6 +94,8 @@ import { Modal } from '../uielements/modal'
 import { Tooltip } from '../uielements/tooltip'
 import { WalletSelector } from '../uielements/wallet'
 import { EditableWalletName } from '../uielements/wallet/EditableWalletName'
+import { AutoComplete } from './AutoComplete'
+import { WalletIndexInput } from './WalletIndexInput'
 import * as Styled from './WalletSettings.styles'
 import { WhitelistModal } from './WhitelistModal'
 
@@ -379,43 +380,44 @@ export const WalletSettings = (props: Props): JSX.Element => {
           <>
             <div className="flex w-full flex-col md:w-auto lg:flex-row">
               <div className="mr-30px flex items-center md:mr-0">
-                <Styled.AddLedgerButton className="gap-x-1" loading={loading} onClick={addLedgerAddressHandler}>
+                <Styled.AddLedgerButton
+                  className="gap-x-1"
+                  sizevalue="small"
+                  loading={loading}
+                  onClick={addLedgerAddressHandler}>
                   <PlusCircleIcon className="text-turquoise" width={20} height={20} />
                   {intl.formatMessage({ id: 'ledger.add.device' })}
                 </Styled.AddLedgerButton>
 
                 <>
-                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                  <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
                     {intl.formatMessage({ id: 'settings.wallet.account' })}
                   </div>
-                  <Styled.WalletIndexInput
+                  <WalletIndexInput
+                    className="ml-2 mr-1 w-16"
                     value={selectedAccountIndex.toString()}
-                    pattern="[0-9]+"
-                    onChange={(value) =>
-                      value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
-                    }
-                    style={{ width: 60 }}
                     disabled={loading || (isEvmChain(chain) && evmHDMode !== 'ledgerlive')}
+                    onChange={(value) => {
+                      if (value !== null && +value >= 0) setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
+                    }}
                     onPressEnter={addLedgerAddressHandler}
                   />
                   <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.account.info' })} />
-                </>
 
-                <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
-                  {intl.formatMessage({ id: 'settings.wallet.index' })}
-                </div>
-                <Styled.WalletIndexInput
-                  className="border border-solid border-bg2 dark:border-bg2d"
-                  value={selectedWalletIndex.toString()}
-                  pattern="[0-9]+"
-                  onChange={(value) =>
-                    value !== null && +value >= 0 && setWalletIndexMap({ ...walletIndexMap, [chain]: +value })
-                  }
-                  style={{ width: 60 }}
-                  disabled={loading}
-                  onPressEnter={addLedgerAddressHandler}
-                />
-                <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.index.info' })} />
+                  <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
+                    {intl.formatMessage({ id: 'settings.wallet.index' })}
+                  </div>
+                  <WalletIndexInput
+                    className="ml-2 mr-1 w-16"
+                    value={selectedWalletIndex.toString()}
+                    onChange={(value) =>
+                      value !== null && +value >= 0 && setWalletIndexMap({ ...walletIndexMap, [chain]: +value })
+                    }
+                    disabled={loading}
+                    onPressEnter={addLedgerAddressHandler}
+                  />
+                  <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.index.info' })} />
+                </>
 
                 {/* Show derivation path for chains with multiple options (non-EVM) */}
                 {chainSupportsMultipleDerivationPaths(chain) && !isEvmChain(chain) && (
@@ -666,7 +668,6 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 visible={true}
                 onOk={onOk}
                 onCancel={onCancel}
-                maskClosable={false}
                 closable={false}
                 okText={intl.formatMessage({ id: 'common.confirm' })}
                 okButtonProps={{ autoFocus: true }}
@@ -788,34 +789,28 @@ export const WalletSettings = (props: Props): JSX.Element => {
   const handleAddAddress = useCallback(() => {
     if (newAddress.name && newAddress.address && newAddress.chain) {
       addAddress({ name: newAddress.name, address: newAddress.address, chain: newAddress.chain })
-      setNewAddress({ chain: '', name: '', address: '' })
-      message.success(intl.formatMessage({ id: 'common.addAddress' }))
+      setNewAddress({})
+      // TODO: notification
+      // message.success(intl.formatMessage({ id: 'common.addAddress' }))
     } else {
-      message.error(intl.formatMessage({ id: 'common.error' }))
+      // message.error(intl.formatMessage({ id: 'common.error' }))
     }
-  }, [newAddress, intl])
+  }, [newAddress])
 
-  const handleRemoveAddress = useCallback(
-    (address: TrustedAddress) => {
-      removeAddress(address)
-      message.success(intl.formatMessage({ id: 'common.removeAddress' }))
-    },
-    [intl]
-  )
+  const handleRemoveAddress = useCallback((address: TrustedAddress) => {
+    removeAddress(address)
+    // TODO: notification
+    // message.success(intl.formatMessage({ id: 'common.removeAddress' }))
+  }, [])
 
   const renderAddAddressForm = useCallback(
     () => (
       <div className="flex items-center gap-3 mb-4">
-        <Styled.AutoComplete
-          className="w-40 mr-2"
-          key={newAddress.chain || 'autocomplete'}
+        <AutoComplete
           placeholder={intl.formatMessage({ id: 'common.chain' })}
           options={enabledChains.map((chain) => ({ value: chain }))}
           value={newAddress.chain}
-          onChange={(value) => setNewAddress((prev) => ({ ...prev, chain: value as string }))}
-          filterOption={(inputValue, option) =>
-            option ? option.value.toLowerCase().includes(inputValue.toLowerCase()) : false
-          }
+          onChange={(value) => setNewAddress((prev) => ({ ...prev, chain: value as Chain }))}
         />
         <Input
           className="border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
@@ -837,7 +832,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
             <PlusCircleIcon className="text-turquoise" width={20} height={20} />
             {intl.formatMessage({ id: 'common.store' })}
           </Styled.AddLedgerButton>
-          <InfoIcon className="ml-10px" tooltip={intl.formatMessage({ id: 'settings.wallet.storeAddress.info' })} />
+          <InfoIcon className="ml-2" tooltip={intl.formatMessage({ id: 'settings.wallet.storeAddress.info' })} />
         </div>
       </div>
     ),
@@ -845,27 +840,17 @@ export const WalletSettings = (props: Props): JSX.Element => {
   )
 
   const renderTrustedAddresses = useCallback(
-    (chain: Chain) => (
-      <List
-        dataSource={trustedAddresses?.addresses.filter((addr) => addr.chain === chain) || []}
-        renderItem={(item) => (
-          <List.Item>
-            <div className="flex w-full items-center justify-between">
-              <List.Item.Meta
-                title={<div className="text-text0 dark:text-text0d">{item.name}</div>}
-                description={
-                  <div className="flex w-full items-center ">
-                    {' '}
-                    <Styled.AddressEllipsis address={item.address} chain={chain} network={network} enableCopy={true} />
-                    <RemoveIcon className="w-4 h-4" onClick={() => handleRemoveAddress(item)} />
-                  </div>
-                }
-              />
-            </div>
-          </List.Item>
-        )}
-      />
-    ),
+    (chain: Chain) => {
+      return (trustedAddresses?.addresses.filter((addr) => addr.chain === chain) || []).map((item) => (
+        <div key={item.address} className="flex flex-col w-full">
+          <Label size="big">{item.name}</Label>
+          <div className="flex w-full items-center space-x-2">
+            <Styled.AddressEllipsis address={item.address} chain={chain} network={network} enableCopy={true} />
+            <RemoveIcon className="w-4 h-4" onClick={() => handleRemoveAddress(item)} />
+          </div>
+        </div>
+      ))
+    },
     [trustedAddresses?.addresses, network, handleRemoveAddress]
   )
   const renderAccounts = useMemo(
@@ -873,11 +858,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
       FP.pipe(
         oFilteredWalletAccounts,
         O.map((walletAccounts) => (
-          <List
-            key="accounts"
-            dataSource={walletAccounts}
-            renderItem={({ chain, accounts: { keystore, ledger: oLedger } }, i: number) => (
-              <Styled.ListItem key={i}>
+          <div className="flex flex-col" key="wallet-accounts">
+            {walletAccounts.map(({ chain, accounts: { keystore, ledger: oLedger } }, i: number) => (
+              <div key={i} className="flex flex-col p-4 border-b border-solid border-b-gray0 dark:border-b-gray0d">
                 <div className="flex w-full items-center justify-start">
                   <AssetIcon asset={getChainAsset(chain)} size="small" network={Network.Mainnet} />
                   <Styled.AccountTitle>{chain}</Styled.AccountTitle>
@@ -910,9 +893,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
                     </div>
                   )}
                 </div>
-              </Styled.ListItem>
-            )}
-          />
+              </div>
+            ))}
+          </div>
         )),
         O.getOrElse(() => <></>)
       ),

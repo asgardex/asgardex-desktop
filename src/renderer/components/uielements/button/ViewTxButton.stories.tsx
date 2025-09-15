@@ -29,13 +29,7 @@ const meta: Meta<typeof Template> = {
   },
   decorators: [
     (S) => (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: 'white',
-          alignItems: 'center'
-        }}>
+      <div className="flex flex-col bg-white items-center">
         <S />
       </div>
     )

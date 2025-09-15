@@ -206,7 +206,6 @@ export const TxsTable = (props: Props): JSX.Element => {
               defaultCurrent={1}
               total={total}
               defaultPageSize={MAX_ITEMS_PER_PAGE}
-              showSizeChanger={false}
               onChange={changePaginationHandler}
             />
           )}

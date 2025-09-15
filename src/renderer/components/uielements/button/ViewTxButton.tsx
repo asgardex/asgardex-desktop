@@ -6,6 +6,7 @@ import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { sequenceTOption } from '../../../helpers/fpHelpers'
+import { CopyLabel } from '../label'
 import * as Styled from './ViewTxButton.styles'
 
 type Props = {
@@ -95,32 +96,26 @@ export const ViewTxButton = ({
         <div className="flex space-x-6">
           <div className="flex items-center justify-center">
             <span className="mt-1 text-text2 dark:text-text1d">{intl.formatMessage({ id: 'common.txUrl' })} : </span>
-            <Styled.CopyLabel
-              copyable={
-                FP.pipe(
-                  oTxUrl,
-                  O.map((url) => ({
-                    text: url,
-                    tooltips: intl.formatMessage({ id: 'common.copyTxUrl' })
-                  })),
-                  O.toUndefined
-                ) || false
-              }
+            <CopyLabel
+              textToCopy={FP.pipe(
+                oTxUrl,
+                O.fold(
+                  () => '',
+                  (url) => url
+                )
+              )}
             />
           </div>
           <div className="flex items-center justify-center">
             <span className="mt-1 text-text2 dark:text-text1d">{intl.formatMessage({ id: 'common.txHash' })} : </span>
-            <Styled.CopyLabel
-              copyable={
-                FP.pipe(
-                  oTxHash,
-                  O.map((url) => ({
-                    text: url,
-                    tooltips: intl.formatMessage({ id: 'common.copyTxHash' })
-                  })),
-                  O.toUndefined
-                ) || false
-              }
+            <CopyLabel
+              textToCopy={FP.pipe(
+                oTxHash,
+                O.fold(
+                  () => '',
+                  (hash) => hash
+                )
+              )}
             />
           </div>
         </div>

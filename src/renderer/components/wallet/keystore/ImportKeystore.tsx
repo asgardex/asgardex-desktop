@@ -7,9 +7,6 @@ import { function as FP } from 'fp-ts'
 import { useForm } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
-/* css import is needed to override antd */
-import '../../uielements/input/overrides.css'
-
 import { defaultWalletName } from '../../../../shared/utils/wallet'
 import { KeystoreClientStates } from '../../../hooks/useKeystoreClientStates'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'

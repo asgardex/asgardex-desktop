@@ -1,6 +1,7 @@
 import React from 'react'
 
 import clsx from 'clsx'
+import { LoadingIcon } from '../../icons'
 import { ButtonWrapper } from './Button.styles'
 import type { ButtonProps } from './Button.types'
 
@@ -16,6 +17,7 @@ export const Button: React.ForwardRefExoticComponent<ButtonProps> = React.forwar
       round = 'false',
       focused = false,
       className = '',
+      loading = false,
       ...otherProps
     } = props
 
@@ -25,14 +27,13 @@ export const Button: React.ForwardRefExoticComponent<ButtonProps> = React.forwar
       <ButtonWrapper
         ref={ref}
         className={clsx(className, 'btn-wrapper', focusedStyle)}
-        type="primary"
         weight={weight}
         color={color}
         sizevalue={sizevalue}
         typevalue={typevalue}
         round={round}
         {...otherProps}>
-        {children}
+        {loading ? <LoadingIcon className="w-4 h-4 animate-spin group-hover:opacity-70" /> : children}
         {props.typevalue === 'normal' && <div className="borderBottom" />}
       </ButtonWrapper>
     )

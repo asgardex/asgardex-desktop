@@ -6,8 +6,6 @@ import { Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
 import * as SC from 'styled-components'
 
-import 'antd/dist/antd.dark.css'
-import 'antd/dist/antd.min.css'
 import { observableState } from '../helpers/stateHelper'
 
 const THEME_TYPE = 'asgdx-theme'

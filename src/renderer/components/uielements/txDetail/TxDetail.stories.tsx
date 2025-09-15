@@ -45,8 +45,6 @@ const Template = ({
   return (
     <TxDetail
       network={Network.Mainnet}
-      type={'SWAP'}
-      date={<>12-12-3 1231</>}
       incomes={getValues(firstInAsset, secondInAsset, firstInValue, secondInValue)}
       outgos={getValues(firstOutAsset, secondOutAsset, firstOutValue, secondOutValue)}
       slip={1.23}

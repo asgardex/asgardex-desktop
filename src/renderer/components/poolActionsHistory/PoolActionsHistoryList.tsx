@@ -5,13 +5,14 @@ import { Network } from '@xchainjs/xchain-client'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { OpenExplorerTxUrl } from '../../services/clients'
 import { Action, ActionsPage, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
 import { ErrorView } from '../shared/error'
 import { Button } from '../uielements/button'
 import { Pagination } from '../uielements/pagination'
+import { Spin } from '../uielements/spin'
 import { TxDetail } from '../uielements/txDetail'
+import { TxType } from '../uielements/txType'
 import { DEFAULT_PAGE_SIZE } from './PoolActionsHistory.const'
 import * as H from './PoolActionsHistory.helper'
 import * as Styled from './PoolActionsHistoryList.styles'
@@ -37,8 +38,6 @@ export const PoolActionsHistoryList = ({
   reloadHistory,
   className
 }: Props) => {
-  const isDesktopView = useBreakpoint()?.lg ?? false
-
   const intl = useIntl()
 
   const renderListItem = useCallback(
@@ -62,39 +61,37 @@ export const PoolActionsHistoryList = ({
       )
 
       return (
-        <Styled.ListItem key={H.getRowKey(action, index)}>
-          <Styled.Card title={<Styled.TxType type={action.type} showTypeIcon={isDesktopView} />} extra={titleExtra}>
-            <TxDetail
-              type={action.type}
-              date={date}
-              incomes={H.getValues(action.in)}
-              outgos={H.getValues(action.out)}
-              network={network}
-              isDesktopView
-            />
-          </Styled.Card>
-        </Styled.ListItem>
+        <div
+          key={H.getRowKey(action, index)}
+          className="flex flex-col p-2 border-t-0 first:border-t last:border-b-0 border-b border-solid border-gray0/40 dark:border-gray0d/40">
+          <div className="flex items-center justify-between">
+            <TxType className="mr-2" type={action.type} showTypeIcon />
+            {titleExtra}
+          </div>
+          <TxDetail incomes={H.getValues(action.in)} outgos={H.getValues(action.out)} network={network} isDesktopView />
+        </div>
       )
     },
-    [isDesktopView, network]
+    [network]
   )
 
   const renderList = useCallback(
     ({ total, actions }: ActionsPage, loading = false) => {
       return (
         <>
-          <Styled.List
-            loading={loading}
-            itemLayout="vertical"
-            dataSource={actions}
-            renderItem={(action, index) => renderListItem(action, index, goToTx)}
-          />
+          <div className="bg-bg1 dark:bg-bg1d">
+            {loading ? (
+              <Spin className="min-h-40" />
+            ) : (
+              actions.map((action, index) => renderListItem(action, index, goToTx))
+            )}
+          </div>
+
           {total > 0 && (
             <Pagination
               current={currentPage}
               total={total}
               defaultPageSize={DEFAULT_PAGE_SIZE}
-              showSizeChanger={false}
               onChange={changePaginationHandler}
             />
           )}

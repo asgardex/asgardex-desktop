@@ -12,7 +12,7 @@ import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { PriceRD } from '../../../services/midgard/midgardTypes'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
-import * as Styled from './HeaderStats.styles'
+import { Label } from '../../uielements/label'
 
 export type Props = {
   runePrice: PriceRD
@@ -210,15 +210,19 @@ export const HeaderStats = (props: Props): JSX.Element => {
         className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadThorStats}>
         <AssetIcon size="xsmall" asset={AssetRuneNative} network={network} />
-        <Styled.Protocol>{THORChain}</Styled.Protocol>
-        <Styled.Label loading={RD.isPending(runePriceRD) ? 'true' : 'false'}>{runePriceLabel}</Styled.Label>
+        <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
+          {THORChain}
+        </Label>
+        <Label className="!w-auto" color="gray" textTransform="uppercase">
+          {runePriceLabel}
+        </Label>
 
         {!isSmallMobileView && (
           <>
             <div className="w-[1px] h-5 bg-gray2 dark:bg-gray2d" />
-            <Styled.Label loading={RD.isPending(volume24PriceRuneRD) ? 'true' : 'false'}>
+            <Label className="!w-auto" color="gray" textTransform="uppercase">
               {volume24PriceRuneLabel}
-            </Styled.Label>
+            </Label>
           </>
         )}
       </div>
@@ -229,8 +233,12 @@ export const HeaderStats = (props: Props): JSX.Element => {
             className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
             onClick={reloadTcyStats}>
             <AssetIcon size="xsmall" asset={AssetTCY} network={network} />
-            <Styled.Protocol>TCY</Styled.Protocol>
-            <Styled.Label loading={RD.isPending(tcyPriceRD) ? 'true' : 'false'}>{tcyPriceLabel}</Styled.Label>
+            <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
+              TCY
+            </Label>
+            <Label className="!w-auto" color="gray" textTransform="uppercase">
+              {tcyPriceLabel}
+            </Label>
           </div>
         ))}
 
@@ -238,15 +246,19 @@ export const HeaderStats = (props: Props): JSX.Element => {
         className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadMayaStats}>
         <AssetIcon size="xsmall" asset={AssetCacao} network={network} />
-        <Styled.Protocol>{MAYAChain}</Styled.Protocol>
-        <Styled.Label loading={RD.isPending(mayaPriceRD) ? 'true' : 'false'}>{mayaPriceLabel}</Styled.Label>
+        <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
+          {MAYAChain}
+        </Label>
+        <Label className="!w-auto" color="gray" textTransform="uppercase">
+          {mayaPriceLabel}
+        </Label>
 
         {!isSmallMobileView && (
           <>
             <div className="h-5 w-[1px] bg-gray2 dark:bg-gray2d" />
-            <Styled.Label loading={RD.isPending(volume24PriceMayaRD) ? 'true' : 'false'}>
+            <Label className="!w-auto" color="gray" textTransform="uppercase">
               {volume24PriceMayaLabel}
-            </Styled.Label>
+            </Label>
           </>
         )}
       </div>

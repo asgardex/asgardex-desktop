@@ -1,7 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
-  "version": "1.40.8",
+  "version": "1.40.9",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN, MAYACHAIN, CHAINFLIP",
   "main": "build/main/electron.js",
   "scripts": {
@@ -115,7 +115,6 @@
     "@xchainjs/xchain-utxo-providers": "2.0.8",
     "@xchainjs/xchain-wallet": "2.0.16",
     "@xchainjs/xchain-zcash": "1.0.9",
-    "antd": "^4.20.7",
     "axios": "1.10.0",
     "bignumber.js": "^9.0.0",
     "clsx": "^2.1.1",

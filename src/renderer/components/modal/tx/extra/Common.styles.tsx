@@ -9,7 +9,7 @@ export const StepLabel = styled(UILabel).attrs({
   color: 'gray'
 })`
   width: 100%;
-  padding: 20px 10px;
+  padding: 10px 10px 15px 10px;
   font-family: 'MainFontRegular';
   text-align: center;
   text-transform: uppercase;
@@ -19,6 +19,7 @@ export const DataWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 `
 
 export const StepBar = styled(UIStepBar)`

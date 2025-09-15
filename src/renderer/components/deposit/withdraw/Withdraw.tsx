@@ -293,6 +293,7 @@ export const Withdraw = ({
         source={O.some({ asset: protocolAsset, amount: runeAmountToWithdraw })}
         stepDescription={stepDescription}
         network={network}
+        isWithdraw={true}
       />
     )
   }, [

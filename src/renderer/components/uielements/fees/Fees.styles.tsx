@@ -11,19 +11,19 @@ export const ReloadFeeButton = styled(UIButton).attrs({
   typevalue: 'outline',
   children: <ArrowPathIcon />
 })`
-  &.ant-btn {
-    /* overridden */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: auto;
-    margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: auto;
+  margin-right: 10px;
+  padding: 4px;
+  border: 1px solid ${palette('primary', 2)};
 
-    svg {
-      min-width: 24px;
-      min-height: 24px;
-    }
+  svg {
+    min-width: 24px;
+    min-height: 24px;
   }
+
   width: 30px;
   height: 30px;
   margin-right: 10px;

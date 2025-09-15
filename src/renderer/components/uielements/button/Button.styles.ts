@@ -1,9 +1,7 @@
-import { Button } from 'antd'
-import { ButtonProps } from 'antd/lib/button'
+import { Button } from '@headlessui/react'
 import styled from 'styled-components'
 import { palette, key } from 'styled-theme'
-
-import { ButtonColor, ButtonRound, ButtonSize, ButtonWeight, ButtonType } from './Button.types'
+import { ButtonProps, ButtonColor, ButtonRound, ButtonSize, ButtonWeight, ButtonType } from './Button.types'
 
 const fontSettings = {
   small: {
@@ -217,28 +215,63 @@ type ButtonWrapperProps = {
 type Props = ButtonWrapperProps & ButtonProps
 
 export const ButtonWrapper = styled(Button)<Props>`
-  &.ant-btn {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-radius: ${(props) => (props.round === 'true' ? sizes[props.sizevalue].height : '3px')};
-    min-width: ${(props) => sizes[props.sizevalue].width};
-    height: ${(props) => sizes[props.sizevalue].height};
-    font-size: ${(props) => fontSettings[props.sizevalue].size};
-    font-weight: ${(props) => props.weight};
-    letter-spacing: ${(props) => fontSettings[props.sizevalue].spacing};
-    box-shadow: none; /* overridden */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: ${(props) => (props.round === 'true' ? sizes[props.sizevalue].height : '3px')};
+  min-width: ${(props) => sizes[props.sizevalue].width};
+  height: ${(props) => sizes[props.sizevalue].height};
+  font-size: ${(props) => fontSettings[props.sizevalue].size};
+  font-weight: ${(props) => props.weight};
+  letter-spacing: ${(props) => fontSettings[props.sizevalue].spacing};
+  box-shadow: none; /* overridden */
 
-    text-transform: uppercase;
-    text-decoration: ${({ typevalue }) => (typevalue === 'underline' ? 'underline' : 'none')};
+  text-transform: uppercase;
+  text-decoration: ${({ typevalue }) => (typevalue === 'underline' ? 'underline' : 'none')};
 
-    /* set theme colors away from antd defaults */
+  &,
+  &:active,
+  &:focus {
+    color: ${(props) => getThemeValue(props.color, props.typevalue)?.text ?? ''};
+    border-color: ${(props) => getThemeValue(props.color, props.typevalue)?.border ?? 'transparent'};
+    background: ${(props) => getThemeValue(props.color, props.typevalue)?.background ?? 'transparent'};
+    ${(props) =>
+      props.typevalue === 'normal' &&
+      `
+          background-position: 0 100%;
+          background-repeat: no-repeat;
+          -webkit-background-size: 100% 3px;
+          -moz-background-size: 100% 3px;
+          background-size: 100% 3px;
+        `}
+  }
+
+  &:disabled {
+    background: ${(props) => getThemeValue(props.color, props.typevalue)?.background ?? 'transparent'};
+    opacity: 0.75;
+  }
+
+  /* provide focus styles over the underlying styles */
+  &:focus,
+  &:active {
+    border-color: ${(props) =>
+      getThemeValue(props.color, props.typevalue)?.focus?.border ??
+      'transparent'} !important; /* (Rudi): HACK: Border is overridden in selection.style.js buttons we need to create a new style for these buttons remove this when ready */
+  }
+
+  /* apply special override styles for .focused class */
+  &.focused,
+  &:hover {
     &,
-    &:active,
-    &:focus {
-      color: ${(props) => getThemeValue(props.color, props.typevalue)?.text ?? ''};
-      border-color: ${(props) => getThemeValue(props.color, props.typevalue)?.border ?? 'transparent'};
-      background: ${(props) => getThemeValue(props.color, props.typevalue)?.background ?? 'transparent'};
+    &:focus,
+    &:active {
+      color: ${(props) => getThemeValue(props.color, props.typevalue)?.action?.text ?? ''};
+      text-decoration: ${({ typevalue }) => (typevalue === 'underline' ? 'underline' : 'none')};
+      border-color: ${(props) => getThemeValue(props.color, props.typevalue)?.action?.border ?? 'transparent'};
+      background: ${(props) =>
+        props.typevalue === 'normal'
+          ? !props.disabled && (getThemeValue(props.color, props.typevalue)?.focus?.borderBottom ?? 'transparent')
+          : !props.disabled && (getThemeValue(props.color, props.typevalue)?.action?.background ?? 'transparent')};
       ${(props) =>
         props.typevalue === 'normal' &&
         `
@@ -248,51 +281,13 @@ export const ButtonWrapper = styled(Button)<Props>`
           -moz-background-size: 100% 3px;
           background-size: 100% 3px;
         `}
-    }
-
-    &:disabled {
-      background: ${(props) => getThemeValue(props.color, props.typevalue)?.background ?? 'transparent'};
-      opacity: 0.75;
-    }
-
-    /* provide focus styles over the underlying styles */
-    &:focus,
-    &:active {
-      border-color: ${(props) =>
-        getThemeValue(props.color, props.typevalue)?.focus?.border ??
-        'transparent'} !important; /* (Rudi): HACK: Border is overridden in selection.style.js buttons we need to create a new style for these buttons remove this when ready */
-    }
-
-    /* apply special override styles for .focused class */
-    &.focused,
-    &:hover {
-      &,
-      &:focus,
-      &:active {
-        color: ${(props) => getThemeValue(props.color, props.typevalue)?.action?.text ?? ''};
-        text-decoration: ${({ typevalue }) => (typevalue === 'underline' ? 'underline' : 'none')};
-        border-color: ${(props) => getThemeValue(props.color, props.typevalue)?.action?.border ?? 'transparent'};
-        background: ${(props) =>
-          props.typevalue === 'normal'
-            ? !props.disabled && (getThemeValue(props.color, props.typevalue)?.focus?.borderBottom ?? 'transparent')
-            : !props.disabled && (getThemeValue(props.color, props.typevalue)?.action?.background ?? 'transparent')};
-        ${(props) =>
-          props.typevalue === 'normal' &&
-          `
-          background-position: 0 100%;
-          background-repeat: no-repeat;
-          -webkit-background-size: 100% 3px;
-          -moz-background-size: 100% 3px;
-          background-size: 100% 3px;
-        `}
-        &:disabled {
-          color: ${(props) => getThemeValue(props.color, props.typevalue)?.text ?? ''};
-        }
+      &:disabled {
+        color: ${(props) => getThemeValue(props.color, props.typevalue)?.text ?? ''};
       }
     }
+  }
 
-    svg {
-      font-size: 18px;
-    }
+  svg {
+    font-size: 18px;
   }
 `

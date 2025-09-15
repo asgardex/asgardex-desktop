@@ -1,6 +1,10 @@
+import { useCallback, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
+import { ChevronDownIcon, FolderIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 
@@ -11,6 +15,7 @@ import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/client
 import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
 import { ViewTxButton } from '../../../uielements/button'
+import { Label } from '../../../uielements/label'
 import * as H from '../TxForm.helpers'
 
 /**
@@ -193,5 +198,64 @@ export const renderDepositModal = ({
       timerValue={timerValue}
       extra={<SendAsset asset={{ asset, amount: amountToSend }} description={stepDescription} network={network} />}
     />
+  )
+}
+
+export const SavedAddressSelect = ({
+  placeholder,
+  onChange,
+  addresses
+}: {
+  placeholder: string
+  addresses: { address: string; name: string }[]
+  onChange: (address: string) => void
+}) => {
+  const [selected, setSelected] = useState<string>()
+
+  const handleChange = useCallback(
+    (value: string) => {
+      setSelected(value)
+      onChange(value)
+    },
+    [onChange]
+  )
+
+  return (
+    <Listbox onChange={handleChange}>
+      <div className="relative">
+        <ListboxButton
+          className={clsx(
+            'relative block w-full rounded-lg bg-bg0 dark:bg-bg0d py-1.5 pr-8 pl-3 text-left text-sm/6 text-text0 dark:text-text0d border border-solid border-gray0 dark:border-gray0d',
+            'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25'
+          )}>
+          <Label>{selected ? selected : placeholder.toUpperCase()}</Label>
+          <ChevronDownIcon className="group pointer-events-none absolute top-2.5 right-2.5 size-4 stroke-text0 dark:stroke-text0d" />
+        </ListboxButton>
+      </div>
+      <ListboxOptions
+        anchor="bottom start"
+        transition
+        className="w-[var(--button-width)] mt-1 p-4 rounded-md bg-bg0 dark:bg-bg0d border border-solid border-gray0 dark:border-gray0d">
+        {addresses.length ? (
+          addresses.map(({ address, name }) => (
+            <ListboxOption className="cursor-pointer flex items-center justify-between" key={address} value={address}>
+              <Label>{address}</Label>
+              <div className="bg-turquoise rounded-lg px-2">
+                <Label color="white" size="small" textTransform="uppercase">
+                  {name}
+                </Label>
+              </div>
+            </ListboxOption>
+          ))
+        ) : (
+          <div className="flex items-center justify-center w-full py-8 space-x-2">
+            <FolderIcon className="stroke-text0 dark:stroke-text0d w-8 h-8" />
+            <Label className="!w-auto" textTransform="uppercase">
+              No Saved Addresses
+            </Label>
+          </div>
+        )}
+      </ListboxOptions>
+    </Listbox>
   )
 }

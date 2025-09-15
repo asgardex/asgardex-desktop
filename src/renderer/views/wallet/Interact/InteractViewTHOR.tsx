@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Col, Row } from 'antd'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -252,12 +251,8 @@ export const InteractViewTHOR = () => {
       ([interactType, { walletType, walletAccount, walletIndex, hdMode }]) => (
         <>
           <div className="relative mb-4 flex items-center justify-between">
-            <Row justify="space-between">
-              <Col>
-                <BackLinkButton />
-              </Col>
-              <RefreshButton className="absolute right-0" onClick={reloadHandler} />
-            </Row>
+            <BackLinkButton />
+            <RefreshButton className="absolute right-0" onClick={reloadHandler} />
           </div>
 
           <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">

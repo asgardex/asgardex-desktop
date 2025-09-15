@@ -161,8 +161,8 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
     return network !== Network.Testnet ? (
       <div className="w-full flex justify-end mt-2 mb-4">
         <div className="bg-turquoise/20 px-2 py-1 rounded-lg">
-          <Button className="w-full !p-0 !justify-between" size="large" typevalue="transparent" onClick={openShareInfo}>
-            <Label className="!w-auto" textTransform="uppercase">
+          <Button className="w-full !p-0 !justify-between" typevalue="transparent" onClick={openShareInfo}>
+            <Label className="!w-auto" size="big" textTransform="uppercase">
               {intl.formatMessage({ id: 'common.analytics' })}
             </Label>
             <ArrowUpIcon className="stroke-turquoise w-4 h-4 rotate-45" />

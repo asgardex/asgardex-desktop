@@ -1466,7 +1466,6 @@ export const TradeSwap = ({
         percent={percentageDifference}
         withLabel
         labels={[`${streamerComparison}`, ``]}
-        tooltipPlacement="top"
         hasError={!isStreaming}
       />
     )

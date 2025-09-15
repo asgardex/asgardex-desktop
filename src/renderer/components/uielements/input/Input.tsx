@@ -62,7 +62,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref): JSX.
         'bg-bg0 font-main dark:bg-bg0d',
         'placeholder:text-gray-300 dark:placeholder:text-gray-400',
         ghost ? 'ring-0' : 'ring-1',
-        error ? 'ring-error0 dark:ring-error0d' : 'ring-gray1 dark:ring-gray1d',
+        error ? 'ring-error0 dark:ring-error0d' : 'ring-gray0 dark:ring-gray0d',
         error ? 'text-error0 dark:text-error0d' : 'text-text0 dark:text-text0d',
         uppercase ? 'uppercase placeholder:uppercase' : 'normal-case',
         disabled ? 'opacity-50' : 'opacity-100',
