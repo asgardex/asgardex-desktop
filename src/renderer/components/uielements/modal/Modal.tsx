@@ -25,7 +25,7 @@ export type HeadlessModalProps = {
   children?: React.ReactNode
 }
 
-export const Modal: React.FC<HeadlessModalProps> = ({
+export const Modal = ({
   visible,
   title,
   onCancel,
@@ -40,7 +40,7 @@ export const Modal: React.FC<HeadlessModalProps> = ({
   okButtonProps,
   cancelButtonProps,
   children
-}) => {
+}: HeadlessModalProps) => {
   return (
     <Transition appear show={visible} as={Fragment}>
       <Dialog as="div" className={clsx('relative z-50', className)} onClose={onCancel ?? (() => {})}>
@@ -75,8 +75,8 @@ export const Modal: React.FC<HeadlessModalProps> = ({
                   panelClassName
                 )}>
                 {/* Header — uppercase, centered, primary bg like palette('primary',2) */}
-                <div className="relative bg-turquoise px-3.5 py-2.5 text-center uppercase">
-                  <DialogTitle as="h3" className="font-main text-sm tracking-wide text-white mb-0">
+                <div className="relative px-3.5 py-2.5 text-center uppercase">
+                  <DialogTitle as="h1" className="text-md tracking-wide font-main text-text2 dark:text-text2d mb-0">
                     {title}
                   </DialogTitle>
 

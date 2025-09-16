@@ -1,8 +1,10 @@
 import { ArrowsRightLeftIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
+import { baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
 import styled from 'styled-components'
 
 import { AssetData as UIAssetData } from '../../../uielements/assets/assetData'
+import { Label } from '../../../uielements/label'
 import * as Styled from './Common.styles'
 import * as C from './Common.types'
 
@@ -20,7 +22,6 @@ const SwapIconContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 8px;
 `
 
 const SwapAssetData = styled(UIAssetData)`
@@ -48,12 +49,22 @@ export const SwapAssets = (props: Props): JSX.Element => {
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <Styled.StepLabel>{stepDescription}</Styled.StepLabel>
-      <SwapDataWrapper>
-        <SwapAssetData asset={source.asset} amount={source.amount} network={network} size="big" />
+      <SwapDataWrapper className="w-full !gap-1">
+        <div className="flex items-center justify-between w-full px-10">
+          <SwapAssetData asset={source.asset} network={network} size="small" />
+          <Label className="text-3xl" align="right">
+            {formatAssetAmount({ amount: baseToAsset(source.amount), trimZeros: true })}
+          </Label>
+        </div>
         <SwapIconContainer>
           <ArrowsRightLeftIcon className="w-8 h-8 text-gray-400 rotate-90" />
         </SwapIconContainer>
-        <SwapAssetData asset={target.asset} amount={target.amount} network={network} size="big" />
+        <div className="flex items-center justify-between w-full px-10">
+          <SwapAssetData asset={target.asset} network={network} size="small" />
+          <Label className="text-3xl" align="right">
+            {formatAssetAmount({ amount: baseToAsset(target.amount), trimZeros: true })}
+          </Label>
+        </div>
       </SwapDataWrapper>
     </div>
   )
