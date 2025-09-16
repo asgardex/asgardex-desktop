@@ -7,16 +7,10 @@ import {
 } from '@heroicons/react/24/outline'
 import { formatAssetAmountCurrency, baseToAsset } from '@xchainjs/xchain-util'
 
-import {
-  OfflineSigningStatus,
-  OfflineTxBundle,
-  SignedTxBundle,
-  WalletMode,
-  WatchOnlyWallet
-} from '../../../../shared/api/offlineTx'
+import { OfflineSigningStatus, OfflineTxBundle, SignedTxBundle, WalletMode } from '../../../../shared/api/offlineTx'
+import { watchOnlyWalletService } from '../../../services/wallet/watchOnlyWallet'
 import { BaseButton } from '../../uielements/button'
 import { Modal } from '../../uielements/modal'
-import { watchOnlyWalletService } from '../../../services/wallet/watchOnlyWallet'
 
 interface Props {
   visible: boolean
@@ -149,7 +143,7 @@ export const OfflineTransactionFlow: React.FC<Props> = ({
             <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
               <h5 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Next Steps:</h5>
               <ol className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                <li>1. Click "Export to USB" to save the unsigned transaction</li>
+                <li>1. Click Export to USB to save the unsigned transaction</li>
                 <li>2. Transfer the USB to your offline computer</li>
                 <li>3. Sign the transaction on the offline computer</li>
                 <li>4. Transfer the signed transaction back via USB</li>
@@ -279,10 +273,8 @@ export const OfflineTransactionFlow: React.FC<Props> = ({
     <Modal
       title={isOnlineMode ? 'Offline Transaction - Online' : 'Offline Transaction - Offline'}
       visible={visible}
-      onCancel={onClose}
-      footer={null}
-      width={500}>
-      {isOnlineMode ? renderOnlineFlow() : renderOfflineFlow()}
+      onCancel={onClose}>
+      {isOfflineMode ? renderOfflineFlow() : renderOnlineFlow()}
 
       {status === OfflineSigningStatus.BROADCAST_SUCCESS && (
         <div className="mt-4 p-4 bg-green-100 dark:bg-green-800 rounded-lg text-center">

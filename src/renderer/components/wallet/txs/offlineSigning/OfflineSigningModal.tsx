@@ -199,7 +199,12 @@ export const OfflineSigningModal: React.FC<Props> = ({
   }
 
   return (
-    <Modal title="Offline Transaction Signing" visible={visible} onCancel={onClose} footer={null} width={500}>
+    <Modal
+      title="Offline Transaction Signing"
+      visible={visible}
+      onCancel={onClose}
+      footer={false}
+      panelClassName="max-w-lg">
       {renderContent()}
     </Modal>
   )

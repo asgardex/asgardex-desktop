@@ -55,13 +55,13 @@ import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIco
 import { QRCodeModal } from '../../components/uielements/qrCodeModal/QRCodeModal'
 import { RadioGroup, Radio } from '../../components/uielements/radio'
 import { PhraseCopyModal } from '../../components/wallet/phrase/PhraseCopyModal'
+import { useWalletContext } from '../../contexts/WalletContext'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { eqChain, eqString } from '../../helpers/fp/eq'
 import { emptyString } from '../../helpers/stringHelper'
 import { getWalletNamesFromKeystoreWallets, isEnabledLedger } from '../../helpers/walletHelper'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
-import { useWalletContext } from '../../contexts/WalletContext'
 import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
 import { userAddresses$, addAddress, removeAddress } from '../../services/storage/userAddresses'
@@ -755,7 +755,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     try {
       // Extract addresses from wallet accounts
       if (!oWalletAccounts || O.isNone(oWalletAccounts)) {
-        message.error('No wallet accounts found to export')
+        // TODO: Add proper error notification when notification system is implemented
+        console.error('No wallet accounts found to export')
         return
       }
 
@@ -768,13 +769,16 @@ export const WalletSettings = (props: Props): JSX.Element => {
       const result = await appWalletService.exportKeystoreAsWatchOnly(addressesToExport)
 
       if (result._tag === 'Right') {
-        message.success('Watch-only wallets exported successfully')
+        // TODO: Add proper success notification when notification system is implemented
+        console.log('Watch-only wallets exported successfully')
       } else {
-        message.error(`Export failed: ${result.left.message}`)
+        // TODO: Add proper error notification when notification system is implemented
+        console.error(`Export failed: ${result.left.message}`)
       }
     } catch (error) {
       const errorMsg = isError(error) ? error?.message ?? error.toString() : `${error}`
-      message.error(`Export failed: ${errorMsg}`)
+      // TODO: Add proper error notification when notification system is implemented
+      console.error(`Export failed: ${errorMsg}`)
     }
   }, [oWalletAccounts, appWalletService])
 

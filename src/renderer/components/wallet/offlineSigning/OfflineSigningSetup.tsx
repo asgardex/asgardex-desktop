@@ -212,18 +212,12 @@ export const OfflineSigningSetup: React.FC<Props> = ({ visible, onClose, onModeC
   }
 
   return (
-    <Modal
-      title="Offline Signing Setup"
-      visible={visible}
-      onCancel={onClose}
-      footer={
-        <div className="flex justify-between">
-          {step !== 'choose' && <FlatButton onClick={() => setStep('choose')}>Back</FlatButton>}
-          <FlatButton onClick={onClose}>Close</FlatButton>
-        </div>
-      }
-      width={600}>
+    <Modal title="Offline Signing Setup" visible={visible} onCancel={onClose} footer={false} panelClassName="max-w-2xl">
       {renderCurrentStep()}
+      <div className="flex justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        {step !== 'choose' && <FlatButton onClick={() => setStep('choose')}>Back</FlatButton>}
+        <FlatButton onClick={onClose}>Close</FlatButton>
+      </div>
     </Modal>
   )
 }
