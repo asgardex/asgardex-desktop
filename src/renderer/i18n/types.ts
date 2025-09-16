@@ -86,6 +86,11 @@ export type CommonMessageKey =
   | 'common.copyTxUrl'
   | 'common.trackTransaction'
   | 'common.copyTxHash'
+  | 'common.transaction.tracking'
+  | 'common.transaction.loading'
+  | 'common.transaction.failed'
+  | 'common.transaction.active'
+  | 'common.transaction.completed'
   | 'common.fee'
   | 'common.feeRate'
   | 'common.fee.nodeOperator'
@@ -214,6 +219,20 @@ export type CommonMessageKey =
 export type CommonMessages = {
   [key in CommonMessageKey]: string
 }
+
+type TransactionMessageKey =
+  | 'transaction.status.complete'
+  | 'transaction.status.pending'
+  | 'transaction.status.observing'
+  | 'transaction.status.confirming'
+  | 'transaction.status.confirming.simple'
+  | 'transaction.status.finalising'
+  | 'transaction.status.swapping'
+  | 'transaction.status.streaming'
+  | 'transaction.status.outbound'
+  | 'transaction.status.outbound.delay'
+
+export type TransactionMessages = { [key in TransactionMessageKey]: string }
 
 type UpdateMessagesKeys = 'update.description' | 'update.link' | 'update.checkFailed' | 'update.noUpdate'
 
@@ -693,6 +712,7 @@ type ModalMessageKey = 'modal.provider.selectProtocols.title'
 export type ModalMessages = { [key in ModalMessageKey]: string }
 
 export type Messages = CommonMessages &
+  TransactionMessages &
   RoutesMessages &
   PoolsMessages &
   WalletMessages &

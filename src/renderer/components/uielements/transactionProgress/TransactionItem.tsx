@@ -1,0 +1,338 @@
+import React, { useState, useEffect } from 'react'
+
+import { CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
+import { useIntl } from 'react-intl'
+
+import { formatSwapTime } from '../../../helpers/timeHelper'
+import { TrackedTransaction } from '../../../services/thorchain/transactionTracking'
+
+export type TransactionItemProps = {
+  transaction: TrackedTransaction
+  onRemove: (id: string) => void
+  className?: string
+}
+
+export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onRemove, className }) => {
+  const intl = useIntl()
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [isNewlyCompleted, setIsNewlyCompleted] = useState(false)
+
+  // Detect when transaction becomes complete for animation
+  useEffect(() => {
+    if (transaction.isComplete && transaction.completedAt) {
+      const timeSinceCompletion = Date.now() - transaction.completedAt
+      // Show animation if completed within last 2 seconds
+      if (timeSinceCompletion < 2000) {
+        setIsNewlyCompleted(true)
+        const timer = setTimeout(() => setIsNewlyCompleted(false), 2000)
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [transaction.isComplete, transaction.completedAt])
+
+  const handleRemove = () => {
+    onRemove(transaction.id)
+  }
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded)
+  }
+
+  const getRichStatusText = () => {
+    if (transaction.isComplete) {
+      return {
+        text: intl.formatMessage({ id: 'transaction.status.complete' }),
+        detail: null,
+        urgent: false
+      }
+    }
+
+    if (!transaction.stages) {
+      return {
+        text: intl.formatMessage({ id: 'transaction.status.pending' }),
+        detail: 'Waiting for blockchain data...',
+        urgent: false
+      }
+    }
+
+    const { stages } = transaction
+
+    // Detailed status with timing information
+    if (!stages.inboundObserved.completed) {
+      return {
+        text: intl.formatMessage({ id: 'transaction.status.observing' }),
+        detail: `Waiting for network detection...`,
+        urgent: false
+      }
+    }
+
+    if (!stages.inboundConfirmationCounted.completed) {
+      const remaining = stages.inboundConfirmationCounted.remainingConfirmationSeconds
+      if (remaining && remaining > 0) {
+        return {
+          text: `Confirming... ${formatSwapTime(remaining)}`,
+          detail: `${Math.ceil(remaining / 10)} confirmations remaining`,
+          urgent: true
+        }
+      }
+      return {
+        text: intl.formatMessage({ id: 'transaction.status.confirming.simple' }),
+        detail: 'Processing confirmations...',
+        urgent: true
+      }
+    }
+
+    if (!stages.inboundFinalised.completed) {
+      return {
+        text: intl.formatMessage({ id: 'transaction.status.finalising' }),
+        detail: 'Finalizing inbound transaction...',
+        urgent: false
+      }
+    }
+
+    if (stages.swapStatus.pending) {
+      return {
+        text: 'Swap pending...',
+        detail: 'Waiting in swap queue',
+        urgent: true
+      }
+    }
+
+    // Streaming swap progress
+    if (stages.swapStatus.streaming.count && stages.swapStatus.streaming.quantity) {
+      const current = stages.swapStatus.streaming.count
+      const total = stages.swapStatus.streaming.quantity
+      return {
+        text: `Streaming ${current}/${total}`,
+        detail: `Sub-swap ${current} of ${total}`,
+        urgent: true
+      }
+    }
+
+    if (!stages.swapFinalised) {
+      return {
+        text: intl.formatMessage({ id: 'transaction.status.swapping' }),
+        detail: 'Processing swap...',
+        urgent: true
+      }
+    }
+
+    // Outbound delay with countdown
+    if (!(stages.outboundSigned.completed ?? false)) {
+      const delaySeconds = stages.outBoundDelay.remainDelaySeconds
+      const delayBlocks = stages.outBoundDelay.remainingDelayBlocks
+
+      if (delaySeconds && delaySeconds > 0) {
+        return {
+          text: `Outbound delay ${formatSwapTime(delaySeconds)}`,
+          detail: delayBlocks ? `${delayBlocks} blocks remaining` : 'Security delay active',
+          urgent: true
+        }
+      }
+
+      return {
+        text: intl.formatMessage({ id: 'transaction.status.outbound' }),
+        detail: 'Preparing outbound transaction...',
+        urgent: false
+      }
+    }
+
+    return {
+      text: intl.formatMessage({ id: 'transaction.status.complete' }),
+      detail: null,
+      urgent: false
+    }
+  }
+
+  const getProgressPercentage = () => {
+    if (!transaction.stages) return 0
+
+    const stages = transaction.stages
+    let progress = 0
+
+    // Stage 1: Inbound Observed (16.7%)
+    if (stages.inboundObserved.completed) {
+      progress += 16.7
+    }
+
+    // Stage 2: Confirmations (16.7% + partial progress based on remaining time)
+    if (stages.inboundConfirmationCounted.completed) {
+      progress += 16.7
+    } else if (stages.inboundObserved.completed) {
+      // Partial progress based on remaining confirmation time
+      const remaining = stages.inboundConfirmationCounted.remainingConfirmationSeconds ?? 0
+      if (remaining > 0) {
+        // Assume max 60 seconds for confirmations, give partial credit
+        const maxConfirmTime = 60
+        const partialProgress = Math.max(0, (maxConfirmTime - remaining) / maxConfirmTime) * 16.7
+        progress += partialProgress
+      }
+    }
+
+    // Stage 3: Inbound Finalised (16.7%)
+    if (stages.inboundFinalised.completed) {
+      progress += 16.7
+    }
+
+    // Stage 4: Swap progress (16.7% + streaming progress)
+    if (stages.swapFinalised) {
+      progress += 16.7
+    } else if (stages.swapStatus.streaming.count && stages.swapStatus.streaming.quantity) {
+      // Streaming progress
+      const streamingProgress = (stages.swapStatus.streaming.count / stages.swapStatus.streaming.quantity) * 16.7
+      progress += streamingProgress
+    } else if (stages.swapStatus.pending) {
+      progress += 8.35 // Half progress when pending
+    }
+
+    // Stage 5: Outbound delay (16.7% + partial progress based on remaining delay)
+    if (stages.outboundSigned.completed) {
+      progress += 16.7
+    } else if (stages.swapFinalised) {
+      const delaySeconds = stages.outBoundDelay.remainDelaySeconds ?? 0
+      if (delaySeconds > 0) {
+        // Assume max 120 seconds for outbound delay
+        const maxDelayTime = 120
+        const partialProgress = Math.max(0, (maxDelayTime - delaySeconds) / maxDelayTime) * 16.7
+        progress += partialProgress
+      } else {
+        progress += 8.35 // Half progress when no delay info
+      }
+    }
+
+    // Stage 6: Complete (16.5%)
+    if (transaction.isComplete) {
+      progress += 16.5
+    }
+
+    return Math.min(100, Math.max(0, progress))
+  }
+
+  return (
+    <div
+      className={clsx(
+        'bg-white dark:bg-gray0d rounded-lg border transition-all duration-500',
+        transaction.isComplete
+          ? 'border-turquoise dark:border-turquoise bg-turquoise/5 dark:bg-turquoise/10'
+          : 'border-gray1 dark:border-gray1d',
+        isNewlyCompleted && 'animate-pulse',
+        className
+      )}>
+      {/* Header */}
+      <div className="p-2">
+        {/* First row: asset swap and controls */}
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center space-x-2 min-w-0">
+            {transaction.isComplete && <CheckCircleIcon className="w-4 h-4 text-turquoise shrink-0" />}
+            <span className="text-sm font-medium text-text1 dark:text-text1d truncate">
+              {transaction.fromAsset} → {transaction.toAsset}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={toggleExpanded}
+              className="p-1 text-text2 dark:text-text2d hover:text-text1 dark:hover:text-text1d transition-colors">
+              {isExpanded ? <ChevronUpIcon className="w-3 h-3" /> : <ChevronDownIcon className="w-3 h-3" />}
+            </button>
+
+            {transaction.isComplete && (
+              <button
+                onClick={handleRemove}
+                className="p-1 text-text2 dark:text-text2d hover:text-error0 dark:hover:text-error0d transition-colors">
+                <XMarkIcon className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Second row: status and progress */}
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex-1 min-w-0">
+            <div
+              className={clsx(
+                'text-xs truncate',
+                getRichStatusText().urgent
+                  ? 'text-yellow-600 dark:text-yellow-400 font-medium'
+                  : 'text-text2 dark:text-text2d'
+              )}>
+              {getRichStatusText().text}
+            </div>
+            {getRichStatusText().detail && (
+              <div className="text-xs text-text2 dark:text-text2d truncate opacity-75">
+                {getRichStatusText().detail}
+              </div>
+            )}
+          </div>
+          <span className="text-xs text-text2 dark:text-text2d ml-2 shrink-0">
+            {Math.round(getProgressPercentage())}%
+          </span>
+        </div>
+
+        {/* Third row: progress bar */}
+        <div className="w-full bg-gray1 dark:bg-gray1d rounded-full h-1 mb-1">
+          <div
+            className={clsx(
+              'h-1 rounded-full transition-all duration-300',
+              transaction.isComplete ? 'bg-turquoise' : 'bg-yellow-500'
+            )}
+            style={{ width: `${getProgressPercentage()}%` }}
+          />
+        </div>
+
+        {/* Fourth row: hash */}
+        <div className="text-xs text-text2 dark:text-text2d font-mono">
+          {transaction.txHash.slice(0, 6)}...{transaction.txHash.slice(-4)}
+        </div>
+      </div>
+
+      {/* Expanded details */}
+      {isExpanded && (
+        <div className="border-t border-gray1 dark:border-gray1d p-2">
+          {/* Additional details */}
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between">
+              <span className="text-text2 dark:text-text2d">Started:</span>
+              <span className="text-text1 dark:text-text1d">
+                {new Date(transaction.startTime).toLocaleTimeString()}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="text-text2 dark:text-text2d">Hash:</span>
+              <span className="text-text1 dark:text-text1d font-mono text-xs break-all">{transaction.txHash}</span>
+            </div>
+
+            {transaction.completedAt && (
+              <div className="flex justify-between">
+                <span className="text-text2 dark:text-text2d">Completed:</span>
+                <span className="text-text1 dark:text-text1d">
+                  {new Date(transaction.completedAt).toLocaleTimeString()}
+                </span>
+              </div>
+            )}
+
+            {transaction.stages?.inboundConfirmationCounted.remainingConfirmationSeconds && (
+              <div className="flex justify-between">
+                <span className="text-text2 dark:text-text2d">Confirmations:</span>
+                <span className="text-text1 dark:text-text1d">
+                  {formatSwapTime(transaction.stages.inboundConfirmationCounted.remainingConfirmationSeconds)} remaining
+                </span>
+              </div>
+            )}
+
+            {transaction.stages?.outBoundDelay.remainDelaySeconds && (
+              <div className="flex justify-between">
+                <span className="text-text2 dark:text-text2d">Outbound Delay:</span>
+                <span className="text-text1 dark:text-text1d">
+                  {formatSwapTime(transaction.stages.outBoundDelay.remainDelaySeconds)} remaining
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

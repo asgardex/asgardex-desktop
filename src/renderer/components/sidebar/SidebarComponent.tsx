@@ -26,6 +26,7 @@ import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
 import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { DEFAULT_WALLET_TYPE } from '../../const'
+import { useThorchainContext } from '../../contexts/ThorchainContext'
 import * as appRoutes from '../../routes/app'
 import * as bondsRoutes from '../../routes/bonds'
 import * as playgroundRoutes from '../../routes/playground'
@@ -35,6 +36,7 @@ import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
 import { Label } from '../uielements/label'
 import { Tooltip } from '../uielements/tooltip'
+import { TransactionTracker } from '../uielements/transactionProgress/TransactionTracker'
 
 type IconProps = {
   className?: string
@@ -90,6 +92,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const { network, commitHash, isDev, publicIP } = props
 
   const intl = useIntl()
+  const { transactionTrackingService } = useThorchainContext()
 
   const navigate = useNavigate()
 
@@ -181,7 +184,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
             <div
               key={key}
               className={clsx(
-                'flex h-full cursor-pointer rounded-lg',
+                'flex cursor-pointer rounded-lg',
                 'font-mainBold text-18 uppercase',
                 'transition duration-100 ease-in-out',
                 'focus-visible:outline-none',
@@ -232,9 +235,11 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   return (
     <div className="w-60 h-full py-5 border-r border-none border-gray0 !bg-bg0 dark:border-gray0d dark:!bg-bg0d">
       <div className="flex h-full flex-col justify-between" ref={setHeaderRef}>
-        <div>
+        <div className="flex-1 flex flex-col">
           {renderLogo}
           {renderMainNav}
+          <TransactionTracker transactionTrackingService={transactionTrackingService} className="mt-6 mx-4" />
+          <div className="flex-1" />
         </div>
         <div className="flex flex-col items-center justify-center">
           <FooterIcon url={ExternalUrl.DOCSTHOR} onClick={clickIconHandler}>

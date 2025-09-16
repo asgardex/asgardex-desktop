@@ -166,7 +166,8 @@ export const Swap = ({
   addressValidator,
   hidePrivateData,
   midgardStatusRD,
-  midgardStatusMayaRD
+  midgardStatusMayaRD,
+  transactionTrackingService
 }: SwapProps) => {
   const { estimateSwap } = useAggregator()
   const intl = useIntl()
@@ -2316,6 +2317,29 @@ export const Swap = ({
       prevTargetAsset.current = O.some(targetAsset)
     }
   }, [reloadFees, resetApproveState, resetSwapState, sourceAsset, targetAsset, swapMemo])
+
+  // Track successful swap transactions (THORChain only)
+  useEffect(() => {
+    const { swapTx } = swapState
+    if (RD.isSuccess(swapTx)) {
+      // Only track THORChain swaps - Maya swaps don't support getTxStatus$
+      FP.pipe(
+        oQuoteProtocol,
+        O.map((quoteProtocol) => {
+          if (quoteProtocol.protocol === 'Thorchain') {
+            const txHash = swapTx.value
+            transactionTrackingService.addTransaction({
+              txHash,
+              startTime: Date.now(),
+              fromAsset: sourceAsset.symbol,
+              toAsset: targetAsset.symbol,
+              amount: amountToSwapMax1e8.amount().toString()
+            })
+          }
+        })
+      )
+    }
+  }, [swapState, sourceAsset, targetAsset, transactionTrackingService, amountToSwapMax1e8, oQuoteProtocol])
 
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching

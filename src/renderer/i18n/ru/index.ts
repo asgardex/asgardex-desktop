@@ -16,11 +16,13 @@ import settings from './settings'
 import sidebar from './sidebar'
 import swap from './swap'
 import tcy from './tcy'
+import transaction from './transaction'
 import update from './update'
 import wallet from './wallet'
 
 export default {
   ...common,
+  ...transaction,
   ...pools,
   ...routes,
   ...wallet,

@@ -215,6 +215,16 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
   )
   const { stream$: reloadTxStatus$, trigger: reloadTxStatus } = triggerStream()
+
+  /**
+   * Normalize transaction hash for Thornode API
+   * Remove 0x prefix from EVM transaction hashes
+   */
+  const normalizeTxHash = (txHash: string): string => {
+    // Remove 0x prefix for EVM chains (ETH, AVAX, BSC, ARB, BASE, etc.)
+    return txHash.startsWith('0x') ? txHash.slice(2) : txHash
+  }
+
   /**
    * Api call to `getTxStatus` endpoint
    */
@@ -223,7 +233,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       thornodeUrl$,
       liveData.chain((basePath) =>
         FP.pipe(
-          Rx.from(new TransactionsApi(getThornodeAPIConfiguration(basePath)).txStages(txHash)),
+          Rx.from(new TransactionsApi(getThornodeAPIConfiguration(basePath)).txStages(normalizeTxHash(txHash))),
           RxOp.map((response: AxiosResponse<TxStagesResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
