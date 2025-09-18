@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { TrashIcon as DeleteOutlined, ArrowUturnRightIcon as RedoOutlined } from '@heroicons/react/24/outline'
-import shuffleArray from 'lodash.shuffle'
+import shuffleArray from 'lodash/shuffle'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
@@ -152,7 +152,7 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
               <RedoOutlined className="w-4 h-4" />
             </FlatButton>
           </h2>
-          <div className="mb-20px w-full grid grid-cols-3 gap-1">
+          <div className="mt-1 mb-4 w-full grid grid-cols-3 gap-1">
             {shuffledWordsList.map((word: WordType) => (
               <div key={word._id} className="text-center">
                 <TextButton

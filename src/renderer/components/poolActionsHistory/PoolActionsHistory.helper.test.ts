@@ -133,60 +133,51 @@ describe('PoolActionsHistory.helper', () => {
   describe('getRowKey', () => {
     it('should return correct id if exists', () => {
       expect(
-        getRowKey(
-          {
-            ...defaultPoolAction,
-            in: [
-              {
-                ...defaultTx,
-                txID: 'inId'
-              }
-            ]
-          },
-          1
-        )
+        getRowKey({
+          ...defaultPoolAction,
+          in: [
+            {
+              ...defaultTx,
+              txID: 'inId'
+            }
+          ]
+        })
       ).toEqual('inId-SWAP')
 
       expect(
-        getRowKey(
-          {
-            ...defaultPoolAction,
-            out: [
-              {
-                ...defaultTx,
-                txID: 'outId'
-              }
-            ]
-          },
-          1
-        )
+        getRowKey({
+          ...defaultPoolAction,
+          out: [
+            {
+              ...defaultTx,
+              txID: 'outId'
+            }
+          ]
+        })
       ).toEqual('outId-SWAP')
 
       expect(
-        getRowKey(
-          {
-            ...defaultPoolAction,
-            in: [
-              {
-                ...defaultTx,
-                txID: 'inId'
-              }
-            ],
-            out: [
-              {
-                ...defaultTx,
-                txID: 'outId'
-              }
-            ]
-          },
-          1
-        )
+        getRowKey({
+          ...defaultPoolAction,
+          in: [
+            {
+              ...defaultTx,
+              txID: 'inId'
+            }
+          ],
+          out: [
+            {
+              ...defaultTx,
+              txID: 'outId'
+            }
+          ]
+        })
       ).toEqual('inId-SWAP')
     })
 
     it('should return default value in case there is no txId (`action.date-action.type`)', () => {
       // Date(0) is a default date property value for defaultPoolAction
-      expect(getRowKey(defaultPoolAction, 1)).toEqual(`${new Date(0)}-SWAP`)
+      expect(getRowKey(defaultPoolAction)).toEqual(`${new Date(0)}-SWAP`)
     })
   })
 

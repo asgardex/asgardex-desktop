@@ -41,7 +41,7 @@ export const PoolActionsHistoryList = ({
   const intl = useIntl()
 
   const renderListItem = useCallback(
-    (action: Action, index: number, goToTx: OpenExplorerTxUrl) => {
+    (action: Action, goToTx: OpenExplorerTxUrl) => {
       const date = H.renderDate(action.date)
 
       const titleExtra = (
@@ -62,7 +62,7 @@ export const PoolActionsHistoryList = ({
 
       return (
         <div
-          key={H.getRowKey(action, index)}
+          key={H.getRowKey(action)}
           className="flex flex-col p-2 border-t-0 first:border-t last:border-b-0 border-b border-solid border-gray0/40 dark:border-gray0d/40">
           <div className="flex items-center justify-between">
             <TxType className="mr-2" type={action.type} showTypeIcon />
@@ -80,11 +80,7 @@ export const PoolActionsHistoryList = ({
       return (
         <>
           <div className="bg-bg1 dark:bg-bg1d">
-            {loading ? (
-              <Spin className="min-h-40" />
-            ) : (
-              actions.map((action, index) => renderListItem(action, index, goToTx))
-            )}
+            {loading ? <Spin className="min-h-40" /> : actions.map((action) => renderListItem(action, goToTx))}
           </div>
 
           {total > 0 && (
