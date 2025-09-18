@@ -10,7 +10,13 @@ const transaction: TransactionMessages = {
   'transaction.status.swapping': 'अदला-बदली',
   'transaction.status.streaming': 'स्ट्रीमिंग ({current}/{total})',
   'transaction.status.outbound': 'आउटबाउंड',
-  'transaction.status.outbound.delay': 'आउटबाउंड देरी ({time} शेष)'
+  'transaction.status.outbound.delay': 'आउटबाउंड देरी ({time} शेष)',
+  'transaction.stage.observed': 'देखा गया',
+  'transaction.stage.confirmed': 'पुष्टि',
+  'transaction.stage.finalised': 'अंतिम रूप',
+  'transaction.stage.swapped': 'अदला-बदली',
+  'transaction.stage.outbound': 'आउटबाउंड',
+  'transaction.progress.summary': '{total} में से {completed} चरण पूर्ण'
 }
 
 export default transaction

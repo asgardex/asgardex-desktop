@@ -141,6 +141,12 @@ const defaultProps: SwapProps = {
     removeTransaction: () => {},
     getTransactions$: Rx.of(RD.success([])),
     reloadTransactions: () => {}
+  },
+  mayaTransactionTrackingService: {
+    addTransaction: () => {},
+    removeTransaction: () => {},
+    getTransactions$: Rx.of(RD.success([])),
+    reloadTransactions: () => {}
   }
 }
 

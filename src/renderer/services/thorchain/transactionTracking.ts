@@ -141,28 +141,39 @@ export const createTransactionTrackingService = (
     return 8000 // 8s - near completion
   }
 
-  // Create a polling observable for a single transaction
+  // Create a self-rescheduling polling observable for a single transaction
   const createTransactionPoll$ = (tx: TrackedTransaction) => {
     return FP.pipe(
-      // Start with immediate poll, then use dynamic intervals
-      Rx.timer(0, 1000), // Check every second to update intervals
-      RxOp.switchMap(() => {
+      // Start with immediate poll (0 delay)
+      Rx.of(0),
+      RxOp.expand((delay: number) => {
+        // Read the latest transaction from the map
         const currentTx = transactionsMap.get(tx.id)
+
+        // Stop if transaction is missing or complete
         if (!currentTx || currentTx.isComplete) {
-          return Rx.EMPTY // Stop polling completed transactions
+          return Rx.EMPTY // Complete the stream
         }
 
-        const interval = getPollingInterval(currentTx.stages)
-
         return FP.pipe(
-          Rx.timer(0, interval),
-          RxOp.take(1), // Only take one emission per interval check
+          // Delay by the computed interval (0 for first emission)
+          Rx.timer(delay),
           RxOp.switchMap(() => getTxStatus$(tx.txHash)),
           RxOp.tap((stagesRD) => {
+            // Update stages on success
             if (RD.isSuccess(stagesRD)) {
               updateTransactionStages(tx.id, stagesRD.value)
             }
-          })
+          }),
+          RxOp.map(() => {
+            // Read the updated transaction and compute next interval
+            const updatedTx = transactionsMap.get(tx.id)
+            if (!updatedTx || updatedTx.isComplete) {
+              return -1 // Signal to complete in next expand iteration
+            }
+            return getPollingInterval(updatedTx.stages)
+          }),
+          RxOp.filter((nextDelay) => nextDelay >= 0) // Filter out completion signals
         )
       }),
       RxOp.map(() => tx.id) // Return ID for combination

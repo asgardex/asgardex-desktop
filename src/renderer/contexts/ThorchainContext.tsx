@@ -88,7 +88,7 @@ type ThorchainContextValue = {
   getTcyClaim$: typeof getTcyClaim$
   reloadTcyClaim: typeof reloadTcyClaim
   getTcyStaker$: typeof getTcyStaker$
-  reloadTcyStaker: typeof reloadTcyClaim
+  reloadTcyStaker: typeof reloadTcyStaker
   transactionTrackingService: typeof transactionTrackingService
 }
 

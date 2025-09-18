@@ -18,7 +18,9 @@ import {
   PoolsApi,
   PoolsResponse,
   TradeAccountResponse,
-  TradeAccountApi
+  TradeAccountApi,
+  TransactionsApi,
+  TxStagesResponse
 } from '@xchainjs/xchain-mayanode'
 import { SaversApi } from '@xchainjs/xchain-thornode'
 import {
@@ -66,7 +68,9 @@ import {
   SaverProviderLD,
   SaverProvider,
   TradeAccountLD,
-  TradeAccount
+  TradeAccount,
+  TxStagesLD,
+  TxStages
 } from './types'
 
 const height: number | undefined = undefined
@@ -565,6 +569,78 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
 
+  const { stream$: reloadTxStatus$, trigger: reloadTxStatus } = triggerStream()
+
+  /**
+   * Normalize transaction hash for Mayanode API
+   * Remove 0x prefix from EVM transaction hashes
+   */
+  const normalizeTxHash = (txHash: string): string => {
+    // Remove 0x prefix for EVM chains (ETH, AVAX, BSC, ARB, BASE, etc.)
+    return txHash.startsWith('0x') ? txHash.slice(2) : txHash
+  }
+
+  /**
+   * Api call to `getTxStatus` endpoint
+   */
+  const apiGetTxStatus$ = (txHash: string) =>
+    FP.pipe(
+      mayanodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new TransactionsApi(getMayanodeAPIConfiguration(basePath)).txStages(normalizeTxHash(txHash))),
+          RxOp.map((response: AxiosResponse<TxStagesResponse>) => RD.success(response.data)),
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      )
+    )
+
+  const getTxStatus$ = (txHash: string): TxStagesLD =>
+    FP.pipe(
+      reloadTxStatus$,
+      RxOp.debounceTime(500),
+      RxOp.switchMap((_) => apiGetTxStatus$(txHash)),
+      liveData.map(
+        // transform data -> TxStages
+        (txStages): TxStages => {
+          return {
+            inboundObserved: {
+              finalCount: txStages.inbound_observed.final_count,
+              completed: txStages.inbound_observed.completed
+            },
+            inboundConfirmationCounted: {
+              remainingConfirmationSeconds: txStages.inbound_confirmation_counted?.remaining_confirmation_seconds,
+              completed: txStages.inbound_confirmation_counted?.completed ?? false
+            },
+            inboundFinalised: {
+              completed: txStages.inbound_finalised?.completed ?? false
+            },
+            outBoundDelay: {
+              remainDelaySeconds: txStages.outbound_delay?.remaining_delay_seconds,
+              remainingDelayBlocks: txStages.outbound_delay?.remaining_delay_blocks,
+              completed: txStages.outbound_delay?.completed
+            },
+            outboundSigned: {
+              scheduledOutboundHeight: txStages.outbound_signed?.scheduled_outbound_height,
+              blocksSinceScheduled: txStages.outbound_signed?.blocks_since_scheduled,
+              completed: txStages.outbound_signed?.completed
+            },
+            swapStatus: {
+              pending: txStages.swap_status?.pending,
+              streaming: {
+                interval: txStages.swap_status?.streaming?.interval,
+                quantity: txStages.swap_status?.streaming?.quantity,
+                count: txStages.swap_status?.streaming?.count
+              }
+            },
+            swapFinalised: txStages.swap_finalised?.completed ?? false
+          }
+        }
+      ),
+      RxOp.catchError((): TxStagesLD => Rx.of(RD.failure(Error(`Failed to load info for ${txHash}`)))),
+      RxOp.shareReplay(1)
+    )
+
   return {
     mayanodeUrl$,
     reloadMayanodeUrl,
@@ -588,6 +664,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     getMayanodePools,
     reloadMayanodePools,
     getTradeAccount$,
-    reloadTradeAccount
+    reloadTradeAccount,
+    getTxStatus$,
+    reloadTxStatus
   }
 }

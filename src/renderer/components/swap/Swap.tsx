@@ -32,7 +32,8 @@ import {
   isTradeAsset,
   isSecuredAsset,
   SecuredAsset,
-  Chain
+  Chain,
+  assetToString
 } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
@@ -78,6 +79,7 @@ import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
 import { formatSwapTime } from '../../helpers/timeHelper'
+import { addSwapToTracker } from '../../helpers/transactionTracker'
 import {
   filterWalletBalancesByAssets,
   getWalletBalanceByAssetAndWalletType,
@@ -167,7 +169,8 @@ export const Swap = ({
   hidePrivateData,
   midgardStatusRD,
   midgardStatusMayaRD,
-  transactionTrackingService
+  transactionTrackingService,
+  mayaTransactionTrackingService
 }: SwapProps) => {
   const { estimateSwap } = useAggregator()
   const intl = useIntl()
@@ -1574,6 +1577,7 @@ export const Swap = ({
     [onChangeAsset, resetIsApprovedState, sourceAsset, sourceWalletType]
   )
   const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
+  const lastTrackedTxHashRef = useRef<string | null>(null)
 
   // whenever `oApproveParams` has been updated,
   // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
@@ -2318,28 +2322,43 @@ export const Swap = ({
     }
   }, [reloadFees, resetApproveState, resetSwapState, sourceAsset, targetAsset, swapMemo])
 
-  // Track successful swap transactions (THORChain only)
+  // Track successful swap transactions (THORChain and Maya)
   useEffect(() => {
     const { swapTx } = swapState
     if (RD.isSuccess(swapTx)) {
-      // Only track THORChain swaps - Maya swaps don't support getTxStatus$
+      const txHash = swapTx.value
       FP.pipe(
         oQuoteProtocol,
         O.map((quoteProtocol) => {
-          if (quoteProtocol.protocol === 'Thorchain') {
-            const txHash = swapTx.value
-            transactionTrackingService.addTransaction({
-              txHash,
-              startTime: Date.now(),
-              fromAsset: sourceAsset.symbol,
-              toAsset: targetAsset.symbol,
-              amount: amountToSwapMax1e8.amount().toString()
-            })
+          if (lastTrackedTxHashRef.current !== txHash) {
+            if (quoteProtocol.protocol === 'Thorchain') {
+              addSwapToTracker(transactionTrackingService, txHash, {
+                sourceAsset: assetToString(sourceAsset),
+                targetAsset: assetToString(targetAsset),
+                amount: amountToSwapMax1e8.amount().toString()
+              })
+              lastTrackedTxHashRef.current = txHash
+            } else if (quoteProtocol.protocol === 'Mayachain') {
+              addSwapToTracker(mayaTransactionTrackingService, txHash, {
+                sourceAsset: assetToString(sourceAsset),
+                targetAsset: assetToString(targetAsset),
+                amount: amountToSwapMax1e8.amount().toString()
+              })
+              lastTrackedTxHashRef.current = txHash
+            }
           }
         })
       )
     }
-  }, [swapState, sourceAsset, targetAsset, transactionTrackingService, amountToSwapMax1e8, oQuoteProtocol])
+  }, [
+    swapState,
+    oQuoteProtocol,
+    transactionTrackingService,
+    mayaTransactionTrackingService,
+    sourceAsset,
+    targetAsset,
+    amountToSwapMax1e8
+  ])
 
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching

@@ -10,7 +10,13 @@ const transaction: TransactionMessages = {
   'transaction.status.swapping': 'Intercambiando',
   'transaction.status.streaming': 'Streaming ({current}/{total})',
   'transaction.status.outbound': 'Saliente',
-  'transaction.status.outbound.delay': 'Retraso saliente ({time} restante)'
+  'transaction.status.outbound.delay': 'Retraso saliente ({time} restante)',
+  'transaction.stage.observed': 'Observado',
+  'transaction.stage.confirmed': 'Confirmado',
+  'transaction.stage.finalised': 'Finalizado',
+  'transaction.stage.swapped': 'Intercambiado',
+  'transaction.stage.outbound': 'Saliente',
+  'transaction.progress.summary': '{completed} de {total} etapas completadas'
 }
 
 export default transaction

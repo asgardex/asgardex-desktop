@@ -27,6 +27,7 @@ import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { useMayachainContext } from '../../contexts/MayachainContext'
 import * as appRoutes from '../../routes/app'
 import * as bondsRoutes from '../../routes/bonds'
 import * as playgroundRoutes from '../../routes/playground'
@@ -93,6 +94,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
 
   const intl = useIntl()
   const { transactionTrackingService } = useThorchainContext()
+  const { transactionTrackingService: mayaTransactionTrackingService } = useMayachainContext()
 
   const navigate = useNavigate()
 
@@ -238,7 +240,16 @@ export const SidebarComponent = (props: Props): JSX.Element => {
         <div className="flex-1 flex flex-col">
           {renderLogo}
           {renderMainNav}
-          <TransactionTracker transactionTrackingService={transactionTrackingService} className="mt-6 mx-4" />
+          <TransactionTracker
+            transactionTrackingService={transactionTrackingService}
+            className="mt-6 mx-4"
+            protocol="Thorchain"
+          />
+          <TransactionTracker
+            transactionTrackingService={mayaTransactionTrackingService}
+            className="mt-2 mx-4"
+            protocol="Mayachain"
+          />
           <div className="flex-1" />
         </div>
         <div className="flex flex-col items-center justify-center">

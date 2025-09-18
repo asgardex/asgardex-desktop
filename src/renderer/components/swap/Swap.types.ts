@@ -84,6 +84,7 @@ export type SwapProps = {
   midgardStatusRD: RD.RemoteData<Error, boolean>
   midgardStatusMayaRD: RD.RemoteData<Error, boolean>
   transactionTrackingService: TransactionTrackingService
+  mayaTransactionTrackingService: TransactionTrackingService
 }
 
 export type QuoteData = {

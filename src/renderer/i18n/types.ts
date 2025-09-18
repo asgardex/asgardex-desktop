@@ -231,6 +231,12 @@ type TransactionMessageKey =
   | 'transaction.status.streaming'
   | 'transaction.status.outbound'
   | 'transaction.status.outbound.delay'
+  | 'transaction.stage.observed'
+  | 'transaction.stage.confirmed'
+  | 'transaction.stage.finalised'
+  | 'transaction.stage.swapped'
+  | 'transaction.stage.outbound'
+  | 'transaction.progress.summary'
 
 export type TransactionMessages = { [key in TransactionMessageKey]: string }
 

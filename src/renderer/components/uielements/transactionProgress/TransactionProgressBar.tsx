@@ -2,6 +2,7 @@ import React from 'react'
 
 import { CheckIcon, ClockIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
+import { useIntl } from 'react-intl'
 
 import { TxStages } from '../../../services/thorchain/types'
 
@@ -19,53 +20,86 @@ export type TransactionProgressBarProps = {
 }
 
 export const TransactionProgressBar: React.FC<TransactionProgressBarProps> = ({ stages, className }) => {
+  const intl = useIntl()
+
   const getTransactionStages = (txStages: TxStages | null): TransactionStage[] => {
     if (!txStages) {
       return [
-        { id: 'observed', label: 'Observed', completed: false, current: true },
-        { id: 'confirmed', label: 'Confirmed', completed: false, current: false },
-        { id: 'finalised', label: 'Finalised', completed: false, current: false },
-        { id: 'swapped', label: 'Swapped', completed: false, current: false },
-        { id: 'outbound', label: 'Outbound', completed: false, current: false, optional: true },
-        { id: 'complete', label: 'Complete', completed: false, current: false }
+        {
+          id: 'observed',
+          label: intl.formatMessage({ id: 'transaction.stage.observed' }),
+          completed: false,
+          current: true
+        },
+        {
+          id: 'confirmed',
+          label: intl.formatMessage({ id: 'transaction.stage.confirmed' }),
+          completed: false,
+          current: false
+        },
+        {
+          id: 'finalised',
+          label: intl.formatMessage({ id: 'transaction.stage.finalised' }),
+          completed: false,
+          current: false
+        },
+        {
+          id: 'swapped',
+          label: intl.formatMessage({ id: 'transaction.stage.swapped' }),
+          completed: false,
+          current: false
+        },
+        {
+          id: 'outbound',
+          label: intl.formatMessage({ id: 'transaction.stage.outbound' }),
+          completed: false,
+          current: false,
+          optional: true
+        },
+        {
+          id: 'complete',
+          label: intl.formatMessage({ id: 'transaction.status.complete' }),
+          completed: false,
+          current: false
+        }
       ]
     }
 
     const stages: TransactionStage[] = [
       {
         id: 'observed',
-        label: 'Observed',
+        label: intl.formatMessage({ id: 'transaction.stage.observed' }),
         completed: txStages.inboundObserved.completed,
         current: !txStages.inboundObserved.completed
       },
       {
         id: 'confirmed',
-        label: 'Confirmed',
+        label: intl.formatMessage({ id: 'transaction.stage.confirmed' }),
         completed: txStages.inboundConfirmationCounted.completed,
         current: txStages.inboundObserved.completed && !txStages.inboundConfirmationCounted.completed
       },
       {
         id: 'finalised',
-        label: 'Finalised',
+        label: intl.formatMessage({ id: 'transaction.stage.finalised' }),
         completed: txStages.inboundFinalised.completed,
         current: txStages.inboundConfirmationCounted.completed && !txStages.inboundFinalised.completed
       },
       {
         id: 'swapped',
-        label: 'Swapped',
+        label: intl.formatMessage({ id: 'transaction.stage.swapped' }),
         completed: txStages.swapFinalised,
         current: txStages.inboundFinalised.completed && !txStages.swapFinalised
       },
       {
         id: 'outbound',
-        label: 'Outbound',
+        label: intl.formatMessage({ id: 'transaction.stage.outbound' }),
         completed: txStages.outboundSigned.completed ?? false,
         current: txStages.swapFinalised && !(txStages.outboundSigned.completed ?? false),
         optional: true
       },
       {
         id: 'complete',
-        label: 'Complete',
+        label: intl.formatMessage({ id: 'transaction.status.complete' }),
         completed:
           txStages.swapFinalised && txStages.inboundFinalised.completed && (txStages.outboundSigned.completed ?? false),
         current: false
@@ -155,7 +189,10 @@ export const TransactionProgressBar: React.FC<TransactionProgressBarProps> = ({ 
       {/* Progress text */}
       <div className="text-center mt-2">
         <span className="text-sm text-text2 dark:text-text2d">
-          {completedStages} of {totalStages} stages complete
+          {intl.formatMessage(
+            { id: 'transaction.progress.summary' },
+            { completed: completedStages, total: totalStages }
+          )}
         </span>
       </div>
     </div>
