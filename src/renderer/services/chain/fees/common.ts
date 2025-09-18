@@ -215,9 +215,55 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         )
       )
     case GAIAChain:
+      // Use gas_rate from inbound addresses for more accurate fees
       return FP.pipe(
-        COSMOS.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
+        Rx.from(getDecimal(asset)),
+        RxOp.switchMap((decimal) =>
+          FP.pipe(
+            getInboundAddresses$(GAIAChain),
+            liveData.map((inboundAddresses) => {
+              const oChainFeeData = FP.pipe(
+                inboundAddresses,
+                A.findFirst((item) => item.chain === GAIAChain),
+                O.chain((data) =>
+                  data.gas_rate
+                    ? O.some({
+                        gas_rate: data.gas_rate,
+                        gas_rate_units: data.gas_rate_units
+                      })
+                    : O.none
+                )
+              )
+
+              return FP.pipe(
+                oChainFeeData,
+                O.fold(
+                  // Fallback to generic COSMOS fees if inbound data not available
+                  () => ({ asset, amount: baseAmount(5000, decimal) }), // Default fallback
+                  (feeData) => ({
+                    asset,
+                    amount: baseAmount(feeData.gas_rate, decimal)
+                  })
+                )
+              )
+            }),
+            liveData.chainOnError(() => {
+              // Final fallback to COSMOS service
+              return FP.pipe(
+                COSMOS.fees$(),
+                liveData.map((fees) => ({ asset, amount: fees.fast }))
+              )
+            })
+          )
+        ),
+        RxOp.catchError(() => {
+          // If getDecimal fails, fallback to COSMOS service
+          return FP.pipe(
+            COSMOS.fees$(),
+            liveData.map((fees) => ({ asset, amount: fees.fast }))
+          )
+        }),
+        RxOp.startWith(RD.pending)
       )
     case ETHChain:
       // Use poolInTxFees$ with actual address address for accurate gas estimation
