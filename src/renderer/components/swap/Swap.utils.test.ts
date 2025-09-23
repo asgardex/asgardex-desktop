@@ -318,7 +318,7 @@ describe('components/swap/utils', () => {
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(30, inAssetDecimal)))).toBeTruthy()
     })
 
-    it(`UTXO assets' min amount should be over estimated with 10k Sats`, () => {
+    it(`UTXO assets' min amount calculation`, () => {
       const inAssetDecimal = BTC_DECIMAL
       const params = {
         swapFees: {
@@ -341,32 +341,32 @@ describe('components/swap/utils', () => {
       //
       // Formula (success):
       // inboundFeeInBTC + outboundFeeInBTC
-      // 0.0001 + (0.01 * 1) = 0.0001 + 1 = 0.0101
+      // 0.0001 + (0.01 * 1) = 0.0001 + 0.01 = 0.0101
       //
       // Formula (failure):
       // inboundFeeInBTC + refundFeeInBTC
       // 0.0001 + (0.0003 * 1) = 0.0001 + 0.0003 = 0.0004
       //
       // Formula (minValue):
-      // 1,5 * max(success, failure)
-      // 1,5 * max(0.0101, 0.0004) = 1,5 * 0.0101 = 0.01515
-      // AND as this is UTXO asset overestimate with 10k Satoshis => 0.01515 + 10k Satoshis = 0.01525
+      // 1.5 * max(success, failure)
+      // 1.5 * max(0.0101, 0.0004) = 1.5 * 0.0101 = 0.01515
+      // UTXO safety buffer is no longer added in minAmountToSwapMax1e8
 
       const result = minAmountToSwapMax1e8(params)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.01525, inAssetDecimal)))).toBeTruthy()
+      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.01515, inAssetDecimal)))).toBeTruthy()
     })
   })
 
   describe('maxAmountToSwapMax1e8', () => {
     it('balance to swap - with estimated fees', () => {
       const params = {
-        balanceAmountMax1e8: baseAmount(50000), // Increased to account for UTXO safety buffer
+        balanceAmountMax1e8: baseAmount(50000),
         asset: AssetBTC,
         feeAmount: baseAmount(100)
       }
       const result = maxAmountToSwapMax1e8(params)
-      // Expect accurate calculation: 50000 - 100 - 10000 (UTXO safety buffer) = 39900
-      expect(eqBaseAmount.equals(result, baseAmount(39900))).toBeTruthy()
+      // Expect calculation: 50000 - 100 = 49900 (no UTXO safety buffer in swap calculation)
+      expect(eqBaseAmount.equals(result, baseAmount(49900))).toBeTruthy()
     })
 
     it('balance to swap - with 1e18 based estimated fees', () => {

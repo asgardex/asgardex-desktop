@@ -339,9 +339,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                 () => Rx.of(RD.success({ asset, amount: feesRD.value.fast })),
                 (feeData) => {
                   // For COSMOS chains, we need to estimate gas units for the transaction
-                  // A typical Cosmos tx with memo uses approximately 200,000 gas units
-                  const GAS_UNITS_ESTIMATE = 200000
-                  const calculatedFee = feeData.gas_rate * GAS_UNITS_ESTIMATE
+                  const calculatedFee = feeData.gas_rate
                   return Rx.of(
                     RD.success({
                       asset,
