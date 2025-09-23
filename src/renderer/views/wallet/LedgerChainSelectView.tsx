@@ -21,7 +21,6 @@ import { AssetIcon } from '../../components/uielements/assets/assetIcon'
 import { FlatButton } from '../../components/uielements/button'
 import { BackLinkButton } from '../../components/uielements/button/BackLinkButton'
 import { Dropdown } from '../../components/uielements/dropdown'
-import { Headline } from '../../components/uielements/headline'
 import { Input } from '../../components/uielements/input'
 import { Label } from '../../components/uielements/label'
 import { Spin } from '../../components/uielements/spin'
@@ -204,9 +203,9 @@ export const LedgerChainSelectView: React.FC = () => {
 
         <div className="flex-1 px-6 pt-8">
           <div className="w-full max-w-2xl mx-auto">
-            <Headline size="large" color="primary" className="mb-8 text-center">
+            <Label className="mb-8" align="center" size="large" color="primary" textTransform="uppercase" weight="bold">
               {intl.formatMessage({ id: 'ledger.detect.title' })}
-            </Headline>
+            </Label>
 
             <Spin
               className="min-h-24 border border-gray0 dark:border-gray0d rounded-lg mb-6"
@@ -250,9 +249,9 @@ export const LedgerChainSelectView: React.FC = () => {
 
       <div className="flex-1 flex flex-col items-center px-6 pb-6">
         <div className="w-full max-w-2xl">
-          <Headline size="large" color="primary" className="mb-2 text-center">
+          <Label align="center" size="large" color="primary" textTransform="uppercase" weight="bold" className="mb-2">
             {intl.formatMessage({ id: 'ledger.connect.title' })}
-          </Headline>
+          </Label>
 
           <p className="text-center text-text2 dark:text-text2d text-16 mb-8">
             {intl.formatMessage({ id: 'ledger.connect.instruction' })}

@@ -1,7 +1,7 @@
 import React from 'react'
 import { HeaderTheme } from '../header/theme'
 import { BackLinkButton } from '../uielements/button'
-import { Headline } from '../uielements/headline'
+import { Label } from '../uielements/label'
 import { LocaleDropdown } from './LocaleDropdown'
 
 type Props = {
@@ -22,7 +22,9 @@ export const LayoutlessWrapper = ({ title, children }: Props) => {
 
       <div className="flex flex-col p-4 w-full max-w-[420px]">
         <div className="flex items-center mb-10">
-          <Headline>{title}</Headline>
+          <Label align="center" size="large" textTransform="uppercase" weight="bold">
+            {title}
+          </Label>
         </div>
 
         {children}
