@@ -12,9 +12,12 @@ import { envOrDefault } from '../../../shared/utils/env'
 import { Header } from '../../components/header'
 import { Sidebar } from '../../components/sidebar'
 import { BorderButton } from '../../components/uielements/button'
+import { TransactionQuickDial } from '../../components/uielements/quickDial'
 import { useI18nContext } from '../../contexts/I18nContext'
+import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedgerAddresses } from '../../hooks/useLedgerAddresses'
@@ -95,6 +98,10 @@ export const AppView = (): JSX.Element => {
 
   const { mimirHaltRD: mimirHaltThorRD } = useThorchainMimirHalt()
   const { mimirHaltRD: mimirHaltMayaRD } = useMayachainMimirHalt()
+
+  // Transaction tracking services
+  const { transactionTrackingService: thorchainTransactionTrackingService } = useThorchainContext()
+  const { transactionTrackingService: mayachainTransactionTrackingService } = useMayachainContext()
 
   const renderImportKeystoreWalletsError = useMemo(() => {
     const empty = () => <></>
@@ -192,6 +199,14 @@ export const AppView = (): JSX.Element => {
               <ViewRoutes />
             </div>
           </div>
+
+          {/* Transaction Quick Dial - only show on desktop view */}
+          {isDesktopView && (
+            <TransactionQuickDial
+              thorchainTransactionTrackingService={thorchainTransactionTrackingService}
+              mayachainTransactionTrackingService={mayachainTransactionTrackingService}
+            />
+          )}
         </div>
       )}
     </Styled.AppWrapper>

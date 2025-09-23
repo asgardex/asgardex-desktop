@@ -1,19 +1,23 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 import { CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { formatSwapTime } from '../../../helpers/timeHelper'
 import { TrackedTransaction } from '../../../services/thorchain/transactionTracking'
+import { CopyLabel } from '../label'
+import { ProgressBar } from '../progressBar'
 
 export type TransactionItemProps = {
+  protocol?: React.ReactNode
   transaction: TrackedTransaction
   onRemove: (id: string) => void
   className?: string
 }
 
-export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onRemove, className }) => {
+export const TransactionItem = ({ protocol, transaction, onRemove, className }: TransactionItemProps) => {
   const intl = useIntl()
   const [isExpanded, setIsExpanded] = useState(false)
   const [isNewlyCompleted, setIsNewlyCompleted] = useState(false)
@@ -212,10 +216,10 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, o
   return (
     <div
       className={clsx(
-        'bg-white dark:bg-gray0d rounded-lg border transition-all duration-500',
+        'bg-gray0 dark:bg-gray0d/30 rounded-lg border transition-all duration-500',
         transaction.isComplete
           ? 'border-turquoise dark:border-turquoise bg-turquoise/5 dark:bg-turquoise/10'
-          : 'border-gray1 dark:border-gray1d',
+          : 'border-gray0 dark:border-gray0d',
         isNewlyCompleted && 'animate-pulse',
         className
       )}>
@@ -225,6 +229,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, o
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center space-x-2 min-w-0">
             {transaction.isComplete && <CheckCircleIcon className="w-4 h-4 text-turquoise shrink-0" />}
+            {!transaction.isComplete && protocol && protocol}
             <span className="text-sm font-medium text-text1 dark:text-text1d truncate">
               {transaction.fromAsset} → {transaction.toAsset}
             </span>
@@ -252,39 +257,26 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, o
           <div className="flex-1 min-w-0">
             <div
               className={clsx(
-                'text-xs truncate',
+                'flex text-xs truncate',
                 getRichStatusText().urgent
                   ? 'text-yellow-600 dark:text-yellow-400 font-medium'
                   : 'text-text2 dark:text-text2d'
               )}>
+              <PaperAirplaneIcon className="w-4 h-4 mr-1" />
               {getRichStatusText().text}
             </div>
             {getRichStatusText().detail && (
-              <div className="text-xs text-text2 dark:text-text2d truncate opacity-75">
+              <div className="text-xs text-text2 dark:text-text2d truncate opacity-50">
                 {getRichStatusText().detail}
               </div>
             )}
           </div>
-          <span className="text-xs text-text2 dark:text-text2d ml-2 shrink-0">
+          <span className="text-base font-bold text-text2 dark:text-text2d ml-2 shrink-0">
             {Math.round(getProgressPercentage())}%
           </span>
         </div>
 
-        {/* Third row: progress bar */}
-        <div className="w-full bg-gray1 dark:bg-gray1d rounded-full h-1 mb-1">
-          <div
-            className={clsx(
-              'h-1 rounded-full transition-all duration-300',
-              transaction.isComplete ? 'bg-turquoise' : 'bg-yellow-500'
-            )}
-            style={{ width: `${getProgressPercentage()}%` }}
-          />
-        </div>
-
-        {/* Fourth row: hash */}
-        <div className="text-xs text-text2 dark:text-text2d font-mono">
-          {transaction.txHash.slice(0, 6)}...{transaction.txHash.slice(-4)}
-        </div>
+        <ProgressBar heightPx={4} percent={getProgressPercentage()} />
       </div>
 
       {/* Expanded details */}
@@ -301,7 +293,12 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, o
 
             <div className="flex justify-between">
               <span className="text-text2 dark:text-text2d">Hash:</span>
-              <span className="text-text1 dark:text-text1d font-mono text-xs break-all">{transaction.txHash}</span>
+              <CopyLabel
+                label={`${transaction.txHash.slice(0, 6)}...${transaction.txHash.slice(-4)}`}
+                textToCopy={transaction.txHash}
+                iconClassName="!w-4 !h-4"
+              />
+              {/* <span className="text-text1 dark:text-text1d font-mono text-xs break-all">{transaction.txHash}</span> */}
             </div>
 
             {transaction.completedAt && (
