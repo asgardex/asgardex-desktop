@@ -159,7 +159,7 @@ export const AppView = (): JSX.Element => {
   }, [])
 
   return (
-    <Styled.AppWrapper>
+    <div className="h-screen p-0 bg-bg3 dark:bg-bg3d font-main">
       {shouldHideLayout ? (
         <ViewRoutes />
       ) : (
@@ -194,6 +194,6 @@ export const AppView = (): JSX.Element => {
           </div>
         </div>
       )}
-    </Styled.AppWrapper>
+    </div>
   )
 }

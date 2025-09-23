@@ -7,7 +7,6 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { AppProvider } from '../src/renderer/contexts/AppContext'
 import { ThemeProvider, themes } from '../src/renderer/contexts/ThemeContext'
 import { getMessagesByLocale } from '../src/renderer/i18n'
-import * as Styled from '../src/renderer/views/app/AppView.styles'
 import { Locale } from '../src/shared/i18n/types'
 
 import * as mockApi from '../src/shared/mock/api'
@@ -33,9 +32,9 @@ const providerDecorator: Decorator = (Story) => (
     {/* We use IntlProvider instead of our our custom I18nProvider to provide messages, but w/o dependencies to Electron/Node source, which can't run in storybook */}
     <IntlProvider locale={locale} messages={messages} defaultLocale={locale}>
       <ThemeProvider theme={lightTheme}>
-        <Styled.AppWrapper>
+        <div className="h-screen p-0 bg-bg3 dark:bg-bg3d font-main">
           <Story />
-        </Styled.AppWrapper>
+        </div>
       </ThemeProvider>
     </IntlProvider>
   </AppProvider>
