@@ -248,19 +248,24 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       liveData.map(
         // transform data -> TxStages
         (txStages): TxStages => {
+          // Helper to safely convert to boolean - handles string "false"/"true" and actual booleans
+          const toBoolean = (value: unknown): boolean => {
+            if (typeof value === 'boolean') return value
+            if (typeof value === 'string') return value.toLowerCase() === 'true'
+            return Boolean(value)
+          }
+
           return {
             inboundObserved: {
               finalCount: txStages.inbound_observed.final_count,
-              completed: txStages.inbound_observed.completed
+              completed: toBoolean(txStages.inbound_observed.completed)
             },
             inboundConfirmationCounted: {
               remainingConfirmationSeconds: txStages.inbound_confirmation_counted?.remaining_confirmation_seconds,
-              completed: txStages.inbound_confirmation_counted?.completed
-                ? txStages.inbound_confirmation_counted?.completed
-                : false
+              completed: toBoolean(txStages.inbound_confirmation_counted?.completed)
             },
             inboundFinalised: {
-              completed: txStages.inbound_finalised?.completed ? txStages.inbound_finalised?.completed : false
+              completed: toBoolean(txStages.inbound_finalised?.completed)
             },
             outBoundDelay: {
               remainDelaySeconds: txStages.outbound_delay?.remaining_delay_seconds,
@@ -280,11 +285,13 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
                 count: txStages.swap_status?.streaming?.count
               }
             },
-            swapFinalised: txStages.swap_finalised?.completed ? txStages.swap_finalised?.completed : false
+            swapFinalised: toBoolean(txStages.swap_finalised?.completed)
           }
         }
       ),
-      RxOp.catchError((): TxStagesLD => Rx.of(RD.failure(Error(`Failed to load info for ${txHash}`))))
+      RxOp.catchError((error: Error): TxStagesLD => {
+        return Rx.of(RD.failure(Error(`Failed to load info for ${txHash}: ${error.message}`)))
+      })
     )
   // `TriggerStream` to reload data of `ThorchainLastblock`
   const { stream$: reloadThorchainLastblock$, trigger: reloadThorchainLastblock } = triggerStream()

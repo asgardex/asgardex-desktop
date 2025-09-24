@@ -67,11 +67,15 @@ export const createTransactionTrackingService = (
     if (!stages) return false
 
     // More comprehensive completion check
-    const allStagesComplete =
-      stages.inboundObserved.completed &&
-      stages.inboundFinalised.completed &&
-      stages.swapFinalised &&
-      (stages.outboundSigned.completed ?? false)
+    const basicStagesComplete =
+      stages.inboundObserved.completed && stages.inboundFinalised.completed && stages.swapFinalised
+
+    // Check if outbound is required - if outboundSigned.completed is undefined,
+    // it means this is not an L1 swap and no outbound transaction is needed
+    const outboundRequired = stages.outboundSigned.completed !== undefined
+    const outboundComplete = outboundRequired ? stages.outboundSigned.completed ?? false : true
+
+    const allStagesComplete = basicStagesComplete && outboundComplete
 
     // Additional checks for truly final state
     const noActiveProcessing =
@@ -96,13 +100,20 @@ export const createTransactionTrackingService = (
     if (transaction) {
       const wasComplete = transaction.isComplete
       const isComplete = isTransactionComplete(stages)
-      transactionsMap.set(id, {
+
+      const updatedTransaction = {
         ...transaction,
         stages,
         isComplete,
         // Set completedAt timestamp when transaction first becomes complete
         completedAt: !wasComplete && isComplete ? Date.now() : transaction.completedAt
-      })
+      }
+      transactionsMap.set(id, updatedTransaction)
+
+      // Trigger UI update only when completion state changes
+      if (wasComplete !== isComplete) {
+        reloadTransactions()
+      }
     }
   }
 
@@ -197,14 +208,20 @@ export const createTransactionTrackingService = (
         return Rx.of(RD.success(transactions))
       }
 
-      // Combine all transaction status polls
-      return FP.pipe(
+      // Combine all transaction status polls + manual updates
+      const manualUpdates$ = reloadTransactions$.pipe(
+        RxOp.map(() => Array.from(transactionsMap.values())),
+        RxOp.map(RD.success)
+      )
+
+      const pollingUpdates$ = FP.pipe(
         Rx.merge(...transactionObservables), // Use merge instead of combineLatest for independent polling
         RxOp.map(() => Array.from(transactionsMap.values())),
         RxOp.map(RD.success),
-        RxOp.catchError((error: Error) => Rx.of(RD.failure(error))),
-        RxOp.startWith(RD.success(transactions))
+        RxOp.catchError((error: Error) => Rx.of(RD.failure(error)))
       )
+
+      return Rx.merge(manualUpdates$, pollingUpdates$).pipe(RxOp.startWith(RD.success(transactions)))
     }),
     RxOp.startWith(RD.success([])),
     RxOp.shareReplay(1)

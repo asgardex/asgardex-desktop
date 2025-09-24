@@ -122,8 +122,9 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
       }
     }
 
-    // Outbound delay with countdown
-    if (!(stages.outboundSigned.completed ?? false)) {
+    // Outbound delay with countdown - only if outbound is required
+    const outboundRequired = stages.outboundSigned.completed !== undefined
+    if (outboundRequired && !(stages.outboundSigned.completed ?? false)) {
       const delaySeconds = stages.outBoundDelay.remainDelaySeconds
       const delayBlocks = stages.outBoundDelay.remainingDelayBlocks
 
@@ -191,7 +192,12 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
     }
 
     // Stage 5: Outbound delay (16.7% + partial progress based on remaining delay)
-    if (stages.outboundSigned.completed) {
+    // Only apply outbound progress if outbound is required (not undefined)
+    const outboundRequired = stages.outboundSigned.completed !== undefined
+    if (!outboundRequired) {
+      // No outbound required, give full outbound progress
+      progress += 16.7
+    } else if (stages.outboundSigned.completed) {
       progress += 16.7
     } else if (stages.swapFinalised) {
       const delaySeconds = stages.outBoundDelay.remainDelaySeconds ?? 0
