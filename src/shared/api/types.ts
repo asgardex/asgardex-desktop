@@ -12,7 +12,7 @@ import { Locale } from '../i18n/types'
 import { EnabledChain } from '../utils/chain'
 import { HDMode, WalletAddress } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
-import { OfflineTxBundle, SignedTxBundle, WatchOnlyWallet } from './offlineTx'
+import { WatchOnlyWallet } from './offlineTx'
 
 export type Dex = {
   chain: Chain
@@ -178,11 +178,6 @@ export type ApiHDWallet = {
 }
 
 export type ApiOfflineTransaction = {
-  exportUnsignedTx: (bundle: OfflineTxBundle) => Promise<E.Either<Error, string>>
-  importUnsignedTx: () => Promise<E.Either<Error, OfflineTxBundle>>
-  exportSignedTx: (bundle: SignedTxBundle) => Promise<E.Either<Error, string>>
-  importSignedTx: () => Promise<E.Either<Error, SignedTxBundle>>
-  clearTxFiles: (path?: string) => Promise<E.Either<Error, number>>
   exportWatchWallets: (wallets: WatchOnlyWallet[]) => Promise<E.Either<Error, string>>
   importWatchWallets: () => Promise<E.Either<Error, WatchOnlyWallet[]>>
 }
