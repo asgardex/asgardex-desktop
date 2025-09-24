@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ReactNode } from 'react'
 
 import { CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
@@ -11,7 +11,7 @@ import { CopyLabel } from '../label'
 import { ProgressBar } from '../progressBar'
 
 export type TransactionItemProps = {
-  protocol?: React.ReactNode
+  protocol?: ReactNode
   transaction: TrackedTransaction
   onRemove: (id: string) => void
   className?: string
@@ -63,7 +63,7 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
     const { stages } = transaction
 
     // Detailed status with timing information
-    if (!stages.inboundObserved.completed) {
+    if (!stages?.inboundObserved?.completed) {
       return {
         text: intl.formatMessage({ id: 'transaction.status.observing' }),
         detail: `Waiting for network detection...`,
@@ -71,8 +71,8 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
       }
     }
 
-    if (!stages.inboundConfirmationCounted.completed) {
-      const remaining = stages.inboundConfirmationCounted.remainingConfirmationSeconds
+    if (!stages?.inboundConfirmationCounted?.completed) {
+      const remaining = stages?.inboundConfirmationCounted?.remainingConfirmationSeconds
       if (remaining && remaining > 0) {
         return {
           text: `Confirming... ${formatSwapTime(remaining)}`,
@@ -87,7 +87,7 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
       }
     }
 
-    if (!stages.inboundFinalised.completed) {
+    if (!stages?.inboundFinalised?.completed) {
       return {
         text: intl.formatMessage({ id: 'transaction.status.finalising' }),
         detail: 'Finalizing inbound transaction...',
@@ -95,7 +95,7 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
       }
     }
 
-    if (stages.swapStatus.pending) {
+    if (stages?.swapStatus?.pending) {
       return {
         text: 'Swap pending...',
         detail: 'Waiting in swap queue',
@@ -103,18 +103,18 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
       }
     }
 
-    // Streaming swap progress
-    if (stages.swapStatus.streaming.count && stages.swapStatus.streaming.quantity) {
-      const current = stages.swapStatus.streaming.count
-      const total = stages.swapStatus.streaming.quantity
+    // Streaming swap progress - use != null to handle count === 0 correctly
+    const streamingCount = stages?.swapStatus?.streaming?.count
+    const streamingQuantity = stages?.swapStatus?.streaming?.quantity
+    if (streamingCount != null && streamingQuantity != null && streamingQuantity > 0) {
       return {
-        text: `Streaming ${current}/${total}`,
-        detail: `Sub-swap ${current} of ${total}`,
+        text: `Streaming ${streamingCount}/${streamingQuantity}`,
+        detail: `Sub-swap ${streamingCount} of ${streamingQuantity}`,
         urgent: true
       }
     }
 
-    if (!stages.swapFinalised) {
+    if (!stages?.swapFinalised) {
       return {
         text: intl.formatMessage({ id: 'transaction.status.swapping' }),
         detail: 'Processing swap...',
@@ -123,10 +123,10 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
     }
 
     // Outbound delay with countdown - only if outbound is required
-    const outboundRequired = stages.outboundSigned.completed !== undefined
-    if (outboundRequired && !(stages.outboundSigned.completed ?? false)) {
-      const delaySeconds = stages.outBoundDelay.remainDelaySeconds
-      const delayBlocks = stages.outBoundDelay.remainingDelayBlocks
+    const outboundRequired = stages?.outboundSigned?.completed !== undefined
+    if (outboundRequired && !(stages?.outboundSigned?.completed ?? false)) {
+      const delaySeconds = stages?.outBoundDelay?.remainDelaySeconds
+      const delayBlocks = stages?.outBoundDelay?.remainingDelayBlocks
 
       if (delaySeconds && delaySeconds > 0) {
         return {
@@ -157,16 +157,16 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
     let progress = 0
 
     // Stage 1: Inbound Observed (16.7%)
-    if (stages.inboundObserved.completed) {
+    if (stages?.inboundObserved?.completed) {
       progress += 16.7
     }
 
     // Stage 2: Confirmations (16.7% + partial progress based on remaining time)
-    if (stages.inboundConfirmationCounted.completed) {
+    if (stages?.inboundConfirmationCounted?.completed) {
       progress += 16.7
-    } else if (stages.inboundObserved.completed) {
+    } else if (stages?.inboundObserved?.completed) {
       // Partial progress based on remaining confirmation time
-      const remaining = stages.inboundConfirmationCounted.remainingConfirmationSeconds ?? 0
+      const remaining = stages?.inboundConfirmationCounted?.remainingConfirmationSeconds ?? 0
       if (remaining > 0) {
         // Assume max 60 seconds for confirmations, give partial credit
         const maxConfirmTime = 60
@@ -176,31 +176,36 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
     }
 
     // Stage 3: Inbound Finalised (16.7%)
-    if (stages.inboundFinalised.completed) {
+    if (stages?.inboundFinalised?.completed) {
       progress += 16.7
     }
 
     // Stage 4: Swap progress (16.7% + streaming progress)
-    if (stages.swapFinalised) {
+    if (stages?.swapFinalised) {
       progress += 16.7
-    } else if (stages.swapStatus.streaming.count && stages.swapStatus.streaming.quantity) {
-      // Streaming progress
-      const streamingProgress = (stages.swapStatus.streaming.count / stages.swapStatus.streaming.quantity) * 16.7
-      progress += streamingProgress
-    } else if (stages.swapStatus.pending) {
-      progress += 8.35 // Half progress when pending
+    } else {
+      // Use != null to handle streaming count === 0 correctly
+      const streamingCount = stages?.swapStatus?.streaming?.count
+      const streamingQuantity = stages?.swapStatus?.streaming?.quantity
+      if (streamingCount != null && streamingQuantity != null && streamingQuantity > 0) {
+        // Streaming progress
+        const streamingProgress = (streamingCount / streamingQuantity) * 16.7
+        progress += streamingProgress
+      } else if (stages?.swapStatus?.pending) {
+        progress += 8.35 // Half progress when pending
+      }
     }
 
     // Stage 5: Outbound delay (16.7% + partial progress based on remaining delay)
     // Only apply outbound progress if outbound is required (not undefined)
-    const outboundRequired = stages.outboundSigned.completed !== undefined
+    const outboundRequired = stages?.outboundSigned?.completed !== undefined
     if (!outboundRequired) {
       // No outbound required, give full outbound progress
       progress += 16.7
-    } else if (stages.outboundSigned.completed) {
+    } else if (stages?.outboundSigned?.completed) {
       progress += 16.7
-    } else if (stages.swapFinalised) {
-      const delaySeconds = stages.outBoundDelay.remainDelaySeconds ?? 0
+    } else if (stages?.swapFinalised) {
+      const delaySeconds = stages?.outBoundDelay?.remainDelaySeconds ?? 0
       if (delaySeconds > 0) {
         // Assume max 120 seconds for outbound delay
         const maxDelayTime = 120
@@ -316,7 +321,7 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
               </div>
             )}
 
-            {transaction.stages?.inboundConfirmationCounted.remainingConfirmationSeconds && (
+            {transaction.stages?.inboundConfirmationCounted?.remainingConfirmationSeconds && (
               <div className="flex justify-between">
                 <span className="text-text2 dark:text-text2d">Confirmations:</span>
                 <span className="text-text1 dark:text-text1d">
@@ -325,7 +330,7 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
               </div>
             )}
 
-            {transaction.stages?.outBoundDelay.remainDelaySeconds && (
+            {transaction.stages?.outBoundDelay?.remainDelaySeconds && (
               <div className="flex justify-between">
                 <span className="text-text2 dark:text-text2d">Outbound Delay:</span>
                 <span className="text-text1 dark:text-text1d">

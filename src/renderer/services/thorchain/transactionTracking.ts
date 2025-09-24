@@ -24,7 +24,7 @@ export type TransactionTrackingState = {
 }
 
 export type TransactionTrackingService = {
-  addTransaction: (tx: Omit<TrackedTransaction, 'id' | 'stages' | 'isComplete'>) => void
+  addTransaction: (tx: Omit<TrackedTransaction, 'id' | 'stages' | 'isComplete' | 'completedAt'>) => void
   removeTransaction: (id: string) => void
   getTransactions$: LiveData<Error, TrackedTransaction[]>
   reloadTransactions: () => void
@@ -44,13 +44,14 @@ export const createTransactionTrackingService = (
   const generateId = () => `tx_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
 
   // Add a new transaction to track
-  const addTransaction = (tx: Omit<TrackedTransaction, 'id' | 'stages' | 'isComplete'>) => {
+  const addTransaction = (tx: Omit<TrackedTransaction, 'id' | 'stages' | 'isComplete' | 'completedAt'>) => {
     const id = generateId()
     const newTransaction: TrackedTransaction = {
       ...tx,
       id,
       stages: null,
-      isComplete: false
+      isComplete: false,
+      completedAt: undefined
     }
     transactionsMap.set(id, newTransaction)
     reloadTransactions()

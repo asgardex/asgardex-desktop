@@ -75,7 +75,6 @@ export const TransactionQuickDial = ({
         )}
         onClick={toggleExpanded}
         onMouseDown={(e) => {
-          console.log('TransactionQuickDial: Mouse down on button')
           e.stopPropagation()
         }}>
         {isExpanded ? <XMarkIcon className="w-6 h-6 text-white" /> : <SwapIcon className="w-8 h-8 text-white" />}
