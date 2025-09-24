@@ -3,7 +3,7 @@ import { Balance, Network, Tx, TxHash } from '@xchainjs/xchain-client'
 import { Keystore } from '@xchainjs/xchain-crypto'
 import { Address, AnyAsset, Chain } from '@xchainjs/xchain-util'
 import type { nonEmptyArray } from 'fp-ts'
-import { array, function as FP, option as O } from 'fp-ts'
+import { array, either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 type NonEmptyArray<T> = nonEmptyArray.NonEmptyArray<T>
@@ -172,14 +172,14 @@ export type StandaloneLedgerService = {
 
 // Watch-Only Service Types
 export interface WatchOnlyWalletService {
-  watchOnlyState$: any // Will be properly typed from watchOnly service
+  watchOnlyState$: Rx.Observable<WatchOnlyState | null>
   enterWatchOnlyMode: (wallets: WatchOnlyWallet[]) => void
   exitWatchOnlyMode: () => void
   addWatchWallet: (wallet: WatchOnlyWallet) => void
   removeWatchWallet: (address: string, chain: Chain) => void
   getWatchWallet: (address: string, chain: Chain) => WatchOnlyWallet | undefined
-  exportWatchWallets: () => Promise<any>
-  importWatchWallets: () => Promise<any>
+  exportWatchWallets: () => Promise<E.Either<Error, string>>
+  importWatchWallets: () => Promise<E.Either<Error, WatchOnlyWallet[]>>
   clearWatchWallets: () => void
 }
 

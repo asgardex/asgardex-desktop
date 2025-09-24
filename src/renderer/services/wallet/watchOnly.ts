@@ -166,7 +166,7 @@ export const createWatchOnlyService = (): WatchOnlyWalletService => {
       }
 
       // Convert wallet accounts to watch-only format
-      const watchWallets: WatchOnlyWallet[] = walletAccounts.map(({ chain, address }, index) => ({
+      const watchWallets: WatchOnlyWallet[] = walletAccounts.map(({ chain, address }) => ({
         address,
         chain,
         walletIndex: 0,
