@@ -20,6 +20,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, array as A, option as O } from 'fp-ts'
@@ -49,6 +50,7 @@ import { useLitecoinContext } from '../../contexts/LitecoinContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useSolContext } from '../../contexts/SolContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { useTronContext } from '../../contexts/TronContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { useXrdContext } from '../../contexts/XrdContext'
 import { useXrpContext } from '../../contexts/XrpContext'
@@ -71,6 +73,7 @@ import {
   isKujiChain,
   isXrdChain,
   isSolChain,
+  isTronChain,
   isAdaChain,
   isZecChain,
   isXrpChain
@@ -117,6 +120,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const { addressUI$: adaAddressUI$ } = useAdaContext()
   const { addressUI$: xrdAddressUI$ } = useXrdContext()
   const { addressUI$: solAddressUI$ } = useSolContext()
+  const { addressUI$: tronAddressUI$ } = useTronContext()
   const { addressUI$: zecAddressUI$ } = useZcashContext()
   const { addressUI$: xrpAddressUI$ } = useXrpContext()
 
@@ -175,6 +179,13 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     address: oZecLedgerWalletAddress,
     removeAddress: removeLedgerZecAddress
   } = useLedger(ZECChain, keystoreId)
+
+  const {
+    addAddress: addLedgerTronAddress,
+    verifyAddress: verifyLedgerTronAddress,
+    address: oTronLedgerWalletAddress,
+    removeAddress: removeLedgerTronAddress
+  } = useLedger(TRONChain, keystoreId)
 
   const {
     addAddress: addLedgerXrpAddress,
@@ -278,6 +289,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     if (isXrdChain(chain)) return addLedgerXrdAddress(walletAccount, walletIndex, hdMode)
     if (isZecChain(chain)) return addLedgerZecAddress(walletAccount, walletIndex, hdMode)
     if (isSolChain(chain)) return addLedgerSolAddress(walletAccount, walletIndex, hdMode)
+    if (isTronChain(chain)) return addLedgerTronAddress(walletAccount, walletIndex, hdMode)
     if (isXrpChain(chain)) return addLedgerXrpAddress(walletAccount, walletIndex, hdMode)
     return Rx.of(
       RD.failure({
@@ -316,6 +328,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     if (isXrdChain(chain)) return verifyLedgerXrdAddress(walletAccount, walletIndex, hdMode)
     if (isZecChain(chain)) return verifyLedgerZecAddress(walletAccount, walletIndex, hdMode)
     if (isSolChain(chain)) return verifyLedgerSolAddress(walletAccount, walletIndex, hdMode)
+    if (isTronChain(chain)) return verifyLedgerTronAddress(walletAccount, walletIndex, hdMode)
     if (isXrpChain(chain)) return verifyLedgerXrpAddress(walletAccount, walletIndex, hdMode)
     return Rx.of(RD.failure(Error(`Ledger address verification for ${chain} has not been implemented`)))
   }
@@ -339,6 +352,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     if (isXrdChain(chain)) return removeLedgerXrdAddress()
     if (isZecChain(chain)) return removeLedgerZecAddress()
     if (isSolChain(chain)) return removeLedgerSolAddress()
+    if (isTronChain(chain)) return removeLedgerTronAddress()
     if (isXrpChain(chain)) return removeLedgerXrpAddress()
 
     return FP.constVoid
@@ -363,6 +377,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const oAdaClient = useObservableState(clientByChain$(ADAChain), O.none)
   const oXrdClient = useObservableState(clientByChain$(RadixChain), O.none)
   const oSolClient = useObservableState(clientByChain$(SOLChain), O.none)
+  const oTronClient = useObservableState(clientByChain$(TRONChain), O.none)
   const oZecClient = useObservableState(clientByChain$(ZECChain), O.none)
   const oXrpClient = useObservableState(clientByChain$(XRPChain), O.none)
 
@@ -428,6 +443,9 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
       case SOLChain:
         FP.pipe(oSolClient, O.map(openExplorerAddressUrl))
         break
+      case TRONChain:
+        FP.pipe(oTronClient, O.map(openExplorerAddressUrl))
+        break
       case ZECChain:
         FP.pipe(oZecClient, O.map(openExplorerAddressUrl))
         break
@@ -452,6 +470,11 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
       addressUI$: solAddressUI$,
       ledgerAddress: oSolLedgerWalletAddress,
       chain: SOLChain
+    })
+    const tronWalletAccount$ = walletAccount$({
+      addressUI$: tronAddressUI$,
+      ledgerAddress: oTronLedgerWalletAddress,
+      chain: TRONChain
     })
     const ethWalletAccount$ = walletAccount$({
       addressUI$: ethAddressUI$,
@@ -554,6 +577,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
           ADA: [adaWalletAccount$],
           XRD: [xrdWalletAccount$],
           SOL: [solWalletAccount$],
+          TRON: [tronWalletAccount$],
           BASE: [baseWalletAccount$],
           ZEC: [zecWalletAccount$],
           XRP: [xrpWalletAccount$]
@@ -569,6 +593,8 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     oBtcLedgerWalletAddress,
     solAddressUI$,
     oSolLedgerWalletAddress,
+    tronAddressUI$,
+    oTronLedgerWalletAddress,
     ethAddressUI$,
     oEthLedgerWalletAddress,
     arbAddressUI$,

@@ -18,6 +18,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { AssetXRP, XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain, TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import {
   assetFromString,
   bnOrZero,
@@ -34,7 +35,16 @@ import {
 import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
-import { AssetATOM, AssetBCH, AssetBTC, AssetDOGE, AssetETH, AssetLTC, AssetZEC } from '../../../../shared/utils/asset'
+import {
+  AssetATOM,
+  AssetBCH,
+  AssetBTC,
+  AssetDOGE,
+  AssetETH,
+  AssetLTC,
+  AssetTRX,
+  AssetZEC
+} from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
@@ -293,6 +303,11 @@ export const getOutboundAssetFeeByChain = (
             asset: AssetATOM
           })
         }
+        case TRONChain:
+          return O.some({
+            amount: baseAmount(value, TRX_DECIMAL),
+            asset: AssetTRX
+          })
         case ZECChain:
           return O.some({
             amount: baseAmount(value, ZEC_DECIMAL),

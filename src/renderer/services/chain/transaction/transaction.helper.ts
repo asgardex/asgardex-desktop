@@ -17,6 +17,7 @@ import { RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain, SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { RUNE_DECIMAL as THOR_DECIMAL, THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain, TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import { BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 
@@ -72,6 +73,9 @@ export const smallestAmountToSend = (chain: Chain, _network: Network): BaseAmoun
       return baseAmount(100000000000000000, XRD_DECIMAL)
     case SOLChain:
       return baseAmount(1, SOL_DECIMALS)
+    case TRONChain:
+      // 1000000 sun (1 TRX)
+      return baseAmount(1000000, TRX_DECIMAL)
     case ZECChain:
       // 1000 zatoshi
       return baseAmount(10001, ZEC_DECIMAL)

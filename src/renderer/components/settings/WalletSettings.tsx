@@ -30,6 +30,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import clsx from 'clsx'
@@ -196,7 +197,8 @@ const initialMap = {
   [SOLChain]: 0,
   [ADAChain]: 0,
   [ZECChain]: 0,
-  [XRPChain]: 0
+  [XRPChain]: 0,
+  [TRONChain]: 0
 }
 
 export const WalletSettings = (props: Props): JSX.Element => {

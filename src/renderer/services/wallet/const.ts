@@ -16,6 +16,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { option as O } from 'fp-ts'
 
@@ -51,6 +52,7 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [KUJIChain]: 'all',
   [RadixChain]: 'all',
   [SOLChain]: 'all',
+  [TRONChain]: 'all',
   [BASEChain]: 'all',
   [ADAChain]: 'all',
   [ZECChain]: 'all',

@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
@@ -50,6 +51,7 @@ import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
+import * as TRON from '../tron'
 import * as ZEC from '../zcash'
 import { INITIAL_BALANCES_STATE } from './const'
 import {
@@ -102,6 +104,7 @@ export const createBalancesService = ({
       if (enabledChains.includes(XRPChain)) XRP.reloadBalances()
       if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
       if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
+      if (enabledChains.includes(TRONChain)) TRON.reloadBalances(DEFAULT_WALLET_TYPE)
       if (enabledChains.includes(ZECChain)) ZEC.reloadBalances(DEFAULT_WALLET_TYPE)
     })
   }
@@ -125,6 +128,7 @@ export const createBalancesService = ({
     [SOLChain]: SOL.reloadBalances,
     [BASEChain]: BASE.reloadBalances,
     [ADAChain]: ADA.reloadBalances,
+    [TRONChain]: TRON.reloadBalances,
     [ZECChain]: ZEC.reloadBalances,
     [XRPChain]: XRP.reloadBalances
   }
@@ -317,6 +321,16 @@ export const createBalancesService = ({
             resetReloadBalances: SOL.resetReloadBalances,
             balances$: SOL.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: SOL.reloadBalances$
+          }
+        case TRONChain:
+          return {
+            reloadBalances: () => TRON.reloadBalances(walletType),
+            resetReloadBalances: () => TRON.resetReloadBalances(walletType),
+            balances$: FP.pipe(
+              network$,
+              RxOp.switchMap((network) => TRON.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
+            ),
+            reloadBalances$: TRON.reloadBalances$
           }
         case ZECChain:
           return {
@@ -1065,6 +1079,45 @@ export const createBalancesService = ({
   })
 
   /**
+   * Transforms TRON balances into `ChainBalance`
+   */
+  const tronChainBalance$: ChainBalance$ = Rx.combineLatest([
+    TRON.addressUI$,
+    getChainBalance$({
+      chain: TRONChain,
+      walletType: WalletType.Keystore,
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+      hdMode: 'default',
+      walletBalanceType: 'all'
+    })
+  ]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: WalletType.Keystore,
+      chain: TRONChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
+
+  /**
+   * TRON Ledger balances
+   */
+  const tronLedgerChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      ledgerChainBalance$({
+        chain: TRONChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: TRON.getBalanceByAddress$(network)
+      })
+    )
+  )
+
+  /**
    * ETH Ledger balances
    */
   const ethLedgerChainBalance$: ChainBalance$ = FP.pipe(
@@ -1221,6 +1274,7 @@ export const createBalancesService = ({
     ADA: [adaChainBalance$, adaLedgerChainBalance$],
     XRD: [xrdChainBalance$, xrdLedgerChainBalance$],
     SOL: [solChainBalance$, solLedgerChainBalance$],
+    TRON: [tronChainBalance$, tronLedgerChainBalance$],
     BASE: [baseChainBalance$, baseLedgerChainBalance$],
     ZEC: [zecChainBalance$, zecLedgerChainBalance$],
     XRP: [xrpChainBalance$, xrpLedgerChainBalance$]
@@ -1245,6 +1299,7 @@ export const createBalancesService = ({
     ADA: [adaLedgerChainBalance$],
     XRD: [xrdLedgerChainBalance$],
     SOL: [solLedgerChainBalance$],
+    TRON: [tronLedgerChainBalance$],
     BASE: [baseLedgerChainBalance$],
     ZEC: [zecLedgerChainBalance$],
     XRP: [xrpLedgerChainBalance$]

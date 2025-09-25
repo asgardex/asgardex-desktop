@@ -6,6 +6,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { TokenAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
@@ -16,12 +17,16 @@ import { getChainAsset } from '../../helpers/chainHelper'
 import { emptyString } from '../../helpers/stringHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import { EVMChains } from '../../services/evm/const'
+
+// Supported whitelist chains (EVM + TRON)
+const WhitelistChains = [...EVMChains, TRONChain]
 import { addAsset, removeAsset, getUserAssetsByChain$ } from '../../services/storage/userChainTokens'
 import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whitelist'
 import { AVAX_TOKEN_WHITELIST } from '../../types/generated/thorchain/avaxerc20whitelist'
 import { BASE_TOKEN_WHITELIST } from '../../types/generated/thorchain/baseerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../../types/generated/thorchain/bscerc20whitelist'
 import { ETH_TOKEN_WHITELIST } from '../../types/generated/thorchain/etherc20whitelist'
+import { TRON_TOKEN_WHITELIST } from '../../types/generated/thorchain/trontrc20whitelist'
 import { AssetData } from '../uielements/assets/assetData'
 import { AssetIcon } from '../uielements/assets/assetIcon'
 import { SwitchButton } from '../uielements/button/SwitchButton'
@@ -35,7 +40,7 @@ type Props = {
 }
 
 const getWhitelistAssets = (
-  chain: typeof EVMChains[number],
+  chain: typeof WhitelistChains[number],
   searchQuery: string,
   checkIsActive: (asset: TokenAsset) => boolean
 ) => {
@@ -46,7 +51,8 @@ const getWhitelistAssets = (
     [AVAXChain]: AVAX_TOKEN_WHITELIST,
     [BASEChain]: BASE_TOKEN_WHITELIST,
     [BSCChain]: BSC_TOKEN_WHITELIST,
-    [ARBChain]: ARB_TOKEN_WHITELIST
+    [ARBChain]: ARB_TOKEN_WHITELIST,
+    [TRONChain]: TRON_TOKEN_WHITELIST
   }
 
   const whitelist = whitelistMap[chain] || []
@@ -64,7 +70,7 @@ const getWhitelistAssets = (
 export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
   const [page, setPage] = useState(1)
   const [searchValue, setSearchValue] = useState<string>(emptyString)
-  const [chain, setChain] = useState<typeof EVMChains[number]>(ETHChain)
+  const [chain, setChain] = useState<typeof WhitelistChains[number]>(ETHChain)
 
   const inputSearchRef = useRef(null)
   const intl = useIntl()
@@ -96,7 +102,7 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
     setSearchValue(emptyString)
   }, [])
 
-  const changeChain = useCallback((chain: typeof EVMChains[number]) => {
+  const changeChain = useCallback((chain: typeof WhitelistChains[number]) => {
     setChain(chain)
     setPage(1)
   }, [])
@@ -110,18 +116,18 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
     () => (
       <div className="flex w-full flex-col px-4 py-4">
         <div className="flex flex-row space-x-2 overflow-x-auto">
-          {EVMChains.map((evmChain) => (
-            <div key={evmChain} className="cursor-pointer" onClick={() => changeChain(evmChain)}>
+          {WhitelistChains.map((supportedChain) => (
+            <div key={supportedChain} className="cursor-pointer" onClick={() => changeChain(supportedChain)}>
               <div
                 className={clsx(
                   'flex flex-col items-center',
                   'space-y-2 px-4 py-2',
                   'rounded-lg border border-solid border-bg2 dark:border-bg2d',
                   'hover:bg-bg2 dark:hover:bg-bg2d',
-                  { 'bg-bg2 dark:bg-bg2d': chain === evmChain }
+                  { 'bg-bg2 dark:bg-bg2d': chain === supportedChain }
                 )}>
-                <AssetIcon asset={getChainAsset(evmChain)} network={network} />
-                <span className="text-text2 dark:text-text2d">{evmChain}</span>
+                <AssetIcon asset={getChainAsset(supportedChain)} network={network} />
+                <span className="text-text2 dark:text-text2d">{supportedChain}</span>
               </div>
             </div>
           ))}

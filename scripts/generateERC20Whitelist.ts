@@ -4,7 +4,7 @@ import axios from 'axios'
 import { format } from 'prettier'
 import { erc20WhitelistIO, ERC20Whitelist } from '../src/renderer/services/thorchain/types'
 
-type Chain = 'ARB' | 'AVAX' | 'BSC' | 'ETH' | 'BASE'
+type Chain = 'ARB' | 'AVAX' | 'BSC' | 'ETH' | 'BASE' | 'TRON'
 
 interface ChainConfig {
   chain: string
@@ -69,6 +69,16 @@ function getChainConfig(chain: Chain): ChainConfig {
         whitelistName: 'BASE_TOKEN_WHITELIST',
         chainId: 8453
       }
+    case 'TRON':
+      return {
+        chain: 'TRONChain',
+        import: "import { TRONChain } from '@xchainjs/xchain-tron';",
+        whitelistUrls: [
+          'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/trontokens/tron_mainnet_latest.json?ref_type=heads'
+        ],
+        outputPath: './src/renderer/types/generated/thorchain/trontrc20whitelist.ts',
+        whitelistName: 'TRON_TOKEN_WHITELIST'
+      }
     default:
       throw new Error(`Unsupported chain: ${chain}`)
   }
@@ -87,7 +97,7 @@ async function loadList(urls: string[], chain: Chain): Promise<ERC20Whitelist> {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tokens = data.tokens.map((token: any) => ({
         ...token,
-        chainId: token.chainId ?? config.chainId // Use token.chainId or fallback to config.chainId
+        chainId: token.chainId ?? config.chainId ?? 1 // Use token.chainId or fallback to config.chainId or 1
       }))
       allTokens.push(...tokens) // Append tokens to the combined list
     } catch (error) {
@@ -157,7 +167,7 @@ function createTemplate(list: AssetList, config: ChainConfig): string {
 async function main() {
   const chain = process.argv[2] as Chain
   if (!chain) {
-    console.error('Chain argument is required (e.g., ARB, AVAX, BSC, ETH, BASE)')
+    console.error('Chain argument is required (e.g., ARB, AVAX, BSC, ETH, BASE, TRON)')
     process.exit(1)
   }
 

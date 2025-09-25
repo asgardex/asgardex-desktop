@@ -19,6 +19,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { AssetType, baseAmount } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
@@ -160,6 +161,7 @@ export const SendView = (): JSX.Element => {
         case XRPChain:
         case RadixChain:
         case SOLChain:
+        case TRONChain:
           return (
             <SendViewCOSMOS
               asset={asset}

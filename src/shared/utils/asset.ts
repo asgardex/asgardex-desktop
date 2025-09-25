@@ -15,6 +15,7 @@ import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
 import { AssetXRD } from '@xchainjs/xchain-radix'
 import { SOLAsset } from '@xchainjs/xchain-solana'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+import { AssetTRX } from '@xchainjs/xchain-tron'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { AssetZEC } from '@xchainjs/xchain-zcash'
 
@@ -44,6 +45,7 @@ export {
   AssetXRD,
   SOLAsset,
   AssetUSK,
+  AssetTRX,
   AssetZEC
 }
 

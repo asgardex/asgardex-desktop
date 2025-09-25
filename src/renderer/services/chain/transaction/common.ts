@@ -18,6 +18,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, AssetType, Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
@@ -45,6 +46,7 @@ import * as XRD from '../../radix'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
 import * as THOR from '../../thorchain'
+import * as TRON from '../../tron'
 import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
 import * as ZEC from '../../zcash'
 import { SendPoolTxParams, SendTxParams } from '../types'
@@ -303,6 +305,8 @@ export const sendTx$ = ({
           })
         })
       )
+    case TRONChain:
+      return TRON.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletAccount, walletIndex, hdMode })
 
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
@@ -424,6 +428,7 @@ export const sendPoolTx$ = ({
     case ADAChain:
     case XRPChain:
     case SOLChain:
+    case TRONChain:
       return sendTx$({
         sender,
         walletType,
@@ -487,6 +492,8 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
       return SOL.txStatus$(txHash, O.none)
     case ZECChain:
       return ZEC.txStatus$(txHash, O.none)
+    case TRONChain:
+      return TRON.txStatus$(txHash, O.none)
     default:
       return Rx.of(
         RD.failure({

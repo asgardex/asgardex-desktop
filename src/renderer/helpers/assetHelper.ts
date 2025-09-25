@@ -41,7 +41,8 @@ import {
   SOLAsset,
   AssetUSK,
   AssetXRD,
-  AssetZEC
+  AssetZEC,
+  AssetTRX
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
@@ -51,6 +52,7 @@ import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whit
 import { BASE_TOKEN_WHITELIST } from '../types/generated/thorchain/baseerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitelist'
 import { ETH_TOKEN_WHITELIST } from '../types/generated/thorchain/etherc20whitelist'
+import { TRON_TOKEN_WHITELIST } from '../types/generated/thorchain/trontrc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
 import { getEVMChecksumAddress } from './addressHelper'
 import {
@@ -217,6 +219,12 @@ export const isXrpAsset = (asset: AnyAsset): boolean =>
 export const isSolAsset = (asset: AnyAsset): boolean =>
   asset.chain === SOLAsset.chain && asset.symbol.toUpperCase() === SOLAsset.symbol.toUpperCase()
 
+/**
+ * Checks whether an asset is a TRON asset
+ */
+export const isTrxAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetTRX.chain && asset.symbol.toUpperCase() === AssetTRX.symbol.toUpperCase()
+
 export const isUskAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetUSK.chain && asset.symbol.toUpperCase() === AssetUSK.symbol.toUpperCase()
 
@@ -328,6 +336,26 @@ export const iconUrlInBASEERC20Whitelist = (asset: AnyAsset): O.Option<string> =
     A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
     O.chain(({ iconUrl }) => iconUrl)
   )
+
+/**
+ * Checks whether a TRC20 asset is white listed or not
+ */
+const assetInTRONTRC20Whitelist = (asset: AnyAsset): boolean =>
+  FP.pipe(
+    TRON_TOKEN_WHITELIST,
+    A.map(({ asset }) => asset),
+    assetInList(asset)
+  )
+
+/**
+ * Gets icon url from TRON TRC20 white list
+ */
+export const iconUrlInTRONTRC20Whitelist = (asset: AnyAsset): O.Option<string> =>
+  FP.pipe(
+    TRON_TOKEN_WHITELIST,
+    A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
+    O.chain(({ iconUrl }) => iconUrl)
+  )
 /**
  * Checks whether ETH/ERC20 asset is whitelisted or not
  * based on following rules:
@@ -372,6 +400,16 @@ export const validAssetForAVAX = (asset: AnyAsset /* AVAX or ERC20 asset */, net
 export const validAssetForBSC = (asset: AnyAsset /* BSC or ERC20 asset */, network: Network): boolean => {
   return network !== Network.Mainnet || isBscAsset(asset) || assetInBSCERC20Whitelist(asset) // Check additional conditions
 }
+
+/**
+ * Checks whether TRX/TRC20 asset is whitelisted or not
+ * based on following rules:
+ * (1) Check on `mainnet` only
+ * (2) Always accept TRX
+ * (3) TRC20 asset needs to be listed in `TRONTRC20Whitelist`
+ */
+export const validAssetForTRON = (asset: AnyAsset /* TRX or TRC20 asset */, network: Network): boolean =>
+  network !== Network.Mainnet /* (1) */ || isTrxAsset(asset) /* (2) */ || assetInTRONTRC20Whitelist(asset)
 
 /**
  * Checks whether an ERC20 address is black listed or not

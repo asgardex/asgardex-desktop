@@ -32,7 +32,8 @@ const supportedChains: Chain[] = [
   'AVAX',
   'BSC',
   'ARB',
-  'BASE'
+  'BASE',
+  'TRON'
 ]
 
 const INITIAL_STANDALONE_LEDGER_STATE: StandaloneLedgerState = {

@@ -16,6 +16,7 @@ import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
 import { AssetXRP, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetTRX, TRONChain } from '@xchainjs/xchain-tron'
 import { AnyAsset, Asset, AssetType, Chain } from '@xchainjs/xchain-util'
 import { AssetZEC, ZECChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDZEC } from '@xchainjs/xchain-zcash'
 
@@ -41,6 +42,7 @@ const chainAssets: Record<Chain, Asset> = {
   SOL: SOLAsset,
   BASE: AssetBETH,
   ADA: ADAAsset,
+  TRON: AssetTRX,
   ZEC: AssetZEC,
   XRP: AssetXRP
 }
@@ -169,6 +171,11 @@ export const isXrdChain = (chain: Chain): boolean => eqChain.equals(chain, Radix
  */
 export const isCosmosChain = (chain: Chain): boolean => eqChain.equals(chain, GAIAChain)
 
+/**
+ * Check whether chain is TRON chain
+ */
+export const isTronChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), TRONChain)
+
 type ChainValues<T> = {
   [k in Chain]?: T[]
 }
@@ -222,6 +229,8 @@ export const getChain = (chain: string): Chain => {
       return ADAChain
     case 'XRP':
       return XRPChain
+    case 'TRON':
+      return TRONChain
     default:
       throw Error('Unknown chain')
   }

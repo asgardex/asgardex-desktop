@@ -16,6 +16,7 @@ import { RadixChain as RADIXChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 
@@ -38,7 +39,8 @@ export const CHAIN_STRINGS: Record<Chain, string> = {
   [BASEChain]: 'Base',
   [ADAChain]: 'Cardano',
   [ZECChain]: 'Zcash',
-  [XRPChain]: 'Ripple'
+  [XRPChain]: 'Ripple',
+  [TRONChain]: 'TRON'
 }
 
 export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
@@ -60,7 +62,8 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [BASEChain]: CHAIN_STRINGS[BASEChain],
   [ADAChain]: CHAIN_STRINGS[ADAChain],
   [ZECChain]: CHAIN_STRINGS[ZECChain],
-  [XRPChain]: CHAIN_STRINGS[XRPChain]
+  [XRPChain]: CHAIN_STRINGS[XRPChain],
+  [TRONChain]: CHAIN_STRINGS[TRONChain]
 }
 
 export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
@@ -195,5 +198,9 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   XRP: {
     blockReward: 0,
     avgBlockTimeInSecs: 4
+  },
+  TRON: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 3
   }
 }

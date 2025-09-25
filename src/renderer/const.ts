@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { assetAmount, bn, assetToString, baseAmount, Chain, AssetType, TokenAsset } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 
@@ -165,6 +166,13 @@ export const AssetSOLUSDC: TokenAsset = {
   type: AssetType.TOKEN
 }
 
+const AssetTRONUSDT: TokenAsset = {
+  chain: TRONChain,
+  symbol: 'USDT-TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+  ticker: 'USDT',
+  type: AssetType.TOKEN
+}
+
 // This hardcode list is for testnet only
 export const ETHAssetsTestnet = [AssetUSDT62E]
 export const AvaxAssetsTestnet = [AssetAVAX]
@@ -176,6 +184,8 @@ export const BSCAssetsFallBack = [AssetUSDCBSC, AssetUSDTBSC]
 export const AVAXAssetsFallback = [AssetUSDTAVAX, AssetUSDCAVAX]
 export const ARBAssetsFallback = [AssetUSDCARB]
 export const BASEAssetsFallback = [AssetCBBTC, AssetUSDCBASE]
+// Default TRON assets - can be expanded later
+export const TRONAssetsFallBack = [AssetTRONUSDT]
 
 // for evm only
 export const DEFAULT_USER_ASSETS = [

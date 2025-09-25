@@ -18,7 +18,12 @@ import * as RxOp from 'rxjs/operators'
 import { cChainToXChain, xAssetToCAsset } from './utils'
 
 // Create singleton instances to prevent multiple instances and cache invalidation
-const sdk = new SwapSDK({ network: 'mainnet' })
+const sdk = new SwapSDK({
+  network: 'mainnet',
+  enabledFeatures: {
+    dca: true
+  }
+})
 const assetsData = new CachedValue(() => sdk.getAssets(), 24 * 60 * 60 * 1000)
 
 export const createChainflipService$ = () => {
@@ -29,7 +34,7 @@ export const createChainflipService$ = () => {
       RxOp.catchError((error) => {
         // Log 429 and other API errors but don't crash the UI
         console.warn('Chainflip API error (assets data):', error)
-        return Rx.of(RD.failure(new Error('Chainflip service temporarily unavailable')))
+        return Rx.of(RD.failure(new Error('Chainflip sdk service temporarily unavailable')))
       }),
       RxOp.shareReplay(1) // Cache the observable result
     )

@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { AssetType } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
@@ -46,6 +47,7 @@ import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
+import * as TRON from '../tron'
 import * as ZEC from '../zcash'
 import { client$, selectedAsset$ } from './common'
 import { INITIAL_LOAD_TXS_PROPS } from './const'
@@ -122,6 +124,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return XRD.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               case SOLChain:
                 return SOL.txs$({ asset: O.some(asset), walletAddress, walletIndex })
+              case TRONChain:
+                return TRON.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               case ZECChain:
                 return ZEC.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case XRPChain:

@@ -9,6 +9,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { AnyAsset, AssetType, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
@@ -42,7 +43,9 @@ import {
   isBaseAsset,
   iconUrlInBASEERC20Whitelist,
   isAdaAsset,
-  isXrpAsset
+  isXrpAsset,
+  isTrxAsset,
+  iconUrlInTRONTRC20Whitelist
 } from '../../../../helpers/assetHelper'
 import {
   isArbChain,
@@ -51,7 +54,8 @@ import {
   isBscChain,
   isEthChain,
   isMayaChain,
-  isSolChain
+  isSolChain,
+  isTronChain
 } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
@@ -77,7 +81,8 @@ import {
   baseIcon,
   tcyIcon,
   xrpIcon,
-  rujiIcon
+  rujiIcon,
+  tronIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -104,6 +109,8 @@ const chainIconMap = (asset: AnyAsset): string | null => {
       return bscIcon
     case SOLChain:
       return solIcon
+    case TRONChain:
+      return tronIcon
     case THORChain:
       if (asset.type === AssetType.NATIVE || asset.type === AssetType.TRADE) return null
       return runeIcon
@@ -206,6 +213,10 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     if (isAtomAsset(asset)) {
       return atomIcon
     }
+    // TRX
+    if (isTrxAsset(asset)) {
+      return tronIcon
+    }
     // Hack for USDP // 1inch doesn't supply
     if (asset.symbol === 'USDP-0X8E870D67F660D95D5BE530380D0EC0BD388289E1') {
       return usdpIcon
@@ -264,6 +275,14 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
       if (isMayaChain(asset.chain) && isMayaAsset(asset)) {
         return mayaIcon
       }
+      // Handle TRON tokens (TRC20)
+      if (isTronChain(asset.chain) && asset.type === AssetType.TOKEN) {
+        return FP.pipe(
+          // Try to get icon url from TRC20 whitelist
+          iconUrlInTRONTRC20Whitelist(asset),
+          O.getOrElse(() => '')
+        )
+      }
     }
 
     return ''
@@ -282,7 +301,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
       return (
         <Styled.IconWrapper size={size} isSynth={isSynth} isTrade={isTrade} isSecured={isSecured} className={className}>
           <Styled.Icon src={src} isNotNative={isSynth || isTrade || isSecured} size={size} />
-          {overlayIconSrc && !asset.symbol.includes(asset.chain) && (
+          {overlayIconSrc && !asset.symbol.includes(asset.chain) && !isTrxAsset(asset) && (
             <Styled.OverlayIcon src={overlayIconSrc} size={size} />
           )}
         </Styled.IconWrapper>

@@ -35,7 +35,8 @@ import {
   isCosmosChain,
   isThorChain,
   isMayaChain,
-  isKujiChain
+  isKujiChain,
+  isTronChain
 } from '../../helpers/chainHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { useNetwork } from '../../hooks/useNetwork'
@@ -53,6 +54,9 @@ const chainSupportsHDModes = (chain: Chain): boolean => {
 
   // Cosmos-based chains support HD modes
   if (isCosmosChain(chain) || isThorChain(chain) || isMayaChain(chain) || isKujiChain(chain)) return true
+
+  // TRON supports HD modes
+  if (isTronChain(chain)) return true
 
   return false
 }
@@ -123,8 +127,8 @@ export const LedgerChainSelectView: React.FC = () => {
     } else if (chain === BCHChain || chain === LTCChain || chain === DOGEChain || chain === DASHChain) {
       // Other UTXO chains use default mode
       setSelectedHDMode('default')
-    } else if (chain === 'GAIA' || chain === 'THOR') {
-      // Cosmos chains use default mode
+    } else if (chain === 'GAIA' || chain === 'THOR' || chain === 'TRON') {
+      // Cosmos chains and TRON use default mode
       setSelectedHDMode('default')
     } else {
       // Default to Ledger Live for EVM chains
