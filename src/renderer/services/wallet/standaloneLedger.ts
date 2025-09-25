@@ -8,6 +8,7 @@ import { LedgerErrorId } from '../../../shared/api/types'
 import { DEFAULT_EVM_HD_MODE } from '../../../shared/evm/types'
 import { isError } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
+import { isEvmChain } from '../../helpers/evmHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import { Network$ } from '../app/types'
@@ -40,15 +41,18 @@ const INITIAL_STANDALONE_LEDGER_STATE: StandaloneLedgerState = {
   availableChains: supportedChains,
   selectedChainForDetection: undefined,
   connectedChain: undefined,
-  address: undefined
+  address: undefined,
+  selectedHDMode: undefined,
+  selectedWalletAccount: 0,
+  selectedWalletIndex: 0
 }
 
 /**
  * Get the correct HD mode for a specific chain
  */
 const getHDModeForChain = (chain: Chain): HDMode => {
-  // EVM chains (ETH, AVAX, BSC, ARB, BASE) need EVM HD mode
-  if (['ETH', 'AVAX', 'BSC', 'ARB', 'BASE'].includes(chain)) {
+  // EVM chains need EVM HD mode
+  if (isEvmChain(chain)) {
     return DEFAULT_EVM_HD_MODE
   }
   // All other chains use default HD mode
@@ -93,13 +97,19 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
 
     const attemptDetection = async (): Promise<Chain | undefined> => {
       try {
+        // Get detection parameters from state
+        const detectionState = standaloneLedgerState()
+        const hdMode = detectionState.selectedHDMode || getHDModeForChain(chainToDetect)
+        const walletAccount = detectionState.selectedWalletAccount || 0
+        const walletIndex = detectionState.selectedWalletIndex || 0
+
         // Attempt to get address - if successful, device is connected for this chain
         const result = await window.apiHDWallet.getLedgerAddress({
           chain: chainToDetect,
           network: currentNetwork || 'mainnet',
-          walletAccount: 0,
-          walletIndex: 0,
-          hdMode: getHDModeForChain(chainToDetect)
+          walletAccount,
+          walletIndex,
+          hdMode
         })
 
         if (result && !('left' in result)) {
@@ -166,7 +176,12 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
   /**
    * Connects to a specific chain on the Ledger device
    */
-  const connectLedgerChain: ConnectLedgerChainHandler = (chain: Chain, hdMode: HDMode = getHDModeForChain(chain)) =>
+  const connectLedgerChain: ConnectLedgerChainHandler = (
+    chain: Chain,
+    hdMode: HDMode = getHDModeForChain(chain),
+    walletAccount: number = 0,
+    walletIndex: number = 0
+  ) =>
     FP.pipe(
       Rx.combineLatest([network$, Rx.of(chain)]),
       RxOp.take(1),
@@ -176,8 +191,8 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
             window.apiHDWallet.getLedgerAddress({
               chain: selectedChain,
               network,
-              walletAccount: 0,
-              walletIndex: 0,
+              walletAccount,
+              walletIndex,
               hdMode
             })
           ),
@@ -223,7 +238,12 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
    * Gets address for a chain without updating the global state
    * Useful for fetching target addresses without affecting source balance
    */
-  const getAddressWithoutStateChange = (chain: Chain, hdMode: HDMode = getHDModeForChain(chain)) =>
+  const getAddressWithoutStateChange = (
+    chain: Chain,
+    hdMode: HDMode = getHDModeForChain(chain),
+    walletAccount: number = 0,
+    walletIndex: number = 0
+  ) =>
     FP.pipe(
       Rx.combineLatest([network$, Rx.of(chain)]),
       RxOp.take(1),
@@ -233,8 +253,8 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
             window.apiHDWallet.getLedgerAddress({
               chain: selectedChain,
               network,
-              walletAccount: 0,
-              walletIndex: 0,
+              walletAccount,
+              walletIndex,
               hdMode
             })
           ),
@@ -345,6 +365,29 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
     setStandaloneLedgerState(INITIAL_STANDALONE_LEDGER_STATE)
   }
 
+  /**
+   * Sets the HD mode for detection
+   */
+  const setDetectionHDMode = (hdMode: HDMode) => {
+    const currentState = standaloneLedgerState()
+    setStandaloneLedgerState({
+      ...currentState,
+      selectedHDMode: hdMode
+    })
+  }
+
+  /**
+   * Sets wallet account and index for detection
+   */
+  const setDetectionWalletParams = (walletAccount: number, walletIndex: number) => {
+    const currentState = standaloneLedgerState()
+    setStandaloneLedgerState({
+      ...currentState,
+      selectedWalletAccount: walletAccount,
+      selectedWalletIndex: walletIndex
+    })
+  }
+
   return {
     standaloneLedgerState$,
     connectLedgerChain,
@@ -356,6 +399,8 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
     startDetection,
     resetToChainSelection,
     enterStandaloneMode,
-    exitStandaloneMode
+    exitStandaloneMode,
+    setDetectionHDMode,
+    setDetectionWalletParams
   }
 }

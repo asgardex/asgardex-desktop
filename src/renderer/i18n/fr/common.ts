@@ -2,13 +2,10 @@ import { CommonMessages } from '../types'
 
 const common: CommonMessages = {
   'common.welcome': 'Bienvenue',
-  'common.stats': 'Statistiques',
   'common.network': 'Réseau',
   'common.dex': 'Dex',
-  'common.faqs': 'FAQ',
   'common.greeting': 'Bonjour {name}',
   'common.examples': 'Exemple {name}',
-  'common.copyright': '©',
   'common.type': 'Taper',
   'common.chain': 'Cadena',
   'common.store': 'Stocker',
@@ -92,6 +89,11 @@ const common: CommonMessages = {
   'common.copyTxUrl': "Copier l'URL de la transaction",
   'common.trackTransaction': 'Suivre la transaction',
   'common.copyTxHash': "Copier l'URL de la hash",
+  'common.transaction.tracking': 'Suivi des transactions',
+  'common.transaction.loading': 'Chargement des transactions...',
+  'common.transaction.failed': 'Échec du chargement des transactions',
+  'common.transaction.active': 'Actives',
+  'common.transaction.completed': 'Terminées',
   'common.fee': 'Frais',
   'common.feeRate': 'Taux de frais',
   'common.fee.nodeOperator': 'Frais de lopérateur de nœud %',
@@ -202,8 +204,17 @@ const common: CommonMessages = {
   'common.metamask': 'MetaMask',
   'common.unknown': 'Inconnu',
   'common.featureUnderDevelopment': 'Fonction en cours de développement, ne pas utiliser',
-  'common.comingSoon': 'Bientôt disponible',
-  'common.watchlist': 'Liste de surveillance'
+  'common.watchlist': 'Liste de surveillance',
+  'common.txUrl': 'URL',
+  'common.txHash': 'HASH',
+  'common.runeScan': 'RuneScan',
+  'common.mayaScan': 'MayaScan',
+  'common.whitelist': 'Whitelist',
+  'common.fetchFromLedger': 'Récupérer depuis Ledger',
+  'common.nativeSegwit': 'Native Segwit',
+  'common.taproot': 'Taproot',
+  'common.protocols': 'Protocoles',
+  'common.resetToDefault': 'Remettre par défaut'
 }
 
 export default common

@@ -16,7 +16,8 @@ import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
-import { getDerivationPaths } from './common'
+import { HDMode } from '../../../../shared/wallet/types'
+import { getDerivationPaths, hdModeToDerivationPathType } from './common'
 
 /**
  * Sends BTC tx using Ledger
@@ -31,7 +32,8 @@ export const send = async ({
   memo,
   walletAccount,
   walletIndex,
-  addressFormat = AddressFormat.P2WPKH,
+  hdMode,
+  addressFormat,
   apiKey
 }: {
   transport: Transport
@@ -43,6 +45,7 @@ export const send = async ({
   memo?: string
   walletAccount: number
   walletIndex: number
+  hdMode?: HDMode
   addressFormat?: AddressFormat
   apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
@@ -77,12 +80,23 @@ export const send = async ({
     [Network.Mainnet]: mainnetBlockcypherProvider
   }
   try {
+    // Determine address format based on hdMode if not explicitly provided
+    let finalAddressFormat: AddressFormat = AddressFormat.P2WPKH
+    if (addressFormat !== undefined) {
+      finalAddressFormat = addressFormat
+    } else if (hdMode === 'p2tr') {
+      finalAddressFormat = AddressFormat.P2TR
+    }
+
     const clientLedger = new ClientLedger({
       transport,
       ...defaultBTCParams,
+      addressFormat: finalAddressFormat,
       dataProviders: [BlockcypherDataProviders, HaskoinDataProviders, BitgoProviders],
       rootDerivationPaths:
-        addressFormat === AddressFormat.P2TR ? tapRootDerivationPaths : getDerivationPaths(walletAccount, network),
+        finalAddressFormat === AddressFormat.P2TR
+          ? tapRootDerivationPaths
+          : getDerivationPaths(walletAccount, network, hdModeToDerivationPathType(hdMode)),
       network: network
     })
 

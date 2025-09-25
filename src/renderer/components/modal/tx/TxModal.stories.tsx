@@ -45,7 +45,7 @@ export const StoryFailure: StoryFn = () => (
 StoryFailure.storyName = 'failure'
 
 const extraContent = (): JSX.Element => (
-  <div className="flex items-center justify-center gap-2">
+  <div className="flex flex-col items-center justify-center gap-2">
     <Label align="center" color="warning" textTransform="uppercase">
       Extra Content
     </Label>

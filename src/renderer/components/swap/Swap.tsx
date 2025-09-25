@@ -32,7 +32,8 @@ import {
   isTradeAsset,
   isSecuredAsset,
   SecuredAsset,
-  Chain
+  Chain,
+  assetToString
 } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
@@ -52,7 +53,7 @@ import {
   isChainOfThor
 } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
-import { WalletType } from '../../../shared/wallet/types'
+import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useWalletContext } from '../../contexts/WalletContext'
@@ -78,6 +79,7 @@ import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
 import { formatSwapTime } from '../../helpers/timeHelper'
+import { addSwapToTracker } from '../../helpers/transactionTracker'
 import {
   filterWalletBalancesByAssets,
   getWalletBalanceByAssetAndWalletType,
@@ -166,7 +168,9 @@ export const Swap = ({
   addressValidator,
   hidePrivateData,
   midgardStatusRD,
-  midgardStatusMayaRD
+  midgardStatusMayaRD,
+  transactionTrackingService,
+  mayaTransactionTrackingService
 }: SwapProps) => {
   const { estimateSwap } = useAggregator()
   const intl = useIntl()
@@ -174,10 +178,16 @@ export const Swap = ({
 
   // Get app wallet state to check for standalone ledger mode
   const appWalletState = useObservableState(appWalletService.appWalletState$)
+  const standaloneLedgerState = useObservableState(appWalletService.standaloneLedgerService.standaloneLedgerState$)
 
   // State for dynamically fetched target address in standalone ledger mode
   const [standaloneLedgerTargetAddress, setStandaloneLedgerTargetAddress] = useState<O.Option<Address>>(O.none)
   const [isFetchingStandaloneLedgerAddress, setIsFetchingStandaloneLedgerAddress] = useState(false)
+
+  // State for target address derivation path parameters
+  const [targetHDMode, setTargetHDMode] = useState<HDMode>('default')
+  const [targetWalletAccount, setTargetWalletAccount] = useState<number>(0)
+  const [targetWalletIndex, setTargetWalletIndex] = useState<number>(0)
 
   const { chain: sourceChain } =
     sourceAsset.type === AssetType.SYNTH
@@ -209,9 +219,9 @@ export const Swap = ({
         setIsFetchingStandaloneLedgerAddress(true)
 
         try {
-          // Get the target chain address without changing global state
+          // Get the target chain address without changing global state using user-selected parameters
           const addressResult = await appWalletService.standaloneLedgerService
-            .getAddressWithoutStateChange(chain)
+            .getAddressWithoutStateChange(chain, targetHDMode, targetWalletAccount, targetWalletIndex)
             .pipe()
             .toPromise()
 
@@ -229,11 +239,24 @@ export const Swap = ({
         }
       }
     },
-    [appWalletState, appWalletService]
+    [appWalletState, appWalletService, targetHDMode, targetWalletAccount, targetWalletIndex]
   )
 
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
   const [isFetchingEstimate, setIsFetchingEstimate] = useState(false)
+
+  // Set default HD mode based on target chain
+  useEffect(() => {
+    if (targetAsset.chain === 'BTC') {
+      setTargetHDMode('p2wpkh') // Default to Native SegWit for Bitcoin
+    } else if (['LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain)) {
+      setTargetHDMode('default') // Default HD mode for other UTXO chains
+    } else if (['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain)) {
+      setTargetHDMode('ledgerlive') // Default to Ledger Live for EVM chains
+    } else {
+      setTargetHDMode('default')
+    }
+  }, [targetAsset.chain])
 
   const { isAssetSupported$ } = useChainflipContext()
 
@@ -629,33 +652,23 @@ export const Swap = ({
   // Price of swap IN fee
   const oPriceSwapInFee: O.Option<CryptoAmount> = useMemo(() => {
     const assetAmount = new CryptoAmount(swapFees.inFee.amount, swapFees.inFee.asset)
-    const result = FP.pipe(
-      isChainOfThor(assetAmount.asset.chain)
-        ? PoolHelpers.getUSDValue({
-            balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-            poolDetails: poolDetailsThor,
-            pricePool: pricePoolThor
-          })
-        : FP.pipe(
-            PoolHelpersMaya.getUSDValue({
-              balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-              poolDetails: poolDetailsMaya,
-              pricePool: pricePoolMaya
-            })
-          ),
-      O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
-    )
+    const usdValueOption = isChainOfThor(assetAmount.asset.chain)
+      ? PoolHelpers.getUSDValue({
+          balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+          poolDetails: poolDetailsThor,
+          pricePool: pricePoolThor
+        })
+      : PoolHelpersMaya.getUSDValue({
+          balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+          poolDetails: poolDetailsMaya,
+          pricePool: pricePoolMaya
+        })
 
-    return O.some(new CryptoAmount(result, pricePoolThor.asset))
-  }, [
-    amountToSwapMax1e8.decimal,
-    poolDetailsMaya,
-    poolDetailsThor,
-    pricePoolMaya,
-    pricePoolThor,
-    swapFees.inFee.amount,
-    swapFees.inFee.asset
-  ])
+    return FP.pipe(
+      usdValueOption,
+      O.map((result) => new CryptoAmount(result, pricePoolThor.asset))
+    )
+  }, [poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor, swapFees.inFee.amount, swapFees.inFee.asset])
 
   const priceSwapInFeeLabel = useMemo(() => {
     // Ensure swapFees is defined before proceeding
@@ -676,19 +689,24 @@ export const Swap = ({
 
     const price = FP.pipe(
       oPriceSwapInFee,
-      O.map(({ assetAmount, asset }) =>
-        eqAsset.equals(feeAsset, asset)
-          ? emptyString
-          : formatAssetAmountCurrency({
-              amount: assetAmount,
-              asset: asset,
-              decimal: isUSDAsset(asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(asset)
-            })
-      ),
+      O.map(({ assetAmount, asset }) => {
+        if (eqAsset.equals(feeAsset, asset)) {
+          return emptyString
+        }
+
+        // Use more decimals for very small USD amounts to avoid showing $0.00
+        const isVerySmallUSDAmount = isUSDAsset(asset) && assetAmount.amount().lt(0.01)
+        const decimalPlaces = isUSDAsset(asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+
+        return formatAssetAmountCurrency({
+          amount: assetAmount,
+          asset: asset,
+          decimal: decimalPlaces,
+          trimZeros: !isUSDAsset(asset) || isVerySmallUSDAmount
+        })
+      }),
       O.getOrElse(() => emptyString)
     )
-
     return price ? `${price} (${fee})` : fee
   }, [oPriceSwapInFee, swapFees])
 
@@ -700,11 +718,11 @@ export const Swap = ({
         () =>
           new CryptoAmount(
             swapFees.outFee.amount,
-            targetAsset.type === AssetType.SYNTH
+            swapFees.outFee.asset.type === AssetType.SYNTH
               ? AssetCacao
-              : targetAsset.type === AssetType.SECURED
+              : swapFees.outFee.asset.type === AssetType.SECURED
               ? AssetRuneNative
-              : targetAsset
+              : swapFees.outFee.asset
           ),
         (txDetails) => {
           const txOutFee = txDetails.fees.outboundFee
@@ -713,7 +731,7 @@ export const Swap = ({
       )
     )
     return swapOutFee
-  }, [oQuoteProtocol, swapFees.outFee.amount, targetAsset])
+  }, [oQuoteProtocol, swapFees.outFee.amount, swapFees.outFee.asset])
   const [outFeePriceValue, setOutFeePriceValue] = useState<CryptoAmount>(
     new CryptoAmount(swapFees.outFee.amount, targetAsset)
   )
@@ -1247,16 +1265,35 @@ export const Swap = ({
             amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
           }
         }
+
+        // In standalone ledger mode, use the actual connected ledger's address info
+        const finalWalletAddress =
+          appWalletState && isStandaloneLedgerMode(appWalletState) && standaloneLedgerState?.address
+            ? standaloneLedgerState.address.address
+            : walletAddress
+        const finalWalletAccount =
+          appWalletState && isStandaloneLedgerMode(appWalletState) && standaloneLedgerState?.address
+            ? standaloneLedgerState.address.walletAccount
+            : walletAccount
+        const finalWalletIndex =
+          appWalletState && isStandaloneLedgerMode(appWalletState) && standaloneLedgerState?.address
+            ? standaloneLedgerState.address.walletIndex
+            : walletIndex
+        const finalHDMode =
+          appWalletState && isStandaloneLedgerMode(appWalletState) && standaloneLedgerState?.address
+            ? standaloneLedgerState.address.hdMode
+            : hdMode
+
         return {
           poolAddress,
           asset: sourceAsset,
           amount: amountToSwap,
           memo: updateMemo(quoteSwap.memo, network),
           walletType,
-          sender: walletAddress,
-          walletAccount,
-          walletIndex,
-          hdMode,
+          sender: finalWalletAddress,
+          walletAccount: finalWalletAccount,
+          walletIndex: finalWalletIndex,
+          hdMode: finalHDMode,
           protocol: poolAddress.protocol
         }
       })
@@ -1273,7 +1310,9 @@ export const Swap = ({
     sourceAsset,
     network,
     sourceChainAssetAmount,
-    swapFees.inFee.amount
+    swapFees.inFee.amount,
+    appWalletState,
+    standaloneLedgerState?.address
   ])
 
   const oCFSwapParams: O.Option<SendTxParams> = useMemo(() => {
@@ -1538,6 +1577,7 @@ export const Swap = ({
     [onChangeAsset, resetIsApprovedState, sourceAsset, sourceWalletType]
   )
   const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
+  const lastTrackedTxHashRef = useRef<string | null>(null)
 
   // whenever `oApproveParams` has been updated,
   // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
@@ -1800,7 +1840,7 @@ export const Swap = ({
           <div>{renderStreamerQuantity}</div>
         </div>
         <div className="flex justify-end">
-          <Tooltip title="Reset to streaming default">
+          <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>
             <BaseButton
               onClick={resetToDefault}
               className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
@@ -2281,6 +2321,44 @@ export const Swap = ({
       prevTargetAsset.current = O.some(targetAsset)
     }
   }, [reloadFees, resetApproveState, resetSwapState, sourceAsset, targetAsset, swapMemo])
+
+  // Track successful swap transactions (THORChain and Maya)
+  useEffect(() => {
+    const { swapTx } = swapState
+    if (RD.isSuccess(swapTx)) {
+      const txHash = swapTx.value
+      FP.pipe(
+        oQuoteProtocol,
+        O.map((quoteProtocol) => {
+          if (lastTrackedTxHashRef.current !== txHash) {
+            if (quoteProtocol.protocol === 'Thorchain') {
+              addSwapToTracker(transactionTrackingService, txHash, {
+                sourceAsset: assetToString(sourceAsset),
+                targetAsset: assetToString(targetAsset),
+                amount: amountToSwapMax1e8.amount().toString()
+              })
+              lastTrackedTxHashRef.current = txHash
+            } else if (quoteProtocol.protocol === 'Mayachain') {
+              addSwapToTracker(mayaTransactionTrackingService, txHash, {
+                sourceAsset: assetToString(sourceAsset),
+                targetAsset: assetToString(targetAsset),
+                amount: amountToSwapMax1e8.amount().toString()
+              })
+              lastTrackedTxHashRef.current = txHash
+            }
+          }
+        })
+      )
+    }
+  }, [
+    swapState,
+    oQuoteProtocol,
+    transactionTrackingService,
+    mayaTransactionTrackingService,
+    sourceAsset,
+    targetAsset,
+    amountToSwapMax1e8
+  ])
 
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching
@@ -2943,12 +3021,66 @@ export const Swap = ({
                         </h3>
                         <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
                       </div>
+                      {/* Derivation path controls - only show when no address is fetched yet and not in manual entry mode */}
+                      {FP.pipe(standaloneLedgerTargetAddress, O.isNone) && !customAddressEditActive && (
+                        <div className="flex items-center gap-2">
+                          {(['BTC', 'LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) ||
+                            ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain)) && (
+                            <>
+                              <div className="flex items-center gap-1">
+                                <span className="text-10 uppercase text-gray2 dark:text-gray2d">Account</span>
+                                <input
+                                  type="number"
+                                  value={targetWalletAccount.toString()}
+                                  onChange={(e) => setTargetWalletAccount(Math.max(0, parseInt(e.target.value) || 0))}
+                                  className="w-12 h-6 text-10 px-1 text-center bg-bg0 dark:bg-bg0d border border-gray1 dark:border-gray1d rounded"
+                                  min="0"
+                                />
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-10 uppercase text-gray2 dark:text-gray2d">Index</span>
+                                <input
+                                  type="number"
+                                  value={targetWalletIndex.toString()}
+                                  onChange={(e) => setTargetWalletIndex(Math.max(0, parseInt(e.target.value) || 0))}
+                                  className="w-12 h-6 text-10 px-1 text-center bg-bg0 dark:bg-bg0d border border-gray1 dark:border-gray1d rounded"
+                                  min="0"
+                                />
+                              </div>
+                              {targetAsset.chain === 'BTC' && (
+                                <select
+                                  value={targetHDMode}
+                                  onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
+                                  className="text-10 px-2 py-1 bg-bg0 dark:bg-bg0d border border-gray1 dark:border-gray1d rounded">
+                                  <option value="p2wpkh">{intl.formatMessage({ id: 'common.nativeSegwit' })}</option>
+                                  <option value="p2tr">{intl.formatMessage({ id: 'common.taproot' })}</option>
+                                </select>
+                              )}
+                              {['LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) && (
+                                <select
+                                  value={targetHDMode}
+                                  onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
+                                  className="text-10 px-2 py-1 bg-bg0 dark:bg-bg0d border border-gray1 dark:border-gray1d rounded">
+                                  <option value="default">Default</option>
+                                </select>
+                              )}
+                              {['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain) && (
+                                <select
+                                  value={targetHDMode}
+                                  onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
+                                  className="text-10 px-2 py-1 bg-bg0 dark:bg-bg0d border border-gray1 dark:border-gray1d rounded">
+                                  <option value="ledgerlive">Ledger Live</option>
+                                  <option value="legacy">Legacy</option>
+                                  <option value="metamask">MetaMask</option>
+                                </select>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
+
                       {/* Refresh from Ledger button - only show if address was fetched from Ledger */}
-                      {FP.pipe(
-                        standaloneLedgerTargetAddress,
-                        O.filter((addr) => addr !== 'MANUAL_ENTRY'),
-                        O.isSome
-                      ) && (
+                      {FP.pipe(standaloneLedgerTargetAddress, O.isSome) && !customAddressEditActive && (
                         <BaseButton
                           size="small"
                           className="hover:shadow-full dark:hover:shadow-fulld"
@@ -2991,9 +3123,11 @@ export const Swap = ({
                                     <div className="w-4 h-4 bg-turquoise rounded-sm"></div>
                                   </div>
                                   <div className="text-left">
-                                    <div className="font-medium text-text0 dark:text-text0d">Fetch from Ledger</div>
+                                    <div className="font-medium text-text0 dark:text-text0d">
+                                      {intl.formatMessage({ id: 'common.fetchFromLedger' })}
+                                    </div>
                                     <div className="text-[12px] text-text2 dark:text-text2d">
-                                      Get address from your hardware wallet
+                                      {intl.formatMessage({ id: 'wallet.ledger.fetchDescription' })}
                                     </div>
                                   </div>
                                 </div>
@@ -3005,7 +3139,7 @@ export const Swap = ({
                               <button
                                 className="group flex items-center justify-between p-4 border border-gray0 dark:border-gray0d rounded-lg hover:border-turquoise hover:bg-bg1 dark:hover:bg-bg1d transition-all duration-200"
                                 onClick={() => {
-                                  setStandaloneLedgerTargetAddress(O.some('MANUAL_ENTRY'))
+                                  setStandaloneLedgerTargetAddress(O.none)
                                   setCustomAddressEditActive(true)
                                 }}>
                                 <div className="flex items-center space-x-3">
@@ -3028,7 +3162,7 @@ export const Swap = ({
                         ),
                         (address) => (
                           <div className="mt-2">
-                            {address === 'MANUAL_ENTRY' ? (
+                            {customAddressEditActive ? (
                               <div className="space-y-2">
                                 <div className="text-[14px] text-text2 dark:text-text2d">Enter recipient address:</div>
                                 <div className="flex items-center space-x-2">

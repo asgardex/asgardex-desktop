@@ -79,9 +79,7 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'Транзакция завершена.',
   'wallet.send.fastest': 'Наибыстро',
   'wallet.send.fast': 'Быстро',
-  'wallet.send.notAllowed': 'Не разрешено',
   'wallet.send.average': 'Среднее',
-  'wallet.send.fundsLoss': 'Средства будут потеряны при отправке на этот адрес.',
   'wallet.send.max.doge':
     'Рассчитанное макс. значение основано на приблизительных комиссиях, которые могут быть иногда неточны для DOGE. В случае появления сообщения об ошибке "Недостаточно средств для проведения операции" проверьте https://blockchair.com/dogecoin/transactions, чтобы получить среднее значение последних сборов и вычесть его из баланса перед отправкой транзакции.',
   'wallet.errors.balancesFailed': 'Нет загруженных балансов. {errorMsg}',
@@ -114,7 +112,11 @@ const wallet: WalletMessages = {
   'wallet.ledger.verifyAddress.modal.description': 'Проверьте адрес {address} на вашем устройстве',
   'wallet.ledger.removeAddress': 'Удалить адрес Ledger для цепочки {chain}',
   'wallet.ledger.viewAddress': 'Просмотреть адрес в проводнике',
-  'wallet.evmToken.tooltip': 'Не можете найти свой токен? Перейдите в настройки и добавьте его в белый список вручную.'
+  'wallet.evmToken.tooltip': 'Не можете найти свой токен? Перейдите в настройки и добавьте его в белый список вручную.',
+  // TODO: Need Russian translation by native speaker
+  'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
+  'wallet.derivationPath.taproot': 'Taproot P2TR',
+  'wallet.ledger.fetchDescription': 'Get address from your hardware wallet'
 }
 
 export default wallet

@@ -17,7 +17,9 @@ const bonds: BondsMessages = {
   'bonds.node.enterMessage': 'Entrez le nœud à surveiller',
   'bonds.validations.nodeAlreadyAdded': 'Le nœud est déjà ajouté',
   'bonds.node.removeMessage': 'Êtes-vous sûr de vouloir supprimer le nœud {node} ?',
-  'bonds.validations.bondStatusActive': "La déliaison d'un nœud actif n'est pas autorisée"
+  'bonds.validations.bondStatusActive': "La déliaison d'un nœud actif n'est pas autorisée",
+  'bonds.tooltip.removeFromWatchlist': "Retirer ce fournisseur d'obligations de la liste de surveillance",
+  'bonds.tooltip.addToWatchlist': "Ajouter ce fournisseur d'obligations à la liste de surveillance"
 }
 
 export default bonds

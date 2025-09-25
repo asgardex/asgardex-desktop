@@ -325,11 +325,12 @@ export const disableTradingActions = ({
 }
 
 /**
- * Helper to check if pool trading actions (`ADD`, `WITHDRAW`) have to be disabled
+ * Helper to check if pool deposit actions (`ADD`) have to be disabled
  *
  * |                                   | ADD | WITHDRAW | SWAP |
  * |--------------------------------- -|-----|----------|------|
- * | PAUSELP{chain}                    | NO  | NO       | YES  |
+ * | PAUSELP (global)                  | NO  | YES      | YES  |
+ * | PAUSELP{chain}                    | NO  | YES      | YES  |
  * | HALT{chain}                       | NO  | NO       | NO   |
  * | PAUSELPDEPOSIT-{chain}-{chain}    | NO  | YES      | NO   |
  */
@@ -345,11 +346,43 @@ export const disablePoolActions = ({
   // Check all `pauseLp{chain}` values (provided by `mimir` endpoint) to disable pool actions
   if (mimirHalt.pauseGlobalLp) return true
 
-  // 2. Dynamic check for the specific chain trading halt status
-  const haltTradingKey = `PAUSELP${chain}` as keyof MimirHalt
+  // 2. Dynamic check for the specific chain LP pause status
+  const pauseLpKey = `PAUSELP${chain}` as keyof MimirHalt
   const haltDepositKey = `PAUSELPDEPOSIT-${chain}-${chain}` as keyof MimirHalt
-  if (mimirHalt[haltTradingKey]) return true
+  if (mimirHalt[pauseLpKey]) return true
   if (mimirHalt[haltDepositKey]) return true
+
+  // Check `chain` is included in `haltedChains` (provided by `inbound_addresses` endpoint)
+  return FP.pipe(haltedChains, isChainElem(chain))
+}
+
+/**
+ * Helper to check if pool withdraw actions have to be disabled
+ *
+ * |                                   | ADD | WITHDRAW | SWAP |
+ * |--------------------------------- -|-----|----------|------|
+ * | PAUSELP (global)                  | NO  | YES      | YES  |
+ * | PAUSELP{chain}                    | NO  | YES      | YES  |
+ * | HALT{chain}                       | NO  | NO       | NO   |
+ * | PAUSELPDEPOSIT-{chain}-{chain}    | NO  | YES      | NO   |
+ */
+export const disableWithdrawActions = ({
+  chain,
+  haltedChains,
+  mimirHalt
+}: {
+  chain: Chain
+  haltedChains: Chain[]
+  mimirHalt: MimirHalt
+}) => {
+  // Check all `pauseLp{chain}` values (provided by `mimir` endpoint) to disable pool actions
+  if (mimirHalt.pauseGlobalLp) return true
+
+  // Dynamic check for the specific chain LP pause status
+  const pauseLpKey = `PAUSELP${chain}` as keyof MimirHalt
+  if (mimirHalt[pauseLpKey]) return true
+
+  // NOTE: PAUSELPDEPOSIT should NOT disable withdrawals - only deposits
 
   // Check `chain` is included in `haltedChains` (provided by `inbound_addresses` endpoint)
   return FP.pipe(haltedChains, isChainElem(chain))

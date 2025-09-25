@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
-import { Fees, FeeType, Protocol } from '@xchainjs/xchain-client'
-import { getFee, GasPrices, Client } from '@xchainjs/xchain-evm'
+import { Fees, FeeType } from '@xchainjs/xchain-client'
+import { getFee, GasPrices, Client, CompatibleAsset } from '@xchainjs/xchain-evm'
 import { Asset, baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
@@ -10,6 +10,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { isAethAsset } from '../../helpers/assetHelper'
 import { observableState } from '../../helpers/stateHelper'
+import { getChainGasPrices$ } from '../chain/fees/nodeapi'
 import type { FeeLD } from '../chain/types'
 import type { FeesLD } from '../clients'
 import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT, EVMZeroAddress } from '../evm/const'
@@ -39,7 +40,7 @@ export const createFeesService = (client$: Client$): FeesService => {
 
   async function estimateAndCalculateFees(client: Client, params: TxParams) {
     // Estimate gas prices
-    const gasPrices = await client.estimateGasPrices(Protocol.THORCHAIN)
+    const gasPrices = await client.estimateGasPrices()
     const { fast: fastGP, fastest: fastestGP, average: averageGP } = gasPrices
 
     // Estimate gas limit - with fallback for standalone ledger mode
@@ -76,37 +77,7 @@ export const createFeesService = (client$: Client$): FeesService => {
   /**
    * Fees for sending txs into pool on Arb
    **/
-  const poolInTxFees$ = ({ address, abi, func, params }: PoolInTxFeeParams): FeesLD =>
-    client$.pipe(
-      RxOp.switchMap((oClient) =>
-        FP.pipe(
-          oClient,
-          O.fold(
-            () => Rx.of(RD.initial),
-            (client): FeesLD =>
-              Rx.combineLatest([
-                client.estimateCall({ contractAddress: address, abi, funcName: func, funcParams: params }),
-                client.estimateGasPrices()
-              ]).pipe(
-                RxOp.map<[BigNumber, GasPrices], Fees>(([gasLimit, gasPrices]) => ({
-                  type: FeeType.PerByte,
-                  average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL }),
-                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL }),
-                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL })
-                })),
-                RxOp.map(RD.success),
-                RxOp.catchError((error) => Rx.of(RD.failure(error))),
-                RxOp.startWith(RD.pending)
-              )
-          )
-        )
-      )
-    )
-
-  /**
-   * Fees for sending txs out of a pool on Arb
-   **/
-  const poolOutTxFee$ = (asset: Asset): FeesLD =>
+  const poolInTxFees$ = (params: PoolInTxFeeParams): FeesLD =>
     client$.pipe(
       RxOp.switchMap((oClient) =>
         FP.pipe(
@@ -114,16 +85,61 @@ export const createFeesService = (client$: Client$): FeesService => {
           O.fold(
             () => Rx.of(RD.initial),
             (client): FeesLD => {
-              const gasLimit = isAethAsset(asset) ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
-              return Rx.from(client.estimateGasPrices()).pipe(
-                RxOp.map<GasPrices, Fees>((gasPrices) => ({
-                  type: FeeType.PerByte,
-                  average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL }),
-                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL }),
-                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL })
-                })),
-                RxOp.map(RD.success),
-                RxOp.catchError((error) => Rx.of(RD.failure(error))),
+              // Get gas limit estimation with fallback for standalone Ledger or flaky RPCs
+              const gasLimit$ = Rx.from(
+                client.estimateGasLimit({
+                  asset: params.asset as CompatibleAsset,
+                  amount: params.amount,
+                  recipient: params.recipient,
+                  memo: params.memo
+                })
+              ).pipe(
+                RxOp.catchError((error) => {
+                  console.error('Gas limit estimation failed, using fallback:', error)
+                  // Use same fallback logic as in estimateAndCalculateFees
+                  const fallbackGasLimit =
+                    params.asset && isAethAsset(params.asset as Asset)
+                      ? new BigNumber(ETH_OUT_TX_GAS_LIMIT) // ARB native transfer
+                      : new BigNumber(ERC20_OUT_TX_GAS_LIMIT) // ERC20 token transfer
+                  return Rx.of(fallbackGasLimit)
+                })
+              )
+
+              // Get gas prices - try THORNode first, fallback to client
+              const gasPrices$: Rx.Observable<RD.RemoteData<Error, GasPrices>> = FP.pipe(
+                getChainGasPrices$('ARB', ARB_GAS_ASSET_DECIMAL),
+                RxOp.map((rd) =>
+                  RD.isFailure(rd) ? RD.failure(new Error(String(rd.error))) : (rd as RD.RemoteData<Error, GasPrices>)
+                ),
+                RxOp.catchError(() =>
+                  // Fallback to client estimation if nodeapi fails
+                  Rx.from(client.estimateGasPrices()).pipe(
+                    RxOp.map(RD.success),
+                    RxOp.catchError((error) => Rx.of(RD.failure(new Error(String(error)))))
+                  )
+                )
+              )
+
+              return Rx.combineLatest([gasLimit$, gasPrices$]).pipe(
+                RxOp.switchMap(([gasLimit, gasPricesRD]) =>
+                  FP.pipe(
+                    gasPricesRD,
+                    RD.fold<Error, GasPrices, FeesLD>(
+                      () => Rx.of(RD.initial),
+                      () => Rx.of(RD.pending),
+                      (error) => Rx.of(RD.failure(error)),
+                      (gasPrices) =>
+                        Rx.of(
+                          RD.success({
+                            type: FeeType.PerByte,
+                            average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL }),
+                            fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL }),
+                            fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: ARB_GAS_ASSET_DECIMAL })
+                          })
+                        )
+                    )
+                  )
+                ),
                 RxOp.startWith(RD.pending)
               )
             }
@@ -180,7 +196,6 @@ export const createFeesService = (client$: Client$): FeesService => {
     fees$,
     reloadFees,
     poolInTxFees$,
-    poolOutTxFee$,
     approveFee$,
     reloadApproveFee
   }

@@ -1,29 +1,29 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 
 import { generatePhrase } from '@xchainjs/xchain-crypto'
-import Form, { Rule } from 'antd/lib/form'
-import { array as A, function as FP, nonEmptyArray as NEA, string as S } from 'fp-ts'
 import { useObservableCallback, useSubscription } from 'observable-hooks'
+import { useForm } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { defaultWalletName } from '../../../../shared/utils/wallet'
 import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
 import { FlatButton, RefreshButton } from '../../uielements/button'
-import { InputPassword, Input } from '../../uielements/input'
+import { Input, InputPassword } from '../../uielements/input'
 import { CopyLabel } from '../../uielements/label'
 import type { WordType } from './NewPhraseConfirm.types'
 import { PhraseInfo } from './Phrase.types'
 
-type Props = {
+export type FormValues = {
+  password: string
+  repeatPassword: string
+  name: string
+}
+
+export type Props = {
   walletId: number
   walletNames: string[]
   onSubmit: (info: PhraseInfo) => void
-}
-
-type FormValues = {
-  password: string
-  name: string
 }
 
 export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) => {
@@ -42,18 +42,21 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
 
   useSubscription(refreshButtonClicked$, () => setPhrase(generatePhrase()))
 
-  const phraseWords: WordType[] = useMemo(
-    () =>
-      FP.pipe(
-        phrase,
-        S.split(' '),
-        NEA.fromReadonlyNonEmptyArray,
-        A.mapWithIndex((index, word) => ({ text: word, _id: `${word}-${index.toString()}` }))
-      ),
-    [phrase]
-  )
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch
+  } = useForm<FormValues>({
+    mode: 'onChange',
+    defaultValues: {
+      password: '',
+      repeatPassword: '',
+      name: ''
+    }
+  })
 
-  const [form] = Form.useForm<FormValues>()
+  const password = watch('password')
 
   const handleFormFinish = useCallback(
     ({ password, name }: FormValues) => {
@@ -69,29 +72,20 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
     [initialWalletName, loading, onSubmit, phrase]
   )
 
-  const passwordRules: Rule[] = useMemo(
-    () => [
-      { required: true, message: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }) },
-      ({ getFieldValue }) => ({
-        validator(_, value) {
-          if (!value || getFieldValue('password') === value) {
-            return Promise.resolve()
-          }
-          return Promise.reject(intl.formatMessage({ id: 'wallet.password.mismatch' }))
-        }
-      })
-    ],
-    [intl]
-  )
-
   const walletNameValidator = useCallback(
-    async (_: unknown, value: string) => {
+    (value: string) => {
       if (walletNames.includes(value)) {
-        return Promise.reject(intl.formatMessage({ id: 'wallet.name.error.duplicated' }))
+        return intl.formatMessage({ id: 'wallet.name.error.duplicated' })
       }
+      return true
     },
     [intl, walletNames]
   )
+
+  const phraseWords: WordType[] = useMemo(() => {
+    const words = phrase.split(' ')
+    return words.map((word: string, index: number) => ({ text: word, _id: `${word}-${index.toString()}` }))
+  }, [phrase])
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">
@@ -114,43 +108,63 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
           ))}
         </div>
       </div>
-      <Form form={form} onFinish={handleFormFinish} labelCol={{ span: 24 }} className="w-full p-30px pt-15px">
+      <form className="w-full pt-4" onSubmit={handleSubmit(handleFormFinish)}>
         <div className="flex flex-col items-center">
-          <Form.Item
-            name="password"
-            className="w-full !max-w-[380px]"
-            validateTrigger={['onSubmit', 'onBlur']}
-            rules={passwordRules}
-            label={intl.formatMessage({ id: 'common.password' })}>
-            <InputPassword size="large" />
-          </Form.Item>
-          {/* repeat password */}
-          <Form.Item
-            name="repeatPassword"
-            className="w-full !max-w-[380px]"
-            dependencies={['password']}
-            validateTrigger={['onSubmit', 'onBlur']}
-            rules={passwordRules}
-            label={intl.formatMessage({ id: 'wallet.password.repeat' })}>
-            <InputPassword size="large" />
-          </Form.Item>
-          {/* name */}
-          <Form.Item
-            name="name"
-            className="w-full !max-w-[380px]"
-            rules={[{ validator: walletNameValidator }]}
-            label={
+          <div className="w-full !max-w-[380px] mb-4">
+            <label className="block mb-2 text-sm font-medium text-text0 dark:text-text0d">
+              {intl.formatMessage({ id: 'common.password' })}
+            </label>
+            <InputPassword
+              size="large"
+              {...register('password', {
+                required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+              })}
+              error={errors.password?.message}
+            />
+          </div>
+
+          <div className="w-full !max-w-[380px] mb-4">
+            <label className="block mb-2 text-sm font-medium text-text0 dark:text-text0d">
+              {intl.formatMessage({ id: 'wallet.password.repeat' })}
+            </label>
+            <InputPassword
+              size="large"
+              {...register('repeatPassword', {
+                required: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' }),
+                validate: (value) => {
+                  // eslint-disable-next-line security/detect-possible-timing-attacks
+                  if (value !== password) {
+                    return intl.formatMessage({ id: 'wallet.password.mismatch' })
+                  }
+                  return true
+                }
+              })}
+              error={errors.repeatPassword?.message}
+            />
+          </div>
+
+          <div className="w-full !max-w-[380px] mb-4">
+            <label className="block mb-2 text-sm font-medium text-text0 dark:text-text0d">
               <div>
                 {intl.formatMessage({ id: 'wallet.name' })}
                 <span className="pl-5px text-[12px] text-gray1 dark:text-gray1d">
                   ({intl.formatMessage({ id: 'wallet.name.maxChars' }, { max: MAX_WALLET_NAME_CHARS })})
                 </span>
               </div>
-            }>
-            <Input size="large" maxLength={MAX_WALLET_NAME_CHARS} placeholder={initialWalletName} />
-          </Form.Item>
+            </label>
+            <Input
+              size="large"
+              maxLength={MAX_WALLET_NAME_CHARS}
+              placeholder={initialWalletName}
+              {...register('name', {
+                validate: walletNameValidator
+              })}
+              error={!!errors.name?.message}
+            />
+          </div>
+
           <FlatButton
-            className="mt-20px"
+            className="mt-4 min-w-40"
             size="large"
             color="primary"
             type="submit"
@@ -159,7 +173,7 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
             {intl.formatMessage({ id: 'common.next' })}
           </FlatButton>
         </div>
-      </Form>
+      </form>
     </div>
   )
 }

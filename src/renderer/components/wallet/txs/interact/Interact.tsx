@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react'
 
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { Chain } from '@xchainjs/xchain-util'
-import { ItemType } from 'antd/lib/menu/hooks/useItems'
-import { array as A, function as FP } from 'fp-ts'
+import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { isLedgerWallet } from '../../../../../shared/utils/guard'
@@ -71,23 +72,78 @@ export const Interact = ({ interactType, interactTypeChanged, network, walletTyp
         </div>
       </div>
 
-      <Styled.MenuDropdownGlobalStyles />
-      <Styled.Menu
-        mode="horizontal"
-        selectedKeys={[interactType]}
-        triggerSubMenuAction={'click'}
-        items={FP.pipe(
-          tabs,
-          A.map<{ type: InteractType; label: string }, ItemType>(({ type, label }) => ({
-            label: (
-              <div className="interact-menu" key={type} onClick={() => interactTypeChanged(type)}>
+      <ul className="hidden md:flex items-center gap-2 border-b border-gray0 dark:border-gray0d">
+        {tabs.map(({ type, label }) => {
+          const isActive = type === interactType
+          return (
+            <li key={type}>
+              <button
+                type="button"
+                onClick={() => interactTypeChanged(type)}
+                className={clsx(
+                  'inline-flex items-center px-3 py-2 text-sm font-medium rounded-t-md border-b-2',
+                  isActive
+                    ? 'text-turquoise border-turquoise'
+                    : 'border-transparent text-text0 dark:text-text0d hover:text-turquoise hover:bg-gray0/50 dark:hover:bg-gray0d/50'
+                )}>
                 {label}
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+
+      <div className="md:hidden">
+        <Menu as="div" className="relative inline-block w-full">
+          <MenuButton
+            className={clsx(
+              'flex w-full items-center justify-between rounded-md border border-gray0 dark:border-gray0d px-3 py-2 text-sm',
+              'bg-bg0 dark:bg-bg0d'
+            )}>
+            <Label size="big">{tabs.find((t) => t.type === interactType)?.label ?? tabs[0]?.label}</Label>
+            <ChevronDownIcon className="h-4 w-4 text-text0 dark:text-text0d" />
+          </MenuButton>
+
+          <Transition
+            enter="transition ease-out duration-100"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95">
+            <MenuItems
+              anchor="bottom start"
+              className={clsx(
+                'absolute z-10 mt-1 w-[--button-width] min-w-[12rem] rounded-md shadow-lg',
+                'border border-gray0 dark:border-gray0d',
+                'bg-bg0 dark:bg-bg0d focus:outline-none'
+              )}>
+              <div className="py-1">
+                {tabs.map(({ type, label }) => {
+                  const isActive = type === interactType
+                  return (
+                    <MenuItem key={type}>
+                      {({ focus }) => (
+                        <button
+                          type="button"
+                          onClick={() => interactTypeChanged(type)}
+                          className={clsx(
+                            'block w-full px-3 py-2 text-left text-sm',
+                            focus ? 'bg-turquoise/10 text-turquoise' : 'text-text0 dark:text-text0d',
+                            isActive && 'font-bold !text-turquoise'
+                          )}>
+                          {label}
+                        </button>
+                      )}
+                    </MenuItem>
+                  )
+                })}
               </div>
-            ),
-            key: type
-          }))
-        )}
-      />
+            </MenuItems>
+          </Transition>
+        </Menu>
+      </div>
+
       <div className="mt-4">{children}</div>
     </Styled.Container>
   )

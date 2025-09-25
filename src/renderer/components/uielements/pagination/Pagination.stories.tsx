@@ -1,9 +1,9 @@
 import { Meta, StoryFn } from '@storybook/react'
-import { PaginationProps } from 'antd'
 
 import { Pagination as Component } from './index'
+import type { Props } from './Pagination'
 
-const Template: StoryFn<PaginationProps> = (args) => <Component {...args} />
+const Template: StoryFn<Props> = (args) => <Component {...args} />
 export const Default = Template.bind({})
 
 const meta: Meta<typeof Component> = {
@@ -15,8 +15,7 @@ const meta: Meta<typeof Component> = {
   args: {
     defaultCurrent: 1,
     total: 100,
-    defaultPageSize: 5,
-    showSizeChanger: false
+    defaultPageSize: 5
   }
 }
 

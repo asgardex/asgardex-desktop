@@ -1,6 +1,5 @@
 import { useCallback, useState, useEffect } from 'react'
 
-import { Progress } from 'antd'
 import clsx from 'clsx'
 
 import useInterval, { INACTIVE_INTERVAL } from '../../../hooks/useInterval'
@@ -19,6 +18,65 @@ export type Props = {
   value?: number
   onChange?: (_: number) => void
   onEnd?: () => void
+}
+
+const CircleProgress = ({
+  className = '',
+  percent, // 0..100
+  size = 120, // px
+  strokeWidth = 7, // px
+  strokeColor = '#0068F7',
+  trailColor = 'rgba(242, 243, 243, 0.5)',
+  strokeLinecap = 'round' as 'round' | 'butt' | 'square',
+  children, // centered content (timer label)
+  ariaLabel
+}: {
+  className?: string
+  percent: number
+  size?: number
+  strokeWidth?: number
+  strokeColor?: string
+  trailColor?: string
+  strokeLinecap?: 'round' | 'butt' | 'square'
+  children?: React.ReactNode
+  ariaLabel?: string
+}) => {
+  const clamped = Math.max(0, Math.min(100, percent))
+  const r = (size - strokeWidth) / 2
+  const c = 2 * Math.PI * r
+  const dash = c
+  const offset = c * (1 - clamped / 100)
+
+  return (
+    <div
+      className={clsx('relative inline-block', className)}
+      style={{ width: size, height: size }}
+      aria-label={ariaLabel}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(clamped)}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+        {/* trail */}
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={trailColor} strokeWidth={strokeWidth} />
+        {/* progress */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          strokeLinecap={strokeLinecap}
+          strokeDasharray={dash}
+          strokeDashoffset={offset}
+          className="transition-[stroke-dashoffset] duration-300 ease-out"
+        />
+      </svg>
+
+      {/* center content */}
+      <div className="absolute inset-0 grid place-items-center">{children}</div>
+    </div>
+  )
 }
 
 export const TxTimer = ({
@@ -100,17 +158,16 @@ export const TxTimer = ({
         {!active && <Styled.IconWrapper>{!refunded ? <Styled.SuccessIcon /> : <RefundIcon />}</Styled.IconWrapper>}
       </div>
       {active && (
-        <Progress
-          type="circle"
+        <CircleProgress
           percent={(progressBarValue / maxValue) * 100}
-          format={() => <Styled.TimerLabel>{totalDurationString}s</Styled.TimerLabel>}
           strokeColor="#0068F7"
           strokeWidth={7}
           strokeLinecap="round"
           trailColor="rgba(242, 243, 243, 0.5)"
           className={hide ? 'hide' : 'timerchart-circular-progressbar'}
-          width={120}
-        />
+          size={120}>
+          <Styled.TimerLabel>{totalDurationString}s</Styled.TimerLabel>
+        </CircleProgress>
       )}
     </Styled.TxTimerWrapper>
   )

@@ -95,7 +95,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                       recipient: router,
                       gasPrice: gasPrices[params.feeOption],
                       isMemoEncoded: true,
-                      gasLimit: new BigNumber(160000)
+                      gasLimit: new BigNumber(200000)
                     })
                   )
                 )

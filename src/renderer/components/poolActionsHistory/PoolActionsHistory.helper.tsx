@@ -1,6 +1,5 @@
 import { TxHash } from '@xchainjs/xchain-client'
 import { array as A, function as FP, option as O } from 'fp-ts'
-import { GetRowKey } from 'rc-table/lib/interface'
 import { FormattedDateParts, FormattedTime } from 'react-intl'
 
 import { Action, Actions, ActionsPage, Tx } from '../../services/midgard/thorMidgard/types'
@@ -57,7 +56,7 @@ export const renderDate = (date: Date) => (
   </Styled.DateContainer>
 )
 
-export const getRowKey: GetRowKey<Action> = (action) =>
+export const getRowKey = (action: Action) =>
   FP.pipe(
     action,
     getTxId,

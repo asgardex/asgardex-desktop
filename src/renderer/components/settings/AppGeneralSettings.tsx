@@ -14,7 +14,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { LOCALES } from '../../i18n'
 import * as walletRoutes from '../../routes/wallet'
 import { AVAILABLE_NETWORKS } from '../../services/const'
-import { isStandaloneLedgerMode } from '../../services/wallet/types'
+import { isStandaloneLedgerMode, isKeystoreUnlocked } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 import { DownIcon } from '../icons'
 import { BorderButton } from '../uielements/button'
@@ -73,19 +73,27 @@ export const AppGeneralSettings = (props: Props) => {
   const navigate = useNavigate()
   const { appWalletService } = useWalletContext()
 
-  // Get current wallet mode
+  // Get current wallet mode and keystore state
   const appWalletState = useObservableState(appWalletService.appWalletState$)
+  const keystoreState = useObservableState(appWalletService.keystoreService.keystoreState$, O.none)
   const isInStandaloneLedgerMode = appWalletState && isStandaloneLedgerMode(appWalletState)
+
+  // Check if keystore is currently unlocked
+  const isUnlocked = FP.pipe(
+    keystoreState,
+    O.map(isKeystoreUnlocked),
+    O.getOrElse(() => false)
+  )
 
   const handleLedgerModeClick = useCallback(() => {
     if (isInStandaloneLedgerMode) {
       // Switch back to keystore mode
       appWalletService.switchToKeystoreMode()
-    } else {
-      // Navigate to ledger chain selector
+    } else if (!isUnlocked) {
+      // Only navigate to ledger chain selector if keystore is locked
       navigate(walletRoutes.ledgerChainSelect.path())
     }
-  }, [isInStandaloneLedgerMode, appWalletService, navigate])
+  }, [isInStandaloneLedgerMode, isUnlocked, appWalletService, navigate])
 
   const handleChangeChainClick = useCallback(() => {
     // Reset to chain selection phase
@@ -249,30 +257,50 @@ export const AppGeneralSettings = (props: Props) => {
       {/* // TODO: locale for subtitle */}
       <Section
         title={intl.formatMessage({ id: 'common.network' })}
-        subtitle="Network to connect to. Mainnet is Recommended">
+        subtitle={intl.formatMessage({ id: 'settings.network.subtitle' })}>
         {renderNetworkMenu}
       </Section>
-      <Section title={intl.formatMessage({ id: 'setting.language' })} subtitle="Preferred language">
+      <Section
+        title={intl.formatMessage({ id: 'settings.language.title' })}
+        subtitle={intl.formatMessage({ id: 'settings.language.subtitle' })}>
         {renderLangMenu}
       </Section>
-      <Section title={intl.formatMessage({ id: 'common.privateData' })} subtitle="Stay hidden, stay secure">
+      <Section
+        title={intl.formatMessage({ id: 'common.privateData' })}
+        subtitle={intl.formatMessage({ id: 'settings.privateData.subtitle' })}>
         <SwitchButton active={isPrivate} onChange={changePrivateData} />
       </Section>
-      <Section title="Ledger Mode" subtitle="Use hardware wallet without keystore setup">
-        <div className="flex flex-col gap-2">
+      <Section
+        title={intl.formatMessage({ id: 'settings.ledgerMode.title' })}
+        subtitle={intl.formatMessage({ id: 'settings.ledgerMode.subtitle' })}>
+        <div className="flex flex-col gap-2 items-end">
           {isInStandaloneLedgerMode && (
             <BorderButton size="normal" onClick={handleChangeChainClick} className="flex items-center gap-2">
               <CpuChipIcon width={16} height={16} />
-              Change Chain
+              {intl.formatMessage({ id: 'settings.chain.changeButton' })}
             </BorderButton>
           )}
-          <BorderButton size="normal" onClick={handleLedgerModeClick} className="flex items-center gap-2">
+          <BorderButton
+            size="normal"
+            onClick={handleLedgerModeClick}
+            disabled={!isInStandaloneLedgerMode && isUnlocked}
+            className={`flex items-center gap-2 ${
+              !isInStandaloneLedgerMode && isUnlocked ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            title={!isInStandaloneLedgerMode && isUnlocked ? 'Lock wallet to enter Ledger mode' : undefined}>
             <CpuChipIcon width={16} height={16} />
             {isInStandaloneLedgerMode ? 'Exit Ledger Mode' : 'Enter Ledger Mode'}
           </BorderButton>
+          {!isInStandaloneLedgerMode && isUnlocked && (
+            <span className="text-warning0 dark:text-warning0d text-xs mt-1">
+              {intl.formatMessage({ id: 'settings.ledgerMode.lockWalletWarning' })}
+            </span>
+          )}
         </div>
       </Section>
-      <Section title={intl.formatMessage({ id: 'setting.version' })} subtitle="Asgardex Software Version">
+      <Section
+        title={intl.formatMessage({ id: 'settings.version.title' })}
+        subtitle={intl.formatMessage({ id: 'settings.version.subtitle' })}>
         <div className="flex max-w-[240px] flex-col space-y-1">
           <div className="flex min-w-[240px] items-center justify-between">
             <Label color="dark" size="big" textTransform="uppercase">

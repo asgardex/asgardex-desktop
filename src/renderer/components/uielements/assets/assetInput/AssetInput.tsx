@@ -134,7 +134,12 @@ export const AssetInput = (props: Props): JSX.Element => {
         {hasAmountShortcut && (
           <div className="flex items-center space-x-2">
             {amountShortcuts.map(({ textId, amount }) => (
-              <Button key={textId} typevalue="outline" sizevalue="small" onClick={() => onChangePercentHandler(amount)}>
+              <Button
+                className="border border-solid border-turquoise hover:bg-turquoise hover:text-white"
+                key={textId}
+                typevalue="outline"
+                sizevalue="small"
+                onClick={() => onChangePercentHandler(amount)}>
                 {intl.formatMessage({ id: textId })}
               </Button>
             ))}

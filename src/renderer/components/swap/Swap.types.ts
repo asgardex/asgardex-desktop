@@ -12,6 +12,7 @@ import { AddressValidationAsync } from '../../services/clients'
 import { ApproveFeeHandler, ApproveParams, IsApproveParams, LoadApproveFeeHandler } from '../../services/evm/types'
 import { PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMigard/types'
 import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/midgardTypes'
+import { TransactionTrackingService } from '../../services/thorchain/transactionTracking'
 import { ApiError, KeystoreState, TxHashLD, ValidatePasswordHandler, BalancesState } from '../../services/wallet/types'
 import { AssetWithDecimal, SlipTolerance } from '../../types/asgardex'
 
@@ -82,6 +83,8 @@ export type SwapProps = {
   hidePrivateData: boolean
   midgardStatusRD: RD.RemoteData<Error, boolean>
   midgardStatusMayaRD: RD.RemoteData<Error, boolean>
+  transactionTrackingService: TransactionTrackingService
+  mayaTransactionTrackingService: TransactionTrackingService
 }
 
 export type QuoteData = {

@@ -91,8 +91,11 @@ const SuccessRouteView = ({
 
   const { network } = useNetwork()
 
-  const { reloadInboundAddresses, reloadTxStatus } = useThorchainContext()
-  const { reloadInboundAddresses: reloadMayaInboundAddresses } = useMayachainContext()
+  const { reloadInboundAddresses, reloadTxStatus, transactionTrackingService } = useThorchainContext()
+  const {
+    reloadInboundAddresses: reloadMayaInboundAddresses,
+    transactionTrackingService: mayaTransactionTrackingService
+  } = useMayachainContext()
 
   const { service: midgardService } = useMidgardContext()
   const { service: midgardMayaService } = useMidgardMayaContext()
@@ -620,6 +623,8 @@ const SuccessRouteView = ({
                     reloadTxStatus={reloadSwapTxStatus}
                     midgardStatusRD={midgardStatusRD}
                     midgardStatusMayaRD={midgardMayaStatusRD}
+                    transactionTrackingService={transactionTrackingService}
+                    mayaTransactionTrackingService={mayaTransactionTrackingService}
                   />
                 )
               }
@@ -703,6 +708,8 @@ const SuccessRouteView = ({
                     reloadTxStatus={reloadSwapTxStatus}
                     midgardStatusRD={midgardStatusRD}
                     midgardStatusMayaRD={midgardMayaStatusRD}
+                    transactionTrackingService={transactionTrackingService}
+                    mayaTransactionTrackingService={mayaTransactionTrackingService}
                   />
                 )
               }

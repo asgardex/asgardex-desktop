@@ -1,5 +1,23 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.9 (2025-09-12)
+
+## Add
+
+- add index & account options for ledger only mode [#886](https://github.com/asgardex/asgardex-desktop/pull/886)
+- add derivation path support for UTXO chains [#838](https://github.com/asgardex/asgardex-desktop/pull/838)
+
+## Update/Fixes
+
+- complete antd removal and package cleanup [#885](https://github.com/asgardex/asgardex-desktop/pull/885)
+- fix withdraw bug [#886](https://github.com/asgardex/asgardex-desktop/pull/886)
+- modernize macOS notarization process [#884](https://github.com/asgardex/asgardex-desktop/pull/884)
+- fix paragraph tag language conformity [#883](https://github.com/asgardex/asgardex-desktop/pull/883)
+- form system migration from antd [#881](https://github.com/asgardex/asgardex-desktop/pull/881)
+- update EVM chains to use proper gas estimation [#882](https://github.com/asgardex/asgardex-desktop/pull/882)
+- various UI component migrations and improvements
+- code cleanup and technical debt reduction
+
 # 1.40.8 (2025-08-15)
 
 ## Add

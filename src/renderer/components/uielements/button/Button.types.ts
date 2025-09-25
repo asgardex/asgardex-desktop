@@ -1,4 +1,4 @@
-import * as AB from 'antd/lib/button'
+import { ButtonProps as HeadlessButtonProps } from '@headlessui/react'
 
 export type ButtonSize = 'small' | 'normal' | 'xnormal' | 'big'
 export type ButtonColor = 'primary' | 'success' | 'warning' | 'error'
@@ -15,9 +15,10 @@ type ComponentProps = {
   round?: ButtonRound
   children?: React.ReactNode
   className?: string
+  loading?: boolean
 }
 
-export type ButtonProps = ComponentProps & AB.ButtonProps
+export type ButtonProps = ComponentProps & HeadlessButtonProps
 
 // Tailwind based button types
 export type Size = 'small' | 'medium' | 'normal' | 'large'

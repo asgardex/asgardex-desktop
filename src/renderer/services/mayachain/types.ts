@@ -277,6 +277,42 @@ export type MayanodePools = MayanodePool[]
 export type MayanodePoolsRD = RD.RemoteData<Error, MayanodePools>
 export type MayanodePoolsLD = LiveData<Error, MayanodePools>
 
+export type TxStages = {
+  inboundObserved: {
+    finalCount: number | undefined
+    completed: boolean
+  }
+  inboundConfirmationCounted: {
+    remainingConfirmationSeconds: number | undefined
+    completed: boolean
+  }
+  inboundFinalised: {
+    completed: boolean
+  }
+  swapStatus: {
+    pending: boolean | undefined
+    streaming: {
+      interval: number | undefined
+      quantity: number | undefined
+      count: number | undefined
+    }
+  }
+  outBoundDelay: {
+    remainingDelayBlocks: number | undefined
+    remainDelaySeconds: number | undefined
+    completed: boolean | undefined
+  }
+  outboundSigned: {
+    scheduledOutboundHeight: number | undefined
+    blocksSinceScheduled: number | undefined
+    completed: boolean | undefined
+  }
+  swapFinalised: boolean
+}
+
+export type TxStagesRD = RD.RemoteData<Error, TxStages>
+export type TxStagesLD = LiveData<Error, TxStages>
+
 export enum NodeStatusEnum {
   Active = 'Active',
   Whitelisted = 'Whitelisted',

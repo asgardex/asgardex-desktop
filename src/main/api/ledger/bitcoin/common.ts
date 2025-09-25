@@ -1,22 +1,54 @@
 import { Network, RootDerivationPaths } from '@xchainjs/xchain-client'
 
 import { LedgerErrorId } from '../../../../shared/api/types'
+import { isUtxoHDMode } from '../../../../shared/utils/guard'
+import { HDMode } from '../../../../shared/wallet/types'
 
-export const getDerivationPath = (walletAccount: number, network: Network): string => {
-  const DERIVATION_PATHS = {
-    [Network.Mainnet]: ["84'", "0'", `${walletAccount}'`, '0/'],
-    [Network.Testnet]: ["84'", "1'", `${walletAccount}'`, '0/'],
-    [Network.Stagenet]: ["84'", "0'", `${walletAccount}'`, '0/']
+// Bitcoin only supports Native SegWit (P2WPKH) and Taproot (P2TR) address formats
+// Other UTXO chains may support different derivation paths
+export type UtxoDerivationPathType = 0 | 1
+
+// Convert HDMode to UtxoDerivationPathType for Bitcoin
+export const hdModeToDerivationPathType = (hdMode?: HDMode): UtxoDerivationPathType => {
+  if (!hdMode || hdMode === 'default') return 0
+  if (!isUtxoHDMode(hdMode)) return 0
+
+  switch (hdMode) {
+    case 'p2wpkh':
+      return 0 // Native Segwit (m/84'/0'/0'/0/{index}) - P2WPKH
+    case 'p2tr':
+      return 1 // Taproot (handled separately with tapRootDerivationPaths)
+    default:
+      return 0 // Default to Native SegWit
   }
-  const path = DERIVATION_PATHS[network].join('/')
-  return path
 }
 
-export const getDerivationPaths = (walletAccount: number, network: Network): RootDerivationPaths => {
+export const getDerivationPath = (
+  walletAccount: number,
+  network: Network,
+  pathType: UtxoDerivationPathType = 0
+): string => {
+  const coinType = network === Network.Testnet ? "1'" : "0'"
+
+  switch (pathType) {
+    case 0: // Native Segwit P2WPKH (m/84'/0'/0'/0/{index})
+      return `84'/${coinType}/${walletAccount}'/0/`
+    case 1: // Taproot P2TR - this case should not be used here as taproot uses tapRootDerivationPaths
+      return `86'/${coinType}/${walletAccount}'/0/` // BIP86 Taproot path
+    default:
+      return `84'/${coinType}/${walletAccount}'/0/` // Default to Native SegWit
+  }
+}
+
+export const getDerivationPaths = (
+  walletAccount: number,
+  _network: Network,
+  pathType: UtxoDerivationPathType = 0
+): RootDerivationPaths => {
   const paths: RootDerivationPaths = {
-    [Network.Mainnet]: `${getDerivationPath(walletAccount, network)}`,
-    [Network.Testnet]: `${getDerivationPath(walletAccount, network)}`,
-    [Network.Stagenet]: `${getDerivationPath(walletAccount, network)}`
+    [Network.Mainnet]: `${getDerivationPath(walletAccount, Network.Mainnet, pathType)}`,
+    [Network.Testnet]: `${getDerivationPath(walletAccount, Network.Testnet, pathType)}`,
+    [Network.Stagenet]: `${getDerivationPath(walletAccount, Network.Stagenet, pathType)}`
   }
   return paths
 }

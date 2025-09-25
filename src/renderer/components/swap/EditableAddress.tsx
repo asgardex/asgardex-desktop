@@ -3,15 +3,14 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset } from '@xchainjs/xchain-util'
-import { Form } from 'antd'
-import { function as FP, option as O } from 'fp-ts'
+import { option as O } from 'fp-ts'
+import { useForm } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { truncateAddress } from '../../helpers/addressHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { hiddenString } from '../../helpers/stringHelper'
 import { AddressValidationAsync } from '../../services/clients'
-import { InnerForm } from '../shared/form'
 import { BaseButton } from '../uielements/button'
 import { InfoIcon } from '../uielements/info'
 import { Input } from '../uielements/input'
@@ -29,6 +28,13 @@ export type EditableAddressProps = {
   hidePrivateData: boolean
   startInEditMode?: boolean
 }
+
+const RECIPIENT_FIELD = 'recipient'
+
+type FormValues = {
+  recipient: string
+}
+
 export const EditableAddress = ({
   asset,
   address,
@@ -40,17 +46,29 @@ export const EditableAddress = ({
   hidePrivateData,
   startInEditMode = false
 }: EditableAddressProps) => {
-  const RECIPIENT_FIELD = 'recipient'
   const intl = useIntl()
   const [editableAddress, setEditableAddress] = useState<O.Option<Address>>(startInEditMode ? O.some(address) : O.none)
 
-  // Handle startInEditMode prop changes
+  const {
+    register,
+    reset,
+    getValues,
+    setValue,
+    formState: { errors }
+  } = useForm<FormValues>({
+    mode: 'onChange',
+    defaultValues: {
+      recipient: address
+    }
+  })
+
   useEffect(() => {
     if (startInEditMode) {
       setEditableAddress(O.some(address))
       onChangeEditableMode(true)
+      setValue(RECIPIENT_FIELD, address)
     }
-  }, [startInEditMode, address, onChangeEditableMode])
+  }, [startInEditMode, address, onChangeEditableMode, setValue])
 
   const truncatedAddress = useMemo(
     () => truncateAddress(address, asset.chain, network),
@@ -58,41 +76,42 @@ export const EditableAddress = ({
   )
 
   const validateAddress = useCallback(
-    async (_: unknown, value: string) => {
+    async (value: string) => {
       if (!value) {
-        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
+        return intl.formatMessage({ id: 'wallet.errors.address.empty' })
       }
       const valid = await addressValidator(value)
+
       if (!valid) {
-        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
+        return intl.formatMessage({ id: 'wallet.errors.address.invalid' })
       }
+      return true
     },
     [addressValidator, intl]
   )
 
-  const [form] = Form.useForm<{ recipient: string }>()
-
   const confirmEditHandler = useCallback(() => {
-    if (form.getFieldError(RECIPIENT_FIELD).length === 0) {
-      onChangeAddress(form.getFieldValue(RECIPIENT_FIELD))
-      onChangeEditableAddress(form.getFieldValue(RECIPIENT_FIELD))
-      form.resetFields()
+    const currentValue = getValues(RECIPIENT_FIELD)
+    if (currentValue && !errors.recipient) {
+      onChangeAddress(currentValue)
+      onChangeEditableAddress(currentValue)
+      reset()
       setEditableAddress(O.none)
       onChangeEditableMode(false)
     }
-  }, [form, onChangeAddress, onChangeEditableAddress, onChangeEditableMode])
+  }, [getValues, errors.recipient, onChangeAddress, onChangeEditableAddress, onChangeEditableMode, reset])
 
   const cancelEditHandler = useCallback(() => {
-    form.resetFields()
+    reset()
     onChangeEditableAddress(address)
     setEditableAddress(O.none)
     onChangeEditableMode(false)
-  }, [address, form, onChangeEditableAddress, onChangeEditableMode])
+  }, [address, onChangeEditableAddress, onChangeEditableMode, reset])
 
   const inputOnKeyUpHandler = useCallback(
     (e: React.KeyboardEvent<HTMLElement>) => {
-      // Call callback before handling key - in other case result will be lost
-      onChangeEditableAddress(form.getFieldValue(RECIPIENT_FIELD))
+      const currentValue = getValues(RECIPIENT_FIELD)
+      onChangeEditableAddress(currentValue)
 
       if (e.key === 'Enter') {
         confirmEditHandler()
@@ -101,7 +120,7 @@ export const EditableAddress = ({
         cancelEditHandler()
       }
     },
-    [cancelEditHandler, confirmEditHandler, form, onChangeEditableAddress]
+    [cancelEditHandler, confirmEditHandler, getValues, onChangeEditableAddress]
   )
 
   const renderAddress = useMemo(() => {
@@ -115,6 +134,7 @@ export const EditableAddress = ({
             onClick={() => {
               setEditableAddress(O.fromNullable(address))
               onChangeEditableMode(true)
+              setValue(RECIPIENT_FIELD, address)
             }}>
             {displayedAddress}
           </BaseButton>
@@ -125,70 +145,65 @@ export const EditableAddress = ({
             onClick={() => {
               setEditableAddress(O.fromNullable(address))
               onChangeEditableMode(true)
+              setValue(RECIPIENT_FIELD, address)
             }}
           />
           <CopyLabel className="text-gray2 dark:text-gray2d" textToCopy={address} />
         </div>
       </div>
     )
-  }, [address, hidePrivateData, truncatedAddress, onChangeEditableMode])
+  }, [address, hidePrivateData, truncatedAddress, onChangeEditableMode, setValue])
 
-  const renderEditableAddress = useCallback(
-    (editableAddress: Address) => {
-      return (
-        <div className="w-full">
-          {/* `items-start` is needed to position icons on top in case of error message */}
-          <InnerForm
-            className="flex w-full items-start"
-            form={form}
-            initialValues={{
-              recipient: editableAddress
-            }}>
-            <Form.Item
-              className="!mb-0 w-full"
-              rules={[{ required: true, validator: validateAddress }]}
-              name={RECIPIENT_FIELD}>
-              <Input className="!text-[16px] normal-case" color="primary" onKeyUp={inputOnKeyUpHandler} />
-            </Form.Item>
-
-            <CheckCircleIcon
-              className="ml-5px h-[30px] w-[30px] cursor-pointer text-turquoise"
-              onClick={confirmEditHandler}
+  const renderEditableAddress = useCallback(() => {
+    return (
+      <div className="w-full">
+        <form className="flex w-full items-start" onSubmit={(e) => e.preventDefault()}>
+          <div className="flex flex-col w-full">
+            <Input
+              className="!text-[16px] normal-case"
+              color="primary"
+              onKeyUp={inputOnKeyUpHandler}
+              {...register(RECIPIENT_FIELD, {
+                required: true,
+                validate: validateAddress
+              })}
+              error={!!errors.recipient}
             />
-            <XCircleIcon
-              className="ml-5px h-[30px] w-[30px] cursor-pointer text-gray2 dark:text-gray2d"
-              onClick={cancelEditHandler}
+            {errors.recipient && (
+              <span className="text-error0 dark:text-error0d text-xs mt-1">{errors.recipient.message}</span>
+            )}
+          </div>
+
+          <CheckCircleIcon
+            className="ml-5px h-[30px] w-[30px] cursor-pointer text-turquoise"
+            onClick={confirmEditHandler}
+          />
+          <XCircleIcon
+            className="ml-5px h-[30px] w-[30px] cursor-pointer text-gray2 dark:text-gray2d"
+            onClick={cancelEditHandler}
+          />
+        </form>
+
+        {/* EVM Smart Contract Warning */}
+        {isEvmChain(asset.chain) && (
+          <div
+            className="mt-2 flex items-center text-[12px] text-warning0 dark:text-warning0d"
+            role="alert"
+            aria-live="polite">
+            <InfoIcon
+              tooltip={intl.formatMessage({ id: 'swap.address.evm.warning' })}
+              className="mr-1 h-[14px] w-[14px]"
             />
-          </InnerForm>
+            {intl.formatMessage({ id: 'swap.address.evm.warning' })}
+          </div>
+        )}
+      </div>
+    )
+  }, [asset.chain, cancelEditHandler, confirmEditHandler, inputOnKeyUpHandler, intl, validateAddress, register, errors])
 
-          {/* EVM Smart Contract Warning */}
-          {isEvmChain(asset.chain) && (
-            <div
-              className="mt-2 flex items-center text-[12px] text-warning0 dark:text-warning0d"
-              role="alert"
-              aria-live="polite">
-              <InfoIcon
-                tooltip={intl.formatMessage({ id: 'swap.address.evm.warning' })}
-                className="mr-1 h-[14px] w-[14px]"
-              />
-              {intl.formatMessage({ id: 'swap.address.evm.warning' })}
-            </div>
-          )}
-        </div>
-      )
-    },
-    [asset.chain, cancelEditHandler, confirmEditHandler, form, inputOnKeyUpHandler, intl, validateAddress]
-  )
+  if (O.isSome(editableAddress)) {
+    return renderEditableAddress()
+  }
 
-  const renderCustomAddressInput = useCallback(
-    () =>
-      FP.pipe(
-        editableAddress,
-        O.map((address) => renderEditableAddress(address)),
-        O.getOrElse(() => renderAddress)
-      ),
-    [editableAddress, renderAddress, renderEditableAddress]
-  )
-
-  return renderCustomAddressInput()
+  return renderAddress
 }

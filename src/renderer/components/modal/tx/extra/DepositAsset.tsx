@@ -30,12 +30,12 @@ export const DepositAsset = (props: Props): JSX.Element => {
   )
 
   return (
-    <>
+    <div className="flex flex-col items-center justify-center w-full">
       <Styled.StepLabel>{stepDescription}</Styled.StepLabel>
       <Styled.DataWrapper>
         {hasSource && <Styled.StepBar size={50} />}
         <Styled.AssetsContainer>{renderSource}</Styled.AssetsContainer>
       </Styled.DataWrapper>
-    </>
+    </div>
   )
 }

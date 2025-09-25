@@ -77,23 +77,30 @@ export const Deposit = (props: Props) => {
     () =>
       FP.pipe(
         poolSharesRD,
-        RD.map((shares) => getSharesByAssetAndType({ shares, asset, type: 'sym' })),
+        RD.map((shares) => {
+          return getSharesByAssetAndType({ shares, asset, type: 'sym' })
+        }),
         RD.map((oPoolShare) =>
           FP.pipe(
             oPoolShare,
             O.filter(({ runeAddress, assetAddress: oAssetAddress }) => {
               // use shares of current selected addresses only
-              return (
-                eqOAddress.equals(runeAddress, O.some(dexWalletAddress.address)) &&
+              const runeAddressMatch = eqOAddress.equals(
                 FP.pipe(
-                  oAssetAddress,
-                  O.map((assetAddress) =>
-                    // Midgard returns addresses in lowercase - it might be changed in the future
-                    eqAddress.equals(assetAddress.toLowerCase(), assetWalletAddress.address.toLowerCase())
-                  ),
-                  O.getOrElse<boolean>(() => false)
-                )
+                  runeAddress,
+                  O.map((addr) => addr.toLowerCase())
+                ),
+                O.some(dexWalletAddress.address.toLowerCase())
               )
+              const assetAddressMatch = FP.pipe(
+                oAssetAddress,
+                O.map((assetAddress) => {
+                  return eqAddress.equals(assetAddress.toLowerCase(), assetWalletAddress.address.toLowerCase())
+                }),
+                O.getOrElse<boolean>(() => false)
+              )
+
+              return runeAddressMatch && assetAddressMatch
             })
           )
         )

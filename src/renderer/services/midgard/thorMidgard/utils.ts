@@ -404,12 +404,17 @@ export const getSharesByAssetAndType = ({
   shares: PoolShares
   asset: AnyAsset
   type: 'sym' | 'asym'
-}): O.Option<PoolShare> =>
-  FP.pipe(
+}): O.Option<PoolShare> => {
+  return FP.pipe(
     shares,
-    A.filter(({ asset: sharesAsset, type: sharesType }) => eqAsset.equals(asset, sharesAsset) && type === sharesType),
+    A.filter(({ asset: sharesAsset, type: sharesType }) => {
+      const assetMatch = eqAsset.equals(asset, sharesAsset)
+      const typeMatch = type === sharesType
+      return assetMatch && typeMatch
+    }),
     A.head
   )
+}
 
 /**
  * Filters `sym` `Poolshare`'s by given asset `Address`

@@ -24,6 +24,7 @@ import { createFeesService } from './fees'
 import { createInteractService$ } from './interact'
 import { createThornodeService$ } from './thornode'
 import { createTransactionService } from './transaction'
+import { createTransactionTrackingService } from './transactionTracking'
 
 const {
   thornodeUrl$,
@@ -64,6 +65,7 @@ const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ }
 )
 const { reloadFees, fees$ } = createFeesService({ client$: enhancedClient$, chain: THORChain })
 const interact$ = createInteractService$(sendPoolTx$, txStatus$)
+const transactionTrackingService = createTransactionTrackingService(getTxStatus$)
 
 export {
   thornodeUrl$,
@@ -119,5 +121,6 @@ export {
   getTcyClaim$,
   reloadTcyClaim,
   getTcyStaker$,
-  reloadTcyStaker
+  reloadTcyStaker,
+  transactionTrackingService
 }

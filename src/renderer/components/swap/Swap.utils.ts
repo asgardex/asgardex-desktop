@@ -1,11 +1,11 @@
 import { QuoteSwap } from '@xchainjs/xchain-mayachain-query'
 import { THORChain, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
-import { array as A, either as E, function as FP, option as O } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../const'
-import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'
+import { isChainAsset, max1e8BaseAmount, convertBaseAmountDecimal } from '../../helpers/assetHelper'
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
@@ -113,12 +113,7 @@ export const minAmountToSwapMax1e8 = ({
     1.5,
     feeToCover.times,
     // transform fee decimal to be `max1e8`
-    max1e8BaseAmount,
-    // Zero amount is possible only in case there is not fees information loaded.
-    // Just to avoid blinking min value filter out zero min amounts too.
-    E.fromPredicate((amount) => amount.eq(0) || !isUtxoAssetChain(inAsset), FP.identity),
-    // increase min value by 10k satoshi (for meaningful UTXO assets' only)
-    E.getOrElse((amount) => amount.plus(10000))
+    max1e8BaseAmount
   )
 }
 
@@ -129,7 +124,7 @@ export const minAmountToSwapMax1e8 = ({
  * Removes arbitrary 1000-unit rounding that was causing precision loss
  *
  * assetAmountMax1e8 => balances of source asset (max 1e8)
- * feeAmount => fee of inbound tx
+ * feeAmount => fee of inbound tx (in native asset decimal)
  */
 export const maxAmountToSwapMax1e8 = ({
   asset,
@@ -143,10 +138,17 @@ export const maxAmountToSwapMax1e8 = ({
   // Ignore non-chain assets
   if (!isChainAsset(asset)) return balanceAmountMax1e8
 
-  const estimatedFee = max1e8BaseAmount(feeAmount)
+  // Convert fee to match balance decimal (max 1e8)
+  // This ensures both amounts have the same decimal before subtraction
+  const estimatedFeeMax1e8 = max1e8BaseAmount(feeAmount)
 
-  const utxoSafetyBuffer = isUtxoAssetChain(asset) ? baseAmount(10000) : ZERO_BASE_AMOUNT // 0.0001 BTC in 1e8 units
-  const maxAmountToSwap = balanceAmountMax1e8.minus(estimatedFee).minus(utxoSafetyBuffer)
+  // Ensure fee has same decimal as balance for proper subtraction
+  const feeInBalanceDecimal =
+    estimatedFeeMax1e8.decimal !== balanceAmountMax1e8.decimal
+      ? convertBaseAmountDecimal(estimatedFeeMax1e8, balanceAmountMax1e8.decimal)
+      : estimatedFeeMax1e8
+
+  const maxAmountToSwap = balanceAmountMax1e8.minus(feeInBalanceDecimal)
   return maxAmountToSwap.gt(ZERO_BASE_AMOUNT) ? maxAmountToSwap : ZERO_BASE_AMOUNT
 }
 

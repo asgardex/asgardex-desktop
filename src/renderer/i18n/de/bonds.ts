@@ -17,7 +17,9 @@ const bonds: BondsMessages = {
   'bonds.node.enterMessage': 'Node-Adresse eingeben',
   'bonds.validations.nodeAlreadyAdded': 'Node wurde bereits hinzugefügt',
   'bonds.node.removeMessage': 'Bist Du sicher, dass Du die Node {node} entfernen möchtest?',
-  'bonds.validations.bondStatusActive': 'Das Abtrennen von einem aktiven Knoten ist nicht erlaubt'
+  'bonds.validations.bondStatusActive': 'Das Abtrennen von einem aktiven Knoten ist nicht erlaubt',
+  'bonds.tooltip.removeFromWatchlist': 'Diesen Bond-Provider aus der Beobachtungsliste entfernen',
+  'bonds.tooltip.addToWatchlist': 'Diesen Bond-Provider zur Beobachtungsliste hinzufügen'
 }
 
 export default bonds

@@ -110,15 +110,16 @@ This is the developer source repository, general information, and download page 
 
 _(in alphabetical order)_
 
-- [Ant Design](https://github.com/ant-design/ant-design/)
 - [ESLint](https://github.com/eslint/eslint)
 - [Electron](https://github.com/electron/electron/)
 - [fp-ts](https://gcanti.github.io/fp-ts/)
+- [HeadlessUI](https://headlessui.com/)
 - [Observable Hooks](https://observable-hooks.js.org/)
 - [Prettier](https://github.com/prettier/prettier)
 - [ReactJS](https://github.com/facebook/react/)
 - [Styled Components](https://styled-components.com/)
 - [RxJS](https://rxjs.dev/)
+- [TailwindCSS](https://tailwindcss.com/)
 - [Typescript](https://github.com/microsoft/TypeScript)
 - [Vite](https://github.com/vitejs/vite)
 - [Vitest](https://github.com/vitest-dev/vitest)

@@ -33,7 +33,7 @@ export const PhraseCopyModal = (props: Props) => {
           )}>
           <div className="flex w-full items-center justify-between px-5">
             <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">
-              {intl.formatMessage({ id: 'setting.view.phrase' })}
+              {intl.formatMessage({ id: 'settings.view.phrase.title' })}
             </h1>
             <BaseButton
               className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d focus:outline-none focus:ring-0"

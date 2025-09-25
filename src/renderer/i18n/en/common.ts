@@ -2,12 +2,9 @@ import { CommonMessages } from '../types'
 
 const common: CommonMessages = {
   'common.welcome': 'Welcome',
-  'common.stats': 'Stats',
   'common.network': 'Network',
   'common.dex': 'Dex',
-  'common.faqs': 'FAQs',
   'common.greeting': 'Hello {name}',
-  'common.copyright': '©',
   'common.type': 'Type',
   'common.chain': 'Chain',
   'common.examples': 'Example {name}',
@@ -94,6 +91,11 @@ const common: CommonMessages = {
   'common.copyTxUrl': 'Copy transaction url',
   'common.trackTransaction': 'Track transaction',
   'common.copyTxHash': 'Copy transaction hash',
+  'common.transaction.tracking': 'Tracking Transactions',
+  'common.transaction.loading': 'Loading transactions...',
+  'common.transaction.failed': 'Failed to load transactions',
+  'common.transaction.active': 'Active',
+  'common.transaction.completed': 'Completed',
   'common.fee': 'Fee',
   'common.feeRate': 'Fee Rate',
   'common.fee.nodeOperator': 'Node Operator Fee %',
@@ -204,8 +206,17 @@ const common: CommonMessages = {
   'common.metamask': 'MetaMask',
   'common.unknown': 'Unknown',
   'common.featureUnderDevelopment': 'Feature under development, do not use',
-  'common.comingSoon': 'Coming Soon',
-  'common.watchlist': 'Watchlist'
+  'common.watchlist': 'Watchlist',
+  'common.txUrl': 'URL',
+  'common.txHash': 'HASH',
+  'common.runeScan': 'RuneScan',
+  'common.mayaScan': 'MayaScan',
+  'common.whitelist': 'Whitelist',
+  'common.fetchFromLedger': 'Fetch from Ledger',
+  'common.nativeSegwit': 'Native Segwit',
+  'common.taproot': 'Taproot',
+  'common.protocols': 'Protocols',
+  'common.resetToDefault': 'Reset to streaming default'
 }
 
 export default common

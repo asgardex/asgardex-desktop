@@ -79,9 +79,7 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'लेन-देन सफल रहा।',
   'wallet.send.fastest': 'सबसे तेज़',
   'wallet.send.fast': 'तेज़',
-  'wallet.send.notAllowed': 'अनुमति नहीं है',
   'wallet.send.average': 'औसत',
-  'wallet.send.fundsLoss': 'इस पते पर भेजने से धन खो जाएगा।',
   'wallet.send.max.doge':
     'अनुमानित शुल्कों के आधार पर गणना किया गया अधिकतम मूल्य, जो कभी-कभी DOGE के लिए गलत हो सकता है। "लेन-देन के लिए बैलेंस अपर्याप्त" त्रुटि संदेश के मामले में https://blockchair.com/dogecoin/transactions पर नवीनतम शुल्कों का औसत प्राप्त करें और लेन-देन भेजने से पहले इसे अपने बैलेंस से घटाने का प्रयास करें।',
   'wallet.errors.balancesFailed': 'बैलेंस लोड करने में विफल। {errorMsg}',
@@ -114,7 +112,11 @@ const wallet: WalletMessages = {
   'wallet.ledger.removeAddress': 'चेन {chain} के लिए लेजर पता हटाएं',
   'wallet.ledger.viewAddress': 'एक्सप्लोरर में पता देखें',
   'wallet.evmToken.tooltip':
-    'क्या आपको अपना टोकन नहीं मिल रहा है? सेटिंग्स में जाएं और इसे मैन्युअल रूप से श्वेतसूची में जोड़ें।'
+    'क्या आपको अपना टोकन नहीं मिल रहा है? सेटिंग्स में जाएं और इसे मैन्युअल रूप से श्वेतसूची में जोड़ें।',
+  // TODO: Need Hindi translation by native speaker
+  'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
+  'wallet.derivationPath.taproot': 'Taproot P2TR',
+  'wallet.ledger.fetchDescription': 'Get address from your hardware wallet'
 }
 
 export default wallet

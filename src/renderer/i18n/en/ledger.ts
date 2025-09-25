@@ -15,7 +15,6 @@ const ledger: LedgerMessages = {
   'ledger.error.getaddressfailed': 'Getting address from Ledger failed',
   'ledger.error.signfailed': 'Signing transaction by Ledger failed',
   'ledger.error.sendfailed': 'Sending transaction by Ledger failed',
-  'ledger.error.depositfailed': 'Sending deposit transaction by Ledger failed',
   'ledger.error.invalidpubkey': 'Invalid public key for using Ledger.',
   'ledger.error.invaliddata': 'Invalid data.',
   'ledger.error.invalidresponse': 'Invalid response after sending transaction using Ledger.',
@@ -39,7 +38,6 @@ const ledger: LedgerMessages = {
   'ledger.detect.title': 'Detecting Ledger Device',
   'ledger.detect.checking': 'Checking {chain}...',
   'ledger.derivation.path': 'Derivation Path',
-  'ledger.derivation.legacy': 'Legacy (MEW)',
   'ledger.derivation.metamask': 'MetaMask',
   'ledger.connect.chain': 'Connect {chain}',
   'ledger.connect.select': 'Select a Chain'

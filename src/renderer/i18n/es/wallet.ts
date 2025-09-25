@@ -80,9 +80,7 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'Transacción realizada.',
   'wallet.send.fastest': 'Más rápido',
   'wallet.send.fast': 'Rápido',
-  'wallet.send.notAllowed': 'No permitido',
   'wallet.send.average': 'Media',
-  'wallet.send.fundsLoss': 'Se perderán fondos al enviar a esta dirección.',
   'wallet.send.max.doge':
     'El valor máximo calculado se basa en las tasas estimadas, que pueden ser incorrectas para DOGE de vez en cuando. En caso de que aparezca el mensaje de error "Saldo insuficiente para la transacción", consulte https://blockchair.com/dogecoin/transactions para obtener un promedio de las últimas comisiones e intente deducirlo de su saldo antes de enviar una transacción.',
   'wallet.errors.balancesFailed': 'Error en la carga de saldos. {errorMsg}',
@@ -114,7 +112,10 @@ const wallet: WalletMessages = {
   'wallet.ledger.verifyAddress.modal.description': 'Verifique la dirección {address} en su dispositivo',
   'wallet.ledger.removeAddress': 'Eliminar la dirección del ledger para la cadena {chain}',
   'wallet.ledger.viewAddress': 'Ver dirección en el explorador',
-  'wallet.evmToken.tooltip': '¿No encuentras tu token? Ve a configuración y añádelo manualmente a la lista blanca.'
+  'wallet.evmToken.tooltip': '¿No encuentras tu token? Ve a configuración y añádelo manualmente a la lista blanca.',
+  'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
+  'wallet.derivationPath.taproot': 'Taproot P2TR',
+  'wallet.ledger.fetchDescription': 'Obtener dirección de tu billetera de hardware'
 }
 
 export default wallet

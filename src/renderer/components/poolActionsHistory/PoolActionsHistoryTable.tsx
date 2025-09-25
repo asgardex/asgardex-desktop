@@ -59,8 +59,6 @@ export const PoolActionsHistoryTable = ({
         header: '',
         cell: ({ row: { original: action } }) => (
           <TxDetail
-            type={action.type}
-            date={H.renderDate(action.date)}
             incomes={H.getValues(action.in)}
             outgos={H.getValues(action.out)}
             fees={action.fees}
@@ -104,7 +102,6 @@ export const PoolActionsHistoryTable = ({
               current={currentPage}
               total={total}
               defaultPageSize={DEFAULT_PAGE_SIZE}
-              showSizeChanger={false}
               onChange={changePaginationHandler}
             />
           )}

@@ -1,4 +1,3 @@
-import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -7,14 +6,6 @@ import { AddressEllipsis as AddressEllipsisUI } from '../uielements/addressEllip
 import { Button as UIButton } from '../uielements/button'
 import { WalletTypeLabel as WalletTypeLabelUI } from '../uielements/common/Common.styles'
 import { Label as UILabel } from '../uielements/label'
-
-export const AutoComplete = styled(A.AutoComplete)`
-  .ant-select-selector {
-    border-color: ${palette('gray', 1)} !important;
-    background-color: ${palette('background', 0)} !important;
-    color: ${palette('text', 0)};
-  }
-`
 
 export const Subtitle = styled(UILabel)`
   text-align: center;
@@ -27,24 +18,6 @@ export const Subtitle = styled(UILabel)`
   ${media.md`
     text-align: left;
   `}
-`
-
-export const List = styled(A.List)`
-  li {
-    border-bottom: 1px solid ${palette('gray', 0)};
-  }
-`
-
-export const ListItem = styled(A.List.Item)`
-  padding: 20px;
-  flex-direction: column;
-  align-items: start;
-
-  border-bottom: none;
-  border-bottom: 1px solid ${palette('gray', 0)} !important;
-  .ant-list-item {
-    border-bottom: 1px solid ${palette('gray', 0)};
-  }
 `
 
 export const AccountTitle = styled(UILabel)`
@@ -78,16 +51,6 @@ export const AddLedgerButton = styled(UIButton).attrs({
   padding-left: 0;
   font-size: 17px;
   cursor: pointer;
-`
-
-export const WalletIndexInput = styled(A.InputNumber)`
-  color: ${palette('text', 2)};
-  background-color: ${palette('background', 1)};
-  margin-left: 10px;
-  margin-right: 5px;
-  max-width: 50px;
-  border-radius: 8px;
-  padding: 0px;
 `
 
 export const WalletTypeLabel = styled(WalletTypeLabelUI)`

@@ -15,7 +15,6 @@ const ledger: LedgerMessages = {
   'ledger.error.getaddressfailed': '원장에서 주소를 가져오는 데 실패했습니다',
   'ledger.error.signfailed': '원장으로 거래 서명에 실패했습니다',
   'ledger.error.sendfailed': '원장으로 거래 전송에 실패했습니다',
-  'ledger.error.depositfailed': '원장으로 입금 거래 전송에 실패했습니다',
   'ledger.error.invalidpubkey': '원장 사용을 위한 공개 키가 유효하지 않습니다.',
   'ledger.error.invaliddata': '유효하지 않은 데이터입니다.',
   'ledger.error.invalidresponse': '원장을 사용하여 거래를 전송한 후 유효하지 않은 응답이 반환되었습니다.',
@@ -40,7 +39,6 @@ const ledger: LedgerMessages = {
   'ledger.detect.title': '레저 장치 감지 중',
   'ledger.detect.checking': '{chain} 확인 중...',
   'ledger.derivation.path': '파생 경로',
-  'ledger.derivation.legacy': '레거시 (MEW)',
   'ledger.derivation.metamask': '메타마스크',
   'ledger.connect.chain': '{chain} 연결',
   'ledger.connect.select': '체인 선택'

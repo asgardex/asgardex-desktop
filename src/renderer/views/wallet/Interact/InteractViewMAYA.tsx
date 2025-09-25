@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
+import { useIntl } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -39,7 +40,7 @@ import { SelectedWalletAssetRD } from '../../../services/wallet/types'
 
 export const InteractViewMAYA = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.InteractParams>()
-
+  const intl = useIntl()
   const { selectedAsset$ } = useWalletContext()
 
   const { allSharesRD: allMayaSharesRD } = usePoolShares(MAYAChain)
@@ -170,7 +171,10 @@ export const InteractViewMAYA = () => {
       (error) => (
         <div>
           <BackLinkButton />
-          <ErrorView title="Missing data for InteractiveView" subTitle={error?.message ?? error.toString()} />
+          <ErrorView
+            title={intl.formatMessage({ id: 'error.interact.missingData.title' })}
+            subTitle={error?.message ?? error.toString()}
+          />
         </div>
       ),
       ([interactType, { walletType, walletAccount, walletIndex, hdMode }]) => (

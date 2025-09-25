@@ -79,9 +79,7 @@ const wallet: WalletMessages = {
   'wallet.send.success': '거래가 성공적으로 완료되었습니다.',
   'wallet.send.fastest': '가장 빠름',
   'wallet.send.fast': '빠름',
-  'wallet.send.notAllowed': '허용되지 않음',
   'wallet.send.average': '보통',
-  'wallet.send.fundsLoss': '이 주소로 자금을 보내면 손실이 발생합니다.',
   'wallet.send.max.doge':
     '예상 수수료를 기반으로 계산된 최대 값은 DOGE의 경우 때때로 잘못될 수 있습니다. "거래를 위한 잔액 부족" 오류 메시지가 표시되면 https://blockchair.com/dogecoin/transactions에서 최신 수수료 평균을 확인하고 거래를 보내기 전에 잔액에서 차감해 보세요.',
   'wallet.errors.balancesFailed': '잔액을 불러오는 데 실패했습니다. {errorMsg}',
@@ -113,7 +111,11 @@ const wallet: WalletMessages = {
   'wallet.ledger.verifyAddress.modal.description': '기기에서 주소 {address}를 확인하세요.',
   'wallet.ledger.removeAddress': '{chain} 체인의 Ledger 주소 삭제',
   'wallet.ledger.viewAddress': '익스플로러에서 주소 보기',
-  'wallet.evmToken.tooltip': '토큰을 찾을 수 없나요? 설정에서 수동으로 화이트리스트에 추가하세요.'
+  'wallet.evmToken.tooltip': '토큰을 찾을 수 없나요? 설정에서 수동으로 화이트리스트에 추가하세요.',
+  // TODO: Need Korean translation by native speaker
+  'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
+  'wallet.derivationPath.taproot': 'Taproot P2TR',
+  'wallet.ledger.fetchDescription': 'Get address from your hardware wallet'
 }
 
 export default wallet

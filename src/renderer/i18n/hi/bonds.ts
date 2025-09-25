@@ -17,7 +17,10 @@ const bonds: BondsMessages = {
   'bonds.node.enterMessage': 'ट्रैकिंग के लिए नोड दर्ज करें',
   'bonds.validations.nodeAlreadyAdded': 'नोड पहले से जोड़ा जा चुका है',
   'bonds.node.removeMessage': 'क्या आप वाकई में नोड {node} को हटाना चाहते हैं?',
-  'bonds.validations.bondStatusActive': 'सक्रिय नोड से अनबॉन्डिंग की अनुमति नहीं है'
+  'bonds.validations.bondStatusActive': 'सक्रिय नोड से अनबॉन्डिंग की अनुमति नहीं है',
+  // TODO: Need Hindi translation by native speaker
+  'bonds.tooltip.removeFromWatchlist': 'Remove this bond provider from the watch list',
+  'bonds.tooltip.addToWatchlist': 'Add this bond provider to the watch list'
 }
 
 export default bonds

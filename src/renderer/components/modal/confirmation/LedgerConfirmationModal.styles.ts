@@ -1,11 +1,9 @@
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import styled from 'styled-components'
-import { palette } from 'styled-theme'
 
 import LedgerConnectUI from '../../../assets/svg/ledger-device-connect.svg?react'
 import { media } from '../../../helpers/styleHelper'
 import { AssetIcon as AssetIconUI } from '../../uielements/assets/assetIcon'
-import { CopyLabel as CopyLabelUI } from '../../uielements/label'
 
 export const LedgerConnect = styled(LedgerConnectUI)`
   transform: scale(0.65, 0.65);
@@ -42,10 +40,4 @@ export const ExpandIcon = styled(ChevronRightIcon)`
     width: 16px; // Match Ant Design's default size
     height: 16px;
   }
-`
-
-export const CopyLabel = styled(CopyLabelUI)`
-  color: ${palette('primary', 2)};
-  padding-top: 20px;
-  font-size: 12px;
 `

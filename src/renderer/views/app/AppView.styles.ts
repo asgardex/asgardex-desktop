@@ -1,38 +1,7 @@
 import styled from 'styled-components'
-import { palette } from 'styled-theme'
 
 import { Alert as UIAlert } from '../../components/uielements/alert'
 import { media } from '../../helpers/styleHelper'
-
-// AppWrapper styled component
-export const AppWrapper = styled.div`
-  height: 100vh;
-  background: ${palette('background', 3)};
-  padding: 0;
-
-  font-family: 'MainFontRegular';
-
-  a {
-    transition: none;
-  }
-
-  .ant {
-    &-btn,
-    &-input,
-    &-menu,
-    &-input-affix-wrapper,
-    &-table-thead > tr > th,
-    &-table-tbody > tr > td {
-      transition: none;
-    }
-    &-form-item-explain {
-      text-transform: uppercase;
-    }
-    &-form-item-explain-error {
-      color: ${palette('error', 0)};
-    }
-  }
-`
 
 export const Alert = styled(UIAlert)`
   margin-bottom: 10px;

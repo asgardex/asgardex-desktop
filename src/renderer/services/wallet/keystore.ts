@@ -358,6 +358,7 @@ const validatePassword$ = (password: string): ValidatePasswordLD =>
 
 export const keystoreService: KeystoreService = {
   keystoreState$,
+  keystoreState,
   addKeystoreWallet,
   removeKeystoreWallet,
   changeKeystoreWallet,

@@ -135,7 +135,19 @@ const defaultProps: SwapProps = {
   hidePrivateData: false,
   reloadTxStatus: () => console.log('reloadBalances'),
   midgardStatusRD: RD.success(true),
-  midgardStatusMayaRD: RD.success(true)
+  midgardStatusMayaRD: RD.success(true),
+  transactionTrackingService: {
+    addTransaction: () => {},
+    removeTransaction: () => {},
+    getTransactions$: Rx.of(RD.success([])),
+    reloadTransactions: () => {}
+  },
+  mayaTransactionTrackingService: {
+    addTransaction: () => {},
+    removeTransaction: () => {},
+    getTransactions$: Rx.of(RD.success([])),
+    reloadTransactions: () => {}
+  }
 }
 
 export const Default: StoryFn = () => <Component {...defaultProps} />

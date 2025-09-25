@@ -129,7 +129,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
               chain_lp_actions_paused: item.chain_lp_actions_paused,
               outbound_fee: item.outbound_fee,
               dust_threshold: item.dust_threshold,
-              halted: item.halted || false // provide a default value if halted is undefined
+              halted: item.halted || false, // provide a default value if halted is undefined
+              gas_rate: item.gas_rate,
+              gas_rate_units: item.gas_rate_units,
+              outbound_tx_size: item.outbound_tx_size
             }))
             return RD.success(data)
           }),
@@ -212,6 +215,16 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
   )
   const { stream$: reloadTxStatus$, trigger: reloadTxStatus } = triggerStream()
+
+  /**
+   * Normalize transaction hash for Thornode API
+   * Remove 0x prefix from EVM transaction hashes
+   */
+  const normalizeTxHash = (txHash: string): string => {
+    // Remove 0x prefix for EVM chains (ETH, AVAX, BSC, ARB, BASE, etc.)
+    return txHash.startsWith('0x') ? txHash.slice(2) : txHash
+  }
+
   /**
    * Api call to `getTxStatus` endpoint
    */
@@ -220,7 +233,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       thornodeUrl$,
       liveData.chain((basePath) =>
         FP.pipe(
-          Rx.from(new TransactionsApi(getThornodeAPIConfiguration(basePath)).txStages(txHash)),
+          Rx.from(new TransactionsApi(getThornodeAPIConfiguration(basePath)).txStages(normalizeTxHash(txHash))),
           RxOp.map((response: AxiosResponse<TxStagesResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
@@ -235,19 +248,24 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       liveData.map(
         // transform data -> TxStages
         (txStages): TxStages => {
+          // Helper to safely convert to boolean - handles string "false"/"true" and actual booleans
+          const toBoolean = (value: unknown): boolean => {
+            if (typeof value === 'boolean') return value
+            if (typeof value === 'string') return value.toLowerCase() === 'true'
+            return Boolean(value)
+          }
+
           return {
             inboundObserved: {
               finalCount: txStages.inbound_observed.final_count,
-              completed: txStages.inbound_observed.completed
+              completed: toBoolean(txStages.inbound_observed.completed)
             },
             inboundConfirmationCounted: {
               remainingConfirmationSeconds: txStages.inbound_confirmation_counted?.remaining_confirmation_seconds,
-              completed: txStages.inbound_confirmation_counted?.completed
-                ? txStages.inbound_confirmation_counted?.completed
-                : false
+              completed: toBoolean(txStages.inbound_confirmation_counted?.completed)
             },
             inboundFinalised: {
-              completed: txStages.inbound_finalised?.completed ? txStages.inbound_finalised?.completed : false
+              completed: toBoolean(txStages.inbound_finalised?.completed)
             },
             outBoundDelay: {
               remainDelaySeconds: txStages.outbound_delay?.remaining_delay_seconds,
@@ -267,11 +285,13 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
                 count: txStages.swap_status?.streaming?.count
               }
             },
-            swapFinalised: txStages.swap_finalised?.completed ? txStages.swap_finalised?.completed : false
+            swapFinalised: toBoolean(txStages.swap_finalised?.completed)
           }
         }
       ),
-      RxOp.catchError((): TxStagesLD => Rx.of(RD.failure(Error(`Failed to load info for ${txHash}`))))
+      RxOp.catchError((error: Error): TxStagesLD => {
+        return Rx.of(RD.failure(Error(`Failed to load info for ${txHash}: ${error.message}`)))
+      })
     )
   // `TriggerStream` to reload data of `ThorchainLastblock`
   const { stream$: reloadThorchainLastblock$, trigger: reloadThorchainLastblock } = triggerStream()

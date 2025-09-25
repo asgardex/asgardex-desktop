@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import * as appRoutes from '../routes/app'
 import * as bondsRoutes from '../routes/bonds'
+import * as historyRoutes from '../routes/history'
 import * as playgroundRoutes from '../routes/playground'
 import * as poolsRoutes from '../routes/pools'
 import * as portfolioRoutes from '../routes/portfolio'
@@ -9,6 +10,7 @@ import * as walletRoutes from '../routes/wallet'
 import { AppSettings } from './app/AppSettings'
 import { BondsView } from './bonds/BondsView'
 import { DepositView } from './deposit/DepositView'
+import { HistoryView } from './history/HistoryView'
 import { NoContentView } from './NoContentView'
 import { PlaygroundView } from './playground/PlaygroundView'
 import { PoolsOverview } from './pools/PoolsOverview'
@@ -71,6 +73,7 @@ export const ViewRoutes = (): JSX.Element => {
       />
       {/* wallet routes */}
       <Route path={walletRoutes.noWallet.template} element={<NoWalletView />} />
+      <Route path={historyRoutes.base.template} element={<HistoryView />} />
       <Route path={walletRoutes.ledgerChainSelect.template} element={<LedgerChainSelectView />} />
       <Route path={`${walletRoutes.create.base.template}/*`} element={<CreateView />} />
       <Route path={walletRoutes.locked.template} element={<UnlockView />} />

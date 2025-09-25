@@ -1,8 +1,5 @@
-import React from 'react'
-
 import { Network } from '@xchainjs/xchain-client'
 
-import { TxType } from '../../../services/midgard/midgardTypes'
 import { AssetWithAmount } from '../../../types/asgardex'
 
 export type ActionProps = {
@@ -15,7 +12,5 @@ export type ActionProps = {
    */
   slip?: number
   className?: string
-  date: React.ReactElement
-  type: TxType
   isDesktopView: boolean
 }

@@ -4,6 +4,7 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { isCashAddress, toCashAddress, toLegacyAddress } from '@xchainjs/xchain-bitcoincash'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, Chain } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
@@ -11,7 +12,7 @@ import { chainToString } from '../../../../shared/utils/chain'
 import { getChainAsset, isBchChain } from '../../../helpers/chainHelper'
 import { AddressEllipsis } from '../../uielements/addressEllipsis'
 import { Button } from '../../uielements/button'
-import { Label } from '../../uielements/label'
+import { CopyLabel, Label } from '../../uielements/label'
 import { ConfirmationModal } from './ConfirmationModal'
 import * as Styled from './LedgerConfirmationModal.styles'
 
@@ -88,8 +89,8 @@ export const LedgerConfirmationModal = ({
               <AddressEllipsis network={network} chain={chain} address={toLegacyAddress(recipient)} enableCopy />
             </div>
           </div>
-          <div className="flex items-center justify-center">
-            <Styled.CopyLabel label={'Copy all addresses'} textToCopy={textToCopy} />
+          <div className="flex items-center justify-center pt-4">
+            <CopyLabel label={'Copy all addresses'} textToCopy={textToCopy} />
           </div>
         </>
       )
@@ -125,21 +126,22 @@ export const LedgerConfirmationModal = ({
                 () => <></>,
                 (bchAddresses) => (
                   <>
-                    <p className="text-11 text-center font-main">
-                      <ExclamationTriangleIcon />
-                      {intl.formatMessage({ id: 'ledger.legacyformat.note' }, { url: 'ulr' })}
-                    </p>
+                    <div className="flex items-center space-x-2">
+                      <ExclamationTriangleIcon className="w-8 h-8" />
+                      <Label size="small">
+                        {intl.formatMessage({ id: 'ledger.legacyformat.note' }, { url: 'url' })}
+                      </Label>
+                    </div>
 
                     <div className="flex items-center justify-center">
                       <Button
                         className="shadow-none"
                         typevalue="transparent"
-                        type="text"
                         onClick={() => setShowAddresses((current) => !current)}>
                         {intl.formatMessage({
                           id: showAddresses ? 'ledger.legacyformat.hide' : 'ledger.legacyformat.show'
                         })}
-                        <Styled.ExpandIcon rotate={showAddresses ? 270 : 90} />
+                        <Styled.ExpandIcon className={clsx('w-4 h-4', showAddresses ? '-rotate-90' : 'rotate-90')} />
                       </Button>
                     </div>
 

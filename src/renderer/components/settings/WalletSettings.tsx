@@ -32,7 +32,6 @@ import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
-import { List, message } from 'antd'
 import clsx from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
@@ -42,6 +41,11 @@ import { KeystoreId, TrustedAddress, TrustedAddresses } from '../../../shared/ap
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
+import {
+  getChainDerivationPath,
+  getChainDerivationOptions,
+  chainSupportsMultipleDerivationPaths
+} from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
 import RemoveIcon from '../../assets/svg/icon-remove.svg?react'
@@ -81,6 +85,7 @@ import { useApp } from '../../store/app/hooks'
 import { FlatButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import { WalletTypeLabel } from '../uielements/common/Common.styles'
+import { Dropdown } from '../uielements/dropdown'
 import { InfoIcon } from '../uielements/info'
 import { Input, InputSearch } from '../uielements/input'
 import { Label } from '../uielements/label'
@@ -88,8 +93,30 @@ import { Modal } from '../uielements/modal'
 import { Tooltip } from '../uielements/tooltip'
 import { WalletSelector } from '../uielements/wallet'
 import { EditableWalletName } from '../uielements/wallet/EditableWalletName'
+import { AutoComplete } from './AutoComplete'
+import { WalletIndexInput } from './WalletIndexInput'
 import * as Styled from './WalletSettings.styles'
 import { WhitelistModal } from './WhitelistModal'
+
+// Convert derivation path index to HDMode for chains that support multiple paths
+const derivationIndexToHDMode = (chain: Chain, index: number): HDMode => {
+  if (chain === BTCChain) {
+    switch (index) {
+      case 0:
+        return 'p2wpkh'
+      case 1:
+        return 'p2tr'
+      default:
+        return 'p2wpkh'
+    }
+  }
+  // For EVM chains, the HDMode is handled separately via evmHDMode
+  // For other UTXO chains, default to p2wpkh
+  if (chain === BCHChain || chain === LTCChain || chain === DOGEChain || chain === DASHChain) {
+    return 'p2wpkh'
+  }
+  return 'default'
+}
 
 const ActionButton = ({
   className,
@@ -149,6 +176,28 @@ type Props = {
 }
 
 type AddressToVerify = O.Option<{ address: Address; chain: Chain }>
+
+const initialMap = {
+  [BTCChain]: 0,
+  [BCHChain]: 0,
+  [LTCChain]: 0,
+  [THORChain]: 0,
+  [ETHChain]: 0,
+  [GAIAChain]: 0,
+  [DOGEChain]: 0,
+  [AVAXChain]: 0,
+  [BASEChain]: 0,
+  [BSCChain]: 0,
+  [MAYAChain]: 0,
+  [DASHChain]: 0,
+  [KUJIChain]: 0,
+  [ARBChain]: 0,
+  [RadixChain]: 0,
+  [SOLChain]: 0,
+  [ADAChain]: 0,
+  [ZECChain]: 0,
+  [XRPChain]: 0
+}
 
 export const WalletSettings = (props: Props): JSX.Element => {
   const {
@@ -214,48 +263,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
     )
   }, [showQRModal, network, closeQrModal])
 
-  const [walletIndexMap, setWalletIndexMap] = useState<Record<EnabledChain, number>>({
-    [BTCChain]: 0,
-    [BCHChain]: 0,
-    [LTCChain]: 0,
-    [THORChain]: 0,
-    [ETHChain]: 0,
-    [GAIAChain]: 0,
-    [DOGEChain]: 0,
-    [AVAXChain]: 0,
-    [BASEChain]: 0,
-    [BSCChain]: 0,
-    [MAYAChain]: 0,
-    [DASHChain]: 0,
-    [KUJIChain]: 0,
-    [ARBChain]: 0,
-    [RadixChain]: 0,
-    [SOLChain]: 0,
-    [ADAChain]: 0,
-    [ZECChain]: 0,
-    [XRPChain]: 0
-  })
-  const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
-    [BTCChain]: 0,
-    [BCHChain]: 0,
-    [LTCChain]: 0,
-    [THORChain]: 0,
-    [ETHChain]: 0,
-    [GAIAChain]: 0,
-    [DOGEChain]: 0,
-    [AVAXChain]: 0,
-    [BASEChain]: 0,
-    [BSCChain]: 0,
-    [MAYAChain]: 0,
-    [DASHChain]: 0,
-    [KUJIChain]: 0,
-    [ARBChain]: 0,
-    [RadixChain]: 0,
-    [SOLChain]: 0,
-    [ADAChain]: 0,
-    [ZECChain]: 0,
-    [XRPChain]: 0
-  })
+  const [walletIndexMap, setWalletIndexMap] = useState<Record<EnabledChain, number>>(initialMap)
+  const [derivationPathIndex, setDerivationPathIndex] = useState<Record<EnabledChain, number>>(initialMap)
+  const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>(initialMap)
 
   const {
     state: verifyLedgerAddressRD,
@@ -297,16 +307,24 @@ export const WalletSettings = (props: Props): JSX.Element => {
     (chain: Chain, walletAccount: number, walletIndex: number) => {
       resetAddLedgerAddressRD()
       setLedgerChainToAdd(O.some(chain))
+
+      let hdMode: HDMode = 'default'
+      if (isEvmChain(chain)) {
+        hdMode = evmHDMode
+      } else if (chainSupportsMultipleDerivationPaths(chain)) {
+        hdMode = derivationIndexToHDMode(chain, derivationPathIndex[chain])
+      }
+
       subscribeAddLedgerAddressRD(
         addLedgerAddress$({
           chain,
           walletAccount,
           walletIndex,
-          hdMode: isEvmChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path
+          hdMode
         })
       )
     },
-    [resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, addLedgerAddress$, evmHDMode]
+    [resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, addLedgerAddress$, evmHDMode, derivationPathIndex]
   )
 
   const verifyLedgerAddressHandler = useCallback(
@@ -360,44 +378,77 @@ export const WalletSettings = (props: Props): JSX.Element => {
           <>
             <div className="flex w-full flex-col md:w-auto lg:flex-row">
               <div className="mr-30px flex items-center md:mr-0">
-                <Styled.AddLedgerButton className="gap-x-1" loading={loading} onClick={addLedgerAddressHandler}>
+                <Styled.AddLedgerButton
+                  className="gap-x-1"
+                  sizevalue="small"
+                  loading={loading}
+                  onClick={addLedgerAddressHandler}>
                   <PlusCircleIcon className="text-turquoise" width={20} height={20} />
                   {intl.formatMessage({ id: 'ledger.add.device' })}
                 </Styled.AddLedgerButton>
 
                 <>
-                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                    {intl.formatMessage({ id: 'setting.wallet.account' })}
+                  <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
+                    {intl.formatMessage({ id: 'settings.wallet.account' })}
                   </div>
-                  <Styled.WalletIndexInput
+                  <WalletIndexInput
+                    className="ml-2 mr-1 w-16"
                     value={selectedAccountIndex.toString()}
-                    pattern="[0-9]+"
-                    onChange={(value) =>
-                      value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
-                    }
-                    style={{ width: 60 }}
                     disabled={loading || (isEvmChain(chain) && evmHDMode !== 'ledgerlive')}
+                    onChange={(value) => {
+                      if (value !== null && +value >= 0) setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
+                    }}
                     onPressEnter={addLedgerAddressHandler}
                   />
-                  <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
-                </>
+                  <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.account.info' })} />
 
-                <>
                   <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
-                    {intl.formatMessage({ id: 'setting.wallet.index' })}
+                    {intl.formatMessage({ id: 'settings.wallet.index' })}
                   </div>
-                  <Styled.WalletIndexInput
+                  <WalletIndexInput
+                    className="ml-2 mr-1 w-16"
                     value={selectedWalletIndex.toString()}
-                    pattern="[0-9]+"
                     onChange={(value) =>
                       value !== null && +value >= 0 && setWalletIndexMap({ ...walletIndexMap, [chain]: +value })
                     }
-                    style={{ width: 60 }}
                     disabled={loading}
                     onPressEnter={addLedgerAddressHandler}
                   />
-                  <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.index.info' })} />
+                  <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.index.info' })} />
                 </>
+
+                {/* Show derivation path for chains with multiple options (non-EVM) */}
+                {chainSupportsMultipleDerivationPaths(chain) && !isEvmChain(chain) && (
+                  <div className="ml-2">
+                    <Dropdown
+                      trigger={
+                        <Label className="rounded-lg p-2 border border-solid border-bg2 dark:border-bg2d">
+                          {getChainDerivationOptions(chain, selectedAccountIndex, selectedWalletIndex, network)[
+                            derivationPathIndex[chain]
+                          ]?.description || 'Default'}
+                        </Label>
+                      }
+                      options={getChainDerivationOptions(chain, selectedAccountIndex, selectedWalletIndex, network).map(
+                        (option, index: number) => (
+                          <Label
+                            key={option.path}
+                            className="px-1"
+                            size="normal"
+                            onClick={() => setDerivationPathIndex({ ...derivationPathIndex, [chain]: index })}>
+                            {option.description}
+                          </Label>
+                        )
+                      )}
+                    />
+                  </div>
+                )}
+
+                {/* Show derivation path for chains with single path */}
+                {!chainSupportsMultipleDerivationPaths(chain) && !isEvmChain(chain) && (
+                  <div className="ml-2 text-[12px] text-text2 dark:text-text2d">
+                    {getChainDerivationPath(chain, selectedAccountIndex, selectedWalletIndex, network).description}
+                  </div>
+                )}
               </div>
               {isEvmChain(chain) && (
                 <RadioGroup
@@ -409,7 +460,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       {intl.formatMessage({ id: 'common.ledgerlive' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
-                          { id: 'setting.wallet.hdpath.ledgerlive.info' },
+                          { id: 'settings.wallet.hdpath.ledgerlive.info' },
                           {
                             path: `${getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')}{index}`
                           }
@@ -422,7 +473,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       {intl.formatMessage({ id: 'common.legacy' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
-                          { id: 'setting.wallet.hdpath.legacy.info' },
+                          { id: 'settings.wallet.hdpath.legacy.info' },
                           { path: `${getEvmDerivationPath(walletAccountMap[chain], 'legacy')}{index}` }
                         )}
                       />
@@ -433,7 +484,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       {intl.formatMessage({ id: 'common.metamask' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
-                          { id: 'setting.wallet.hdpath.metamask.info' },
+                          { id: 'settings.wallet.hdpath.metamask.info' },
                           { path: `${getEvmDerivationPath(walletAccountMap[chain], 'metamask')}{index}` }
                         )}
                       />
@@ -504,20 +555,22 @@ export const WalletSettings = (props: Props): JSX.Element => {
             <div className="flex w-full space-x-4">
               <>
                 <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                  <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
+                  <div>{intl.formatMessage({ id: 'settings.wallet.account' })}</div>
                 </div>
                 <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
               </>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">
-                {intl.formatMessage({ id: 'setting.wallet.index' })}
+                {intl.formatMessage({ id: 'settings.wallet.index' })}
               </div>
               <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletIndex}</div>
-              {isEvmChain(chain) && (
-                <div className="text-[12px] uppercase text-text2 dark:text-text2d">{`${getEvmDerivationPath(
-                  walletAccountMap[chain],
-                  `${evmHDMode}`
-                )}${walletIndex}`}</div>
-              )}
+              {/* Show derivation path for all chains */}
+              <div className="text-[12px] text-text2 dark:text-text2d">
+                {isEvmChain(chain)
+                  ? `${getEvmDerivationPath(walletAddress.walletAccount, walletAddress.hdMode as EvmHDMode)}${
+                      walletAddress.walletIndex
+                    }`
+                  : getChainDerivationPath(chain, walletAccount, walletIndex, network, walletAddress.hdMode).path}
+              </div>
             </div>
           </>
         )
@@ -541,10 +594,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
     },
     [
       intl,
-      walletIndexMap,
       walletAccountMap,
+      walletIndexMap,
       ledgerChainToAdd,
       addLedgerAddressRD,
+      derivationPathIndex,
       evmHDMode,
       updateEvmHDMode,
       addLedgerAddress,
@@ -612,7 +666,6 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 visible={true}
                 onOk={onOk}
                 onCancel={onCancel}
-                maskClosable={false}
                 closable={false}
                 okText={intl.formatMessage({ id: 'common.confirm' })}
                 okButtonProps={{ autoFocus: true }}
@@ -707,34 +760,28 @@ export const WalletSettings = (props: Props): JSX.Element => {
   const handleAddAddress = useCallback(() => {
     if (newAddress.name && newAddress.address && newAddress.chain) {
       addAddress({ name: newAddress.name, address: newAddress.address, chain: newAddress.chain })
-      setNewAddress({ chain: '', name: '', address: '' })
-      message.success(intl.formatMessage({ id: 'common.addAddress' }))
+      setNewAddress({})
+      // TODO: notification
+      // message.success(intl.formatMessage({ id: 'common.addAddress' }))
     } else {
-      message.error(intl.formatMessage({ id: 'common.error' }))
+      // message.error(intl.formatMessage({ id: 'common.error' }))
     }
-  }, [newAddress, intl])
+  }, [newAddress])
 
-  const handleRemoveAddress = useCallback(
-    (address: TrustedAddress) => {
-      removeAddress(address)
-      message.success(intl.formatMessage({ id: 'common.removeAddress' }))
-    },
-    [intl]
-  )
+  const handleRemoveAddress = useCallback((address: TrustedAddress) => {
+    removeAddress(address)
+    // TODO: notification
+    // message.success(intl.formatMessage({ id: 'common.removeAddress' }))
+  }, [])
 
   const renderAddAddressForm = useCallback(
     () => (
       <div className="flex items-center gap-3 mb-4">
-        <Styled.AutoComplete
-          className="w-40 mr-2"
-          key={newAddress.chain || 'autocomplete'}
+        <AutoComplete
           placeholder={intl.formatMessage({ id: 'common.chain' })}
           options={enabledChains.map((chain) => ({ value: chain }))}
           value={newAddress.chain}
-          onChange={(value) => setNewAddress((prev) => ({ ...prev, chain: value as string }))}
-          filterOption={(inputValue, option) =>
-            option ? option.value.toLowerCase().includes(inputValue.toLowerCase()) : false
-          }
+          onChange={(value) => setNewAddress((prev) => ({ ...prev, chain: value as Chain }))}
         />
         <Input
           className="border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
@@ -756,7 +803,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
             <PlusCircleIcon className="text-turquoise" width={20} height={20} />
             {intl.formatMessage({ id: 'common.store' })}
           </Styled.AddLedgerButton>
-          <InfoIcon className="ml-10px" tooltip={intl.formatMessage({ id: 'setting.wallet.storeAddress.info' })} />
+          <InfoIcon className="ml-2" tooltip={intl.formatMessage({ id: 'settings.wallet.storeAddress.info' })} />
         </div>
       </div>
     ),
@@ -764,27 +811,17 @@ export const WalletSettings = (props: Props): JSX.Element => {
   )
 
   const renderTrustedAddresses = useCallback(
-    (chain: Chain) => (
-      <List
-        dataSource={trustedAddresses?.addresses.filter((addr) => addr.chain === chain) || []}
-        renderItem={(item) => (
-          <List.Item>
-            <div className="flex w-full items-center justify-between">
-              <List.Item.Meta
-                title={<div className="text-text0 dark:text-text0d">{item.name}</div>}
-                description={
-                  <div className="flex w-full items-center ">
-                    {' '}
-                    <Styled.AddressEllipsis address={item.address} chain={chain} network={network} enableCopy={true} />
-                    <RemoveIcon className="w-4 h-4" onClick={() => handleRemoveAddress(item)} />
-                  </div>
-                }
-              />
-            </div>
-          </List.Item>
-        )}
-      />
-    ),
+    (chain: Chain) => {
+      return (trustedAddresses?.addresses.filter((addr) => addr.chain === chain) || []).map((item) => (
+        <div key={item.address} className="flex flex-col w-full">
+          <Label size="big">{item.name}</Label>
+          <div className="flex w-full items-center space-x-2">
+            <Styled.AddressEllipsis address={item.address} chain={chain} network={network} enableCopy={true} />
+            <RemoveIcon className="w-4 h-4" onClick={() => handleRemoveAddress(item)} />
+          </div>
+        </div>
+      ))
+    },
     [trustedAddresses?.addresses, network, handleRemoveAddress]
   )
   const renderAccounts = useMemo(
@@ -792,11 +829,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
       FP.pipe(
         oFilteredWalletAccounts,
         O.map((walletAccounts) => (
-          <List
-            key="accounts"
-            dataSource={walletAccounts}
-            renderItem={({ chain, accounts: { keystore, ledger: oLedger } }, i: number) => (
-              <Styled.ListItem key={i}>
+          <div className="flex flex-col" key="wallet-accounts">
+            {walletAccounts.map(({ chain, accounts: { keystore, ledger: oLedger } }, i: number) => (
+              <div key={i} className="flex flex-col p-4 border-b border-solid border-b-gray0 dark:border-b-gray0d">
                 <div className="flex w-full items-center justify-start">
                   <AssetIcon asset={getChainAsset(chain)} size="small" network={Network.Mainnet} />
                   <Styled.AccountTitle>{chain}</Styled.AccountTitle>
@@ -829,9 +864,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
                     </div>
                   )}
                 </div>
-              </Styled.ListItem>
-            )}
-          />
+              </div>
+            ))}
+          </div>
         )),
         O.getOrElse(() => <></>)
       ),
@@ -953,7 +988,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
       <div className="w-full px-4">
         <div className="flex flex-row items-center justify-between">
           <h1 className="font-main text-16 uppercase text-text0 dark:text-text0d">
-            {intl.formatMessage({ id: 'setting.wallet.management' })}
+            {intl.formatMessage({ id: 'settings.wallet.management' })}
           </h1>
           <div className="flex flex-row items-center space-x-2">
             <WalletSelector
@@ -980,17 +1015,17 @@ export const WalletSettings = (props: Props): JSX.Element => {
         <div className="mt-10 flex flex-row items-center justify-center space-x-2">
           <ActionButton
             icon={<ArrowUpTrayIcon width={24} height={24} />}
-            text={intl.formatMessage({ id: 'setting.export' })}
+            text={intl.formatMessage({ id: 'settings.export.title' })}
             onClick={exportKeystoreHandler}
           />
           <ActionButton
             icon={<LockClosedIcon width={24} height={24} />}
-            text={intl.formatMessage({ id: 'setting.lock' })}
+            text={intl.formatMessage({ id: 'settings.lock.title' })}
             onClick={lockWallet}
           />
           <ActionButton
             icon={<EyeIcon width={24} height={24} />}
-            text={intl.formatMessage({ id: 'setting.view.phrase' })}
+            text={intl.formatMessage({ id: 'settings.view.phrase.title' })}
             onClick={() => setShowPasswordModal(true)}
           />
           <ActionButton
@@ -1001,7 +1036,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         </div>
       </div>
       <div key="accounts" className="mt-4 w-full border-t border-solid border-bg2 dark:border-bg2d">
-        <Styled.Subtitle>{intl.formatMessage({ id: 'setting.accounts' })}</Styled.Subtitle>
+        <Styled.Subtitle>{intl.formatMessage({ id: 'settings.accounts.title' })}</Styled.Subtitle>
         <div className="mt-30px flex justify-center md:ml-4 md:justify-start">
           <InputSearch
             placeholder={intl.formatMessage({ id: 'common.search' }).toUpperCase()}
@@ -1012,7 +1047,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
         <div className="mt-10px border-b border-solid border-bg2 px-4 dark:border-bg2d">{renderAddAddressForm()}</div>
         <div className="flex items-center justify-center">
           <Styled.Subtitle>{intl.formatMessage({ id: 'common.chainManagement' })}</Styled.Subtitle>
-          <ActionButton className="mt-5 mr-5" text="Whitelist" onClick={() => setIsWhitelistModalOpen(true)} />
+          <ActionButton
+            className="mt-5 mr-5"
+            text={intl.formatMessage({ id: 'common.whitelist' })}
+            onClick={() => setIsWhitelistModalOpen(true)}
+          />
         </div>
         {renderAccounts}
       </div>

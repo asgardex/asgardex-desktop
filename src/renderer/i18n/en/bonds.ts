@@ -17,7 +17,9 @@ const bonds: BondsMessages = {
   'bonds.node.enterMessage': 'Enter node to monitor',
   'bonds.validations.nodeAlreadyAdded': 'Node is already added',
   'bonds.node.removeMessage': 'Are you sure you want to remove node with address {node} ?',
-  'bonds.validations.bondStatusActive': 'Unbonding from an active node is not allowed'
+  'bonds.validations.bondStatusActive': 'Unbonding from an active node is not allowed',
+  'bonds.tooltip.removeFromWatchlist': 'Remove this bond provider from the watch list',
+  'bonds.tooltip.addToWatchlist': 'Add this bond provider to the watch list'
 }
 
 export default bonds

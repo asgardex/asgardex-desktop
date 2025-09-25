@@ -42,7 +42,8 @@ import {
   getTcyClaim$,
   reloadTcyClaim,
   getTcyStaker$,
-  reloadTcyStaker
+  reloadTcyStaker,
+  transactionTrackingService
 } from '../services/thorchain'
 
 type ThorchainContextValue = {
@@ -87,7 +88,8 @@ type ThorchainContextValue = {
   getTcyClaim$: typeof getTcyClaim$
   reloadTcyClaim: typeof reloadTcyClaim
   getTcyStaker$: typeof getTcyStaker$
-  reloadTcyStaker: typeof reloadTcyClaim
+  reloadTcyStaker: typeof reloadTcyStaker
+  transactionTrackingService: typeof transactionTrackingService
 }
 
 const initialContext: ThorchainContextValue = {
@@ -132,7 +134,8 @@ const initialContext: ThorchainContextValue = {
   getTcyClaim$,
   reloadTcyClaim,
   getTcyStaker$,
-  reloadTcyStaker
+  reloadTcyStaker,
+  transactionTrackingService
 }
 
 const ThorchainContext = createContext<ThorchainContextValue | null>(null)

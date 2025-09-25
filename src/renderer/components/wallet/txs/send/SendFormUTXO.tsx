@@ -15,9 +15,9 @@ import {
   eqAsset,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O } from 'fp-ts'
+import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
@@ -61,7 +61,7 @@ type FormValues = {
   recipient: string
   amount: BigNumber
   memo?: string
-  feeRate?: number
+  feeRate?: FeeOption
 }
 
 type Props = {
@@ -112,15 +112,32 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       FP.pipe(O.fromNullable(trustedAddresses?.addresses), O.map(A.filter((address) => address.chain === asset.chain))),
     [trustedAddresses, asset.chain]
   )
-  const [form] = Form.useForm<FormValues>()
+
+  // Initialize react-hook-form
+  const {
+    handleSubmit,
+    setValue,
+    watch,
+    control,
+    formState: { errors }
+  } = useForm<FormValues>({
+    defaultValues: {
+      recipient: '',
+      amount: bn(0),
+      memo: '',
+      feeRate: DEFAULT_FEE_OPTION
+    },
+    mode: 'onChange'
+  })
+
   const handleSavedAddressSelect = useCallback(
     (value: string) => {
-      form.setFieldsValue({ recipient: value })
+      setValue('recipient', value)
       setRecipientAddress(value)
       const matched = Shared.filterMatchedAddresses(oSavedAddresses, value)
       setMatchedAddresses(matched)
     },
-    [form, oSavedAddresses]
+    [setValue, oSavedAddresses]
   )
 
   const renderSavedAddressesDropdown = useMemo(
@@ -130,18 +147,14 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
         O.fold(
           () => null,
           (addresses) => (
-            <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
-              <Styled.CustomSelect
-                className="w-full"
+            <div>
+              <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.savedAddresses' })}</Styled.CustomLabel>
+              <Shared.SavedAddressSelect
                 placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
-                onChange={(value) => handleSavedAddressSelect(value as string)}>
-                {addresses.map((address) => (
-                  <Styled.CustomSelect.Option key={address.address} value={address.address}>
-                    {address.name}: {address.address}
-                  </Styled.CustomSelect.Option>
-                ))}
-              </Styled.CustomSelect>
-            </Form.Item>
+                addresses={addresses}
+                onChange={(value) => handleSavedAddressSelect(value as string)}
+              />
+            </div>
           )
         )
       ),
@@ -177,10 +190,10 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
   const [currentMemo, setCurrentMemo] = useState<string>('')
 
   const handleMemo = useCallback(() => {
-    const memoValue = form.getFieldValue('memo') as string
+    const memoValue = watch('memo') as string
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form])
+  }, [watch])
 
   const prevFeesWithRatesRef = useRef<O.Option<FeesWithRates>>(O.none)
 
@@ -339,14 +352,29 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
   )
 
   const addressValidator = useCallback(
-    async (_: unknown, value: string) => {
+    (value: string) => {
+      console.log('addressValidator called with:', value)
+
       if (!value) {
         setWarningMessage('')
-        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
+        const error = intl.formatMessage({ id: 'wallet.errors.address.empty' })
+        console.log('Returning empty error:', error)
+        return error
       }
-      if (!addressValidation(value)) {
-        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
+
+      try {
+        if (!addressValidation(value)) {
+          const error = intl.formatMessage({ id: 'wallet.errors.address.invalid' })
+          console.log('Returning invalid error:', error)
+          return error
+        }
+      } catch (error) {
+        // If addressValidation throws an error, it means the address is invalid
+        const errorMsg = intl.formatMessage({ id: 'wallet.errors.address.invalid' })
+        console.log('Caught error, returning:', errorMsg)
+        return errorMsg
       }
+
       if (inboundAddress.THOR === value || inboundAddress.MAYA === value) {
         const dexInbound = inboundAddress.THOR === value ? 'Thorchain' : 'Mayachain'
         const type = `${dexInbound} ${asset.chain} Inbound`
@@ -354,6 +382,8 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       } else {
         setWarningMessage('')
       }
+      console.log('Returning true (valid)')
+      return true
     },
     [inboundAddress, addressValidation, asset, intl]
   )
@@ -456,15 +486,20 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       selectedFee,
       O.fold(
         () => O.none, // Return `O.none` if `selectedFee` is `None`
-        (fee) =>
-          O.some(
+        (fee) => {
+          // Use more decimals for very small USD amounts to avoid showing $0.00
+          const feeAmount = baseToAsset(fee)
+          const isVerySmallUSDAmount = isUSDAsset(asset) && feeAmount.amount().lt(0.01)
+          const decimalPlaces = isUSDAsset(asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+          return O.some(
             formatAssetAmountCurrency({
-              amount: baseToAsset(fee),
+              amount: feeAmount,
               asset: asset,
-              decimal: isUSDAsset(asset) ? 2 : 6,
+              decimal: decimalPlaces,
               trimZeros: !isUSDAsset(asset)
             })
           )
+        }
       ),
       O.getOrElse(() => '')
     )
@@ -474,12 +509,17 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       O.map((cryptoAmount: CryptoAmount) =>
         eqAsset(asset, cryptoAmount.asset)
           ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
+          : (() => {
+              // Use more decimals for very small USD amounts to avoid showing $0.00
+              const isVerySmallUSDAmount = isUSDAsset(cryptoAmount.asset) && cryptoAmount.assetAmount.amount().lt(0.01)
+              const decimalPlaces = isUSDAsset(cryptoAmount.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+              return formatAssetAmountCurrency({
+                amount: cryptoAmount.assetAmount,
+                asset: cryptoAmount.asset,
+                decimal: decimalPlaces,
+                trimZeros: !isUSDAsset(cryptoAmount.asset)
+              })
+            })()
       ),
       O.getOrElse(() => '')
     )
@@ -492,10 +532,14 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       return loadingString // or noDataString, depending on your needs
     }
 
+    // Use more decimals for very small USD amounts to avoid showing $0.00
+    const assetAmount = baseToAsset(amountToSend)
+    const isVerySmallUSDAmount = isUSDAsset(asset) && assetAmount.amount().lt(0.01)
+    const decimalPlaces = isUSDAsset(asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
     const amount = formatAssetAmountCurrency({
-      amount: baseToAsset(amountToSend), // Find the value of swap slippage
+      amount: assetAmount, // Find the value of swap slippage
       asset: asset,
-      decimal: isUSDAsset(asset) ? 2 : 6,
+      decimal: decimalPlaces,
       trimZeros: !isUSDAsset(asset)
     })
 
@@ -504,12 +548,17 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
       O.map((cryptoAmount: CryptoAmount) =>
         eqAsset(asset, cryptoAmount.asset)
           ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
+          : (() => {
+              // Use more decimals for very small USD amounts to avoid showing $0.00
+              const isVerySmallUSDAmount = isUSDAsset(cryptoAmount.asset) && cryptoAmount.assetAmount.amount().lt(0.01)
+              const decimalPlaces = isUSDAsset(cryptoAmount.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+              return formatAssetAmountCurrency({
+                amount: cryptoAmount.assetAmount,
+                asset: cryptoAmount.asset,
+                decimal: decimalPlaces,
+                trimZeros: !isUSDAsset(cryptoAmount.asset)
+              })
+            })()
       ),
       O.getOrElse(() => '')
     )
@@ -519,20 +568,23 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
-    form.setFieldsValue({
-      amount: baseToAsset(amountToSend).amount()
-    })
-  }, [amountToSend, form])
+    setValue('amount', baseToAsset(amountToSend).amount())
+  }, [amountToSend, setValue])
 
   const amountValidator = useCallback(
-    async (_: unknown, value: BigNumber) => {
-      // error messages
+    async (value: BigNumber) => {
       const errors = {
         msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
         msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
         msg3: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalanceAndFee' })
       }
-      return validateTxAmountInput({ input: value, maxAmount: baseToAsset(maxAmount), errors })
+
+      try {
+        await validateTxAmountInput({ input: value, maxAmount: baseToAsset(maxAmount), errors })
+        return true
+      } catch (error) {
+        return error as string
+      }
     },
     [intl, maxAmount]
   )
@@ -551,7 +603,10 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
 
     const setAmountToSendFromPercentValue = (percents: number) => {
       const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
-      return setAmountToSend(baseAmount(amountFromPercentage, maxAmount.decimal))
+      const newAmount = baseAmount(amountFromPercentage, maxAmount.decimal)
+      setAmountToSend(newAmount)
+      // Also update the form field and trigger validation
+      setValue('amount', baseToAsset(newAmount).amount(), { shouldValidate: true })
     }
 
     return (
@@ -562,7 +617,7 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
         disabled={isLoading}
       />
     )
-  }, [amountToSend, maxAmount, isLoading])
+  }, [amountToSend, maxAmount, isLoading, setValue])
 
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
@@ -619,7 +674,7 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
           visible={showConfirmationModal}
           chain={asset.chain}
           description2={intl.formatMessage({ id: 'ledger.sign' })}
-          addresses={O.some({ sender: walletAddress, recipient: form.getFieldValue('recipient') })}
+          addresses={O.some({ sender: walletAddress, recipient: watch('recipient') })}
         />
       )
     } else if (isKeystoreWallet(walletType)) {
@@ -633,7 +688,7 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
     } else {
       return null
     }
-  }, [walletType, submitTx, network, showConfirmationModal, asset.chain, intl, walletAddress, form, validatePassword$])
+  }, [walletType, submitTx, network, showConfirmationModal, asset.chain, intl, walletAddress, watch, validatePassword$])
 
   const renderTxModal = useMemo(
     () =>
@@ -674,13 +729,22 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
       // we have to validate input before storing into the state
-      amountValidator(undefined, value)
-        .then(() => {
-          setAmountToSend(assetToBase(assetAmount(value, balance.amount.decimal)))
-        })
-        .catch(() => {}) // do nothing, Ant' form does the job for us to show an error message
+      const validationResult = await amountValidator(value)
+      if (validationResult === true) {
+        setAmountToSend(assetToBase(assetAmount(value, balance.amount.decimal)))
+      }
     },
     [amountValidator, balance.amount.decimal]
+  )
+
+  const onChangeAddress = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setRecipientAddress(value)
+      const matched = Shared.filterMatchedAddresses(oSavedAddresses, value)
+      setMatchedAddresses(matched)
+    },
+    [oSavedAddresses]
   )
 
   const reloadFees = useCallback(() => {
@@ -692,7 +756,11 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
     reloadFees()
   }, [currentMemo, reloadFees])
 
-  const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
+  const addMaxAmountHandler = useCallback(() => {
+    setAmountToSend(maxAmount)
+    // Also update the form field and trigger validation
+    setValue('amount', baseToAsset(maxAmount).amount(), { shouldValidate: true })
+  }, [maxAmount, setValue])
 
   const isMaxButtonDisabled = useMemo(
     () =>
@@ -710,11 +778,11 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
   const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
 
   const handleOnKeyUp = useCallback(async () => {
-    const recipient = form.getFieldValue('recipient')
+    const recipient = watch('recipient')
     setRecipientAddress(recipient)
     const matched = Shared.filterMatchedAddresses(oSavedAddresses, recipient)
     setMatchedAddresses(matched)
-  }, [form, oSavedAddresses])
+  }, [watch, oSavedAddresses])
   const oMatchedWalletType: O.Option<WalletType> = useMemo(
     () => matchedWalletType(balances, recipientAddress),
     [balances, recipientAddress]
@@ -729,36 +797,71 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
     <>
       <Styled.Container>
         <AccountSelector selectedWallet={balance} network={network} />
-        <Styled.Form
-          form={form}
-          initialValues={{
-            // default value for BigNumberInput
-            amount: bn(0),
-            // Default value for RadioGroup of feeOptions
-            feeRate: DEFAULT_FEE_OPTION
-          }}
-          onFinish={() => setShowConfirmationModal(true)}
-          labelCol={{ span: 24 }}>
+        <form onSubmit={handleSubmit(() => setShowConfirmationModal(true))}>
           <Styled.SubForm>
             {renderSavedAddressesDropdown}
-            <Styled.CustomLabel size="big">
+            <Styled.CustomLabel className="mt-2" size="big">
               {intl.formatMessage({ id: 'common.address' })}
               {renderWalletType}
             </Styled.CustomLabel>
-            <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Input size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
-            </Form.Item>
-            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
-            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
-            <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
-              <InputBigNumber
-                min={0}
-                size="large"
-                disabled={isLoading}
-                decimal={balance.amount.decimal}
-                onChange={onChangeInput}
+            <div className="flex flex-col">
+              <Controller
+                name="recipient"
+                control={control}
+                rules={{
+                  required: intl.formatMessage({ id: 'wallet.errors.address.empty' }),
+                  validate: addressValidator
+                }}
+                render={({ field }) => (
+                  <Input
+                    size="large"
+                    disabled={isLoading}
+                    value={field.value || ''}
+                    onChange={(e) => {
+                      field.onChange(e)
+                      onChangeAddress(e)
+                    }}
+                    onKeyUp={handleOnKeyUp}
+                    error={!!errors.recipient}
+                  />
+                )}
               />
-            </Styled.FormItem>
+              {errors.recipient && (
+                <span className="text-error0 dark:text-error0d text-xs mt-1">
+                  {typeof errors.recipient === 'string' ? errors.recipient : errors.recipient.message}
+                </span>
+              )}
+            </div>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
+            <Styled.CustomLabel className="mt-2" size="big">
+              {intl.formatMessage({ id: 'common.amount' })}
+            </Styled.CustomLabel>
+            <div className="flex flex-col">
+              <Controller
+                name="amount"
+                control={control}
+                rules={{
+                  required: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                  validate: amountValidator
+                }}
+                render={({ field }) => (
+                  <InputBigNumber
+                    min={0}
+                    size="large"
+                    disabled={isLoading}
+                    decimal={balance.amount.decimal}
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value)
+                      onChangeInput(value)
+                    }}
+                  />
+                )}
+              />
+              {errors.amount && (
+                <span className="text-error0 dark:text-error0d text-xs mt-1">{errors.amount.message}</span>
+              )}
+            </div>
             <MaxBalanceButton
               className="mb-10px"
               color="neutral"
@@ -771,20 +874,34 @@ export const SendFormUTXO = (props: Props): JSX.Element => {
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
-            <Form.Item name="memo">
-              <Input size="large" disabled={isLoading} onBlur={handleMemo} />
-            </Form.Item>
-            <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
+            <div className="flex flex-col">
+              <Controller
+                name="memo"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    size="large"
+                    disabled={isLoading}
+                    value={field.value || ''}
+                    onBlur={handleMemo}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+            </div>
+            <div className="flex flex-col">
+              <Controller name="feeRate" control={control} render={() => <div>{renderFeeOptions}</div>} />
+            </div>
           </Styled.SubForm>
           <FlatButton
-            className="mt-40px min-w-[200px]"
+            className="mt-40px min-w-[200px] w-full"
             loading={isLoading}
             disabled={!feesAvailable || isLoading}
             type="submit"
             size="large">
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
-        </Styled.Form>
+        </form>
         <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
           {/* memo */}
           <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">

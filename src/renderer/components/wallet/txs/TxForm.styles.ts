@@ -1,10 +1,8 @@
 import { CursorArrowRaysIcon as SelectOutlined } from '@heroicons/react/24/outline'
-import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { media } from '../../../helpers/styleHelper'
-import { InnerForm } from '../../shared/form/Form.styles'
 import { Button as UIButton } from '../../uielements/button/Button'
 import { Fees as UIFees } from '../../uielements/fees'
 import { Label as UILabel } from '../../uielements/label'
@@ -22,18 +20,8 @@ export const Container = styled('div')`
   `}
 `
 
-export const Form = styled(InnerForm)`
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-`
-
 export const SubForm = styled.div`
   max-width: 630px;
-`
-
-export const FormItem = styled(A.Form.Item)`
-  margin-bottom: 0;
 `
 
 export const CustomLabel = styled(UILabel)`
@@ -56,29 +44,12 @@ export const Fees = styled(UIFees)`
   padding: 0 0 20px 0;
 `
 
-export const SubmitItem = styled(A.Form.Item)`
-  .ant-form-item-control-input-content {
-    display: flex;
-    justify-content: flex-end;
-  }
-`
-
 export const BackLabel = styled(UILabel)`
   margin-bottom: 18px;
   font-family: 'MainFontRegular';
 `
 
-export const Result = styled(A.Result)`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: ${palette('background', 1)};
-`
-
 export const Button = styled(UIButton).attrs({
-  type: 'primary',
   round: 'true',
   sizevalue: 'xnormal'
 })``
@@ -160,25 +131,4 @@ export const Alert = styled('div')`
 
 export const MemoWrapper = styled('div')`
   margin-top: 16px;
-`
-
-export const CustomSelect = styled(A.Select)`
-  background: inherit !important;
-  color: ${palette('text', 0)};
-
-  .ant-select-selector {
-    background: inherit !important;
-    border-radius: 8px !important;
-    border: none;
-  }
-  .ant-select-arrow {
-    color: ${palette('text', 0)};
-  }
-  .ant-select-dropdown {
-    background: inherit !important;
-    color: ${palette('text', 0)};
-  }
-  &:hover {
-    border-color: ${palette('primary', 2)};
-  }
 `
