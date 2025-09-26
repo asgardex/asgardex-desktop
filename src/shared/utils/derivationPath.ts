@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 
@@ -149,6 +150,11 @@ export const getChainDerivationPath = (
       return {
         path: `m/44'/133'/${account}'/0/${index}`,
         description: `Zcash (m/44'/133'/${account}'/0/${index})`
+      }
+    case TRONChain:
+      return {
+        path: `m/44'/195'/${account}'/0/${index}`,
+        description: `TRON (m/44'/195'/${account}'/0/${index})`
       }
 
     default:
