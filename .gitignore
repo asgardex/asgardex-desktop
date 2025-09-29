@@ -37,3 +37,32 @@ dev-app-update.yml
 .trunk/logs/
 
 stats.html
+
+# Playwright E2E test artifacts
+/test-results/
+/playwright-report/
+playwright-results.json
+*.spec.js
+*.spec.js.map
+
+# Test screenshots and artifacts
+test-results/**/*.png
+test-results/**/*.webm
+test-results/**/*.html
+test-results/**/*.json
+test-results/**/*.log
+
+# Playwright cache and temporary files
+.last-run.json
+
+# Additional test artifacts and caches
+tests-e2e/**/*.png
+tests-e2e/**/*.webm
+tests-e2e/**/*.mp4
+*.trace
+.playwright/
+
+# IDE and editor files (if not already covered)
+.vscode/settings.json
+*.swp
+*.swo
