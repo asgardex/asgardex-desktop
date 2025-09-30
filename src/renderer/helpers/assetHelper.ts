@@ -3,6 +3,7 @@ import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { AssetXRP } from '@xchainjs/xchain-ripple'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { validateAddress as validateTRONAddress } from '@xchainjs/xchain-tron'
 import {
   Address,
   AnyAsset,
@@ -485,7 +486,35 @@ export const addressInBscWhitelist = (address: Address): boolean => addressInLis
  * Checks whether a TRC20 address is white listed or not
  */
 export const addressInTRONTRC20Whitelist = (address: Address): boolean =>
-  addressInList(address, tronTokenWhiteListAssetOnly)
+  addressInTRONList(address, tronTokenWhiteListAssetOnly)
+
+/**
+ * Extracts TRON token address from asset symbol
+ * TRON token symbols are in format: SYMBOL-ADDRESS (e.g., "USDT-TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")
+ */
+const getTRONTokenAddress = (asset: TokenAsset): O.Option<Address> =>
+  FP.pipe(O.fromNullable(getTokenAddress(asset)), O.filter(validateTRONAddress))
+
+/**
+ * TRON-specific address matching function
+ * Uses Base58Check address validation instead of EVM checksumming
+ */
+const addressInTRONList = (address: Address, list: TokenAsset[]): boolean => {
+  // Validate the input address is a valid TRON address
+  if (!validateTRONAddress(address)) return false
+
+  return FP.pipe(
+    list,
+    A.findFirst(
+      FP.flow(
+        getTRONTokenAddress,
+        O.map((tokenAddress) => eqString.equals(tokenAddress, address)),
+        O.getOrElse<boolean>(() => false)
+      )
+    ),
+    O.isSome
+  )
+}
 
 /**
  * Check whether an asset is TGT asset
