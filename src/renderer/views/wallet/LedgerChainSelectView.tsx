@@ -127,8 +127,8 @@ export const LedgerChainSelectView: React.FC = () => {
     } else if (chain === BCHChain || chain === LTCChain || chain === DOGEChain || chain === DASHChain) {
       // Other UTXO chains use default mode
       setSelectedHDMode('default')
-    } else if (chain === 'GAIA' || chain === 'THOR' || chain === 'TRON') {
-      // Cosmos chains and TRON use default mode
+    } else if (isCosmosChain(chain) || isThorChain(chain)) {
+      // Cosmos chains use default mode
       setSelectedHDMode('default')
     } else {
       // Default to Ledger Live for EVM chains

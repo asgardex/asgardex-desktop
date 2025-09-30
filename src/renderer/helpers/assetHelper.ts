@@ -453,6 +453,10 @@ const bscTokenWhiteListAssetOnly = FP.pipe(
   BSC_TOKEN_WHITELIST,
   A.map(({ asset }) => asset)
 )
+const tronTokenWhiteListAssetOnly = FP.pipe(
+  TRON_TOKEN_WHITELIST,
+  A.map(({ asset }) => asset)
+)
 /**
  * Checks whether an ERC20 address is white listed or not
  */
@@ -476,6 +480,12 @@ export const addressInBaseWhitelist = (address: Address): boolean => addressInLi
  * Checks whether an ERC20 address is white listed or not
  */
 export const addressInBscWhitelist = (address: Address): boolean => addressInList(address, bscTokenWhiteListAssetOnly)
+
+/**
+ * Checks whether a TRC20 address is white listed or not
+ */
+export const addressInTRONTRC20Whitelist = (address: Address): boolean =>
+  addressInList(address, tronTokenWhiteListAssetOnly)
 
 /**
  * Check whether an asset is TGT asset

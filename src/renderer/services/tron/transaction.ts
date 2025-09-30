@@ -8,7 +8,7 @@ import * as RxOp from 'rxjs/operators'
 import { IPCLedgerSendTxParams, ipcLedgerSendTxParamsIO } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
 import { isLedgerWallet } from '../../../shared/utils/guard'
-import { addressInERC20Whitelist } from '../../helpers/assetHelper'
+import { addressInTRONTRC20Whitelist } from '../../helpers/assetHelper'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
@@ -97,7 +97,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const approveTRC20Token$ = (params: ApproveParams): TxHashLD => {
     const { contractAddress, network, walletType } = params
     // Check contract address before approving
-    if (network === Network.Mainnet && !addressInERC20Whitelist(contractAddress)) {
+    if (network === Network.Mainnet && !addressInTRONTRC20Whitelist(contractAddress)) {
       return Rx.of(
         RD.failure({
           msg: `Contract address ${contractAddress} is not whitelisted`,
@@ -172,6 +172,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const sendTx = (params: SendTxParams): TxHashLD =>
     FP.pipe(
       network$,
+      RxOp.take(1),
       RxOp.switchMap((network) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
 

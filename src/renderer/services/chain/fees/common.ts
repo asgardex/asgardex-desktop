@@ -872,7 +872,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
     case TRONChain:
       return FP.pipe(
         TRON.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
+        liveData.map((fees) => ({ asset: getChainAsset(TRONChain), amount: fees.fast }))
       )
     default:
       return FP.pipe(

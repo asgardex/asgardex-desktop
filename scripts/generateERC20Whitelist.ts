@@ -97,7 +97,7 @@ async function loadList(urls: string[], chain: Chain): Promise<ERC20Whitelist> {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tokens = data.tokens.map((token: any) => ({
         ...token,
-        chainId: token.chainId ?? config.chainId ?? 1 // Use token.chainId or fallback to config.chainId or 1
+        chainId: token.chainId ?? config.chainId // Use token.chainId or fallback to config.chainId or 1
       }))
       allTokens.push(...tokens) // Append tokens to the combined list
     } catch (error) {

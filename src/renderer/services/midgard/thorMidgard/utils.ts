@@ -305,7 +305,7 @@ export const getOutboundAssetFeeByChain = (
         }
         case TRONChain:
           return O.some({
-            amount: baseAmount(value, TRX_DECIMAL),
+            amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), TRX_DECIMAL),
             asset: AssetTRX
           })
         case ZECChain:
