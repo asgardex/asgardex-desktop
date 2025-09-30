@@ -1,8 +1,9 @@
+import { Page } from 'playwright'
 import { test, expect, TestHelpers } from './base/ElectronTestBaseFinal'
 
 test.describe('Complete Wallet Interface Tests', () => {
   // Helper function to ensure wallet is unlocked
-  async function ensureWalletUnlocked(mainWindow: any) {
+  async function ensureWalletUnlocked(mainWindow: Page) {
     const currentUrl = await mainWindow.url()
 
     if (currentUrl.includes('#/wallet/locked')) {

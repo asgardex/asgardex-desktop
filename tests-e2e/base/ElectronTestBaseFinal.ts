@@ -7,7 +7,7 @@ export const test = base.extend<{
   mainWindow: Page
 }>({
   electronApp: [
-    async ({}, use) => {
+    async (_, use) => {
       const app = await ElectronSingleton.getElectronApp()
       const stats = ElectronSingleton.getStats()
 
@@ -19,7 +19,7 @@ export const test = base.extend<{
   ],
 
   mainWindow: [
-    async ({}, use) => {
+    async (_, use) => {
       const window = await ElectronSingleton.getMainWindow()
 
       console.log('♻️ Using singleton main window')

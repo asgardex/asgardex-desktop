@@ -1,5 +1,8 @@
 name: E2E Tests
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main, develop]
