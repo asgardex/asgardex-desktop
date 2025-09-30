@@ -15,13 +15,13 @@ import { defaultBscParams } from '../../../shared/bsc/const'
 import { ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
 import { getProtocolFromStorage, setValueToStorage, StorageKey } from '../../helpers/storage'
+import { getCurrentNetworkState } from '../../services/app/service'
 import { State } from './types'
 
 const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
 
 const initialState: State = {
   isLoading: false,
-
   protocols: JSON.parse(getProtocolFromStorage(JSON.stringify(AllProtocols))),
   aggregator: new Aggregator({
     affiliate: {
@@ -47,7 +47,8 @@ const initialState: State = {
       BASE: new BaseClient({
         ...defaultBaseParams
       })
-    })
+    }),
+    network: getCurrentNetworkState()
   }),
   quoteSwap: null
 }

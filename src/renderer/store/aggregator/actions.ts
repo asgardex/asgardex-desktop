@@ -5,6 +5,7 @@ import { Client as ArbClient } from '@xchainjs/xchain-arbitrum'
 import { Client as AvaxClient } from '@xchainjs/xchain-avax'
 import { Client as BaseClient } from '@xchainjs/xchain-base'
 import { Client as BscClient } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
 import { Client as EthClient } from '@xchainjs/xchain-ethereum'
 import { Wallet } from '@xchainjs/xchain-wallet'
 
@@ -21,12 +22,14 @@ export const getEstimate = createAsyncThunk(
     aggregator,
     protocols,
     params,
-    useAffiliate
+    useAffiliate,
+    network
   }: {
     aggregator: Aggregator
     protocols: Protocol[]
     params: QuoteSwapParams
     useAffiliate: boolean
+    network: Network
   }) => {
     try {
       const wallet = new Wallet({
@@ -54,7 +57,8 @@ export const getEstimate = createAsyncThunk(
           affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
         },
         protocols,
-        wallet
+        wallet,
+        network
       })
 
       const estimate = await aggregator.estimateSwap(params)
