@@ -82,7 +82,7 @@
     "@mayaprotocol/zcash-js": "^1.0.7",
     "@reduxjs/toolkit": "^2.3.0",
     "@tanstack/react-table": "^8.21.3",
-    "@xchainjs/xchain-aggregator": "2.0.24",
+    "@xchainjs/xchain-aggregator": "2.0.25",
     "@xchainjs/xchain-arbitrum": "2.0.12",
     "@xchainjs/xchain-avax": "2.0.12",
     "@xchainjs/xchain-base": "1.0.12",
