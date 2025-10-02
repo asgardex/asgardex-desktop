@@ -21,6 +21,7 @@ export type SendTxParams = {
   walletIndex: number
   hdMode: HDMode
   sender?: Address
+  destinationTag?: number
 }
 
 export type TransactionService = C.TransactionService<SendTxParams>

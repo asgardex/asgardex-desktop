@@ -102,7 +102,8 @@ describe('shared/io', () => {
         feeAmount: baseAmount(1, 6),
         nodeUrl: 'node-url',
         hdMode: 'default',
-        apiKey: 'apikey'
+        apiKey: 'apikey',
+        destinationTag: 1234
       })
       expect(encoded).toEqual({
         chain: 'BTC',
@@ -141,7 +142,8 @@ describe('shared/io', () => {
         feeAmount: undefined,
         nodeUrl: undefined,
         hdMode: 'default',
-        apiKey: 'apikey'
+        apiKey: 'apikey',
+        destinationTag: 1234
       })
 
       expect(encoded).toEqual({

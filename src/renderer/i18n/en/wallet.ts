@@ -96,6 +96,8 @@ const wallet: WalletMessages = {
   'wallet.errors.fee.notCovered': 'Fees are not covered by your balance ({balance})',
   'wallet.errors.invalidChain': 'Invalid chain: {chain}',
   'wallet.errors.memo.max': "Length of memo can't be greater than {max}",
+  'wallet.errors.destinationTag.required': 'Destination tag is required for this address',
+  'wallet.errors.destinationTag.invalid': 'Destination tag must be a valid number (0-4294967295)',
   'wallet.password.confirmation.title': 'Wallet password confirmation',
   'wallet.password.confirmation.description': 'Please enter your wallet password.',
   'wallet.password.confirmation.pending': 'Validating password',

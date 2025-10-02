@@ -122,7 +122,8 @@ export const ipcLedgerSendTxParamsIO = t.type({
   feeAmount: t.union([baseAmountIO, t.undefined]),
   nodeUrl: t.union([t.string, t.undefined]),
   hdMode: hdModeIO,
-  apiKey: t.union([t.string, t.undefined])
+  apiKey: t.union([t.string, t.undefined]),
+  destinationTag: t.union([t.number, t.undefined])
 })
 
 export type IPCLedgerSendTxParams = t.TypeOf<typeof ipcLedgerSendTxParamsIO>

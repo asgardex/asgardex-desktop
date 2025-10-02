@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, Fees, FeesWithRates, Network } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -28,6 +29,7 @@ import { isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
+import { useXrpContext } from '../../../../contexts/XrpContext'
 import { isMayaAsset, isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
 import { getChainAsset, getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { isEvmChain, isEvmChainAsset } from '../../../../helpers/evmHelper'
@@ -83,6 +85,7 @@ type FormValues = {
   memo?: string
   fee?: FeeOption
   feeRate?: FeeOption
+  destinationTag?: number
 }
 
 export type Props = {
@@ -136,6 +139,10 @@ export const SendForm = (props: Props): JSX.Element => {
   const { asset } = balance
   const sourceChainAsset = getChainAsset(asset.chain)
 
+  // Get XRP client for destination tag validation
+  const xrpContext = useXrpContext()
+  const isXrpChain = asset.chain === XRPChain
+
   // Chain type detection
   const isEVMChain = isEvmChain(asset.chain)
   const isUTXOChain = isUtxoAssetChain(asset)
@@ -160,7 +167,8 @@ export const SendForm = (props: Props): JSX.Element => {
       amount: bn(0),
       memo: '',
       fee: DEFAULT_FEE_OPTION,
-      feeRate: DEFAULT_FEE_OPTION
+      feeRate: DEFAULT_FEE_OPTION,
+      destinationTag: undefined
     },
     mode: 'onChange'
   })
@@ -179,6 +187,8 @@ export const SendForm = (props: Props): JSX.Element => {
   const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
   const [_notAllowed, _setNotAllowed] = useState<boolean>(false)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
+  const [destinationTagRequired, setDestinationTagRequired] = useState<boolean>(false)
+  const [isRouterAddress, setIsRouterAddress] = useState<boolean>(false)
 
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
@@ -455,8 +465,41 @@ export const SendForm = (props: Props): JSX.Element => {
     isEVMChain
   ])
 
+  // Watch the recipient field for changes
+  const recipientValue = watch('recipient')
+
+  // Effect to check XRP destination tag requirements
+  useEffect(() => {
+    if (!isXrpChain) {
+      setDestinationTagRequired(false)
+      return
+    }
+
+    if (!recipientValue) {
+      setDestinationTagRequired(false)
+      return
+    }
+
+    const subscription = xrpContext.client$.subscribe(async (oClient) => {
+      if (O.isSome(oClient)) {
+        try {
+          const requiresDestTag = await oClient.value.requiresDestinationTag(recipientValue)
+          setDestinationTagRequired(requiresDestTag)
+        } catch (error) {
+          setDestinationTagRequired(false)
+        }
+      } else {
+        setDestinationTagRequired(false)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [isXrpChain, recipientValue, xrpContext.client$, setDestinationTagRequired])
+
   const addressValidator = useCallback(
-    (value: string) => {
+    async (value: string) => {
       if (!value) {
         setWarningMessage('')
         return intl.formatMessage({ id: 'wallet.errors.address.empty' })
@@ -489,13 +532,38 @@ export const SendForm = (props: Props): JSX.Element => {
         )
       }
 
+      const routerAddress = {
+        THOR: FP.pipe(
+          oPoolAddress,
+          O.chain((details) => details.router),
+          O.getOrElse(() => '')
+        ),
+        MAYA: FP.pipe(
+          oPoolAddressMaya || O.none,
+          O.chain((details) => details.router),
+          O.getOrElse(() => '')
+        )
+      }
+
+      // Check for inbound addresses
       if (inboundAddress.THOR === value || inboundAddress.MAYA === value) {
         const dexInbound = inboundAddress.THOR === value ? 'Thorchain' : 'Mayachain'
         const type = `${dexInbound} ${asset.chain} Inbound`
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+        setIsRouterAddress(false)
+      }
+      // Check for router addresses
+      else if (routerAddress.THOR === value || routerAddress.MAYA === value) {
+        const dexRouter = routerAddress.THOR === value ? 'Thorchain' : 'Mayachain'
+        const type = `${dexRouter} ${asset.chain} Router`
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+        setIsRouterAddress(true)
       } else {
         setWarningMessage('')
+        setIsRouterAddress(false)
       }
+
+      // For XRP, destination tag validation will be handled separately
 
       return true
     },
@@ -830,7 +898,8 @@ export const SendForm = (props: Props): JSX.Element => {
         asset,
         amount,
         feeOption: isEVMChain ? selectedFeeOption : selectedFeeOptionKey,
-        memo: currentMemo
+        memo: currentMemo,
+        destinationTag: watch('destinationTag')
       })
     )
   }, [
@@ -847,7 +916,8 @@ export const SendForm = (props: Props): JSX.Element => {
     asset,
     selectedFeeOption,
     selectedFeeOptionKey,
-    currentMemo
+    currentMemo,
+    watch
   ])
 
   // Confirmation modal
@@ -1025,8 +1095,10 @@ export const SendForm = (props: Props): JSX.Element => {
 
   // Memo field rendering (only for certain chains)
   const renderMemo = () => {
-    if (isEVMChain && !isEvmChainAsset(asset)) return null
-    if (isUTXOChain || isCOSMOSChain) {
+    // Hide memo field for XRP when destination tag is required to avoid confusion
+    if (isXrpChain && destinationTagRequired) return null
+    // Show memo field for UTXO, COSMOS chains, or EVM chains
+    if (isUTXOChain || isCOSMOSChain || isEVMChain) {
       return (
         <>
           <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
@@ -1090,6 +1162,66 @@ export const SendForm = (props: Props): JSX.Element => {
               )}
             </div>
             {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
+
+            {/* Destination Tag field for XRP - only show when required */}
+            {isXrpChain && destinationTagRequired && (
+              <>
+                <Styled.CustomLabel className="mt-2" size="big">
+                  {intl.formatMessage({ id: 'common.destinationTag' })}
+                  {destinationTagRequired && <span className="text-error0 dark:text-error0d"> *</span>}
+                </Styled.CustomLabel>
+                <div className="flex flex-col">
+                  <Controller
+                    name="destinationTag"
+                    control={control}
+                    rules={{
+                      required: destinationTagRequired
+                        ? intl.formatMessage({ id: 'wallet.errors.destinationTag.required' })
+                        : false,
+                      validate: (value) => {
+                        // If destination tag is required and not provided
+                        if (destinationTagRequired && (value === undefined || value === null)) {
+                          return intl.formatMessage({ id: 'wallet.errors.destinationTag.required' })
+                        }
+
+                        // If value is provided, validate the format
+                        if (value !== undefined && value !== null) {
+                          if (!Number.isInteger(Number(value)) || Number(value) < 0 || Number(value) > 4294967295) {
+                            return intl.formatMessage({ id: 'wallet.errors.destinationTag.invalid' })
+                          }
+                        }
+                        return true
+                      }
+                    }}
+                    render={({ field }) => (
+                      <Input
+                        size="large"
+                        disabled={isLoading}
+                        value={field.value?.toString() || ''}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          field.onChange(value ? parseInt(value) : undefined)
+                        }}
+                        placeholder={
+                          destinationTagRequired
+                            ? intl.formatMessage({ id: 'common.destinationTag.required.placeholder' })
+                            : intl.formatMessage({ id: 'common.destinationTag.placeholder' })
+                        }
+                        type="number"
+                        error={!!errors.destinationTag}
+                      />
+                    )}
+                  />
+                  {errors.destinationTag && (
+                    <span className="text-error0 dark:text-error0d text-xs mt-1">
+                      {typeof errors.destinationTag === 'string'
+                        ? errors.destinationTag
+                        : errors.destinationTag.message}
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
 
             <Styled.CustomLabel className="mt-2" size="big">
               {intl.formatMessage({ id: 'common.amount' })}
@@ -1190,14 +1322,14 @@ export const SendForm = (props: Props): JSX.Element => {
               </div>
             )}
 
-            {/* Memo field for UTXO and COSMOS chains */}
-            {!isEVMChain && renderMemo()}
+            {/* Memo field for UTXO, COSMOS chains, and EVM tokens (non-chain assets) */}
+            {(!isEVMChain || (isEVMChain && !isEvmChainAsset(asset))) && renderMemo()}
           </Styled.SubForm>
 
           <FlatButton
             className="mt-40px min-w-[200px] w-full"
             loading={isLoading}
-            disabled={isFeeError || isLoading}
+            disabled={isFeeError || isLoading || isRouterAddress}
             type="submit"
             size="large">
             {poolDeposit
@@ -1231,6 +1363,7 @@ export const SendForm = (props: Props): JSX.Element => {
                 asset={asset}
                 upperFeeBound={isUTXOChain ? getChainFeeBounds(asset.chain) : undefined}
                 feeRate={isUTXOChain ? feeRate : undefined}
+                destinationTag={isXrpChain ? watch('destinationTag') : undefined}
               />
             )}
           </div>

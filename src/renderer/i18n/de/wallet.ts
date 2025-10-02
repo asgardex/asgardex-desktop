@@ -100,6 +100,8 @@ const wallet: WalletMessages = {
   'wallet.errors.fee.notCovered': 'Die Gebühren sind nicht über Dein Guthaben ({balance}) gedeckt',
   'wallet.errors.invalidChain': 'Ungültige Chain: {chain}',
   'wallet.errors.memo.max': 'Memo darf nicht mehr als {max} Zeichen beinhalten',
+  'wallet.errors.destinationTag.required': 'Ziel-Tag ist für diese Adresse erforderlich',
+  'wallet.errors.destinationTag.invalid': 'Ziel-Tag muss eine gültige Zahl (0-4294967295) sein',
   'wallet.password.confirmation.title': 'Wallet Passwort bestätigen',
   'wallet.password.confirmation.description': 'Bitte gib zur Bestätigung Dein Wallet Passwort ein.',
   'wallet.password.confirmation.pending': 'Überprüfe Passwort',

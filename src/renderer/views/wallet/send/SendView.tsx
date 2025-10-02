@@ -163,8 +163,6 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
     }
   }
 
-  const finalOPoolAddress = isCOSMOSChain && !isChainOfMaya(asset.asset.chain) ? oPoolAddress : oPoolAddressMaya
-
   return FP.pipe(
     oWalletBalance,
     O.fold(
@@ -192,8 +190,8 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
               network={network}
               poolDetails={poolDetails}
               mayaScanPrice={mayaScanPriceRD}
-              oPoolAddress={isEVMChain ? O.none : finalOPoolAddress}
-              oPoolAddressMaya={isEVMChain ? O.none : oPoolAddressMaya}
+              oPoolAddress={oPoolAddress}
+              oPoolAddressMaya={oPoolAddressMaya}
             />
           </div>
         </Spin>
@@ -221,8 +219,8 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
             network={network}
             poolDetails={poolDetails}
             mayaScanPrice={mayaScanPriceRD}
-            oPoolAddress={isEVMChain ? O.none : finalOPoolAddress}
-            oPoolAddressMaya={isEVMChain ? O.none : oPoolAddressMaya}
+            oPoolAddress={oPoolAddress}
+            oPoolAddressMaya={oPoolAddressMaya}
           />
         </div>
       )

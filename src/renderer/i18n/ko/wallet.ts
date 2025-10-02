@@ -96,6 +96,8 @@ const wallet: WalletMessages = {
   'wallet.errors.fee.notCovered': '수수료가 잔액({balance})으로 충당되지 않습니다.',
   'wallet.errors.invalidChain': '유효하지 않은 체인: {chain}',
   'wallet.errors.memo.max': '메모 길이는 {max}자를 초과할 수 없습니다.',
+  'wallet.errors.destinationTag.required': '이 주소에는 대상 태그가 필요합니다',
+  'wallet.errors.destinationTag.invalid': '대상 태그는 유효한 숫자(0-4294967295)여야 합니다',
   'wallet.password.confirmation.title': '지갑 비밀번호 확인',
   'wallet.password.confirmation.description': '지갑 비밀번호를 입력해 주세요.',
   'wallet.password.confirmation.pending': '비밀번호 확인 중',

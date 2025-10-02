@@ -20,6 +20,7 @@ type Props = {
   feeRate?: number
   upperFeeBound?: number
   asset: AnyAsset
+  destinationTag?: number
 }
 
 export const ShowDetails = ({
@@ -30,7 +31,8 @@ export const ShowDetails = ({
   feeRate,
   expectedTxMined,
   currentMemo,
-  asset
+  asset,
+  destinationTag
 }: Props): JSX.Element => {
   const intl = useIntl()
   const denom: string = (() => {
@@ -82,6 +84,13 @@ export const ShowDetails = ({
         <div className="flex w-full justify-between">
           <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
           <div>{expectedTxMined}</div>
+        </div>
+      )}
+
+      {destinationTag !== undefined && (
+        <div className="flex w-full justify-between">
+          <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.destinationTag' })}</div>
+          <div className="font-main text-[12px]">{destinationTag}</div>
         </div>
       )}
 

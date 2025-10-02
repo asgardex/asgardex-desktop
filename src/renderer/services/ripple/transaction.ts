@@ -33,7 +33,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       feeAmount: undefined,
       nodeUrl: undefined,
       hdMode: 'default',
-      apiKey: undefined
+      apiKey: undefined,
+      destinationTag: params.destinationTag
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(sendLedgerTxParams)
 
@@ -63,7 +64,14 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       RxOp.switchMap((network) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
 
-        return common.sendTx(params)
+        // Map our XRP-specific params to the standard TxParams for the common service
+        const txParams = {
+          recipient: params.recipient,
+          amount: params.amount,
+          memo: params.memo,
+          destinationTag: params.destinationTag
+        }
+        return common.sendTx(txParams)
       })
     )
 

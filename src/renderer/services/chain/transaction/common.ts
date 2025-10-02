@@ -71,7 +71,8 @@ export const sendTx$ = ({
   walletAccount,
   walletIndex,
   hdMode,
-  allowOwnerOffCurve
+  allowOwnerOffCurve,
+  destinationTag
 }: SendTxParams): TxHashLD => {
   const { chain } =
     asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.SECURED ? { chain: THORChain } : asset
@@ -159,7 +160,8 @@ export const sendTx$ = ({
         sender,
         walletAccount,
         walletIndex,
-        hdMode
+        hdMode,
+        destinationTag
       })
 
     case GAIAChain:

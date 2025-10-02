@@ -336,7 +336,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       feeAmount: undefined,
       nodeUrl: undefined,
       hdMode: params.hdMode,
-      apiKey: etherscanApiKey
+      apiKey: etherscanApiKey,
+      destinationTag: undefined
     }
 
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)

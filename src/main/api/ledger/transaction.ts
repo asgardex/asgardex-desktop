@@ -261,7 +261,8 @@ export const sendTx = async ({
   walletIndex,
   nodeUrl,
   hdMode,
-  apiKey
+  apiKey,
+  destinationTag
 }: IPCLedgerSendTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const transport = await TransportNodeHidSingleton.default.create()
@@ -298,7 +299,8 @@ export const sendTx = async ({
       nodeUrl,
       hdMode,
       feeAsset: undefined,
-      apiKey
+      apiKey,
+      destinationTag
     })
     await transport.close()
     return res

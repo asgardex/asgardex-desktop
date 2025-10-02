@@ -96,6 +96,8 @@ const wallet: WalletMessages = {
   'wallet.errors.fee.notCovered': 'शुल्क आपके बैलेंस ({balance}) द्वारा कवर नहीं किया गया है',
   'wallet.errors.invalidChain': 'अमान्य चेन: {chain}',
   'wallet.errors.memo.max': 'मेमो की लंबाई {max} से अधिक नहीं हो सकती',
+  'wallet.errors.destinationTag.required': 'इस पते के लिए गंतव्य टैग आवश्यक है',
+  'wallet.errors.destinationTag.invalid': 'गंतव्य टैग एक वैध संख्या (0-4294967295) होना चाहिए',
   'wallet.password.confirmation.title': 'वॉलेट पासवर्ड की पुष्टि',
   'wallet.password.confirmation.description': 'कृपया अपना वॉलेट पासवर्ड दर्ज करें।',
   'wallet.password.confirmation.pending': 'पासवर्ड की पुष्टि जारी',

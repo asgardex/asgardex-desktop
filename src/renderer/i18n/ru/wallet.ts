@@ -97,6 +97,8 @@ const wallet: WalletMessages = {
   'wallet.errors.fee.notCovered': 'Комиссия не покрывается вашим балансом ({balance})',
   'wallet.errors.invalidChain': 'Неверная цепочка: {chain}',
   'wallet.errors.memo.max': 'Длина мемо не может быть больше, чем {max}',
+  'wallet.errors.destinationTag.required': 'Для этого адреса требуется целевая метка',
+  'wallet.errors.destinationTag.invalid': 'Целевая метка должна быть действительным числом (0-4294967295)',
   'wallet.password.confirmation.title': 'Подтверждение пароля',
   'wallet.password.confirmation.description': 'Пожалуйста введите свой пароль',
   'wallet.password.confirmation.pending': 'Проверяю пароль',

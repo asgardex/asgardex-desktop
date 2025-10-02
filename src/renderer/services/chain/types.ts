@@ -106,6 +106,7 @@ export type SendTxParams = {
   feeAmount?: BaseAmount
   hdMode: HDMode
   allowOwnerOffCurve?: boolean
+  destinationTag?: number
 }
 
 export type SendPoolTxParams = SendTxParams & {
