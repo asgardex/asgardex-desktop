@@ -209,63 +209,21 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
   }
   switch (asset.chain) {
     case DOGEChain:
-      // Use gas_rate from inbound addresses with FeesWithRates ratio
       return FP.pipe(
-        Rx.combineLatest([
-          getInboundAddresses$(DOGEChain),
-          // Get current FeesWithRates to establish rate-to-fee relationship
-          DOGE.address$.pipe(
-            RxOp.switchMap(
-              O.fold(
-                () => Rx.of(RD.initial),
-                (address) => DOGE.feesWithRates$(address.address, memo)
-              )
-            )
-          )
-        ]),
-        RxOp.switchMap(([inboundAddressesRD, feesWithRatesRD]) => {
-          if (RD.isSuccess(inboundAddressesRD) && RD.isSuccess(feesWithRatesRD)) {
-            const oChainFeeData = FP.pipe(
-              inboundAddressesRD.value,
-              A.findFirst((item) => item.chain === DOGEChain),
-              O.chain((data) => (data.gas_rate ? O.some({ gas_rate: Number(data.gas_rate) }) : O.none))
-            )
-
-            return FP.pipe(
-              oChainFeeData,
-              O.fold(
-                // Fallback to DOGE service fees if inbound data not available
-                () => Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast })),
-                (feeData) => {
-                  const extrapolatedFee = extrapolateFeeFromGasRate(feeData.gas_rate, feesWithRatesRD.value)
-                  return Rx.of(RD.success({ asset, amount: extrapolatedFee }))
-                }
-              )
-            )
-          }
-          // Fallback to DOGE service if either inbound addresses or fees failed
-          return RD.isSuccess(feesWithRatesRD)
-            ? Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast }))
-            : Rx.of(RD.failure(new Error('Failed to load fees')))
-        }),
-        RxOp.catchError(() => {
-          // Final fallback to DOGE service
-          return FP.pipe(
-            DOGE.address$.pipe(
-              RxOp.switchMap(
-                O.fold(
-                  () => Rx.of(RD.failure(new Error('No address available'))),
-                  (address) =>
-                    FP.pipe(
-                      DOGE.feesWithRates$(address.address, memo),
-                      liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
-                    )
+        DOGE.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  DOGE.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
                 )
-              )
             )
-          )
-        }),
-        RxOp.startWith(RD.pending)
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
 
     case LTCChain:
@@ -760,114 +718,38 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         liveData.map((fees) => ({ asset, amount: fees.fast }))
       )
     case DASHChain:
-      // Use gas_rate from inbound addresses with FeesWithRates ratio
       return FP.pipe(
-        Rx.combineLatest([
-          getInboundAddresses$(DASHChain),
-          DASH.address$.pipe(
-            RxOp.switchMap(
-              O.fold(
-                () => Rx.of(RD.initial),
-                (address) => DASH.feesWithRates$(address.address, memo)
-              )
-            )
-          )
-        ]),
-        RxOp.switchMap(([inboundAddressesRD, feesWithRatesRD]) => {
-          if (RD.isSuccess(inboundAddressesRD) && RD.isSuccess(feesWithRatesRD)) {
-            const oChainFeeData = FP.pipe(
-              inboundAddressesRD.value,
-              A.findFirst((item) => item.chain === DASHChain),
-              O.chain((data) => (data.gas_rate ? O.some({ gas_rate: Number(data.gas_rate) }) : O.none))
-            )
-
-            return FP.pipe(
-              oChainFeeData,
-              O.fold(
-                () => Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast })),
-                (feeData) => {
-                  const extrapolatedFee = extrapolateFeeFromGasRate(feeData.gas_rate, feesWithRatesRD.value)
-                  return Rx.of(RD.success({ asset, amount: extrapolatedFee }))
-                }
-              )
-            )
-          }
-          return RD.isSuccess(feesWithRatesRD)
-            ? Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast }))
-            : Rx.of(RD.failure(new Error('Failed to load DASH fees')))
-        }),
-        RxOp.catchError(() => {
-          return FP.pipe(
-            DASH.address$.pipe(
-              RxOp.switchMap(
-                O.fold(
-                  () => Rx.of(RD.failure(new Error('No address available'))),
-                  (address) =>
-                    FP.pipe(
-                      DASH.feesWithRates$(address.address, memo),
-                      liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
-                    )
+        DASH.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  DASH.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
                 )
-              )
             )
-          )
-        }),
-        RxOp.startWith(RD.pending)
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
     case ZECChain:
-      // Use gas_rate from inbound addresses with FeesWithRates ratio
       return FP.pipe(
-        Rx.combineLatest([
-          getInboundAddresses$(ZECChain),
-          ZEC.address$.pipe(
-            RxOp.switchMap(
-              O.fold(
-                () => Rx.of(RD.initial),
-                (address) => ZEC.feesWithRates$(address.address, memo)
-              )
-            )
-          )
-        ]),
-        RxOp.switchMap(([inboundAddressesRD, feesWithRatesRD]) => {
-          if (RD.isSuccess(inboundAddressesRD) && RD.isSuccess(feesWithRatesRD)) {
-            const oChainFeeData = FP.pipe(
-              inboundAddressesRD.value,
-              A.findFirst((item) => item.chain === ZECChain),
-              O.chain((data) => (data.gas_rate ? O.some({ gas_rate: Number(data.gas_rate) }) : O.none))
-            )
-
-            return FP.pipe(
-              oChainFeeData,
-              O.fold(
-                () => Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast })),
-                (feeData) => {
-                  const extrapolatedFee = extrapolateFeeFromGasRate(feeData.gas_rate, feesWithRatesRD.value)
-                  return Rx.of(RD.success({ asset, amount: extrapolatedFee }))
-                }
-              )
-            )
-          }
-          return RD.isSuccess(feesWithRatesRD)
-            ? Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast }))
-            : Rx.of(RD.failure(new Error('Failed to load ZEC fees')))
-        }),
-        RxOp.catchError(() => {
-          return FP.pipe(
-            ZEC.address$.pipe(
-              RxOp.switchMap(
-                O.fold(
-                  () => Rx.of(RD.failure(new Error('No address available'))),
-                  (address) =>
-                    FP.pipe(
-                      ZEC.feesWithRates$(address.address, memo),
-                      liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
-                    )
+        ZEC.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  ZEC.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
                 )
-              )
             )
-          )
-        }),
-        RxOp.startWith(RD.pending)
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
     case TRONChain:
       return FP.pipe(

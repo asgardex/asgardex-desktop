@@ -470,6 +470,8 @@ export const SendForm = (props: Props): JSX.Element => {
 
   // Effect to check XRP destination tag requirements
   useEffect(() => {
+    let active = true
+
     if (!isXrpChain) {
       setDestinationTagRequired(false)
       return
@@ -484,9 +486,13 @@ export const SendForm = (props: Props): JSX.Element => {
       if (O.isSome(oClient)) {
         try {
           const requiresDestTag = await oClient.value.requiresDestinationTag(recipientValue)
-          setDestinationTagRequired(requiresDestTag)
+          if (active) {
+            setDestinationTagRequired(requiresDestTag)
+          }
         } catch (error) {
-          setDestinationTagRequired(false)
+          if (active) {
+            setDestinationTagRequired(false)
+          }
         }
       } else {
         setDestinationTagRequired(false)
@@ -494,6 +500,7 @@ export const SendForm = (props: Props): JSX.Element => {
     })
 
     return () => {
+      active = false
       subscription.unsubscribe()
     }
   }, [isXrpChain, recipientValue, xrpContext.client$, setDestinationTagRequired])
@@ -1163,8 +1170,8 @@ export const SendForm = (props: Props): JSX.Element => {
             </div>
             {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
 
-            {/* Destination Tag field for XRP - only show when required */}
-            {isXrpChain && destinationTagRequired && (
+            {/* Destination Tag field for XRP - show for all XRP transfers */}
+            {isXrpChain && (
               <>
                 <Styled.CustomLabel className="mt-2" size="big">
                   {intl.formatMessage({ id: 'common.destinationTag' })}
@@ -1186,7 +1193,8 @@ export const SendForm = (props: Props): JSX.Element => {
 
                         // If value is provided, validate the format
                         if (value !== undefined && value !== null) {
-                          if (!Number.isInteger(Number(value)) || Number(value) < 0 || Number(value) > 4294967295) {
+                          const numValue = typeof value === 'string' ? parseInt(value, 10) : value
+                          if (!Number.isInteger(numValue) || numValue < 0 || numValue > 4294967295) {
                             return intl.formatMessage({ id: 'wallet.errors.destinationTag.invalid' })
                           }
                         }
@@ -1199,8 +1207,8 @@ export const SendForm = (props: Props): JSX.Element => {
                         disabled={isLoading}
                         value={field.value?.toString() || ''}
                         onChange={(e) => {
-                          const value = e.target.value
-                          field.onChange(value ? parseInt(value) : undefined)
+                          const value = e.target.value.trim()
+                          field.onChange(value ? parseInt(value, 10) : undefined)
                         }}
                         placeholder={
                           destinationTagRequired
