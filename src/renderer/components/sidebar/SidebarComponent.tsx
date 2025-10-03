@@ -27,6 +27,7 @@ import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
 import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { DEFAULT_WALLET_TYPE } from '../../const'
+import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import * as appRoutes from '../../routes/app'
@@ -39,7 +40,7 @@ import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
 import { Label } from '../uielements/label'
 import { Tooltip } from '../uielements/tooltip'
-import { TransactionTracker } from '../uielements/transactionProgress/TransactionTracker'
+import { TransactionTracker, ChainflipTransactionTracker } from '../uielements/transactionProgress'
 
 type IconProps = {
   className?: string
@@ -98,6 +99,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const intl = useIntl()
   const { transactionTrackingService } = useThorchainContext()
   const { transactionTrackingService: mayaTransactionTrackingService } = useMayachainContext()
+  const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
 
   const navigate = useNavigate()
 
@@ -261,6 +263,10 @@ export const SidebarComponent = (props: Props): JSX.Element => {
             transactionTrackingService={mayaTransactionTrackingService}
             className="mt-2 mx-4"
             protocol="Mayachain"
+          />
+          <ChainflipTransactionTracker
+            transactionTrackingService={chainflipTransactionTrackingService}
+            className="mt-2 mx-4"
           />
           <div className="flex-1" />
         </div>

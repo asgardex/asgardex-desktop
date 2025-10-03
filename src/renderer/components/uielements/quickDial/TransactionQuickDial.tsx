@@ -8,52 +8,61 @@ import { useIntl } from 'react-intl'
 
 import SwapIcon from '../../../assets/svg/icon-swap.svg?react'
 import ThorChainIcon from '../../../assets/svg/logo-thorchain.svg?react'
+import { ChainflipTransactionTrackingService } from '../../../services/chainflip/transactionTracking'
 import { TransactionTrackingService } from '../../../services/thorchain/transactionTracking'
 import { mayaIconT } from '../../icons'
 import { Label } from '../label'
+import { ChainflipTransactionItem } from '../transactionProgress/ChainflipTransactionItem'
 import { TransactionItem } from '../transactionProgress/TransactionItem'
 
 export type TransactionQuickDialProps = {
   thorchainTransactionTrackingService: TransactionTrackingService
   mayachainTransactionTrackingService: TransactionTrackingService
+  chainflipTransactionTrackingService: ChainflipTransactionTrackingService
   className?: string
 }
 
 export const TransactionQuickDial = ({
   thorchainTransactionTrackingService,
   mayachainTransactionTrackingService,
+  chainflipTransactionTrackingService,
   className
 }: TransactionQuickDialProps) => {
   const intl = useIntl()
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Get transactions from both services
+  // Get transactions from all services
   const thorTransactionsRD = useObservableState(thorchainTransactionTrackingService.getTransactions$, RD.initial)
   const mayaTransactionsRD = useObservableState(mayachainTransactionTrackingService.getTransactions$, RD.initial)
+  const chainflipTransactionsRD = useObservableState(chainflipTransactionTrackingService.getTransactions$, RD.initial)
 
   // Combine and filter active transactions
   const activeTransactions = useMemo(() => {
     const thorTransactions = RD.isSuccess(thorTransactionsRD) ? thorTransactionsRD.value : []
     const mayaTransactions = RD.isSuccess(mayaTransactionsRD) ? mayaTransactionsRD.value : []
+    const chainflipTransactions = RD.isSuccess(chainflipTransactionsRD) ? chainflipTransactionsRD.value : []
 
     // Combine all transactions and filter for active ones
     const allTransactions = [
       ...thorTransactions.map((tx) => ({ ...tx, protocol: 'Thorchain' as const })),
-      ...mayaTransactions.map((tx) => ({ ...tx, protocol: 'Mayachain' as const }))
+      ...mayaTransactions.map((tx) => ({ ...tx, protocol: 'Mayachain' as const })),
+      ...chainflipTransactions.map((tx) => ({ ...tx, txHash: tx.depositChannelId, protocol: 'Chainflip' as const }))
     ]
 
     return allTransactions.filter((tx) => !tx.isComplete)
-  }, [thorTransactionsRD, mayaTransactionsRD])
+  }, [thorTransactionsRD, mayaTransactionsRD, chainflipTransactionsRD])
 
   const handleRemoveTransaction = useCallback(
-    (id: string, protocol: 'Thorchain' | 'Mayachain') => {
+    (id: string, protocol: 'Thorchain' | 'Mayachain' | 'Chainflip') => {
       if (protocol === 'Thorchain') {
         thorchainTransactionTrackingService.removeTransaction(id)
-      } else {
+      } else if (protocol === 'Mayachain') {
         mayachainTransactionTrackingService.removeTransaction(id)
+      } else if (protocol === 'Chainflip') {
+        chainflipTransactionTrackingService.removeTransaction(id)
       }
     },
-    [mayachainTransactionTrackingService, thorchainTransactionTrackingService]
+    [mayachainTransactionTrackingService, thorchainTransactionTrackingService, chainflipTransactionTrackingService]
   )
 
   const toggleExpanded = useCallback(() => {
@@ -118,11 +127,23 @@ export const TransactionQuickDial = ({
                 const protocolIcon =
                   transaction.protocol === 'Mayachain' ? (
                     <img src={mayaIconT} alt="Maya" className="w-3 h-3 rounded-full" />
+                  ) : transaction.protocol === 'Chainflip' ? (
+                    <div className="w-3 h-3 bg-turquoise rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">C</span>
+                    </div>
                   ) : (
                     <ThorChainIcon className="w-3 h-3 [&>*:not(:first-child)]:fill-text2 [&>*:not(:first-child)]:dark:fill-text2d" />
                   )
 
-                return (
+                // Use appropriate component based on protocol
+                return transaction.protocol === 'Chainflip' ? (
+                  <ChainflipTransactionItem
+                    key={transaction.id}
+                    protocol={protocolIcon}
+                    transaction={transaction}
+                    onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
+                  />
+                ) : (
                   <TransactionItem
                     key={transaction.id}
                     protocol={protocolIcon}

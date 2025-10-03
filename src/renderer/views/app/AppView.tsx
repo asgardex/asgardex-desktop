@@ -13,6 +13,7 @@ import { Header } from '../../components/header'
 import { Sidebar } from '../../components/sidebar'
 import { BorderButton } from '../../components/uielements/button'
 import { TransactionQuickDial } from '../../components/uielements/quickDial'
+import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useI18nContext } from '../../contexts/I18nContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -102,6 +103,7 @@ export const AppView = (): JSX.Element => {
   // Transaction tracking services
   const { transactionTrackingService: thorchainTransactionTrackingService } = useThorchainContext()
   const { transactionTrackingService: mayachainTransactionTrackingService } = useMayachainContext()
+  const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
 
   const renderImportKeystoreWalletsError = useMemo(() => {
     const empty = () => <></>
@@ -205,6 +207,7 @@ export const AppView = (): JSX.Element => {
             <TransactionQuickDial
               thorchainTransactionTrackingService={thorchainTransactionTrackingService}
               mayachainTransactionTrackingService={mayachainTransactionTrackingService}
+              chainflipTransactionTrackingService={chainflipTransactionTrackingService}
             />
           )}
         </div>

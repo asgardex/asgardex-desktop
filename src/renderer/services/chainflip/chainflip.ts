@@ -15,6 +15,7 @@ import {
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { createChainflipTransactionTrackingService } from './transactionTracking'
 import { cChainToXChain, xAssetToCAsset } from './utils'
 
 // Create singleton instances to prevent multiple instances and cache invalidation
@@ -25,6 +26,9 @@ const sdk = new SwapSDK({
   }
 })
 const assetsData = new CachedValue(() => sdk.getAssets(), 24 * 60 * 60 * 1000)
+
+// Create transaction tracking service
+const transactionTrackingService = createChainflipTransactionTrackingService(sdk)
 
 export const createChainflipService$ = () => {
   // Observable for cached assets data
@@ -86,6 +90,7 @@ export const createChainflipService$ = () => {
   return {
     getAssetsData$,
     isAssetSupported$,
-    chainflipSupportedChains$
+    chainflipSupportedChains$,
+    transactionTrackingService
   }
 }

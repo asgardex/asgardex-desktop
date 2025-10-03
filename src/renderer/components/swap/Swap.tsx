@@ -69,6 +69,7 @@ import {
   getEVMTokenAddressForChain,
   isRujiAsset
 } from '../../helpers/assetHelper'
+import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
@@ -258,7 +259,7 @@ export const Swap = ({
     }
   }, [targetAsset.chain])
 
-  const { isAssetSupported$ } = useChainflipContext()
+  const { isAssetSupported$, transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
 
   const useSourceAssetLedger = useMemo(() => {
     // In standalone ledger mode, always use ledger for source asset
@@ -2354,6 +2355,13 @@ export const Swap = ({
                 amount: amountToSwapMax1e8.amount().toString()
               })
               lastTrackedTxHashRef.current = txHash
+            } else if (quoteProtocol.protocol === 'Chainflip' && quoteProtocol.depositChannelId) {
+              addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, quoteProtocol.depositChannelId, {
+                srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
+                destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
+                depositAmount: amountToSwapMax1e8.amount().toString()
+              })
+              lastTrackedTxHashRef.current = txHash
             }
           }
         })
@@ -2366,7 +2374,8 @@ export const Swap = ({
     mayaTransactionTrackingService,
     sourceAsset,
     targetAsset,
-    amountToSwapMax1e8
+    amountToSwapMax1e8,
+    chainflipTransactionTrackingService
   ])
 
   const onSwitchAssets = useCallback(async () => {

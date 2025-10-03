@@ -1,5 +1,6 @@
 import { createChainflipService$ } from './chainflip'
 
-const { getAssetsData$, isAssetSupported$, chainflipSupportedChains$ } = createChainflipService$()
+const { getAssetsData$, isAssetSupported$, chainflipSupportedChains$, transactionTrackingService } =
+  createChainflipService$()
 
-export { getAssetsData$, isAssetSupported$, chainflipSupportedChains$ }
+export { getAssetsData$, isAssetSupported$, chainflipSupportedChains$, transactionTrackingService }
