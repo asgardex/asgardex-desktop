@@ -1,7 +1,8 @@
-import { useState, useEffect, ReactNode } from 'react'
+import { useState, useEffect, ReactNode, useMemo } from 'react'
 
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/solid'
+import { assetFromString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
@@ -13,6 +14,7 @@ import { ProgressBar } from '../progressBar'
 
 export type ChainflipTransactionItemProps = {
   protocol?: ReactNode
+  isMini?: boolean
   transaction: ChainflipTrackedTransaction
   onRemove: (id: string) => void
   className?: string
@@ -20,6 +22,7 @@ export type ChainflipTransactionItemProps = {
 
 export const ChainflipTransactionItem = ({
   protocol,
+  isMini = false,
   transaction,
   onRemove,
   className
@@ -27,6 +30,18 @@ export const ChainflipTransactionItem = ({
   const intl = useIntl()
   const [isExpanded, setIsExpanded] = useState(false)
   const [isNewlyCompleted, setIsNewlyCompleted] = useState(false)
+
+  const fromAsset = useMemo(() => {
+    const asset = assetFromString(transaction.fromAsset)
+
+    return isMini && asset ? asset.ticker : asset ? `${asset?.chain}.${asset?.ticker}` : transaction.fromAsset
+  }, [transaction.fromAsset, isMini])
+
+  const toAsset = useMemo(() => {
+    const asset = assetFromString(transaction.toAsset)
+
+    return isMini && asset ? asset.ticker : asset ? `${asset?.chain}.${asset?.ticker}` : transaction.toAsset
+  }, [transaction.toAsset, isMini])
 
   // Detect when transaction becomes complete for animation
   useEffect(() => {
@@ -160,22 +175,14 @@ export const ChainflipTransactionItem = ({
       )}>
       <div className="p-2">
         <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center space-x-2 min-w-0">
+          <div className="flex items-center space-x-1 min-w-0">
             {protocol && protocol}
             <span className="text-sm font-medium text-text1 dark:text-text1d truncate">
-              {transaction.fromAsset} → {transaction.toAsset}
+              {fromAsset} → {toAsset}
             </span>
           </div>
 
           <div className="flex items-center space-x-1">
-            {transaction.isComplete && (
-              <div className="flex items-center space-x-1 bg-turquoise/80 dark:bg-turquoise/80 px-2 py-1 rounded-lg">
-                <CheckCircleIcon className="w-4 h-4 text-white shrink-0" />
-                <Label size="small" color="white" textTransform="uppercase">
-                  Completed
-                </Label>
-              </div>
-            )}
             <button
               onClick={toggleExpanded}
               className="p-1 text-text2 dark:text-text2d hover:text-text1 dark:hover:text-text1d transition-colors">
@@ -193,26 +200,35 @@ export const ChainflipTransactionItem = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex-1 min-w-0">
-            <div
-              className={clsx(
-                'flex text-xs truncate',
-                getRichStatusText().urgent
-                  ? 'text-yellow-600 dark:text-yellow-400 font-medium'
-                  : 'text-text2 dark:text-text2d'
-              )}>
-              <PaperAirplaneIcon className="w-4 h-4 mr-1" />
-              {statusInfo.text}
+        <div className="flex items-center justify-between">
+          {transaction.isComplete ? (
+            <div className="flex items-center space-x-1 bg-turquoise/80 dark:bg-turquoise/80 px-2 py-1 rounded-lg">
+              <CheckCircleIcon className="w-4 h-4 text-white shrink-0" />
+              <Label size="small" color="white" textTransform="uppercase">
+                Completed
+              </Label>
             </div>
-            {statusInfo.detail && (
-              <div className="text-xs text-text2 dark:text-text2d truncate opacity-50">{statusInfo.detail}</div>
-            )}
-          </div>
+          ) : (
+            <div className="flex-1 min-w-0">
+              <div
+                className={clsx(
+                  'flex text-xs truncate',
+                  getRichStatusText().urgent
+                    ? 'text-yellow-600 dark:text-yellow-400 font-medium'
+                    : 'text-text2 dark:text-text2d'
+                )}>
+                <PaperAirplaneIcon className="w-4 h-4 mr-1" />
+                {statusInfo.text}
+              </div>
+              {statusInfo.detail && (
+                <div className="text-xs text-text2 dark:text-text2d truncate opacity-50">{statusInfo.detail}</div>
+              )}
+            </div>
+          )}
           <span className="text-base font-bold text-text2 dark:text-text2d ml-2 shrink-0">{Math.round(progress)}%</span>
         </div>
 
-        <ProgressBar heightPx={4} percent={progress} />
+        {!transaction.isComplete && <ProgressBar className="mt-1" heightPx={4} percent={progress} />}
       </div>
 
       {/* Expanded Details */}

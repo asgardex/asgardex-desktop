@@ -4,8 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
 
-import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
-import { mayaIconT } from '../../components/icons'
 import { ProviderIcon } from '../../components/swap/ProviderIcon'
 import { Label } from '../../components/uielements/label'
 import { TransactionItem, ChainflipTransactionItem } from '../../components/uielements/transactionProgress'
@@ -70,14 +68,7 @@ export const HistoryView = (): JSX.Element => {
       ) : null}
       <div className="flex flex-col space-y-1">
         {activeTxs.map((transaction) => {
-          const protocolIcon =
-            transaction.protocol === 'Mayachain' ? (
-              <img src={mayaIconT} alt="Maya" className="w-3 h-3 rounded-full" />
-            ) : transaction.protocol === 'Chainflip' ? (
-              <ProviderIcon protocol="Chainflip" className="w-3 h-3" />
-            ) : (
-              <ThorChainIcon className="w-3 h-3 [&>*:not(:first-child)]:fill-text2 [&>*:not(:first-child)]:dark:fill-text2d" />
-            )
+          const protocolIcon = <ProviderIcon protocol={transaction.protocol} className="w-3 h-3" />
 
           // Use appropriate component based on protocol
           return transaction.protocol === 'Chainflip' ? (

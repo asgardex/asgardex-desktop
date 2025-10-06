@@ -1,13 +1,10 @@
-import React from 'react'
-
 import * as RD from '@devexperts/remote-data-ts'
 import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import ThorChainIcon from '../../../assets/svg/logo-thorchain.svg?react'
 import { TransactionTrackingService } from '../../../services/thorchain/transactionTracking'
-import { mayaIconT } from '../../icons'
+import { ProviderIcon } from '../../swap/ProviderIcon'
 import { TransactionItem } from './TransactionItem'
 
 export type TransactionTrackerProps = {
@@ -16,11 +13,11 @@ export type TransactionTrackerProps = {
   protocol?: 'Thorchain' | 'Mayachain'
 }
 
-export const TransactionTracker: React.FC<TransactionTrackerProps> = ({
+export const TransactionTracker = ({
   transactionTrackingService,
   className,
   protocol = 'Thorchain'
-}) => {
+}: TransactionTrackerProps) => {
   const intl = useIntl()
 
   const transactionsRD = useObservableState(transactionTrackingService.getTransactions$, RD.initial)
@@ -58,12 +55,7 @@ export const TransactionTracker: React.FC<TransactionTrackerProps> = ({
   const activeTransactions = transactions.filter((tx) => !tx.isComplete)
   const completedTransactions = transactions.filter((tx) => tx.isComplete)
 
-  const protocolIcon =
-    protocol === 'Mayachain' ? (
-      <img src={mayaIconT} alt="Maya" className="w-3 h-3" />
-    ) : (
-      <ThorChainIcon className="w-3 h-3 [&>*:not(:first-child)]:fill-text2 [&>*:not(:first-child)]:dark:fill-text2d" />
-    )
+  const protocolIcon = <ProviderIcon protocol={protocol} className="!w-4 !h-4" />
 
   const protocolLabel = protocol === 'Mayachain' ? 'Maya' : 'THORChain'
 
@@ -91,7 +83,7 @@ export const TransactionTracker: React.FC<TransactionTrackerProps> = ({
             {intl.formatMessage({ id: 'common.transaction.active' })}
           </div>
           {activeTransactions.map((transaction) => (
-            <TransactionItem key={transaction.id} transaction={transaction} onRemove={handleRemoveTransaction} />
+            <TransactionItem key={transaction.id} isMini transaction={transaction} onRemove={handleRemoveTransaction} />
           ))}
         </div>
       )}
@@ -103,7 +95,7 @@ export const TransactionTracker: React.FC<TransactionTrackerProps> = ({
             {intl.formatMessage({ id: 'common.transaction.completed' })}
           </div>
           {completedTransactions.map((transaction) => (
-            <TransactionItem key={transaction.id} transaction={transaction} onRemove={handleRemoveTransaction} />
+            <TransactionItem key={transaction.id} isMini transaction={transaction} onRemove={handleRemoveTransaction} />
           ))}
         </div>
       )}

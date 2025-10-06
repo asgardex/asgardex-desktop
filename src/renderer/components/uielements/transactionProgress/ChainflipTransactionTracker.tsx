@@ -6,6 +6,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { ChainflipTransactionTrackingService } from '../../../services/chainflip/transactionTracking'
+import { ProviderIcon } from '../../swap/ProviderIcon'
 import { ChainflipTransactionItem } from './ChainflipTransactionItem'
 
 export type ChainflipTransactionTrackerProps = {
@@ -54,18 +55,12 @@ export const ChainflipTransactionTracker: React.FC<ChainflipTransactionTrackerPr
   const activeTransactions = transactions.filter((tx) => !tx.isComplete)
   const completedTransactions = transactions.filter((tx) => tx.isComplete)
 
-  const protocolIcon = (
-    <div className="w-3 h-3 bg-turquoise rounded-full flex items-center justify-center">
-      <span className="text-white text-xs font-bold">C</span>
-    </div>
-  )
-
   return (
     <div className={clsx('rounded-lg border border-gray1 dark:border-gray1d bg-bg1 dark:bg-bg1d', className)}>
       {/* Header */}
       <div className="p-2 border-b border-gray1 dark:border-gray1d">
         <div className="flex items-center space-x-2">
-          {protocolIcon}
+          <ProviderIcon protocol="Chainflip" className="!w-4 !h-4" />
           <span className="text-xs font-medium text-text1 dark:text-text1d">
             Chainflip {intl.formatMessage({ id: 'common.transaction.tracking' })}
           </span>
@@ -86,6 +81,7 @@ export const ChainflipTransactionTracker: React.FC<ChainflipTransactionTrackerPr
           {activeTransactions.map((transaction) => (
             <ChainflipTransactionItem
               key={transaction.id}
+              isMini
               transaction={transaction}
               onRemove={handleRemoveTransaction}
             />
@@ -102,6 +98,7 @@ export const ChainflipTransactionTracker: React.FC<ChainflipTransactionTrackerPr
           {completedTransactions.map((transaction) => (
             <ChainflipTransactionItem
               key={transaction.id}
+              isMini
               transaction={transaction}
               onRemove={handleRemoveTransaction}
             />
