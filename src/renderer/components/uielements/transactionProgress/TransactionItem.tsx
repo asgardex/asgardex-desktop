@@ -29,7 +29,7 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
 
     if (!asset) return transaction.fromAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.symbol ?? asset.ticker}`
+    return `${asset.chain}.${asset.ticker ?? asset.ticker}`
   }, [transaction.fromAsset, isMini])
 
   const toAsset = useMemo(() => {
@@ -37,7 +37,7 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
 
     if (!asset) return transaction.toAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.symbol ?? asset.ticker}`
+    return `${asset.chain}.${asset.ticker ?? asset.ticker}`
   }, [transaction.toAsset, isMini])
 
   // Detect when transaction becomes complete for animation
