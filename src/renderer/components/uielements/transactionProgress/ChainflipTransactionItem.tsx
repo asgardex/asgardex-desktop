@@ -1,13 +1,14 @@
 import { useState, useEffect, ReactNode } from 'react'
 
-import { CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
+import { truncateMiddle } from '../../../helpers/stringHelper'
 import { formatSwapTime } from '../../../helpers/timeHelper'
 import { ChainflipTrackedTransaction } from '../../../services/chainflip/transactionTracking'
-import { CopyLabel } from '../label'
+import { CopyLabel, Label } from '../label'
 import { ProgressBar } from '../progressBar'
 
 export type ChainflipTransactionItemProps = {
@@ -152,59 +153,72 @@ export const ChainflipTransactionItem = ({
   return (
     <div
       className={clsx(
-        'bg-bg0 dark:bg-bg0d rounded-lg border border-gray1 dark:border-gray1d p-3',
-        'transition-all duration-300 ease-in-out',
-        {
-          'ring-2 ring-turquoise ring-opacity-50 border-turquoise': isNewlyCompleted,
-          'shadow-lg': isExpanded
-        },
+        'bg-gray0/30 dark:bg-gray0d/30 rounded-lg border transition-all duration-500',
+        'border-gray0 dark:border-gray0d',
+        isNewlyCompleted && 'animate-pulse',
         className
       )}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2 flex-1 min-w-0">
-          {protocol && <div className="flex-shrink-0">{protocol}</div>}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-1">
-              <span className="text-xs font-medium text-text1 dark:text-text1d truncate">
-                {transaction.fromAsset} → {transaction.toAsset}
-              </span>
-              {transaction.isComplete && <CheckCircleIcon className="w-3 h-3 text-turquoise flex-shrink-0" />}
-              {statusInfo.urgent && !transaction.isComplete && (
-                <PaperAirplaneIcon className="w-3 h-3 text-turquoise flex-shrink-0 animate-pulse" />
+      <div className="p-2">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center space-x-2 min-w-0">
+            {protocol && protocol}
+            <span className="text-sm font-medium text-text1 dark:text-text1d truncate">
+              {transaction.fromAsset} → {transaction.toAsset}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-1">
+            {transaction.isComplete && (
+              <div className="flex items-center space-x-1 bg-turquoise/80 dark:bg-turquoise/80 px-2 py-1 rounded-lg">
+                <CheckCircleIcon className="w-4 h-4 text-white shrink-0" />
+                <Label size="small" color="white" textTransform="uppercase">
+                  Completed
+                </Label>
+              </div>
+            )}
+            <button
+              onClick={toggleExpanded}
+              className="p-1 text-text2 dark:text-text2d hover:text-text1 dark:hover:text-text1d transition-colors">
+              {isExpanded ? (
+                <ChevronUpIcon className="w-3 h-3 text-text2 dark:text-text2d" />
+              ) : (
+                <ChevronDownIcon className="w-3 h-3 text-text2 dark:text-text2d" />
               )}
-            </div>
-            <div className="text-xs text-text2 dark:text-text2d mt-0.5 truncate">
-              {statusInfo.text}
-              {statusInfo.detail && ` - ${statusInfo.detail}`}
-            </div>
-            <div className="mt-1">
-              <ProgressBar percent={progress} className="h-1" />
-            </div>
+            </button>
+            <button
+              onClick={handleRemove}
+              className="p-1 text-text2 dark:text-text2d hover:text-error0 dark:hover:text-error0d transition-colors">
+              <XMarkIcon className="w-3 h-3 text-text2 dark:text-text2d group-hover:text-error0 dark:group-hover:text-error0d" />
+            </button>
           </div>
         </div>
-        <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
-          <span className="text-base font-bold text-text2 dark:text-text2d mr-2">{Math.round(progress)}%</span>
-          <button
-            onClick={toggleExpanded}
-            className="p-1 rounded-md hover:bg-gray1 dark:hover:bg-gray1d transition-colors">
-            {isExpanded ? (
-              <ChevronUpIcon className="w-3 h-3 text-text2 dark:text-text2d" />
-            ) : (
-              <ChevronDownIcon className="w-3 h-3 text-text2 dark:text-text2d" />
+
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex-1 min-w-0">
+            <div
+              className={clsx(
+                'flex text-xs truncate',
+                getRichStatusText().urgent
+                  ? 'text-yellow-600 dark:text-yellow-400 font-medium'
+                  : 'text-text2 dark:text-text2d'
+              )}>
+              <PaperAirplaneIcon className="w-4 h-4 mr-1" />
+              {statusInfo.text}
+            </div>
+            {statusInfo.detail && (
+              <div className="text-xs text-text2 dark:text-text2d truncate opacity-50">{statusInfo.detail}</div>
             )}
-          </button>
-          <button
-            onClick={handleRemove}
-            className="p-1 rounded-md hover:bg-error1 dark:hover:bg-error1d transition-colors group">
-            <XMarkIcon className="w-3 h-3 text-text2 dark:text-text2d group-hover:text-error0 dark:group-hover:text-error0d" />
-          </button>
+          </div>
+          <span className="text-base font-bold text-text2 dark:text-text2d ml-2 shrink-0">{Math.round(progress)}%</span>
         </div>
+
+        <ProgressBar heightPx={4} percent={progress} />
       </div>
 
       {/* Expanded Details */}
       {isExpanded && (
-        <div className="mt-3 pt-3 border-t border-gray1 dark:border-gray1d space-y-2 text-xs">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="border-t border-gray1 dark:border-gray1d p-2 text-xs">
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-text2 dark:text-text2d">Amount:</span>
               <span className="ml-1 text-text1 dark:text-text1d">{transaction.amount}</span>
@@ -214,41 +228,45 @@ export const ChainflipTransactionItem = ({
               <span className="ml-1 text-text1 dark:text-text1d">{formatSwapTime(elapsedTime / 1000)}</span>
             </div>
           </div>
-          <div>
-            <span className="text-text2 dark:text-text2d">Channel ID:</span>
+          <div className="flex justify-between">
+            <span className="text-xs text-text2 dark:text-text2d">Channel ID:</span>
             <CopyLabel
               textToCopy={transaction.depositChannelId}
               label={transaction.depositChannelId}
               className="ml-1 text-text1 dark:text-text1d text-xs"
+              iconClassName="!w-4 !h-4"
             />
           </div>
           {transaction.swapId && (
-            <div>
+            <div className="flex justify-between">
               <span className="text-text2 dark:text-text2d">Swap ID:</span>
               <CopyLabel
                 textToCopy={transaction.swapId}
                 label={transaction.swapId}
                 className="ml-1 text-text1 dark:text-text1d text-xs"
+                iconClassName="!w-4 !h-4"
               />
             </div>
           )}
           {transaction.stages?.depositTxHash && (
-            <div>
+            <div className="flex justify-between">
               <span className="text-text2 dark:text-text2d">Deposit Tx:</span>
               <CopyLabel
                 textToCopy={transaction.stages.depositTxHash}
-                label={transaction.stages.depositTxHash}
+                label={truncateMiddle(transaction.stages.depositTxHash, { start: 6, end: 4 })}
                 className="ml-1 text-text1 dark:text-text1d text-xs"
+                iconClassName="!w-4 !h-4"
               />
             </div>
           )}
           {transaction.stages?.egressTxHash && (
-            <div>
+            <div className="flex justify-between">
               <span className="text-text2 dark:text-text2d">Egress Tx:</span>
               <CopyLabel
                 textToCopy={transaction.stages.egressTxHash}
-                label={transaction.stages.egressTxHash}
+                label={truncateMiddle(transaction.stages.egressTxHash)}
                 className="ml-1 text-text1 dark:text-text1d text-xs"
+                iconClassName="!w-4 !h-4"
               />
             </div>
           )}

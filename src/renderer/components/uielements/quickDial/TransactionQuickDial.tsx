@@ -11,6 +11,7 @@ import ThorChainIcon from '../../../assets/svg/logo-thorchain.svg?react'
 import { ChainflipTransactionTrackingService } from '../../../services/chainflip/transactionTracking'
 import { TransactionTrackingService } from '../../../services/thorchain/transactionTracking'
 import { mayaIconT } from '../../icons'
+import { ProviderIcon } from '../../swap/ProviderIcon'
 import { Label } from '../label'
 import { ChainflipTransactionItem } from '../transactionProgress/ChainflipTransactionItem'
 import { TransactionItem } from '../transactionProgress/TransactionItem'
@@ -128,9 +129,7 @@ export const TransactionQuickDial = ({
                   transaction.protocol === 'Mayachain' ? (
                     <img src={mayaIconT} alt="Maya" className="w-3 h-3 rounded-full" />
                   ) : transaction.protocol === 'Chainflip' ? (
-                    <div className="w-3 h-3 bg-turquoise rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">C</span>
-                    </div>
+                    <ProviderIcon protocol="Chainflip" className="w-3 h-3" />
                   ) : (
                     <ThorChainIcon className="w-3 h-3 [&>*:not(:first-child)]:fill-text2 [&>*:not(:first-child)]:dark:fill-text2d" />
                   )

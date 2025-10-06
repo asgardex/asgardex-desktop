@@ -1,13 +1,13 @@
 import { useState, useEffect, ReactNode } from 'react'
 
-import { CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { formatSwapTime } from '../../../helpers/timeHelper'
 import { TrackedTransaction } from '../../../services/thorchain/transactionTracking'
-import { CopyLabel } from '../label'
+import { CopyLabel, Label } from '../label'
 import { ProgressBar } from '../progressBar'
 
 export type TransactionItemProps = {
@@ -227,10 +227,8 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
   return (
     <div
       className={clsx(
-        'bg-gray0 dark:bg-gray0d/30 rounded-lg border transition-all duration-500',
-        transaction.isComplete
-          ? 'border-turquoise dark:border-turquoise bg-turquoise/5 dark:bg-turquoise/10'
-          : 'border-gray0 dark:border-gray0d',
+        'bg-gray0/30 dark:bg-gray0d/30 rounded-lg border transition-all duration-500',
+        'border-gray0 dark:border-gray0d',
         isNewlyCompleted && 'animate-pulse',
         className
       )}>
@@ -239,14 +237,21 @@ export const TransactionItem = ({ protocol, transaction, onRemove, className }: 
         {/* First row: asset swap and controls */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center space-x-2 min-w-0">
-            {transaction.isComplete && <CheckCircleIcon className="w-4 h-4 text-turquoise shrink-0" />}
-            {!transaction.isComplete && protocol && protocol}
+            {protocol && protocol}
             <span className="text-sm font-medium text-text1 dark:text-text1d truncate">
               {transaction.fromAsset} → {transaction.toAsset}
             </span>
           </div>
 
           <div className="flex items-center space-x-1">
+            {transaction.isComplete && (
+              <div className="flex items-center space-x-1 bg-turquoise/80 dark:bg-turquoise/80 px-2 py-1 rounded-lg">
+                <CheckCircleIcon className="w-4 h-4 text-white shrink-0" />
+                <Label size="small" color="white" textTransform="uppercase">
+                  Completed
+                </Label>
+              </div>
+            )}
             <button
               onClick={toggleExpanded}
               className="p-1 text-text2 dark:text-text2d hover:text-text1 dark:hover:text-text1d transition-colors">

@@ -1,10 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
 
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { mayaIconT } from '../../components/icons'
+import { ProviderIcon } from '../../components/swap/ProviderIcon'
 import { Label } from '../../components/uielements/label'
 import { TransactionItem, ChainflipTransactionItem } from '../../components/uielements/transactionProgress'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
@@ -66,69 +68,62 @@ export const HistoryView = (): JSX.Element => {
           In Progress ({activeTxs.length})
         </Label>
       ) : null}
-      {activeTxs.map((transaction) => {
-        const protocolIcon =
-          transaction.protocol === 'Mayachain' ? (
-            <img src={mayaIconT} alt="Maya" className="w-3 h-3 rounded-full" />
-          ) : transaction.protocol === 'Chainflip' ? (
-            <div className="w-3 h-3 bg-turquoise rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">C</span>
-            </div>
-          ) : (
-            <ThorChainIcon className="w-3 h-3 [&>*:not(:first-child)]:fill-text2 [&>*:not(:first-child)]:dark:fill-text2d" />
-          )
+      <div className="flex flex-col space-y-1">
+        {activeTxs.map((transaction) => {
+          const protocolIcon =
+            transaction.protocol === 'Mayachain' ? (
+              <img src={mayaIconT} alt="Maya" className="w-3 h-3 rounded-full" />
+            ) : transaction.protocol === 'Chainflip' ? (
+              <ProviderIcon protocol="Chainflip" className="w-3 h-3" />
+            ) : (
+              <ThorChainIcon className="w-3 h-3 [&>*:not(:first-child)]:fill-text2 [&>*:not(:first-child)]:dark:fill-text2d" />
+            )
 
-        // Use appropriate component based on protocol
-        return transaction.protocol === 'Chainflip' ? (
-          <ChainflipTransactionItem
-            key={transaction.id}
-            protocol={protocolIcon}
-            transaction={transaction}
-            onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
-          />
-        ) : (
-          <TransactionItem
-            key={transaction.id}
-            protocol={protocolIcon}
-            transaction={transaction}
-            onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
-          />
-        )
-      })}
+          // Use appropriate component based on protocol
+          return transaction.protocol === 'Chainflip' ? (
+            <ChainflipTransactionItem
+              key={transaction.id}
+              protocol={protocolIcon}
+              transaction={transaction}
+              onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
+            />
+          ) : (
+            <TransactionItem
+              key={transaction.id}
+              protocol={protocolIcon}
+              transaction={transaction}
+              onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
+            />
+          )
+        })}
+      </div>
       {completedTxs.length ? (
-        <Label className="mt-4 mb-1" size="big">
+        <Label className={clsx('mb-1', { 'mt-4': activeTxs.length > 0 })} size="big">
           Completed ({completedTxs.length})
         </Label>
       ) : null}
-      {completedTxs.map((transaction) => {
-        const protocolIcon =
-          transaction.protocol === 'Mayachain' ? (
-            <img src={mayaIconT} alt="Maya" className="w-3 h-3 rounded-full" />
-          ) : transaction.protocol === 'Chainflip' ? (
-            <div className="w-3 h-3 bg-turquoise rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">C</span>
-            </div>
-          ) : (
-            <ThorChainIcon className="w-3 h-3 [&>*:not(:first-child)]:fill-text2 [&>*:not(:first-child)]:dark:fill-text2d" />
-          )
+      <div className="flex flex-col space-y-1">
+        {completedTxs.map((transaction) => {
+          const protocolIcon = <ProviderIcon protocol={transaction.protocol} className="w-3 h-3" />
 
-        // Use appropriate component based on protocol
-        return transaction.protocol === 'Chainflip' ? (
-          <ChainflipTransactionItem
-            key={transaction.id}
-            protocol={protocolIcon}
-            transaction={transaction}
-            onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
-          />
-        ) : (
-          <TransactionItem
-            key={transaction.id}
-            protocol={protocolIcon}
-            transaction={transaction}
-            onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
-          />
-        )
-      })}
+          // Use appropriate component based on protocol
+          return transaction.protocol === 'Chainflip' ? (
+            <ChainflipTransactionItem
+              key={transaction.id}
+              protocol={protocolIcon}
+              transaction={transaction}
+              onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
+            />
+          ) : (
+            <TransactionItem
+              key={transaction.id}
+              protocol={protocolIcon}
+              transaction={transaction}
+              onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }
