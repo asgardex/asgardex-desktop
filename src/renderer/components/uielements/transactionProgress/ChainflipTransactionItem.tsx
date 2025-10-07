@@ -80,7 +80,10 @@ export const ChainflipTransactionItem = ({
     if (!transaction.stages) {
       return {
         text: intl.formatMessage({ id: 'transaction.status.pending' }),
-        detail: 'Waiting for blockchain data...',
+        detail: intl.formatMessage({
+          id: 'chainflip.status.pending.detail',
+          defaultMessage: 'Waiting for blockchain data...'
+        }),
         urgent: false
       }
     }
@@ -91,50 +94,68 @@ export const ChainflipTransactionItem = ({
     switch (stages.state) {
       case 'WAITING':
         return {
-          text: 'Waiting for deposit',
+          text: intl.formatMessage({ id: 'chainflip.status.waiting', defaultMessage: 'Waiting for deposit' }),
           detail: null,
           urgent: false
         }
       case 'RECEIVING':
         return {
-          text: 'Receiving deposit',
-          detail: 'Processing your deposit...',
+          text: intl.formatMessage({ id: 'chainflip.status.receiving', defaultMessage: 'Receiving deposit' }),
+          detail: intl.formatMessage({
+            id: 'chainflip.status.receiving.detail',
+            defaultMessage: 'Processing your deposit...'
+          }),
           urgent: true
         }
       case 'SWAPPING':
         return {
-          text: 'Swapping',
-          detail: 'Executing swap on Chainflip...',
+          text: intl.formatMessage({ id: 'chainflip.status.swapping', defaultMessage: 'Swapping' }),
+          detail: intl.formatMessage({
+            id: 'chainflip.status.swapping.detail',
+            defaultMessage: 'Executing swap on Chainflip...'
+          }),
           urgent: true
         }
       case 'SENDING':
         return {
-          text: 'Sending',
-          detail: 'Preparing egress transaction...',
+          text: intl.formatMessage({ id: 'chainflip.status.sending', defaultMessage: 'Sending' }),
+          detail: intl.formatMessage({
+            id: 'chainflip.status.sending.detail',
+            defaultMessage: 'Preparing egress transaction...'
+          }),
           urgent: true
         }
       case 'SENT':
         return {
-          text: 'Sent',
-          detail: 'Transaction sent to destination',
+          text: intl.formatMessage({ id: 'chainflip.status.sent', defaultMessage: 'Sent' }),
+          detail: intl.formatMessage({
+            id: 'chainflip.status.sent.detail',
+            defaultMessage: 'Transaction sent to destination'
+          }),
           urgent: false
         }
       case 'COMPLETED':
         return {
-          text: 'Complete',
-          detail: 'Swap completed successfully',
+          text: intl.formatMessage({ id: 'chainflip.status.complete', defaultMessage: 'Complete' }),
+          detail: intl.formatMessage({
+            id: 'chainflip.status.complete.detail',
+            defaultMessage: 'Swap completed successfully'
+          }),
           urgent: false
         }
       case 'FAILED':
         return {
-          text: 'Failed',
-          detail: 'Swap failed',
+          text: intl.formatMessage({ id: 'chainflip.status.failed', defaultMessage: 'Failed' }),
+          detail: intl.formatMessage({ id: 'chainflip.status.failed.detail', defaultMessage: 'Swap failed' }),
           urgent: false
         }
       default:
         return {
-          text: 'Processing',
-          detail: 'Transaction in progress...',
+          text: intl.formatMessage({ id: 'chainflip.status.processing', defaultMessage: 'Processing' }),
+          detail: intl.formatMessage({
+            id: 'chainflip.status.processing.detail',
+            defaultMessage: 'Transaction in progress...'
+          }),
           urgent: false
         }
     }
@@ -209,7 +230,7 @@ export const ChainflipTransactionItem = ({
             <div className="flex items-center space-x-1 bg-turquoise/80 dark:bg-turquoise/80 px-2 py-1 rounded-lg">
               <CheckCircleIcon className="w-4 h-4 text-white shrink-0" />
               <Label size="small" color="white" textTransform="uppercase">
-                Completed
+                {intl.formatMessage({ id: 'chainflip.completed', defaultMessage: 'Completed' })}
               </Label>
             </div>
           ) : (
@@ -240,16 +261,22 @@ export const ChainflipTransactionItem = ({
         <div className="border-t border-gray1 dark:border-gray1d p-2 text-xs">
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <span className="text-text2 dark:text-text2d">Amount:</span>
+              <span className="text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'chainflip.field.amount', defaultMessage: 'Amount:' })}
+              </span>
               <span className="ml-1 text-text1 dark:text-text1d">{transaction.amount}</span>
             </div>
             <div>
-              <span className="text-text2 dark:text-text2d">Time:</span>
+              <span className="text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'chainflip.field.time', defaultMessage: 'Time:' })}
+              </span>
               <span className="ml-1 text-text1 dark:text-text1d">{formatSwapTime(elapsedTime / 1000)}</span>
             </div>
           </div>
           <div className="flex justify-between">
-            <span className="text-xs text-text2 dark:text-text2d">Channel ID:</span>
+            <span className="text-xs text-text2 dark:text-text2d">
+              {intl.formatMessage({ id: 'chainflip.field.channelId', defaultMessage: 'Channel ID:' })}
+            </span>
             <CopyLabel
               textToCopy={transaction.depositChannelId}
               label={transaction.depositChannelId}
@@ -259,7 +286,9 @@ export const ChainflipTransactionItem = ({
           </div>
           {transaction.swapId && (
             <div className="flex justify-between">
-              <span className="text-text2 dark:text-text2d">Swap ID:</span>
+              <span className="text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'chainflip.field.swapId', defaultMessage: 'Swap ID:' })}
+              </span>
               <CopyLabel
                 textToCopy={transaction.swapId}
                 label={transaction.swapId}
@@ -270,7 +299,9 @@ export const ChainflipTransactionItem = ({
           )}
           {transaction.stages?.depositTxHash && (
             <div className="flex justify-between">
-              <span className="text-text2 dark:text-text2d">Deposit Tx:</span>
+              <span className="text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'chainflip.field.depositTx', defaultMessage: 'Deposit Tx:' })}
+              </span>
               <CopyLabel
                 textToCopy={transaction.stages.depositTxHash}
                 label={truncateMiddle(transaction.stages.depositTxHash, { start: 6, end: 4 })}
@@ -281,7 +312,9 @@ export const ChainflipTransactionItem = ({
           )}
           {transaction.stages?.egressTxHash && (
             <div className="flex justify-between">
-              <span className="text-text2 dark:text-text2d">Egress Tx:</span>
+              <span className="text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'chainflip.field.egressTx', defaultMessage: 'Egress Tx:' })}
+              </span>
               <CopyLabel
                 textToCopy={transaction.stages.egressTxHash}
                 label={truncateMiddle(transaction.stages.egressTxHash)}

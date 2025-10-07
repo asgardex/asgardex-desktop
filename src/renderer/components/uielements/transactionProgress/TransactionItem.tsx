@@ -284,7 +284,7 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
             <div className="flex items-center space-x-1 bg-turquoise/80 dark:bg-turquoise/80 px-2 py-1 rounded-lg">
               <CheckCircleIcon className="w-4 h-4 text-white shrink-0" />
               <Label size="small" color="white" textTransform="uppercase">
-                Completed
+                {intl.formatMessage({ id: 'transaction.status.complete' })}
               </Label>
             </div>
           ) : (

@@ -1,5 +1,6 @@
 import { Messages } from '../types'
 import bonds from './bonds'
+import chainflip from './chainflip'
 import common from './common'
 import deposit from './deposit'
 import error from './error'
@@ -22,6 +23,7 @@ import wallet from './wallet'
 
 export default {
   ...common,
+  ...chainflip,
   ...transaction,
   ...pools,
   ...routes,
