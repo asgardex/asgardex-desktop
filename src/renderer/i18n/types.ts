@@ -243,6 +243,33 @@ type TransactionMessageKey =
 
 export type TransactionMessages = { [key in TransactionMessageKey]: string }
 
+type ChainflipMessageKey =
+  | 'chainflip.status.waiting'
+  | 'chainflip.status.receiving'
+  | 'chainflip.status.receiving.detail'
+  | 'chainflip.status.swapping'
+  | 'chainflip.status.swapping.detail'
+  | 'chainflip.status.sending'
+  | 'chainflip.status.sending.detail'
+  | 'chainflip.status.sent'
+  | 'chainflip.status.sent.detail'
+  | 'chainflip.status.complete'
+  | 'chainflip.status.complete.detail'
+  | 'chainflip.status.failed'
+  | 'chainflip.status.failed.detail'
+  | 'chainflip.status.processing'
+  | 'chainflip.status.processing.detail'
+  | 'chainflip.status.pending.detail'
+  | 'chainflip.completed'
+  | 'chainflip.field.amount'
+  | 'chainflip.field.time'
+  | 'chainflip.field.channelId'
+  | 'chainflip.field.swapId'
+  | 'chainflip.field.depositTx'
+  | 'chainflip.field.egressTx'
+
+export type ChainflipMessages = { [key in ChainflipMessageKey]: string }
+
 type UpdateMessagesKeys = 'update.description' | 'update.link' | 'update.checkFailed' | 'update.noUpdate'
 
 export type UpdateMessages = { [key in UpdateMessagesKeys]: string }
@@ -724,6 +751,7 @@ export type ModalMessages = { [key in ModalMessageKey]: string }
 
 export type Messages = CommonMessages &
   TransactionMessages &
+  ChainflipMessages &
   RoutesMessages &
   PoolsMessages &
   WalletMessages &
