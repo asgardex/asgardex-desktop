@@ -36,7 +36,7 @@ export const ChainflipTransactionItem = ({
 
     if (!asset) return transaction.fromAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.ticker ?? asset.ticker}`
+    return `${asset.chain}.${asset.ticker}`
   }, [transaction.fromAsset, isMini])
 
   const toAsset = useMemo(() => {
@@ -44,7 +44,7 @@ export const ChainflipTransactionItem = ({
 
     if (!asset) return transaction.toAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.ticker ?? asset.ticker}`
+    return `${asset.chain}.${asset.ticker}`
   }, [transaction.toAsset, isMini])
 
   // Detect when transaction becomes complete for animation
