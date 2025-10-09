@@ -5,7 +5,17 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, assetToString, bn, Chain, baseAmount, AnyAsset, AssetType } from '@xchainjs/xchain-util'
+import {
+  Address,
+  assetToString,
+  bn,
+  Chain,
+  baseAmount,
+  AnyAsset,
+  AssetType,
+  Asset as XAsset,
+  TokenAsset as XTokenAsset
+} from '@xchainjs/xchain-util'
 import { function as FP, array as A, eq as Eq, option as O } from 'fp-ts'
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { useObservableState } from 'observable-hooks'
@@ -223,9 +233,10 @@ const SuccessRouteView = ({
     }
     // Check if chainFlipAssets is available and contains the sourceAsset
     if (RD.isSuccess(chainFlipAssets)) {
-      const matchingAsset = chainFlipAssets.value.find(
-        (asset) => cChainToXChain(asset.chain) === sourceAsset.chain && asset.asset === sourceAsset.ticker
-      )
+      const matchingAsset = chainFlipAssets.value.find((asset) => {
+        const chainflipChain = cChainToXChain(asset.chain)
+        return chainflipChain && chainflipChain === sourceAsset.chain && asset.asset === sourceAsset.ticker
+      })
       if (matchingAsset) {
         // If a matching asset is found, return its decimal value
         return Rx.of(
@@ -556,8 +567,8 @@ const SuccessRouteView = ({
 
                 // Convert assets and filter out unsupported chains
                 const convertedAssets = assetData
-                  .map(cAssetToXAsset) // Apply the conversion function
-                  .filter((asset) => asset.chain !== 'POL') // Remove assets with unsupported chain
+                  .map(cAssetToXAsset)
+                  .filter((asset): asset is XAsset | XTokenAsset => asset !== null)
                 const poolAssetDetailsResult = getPoolAssetDetails(
                   sourceAsset,
                   targetAsset,
@@ -653,7 +664,9 @@ const SuccessRouteView = ({
                 const assetData = RD.isSuccess(chainFlipAssets) ? chainFlipAssets.value : []
 
                 // Convert assets and filter out unsupported chains
-                const convertedAssets = assetData.map(cAssetToXAsset).filter((asset) => asset.chain !== 'POL')
+                const convertedAssets = assetData
+                  .map(cAssetToXAsset)
+                  .filter((asset): asset is XAsset | XTokenAsset => asset !== null)
 
                 const assetValidationResult = validatePoolAssets(thorchainPoolAssetDetails, sourceAsset, targetAsset)
                 if (isLeft(assetValidationResult)) {

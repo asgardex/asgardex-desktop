@@ -46,6 +46,31 @@ const clientState$: ClientState$ = FP.pipe(
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
+ * Read-only XRP client for balance queries without requiring keystore
+ * This client can be used for standalone ledger mode to query balances
+ */
+const readOnlyClientState$: Rx.Observable<RD.RemoteData<Error, XRPClient>> = FP.pipe(
+  clientNetwork$,
+  RxOp.map((network) => {
+    try {
+      // Create client without phrase - only for balance queries
+      const client = new XRPClient({ ...defaultXRPParams, network })
+      return RD.success(client)
+    } catch (error) {
+      console.error('Failed to create read-only XRP client', error)
+      return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+    }
+  }),
+  RxOp.startWith<RD.RemoteData<Error, XRPClient>>(RD.pending),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$: Rx.Observable<O.Option<XRPClient>> = readOnlyClientState$.pipe(
+  RxOp.map(RD.toOption),
+  RxOp.shareReplay(1)
+)
+
+/**
  * `Address`
  */
 const address$: C.WalletAddress$ = C.address$(client$, XRPChain)
@@ -60,4 +85,4 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, XRPChain)
  */
 const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }

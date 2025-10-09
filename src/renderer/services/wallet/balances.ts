@@ -101,7 +101,7 @@ export const createBalancesService = ({
       if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances(DEFAULT_WALLET_TYPE)
       if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
       if (enabledChains.includes(ADAChain)) ADA.reloadBalances()
-      if (enabledChains.includes(XRPChain)) XRP.reloadBalances()
+      if (enabledChains.includes(XRPChain)) XRP.reloadBalances(DEFAULT_WALLET_TYPE)
       if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
       if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
       if (enabledChains.includes(TRONChain)) TRON.reloadBalances(DEFAULT_WALLET_TYPE)
@@ -341,9 +341,9 @@ export const createBalancesService = ({
           }
         case XRPChain:
           return {
-            reloadBalances: () => XRP.reloadBalances(),
-            resetReloadBalances: () => XRP.resetReloadBalances(),
-            balances$: XRP.balances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances: () => XRP.reloadBalances(walletType),
+            resetReloadBalances: () => XRP.resetReloadBalances(walletType),
+            balances$: XRP.balances$({ walletType, walletAccount, walletIndex, walletBalanceType, hdMode }),
             reloadBalances$: XRP.reloadBalances$
           }
         default:
@@ -1248,7 +1248,7 @@ export const createBalancesService = ({
   const xrpLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
     chain: XRPChain,
     walletBalanceType: 'all',
-    getBalanceByAddress$: XRP.getBalanceByAddress$
+    getBalanceByAddress$: XRP.getBalanceByAddress$('all')
   })
 
   /**

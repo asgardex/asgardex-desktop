@@ -29,6 +29,7 @@ const supportedChains: Chain[] = [
   'DASH',
   'DOGE',
   'GAIA',
+  'XRP',
   'AVAX',
   'BSC',
   'ARB',

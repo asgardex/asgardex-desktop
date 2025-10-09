@@ -29,6 +29,13 @@ export const ASGARDEX_AFFILIATE_FEE = 30
 export const ASGARDEX_TRADE_AFFILIATE_FEE = 15
 export const ASGARDEX_THORNAME = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNAME, 'dx')
 
+// Chainflip broker configuration
+export const ASGARDEX_BROKER_URL = envOrDefault(import.meta.env.VITE_ASGARDEX_BROKER_URL, '')
+export const ASGARDEX_AFFILIATE_BROKERS_ADDRESS = envOrDefault(
+  import.meta.env.VITE_ASGARDEX_AFFILIATE_BROKERS_ADDRESS as `cF${string}`,
+  ''
+)
+
 export const getAsgardexThorname = (network: Network): string | undefined =>
   network === Network.Mainnet ? ASGARDEX_THORNAME : undefined
 

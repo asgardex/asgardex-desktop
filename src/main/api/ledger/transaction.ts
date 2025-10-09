@@ -14,8 +14,10 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
@@ -35,7 +37,9 @@ import * as DASH from './dash/transaction'
 import * as DOGE from './doge/transaction'
 import * as ETH from './ethereum/transaction'
 import * as LTC from './litecoin/transaction'
+import * as XRP from './ripple/transaction'
 import * as THOR from './thorchain/transaction'
+import * as TRON from './tron/transaction'
 
 const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
@@ -241,6 +245,40 @@ const chainSendFunctions: Record<
       })
     }
     return COSMOS.send(params)
+  },
+  [XRPChain]: async (params) => {
+    if (!params.asset) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(XRPChain)}`
+      })
+    }
+    return XRP.send({
+      transport: params.transport,
+      network: params.network,
+      amount: params.amount,
+      asset: params.asset,
+      recipient: params.recipient,
+      memo: params.memo,
+      walletAccount: params.walletAccount,
+      walletIndex: params.walletIndex,
+      destinationTag: params.destinationTag
+    })
+  },
+  [TRONChain]: async (params) => {
+    if (!params.asset) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(TRONChain)}`
+      })
+    }
+    if (!params.feeOption) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(TRONChain)}`
+      })
+    }
+    return TRON.send({ ...params, feeOption: params.feeOption, walletAccount: params.walletAccount })
   }
 }
 

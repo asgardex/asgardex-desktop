@@ -14,8 +14,10 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
@@ -31,7 +33,9 @@ import { getAddress as getDASHAddress, verifyAddress as verifyDASHAddress } from
 import { getAddress as getDOGEAddress, verifyAddress as verifyDOGEAddress } from './doge/address'
 import { getEVMAddress, verifyEVMAddress } from './evm/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
+import { getAddress as getXRPAddress, verifyAddress as verifyXRPAddress } from './ripple/address'
 import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
+import { getAddress as getTRONAddress, verifyAddress as verifyTRONAddress } from './tron/address'
 
 const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
@@ -84,7 +88,9 @@ const chainAddressFunctions: Record<
   [BCHChain]: getBCHAddress,
   [DOGEChain]: getDOGEAddress,
   [DASHChain]: getDASHAddress,
-  [GAIAChain]: getCOSMOSAddress
+  [GAIAChain]: getCOSMOSAddress,
+  [XRPChain]: getXRPAddress,
+  [TRONChain]: getTRONAddress
 }
 
 const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
@@ -174,6 +180,12 @@ export const verifyLedgerAddress = async ({
     }
     case GAIAChain:
       result = await verifyCOSMOSAddress(transport, walletAccount, walletIndex, network)
+      break
+    case XRPChain:
+      result = await verifyXRPAddress(transport, walletAccount, walletIndex, network)
+      break
+    case TRONChain:
+      result = await verifyTRONAddress({ transport, network, walletAccount, walletIndex })
       break
   }
   await transport.close()

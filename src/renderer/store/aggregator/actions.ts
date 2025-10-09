@@ -13,7 +13,12 @@ import { defaultArbParams } from '../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../shared/avax/const'
 import { defaultBaseParams } from '../../../shared/base/const'
 import { defaultBscParams } from '../../../shared/bsc/const'
-import { ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../shared/const'
+import {
+  ASGARDEX_AFFILIATE_FEE,
+  ASGARDEX_THORNAME,
+  ASGARDEX_BROKER_URL,
+  ASGARDEX_AFFILIATE_BROKERS_ADDRESS
+} from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
 
 export const getEstimate = createAsyncThunk(
@@ -58,7 +63,14 @@ export const getEstimate = createAsyncThunk(
         },
         protocols,
         wallet,
-        network
+        network,
+        brokerUrl: ASGARDEX_BROKER_URL,
+        affiliateBrokers: [
+          {
+            account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
+            commissionBps: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0
+          }
+        ]
       })
 
       const estimate = await aggregator.estimateSwap(params)
