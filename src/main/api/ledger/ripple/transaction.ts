@@ -1,6 +1,6 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { Network, TxHash } from '@xchainjs/xchain-client'
-import { AssetXRP, ClientLedger, defaultXRPParams } from '@xchainjs/xchain-ripple'
+import { Network, TxHash, TxParams } from '@xchainjs/xchain-client'
+import { AssetXRP, ClientLedger, defaultXRPParams, XRPTxParams } from '@xchainjs/xchain-ripple'
 import { Address, AnyAsset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import { either as E } from 'fp-ts'
 
@@ -46,7 +46,7 @@ export const send = async ({
     })
 
     // Prepare transfer parameters with destination tag support
-    const transferParams: any = {
+    const transferParams: TxParams & XRPTxParams = {
       walletIndex,
       asset: AssetXRP,
       recipient,
