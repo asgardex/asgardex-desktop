@@ -57,7 +57,7 @@ const initialState: State = {
     brokerUrl: ASGARDEX_BROKER_URL,
     affiliateBrokers: [
       {
-        account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
+        account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS as `cF${string}`,
         commissionBps: ASGARDEX_AFFILIATE_FEE
       }
     ]

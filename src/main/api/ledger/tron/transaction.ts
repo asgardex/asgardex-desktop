@@ -1,5 +1,5 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { ClientLedger, defaultTRONParams } from '@xchainjs/xchain-tron'
 import { Address, AnyAsset, Asset, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import { either as E } from 'fp-ts'
@@ -27,7 +27,6 @@ export const send = async ({
   network: Network
   recipient: Address
   memo?: string
-  feeOption: FeeOption
   walletAccount: number
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {

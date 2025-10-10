@@ -272,13 +272,7 @@ const chainSendFunctions: Record<
         msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(TRONChain)}`
       })
     }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(TRONChain)}`
-      })
-    }
-    return TRON.send({ ...params, feeOption: params.feeOption, walletAccount: params.walletAccount })
+    return TRON.send({ ...params, walletAccount: params.walletAccount })
   }
 }
 

@@ -67,7 +67,7 @@ export const getEstimate = createAsyncThunk(
         brokerUrl: ASGARDEX_BROKER_URL,
         affiliateBrokers: [
           {
-            account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
+            account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS as `cF${string}`,
             commissionBps: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0
           }
         ]
