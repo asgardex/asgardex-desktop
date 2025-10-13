@@ -509,24 +509,54 @@ export const Swap = ({
   )
 
   const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
-    const result = FP.pipe(
-      isChainOfThor(sourceChain)
-        ? PoolHelpers.getUSDValue({
-            balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
-            poolDetails: poolDetailsThor,
-            pricePool: pricePoolThor
-          })
-        : FP.pipe(
-            PoolHelpersMaya.getUSDValue({
-              balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
-              poolDetails: poolDetailsMaya,
-              pricePool: pricePoolMaya
-            })
-          ),
-      O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
+    // Check if we have a Chainflip quote protocol
+    const isChainflipProtocol = FP.pipe(
+      oQuoteProtocol,
+      O.map((quoteProtocol) => quoteProtocol.protocol === 'Chainflip'),
+      O.getOrElse(() => false)
     )
+
+    let result: BaseAmount
+
+    if (isChainflipProtocol) {
+      // Use CoinGecko price for Chainflip assets
+
+      const assetSymbol = sourceAsset.symbol.toUpperCase()
+      const geckoId = GECKO_MAP[assetSymbol]
+      const geckoPrice = geckoId ? geckoPriceMap[geckoId]?.usd : 0
+      const usdValue = amountToSwapMax1e8.times(geckoPrice || 0)
+      result = usdValue
+    } else {
+      result = FP.pipe(
+        isChainOfThor(sourceChain)
+          ? PoolHelpers.getUSDValue({
+              balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
+              poolDetails: poolDetailsThor,
+              pricePool: pricePoolThor
+            })
+          : FP.pipe(
+              PoolHelpersMaya.getUSDValue({
+                balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
+                poolDetails: poolDetailsMaya,
+                pricePool: pricePoolMaya
+              })
+            ),
+        O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
+      )
+    }
+
     return new CryptoAmount(result, pricePoolThor.asset)
-  }, [amountToSwapMax1e8, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor, sourceAsset, sourceChain])
+  }, [
+    amountToSwapMax1e8,
+    poolDetailsMaya,
+    poolDetailsThor,
+    pricePoolMaya,
+    pricePoolThor,
+    sourceAsset,
+    sourceChain,
+    oQuoteProtocol,
+    geckoPriceMap
+  ])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwapMax1e8.amount().isZero(), [amountToSwapMax1e8])
 
