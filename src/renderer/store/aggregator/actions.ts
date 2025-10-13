@@ -55,10 +55,16 @@ export const getEstimate = createAsyncThunk(
         })
       })
 
-      // Validate broker URL
-      if (!ASGARDEX_BROKER_URL || typeof ASGARDEX_BROKER_URL !== 'string' || ASGARDEX_BROKER_URL.trim() === '') {
-        throw new Error('Invalid broker URL: ASGARDEX_BROKER_URL must be a non-empty string')
-      }
+      // Validate broker URL - log warning instead of throwing
+      const brokerUrl =
+        !ASGARDEX_BROKER_URL || typeof ASGARDEX_BROKER_URL !== 'string' || ASGARDEX_BROKER_URL.trim() === ''
+          ? (() => {
+              console.warn(
+                'Invalid or missing broker URL: ASGARDEX_BROKER_URL must be a non-empty string, using empty string'
+              )
+              return ''
+            })()
+          : ASGARDEX_BROKER_URL
 
       // Validate affiliate broker address pattern (Chainflip addresses start with 'cF')
       const isValidChainflipAddress = (address: string): address is `cF${string}` => {
@@ -77,7 +83,7 @@ export const getEstimate = createAsyncThunk(
       }
 
       // Fetch estimates for all selected protocols
-      aggregator.setConfiguration({
+      const config = {
         affiliate: {
           basisPoints: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0,
           affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
@@ -85,9 +91,11 @@ export const getEstimate = createAsyncThunk(
         protocols,
         wallet,
         network,
-        brokerUrl: ASGARDEX_BROKER_URL,
-        affiliateBrokers
-      })
+        affiliateBrokers,
+        ...(brokerUrl && { brokerUrl }) // Only include brokerUrl if it's non-empty
+      }
+
+      aggregator.setConfiguration(config)
 
       const estimate = await aggregator.estimateSwap(params)
 
