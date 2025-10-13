@@ -103,7 +103,9 @@ import { addAsset } from '../../services/storage/userChainTokens'
 import { TxHashRD, WalletBalance, WalletBalances, isStandaloneLedgerMode } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { useAggregator } from '../../store/aggregator/hooks'
+import { useCoingecko } from '../../store/gecko/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
+import { GECKO_MAP } from '../../types/generated/geckoMap'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { ProviderModal } from '../modal/provider'
 import { SwapAssets } from '../modal/tx/extra'
@@ -174,6 +176,7 @@ export const Swap = ({
   mayaTransactionTrackingService
 }: SwapProps) => {
   const { estimateSwap } = useAggregator()
+  const { geckoPriceMap } = useCoingecko()
   const intl = useIntl()
   const { appWalletService } = useWalletContext()
 
@@ -1177,6 +1180,13 @@ export const Swap = ({
                 pricePool: pricePoolMaya
               })
             )
+          } else if (quoteProtocol.protocol === 'Chainflip') {
+            // Use CoinGecko price for Chainflip assets
+            const assetSymbol = swapResultAmountMax.asset.symbol.toUpperCase()
+            const geckoId = GECKO_MAP[assetSymbol]
+            const geckoPrice = geckoId ? geckoPriceMap[geckoId]?.usd : 0
+            const usdValue = swapResultAmountMax.baseAmount.times(geckoPrice)
+            return usdValue
           }
           return baseAmount(0, THORCHAIN_DECIMAL)
         }
@@ -1187,11 +1197,11 @@ export const Swap = ({
   }, [
     oQuoteProtocol,
     pricePoolThor,
-    swapResultAmountMax.asset,
-    swapResultAmountMax.baseAmount,
+    swapResultAmountMax,
     poolDetailsThor,
     poolDetailsMaya,
-    pricePoolMaya
+    pricePoolMaya,
+    geckoPriceMap
   ])
 
   /**
