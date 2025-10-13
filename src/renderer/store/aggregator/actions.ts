@@ -55,6 +55,27 @@ export const getEstimate = createAsyncThunk(
         })
       })
 
+      // Validate broker URL
+      if (!ASGARDEX_BROKER_URL || typeof ASGARDEX_BROKER_URL !== 'string' || ASGARDEX_BROKER_URL.trim() === '') {
+        throw new Error('Invalid broker URL: ASGARDEX_BROKER_URL must be a non-empty string')
+      }
+
+      // Validate affiliate broker address pattern (Chainflip addresses start with 'cF')
+      const isValidChainflipAddress = (address: string): address is `cF${string}` => {
+        return typeof address === 'string' && address.length > 2 && address.startsWith('cF')
+      }
+
+      // Prepare affiliate brokers configuration
+      const affiliateBrokers = []
+      if (ASGARDEX_AFFILIATE_BROKERS_ADDRESS && isValidChainflipAddress(ASGARDEX_AFFILIATE_BROKERS_ADDRESS)) {
+        affiliateBrokers.push({
+          account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
+          commissionBps: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0
+        })
+      } else {
+        console.warn('Invalid or missing affiliate broker address, skipping affiliate broker configuration')
+      }
+
       // Fetch estimates for all selected protocols
       aggregator.setConfiguration({
         affiliate: {
@@ -65,12 +86,7 @@ export const getEstimate = createAsyncThunk(
         wallet,
         network,
         brokerUrl: ASGARDEX_BROKER_URL,
-        affiliateBrokers: [
-          {
-            account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS as `cF${string}`,
-            commissionBps: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0
-          }
-        ]
+        affiliateBrokers
       })
 
       const estimate = await aggregator.estimateSwap(params)

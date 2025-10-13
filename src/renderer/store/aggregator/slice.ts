@@ -25,6 +25,34 @@ import { State } from './types'
 
 const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
 
+// Validate Chainflip address pattern
+const isValidChainflipAddress = (address: string): address is `cF${string}` => {
+  return typeof address === 'string' && address.length > 2 && address.startsWith('cF')
+}
+
+// Prepare affiliate brokers configuration with validation
+const getAffiliateBrokers = () => {
+  if (ASGARDEX_AFFILIATE_BROKERS_ADDRESS && isValidChainflipAddress(ASGARDEX_AFFILIATE_BROKERS_ADDRESS)) {
+    return [
+      {
+        account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
+        commissionBps: ASGARDEX_AFFILIATE_FEE
+      }
+    ]
+  }
+  console.warn('Invalid or missing affiliate broker address in slice initialization, using empty array')
+  return []
+}
+
+// Validate broker URL
+const getBrokerUrl = () => {
+  if (!ASGARDEX_BROKER_URL || typeof ASGARDEX_BROKER_URL !== 'string' || ASGARDEX_BROKER_URL.trim() === '') {
+    console.warn('Invalid broker URL in slice initialization, using empty string')
+    return ''
+  }
+  return ASGARDEX_BROKER_URL
+}
+
 const initialState: State = {
   isLoading: false,
   protocols: JSON.parse(getProtocolFromStorage(JSON.stringify(AllProtocols))),
@@ -54,13 +82,8 @@ const initialState: State = {
       })
     }),
     network: getCurrentNetworkState(),
-    brokerUrl: ASGARDEX_BROKER_URL,
-    affiliateBrokers: [
-      {
-        account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS as `cF${string}`,
-        commissionBps: ASGARDEX_AFFILIATE_FEE
-      }
-    ]
+    brokerUrl: getBrokerUrl(),
+    affiliateBrokers: getAffiliateBrokers()
   }),
   quoteSwap: null
 }

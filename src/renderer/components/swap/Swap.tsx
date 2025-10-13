@@ -1029,12 +1029,24 @@ export const Swap = ({
     [fetchSwap]
   )
 
+  const debouncedSetAmountToSwap = useMemo(
+    () => debounce((amount: BaseAmount) => setAmountToSwapMax1e8(amount), 300), // 300ms delay for input
+    [setAmountToSwapMax1e8]
+  )
+
   useEffect(() => {
     debouncedFetchSwap(amountToSwapMax1e8)
     return () => {
       debouncedFetchSwap.cancel()
     }
   }, [amountToSwapMax1e8, debouncedFetchSwap])
+
+  // Cleanup debounced input handler on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSetAmountToSwap.cancel()
+    }
+  }, [debouncedSetAmountToSwap])
 
   // Function to handle user selection
   const handleSelectQuote = (selectedQuote: QuoteSwap) => {
@@ -2638,7 +2650,7 @@ export const Swap = ({
           network={network}
           hasAmountShortcut
           onChangeAsset={setSourceAsset}
-          onChange={setAmountToSwapMax1e8}
+          onChange={debouncedSetAmountToSwap}
           onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
           showError={minAmountError || belowDustThreshold}
