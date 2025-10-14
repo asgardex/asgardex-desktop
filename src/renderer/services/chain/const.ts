@@ -58,7 +58,7 @@ export const INITIAL_WITHDRAW_STATE: WithdrawState = {
 }
 
 export const INITIAL_SEND_STATE: SendTxState = {
-  steps: { current: 0, total: 1 },
+  steps: { current: 0, total: 3 },
   status: RD.initial
 }
 

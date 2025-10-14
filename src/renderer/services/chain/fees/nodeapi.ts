@@ -240,11 +240,3 @@ export const getChainGasPrices$ = (chain: Chain, decimals: number = 18) => {
   const protocol = getChainNodeProtocol(chain)
   return getNodeGasPrices$(chain, protocol, decimals)
 }
-
-/**
- * Convenience function to get outbound fees using the appropriate node protocol for the chain
- */
-export const getChainOutboundFee$ = (chain: Chain, assetDecimals: number = 18) => {
-  const protocol = getChainNodeProtocol(chain)
-  return getNodeOutboundFee$(chain, protocol, assetDecimals)
-}

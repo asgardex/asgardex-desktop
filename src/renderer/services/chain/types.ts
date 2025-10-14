@@ -321,13 +321,14 @@ export type TradeWithdrawStateHandler = (p: TradeWithdrawParams) => WithdrawStat
  * State to reflect status for sending
  *
  * Three steps are needed:
- * 1. Send tx
- * 2. Check status of tx
+ * 1. Health check
+ * 2. Send tx
+ * 3. Check status of tx
  *
  */
 export type SendTxState = {
   // State of steps (current step + total number of steps)
-  readonly steps: { current: number; readonly total: 1 }
+  readonly steps: { current: number; readonly total: 3 }
   // RD of all steps
   readonly status: TxHashRD
 }

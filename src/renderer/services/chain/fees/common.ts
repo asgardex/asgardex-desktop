@@ -70,7 +70,7 @@ import { FeesWithRatesLD } from '../../utxo/types'
 import * as ZEC from '../../zcash'
 import { getDecimal } from '../decimal'
 import { PoolFeeLD } from '../types'
-import { getChainOutboundFee$, getChainNodeProtocol, NodeProtocol } from './nodeapi'
+import { getChainNodeProtocol, NodeProtocol } from './nodeapi'
 
 const {
   pools: { outboundAssetFeeByChain$ }
@@ -152,36 +152,12 @@ export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
     )
   } else {
     const { chain } = asset
-    // First try to get authoritative fee from THORNode/MAYANode
+    // Use Midgard outbound fee directly
+    const outboundFee = isChainOfThor(chain) ? outboundAssetFeeByChain$(chain) : outboundAssetFeeByChainMaya$(chain)
+    // Ensure the returned fee uses the correct asset (the one we requested)
     return FP.pipe(
-      Rx.from(getDecimal(asset)),
-      RxOp.switchMap((decimal) =>
-        FP.pipe(
-          getChainOutboundFee$(chain, decimal),
-          liveData.map((amount) => ({ amount, asset: getChainAsset(asset.chain) })),
-          liveData.chainOnError(() => {
-            // Fallback to midgard if nodeapi fails with RD.failure
-            const outboundFee = isChainOfThor(chain)
-              ? outboundAssetFeeByChain$(chain)
-              : outboundAssetFeeByChainMaya$(chain)
-            // Ensure the returned fee uses the correct asset (the one we requested)
-            return FP.pipe(
-              outboundFee,
-              liveData.map((fee) => ({ amount: fee.amount, asset: getChainAsset(asset.chain) }))
-            )
-          })
-        )
-      ),
-      RxOp.catchError(() => {
-        // Fallback to midgard if getDecimal fails (thrown error)
-        const outboundFee = isChainOfThor(chain) ? outboundAssetFeeByChain$(chain) : outboundAssetFeeByChainMaya$(chain)
-        // Ensure the returned fee uses the correct asset (the one we requested)
-        return FP.pipe(
-          outboundFee,
-          liveData.map((fee) => ({ amount: fee.amount, asset: getChainAsset(asset.chain) }))
-        )
-      }),
-      RxOp.startWith(RD.pending)
+      outboundFee,
+      liveData.map((fee) => ({ amount: fee.amount, asset: getChainAsset(asset.chain) }))
     )
   }
 }

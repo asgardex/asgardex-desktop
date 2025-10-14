@@ -7,6 +7,7 @@ import { TrustedAddress } from '../../../../shared/api/types'
 import { WalletType } from '../../../../shared/wallet/types'
 import { emptyString } from '../../../helpers/stringHelper'
 import { getWalletByAddress } from '../../../helpers/walletHelper'
+import { SendTxState } from '../../../services/chain/types'
 import { WalletBalances } from '../../../services/clients'
 import { TxHashRD } from '../../../services/wallet/types'
 import { WalletTypeLabel } from '../../uielements/common/Common.styles'
@@ -60,24 +61,31 @@ export const getSendTxTimerValue = (status: TxHashRD) =>
   )
 
 export const getSendTxDescription = ({
-  status,
+  sendTxState,
   asset,
   intl
 }: {
-  status: TxHashRD
+  sendTxState: SendTxState
   asset: AnyAsset
   intl: IntlShape
-}): string =>
-  FP.pipe(
-    status,
+}): string => {
+  const stepDescriptions = [
+    intl.formatMessage({ id: 'common.tx.healthCheck' }),
+    intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: asset.ticker }),
+    intl.formatMessage({ id: 'common.tx.checkResult' })
+  ]
+
+  return FP.pipe(
+    sendTxState.status,
     RD.fold(
       () => emptyString,
       () =>
-        `${intl.formatMessage({ id: 'common.step' }, { current: 1, total: 1 })}: ${intl.formatMessage(
-          { id: 'common.tx.sendingAsset' },
-          { assetTicker: asset.ticker }
-        )}`,
+        `${intl.formatMessage(
+          { id: 'common.step' },
+          { current: sendTxState.steps.current, total: sendTxState.steps.total }
+        )}: ${stepDescriptions[sendTxState.steps.current - 1] || ''}`,
       () => emptyString,
       () => intl.formatMessage({ id: 'common.tx.success' })
     )
   )
+}

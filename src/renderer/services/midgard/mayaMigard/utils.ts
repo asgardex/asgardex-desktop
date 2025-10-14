@@ -18,6 +18,7 @@ import { AssetXRD, RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import {
   assetFromString,
   bnOrZero,
@@ -243,6 +244,7 @@ export const getOutboundAssetFeeByChain = (
         case BASEChain:
         case LTCChain:
         case XRPChain:
+        case TRONChain:
           return O.none
         case BTCChain:
           return O.some({
