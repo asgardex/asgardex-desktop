@@ -24,6 +24,7 @@ const supportedChains: Chain[] = [
   'BTC',
   'ETH',
   'THOR',
+  'MAYA',
   'LTC',
   'BCH',
   'DASH',

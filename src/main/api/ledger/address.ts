@@ -33,6 +33,7 @@ import { getAddress as getDASHAddress, verifyAddress as verifyDASHAddress } from
 import { getAddress as getDOGEAddress, verifyAddress as verifyDOGEAddress } from './doge/address'
 import { getEVMAddress, verifyEVMAddress } from './evm/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
+import { getAddress as getMAYAAddress, verifyAddress as verifyMAYAAddress } from './mayachain/address'
 import { getAddress as getXRPAddress, verifyAddress as verifyXRPAddress } from './ripple/address'
 import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
 import { getAddress as getTRONAddress, verifyAddress as verifyTRONAddress } from './tron/address'
@@ -83,6 +84,7 @@ const chainAddressFunctions: Record<
 
   // Non-EVM chains
   [THORChain]: getTHORAddress,
+  [MAYAChain]: getMAYAAddress,
   [BTCChain]: getBTCAddress,
   [LTCChain]: getLTCAddress,
   [BCHChain]: getBCHAddress,
@@ -93,7 +95,7 @@ const chainAddressFunctions: Record<
   [TRONChain]: getTRONAddress
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
+const unsupportedChains: Chain[] = [KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
 
 export const getAddress = async ({
   chain,
@@ -146,6 +148,9 @@ export const verifyLedgerAddress = async ({
   switch (chain) {
     case THORChain:
       result = await verifyTHORAddress({ transport, network, walletAccount, walletIndex })
+      break
+    case MAYAChain:
+      result = await verifyMAYAAddress({ transport, network, walletAccount, walletIndex })
       break
     case BTCChain:
       result = await verifyBTCAddress({ transport, network, walletAccount, walletIndex, hdMode })

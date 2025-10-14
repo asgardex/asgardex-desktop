@@ -37,6 +37,7 @@ import * as DASH from './dash/transaction'
 import * as DOGE from './doge/transaction'
 import * as ETH from './ethereum/transaction'
 import * as LTC from './litecoin/transaction'
+import * as MAYA from './mayachain/transaction'
 import * as XRP from './ripple/transaction'
 import * as THOR from './thorchain/transaction'
 import * as TRON from './tron/transaction'
@@ -55,6 +56,15 @@ const chainSendFunctions: Record<
       })
     }
     return THOR.send({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex })
+  },
+  [MAYAChain]: async ({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex }) => {
+    if (!asset) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(MAYAChain)}`
+      })
+    }
+    return MAYA.send({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex })
   },
   [BTCChain]: async (params) => {
     if (params.apiKey === undefined) {
@@ -276,7 +286,7 @@ const chainSendFunctions: Record<
   }
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
+const unsupportedChains: Chain[] = [KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
 
 export const sendTx = async ({
   chain,
@@ -356,6 +366,15 @@ const chainDepositFunctions: Record<
       })
     }
     return THOR.deposit({ transport, network, amount, asset, memo, walletAccount, walletIndex })
+  },
+  [MAYAChain]: async ({ transport, network, asset, amount, memo, walletAccount, walletIndex, nodeUrl }) => {
+    if (!nodeUrl) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(MAYAChain)}`
+      })
+    }
+    return MAYA.deposit({ transport, network, amount, asset, memo, walletAccount, walletIndex })
   },
   [ETHChain]: async ({
     transport,
