@@ -79,4 +79,4 @@ const getBalanceByAddress$ = C.balancesByAddress$({
   walletBalanceType: 'all'
 })
 
-export { balances$, getBalanceByAddress$, reloadBalances, reloadBalances$, resetReloadBalances }
+export { balances$, getBalanceByAddress$, reloadBalances, reloadBalances$, resetReloadBalances, enhancedClient$ }

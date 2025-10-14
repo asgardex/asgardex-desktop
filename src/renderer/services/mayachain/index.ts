@@ -2,7 +2,14 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 
 import { network$ } from '../app/service'
 import { createTransactionTrackingService } from '../thorchain/transactionTracking'
-import { reloadBalances, balances$, getBalanceByAddress$, reloadBalances$, resetReloadBalances } from './balances'
+import {
+  reloadBalances,
+  balances$,
+  getBalanceByAddress$,
+  reloadBalances$,
+  resetReloadBalances,
+  enhancedClient$
+} from './balances'
 import {
   client$,
   clientState$,
@@ -52,7 +59,7 @@ const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ }
   network$,
   clientUrl$
 )
-const { reloadFees, fees$ } = createFeesService({ client$, chain: MAYAChain })
+const { reloadFees, fees$ } = createFeesService({ client$: enhancedClient$, chain: MAYAChain })
 const interactMaya$ = createInteractService$(sendPoolTx$, txStatus$)
 const transactionTrackingService = createTransactionTrackingService(getTxStatus$)
 
