@@ -23,7 +23,7 @@ export const getDerivationPaths = (walletAccount: number, network: Network): Roo
 export const getDefaultClientUrls = (): Record<Network, string[]> => {
   return {
     [Network.Testnet]: ['https://tendermint.mayachain.info'],
-    [Network.Stagenet]: ['https://tendermint.mayachain.info'],
+    [Network.Stagenet]: ['https://stagenet.tendermint.mayachain.info'],
     [Network.Mainnet]: ['https://tendermint.mayachain.info']
   }
 }
