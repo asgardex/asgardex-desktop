@@ -25,8 +25,8 @@ import {
 export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
   // no mimir -> no action
   if (mimir === 0) return false
-  // 1 -> halt | pause
-  if (mimir > 1) return true
+  // 1 or any numeric value -> halt | pause
+  if (mimir >= 1) return true
   // compare to current block height
   if (mimir < lastHeight) return true
   return false
