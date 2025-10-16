@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
