@@ -1,5 +1,20 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.41.1 (2025-10-16)
+
+## Add
+
+- add TRON ledger support
+- add XRP ledger support
+- add Mayachain ledger support
+
+## Update/Fixes
+
+- fix fee issue & add send state to send.shared [#909](https://github.com/asgardex/asgardex-desktop/pull/909)
+- chainflip updates [#908](https://github.com/asgardex/asgardex-desktop/pull/908)
+- add chainflip tracking components and logic [#907](https://github.com/asgardex/asgardex-desktop/pull/907)
+- update build params
+
 # 1.41.0 (2025-10-02)
 
 ## Add
