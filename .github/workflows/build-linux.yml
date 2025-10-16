@@ -56,6 +56,8 @@ jobs:
           VITE_SOL_API_KEY: ${{ secrets.REACT_APP_SOL_API_KEY }}
           VITE_ADA_API_KEY: ${{ secrets.REACT_APP_ADA_API_KEY }}
           VITE_NOWNODES_API_KEY: ${{ secrets.REACT_APP_NOWNODES_API_KEY }}
+          VITE_ASGARDEX_BROKER_URL: ${{secrets.VITE_ASGARDEX_BROKER_URL}}
+          VITE_ASGARDEX_AFFILIATE_BROKERS_ADDRESS: ${{secrets.VITE_ASGARDEX_AFFILIATE_BROKERS_ADDRESS}}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
