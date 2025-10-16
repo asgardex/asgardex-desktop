@@ -51,7 +51,7 @@ export const createChainflipService$ = () => {
       RxOp.catchError((error) => {
         // Handle specific error messages from Chainflip SDK
         if (error.message && error.message.includes('disabled')) {
-          console.warn(`Asset ${asset.ticker} is disabled in Chainflip:`, error.message)
+          console.warn('Asset %s is disabled in Chainflip:', asset.ticker, error.message)
         }
         return Rx.of(false)
       }),
