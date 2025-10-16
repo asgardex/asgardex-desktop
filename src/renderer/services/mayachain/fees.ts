@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -11,7 +12,7 @@ import { Client$, FeesService } from './types'
  * Custom `FeesService` for Mayachain
  * Handles standalone ledger mode by not requiring a sender address
  */
-export const createFeesService = ({ client$ }: { client$: Client$ }): FeesService => {
+export const createFeesService = ({ client$ }: { client$: Client$; chain: Chain }): FeesService => {
   const { stream$: reloadFees$, trigger: reloadFees } = triggerStream()
 
   const fees$ = (): FeesLD =>
