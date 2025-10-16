@@ -1024,20 +1024,46 @@ export const Swap = ({
             const timeB = b.totalSwapSeconds
             return amountA > amountB ? -1 : amountA < amountB ? 1 : timeA - timeB
           })
+
           setQuoteProtocols(O.some(sortedQuotes))
-          if (sortedQuotes.length > 0) {
-            setQuoteProtocol(O.some(sortedQuotes[0]))
+          const swappableQuotes = sortedQuotes.filter((quote) => quote.canSwap === true)
+
+          if (swappableQuotes.length > 0) {
+            setQuoteProtocol(O.some(swappableQuotes[0]))
             setErrorProtocol(O.none)
           } else {
+            // No swappable quotes - check the original sortedQuotes for error messages
+            const quoteWithError = sortedQuotes.find((quote) => quote.errors && quote.errors.length > 0)
+
+            if (quoteWithError && quoteWithError.errors.length > 0) {
+              // Use the specific error from the non-swappable quote
+              const errorMessage = quoteWithError.errors[0]
+              setErrorProtocol(O.some(new Error(errorMessage)))
+            } else {
+              // Fallback to generic message
+              setErrorProtocol(O.some(new Error('No swap route available for this asset pair')))
+            }
             setQuoteProtocol(O.none)
-            setErrorProtocol(O.some(new Error('No swap route found')))
           }
         }
 
         sortAndSetDefaultQuote(result)
       } catch (err) {
         console.error('Failed to fetch estimate:', err)
-        setErrorProtocol(O.some(err as Error))
+
+        // Ensure we always have a proper Error object with a valid message
+        let errorToSet: Error
+        if (err instanceof Error) {
+          errorToSet = err
+        } else if (typeof err === 'string') {
+          errorToSet = new Error(err)
+        } else if (err && typeof err === 'object' && 'message' in err) {
+          errorToSet = new Error(String(err.message))
+        } else {
+          errorToSet = new Error('Failed to get swap estimate. Please try again.')
+        }
+
+        setErrorProtocol(O.some(errorToSet))
       }
       setIsFetchingEstimate(false)
     },
@@ -1155,11 +1181,17 @@ export const Swap = ({
           if (
             !quoteOnly &&
             O.isNone(effectiveRecipientAddress) &&
-            (error.message.toLowerCase().includes('memo') || error.message.toLowerCase().includes('parsing'))
+            (error?.message?.toLowerCase?.()?.includes('memo') || error?.message?.toLowerCase?.()?.includes('parsing'))
           ) {
             return ['Please enter a recipient address to proceed with the swap']
           }
-          return [error.message]
+          // Safely extract error message with fallback
+          const errorMessage =
+            typeof error?.message === 'string' && error.message.trim()
+              ? error.message
+              : error?.toString?.() || 'An unexpected error occurred during swap estimation'
+
+          return [errorMessage]
         }
       )
     )
@@ -1276,7 +1308,7 @@ export const Swap = ({
     return FP.pipe(
       oQuoteProtocol,
       O.chain((txDetails) => {
-        return swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8)
+        return swapResultAmountMax.baseAmount && swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8)
           ? O.some(Utils.getSwapLimit1e8(txDetails.memo))
           : O.none
       })
@@ -2468,6 +2500,7 @@ export const Swap = ({
         RD.isPending(swapFeesRD) ||
         RD.isPending(approveState) ||
         isCausedSlippage ||
+        !swapResultAmountMax.baseAmount ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax1e8) ||
         O.isNone(effectiveRecipientAddress) ||
         !canSwap ||

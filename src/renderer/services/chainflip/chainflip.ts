@@ -48,7 +48,13 @@ export const createChainflipService$ = () => {
     if (isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)) return Rx.of(false)
     return Rx.defer(() => getAssetData(asset)).pipe(
       RxOp.map(() => true),
-      RxOp.catchError(() => Rx.of(false)),
+      RxOp.catchError((error) => {
+        // Handle specific error messages from Chainflip SDK
+        if (error.message && error.message.includes('disabled')) {
+          console.warn(`Asset ${asset.ticker} is disabled in Chainflip:`, error.message)
+        }
+        return Rx.of(false)
+      }),
       RxOp.shareReplay(1) // Prevent duplicate requests for the same asset
     )
   }
@@ -83,6 +89,12 @@ export const createChainflipService$ = () => {
       // Handle 429 rate limit and other API errors gracefully
       // Log the error but don't crash the app
       console.warn('Chainflip API error (asset data fetch):', error)
+
+      // Handle specific "disabled" error messages from Chainflip SDK
+      if (error instanceof Error && error.message && error.message.toLowerCase().includes('disabled')) {
+        throw new Error(`Asset ${asset.ticker} is currently disabled in Chainflip protocol`)
+      }
+
       throw new Error(`Chainflip service temporarily unavailable for ${asset.ticker}`)
     }
   }
