@@ -2,26 +2,34 @@ import { getMimirStatus } from './useMimirHalt'
 
 describe('hooks/useMimirHalt', () => {
   describe('getMimirStatus', () => {
-    it('mimir = 1', () => {
+    it('should return true when mimir = 1 (halt enabled)', () => {
       expect(getMimirStatus(1)).toBeTruthy()
     })
-    it('mimir = 0', () => {
+
+    it('should return false when mimir = 0 (no halt)', () => {
       expect(getMimirStatus(0)).toBeFalsy()
     })
-    it('mimir = 99, blockheight = 100', () => {
+
+    it('should return true when mimir >= 1 regardless of block height', () => {
       expect(getMimirStatus(99, 100)).toBeTruthy()
+      expect(getMimirStatus(100, 100)).toBeTruthy()
+      expect(getMimirStatus(101, 100)).toBeTruthy()
     })
-    it('mimir = 100, blockheight = 100', () => {
-      expect(getMimirStatus(100, 100)).toBeFalsy()
+
+    it('should return true when mimir > 0 and lastHeight = 0', () => {
+      expect(getMimirStatus(10, 0)).toBeTruthy()
     })
-    it('mimir = 101, blockheight = 100', () => {
-      expect(getMimirStatus(101, 100)).toBeFalsy()
-    })
-    it('mimir = 10, blockheight = 0', () => {
-      expect(getMimirStatus(10, 0)).toBeFalsy()
-    })
-    it('mimir = undefined + blockheight = undefined', () => {
+
+    it('should return false when mimir and lastHeight are undefined', () => {
       expect(getMimirStatus(undefined, undefined)).toBeFalsy()
+    })
+
+    it('should return false when mimir is undefined with valid lastHeight', () => {
+      expect(getMimirStatus(undefined, 100)).toBeFalsy()
+    })
+
+    it('should return false when mimir = 0 with valid lastHeight', () => {
+      expect(getMimirStatus(0, 100)).toBeFalsy()
     })
   })
 })
