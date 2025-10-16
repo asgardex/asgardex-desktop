@@ -12,7 +12,7 @@ import { Client$, FeesService } from './types'
  * Custom `FeesService` for Mayachain
  * Handles standalone ledger mode by not requiring a sender address
  */
-export const createFeesService = ({ client$ }: { client$: Client$; chain: Chain }): FeesService => {
+export const createFeesService = ({ client$ }: { client$: Client$ }): FeesService => {
   const { stream$: reloadFees$, trigger: reloadFees } = triggerStream()
 
   const fees$ = (): FeesLD =>
