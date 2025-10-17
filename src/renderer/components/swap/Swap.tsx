@@ -1606,7 +1606,9 @@ export const Swap = ({
       )
     )
 
-    const minAmountErrorMessage = errors.find((error) => error.includes('is less than recommended Min Amount:'))
+    const minAmountErrorMessage = errors.find(
+      (error) => error.includes('is less than recommended Min Amount:') || error.includes('below minimum swap amount')
+    )
 
     if (!minAmountErrorMessage) {
       return false
@@ -2065,7 +2067,7 @@ export const Swap = ({
       )
     )
 
-    if (swapErrors.length === 0) {
+    if (swapErrors.length === 0 && !minAmountError) {
       return <></>
     }
 
@@ -2081,10 +2083,26 @@ export const Swap = ({
               const formattedMinAmount = new CryptoAmount(baseAmount(minAmount), sourceAsset).formatedAssetString()
               return (
                 <div key={index}>
-                  {`Error: Amount ${formattedAmountIn} is less than the recommended minimum amount: ${formattedMinAmount}`}
+                  {`Amount ${formattedAmountIn} is below the minimum required amount of ${formattedMinAmount}. Please increase your swap amount.`}
                 </div>
               )
             }
+          }
+
+          // Check for Chainflip minimum swap amount error
+          if (error.includes('below minimum swap amount')) {
+            const matches = error.match(/\((\d+)\)/)
+            if (matches) {
+              const [_, minAmount] = matches
+              const formattedMinAmount = new CryptoAmount(baseAmount(minAmount), sourceAsset).formatedAssetString()
+              return (
+                <div key={index}>
+                  {`Amount is below the minimum swap amount of ${formattedMinAmount}. Please increase your swap amount.`}
+                </div>
+              )
+            }
+            // Fallback if parsing fails
+            return <div key={index}>{`Amount is below the minimum swap amount. Please increase your swap amount.`}</div>
           }
 
           // Check for Maya price limit error
@@ -2099,10 +2117,13 @@ export const Swap = ({
           // Default error display
           return <div key={index}>{error}</div>
         })}
+        {minAmountError && swapErrors.length === 0 && (
+          <div>The swap amount is below the minimum required. Please increase your swap amount.</div>
+        )}
         {belowDustThreshold && <>{`Amount to swap is Below DustThreshold`}</>}
       </ErrorLabel>
     )
-  }, [belowDustThreshold, oQuoteProtocol, sourceAsset])
+  }, [belowDustThreshold, minAmountError, oQuoteProtocol, sourceAsset])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
