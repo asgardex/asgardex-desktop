@@ -64,7 +64,8 @@ import {
   isCacaoAsset,
   isEVMTokenAsset,
   getEVMTokenAddressForChain,
-  isRujiAsset
+  isRujiAsset,
+  convertBaseAmountDecimal
 } from '../../helpers/assetHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
 import { getChainAsset } from '../../helpers/chainHelper'
@@ -2248,7 +2249,7 @@ export const Swap = ({
       swapLimit,
       O.fold(
         () => baseAmount(0, targetAssetDecimal) /* zero amount */,
-        (limitAmount) => limitAmount
+        (limitAmount) => convertBaseAmountDecimal(limitAmount, targetAssetDecimal)
       )
     )
 
