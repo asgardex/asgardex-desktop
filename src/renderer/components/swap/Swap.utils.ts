@@ -152,6 +152,32 @@ export const maxAmountToSwapMax1e8 = ({
   return maxAmountToSwap.gt(ZERO_BASE_AMOUNT) ? maxAmountToSwap : ZERO_BASE_AMOUNT
 }
 
+/**
+ * Helper to get max. amount to swap for native decimal amounts
+ *
+ * balanceAmount => balances of source asset (in native decimal)
+ * feeAmount => fee of inbound tx (in native asset decimal)
+ */
+export const maxAmountToSwap = ({
+  asset,
+  balanceAmount,
+  feeAmount
+}: {
+  asset: AnyAsset
+  balanceAmount: BaseAmount
+  feeAmount: BaseAmount
+}): BaseAmount => {
+  // Ignore non-chain assets
+  if (!isChainAsset(asset)) return balanceAmount
+
+  // Ensure fee has same decimal as balance for proper subtraction
+  const feeInBalanceDecimal =
+    feeAmount.decimal !== balanceAmount.decimal ? convertBaseAmountDecimal(feeAmount, balanceAmount.decimal) : feeAmount
+
+  const maxAmountToSwap = balanceAmount.minus(feeInBalanceDecimal)
+  return maxAmountToSwap.gt(ZERO_BASE_AMOUNT) ? maxAmountToSwap : ZERO_BASE_AMOUNT
+}
+
 export const assetsInWallet: (_: WalletBalances) => AnyAsset[] = FP.flow(A.map(({ asset }) => asset))
 
 export const balancesToSwapFrom = ({

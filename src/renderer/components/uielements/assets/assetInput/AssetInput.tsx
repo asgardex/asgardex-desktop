@@ -3,9 +3,9 @@ import React, { useRef, useCallback } from 'react'
 import { Network } from '@xchainjs/xchain-client'
 import {
   AnyAsset,
+  BaseAmount,
   assetAmount,
   assetToBase,
-  BaseAmount,
   baseToAsset,
   Chain,
   formatAssetAmountCurrency
@@ -103,6 +103,7 @@ export const AssetInput = (props: Props): JSX.Element => {
 
   const onChangeHandler = useCallback(
     (value: BigNumber) => {
+      // Convert asset amount (what user types) to base amount (internal representation)
       onChange(assetToBase(assetAmount(value, amount.decimal)))
     },
     [amount.decimal, onChange]
@@ -196,7 +197,7 @@ export const AssetInput = (props: Props): JSX.Element => {
             <div className="flex items-center justify-end space-x-1 pr-4">
               <WalletIcon className="h-5 w-5 text-gray1 dark:text-gray1d" />
               <p className="mb-0 text-[14px] text-gray1 dark:text-gray1d">
-                {baseToAsset(walletBalance).amount().toString()}
+                {baseToAsset(walletBalance).amount().decimalPlaces(8).toString()}
               </p>
             </div>
           ) : (

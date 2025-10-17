@@ -31,6 +31,9 @@ export const InputBigNumber = forwardRef<HTMLInputElement, Props>((props: Props,
     ...otherProps /* any props of `InputNumberProps` */
   } = props
 
+  // Limit display decimals to maximum of 8 for better UX
+  const displayDecimals = Math.min(decimal, 8)
+
   // value as string (formatted) - it supports empty string for an empty input
   const [broadcastValue, setBroadcastValue] = useState<O.Option<string>>(O.some(VALUE_ZERO))
 
@@ -41,25 +44,28 @@ export const InputBigNumber = forwardRef<HTMLInputElement, Props>((props: Props,
         setBroadcastValue(O.none)
       } else {
         // check for the '.' at the end of a `targetValue`
-        const formatted = formatValue(unformatValue(targetValue), decimal).replaceAll(',', '')
+        const formatted = formatValue(unformatValue(targetValue), displayDecimals).replaceAll(',', '')
         const bnValue = bnOrZero(formatted)
-        if (!eqBigNumber.equals(bnValue, value)) {
-          setBroadcastValue(O.some(formatted))
+
+        const currentBroadcast = FP.pipe(
+          broadcastValue,
+          O.getOrElse(() => EMPTY_INPUT)
+        )
+
+        // Only update if value actually changed
+        const valueChanged = !eqBigNumber.equals(bnValue, value)
+        const displayChanged = targetValue !== currentBroadcast
+
+        if (valueChanged) {
           onChange(bnValue)
         }
 
-        if (
-          targetValue !==
-          FP.pipe(
-            broadcastValue,
-            O.getOrElse(() => EMPTY_INPUT)
-          )
-        ) {
+        if (displayChanged) {
           setBroadcastValue(O.some(targetValue))
         }
       }
     },
-    [onChange, value, decimal, broadcastValue]
+    [onChange, value, displayDecimals, broadcastValue]
   )
 
   useEffect(() => {
@@ -75,11 +81,11 @@ export const InputBigNumber = forwardRef<HTMLInputElement, Props>((props: Props,
         )
       }),
       // fix to decimal + always round down for currencies
-      O.map((val) => val.toFixed(decimal, BigNumber.ROUND_DOWN)),
-      O.map((s) => formatValue(s, decimal)),
+      O.map((val) => val.toFixed(displayDecimals, BigNumber.ROUND_DOWN)),
+      O.map((s) => formatValue(s, displayDecimals)),
       O.map(setValues)
     )
-  }, [decimal, value, setValues, broadcastValue])
+  }, [displayDecimals, value, setValues, broadcastValue])
 
   const onFocusHandler = useCallback(
     async (event: React.FocusEvent<HTMLInputElement>) => {
@@ -103,10 +109,10 @@ export const InputBigNumber = forwardRef<HTMLInputElement, Props>((props: Props,
       O.alt(() => O.some(EMPTY_INPUT)),
       O.map((v) => (v === EMPTY_INPUT ? VALUE_ZERO : v)),
       // Pass ONLY meaningful value without formatting
-      O.map((v) => formatValue(unformatValue(v), decimal)),
+      O.map((v) => formatValue(unformatValue(v), displayDecimals)),
       O.map(setValues)
     )
-  }, [setValues, broadcastValue, decimal])
+  }, [setValues, broadcastValue, displayDecimals])
 
   const onBlurHandler = useCallback(
     (event: React.FocusEvent<HTMLInputElement>) => {
@@ -145,12 +151,12 @@ export const InputBigNumber = forwardRef<HTMLInputElement, Props>((props: Props,
             return valueBN.isLessThanOrEqualTo(maxBN) ? value : max.toString()
           }),
           // Limit decimal places of entered value
-          O.map(truncateByDecimals(decimal)),
+          O.map(truncateByDecimals(displayDecimals)),
           O.map(setValues)
         )
       }
     },
-    [decimal, max, setValues]
+    [displayDecimals, max, setValues]
   )
 
   return (

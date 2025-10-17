@@ -82,16 +82,17 @@ const {
 // Import inbound addresses observables
 
 /**
- * Helper to get address address for a chain from inbound addresses
+ * Helper to get inbound address for a chain from inbound addresses
  */
-const getRouterAddress = (
+const getInboundAddress = (
   inboundAddresses: (ThorInboundAddress | MayaInboundAddress)[],
   chain: Chain
 ): O.Option<Address> => {
   return FP.pipe(
     inboundAddresses,
     A.findFirst((item) => item.chain === chain),
-    O.chain((item) => O.fromNullable(item.router))
+    O.chain((item: ThorInboundAddress | MayaInboundAddress) => O.fromNullable(item.address)),
+    O.filter((address) => address.length > 0)
   )
 }
 
@@ -299,13 +300,13 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.startWith(RD.pending)
       )
     case ETHChain:
-      // Use poolInTxFees$ with actual address address for accurate gas estimation
+      // Use poolInTxFees$ with actual inbound address for accurate gas estimation
       return FP.pipe(
         Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(ETHChain)]),
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getRouterAddress(inboundAddressesRD.value, ETHChain),
+                getInboundAddress(inboundAddressesRD.value, ETHChain),
                 O.fold(
                   // Fallback to zero address if address not found
                   () =>
@@ -318,13 +319,13 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                       }),
                       liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
-                  // Use actual address address for better estimation
-                  (address) =>
+                  // Use actual inbound address for better estimation
+                  (inboundAddress) =>
                     FP.pipe(
                       ETH.poolInTxFees$({
                         asset,
                         amount: baseAmount(1, decimal),
-                        recipient: address,
+                        recipient: inboundAddress,
                         memo
                       }),
                       liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
@@ -346,13 +347,13 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.startWith(RD.pending)
       )
     case ARBChain:
-      // Use poolInTxFees$ with actual address address for accurate gas estimation
+      // Use poolInTxFees$ with actual inbound address for accurate gas estimation
       return FP.pipe(
         Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(ARBChain)]),
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getRouterAddress(inboundAddressesRD.value, ARBChain),
+                getInboundAddress(inboundAddressesRD.value, ARBChain),
                 O.fold(
                   // Fallback to zero address if address not found
                   () =>
@@ -365,7 +366,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                       }),
                       liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
-                  // Use actual address address for better estimation
+                  // Use actual inbound address for better estimation
                   (address) =>
                     FP.pipe(
                       ARB.poolInTxFees$({
@@ -399,7 +400,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getRouterAddress(inboundAddressesRD.value, BASEChain),
+                getInboundAddress(inboundAddressesRD.value, BASEChain),
                 O.fold(
                   // Fallback to zero address if not found
                   () =>
@@ -412,7 +413,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                       }),
                       liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
-                  // Use actual address address for better estimation
+                  // Use actual inbound address for better estimation
                   (address) =>
                     FP.pipe(
                       BASE.poolInTxFees$({
@@ -440,13 +441,13 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.startWith(RD.pending)
       )
     case AVAXChain:
-      // Use poolInTxFees$ with actual address address for accurate gas estimation
+      // Use poolInTxFees$ with actual inbound address for accurate gas estimation
       return FP.pipe(
         Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(AVAXChain)]),
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getRouterAddress(inboundAddressesRD.value, AVAXChain),
+                getInboundAddress(inboundAddressesRD.value, AVAXChain),
                 O.fold(
                   // Fallback to zero address if address not found
                   () =>
@@ -459,7 +460,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                       }),
                       liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
-                  // Use actual address address for better estimation
+                  // Use actual inbound address for better estimation
                   (address) =>
                     FP.pipe(
                       AVAX.poolInTxFees$({
@@ -487,13 +488,13 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.startWith(RD.pending)
       )
     case BSCChain:
-      // Use poolInTxFees$ with actual address address for accurate gas estimation
+      // Use poolInTxFees$ with actual inbound address for accurate gas estimation
       return FP.pipe(
         Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(BSCChain)]),
         RxOp.switchMap(([decimal, inboundAddressesRD]) =>
           RD.isSuccess(inboundAddressesRD)
             ? FP.pipe(
-                getRouterAddress(inboundAddressesRD.value, BSCChain),
+                getInboundAddress(inboundAddressesRD.value, BSCChain),
                 O.fold(
                   // Fallback to zero address if address not found
                   () =>
@@ -506,7 +507,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
                       }),
                       liveData.map((fees) => ({ asset: getChainAsset(asset.chain), amount: fees.fast }))
                     ),
-                  // Use actual address address for better estimation
+                  // Use actual inbound address for better estimation
                   (address) =>
                     FP.pipe(
                       BSC.poolInTxFees$({
