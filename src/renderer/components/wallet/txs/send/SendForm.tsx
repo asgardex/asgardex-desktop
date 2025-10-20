@@ -361,7 +361,8 @@ export const SendForm = (props: Props): JSX.Element => {
       )
     }
     if (isCOSMOSChain) {
-      const accountReserve = effectiveChain === 'XRP' ? baseAmount(1000000, balance.amount.decimal) : ZERO_BASE_AMOUNT
+      const accountReserve =
+        effectiveChain === XRPChain ? baseAmount(1000000, balance.amount.decimal) : ZERO_BASE_AMOUNT
       const isChainAsset = eqAsset(asset, sourceChainAsset)
       return FP.pipe(
         sequenceTOption(selectedFee, oAssetAmount),
