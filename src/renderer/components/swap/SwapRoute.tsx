@@ -66,6 +66,18 @@ const Route = ({
             </span>
           </div>
         )}
+        {quote.errors && quote.errors.length > 0 && (
+          <div className="mt-1 text-[11px] text-red-600 dark:text-red-400">
+            {quote.errors.map((error, index) => (
+              <span key={index}>
+                {error.includes('price limit')
+                  ? 'Price slippage too high. Please adjust your price tolerance settings.'
+                  : error}
+                {index < quote.errors.length - 1 && ' | '}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -33,7 +33,8 @@ import {
   isSecuredAsset,
   SecuredAsset,
   Chain,
-  assetToString
+  assetToString,
+  assetFromStringEx
 } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
@@ -510,13 +511,34 @@ export const Swap = ({
     let result: BaseAmount
 
     if (isChainflipProtocol) {
-      // Use CoinGecko price for Chainflip assets
+      // Use THORChain pools for Chainflip asset pricing
+      const usdValueOption = PoolHelpers.getUSDValue({
+        balance: { asset: sourceAsset, amount: amountToSwap },
+        poolDetails: poolDetailsThor,
+        pricePool: pricePoolThor
+      })
 
-      const assetSymbol = sourceAsset.symbol.toUpperCase()
-      const geckoId = GECKO_MAP[assetSymbol]
-      const geckoPrice = geckoId ? geckoPriceMap[geckoId]?.usd : 0
-      const usdValue = amountToSwap.times(geckoPrice || 0)
-      result = usdValue
+      // If no price found and asset is SOL.SOL, try cross-referencing with AVAX.SOL
+      if (O.isNone(usdValueOption) && sourceAsset.chain === 'SOL' && sourceAsset.symbol === 'SOL') {
+        const avaxSolAsset = assetFromStringEx('AVAX.SOL-0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F')
+        if (avaxSolAsset) {
+          result = FP.pipe(
+            PoolHelpers.getUSDValue({
+              balance: { asset: avaxSolAsset, amount: amountToSwap },
+              poolDetails: poolDetailsThor,
+              pricePool: pricePoolThor
+            }),
+            O.getOrElse(() => baseAmount(0, amountToSwap.decimal))
+          )
+        } else {
+          result = baseAmount(0, amountToSwap.decimal)
+        }
+      } else {
+        result = FP.pipe(
+          usdValueOption,
+          O.getOrElse(() => baseAmount(0, amountToSwap.decimal))
+        )
+      }
     } else {
       result = FP.pipe(
         isChainOfThor(sourceChain)
@@ -545,8 +567,7 @@ export const Swap = ({
     pricePoolThor,
     sourceAsset,
     sourceChain,
-    oQuoteProtocol,
-    geckoPriceMap
+    oQuoteProtocol
   ])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwap.amount().isZero(), [amountToSwap])
@@ -1006,16 +1027,14 @@ export const Swap = ({
             destinationAddress: quoteOnly ? undefined : effectiveRecipientAddressString,
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: slipTolerance * 100
+            liquidityToleranceBps: slipTolerance * 10,
+            toleranceBps: undefined
           },
           applyBps
         )
 
         const sortAndSetDefaultQuote = (quotes: QuoteSwap[]) => {
-          // Filter out quotes with errors (invalid quotes)
-          const validQuotes = quotes.filter((quote) => !quote.errors || quote.errors.length === 0)
-
-          const sortedQuotes = validQuotes.sort((a, b) => {
+          const sortedQuotes = quotes.sort((a, b) => {
             const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
             const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
             const timeA = a.totalSwapSeconds

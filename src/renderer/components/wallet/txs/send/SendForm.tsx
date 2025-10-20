@@ -4,12 +4,14 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, Fees, FeesWithRates, Network } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   assetAmount,
   assetToBase,
+  AssetType,
   BaseAmount,
   baseAmount,
   baseToAsset,
@@ -34,8 +36,8 @@ import { isMayaAsset, isUSDAsset, isUtxoAssetChain } from '../../../../helpers/a
 import { getChainAsset, getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { isEvmChain, isEvmChainAsset } from '../../../../helpers/evmHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
-import { getPoolPriceValue } from '../../../../helpers/poolHelper'
-import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
+import * as PoolHelpers from '../../../../helpers/poolHelper'
+import * as PoolHelpersMaya from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
@@ -137,22 +139,28 @@ export const SendForm = (props: Props): JSX.Element => {
   const intl = useIntl()
 
   const { asset } = balance
-  const sourceChainAsset = getChainAsset(asset.chain)
+
+  // Determine the effective chain for operations (MAYAChain for synths, THORChain for secured, otherwise asset.chain)
+  const effectiveChain = (
+    asset.type === AssetType.SYNTH ? MAYAChain : asset.type === AssetType.SECURED ? THORChain : asset.chain
+  ) as Chain
+
+  const sourceChainAsset = getChainAsset(effectiveChain)
 
   // Get XRP client for destination tag validation
   const xrpContext = useXrpContext()
-  const isXrpChain = asset.chain === XRPChain
+  const isXrpChain = effectiveChain === XRPChain
 
-  // Chain type detection
-  const isEVMChain = isEvmChain(asset.chain)
-  const isUTXOChain = isUtxoAssetChain(asset)
+  // Chain type detection using effective chain
+  const isEVMChain = isEvmChain(effectiveChain)
+  const isUTXOChain = isUtxoAssetChain({ ...asset, chain: effectiveChain })
   const isCOSMOSChain = !isEVMChain && !isUTXOChain
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
   const pricePool = useMemo(
-    () => (!isChainOfMaya(asset.chain) ? pricePoolThor : pricePoolMaya),
-    [asset.chain, pricePoolThor, pricePoolMaya]
+    () => (!isChainOfMaya(effectiveChain) ? pricePoolThor : pricePoolMaya),
+    [effectiveChain, pricePoolThor, pricePoolMaya]
   )
 
   const {
@@ -220,8 +228,11 @@ export const SendForm = (props: Props): JSX.Element => {
 
   const oSavedAddresses: O.Option<TrustedAddress[]> = useMemo(
     () =>
-      FP.pipe(O.fromNullable(trustedAddresses?.addresses), O.map(A.filter((address) => address.chain === asset.chain))),
-    [trustedAddresses?.addresses, asset.chain]
+      FP.pipe(
+        O.fromNullable(trustedAddresses?.addresses),
+        O.map(A.filter((address) => address.chain === effectiveChain))
+      ),
+    [trustedAddresses?.addresses, effectiveChain]
   )
 
   const oFees: O.Option<Fees> = useMemo(() => {
@@ -250,7 +261,7 @@ export const SendForm = (props: Props): JSX.Element => {
       return FP.pipe(
         oFees,
         O.map((fees) => {
-          setAssetFee(new CryptoAmount(fees[selectedFeeOption], getChainAsset(asset.chain)))
+          setAssetFee(new CryptoAmount(fees[selectedFeeOption], getChainAsset(effectiveChain)))
           return fees[selectedFeeOption]
         })
       )
@@ -281,7 +292,8 @@ export const SendForm = (props: Props): JSX.Element => {
     oFee,
     selectedFeeOption,
     selectedFeeOptionKey,
-    asset
+    asset,
+    effectiveChain
   ])
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
@@ -291,7 +303,7 @@ export const SendForm = (props: Props): JSX.Element => {
       // For EVM tokens, get ETH balance for fees
       return FP.pipe(
         balances,
-        (bals) => bals.find((b) => b.asset.chain === asset.chain && isEvmChainAsset(b.asset)),
+        (bals) => bals.find((b) => b.asset.chain === effectiveChain && isEvmChainAsset(b.asset)),
         O.fromNullable,
         O.map((b) => b.amount)
       )
@@ -300,7 +312,26 @@ export const SendForm = (props: Props): JSX.Element => {
       return O.some(balance.amount)
     }
     return O.none
-  }, [isEVMChain, isUTXOChain, isCOSMOSChain, asset, balance.amount, balances])
+  }, [isEVMChain, isUTXOChain, isCOSMOSChain, asset, balance.amount, balances, effectiveChain])
+
+  // Separate balance for fee validation - chain asset uses its own balance, tokens/synths use chain asset balance
+  const oFeeAssetAmount: O.Option<BaseAmount> = useMemo(() => {
+    const chainAsset = getChainAsset(effectiveChain)
+    const isChainAsset = eqAsset(asset, chainAsset)
+
+    if (isChainAsset) {
+      // Chain asset uses its own balance
+      return O.some(balance.amount)
+    } else {
+      // Token/synth uses chain asset balance
+      return FP.pipe(
+        balances,
+        (bals) => bals.find((b) => eqAsset(b.asset, chainAsset)),
+        O.fromNullable,
+        O.map((b) => b.amount)
+      )
+    }
+  }, [asset, balance.amount, balances, effectiveChain])
 
   const maxAmount: BaseAmount = useMemo(() => {
     if (isEVMChain) {
@@ -330,7 +361,7 @@ export const SendForm = (props: Props): JSX.Element => {
       )
     }
     if (isCOSMOSChain) {
-      const accountReserve = asset.chain === 'XRP' ? baseAmount(1000000, balance.amount.decimal) : ZERO_BASE_AMOUNT
+      const accountReserve = effectiveChain === 'XRP' ? baseAmount(1000000, balance.amount.decimal) : ZERO_BASE_AMOUNT
       const isChainAsset = eqAsset(asset, sourceChainAsset)
       return FP.pipe(
         sequenceTOption(selectedFee, oAssetAmount),
@@ -349,23 +380,33 @@ export const SendForm = (props: Props): JSX.Element => {
       )
     }
     return ZERO_BASE_AMOUNT
-  }, [isEVMChain, isUTXOChain, isCOSMOSChain, selectedFee, oAssetAmount, balance.amount, asset, sourceChainAsset])
+  }, [
+    isEVMChain,
+    isUTXOChain,
+    isCOSMOSChain,
+    selectedFee,
+    oAssetAmount,
+    balance.amount,
+    asset,
+    sourceChainAsset,
+    effectiveChain
+  ])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
-      sequenceTOption(selectedFee, oAssetAmount),
+      sequenceTOption(selectedFee, oFeeAssetAmount),
       O.fold(
         () => false,
         ([fee, assetAmount]) => assetAmount.lt(fee)
       )
     )
-  }, [selectedFee, oAssetAmount])
+  }, [selectedFee, oFeeAssetAmount])
 
   const renderFeeError = useMemo(() => {
     if (!isFeeError) return <></>
 
     const amount: BaseAmount = FP.pipe(
-      oAssetAmount,
+      oFeeAssetAmount,
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
 
@@ -374,7 +415,7 @@ export const SendForm = (props: Props): JSX.Element => {
       {
         balance: formatAssetAmountCurrency({
           amount: baseToAsset(amount),
-          asset: isEVMChain ? getChainAsset(asset.chain) : asset,
+          asset: eqAsset(asset, getChainAsset(effectiveChain)) ? asset : getChainAsset(effectiveChain),
           trimZeros: true
         })
       }
@@ -385,84 +426,97 @@ export const SendForm = (props: Props): JSX.Element => {
         {msg}
       </Styled.Label>
     )
-  }, [isFeeError, oAssetAmount, intl, isEVMChain, asset])
+  }, [isFeeError, oFeeAssetAmount, intl, asset, effectiveChain])
 
   useEffect(() => {
     const amountValue = isEVMChain
       ? O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend as O.Option<BaseAmount>)
       : (amountToSend as BaseAmount)
 
-    const isPoolDetails = (poolDetails: PoolDetails | PoolDetailsMaya): poolDetails is PoolDetails => {
-      return (poolDetails as PoolDetails) !== undefined
-    }
+    const maxAmountPrice = isChainOfThor(effectiveChain)
+      ? PoolHelpers.getUSDValue({
+          balance: { asset, amount: maxAmount },
+          poolDetails: poolDetails as PoolDetails,
+          pricePool
+        })
+      : PoolHelpersMaya.getUSDValue({
+          balance: { asset, amount: maxAmount },
+          poolDetails: poolDetails as PoolDetailsMaya,
+          pricePool: pricePoolMaya
+        })
 
-    const maxAmountPrice =
-      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
-        ? getPoolPriceValue({
-            balance: { asset, amount: maxAmount },
-            poolDetails,
-            pricePool
-          })
-        : getPoolPriceValueM({
-            balance: { asset, amount: maxAmount },
-            poolDetails,
-            pricePool: pricePoolMaya,
-            mayaPriceRD: mayaScanPrice
-          })
+    const amountPrice = isChainOfThor(effectiveChain)
+      ? PoolHelpers.getUSDValue({
+          balance: { asset, amount: amountValue },
+          poolDetails: poolDetails as PoolDetails,
+          pricePool
+        })
+      : PoolHelpersMaya.getUSDValue({
+          balance: { asset, amount: amountValue },
+          poolDetails: poolDetails as PoolDetailsMaya,
+          pricePool: pricePoolMaya
+        })
 
-    const amountPrice =
-      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
-        ? getPoolPriceValue({
-            balance: { asset, amount: amountValue },
-            poolDetails,
-            pricePool
-          })
-        : getPoolPriceValueM({
-            balance: { asset, amount: amountValue },
-            poolDetails,
-            pricePool: pricePoolMaya,
-            mayaPriceRD: mayaScanPrice
-          })
-
-    const assetFeePrice =
-      isPoolDetails(poolDetails) && isChainOfThor(sourceChainAsset.chain)
-        ? getPoolPriceValue({
-            balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
-            poolDetails,
-            pricePool
-          })
-        : getPoolPriceValueM({
-            balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
-            poolDetails,
-            pricePool: pricePoolMaya,
-            mayaPriceRD: mayaScanPrice
-          })
+    const assetFeePrice = isChainOfThor(sourceChainAsset.chain)
+      ? PoolHelpers.getUSDValue({
+          balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
+          poolDetails: poolDetails as PoolDetails,
+          pricePool
+        })
+      : PoolHelpersMaya.getUSDValue({
+          balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
+          poolDetails: poolDetails as PoolDetailsMaya,
+          pricePool: pricePoolMaya
+        })
 
     if (O.isSome(assetFeePrice)) {
       const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
-      setFeePriceValue(maxCryptoAmount)
+      setFeePriceValue((prev) => {
+        if (
+          !prev.assetAmount.amount().eq(maxCryptoAmount.assetAmount.amount()) ||
+          !eqAsset(prev.asset, maxCryptoAmount.asset)
+        ) {
+          return maxCryptoAmount
+        }
+        return prev
+      })
     }
     if (O.isSome(amountPrice)) {
       const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
-      setAmountPriceValue(amountPriceAmount)
+      setAmountPriceValue((prev) => {
+        if (
+          !prev.baseAmount.amount().eq(amountPriceAmount.baseAmount.amount()) ||
+          !eqAsset(prev.asset, amountPriceAmount.asset)
+        ) {
+          return amountPriceAmount
+        }
+        return prev
+      })
     }
     if (O.isSome(maxAmountPrice)) {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
-      setMaxAmountPriceValue(maxCryptoAmount)
+      setMaxAmountPriceValue((prev) => {
+        if (
+          !prev.baseAmount.amount().eq(maxCryptoAmount.baseAmount.amount()) ||
+          !eqAsset(prev.asset, maxCryptoAmount.asset)
+        ) {
+          return maxCryptoAmount
+        }
+        return prev
+      })
     }
   }, [
     amountToSend,
     asset,
     maxAmount,
     assetFee,
-    pricePool.asset,
     pricePool,
     network,
     poolDetails,
     sourceChainAsset,
     pricePoolMaya,
-    mayaScanPrice,
-    isEVMChain
+    isEVMChain,
+    effectiveChain
   ])
 
   // Watch the recipient field for changes
@@ -574,7 +628,7 @@ export const SendForm = (props: Props): JSX.Element => {
 
       return true
     },
-    [isEVMChain, addressValidation, intl, oPoolAddress, oPoolAddressMaya, asset.chain]
+    [isEVMChain, oPoolAddress, oPoolAddressMaya, intl, addressValidation, asset.chain]
   )
 
   const amountValidator = useCallback(
@@ -623,18 +677,28 @@ export const SendForm = (props: Props): JSX.Element => {
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
       const validationResult = await amountValidator(value)
-      if (validationResult === true) {
-        const newAmount = assetToBase(assetAmount(value, balance.amount.decimal))
+      const newValue = validationResult === true ? assetToBase(assetAmount(value, balance.amount.decimal)) : null
+
+      setAmountToSend((prev) => {
         if (isEVMChain) {
-          setAmountToSend(O.some(newAmount))
+          const prevAmount = O.getOrElse(() => ZERO_BASE_AMOUNT)(prev as O.Option<BaseAmount>)
+          if (newValue) {
+            if (!prevAmount.amount().eq(newValue.amount()) || prevAmount.decimal !== newValue.decimal) {
+              return O.some(newValue)
+            }
+          } else if (O.isSome(prev as O.Option<BaseAmount>)) {
+            return O.none
+          }
+          return prev
         } else {
-          setAmountToSend(newAmount)
+          const prevAmount = prev as BaseAmount
+          const targetAmount = newValue || ZERO_BASE_AMOUNT
+          if (!prevAmount.amount().eq(targetAmount.amount()) || prevAmount.decimal !== targetAmount.decimal) {
+            return targetAmount
+          }
+          return prev
         }
-      } else {
-        if (isEVMChain) {
-          setAmountToSend(O.none)
-        }
-      }
+      })
     },
     [amountValidator, balance.amount.decimal, isEVMChain]
   )
@@ -655,9 +719,21 @@ export const SendForm = (props: Props): JSX.Element => {
 
   const addMaxAmountHandler = useCallback(() => {
     if (isEVMChain) {
-      setAmountToSend(O.some(maxAmount))
+      setAmountToSend((prev) => {
+        const prevAmount = O.getOrElse(() => ZERO_BASE_AMOUNT)(prev as O.Option<BaseAmount>)
+        if (!prevAmount.amount().eq(maxAmount.amount()) || prevAmount.decimal !== maxAmount.decimal) {
+          return O.some(maxAmount)
+        }
+        return prev
+      })
     } else {
-      setAmountToSend(maxAmount)
+      setAmountToSend((prev) => {
+        const prevAmount = prev as BaseAmount
+        if (!prevAmount.amount().eq(maxAmount.amount()) || prevAmount.decimal !== maxAmount.decimal) {
+          return maxAmount
+        }
+        return prev
+      })
     }
     setValue('amount', baseToAsset(maxAmount).amount())
   }, [isEVMChain, maxAmount, setValue])
@@ -729,9 +805,21 @@ export const SendForm = (props: Props): JSX.Element => {
       const newAmount = baseAmount(amountFromPercentage, maxAmount.decimal)
 
       if (isEVMChain) {
-        setAmountToSend(O.some(newAmount))
+        setAmountToSend((prev) => {
+          const prevAmount = O.getOrElse(() => ZERO_BASE_AMOUNT)(prev as O.Option<BaseAmount>)
+          if (!prevAmount.amount().eq(newAmount.amount()) || prevAmount.decimal !== newAmount.decimal) {
+            return O.some(newAmount)
+          }
+          return prev
+        })
       } else {
-        setAmountToSend(newAmount)
+        setAmountToSend((prev) => {
+          const prevAmount = prev as BaseAmount
+          if (!prevAmount.amount().eq(newAmount.amount()) || prevAmount.decimal !== newAmount.decimal) {
+            return newAmount
+          }
+          return prev
+        })
       }
       setValue('amount', baseToAsset(newAmount).amount())
     }
@@ -1032,7 +1120,7 @@ export const SendForm = (props: Props): JSX.Element => {
     if (isEVMChain && feesRD) {
       return FP.pipe(
         feesRD,
-        RD.map((fees) => [{ asset: getChainAsset(asset.chain), amount: fees[selectedFeeOption] }]),
+        RD.map((fees) => [{ asset: getChainAsset(effectiveChain), amount: fees[selectedFeeOption] }]),
         RD.mapLeft((error) => new Error(`${error.message.split(':')[0]}`))
       )
     }
@@ -1062,7 +1150,8 @@ export const SendForm = (props: Props): JSX.Element => {
     asset,
     selectedFeeOption,
     selectedFeeOptionKey,
-    sourceChainAsset
+    sourceChainAsset,
+    effectiveChain
   ])
 
   // Wallet type detection

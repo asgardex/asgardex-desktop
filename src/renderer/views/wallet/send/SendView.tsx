@@ -65,9 +65,6 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
     INITIAL_BALANCES_STATE
   )
 
-  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(asset.asset.chain))
-  const { validateAddress } = useValidateAddress(asset.asset.chain)
-
   const chain = (
     asset.asset.type === AssetType.SYNTH
       ? MAYAChain
@@ -75,6 +72,9 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
       ? THORChain
       : asset.asset.chain
   ) as Chain
+
+  const { validateAddress } = useValidateAddress(chain)
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(chain))
 
   const isUTXOChain = isUtxoAssetChain({ ...asset.asset, chain })
   const isEVMChain = isEvmChain(chain)
@@ -105,20 +105,20 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
     reloadUtxoFeesWithRates$
   } = useChainContext()
 
-  const { reloadFees } = useEvmContext(asset.asset.chain)
+  const { reloadFees } = useEvmContext(chain)
 
   const evmFeesObservable = useMemo(
     () =>
       isEVMChain
         ? evmFees$({
-            chain: asset.asset.chain,
-            asset: getChainAsset(asset.asset.chain),
+            chain: chain,
+            asset: getChainAsset(chain),
             amount: baseAmount(1),
             recipient: EVMZeroAddress,
             from: asset.walletAddress
           })
         : scheduled([RD.initial], asapScheduler),
-    [isEVMChain, asset.asset.chain, asset.walletAddress, evmFees$]
+    [isEVMChain, chain, asset.walletAddress, evmFees$]
   )
   const feesRD = useObservableState<FeesRD>(evmFeesObservable, RD.initial)
 
@@ -151,7 +151,7 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
   const reloadFeesHandler = () => {
     if (isEVMChain) {
       reloadFees({
-        asset: getChainAsset(asset.asset.chain),
+        asset: getChainAsset(chain),
         amount: baseAmount(1),
         recipient: EVMZeroAddress,
         from: asset.walletAddress
