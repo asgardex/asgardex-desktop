@@ -272,7 +272,16 @@ export const ASYM_DEPOSIT_TOOL_URL: Record<Network, string> = {
 }
 
 // @asgdx-team: Extend list whenever another ledger app will be supported
-export const SUPPORTED_LEDGER_APPS: Chain[] = [THORChain, BTCChain, LTCChain, DOGEChain, BCHChain, ETHChain, GAIAChain]
+export const SUPPORTED_LEDGER_APPS: Chain[] = [
+  THORChain,
+  BTCChain,
+  LTCChain,
+  DOGEChain,
+  BCHChain,
+  ETHChain,
+  GAIAChain,
+  SOLChain
+]
 
 export const DEFAULT_GET_POOLS_PERIOD = GetPoolsPeriodEnum._30d
 export const DEFAULT_GET_POOLS_PERIOD_MAYA = GetPoolsPeriodEnum._30d

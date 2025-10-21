@@ -39,6 +39,7 @@ import * as ETH from './ethereum/transaction'
 import * as LTC from './litecoin/transaction'
 import * as MAYA from './mayachain/transaction'
 import * as XRP from './ripple/transaction'
+import * as SOL from './solana/transaction'
 import * as THOR from './thorchain/transaction'
 import * as TRON from './tron/transaction'
 
@@ -275,6 +276,15 @@ const chainSendFunctions: Record<
       destinationTag: params.destinationTag
     })
   },
+  [SOLChain]: async ({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex }) => {
+    if (!asset) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(SOLChain)}`
+      })
+    }
+    return SOL.send({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex })
+  },
   [TRONChain]: async (params) => {
     if (!params.asset) {
       return E.left({
@@ -286,7 +296,7 @@ const chainSendFunctions: Record<
   }
 }
 
-const unsupportedChains: Chain[] = [KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
+const unsupportedChains: Chain[] = [KUJIChain, RadixChain, ZECChain, 'ADA']
 
 export const sendTx = async ({
   chain,

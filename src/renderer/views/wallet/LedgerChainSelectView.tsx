@@ -36,7 +36,8 @@ import {
   isThorChain,
   isMayaChain,
   isKujiChain,
-  isTronChain
+  isTronChain,
+  isSolChain
 } from '../../helpers/chainHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { useNetwork } from '../../hooks/useNetwork'
@@ -57,6 +58,9 @@ const chainSupportsHDModes = (chain: Chain): boolean => {
 
   // TRON supports HD modes
   if (isTronChain(chain)) return true
+
+  // Solana supports HD modes
+  if (isSolChain(chain)) return true
 
   return false
 }

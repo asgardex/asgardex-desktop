@@ -64,6 +64,34 @@ const clientState$: ClientState$ = FP.pipe(
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
+ * Read-only SOL client for balance queries without requiring keystore
+ * This client can be used for standalone ledger mode to query balances
+ */
+const readOnlyClientState$: ClientState$ = FP.pipe(
+  clientNetwork$,
+  RxOp.map((network): ClientState => {
+    try {
+      // Create client without phrase - only for balance queries
+      const solInitParams = {
+        ...defaultSolanaParams,
+        network: network,
+        clientUrls: defaultClientUrls()
+        // No phrase - this limits functionality to read-only operations
+      }
+      const client = new SolClient(solInitParams)
+      return RD.success(client)
+    } catch (error) {
+      console.error('Failed to create read-only SOL client', error)
+      return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only SOL client'))
+    }
+  }),
+  RxOp.startWith<ClientState>(RD.pending),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$: Client$ = readOnlyClientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
+
+/**
  * `Address`
  */
 const address$: C.WalletAddress$ = C.address$(client$, SOLChain)
@@ -78,4 +106,4 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, SOLChain)
  */
 const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }

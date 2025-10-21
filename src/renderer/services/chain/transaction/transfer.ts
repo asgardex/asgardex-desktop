@@ -1,5 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { TokenAsset } from '@xchainjs/xchain-util'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetType, Chain, TokenAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -20,8 +22,10 @@ export const transfer$: SendTxStateHandler = (params) => {
   const total = O.some(100)
   const { asset } = params
 
-  // For status checking, always use the asset's native chain, not protocol chain
-  const nativeChain = asset.chain
+  // For status checking, always use the asset's native chain, not protocol chain for synths an secured assets use appropriate native chains
+  const nativeChain = (
+    asset.type === AssetType.SYNTH ? MAYAChain : asset.type === AssetType.SECURED ? THORChain : asset.chain
+  ) as Chain
 
   // Observable state of `SendTxState`
   const {

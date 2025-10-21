@@ -21,6 +21,7 @@ import {
   formatAssetAmountCurrency,
   delay,
   assetAmount,
+  assetToBase,
   Address,
   isSynthAsset,
   CryptoAmount,
@@ -501,74 +502,48 @@ export const Swap = ({
   )
 
   const priceAmountToSwap: CryptoAmount = useMemo(() => {
-    // Check if we have a Chainflip quote protocol
-    const isChainflipProtocol = FP.pipe(
-      oQuoteProtocol,
-      O.map((quoteProtocol) => quoteProtocol.protocol === 'Chainflip'),
-      O.getOrElse(() => false)
-    )
+    // Try THORChain pricing first
+    const thorUsdValue = PoolHelpers.getUSDValue({
+      balance: { asset: sourceAsset, amount: amountToSwap },
+      poolDetails: poolDetailsThor,
+      pricePool: pricePoolThor
+    })
 
     let result: BaseAmount
 
-    if (isChainflipProtocol) {
-      // Use THORChain pools for Chainflip asset pricing
-      const usdValueOption = PoolHelpers.getUSDValue({
-        balance: { asset: sourceAsset, amount: amountToSwap },
-        poolDetails: poolDetailsThor,
-        pricePool: pricePoolThor
-      })
-
-      // If no price found and asset is SOL.SOL, try cross-referencing with AVAX.SOL
-      if (O.isNone(usdValueOption) && sourceAsset.chain === 'SOL' && sourceAsset.symbol === 'SOL') {
-        const avaxSolAsset = assetFromStringEx('AVAX.SOL-0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F')
-        if (avaxSolAsset) {
-          result = FP.pipe(
-            PoolHelpers.getUSDValue({
-              balance: { asset: avaxSolAsset, amount: amountToSwap },
-              poolDetails: poolDetailsThor,
-              pricePool: pricePoolThor
-            }),
-            O.getOrElse(() => baseAmount(0, amountToSwap.decimal))
-          )
-        } else {
-          result = baseAmount(0, amountToSwap.decimal)
-        }
-      } else {
+    if (O.isSome(thorUsdValue)) {
+      result = thorUsdValue.value
+    } else if (sourceAsset.chain === 'SOL' && sourceAsset.symbol === 'SOL') {
+      // Special case: try cross-referencing SOL.SOL with AVAX.SOL
+      const avaxSolAsset = assetFromStringEx('AVAX.SOL-0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F')
+      if (avaxSolAsset) {
         result = FP.pipe(
-          usdValueOption,
+          PoolHelpers.getUSDValue({
+            balance: { asset: avaxSolAsset, amount: amountToSwap },
+            poolDetails: poolDetailsThor,
+            pricePool: pricePoolThor
+          }),
           O.getOrElse(() => baseAmount(0, amountToSwap.decimal))
         )
+      } else {
+        result = baseAmount(0, amountToSwap.decimal)
       }
+    } else if (isChainOfThor(sourceChain)) {
+      result = baseAmount(0, amountToSwap.decimal)
     } else {
+      // Try Maya pricing for non-THORChain assets
       result = FP.pipe(
-        isChainOfThor(sourceChain)
-          ? PoolHelpers.getUSDValue({
-              balance: { asset: sourceAsset, amount: amountToSwap },
-              poolDetails: poolDetailsThor,
-              pricePool: pricePoolThor
-            })
-          : FP.pipe(
-              PoolHelpersMaya.getUSDValue({
-                balance: { asset: sourceAsset, amount: amountToSwap },
-                poolDetails: poolDetailsMaya,
-                pricePool: pricePoolMaya
-              })
-            ),
+        PoolHelpersMaya.getUSDValue({
+          balance: { asset: sourceAsset, amount: amountToSwap },
+          poolDetails: poolDetailsMaya,
+          pricePool: pricePoolMaya
+        }),
         O.getOrElse(() => baseAmount(0, amountToSwap.decimal))
       )
     }
 
     return new CryptoAmount(result, pricePoolThor.asset)
-  }, [
-    amountToSwap,
-    poolDetailsMaya,
-    poolDetailsThor,
-    pricePoolMaya,
-    pricePoolThor,
-    sourceAsset,
-    sourceChain,
-    oQuoteProtocol
-  ])
+  }, [amountToSwap, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor, sourceAsset, sourceChain])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwap.amount().isZero(), [amountToSwap])
 
@@ -940,10 +915,63 @@ export const Swap = ({
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   // Apparently thornode bug is fixed.
   // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
-  const applyBps = useMemo(() => {
-    const txFeeCovered = priceAmountToSwap.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    return txFeeCovered
-  }, [priceAmountToSwap.assetAmount])
+  const oApplyBps: O.Option<boolean> = useMemo(() => {
+    // Return None if amount is zero - we don't need to calculate affiliate fees for zero amounts
+    if (amountToSwap.amount().isZero()) {
+      return O.none
+    }
+    // Calculate USD value of input amount directly without depending on quote
+    // Handle Chainflip assets that might not be supported by THORChain (like SOL.SOL)
+    let inputUsdValue: BaseAmount
+
+    // Try THORChain pricing first
+    const thorUsdValue = PoolHelpers.getUSDValue({
+      balance: { asset: sourceAsset, amount: amountToSwap },
+      poolDetails: poolDetailsThor,
+      pricePool: pricePoolThor
+    })
+
+    if (O.isSome(thorUsdValue)) {
+      inputUsdValue = thorUsdValue.value
+    } else if (sourceAsset.chain === 'SOL' && sourceAsset.symbol === 'SOL') {
+      // Special case: try cross-referencing SOL.SOL with AVAX.SOL for Chainflip
+      const avaxSolAsset = assetFromStringEx('AVAX.SOL-0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F')
+      if (avaxSolAsset) {
+        inputUsdValue = FP.pipe(
+          PoolHelpers.getUSDValue({
+            balance: { asset: avaxSolAsset, amount: amountToSwap },
+            poolDetails: poolDetailsThor,
+            pricePool: pricePoolThor
+          }),
+          O.getOrElse(() => baseAmount(0, amountToSwap.decimal))
+        )
+      } else {
+        inputUsdValue = baseAmount(0, amountToSwap.decimal)
+      }
+    } else if (isChainOfThor(sourceChain)) {
+      inputUsdValue = baseAmount(0, amountToSwap.decimal)
+    } else {
+      // Try Maya pricing for non-THORChain assets
+      inputUsdValue = FP.pipe(
+        PoolHelpersMaya.getUSDValue({
+          balance: { asset: sourceAsset, amount: amountToSwap },
+          poolDetails: poolDetailsMaya,
+          pricePool: pricePoolMaya
+        }),
+        O.getOrElse(() => baseAmount(0, amountToSwap.decimal))
+      )
+    }
+
+    // If we couldn't get a USD value, return None to wait for pool data
+    if (inputUsdValue.amount().isZero()) {
+      return O.none
+    }
+
+    // Convert ASGARDEX_AFFILIATE_FEE_MIN to same decimal format as USD price pool
+    const affiliateFeeMinInUsdDecimals = assetToBase(assetAmount(ASGARDEX_AFFILIATE_FEE_MIN, inputUsdValue.decimal))
+    const txFeeCovered = inputUsdValue.amount().gte(affiliateFeeMinInUsdDecimals.amount())
+    return O.some(txFeeCovered)
+  }, [amountToSwap, sourceAsset, sourceChain, poolDetailsThor, pricePoolThor, poolDetailsMaya, pricePoolMaya])
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -972,10 +1000,14 @@ export const Swap = ({
       O.getOrElse(() => '')
     )
     const bps = getAsgardexAffiliateFee(network)
+    const applyBps = FP.pipe(
+      oApplyBps,
+      O.getOrElse(() => false)
+    )
     const displayBps = applyBps && bps !== undefined ? `${bps / 100}%` : '0%'
 
     return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee
-  }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, network, sourceAsset])
+  }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, oApplyBps, network, sourceAsset])
 
   const {
     state: approveState,
@@ -1011,6 +1043,12 @@ export const Swap = ({
         return
       }
 
+      // Don't fetch if we don't know whether to apply affiliate fees yet
+      if (O.isNone(oApplyBps)) {
+        return
+      }
+
+      const applyBps = oApplyBps.value
       setQuoteProtocol(O.none)
       setIsFetchingEstimate(true)
 
@@ -1085,10 +1123,17 @@ export const Swap = ({
       streamingInterval,
       streamingQuantity,
       slipTolerance,
-      applyBps,
+      oApplyBps,
       quoteOnly
     ]
   )
+
+  // Re-fetch quote when oApplyBps becomes Some() to ensure correct affiliate fee is applied
+  useEffect(() => {
+    if (O.isSome(oApplyBps) && amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
+      fetchSwap(amountToSwap)
+    }
+  }, [oApplyBps, amountToSwap, fetchSwap])
 
   // Separate input display state from swap calculation state
   const [inputDisplayAmount, setInputDisplayAmount] = useState<BaseAmount>(amountToSwap)
