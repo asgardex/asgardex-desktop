@@ -2506,6 +2506,7 @@ export const Swap = ({
     // delay to avoid render issues while switching
     await delay(100)
     setAmountToSwap(initialAmountToSwap)
+    setQuoteProtocol(O.none)
     const walletType = FP.pipe(
       oTargetWalletType,
       O.getOrElse<WalletType>(() => WalletType.Keystore)
