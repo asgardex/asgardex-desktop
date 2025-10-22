@@ -81,7 +81,7 @@ export const getEstimate = createAsyncThunk(
       } else {
         console.warn('Invalid or missing affiliate broker address, skipping affiliate broker configuration')
       }
-      console.log(useAffiliate)
+
       // Fetch estimates for all selected protocols
       const config = {
         affiliate: {
