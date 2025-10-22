@@ -517,9 +517,11 @@ export const Swap = ({
       // Special case: try cross-referencing SOL.SOL with AVAX.SOL
       const avaxSolAsset = assetFromStringEx('AVAX.SOL-0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F')
       if (avaxSolAsset) {
+        // Convert SOL decimal amount to THOR decimal for AVAX.SOL pricing
+        const thorDecimalAmount = convertBaseAmountDecimal(amountToSwap, THORCHAIN_DECIMAL)
         result = FP.pipe(
           PoolHelpers.getUSDValue({
-            balance: { asset: avaxSolAsset, amount: amountToSwap },
+            balance: { asset: avaxSolAsset, amount: thorDecimalAmount },
             poolDetails: poolDetailsThor,
             pricePool: pricePoolThor
           }),
@@ -937,9 +939,11 @@ export const Swap = ({
       // Special case: try cross-referencing SOL.SOL with AVAX.SOL for Chainflip
       const avaxSolAsset = assetFromStringEx('AVAX.SOL-0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F')
       if (avaxSolAsset) {
+        // Convert SOL decimal amount to THOR decimal for AVAX.SOL pricing
+        const thorDecimalAmount = convertBaseAmountDecimal(amountToSwap, THORCHAIN_DECIMAL)
         inputUsdValue = FP.pipe(
           PoolHelpers.getUSDValue({
-            balance: { asset: avaxSolAsset, amount: amountToSwap },
+            balance: { asset: avaxSolAsset, amount: thorDecimalAmount },
             poolDetails: poolDetailsThor,
             pricePool: pricePoolThor
           }),
@@ -1044,11 +1048,11 @@ export const Swap = ({
       }
 
       // Don't fetch if we don't know whether to apply affiliate fees yet
-      if (O.isNone(oApplyBps)) {
-        return
-      }
-
-      const applyBps = oApplyBps.value
+      if (O.isNone(oApplyBps)) return
+      const applyBps = FP.pipe(
+        oApplyBps,
+        O.getOrElse(() => false)
+      )
       setQuoteProtocol(O.none)
       setIsFetchingEstimate(true)
 
