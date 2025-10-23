@@ -40,7 +40,7 @@ export const getAddress = async (
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,
-      msg: isError(error) ? error?.message ?? error.toString() : `${error}`
+      msg: isError(error) ? (error?.message ?? error.toString()) : `${error}`
     })
   }
 }
