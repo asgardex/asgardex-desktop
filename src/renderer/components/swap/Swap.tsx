@@ -196,14 +196,14 @@ export const Swap = ({
     sourceAsset.type === AssetType.SYNTH
       ? AssetCacao
       : sourceAsset.type === AssetType.SECURED
-        ? AssetRuneNative
-        : sourceAsset
+      ? AssetRuneNative
+      : sourceAsset
   const { chain: targetChain } =
     targetAsset.type === AssetType.SYNTH
       ? AssetCacao
       : sourceAsset.type === AssetType.SECURED
-        ? AssetRuneNative
-        : targetAsset
+      ? AssetRuneNative
+      : targetAsset
 
   const lockedWallet: boolean = useMemo(() => {
     // In standalone ledger mode, bypass keystore authentication
@@ -328,10 +328,10 @@ export const Swap = ({
         quoteSwap.protocol === 'Thorchain'
           ? O.some(THORChain)
           : quoteSwap.protocol === 'Mayachain'
-            ? O.some(MAYAChain)
-            : quoteSwap.protocol === 'Chainflip'
-              ? O.some(sourceChain)
-              : O.none
+          ? O.some(MAYAChain)
+          : quoteSwap.protocol === 'Chainflip'
+          ? O.some(sourceChain)
+          : O.none
       )
     )
   )
@@ -598,7 +598,7 @@ export const Swap = ({
           streamingInterval,
           streamingQuantity,
           affiliateName: affiliateName,
-          affiliateBps: affiliateName ? (affiliateBps ?? 0) : undefined
+          affiliateBps: affiliateName ? affiliateBps ?? 0 : undefined
         })
       }
     )(effectiveRecipientAddress)
@@ -747,8 +747,8 @@ export const Swap = ({
             swapFees.outFee.asset.type === AssetType.SYNTH
               ? AssetCacao
               : swapFees.outFee.asset.type === AssetType.SECURED
-                ? AssetRuneNative
-                : swapFees.outFee.asset
+              ? AssetRuneNative
+              : swapFees.outFee.asset
           ),
         (txDetails) => {
           const txOutFee = txDetails.fees.outboundFee
@@ -1383,22 +1383,6 @@ export const Swap = ({
           const affiliateAmount = convertBaseAmountDecimal(affiliateFee.baseAmount, targetDecimals)
           const slipbps = swapSlippage
           const slipAmount = priceAmountToSwap.baseAmount.times(slipbps / 100)
-
-          // Debug logging to verify decimal conversion
-          console.log('🔍 Fee Components Debug (After Conversion):', {
-            targetDecimals,
-            inFeeAmount: inFeeAmount.amount().toNumber(),
-            inFeeDecimals: inFeeAmount.decimal,
-            outFeeAmount: outFeeAmount.amount().toNumber(),
-            outFeeDecimals: outFeeAmount.decimal,
-            affiliateAmount: affiliateAmount.amount().toNumber(),
-            affiliateDecimals: affiliateAmount.decimal,
-            slipAmount: slipAmount.amount().toNumber(),
-            slipDecimals: slipAmount.decimal,
-            slipbps,
-            priceAmountToSwap: priceAmountToSwap.baseAmount.amount().toNumber(),
-            priceAmountDecimals: priceAmountToSwap.baseAmount.decimal
-          })
 
           // adding slip costs to total fees - now all have same decimals
           const totalAmount = inFeeAmount.plus(outFeeAmount).plus(affiliateAmount).plus(slipAmount)
@@ -2779,8 +2763,8 @@ export const Swap = ({
                       targetAsset.type === AssetType.SYNTH
                         ? MAYAChain
                         : targetAsset.type === AssetType.SECURED
-                          ? THORChain
-                          : targetAsset.chain
+                        ? THORChain
+                        : targetAsset.chain
                   }
                 )}
               </div>
@@ -3141,13 +3125,13 @@ export const Swap = ({
                           {walletBalancesLoading
                             ? loadingString
                             : hidePrivateData
-                              ? hiddenString
-                              : formatAssetAmountCurrency({
-                                  amount: baseToAsset(sourceAssetAmountNative),
-                                  asset: sourceAsset,
-                                  decimal: 8,
-                                  trimZeros: true
-                                })}
+                            ? hiddenString
+                            : formatAssetAmountCurrency({
+                                amount: baseToAsset(sourceAssetAmountNative),
+                                asset: sourceAsset,
+                                decimal: 8,
+                                trimZeros: true
+                              })}
                         </div>
                       </div>
                     </>
@@ -3505,8 +3489,8 @@ export const Swap = ({
             isFetchingEstimate
               ? intl.formatMessage({ id: 'common.loading' })
               : walletBalancesLoading
-                ? intl.formatMessage({ id: 'common.balance.loading' })
-                : undefined
+              ? intl.formatMessage({ id: 'common.balance.loading' })
+              : undefined
           }
         />
       )}
