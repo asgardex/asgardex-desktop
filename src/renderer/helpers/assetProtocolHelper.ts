@@ -20,11 +20,7 @@ export const getRequiredProtocolsForAssets = (
   // Find intersection - protocols that can handle BOTH assets
   const intersection = sourceProtocols.filter((protocol) => targetProtocols.includes(protocol))
 
-  // If no intersection, return union - at least one protocol needs to handle the pair
-  if (intersection.length === 0) {
-    return [...new Set([...sourceProtocols, ...targetProtocols])]
-  }
-
+  // Return only protocols that can handle both assets (may be empty)
   return intersection
 }
 
@@ -74,9 +70,9 @@ const getSupportedProtocolsForAsset = (
     }
   }
 
-  // If no protocols detected, assume all can handle it
+  // If no protocols detected, return empty array so upstream code can handle the error
   if (supportedProtocols.size === 0) {
-    return ['Thorchain', 'Mayachain', 'Chainflip']
+    return []
   }
 
   return Array.from(supportedProtocols)
@@ -96,6 +92,15 @@ export const validateProtocolsForAssets = (
   requiredProtocols: Protocol[]
 } => {
   const requiredProtocols = getRequiredProtocolsForAssets(sourceAsset, targetAsset, chainflipAssetCheck)
+
+  // If no protocols can handle both assets, the pair is invalid
+  if (requiredProtocols.length === 0) {
+    return {
+      isValid: false,
+      missingProtocols: [],
+      requiredProtocols
+    }
+  }
 
   // Check if AT LEAST ONE required protocol is enabled
   const hasValidProtocol = requiredProtocols.some((protocol) => enabledProtocols.includes(protocol))
