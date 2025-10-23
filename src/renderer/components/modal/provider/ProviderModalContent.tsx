@@ -1,5 +1,4 @@
-import { useCallback, useEffect } from 'react'
-import * as RD from '@devexperts/remote-data-ts'
+import { useCallback } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
@@ -14,13 +13,11 @@ import { SwitchButton } from '../../uielements/button/SwitchButton'
 export type Props = {
   open: boolean
   onClose: FP.Lazy<void>
-  midgardStatusRD: RD.RemoteData<Error, boolean>
-  midgardStatusMayaRD: RD.RemoteData<Error, boolean>
 }
 
 const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
 
-export const ProviderModalContent = ({ open, onClose, midgardStatusRD, midgardStatusMayaRD }: Props) => {
+export const ProviderModalContent = ({ open, onClose }: Props) => {
   const { protocols, setAggProtocol } = useAggregator()
   const intl = useIntl()
 
@@ -34,16 +31,6 @@ export const ProviderModalContent = ({ open, onClose, midgardStatusRD, midgardSt
   const onCloseMenu = useCallback(() => {
     onClose()
   }, [onClose])
-
-  // Programmatically toggle protocols off if API is offline or failed
-  useEffect(() => {
-    if (RD.isFailure(midgardStatusRD)) {
-      setAggProtocol('Thorchain', false)
-    }
-    if (RD.isFailure(midgardStatusMayaRD)) {
-      setAggProtocol('Mayachain', false)
-    }
-  }, [midgardStatusRD, midgardStatusMayaRD, setAggProtocol])
 
   return (
     <Dialog as="div" className="relative z-10" open={open} onClose={onCloseMenu}>

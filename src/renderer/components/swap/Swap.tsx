@@ -69,6 +69,7 @@ import {
   isRujiAsset,
   convertBaseAmountDecimal
 } from '../../helpers/assetHelper'
+import { createProtocolErrorMessage, validateProtocolsForAssets } from '../../helpers/assetProtocolHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChainToken } from '../../helpers/evmHelper'
@@ -170,12 +171,10 @@ export const Swap = ({
   importWalletHandler,
   addressValidator,
   hidePrivateData,
-  midgardStatusRD,
-  midgardStatusMayaRD,
   transactionTrackingService,
   mayaTransactionTrackingService
 }: SwapProps) => {
-  const { estimateSwap } = useAggregator()
+  const { estimateSwap, protocols } = useAggregator()
   const { geckoPriceMap } = useCoingecko()
   const intl = useIntl()
   const { appWalletService } = useWalletContext()
@@ -816,24 +815,10 @@ export const Swap = ({
     const {
       outFee: { amount, asset: feeAsset }
     } = swapFees
-    const oValueInAsset = isChainOfThor(oSwapOutFee.asset.chain)
-      ? PoolHelpers.getAssetAmountFromUSDValue({
-          usdValue: outFeePriceValue.baseAmount,
-          poolDetails: poolDetailsThor,
-          asset: feeAsset,
-          amount: amount,
-          pricePool: pricePoolThor
-        })
-      : PoolHelpersMaya.getAssetAmountFromUSDValue({
-          usdValue: outFeePriceValue.baseAmount,
-          poolDetails: poolDetailsMaya,
-          asset: feeAsset,
-          amount: amount,
-          pricePool: pricePoolMaya
-        })
-    const fee = O.isSome(oValueInAsset)
+
+    const fee = oSwapOutFee
       ? formatAssetAmountCurrency({
-          amount: baseToAsset(oValueInAsset.value),
+          amount: baseToAsset(oSwapOutFee.baseAmount),
           asset: feeAsset,
           decimal: isUSDAsset(feeAsset) ? 2 : 6,
           trimZeros: !isUSDAsset(feeAsset)
@@ -861,15 +846,7 @@ export const Swap = ({
     )
 
     return price ? `${price} (${fee})` : fee
-  }, [
-    swapFees,
-    oSwapOutFee.asset.chain,
-    outFeePriceValue,
-    poolDetailsThor,
-    pricePoolThor,
-    poolDetailsMaya,
-    pricePoolMaya
-  ])
+  }, [swapFees, oSwapOutFee, outFeePriceValue])
 
   // Affiliate fee
   const affiliateFee: CryptoAmount = useMemo(() => {
@@ -1053,6 +1030,34 @@ export const Swap = ({
         oApplyBps,
         O.getOrElse(() => false)
       )
+      // Create a synchronous Chainflip asset check based on the async one
+      const syncChainflipCheck = (asset: AnyAsset): boolean => {
+        // Based on chainflip service logic: exclude synth, trade, secured assets
+        if (isSynthAsset(asset) || asset.type === AssetType.TRADE || isSecuredAsset(asset)) return false
+        // For others, use fallback hardcoded check
+        const chainflipSupportedChains = ['BTC', 'ETH', 'DOT']
+        const chainflipSupportedAssets = ['USDC', 'USDT', 'FLIP']
+        return (
+          chainflipSupportedChains.includes(asset.chain) ||
+          chainflipSupportedAssets.includes(asset.symbol.toUpperCase())
+        )
+      }
+
+      // Validate that enabled protocols can handle this asset pair
+      const protocolValidation = validateProtocolsForAssets(sourceAsset, targetAsset, protocols, syncChainflipCheck)
+      if (!protocolValidation.isValid) {
+        const errorMessage = createProtocolErrorMessage(
+          sourceAsset,
+          targetAsset,
+          protocolValidation.missingProtocols,
+          syncChainflipCheck
+        )
+        setErrorProtocol(O.some(new Error(errorMessage)))
+        setQuoteProtocol(O.none)
+        setIsFetchingEstimate(false)
+        return
+      }
+
       setQuoteProtocol(O.none)
       setIsFetchingEstimate(true)
 
@@ -1069,7 +1074,7 @@ export const Swap = ({
             destinationAddress: quoteOnly ? undefined : effectiveRecipientAddressString,
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
-            liquidityToleranceBps: slipTolerance * 10,
+            liquidityToleranceBps: slipTolerance * 100,
             toleranceBps: undefined
           },
           applyBps
@@ -1118,17 +1123,18 @@ export const Swap = ({
       setIsFetchingEstimate(false)
     },
     [
-      estimateSwap,
+      oApplyBps,
       sourceAsset,
       targetAsset,
+      protocols,
+      estimateSwap,
       sourceWalletAddress,
+      quoteOnly,
       effectiveRecipientAddressString,
       isStreaming,
       streamingInterval,
       streamingQuantity,
-      slipTolerance,
-      oApplyBps,
-      quoteOnly
+      slipTolerance
     ]
   )
 
@@ -1369,13 +1375,34 @@ export const Swap = ({
           affiliateFee: O.some(affiliatePriceValue)
         }),
         O.map(({ inFee, outFee, affiliateFee }) => {
+          // Convert all amounts to the same decimal precision (use inFee asset's decimals as reference)
+          const targetDecimals = inFee.baseAmount.decimal
+
           const inFeeAmount = inFee.baseAmount
-          const outFeeAmount = outFee.baseAmount
-          const affiliateAmount = affiliateFee.baseAmount
+          const outFeeAmount = convertBaseAmountDecimal(outFee.baseAmount, targetDecimals)
+          const affiliateAmount = convertBaseAmountDecimal(affiliateFee.baseAmount, targetDecimals)
           const slipbps = swapSlippage
           const slipAmount = priceAmountToSwap.baseAmount.times(slipbps / 100)
-          // adding slip costs to total fees
-          return { asset: inFee.asset, amount: inFeeAmount.plus(outFeeAmount).plus(affiliateAmount).plus(slipAmount) }
+
+          // Debug logging to verify decimal conversion
+          console.log('🔍 Fee Components Debug (After Conversion):', {
+            targetDecimals,
+            inFeeAmount: inFeeAmount.amount().toNumber(),
+            inFeeDecimals: inFeeAmount.decimal,
+            outFeeAmount: outFeeAmount.amount().toNumber(),
+            outFeeDecimals: outFeeAmount.decimal,
+            affiliateAmount: affiliateAmount.amount().toNumber(),
+            affiliateDecimals: affiliateAmount.decimal,
+            slipAmount: slipAmount.amount().toNumber(),
+            slipDecimals: slipAmount.decimal,
+            slipbps,
+            priceAmountToSwap: priceAmountToSwap.baseAmount.amount().toNumber(),
+            priceAmountDecimals: priceAmountToSwap.baseAmount.decimal
+          })
+
+          // adding slip costs to total fees - now all have same decimals
+          const totalAmount = inFeeAmount.plus(outFeeAmount).plus(affiliateAmount).plus(slipAmount)
+          return { asset: inFee.asset, amount: totalAmount }
         })
       ),
     [oPriceSwapInFee, outFeePriceValue, affiliatePriceValue, swapSlippage, priceAmountToSwap]
@@ -2782,7 +2809,7 @@ export const Swap = ({
               onClick={quoteOnlyButton}>
               {quoteOnly ? 'Preview Only' : 'Preview & Swap'}
             </FlatButton>
-            <ProviderModal midgardStatusRD={midgardStatusRD} midgardStatusMayaRD={midgardStatusMayaRD} />
+            <ProviderModal />
           </div>
           {disabledChains.length > 0 ? (
             <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">

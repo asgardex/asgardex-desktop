@@ -1,4 +1,3 @@
-import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, Asset, CryptoAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -81,8 +80,6 @@ export type SwapProps = {
   importWalletHandler: FP.Lazy<void>
   addressValidator: AddressValidationAsync
   hidePrivateData: boolean
-  midgardStatusRD: RD.RemoteData<Error, boolean>
-  midgardStatusMayaRD: RD.RemoteData<Error, boolean>
   transactionTrackingService: TransactionTrackingService
   mayaTransactionTrackingService: TransactionTrackingService
 }

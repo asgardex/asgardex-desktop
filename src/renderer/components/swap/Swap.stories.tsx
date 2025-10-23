@@ -134,8 +134,6 @@ const defaultProps: SwapProps = {
   addressValidator: () => Promise.resolve(true),
   hidePrivateData: false,
   reloadTxStatus: () => console.log('reloadBalances'),
-  midgardStatusRD: RD.success(true),
-  midgardStatusMayaRD: RD.success(true),
   transactionTrackingService: {
     addTransaction: () => {},
     removeTransaction: () => {},

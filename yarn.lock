@@ -5663,9 +5663,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-aggregator@npm:2.0.28":
-  version: 2.0.28
-  resolution: "@xchainjs/xchain-aggregator@npm:2.0.28"
+"@xchainjs/xchain-aggregator@npm:2.0.29":
+  version: 2.0.29
+  resolution: "@xchainjs/xchain-aggregator@npm:2.0.29"
   dependencies:
     "@chainflip/sdk": "npm:1.11.0"
     "@trpc/server": "npm:^10.45.2"
@@ -5678,7 +5678,7 @@ __metadata:
     "@xchainjs/xchain-thorchain-query": "npm:2.0.15"
     "@xchainjs/xchain-util": "npm:2.0.5"
     "@xchainjs/xchain-wallet": "npm:2.0.18"
-  checksum: 10/62efd7120e04a071a33ba11552af33903cc5ee4992a60dd91189995d28e175b265a09031f9ccca8e7bdea09b9cb8c3b0f34549dc54bbbe85cca72a55f76cf1aa
+  checksum: 10/dd82e570c1bfa52edbae572e7eaefee636309ac84f8e55ae83389c9b8698014836717b0e5b246b690c48984db29254b4c50adf57cf46716f0cc1feaa3fed2997
   languageName: node
   linkType: hard
 
@@ -6797,7 +6797,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^7.18.0"
     "@vitejs/plugin-react": "npm:^4.4.1"
     "@vitest/ui": "npm:^3.1.3"
-    "@xchainjs/xchain-aggregator": "npm:2.0.28"
+    "@xchainjs/xchain-aggregator": "npm:2.0.29"
     "@xchainjs/xchain-arbitrum": "npm:2.0.12"
     "@xchainjs/xchain-avax": "npm:2.0.12"
     "@xchainjs/xchain-base": "npm:1.0.12"

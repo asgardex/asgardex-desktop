@@ -117,7 +117,6 @@ const SuccessRouteView = ({
       selectedPoolAddress$,
       pendingPoolsState$
     },
-    healthStatus$,
     setSelectedPoolAsset
   } = midgardService
   const {
@@ -128,14 +127,10 @@ const SuccessRouteView = ({
       selectedPoolAddress$: selectedPoolAddressMaya$,
       pendingPoolsState$: pendingPoolsStateMaya$
     },
-    healthStatus$: healthStatusMaya$,
     setSelectedPoolAsset: setSelectedPoolAssetMaya
   } = midgardMayaService
 
   const { isPrivate } = useApp()
-
-  const midgardMayaStatusRD = useObservableState(healthStatusMaya$, RD.initial)
-  const midgardStatusRD = useObservableState(healthStatus$, RD.initial)
 
   const { getAssetsData$ } = useChainflipContext()
 
@@ -632,8 +627,6 @@ const SuccessRouteView = ({
                     addressValidator={validateSwapAddress}
                     hidePrivateData={isPrivate}
                     reloadTxStatus={reloadSwapTxStatus}
-                    midgardStatusRD={midgardStatusRD}
-                    midgardStatusMayaRD={midgardMayaStatusRD}
                     transactionTrackingService={transactionTrackingService}
                     mayaTransactionTrackingService={mayaTransactionTrackingService}
                   />
@@ -719,8 +712,6 @@ const SuccessRouteView = ({
                     addressValidator={validateSwapAddress}
                     hidePrivateData={isPrivate}
                     reloadTxStatus={reloadSwapTxStatus}
-                    midgardStatusRD={midgardStatusRD}
-                    midgardStatusMayaRD={midgardMayaStatusRD}
                     transactionTrackingService={transactionTrackingService}
                     mayaTransactionTrackingService={mayaTransactionTrackingService}
                   />
