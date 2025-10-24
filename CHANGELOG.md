@@ -1,5 +1,19 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.41.2 (2025-10-24)
+
+## Add
+
+- add Solana ledger support [#920](https://github.com/asgardex/asgardex-desktop/pull/920)
+- add TRON USDT support
+
+## Update/Fixes
+
+- fix chainflip fees and add protocol helper [#922](https://github.com/asgardex/asgardex-desktop/pull/922)
+- update prettier rules for Tailwind CSS
+- update ESLint configuration and packages
+- code cleanup and formatting improvements
+
 # 1.41.1 (2025-10-16)
 
 ## Add

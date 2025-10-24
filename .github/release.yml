@@ -1,0 +1,100 @@
+# Auto-generated release notes configuration for Asgardex
+# Creates organized release notes for GitHub and enables website automation
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - dependencies
+      - trunk-ignore
+    authors:
+      - dependabot
+      - app/dependabot
+  categories:
+    - title: 🚀 New Features
+      labels:
+        - feature
+        - enhancement
+        - feat
+        - add
+      collapse-after: 10
+    - title: 🔧 Updates & Improvements
+      labels:
+        - update
+        - improvement
+        - chore
+        - refactor
+        - modernize
+        - migration
+        - cleanup
+      collapse-after: 15
+    - title: 🐛 Bug Fixes
+      labels:
+        - bug
+        - fix
+        - bugfix
+        - hotfix
+      collapse-after: 10
+    - title: 🔐 Security & Ledger
+      labels:
+        - security
+        - ledger
+        - hardware-wallet
+        - standalone-ledger
+      collapse-after: 5
+    - title: ⚡ Performance
+      labels:
+        - performance
+        - optimization
+        - perf
+      collapse-after: 5
+    - title: 🎨 UI/UX
+      labels:
+        - ui
+        - ux
+        - design
+        - styling
+        - components
+      collapse-after: 10
+    - title: 📚 Documentation
+      labels:
+        - documentation
+        - docs
+        - readme
+        - changelog
+      collapse-after: 5
+    - title: 🧪 Testing
+      labels:
+        - test
+        - testing
+        - tests
+        - ci
+      collapse-after: 5
+    - title: 🔗 Dependencies
+      labels:
+        - dependencies
+        - deps
+        - package-update
+        - npm
+        - yarn
+      collapse-after: 20
+    - title: 📦 Build & Deploy
+      labels:
+        - build
+        - deploy
+        - packaging
+        - release
+        - distribution
+      collapse-after: 10
+    - title: 🌐 Blockchain Support
+      labels:
+        - blockchain
+        - chain
+        - bitcoin
+        - ethereum
+        - thorchain
+        - mayachain
+        - solana
+        - tron
+        - chainflip
+      collapse-after: 8
