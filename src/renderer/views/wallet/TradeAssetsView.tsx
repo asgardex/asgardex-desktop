@@ -147,6 +147,29 @@ export const TradeAssetsView = (): JSX.Element => {
     [loadingBalances, poolsRD, poolsMayaRD, isRefreshing]
   )
 
+  const isCompletelyLoaded = useMemo(() => {
+    const tradeAccountsLoaded =
+      !RD.isPending(tradeAccountBalanceThorKeystoreRD) &&
+      !RD.isPending(tradeAccountBalanceThorLedgerRD) &&
+      !RD.isPending(tradeAccountBalanceMayaKeystoreRD) &&
+      !RD.isPending(tradeAccountBalanceMayaLedgerRD)
+
+    const poolsLoaded = !RD.isPending(poolsRD) && !RD.isPending(poolsMayaRD)
+    const balancesLoaded = !loadingBalances
+    const notRefreshing = !isRefreshing
+
+    return tradeAccountsLoaded && poolsLoaded && balancesLoaded && notRefreshing
+  }, [
+    tradeAccountBalanceThorKeystoreRD,
+    tradeAccountBalanceThorLedgerRD,
+    tradeAccountBalanceMayaKeystoreRD,
+    tradeAccountBalanceMayaLedgerRD,
+    poolsRD,
+    poolsMayaRD,
+    loadingBalances,
+    isRefreshing
+  ])
+
   const refreshHandler = useCallback(
     async (protocol?: Chain) => {
       setIsRefreshing(true)
@@ -264,40 +287,43 @@ export const TradeAssetsView = (): JSX.Element => {
   return (
     <>
       <div className="flex w-full justify-end pb-20px">
-        <RefreshButton onClick={() => refreshHandler()} />
+        <RefreshButton onClick={() => refreshHandler()} disabled={disableRefresh} />
       </div>
       <AssetsNav />
-      {isRefreshing && (
-        <div className="flex items-center justify-center py-4">
-          <Spin /> {/* Display spinner during refresh */}
+      {!isCompletelyLoaded ? (
+        <div className="flex items-center justify-center py-8">
+          <Spin />
         </div>
+      ) : (
+        <>
+          <TotalAssetValue
+            balancesByChain={balances}
+            errorsByChain={errors}
+            title={intl.formatMessage({ id: 'wallet.balance.total.tradeAssets' })}
+            info={intl.formatMessage({ id: 'wallet.balance.total.tradeAssets.info' })}
+            hidePrivateData={isPrivate}
+          />
+          <TradeAssetsTableCollapsable
+            chainBalances={chainBalances$}
+            disableRefresh={disableRefresh}
+            tradeAccountBalances={combinedTradeAccountBalances}
+            pricePool={selectedPricePool}
+            pricePoolMaya={selectedPricePoolMaya}
+            poolDetails={poolDetails}
+            poolDetailsMaya={poolDetailsMaya}
+            pendingPoolDetails={pendingPoolsDetails}
+            pendingPoolDetailsMaya={pendingPoolsDetailsMaya}
+            poolsData={poolsData}
+            poolsDataMaya={poolsDataMaya}
+            selectAssetHandler={selectAssetHandler}
+            mimirHalt={mimirHaltRD}
+            network={network}
+            hidePrivateData={isPrivate}
+            refreshHandler={refreshHandler}
+            isRefreshing={isRefreshing}
+          />
+        </>
       )}
-      <TotalAssetValue
-        balancesByChain={balances}
-        errorsByChain={errors}
-        title={intl.formatMessage({ id: 'wallet.balance.total.tradeAssets' })}
-        info={intl.formatMessage({ id: 'wallet.balance.total.tradeAssets.info' })}
-        hidePrivateData={isPrivate}
-      />
-      <TradeAssetsTableCollapsable
-        chainBalances={chainBalances$}
-        disableRefresh={disableRefresh}
-        tradeAccountBalances={combinedTradeAccountBalances}
-        pricePool={selectedPricePool}
-        pricePoolMaya={selectedPricePoolMaya}
-        poolDetails={poolDetails}
-        poolDetailsMaya={poolDetailsMaya}
-        pendingPoolDetails={pendingPoolsDetails}
-        pendingPoolDetailsMaya={pendingPoolsDetailsMaya}
-        poolsData={poolsData}
-        poolsDataMaya={poolsDataMaya}
-        selectAssetHandler={selectAssetHandler}
-        mimirHalt={mimirHaltRD}
-        network={network}
-        hidePrivateData={isPrivate}
-        refreshHandler={refreshHandler}
-        isRefreshing={isRefreshing}
-      />
     </>
   )
 }

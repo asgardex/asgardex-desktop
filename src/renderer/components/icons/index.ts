@@ -1,6 +1,8 @@
+import bchIcon from '../../assets/png/asset-bch.png'
 import cacaoIcon from '../../assets/png/asset-cacao.png'
 import dogeIcon from '../../assets/png/asset-doge.png'
 import kujiIcon from '../../assets/png/asset-kuji.png'
+import ltcIcon from '../../assets/png/asset-ltc.png'
 import mayaIconT from '../../assets/png/asset-maya-T.png'
 import mayaIcon from '../../assets/png/asset-maya.png'
 import rujiIcon from '../../assets/png/asset-ruji.png'
@@ -8,6 +10,7 @@ import tcyIcon from '../../assets/png/asset-tcy.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
 import usdpIcon from '../../assets/png/asset-usdp.png'
 import uskIcon from '../../assets/png/asset-usk.png'
+import zecIcon from '../../assets/png/asset-zec.png'
 import adaIcon from '../../assets/svg/asset-ada.svg?url'
 import arbIcon from '../../assets/svg/asset-arb.svg?url'
 import atomIcon from '../../assets/svg/asset-atom.svg?url'
@@ -35,6 +38,7 @@ import LedgerIcon from '../../assets/svg/ledger.svg?react'
 export {
   arbIcon,
   atomIcon,
+  bchIcon,
   cacaoIcon,
   avaxIcon,
   bscIcon,
@@ -58,6 +62,7 @@ export {
   usdpIcon,
   dashIcon,
   kujiIcon,
+  ltcIcon,
   adaIcon,
   uskIcon,
   mayaIconT,
@@ -65,5 +70,6 @@ export {
   solIcon,
   baseIcon,
   xrpIcon,
-  tronIcon
+  tronIcon,
+  zecIcon
 }

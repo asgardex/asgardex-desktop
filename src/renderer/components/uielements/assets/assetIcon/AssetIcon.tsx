@@ -65,11 +65,13 @@ import {
   arbIcon,
   atomIcon,
   avaxIcon,
+  bchIcon,
   bscIcon,
   mayaIcon,
   btcIcon,
   dogeIcon,
   ethIcon,
+  ltcIcon,
   runeIcon,
   tgtIcon,
   cacaoIcon,
@@ -84,7 +86,8 @@ import {
   tcyIcon,
   xrpIcon,
   rujiIcon,
-  tronIcon
+  tronIcon,
+  zecIcon
 } from '../../../icons'
 import { sizes, borders, fontSizes } from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -170,15 +173,15 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     }
     // ZEC
     if (isZecAsset(asset)) {
-      return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/zcash/info/logo.png`
+      return zecIcon
     }
     // LTC
     if (isLtcAsset(asset)) {
-      return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/litecoin/info/logo.png`
+      return ltcIcon
     }
     // BCH
     if (isBchAsset(asset)) {
-      return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoincash/info/logo.png`
+      return bchIcon
     }
 
     if (isTgtERC20Asset(asset)) {
