@@ -6,19 +6,16 @@ import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
 import { etherscanApiKey } from '../api/etherscan'
-import { envOrDefault } from '../utils/env'
 
 const LOWER_FEE_BOUND = 100000000
 
-export const ankrApiKey = envOrDefault(import.meta.env.VITE_ANKR_API_KEY, '')
-
 // =====Ethers providers=====
 // Define JSON-RPC providers for mainnet and testnet
-const AVALANCHE_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://rpc.ankr.com/avalanche/${ankrApiKey}`, {
+const AVALANCHE_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://api.avax.network/ext/bc/C/rpc`, {
   name: 'avalanche',
   chainId: 43114
 })
-const AVALANCHE_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://rpc.ankr.com/avalanche_fuji/${ankrApiKey}`, {
+const AVALANCHE_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://api.avax-test.network/ext/bc/C/rpc`, {
   name: 'fuji',
   chainId: 43113
 })

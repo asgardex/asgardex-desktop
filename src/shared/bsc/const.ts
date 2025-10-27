@@ -6,14 +6,12 @@ import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
 import { etherscanApiKey } from '../api/etherscan'
-import { envOrDefault } from '../utils/env'
 
 const LOWER_FEE_BOUND = 1000000
 
-export const ankrApiKey = envOrDefault(import.meta.env.VITE_ANKR_API_KEY, '')
 // =====Ethers providers=====
-const BSC_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://rpc.ankr.com/bsc/${ankrApiKey}`)
-const BSC_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://rpc.ankr.com/bsc_testnet_chapel/${ankrApiKey}`)
+const BSC_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://bsc-dataseed.binance.org/`)
+const BSC_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://data-seed-prebsc-1-s1.binance.org:8545/`)
 
 const ethersJSProviders = {
   [Network.Mainnet]: BSC_MAINNET_ETHERS_PROVIDER,
