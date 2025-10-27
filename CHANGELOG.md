@@ -1,5 +1,12 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.41.3 (2025-10-27)
+
+## Update/Fixes
+
+- switch RPC providers, Ankr is no longer viable [#925](https://github.com/asgardex/asgardex-desktop/pull/925)
+- update to default gas prices, improve loading for trade assets [#924](https://github.com/asgardex/asgardex-desktop/pull/924)
+
 # 1.41.2 (2025-10-24)
 
 ## Add
