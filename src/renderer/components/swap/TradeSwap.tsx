@@ -991,7 +991,7 @@ export const TradeSwap = ({
     return (
       <ErrorLabel>
         {protocolErrors.map((error, index) => (
-          <div key={index}>{`${error} try adjusting amount`}</div>
+          <div key={index} className="text-error0 dark:text-error0d">{`${error} try adjusting amount`}</div>
         ))}
       </ErrorLabel>
     )

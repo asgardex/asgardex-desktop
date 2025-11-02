@@ -9,7 +9,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { TokenAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import { function as FP } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
@@ -29,10 +29,12 @@ import { ETH_TOKEN_WHITELIST } from '../../types/generated/thorchain/etherc20whi
 import { TRON_TOKEN_WHITELIST } from '../../types/generated/thorchain/trontrc20whitelist'
 import { AssetData } from '../uielements/assets/assetData'
 import { AssetIcon } from '../uielements/assets/assetIcon'
+import { Button } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import { InputSearch } from '../uielements/input'
 import { Label } from '../uielements/label'
 import { HeadlessModal } from '../uielements/modal/Modal'
+import { CustomTokenModal } from './CustomTokenModal'
 
 type Props = {
   open: boolean
@@ -71,6 +73,7 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
   const [page, setPage] = useState(1)
   const [searchValue, setSearchValue] = useState<string>(emptyString)
   const [chain, setChain] = useState<(typeof WhitelistChains)[number]>(ETHChain)
+  const [customTokenModalOpen, setCustomTokenModalOpen] = useState(false)
 
   const inputSearchRef = useRef(null)
   const intl = useIntl()
@@ -107,10 +110,36 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
     setPage(1)
   }, [])
 
-  const whitelistAssets = useMemo(
-    () => getWhitelistAssets(chain, searchValue, checkIsActive),
-    [chain, searchValue, checkIsActive]
-  )
+  const whitelistAssets = useMemo(() => {
+    const predefinedAssets = getWhitelistAssets(chain, searchValue, checkIsActive)
+
+    // Add custom tokens for this chain
+    const customAssets = chainAssets
+      .filter((asset) => {
+        const upperSearchValue = searchValue.toUpperCase()
+        return asset.symbol.toUpperCase().includes(upperSearchValue)
+      })
+      .map((asset) => ({ asset, iconUrl: O.none }))
+
+    // Combine and deduplicate (custom tokens might override predefined ones)
+    const allAssets = [...predefinedAssets]
+
+    // Add custom tokens that aren't already in the predefined list
+    customAssets.forEach((customAsset) => {
+      const exists = predefinedAssets.some(
+        (predefined) => predefined.asset.symbol.toUpperCase() === customAsset.asset.symbol.toUpperCase()
+      )
+      if (!exists) {
+        allAssets.push(customAsset)
+      }
+    })
+
+    return allAssets.sort((tokenA, tokenB) => {
+      const isFirstTokenActive = checkIsActive(tokenA.asset)
+      const isSecondTokenActive = checkIsActive(tokenB.asset)
+      return Number(isSecondTokenActive) - Number(isFirstTokenActive)
+    })
+  }, [chain, searchValue, checkIsActive, chainAssets])
 
   const chainFilter = useMemo(
     () => (
@@ -146,6 +175,14 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
     setPage((prev) => prev + 1)
   }, [])
 
+  const openCustomTokenModal = useCallback(() => {
+    setCustomTokenModalOpen(true)
+  }, [])
+
+  const closeCustomTokenModal = useCallback(() => {
+    setCustomTokenModalOpen(false)
+  }, [])
+
   return (
     <HeadlessModal
       className="h-3/4 max-h-[600px] min-h-[350px]"
@@ -165,6 +202,11 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
         />
       </div>
       {chainFilter}
+      <div className="flex w-full justify-center px-4 pb-2">
+        <Button color="primary" onClick={openCustomTokenModal}>
+          Add Custom Token
+        </Button>
+      </div>
       <div className="w-[calc(100%-32px)] overflow-y-auto rounded-lg">
         {whitelistAssets.slice(0, 20 * page).map(({ asset }) => (
           <div
@@ -193,6 +235,7 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
           </div>
         )}
       </div>
+      <CustomTokenModal open={customTokenModalOpen} onClose={closeCustomTokenModal} />
     </HeadlessModal>
   )
 }
