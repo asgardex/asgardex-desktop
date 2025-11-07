@@ -34,6 +34,7 @@ export const CustomTokenModal = ({ open, onClose }: Props): JSX.Element => {
   const [selectedChain, setSelectedChain] = useState<Chain>(EVMChains[0])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>(emptyString)
+  const [decimalsError, setDecimalsError] = useState<string>(emptyString)
 
   const contractAddressRef = useRef(null)
   const intl = useIntl()
@@ -50,8 +51,8 @@ export const CustomTokenModal = ({ open, onClose }: Props): JSX.Element => {
   }, [contractAddress, validateAddress])
 
   const canAddToken = useMemo(() => {
-    return isValidAddress && tokenSymbol.trim() && tokenName.trim() && tokenDecimals && !isLoading
-  }, [isValidAddress, tokenSymbol, tokenName, tokenDecimals, isLoading])
+    return isValidAddress && tokenSymbol.trim() && tokenName.trim() && tokenDecimals && !decimalsError && !isLoading
+  }, [isValidAddress, tokenSymbol, tokenName, tokenDecimals, decimalsError, isLoading])
 
   const handleContractAddressChange = useCallback((value: string) => {
     const trimmedValue = value.trim()
@@ -68,7 +69,26 @@ export const CustomTokenModal = ({ open, onClose }: Props): JSX.Element => {
   }, [])
 
   const handleTokenDecimalsChange = useCallback((value: string) => {
-    setTokenDecimals(value)
+    setDecimalsError(emptyString)
+
+    if (value === emptyString) {
+      setTokenDecimals(value)
+      return
+    }
+
+    const numericValue = parseInt(value, 10)
+
+    if (isNaN(numericValue) || numericValue < 0) {
+      setDecimalsError('Decimals must be a non-negative integer')
+      return
+    }
+
+    if (numericValue > 255) {
+      setDecimalsError('Decimals must be 255 or less')
+      return
+    }
+
+    setTokenDecimals(numericValue.toString())
   }, [])
 
   const handleChainChange = useCallback((chain: Chain) => {
@@ -83,6 +103,7 @@ export const CustomTokenModal = ({ open, onClose }: Props): JSX.Element => {
     setTokenName(emptyString)
     setTokenDecimals('18')
     setError(emptyString)
+    setDecimalsError(emptyString)
     setIsLoading(false)
   }, [])
 
@@ -209,10 +230,20 @@ export const CustomTokenModal = ({ open, onClose }: Props): JSX.Element => {
           <Input
             className="w-full"
             size="normal"
+            type="number"
+            min="0"
+            max="255"
+            step="1"
             value={tokenDecimals}
             onChange={(e) => handleTokenDecimalsChange(e.target.value)}
             placeholder="18"
+            error={!!decimalsError}
           />
+          {decimalsError && (
+            <Label size="small" color="error">
+              {decimalsError}
+            </Label>
+          )}
         </div>
 
         {error && (

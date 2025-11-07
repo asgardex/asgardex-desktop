@@ -204,7 +204,7 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
       {chainFilter}
       <div className="flex w-full justify-center px-4 pb-2">
         <Button color="primary" onClick={openCustomTokenModal}>
-          Add Custom Token
+          {intl.formatMessage({ id: 'settings.custom.token.modal.title' })}
         </Button>
       </div>
       <div className="w-[calc(100%-32px)] overflow-y-auto rounded-lg">
