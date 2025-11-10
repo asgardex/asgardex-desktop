@@ -11,6 +11,7 @@ import CloseIcon from '../../assets/svg/icon-close.svg?react'
 import MenuIcon from '../../assets/svg/icon-menu.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
+import AsgardexChristmasLogo from '../../assets/svg/logo-asgardex-christmas.svg?react'
 import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import * as appRoutes from '../../routes/app'
@@ -29,6 +30,7 @@ import {
 import { MimirRD } from '../../services/thorchain/types'
 import { ChangeKeystoreWalletHandler, KeystoreState, KeystoreWalletsUI } from '../../services/wallet/types'
 import { isLocked } from '../../services/wallet/util'
+import { isChristmasSeason } from '../../utils/dateUtils'
 import { PricePoolAsset, PricePoolAssets } from '../../views/pools/Pools.types'
 import { Drawer } from '../uielements/drawer'
 import { Label } from '../uielements/label'
@@ -114,6 +116,8 @@ export const HeaderComponent = (props: Props): JSX.Element => {
   } = props
 
   const intl = useIntl()
+
+  const LogoComponent = isChristmasSeason() ? AsgardexChristmasLogo : AsgardexLogo
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -315,7 +319,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
       </div>
       {!isDesktopView && (
         <Drawer
-          title={<AsgardexLogo className="text-text2 dark:text-text2d [&>*]:fill-current" />}
+          title={<LogoComponent className="text-text2 dark:text-text2d [&>*]:fill-current" />}
           isOpen={menuVisible}
           onClose={() => setMenuVisible(false)}>
           {links}

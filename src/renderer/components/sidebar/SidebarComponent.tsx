@@ -24,6 +24,7 @@ import PortfolioIcon from '../../assets/svg/icon-portfolio.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import TwitterIcon from '../../assets/svg/icon-twitter.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
+import AsgardexChristmasLogo from '../../assets/svg/logo-asgardex-christmas.svg?react'
 import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { DEFAULT_WALLET_TYPE } from '../../const'
@@ -37,6 +38,7 @@ import * as playgroundRoutes from '../../routes/playground'
 import * as poolsRoutes from '../../routes/pools'
 import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
+import { isChristmasSeason } from '../../utils/dateUtils'
 import { mayaIconT } from '../icons'
 import { Label } from '../uielements/label'
 import { Tooltip } from '../uielements/tooltip'
@@ -102,6 +104,8 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
 
   const navigate = useNavigate()
+
+  const LogoComponent = isChristmasSeason() ? AsgardexChristmasLogo : AsgardexLogo
 
   const matchBondsRoute = useMatch({ path: bondsRoutes.base.path(), end: false })
   const matchHistoryRoute = useMatch({ path: historyRoutes.base.path(), end: false })
@@ -229,7 +233,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const renderLogo = useMemo(
     () => (
       <div className="mt-4 flex flex-col items-center justify-center">
-        <AsgardexLogo className="[&>*]:fill-text1 [&>*]:dark:fill-text1d" />
+        <LogoComponent className="[&>*]:fill-text1 [&>*]:dark:fill-text1d" />
         <Label
           className={clsx('-mt-3 !w-auto rounded-full px-2', networkBgCn)}
           color="white"
@@ -239,7 +243,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
         </Label>
       </div>
     ),
-    [network, networkBgCn]
+    [network, networkBgCn, LogoComponent]
   )
 
   const clickIconHandler = useCallback((url: string) => {
