@@ -609,6 +609,7 @@ type DepositMessageKey =
   | 'deposit.interact.actions.leave'
   | 'deposit.interact.actions.whitelist'
   | 'deposit.interact.actions.runePool'
+  | 'deposit.interact.actions.cacaoPool'
   | 'deposit.interact.actions.buyThorname'
   | 'deposit.interact.actions.buyMayaname'
   | 'deposit.interact.actions.checkThorname'

@@ -36,7 +36,8 @@ import {
   getBondMemoMayanode,
   getLeaveMemo,
   getUnbondMemoMayanode,
-  getWhitelistMemo
+  getWhitelistMemo,
+  Action
 } from '../../../../helpers/memoHelper'
 import { getUSDValue } from '../../../../helpers/poolHelperMaya'
 import { useBondableAssets } from '../../../../hooks/useBondableAssets'
@@ -68,6 +69,7 @@ import { InfoIcon } from '../../../uielements/info'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
 import { RadioGroup, Radio } from '../../../uielements/radio'
+import { Switch } from '../../../uielements/switch'
 import { Tooltip } from '../../../uielements/tooltip'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
@@ -144,6 +146,7 @@ export const InteractFormMaya = (props: Props) => {
 
   const [userNodeInfo, setUserNodeInfo] = useState<UserNodeInfo | undefined>(undefined)
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
+  const [cacaoPoolAction, setCacaoPoolAction] = useState<Action>(Action.add)
 
   const nodes: NodeInfos = useMemo(
     () =>
@@ -191,8 +194,12 @@ export const InteractFormMaya = (props: Props) => {
       case InteractType.Unbond:
       case InteractType.Leave:
         return ZERO_BASE_AMOUNT
+      case InteractType.CacaoPool: {
+        const amnt = cacaoPoolAction === Action.add ? _amountToSend : ZERO_BASE_AMOUNT
+        return amnt
+      }
     }
-  }, [_amountToSend, interactType])
+  }, [_amountToSend, interactType, cacaoPoolAction])
 
   const {
     state: interactState,
@@ -704,6 +711,13 @@ export const InteractFormMaya = (props: Props) => {
         return whitelisting
           ? intl.formatMessage({ id: 'deposit.interact.actions.whitelist' })
           : intl.formatMessage({ id: 'common.remove' })
+      case InteractType.CacaoPool: {
+        const label =
+          cacaoPoolAction === Action.add
+            ? intl.formatMessage({ id: 'wallet.action.deposit' })
+            : intl.formatMessage({ id: 'deposit.withdraw.sym' })
+        return label
+      }
       case InteractType.MAYAName:
         if (isOwner) {
           return intl.formatMessage({ id: 'common.isUpdateMayaname' })
@@ -711,7 +725,7 @@ export const InteractFormMaya = (props: Props) => {
           return intl.formatMessage({ id: 'deposit.interact.actions.buyMayaname' })
         }
     }
-  }, [interactType, intl, isOwner, whitelisting])
+  }, [interactType, intl, isOwner, whitelisting, cacaoPoolAction])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -927,6 +941,20 @@ export const InteractFormMaya = (props: Props) => {
           </div>
         )}
 
+        {/** Cacao Pool */}
+        {interactType === InteractType.CacaoPool && (
+          <div className="mb-2">
+            <span className="inline-block">
+              <Switch
+                labels={['DEPOSIT', 'WITHDRAW']}
+                colors={['#3B82F6', '#EF4444']}
+                onChange={(value) => {
+                  setCacaoPoolAction(value === 'DEPOSIT' ? Action.add : Action.withdraw)
+                }}
+              />
+            </span>
+          </div>
+        )}
         {/* Provider address input (whitelist only) */}
         {interactType === InteractType.Whitelist && (
           <>
@@ -974,7 +1002,7 @@ export const InteractFormMaya = (props: Props) => {
         )}
 
         {/* Amount input (BOND/UNBOND/CUSTOM only) */}
-        {interactType === InteractType.Custom && (
+        {(interactType === InteractType.Custom || interactType === InteractType.CacaoPool) && (
           <div className="w-full sm:max-w-[630px]">
             <Label color="input" size="big" textTransform="uppercase">
               {intl.formatMessage({ id: 'common.amount' })}
@@ -1008,7 +1036,7 @@ export const InteractFormMaya = (props: Props) => {
               )}
             </div>
             {/* max. amount button (BOND/CUSTOM only) */}
-            {interactType === InteractType.Custom && (
+            {(interactType === InteractType.Custom || interactType === InteractType.CacaoPool) && (
               <MaxBalanceButton
                 className="mb-10px"
                 color="neutral"
@@ -1325,7 +1353,19 @@ export const InteractFormMaya = (props: Props) => {
             {submitLabel}
           </FlatButton>
         )}
-        {interactType !== InteractType.MAYAName && (
+
+        {interactType === InteractType.CacaoPool && (
+          <FlatButton
+            className="mt-20px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading}
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
+
+        {interactType !== InteractType.CacaoPool && interactType !== InteractType.MAYAName && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
@@ -1385,6 +1425,14 @@ export const InteractFormMaya = (props: Props) => {
                   return null
                 }),
                 O.toNullable
+              )}
+              {interactType === InteractType.CacaoPool && (
+                <>
+                  <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+                    {intl.formatMessage({ id: 'runePool.detail.daysLeft' })}
+                    <div className="truncate pl-10px font-main text-[12px]">{/* //TODO: */}</div>
+                  </div>
+                </>
               )}
               <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.amount' })}

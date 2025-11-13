@@ -4,6 +4,7 @@ import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/r
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
@@ -39,11 +40,19 @@ export const Interact = ({ interactType, interactTypeChanged, network, walletTyp
         { type: name, label: intl.formatMessage({ id: `common.${name}` }) }
       ]
 
-      // Add RunePool tab only if the chain is not mayachain
-      if (chain !== MAYAChain) {
+      // Add RunePool for THORChain
+      if (chain === THORChain) {
         baseTabs.push({
           type: InteractType.RunePool,
           label: intl.formatMessage({ id: 'deposit.interact.actions.runePool' })
+        })
+      }
+
+      // Add CacaoPool for Mayachain
+      if (chain === MAYAChain) {
+        baseTabs.push({
+          type: InteractType.CacaoPool,
+          label: intl.formatMessage({ id: 'deposit.interact.actions.cacaoPool' })
         })
       }
 
@@ -54,7 +63,7 @@ export const Interact = ({ interactType, interactTypeChanged, network, walletTyp
   const asset = getChainAsset(chain)
 
   return (
-    <div className="flex min-h-full w-full max-w-[630px] flex-col p-2.5 sm:p-[35px_50px_150px]">
+    <div className="flex min-h-full w-full max-w-[690px] flex-col p-2.5 sm:p-[35px_50px_150px]">
       <div className="mb-5 flex flex-col items-center justify-center sm:flex-row sm:justify-start">
         <AssetIcon className="mb-10px mr-0 sm:mb-0 sm:mr-4" network={network} asset={asset} size="big" />
         <div>

@@ -9,6 +9,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.leave': '나가기',
   'deposit.interact.actions.whitelist': '화이트리스트',
   'deposit.interact.actions.runePool': 'Rune 풀',
+  'deposit.interact.actions.cacaoPool': 'Cacao Pool',
   'deposit.interact.actions.buyThorname': 'THORName 구매',
   'deposit.interact.actions.buyMayaname': 'MAYAName 구매',
   'deposit.interact.actions.checkThorname': '사용 가능 여부 확인',

@@ -6,5 +6,6 @@ export enum InteractType {
   THORName = 'thorname',
   MAYAName = 'mayaname',
   RunePool = 'runePool',
+  CacaoPool = 'cacaoPool',
   Whitelist = 'whitelist'
 }

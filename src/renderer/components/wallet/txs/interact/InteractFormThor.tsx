@@ -70,6 +70,7 @@ import { InfoIcon } from '../../../uielements/info'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
 import { RadioGroup, Radio } from '../../../uielements/radio'
+import { Switch } from '../../../uielements/switch'
 import { Tooltip } from '../../../uielements/tooltip'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
@@ -275,6 +276,9 @@ export const InteractFormThor = ({
       case InteractType.RunePool: {
         const amnt = runePoolAction === Action.add ? _amountToSend : ZERO_BASE_AMOUNT
         return amnt
+      }
+      case InteractType.CacaoPool: {
+        return ZERO_BASE_AMOUNT
       }
     }
   }, [_amountToSend, interactType, runePoolAction])
@@ -993,21 +997,19 @@ export const InteractFormThor = ({
             </div>
           </div>
         )}
-        {/** Rune Pool Only */}
+        {/** Rune Pool */}
         {interactType === InteractType.RunePool && (
-          <div>
+          <div className="mb-2">
             <span className="inline-block">
-              <SwitchButton
-                active={runePoolAction === Action.add}
-                onChange={(active) => setRunePoolAction(active ? Action.add : Action.withdraw)}
+              <Switch
+                labels={['DEPOSIT', 'WITHDRAW']}
+                colors={['#3B82F6', '#EF4444']}
+                onChange={(value) => {
+                  setRunePoolAction(value === 'DEPOSIT' ? Action.add : Action.withdraw)
+                }}
               />
             </span>
             <span className="ml-2 inline-block">
-              <Label color="input" size="big" textTransform="uppercase">
-                {runePoolAction === Action.add
-                  ? intl.formatMessage({ id: 'runePool.detail.titleDeposit' })
-                  : intl.formatMessage({ id: 'runePool.detail.titleWithdraw' })}
-              </Label>
               {!runePoolAvialable && intl.formatMessage({ id: 'runePool.detail.availability' })}
             </span>
             {runePoolProvider.value.gt(0) && runePoolAction === Action.add && renderRunePoolWarning}
@@ -1479,7 +1481,7 @@ export const InteractFormThor = ({
 
         {interactType === InteractType.RunePool && (
           <FlatButton
-            className="mt-10px min-w-[200px]"
+            className="mt-20px min-w-[200px]"
             loading={isLoading}
             disabled={
               isLoading ||

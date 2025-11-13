@@ -6,6 +6,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.leave': 'Выйти',
   'deposit.interact.actions.whitelist': 'Белый список',
   'deposit.interact.actions.runePool': 'Руна Пул',
+  'deposit.interact.actions.cacaoPool': 'Cacao Pool',
   'deposit.interact.actions.buyThorname': 'Купить THORName',
   'deposit.interact.actions.buyMayaname': 'Купить MAYAName',
   'deposit.interact.actions.checkThorname': 'Проверить доступность',

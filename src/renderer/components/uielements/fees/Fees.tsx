@@ -6,7 +6,6 @@ import clsx from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { Button } from '../button'
 import { Label } from '../label'
 import { formatFee } from './Fees.helper'
 import { UIFeesRD } from './Fees.types'
@@ -76,17 +75,19 @@ export const Fees = ({ fees, reloadFees, disabled = false, className }: Props) =
   return (
     <div className={clsx('flex items-center space-x-2 text-text0 dark:text-text0d', className)}>
       {reloadFees && (
-        <Button
-          className={clsx('flex !min-w-0 items-center justify-center')}
-          typevalue="outline"
-          round="true"
-          disabled={isLoading || disabled}
+        <div
           onClick={(e) => {
             e.preventDefault()
-            reloadFees()
-          }}>
-          <ArrowPathIcon className={clsx('h-4 w-4', isLoading && 'animate-spin')} />
-        </Button>
+            if (!isLoading && !disabled) reloadFees()
+          }}
+          className={clsx(
+            'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-turquoise dark:border-turquoise',
+            'transition-colors duration-200',
+            'hover:bg-gray-100 hover:dark:bg-gray-800',
+            (isLoading || disabled) && 'pointer-events-none cursor-not-allowed opacity-50'
+          )}>
+          <ArrowPathIcon className={clsx('h-3 w-3 text-text0 dark:text-text0d', isLoading && 'animate-spin')} />
+        </div>
       )}
       <Label color={isError ? 'error' : isLoading ? 'input' : 'normal'} textTransform="uppercase">
         {feesFormattedValue}
