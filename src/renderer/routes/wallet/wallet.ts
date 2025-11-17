@@ -68,6 +68,12 @@ export const runepool: Route<void> = {
     return this.template
   }
 }
+export const cacaopool: Route<void> = {
+  template: `${base.template}/cacaopool`,
+  path() {
+    return this.template
+  }
+}
 
 export type InteractParams = {
   interactType: InteractType

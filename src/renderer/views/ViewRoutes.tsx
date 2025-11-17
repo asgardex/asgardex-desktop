@@ -26,7 +26,7 @@ import { InteractView } from './wallet/Interact'
 import { LedgerChainSelectView } from './wallet/LedgerChainSelectView'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
-import { RunepoolView } from './wallet/RunepoolView'
+import { ProtocolPoolView } from './wallet/ProtocolPoolView'
 import { SendView } from './wallet/send'
 import { TcyView } from './wallet/TcyView'
 import { TradeAssetsView } from './wallet/TradeAssetsView'
@@ -119,7 +119,7 @@ export const ViewRoutes = (): JSX.Element => {
         path={walletRoutes.runepool.template}
         element={
           <WalletAuth>
-            <RunepoolView />
+            <ProtocolPoolView />
           </WalletAuth>
         }
       />
@@ -136,6 +136,14 @@ export const ViewRoutes = (): JSX.Element => {
         element={
           <WalletAuth>
             <SendView />
+          </WalletAuth>
+        }
+      />
+      <Route
+        path={walletRoutes.cacaopool.template}
+        element={
+          <WalletAuth>
+            <ProtocolPoolView />
           </WalletAuth>
         }
       />

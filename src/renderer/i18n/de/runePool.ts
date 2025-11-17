@@ -1,32 +1,38 @@
-import { RunePoolMessages } from '../types'
+import { ProtocolPoolMessages } from '../types'
 
-const runePool: RunePoolMessages = {
-  'runePool.noRuneAdded': 'Sie haben dem Rune-Pool nichts hinzugefügt',
-  'runePool.detail.title': 'Rune-Pool-Position',
-  'runePool.detail.availability': 'Rune-Pool derzeit nicht verfügbar',
-  'runePool.detail.titleDeposit': 'Einzahlung in den RunePool',
-  'runePool.detail.titleWithdraw': 'Auszahlung aus dem RunePool',
-  'runePool.detail.current.title': 'Einzahlungswert',
-  'runePool.detail.redeem.title': 'Einlösewert',
-  'runePool.detail.percent': 'Wachstum',
-  'runePool.detail.totalGrowth': 'Wachstum USD',
-  'runePool.detail.priceGrowth': 'Preiswachstum',
-  'runePool.detail.assetAmount': 'Asset-Menge',
-  'runePool.detail.daysLeft': 'Verbleibende Tage bis zur Abhebung',
-  'runePool.detail.blocksLeft': 'Verbleibende Blöcke bis zur Abhebung',
-  'runePool.detail.warning': 'Eine Einzahlung in den Rune-Pool setzt den Auszahlungszeitraum zurück',
-  'runePool.info.max.withdraw.value': 'Maximaler Abhebungswert',
-  'runePool.info.max.balance': 'Maximaler Kontostand',
-  'runePool.add.state.sending': 'Rune-Transaktion wird gesendet',
-  'runePool.add.state.checkResults': 'Überprüfung der Transaktionsergebnisse',
-  'runePool.add.state.pending': 'Rune wird hinzugefügt',
-  'runePool.add.state.success': 'Erfolgreiches Hinzufügen von Rune',
-  'runePool.withdraw.state.sending': 'Rune-Abhebungstransaktion wird gesendet',
-  'runePool.withdraw.state.checkResults': 'Überprüfung der Transaktionsergebnisse',
-  'runePool.withdraw.state.pending': 'Rune wird abgehoben',
-  'runePool.withdraw.state.success': 'Erfolgreiche Rune-Pool-Abhebung',
-  'runePool.add.state.error': 'Fehler beim Hinzufügen zum Rune-Pool',
-  'runePool.withdraw.state.error': 'Fehler bei der Abhebung vom Rune-Pool'
+const protocolPool: ProtocolPoolMessages = {
+  // General protocol pool keys
+  'protocolPool.detail.title': 'Protokoll-Pool-Position',
+  'protocolPool.detail.availability': 'Protokoll-Pool derzeit nicht verfügbar',
+  'protocolPool.detail.titleDeposit': 'Einzahlung in Protokoll-Pool',
+  'protocolPool.detail.titleWithdraw': 'Auszahlung aus Protokoll-Pool',
+  'protocolPool.detail.current.title': 'Einzahlungswert',
+  'protocolPool.detail.redeem.title': 'Einlösewert',
+  'protocolPool.detail.percent': 'Wachstum',
+  'protocolPool.detail.totalGrowth': 'Wachstum USD',
+  'protocolPool.detail.priceGrowth': 'Preiswachstum',
+  'protocolPool.detail.assetAmount': 'Asset-Menge',
+  'protocolPool.detail.daysLeft': 'Verbleibende Tage bis zur Abhebung',
+  'protocolPool.detail.blocksLeft': 'Verbleibende Blöcke bis zur Abhebung',
+  'protocolPool.detail.warning': 'Einzahlung in Protokoll-Pool setzt den Auszahlungszeitraum zurück',
+  'protocolPool.info.max.withdraw.value': 'Maximaler Abhebungswert',
+  'protocolPool.info.max.balance': 'Maximaler Kontostand',
+  'protocolPool.add.state.sending': 'Transaktion wird gesendet',
+  'protocolPool.add.state.checkResults': 'Überprüfung der Transaktionsergebnisse',
+  'protocolPool.add.state.pending': 'Wird zum Pool hinzugefügt',
+  'protocolPool.add.state.success': 'Erfolgreiches Hinzufügen zum Pool',
+  'protocolPool.add.state.error': 'Fehler beim Hinzufügen zum Pool',
+  'protocolPool.withdraw.state.sending': 'Abhebungstransaktion wird gesendet',
+  'protocolPool.withdraw.state.checkResults': 'Überprüfung der Transaktionsergebnisse',
+  'protocolPool.withdraw.state.pending': 'Wird vom Pool abgehoben',
+  'protocolPool.withdraw.state.success': 'Erfolgreiche Pool-Abhebung',
+  'protocolPool.withdraw.state.error': 'Fehler bei der Abhebung vom Pool',
+  // RUNE specific
+  'protocolPool.rune.noAdded': 'Sie haben dem Rune-Pool nichts hinzugefügt',
+  'protocolPool.rune.title': 'Rune-Pool-Position',
+  // CACAO specific
+  'protocolPool.cacao.noAdded': 'Sie haben dem Cacao-Pool nichts hinzugefügt',
+  'protocolPool.cacao.title': 'Cacao-Pool-Position'
 }
 
-export default runePool
+export default protocolPool

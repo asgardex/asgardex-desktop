@@ -12,7 +12,7 @@ const wallet: WalletMessages = {
   'wallet.nav.poolshares': 'PL Acciones',
   'wallet.nav.tcy': 'TCY',
   'wallet.nav.savers': 'Ahorradores',
-  'wallet.nav.runepool': 'Piscina de Runa',
+  'wallet.nav.runepool': 'Pool de Protocolo',
   'wallet.column.name': 'Nombre',
   'wallet.column.ticker': 'Ticker',
   'wallet.action.send': 'Enviar',

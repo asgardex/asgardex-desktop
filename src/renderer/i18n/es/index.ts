@@ -12,7 +12,7 @@ import netstatus from './netstatus'
 import pools from './pools'
 import poolShares from './poolshares'
 import routes from './routes'
-import runePool from './runePool'
+import protocolPool from './runePool'
 import settings from './settings'
 import sidebar from './sidebar'
 import swap from './swap'
@@ -32,7 +32,7 @@ export default {
   ...swap,
   ...tcy,
   ...deposit,
-  ...runePool,
+  ...protocolPool,
   ...midgard,
   ...ledger,
   ...bonds,

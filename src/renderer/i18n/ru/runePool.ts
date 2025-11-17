@@ -1,31 +1,37 @@
-import { RunePoolMessages } from '../types'
+import { ProtocolPoolMessages } from '../types'
 
-const runePool: RunePoolMessages = {
-  'runePool.noRuneAdded': 'Вы не добавили средства в пул рун',
-  'runePool.detail.title': 'Позиция в пуле рун',
-  'runePool.detail.availability': 'Пул рун в настоящее время недоступен',
-  'runePool.detail.titleDeposit': 'Депозит в RunePool',
-  'runePool.detail.titleWithdraw': 'Вывод из RunePool',
-  'runePool.detail.current.title': 'Стоимость депозита',
-  'runePool.detail.redeem.title': 'Стоимость вывода',
-  'runePool.detail.percent': 'Рост',
-  'runePool.detail.totalGrowth': 'Рост в USD',
-  'runePool.detail.priceGrowth': 'Рост цены',
-  'runePool.detail.assetAmount': 'Количество активов',
-  'runePool.detail.daysLeft': 'Дней осталось до возможности вывода',
-  'runePool.detail.blocksLeft': 'Блоков осталось до возможности вывода',
-  'runePool.detail.warning': 'Депозит в пул Rune сбросит период вывода средств',
-  'runePool.info.max.withdraw.value': 'Максимальная сумма для вывода',
-  'runePool.info.max.balance': 'Максимальный баланс',
-  'runePool.add.state.sending': 'Отправка транзакции добавления рун',
-  'runePool.add.state.checkResults': 'Проверка результатов транзакции',
-  'runePool.add.state.pending': 'Добавление рун',
-  'runePool.add.state.success': 'Успешное добавление рун',
-  'runePool.withdraw.state.sending': 'Отправка транзакции вывода рун',
-  'runePool.withdraw.state.checkResults': 'Проверка результатов транзакции',
-  'runePool.withdraw.state.pending': 'Вывод рун',
-  'runePool.withdraw.state.success': 'Успешный вывод из пула рун',
-  'runePool.add.state.error': 'Ошибка при добавлении в пул рун',
-  'runePool.withdraw.state.error': 'Ошибка при выводе из пула рун'
+const protocolPool: ProtocolPoolMessages = {
+  // General protocol pool keys
+  'protocolPool.detail.title': 'Позиция в Пуле Протокола',
+  'protocolPool.detail.availability': 'Пул протокола в настоящее время недоступен',
+  'protocolPool.detail.titleDeposit': 'Депозит в Пул Протокола',
+  'protocolPool.detail.titleWithdraw': 'Вывод из Пула Протокола',
+  'protocolPool.detail.current.title': 'Стоимость депозита',
+  'protocolPool.detail.redeem.title': 'Стоимость вывода',
+  'protocolPool.detail.percent': 'Рост',
+  'protocolPool.detail.totalGrowth': 'Рост в USD',
+  'protocolPool.detail.priceGrowth': 'Рост цены',
+  'protocolPool.detail.assetAmount': 'Количество активов',
+  'protocolPool.detail.daysLeft': 'Дней осталось до возможности вывода',
+  'protocolPool.detail.blocksLeft': 'Блоков осталось до возможности вывода',
+  'protocolPool.detail.warning': 'Депозит в пул протокола сбросит период вывода',
+  'protocolPool.info.max.withdraw.value': 'Максимальная сумма для вывода',
+  'protocolPool.info.max.balance': 'Максимальный баланс',
+  'protocolPool.add.state.sending': 'Отправка транзакции',
+  'protocolPool.add.state.checkResults': 'Проверка результатов транзакции',
+  'protocolPool.add.state.pending': 'Добавление в пул',
+  'protocolPool.add.state.success': 'Успешное добавление в пул',
+  'protocolPool.add.state.error': 'Ошибка при добавлении в пул',
+  'protocolPool.withdraw.state.sending': 'Отправка транзакции вывода',
+  'protocolPool.withdraw.state.checkResults': 'Проверка результатов транзакции',
+  'protocolPool.withdraw.state.pending': 'Вывод из пула',
+  'protocolPool.withdraw.state.success': 'Успешный вывод из пула',
+  'protocolPool.withdraw.state.error': 'Ошибка при выводе из пула',
+  // RUNE specific
+  'protocolPool.rune.noAdded': 'Вы не добавили в пул рун',
+  'protocolPool.rune.title': 'Позиция в Пуле Рун',
+  // CACAO specific
+  'protocolPool.cacao.noAdded': 'Вы не добавили в пул какао',
+  'protocolPool.cacao.title': 'Позиция в Пуле Какао'
 }
-export default runePool
+export default protocolPool

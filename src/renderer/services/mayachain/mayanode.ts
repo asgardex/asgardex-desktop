@@ -20,7 +20,9 @@ import {
   TradeAccountResponse,
   TradeAccountApi,
   TransactionsApi,
-  TxStagesResponse
+  TxStagesResponse,
+  CACAOProvider,
+  CACAOPoolApi
 } from '@xchainjs/xchain-mayanode'
 import { SaversApi } from '@xchainjs/xchain-thornode'
 import {
@@ -70,7 +72,9 @@ import {
   TradeAccountLD,
   TradeAccount,
   TxStagesLD,
-  TxStages
+  TxStages,
+  CacaoPoolProvider,
+  CacaoPoolProviderLD
 } from './types'
 
 const height: number | undefined = undefined
@@ -648,6 +652,55 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.shareReplay(1)
     )
 
+  const apiGetCacaoPoolProvider$ = (address: Address): LiveData<Error, CACAOProvider> =>
+    FP.pipe(
+      mayanodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new CACAOPoolApi(getMayanodeAPIConfiguration(basePath)).cacaoProvider(address)),
+          RxOp.map((response: AxiosResponse<CACAOProvider>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+
+  const { stream$: reloadCacaoPoolProvider$, trigger: reloadCacaoPoolProvider } = triggerStream()
+
+  const getCacaoPoolProvider$ = (address: Address, walletType?: WalletType): CacaoPoolProviderLD =>
+    FP.pipe(
+      reloadCacaoPoolProvider$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetCacaoPoolProvider$(address)),
+      liveData.map(
+        // transform CACAOProvider -> CacaoPoolProvider
+        (provider): CacaoPoolProvider => {
+          const { value, pnl, deposit_amount, withdraw_amount, last_deposit_height, last_withdraw_height } = provider
+          /* 1e10 decimal by default, which is default decimal for ALL assets at MAYAChain  */
+          const currentValue = baseAmount(value, CACAO_DECIMAL)
+          const depositAmount = baseAmount(deposit_amount, CACAO_DECIMAL)
+          const withdrawAmount = baseAmount(withdraw_amount, CACAO_DECIMAL)
+          const profitAndLoss = baseAmount(pnl, CACAO_DECIMAL)
+          const addHeight = FP.pipe(last_deposit_height, O.fromPredicate(N.isNumber))
+          const withdrawHeight = FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber))
+          return {
+            address: provider.cacao_address,
+            value: currentValue,
+            pnl: profitAndLoss,
+            depositAmount,
+            withdrawAmount,
+            addHeight,
+            withdrawHeight,
+            walletType
+          }
+        }
+      ),
+      RxOp.catchError(
+        (): CacaoPoolProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${address} cacao pool provider`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
+
   return {
     mayanodeUrl$,
     reloadMayanodeUrl,
@@ -673,6 +726,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     getTradeAccount$,
     reloadTradeAccount,
     getTxStatus$,
-    reloadTxStatus
+    reloadTxStatus,
+    getCacaoPoolProvider$,
+    reloadCacaoPoolProvider
   }
 }

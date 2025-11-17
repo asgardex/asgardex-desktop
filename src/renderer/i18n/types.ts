@@ -694,35 +694,41 @@ type TcyMessageKey =
 
 export type TcyMessages = { [key in TcyMessageKey]: string }
 
-type RunePoolMessageKey =
-  | 'runePool.noRuneAdded'
-  | 'runePool.detail.title'
-  | 'runePool.detail.availability'
-  | 'runePool.detail.titleDeposit'
-  | 'runePool.detail.titleWithdraw'
-  | 'runePool.detail.current.title'
-  | 'runePool.detail.redeem.title'
-  | 'runePool.detail.percent'
-  | 'runePool.detail.totalGrowth'
-  | 'runePool.detail.priceGrowth'
-  | 'runePool.detail.assetAmount'
-  | 'runePool.detail.daysLeft'
-  | 'runePool.detail.blocksLeft'
-  | 'runePool.detail.warning'
-  | 'runePool.info.max.withdraw.value'
-  | 'runePool.info.max.balance'
-  | 'runePool.add.state.sending'
-  | 'runePool.add.state.checkResults'
-  | 'runePool.add.state.pending'
-  | 'runePool.add.state.success'
-  | 'runePool.add.state.error'
-  | 'runePool.withdraw.state.sending'
-  | 'runePool.withdraw.state.checkResults'
-  | 'runePool.withdraw.state.pending'
-  | 'runePool.withdraw.state.success'
-  | 'runePool.withdraw.state.error'
+type ProtocolPoolMessageKey =
+  // General protocol pool keys
+  | 'protocolPool.detail.title'
+  | 'protocolPool.detail.availability'
+  | 'protocolPool.detail.titleDeposit'
+  | 'protocolPool.detail.titleWithdraw'
+  | 'protocolPool.detail.current.title'
+  | 'protocolPool.detail.redeem.title'
+  | 'protocolPool.detail.percent'
+  | 'protocolPool.detail.totalGrowth'
+  | 'protocolPool.detail.priceGrowth'
+  | 'protocolPool.detail.assetAmount'
+  | 'protocolPool.detail.daysLeft'
+  | 'protocolPool.detail.blocksLeft'
+  | 'protocolPool.detail.warning'
+  | 'protocolPool.info.max.withdraw.value'
+  | 'protocolPool.info.max.balance'
+  | 'protocolPool.add.state.sending'
+  | 'protocolPool.add.state.checkResults'
+  | 'protocolPool.add.state.pending'
+  | 'protocolPool.add.state.success'
+  | 'protocolPool.add.state.error'
+  | 'protocolPool.withdraw.state.sending'
+  | 'protocolPool.withdraw.state.checkResults'
+  | 'protocolPool.withdraw.state.pending'
+  | 'protocolPool.withdraw.state.success'
+  | 'protocolPool.withdraw.state.error'
+  // RUNE specific
+  | 'protocolPool.rune.noAdded'
+  | 'protocolPool.rune.title'
+  // CACAO specific
+  | 'protocolPool.cacao.noAdded'
+  | 'protocolPool.cacao.title'
 
-export type RunePoolMessages = { [key in RunePoolMessageKey]: string }
+export type ProtocolPoolMessages = { [key in ProtocolPoolMessageKey]: string }
 
 type HaltMessageKey =
   | 'halt.thorchain'
@@ -770,7 +776,7 @@ export type Messages = CommonMessages &
   SwapMessages &
   DepositMessages &
   TcyMessages &
-  RunePoolMessages &
+  ProtocolPoolMessages &
   LedgerMessages &
   BondsMessages &
   PoolSharesMessage &

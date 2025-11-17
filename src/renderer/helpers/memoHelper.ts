@@ -249,7 +249,7 @@ export const getDepositMemo = ({
   short?: boolean
 }) => mkMemo([`${short ? '+' : 'ADD'}`, assetToMemoString(asset), address || null])
 
-export const getRunePoolMemo = ({ action, bps, network }: { action: Action; bps: number; network: Network }) => {
+export const getProtocolPoolMemo = ({ action, bps, network }: { action: Action; bps: number; network: Network }) => {
   const poolAction = action === Action.add ? `+` : '-'
 
   const memoParts = [`POOL${poolAction}`]

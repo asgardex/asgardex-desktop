@@ -14,7 +14,7 @@ import { BorderButton } from './BorderButton'
 import { FlatButton } from './FlatButton'
 import type { Props as ButtonProps } from './FlatButton'
 
-type ButtonVariant = 'runePool' | 'savers' | 'manage'
+type ButtonVariant = 'runePool' | 'savers' | 'manage' | 'cacaoPool'
 
 export type Props = Omit<ButtonProps, 'onClick'> & {
   variant: ButtonVariant
@@ -22,6 +22,7 @@ export type Props = Omit<ButtonProps, 'onClick'> & {
   interactType?: InteractType
   isTextView: boolean
   useBorderButton?: boolean
+  onManageClick?: () => void // Optional callback for custom handling
 }
 
 export const ManageButton = ({
@@ -30,6 +31,7 @@ export const ManageButton = ({
   interactType,
   isTextView,
   useBorderButton = false,
+  onManageClick,
   ...otherProps
 }: Props) => {
   const intl = useIntl()
@@ -40,7 +42,13 @@ export const ManageButton = ({
       event.preventDefault()
       event.stopPropagation()
 
-      if (variant === 'runePool' && interactType) {
+      // If a custom callback is provided, use it instead of default routing
+      if (onManageClick) {
+        onManageClick()
+        return
+      }
+
+      if ((variant === 'runePool' || variant === 'cacaoPool') && interactType) {
         navigate(walletRoutes.interact.path({ interactType }))
       } else if (variant === 'manage' && asset) {
         navigate(
@@ -52,7 +60,7 @@ export const ManageButton = ({
         )
       }
     },
-    [variant, interactType, asset, navigate]
+    [variant, interactType, asset, navigate, onManageClick]
   )
 
   const ButtonComponent = useBorderButton ? BorderButton : FlatButton

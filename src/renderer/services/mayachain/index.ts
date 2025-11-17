@@ -51,7 +51,9 @@ const {
   getTradeAccount$,
   reloadTradeAccount,
   getTxStatus$,
-  reloadTxStatus
+  reloadTxStatus,
+  getCacaoPoolProvider$,
+  reloadCacaoPoolProvider
 } = createMayanodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
@@ -114,5 +116,7 @@ export {
   reloadTradeAccount,
   getTxStatus$,
   reloadTxStatus,
+  getCacaoPoolProvider$,
+  reloadCacaoPoolProvider,
   transactionTrackingService
 }

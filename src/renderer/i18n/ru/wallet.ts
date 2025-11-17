@@ -12,7 +12,7 @@ const wallet: WalletMessages = {
   'wallet.nav.poolshares': 'Доли',
   'wallet.nav.tcy': 'TCY',
   'wallet.nav.savers': 'Сбережения',
-  'wallet.nav.runepool': 'Руна Пул',
+  'wallet.nav.runepool': 'Протокол Пул',
   'wallet.column.name': 'Имя',
   'wallet.column.ticker': 'Тикер',
   'wallet.action.send': 'Отправить',

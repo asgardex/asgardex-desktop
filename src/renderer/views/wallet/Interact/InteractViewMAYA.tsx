@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useEffect, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -32,7 +32,7 @@ import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
 import { getNodeInfos$ } from '../../../services/mayachain'
-import { NodeInfosRD } from '../../../services/mayachain/types'
+import { CacaoPoolProviderRD, NodeInfosRD } from '../../../services/mayachain/types'
 import { userNodes$ } from '../../../services/storage/userNodes'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
@@ -116,7 +116,15 @@ export const InteractViewMAYA = () => {
     )
   }, [oBalances, selectedAssetRD])
 
-  const { fees$, reloadFees, interactMaya$ } = useMayachainContext()
+  const {
+    fees$,
+    reloadFees,
+    interactMaya$,
+    getCacaoPoolProvider$,
+    reloadCacaoPoolProvider,
+    mayachainLastblockState$,
+    mimir$
+  } = useMayachainContext()
 
   const [feeRD] = useObservableState<FeeRD>(
     () =>
@@ -148,6 +156,43 @@ export const InteractViewMAYA = () => {
     RD.initial
   )
 
+  const mayachainLastblockRD = useObservableState(mayachainLastblockState$, RD.initial)
+  const mimirRD = useObservableState(mimir$, RD.initial)
+
+  const [cacaoPoolProviderRD, setCacaoPoolProviderRD] = useState<CacaoPoolProviderRD>(RD.initial)
+
+  useEffect(() => {
+    if (O.isSome(oWalletBalance)) {
+      setCacaoPoolProviderRD(RD.pending) // Set to pending while fetching data
+
+      const subscription = getCacaoPoolProvider$(
+        oWalletBalance.value.walletAddress,
+        oWalletBalance.value.walletType
+      ).subscribe({
+        next: (rdProvider) => {
+          FP.pipe(
+            rdProvider,
+            RD.fold(
+              () => setCacaoPoolProviderRD(RD.initial),
+              () => setCacaoPoolProviderRD(RD.pending),
+              (error) => setCacaoPoolProviderRD(RD.failure(error)),
+              (provider) => setCacaoPoolProviderRD(RD.success(provider))
+            )
+          )
+        },
+        error: (error) => {
+          setCacaoPoolProviderRD(RD.failure(error))
+        }
+      })
+
+      return () => {
+        subscription.unsubscribe()
+      } // Cleanup on unmount or when dependencies change
+    } else {
+      setCacaoPoolProviderRD(RD.initial) // Set to initial if no wallet balance
+    }
+  }, [oWalletBalance, getCacaoPoolProvider$])
+
   const interactTypeChanged = useCallback(
     (type: InteractType) => {
       navigate(
@@ -160,8 +205,9 @@ export const InteractViewMAYA = () => {
   )
   const reloadHandler = useCallback(() => {
     const lazyReload = reloadBalancesByChain(assetChain, DEFAULT_WALLET_TYPE)
+    reloadCacaoPoolProvider()
     lazyReload() // Invoke the lazy function
-  }, [assetChain])
+  }, [assetChain, reloadCacaoPoolProvider])
 
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),
@@ -217,6 +263,9 @@ export const InteractViewMAYA = () => {
                       poolDetails={poolDetails}
                       nodes={nodeInfos}
                       poolShares={allMayaSharesRD}
+                      cacaoPoolProvider={cacaoPoolProviderRD}
+                      mayachainLastblockRD={mayachainLastblockRD}
+                      mimirRD={mimirRD}
                     />
                   </Interact>
                 )

@@ -35,7 +35,7 @@ import {
   Action,
   getBondMemo,
   getLeaveMemo,
-  getRunePoolMemo,
+  getProtocolPoolMemo,
   getUnbondMemo,
   getWhitelistMemo
 } from '../../../../helpers/memoHelper'
@@ -380,7 +380,7 @@ export const InteractFormThor = ({
   const renderRunePoolWarning = useMemo(
     () => (
       <Label size="big" color="warning">
-        {intl.formatMessage({ id: 'runePool.detail.warning' })}
+        {intl.formatMessage({ id: 'protocolPool.detail.warning' })}
       </Label>
     ),
     [intl]
@@ -628,9 +628,9 @@ export const InteractFormThor = ({
         break
       }
       case InteractType.RunePool: {
-        createMemo = getRunePoolMemo({
+        createMemo = getProtocolPoolMemo({
           action: runePoolAction,
-          bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend),
+          bps: H.getProtocolPoolWithdrawBps(runePoolProvider.value, _amountToSend),
           network
         })
         break
@@ -1010,7 +1010,7 @@ export const InteractFormThor = ({
               />
             </span>
             <span className="ml-2 inline-block">
-              {!runePoolAvialable && intl.formatMessage({ id: 'runePool.detail.availability' })}
+              {!runePoolAvialable && intl.formatMessage({ id: 'protocolPool.detail.availability' })}
             </span>
             {runePoolProvider.value.gt(0) && runePoolAction === Action.add && renderRunePoolWarning}
           </div>
@@ -1570,7 +1570,7 @@ export const InteractFormThor = ({
               {interactType === InteractType.RunePool && (
                 <>
                   <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
-                    {intl.formatMessage({ id: 'runePool.detail.daysLeft' })}
+                    {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
                     <div className="truncate pl-10px font-main text-[12px]">
                       {RD.fold(
                         () => <p>{emptyString}</p>,

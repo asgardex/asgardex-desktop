@@ -12,7 +12,7 @@ const wallet: WalletMessages = {
   'wallet.nav.poolshares': 'LP 지분',
   'wallet.nav.tcy': 'TCY',
   'wallet.nav.savers': '세이버',
-  'wallet.nav.runepool': '룬 풀',
+  'wallet.nav.runepool': '프로토콜 풀',
   'wallet.column.name': '이름',
   'wallet.column.ticker': '티커',
   'wallet.action.send': '보내기',

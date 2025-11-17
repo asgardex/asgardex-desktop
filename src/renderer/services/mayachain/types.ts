@@ -320,3 +320,17 @@ export enum NodeStatusEnum {
   Ready = 'Ready',
   Disabled = 'Disabled'
 }
+
+export type CacaoPoolProvider = {
+  address: Address
+  value: BaseAmount
+  pnl: BaseAmount
+  depositAmount: BaseAmount
+  withdrawAmount: BaseAmount
+  addHeight: O.Option<number>
+  withdrawHeight: O.Option<number>
+  walletType?: WalletType
+}
+
+export type CacaoPoolProviderRD = RD.RemoteData<Error, CacaoPoolProvider>
+export type CacaoPoolProviderLD = LiveData<Error, CacaoPoolProvider>

@@ -100,12 +100,17 @@ export const findNodeIndex = (nodes: NodeInfos, inputaddress: string) => {
   return nodes.findIndex(({ address, status }) => address.toLowerCase() === inputaddress && status === 'Active')
 }
 
-export const getRunePoolWithdrawBps = (amountOne: BaseAmount, amountTwo: BaseAmount): number => {
-  const value1 = amountOne.amount()
-  const value2 = amountTwo.amount()
+export const getProtocolPoolWithdrawBps = (pooledAmount: BaseAmount, withdrawAmount: BaseAmount): number => {
+  const value1 = pooledAmount.amount()
+  const value2 = withdrawAmount.amount()
 
   if (value1.isZero()) {
     return 0
+  }
+
+  // Check if we're withdrawing the full amount (100%)
+  if (value2.isGreaterThanOrEqualTo(value1)) {
+    return 10000
   }
 
   const bps = value2.div(value1).multipliedBy(10000).decimalPlaces(0, 1).toNumber()

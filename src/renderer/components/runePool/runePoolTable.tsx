@@ -1,15 +1,22 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { baseToAsset, formatAssetAmountCurrency, baseAmount, formatBN } from '@xchainjs/xchain-util'
+import { option as O, nonEmptyArray as NEA } from 'fp-ts'
 import { useIntl } from 'react-intl'
+import { useNavigate } from 'react-router-dom'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BN } from '../../const'
 import { isUSDAsset } from '../../helpers/assetHelper'
 import { hiddenString } from '../../helpers/stringHelper'
+import { getWalletBalanceByAssetAndWalletType } from '../../helpers/walletHelper'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
+import * as walletRoutes from '../../routes/wallet'
+import { setSelectedAsset } from '../../services/wallet'
 import { FixmeType } from '../../types/asgardex'
-import { ParentProps } from '../../views/wallet/RunepoolView'
+import { ParentProps } from '../../views/wallet/ProtocolPoolView'
 import { Table } from '../table'
 import { AssetData } from '../uielements/assets/assetData'
 import { ManageButton } from '../uielements/button/ManageButton'
@@ -26,12 +33,69 @@ export type RPRow = {
   growthValueLabel: string
   percentLabel: string
   walletType: WalletType
+  chain: string
 }
 
-export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
+export const ProtocolPoolTable = ({ assetDetails, allBalances }: ParentProps): JSX.Element => {
   const intl = useIntl()
+  const navigate = useNavigate()
   const isXLargeScreen = useBreakpoint()?.xl ?? false
   const isXXLargeScreen = useBreakpoint()?.xxl ?? false
+
+  const handleManageClick = useCallback(
+    (chain: string, walletType: WalletType, interactType: InteractType) => {
+      console.log('CACAO Manage Debug: handleManageClick called with chain:', chain, 'walletType:', walletType)
+
+      if (chain === 'MAYA') {
+        // For MAYA chain, find the CACAO wallet balance and set it as selected asset
+        const oWalletBalances = NEA.fromArray(allBalances)
+        const cacaoWalletBalance = getWalletBalanceByAssetAndWalletType({
+          oWalletBalances,
+          asset: AssetCacao,
+          walletType
+        })
+
+        console.log('CACAO Manage Debug: Found CACAO wallet balance:', cacaoWalletBalance)
+
+        if (O.isSome(cacaoWalletBalance)) {
+          console.log('CACAO Manage Debug: Setting selected asset to CACAO')
+          const selectedAsset = {
+            asset: cacaoWalletBalance.value.asset,
+            walletAddress: cacaoWalletBalance.value.walletAddress,
+            walletType: cacaoWalletBalance.value.walletType,
+            walletAccount: cacaoWalletBalance.value.walletAccount,
+            walletIndex: cacaoWalletBalance.value.walletIndex,
+            hdMode: cacaoWalletBalance.value.hdMode
+          }
+          setSelectedAsset(O.some(selectedAsset))
+        }
+      } else if (chain === 'THOR') {
+        // For THOR chain, find the RUNE wallet balance and set it as selected asset
+        const oWalletBalances = NEA.fromArray(allBalances)
+        const runeWalletBalance = getWalletBalanceByAssetAndWalletType({
+          oWalletBalances,
+          asset: AssetRuneNative,
+          walletType
+        })
+
+        if (O.isSome(runeWalletBalance)) {
+          const selectedAsset = {
+            asset: runeWalletBalance.value.asset,
+            walletAddress: runeWalletBalance.value.walletAddress,
+            walletType: runeWalletBalance.value.walletType,
+            walletAccount: runeWalletBalance.value.walletAccount,
+            walletIndex: runeWalletBalance.value.walletIndex,
+            hdMode: runeWalletBalance.value.hdMode
+          }
+          setSelectedAsset(O.some(selectedAsset))
+        }
+      }
+
+      // Navigate to interact route
+      navigate(walletRoutes.interact.path({ interactType }))
+    },
+    [navigate, allBalances]
+  )
 
   const columns: ColumnDef<RPRow, FixmeType>[] = useMemo(
     () => [
@@ -53,21 +117,21 @@ export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
         enableSorting: false
       },
       {
-        header: intl.formatMessage({ id: 'runePool.detail.current.title' }),
+        header: intl.formatMessage({ id: 'protocolPool.detail.current.title' }),
         accessorKey: 'priceDepositLabel',
         cell: ({ row }) => <Label align="center">{row.original.priceDepositLabel}</Label>,
         enableSorting: false,
         size: 120
       },
       {
-        header: intl.formatMessage({ id: 'runePool.detail.assetAmount' }),
+        header: intl.formatMessage({ id: 'protocolPool.detail.assetAmount' }),
         accessorKey: 'depositValueLabel',
         cell: ({ row }) => <Label align="center">{row.original.depositValueLabel}</Label>,
         enableSorting: false,
         size: 120
       },
       {
-        header: intl.formatMessage({ id: 'runePool.detail.redeem.title' }),
+        header: intl.formatMessage({ id: 'protocolPool.detail.redeem.title' }),
         accessorKey: 'withdrawValueLabel',
         cell: ({ row }) => <Label align="center">{row.original.withdrawValueLabel}</Label>,
         enableSorting: false,
@@ -76,14 +140,14 @@ export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
       ...(isXXLargeScreen
         ? ([
             {
-              header: intl.formatMessage({ id: 'runePool.detail.totalGrowth' }),
+              header: intl.formatMessage({ id: 'protocolPool.detail.totalGrowth' }),
               accessorKey: 'withdrawDepositLabel',
               cell: ({ row }) => <Label align="center">{row.original.withdrawDepositLabel}</Label>,
               enableSorting: false,
               size: 120
             },
             {
-              header: intl.formatMessage({ id: 'runePool.detail.percent' }),
+              header: intl.formatMessage({ id: 'protocolPool.detail.percent' }),
               accessorKey: 'growthValueLabel',
               cell: ({ row }) => <Label align="center">{row.original.growthValueLabel}</Label>,
               enableSorting: false,
@@ -113,14 +177,17 @@ export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
           </Label>
         ),
         accessorKey: 'manage',
-        cell: () => {
+        cell: ({ row }) => {
+          const isRunePool = row.original.chain === 'THOR'
+          const interactType = isRunePool ? InteractType.RunePool : InteractType.CacaoPool
           return (
             <div className="flex items-center justify-center">
               <ManageButton
-                variant="runePool"
-                interactType={InteractType.RunePool}
+                variant={isRunePool ? 'runePool' : 'cacaoPool'}
+                interactType={interactType}
                 useBorderButton={false}
                 isTextView={isXLargeScreen}
+                onManageClick={() => handleManageClick(row.original.chain, row.original.walletType, interactType)}
               />
             </div>
           )
@@ -128,62 +195,65 @@ export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
         enableSorting: false
       }
     ],
-    [assetDetails, intl, isXLargeScreen, isXXLargeScreen]
+    [assetDetails, intl, isXLargeScreen, isXXLargeScreen, handleManageClick]
   )
 
-  const dataSource = assetDetails.map(({ asset, deposit, value, priceAsset, percent, walletType, privateData }) => {
-    const depositValueLabel = privateData
-      ? hiddenString
-      : formatAssetAmountCurrency({ amount: baseToAsset(deposit.amount), asset, decimal: 3 })
+  const dataSource = assetDetails.map(
+    ({ asset, deposit, value, priceAsset, percent, walletType, privateData, chain }) => {
+      const depositValueLabel = privateData
+        ? hiddenString
+        : formatAssetAmountCurrency({ amount: baseToAsset(deposit.amount), asset, decimal: 3 })
 
-    const priceDepositLabel = privateData
-      ? hiddenString
-      : formatAssetAmountCurrency({
-          amount: baseToAsset(deposit.price),
-          asset: priceAsset,
-          decimal: isUSDAsset(priceAsset) ? 2 : 6
-        })
-    const withdrawValueLabel = privateData
-      ? hiddenString
-      : formatAssetAmountCurrency({ amount: baseToAsset(value), asset, decimal: 3 })
+      const priceDepositLabel = privateData
+        ? hiddenString
+        : formatAssetAmountCurrency({
+            amount: baseToAsset(deposit.price),
+            asset: priceAsset,
+            decimal: isUSDAsset(priceAsset) ? 2 : 6
+          })
+      const withdrawValueLabel = privateData
+        ? hiddenString
+        : formatAssetAmountCurrency({ amount: baseToAsset(value), asset, decimal: 3 })
 
-    const withdrawDepositLabel = privateData
-      ? hiddenString
-      : formatAssetAmountCurrency({
-          amount: baseToAsset(value.minus(deposit.amount)),
-          asset: priceAsset,
-          decimal: isUSDAsset(priceAsset) ? 2 : 6
-        })
-    const gV = value.minus(deposit.amount)
-    const growthValue = privateData
-      ? hiddenString
-      : formatAssetAmountCurrency({
-          amount: baseToAsset(gV),
-          asset: priceAsset,
-          decimal: isUSDAsset(priceAsset) ? 2 : 6
-        })
-    const growthValueLabel = privateData
-      ? hiddenString
-      : formatAssetAmountCurrency({
-          amount: baseToAsset(gV.gt(0) ? gV : baseAmount(0, deposit.amount.decimal)),
-          asset,
-          decimal: isUSDAsset(asset) ? 2 : 6
-        })
+      const withdrawDepositLabel = privateData
+        ? hiddenString
+        : formatAssetAmountCurrency({
+            amount: baseToAsset(value.minus(deposit.amount)),
+            asset: priceAsset,
+            decimal: isUSDAsset(priceAsset) ? 2 : 6
+          })
+      const gV = value.minus(deposit.amount)
+      const growthValue = privateData
+        ? hiddenString
+        : formatAssetAmountCurrency({
+            amount: baseToAsset(gV),
+            asset: priceAsset,
+            decimal: isUSDAsset(priceAsset) ? 2 : 6
+          })
+      const growthValueLabel = privateData
+        ? hiddenString
+        : formatAssetAmountCurrency({
+            amount: baseToAsset(gV.gt(0) ? gV : baseAmount(0, deposit.amount.decimal)),
+            asset,
+            decimal: isUSDAsset(asset) ? 2 : 6
+          })
 
-    const percentLabel = privateData ? hiddenString : `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
+      const percentLabel = privateData ? hiddenString : `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
 
-    return {
-      key: `${asset.chain}.${asset.symbol}.${walletType}`,
-      depositValueLabel,
-      withdrawValueLabel,
-      priceDepositLabel,
-      withdrawDepositLabel,
-      growthValue,
-      growthValueLabel,
-      percentLabel,
-      walletType
+      return {
+        key: `${asset.chain}.${asset.symbol}.${walletType}`,
+        depositValueLabel,
+        withdrawValueLabel,
+        priceDepositLabel,
+        withdrawDepositLabel,
+        growthValue,
+        growthValueLabel,
+        percentLabel,
+        walletType,
+        chain
+      }
     }
-  })
+  )
 
   return <Table loading={false} columns={columns} data={dataSource} />
 }

@@ -39,7 +39,9 @@ import {
   reloadTradeAccount,
   getTxStatus$,
   reloadTxStatus,
-  transactionTrackingService
+  transactionTrackingService,
+  getCacaoPoolProvider$,
+  reloadCacaoPoolProvider
 } from '../services/mayachain'
 
 type MayachainContextValue = {
@@ -82,6 +84,8 @@ type MayachainContextValue = {
   getTxStatus$: typeof getTxStatus$
   reloadTxStatus: typeof reloadTxStatus
   transactionTrackingService: typeof transactionTrackingService
+  getCacaoPoolProvider$: typeof getCacaoPoolProvider$
+  reloadCacaoPoolProvider: typeof reloadCacaoPoolProvider
 }
 
 const initialContext: MayachainContextValue = {
@@ -123,7 +127,9 @@ const initialContext: MayachainContextValue = {
   reloadTradeAccount,
   getTxStatus$,
   reloadTxStatus,
-  transactionTrackingService
+  transactionTrackingService,
+  getCacaoPoolProvider$,
+  reloadCacaoPoolProvider
 }
 
 const MayachainContext = createContext<MayachainContextValue | null>(null)
