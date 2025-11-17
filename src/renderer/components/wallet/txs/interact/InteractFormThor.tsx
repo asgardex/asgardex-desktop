@@ -714,6 +714,7 @@ export const InteractFormThor = ({
     setThornameQuoteValid(false)
     setThornameUpdate(false)
     setThornameAvailable(false)
+    setRunePoolAction(Action.add)
   }, [reset, resetInteractState, watch, balance.walletAddress])
 
   const renderConfirmationModal = useMemo(() => {
@@ -929,6 +930,14 @@ export const InteractFormThor = ({
     resetForm()
     setMemo('')
   }, [interactType, resetForm])
+
+  // Reset form when switching between deposit and withdraw for RunePool
+  useEffect(() => {
+    if (interactType === InteractType.RunePool) {
+      resetForm()
+      setMemo('')
+    }
+  }, [runePoolAction, resetForm, interactType])
 
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const bondBaseAmount = userNodeInfo?.bondAmount ? userNodeInfo.bondAmount : baseAmount(0)

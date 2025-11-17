@@ -892,6 +892,14 @@ export const InteractFormMaya = (props: Props) => {
     setMemo('')
   }, [interactType, resetForm])
 
+  // Reset form when switching between deposit and withdraw for CacaoPool
+  useEffect(() => {
+    if (interactType === InteractType.CacaoPool) {
+      resetForm()
+      setMemo('')
+    }
+  }, [cacaoPoolAction, resetForm, interactType])
+
   // Call estimate handler when mayaname becomes available
   useEffect(() => {
     if (mayanameAvailable && interactType === InteractType.MAYAName) {
