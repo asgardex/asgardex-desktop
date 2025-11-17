@@ -1,7 +1,6 @@
 import { ProtocolPoolMessages } from '../types'
 
 const protocolPool: ProtocolPoolMessages = {
-  // General protocol pool keys
   'protocolPool.detail.title': 'Protokoll-Pool-Position',
   'protocolPool.detail.availability': 'Protokoll-Pool derzeit nicht verfügbar',
   'protocolPool.detail.titleDeposit': 'Einzahlung in Protokoll-Pool',
@@ -27,10 +26,8 @@ const protocolPool: ProtocolPoolMessages = {
   'protocolPool.withdraw.state.pending': 'Wird vom Pool abgehoben',
   'protocolPool.withdraw.state.success': 'Erfolgreiche Pool-Abhebung',
   'protocolPool.withdraw.state.error': 'Fehler bei der Abhebung vom Pool',
-  // RUNE specific
   'protocolPool.rune.noAdded': 'Sie haben dem Rune-Pool nichts hinzugefügt',
   'protocolPool.rune.title': 'Rune-Pool-Position',
-  // CACAO specific
   'protocolPool.cacao.noAdded': 'Sie haben dem Cacao-Pool nichts hinzugefügt',
   'protocolPool.cacao.title': 'Cacao-Pool-Position'
 }

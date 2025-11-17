@@ -44,8 +44,6 @@ export const ProtocolPoolTable = ({ assetDetails, allBalances }: ParentProps): J
 
   const handleManageClick = useCallback(
     (chain: string, walletType: WalletType, interactType: InteractType) => {
-      console.log('CACAO Manage Debug: handleManageClick called with chain:', chain, 'walletType:', walletType)
-
       if (chain === 'MAYA') {
         // For MAYA chain, find the CACAO wallet balance and set it as selected asset
         const oWalletBalances = NEA.fromArray(allBalances)
@@ -55,10 +53,7 @@ export const ProtocolPoolTable = ({ assetDetails, allBalances }: ParentProps): J
           walletType
         })
 
-        console.log('CACAO Manage Debug: Found CACAO wallet balance:', cacaoWalletBalance)
-
         if (O.isSome(cacaoWalletBalance)) {
-          console.log('CACAO Manage Debug: Setting selected asset to CACAO')
           const selectedAsset = {
             asset: cacaoWalletBalance.value.asset,
             walletAddress: cacaoWalletBalance.value.walletAddress,
