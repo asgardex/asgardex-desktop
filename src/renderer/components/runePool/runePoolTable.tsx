@@ -44,46 +44,26 @@ export const ProtocolPoolTable = ({ assetDetails, allBalances }: ParentProps): J
 
   const handleManageClick = useCallback(
     (chain: string, walletType: WalletType, interactType: InteractType) => {
-      if (chain === 'MAYA') {
-        // For MAYA chain, find the CACAO wallet balance and set it as selected asset
-        const oWalletBalances = NEA.fromArray(allBalances)
-        const cacaoWalletBalance = getWalletBalanceByAssetAndWalletType({
-          oWalletBalances,
-          asset: AssetCacao,
-          walletType
-        })
+      // Determine asset based on chain
+      const asset = chain === 'MAYA' ? AssetCacao : AssetRuneNative
 
-        if (O.isSome(cacaoWalletBalance)) {
-          const selectedAsset = {
-            asset: cacaoWalletBalance.value.asset,
-            walletAddress: cacaoWalletBalance.value.walletAddress,
-            walletType: cacaoWalletBalance.value.walletType,
-            walletAccount: cacaoWalletBalance.value.walletAccount,
-            walletIndex: cacaoWalletBalance.value.walletIndex,
-            hdMode: cacaoWalletBalance.value.hdMode
-          }
-          setSelectedAsset(O.some(selectedAsset))
-        }
-      } else if (chain === 'THOR') {
-        // For THOR chain, find the RUNE wallet balance and set it as selected asset
-        const oWalletBalances = NEA.fromArray(allBalances)
-        const runeWalletBalance = getWalletBalanceByAssetAndWalletType({
-          oWalletBalances,
-          asset: AssetRuneNative,
-          walletType
-        })
+      const oWalletBalances = NEA.fromArray(allBalances)
+      const walletBalance = getWalletBalanceByAssetAndWalletType({
+        oWalletBalances,
+        asset,
+        walletType
+      })
 
-        if (O.isSome(runeWalletBalance)) {
-          const selectedAsset = {
-            asset: runeWalletBalance.value.asset,
-            walletAddress: runeWalletBalance.value.walletAddress,
-            walletType: runeWalletBalance.value.walletType,
-            walletAccount: runeWalletBalance.value.walletAccount,
-            walletIndex: runeWalletBalance.value.walletIndex,
-            hdMode: runeWalletBalance.value.hdMode
-          }
-          setSelectedAsset(O.some(selectedAsset))
+      if (O.isSome(walletBalance)) {
+        const selectedAsset = {
+          asset: walletBalance.value.asset,
+          walletAddress: walletBalance.value.walletAddress,
+          walletType: walletBalance.value.walletType,
+          walletAccount: walletBalance.value.walletAccount,
+          walletIndex: walletBalance.value.walletIndex,
+          hdMode: walletBalance.value.hdMode
         }
+        setSelectedAsset(O.some(selectedAsset))
       }
 
       // Navigate to interact route
