@@ -10,6 +10,7 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline'
 import { QuoteSwap } from '@xchainjs/xchain-aggregator'
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
@@ -2897,6 +2898,7 @@ export const Swap = ({
             <></>
           ) : (
             <SwapRoute
+              isBoostable={sourceAsset.chain === BTCChain}
               targetAsset={targetAsset.ticker}
               quote={oQuoteProtocol}
               quotes={oQuoteProcotols}
