@@ -5,6 +5,7 @@ import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
+import BoostIcon from '../../../assets/svg/boost.svg'
 import { useAggregator } from '../../../store/aggregator/hooks'
 import { ProviderIcon } from '../../swap/ProviderIcon'
 import { BaseButton } from '../../uielements/button'
@@ -74,7 +75,10 @@ export const ProviderModalContent = ({ open, onClose }: Props) => {
             <div className="mt-4 border-t border-gray1 pt-4 dark:border-gray0d">
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-text2 dark:text-text2d">Enable Boost Swaps</span>
+                  <span className="flex items-center text-text2 dark:text-text2d">
+                    Chainflip Boost (Bitcoin Only)
+                    <img src={BoostIcon} alt="Boost" className="h-5 w-5" />
+                  </span>
                   <span className="text-xs text-gray1 dark:text-gray1d">
                     Faster Chainflip swaps with additional fees
                   </span>
