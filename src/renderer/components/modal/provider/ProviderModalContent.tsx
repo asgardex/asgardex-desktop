@@ -18,7 +18,7 @@ export type Props = {
 const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
 
 export const ProviderModalContent = ({ open, onClose }: Props) => {
-  const { protocols, setAggProtocol } = useAggregator()
+  const { protocols, setAggProtocol, isBoostEnabled, setBoostEnabled } = useAggregator()
   const intl = useIntl()
 
   const onToggleSwitch = useCallback(
@@ -69,6 +69,19 @@ export const ProviderModalContent = ({ open, onClose }: Props) => {
                 />
               </div>
             ))}
+
+            {/* Boost Setting */}
+            <div className="mt-4 border-t border-gray1 pt-4 dark:border-gray0d">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-text2 dark:text-text2d">Enable Boost Swaps</span>
+                  <span className="text-xs text-gray1 dark:text-gray1d">
+                    Faster Chainflip swaps with additional fees
+                  </span>
+                </div>
+                <SwitchButton active={isBoostEnabled} onChange={(active) => setBoostEnabled(active)} />
+              </div>
+            </div>
           </div>
         </DialogPanel>
       </div>

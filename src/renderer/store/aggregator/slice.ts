@@ -56,6 +56,7 @@ const getBrokerUrl = () => {
 const initialState: State = {
   isLoading: false,
   protocols: JSON.parse(getProtocolFromStorage(JSON.stringify(AllProtocols))),
+  isBoostEnabled: false, // Boost disabled by default
   aggregator: new Aggregator({
     affiliate: {
       basisPoints: ASGARDEX_AFFILIATE_FEE,
@@ -103,6 +104,9 @@ const slice = createSlice({
       }
 
       setValueToStorage(StorageKey.Protocol, JSON.stringify(state.protocols))
+    },
+    setBoostEnabled(state, { payload }: PayloadAction<boolean>) {
+      state.isBoostEnabled = payload
     }
   }
 })

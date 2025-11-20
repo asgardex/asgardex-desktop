@@ -1300,6 +1300,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@chainflip/rpc@npm:~1.11.7":
+  version: 1.11.13
+  resolution: "@chainflip/rpc@npm:1.11.13"
+  dependencies:
+    "@chainflip/utils": "npm:0.11.0"
+    zod: "npm:^3.25.75"
+  checksum: 10/84847e7814af13ef1aa90dd61122b98a054a252515a30990dd7d1020ceca9270f64246406a630b9b054c8073b5e66c73ff50d5ffcfc061f028d2f0eadbcfa738
+  languageName: node
+  linkType: hard
+
 "@chainflip/scale@npm:^1.11.0":
   version: 1.11.0
   resolution: "@chainflip/scale@npm:1.11.0"
@@ -1324,6 +1334,23 @@ __metadata:
     ethers: "npm:^6.14.4"
     zod: "npm:^3.25.76"
   checksum: 10/4350285f55e0e84dab8273d8b2eb85dfd98db9d9384900d9fabf9e389526d6f0d791e0f1d1be577783647c80d4d3485f472f87f42ad29fbbd2a7d3745945cae3
+  languageName: node
+  linkType: hard
+
+"@chainflip/sdk@npm:1.11.2":
+  version: 1.11.2
+  resolution: "@chainflip/sdk@npm:1.11.2"
+  dependencies:
+    "@chainflip/bitcoin": "npm:^1.2.7"
+    "@chainflip/rpc": "npm:~1.11.7"
+    "@chainflip/solana": "npm:^2.2.0"
+    "@chainflip/utils": "npm:^0.11.1"
+    "@ts-rest/core": "npm:^3.52.1"
+    axios: "npm:^1.10.0"
+    bignumber.js: "npm:^9.3.0"
+    ethers: "npm:^6.14.4"
+    zod: "npm:^3.25.76"
+  checksum: 10/eaa051c2b9b723bb830f4850d8ad2615a64cc08ed6f289dfd57daebc29381969dd90f9195457b73888db44ef3146a1b5959bc543ae8a94a9114f6b2f84949990
   languageName: node
   linkType: hard
 
@@ -5663,11 +5690,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-aggregator@npm:2.0.29":
-  version: 2.0.29
-  resolution: "@xchainjs/xchain-aggregator@npm:2.0.29"
+"@xchainjs/xchain-aggregator@npm:2.0.30":
+  version: 2.0.30
+  resolution: "@xchainjs/xchain-aggregator@npm:2.0.30"
   dependencies:
-    "@chainflip/sdk": "npm:1.11.0"
+    "@chainflip/sdk": "npm:1.11.2"
     "@trpc/server": "npm:^10.45.2"
     "@xchainjs/xchain-client": "npm:2.0.9"
     "@xchainjs/xchain-mayachain": "npm:4.1.0"
@@ -5678,7 +5705,7 @@ __metadata:
     "@xchainjs/xchain-thorchain-query": "npm:2.0.15"
     "@xchainjs/xchain-util": "npm:2.0.5"
     "@xchainjs/xchain-wallet": "npm:2.0.18"
-  checksum: 10/dd82e570c1bfa52edbae572e7eaefee636309ac84f8e55ae83389c9b8698014836717b0e5b246b690c48984db29254b4c50adf57cf46716f0cc1feaa3fed2997
+  checksum: 10/a902b9a8e2df4661daa8d6245f4f9e326cab7f45706ddf6fe749d57a9c217ca2d33a62fba677faf50ace5f280cc924eb5e713f9eeb65101f0d2e408670527043
   languageName: node
   linkType: hard
 
@@ -6797,7 +6824,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^7.18.0"
     "@vitejs/plugin-react": "npm:^4.4.1"
     "@vitest/ui": "npm:^3.1.3"
-    "@xchainjs/xchain-aggregator": "npm:2.0.29"
+    "@xchainjs/xchain-aggregator": "npm:2.0.30"
     "@xchainjs/xchain-arbitrum": "npm:2.0.12"
     "@xchainjs/xchain-avax": "npm:2.0.12"
     "@xchainjs/xchain-base": "npm:1.0.12"

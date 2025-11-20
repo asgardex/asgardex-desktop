@@ -6,4 +6,5 @@ export type State = {
   aggregator: Aggregator
   quoteSwap: QuoteSwap[] | null
   protocols: Protocol[]
+  isBoostEnabled: boolean
 }

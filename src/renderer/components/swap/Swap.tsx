@@ -128,6 +128,11 @@ import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
 import { SwapTxModal } from './SwapTxModal'
 
+// Extended QuoteSwap type to include boost information
+type ExtendedQuoteSwap = QuoteSwap & {
+  isBoostQuote?: boolean
+}
+
 const ErrorLabel = ({ children, className }: { children: React.ReactNode; className?: string }): JSX.Element => (
   <div
     className={clsx('mb-[14px] text-center font-main text-[12px] uppercase text-error0 dark:text-error0d', className)}>
@@ -174,7 +179,7 @@ export const Swap = ({
   transactionTrackingService,
   mayaTransactionTrackingService
 }: SwapProps) => {
-  const { estimateSwap, protocols } = useAggregator()
+  const { estimateSwap, protocols, isBoostEnabled } = useAggregator()
   const { geckoPriceMap } = useCoingecko()
   const intl = useIntl()
   const { appWalletService } = useWalletContext()
@@ -307,8 +312,8 @@ export const Swap = ({
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
 
-  const [oQuoteProcotols, setQuoteProtocols] = useState<O.Option<QuoteSwap[]>>(O.none)
-  const [oQuoteProtocol, setQuoteProtocol] = useState<O.Option<QuoteSwap>>(O.none)
+  const [oQuoteProcotols, setQuoteProtocols] = useState<O.Option<ExtendedQuoteSwap[]>>(O.none)
+  const [oQuoteProtocol, setQuoteProtocol] = useState<O.Option<ExtendedQuoteSwap>>(O.none)
   const [oErrorProtocol, setErrorProtocol] = useState<O.Option<Error>>(O.none)
 
   // Default Streaming interval set to 1 blocks
@@ -1062,25 +1067,35 @@ export const Swap = ({
       setIsFetchingEstimate(true)
 
       try {
-        const result = await estimateSwap(
-          {
-            fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
-            destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
-            amount: new CryptoAmount(amount, {
-              ...sourceAsset,
-              symbol: sourceAsset.symbol.toUpperCase()
-            }),
-            fromAddress: isSecuredAsset(sourceAsset) ? undefined : sourceWalletAddress,
-            destinationAddress: quoteOnly ? undefined : effectiveRecipientAddressString,
-            streamingInterval: isStreaming ? streamingInterval : 0,
-            streamingQuantity: isStreaming ? streamingQuantity : 0,
-            liquidityToleranceBps: slipTolerance * 100,
-            toleranceBps: undefined
-          },
-          applyBps
+        const swapParams = {
+          fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
+          destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
+          amount: new CryptoAmount(amount, {
+            ...sourceAsset,
+            symbol: sourceAsset.symbol.toUpperCase()
+          }),
+          fromAddress: isSecuredAsset(sourceAsset) ? undefined : sourceWalletAddress,
+          destinationAddress: quoteOnly ? undefined : effectiveRecipientAddressString,
+          streamingInterval: isStreaming ? streamingInterval : 0,
+          streamingQuantity: isStreaming ? streamingQuantity : 0,
+          liquidityToleranceBps: slipTolerance * 100,
+          toleranceBps: undefined
+        }
+
+        let allQuotes: ExtendedQuoteSwap[] = []
+
+        // Fetch quotes with boost based on user setting
+        const result = await estimateSwap({ ...swapParams, enableBoost: isBoostEnabled }, applyBps)
+        allQuotes = result.map(
+          (quote) =>
+            ({
+              ...quote,
+              // Mark Chainflip quotes as boost quotes only if boost is enabled
+              isBoostQuote: quote.protocol === 'Chainflip' && isBoostEnabled
+            }) as ExtendedQuoteSwap
         )
 
-        const sortAndSetDefaultQuote = (quotes: QuoteSwap[]) => {
+        const sortAndSetDefaultQuote = (quotes: ExtendedQuoteSwap[]) => {
           const sortedQuotes = quotes.sort((a, b) => {
             const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
             const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
@@ -1102,7 +1117,7 @@ export const Swap = ({
           }
         }
 
-        sortAndSetDefaultQuote(result)
+        sortAndSetDefaultQuote(allQuotes)
       } catch (err) {
         console.error('Failed to fetch estimate:', err)
 
@@ -1134,7 +1149,8 @@ export const Swap = ({
       isStreaming,
       streamingInterval,
       streamingQuantity,
-      slipTolerance
+      slipTolerance,
+      isBoostEnabled
     ]
   )
 
@@ -1187,7 +1203,7 @@ export const Swap = ({
   }, [debouncedSetAmountToSwap])
 
   // Function to handle user selection
-  const handleSelectQuote = (selectedQuote: QuoteSwap) => {
+  const handleSelectQuote = (selectedQuote: ExtendedQuoteSwap) => {
     setQuoteProtocol(O.some(selectedQuote))
   }
 

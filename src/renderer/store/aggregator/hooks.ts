@@ -14,11 +14,18 @@ export const useAggregator = () => {
   const network = getCurrentNetworkState()
 
   // Selector to get aggregator state from Redux
-  const { aggregator, protocols, ...rest } = useSelector((state: RootState) => state.aggregator)
+  const { aggregator, protocols, isBoostEnabled, ...rest } = useSelector((state: RootState) => state.aggregator)
 
   const setAggProtocol = useCallback(
     (protocol: Protocol, isActive: boolean) => {
       dispatch(actions.setProtocol({ protocol, isActive }))
+    },
+    [dispatch]
+  )
+
+  const setBoostEnabled = useCallback(
+    (enabled: boolean) => {
+      dispatch(actions.setBoostEnabled(enabled))
     },
     [dispatch]
   )
@@ -45,8 +52,10 @@ export const useAggregator = () => {
   return {
     aggregator,
     protocols,
+    isBoostEnabled,
     ...rest,
     estimateSwap,
-    setAggProtocol
+    setAggProtocol,
+    setBoostEnabled
   }
 }
