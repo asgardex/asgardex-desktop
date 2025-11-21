@@ -1,5 +1,22 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.41.4 (2024-11-21)
+
+## Add
+
+- add chainflip aggregator package update with boost option [#937](https://github.com/asgardex/asgardex-desktop/pull/937)
+- add cacao pool UI [#931](https://github.com/asgardex/asgardex-desktop/pull/931)
+- add import tokens UI [#932](https://github.com/asgardex/asgardex-desktop/pull/932)
+- add custom ERC20 support [#927](https://github.com/asgardex/asgardex-desktop/pull/927)
+- add synth warning for minting [#929](https://github.com/asgardex/asgardex-desktop/pull/929)
+
+## Update/Fixes
+
+- fix missing i18n translations [#935](https://github.com/asgardex/asgardex-desktop/pull/935)
+- fix chain icon visibility for collapse open state [#936](https://github.com/asgardex/asgardex-desktop/pull/936)
+- update unit tests for chain utils
+- ready for new release [#926](https://github.com/asgardex/asgardex-desktop/pull/926)
+
 # 1.41.3 (2025-10-27)
 
 ## Update/Fixes
