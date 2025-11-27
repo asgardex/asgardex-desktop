@@ -355,6 +355,7 @@ export const Swap = ({
       // Only reset if the target chain actually changed (not just a re-render)
       if (prevTargetChainRef.current && prevTargetChainRef.current !== targetChain) {
         setStandaloneLedgerTargetAddress(O.none)
+        setCustomAddressEditActive(false) // Reset manual entry mode when chain changes
       }
       prevTargetChainRef.current = targetChain
     }
@@ -389,6 +390,13 @@ export const Swap = ({
   const prevTargetAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
+
+  // Reset manual entry mode when entering standalone ledger mode
+  useEffect(() => {
+    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
+      setCustomAddressEditActive(false)
+    }
+  }, [appWalletState])
 
   const sourceWalletAddress = useMemo(() => {
     return FP.pipe(
@@ -3252,63 +3260,6 @@ export const Swap = ({
                         </h3>
                         <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
                       </div>
-                      {/* Derivation path controls - only show when no address is fetched yet and not in manual entry mode */}
-                      {FP.pipe(standaloneLedgerTargetAddress, O.isNone) && !customAddressEditActive && (
-                        <div className="flex items-center gap-2">
-                          {(['BTC', 'LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) ||
-                            ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain)) && (
-                            <>
-                              <div className="flex items-center gap-1">
-                                <span className="text-10 uppercase text-gray2 dark:text-gray2d">Account</span>
-                                <input
-                                  type="number"
-                                  value={targetWalletAccount.toString()}
-                                  onChange={(e) => setTargetWalletAccount(Math.max(0, parseInt(e.target.value) || 0))}
-                                  className="text-10 h-6 w-12 rounded border border-gray1 bg-bg0 px-1 text-center dark:border-gray1d dark:bg-bg0d"
-                                  min="0"
-                                />
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <span className="text-10 uppercase text-gray2 dark:text-gray2d">Index</span>
-                                <input
-                                  type="number"
-                                  value={targetWalletIndex.toString()}
-                                  onChange={(e) => setTargetWalletIndex(Math.max(0, parseInt(e.target.value) || 0))}
-                                  className="text-10 h-6 w-12 rounded border border-gray1 bg-bg0 px-1 text-center dark:border-gray1d dark:bg-bg0d"
-                                  min="0"
-                                />
-                              </div>
-                              {targetAsset.chain === 'BTC' && (
-                                <select
-                                  value={targetHDMode}
-                                  onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
-                                  className="text-10 rounded border border-gray1 bg-bg0 px-2 py-1 dark:border-gray1d dark:bg-bg0d">
-                                  <option value="p2wpkh">{intl.formatMessage({ id: 'common.nativeSegwit' })}</option>
-                                  <option value="p2tr">{intl.formatMessage({ id: 'common.taproot' })}</option>
-                                </select>
-                              )}
-                              {['LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) && (
-                                <select
-                                  value={targetHDMode}
-                                  onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
-                                  className="text-10 rounded border border-gray1 bg-bg0 px-2 py-1 dark:border-gray1d dark:bg-bg0d">
-                                  <option value="default">Default</option>
-                                </select>
-                              )}
-                              {['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain) && (
-                                <select
-                                  value={targetHDMode}
-                                  onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
-                                  className="text-10 rounded border border-gray1 bg-bg0 px-2 py-1 dark:border-gray1d dark:bg-bg0d">
-                                  <option value="ledgerlive">Ledger Live</option>
-                                  <option value="legacy">Legacy</option>
-                                  <option value="metamask">MetaMask</option>
-                                </select>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )}
 
                       {/* Refresh from Ledger button - only show if address was fetched from Ledger */}
                       {FP.pipe(standaloneLedgerTargetAddress, O.isSome) && !customAddressEditActive && (
@@ -3337,35 +3288,111 @@ export const Swap = ({
                         () => (
                           <div className="mt-3 space-y-3">
                             <div className="grid grid-cols-1 gap-3">
-                              <button
-                                className="group flex items-center justify-between rounded-lg border border-gray0 p-4 transition-all duration-200 hover:border-turquoise hover:bg-bg1 dark:border-gray0d dark:hover:bg-bg1d"
-                                disabled={isFetchingStandaloneLedgerAddress}
-                                onClick={() => {
-                                  if (
-                                    window.confirm(
-                                      `Please make sure the ${targetChain} app is open on your Ledger device before proceeding.`
-                                    )
-                                  ) {
-                                    fetchStandaloneLedgerTargetAddress(targetChain)
-                                  }
-                                }}>
-                                <div className="flex items-center space-x-3">
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-turquoise/10">
-                                    <div className="h-4 w-4 rounded-sm bg-turquoise"></div>
-                                  </div>
-                                  <div className="text-left">
-                                    <div className="font-medium text-text0 dark:text-text0d">
-                                      {intl.formatMessage({ id: 'common.fetchFromLedger' })}
+                              <div className="rounded-lg border border-gray0 dark:border-gray0d">
+                                {/* Derivation path controls */}
+                                {(['BTC', 'LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) ||
+                                  ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain)) && (
+                                  <div className="border-b border-gray0 p-3 dark:border-gray0d">
+                                    <div className="mb-2 text-[12px] font-medium uppercase text-text2 dark:text-text2d">
+                                      Derivation Path
                                     </div>
-                                    <div className="text-[12px] text-text2 dark:text-text2d">
-                                      {intl.formatMessage({ id: 'wallet.ledger.fetchDescription' })}
+                                    <div className="flex items-end gap-3">
+                                      <div className="flex flex-col gap-1">
+                                        <span className="text-xs font-medium text-text2 dark:text-text2d">Account</span>
+                                        <input
+                                          type="number"
+                                          value={targetWalletAccount.toString()}
+                                          onChange={(e) =>
+                                            setTargetWalletAccount(Math.max(0, parseInt(e.target.value) || 0))
+                                          }
+                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
+                                          min="0"
+                                        />
+                                      </div>
+                                      <div className="flex flex-col gap-1">
+                                        <span className="text-xs font-medium text-text2 dark:text-text2d">Index</span>
+                                        <input
+                                          type="number"
+                                          value={targetWalletIndex.toString()}
+                                          onChange={(e) =>
+                                            setTargetWalletIndex(Math.max(0, parseInt(e.target.value) || 0))
+                                          }
+                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
+                                          min="0"
+                                        />
+                                      </div>
+                                      {targetAsset.chain === 'BTC' && (
+                                        <div className="flex flex-col gap-1">
+                                          <span className="text-xs font-medium text-text2 dark:text-text2d">Type</span>
+                                          <select
+                                            value={targetHDMode}
+                                            onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
+                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
+                                            <option value="p2wpkh">
+                                              {intl.formatMessage({ id: 'common.nativeSegwit' })}
+                                            </option>
+                                            <option value="p2tr">{intl.formatMessage({ id: 'common.taproot' })}</option>
+                                          </select>
+                                        </div>
+                                      )}
+                                      {['LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) && (
+                                        <div className="flex flex-col gap-1">
+                                          <span className="text-xs font-medium text-text2 dark:text-text2d">Type</span>
+                                          <select
+                                            value={targetHDMode}
+                                            onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
+                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
+                                            <option value="default">Default</option>
+                                          </select>
+                                        </div>
+                                      )}
+                                      {['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain) && (
+                                        <div className="flex flex-col gap-1">
+                                          <span className="text-xs font-medium text-text2 dark:text-text2d">Type</span>
+                                          <select
+                                            value={targetHDMode}
+                                            onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
+                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
+                                            <option value="ledgerlive">Ledger Live</option>
+                                            <option value="legacy">Legacy</option>
+                                            <option value="metamask">MetaMask</option>
+                                          </select>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
-                                </div>
-                                <div className="text-turquoise transition-transform duration-200 group-hover:translate-x-1">
-                                  →
-                                </div>
-                              </button>
+                                )}
+                                {/* Fetch button */}
+                                <button
+                                  className="group flex w-full items-center justify-between p-4 transition-all duration-200 hover:bg-bg1 dark:hover:bg-bg1d"
+                                  disabled={isFetchingStandaloneLedgerAddress}
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        `Please make sure the ${targetChain} app is open on your Ledger device before proceeding.`
+                                      )
+                                    ) {
+                                      fetchStandaloneLedgerTargetAddress(targetChain)
+                                    }
+                                  }}>
+                                  <div className="flex items-center space-x-3">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-turquoise/10">
+                                      <div className="h-4 w-4 rounded-sm bg-turquoise"></div>
+                                    </div>
+                                    <div className="text-left">
+                                      <div className="font-medium text-text0 dark:text-text0d">
+                                        {intl.formatMessage({ id: 'common.fetchFromLedger' })}
+                                      </div>
+                                      <div className="text-[12px] text-text2 dark:text-text2d">
+                                        {intl.formatMessage({ id: 'wallet.ledger.fetchDescription' })}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="text-turquoise transition-transform duration-200 group-hover:translate-x-1">
+                                    →
+                                  </div>
+                                </button>
+                              </div>
 
                               <button
                                 className="group flex items-center justify-between rounded-lg border border-gray0 p-4 transition-all duration-200 hover:border-turquoise hover:bg-bg1 dark:border-gray0d dark:hover:bg-bg1d"
@@ -3375,7 +3402,7 @@ export const Swap = ({
                                 }}>
                                 <div className="flex items-center space-x-3">
                                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-warning0/10">
-                                    <div className="h-4 w-4 rounded-sm border-2 border-warning0"></div>
+                                    <div className="h-4 w-4 rounded-sm bg-warning0"></div>
                                   </div>
                                   <div className="text-left">
                                     <div className="font-medium text-text0 dark:text-text0d">Enter Manually</div>
@@ -3389,6 +3416,32 @@ export const Swap = ({
                                 </div>
                               </button>
                             </div>
+
+                            {/* Manual entry interface - shown when customAddressEditActive is true */}
+                            {customAddressEditActive && (
+                              <div className="space-y-2">
+                                <div className="text-[14px] text-text2 dark:text-text2d">Enter recipient address:</div>
+                                <EditableAddress
+                                  key="manual-entry"
+                                  asset={targetAsset}
+                                  network={network}
+                                  address=""
+                                  startInEditMode={customAddressEditActive}
+                                  onChangeAddress={(newAddress) => {
+                                    if (newAddress.trim()) {
+                                      setStandaloneLedgerTargetAddress(O.some(newAddress))
+                                      onChangeRecipientAddress(newAddress)
+                                    } else {
+                                      setStandaloneLedgerTargetAddress(O.none)
+                                    }
+                                  }}
+                                  onChangeEditableAddress={onChangeEditableRecipientAddress}
+                                  onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
+                                  addressValidator={addressValidator}
+                                  hidePrivateData={hidePrivateData}
+                                />
+                              </div>
+                            )}
                           </div>
                         ),
                         (address) => (
