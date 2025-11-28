@@ -60,7 +60,7 @@ import {
   WalletBalances
 } from '../../../../services/clients'
 import { TxParams } from '../../../../services/evm/types'
-import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/mayaMigard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/mayaMidgard/types'
 import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'

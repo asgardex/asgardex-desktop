@@ -11,7 +11,7 @@ import {
   AssetUniHAddress,
   AssetUSDCAVAX,
   AssetUSDCBSC,
-  AssetUSDTERC20,
+  AssetUSDT,
   AssetUSDTERC20Testnet,
   AssetXRune,
   AssetXRuneAddress,
@@ -130,7 +130,7 @@ describe('helpers/assetHelper', () => {
     })
 
     it('USDT (white listed)', () => {
-      expect(assetInERC20Whitelist(AssetUSDTERC20)).toBeTruthy()
+      expect(assetInERC20Whitelist(AssetUSDT)).toBeTruthy()
     })
 
     it('XRUNE (white listed)', () => {
@@ -140,7 +140,7 @@ describe('helpers/assetHelper', () => {
 
   describe('iconUrlInERC20Whitelist', () => {
     it('USDT (w/ icon)', () => {
-      expect(iconUrlInERC20Whitelist(AssetUSDTERC20)).toEqual(
+      expect(iconUrlInERC20Whitelist(AssetUSDT)).toEqual(
         O.some('https://tokens.1inch.io/0xdac17f958d2ee523a2206206994597c13d831ec7.png')
       )
     })

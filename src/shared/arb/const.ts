@@ -9,8 +9,8 @@ import { etherscanApiKey } from '../api/etherscan'
 
 export const UPPER_FEE_BOUND = 2000000000
 
-// =====Ethers providers=====
-// Define JSON-RPC providers for mainnet and testnet
+// =====JSON-RPC Providers=====
+// Define providers for ARB mainnet and testnet
 const ARBITRUM_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://arb1.arbitrum.io/rpc')
 const ARBITRUM_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://goerli-rollup.arbitrum.io/rpc')
 
@@ -19,8 +19,10 @@ const ethersJSProviders = {
   [Network.Testnet]: ARBITRUM_TESTNET_ETHERS_PROVIDER,
   [Network.Stagenet]: ARBITRUM_MAINNET_ETHERS_PROVIDER
 }
-// =====Ethers providers=====
-// =====ONLINE providers=====
+// =====JSON-RPC Providers=====
+
+// =====Data Providers=====
+// Define data providers (Etherscan/Routescan) for different networks
 
 const ARB_ONLINE_PROVIDER_TESTNET = new EtherscanProviderV2(
   ARBITRUM_TESTNET_ETHERS_PROVIDER,
@@ -48,7 +50,7 @@ const arbProviders = {
 const ROUTESCAN_PROVIDER_MAINNET = new RoutescanProvider(
   ARBITRUM_MAINNET_ETHERS_PROVIDER,
   'https://api.routescan.io',
-  43114,
+  42161,
   AssetAETH,
   ARB_DECIMAL
 )
@@ -56,7 +58,7 @@ const ROUTESCAN_PROVIDER_MAINNET = new RoutescanProvider(
 const ROUTESCAN_PROVIDER_TESTNET = new RoutescanProvider(
   ARBITRUM_TESTNET_ETHERS_PROVIDER,
   'https://api.routescan.io',
-  42161,
+  421614,
   AssetAETH,
   ARB_DECIMAL,
   true
@@ -67,10 +69,11 @@ const routescanProviders = {
   [Network.Testnet]: ROUTESCAN_PROVIDER_TESTNET,
   [Network.Stagenet]: ROUTESCAN_PROVIDER_MAINNET
 }
-// =====ONLINE providers=====
+// =====Data Providers=====
 
-// =====Explorers=====
-// Define explorer providers for mainnet and testnet
+// =====Block Explorers=====
+// =====Block Explorers=====
+// Define explorer providers for different networks
 const ARB_MAINNET_EXPLORER = new ExplorerProvider(
   'https://arbiscan.io/',
   'https://arbiscan.io/address/%%ADDRESS%%',
@@ -86,9 +89,11 @@ const arbExplorerProviders = {
   [Network.Testnet]: ARB_TESTNET_EXPLORER,
   [Network.Stagenet]: ARB_MAINNET_EXPLORER
 }
-// =====Explorers=====
+// =====Block Explorers=====
 
-const ethRootDerivationPaths = {
+// =====Network Configuration=====
+// Define root derivation paths and default parameters
+const evmRootDerivationPaths = {
   [Network.Mainnet]: `m/44'/60'/0'/0/`,
   [Network.Testnet]: `m/44'/60'/0'/0/`,
   [Network.Stagenet]: `m/44'/60'/0'/0/`
@@ -128,5 +133,5 @@ export const defaultArbParams: EVMClientParams = {
     lower: LOWER_FEE_BOUND,
     upper: UPPER_FEE_BOUND
   },
-  rootDerivationPaths: ethRootDerivationPaths
+  rootDerivationPaths: evmRootDerivationPaths
 }

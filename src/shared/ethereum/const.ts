@@ -11,6 +11,8 @@ export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
 const LOWER_FEE_BOUND = 1000000
 
+// =====JSON-RPC Providers=====
+// Define providers for ETH mainnet and testnet
 const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
 const network = EthersNetwork.from('sepolia')
 const ETH_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com', network)
@@ -20,9 +22,10 @@ const ethersJSProviders = {
   [Network.Testnet]: ETH_TESTNET_ETHERS_PROVIDER,
   [Network.Stagenet]: ETH_MAINNET_ETHERS_PROVIDER
 }
-// =====Ethers providers=====
+// =====JSON-RPC Providers=====
 
-// =====ONLINE providers=====
+// =====Data Providers=====
+// Define data providers (Etherscan) for different networks
 const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProviderV2(
   ETH_TESTNET_ETHERS_PROVIDER,
   'https://api.etherscan.io/v2',
@@ -47,9 +50,11 @@ const ethProviders = {
   [Network.Testnet]: ETH_ONLINE_PROVIDER_TESTNET,
   [Network.Stagenet]: ETH_ONLINE_PROVIDER_MAINNET
 }
-// =====ONLINE providers=====
+// =====Data Providers=====
 
-// =====Explorers=====
+// =====Block Explorers=====
+// =====Block Explorers=====
+// Define explorer providers for different networks
 const ETH_MAINNET_EXPLORER = new ExplorerProvider(
   'https://etherscan.io',
   'https://etherscan.io/address/%%ADDRESS%%',
@@ -65,8 +70,10 @@ const ethExplorerProviders = {
   [Network.Testnet]: ETH_TESTNET_EXPLORER,
   [Network.Stagenet]: ETH_MAINNET_EXPLORER
 }
-// =====Explorers=====
+// =====Block Explorers=====
 
+// =====Network Configuration=====
+// Define root derivation paths and default parameters
 const ethRootDerivationPaths = {
   [Network.Mainnet]: "m/44'/60'/0'/0/",
   [Network.Testnet]: "m/44'/60'/0'/0/",
@@ -94,6 +101,8 @@ const defaults = {
   }
 }
 
+// =====Client Parameters=====
+// Export default client configuration
 export const defaultEthParams: EVMClientParams = {
   chain: ETHChain,
   gasAsset: AssetETH,

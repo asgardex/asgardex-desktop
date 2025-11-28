@@ -20,7 +20,7 @@ import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { AssetZEC } from '@xchainjs/xchain-zcash'
 
 import { eqAsset } from '../../renderer/helpers/fp/eq'
-import { PoolDetails as PoolDetailsMaya } from '../../renderer/services/midgard/mayaMigard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../renderer/services/midgard/mayaMidgard/types'
 import { PoolDetails } from '../../renderer/services/midgard/midgardTypes'
 
 // Re-export to have asset definition at one place only to handle xchain-* changes easily in the future

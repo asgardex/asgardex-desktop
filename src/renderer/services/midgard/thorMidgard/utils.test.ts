@@ -18,7 +18,7 @@ import {
   TWO_RUNE_BASE_AMOUNT
 } from '../../../../shared/mock/amount'
 import { AssetATOM, AssetBSC, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../../../shared/utils/asset'
-import { PRICE_POOLS_WHITELIST, AssetUSDC, AssetUSDTDAC, AssetUSDCBSC } from '../../../const'
+import { PRICE_POOLS_WHITELIST, AssetUSDC, AssetUSDT, AssetUSDCBSC } from '../../../const'
 import { eqAsset, eqPoolShare, eqPoolShares, eqOAssetWithAmount, eqString } from '../../../helpers/fp/eq'
 import { RUNE_POOL_ADDRESS, RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import {
@@ -59,7 +59,7 @@ describe('services/midgard/utils/', () => {
     const btc = { asset: assetToString(AssetBTC), assetDepth: '4', runeDepth: '44' } as PoolDetail
     const ltc = { asset: assetToString(AssetLTC), assetDepth: '5', runeDepth: '5' } as PoolDetail
     const usdc = { asset: assetToString(AssetUSDC), assetDepth: '66', runeDepth: '5' } as PoolDetail
-    const usdt = { asset: assetToString(AssetUSDTDAC), assetDepth: '77', runeDepth: '5' } as PoolDetail
+    const usdt = { asset: assetToString(AssetUSDT), assetDepth: '77', runeDepth: '5' } as PoolDetail
 
     it('returns list of price pools in a right order', () => {
       const result = getPricePools([bsc, eth, usdc_bsc, btc, ltc], PRICE_POOLS_WHITELIST)
@@ -113,7 +113,7 @@ describe('services/midgard/utils/', () => {
       expect(pool0.asset).toEqual(AssetRuneNative)
       // USD pool
       const pool1 = result[1]
-      expect(pool1.asset).toEqual(AssetUSDTDAC)
+      expect(pool1.asset).toEqual(AssetUSDT)
     })
   })
 

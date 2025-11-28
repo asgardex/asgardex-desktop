@@ -91,8 +91,8 @@ import { AddressValidationAsync, GetExplorerTxUrl, OpenExplorerTxUrl } from '../
 import {
   PoolDetails as PoolDetailsMaya,
   PoolsDataMap as PoolsDataMapMaya
-} from '../../services/midgard/mayaMigard/types'
-import { getPoolDetail as getPoolDetailMaya } from '../../services/midgard/mayaMigard/utils'
+} from '../../services/midgard/mayaMidgard/types'
+import { getPoolDetail as getPoolDetailMaya } from '../../services/midgard/mayaMidgard/utils'
 import { PoolAddress, PoolsDataMap, PoolDetails } from '../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
 import { userChains$ } from '../../services/storage/userChains'

@@ -8,25 +8,27 @@ import { JsonRpcProvider } from 'ethers'
 
 import { etherscanApiKey } from '../api/etherscan'
 
-// Define JSON-RPC providers for mainnet and testnet
+// =====JSON-RPC Providers=====
+// Define providers for BASE mainnet and testnet
 const BASE_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://1rpc.io/base')
 const BASE_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://base-sepolia-rpc.publicnode.com')
 
-// Define ethers providers for different networks
 const ethersJSProviders = {
   [Network.Mainnet]: BASE_MAINNET_ETHERS_PROVIDER,
   [Network.Testnet]: BASE_TESTNET_ETHERS_PROVIDER,
   [Network.Stagenet]: BASE_MAINNET_ETHERS_PROVIDER
 }
+// =====JSON-RPC Providers=====
 
-// Define online providers (Etherscan) for mainnet and testnet
+// =====Data Providers=====
+// Define data providers (Etherscan) for different networks
 const BASE_ONLINE_PROVIDER_MAINNET = new EtherscanProviderV2(
   BASE_MAINNET_ETHERS_PROVIDER,
   'https://api.etherscan.io/v2',
   etherscanApiKey,
   BASEChain,
   AssetBETH,
-  18,
+  BASE_GAS_ASSET_DECIMAL,
   8453
 )
 
@@ -36,18 +38,19 @@ const BASE_ONLINE_PROVIDER_TESTNET = new EtherscanProviderV2(
   etherscanApiKey,
   BASEChain,
   AssetBETH,
-  18,
+  BASE_GAS_ASSET_DECIMAL,
   84532
 )
 
-// Define providers for different networks
 const baseProviders = {
   [Network.Mainnet]: BASE_ONLINE_PROVIDER_MAINNET,
   [Network.Testnet]: BASE_ONLINE_PROVIDER_TESTNET,
   [Network.Stagenet]: BASE_ONLINE_PROVIDER_MAINNET
 }
+// =====Data Providers=====
 
-// Define explorer providers for mainnet and testnet
+// =====Block Explorers=====
+// Define explorer providers for different networks
 const BASE_MAINNET_EXPLORER = new ExplorerProvider(
   'https://basescan.org/',
   'https://basescan.org/address/%%ADDRESS%%',
@@ -60,22 +63,22 @@ const BASE_TESTNET_EXPLORER = new ExplorerProvider(
   'https://sepolia.basescan.org/tx/%%TX_ID%%'
 )
 
-// Define explorer providers for different networks
 const baseExplorerProviders = {
   [Network.Mainnet]: BASE_MAINNET_EXPLORER,
   [Network.Testnet]: BASE_TESTNET_EXPLORER,
   [Network.Stagenet]: BASE_MAINNET_EXPLORER
 }
+// =====Block Explorers=====
 
-// Define root derivation paths for different networks
-const ethRootDerivationPaths = {
+// =====Network Configuration=====
+// Define root derivation paths and default parameters
+const evmRootDerivationPaths = {
   [Network.Mainnet]: `m/44'/60'/0'/0/`,
   [Network.Testnet]: `m/44'/60'/0'/0/`,
   [Network.Stagenet]: `m/44'/60'/0'/0/`
 }
 
-// Define default parameters for the Base client
-// TODO: not sure
+// TODO: not sure about these gas price values
 const defaults = {
   [Network.Mainnet]: {
     approveGasLimit: new BigNumber(200000),
@@ -97,7 +100,8 @@ const defaults = {
   }
 }
 
-// Define the default parameters for the Base client
+// =====Client Parameters=====
+// Export default client configuration
 export const defaultBaseParams: EVMClientParams = {
   chain: BASEChain,
   gasAsset: AssetBETH,
@@ -111,5 +115,5 @@ export const defaultBaseParams: EVMClientParams = {
     lower: LOWER_FEE_BOUND,
     upper: UPPER_FEE_BOUND
   },
-  rootDerivationPaths: ethRootDerivationPaths
+  rootDerivationPaths: evmRootDerivationPaths
 }

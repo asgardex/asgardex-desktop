@@ -28,7 +28,7 @@ import { ONE_RUNE_BASE_AMOUNT } from '../../../../../shared/mock/amount'
 import { AssetAVAX, AssetBTC, AssetDOGE, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
-import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDT, ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import {
@@ -122,7 +122,7 @@ type Props = {
 const preferredAssetMap: Record<string, AnyAsset> = {
   [AssetBTC.symbol]: AssetBTC,
   [AssetETH.symbol]: AssetETH,
-  [AssetUSDTDAC.symbol]: AssetUSDTDAC
+  [AssetUSDT.symbol]: AssetUSDT
 }
 
 export const InteractFormThor = ({
@@ -1289,7 +1289,7 @@ export const InteractFormThor = ({
                           <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.symbol}>
                             ETH
                           </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetUSDTDAC.symbol}>
+                          <Radio className="text-gray2 dark:text-gray2d" value={AssetUSDT.symbol}>
                             USDT
                           </Radio>
                         </RadioGroup>

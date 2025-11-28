@@ -11,7 +11,7 @@ import { getEVMTokenAddressForChain, isRuneNativeAsset } from '../../../helpers/
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
-import { service as mayaMidgardService } from '../../midgard/mayaMigard/service'
+import { service as mayaMidgardService } from '../../midgard/mayaMidgard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import { ApiError, ErrorId } from '../../wallet/types'
 import { ChainTxFeeOption, INITIAL_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../const'

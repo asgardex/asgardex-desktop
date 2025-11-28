@@ -15,7 +15,7 @@ import {
   MayaLpUnits,
   NodeInfo as NodeInfoMaya
 } from '../../../services/mayachain/types'
-import { PoolDetails, PoolDetailsRD } from '../../../services/midgard/mayaMigard/types'
+import { PoolDetails, PoolDetailsRD } from '../../../services/midgard/mayaMidgard/types'
 import { PricePool } from '../../../services/midgard/midgardTypes'
 import { NodeInfo, NodeStatusEnum } from '../../../services/thorchain/types'
 import { AddressEllipsis } from '../../uielements/addressEllipsis'

@@ -9,8 +9,8 @@ import { etherscanApiKey } from '../api/etherscan'
 
 const LOWER_FEE_BOUND = 100000000
 
-// =====Ethers providers=====
-// Define JSON-RPC providers for mainnet and testnet
+// =====JSON-RPC Providers=====
+// Define providers for AVAX mainnet and testnet
 const AVALANCHE_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://api.avax.network/ext/bc/C/rpc`, {
   name: 'avalanche',
   chainId: 43114
@@ -25,8 +25,10 @@ const ethersJSProviders = {
   [Network.Testnet]: AVALANCHE_TESTNET_ETHERS_PROVIDER,
   [Network.Stagenet]: AVALANCHE_MAINNET_ETHERS_PROVIDER
 }
-// =====Ethers providers=====
-// =====ONLINE providers=====
+// =====JSON-RPC Providers=====
+
+// =====Data Providers=====
+// Define data providers (Etherscan/Routescan) for different networks
 
 const AVAX_ONLINE_PROVIDER_TESTNET = new EtherscanProviderV2(
   AVALANCHE_TESTNET_ETHERS_PROVIDER,
@@ -73,9 +75,11 @@ const routescanProviders = {
   [Network.Testnet]: ROUTESCAN_PROVIDER_TESTNET,
   [Network.Stagenet]: ROUTESCAN_PROVIDER_MAINNET
 }
-// =====ONLINE providers=====
+// =====Data Providers=====
 
-// =====Explorers=====
+// =====Block Explorers=====
+// =====Block Explorers=====
+// Define explorer providers for different networks
 const AVAX_MAINNET_EXPLORER = new ExplorerProvider(
   'https://snowtrace.dev/',
   'https://snowtrace.dev/address/%%ADDRESS%%',
@@ -91,9 +95,11 @@ const avaxExplorerProviders = {
   [Network.Testnet]: AVAX_TESTNET_EXPLORER,
   [Network.Stagenet]: AVAX_MAINNET_EXPLORER
 }
-// =====Explorers=====
+// =====Block Explorers=====
 
-const ethRootDerivationPaths = {
+// =====Network Configuration=====
+// Define root derivation paths and default parameters
+const evmRootDerivationPaths = {
   [Network.Mainnet]: `m/44'/60'/0'/0/`,
   [Network.Testnet]: `m/44'/60'/0'/0/`,
   [Network.Stagenet]: `m/44'/60'/0'/0/`
@@ -132,5 +138,5 @@ export const defaultAvaxParams: EVMClientParams = {
     lower: LOWER_FEE_BOUND,
     upper: UPPER_FEE_BOUND
   },
-  rootDerivationPaths: ethRootDerivationPaths
+  rootDerivationPaths: evmRootDerivationPaths
 }

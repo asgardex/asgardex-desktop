@@ -22,7 +22,7 @@ import {
 } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
-import { service as mayaMidgardService } from '../../midgard/mayaMigard/service'
+import { service as mayaMidgardService } from '../../midgard/mayaMidgard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import { INITIAL_WITHDRAW_STATE, ChainTxFeeOption } from '../const'
 import { PoolWithdrawParams, SymWithdrawParams, TradeWithdrawParams, WithdrawState, WithdrawState$ } from '../types'

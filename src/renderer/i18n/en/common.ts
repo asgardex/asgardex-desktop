@@ -13,7 +13,7 @@ const common: CommonMessages = {
   'common.addresses': 'Addresses',
   'common.savedAddresses': 'Saved Addresses',
   'common.addAddress': 'Address added successfully',
-  'common.removeAddress': 'Address removed sucessfully',
+  'common.removeAddress': 'Address removed successfully',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':
     'THORNames allow anyone to register cross-chain wallet addresses to a 1-30 long string of hexadecimal characters which include special characters -_+. THORNames are limited to 30 characters, including ^[a-zA-Z0-9+_-]+$',

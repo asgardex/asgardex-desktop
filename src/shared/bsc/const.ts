@@ -9,7 +9,8 @@ import { etherscanApiKey } from '../api/etherscan'
 
 const LOWER_FEE_BOUND = 1000000
 
-// =====Ethers providers=====
+// =====JSON-RPC Providers=====
+// Define providers for BSC mainnet and testnet
 const BSC_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://bsc-dataseed.binance.org/`)
 const BSC_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://data-seed-prebsc-1-s1.binance.org:8545/`)
 
@@ -18,9 +19,10 @@ const ethersJSProviders = {
   [Network.Testnet]: BSC_TESTNET_ETHERS_PROVIDER,
   [Network.Stagenet]: BSC_MAINNET_ETHERS_PROVIDER
 }
-// =====Ethers providers=====
+// =====JSON-RPC Providers=====
 
-// =====ONLINE providers=====
+// =====Data Providers=====
+// Define data providers (Etherscan) for different networks
 const BSC_ONLINE_PROVIDER_TESTNET = new EtherscanProviderV2(
   BSC_TESTNET_ETHERS_PROVIDER,
   'https://api.etherscan.io/v2',
@@ -44,9 +46,11 @@ const bscProviders = {
   [Network.Testnet]: BSC_ONLINE_PROVIDER_TESTNET,
   [Network.Stagenet]: BSC_ONLINE_PROVIDER_MAINNET
 }
-// =====ONLINE providers=====
+// =====Data Providers=====
 
-// =====Explorers=====
+// =====Block Explorers=====
+// =====Block Explorers=====
+// Define explorer providers for different networks
 const BSC_MAINNET_EXPLORER = new ExplorerProvider(
   'https://bscscan.com/',
   'https://bscscan.com/address/%%ADDRESS%%',
@@ -62,9 +66,11 @@ const bscExplorerProviders = {
   [Network.Testnet]: BSC_TESTNET_EXPLORER,
   [Network.Stagenet]: BSC_MAINNET_EXPLORER
 }
-// =====Explorers=====
+// =====Block Explorers=====
 
-const ethRootDerivationPaths = {
+// =====Network Configuration=====
+// Define root derivation paths and default parameters
+const evmRootDerivationPaths = {
   [Network.Mainnet]: "m/44'/60'/0'/0/",
   [Network.Testnet]: "m/44'/60'/0'/0/",
   [Network.Stagenet]: "m/44'/60'/0'/0/"
@@ -104,5 +110,5 @@ export const defaultBscParams: EVMClientParams = {
     lower: LOWER_FEE_BOUND,
     upper: UPPER_FEE_BOUND
   },
-  rootDerivationPaths: ethRootDerivationPaths
+  rootDerivationPaths: evmRootDerivationPaths
 }

@@ -6,7 +6,7 @@ import { AssetBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC } from '@xchainjs/xchain-bsc'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
 
-import { AssetUSDTDAC } from '../const'
+import { AssetUSDT } from '../const'
 import { isEvmChain, isEvmChainAsset, isEvmChainToken } from './evmHelper'
 
 // 1. Test isEvmChain
@@ -40,7 +40,7 @@ describe('helpers/evmHelper', () => {
   // 3. Test isEvmChainToken
   describe('isEvmChainToken', () => {
     it('returns true for an EVM token (ETH.USDT)', () => {
-      expect(isEvmChainToken(AssetUSDTDAC)).toBe(true)
+      expect(isEvmChainToken(AssetUSDT)).toBe(true)
     })
 
     it('returns false for native EVM asset (ETH.ETH)', () => {
@@ -71,7 +71,7 @@ describe('helpers/evmHelper', () => {
     })
 
     it('returns false for non-native token (ETH.USDT)', () => {
-      expect(isEvmChainAsset(AssetUSDTDAC)).toBe(false)
+      expect(isEvmChainAsset(AssetUSDT)).toBe(false)
     })
 
     it('returns false for non-EVM asset (BTC.BTC)', () => {

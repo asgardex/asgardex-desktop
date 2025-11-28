@@ -6,7 +6,7 @@ import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 
 import { AssetBTC, AssetETH, AssetBSC } from '../../../../shared/utils/asset'
-import { AssetUSDCBSC, AssetUSDTBSC, AssetUSDTERC20 } from '../../../const'
+import { AssetUSDCBSC, AssetUSDTBSC, AssetUSDT } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
@@ -353,7 +353,7 @@ describe('deposit/Deposit.helper', () => {
           outFee: assetToBase(assetAmount(0.03, ETH_GAS_ASSET_DECIMAL)),
           refundFee: assetToBase(assetAmount(0.03, ETH_GAS_ASSET_DECIMAL))
         },
-        asset: AssetUSDTERC20,
+        asset: AssetUSDT,
         assetDecimal: depositAssetDecimal,
         poolsData
       }

@@ -11,7 +11,7 @@ import { Filter } from '../components/poolActionsHistory/types'
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { liveData } from '../helpers/rx/liveData'
 import { observableState, triggerStream } from '../helpers/stateHelper'
-import { ActionsPage, ActionsPageRD } from '../services/midgard/mayaMigard/types'
+import { ActionsPage, ActionsPageRD } from '../services/midgard/mayaMidgard/types'
 import { LoadActionsParams } from '../services/midgard/midgardTypes'
 
 export const useMayaMidgardHistoryActions = (itemsPerPage = 10) => {

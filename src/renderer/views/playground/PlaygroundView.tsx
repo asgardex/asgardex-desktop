@@ -10,7 +10,7 @@ import { useIntl } from 'react-intl'
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { PoolsState as PoolStateMaya } from '../../services/midgard/mayaMigard/types'
+import { PoolsState as PoolStateMaya } from '../../services/midgard/mayaMidgard/types'
 import { PoolsState } from '../../services/midgard/midgardTypes'
 import { useApp } from '../../store/app/hooks'
 

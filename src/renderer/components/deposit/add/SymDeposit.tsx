@@ -72,7 +72,7 @@ import {
   IsApproveParams,
   LoadApproveFeeHandler
 } from '../../../services/evm/types'
-import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMigard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMidgard/types'
 import { PoolAddress, PoolData, PoolDetails, PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import {
   FailedAssets,

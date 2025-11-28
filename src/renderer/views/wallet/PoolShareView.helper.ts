@@ -8,11 +8,11 @@ import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
 import * as ShareHelpers from '../../helpers/poolShareHelper'
-import { PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMigard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMidgard/types'
 import {
   getPoolDetail as getPoolDetailMaya,
   toPoolData as toPoolDataMaya
-} from '../../services/midgard/mayaMigard/utils'
+} from '../../services/midgard/mayaMidgard/utils'
 import { PoolData, PoolDetails, PoolShares } from '../../services/midgard/midgardTypes'
 import { getPoolDetail, toPoolData } from '../../services/midgard/thorMidgard/utils'
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../pools/Pools.utils'

@@ -32,10 +32,17 @@ import { PricePoolCurrencyWeights, PricePoolAssets } from './views/pools/Pools.t
 //
 
 // ETH.USDT
-export const AssetUSDTERC20: TokenAsset = {
+export const AssetUSDT: TokenAsset = {
   chain: ETHChain,
   symbol: 'USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7',
   ticker: 'USDT',
+  type: AssetType.TOKEN
+}
+// ETH.LUSD
+export const AssetLUSD: TokenAsset = {
+  chain: ETHChain,
+  symbol: 'LUSD-0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
+  ticker: 'LUSD',
   type: AssetType.TOKEN
 }
 
@@ -85,13 +92,6 @@ export const AssetUniH: TokenAsset = {
 // All of following assets are needed for pricing USD
 //
 
-// ETH.USDT mainnet
-export const AssetUSDTDAC: TokenAsset = {
-  chain: ETHChain,
-  symbol: 'USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7',
-  ticker: 'USDT',
-  type: AssetType.TOKEN
-}
 // ETH.USDT testnet
 export const AssetUSDT62E: TokenAsset = {
   chain: ETHChain,
@@ -106,12 +106,19 @@ export const AssetUSDC: TokenAsset = {
   ticker: 'USDC',
   type: AssetType.TOKEN
 }
+// ETH.DAI
+export const AssetDAI: TokenAsset = {
+  chain: ETHChain,
+  symbol: 'DAI-0x6B175474E89094C44Da98b954EedeAC495271d0F',
+  ticker: 'DAI',
+  type: AssetType.TOKEN
+}
 
 // AVAX.USDC mainnet
 export const AssetUSDCAVAX: TokenAsset = {
   chain: AVAXChain,
   symbol: 'USDC-0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
-  ticker: 'USDT',
+  ticker: 'USDC',
   type: AssetType.TOKEN
 }
 
@@ -119,7 +126,7 @@ export const AssetUSDCAVAX: TokenAsset = {
 const AssetUSDTAVAX: TokenAsset = {
   chain: AVAXChain,
   symbol: 'USDT-0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',
-  ticker: 'USDC',
+  ticker: 'USDT',
   type: AssetType.TOKEN
 }
 // BSC.USDT mainnet
@@ -179,7 +186,7 @@ export const AvaxAssetsTestnet = [AssetAVAX]
 export const BscAssetsTestnet = [AssetBSC]
 export const ArbAssetsTestnet = [AssetARB]
 
-export const ETHAssetsFallBack = [AssetUSDTDAC, AssetUSDC]
+export const ETHAssetsFallBack = [AssetUSDT, AssetUSDC, AssetLUSD, AssetDAI]
 export const BSCAssetsFallBack = [AssetUSDCBSC, AssetUSDTBSC]
 export const AVAXAssetsFallback = [AssetUSDTAVAX, AssetUSDCAVAX]
 export const ARBAssetsFallback = [AssetUSDCARB]
@@ -189,13 +196,15 @@ export const TRONAssetsFallBack = [AssetTRONUSDT]
 
 // for evm only
 export const DEFAULT_USER_ASSETS = [
-  AssetUSDTDAC,
+  AssetUSDT,
   AssetUSDC,
   AssetUSDCBSC,
   AssetUSDTBSC,
   AssetUSDTAVAX,
   AssetUSDCAVAX,
-  AssetUSDCARB
+  AssetUSDCARB,
+  AssetLUSD,
+  AssetDAI
 ]
 
 export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao]
@@ -229,10 +238,10 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
 // The higher the value the higher the weight
 export const CURRENCY_WEIGHTS: PricePoolCurrencyWeights = {
   [assetToString(AssetUSDC)]: 0,
-  [assetToString(AssetUSDTERC20)]: 2,
-  [assetToString(AssetUSDTDAC)]: 3,
+  [assetToString(AssetUSDT)]: 2,
+  [assetToString(AssetLUSD)]: 3,
   [assetToString(AssetUSDTAVAX)]: 4,
-  [assetToString(AssetUSDTAVAX)]: 5,
+  [assetToString(AssetUSDCAVAX)]: 5,
   [assetToString(AssetUSDTBSC)]: 6,
   [assetToString(AssetUSDCBSC)]: 7,
   [assetToString(AssetETH)]: 8,
@@ -240,14 +249,13 @@ export const CURRENCY_WEIGHTS: PricePoolCurrencyWeights = {
   [assetToString(AssetRuneNative)]: 10
 }
 
-// All Mainnet Pools except AssetUSDT62E
+// All Mainnet Pools including AssetUSDT62E for testnet.
 export const USD_PRICE_ASSETS: PricePoolAssets = [
-  AssetUSDTDAC, // ETH.DAI
   AssetUSDT62E, // ETH.USDT (Testnet)
-  AssetUSDTERC20, // ETH.USDT
-  AssetUSDTAVAX, // ETH.USDT
+  AssetUSDT, // ETH.USDT
   AssetUSDC, // ETH.USDC
   AssetUSDCAVAX, // AVAX.USDC
+  AssetUSDTAVAX, // AVAX.USDT
   AssetUSDTBSC, // BSC.USDT
   AssetUSDCBSC // BSC.USDC
 ]
