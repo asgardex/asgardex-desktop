@@ -355,7 +355,7 @@ export const Swap = ({
       // Only reset if the target chain actually changed (not just a re-render)
       if (prevTargetChainRef.current && prevTargetChainRef.current !== targetChain) {
         setStandaloneLedgerTargetAddress(O.none)
-        setCustomAddressEditActive(false) // Reset manual entry mode when chain changes
+        // Don't reset customAddressEditActive - let user keep manual entry mode
       }
       prevTargetChainRef.current = targetChain
     }
@@ -390,13 +390,6 @@ export const Swap = ({
   const prevTargetAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
-
-  // Reset manual entry mode when entering standalone ledger mode
-  useEffect(() => {
-    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
-      setCustomAddressEditActive(false)
-    }
-  }, [appWalletState])
 
   const sourceWalletAddress = useMemo(() => {
     return FP.pipe(
@@ -3273,6 +3266,7 @@ export const Swap = ({
                                 `Please make sure the ${targetAsset.chain} app is open on your Ledger device before proceeding.`
                               )
                             ) {
+                              setCustomAddressEditActive(false)
                               fetchStandaloneLedgerTargetAddress(targetAsset.chain)
                             }
                           }}>
@@ -3372,6 +3366,7 @@ export const Swap = ({
                                         `Please make sure the ${targetChain} app is open on your Ledger device before proceeding.`
                                       )
                                     ) {
+                                      setCustomAddressEditActive(false)
                                       fetchStandaloneLedgerTargetAddress(targetChain)
                                     }
                                   }}>

@@ -66,9 +66,13 @@ export const EditableAddress = ({
     if (startInEditMode) {
       setEditableAddress(O.some(address))
       onChangeEditableMode(true)
-      setValue(RECIPIENT_FIELD, address)
+      // Only set initial value, don't override user input
+      const currentValue = getValues(RECIPIENT_FIELD)
+      if (!currentValue || currentValue === address) {
+        setValue(RECIPIENT_FIELD, address)
+      }
     }
-  }, [startInEditMode, address, onChangeEditableMode, setValue])
+  }, [startInEditMode, address, onChangeEditableMode, setValue, getValues])
 
   const truncatedAddress = useMemo(
     () => truncateAddress(address, asset.chain, network),
