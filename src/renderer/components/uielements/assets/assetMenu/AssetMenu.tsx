@@ -32,7 +32,6 @@ export enum ExtendedAssetType {
   All = 'all',
   Favorite = 'favorite',
   Native = AssetType.NATIVE,
-  Synth = AssetType.SYNTH,
   Secured = AssetType.SECURED
 }
 
@@ -44,10 +43,6 @@ export const filterButtons = [
   {
     text: 'Native',
     type: ExtendedAssetType.Native
-  },
-  {
-    text: 'Synth',
-    type: ExtendedAssetType.Synth
   },
   {
     text: 'Secured',
@@ -91,10 +86,9 @@ export const AssetMenu = (props: Props): JSX.Element => {
         assets,
         A.filter((asset) => {
           // if synth asset is disabled for To Asset type
-          if (synthDisabled && asset.type === AssetType.SYNTH) return false
+          if (asset.type === AssetType.SYNTH) return false
 
           if (activeFilter === ExtendedAssetType.Native && asset.type !== AssetType.NATIVE) return false
-          if (activeFilter === ExtendedAssetType.Synth && asset.type !== AssetType.SYNTH) return false
           if (activeFilter === ExtendedAssetType.Secured && asset.type !== AssetType.SECURED) return false
 
           if (searchValue) {
@@ -105,7 +99,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
           return true
         })
       ),
-    [activeFilter, assets, searchValue, synthDisabled]
+    [activeFilter, assets, searchValue]
   )
 
   const renderAssets = useMemo(
