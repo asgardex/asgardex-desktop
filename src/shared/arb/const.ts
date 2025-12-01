@@ -1,11 +1,9 @@
 import { ARBChain, ARB_DECIMAL, ARB_GAS_ASSET_DECIMAL, AssetAETH, LOWER_FEE_BOUND } from '@xchainjs/xchain-arbitrum'
 import { ExplorerProvider, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
-import { EtherscanProviderV2, RoutescanProvider } from '@xchainjs/xchain-evm-providers'
+import { RoutescanProvider } from '@xchainjs/xchain-evm-providers'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
-
-import { etherscanApiKey } from '../api/etherscan'
 
 export const UPPER_FEE_BOUND = 2000000000
 
@@ -24,29 +22,8 @@ const ethersJSProviders = {
 // =====Data Providers=====
 // Define data providers (Etherscan/Routescan) for different networks
 
-const ARB_ONLINE_PROVIDER_TESTNET = new EtherscanProviderV2(
-  ARBITRUM_TESTNET_ETHERS_PROVIDER,
-  'https://api.etherscan.io/v2',
-  etherscanApiKey,
-  ARBChain,
-  AssetAETH,
-  ARB_DECIMAL,
-  421614
-)
-const ARB_ONLINE_PROVIDER_MAINNET = new EtherscanProviderV2(
-  ARBITRUM_MAINNET_ETHERS_PROVIDER,
-  'https://api.etherscan.io/v2',
-  etherscanApiKey,
-  ARBChain,
-  AssetAETH,
-  ARB_DECIMAL,
-  42161
-)
-const arbProviders = {
-  [Network.Mainnet]: ARB_ONLINE_PROVIDER_MAINNET,
-  [Network.Testnet]: ARB_ONLINE_PROVIDER_TESTNET,
-  [Network.Stagenet]: ARB_ONLINE_PROVIDER_MAINNET
-}
+// Etherscan providers removed - Etherscan's gas oracle doesn't support Arbitrum
+// This was causing "Missing Or invalid Module name" errors and wrong gas price fallbacks
 const ROUTESCAN_PROVIDER_MAINNET = new RoutescanProvider(
   ARBITRUM_MAINNET_ETHERS_PROVIDER,
   'https://api.routescan.io',
@@ -127,7 +104,7 @@ export const defaultArbParams: EVMClientParams = {
   defaults,
   providers: ethersJSProviders,
   explorerProviders: arbExplorerProviders,
-  dataProviders: [arbProviders, routescanProviders],
+  dataProviders: [routescanProviders],
   network: Network.Mainnet,
   feeBounds: {
     lower: LOWER_FEE_BOUND,
