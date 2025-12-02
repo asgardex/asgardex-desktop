@@ -961,6 +961,11 @@ export const Swap = ({
       return O.some(false)
     }
 
+    // Check if maxAmountToSwap is zero to avoid division-by-zero error
+    if (maxAmountToSwap.amount().isZero()) {
+      return O.none
+    }
+
     // Calculate what percentage of balance the user is swapping
     const swapPercentage = amountToSwap.amount().div(maxAmountToSwap.amount())
     const estimatedSwapUsdValue = balanceUsdValue.amount().multipliedBy(swapPercentage)
@@ -1175,8 +1180,8 @@ export const Swap = ({
     ]
   )
 
-  // Note: Removed oApplyBps useEffect since BPS is now calculated based on balance percentage
-  // and is much more stable, reducing unnecessary fetchSwap calls
+  // Note: Consolidated BPS handling - oApplyBps remains a dependency but triggers less frequently
+  // since BPS calculation is now more stable based on balance percentage
 
   // Fetch new quote when assets change (source or target)
   useEffect(() => {
