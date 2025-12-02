@@ -899,67 +899,86 @@ export const Swap = ({
   }, [affiliateFee, network, oQuoteProtocol, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor])
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
-  // Apparently thornode bug is fixed.
-  // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
+  // Optimized: Check balance USD value instead of recalculating input USD on every change
   const oApplyBps: O.Option<boolean> = useMemo(() => {
     // Return None if amount is zero - we don't need to calculate affiliate fees for zero amounts
     if (amountToSwap.amount().isZero()) {
       return O.none
     }
-    // Calculate USD value of input amount directly without depending on quote
-    // Handle Chainflip assets that might not be supported by THORChain (like SOL.SOL)
-    let inputUsdValue: BaseAmount
 
-    // Try THORChain pricing first
-    const thorUsdValue = PoolHelpers.getUSDValue({
-      balance: { asset: sourceAsset, amount: amountToSwap },
+    // Calculate USD value of user's total balance (more efficient than input amount)
+    let balanceUsdValue: BaseAmount
+
+    // Try THORChain pricing first for the full balance
+    const thorBalanceUsdValue = PoolHelpers.getUSDValue({
+      balance: { asset: sourceAsset, amount: maxAmountToSwap },
       poolDetails: poolDetailsThor,
       pricePool: pricePoolThor
     })
 
-    if (O.isSome(thorUsdValue)) {
-      inputUsdValue = thorUsdValue.value
+    if (O.isSome(thorBalanceUsdValue)) {
+      balanceUsdValue = thorBalanceUsdValue.value
     } else if (sourceAsset.chain === 'SOL' && sourceAsset.symbol === 'SOL') {
       // Special case: try cross-referencing SOL.SOL with AVAX.SOL for Chainflip
       const avaxSolAsset = assetFromStringEx('AVAX.SOL-0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F')
       if (avaxSolAsset) {
         // Convert SOL decimal amount to THOR decimal for AVAX.SOL pricing
-        const thorDecimalAmount = convertBaseAmountDecimal(amountToSwap, THORCHAIN_DECIMAL)
-        inputUsdValue = FP.pipe(
+        const thorDecimalAmount = convertBaseAmountDecimal(maxAmountToSwap, THORCHAIN_DECIMAL)
+        balanceUsdValue = FP.pipe(
           PoolHelpers.getUSDValue({
             balance: { asset: avaxSolAsset, amount: thorDecimalAmount },
             poolDetails: poolDetailsThor,
             pricePool: pricePoolThor
           }),
-          O.getOrElse(() => baseAmount(0, amountToSwap.decimal))
+          O.getOrElse(() => baseAmount(0, maxAmountToSwap.decimal))
         )
       } else {
-        inputUsdValue = baseAmount(0, amountToSwap.decimal)
+        balanceUsdValue = baseAmount(0, maxAmountToSwap.decimal)
       }
     } else if (isChainOfThor(sourceChain)) {
-      inputUsdValue = baseAmount(0, amountToSwap.decimal)
+      balanceUsdValue = baseAmount(0, maxAmountToSwap.decimal)
     } else {
       // Try Maya pricing for non-THORChain assets
-      inputUsdValue = FP.pipe(
+      balanceUsdValue = FP.pipe(
         PoolHelpersMaya.getUSDValue({
-          balance: { asset: sourceAsset, amount: amountToSwap },
+          balance: { asset: sourceAsset, amount: maxAmountToSwap },
           poolDetails: poolDetailsMaya,
           pricePool: pricePoolMaya
         }),
-        O.getOrElse(() => baseAmount(0, amountToSwap.decimal))
+        O.getOrElse(() => baseAmount(0, maxAmountToSwap.decimal))
       )
     }
 
     // If we couldn't get a USD value, return None to wait for pool data
-    if (inputUsdValue.amount().isZero()) {
+    if (balanceUsdValue.amount().isZero()) {
       return O.none
     }
 
-    // Convert ASGARDEX_AFFILIATE_FEE_MIN to same decimal format as USD price pool
-    const affiliateFeeMinInUsdDecimals = assetToBase(assetAmount(ASGARDEX_AFFILIATE_FEE_MIN, inputUsdValue.decimal))
-    const txFeeCovered = inputUsdValue.amount().gte(affiliateFeeMinInUsdDecimals.amount())
-    return O.some(txFeeCovered)
-  }, [amountToSwap, sourceAsset, sourceChain, poolDetailsThor, pricePoolThor, poolDetailsMaya, pricePoolMaya])
+    const affiliateFeeMinInUsdDecimals = assetToBase(assetAmount(ASGARDEX_AFFILIATE_FEE_MIN, balanceUsdValue.decimal))
+
+    // If total balance < $1001, user can never reach threshold, so never apply BPS
+    if (balanceUsdValue.amount().lt(affiliateFeeMinInUsdDecimals.amount())) {
+      return O.some(false)
+    }
+
+    // Calculate what percentage of balance the user is swapping
+    const swapPercentage = amountToSwap.amount().div(maxAmountToSwap.amount())
+    const estimatedSwapUsdValue = balanceUsdValue.amount().multipliedBy(swapPercentage)
+
+    // Apply BPS if the estimated swap value >= $1001
+    const shouldApplyBps = estimatedSwapUsdValue.gte(affiliateFeeMinInUsdDecimals.amount())
+
+    return O.some(shouldApplyBps)
+  }, [
+    amountToSwap,
+    maxAmountToSwap,
+    sourceAsset,
+    sourceChain,
+    poolDetailsThor,
+    pricePoolThor,
+    poolDetailsMaya,
+    pricePoolMaya
+  ])
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -1156,12 +1175,15 @@ export const Swap = ({
     ]
   )
 
-  // Re-fetch quote when oApplyBps becomes Some() to ensure correct affiliate fee is applied
+  // Note: Removed oApplyBps useEffect since BPS is now calculated based on balance percentage
+  // and is much more stable, reducing unnecessary fetchSwap calls
+
+  // Fetch new quote when assets change (source or target)
   useEffect(() => {
-    if (O.isSome(oApplyBps) && amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
+    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && O.isSome(oApplyBps)) {
       fetchSwap(amountToSwap)
     }
-  }, [oApplyBps, amountToSwap, fetchSwap])
+  }, [sourceAsset, targetAsset, fetchSwap, amountToSwap, oApplyBps])
 
   // Separate input display state from swap calculation state
   const [inputDisplayAmount, setInputDisplayAmount] = useState<BaseAmount>(amountToSwap)
@@ -1957,12 +1979,10 @@ export const Swap = ({
       const amountFromPercentage = maxAmountToSwap.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmountToSwap.decimal)
       setAmountToSwap(newAmount)
-      if (newAmount.gt(baseAmount(0, newAmount.decimal))) {
-        fetchSwap(newAmount)
-      }
+      // Note: Removed immediate fetchSwap call here because the debounced handler will fetch the quote
       return newAmount
     },
-    [maxAmountToSwap, setAmountToSwap, fetchSwap]
+    [maxAmountToSwap, setAmountToSwap]
   )
 
   // Function to reset the slider to default position
