@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowsRightLeftIcon as SwapOutlined } from '@heroicons/react/20/solid'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain, Client as MayachainClient } from '@xchainjs/xchain-mayachain'
-import { Client as ThorchainClient, THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
+import { THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   assetAmount,
@@ -57,7 +57,7 @@ enum LabelView {
 
 export const BondsView = (): JSX.Element => {
   const { protocol, setProtocol } = useApp()
-  const { client$, getNodeInfos$, reloadNodeInfos: reloadNodeInfosThor } = useThorchainContext()
+  const { getNodeInfos$, reloadNodeInfos: reloadNodeInfosThor } = useThorchainContext()
   const {
     client$: clientMaya$,
     getNodeInfos$: getNodeInfosMaya$,
@@ -82,7 +82,6 @@ export const BondsView = (): JSX.Element => {
   const { setSelectedAsset } = useWalletContext()
 
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
-  const oClientThor = useObservableState<O.Option<ThorchainClient>>(client$, O.none)
   const oClientMaya = useObservableState<O.Option<MayachainClient>>(clientMaya$, O.none)
   const [balancesState] = useObservableState(
     () => balancesState$({ ...DEFAULT_BALANCES_FILTER }),
@@ -123,17 +122,13 @@ export const BondsView = (): JSX.Element => {
   const goToExplorerNodeAddress = useCallback(
     (address: Address) =>
       address.startsWith('thor')
-        ? FP.pipe(
-            oClientThor,
-            O.map((client) => client.getExplorerAddressUrl(address)),
-            O.map(window.apiUrl.openExternal)
-          )
+        ? window.apiUrl.openExternal(`https://runescan.io/node/${address}`)
         : FP.pipe(
             oClientMaya,
             O.map((client) => client.getExplorerAddressUrl(address)),
             O.map(window.apiUrl.openExternal)
           ),
-    [oClientThor, oClientMaya]
+    [oClientMaya]
   )
 
   useEffect(() => {
