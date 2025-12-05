@@ -213,7 +213,7 @@ export const AssetInput = (props: Props): JSX.Element => {
                   }
                   return formatAssetAmountCurrency({
                     amount: assetAmount,
-                    asset: amount.asset,
+                    asset,
                     decimal: getDecimalPlaces(assetAmount),
                     trimZeros: true
                   })
