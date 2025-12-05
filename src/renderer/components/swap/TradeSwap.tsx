@@ -942,7 +942,7 @@ export const TradeSwap = ({
         O.map((inFee) => {
           const in1e8 = to1e8BaseAmount(inFee.baseAmount)
           const slipbps = isStreaming ? swapStreamingSlippage : swapSlippage
-          const slip = to1e8BaseAmount(priceAmountToSwapMax1e8.baseAmount.times(slipbps / 100))
+          const slip = to1e8BaseAmount(priceAmountToSwapMax1e8.baseAmount).times(slipbps / 100)
           // adding slip costs to total fees
           return { asset: inFee.asset, amount: in1e8.plus(slip) }
         })

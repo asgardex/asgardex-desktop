@@ -3,6 +3,7 @@ import React, { useRef, useCallback } from 'react'
 import { Network } from '@xchainjs/xchain-client'
 import {
   AnyAsset,
+  AssetAmount,
   BaseAmount,
   assetAmount,
   assetToBase,
@@ -200,7 +201,23 @@ export const AssetInput = (props: Props): JSX.Element => {
             <div className="flex items-center justify-end space-x-1 pr-4">
               <WalletIcon className="h-5 w-5 text-gray1 dark:text-gray1d" />
               <p className="mb-0 text-[14px] text-gray1 dark:text-gray1d">
-                {baseToAsset(walletBalance).amount().decimalPlaces(8).toString()}
+                {(() => {
+                  const assetAmount = baseToAsset(walletBalance)
+                  // For very small amounts, use more decimal places to avoid scientific notation
+                  const getDecimalPlaces = (amount: AssetAmount) => {
+                    const num = amount.amount().toNumber()
+                    if (num === 0) return 0
+                    if (num < 0.000001) return 8 // Show 8 decimals for very small amounts
+                    if (num < 0.001) return 6 // Show 6 decimals for small amounts
+                    return 3 // Default 3 decimals
+                  }
+                  return formatAssetAmountCurrency({
+                    amount: assetAmount,
+                    asset: amount.asset,
+                    decimal: getDecimalPlaces(assetAmount),
+                    trimZeros: true
+                  })
+                })()}
               </p>
             </div>
           ) : (

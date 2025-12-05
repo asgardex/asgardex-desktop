@@ -10,6 +10,7 @@ import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   AnyAsset,
+  AssetAmount,
   assetFromString,
   assetToString,
   BaseAmount,
@@ -549,7 +550,21 @@ export const TradeAssetsTableCollapsable = ({
         header: '',
         cell: ({ row }) => {
           const { asset, amount, protocol } = row.original
-          const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
+          const assetAmount = baseToAsset(amount)
+          // For very small amounts, use more decimal places to avoid scientific notation
+          const getDecimalPlaces = (amount: AssetAmount) => {
+            const num = amount.amount().toNumber()
+            if (num === 0) return 0
+            if (num < 0.000001) return 8 // Show 8 decimals for very small amounts
+            if (num < 0.001) return 6 // Show 6 decimals for small amounts
+            return 3 // Default 3 decimals
+          }
+          const balance = formatAssetAmountCurrency({
+            amount: assetAmount,
+            asset,
+            decimal: getDecimalPlaces(assetAmount),
+            trimZeros: true
+          })
           const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
             if (O.isSome(priceOption)) {
               return formatAssetAmountCurrency({
