@@ -34,13 +34,7 @@ import debounce from 'lodash/debounce'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import {
-  ASGARDEX_ADDRESS,
-  ASGARDEX_AFFILIATE_FEE_MIN,
-  getAsgardexAffiliateFee,
-  getAsgardexThorname,
-  getAsgardexTradeAffiliateFee
-} from '../../../shared/const'
+import { ASGARDEX_ADDRESS, getAsgardexThorname } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -58,7 +52,7 @@ import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChain, isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
-import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
+import { sequenceTOption } from '../../helpers/fpHelpers'
 import { getSwapMemo, updateMemoWithFullAsset } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
@@ -508,7 +502,6 @@ export const TradeSwap = ({
       (recipientAddress: string) => {
         const toleranceBps = slipTolerance * 100
         const affiliateName = getAsgardexThorname(network)
-        const affiliateBps = getAsgardexAffiliateFee(network)
 
         return getSwapMemo({
           targetAsset,
@@ -517,7 +510,7 @@ export const TradeSwap = ({
           streamingInterval,
           streamingQuantity,
           affiliateName,
-          affiliateBps: affiliateName ? (affiliateBps ?? 0) : undefined
+          affiliateBps: 0
         })
       }
     )(oRecipientAddress)
@@ -646,95 +639,6 @@ export const TradeSwap = ({
     return price ? `${price} (${fee})` : fee
   }, [oPriceSwapInFee, swapFees])
 
-  // Affiliate fee
-  const affiliateFee: CryptoAmount = useMemo(() => {
-    const affiliateThor = FP.pipe(
-      oQuote,
-      O.fold(
-        () => new CryptoAmount(baseAmount(0), AssetRuneNative),
-        (txDetails) => {
-          const fee = txDetails.txEstimate.totalFees.affiliateFee
-          return fee
-        }
-      )
-    )
-    const affiliateMaya = FP.pipe(
-      oQuoteMaya,
-      O.fold(
-        () => new CryptoAmount(baseAmount(0), AssetCacao),
-        (txDetails) => {
-          const fee = txDetails.fees.affiliateFee
-          return fee
-        }
-      )
-    )
-    return protocol === THORChain ? affiliateThor : affiliateMaya
-  }, [oQuote, oQuoteMaya, protocol])
-
-  // store affiliate fee
-  const [affiliatePriceValue, setAffiliatePriceValue] = useState<CryptoAmount>(
-    new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
-  )
-
-  // useEffect to fetch data from query
-  useEffect(() => {
-    const affiliatePriceValue = isChainOfThor(affiliateFee.asset.chain)
-      ? PoolHelpers.getUSDValue({
-          balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
-          poolDetails: poolDetails,
-          pricePool: pricePoolThor
-        })
-      : PoolHelpersMaya.getUSDValue({
-          balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
-          poolDetails: poolDetailsMaya,
-          pricePool: pricePoolMaya
-        })
-
-    if (O.isSome(affiliatePriceValue)) {
-      const maxCryptoAmount = new CryptoAmount(affiliatePriceValue.value, pricePoolThor.asset)
-      setAffiliatePriceValue(maxCryptoAmount)
-    }
-  }, [affiliateFee, network, poolDetails, pricePoolThor, pricePoolMaya, poolDetailsMaya])
-
-  //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
-  const applyBps = useMemo(() => {
-    const aff = getAsgardexTradeAffiliateFee(network)
-    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    const applyBps = txFeeCovered ? aff : 0
-    return applyBps
-  }, [network, priceAmountToSwapMax1e8.assetAmount])
-
-  const priceAffiliateFeeLabel = useMemo(() => {
-    if (!swapFees) {
-      return loadingString // or noDataString, depending on your needs
-    }
-
-    const fee = formatAssetAmountCurrency({
-      amount: affiliateFee.assetAmount,
-      asset: affiliateFee.asset,
-      decimal: isUSDAsset(affiliateFee.asset) ? 2 : 6,
-      trimZeros: !isUSDAsset(affiliateFee.asset)
-    })
-
-    const price = FP.pipe(
-      O.some(affiliatePriceValue), // Assuming this is Option<CryptoAmount>
-      O.map((cryptoAmount: CryptoAmount) =>
-        eqAsset.equals(sourceAsset, cryptoAmount.asset)
-          ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
-      ),
-      O.getOrElse(() => '')
-    )
-    const displayBps = applyBps !== undefined ? `${applyBps / 100}%` : '0%'
-
-    return price ? `${price} (${fee}) ${displayBps}` : fee
-  }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, sourceAsset])
-
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
     () =>
       FP.pipe(
@@ -745,7 +649,6 @@ export const TradeSwap = ({
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
           const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : getAsgardexThorname(network)
-          const affiliateBps = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = slipTolerance * 100 // convert to basis points
@@ -758,7 +661,7 @@ export const TradeSwap = ({
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
             affiliateAddress: affiliate,
-            affiliateBps: affiliate ? (affiliateBps ?? 0) : undefined
+            affiliateBps: 0
           }
         })
       ),
@@ -769,7 +672,6 @@ export const TradeSwap = ({
       targetAsset,
       amountToSwapMax1e8,
       sourceAssetDecimal,
-      applyBps,
       isStreaming,
       streamingInterval,
       streamingQuantity,
@@ -824,7 +726,7 @@ export const TradeSwap = ({
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: slipTolerance * 100, // convert to basis points
             affiliateAddress: affiliateName,
-            affiliateBps: affiliateName ? (applyBps ?? 0) : undefined
+            affiliateBps: 0
           }
           const estimateSwap = estimateThorDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
@@ -858,7 +760,6 @@ export const TradeSwap = ({
     oSourceAssetWB,
     oSourceWalletAddress,
     sourceWalletAddress,
-    applyBps,
     network,
     slipTolerance
   ])
@@ -1032,25 +933,21 @@ export const TradeSwap = ({
   ])
 
   /**
-   * Price sum of swap fees (IN + OUT) and affiliate
+   * Price sum of swap fees (IN + OUT) and slippage
    */
   const oPriceSwapFees1e8: O.Option<AssetWithAmount> = useMemo(
     () =>
       FP.pipe(
-        sequenceSOption({
-          inFee: oPriceSwapInFee,
-          affiliateFee: O.some(affiliatePriceValue)
-        }),
-        O.map(({ inFee, affiliateFee }) => {
+        oPriceSwapInFee,
+        O.map((inFee) => {
           const in1e8 = to1e8BaseAmount(inFee.baseAmount)
-          const affiliate = to1e8BaseAmount(affiliateFee.baseAmount)
           const slipbps = isStreaming ? swapStreamingSlippage : swapSlippage
           const slip = to1e8BaseAmount(priceAmountToSwapMax1e8.baseAmount.times(slipbps / 100))
           // adding slip costs to total fees
-          return { asset: inFee.asset, amount: in1e8.plus(affiliate).plus(slip) }
+          return { asset: inFee.asset, amount: in1e8.plus(slip) }
         })
       ),
-    [oPriceSwapInFee, affiliatePriceValue, isStreaming, swapStreamingSlippage, swapSlippage, priceAmountToSwapMax1e8]
+    [oPriceSwapInFee, isStreaming, swapStreamingSlippage, swapSlippage, priceAmountToSwapMax1e8]
   )
 
   const priceSwapFeesLabel = useMemo(() => {
@@ -2164,12 +2061,6 @@ export const TradeSwap = ({
                         </div>
                         <div className="text-text2 dark:text-text2d">{priceSwapInFeeLabel}</div>
                       </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div className="text-text2 dark:text-text2d">
-                          {intl.formatMessage({ id: 'common.fee.affiliate' })}
-                        </div>
-                        <div className="text-text2 dark:text-text2d">{priceAffiliateFeeLabel}</div>
-                      </div>
                     </>
                   )}
                   {/* Slippage */}
@@ -2399,12 +2290,6 @@ export const TradeSwap = ({
                           trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
                         }) + ` (${isStreaming ? swapStreamingSlippage.toFixed(2) : swapSlippage.toFixed(2)}%)`}
                       </div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className="text-text2 dark:text-text2d">
-                        {intl.formatMessage({ id: 'common.fee.affiliate' })}
-                      </div>
-                      <div className="text-text2 dark:text-text2d">{priceAffiliateFeeLabel}</div>
                     </div>
 
                     {/* Transaction time */}
