@@ -18,7 +18,6 @@ import {
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import * as Rx from 'rxjs'
 
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
@@ -28,8 +27,9 @@ import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { getEVMTokenAddressForChain } from '../../../helpers/assetHelper'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
+import { INITIAL_DEPOSIT_STATE } from '../../../services/chain/const'
 import { tradeDeposit$, generateTradeMemo } from '../../../services/chain/transaction/tradeDeposit'
-import { DepositState$ } from '../../../services/chain/types'
+import { DepositState } from '../../../services/chain/types'
 import { ApproveParams, IsApproveParams } from '../../../services/evm/types'
 import {
   ChainBalance,
@@ -79,16 +79,17 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
   const intl = useIntl()
 
   // Get selected pool addresses from Midgard contexts
+  const { service: midgardService } = useMidgardContext()
+  const { service: midgardMayaService } = useMidgardMayaContext()
+
   const {
-    service: {
-      pools: { selectedPoolAddress$: selectedPoolAddressThor$ }
-    }
-  } = useMidgardContext()
+    pools: { selectedPoolAddress$: selectedPoolAddressThor$ },
+    setSelectedPoolAsset
+  } = midgardService
   const {
-    service: {
-      pools: { selectedPoolAddress$: selectedPoolAddressMaya$ }
-    }
-  } = useMidgardMayaContext()
+    pools: { selectedPoolAddress$: selectedPoolAddressMaya$ },
+    setSelectedPoolAsset: setSelectedPoolAssetMaya
+  } = midgardMayaService
 
   const selectedPoolAddressThor = useObservableState(selectedPoolAddressThor$, O.none)
   const selectedPoolAddressMaya = useObservableState(selectedPoolAddressMaya$, O.none)
@@ -102,9 +103,13 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
   const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
 
-  // Transaction state
-  const [depositState$, setDepositState$] = useState<DepositState$ | null>(null)
-  const depositState = useObservableState(depositState$ || Rx.of(null), null)
+  // Transaction state using subscription pattern like swap
+  const [depositStartTime, setDepositStartTime] = useState<number>(0)
+  const {
+    state: depositState,
+    reset: resetDepositState,
+    subscribe: subscribeDepositState
+  } = useSubscriptionState<DepositState>(INITIAL_DEPOSIT_STATE)
 
   // ERC20 Approval state management
   const {
@@ -145,7 +150,8 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
             walletType: chainBalance.walletType,
             walletAddress: balance.walletAddress,
             walletAccount: balance.walletAccount,
-            walletIndex: balance.walletIndex
+            walletIndex: balance.walletIndex,
+            hdMode: balance.hdMode
           }))
         )
       )
@@ -233,7 +239,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
                         walletAccount: balance.walletAccount,
                         walletIndex: balance.walletIndex,
                         walletType: balance.walletType,
-                        hdMode: 'default' as const,
+                        hdMode: balance.hdMode,
                         network
                       }))
                     )
@@ -412,6 +418,19 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     }
   }, [oIsApproveParams, checkApprovedStatus, resetIsApprovedState])
 
+  // Set selectedPoolAsset when user selects an asset for trade deposit
+  useEffect(() => {
+    if (O.isSome(selectedAsset)) {
+      // Set the selected pool asset for both protocols to ensure pool addresses are available
+      setSelectedPoolAsset(selectedAsset)
+      setSelectedPoolAssetMaya(selectedAsset)
+    } else {
+      // Reset when no asset is selected
+      setSelectedPoolAsset(O.none)
+      setSelectedPoolAssetMaya(O.none)
+    }
+  }, [selectedAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya])
+
   // Handle initial confirm click - triggers approval or deposit flow
   const handleConfirm = useCallback(() => {
     if (O.isSome(selectedAsset) && isValidAmount) {
@@ -466,21 +485,22 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
                 // Generate the trade memo
                 const memo = generateTradeMemo(currentProtocolAddress)
 
-                // Start the transaction
-                const txStream$ = tradeDeposit$({
-                  poolAddress: poolAddress.value,
-                  asset,
-                  amount: amountToDeposit,
-                  memo,
-                  sender: balance.walletAddress,
-                  walletType: selectedWalletType,
-                  walletAccount: balance.walletAccount,
-                  walletIndex: balance.walletIndex,
-                  hdMode: 'default',
-                  protocol: currentProtocol
-                })
-
-                setDepositState$(txStream$)
+                // Start the transaction using subscription pattern like swap
+                setDepositStartTime(Date.now())
+                subscribeDepositState(
+                  tradeDeposit$({
+                    poolAddress: poolAddress.value,
+                    asset,
+                    amount: amountToDeposit,
+                    memo,
+                    sender: balance.walletAddress,
+                    walletType: selectedWalletType,
+                    walletAccount: balance.walletAccount,
+                    walletIndex: balance.walletIndex,
+                    hdMode: balance.hdMode,
+                    protocol: currentProtocol
+                  })
+                )
               }
             )
           )
@@ -495,7 +515,8 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     selectedPoolAddressMaya,
     selectedAssetBalance,
     amount,
-    selectedWalletType
+    selectedWalletType,
+    subscribeDepositState
   ])
 
   const handleCancel = useCallback(() => {
@@ -626,7 +647,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
                   () => null,
                   (asset) => (
                     <Label size="small" color="gray">
-                      Approve {asset.symbol} for trading
+                      Approve {asset.ticker} for trading
                     </Label>
                   )
                 )
@@ -641,21 +662,48 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
 
   // Render transaction progress modal
   const renderTxModal = useMemo(() => {
-    if (!depositState) return null
+    if (RD.isInitial(depositState.deposit)) return null
+
+    // Get proper title based on transaction state
+    const txModalTitle = FP.pipe(
+      depositState.deposit,
+      RD.fold(
+        () => 'deposit.add.state.pending',
+        () => 'deposit.add.state.pending',
+        () => 'deposit.add.state.error',
+        () => 'deposit.add.state.success'
+      ),
+      (id) => intl.formatMessage({ id })
+    )
+
+    // Get timer value like SwapTxModal
+    const timerValue = FP.pipe(
+      depositState.deposit,
+      RD.fold(
+        () => 0,
+        FP.flow(
+          O.map(({ loaded }) => loaded),
+          O.getOrElse(() => 0)
+        ),
+        () => 0,
+        () => 100
+      )
+    )
 
     return (
       <TxModal
-        title={intl.formatMessage({ id: 'common.tx.broadcasting' })}
+        title={txModalTitle}
         onClose={() => {
-          setDepositState$(null)
+          resetDepositState()
           onClose()
         }}
         onFinish={() => {
-          setDepositState$(null)
+          resetDepositState()
           onClose()
         }}
-        startTime={Date.now()}
+        startTime={depositStartTime}
         txRD={depositState.deposit}
+        timerValue={timerValue}
         extraResult={
           <div className="flex flex-col gap-2">
             <Label size="normal" color="primary">
@@ -667,7 +715,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
                 () => null,
                 (asset) => (
                   <Label size="small" color="gray">
-                    {amount} {asset.symbol} → {currentProtocol === THORChain ? 'THORChain' : 'MAYAChain'}
+                    {amount} {asset.ticker} → {currentProtocol === THORChain ? 'THORChain' : 'MAYAChain'}
                   </Label>
                 )
               )
@@ -676,7 +724,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
         }
       />
     )
-  }, [depositState, intl, onClose, selectedAsset, amount, currentProtocol])
+  }, [depositState, intl, onClose, selectedAsset, amount, currentProtocol, depositStartTime, resetDepositState])
 
   return (
     <>
@@ -686,7 +734,10 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
       {renderTxModal}
       <Modal
         visible={
-          visible && showPasswordModal === ModalState.None && showLedgerModal === ModalState.None && !depositState
+          visible &&
+          showPasswordModal === ModalState.None &&
+          showLedgerModal === ModalState.None &&
+          RD.isInitial(depositState.deposit)
         }
         title={intl.formatMessage({ id: 'wallet.action.deposit' })}
         onCancel={handleCancel}
