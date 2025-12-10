@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
@@ -42,7 +42,7 @@ import { walletTypeToI18n } from '../../../services/wallet/util'
 import { AssetSelect } from '../../uielements/assets/assetSelect'
 import { Button, BaseButton } from '../../uielements/button'
 import { Label } from '../../uielements/label'
-import { Modal } from '../../uielements/modal'
+import { HeadlessModal as Modal } from '../../uielements/modal'
 import { ProtocolSwitch } from '../../uielements/protocolSwitch'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../confirmation'
 import { TxModal } from '../tx'
@@ -733,22 +733,19 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
       {renderApproveTxModal}
       {renderTxModal}
       <Modal
-        visible={
+        isOpen={
           visible &&
           showPasswordModal === ModalState.None &&
           showLedgerModal === ModalState.None &&
           RD.isInitial(depositState.deposit)
         }
         title={intl.formatMessage({ id: 'wallet.action.deposit' })}
-        onCancel={handleCancel}
-        panelClassName="!max-w-[480px]">
-        <div className="flex flex-col gap-6 p-6">
+        onClose={handleCancel}
+        className="!max-w-[420px]">
+        <div className="flex flex-col gap-6">
           {/* Protocol Selection */}
           <div className="flex flex-col gap-2">
-            <Label size="normal" color="primary">
-              {intl.formatMessage({ id: 'wallet.action.deposit' })} Protocol
-            </Label>
-            <div className="rounded-lg border border-gray0 bg-gray0 p-3 dark:border-gray0d dark:bg-gray0d">
+            <div className="flex items-center justify-end">
               <ProtocolSwitch protocol={selectedProtocol} setProtocol={handleProtocolChange} />
             </div>
             <Label size="small" color="gray">

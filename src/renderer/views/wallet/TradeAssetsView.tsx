@@ -12,6 +12,7 @@ import * as RxOp from 'rxjs/operators'
 import { WalletType } from '../../../shared/wallet/types'
 import { TradeDepositModal } from '../../components/modal/tradeDeposit'
 import { RefreshButton, Button } from '../../components/uielements/button'
+import { Label } from '../../components/uielements/label'
 import { Spin } from '../../components/uielements/spin'
 import { AssetsNav } from '../../components/wallet/assets'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
@@ -306,10 +307,12 @@ export const TradeAssetsView = (): JSX.Element => {
     <>
       <div className="flex w-full justify-between pb-20px">
         <Button
+          className="rounded-lg bg-turquoise !p-2 hover:bg-turquoise/80"
           onClick={() => setShowDepositModal(true)}
-          disabled={disableRefresh}
-          className="bg-turquoise hover:bg-turquoise/80">
-          {intl.formatMessage({ id: 'wallet.action.deposit' })} Trade Assets
+          disabled={disableRefresh}>
+          <Label size="big" color="white">
+            {intl.formatMessage({ id: 'wallet.action.deposit' })} Trade Assets
+          </Label>
         </Button>
         <RefreshButton onClick={() => refreshHandler()} disabled={disableRefresh} />
       </div>

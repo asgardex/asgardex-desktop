@@ -1,1 +1,1 @@
-export { Modal } from './Modal'
+export { Modal, HeadlessModal } from './Modal'
