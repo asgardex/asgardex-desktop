@@ -793,7 +793,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
         title={intl.formatMessage({ id: 'wallet.action.deposit' })}
         onClose={handleCancel}
         className="!max-w-[480px]">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 px-4">
           {/* Protocol Selection */}
           <div className="flex flex-col gap-2">
             <Label size="small" color="gray">
@@ -810,6 +810,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
             title={intl.formatMessage({ id: 'wallet.action.deposit' })}
             amount={assetInputAmount}
             priceAmount={assetInputPrice}
+            showPrice={false}
             walletBalance={walletBalanceForInput}
             assets={uniqueAssets}
             network={network}

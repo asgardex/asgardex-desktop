@@ -34,6 +34,7 @@ export type Props = {
   amount: AssetWithAmount
   walletBalance?: BaseAmount
   priceAmount: AssetWithAmount
+  showPrice?: boolean
   assets: AnyAsset[]
   network: Network
   disabled?: boolean
@@ -80,6 +81,7 @@ export const AssetInput = (props: Props): JSX.Element => {
     title,
     amount: { amount, asset },
     walletBalance,
+    showPrice = true,
     extraContent = <></>,
     priceAmount: { amount: priceAmount, asset: priceAsset },
     assets,
@@ -172,17 +174,23 @@ export const AssetInput = (props: Props): JSX.Element => {
             disabled={asLabel || disabled}
             decimal={amount.decimal}
             // override text style of input for acting as label only
-            className={clsx('w-full !px-0 leading-none', { 'text-text0 !opacity-100 dark:text-text0d': asLabel })}
+            className={clsx(
+              'w-full !px-0 leading-none',
+              { 'text-text0 !opacity-100 dark:text-text0d': asLabel },
+              { '!py-2 text-[28px] md:text-[32px]': !showPrice }
+            )}
           />
 
-          <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
-            {formatAssetAmountCurrency({
-              amount: baseToAsset(priceAmount),
-              asset: priceAsset,
-              decimal: isUSDAsset(priceAsset) ? 4 : 6,
-              trimZeros: true
-            })}
-          </p>
+          {showPrice && (
+            <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
+              {formatAssetAmountCurrency({
+                amount: baseToAsset(priceAmount),
+                asset: priceAsset,
+                decimal: isUSDAsset(priceAsset) ? 4 : 6,
+                trimZeros: true
+              })}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col">
