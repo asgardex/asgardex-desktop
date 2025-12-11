@@ -98,6 +98,16 @@ actions:
     - trunk-check-pre-push
     - trunk-upgrade-available
 
+tools:
+  definitions:
+    - name: checkov
+      runtime: python
+      package: checkov
+      shims: [checkov]
+      known_good_version: 3.2.407
+      extra_packages:
+        - pycares<5.0.0 # Pin to avoid aiodns incompatibility with pycares 5.0.0
+
 runtimes:
   enabled:
     - python@3.10.8
