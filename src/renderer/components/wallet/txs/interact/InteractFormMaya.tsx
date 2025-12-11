@@ -373,6 +373,15 @@ export const InteractFormMaya = (props: Props) => {
     [intl]
   )
 
+  const renderCacaoPoolWarning = useMemo(
+    () => (
+      <Label size="big" color="warning">
+        {intl.formatMessage({ id: 'protocolPool.detail.warning' })}
+      </Label>
+    ),
+    [intl]
+  )
+
   // max amount for CacaoNative
   const maxAmount: BaseAmount = useMemo(
     () =>
@@ -1081,6 +1090,7 @@ export const InteractFormMaya = (props: Props) => {
                 }}
               />
             </span>
+            {cacaoPoolProvider.value.gt(0) && cacaoPoolAction === Action.add && renderCacaoPoolWarning}
           </div>
         )}
         {/* Provider address input (whitelist only) */}
