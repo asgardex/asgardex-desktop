@@ -13,8 +13,7 @@ import {
   assetAmount,
   assetToBase,
   TokenAsset,
-  isTokenAsset,
-  baseAmount
+  isTokenAsset
 } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -297,6 +296,25 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     )
   }, [selectedAsset, availableAssets])
 
+  // Auto-select a default asset (prefer BTC) when modal opens or when list updates
+  useEffect(() => {
+    if (!visible || O.isSome(selectedAsset)) return
+
+    const defaultAsset = FP.pipe(
+      availableAssets,
+      A.findFirst((item) => item.asset.chain === AssetBTC.chain && item.asset.symbol === AssetBTC.symbol),
+      O.alt(() => FP.pipe(availableAssets, A.head))
+    )
+
+    FP.pipe(
+      defaultAsset,
+      O.map(({ asset, walletType }) => {
+        setSelectedAsset(O.some(asset))
+        setSelectedWalletType(walletType)
+      })
+    )
+  }, [availableAssets, selectedAsset, visible])
+
   const handleAssetSelect = useCallback(
     (asset: AnyAsset) => {
       setSelectedAsset(O.some(asset))
@@ -388,9 +406,9 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
       FP.pipe(
         selectedAssetBalance,
         O.map(({ amount }) => amount),
-        O.getOrElse(() => baseAmount(0, assetInputDecimal))
+        O.toUndefined
       ),
-    [selectedAssetBalance, assetInputDecimal]
+    [selectedAssetBalance]
   )
 
   // Check approval status
