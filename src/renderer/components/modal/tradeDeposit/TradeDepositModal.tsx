@@ -7,14 +7,16 @@ import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   AnyAsset,
+  BaseAmount,
   Chain,
   baseToAsset,
-  formatAssetAmountCurrency,
   assetAmount,
   assetToBase,
   TokenAsset,
-  isTokenAsset
+  isTokenAsset,
+  baseAmount
 } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -39,7 +41,7 @@ import {
   ApiError
 } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
-import { AssetSelect } from '../../uielements/assets/assetSelect'
+import { AssetInput } from '../../uielements/assets/assetInput'
 import { Button, BaseButton } from '../../uielements/button'
 import { Label } from '../../uielements/label'
 import { HeadlessModal as Modal } from '../../uielements/modal'
@@ -288,7 +290,8 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
           FP.pipe(
             availableAssets,
             A.filter((item) => item.asset.chain === asset.chain && item.asset.symbol === asset.symbol),
-            A.map((item) => item.walletType)
+            A.map((item) => item.walletType),
+            (walletTypes) => Array.from(new Set(walletTypes))
           )
       )
     )
@@ -321,44 +324,74 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     [availableAssets]
   )
 
-  const handleAmountChange = useCallback((value: string) => {
-    setAmount(value)
-  }, [])
-
   const handleWalletTypeSelect = useCallback((walletType: WalletType) => {
     setSelectedWalletType(walletType)
     setAmount('') // Reset amount when wallet type changes
   }, [])
 
-  const handleMaxClick = useCallback(() => {
-    FP.pipe(
-      selectedAssetBalance,
-      O.fold(
-        () => {
-          // No balance available, do nothing
-        },
-        (balance) => {
-          FP.pipe(
-            selectedAsset,
-            O.fold(
-              () => {
-                // No asset selected
-              },
-              (asset) => {
-                const formattedAmount = formatAssetAmountCurrency({
-                  amount: baseToAsset(balance.amount),
-                  asset,
-                  decimal: 8,
-                  trimZeros: true
-                }).replace(/[^0-9.]/g, '') // Remove currency symbols and keep only numbers and decimal
-                setAmount(formattedAmount)
-              }
-            )
-          )
-        }
+  const handleAmountInput = useCallback((value: BaseAmount) => {
+    const assetAmountValue = baseToAsset(value)
+    setAmount(assetAmountValue.amount().toString())
+  }, [])
+
+  const handleAmountPercent = useCallback(
+    (percents: number) => {
+      FP.pipe(
+        selectedAssetBalance,
+        O.map((balance) => {
+          const assetAmountValue = baseToAsset(balance.amount)
+            .amount()
+            .multipliedBy(percents / 100)
+          setAmount(assetAmountValue.toFixed(balance.amount.decimal))
+        })
       )
-    )
-  }, [selectedAssetBalance, selectedAsset])
+    },
+    [selectedAssetBalance]
+  )
+
+  const assetInputDecimal = useMemo(
+    () =>
+      FP.pipe(
+        selectedAssetBalance,
+        O.fold(
+          () => 8,
+          (balance) => balance.amount.decimal
+        )
+      ),
+    [selectedAssetBalance]
+  )
+
+  const assetInputAmount = useMemo(
+    () => ({
+      amount: assetToBase(assetAmount(Number.isFinite(parseFloat(amount)) ? parseFloat(amount) : 0, assetInputDecimal)),
+      asset: FP.pipe(
+        selectedAsset,
+        O.getOrElse(() => AssetBTC as AnyAsset)
+      )
+    }),
+    [amount, assetInputDecimal, selectedAsset]
+  )
+
+  const assetInputPrice = useMemo(
+    () => ({
+      amount: assetToBase(assetAmount(0, 8)),
+      asset: FP.pipe(
+        selectedAsset,
+        O.getOrElse(() => AssetBTC as AnyAsset)
+      )
+    }),
+    [selectedAsset]
+  )
+
+  const walletBalanceForInput = useMemo(
+    () =>
+      FP.pipe(
+        selectedAssetBalance,
+        O.map(({ amount }) => amount),
+        O.getOrElse(() => baseAmount(0, assetInputDecimal))
+      ),
+    [selectedAssetBalance, assetInputDecimal]
+  )
 
   // Check approval status
   const checkApprovedStatus = useCallback(
@@ -741,37 +774,38 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
         }
         title={intl.formatMessage({ id: 'wallet.action.deposit' })}
         onClose={handleCancel}
-        className="!max-w-[420px]">
-        <div className="flex flex-col gap-6">
+        className="!max-w-[480px]">
+        <div className="flex flex-col gap-4">
           {/* Protocol Selection */}
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-end">
-              <ProtocolSwitch protocol={selectedProtocol} setProtocol={handleProtocolChange} />
-            </div>
             <Label size="small" color="gray">
               Choose where your trade assets will be deposited:{' '}
               {currentProtocol === THORChain ? 'THORChain' : 'MAYAChain'}
             </Label>
+            <div className="flex items-center">
+              <ProtocolSwitch protocol={selectedProtocol} setProtocol={handleProtocolChange} />
+            </div>
           </div>
 
-          {/* Asset Selection */}
-          <div className="flex flex-col gap-2">
-            <Label size="normal" color="primary">
-              {intl.formatMessage({ id: 'common.asset' })}
-            </Label>
-            <AssetSelect
-              asset={FP.pipe(
-                selectedAsset,
-                O.getOrElse(() => AssetBTC as AnyAsset)
-              )}
-              assets={uniqueAssets}
-              onSelect={handleAssetSelect}
-              network={network}
-              dialogHeadline={intl.formatMessage({ id: 'common.asset.chooseAsset' })}
-              className="w-full"
-              shadowless
-            />
-          </div>
+          {/* Asset + Amount */}
+          <AssetInput
+            title={intl.formatMessage({ id: 'wallet.action.deposit' })}
+            amount={assetInputAmount}
+            priceAmount={assetInputPrice}
+            walletBalance={walletBalanceForInput}
+            assets={uniqueAssets}
+            network={network}
+            showError={amount !== '' && !isValidAmount}
+            onChangeAsset={handleAssetSelect}
+            onChange={handleAmountInput}
+            onChangePercent={handleAmountPercent}
+            hasAmountShortcut
+            useLedger={false}
+            hasLedger={false}
+            useLedgerHandler={FP.constVoid}
+            protocol={currentProtocol}
+            synthDisabled
+          />
 
           {/* Wallet Type Selection */}
           {O.isSome(selectedAsset) && availableWalletTypes.length > 1 && (
@@ -796,82 +830,12 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
             </div>
           )}
 
-          {/* Balance Display */}
-          {FP.pipe(
-            selectedAssetBalance,
-            O.fold(
-              () => null,
-              (balance) => (
-                <div className="flex items-center justify-between rounded-lg bg-gray0 p-3 dark:bg-gray0d">
-                  <Label size="normal" color="gray">
-                    {intl.formatMessage({ id: 'common.balance' })}
-                  </Label>
-                  <Label size="normal" color="primary">
-                    {balance.amount.amount().toString()}{' '}
-                    {FP.pipe(
-                      selectedAsset,
-                      O.fold(
-                        () => '',
-                        (asset) => asset.symbol
-                      )
-                    )}
-                  </Label>
-                </div>
-              )
-            )
-          )}
-
-          {/* Amount Input */}
-          {O.isSome(selectedAsset) &&
-            FP.pipe(
-              selectedAssetBalance,
-              O.fold(
-                () => null,
-                (balance) => (
-                  <div className="flex flex-col gap-2">
-                    <Label size="normal" color="primary">
-                      {intl.formatMessage({ id: 'common.amount' })}
-                    </Label>
-                    <div className="relative flex">
-                      <input
-                        type="text"
-                        value={amount}
-                        onChange={(e) => handleAmountChange(e.target.value)}
-                        placeholder="0.00"
-                        className="w-full rounded-lg border border-gray1 bg-white p-3 pr-16 text-text2 dark:border-gray1d dark:bg-bg1d dark:text-text2d"
-                      />
-                      <Button
-                        onClick={handleMaxClick}
-                        disabled={O.isNone(selectedAsset) || O.isNone(selectedAssetBalance)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-turquoise px-3 py-1 text-xs text-white hover:bg-turquoise/80 disabled:cursor-not-allowed disabled:bg-gray1 disabled:text-gray2 dark:disabled:bg-gray1d dark:disabled:text-gray2d">
-                        {intl.formatMessage({ id: 'common.max' })}
-                      </Button>
-                    </div>
-                    <Label size="small" color="gray">
-                      Max:{' '}
-                      {formatAssetAmountCurrency({
-                        amount: baseToAsset(balance.amount),
-                        asset: FP.pipe(
-                          selectedAsset,
-                          O.getOrElse(() => AssetBTC as AnyAsset)
-                        ),
-                        decimal: 8,
-                        trimZeros: true
-                      })}
-                    </Label>
-                  </div>
-                )
-              )
-            )}
-
           {/* Memo */}
           {O.isSome(selectedAsset) && (
             <div className="flex flex-col gap-2">
-              <Label size="normal" color="primary">
-                {intl.formatMessage({ id: 'common.memo' })}
-              </Label>
+              <Label size="normal">{intl.formatMessage({ id: 'common.memo' })}</Label>
               <div className="rounded-lg bg-gray0 p-3 dark:bg-gray0d">
-                <Label size="small" color="primary">
+                <Label size="small">
                   TRADE+:{protocolAddress || `{YOUR_${currentProtocol === THORChain ? 'THOR' : 'MAYA'}_ADDRESS}`}
                 </Label>
               </div>
@@ -885,20 +849,26 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
           )}
 
           {/* Action Buttons */}
-          <div className="mt-6 flex gap-4">
+          <div className="mt-6 flex w-full items-center justify-end gap-2">
             <BaseButton
               onClick={handleCancel}
-              className="flex-1 bg-gray1 text-gray2 hover:bg-gray2 dark:bg-gray1d dark:text-gray2d dark:hover:bg-gray2d">
+              className={clsx(
+                'flex-1 rounded-md !px-4 !py-2',
+                'border border-solid border-gray1/20 dark:border-gray1d/20',
+                'text-text0 dark:text-text0d',
+                'hover:bg-gray1/20 hover:dark:bg-gray1d/20'
+              )}>
               {intl.formatMessage({ id: 'common.cancel' })}
             </BaseButton>
             <BaseButton
               onClick={handleConfirm}
               disabled={!canProceed}
-              className={`flex-1 ${
+              className={clsx(
+                'flex-1 rounded-lg !px-4 !py-2',
                 canProceed
                   ? 'bg-turquoise text-white hover:bg-turquoise/80'
                   : 'cursor-not-allowed bg-gray1 text-gray2 dark:bg-gray1d dark:text-gray2d'
-              }`}>
+              )}>
               {getButtonText}
             </BaseButton>
           </div>
