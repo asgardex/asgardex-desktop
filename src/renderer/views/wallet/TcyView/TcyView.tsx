@@ -468,9 +468,9 @@ export const TcyView = () => {
   }, [activeTab, reloadTcyClaim, reloadTcyStaker])
 
   const refreshThorBalances = useCallback(() => {
-    const lazyReload = reloadBalancesByChain(THORChain, DEFAULT_WALLET_TYPE)
+    const lazyReload = reloadBalancesByChain(THORChain, useLedger ? WalletType.Ledger : DEFAULT_WALLET_TYPE)
     lazyReload()
-  }, [])
+  }, [useLedger])
 
   const handleClaim = useCallback((tcyInfo: TcyInfo) => {
     setSelectedAsset(tcyInfo)
