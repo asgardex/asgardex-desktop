@@ -1121,7 +1121,7 @@ export const TcyView = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Label className="!w-auto" color="gray" size="big">
-                    Wallet Balance
+                    {intl.formatMessage({ id: 'tcy.walletBalance' })}
                   </Label>
                   <Tooltip title={intl.formatMessage({ id: 'tcy.walletBalanceTooltip' })}>
                     <InformationCircleIcon className="h-4 w-4 cursor-pointer text-turquoise" />

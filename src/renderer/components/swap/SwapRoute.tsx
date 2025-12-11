@@ -24,6 +24,34 @@ type Props = {
   quote: O.Option<ExtendedQuoteSwap>
   quotes: O.Option<ExtendedQuoteSwap[]>
   onSelectQuote: (selectedQuote: ExtendedQuoteSwap) => void // Callback for quote selection
+  quoteOnly?: boolean // Preview mode flag
+}
+
+const getPreviewModeErrors = (errors: string[], quoteOnly: boolean) => {
+  if (!quoteOnly) return errors
+
+  const isPreviewFilteredError = (error: string) => {
+    const errorLower = error.toLowerCase()
+    return (
+      errorLower.includes('insufficient') ||
+      errorLower.includes('not enough') ||
+      errorLower.includes('exceed') ||
+      errorLower.includes('balance') ||
+      errorLower.includes('funds') ||
+      errorLower.includes('fee') ||
+      errorLower.includes('outbound') ||
+      errorLower.includes('inbound') ||
+      errorLower.includes('gas') ||
+      errorLower.includes('router has not been approved') ||
+      errorLower.includes('memo') ||
+      errorLower.includes('parsing') ||
+      errorLower.includes('undefined') ||
+      errorLower.includes('recipient') ||
+      errorLower.includes('address')
+    )
+  }
+
+  return errors.filter((error) => !isPreviewFilteredError(error))
 }
 
 const formatTime = (seconds: number): string => {
@@ -41,7 +69,8 @@ const Route = ({
   isBestRate,
   isFastest,
   isBoostEnabled,
-  onToggleBoost
+  onToggleBoost,
+  quoteOnly
 }: {
   className?: string
   isBoostable: boolean
@@ -51,6 +80,7 @@ const Route = ({
   isFastest: boolean
   isBoostEnabled?: boolean
   onToggleBoost?: (enabled: boolean) => void
+  quoteOnly?: boolean
 }) => {
   const isChainflip = quote.protocol === 'Chainflip'
 
@@ -96,12 +126,12 @@ const Route = ({
         )}
         {quote.errors && quote.errors.length > 0 && (
           <div className="mt-1 text-[11px] text-error0">
-            {quote.errors.map((error, index) => (
+            {getPreviewModeErrors(quote.errors, quoteOnly ?? false).map((error, index) => (
               <span key={index}>
                 {error.includes('price limit')
                   ? 'Price slippage too high. Please adjust your price tolerance settings.'
                   : error}
-                {index < quote.errors.length - 1 && ' | '}
+                {index < getPreviewModeErrors(quote.errors, quoteOnly ?? false).length - 1 && ' | '}
               </span>
             ))}
           </div>
@@ -111,7 +141,7 @@ const Route = ({
   )
 }
 
-export const SwapRoute = ({ isBoostable, targetAsset, quote, quotes, onSelectQuote }: Props) => {
+export const SwapRoute = ({ isBoostable, targetAsset, quote, quotes, onSelectQuote, quoteOnly }: Props) => {
   const { isBoostEnabled, setBoostEnabled } = useAggregator()
 
   const availableQuotes = useMemo(() => {
@@ -165,6 +195,7 @@ export const SwapRoute = ({ isBoostable, targetAsset, quote, quotes, onSelectQuo
               isFastest={fastestQuote ? activeQuote.totalSwapSeconds === fastestQuote.totalSwapSeconds : false}
               isBoostEnabled={isBoostEnabled}
               onToggleBoost={setBoostEnabled}
+              quoteOnly={quoteOnly}
             />
           }>
           {availableQuotes
@@ -193,6 +224,7 @@ export const SwapRoute = ({ isBoostable, targetAsset, quote, quotes, onSelectQuo
                   isFastest={fastestQuote ? availableQuote.totalSwapSeconds === fastestQuote.totalSwapSeconds : false}
                   isBoostEnabled={isBoostEnabled}
                   onToggleBoost={setBoostEnabled}
+                  quoteOnly={quoteOnly}
                 />
               </div>
             ))}

@@ -1280,6 +1280,20 @@ export const Swap = ({
           ) {
             return ['Please enter a recipient address to proceed with the swap']
           }
+          // In preview mode, filter out memo/transaction errors
+          if (quoteOnly) {
+            const errorMsg = error?.message?.toLowerCase?.()
+            if (
+              errorMsg?.includes('memo') ||
+              errorMsg?.includes('parsing') ||
+              errorMsg?.includes('undefined') ||
+              errorMsg?.includes('recipient') ||
+              errorMsg?.includes('address')
+            ) {
+              return [] // Hide these errors in preview mode
+            }
+          }
+
           // Safely extract error message with fallback
           const errorMessage =
             typeof error?.message === 'string' && error.message.trim()
@@ -2223,13 +2237,41 @@ export const Swap = ({
       )
     )
 
-    if (swapErrors.length === 0) {
+    // Filter out balance and fee errors in preview mode
+    const filteredErrors = quoteOnly
+      ? swapErrors.filter((error) => {
+          const errorLower = error.toLowerCase()
+          // Filter out balance-related errors
+          const isBalanceError =
+            errorLower.includes('insufficient') ||
+            errorLower.includes('not enough') ||
+            errorLower.includes('exceed') ||
+            errorLower.includes('balance') ||
+            errorLower.includes('funds')
+
+          // Filter out fee-related errors
+          const isFeeError =
+            errorLower.includes('fee') ||
+            errorLower.includes('outbound') ||
+            errorLower.includes('inbound') ||
+            errorLower.includes('gas') ||
+            errorLower.includes('router has not been approved')
+
+          // Filter out memo/transaction errors that require wallet connection
+          const isMemoError =
+            errorLower.includes('memo') || errorLower.includes('parsing') || errorLower.includes('undefined')
+
+          return !isBalanceError && !isFeeError && !isMemoError
+        })
+      : swapErrors
+
+    if (filteredErrors.length === 0) {
       return <></>
     }
 
     return (
       <ErrorLabel>
-        {swapErrors.map((error, index) => {
+        {filteredErrors.map((error, index) => {
           // Check for specific error patterns
           if (error.includes('is less than recommended Min Amount')) {
             const matches = error.match(/amount in: (\d+) is less than recommended Min Amount: (\d+)/)
@@ -2257,13 +2299,13 @@ export const Swap = ({
           // Default error display
           return <div key={index}>{error}</div>
         })}
-        {belowDustThreshold && <>{`Amount to swap is Below DustThreshold`}</>}
+        {!quoteOnly && belowDustThreshold && <>{`Amount to swap is Below DustThreshold`}</>}
       </ErrorLabel>
     )
-  }, [belowDustThreshold, oQuoteProtocol, sourceAsset])
+  }, [belowDustThreshold, oQuoteProtocol, sourceAsset, quoteOnly])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
-    if (!sourceChainFeeError) {
+    if (!sourceChainFeeError || quoteOnly) {
       return <></>
     }
 
@@ -2290,7 +2332,7 @@ export const Swap = ({
         )}
       </ErrorLabel>
     )
-  }, [sourceChainFeeError, swapFees, intl, sourceChainAsset, sourceChainAssetAmount])
+  }, [sourceChainFeeError, swapFees, intl, sourceChainAsset, sourceChainAssetAmount, quoteOnly])
 
   // Label: Min amount to swap
   const swapMinResultLabel = useMemo(() => {
@@ -2805,6 +2847,7 @@ export const Swap = ({
               quote={oQuoteProtocol}
               quotes={oQuoteProcotols}
               onSelectQuote={handleSelectQuote}
+              quoteOnly={quoteOnly}
             />
           )}
           {FP.pipe(
