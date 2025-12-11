@@ -59,8 +59,10 @@ type TradeDepositModalProps = {
   visible: boolean
   chainBalances: ChainBalance[]
   initialProtocol?: Chain
-  thorProtocolAddress?: string
-  mayaProtocolAddress?: string
+  thorKeystoreProtocolAddress?: string
+  thorLedgerProtocolAddress?: string
+  mayaKeystoreProtocolAddress?: string
+  mayaLedgerProtocolAddress?: string
   network: Network
   validatePassword$: ValidatePasswordHandler
   onClose: () => void
@@ -71,8 +73,10 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     visible,
     chainBalances,
     initialProtocol = THORChain,
-    thorProtocolAddress,
-    mayaProtocolAddress,
+    thorKeystoreProtocolAddress,
+    thorLedgerProtocolAddress,
+    mayaKeystoreProtocolAddress,
+    mayaLedgerProtocolAddress,
     network,
     validatePassword$,
     onClose
@@ -125,8 +129,21 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     subscribe: subscribeIsApprovedState
   } = useSubscriptionState<RD.RemoteData<ApiError, boolean>>(RD.initial)
 
-  // Get the current protocol address
-  const protocolAddress = selectedProtocol === THORChain ? thorProtocolAddress : mayaProtocolAddress
+  // Get the current protocol address based on selected protocol and wallet type
+  const protocolAddress = useMemo(() => {
+    if (selectedProtocol === THORChain) {
+      return selectedWalletType === WalletType.Keystore ? thorKeystoreProtocolAddress : thorLedgerProtocolAddress
+    } else {
+      return selectedWalletType === WalletType.Keystore ? mayaKeystoreProtocolAddress : mayaLedgerProtocolAddress
+    }
+  }, [
+    selectedProtocol,
+    selectedWalletType,
+    thorKeystoreProtocolAddress,
+    thorLedgerProtocolAddress,
+    mayaKeystoreProtocolAddress,
+    mayaLedgerProtocolAddress
+  ])
   const currentProtocol = selectedProtocol as Chain
 
   // Check if user is using ledger wallet
@@ -436,22 +453,20 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
   }, [needApprovement, approveState, isApprovedState])
 
   const isValidAmount = useMemo(() => {
-    if (!amount) return false
-
     return FP.pipe(
       selectedAssetBalance,
       O.fold(
         () => false,
         (balance) => {
           try {
-            return balance.amount.gt(0)
-          } catch (error) {
+            return assetInputAmount.amount.gt(0) && balance.amount.gte(assetInputAmount.amount)
+          } catch {
             return false
           }
         }
       )
     )
-  }, [amount, selectedAssetBalance])
+  }, [selectedAssetBalance, assetInputAmount])
 
   const handleProtocolChange = useCallback((newProtocol: string) => {
     setSelectedProtocol(newProtocol)
@@ -577,7 +592,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     onClose()
   }, [onClose])
 
-  const canProceed = O.isSome(selectedAsset) && isValidAmount
+  const canProceed = O.isSome(selectedAsset) && isValidAmount && !!protocolAddress
 
   // Get appropriate button text based on approval state
   const getButtonText = useMemo(() => {
@@ -829,9 +844,6 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
           {/* Wallet Type Selection */}
           {O.isSome(selectedAsset) && availableWalletTypes.length > 1 && (
             <div className="flex flex-col gap-2">
-              <Label size="normal" color="primary">
-                {intl.formatMessage({ id: 'wallet.type' })}
-              </Label>
               <div className="flex gap-2">
                 {availableWalletTypes.map((walletType) => (
                   <Button

@@ -136,7 +136,7 @@ export const tradeDeposit$ = ({
                   oProgress,
                   O.map(({ loaded }): DepositState => {
                     // From 75 to 97 we count progress with small steps, but stop it at 98
-                    const updatedLoaded = loaded >= 75 && loaded <= 97 ? loaded++ : loaded
+                    const updatedLoaded = loaded >= 75 && loaded <= 97 ? Math.min(97, loaded + 1) : loaded
                     return { ...state, deposit: RD.progress({ loaded: updatedLoaded, total }) }
                   }),
                   O.getOrElse(() => state)

@@ -50,15 +50,25 @@ export const TradeAssetsView = (): JSX.Element => {
   // Get chain balances for the modal
   const chainBalances = useObservableState(chainBalances$, [])
 
-  // Get protocol addresses for trade deposit
-  const { protocolAddress: thorProtocolAddress } = useTradeDepositAddresses({
+  // Get protocol addresses for trade deposit - both keystore and ledger
+  const { protocolAddress: thorKeystoreProtocolAddress } = useTradeDepositAddresses({
     protocol: THORChain,
     walletType: WalletType.Keystore
   })
 
-  const { protocolAddress: mayaProtocolAddress } = useTradeDepositAddresses({
+  const { protocolAddress: thorLedgerProtocolAddress } = useTradeDepositAddresses({
+    protocol: THORChain,
+    walletType: WalletType.Ledger
+  })
+
+  const { protocolAddress: mayaKeystoreProtocolAddress } = useTradeDepositAddresses({
     protocol: MAYAChain,
     walletType: WalletType.Keystore
+  })
+
+  const { protocolAddress: mayaLedgerProtocolAddress } = useTradeDepositAddresses({
+    protocol: MAYAChain,
+    walletType: WalletType.Ledger
   })
 
   const {
@@ -355,15 +365,29 @@ export const TradeAssetsView = (): JSX.Element => {
         visible={showDepositModal}
         chainBalances={chainBalances}
         initialProtocol={protocol}
-        thorProtocolAddress={FP.pipe(
-          thorProtocolAddress,
+        thorKeystoreProtocolAddress={FP.pipe(
+          thorKeystoreProtocolAddress,
           O.fold(
             () => undefined,
             (address) => address.address
           )
         )}
-        mayaProtocolAddress={FP.pipe(
-          mayaProtocolAddress,
+        thorLedgerProtocolAddress={FP.pipe(
+          thorLedgerProtocolAddress,
+          O.fold(
+            () => undefined,
+            (address) => address.address
+          )
+        )}
+        mayaKeystoreProtocolAddress={FP.pipe(
+          mayaKeystoreProtocolAddress,
+          O.fold(
+            () => undefined,
+            (address) => address.address
+          )
+        )}
+        mayaLedgerProtocolAddress={FP.pipe(
+          mayaLedgerProtocolAddress,
           O.fold(
             () => undefined,
             (address) => address.address
