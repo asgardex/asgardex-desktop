@@ -35,7 +35,6 @@ import { CheckButton } from '../../../components/uielements/button/CheckButton'
 import { WalletTypeLabel, WalletTypeTinyLabel } from '../../../components/uielements/common'
 import { InputBigNumber } from '../../../components/uielements/input'
 import { Label } from '../../../components/uielements/label'
-import { Slider } from '../../../components/uielements/slider'
 import { Tooltip } from '../../../components/uielements/tooltip'
 import { AssetsNav } from '../../../components/wallet/assets'
 import { getInteractiveDescription } from '../../../components/wallet/txs/interact/Interact.helpers'
@@ -403,6 +402,18 @@ export const TcyView = () => {
     [activeTab, amountValidator, maxAmountToUnstake, tcyStakePosRD]
   )
 
+  // Initialize memos for stake and unstake operations
+  useEffect(() => {
+    if (activeTab === TcyOperation.Stake) {
+      setCurrentMemo(getStakeMemo())
+    } else if (activeTab === TcyOperation.Unstake) {
+      if (RD.isSuccess(tcyStakePosRD) && maxAmountToUnstake.gt(ZERO_BASE_AMOUNT)) {
+        // Default to 0 bps for unstake memo when no amount is entered
+        setCurrentMemo(getUnstakeMemo('0'))
+      }
+    }
+  }, [activeTab, tcyStakePosRD, maxAmountToUnstake])
+
   const submitAsymDepositTx = useCallback(() => {
     const oAssetWB: O.Option<WalletBalance> = FP.pipe(
       sequenceTOption(oClaimAssetAmount, claimAddress),
@@ -546,39 +557,6 @@ export const TcyView = () => {
     setPasswordModalVisible(false)
   }, [activeTab, submitTx, currentMemo, submitAsymDepositTx])
 
-  const renderSlider = useMemo(() => {
-    // Calculate percentage based on amountToSend and maxAmount
-    const percentage =
-      RD.isSuccess(tcyStakePosRD) && maxAmountToUnstake.gt(ZERO_BASE_AMOUNT)
-        ? (baseToAsset(_amountToSend).amount().toNumber() / baseToAsset(maxAmountToUnstake).amount().toNumber()) * 100
-        : 0
-
-    const setAmountToSendFromPercentValue = (percents: number) => {
-      if (RD.isSuccess(tcyStakePosRD)) {
-        // Handle exactly 100% case to ensure we get 10000 bps
-        const isMaxPercent = percents >= 99.99
-        const bps = isMaxPercent ? 10000 : Math.round(percents * 100)
-        setCurrentMemo(getUnstakeMemo(bps.toString()))
-
-        // Calculate amount to send based on percentage of maxAmount
-        // For 100%, use the exact maxAmount to avoid floating point issues
-        const newAmount = isMaxPercent ? maxAmountToUnstake : maxAmountToUnstake.times(percents / 100)
-        setAmountToSend(newAmount)
-      }
-    }
-
-    return (
-      <Slider
-        key={'Tcy Unstake percentage slider'}
-        value={percentage}
-        onChange={setAmountToSendFromPercentValue}
-        min={0}
-        max={100}
-        step={0.01}
-        disabled={isLoading || !RD.isSuccess(tcyStakePosRD) || maxAmountToUnstake.eq(ZERO_BASE_AMOUNT)}
-      />
-    )
-  }, [_amountToSend, isLoading, maxAmountToUnstake, tcyStakePosRD])
   // need to separate these
   const resetStake = useCallback(() => {
     resetInteractState()
@@ -957,6 +935,16 @@ export const TcyView = () => {
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <FlatButton
+                        className="h-8 px-3 py-1 text-xs"
+                        color="primary"
+                        size="small"
+                        disabled={isLoading || maxAmountToStake.eq(ZERO_BASE_AMOUNT)}
+                        onClick={() => {
+                          setAmountToSend(maxAmountToStake)
+                        }}>
+                        {intl.formatMessage({ id: 'common.max' })}
+                      </FlatButton>
                       <AssetIcon asset={AssetTCY} network={network} />
                       <div className="flex flex-col">
                         <Label size="big" textTransform="uppercase" weight="bold">
@@ -980,6 +968,12 @@ export const TcyView = () => {
                       </CheckButton>
                     </div>
                   )}
+                  {/* Memo Display */}
+                  <div className="rounded-lg bg-gray0 p-3 dark:bg-gray0d">
+                    <Label size="small" color="primary">
+                      {currentMemo || getStakeMemo()}
+                    </Label>
+                  </div>
                   <FlatButton
                     className="my-30px min-w-[200px]"
                     size="large"
@@ -1056,20 +1050,12 @@ export const TcyView = () => {
                       </CheckButton>
                     </div>
                   )}
-                  {renderSlider}
                   {/* Memo Display */}
-                  {currentMemo && (
-                    <div className="flex flex-col space-y-2">
-                      <Label size="big" color="gray" textTransform="uppercase">
-                        {intl.formatMessage({ id: 'common.memo' })}
-                      </Label>
-                      <div className="rounded-lg bg-gray0 p-3 dark:bg-gray0d">
-                        <Label size="small" color="primary">
-                          {currentMemo}
-                        </Label>
-                      </div>
-                    </div>
-                  )}
+                  <div className="rounded-lg bg-gray0 p-3 dark:bg-gray0d">
+                    <Label size="small" color="primary">
+                      {currentMemo || getUnstakeMemo('0')}
+                    </Label>
+                  </div>
 
                   <FlatButton
                     className="my-30px min-w-[200px]"
