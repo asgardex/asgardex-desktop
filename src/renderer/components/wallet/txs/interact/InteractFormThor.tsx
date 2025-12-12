@@ -225,7 +225,7 @@ export const InteractFormThor = ({
   }
 
   const runePoolData = useRunePoolProviderMaturity(runePoolProviderRd, thorchainLastblockRd, mimirKeys)
-  const runePoolAvialable = mimirKeys['RUNEPOOLENABLED'] === 1
+  const runePoolAvailable = mimirKeys['RUNEPOOLENABLED'] === 1
 
   useEffect(() => {
     let foundNodeInfo: UserNodeInfo | undefined = undefined
@@ -714,7 +714,6 @@ export const InteractFormThor = ({
     setThornameQuoteValid(false)
     setThornameUpdate(false)
     setThornameAvailable(false)
-    setRunePoolAction(Action.add)
   }, [reset, resetInteractState, watch, balance.walletAddress])
 
   const renderConfirmationModal = useMemo(() => {
@@ -929,6 +928,7 @@ export const InteractFormThor = ({
   useEffect(() => {
     resetForm()
     setMemo('')
+    setRunePoolAction(Action.add) // Reset to deposit when changing interact type
   }, [interactType, resetForm])
 
   // Reset form when switching between deposit and withdraw for RunePool
@@ -1019,7 +1019,7 @@ export const InteractFormThor = ({
               />
             </span>
             <span className="ml-2 inline-block">
-              {!runePoolAvialable && intl.formatMessage({ id: 'protocolPool.detail.availability' })}
+              {!runePoolAvailable && intl.formatMessage({ id: 'protocolPool.detail.availability' })}
             </span>
             {runePoolProvider.value.gt(0) && runePoolAction === Action.add && renderRunePoolWarning}
           </div>
@@ -1494,12 +1494,12 @@ export const InteractFormThor = ({
             loading={isLoading}
             disabled={
               isLoading ||
-              !runePoolAvialable ||
+              !runePoolAvailable ||
               (runePoolAction === Action.withdraw &&
                 runePoolData &&
                 RD.isSuccess(runePoolData) &&
                 runePoolData.value.blocksLeft > 0) ||
-              !isValid
+              (runePoolAction === Action.add && !isValid)
             }
             type="submit"
             size="large">
