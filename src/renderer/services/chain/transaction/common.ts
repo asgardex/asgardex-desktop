@@ -490,6 +490,8 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
       return ADA.txStatus$(txHash, O.none)
     case RadixChain:
       return XRD.txStatus$(txHash, O.none)
+    case XRPChain:
+      return XRP.txStatus$(txHash, O.none)
     case SOLChain:
       return SOL.txStatus$(txHash, O.none)
     case ZECChain:

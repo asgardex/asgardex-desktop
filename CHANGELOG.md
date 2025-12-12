@@ -1,5 +1,26 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.41.5 (2025-12-12)
+
+## Add
+
+- add trade deposit modal for depositing assets into supported trading protocols [#955](https://github.com/asgardex/asgardex-desktop/pull/955)
+- add LUSD and DAI asset support for ETH token pools [#943](https://github.com/asgardex/asgardex-desktop/pull/943)
+- add transaction slideshow for tracking active swaps across multiple protocols [#941](https://github.com/asgardex/asgardex-desktop/pull/941)
+- add collapsible swap view with detailed settings and transaction information [#948](https://github.com/asgardex/asgardex-desktop/pull/948)
+- add manual refresh button for THOR balances and improved unstake controls [#957](https://github.com/asgardex/asgardex-desktop/pull/957)
+
+## Update/Fixes
+
+- fix XRP transaction status tracking for trade deposits
+- fix ledger mode issues with manual recipient address entry [#942](https://github.com/asgardex/asgardex-desktop/pull/942)
+- fix Arbitrum fee calculations and update xchainjs packages [#946](https://github.com/asgardex/asgardex-desktop/pull/946)
+- fix Thorchain node address explorer navigation to use RuneScan [#951](https://github.com/asgardex/asgardex-desktop/pull/951)
+- fix chainflip channel ID tracking and optimize quote fetch logic [#947](https://github.com/asgardex/asgardex-desktop/pull/947)
+- remove affiliate fees from trade swaps for Thorchain and Mayachain [#952](https://github.com/asgardex/asgardex-desktop/pull/952)
+- remove synth assets from asset selection [#945](https://github.com/asgardex/asgardex-desktop/pull/945)
+- cleanup unused modules and dependencies [#950](https://github.com/asgardex/asgardex-desktop/pull/950)
+
 # 1.41.4 (2025-11-21)
 
 ## Add
