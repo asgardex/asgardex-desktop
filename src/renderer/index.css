@@ -1,45 +1,139 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-@font-face {
-  font-family: 'MainFontRegular';
-  font-style: normal;
-  font-weight: normal;
-  src:
-    local('MainFontRegular'),
-    url(./assets/fonts/Exo2-Regular.otf) format('opentype');
-}
-@font-face {
-  font-family: 'MainFontBold';
-  font-style: normal;
-  font-weight: normal;
-  src:
-    local('MainFontBold'),
-    url(./assets/fonts/Exo2-Bold.otf) format('opentype');
-}
-@font-face {
-  font-family: 'MainFontSemiBold';
-  font-style: normal;
-  font-weight: normal;
-  src:
-    local('MainFontSemiBold'),
-    url(./assets/fonts/Exo2-SemiBold.otf) format('opentype');
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-xs: 0px;
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-2xl: 1600px;
+
+  --font-main: MainFontRegular;
+  --font-mainBold: MainFontBold;
+  --font-mainSemiBold: MainFontSemiBold;
+
+  --spacing-5px: 5px;
+  --spacing-10px: 10px;
+  --spacing-15px: 15px;
+  --spacing-20px: 20px;
+  --spacing-30px: 30px;
+  --spacing-40px: 40px;
+  --spacing-50px: 50px;
+
+  --text-11: 11px;
+  --text-11--line-height: 14px;
+  --text-14: 14px;
+  --text-14--line-height: 17px;
+  --text-16: 16px;
+  --text-16--line-height: 19px;
+  --text-18: 18px;
+  --text-18--line-height: 21px;
+  --text-20: 20px;
+  --text-20--line-height: 23px;
+
+  --color-turquoise: #0068f7;
+  --color-cyanblue: #1fb6ff;
+  --color-red: #ff4954;
+  --color-success: #23dcc8;
+  --color-text0: #303942;
+  --color-text0d: #fff;
+  --color-text1: #101921;
+  --color-text1d: #f3f4f4;
+  --color-text2: #616b75;
+  --color-text2d: #d1d5da;
+  --color-text3: #fff;
+  --color-text3d: #fff;
+  --color-bg0: #fff;
+  --color-bg0d: #111315;
+  --color-bg1: #fff;
+  --color-bg1d: #111315;
+  --color-bg2: #f3f4f4;
+  --color-bg2d: #303942;
+  --color-bg3: #f3f4f4;
+  --color-bg3d: #000;
+  --color-error0: #ff4954;
+  --color-error0d: #ff4954;
+  --color-error1: #fb000f;
+  --color-error1d: #fb000f;
+  --color-error2: #fffbfc;
+  --color-error2d: #fffbfc;
+  --color-error3: linear-gradient(47.73deg, #ff4954 0%, #ff4954 100%);
+  --color-error3d: linear-gradient(47.73deg, #ff4954 0%, #ff4954 100%);
+  --color-warning0: #f3ba2f;
+  --color-warning0d: #f3ba2f;
+  --color-gray0: #daddee;
+  --color-gray0d: #303942;
+  --color-gray1: #89939d;
+  --color-gray1d: #616b75;
+  --color-gray2: #616b75;
+  --color-gray2d: #89939d;
+
+  --transition-property-height: height;
+
+  --shadow-full: 0 0 15px #89939d;
+  --shadow-fulld: 0 0 15px #616b75;
 }
 
-html,
-body {
-  margin: 0;
-  font-family: 'MainFontRegular';
-}
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
 
-@layer components {
-  .card {
-    @apply rounded-[5px] border border-solid border-gray0 bg-bg0 p-[24px] dark:border-gray0d dark:bg-bg0d;
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
   }
+}
+
+@utility card {
+  @apply rounded-[5px] border border-solid border-gray0 bg-bg0 p-[24px] dark:border-gray0d dark:bg-bg0d;
+}
+
+@utility ease {
   /* default ease */
-  .ease {
-    @apply transition duration-300 ease-in-out;
+  @apply transition duration-300 ease-in-out;
+}
+
+@layer utilities {
+  @font-face {
+    font-family: 'MainFontRegular';
+    font-style: normal;
+    font-weight: normal;
+    src:
+      local('MainFontRegular'),
+      url(./assets/fonts/Exo2-Regular.otf) format('opentype');
+  }
+  @font-face {
+    font-family: 'MainFontBold';
+    font-style: normal;
+    font-weight: normal;
+    src:
+      local('MainFontBold'),
+      url(./assets/fonts/Exo2-Bold.otf) format('opentype');
+  }
+  @font-face {
+    font-family: 'MainFontSemiBold';
+    font-style: normal;
+    font-weight: normal;
+    src:
+      local('MainFontSemiBold'),
+      url(./assets/fonts/Exo2-SemiBold.otf) format('opentype');
+  }
+
+  html,
+  body {
+    margin: 0;
+    font-family: 'MainFontRegular';
   }
 }
 
