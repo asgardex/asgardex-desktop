@@ -100,8 +100,9 @@
 }
 
 @utility ease {
-  /* default ease */
-  @apply transition duration-300 ease-in-out;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* ease-in-out */
+  transition-duration: 300ms;
 }
 
 @layer utilities {
