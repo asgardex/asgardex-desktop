@@ -2825,13 +2825,13 @@ export const Swap = ({
               <BaseButton
                 size="small"
                 onClick={onSwitchAssets}
-                className="group rounded-full border border-solid border-turquoise bg-bg0 p-10px! hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
+                className="p-10px! group rounded-full border border-solid border-turquoise bg-bg0 hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
                 <ArrowsUpDownIcon className="ease h-40px w-40px text-turquoise" />
               </BaseButton>
             </div>
           </div>
         </div>
-        <div className="mt-1 space-y-1">
+        <div className="mt-1 gap-1">
           {isFetchingEstimate ? (
             <Spin
               className="min-h-24 rounded-lg border border-gray0 dark:border-gray0d"
@@ -2937,7 +2937,7 @@ export const Swap = ({
                       standaloneLedgerTargetAddress,
                       O.fold(
                         () => (
-                          <div className="mt-3 space-y-3">
+                          <div className="mt-3 gap-3">
                             <div className="grid grid-cols-1 gap-3">
                               <div className="rounded-lg border border-gray0 dark:border-gray0d">
                                 {/* Derivation path controls */}
@@ -3027,7 +3027,7 @@ export const Swap = ({
                                       fetchStandaloneLedgerTargetAddress(targetChain)
                                     }
                                   }}>
-                                  <div className="flex items-center space-x-3">
+                                  <div className="flex items-center gap-3">
                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-turquoise/10">
                                       <div className="h-4 w-4 rounded-sm bg-turquoise"></div>
                                     </div>
@@ -3052,7 +3052,7 @@ export const Swap = ({
                                   setStandaloneLedgerTargetAddress(O.none)
                                   setCustomAddressEditActive(true)
                                 }}>
-                                <div className="flex items-center space-x-3">
+                                <div className="flex items-center gap-3">
                                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-warning0/10">
                                     <div className="h-4 w-4 rounded-sm bg-warning0"></div>
                                   </div>
@@ -3071,7 +3071,7 @@ export const Swap = ({
 
                             {/* Manual entry interface - shown when customAddressEditActive is true */}
                             {customAddressEditActive && (
-                              <div className="space-y-2">
+                              <div className="gap-2">
                                 <div className="text-[14px] text-text2 dark:text-text2d">Enter recipient address:</div>
                                 <EditableAddress
                                   key="manual-entry"
@@ -3099,9 +3099,9 @@ export const Swap = ({
                         (address) => (
                           <div className="mt-2">
                             {customAddressEditActive ? (
-                              <div className="space-y-2">
+                              <div className="gap-2">
                                 <div className="text-[14px] text-text2 dark:text-text2d">Enter recipient address:</div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center gap-2">
                                   <div className="flex-1">
                                     <EditableAddress
                                       key="manual-entry"
@@ -3136,7 +3136,7 @@ export const Swap = ({
                                 </div>
                               </div>
                             ) : (
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center gap-2">
                                 <div className="flex-1">
                                   <EditableAddress
                                     key={address}

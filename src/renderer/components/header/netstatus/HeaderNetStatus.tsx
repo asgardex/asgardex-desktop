@@ -258,10 +258,7 @@ export const HeaderNetStatus = (props: Props) => {
       A.map((item) => {
         const { headline, key, subheadline, color, url } = item
         return (
-          <div
-            key={key}
-            className="flex items-center space-x-4 px-2 py-1"
-            onClick={() => window.apiUrl.openExternal(url)}>
+          <div key={key} className="flex items-center gap-4 px-2 py-1" onClick={() => window.apiUrl.openExternal(url)}>
             <ConnectionStatus color={color} />
             <div className="flex flex-col">
               <Label
@@ -290,7 +287,7 @@ export const HeaderNetStatus = (props: Props) => {
       return (
         <div
           key={key}
-          className="flex h-[60px] items-center space-x-4 border-b border-solid border-bg2 px-6 last:border-none dark:border-bg2d">
+          className="flex h-[60px] items-center gap-4 border-b border-solid border-bg2 px-6 last:border-none dark:border-bg2d">
           <ConnectionStatus color={color} />
           <div className="flex flex-col">
             <Label className="pr-5" color="normal" size="big" weight="bold" textTransform="uppercase" nowrap>

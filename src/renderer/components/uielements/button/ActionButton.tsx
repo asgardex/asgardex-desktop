@@ -28,7 +28,7 @@ export const ActionButton = ({
 }: Props): JSX.Element => {
   if (actions.length <= 3) {
     return (
-      <div className={clsx('flex w-full justify-start space-x-2', className)}>
+      <div className={clsx('flex w-full justify-start gap-2', className)}>
         {actions.map(({ label, callback, disabled = false }, index) => (
           <FlatButton
             className={clsx('group', btnClassName)} // Use FlatButton or TextButton as needed
@@ -48,7 +48,7 @@ export const ActionButton = ({
   }
 
   return (
-    <div className={clsx('flex w-full justify-start space-x-2', className)}>
+    <div className={clsx('flex w-full justify-start gap-2', className)}>
       {actions.slice(0, 2).map(({ label, callback, disabled = false }, index) => (
         <FlatButton
           className={clsx('group', btnClassName)} // Use FlatButton or TextButton as needed

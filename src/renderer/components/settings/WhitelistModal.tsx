@@ -140,13 +140,13 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
   const chainFilter = useMemo(
     () => (
       <div className="flex w-full flex-col items-center px-4 py-4">
-        <div className="flex flex-row space-x-2 overflow-x-auto">
+        <div className="flex flex-row gap-2 overflow-x-auto">
           {WhitelistChains.map((supportedChain) => (
             <div key={supportedChain} className="cursor-pointer" onClick={() => changeChain(supportedChain)}>
               <div
                 className={clsx(
                   'flex flex-col items-center',
-                  'space-y-2 px-3 py-2',
+                  'gap-2 px-3 py-2',
                   'rounded-lg border border-solid border-bg2 dark:border-bg2d',
                   'hover:bg-bg2 dark:hover:bg-bg2d',
                   { 'border-turquoise bg-bg2 dark:border-turquoise dark:bg-bg2d': chain === supportedChain }

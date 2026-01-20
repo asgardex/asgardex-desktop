@@ -125,13 +125,13 @@ export const CustomTokenPanel = (): JSX.Element => {
   const chainFilter = useMemo(
     () => (
       <div className="flex w-full flex-col items-center px-4 py-4">
-        <div className="flex flex-row space-x-2 overflow-x-auto">
+        <div className="flex flex-row gap-2 overflow-x-auto">
           {CustomTokenChains.map((chain) => (
             <div key={chain} className="cursor-pointer" onClick={() => handleChainChange(chain)}>
               <div
                 className={clsx(
                   'flex flex-col items-center',
-                  'space-y-2 px-3 py-2',
+                  'gap-2 px-3 py-2',
                   'rounded-lg border border-solid border-bg2 dark:border-bg2d',
                   'hover:bg-bg2 dark:hover:bg-bg2d',
                   { 'border-turquoise bg-bg2 dark:border-turquoise dark:bg-bg2d': selectedChain === chain }
@@ -150,7 +150,7 @@ export const CustomTokenPanel = (): JSX.Element => {
     <div className="flex h-[510px] flex-col items-center">
       {chainFilter}
 
-      <div className="flex w-full flex-col space-y-4 px-4">
+      <div className="flex w-full flex-col gap-4 px-4">
         <div>
           <Label size="big">{intl.formatMessage({ id: 'settings.custom.token.modal.address' })}</Label>
           <Input
@@ -220,7 +220,7 @@ export const CustomTokenPanel = (): JSX.Element => {
           </Label>
         )}
 
-        <div className="flex justify-end space-x-2 pt-2">
+        <div className="flex justify-end gap-2 pt-2">
           <FlatButton
             className="w-full rounded-md"
             color="primary"

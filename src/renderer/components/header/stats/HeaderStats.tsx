@@ -205,9 +205,9 @@ export const HeaderStats = (props: Props): JSX.Element => {
   }, [mayaPriceRD, reloadMayaPrice, reloadVolume24PriceMaya, volume24PriceMayaRD])
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center gap-2">
       <div
-        className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
+        className="flex cursor-pointer items-center gap-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadThorStats}>
         <AssetIcon size="xsmall" asset={AssetRuneNative} network={network} />
         <Label className="w-auto!" color="primary" textTransform="uppercase" weight="bold">
@@ -230,7 +230,7 @@ export const HeaderStats = (props: Props): JSX.Element => {
       {isSmallMobileView ||
         (!(isLargeMobileView && !isXLargeMobileView) && (
           <div
-            className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
+            className="flex cursor-pointer items-center gap-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
             onClick={reloadTcyStats}>
             <AssetIcon size="xsmall" asset={AssetTCY} network={network} />
             <Label className="w-auto!" color="primary" textTransform="uppercase" weight="bold">
@@ -243,7 +243,7 @@ export const HeaderStats = (props: Props): JSX.Element => {
         ))}
 
       <div
-        className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
+        className="flex cursor-pointer items-center gap-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadMayaStats}>
         <AssetIcon size="xsmall" asset={AssetCacao} network={network} />
         <Label className="w-auto!" color="primary" textTransform="uppercase" weight="bold">

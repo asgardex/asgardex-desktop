@@ -96,7 +96,7 @@ export const ViewTxButton = ({
             <ExternalLinkIcon className="text-turquoise" />
           </Button>
         )}
-        <div className="flex space-x-6">
+        <div className="flex gap-6">
           <div className="flex items-center justify-center">
             <span className="mt-1 text-text2 dark:text-text1d">{intl.formatMessage({ id: 'common.txUrl' })} : </span>
             <CopyLabel

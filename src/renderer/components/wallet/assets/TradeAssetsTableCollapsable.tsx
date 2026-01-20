@@ -531,7 +531,7 @@ export const TradeAssetsTableCollapsable = ({
         cell: ({ row }) => {
           const { asset, protocol } = row.original
           return (
-            <div className="mx-2 flex items-center space-x-2">
+            <div className="mx-2 flex items-center gap-2">
               <AssetIcon asset={asset} size="normal" network={network} />
               <div className="flex flex-col">
                 <Label className="text-16! leading-[18px]!" textTransform="uppercase" weight="bold">
@@ -738,8 +738,8 @@ export const TradeAssetsTableCollapsable = ({
       )
 
       const renderHeader = () => (
-        <div className="flex w-full justify-between space-x-4">
-          <div className="flex flex-row items-center space-x-2">
+        <div className="flex w-full justify-between gap-4">
+          <div className="flex flex-row items-center gap-2">
             <Label className="w-auto!" textTransform="uppercase">
               {protocol}
             </Label>
@@ -752,11 +752,11 @@ export const TradeAssetsTableCollapsable = ({
               {`(${balances.length} Assets)`}
             </Label>
           </div>
-          <div className="flex items-center justify-end space-x-2">
+          <div className="flex items-center justify-end gap-2">
             <Label className="flex items-center text-text0 dark:text-text0d" color="gray" textTransform="none">
               {hidePrivateData ? hiddenString : truncatedWalletAddress}
             </Label>
-            <div className="flex items-center justify-end space-x-2 pr-4">
+            <div className="flex items-center justify-end gap-2 pr-4">
               <IconButton
                 onClick={(e) => {
                   e.stopPropagation()
@@ -785,7 +785,7 @@ export const TradeAssetsTableCollapsable = ({
   }, [tradeAccountBalances, renderGroupedBalances, intl, hidePrivateData, disableRefresh, network, refreshHandler])
 
   return (
-    <div className="mt-2 space-y-2">
+    <div className="mt-2 gap-2">
       {renderContent()}
       {renderWithdrawConfirm}
       {renderPasswordConfirmationModal}

@@ -1973,13 +1973,13 @@ export const TradeSwap = ({
               <BaseButton
                 size="small"
                 onClick={onSwitchAssets}
-                className="group rounded-full border border-solid border-turquoise bg-bg0 p-10px! hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
+                className="p-10px! group rounded-full border border-solid border-turquoise bg-bg0 hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
                 <ArrowsUpDownIcon className="ease h-40px w-40px text-turquoise" />
               </BaseButton>
             </div>
           </div>
         </div>
-        <div className="mt-1 space-y-1">
+        <div className="mt-1 gap-1">
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">
@@ -1990,7 +1990,7 @@ export const TradeSwap = ({
               </div>
             }>
             <div className="flex flex-col p-4">
-              <div className="flex w-full flex-col space-y-4 px-2">
+              <div className="flex w-full flex-col gap-4 px-2">
                 <div>{renderStreamerInterval}</div>
                 <div>{renderStreamerQuantity}</div>
                 <div>{renderStreamerReturns}</div>
@@ -2017,7 +2017,7 @@ export const TradeSwap = ({
             {!isLocked(keystore) ? (
               <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                 <BaseButton
-                  className="group flex w-full justify-between p-0! font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                  className="p-0! group flex w-full justify-between font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
                   onClick={() => setShowDetails((current) => !current)}>
                   {intl.formatMessage({ id: 'common.details' })}
                   {showDetails ? (
@@ -2031,7 +2031,7 @@ export const TradeSwap = ({
                   {/* Rate */}
                   <div className="flex w-full justify-between font-mainBold text-[14px]">
                     <BaseButton
-                      className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
+                      className="p-0! font-mainBold! text-text2! dark:text-text2d! group"
                       onClick={() =>
                         // toggle rate
                         setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
@@ -2045,7 +2045,7 @@ export const TradeSwap = ({
                   <div className="flex w-full items-center justify-between font-mainBold">
                     <BaseButton
                       disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                      className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
+                      className="p-0! font-mainBold! text-text2! dark:text-text2d! group"
                       onClick={reloadFeesHandler}>
                       {intl.formatMessage({ id: 'common.fees.estimated' })}
                       <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
@@ -2207,7 +2207,7 @@ export const TradeSwap = ({
                       <div className="w-full pt-10px text-[14px] text-text2 dark:text-text2d">
                         <BaseButton
                           disabled={walletBalancesLoading}
-                          className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
+                          className="p-0! font-mainBold! text-text2! dark:text-text2d! group"
                           onClick={reloadBalances}>
                           {intl.formatMessage({ id: 'common.balances' })}
                           <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
@@ -2251,7 +2251,7 @@ export const TradeSwap = ({
                     {/* Rate */}
                     <div className="flex w-full justify-between font-mainBold text-[14px]">
                       <BaseButton
-                        className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
+                        className="p-0! font-mainBold! text-text2! dark:text-text2d! group"
                         onClick={() =>
                           // toggle rate
                           setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
@@ -2265,7 +2265,7 @@ export const TradeSwap = ({
                     <div className="flex w-full items-center justify-between font-mainBold">
                       <BaseButton
                         disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                        className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
+                        className="p-0! font-mainBold! text-text2! dark:text-text2d! group"
                         onClick={reloadFeesHandler}>
                         {intl.formatMessage({ id: 'common.fees.estimated' })}
                         <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />

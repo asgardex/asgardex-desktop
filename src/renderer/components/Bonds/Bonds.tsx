@@ -155,7 +155,7 @@ export const Bonds = ({
 
       return (
         <BondsTable
-          className="border-b mb-[25px] border-solid border-gray1 dark:border-gray1d"
+          className="mb-[25px] border-b border-solid border-gray1 dark:border-gray1d"
           nodes={filteredNodes}
           protocol={protocol}
           watchlist={filteredWatchlist}
@@ -187,7 +187,7 @@ export const Bonds = ({
 
       return (
         <BondsTable
-          className="border-b mb-[25px] border-solid border-gray1 dark:border-gray1d"
+          className="mb-[25px] border-b border-solid border-gray1 dark:border-gray1d"
           nodes={filteredNodes}
           protocol={protocol}
           watchlist={filteredWatchlist}
@@ -306,7 +306,7 @@ export const Bonds = ({
     <div className={clsx('bg-bg0 dark:bg-bg0d', className)}>
       <form className="flex items-center" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex w-full flex-row items-center justify-between px-4 pb-2">
-          <div className="flex items-start space-x-2">
+          <div className="flex items-start gap-2">
             <div className="flex flex-col">
               <Input
                 className="border border-solid border-gray0 dark:border-gray0d"
@@ -324,7 +324,7 @@ export const Bonds = ({
                 <span className="mt-1 text-xs text-error0 dark:text-error0d">{errors.address.message}</span>
               )}
             </div>
-            <Button className="space-x-1" type="submit" disabled={disableForm} typevalue="transparent">
+            <Button type="submit" disabled={disableForm} typevalue="transparent">
               <PlusIcon className="mr-1 h-4 w-4 rounded-full bg-turquoise stroke-text3 dark:stroke-text3d" />
               {intl.formatMessage({ id: 'bonds.node.add' })}
             </Button>

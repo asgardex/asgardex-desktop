@@ -49,7 +49,7 @@ export const SwapSettings = ({
         </div>
       }>
       <div className="flex flex-col p-4">
-        <div className="flex w-full flex-col space-y-4 px-2">
+        <div className="flex w-full flex-col gap-4 px-2">
           <Slider value={slider} onChange={onSliderChange} max={100} labels={[labelMin, `${streamingInterval}`]} />
           <Slider value={streamingQuantity} onChange={onQuantityChange} labels={quantityLabel} />
         </div>

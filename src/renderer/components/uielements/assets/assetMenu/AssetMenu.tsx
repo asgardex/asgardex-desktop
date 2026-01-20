@@ -132,7 +132,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
                   const selected = eqAsset.equals(asset, assetInList)
                   return (
                     <BaseButton
-                      className="w-full justify-between! rounded-lg pr-20px! hover:bg-gray0 hover:dark:bg-gray0d"
+                      className="justify-between! pr-20px! w-full rounded-lg hover:bg-gray0 hover:dark:bg-gray0d"
                       key={assetToString(assetInList)}
                       onClick={() => handleChangeAsset(assetInList)}
                       disabled={selected}>
@@ -190,13 +190,13 @@ export const AssetMenu = (props: Props): JSX.Element => {
         <h6 className="text-base font-normal text-text2 dark:text-text2d">
           {intl.formatMessage({ id: 'common.asset.quickSelect' })}
         </h6>
-        <div className="flex flex-row space-x-2 overflow-x-scroll pb-2">
+        <div className="flex flex-row gap-2 overflow-x-scroll pb-2">
           {Array.from(uniqueChains).map((chain) => (
             <div key={chain} onClick={() => handleChainSelect(chain)} className="cursor-pointer">
               <div
                 className={clsx(
                   'flex flex-col items-center',
-                  'space-y-2 px-4 py-2',
+                  'gap-2 px-4 py-2',
                   'rounded-lg border border-solid border-bg2 dark:border-bg2d',
                   'hover:bg-bg2 dark:hover:bg-bg2d'
                 )}>
@@ -217,7 +217,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
   return (
     <Dialog
       as="div"
-      className={clsx('relative z-60', className)}
+      className={clsx('z-60 relative', className)}
       initialFocus={inputSearchRef}
       transition
       open={open}

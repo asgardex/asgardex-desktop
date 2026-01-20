@@ -960,7 +960,7 @@ export const InteractFormThor = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="flex flex-col space-y-2">
+      <div className="flex flex-col gap-2">
         {/* Memo input (CUSTOM only) */}
         {interactType === InteractType.Custom && (
           <div className="w-full sm:max-w-[630px]">
@@ -1026,7 +1026,7 @@ export const InteractFormThor = ({
         )}
 
         {interactType === InteractType.Whitelist && (
-          <div className="mb-2 flex items-center justify-end space-x-2">
+          <div className="mb-2 flex items-center justify-end gap-2">
             <span className="dark:text=text2d text-14 text-text2">Toggle Whitelist / Unwhitelist</span>
             <SwitchButton active={whitelisting} onChange={onWhitelistAddress} />
           </div>

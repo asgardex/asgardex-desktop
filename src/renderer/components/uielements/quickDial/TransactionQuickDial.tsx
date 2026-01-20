@@ -105,8 +105,8 @@ export const TransactionQuickDial = ({
           )}>
           {/* Header */}
           <div className="border-b border-gray0 p-3 dark:border-gray0d">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center -space-x-1">
+            <div className="flex items-center gap-2">
+              <div className="-gap-1 flex items-center">
                 <SwapIcon className="h-4 w-4 text-text0 dark:text-text0d" />
               </div>
               <span className="text-sm font-medium text-text0 dark:text-text0d">
@@ -117,7 +117,7 @@ export const TransactionQuickDial = ({
 
           {/* Transaction List */}
           <div className="max-h-96 overflow-y-auto">
-            <div className="space-y-2 p-3">
+            <div className="gap-2 p-3">
               <div className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">
                 {intl.formatMessage({ id: 'common.transaction.active' })} ({activeTransactions.length})
               </div>

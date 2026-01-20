@@ -60,7 +60,7 @@ export const TcyClaimModal = (props: Props) => {
             </BaseButton>
           </div>
           <div className="h-px w-full bg-gray1 dark:bg-gray0d" />
-          <div className="w-full space-y-1 px-4">
+          <div className="w-full gap-1 px-4">
             <div className="flex w-full items-center justify-between">
               <AssetData asset={tcyInfo.asset} network={network} />
             </div>

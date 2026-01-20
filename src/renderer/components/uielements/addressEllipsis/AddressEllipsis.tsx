@@ -66,7 +66,7 @@ export const AddressEllipsis = (props: Props) => {
 
   return (
     <div className={className}>
-      <div className="flex items-center space-x-1 break-normal break-keep" ref={measuredParent}>
+      <div className="flex items-center gap-1 break-normal break-keep" ref={measuredParent}>
         <span className="font-main text-text2 dark:text-text2d">{address}</span>
         <CopyLabel iconClassName="w-4! h-4! text-turquoise" textToCopy={address} />
       </div>

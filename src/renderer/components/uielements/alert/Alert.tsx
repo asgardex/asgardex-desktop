@@ -21,7 +21,7 @@ export const Alert = ({ className, type, title, description, action }: Props): J
           { 'border-warning0 bg-warning0/10 dark:bg-warning0/10': type === 'warning' },
           { 'border-error0 bg-error0/10 dark:bg-error0/10': type === 'error' }
         )}>
-        <div className="flex items-start space-x-2">
+        <div className="flex items-start gap-2">
           <div className="h-6 w-6">
             {type === 'info' && <InformationCircleIcon className="text-turquoise" />}
             {type === 'warning' && <ExclamationTriangleIcon className="text-warning0" />}

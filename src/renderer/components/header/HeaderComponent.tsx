@@ -291,7 +291,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
           reloadVolume24PriceMaya={reloadVolume24PriceMaya}
         />
         {isDesktopView ? (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             {renderHeaderNetStatus}
             <HeaderTheme isDesktopView={isDesktopView} />
             {renderHeaderCurrency}
@@ -315,7 +315,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
       </div>
       {!isDesktopView && (
         <Drawer
-          title={<AsgardexLogo className="text-text2 dark:text-text2d *:fill-current" />}
+          title={<AsgardexLogo className="text-text2 *:fill-current dark:text-text2d" />}
           isOpen={menuVisible}
           onClose={() => setMenuVisible(false)}>
           {links}

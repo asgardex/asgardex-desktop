@@ -87,7 +87,7 @@ const Route = ({
   return (
     <div className={clsx('flex grow flex-col', className)}>
       <div className="flex w-full items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <ProviderIcon protocol={quote.protocol} />
           <span className="m-0 font-main text-[14px] text-text0 dark:text-gray2d">
             {protocolMapping?.[quote.protocol as keyof typeof protocolMapping] ?? quote.protocol}
@@ -96,7 +96,7 @@ const Route = ({
           {isFastest && <span className="rounded bg-turquoise px-1 text-11 text-white">FASTEST</span>}
         </div>
         {isBoostable && isChainflip && onToggleBoost && isBoostEnabled !== undefined && (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <div className="flex items-center">
               <img src={BoostIcon} alt="Boost" className="h-5 w-5" />
               <span className="text-11 text-[#FF33AF]">Boost</span>
@@ -106,8 +106,8 @@ const Route = ({
         )}
       </div>
 
-      <div className="mt-2 flex w-full flex-col space-y-1">
-        <div className="flex flex-row items-center space-x-1">
+      <div className="mt-2 flex w-full flex-col gap-1">
+        <div className="flex flex-row items-center gap-1">
           <Amount className="text-text0 dark:text-gray2d" />
           <span className="text-[12px] text-text0 dark:text-gray2d">
             Est. Amount:{' '}
@@ -117,7 +117,7 @@ const Route = ({
           </span>
         </div>
         {quote.totalSwapSeconds > 0 && (
-          <div className="flex flex-row items-center space-x-1">
+          <div className="flex flex-row items-center gap-1">
             <StopWatch className="text-text0 dark:text-gray2d" />
             <span className="text-[12px] text-text0 dark:text-gray2d">
               Est. Time: <b>{formatTime(quote.totalSwapSeconds)}</b>

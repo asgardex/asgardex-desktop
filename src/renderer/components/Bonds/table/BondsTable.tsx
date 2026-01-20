@@ -91,7 +91,7 @@ export const BondsTable = ({
         header: '',
         cell: ({ row }) => {
           return (
-            <div className="flex items-center justify-around space-x-2">
+            <div className="flex items-center justify-around gap-2">
               {row.original.bondProviders.providers.length > 0 && (
                 <div className="flex items-center justify-center" onClick={() => row.toggleExpanded()}>
                   <ChevronRightIcon
@@ -188,7 +188,7 @@ export const BondsTable = ({
           const uniquePools = [...new Set(allPools)]
 
           return (
-            <div className="flex flex-row items-center justify-end space-x-1">
+            <div className="flex flex-row items-center justify-end gap-1">
               {uniquePools.map((assetPool) => (
                 <AssetIcon
                   key={assetPool}
@@ -309,7 +309,7 @@ export const BondsTable = ({
       searchWalletAddresses(walletAddresses.MAYA, 'MAYA')
 
       return (
-        <div className="flex w-full justify-between text-11! text-text2 dark:text-text2d">
+        <div className="text-11! flex w-full justify-between text-text2 dark:text-text2d">
           {walletTypeLabel !== 'Not a wallet address' ? (
             <>
               <Label size="small" textTransform="uppercase">
@@ -363,23 +363,23 @@ export const BondsTable = ({
             </div>
             <div className="mt-2 flex items-center justify-between">{renderSubWalletType(bondAddress)}</div>
           </div>
-          <div className="mt-4 flex items-center justify-center space-x-2">
+          <div className="mt-4 flex items-center justify-center gap-2">
             <TextButton
-              className={clsx({ 'rounded-md bg-turquoise text-white!': isWalletAddress })}
+              className={clsx({ 'text-white! rounded-md bg-turquoise': isWalletAddress })}
               disabled={!isWalletAddress}
               size="normal"
               onClick={() => goToAction('bond', matchedAddresses[0] || nodeAddress, walletType)}>
               {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
             </TextButton>
             <TextButton
-              className={clsx({ 'rounded-md bg-turquoise text-white!': !(!isWalletAddress || unbondDisabled) })}
+              className={clsx({ 'text-white! rounded-md bg-turquoise': !(!isWalletAddress || unbondDisabled) })}
               disabled={!isWalletAddress || unbondDisabled}
               size="normal"
               onClick={() => goToAction('unbond', matchedAddresses[0] || nodeAddress, walletType)}>
               {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
             </TextButton>
             <TextButton
-              className={clsx({ 'rounded-md bg-turquoise text-white!': !(!isWalletAddress || !isLeaveEligible) })}
+              className={clsx({ 'text-white! rounded-md bg-turquoise': !(!isWalletAddress || !isLeaveEligible) })}
               disabled={!isWalletAddress || !isLeaveEligible}
               size="normal"
               onClick={() => goToAction('leave', matchedAddresses[0] || nodeAddress, walletType)}>

@@ -990,7 +990,7 @@ export const InteractFormMaya = (props: Props) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="flex flex-col space-y-2">
+      <div className="flex flex-col gap-2">
         {/* Memo input (CUSTOM only) */}
         {interactType === InteractType.Custom && (
           <div className="w-full sm:max-w-[630px]">
@@ -1040,7 +1040,7 @@ export const InteractFormMaya = (props: Props) => {
         )}
 
         {interactType === InteractType.Whitelist && (
-          <div className="mb-2 flex items-center justify-end space-x-2">
+          <div className="mb-2 flex items-center justify-end gap-2">
             <span className="dark:text=text2d text-14 text-text2">Toggle Whitelist / Unwhitelist</span>
             <SwitchButton active={whitelisting} onChange={onWhitelistAddress} />
           </div>
@@ -1689,7 +1689,7 @@ const PoolShareItem = ({
   return (
     <div className="flex flex-col border-b pb-2 pt-2 first:pt-0 dark:border-gray1d">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <AssetIcon asset={share.asset} network={network} />
           <div className="flex flex-col">
             <div className="font-main text-[12px] text-text2 dark:text-text2d">{assetString}</div>
@@ -1703,7 +1703,7 @@ const PoolShareItem = ({
             </div>
           </div>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex gap-2">
           <FlatButton
             size="small"
             onClick={handleHalfClick}

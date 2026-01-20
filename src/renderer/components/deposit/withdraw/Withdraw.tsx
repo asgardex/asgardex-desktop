@@ -596,7 +596,7 @@ export const Withdraw = ({
         </div>
       </div>
 
-      <div className="flex flex-col space-y-4 pb-4 xl:pb-0">
+      <div className="flex flex-col gap-4 pb-4 xl:pb-0">
         <div className="flex items-center">
           <Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} />
         </div>

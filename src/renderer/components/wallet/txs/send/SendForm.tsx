@@ -762,7 +762,7 @@ export const SendForm = (props: Props): JSX.Element => {
 
     return (
       <RadioGroup
-        className="flex flex-col lg:flex-row lg:space-x-2"
+        className="flex flex-col lg:flex-row lg:gap-2"
         onChange={onChangeHandler}
         value={isEVMChain ? selectedFeeOption : selectedFeeOptionKey}
         disabled={disabled}>
@@ -1396,7 +1396,7 @@ export const SendForm = (props: Props): JSX.Element => {
                 <div className="flex flex-wrap items-center gap-4 py-2.5">
                   <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)} active={poolDeposit} />
                   {poolDeposit ? (
-                    <div className="flex max-w-full flex-1 items-center rounded-lg border border-error0/25 bg-error0/13 px-3 py-2 sm:max-w-[500px]">
+                    <div className="bg-error0/13 flex max-w-full flex-1 items-center rounded-lg border border-error0/25 px-3 py-2 sm:max-w-[500px]">
                       <span className="text-sm leading-[1.4] text-error0 dark:text-error0d">
                         <FormattedMessage
                           id="deposit.poolTransactionWarning"
@@ -1443,7 +1443,7 @@ export const SendForm = (props: Props): JSX.Element => {
         <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
           <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
             <BaseButton
-              className="group flex w-full justify-between p-0! font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              className="p-0! group flex w-full justify-between font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
               onClick={() => setShowDetails((current) => !current)}>
               {intl.formatMessage({ id: 'common.details' })}
               {showDetails ? (

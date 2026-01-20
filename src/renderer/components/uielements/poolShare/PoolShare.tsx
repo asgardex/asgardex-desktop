@@ -83,11 +83,11 @@ export const PoolShare = ({
   const renderRedemption = useMemo(
     () => (
       <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-        <div className="flex flex-col space-y-2 rounded-lg bg-turquoise/20 p-2">
+        <div className="flex flex-col gap-2 rounded-lg bg-turquoise/20 p-2">
           <AssetLabel className="flex justify-center" asset={asset} />
           {renderRedemptionCol(assetShare, assetPrice, asset)}
         </div>
-        <div className="flex flex-col space-y-2 rounded-lg bg-turquoise/20 p-2">
+        <div className="flex flex-col gap-2 rounded-lg bg-turquoise/20 p-2">
           <AssetLabel className="flex justify-center" asset={dexAsset} />
           {renderRedemptionCol(runeShare, runePrice, dexAsset)}
         </div>
@@ -104,10 +104,10 @@ export const PoolShare = ({
   }, [depositUnits, dexAssetDecimal])
 
   return (
-    <div className="w-full space-y-2 p-2" ref={ref}>
+    <div className="w-full gap-2 p-2" ref={ref}>
       <PoolShareCard title={intl.formatMessage({ id: 'deposit.share.title' })}>
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          <div className="space-y-2 rounded-lg bg-turquoise/20 p-2">
+          <div className="gap-2 rounded-lg bg-turquoise/20 p-2">
             <Label align="center" color="dark" size="small" textTransform="uppercase">
               {intl.formatMessage({ id: 'deposit.share.units' })}
             </Label>
@@ -115,7 +115,7 @@ export const PoolShare = ({
               {depositUnitsFormatted}
             </Label>
           </div>
-          <div className="space-y-2 rounded-lg bg-turquoise/20 p-2">
+          <div className="gap-2 rounded-lg bg-turquoise/20 p-2">
             <Label align="center" color="dark" size="small" textTransform="uppercase">
               {intl.formatMessage({ id: 'deposit.share.poolshare' })}
             </Label>

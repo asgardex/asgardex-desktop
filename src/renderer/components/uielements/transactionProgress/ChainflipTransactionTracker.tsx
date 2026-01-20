@@ -59,7 +59,7 @@ export const ChainflipTransactionTracker: React.FC<ChainflipTransactionTrackerPr
     <div className={clsx('rounded-lg border border-gray1 bg-bg1 dark:border-gray1d dark:bg-bg1d', className)}>
       {/* Header */}
       <div className="border-b border-gray1 p-2 dark:border-gray1d">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <ProviderIcon protocol="Chainflip" className="h-4! w-4!" />
           <span className="text-xs font-medium text-text1 dark:text-text1d">
             Chainflip {intl.formatMessage({ id: 'common.transaction.tracking' })}
@@ -74,7 +74,7 @@ export const ChainflipTransactionTracker: React.FC<ChainflipTransactionTrackerPr
 
       {/* Active transactions */}
       {activeTransactions.length > 0 && (
-        <div className="space-y-2 p-2">
+        <div className="gap-2 p-2">
           <div className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">
             {intl.formatMessage({ id: 'common.transaction.active' })}
           </div>
@@ -91,7 +91,7 @@ export const ChainflipTransactionTracker: React.FC<ChainflipTransactionTrackerPr
 
       {/* Completed transactions */}
       {completedTransactions.length > 0 && (
-        <div className="space-y-2 border-t border-gray1 p-2 dark:border-gray1d">
+        <div className="gap-2 border-t border-gray1 p-2 dark:border-gray1d">
           <div className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">
             {intl.formatMessage({ id: 'common.transaction.completed' })}
           </div>

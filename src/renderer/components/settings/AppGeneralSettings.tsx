@@ -301,7 +301,7 @@ export const AppGeneralSettings = (props: Props) => {
       <Section
         title={intl.formatMessage({ id: 'settings.version.title' })}
         subtitle={intl.formatMessage({ id: 'settings.version.subtitle' })}>
-        <div className="flex max-w-[240px] flex-col space-y-1">
+        <div className="flex max-w-[240px] flex-col gap-1">
           <div className="flex min-w-[240px] items-center justify-between">
             <Label color="dark" size="big" textTransform="uppercase">
               v{version}

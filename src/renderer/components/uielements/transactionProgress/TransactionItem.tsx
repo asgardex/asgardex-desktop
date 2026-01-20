@@ -254,14 +254,14 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
       <div className="p-2">
         {/* First row: asset swap and controls */}
         <div className="mb-1 flex items-center justify-between">
-          <div className="flex min-w-0 items-center space-x-1">
+          <div className="flex min-w-0 items-center gap-1">
             {protocol && protocol}
             <span className="truncate text-sm font-medium text-text1 dark:text-text1d">
               {fromAsset} → {toAsset}
             </span>
           </div>
 
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center gap-1">
             <button
               onClick={toggleExpanded}
               className="p-1 text-text2 transition-colors hover:text-text1 dark:text-text2d dark:hover:text-text1d">
@@ -281,7 +281,7 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
         {/* Second row: status and progress */}
         <div className="flex items-center justify-between">
           {transaction.isComplete ? (
-            <div className="flex items-center space-x-1 rounded-lg bg-turquoise/80 px-2 py-1 dark:bg-turquoise/80">
+            <div className="flex items-center gap-1 rounded-lg bg-turquoise/80 px-2 py-1 dark:bg-turquoise/80">
               <CheckCircleIcon className="h-4 w-4 shrink-0 text-white" />
               <Label size="small" color="white" textTransform="uppercase">
                 {intl.formatMessage({ id: 'transaction.status.complete' })}
@@ -318,7 +318,7 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
       {isExpanded && (
         <div className="border-t border-gray1 p-2 dark:border-gray1d">
           {/* Additional details */}
-          <div className="space-y-1 text-xs">
+          <div className="gap-1 text-xs">
             <div className="flex justify-between">
               <span className="text-text2 dark:text-text2d">Started:</span>
               <span className="text-text1 dark:text-text1d">

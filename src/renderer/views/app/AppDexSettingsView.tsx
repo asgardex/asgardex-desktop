@@ -70,7 +70,7 @@ export const AppDexSettingsView = (): JSX.Element => {
   const slipMenu = useCallback((onClick: (slip: SlipTolerance) => void, isStreaming: boolean) => {
     const slipToleranceOptions: SlipTolerance[] = isStreaming ? [1, 3, 5, 10, 15, 20] : [0.5, 1, 3, 5, 10, 15, 20]
     return slipToleranceOptions.map((slip) => (
-      <div key={slip} className="flex min-w-[102px] items-center space-x-4 px-2 py-1" onClick={() => onClick(slip)}>
+      <div key={slip} className="flex min-w-[102px] items-center gap-4 px-2 py-1" onClick={() => onClick(slip)}>
         <div className="flex flex-col">
           <Label
             className="pr-5 tracking-tight"

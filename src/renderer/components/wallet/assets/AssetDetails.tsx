@@ -177,7 +177,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
         <BackLinkButton path={walletRoutes.assets.path()} />
         <RefreshButton onClick={refreshHandler} />
       </div>
-      <div className="flex flex-col space-y-8 rounded-xl bg-bg1 p-8 dark:bg-bg1d">
+      <div className="flex flex-col gap-8 rounded-xl bg-bg1 p-8 dark:bg-bg1d">
         <AssetInfo
           walletInfo={O.some({ walletType })}
           asset={O.some(asset)}
@@ -187,7 +187,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
         />
 
         <div className="w-full">
-          <div className="flex flex-col items-center justify-center space-x-0 space-y-1 sm:flex-row sm:space-x-2 sm:space-y-0">
+          <div className="flex flex-col items-center justify-center gap-0 gap-1 sm:flex-row sm:gap-0 sm:gap-2">
             <ActionIconButton
               icon={<ArrowUpOnSquareIcon className="h-6 w-6" />}
               text={intl.formatMessage({ id: 'wallet.action.send' })}

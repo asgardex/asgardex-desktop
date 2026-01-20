@@ -45,7 +45,7 @@ export const ProgressBar = ({
   )
 
   return (
-    <div className={clsx('w-full space-y-1', className)}>
+    <div className={clsx('w-full gap-1', className)}>
       {withLabel && labelPosition === 'top' && percentLabels}
 
       <div
@@ -66,7 +66,7 @@ export const ProgressBar = ({
             strokeLinecap === 'round' && 'rounded-full'
           )}
           style={{ width: `${clamped}%` }}>
-          <div className="h-full w-full rounded-full bg-linear-to-r from-[#0068F7] to-[#23DCC8]" />
+          <div className="bg-linear-to-r h-full w-full rounded-full from-[#0068F7] to-[#23DCC8]" />
         </div>
 
         {/* Error overlay border */}

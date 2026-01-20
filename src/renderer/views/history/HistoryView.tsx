@@ -66,7 +66,7 @@ export const HistoryView = (): JSX.Element => {
           In Progress ({activeTxs.length})
         </Label>
       ) : null}
-      <div className="flex flex-col space-y-1">
+      <div className="flex flex-col gap-1">
         {activeTxs.map((transaction) => {
           const protocolIcon = <ProviderIcon protocol={transaction.protocol} className="h-3 w-3" />
 
@@ -93,7 +93,7 @@ export const HistoryView = (): JSX.Element => {
           Completed ({completedTxs.length})
         </Label>
       ) : null}
-      <div className="flex flex-col space-y-1">
+      <div className="flex flex-col gap-1">
         {completedTxs.map((transaction) => {
           const protocolIcon = <ProviderIcon protocol={transaction.protocol} className="h-3 w-3" />
 

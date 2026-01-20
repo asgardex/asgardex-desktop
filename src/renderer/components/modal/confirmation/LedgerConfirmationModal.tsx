@@ -145,7 +145,7 @@ export const LedgerConfirmationModal = ({
                 () => <></>,
                 (bchAddresses) => (
                   <>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                       <ExclamationTriangleIcon className="h-8 w-8" />
                       <Label size="small">
                         {intl.formatMessage({ id: 'ledger.legacyformat.note' }, { url: 'url' })}

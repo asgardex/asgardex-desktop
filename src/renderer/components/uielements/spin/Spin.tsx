@@ -10,7 +10,7 @@ type SpinProps = {
 export const Spin = ({ className, spinning = true, tip, children }: SpinProps) => {
   if (!children) {
     return (
-      <div className={clsx('flex flex-col items-center justify-center space-y-2', className)}>
+      <div className={clsx('flex flex-col items-center justify-center gap-2', className)}>
         {spinning && (
           <>
             <svg
@@ -33,7 +33,7 @@ export const Spin = ({ className, spinning = true, tip, children }: SpinProps) =
   return (
     <div className={clsx('relative', className)}>
       {spinning && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center space-y-2">
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-2">
           <svg
             className="animate-spin rounded-full border border-solid border-turquoise bg-turquoise fill-bg0 dark:fill-bg0d"
             width="40"

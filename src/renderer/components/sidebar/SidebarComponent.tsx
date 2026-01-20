@@ -193,7 +193,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
 
   const renderMainNav = useMemo(
     () => (
-      <div className="mx-4 mt-8 space-y-1">
+      <div className="mx-4 mt-8 gap-1">
         {items.map(({ label, key, path, icon: Icon }) => {
           const selected = activeKey === key
           return (
@@ -231,7 +231,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
       <div className="mt-4 flex flex-col items-center justify-center">
         <AsgardexLogo className="*:fill-text1 *:dark:fill-text1d" />
         <Label
-          className={clsx('-mt-3 w-auto! rounded-full px-2', networkBgCn)}
+          className={clsx('w-auto! -mt-3 rounded-full px-2', networkBgCn)}
           color="white"
           size="small"
           textTransform="uppercase">
@@ -249,7 +249,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const gotoPlayground = useCallback(() => navigate(playgroundRoutes.base.path()), [navigate])
 
   return (
-    <div className="h-full w-60 border-r border-none border-gray0 bg-bg0! py-5 dark:border-gray0d dark:bg-bg0d!">
+    <div className="bg-bg0! dark:bg-bg0d! h-full w-60 border-r border-none border-gray0 py-5 dark:border-gray0d">
       <div className="flex h-full flex-col justify-between" ref={setHeaderRef}>
         <div className="flex flex-1 flex-col">
           {renderLogo}
@@ -269,7 +269,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
             </div>
           </FooterIcon>
           <FooterIcon className="ml-0!" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
-            <div className="flex h-12 flex-row items-center space-x-2">
+            <div className="flex h-12 flex-row items-center gap-2">
               <img className="h-8 w-8 rounded-full" src={mayaIconT} />
               <Label size="big" textTransform="uppercase">
                 MAYACHAIN

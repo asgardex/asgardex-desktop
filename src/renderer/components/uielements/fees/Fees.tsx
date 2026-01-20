@@ -73,7 +73,7 @@ export const Fees = ({ fees, reloadFees, disabled = false, className }: Props) =
   const isLoading = RD.isPending(fees)
 
   return (
-    <div className={clsx('flex items-center space-x-2 text-text0 dark:text-text0d', className)}>
+    <div className={clsx('flex items-center gap-2 text-text0 dark:text-text0d', className)}>
       {reloadFees && (
         <div
           onClick={(e) => {

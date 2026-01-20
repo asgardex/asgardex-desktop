@@ -86,14 +86,14 @@ export const TransactionSlideshow = ({
   return (
     <div className={clsx('rounded-lg border border-gray1 bg-bg0 p-3 dark:border-gray0d dark:bg-bg1d', className)}>
       <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <span className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">Active Swaps</span>
           <span className="rounded bg-turquoise px-1.5 py-0.5 text-xs font-medium text-white">
             {currentIndex + 1}/{activeTransactions.length}
           </span>
         </div>
         {activeTransactions.length > 1 && (
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center gap-1">
             <button
               onClick={handlePrevious}
               className="rounded p-1 text-text2 transition-colors hover:bg-gray0 hover:text-text0 dark:text-text2d dark:hover:bg-gray0d dark:hover:text-text0d">

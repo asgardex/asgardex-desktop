@@ -8,7 +8,7 @@ export type Props = {
 }
 
 export const WarningView = ({ title, subTitle, extra }: Props): JSX.Element => (
-  <div className="flex flex-col items-center space-y-4 rounded-xl bg-bg1 py-8 dark:bg-bg1d">
+  <div className="flex flex-col items-center gap-4 rounded-xl bg-bg1 py-8 dark:bg-bg1d">
     <div className="flex h-20 w-20 items-center justify-center rounded-full bg-warning0/10">
       <ExclamationCircleIcon className="h-16 w-16 text-warning0" />
     </div>

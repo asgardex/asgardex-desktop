@@ -134,7 +134,7 @@ const ActionButton = ({
     <div
       className={clsx(
         'flex min-w-[128px] cursor-pointer flex-col items-center',
-        'space-y-2 px-4 py-2',
+        'gap-2 px-4 py-2',
         'rounded-lg border border-solid border-gray1 dark:border-gray1d',
         'text-text2 dark:text-text2d',
         'hover:bg-bg2 dark:hover:bg-bg2d',
@@ -381,7 +381,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
             <div className="flex w-full flex-col md:w-auto lg:flex-row">
               <div className="mr-30px flex items-center md:mr-0">
                 <Button
-                  className="cursor-pointer gap-x-1 p-0! text-[12px]"
+                  className="p-0! cursor-pointer gap-x-1 text-[12px]"
                   sizevalue="small"
                   loading={loading}
                   typevalue="transparent"
@@ -455,7 +455,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
               </div>
               {isEvmChain(chain) && (
                 <RadioGroup
-                  className="flex flex-col items-start lg:flex-row lg:items-center lg:space-x-2 lg:pl-30px"
+                  className="flex flex-col items-start lg:flex-row lg:items-center lg:gap-2 lg:pl-30px"
                   onChange={onChangeEvmDerivationMode}
                   value={evmHDMode}>
                   <Radio value="ledgerlive" key="ledgerlive">
@@ -561,7 +561,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         const { walletAccount, walletIndex, chain } = walletAddress
         return (
           <>
-            <div className="flex w-full space-x-4">
+            <div className="flex w-full gap-4">
               <>
                 <div className="text-[12px] uppercase text-text2 dark:text-text2d">
                   <div>{intl.formatMessage({ id: 'settings.wallet.account' })}</div>
@@ -835,7 +835,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
       return (trustedAddresses?.addresses.filter((addr) => addr.chain === chain) || []).map((item) => (
         <div key={item.address} className="flex w-full flex-col">
           <Label size="big">{item.name}</Label>
-          <div className="flex w-full items-center space-x-2">
+          <div className="flex w-full items-center gap-2">
             <AddressEllipsis
               className="max-w-full overflow-hidden font-main text-base text-text1 only:mx-auto dark:text-text1d"
               address={item.address}
@@ -1018,7 +1018,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
           <h1 className="font-main text-16 uppercase text-text0 dark:text-text0d">
             {intl.formatMessage({ id: 'settings.wallet.management' })}
           </h1>
-          <div className="flex flex-row items-center space-x-2">
+          <div className="flex flex-row items-center gap-2">
             <WalletSelector
               className="min-w-[200px]"
               disabled={RD.isPending(changeWalletState)}
@@ -1040,7 +1040,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
           loading={RD.isPending(renameWalletState)}
         />
         {renderRenameWalletError}
-        <div className="mt-10 flex flex-row items-center justify-center space-x-2">
+        <div className="mt-10 flex flex-row items-center justify-center gap-2">
           <ActionButton
             icon={<ArrowUpTrayIcon width={24} height={24} />}
             text={intl.formatMessage({ id: 'settings.export.title' })}

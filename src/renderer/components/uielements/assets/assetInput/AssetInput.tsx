@@ -138,10 +138,10 @@ export const AssetInput = (props: Props): JSX.Element => {
           </p>
         )}
         {hasAmountShortcut && (
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center gap-1">
             {amountShortcuts.map(({ textId, amount }) => (
               <Button
-                className="rounded-lg border-turquoise! text-text0! hover:bg-turquoise! hover:text-white! dark:text-text0d!"
+                className="border-turquoise! text-text0! hover:bg-turquoise! hover:text-white! dark:text-text0d! rounded-lg"
                 key={textId}
                 typevalue="outline"
                 sizevalue="small"
@@ -152,7 +152,7 @@ export const AssetInput = (props: Props): JSX.Element => {
           </div>
         )}
         {!hasAmountShortcut && protocol && (
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center gap-1">
             <ProviderIcon protocol={protocol} />
             <Label textTransform="uppercase" color="gray" size="small">
               {chainToProtocol[protocol as keyof typeof chainToProtocol]}
@@ -175,8 +175,8 @@ export const AssetInput = (props: Props): JSX.Element => {
             decimal={amount.decimal}
             // override text style of input for acting as label only
             className={clsx(
-              'w-full px-0! leading-none',
-              { 'text-text0 opacity-100! dark:text-text0d': asLabel },
+              'px-0! w-full leading-none',
+              { 'opacity-100! text-text0 dark:text-text0d': asLabel },
               { 'py-2! text-[28px] md:text-[32px]': !showPrice }
             )}
           />
@@ -206,7 +206,7 @@ export const AssetInput = (props: Props): JSX.Element => {
             synthDisabled={synthDisabled}
           />
           {walletBalance ? (
-            <div className="flex items-center justify-end space-x-1 pr-4">
+            <div className="flex items-center justify-end gap-1 pr-4">
               <WalletIcon className="h-5 w-5 text-gray1 dark:text-gray1d" />
               <p className="mb-0 text-[14px] text-gray1 dark:text-gray1d">
                 {(() => {
