@@ -190,7 +190,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
             'rounded-lg bg-bg0 dark:bg-bg0d',
             'px-30px pb-[35px] pt-[45px] sm:px-[60px] sm:pb-[70px] sm:pt-[90px]'
           )}>
-          <div className="w-full max-w-[320px] space-y-3">
+          <div className="flex w-full max-w-[320px] flex-col gap-2">
             <div className="flex flex-col">
               <h1 className="mb-12px inline-block w-full font-mainSemiBold text-18 uppercase text-text1 dark:text-text1d">
                 {intl.formatMessage({ id: 'wallet.unlock.label' })}
@@ -204,12 +204,12 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
               wallets={wallets}
               onChange={changeWalletHandler}
               disabled={RD.isPending(changeWalletState)}
-              className="mb-2 min-w-[200px] rounded-lg"
+              className="min-w-[200px] rounded-lg"
               buttonClassName="shadow-none! !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
             />
             <InputPassword
               id="password"
-              className="mx-auto mb-20px flex h-[38px] w-full items-center justify-between rounded-lg border border-solid border-gray0! dark:border-gray0d!"
+              className="border-gray0! dark:border-gray0d! mx-auto flex h-[38px] w-full items-center justify-between rounded-lg border border-solid"
               inputClassName="ring-0! w-full"
               {...register('password', { required: true })}
               placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
@@ -237,7 +237,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
               {intl.formatMessage({ id: 'wallet.remove.label' })}
             </BorderButton>
             <div className="flex w-full flex-col items-center border-t border-solid border-gray1 dark:border-gray0d">
-              <div className="flex w-full flex-col justify-between space-y-3 pt-4">
+              <div className="flex w-full flex-col justify-between gap-2 pt-4">
                 <BorderButton
                   className="flex w-full min-w-[200px] items-center justify-center gap-2"
                   size="normal"
