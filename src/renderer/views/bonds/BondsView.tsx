@@ -368,13 +368,13 @@ export const BondsView = (): JSX.Element => {
       <div className="flex flex-col items-center justify-center rounded-t-lg bg-bg1 px-4 pb-8 pt-4 dark:bg-bg1d">
         <div className="relative flex w-full items-center justify-center">
           <div className="flex items-center">
-            <Label className="!w-auto" align="center" color="input" textTransform="uppercase">
+            <Label className="w-auto!" align="center" color="input" textTransform="uppercase">
               {activeLabel === LabelView.Monitored
                 ? 'Total Value Across Connected and Monitored Addresses'
                 : 'Total Connected Wallet Value'}
             </Label>
             <BaseButton
-              className="ml-2 !p-0 text-turquoise"
+              className="ml-2 p-0! text-turquoise"
               onClick={() =>
                 setActiveLabel((prev) => (prev === LabelView.Connected ? LabelView.Monitored : LabelView.Connected))
               }>

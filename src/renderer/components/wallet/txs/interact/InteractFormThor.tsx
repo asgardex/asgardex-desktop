@@ -1226,7 +1226,7 @@ export const InteractFormThor = ({
                   {intl.formatMessage({ id: 'common.thorname' })}
                 </Label>
                 <InfoIcon
-                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                  className="ml-[3px] h-15px w-15px text-inherit"
                   tooltip={intl.formatMessage({ id: 'common.thornameRegistrationSpecifics' })}
                   color="primary"
                 />
@@ -1522,13 +1522,13 @@ export const InteractFormThor = ({
         {/* memo */}
         <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
           <BaseButton
-            className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            className="group flex w-full justify-between p-0! font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
             onClick={() => setShowDetails((current) => !current)}>
             {intl.formatMessage({ id: 'common.details' })}
             {showDetails ? (
-              <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+              <MagnifyingGlassMinusIcon className="ease h-20px w-20px text-inherit group-hover:scale-125" />
             ) : (
-              <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+              <MagnifyingGlassPlusIcon className="ease h-20px w-20px text-inherit group-hover:scale-125" />
             )}
           </BaseButton>
           {showDetails && (

@@ -13,12 +13,12 @@ export const WarningView = ({ title, subTitle, extra }: Props): JSX.Element => (
       <ExclamationCircleIcon className="h-16 w-16 text-warning0" />
     </div>
     {title && (
-      <Label className="!w-auto" color="gray" size="big" textTransform="uppercase" weight="bold">
+      <Label className="w-auto!" color="gray" size="big" textTransform="uppercase" weight="bold">
         {title}
       </Label>
     )}
     {subTitle && (
-      <Label className="!w-auto" color="gray" textTransform="uppercase">
+      <Label className="w-auto!" color="gray" textTransform="uppercase">
         {subTitle}
       </Label>
     )}

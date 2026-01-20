@@ -205,12 +205,12 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
               onChange={changeWalletHandler}
               disabled={RD.isPending(changeWalletState)}
               className="mb-2 min-w-[200px] rounded-lg"
-              buttonClassName="!shadow-none !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
+              buttonClassName="shadow-none! !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
             />
             <InputPassword
               id="password"
-              className="mx-auto mb-20px flex h-[38px] w-full items-center justify-between rounded-lg border border-solid !border-gray0 dark:!border-gray0d"
-              inputClassName="!ring-0 w-full"
+              className="mx-auto mb-20px flex h-[38px] w-full items-center justify-between rounded-lg border border-solid border-gray0! dark:border-gray0d!"
+              inputClassName="ring-0! w-full"
               {...register('password', { required: true })}
               placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
               ghost

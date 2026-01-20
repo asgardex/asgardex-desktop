@@ -264,7 +264,7 @@ export const ProtocolPoolView = (): JSX.Element => {
   const renderProtocolPoolTotal = useMemo(() => {
     return (
       <div className="flex flex-col items-center justify-center bg-bg1 px-4 pb-8 pt-4 dark:bg-bg1d">
-        <Label className="!w-auto" align="center" color="input" textTransform="uppercase">
+        <Label className="w-auto!" align="center" color="input" textTransform="uppercase">
           {intl.formatMessage({ id: 'wallet.shares.total' })}
         </Label>
         <Label className="mx-10px mt-4 text-[28px]" align="center" color="gray">

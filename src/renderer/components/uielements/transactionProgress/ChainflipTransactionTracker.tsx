@@ -60,12 +60,12 @@ export const ChainflipTransactionTracker: React.FC<ChainflipTransactionTrackerPr
       {/* Header */}
       <div className="border-b border-gray1 p-2 dark:border-gray1d">
         <div className="flex items-center space-x-2">
-          <ProviderIcon protocol="Chainflip" className="!h-4 !w-4" />
+          <ProviderIcon protocol="Chainflip" className="h-4! w-4!" />
           <span className="text-xs font-medium text-text1 dark:text-text1d">
             Chainflip {intl.formatMessage({ id: 'common.transaction.tracking' })}
           </span>
           {activeTransactions.length > 0 && (
-            <span className="min-w-[1.25rem] rounded-full bg-turquoise px-1.5 py-0.5 text-center text-xs text-white">
+            <span className="min-w-5 rounded-full bg-turquoise px-1.5 py-0.5 text-center text-xs text-white">
               {activeTransactions.length}
             </span>
           )}

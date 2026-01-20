@@ -52,7 +52,7 @@ export const NoWalletView = () => {
         <HeaderTheme isDesktopView />
       </div>
       <div className="flex flex-col items-center justify-center">
-        <AsgardexLogo className="[&>*]:fill-text1 [&>*]:dark:fill-text1d" />
+        <AsgardexLogo className="*:fill-text1 *:dark:fill-text1d" />
         <span className="text-xs text-gray2 dark:text-gray2d">{intl.formatMessage({ id: 'common.welcome' })}</span>
       </div>
       <div className="flex flex-col gap-4">

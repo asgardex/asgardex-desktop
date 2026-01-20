@@ -14,7 +14,7 @@ export const SendAsset = (props: Props): JSX.Element => {
   const { asset, description = '', network } = props
   return (
     <div className="flex w-full flex-col items-center justify-center">
-      <Label size="small" color="gray" className="w-full px-[10px] pb-[15px] pt-[10px] text-center uppercase">
+      <Label size="small" color="gray" className="w-full px-10px pb-15px pt-10px text-center uppercase">
         {description}
       </Label>
       <div className="relative flex items-center justify-center">

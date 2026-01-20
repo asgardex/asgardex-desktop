@@ -40,7 +40,7 @@ export const AutoComplete = ({
       <ListboxOptions
         anchor="bottom start"
         transition
-        className="mt-1 w-[--button-width] rounded-md border border-solid border-gray0 bg-bg0 px-2 py-2 dark:border-gray0d dark:bg-bg0d">
+        className="mt-1 w-(--button-width) rounded-md border border-solid border-gray0 bg-bg0 px-2 py-2 dark:border-gray0d dark:bg-bg0d">
         {options.map(({ value }) => (
           <ListboxOption
             className="flex cursor-pointer items-center justify-between rounded-md px-2 py-0.5 hover:bg-bg2 dark:hover:bg-bg2d"

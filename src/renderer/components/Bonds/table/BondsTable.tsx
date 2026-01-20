@@ -136,7 +136,7 @@ export const BondsTable = ({
         cell: ({ row }) => (
           <div className="flex items-center justify-between">
             <H.Status data={row.original} />
-            <ExternalLinkIcon className="!h-4 !w-4" onClick={() => goToNode(row.original.address)} />
+            <ExternalLinkIcon className="h-4! w-4!" onClick={() => goToNode(row.original.address)} />
           </div>
         ),
         enableSorting: false
@@ -309,7 +309,7 @@ export const BondsTable = ({
       searchWalletAddresses(walletAddresses.MAYA, 'MAYA')
 
       return (
-        <div className="flex w-full justify-between !text-11 text-text2 dark:text-text2d">
+        <div className="flex w-full justify-between text-11! text-text2 dark:text-text2d">
           {walletTypeLabel !== 'Not a wallet address' ? (
             <>
               <Label size="small" textTransform="uppercase">
@@ -351,13 +351,13 @@ export const BondsTable = ({
       const walletType = matchedWalletInfo?.walletType || 'Unknown'
 
       return (
-        <div className="flex flex-grow flex-col">
+        <div className="flex grow flex-col">
           <div className="mt-4 w-full">
             <div className="flex items-center justify-between">
               <Label size="small" textTransform="uppercase">
                 {intl.formatMessage({ id: 'bonds.bondProvider' })}
               </Label>
-              <Label className="!w-auto" textTransform="lowercase" color="gray">
+              <Label className="w-auto!" textTransform="lowercase" color="gray">
                 {truncateAddress(bondAddress, protocol, network)}
               </Label>
             </div>
@@ -365,21 +365,21 @@ export const BondsTable = ({
           </div>
           <div className="mt-4 flex items-center justify-center space-x-2">
             <TextButton
-              className={clsx({ 'rounded-md bg-turquoise !text-white': isWalletAddress })}
+              className={clsx({ 'rounded-md bg-turquoise text-white!': isWalletAddress })}
               disabled={!isWalletAddress}
               size="normal"
               onClick={() => goToAction('bond', matchedAddresses[0] || nodeAddress, walletType)}>
               {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
             </TextButton>
             <TextButton
-              className={clsx({ 'rounded-md bg-turquoise !text-white': !(!isWalletAddress || unbondDisabled) })}
+              className={clsx({ 'rounded-md bg-turquoise text-white!': !(!isWalletAddress || unbondDisabled) })}
               disabled={!isWalletAddress || unbondDisabled}
               size="normal"
               onClick={() => goToAction('unbond', matchedAddresses[0] || nodeAddress, walletType)}>
               {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
             </TextButton>
             <TextButton
-              className={clsx({ 'rounded-md bg-turquoise !text-white': !(!isWalletAddress || !isLeaveEligible) })}
+              className={clsx({ 'rounded-md bg-turquoise text-white!': !(!isWalletAddress || !isLeaveEligible) })}
               disabled={!isWalletAddress || !isLeaveEligible}
               size="normal"
               onClick={() => goToAction('leave', matchedAddresses[0] || nodeAddress, walletType)}>

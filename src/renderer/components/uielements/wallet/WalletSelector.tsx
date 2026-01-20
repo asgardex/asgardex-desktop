@@ -63,7 +63,7 @@ export const WalletSelector = ({
             </ListboxButton>
             <ListboxOptions
               className={clsx(
-                'absolute z-[2000] mt-0.5 max-h-60 w-full overflow-auto rounded-lg',
+                'absolute z-2000 mt-0.5 max-h-60 w-full overflow-auto rounded-lg',
                 'border border-gray0 bg-bg0 focus:outline-none dark:border-gray0d dark:bg-bg0d'
               )}>
               {FP.pipe(

@@ -1396,7 +1396,7 @@ export const SendForm = (props: Props): JSX.Element => {
                 <div className="flex flex-wrap items-center gap-4 py-2.5">
                   <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)} active={poolDeposit} />
                   {poolDeposit ? (
-                    <div className="flex max-w-full flex-1 items-center rounded-lg border border-error0/[0.25] bg-error0/[0.13] px-3 py-2 sm:max-w-[500px]">
+                    <div className="flex max-w-full flex-1 items-center rounded-lg border border-error0/25 bg-error0/13 px-3 py-2 sm:max-w-[500px]">
                       <span className="text-sm leading-[1.4] text-error0 dark:text-error0d">
                         <FormattedMessage
                           id="deposit.poolTransactionWarning"
@@ -1443,13 +1443,13 @@ export const SendForm = (props: Props): JSX.Element => {
         <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
           <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
             <BaseButton
-              className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              className="group flex w-full justify-between p-0! font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
               onClick={() => setShowDetails((current) => !current)}>
               {intl.formatMessage({ id: 'common.details' })}
               {showDetails ? (
-                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                <MagnifyingGlassMinusIcon className="ease h-20px w-20px text-inherit group-hover:scale-125" />
               ) : (
-                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                <MagnifyingGlassPlusIcon className="ease h-20px w-20px text-inherit group-hover:scale-125" />
               )}
             </BaseButton>
             {showDetails && (

@@ -123,7 +123,7 @@ export const TransactionQuickDial = ({
               </div>
 
               {activeTransactions.map((transaction) => {
-                const protocolIcon = <ProviderIcon protocol={transaction.protocol} className="!h-4 !w-4" />
+                const protocolIcon = <ProviderIcon protocol={transaction.protocol} className="h-4! w-4!" />
 
                 // Use appropriate component based on protocol
                 return transaction.protocol === 'Chainflip' ? (

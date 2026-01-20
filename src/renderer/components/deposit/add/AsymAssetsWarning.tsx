@@ -36,10 +36,10 @@ export const AsymAssetsWarning = (props: AsymAssetsWarningProps): JSX.Element =>
       <TextButton
         size="normal"
         color="neutral"
-        className="mr-10px whitespace-nowrap pl-0 !font-mainBold uppercase"
+        className="mr-10px whitespace-nowrap pl-0 font-mainBold! uppercase"
         onClick={() => setCollapsed((v) => !v)}>
         {intl.formatMessage({ id: 'common.informationMore' })}
-        <ChevronRightIcon className={clsx('ease h-[20px] w-[20px] text-turquoise', { 'rotate-90': collapsed })} />
+        <ChevronRightIcon className={clsx('ease h-20px w-20px text-turquoise', { 'rotate-90': collapsed })} />
       </TextButton>
       {collapsed && (
         <>

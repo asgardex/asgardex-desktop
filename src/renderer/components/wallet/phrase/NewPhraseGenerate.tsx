@@ -110,7 +110,7 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
       </div>
       <form className="w-full pt-4" onSubmit={handleSubmit(handleFormFinish)}>
         <div className="flex flex-col items-center">
-          <div className="mb-4 w-full !max-w-[380px]">
+          <div className="mb-4 w-full max-w-[380px]!">
             <label className="mb-2 block text-sm font-medium text-text0 dark:text-text0d">
               {intl.formatMessage({ id: 'common.password' })}
             </label>
@@ -123,7 +123,7 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
             />
           </div>
 
-          <div className="mb-4 w-full !max-w-[380px]">
+          <div className="mb-4 w-full max-w-[380px]!">
             <label className="mb-2 block text-sm font-medium text-text0 dark:text-text0d">
               {intl.formatMessage({ id: 'wallet.password.repeat' })}
             </label>
@@ -143,7 +143,7 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
             />
           </div>
 
-          <div className="mb-4 w-full !max-w-[380px]">
+          <div className="mb-4 w-full max-w-[380px]!">
             <label className="mb-2 block text-sm font-medium text-text0 dark:text-text0d">
               <div>
                 {intl.formatMessage({ id: 'wallet.name' })}

@@ -12,7 +12,7 @@ type TooltipProps = {
   placement?: Placement
 }
 
-const base = 'z-50 px-2 py-1 text-xs text-white bg-bg0d/80 rounded-md shadow-lg whitespace-normal break-words relative'
+const base = 'z-50 px-2 py-1 text-xs text-white bg-bg0d/80 rounded-md shadow-lg whitespace-normal wrap-break-word relative'
 
 const arrowBase = 'absolute w-0 h-0 border-transparent'
 const arrowPlacements: Record<Placement, string> = {

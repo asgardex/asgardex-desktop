@@ -14,10 +14,10 @@ export const AssetLabel = (props: Props) => {
   return (
     <div className={clsx('py-1', className)}>
       <div>
-        <Label className="!w-auto" size="big" textTransform="uppercase" weight="bold">
+        <Label className="w-auto!" size="big" textTransform="uppercase" weight="bold">
           {asset.ticker}
         </Label>
-        <Label className="!w-auto" color="gray">
+        <Label className="w-auto!" color="gray">
           {asset.chain}
         </Label>
       </div>

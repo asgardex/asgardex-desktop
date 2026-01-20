@@ -235,7 +235,7 @@ export const SavedAddressSelect = ({
       <ListboxOptions
         anchor="bottom start"
         transition
-        className="mt-1 w-[var(--button-width)] rounded-md border border-solid border-gray0 bg-bg0 p-4 dark:border-gray0d dark:bg-bg0d">
+        className="mt-1 w-(--button-width) rounded-md border border-solid border-gray0 bg-bg0 p-4 dark:border-gray0d dark:bg-bg0d">
         {addresses.length ? (
           addresses.map(({ address, name }) => (
             <ListboxOption className="flex cursor-pointer items-center justify-between" key={address} value={address}>
@@ -250,7 +250,7 @@ export const SavedAddressSelect = ({
         ) : (
           <div className="flex w-full items-center justify-center space-x-2 py-8">
             <FolderIcon className="h-8 w-8 stroke-text0 dark:stroke-text0d" />
-            <Label className="!w-auto" textTransform="uppercase">
+            <Label className="w-auto!" textTransform="uppercase">
               No Saved Addresses
             </Label>
           </div>

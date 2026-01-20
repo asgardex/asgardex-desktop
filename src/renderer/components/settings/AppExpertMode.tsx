@@ -130,7 +130,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
           <div className="flex items-center justify-end px-4 py-6">
             <TextButton
               className={clsx(
-                'mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d',
+                'mb-0 py-0! pl-0! pr-10px! font-main text-14! uppercase text-text0 dark:text-text0d',
                 advancedActive ? 'opacity-100' : 'opacity-60'
               )}
               onClick={() => setAdvancedActive((prev) => ({ ...prev, thorchain: !prev.thorchain }))}>
@@ -183,7 +183,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
           <div className="flex items-center justify-end px-4 py-6">
             <TextButton
               className={clsx(
-                'mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d',
+                'mb-0 py-0! pl-0! pr-10px! font-main text-14! uppercase text-text0 dark:text-text0d',
                 advancedActive ? 'opacity-100' : 'opacity-60'
               )}
               onClick={() => setAdvancedActive((prev) => ({ ...prev, mayachain: !prev.mayachain }))}>

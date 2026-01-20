@@ -11,7 +11,7 @@ export const RadioGroup = ({
 }) => {
   return (
     <div className="h-fit">
-      <div className="flex gap-x-[2px] rounded-lg border border-solid border-gray1 bg-bg0 p-[1px] dark:border-gray0d dark:bg-bg0d">
+      <div className="flex gap-x-[2px] rounded-lg border border-solid border-gray1 bg-bg0 p-px dark:border-gray0d dark:bg-bg0d">
         {options.map((option, index) => (
           <div
             key={option.value}

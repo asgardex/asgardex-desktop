@@ -33,7 +33,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
     <motion.div
       ref={containerRef}
       className={clsx(
-        'relative inline-flex cursor-pointer items-center justify-between rounded-full p-[1px]',
+        'relative inline-flex cursor-pointer items-center justify-between rounded-full p-px',
         'select-none bg-gray-100 transition-colors dark:bg-gray-900'
       )}
       onClick={handleToggle}
@@ -46,7 +46,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
       }}>
       <motion.div
         layout
-        className="absolute left-[1px] top-[1px] h-[calc(100%-2px)] rounded-full"
+        className="absolute left-px top-px h-[calc(100%-2px)] rounded-full"
         style={{
           width: halfWidth ? `${halfWidth - 2}px` : '50%',
           border: `1px solid ${colors[activeIndex]}`,
@@ -63,7 +63,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
       <div
         className={clsx(
           'relative z-10 flex flex-1 items-center justify-center px-4 text-center font-medium transition-colors',
-          active === labels[0] ? 'text-[var(--color-a)]' : 'text-gray-500'
+          active === labels[0] ? 'text-(--color-a)' : 'text-gray-500'
         )}
         style={{ '--color-a': colors[0] } as React.CSSProperties}>
         {labels[0]}
@@ -72,7 +72,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
       <div
         className={clsx(
           'relative z-10 flex flex-1 items-center justify-center px-2 text-center font-medium transition-colors',
-          active === labels[1] ? 'text-[var(--color-b)]' : 'text-gray-500'
+          active === labels[1] ? 'text-(--color-b)' : 'text-gray-500'
         )}
         style={{ '--color-b': colors[1] } as React.CSSProperties}>
         {labels[1]}

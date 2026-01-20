@@ -108,7 +108,7 @@ const PasswordModal = (props: PasswordModalProps) => {
           <div className="flex w-full items-center justify-end gap-2">
             <BaseButton
               className={clsx(
-                'rounded-md !px-4 !py-2',
+                'rounded-md px-4! py-2!',
                 'border border-solid border-gray1/20 dark:border-gray1d/20',
                 'text-text0 dark:text-text0d',
                 'hover:bg-gray1/20 hover:dark:bg-gray1d/20'
@@ -117,7 +117,7 @@ const PasswordModal = (props: PasswordModalProps) => {
               {intl.formatMessage({ id: 'common.cancel' })}
             </BaseButton>
             <BaseButton
-              className="rounded-lg bg-turquoise !px-4 !py-2 text-white hover:bg-turquoise/80"
+              className="rounded-lg bg-turquoise px-4! py-2! text-white hover:bg-turquoise/80"
               onClick={onOkCb}>
               {intl.formatMessage({ id: 'common.confirm' })}
             </BaseButton>

@@ -210,17 +210,17 @@ export const HeaderStats = (props: Props): JSX.Element => {
         className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadThorStats}>
         <AssetIcon size="xsmall" asset={AssetRuneNative} network={network} />
-        <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
+        <Label className="w-auto!" color="primary" textTransform="uppercase" weight="bold">
           {THORChain}
         </Label>
-        <Label className="!w-auto" color="gray" textTransform="uppercase">
+        <Label className="w-auto!" color="gray" textTransform="uppercase">
           {runePriceLabel}
         </Label>
 
         {!isSmallMobileView && (
           <>
-            <div className="h-5 w-[1px] bg-gray2 dark:bg-gray2d" />
-            <Label className="!w-auto" color="gray" textTransform="uppercase">
+            <div className="h-5 w-px bg-gray2 dark:bg-gray2d" />
+            <Label className="w-auto!" color="gray" textTransform="uppercase">
               {volume24PriceRuneLabel}
             </Label>
           </>
@@ -233,10 +233,10 @@ export const HeaderStats = (props: Props): JSX.Element => {
             className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
             onClick={reloadTcyStats}>
             <AssetIcon size="xsmall" asset={AssetTCY} network={network} />
-            <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
+            <Label className="w-auto!" color="primary" textTransform="uppercase" weight="bold">
               TCY
             </Label>
-            <Label className="!w-auto" color="gray" textTransform="uppercase">
+            <Label className="w-auto!" color="gray" textTransform="uppercase">
               {tcyPriceLabel}
             </Label>
           </div>
@@ -246,17 +246,17 @@ export const HeaderStats = (props: Props): JSX.Element => {
         className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadMayaStats}>
         <AssetIcon size="xsmall" asset={AssetCacao} network={network} />
-        <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
+        <Label className="w-auto!" color="primary" textTransform="uppercase" weight="bold">
           {MAYAChain}
         </Label>
-        <Label className="!w-auto" color="gray" textTransform="uppercase">
+        <Label className="w-auto!" color="gray" textTransform="uppercase">
           {mayaPriceLabel}
         </Label>
 
         {!isSmallMobileView && (
           <>
-            <div className="h-5 w-[1px] bg-gray2 dark:bg-gray2d" />
-            <Label className="!w-auto" color="gray" textTransform="uppercase">
+            <div className="h-5 w-px bg-gray2 dark:bg-gray2d" />
+            <Label className="w-auto!" color="gray" textTransform="uppercase">
               {volume24PriceMayaLabel}
             </Label>
           </>

@@ -493,7 +493,7 @@ export const Withdraw = ({
 
   return (
     <div>
-      <Label className="!text-16" textTransform="uppercase">
+      <Label className="text-16!" textTransform="uppercase">
         {intl.formatMessage({ id: 'deposit.withdraw.sym.title' })}
       </Label>
       <Label className="mt-2" size="big" textTransform="uppercase">
@@ -528,13 +528,13 @@ export const Withdraw = ({
           error={minRuneAmountError}
         />
       </div>
-      <div className="my-5 flex flex-row items-center last:m-0 [&>div:first-child]:mr-[10px]">
+      <div className="my-5 flex flex-row items-center last:m-0 [&>div:first-child]:mr-10px">
         <Tooltip title={runeAddress} size="big">
           <div className="flex items-center">
             <AssetIcon className="mr-10px" asset={protocolAsset} network={network} />
             <AssetLabel asset={protocolAsset} className="m-0 p-0" />
             {isLedgerWallet(runeWalletType) && (
-              <WalletTypeLabel className="mr-[10px] text-[8px] leading-3 md:text-[10px]">
+              <WalletTypeLabel className="mr-10px text-[8px] leading-3 md:text-[10px]">
                 {intl.formatMessage({ id: 'ledger.title' })}
               </WalletTypeLabel>
             )}
@@ -563,13 +563,13 @@ export const Withdraw = ({
         </div>
       </div>
 
-      <div className="my-5 flex flex-row items-center last:m-0 [&>div:first-child]:mr-[10px]">
+      <div className="my-5 flex flex-row items-center last:m-0 [&>div:first-child]:mr-10px">
         <Tooltip title={assetAddress} size="big">
           <div className="flex items-center">
             <AssetIcon className="mr-10px" asset={asset} network={network} />
             <AssetLabel asset={asset} className="m-0 p-0" />
             {isLedgerWallet(assetWalletType) && (
-              <WalletTypeLabel className="mr-[10px] text-[8px] leading-3 md:text-[10px]">
+              <WalletTypeLabel className="mr-10px text-[8px] leading-3 md:text-[10px]">
                 {intl.formatMessage({ id: 'ledger.title' })}
               </WalletTypeLabel>
             )}

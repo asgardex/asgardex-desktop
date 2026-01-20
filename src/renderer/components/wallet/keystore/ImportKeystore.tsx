@@ -136,7 +136,7 @@ export const ImportKeystore = (props: Props): JSX.Element => {
       <div className="flex flex-col items-center">
         {/* import button */}
         <BorderButton
-          className="mb-2 w-full cursor-pointer !rounded-lg"
+          className="mb-2 w-full cursor-pointer rounded-lg!"
           type="button"
           size="large"
           onClick={uploadKeystore}>

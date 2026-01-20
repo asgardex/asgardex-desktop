@@ -12,7 +12,7 @@ export const Radio = ({ children, ...rest }: RadioProps) => {
             <CheckCircleIcon className="mr-1 size-6 min-w-6 text-turquoise" />
           ) : (
             <div className="mr-1 flex size-6 min-w-6 items-center justify-center">
-              <span className="h-[18px] w-[18px] min-w-[18px] rounded-full border-[2px] border-turquoise" />
+              <span className="h-[18px] w-[18px] min-w-[18px] rounded-full border-2 border-turquoise" />
             </div>
           )}
           {typeof children === 'function' ? children({ checked, ...restBagSlots }) : children}

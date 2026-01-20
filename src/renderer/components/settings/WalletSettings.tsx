@@ -381,7 +381,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
             <div className="flex w-full flex-col md:w-auto lg:flex-row">
               <div className="mr-30px flex items-center md:mr-0">
                 <Button
-                  className="cursor-pointer gap-x-1 !p-0 text-[12px]"
+                  className="cursor-pointer gap-x-1 p-0! text-[12px]"
                   sizevalue="small"
                   loading={loading}
                   typevalue="transparent"
@@ -860,7 +860,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
               <div key={i} className="flex flex-col border-b border-solid border-b-gray0 p-4 dark:border-b-gray0d">
                 <div className="flex w-full items-center justify-start">
                   <ChainIcon chain={chain} size="small" />
-                  <Label className="p-0 pl-[10px] text-xl leading-[25px] tracking-[2px]" textTransform="uppercase">
+                  <Label className="p-0 pl-10px text-xl leading-[25px] tracking-[2px]" textTransform="uppercase">
                     {chainToString(chain)}
                   </Label>
                 </div>

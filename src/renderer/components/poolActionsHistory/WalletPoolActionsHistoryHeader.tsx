@@ -58,7 +58,7 @@ export const WalletPoolActionsHistoryHeader = (props: Props) => {
       </div>
       <div className="flex items-center justify-center pt-5 md:grow md:justify-end md:pt-0">
         <Label
-          className="flex !w-auto items-center"
+          className="flex w-auto! items-center"
           size="large"
           textTransform="uppercase"
           align="center"

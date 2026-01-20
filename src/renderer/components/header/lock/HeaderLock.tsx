@@ -115,7 +115,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
                   <ListboxOptions
                     className={clsx(
                       'absolute left-[-100px] top-[35px]',
-                      'z-[2000] mt-1 max-h-60 w-[200px]',
+                      'z-2000 mt-1 max-h-60 w-[200px]',
                       'overflow-auto bg-bg0 dark:bg-bg0d',
                       'drop-shadow-lg focus:outline-none',
                       'rounded-md border border-solid border-gray0 dark:border-gray0d'
@@ -159,7 +159,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
   const renderAddWallet = useMemo(
     () => (
       <Tooltip title={intl.formatMessage({ id: 'wallet.add.label' })}>
-        <BaseButton className="!p-0 text-warning0" onClick={() => navigate(walletRoutes.noWallet.path())}>
+        <BaseButton className="p-0! text-warning0" onClick={() => navigate(walletRoutes.noWallet.path())}>
           <PlusCircleIcon className="ml-5px h-[28px] w-[28px]" />
         </BaseButton>
       </Tooltip>

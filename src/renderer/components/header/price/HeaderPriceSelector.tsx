@@ -55,7 +55,7 @@ export const HeaderPriceSelector = (props: Props): JSX.Element => {
         anchor={{ to: 'bottom', gap: 4 }}
         trigger={
           <div className="flex min-w-24 cursor-pointer items-center lg:min-w-0">
-            <Label className="!text-16" color="dark" weight="bold" textTransform="uppercase">
+            <Label className="text-16!" color="dark" weight="bold" textTransform="uppercase">
               {title}
             </Label>
             <DownIcon />

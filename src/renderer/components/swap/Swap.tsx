@@ -2713,7 +2713,7 @@ export const Swap = ({
         O.getOrElse(() => emptyString),
         (memo: string) => (
           <CopyLabel
-            className="!font-mainBold text-[14px] text-gray2 dark:text-gray2d"
+            className="font-mainBold! text-[14px] text-gray2 dark:text-gray2d"
             label={intl.formatMessage({ id: 'common.memo' })}
             textToCopy={memo}
           />
@@ -2825,8 +2825,8 @@ export const Swap = ({
               <BaseButton
                 size="small"
                 onClick={onSwitchAssets}
-                className="group rounded-full border border-solid border-turquoise bg-bg0 !p-10px hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
-                <ArrowsUpDownIcon className="ease h-[40px] w-[40px] text-turquoise" />
+                className="group rounded-full border border-solid border-turquoise bg-bg0 p-10px! hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
+                <ArrowsUpDownIcon className="ease h-40px w-40px text-turquoise" />
               </BaseButton>
             </div>
           </div>
@@ -2905,7 +2905,7 @@ export const Swap = ({
                     key="standalone-recipient-address">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <h3 className="!mb-0 mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                        <h3 className="mb-0! mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
                           {intl.formatMessage({ id: 'common.recipient' })}
                         </h3>
                         <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
@@ -3128,9 +3128,9 @@ export const Swap = ({
                                   {!customAddressEditActive && (
                                     <BaseButton
                                       size="small"
-                                      className="!p-1"
+                                      className="p-1!"
                                       onClick={() => setStandaloneLedgerTargetAddress(O.none)}>
-                                      <XCircleIcon className="ml-5px h-[30px] w-[30px] cursor-pointer text-gray2 dark:text-gray2d" />
+                                      <XCircleIcon className="ml-5px h-30px w-30px cursor-pointer text-gray2 dark:text-gray2d" />
                                     </BaseButton>
                                   )}
                                 </div>
@@ -3157,9 +3157,9 @@ export const Swap = ({
                                 </div>
                                 <BaseButton
                                   size="small"
-                                  className="!p-1"
+                                  className="p-1!"
                                   onClick={() => setStandaloneLedgerTargetAddress(O.none)}>
-                                  <XCircleIcon className="ml-5px h-[30px] w-[30px] cursor-pointer text-gray2 dark:text-gray2d" />
+                                  <XCircleIcon className="ml-5px h-30px w-30px cursor-pointer text-gray2 dark:text-gray2d" />
                                 </BaseButton>
                               </div>
                             )}
@@ -3179,7 +3179,7 @@ export const Swap = ({
                     className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                     key="edit-address">
                     <div className="flex items-center">
-                      <h3 className="!mb-0 mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                      <h3 className="mb-0! mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
                         {intl.formatMessage({ id: 'common.recipient' })}
                       </h3>
                       <WalletTypeLabel key="target-w-type">

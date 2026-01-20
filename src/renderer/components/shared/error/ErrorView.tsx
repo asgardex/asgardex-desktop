@@ -19,12 +19,12 @@ export const ErrorView = ({ className, title, subTitle, extra }: Props): JSX.Ele
       <ExclamationCircleIcon className="h-16 w-16 text-error0" />
     </div>
     {title && (
-      <Label className="!w-auto" color="gray" size="big" textTransform="uppercase" weight="bold">
+      <Label className="w-auto!" color="gray" size="big" textTransform="uppercase" weight="bold">
         {title}
       </Label>
     )}
     {subTitle && (
-      <Label className="!w-auto" color="gray" textTransform="uppercase">
+      <Label className="w-auto!" color="gray" textTransform="uppercase">
         {subTitle}
       </Label>
     )}

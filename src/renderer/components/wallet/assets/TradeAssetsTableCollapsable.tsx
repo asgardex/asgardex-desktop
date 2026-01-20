@@ -200,10 +200,10 @@ export const TradeAssetsTableCollapsable = ({
             <div className="flex-col">
               <div className="m-2 flex items-center justify-between">
                 <div className="flex items-center">
-                  <AssetIcon className="flex-shrink-0" size="small" asset={params.asset} network={network} />
-                  <AssetLabel className="mx-2 flex-shrink-0" asset={params.asset} />
+                  <AssetIcon className="shrink-0" size="small" asset={params.asset} network={network} />
+                  <AssetLabel className="mx-2 shrink-0" asset={params.asset} />
                 </div>
-                <span className="flex-shrink-0 text-16 text-text0 dark:text-text0d">
+                <span className="shrink-0 text-16 text-text0 dark:text-text0d">
                   {formatAssetAmountCurrency({
                     asset: params.asset,
                     amount: baseToAsset(params.amount),
@@ -534,7 +534,7 @@ export const TradeAssetsTableCollapsable = ({
             <div className="mx-2 flex items-center space-x-2">
               <AssetIcon asset={asset} size="normal" network={network} />
               <div className="flex flex-col">
-                <Label className="!text-16 !leading-[18px]" textTransform="uppercase" weight="bold">
+                <Label className="text-16! leading-[18px]!" textTransform="uppercase" weight="bold">
                   {asset.ticker}
                 </Label>
                 <Label color="primary" weight="bold">
@@ -740,7 +740,7 @@ export const TradeAssetsTableCollapsable = ({
       const renderHeader = () => (
         <div className="flex w-full justify-between space-x-4">
           <div className="flex flex-row items-center space-x-2">
-            <Label className="!w-auto" textTransform="uppercase">
+            <Label className="w-auto!" textTransform="uppercase">
               {protocol}
             </Label>
             {!isKeystoreWallet(walletType as WalletType) && (
@@ -748,7 +748,7 @@ export const TradeAssetsTableCollapsable = ({
                 {walletTypeToI18n(walletType as WalletType, intl)}
               </WalletTypeLabel>
             )}
-            <Label className="!w-auto" color="gray" textTransform="uppercase">
+            <Label className="w-auto!" color="gray" textTransform="uppercase">
               {`(${balances.length} Assets)`}
             </Label>
           </div>
@@ -761,7 +761,7 @@ export const TradeAssetsTableCollapsable = ({
                 onClick={(e) => {
                   e.stopPropagation()
                 }}>
-                <CopyLabel iconClassName="!text-text2 dark:!text-text2d" textToCopy={fullWalletAddress} />
+                <CopyLabel iconClassName="text-text2! dark:text-text2d!" textToCopy={fullWalletAddress} />
               </IconButton>
               <IconButton
                 disabled={disableRefresh}

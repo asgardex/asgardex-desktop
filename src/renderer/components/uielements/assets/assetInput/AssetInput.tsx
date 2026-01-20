@@ -141,7 +141,7 @@ export const AssetInput = (props: Props): JSX.Element => {
           <div className="flex items-center space-x-1">
             {amountShortcuts.map(({ textId, amount }) => (
               <Button
-                className="rounded-lg !border-turquoise !text-text0 hover:!bg-turquoise hover:!text-white dark:!text-text0d"
+                className="rounded-lg border-turquoise! text-text0! hover:bg-turquoise! hover:text-white! dark:text-text0d!"
                 key={textId}
                 typevalue="outline"
                 sizevalue="small"
@@ -175,9 +175,9 @@ export const AssetInput = (props: Props): JSX.Element => {
             decimal={amount.decimal}
             // override text style of input for acting as label only
             className={clsx(
-              'w-full !px-0 leading-none',
-              { 'text-text0 !opacity-100 dark:text-text0d': asLabel },
-              { '!py-2 text-[28px] md:text-[32px]': !showPrice }
+              'w-full px-0! leading-none',
+              { 'text-text0 opacity-100! dark:text-text0d': asLabel },
+              { 'py-2! text-[28px] md:text-[32px]': !showPrice }
             )}
           />
 

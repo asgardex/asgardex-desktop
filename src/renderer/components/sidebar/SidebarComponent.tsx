@@ -229,9 +229,9 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const renderLogo = useMemo(
     () => (
       <div className="mt-4 flex flex-col items-center justify-center">
-        <AsgardexLogo className="[&>*]:fill-text1 [&>*]:dark:fill-text1d" />
+        <AsgardexLogo className="*:fill-text1 *:dark:fill-text1d" />
         <Label
-          className={clsx('-mt-3 !w-auto rounded-full px-2', networkBgCn)}
+          className={clsx('-mt-3 w-auto! rounded-full px-2', networkBgCn)}
           color="white"
           size="small"
           textTransform="uppercase">
@@ -249,7 +249,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const gotoPlayground = useCallback(() => navigate(playgroundRoutes.base.path()), [navigate])
 
   return (
-    <div className="h-full w-60 border-r border-none border-gray0 !bg-bg0 py-5 dark:border-gray0d dark:!bg-bg0d">
+    <div className="h-full w-60 border-r border-none border-gray0 bg-bg0! py-5 dark:border-gray0d dark:bg-bg0d!">
       <div className="flex h-full flex-col justify-between" ref={setHeaderRef}>
         <div className="flex flex-1 flex-col">
           {renderLogo}
@@ -268,7 +268,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
               <ThorChainIcon className="[&>*:not(:first-child)]:fill-text1 [&>*:not(:first-child)]:dark:fill-text1d" />
             </div>
           </FooterIcon>
-          <FooterIcon className="!ml-0" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
+          <FooterIcon className="ml-0!" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
             <div className="flex h-12 flex-row items-center space-x-2">
               <img className="h-8 w-8 rounded-full" src={mayaIconT} />
               <Label size="big" textTransform="uppercase">

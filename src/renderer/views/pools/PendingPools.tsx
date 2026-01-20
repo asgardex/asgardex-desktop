@@ -149,7 +149,7 @@ export const PendingPools = (): JSX.Element => {
 
       return (
         <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
-          <Label className="inline-block w-24 !text-16" align="right">
+          <Label className="inline-block w-24 text-16!" align="right">
             {deepest ? (protocol === THORChain ? blocksLeft : blocksLeftMaya) : '--'}
           </Label>
         </div>
@@ -188,7 +188,7 @@ export const PendingPools = (): JSX.Element => {
         accessorKey: 'poolPrice',
         header: intl.formatMessage({ id: 'common.price' }),
         cell: (row) => (
-          <Label className="!text-16" align="right" nowrap>
+          <Label className="text-16!" align="right" nowrap>
             {formatAssetAmountCurrency({
               amount: baseToAsset(row.getValue()),
               asset: pricePool.asset,

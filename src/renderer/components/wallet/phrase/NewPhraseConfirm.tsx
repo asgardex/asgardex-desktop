@@ -136,7 +136,7 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
           {intl.formatMessage({ id: 'wallet.create.enter.phrase' })}
         </h2>
         <div className="flex w-full flex-col items-center justify-center">
-          <div className="!mb-2 w-full">
+          <div className="mb-2! w-full">
             <Phrase
               wordIcon={<DeleteOutlined className="h-4 w-4 text-red" />}
               words={sortedSelectedWords}

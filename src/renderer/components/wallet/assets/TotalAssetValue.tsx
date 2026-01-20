@@ -77,21 +77,21 @@ export const TotalAssetValue = (props: Props): JSX.Element => {
   return (
     <div className="flex flex-col items-center justify-center bg-bg1 px-4 pb-8 pt-4 dark:bg-bg1d">
       <div className="flex items-center">
-        <Label className="!w-auto" align="center" color="input" textTransform="uppercase">
+        <Label className="w-auto!" align="center" color="input" textTransform="uppercase">
           {title}
         </Label>
         {info && <InfoIcon tooltip={info} color="primary" />}
       </div>
 
       <BaseButton
-        className="flex justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+        className="flex justify-between p-0! font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
         onClick={() => setShowDetails((current) => !current)}>
         <div className="m-4">{totalBalanceDisplay}</div>
         {isChartVisible &&
           (showDetails ? (
-            <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+            <MagnifyingGlassMinusIcon className="ease h-20px w-20px text-inherit group-hover:scale-125" />
           ) : (
-            <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+            <MagnifyingGlassPlusIcon className="ease h-20px w-20px text-inherit group-hover:scale-125" />
           ))}
       </BaseButton>
       {hasErrors && chainErrors}

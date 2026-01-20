@@ -132,7 +132,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
                   const selected = eqAsset.equals(asset, assetInList)
                   return (
                     <BaseButton
-                      className="w-full !justify-between rounded-lg !pr-20px hover:bg-gray0 hover:dark:bg-gray0d"
+                      className="w-full justify-between! rounded-lg pr-20px! hover:bg-gray0 hover:dark:bg-gray0d"
                       key={assetToString(assetInList)}
                       onClick={() => handleChangeAsset(assetInList)}
                       disabled={selected}>
@@ -217,7 +217,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
   return (
     <Dialog
       as="div"
-      className={clsx('relative z-[60]', className)}
+      className={clsx('relative z-60', className)}
       initialFocus={inputSearchRef}
       transition
       open={open}
@@ -236,7 +236,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
           <div className="flex w-full items-center justify-between px-5">
             {headline && <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">{headline}</h1>}
             <BaseButton
-              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
+              className="p-0! text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
               onClick={onCloseMenu}>
               <XMarkIcon className="h-20px w-20px text-inherit" />
             </BaseButton>
@@ -247,7 +247,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
             <InputSearch
               ref={inputSearchRef}
               className="w-full"
-              classNameInput="rounded-lg !p-2"
+              classNameInput="rounded-lg p-2!"
               size="normal"
               onChange={searchHandler}
               onCancel={clearSearchValue}

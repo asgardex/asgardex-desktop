@@ -1836,7 +1836,7 @@ export const TradeSwap = ({
         O.getOrElse(() => emptyString),
         (memo: string) => (
           <CopyLabel
-            className="!font-mainBold text-[14px] text-text2 dark:text-text2d"
+            className="font-mainBold! text-[14px] text-text2 dark:text-text2d"
             label={intl.formatMessage({ id: 'common.memo' })}
             textToCopy={memo}
           />
@@ -1973,8 +1973,8 @@ export const TradeSwap = ({
               <BaseButton
                 size="small"
                 onClick={onSwitchAssets}
-                className="group rounded-full border border-solid border-turquoise bg-bg0 !p-10px hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
-                <ArrowsUpDownIcon className="ease h-[40px] w-[40px] text-turquoise" />
+                className="group rounded-full border border-solid border-turquoise bg-bg0 p-10px! hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
+                <ArrowsUpDownIcon className="ease h-40px w-40px text-turquoise" />
               </BaseButton>
             </div>
           </div>
@@ -2017,13 +2017,13 @@ export const TradeSwap = ({
             {!isLocked(keystore) ? (
               <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                 <BaseButton
-                  className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                  className="group flex w-full justify-between p-0! font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
                   onClick={() => setShowDetails((current) => !current)}>
                   {intl.formatMessage({ id: 'common.details' })}
                   {showDetails ? (
-                    <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                    <MagnifyingGlassMinusIcon className="ease h-20px w-20px text-inherit group-hover:scale-125" />
                   ) : (
-                    <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                    <MagnifyingGlassPlusIcon className="ease h-20px w-20px text-inherit group-hover:scale-125" />
                   )}
                 </BaseButton>
 
@@ -2031,13 +2031,13 @@ export const TradeSwap = ({
                   {/* Rate */}
                   <div className="flex w-full justify-between font-mainBold text-[14px]">
                     <BaseButton
-                      className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                      className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
                       onClick={() =>
                         // toggle rate
                         setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
                       }>
                       {intl.formatMessage({ id: 'common.rate' })}
-                      <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                      <ArrowsRightLeftIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
                     </BaseButton>
                     <div className="text-text2 dark:text-text2d">{rateLabel}</div>
                   </div>
@@ -2045,10 +2045,10 @@ export const TradeSwap = ({
                   <div className="flex w-full items-center justify-between font-mainBold">
                     <BaseButton
                       disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                      className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                      className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
                       onClick={reloadFeesHandler}>
                       {intl.formatMessage({ id: 'common.fees.estimated' })}
-                      <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                      <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
                     </BaseButton>
                     <div className="text-text2 dark:text-text2d">{priceSwapFeesLabel}</div>
                   </div>
@@ -2090,7 +2090,7 @@ export const TradeSwap = ({
                           <div className="flex items-center">
                             {intl.formatMessage({ id: 'swap.slip.tolerance' })}
                             <InfoIcon
-                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              className="ml-[3px] h-15px w-15px text-inherit"
                               tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
                             />
                           </div>
@@ -2102,7 +2102,7 @@ export const TradeSwap = ({
                           <div className="flex items-center">
                             {intl.formatMessage({ id: 'swap.min.result.protected' })}
                             <InfoIcon
-                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              className="ml-[3px] h-15px w-15px text-inherit"
                               tooltip={intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })}
                             />
                           </div>
@@ -2207,10 +2207,10 @@ export const TradeSwap = ({
                       <div className="w-full pt-10px text-[14px] text-text2 dark:text-text2d">
                         <BaseButton
                           disabled={walletBalancesLoading}
-                          className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                          className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
                           onClick={reloadBalances}>
                           {intl.formatMessage({ id: 'common.balances' })}
-                          <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                          <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
                         </BaseButton>
                       </div>
                       {/* sender balance */}
@@ -2251,13 +2251,13 @@ export const TradeSwap = ({
                     {/* Rate */}
                     <div className="flex w-full justify-between font-mainBold text-[14px]">
                       <BaseButton
-                        className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                        className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
                         onClick={() =>
                           // toggle rate
                           setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
                         }>
                         {intl.formatMessage({ id: 'common.rate' })}
-                        <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                        <ArrowsRightLeftIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
                       </BaseButton>
                       <div className="text-text2 dark:text-text2d">{rateLabel}</div>
                     </div>
@@ -2265,10 +2265,10 @@ export const TradeSwap = ({
                     <div className="flex w-full items-center justify-between font-mainBold">
                       <BaseButton
                         disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                        className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                        className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
                         onClick={reloadFeesHandler}>
                         {intl.formatMessage({ id: 'common.fees.estimated' })}
-                        <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                        <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
                       </BaseButton>
                       <div className="text-text2 dark:text-text2d">{priceSwapFeesLabel}</div>
                     </div>
@@ -2355,7 +2355,7 @@ export const TradeSwap = ({
                   className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                   key="edit-address">
                   <div className="flex items-center">
-                    <h3 className="!mb-0 mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                    <h3 className="mb-0! mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
                       {intl.formatMessage({ id: 'common.recipient' })}
                     </h3>
                     <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>

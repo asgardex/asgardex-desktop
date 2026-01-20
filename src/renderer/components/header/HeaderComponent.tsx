@@ -276,7 +276,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
   }, [])
 
   return (
-    <div className="!bg-bg3 dark:!bg-bg3d">
+    <div className="bg-bg3! dark:bg-bg3d!">
       <div className="flex h-[70px] items-center justify-between" ref={setHeaderRef}>
         <HeaderStats
           runePrice={runePriceRD}
@@ -306,16 +306,16 @@ export const HeaderComponent = (props: Props): JSX.Element => {
         ) : (
           <div className="flex h-[70px] cursor-pointer items-center" onClick={toggleMenu}>
             {menuVisible ? (
-              <CloseIcon className="mr-5 text-[24px] [&>*]:fill-text0 [&>*]:dark:fill-text0d" />
+              <CloseIcon className="mr-5 text-[24px] *:fill-text0 *:dark:fill-text0d" />
             ) : (
-              <MenuIcon className="mr-5 text-[24px] [&>*]:fill-text0 [&>*]:dark:fill-text0d" />
+              <MenuIcon className="mr-5 text-[24px] *:fill-text0 *:dark:fill-text0d" />
             )}
           </div>
         )}
       </div>
       {!isDesktopView && (
         <Drawer
-          title={<AsgardexLogo className="text-text2 dark:text-text2d [&>*]:fill-current" />}
+          title={<AsgardexLogo className="text-text2 dark:text-text2d *:fill-current" />}
           isOpen={menuVisible}
           onClose={() => setMenuVisible(false)}>
           {links}

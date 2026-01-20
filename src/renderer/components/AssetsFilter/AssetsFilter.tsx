@@ -112,7 +112,7 @@ export const AssetsFilter = ({ poolFilters, className, activeFilter: oActiveFilt
           className="mt-10px md:mt-0"
           // Note: `delay-200` needed to handle `onCancel` callback of InputSearch
           // in other case X icon in InputSearch does not fire `onClick` event internally due focus changes + animation of width (tailwind bug?)
-          classNameInput="rounded-full w-[150px] focus:w-[300px] !bg-bg0 focus:dark:!bg-bg0d focus:!bg-bg0 dark:!bg-bg0d"
+          classNameInput="rounded-full w-[150px] focus:w-[300px] bg-bg0! focus:dark:bg-bg0d! focus:bg-bg0! dark:bg-bg0d!"
           onChange={setCustomFilter}
           value={inputValue}
           size="normal"

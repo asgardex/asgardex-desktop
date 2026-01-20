@@ -81,10 +81,10 @@ export const InputSearch = forwardRef<HTMLInputElement, Props>((props, ref): JSX
   }
 
   const inputOffsetX: Record<Size, string> = {
-    small: '!px-20px',
-    normal: '!px-30px',
-    large: '!px-30px',
-    xlarge: '!px-30px'
+    small: 'px-20px!',
+    normal: 'px-30px!',
+    large: 'px-30px!',
+    xlarge: 'px-30px!'
   }
 
   return (
@@ -99,7 +99,7 @@ export const InputSearch = forwardRef<HTMLInputElement, Props>((props, ref): JSX
         )}
       />
       <BaseButton
-        className={clsx('absolute top-[50%] translate-y-[-50%] !px-0 text-gray2 dark:text-gray2', iconOffsetR[size], {
+        className={clsx('absolute top-[50%] translate-y-[-50%] px-0! text-gray2 dark:text-gray2', iconOffsetR[size], {
           hidden: !searchTxt
         })}
         onClick={() => {

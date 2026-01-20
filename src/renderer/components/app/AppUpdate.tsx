@@ -30,7 +30,7 @@ export const AppUpdate = (props: AppUpdateModalProps) => {
             {intl.formatMessage({ id: 'update.description' }, { version: props.version })}
           </span>
         </div>
-        <Button className="flex items-center !rounded-lg px-2" sizevalue="normal" onClick={props.goToUpdates}>
+        <Button className="flex items-center rounded-lg! px-2" sizevalue="normal" onClick={props.goToUpdates}>
           {isDesktopView && <Label color="white">{intl.formatMessage({ id: 'update.link' })}</Label>}
           <ExternalLinkIcon className="ml-0 h-4 w-4 lg:ml-2" />
         </Button>

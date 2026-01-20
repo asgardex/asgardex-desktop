@@ -94,7 +94,7 @@ export const Modal = ({
                         type="button"
                         onClick={onCancel}
                         className={clsx(
-                          'cancel-ant-btn h-full flex-1 rounded-none border-0 font-[MainFontRegular] text-sm uppercase',
+                          'cancel-ant-btn h-full flex-1 rounded-none border-0 font-main text-sm uppercase',
                           // text/background like palette('text',2)/(background,1)
                           'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-200',
                           // first-child right border like your styled rule
@@ -111,11 +111,11 @@ export const Modal = ({
                         onClick={onOk}
                         disabled={confirmLoading}
                         className={clsx(
-                          'ok-ant-btn h-full flex-1 rounded-none border-0 font-[MainFontRegular] text-sm uppercase',
+                          'ok-ant-btn h-full flex-1 rounded-none border-0 font-main text-sm uppercase',
                           // primary text like palette('primary',2)
                           'bg-white text-indigo-600 dark:bg-gray-900 dark:text-indigo-400',
                           // hover gradient echoing palette('gradient',1)
-                          'hover:bg-gradient-to-r hover:from-indigo-600/10 hover:to-teal-400/10',
+                          'hover:bg-linear-to-r hover:from-indigo-600/10 hover:to-teal-400/10',
                           'disabled:cursor-not-allowed disabled:opacity-50',
                           'focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
                           okButtonProps?.className
@@ -187,12 +187,12 @@ export const HeadlessModal = ({
           <div className="flex w-full items-center justify-between rounded-t-lg px-4">
             <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">{title}</h1>
             <BaseButton
-              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
+              className="p-0! text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
               onClick={() => onClose()}>
               <XMarkIcon className="h-20px w-20px text-inherit" />
             </BaseButton>
           </div>
-          <div className="my-4 h-[1px] w-full bg-gray1 dark:bg-gray0d" />
+          <div className="my-4 h-px w-full bg-gray1 dark:bg-gray0d" />
           {children}
         </DialogPanel>
       </div>

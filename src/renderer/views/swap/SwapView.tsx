@@ -513,7 +513,7 @@ const SuccessRouteView = ({
   return (
     <>
       <div className="relative mb-4 flex items-center justify-between">
-        <BackLinkButton className="absolute !m-0" />
+        <BackLinkButton className="absolute m-0!" />
         <h2 className="m-0 w-full text-center font-mainSemiBold text-16 uppercase text-turquoise">
           {intl.formatMessage({ id: 'common.swap' })}
         </h2>
@@ -1066,7 +1066,7 @@ const SuccessTradeRouteView = ({
   return (
     <>
       <div className="relative mb-4 flex items-center justify-between">
-        <BackLinkButton className="absolute !m-0" />
+        <BackLinkButton className="absolute m-0!" />
         <h2 className="m-0 w-full text-center font-mainSemiBold text-16 uppercase text-turquoise">
           {intl.formatMessage({ id: 'common.swap' })}
         </h2>

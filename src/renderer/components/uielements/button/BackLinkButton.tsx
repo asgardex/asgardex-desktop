@@ -28,7 +28,7 @@ export const BackLinkButton = ({ label, path, size = 'normal', className = '' }:
   }, [path, navigate])
 
   return (
-    <TextButton className={clsx('!p-0', className)} size={size} onClick={clickHandler}>
+    <TextButton className={clsx('p-0!', className)} size={size} onClick={clickHandler}>
       <ChevronLeftIcon className="h-20px w-20px text-inherit" />
       <span className="hidden sm:inline-block">{label || intl.formatMessage({ id: 'common.back' })}</span>
     </TextButton>

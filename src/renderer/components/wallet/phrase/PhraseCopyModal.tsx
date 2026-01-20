@@ -36,7 +36,7 @@ export const PhraseCopyModal = (props: Props) => {
               {intl.formatMessage({ id: 'settings.view.phrase.title' })}
             </h1>
             <BaseButton
-              className="!p-0 text-gray1 hover:text-gray2 focus:outline-none focus:ring-0 dark:text-gray1d hover:dark:text-gray2d"
+              className="p-0! text-gray1 hover:text-gray2 focus:outline-none focus:ring-0 dark:text-gray1d hover:dark:text-gray2d"
               onClick={onClose}>
               <XMarkIcon className="h-20px w-20px text-inherit" />
             </BaseButton>

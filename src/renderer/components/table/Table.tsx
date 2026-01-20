@@ -129,7 +129,7 @@ export const Table = <T extends object>({
               colSpan={table.getAllLeafColumns().length}>
               <div className="flex min-h-28 w-full items-center justify-center space-x-2 bg-bg1 dark:bg-bg1d">
                 <SignalIcon className="h-6 w-6 animate-spin text-turquoise" />
-                <Label className="!w-auto" textTransform="uppercase">
+                <Label className="w-auto!" textTransform="uppercase">
                   {intl.formatMessage({ id: 'common.loading' })}
                 </Label>
               </div>
@@ -142,7 +142,7 @@ export const Table = <T extends object>({
               className="border border-solid border-gray0/40 dark:border-gray0d/40"
               colSpan={table.getAllLeafColumns().length || 1}>
               <div className="flex min-h-28 w-full items-center justify-center bg-bg1 dark:bg-bg1d">
-                <Label className="!w-auto" textTransform="uppercase">
+                <Label className="w-auto!" textTransform="uppercase">
                   {intl.formatMessage({ id: 'common.noData' })}
                 </Label>
               </div>

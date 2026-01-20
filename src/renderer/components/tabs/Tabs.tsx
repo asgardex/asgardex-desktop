@@ -28,7 +28,7 @@ export const Tabs = ({
             {({ hover, selected }) => (
               <div className={clsx('flex flex-col outline-none', disabled ? 'cursor-not-allowed' : 'cursor-pointer')}>
                 <Label
-                  className="!w-auto p-6 !text-16 !leading-5"
+                  className="w-auto! p-6 text-16! leading-5!"
                   color={hover || selected ? 'primary' : 'dark'}
                   weight="bold"
                   textTransform="uppercase">

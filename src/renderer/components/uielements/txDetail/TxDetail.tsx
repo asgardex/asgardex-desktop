@@ -79,10 +79,10 @@ export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network,
       <div className="flex flex-wrap text-left last:mr-0 md:mr-4">
         <div
           className={clsx(
-            'flex items-center px-[5px] py-[3px] text-xs uppercase leading-[22px]',
+            'flex items-center px-5px py-[3px] text-xs uppercase leading-[22px]',
             'border border-gray2 bg-bg2 text-text0 dark:border-gray2d dark:bg-bg2d dark:text-text0d',
             'first:self-start first:rounded-l-[1.7rem] last:rounded-r-[1.7rem]',
-            'md:px-[10px] md:py-[5px] md:text-sm'
+            'md:px-10px md:py-5px md:text-sm'
           )}>
           <span className="mr-1 text-xs uppercase text-text2 first:ml-1 first:mr-1 last:ml-1 only:m-0 dark:text-text2d">
             in
@@ -91,10 +91,10 @@ export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network,
         </div>
         <div
           className={clsx(
-            'flex items-center px-[5px] py-[3px] text-xs uppercase leading-[22px]',
+            'flex items-center px-5px py-[3px] text-xs uppercase leading-[22px]',
             'border border-gray2 bg-bg2 text-text0 dark:border-gray2d dark:bg-bg2d dark:text-text0d',
             'first:self-start first:rounded-l-[1.7rem] last:rounded-r-[1.7rem]',
-            'md:px-[10px] md:py-[5px] md:text-sm'
+            'md:px-10px md:py-5px md:text-sm'
           )}>
           {renderOutgos}
           <span className="mr-1 text-xs uppercase text-text2 first:ml-1 first:mr-1 last:ml-1 only:m-0 dark:text-text2d">
@@ -103,7 +103,7 @@ export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network,
         </div>
       </div>
 
-      <span className="mr-[10px] p-0 text-sm text-gray2 last:mr-0 dark:text-gray2d">
+      <span className="mr-10px p-0 text-sm text-gray2 last:mr-0 dark:text-gray2d">
         {feesComponent}
         {slip && <div className="relative mr-[2px] inline-block first:ml-0 last:mr-0">slip: {slip}%</div>}
       </span>

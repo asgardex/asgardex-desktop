@@ -54,12 +54,12 @@ export const TcyClaimModal = (props: Props) => {
           <div className="flex w-full items-center justify-between px-5">
             <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">Claim</h1>
             <BaseButton
-              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
+              className="p-0! text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
               onClick={onClose}>
               <XMarkIcon className="h-20px w-20px text-inherit" />
             </BaseButton>
           </div>
-          <div className="h-[1px] w-full bg-gray1 dark:bg-gray0d" />
+          <div className="h-px w-full bg-gray1 dark:bg-gray0d" />
           <div className="w-full space-y-1 px-4">
             <div className="flex w-full items-center justify-between">
               <AssetData asset={tcyInfo.asset} network={network} />
@@ -83,7 +83,7 @@ export const TcyClaimModal = (props: Props) => {
               <Fees fees={uiFeesRD} />
             </div>
           </div>
-          <div className="h-[1px] w-full bg-gray1 dark:bg-gray0d" />
+          <div className="h-px w-full bg-gray1 dark:bg-gray0d" />
           <div className="flex w-full items-center justify-end px-4">
             <FlatButton className="mt-10px min-w-[200px]" type="submit" size="large" onClick={onClaim}>
               Claim

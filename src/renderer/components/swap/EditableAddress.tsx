@@ -134,7 +134,7 @@ export const EditableAddress = ({
       <div className="flex items-center overflow-hidden font-main text-[16px] normal-case text-text2 dark:text-text2d">
         <Tooltip title={displayedAddress} size="big">
           <BaseButton
-            className="!px-0 normal-case !text-text2 dark:!text-text2d"
+            className="px-0! normal-case text-text2! dark:text-text2d!"
             onClick={() => {
               setEditableAddress(O.fromNullable(address))
               onChangeEditableMode(true)
@@ -145,7 +145,7 @@ export const EditableAddress = ({
         </Tooltip>
         <div className="flex flex-row items-center">
           <PencilSquareIcon
-            className="ml-[5px] h-[20px] w-[20px] cursor-pointer text-gray2 dark:text-gray2d"
+            className="ml-5px h-20px w-20px cursor-pointer text-gray2 dark:text-gray2d"
             onClick={() => {
               setEditableAddress(O.fromNullable(address))
               onChangeEditableMode(true)
@@ -164,7 +164,7 @@ export const EditableAddress = ({
         <form className="flex w-full items-start" onSubmit={(e) => e.preventDefault()}>
           <div className="flex w-full flex-col">
             <Input
-              className="!text-[16px] normal-case"
+              className="text-[16px]! normal-case"
               color="primary"
               onKeyUp={inputOnKeyUpHandler}
               {...register(RECIPIENT_FIELD, {
@@ -179,11 +179,11 @@ export const EditableAddress = ({
           </div>
 
           <CheckCircleIcon
-            className="ml-5px h-[30px] w-[30px] cursor-pointer text-turquoise"
+            className="ml-5px h-30px w-30px cursor-pointer text-turquoise"
             onClick={confirmEditHandler}
           />
           <XCircleIcon
-            className="ml-5px h-[30px] w-[30px] cursor-pointer text-gray2 dark:text-gray2d"
+            className="ml-5px h-30px w-30px cursor-pointer text-gray2 dark:text-gray2d"
             onClick={cancelEditHandler}
           />
         </form>

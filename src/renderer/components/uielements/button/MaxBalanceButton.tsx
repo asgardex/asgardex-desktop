@@ -71,7 +71,7 @@ export const MaxBalanceButton = (props: Props): JSX.Element => {
         size={size}
         disabled={disabled}
         onClick={onClickHandler}
-        className={clsx('mr-5px w-auto whitespace-nowrap !p-0', classNameButton)}>
+        className={clsx('mr-5px w-auto whitespace-nowrap p-0!', classNameButton)}>
         <span className="pr-5px underline">{intl.formatMessage({ id: 'common.max' })}:</span>
         &nbsp;
         {hidePrivateData ? hiddenString : `${valueLabel}`}

@@ -226,7 +226,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
       </div>
       <div>
         <div>
-          <TextButton className="!px-0 pb-20px pt-40px" size="large" color="neutral" onClick={openExplorerAddressUrl}>
+          <TextButton className="px-0! pb-20px pt-40px" size="large" color="neutral" onClick={openExplorerAddressUrl}>
             <Label size="large" weight="bold">
               {intl.formatMessage({ id: 'wallet.txs.history' })}
             </Label>

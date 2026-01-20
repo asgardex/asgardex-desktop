@@ -501,7 +501,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             <div className="flex items-center space-x-4 pl-4">
               <AssetIcon asset={asset} size="normal" network={network} />
               <div className="flex flex-col">
-                <Label className="!text-16 !leading-[18px]" textTransform="uppercase" weight="bold">
+                <Label className="text-16! leading-[18px]!" textTransform="uppercase" weight="bold">
                   {asset.ticker}
                 </Label>
                 {!isSynthAsset(asset) && !isSecuredAsset(asset) && (
@@ -631,7 +631,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         <div className="flex w-full justify-between space-x-4 bg-bg0 py-1 dark:bg-bg0d">
           <div className="flex flex-row items-center space-x-2">
             {!isOpen && <ChainIcon chain={chain} />}
-            <Label className="!w-auto" textTransform="uppercase">
+            <Label className="w-auto!" textTransform="uppercase">
               {chainToString(chain)}
             </Label>
             {!isKeystoreWallet(walletType) && (
@@ -640,7 +640,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               </WalletTypeLabel>
             )}
             <Label
-              className="flex !w-auto items-center space-x-2"
+              className="flex w-auto! items-center space-x-2"
               color={RD.isFailure(balancesRD) ? 'error' : 'gray'}
               textTransform="uppercase">
               <span>{assetsTxt}</span>
@@ -658,7 +658,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
                 onClick={(e) => {
                   e.stopPropagation()
                 }}>
-                <CopyLabel iconClassName="!text-text2 dark:!text-text2d" textToCopy={walletAddress} />
+                <CopyLabel iconClassName="text-text2! dark:text-text2d!" textToCopy={walletAddress} />
               </IconButton>
               <IconButton
                 disabled={disableRefresh}

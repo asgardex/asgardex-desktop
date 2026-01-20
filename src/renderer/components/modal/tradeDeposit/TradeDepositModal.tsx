@@ -807,7 +807,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
         }
         title={intl.formatMessage({ id: 'wallet.action.deposit' })}
         onClose={handleCancel}
-        className="!max-w-[480px]">
+        className="max-w-[480px]!">
         <div className="flex flex-col gap-4 px-4">
           {/* Protocol Selection */}
           <div className="flex flex-col gap-2">
@@ -884,7 +884,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
             <BaseButton
               onClick={handleCancel}
               className={clsx(
-                'flex-1 rounded-md !px-4 !py-2',
+                'flex-1 rounded-md px-4! py-2!',
                 'border border-solid border-gray1/20 dark:border-gray1d/20',
                 'text-text0 dark:text-text0d',
                 'hover:bg-gray1/20 hover:dark:bg-gray1d/20'
@@ -895,7 +895,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
               onClick={handleConfirm}
               disabled={!canProceed}
               className={clsx(
-                'flex-1 rounded-lg !px-4 !py-2',
+                'flex-1 rounded-lg px-4! py-2!',
                 canProceed
                   ? 'bg-turquoise text-white hover:bg-turquoise/80'
                   : 'cursor-not-allowed bg-gray1 text-gray2 dark:bg-gray1d dark:text-gray2d'

@@ -102,7 +102,7 @@ export const Status = ({ data }: { data: NodeInfo | NodeInfoMaya }) => {
   }
 
   return (
-    <Label className="!w-auto" align="center" color={getColor(data.status)} textTransform="uppercase">
+    <Label className="w-auto!" align="center" color={getColor(data.status)} textTransform="uppercase">
       {intl.formatMessage({ id: getStatusMessageId(data.status) })}
     </Label>
   )

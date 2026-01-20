@@ -32,7 +32,7 @@ export const BaseButton = (props: BaseButtonProps): JSX.Element => {
   } = props
 
   const sizeClasses: Record<Size, string> = {
-    small: 'px-[10px] py-[1px] text-[10px]',
+    small: 'px-10px py-px text-[10px]',
     medium: 'px-[12px] py-[2px] text-[12px]',
     normal: 'px-4 py-1 text-[14px]',
     large: 'px-5 py-1 text-[16px]'

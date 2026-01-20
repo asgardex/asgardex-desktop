@@ -33,7 +33,7 @@ export const DepositAsset = (props: Props): JSX.Element => {
 
   return (
     <div className="flex w-full flex-col items-center justify-center">
-      <Label size="small" color="gray" className="w-full px-[10px] pb-[15px] pt-[10px] text-center uppercase">
+      <Label size="small" color="gray" className="w-full px-10px pb-15px pt-10px text-center uppercase">
         {stepDescription}
       </Label>
       <div className="relative flex items-center justify-center">

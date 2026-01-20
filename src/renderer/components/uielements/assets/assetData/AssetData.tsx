@@ -35,7 +35,7 @@ export const AssetData = (props: Props): JSX.Element => {
 
   return (
     <div className={clsx('mr-2 flex flex-wrap items-center py-1 last:m-0', className)}>
-      <div className="relative mr-2 flex items-center py-[10px]">
+      <div className="relative mr-2 flex items-center py-10px">
         <AssetIcon asset={asset} size={size} network={network} />
       </div>
       {!noTicker && (
@@ -53,12 +53,12 @@ export const AssetData = (props: Props): JSX.Element => {
             {isSecuredAsset(asset) && <AssetSecuredLabel>secured</AssetSecuredLabel>}
           </div>
           {walletType && isLedgerWallet(walletType) && (
-            <WalletTypeLabel className="ml-[10px] text-[8px] leading-3">
+            <WalletTypeLabel className="ml-10px text-[8px] leading-3">
               {walletTypeToI18n(walletType, intl)}
             </WalletTypeLabel>
           )}
           {walletType && isKeystoreWallet(walletType) && (
-            <WalletTypeLabel className="ml-[10px] text-[8px] leading-3">
+            <WalletTypeLabel className="ml-10px text-[8px] leading-3">
               {walletTypeToI18n(walletType, intl)}
             </WalletTypeLabel>
           )}
@@ -66,7 +66,7 @@ export const AssetData = (props: Props): JSX.Element => {
       )}
       {assetAmount && (
         <div className="mr-2 last:m-0">
-          <Label className="pl-[10px]" textTransform="uppercase" weight="bold">
+          <Label className="pl-10px" textTransform="uppercase" weight="bold">
             {formatAssetAmountCurrency({ amount: baseToAsset(assetAmount), asset, trimZeros: true })}
           </Label>
         </div>

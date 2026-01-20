@@ -39,13 +39,13 @@ export const QRCodeModal = ({
       onOk={() => onOk()}
       okButtonProps={{ autoFocus: true }}>
       <QRCode text={address} qrError={intl.formatMessage({ id: 'wallet.receive.address.errorQR' })} />
-      <div key={'address info'} className="mt-5 flex flex-grow flex-row items-center">
+      <div key={'address info'} className="mt-5 flex grow flex-row items-center">
         <AddressEllipsis
           enableCopy
           network={network}
           chain={asset.chain}
           address={address}
-          className="max-w-full overflow-hidden text-base [&:only-child]:m-auto [&_svg]:h-5 [&_svg]:w-5"
+          className="max-w-full overflow-hidden text-base only:m-auto [&_svg]:h-5 [&_svg]:w-5"
         />
       </div>
     </Modal>

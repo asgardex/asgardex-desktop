@@ -66,7 +66,7 @@ export const ProgressBar = ({
             strokeLinecap === 'round' && 'rounded-full'
           )}
           style={{ width: `${clamped}%` }}>
-          <div className="h-full w-full rounded-full bg-gradient-to-r from-[#0068F7] to-[#23DCC8]" />
+          <div className="h-full w-full rounded-full bg-linear-to-r from-[#0068F7] to-[#23DCC8]" />
         </div>
 
         {/* Error overlay border */}

@@ -18,7 +18,7 @@ export const WalletTypeTinyLabel = ({ children, className, ...props }: LabelProp
     textTransform="uppercase"
     size="tiny"
     className={clsx(
-      '!w-auto rounded-[5px] bg-gray0 px-[7px] py-[1px] font-main text-text2 shadow-[1px_1px_1px] shadow-bg1',
+      'w-auto! rounded-[5px] bg-gray0 px-[7px] py-px font-main text-text2 shadow-[1px_1px_1px] shadow-bg1',
       'dark:bg-gray0d dark:text-text2d dark:shadow-bg1d',
       className
     )}
@@ -32,7 +32,7 @@ export const WalletTypeLabel = ({ children, className, ...props }: LabelProps) =
     textTransform="uppercase"
     size="small"
     className={clsx(
-      '!w-auto rounded-[5px] bg-gray0 px-[7px] py-[1px] font-main text-text2 shadow-[1px_1px_1px] shadow-bg1',
+      'w-auto! rounded-[5px] bg-gray0 px-[7px] py-px font-main text-text2 shadow-[1px_1px_1px] shadow-bg1',
       'dark:bg-gray0d dark:text-text2d dark:shadow-bg1d',
       className
     )}
@@ -46,7 +46,7 @@ export const AssetSynthLabel = ({ children, className, ...props }: LabelProps) =
     textTransform="uppercase"
     size="small"
     className={clsx(
-      'bg-primary0 !w-auto rounded-[5px] px-[7px] py-[1px] font-main text-text3',
+      'bg-primary0 w-auto! rounded-[5px] px-[7px] py-px font-main text-text3',
       'dark:bg-primary0d dark:text-text3d',
       className
     )}
@@ -59,7 +59,7 @@ export const AssetSecuredLabel = ({ children, className, ...props }: LabelProps)
   <Label
     textTransform="uppercase"
     size="small"
-    className={clsx('!w-auto rounded-[5px] bg-[#b224ec] px-[7px] py-[1px] font-main text-text3', className)}
+    className={clsx('w-auto! rounded-[5px] bg-[#b224ec] px-[7px] py-px font-main text-text3', className)}
     {...props}>
     {children}
   </Label>

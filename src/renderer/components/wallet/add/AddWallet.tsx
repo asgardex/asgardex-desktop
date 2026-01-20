@@ -28,7 +28,7 @@ export const AddWallet = ({ isLocked = false }: Props) => {
       ) : (
         <FolderPlusIcon className="mb-0 h-[60px] w-[60px] stroke-gray2 dark:stroke-gray2d" />
       )}
-      <Label className="!w-auto" textTransform="uppercase">
+      <Label className="w-auto!" textTransform="uppercase">
         {intl.formatMessage({ id: intlLabelId })}
       </Label>
       <Button onClick={onButtonClick} round="true">

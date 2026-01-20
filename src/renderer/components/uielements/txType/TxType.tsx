@@ -38,14 +38,14 @@ const getIcon = (type: MidgardTxType) => {
     case 'RUNEPOOLWITHDRAW':
       return <RunePoolIcon className="rotate-180" />
     case 'BOND':
-      return <PlusCircleIcon className="!stroke-turquoise" width={18} height={18} />
+      return <PlusCircleIcon className="stroke-turquoise!" width={18} height={18} />
     case 'UNBOND':
     case 'LEAVE':
-      return <MinusCircleIcon className="!text-turquoise" width={18} height={18} />
+      return <MinusCircleIcon className="text-turquoise!" width={18} height={18} />
     case 'TRADE':
-      return <BeakerIcon className="!text-turquoise" width={18} height={18} />
+      return <BeakerIcon className="text-turquoise!" width={18} height={18} />
     case 'FAILED':
-      return <XMarkIcon className="!stroke-red" width={18} height={18} />
+      return <XMarkIcon className="stroke-red!" width={18} height={18} />
     default:
       return <></>
   }
@@ -57,7 +57,7 @@ export const TxType = ({ type, showTypeIcon, className }: Props) => {
   return (
     <div className={clsx('flex items-center', className)}>
       {showTypeIcon && <div className="flex h-6 w-6 items-center justify-center">{getIcon(type)}</div>}
-      <Label className="ml-1 !w-auto" textTransform="uppercase">
+      <Label className="ml-1 w-auto!" textTransform="uppercase">
         {getTxTypeI18n(type, intl)}
       </Label>
     </div>

@@ -80,7 +80,7 @@ const CardItem = ({
   }, [route, navigate])
 
   return (
-    <div className="rounded-lg border border-l-4 border-solid border-gray0 !border-l-turquoise px-4 py-2 dark:border-gray0d">
+    <div className="rounded-lg border border-l-4 border-solid border-gray0 border-l-turquoise! px-4 py-2 dark:border-gray0d">
       <div className="flex w-full items-center justify-between">
         <div className="text-[13px] text-text2 dark:text-text2d">{title}</div>
         <div className="cursor-pointer text-[13px] text-turquoise" onClick={handleManage}>
@@ -562,10 +562,10 @@ export const PortfolioView = (): JSX.Element => {
           <RadioGroup options={options} activeIndex={activeIndex} onChange={setActiveIndex} />
         </div>
         <div className="flex flex-col items-center justify-center">
-          <Label className="!w-auto px-1 text-[9px] uppercase sm:text-[11px] lg:text-[13px]" color="input">
+          <Label className="w-auto! px-1 text-[9px] uppercase sm:text-[11px] lg:text-[13px]" color="input">
             {intl.formatMessage({ id: 'wallet.balance.total.portfolio' })}
           </Label>
-          <div className="mb-4 !text-[28px] text-text2 dark:text-text2d">
+          <div className="mb-4 text-[28px]! text-text2 dark:text-text2d">
             {isPrivate ? hiddenString : getCurrencyFormat(calculatedTotal)}
           </div>
         </div>

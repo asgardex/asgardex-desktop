@@ -214,7 +214,7 @@ export const ActivePools = (): JSX.Element => {
         accessorKey: 'poolPrice',
         header: intl.formatMessage({ id: 'common.price' }),
         cell: (row) => (
-          <Label className="!text-16" align="right" nowrap>
+          <Label className="text-16!" align="right" nowrap>
             {formatAssetAmountCurrency({
               amount: baseToAsset(row.getValue()),
               asset: pricePool.asset,
@@ -258,7 +258,7 @@ export const ActivePools = (): JSX.Element => {
               cell: ({ row }) => {
                 const { asset, volumeAmount, volumePrice } = row.original
                 return (
-                  <Label className="!text-16" align="right" nowrap>
+                  <Label className="text-16!" align="right" nowrap>
                     <div className="flex flex-col items-end justify-center font-main">
                       <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">
                         {formatAssetAmountCurrency({
@@ -299,7 +299,7 @@ export const ActivePools = (): JSX.Element => {
                 const { apy } = row.original
 
                 return (
-                  <Label className="!text-16" align="center" nowrap>
+                  <Label className="text-16!" align="center" nowrap>
                     {formatBN(bn(apy), 2)}%
                   </Label>
                 )

@@ -331,7 +331,7 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
               <CopyLabel
                 label={`${transaction.txHash.slice(0, 6)}...${transaction.txHash.slice(-4)}`}
                 textToCopy={transaction.txHash}
-                iconClassName="!w-4 !h-4"
+                iconClassName="w-4! h-4!"
               />
               {/* <span className="text-text1 dark:text-text1d font-mono text-xs break-all">{transaction.txHash}</span> */}
             </div>

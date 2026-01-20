@@ -81,7 +81,7 @@ export const TransactionSlideshow = ({
   }
 
   const currentTransaction = activeTransactions[currentIndex]
-  const protocolIcon = <ProviderIcon protocol={currentTransaction.protocol} className="!h-4 !w-4" />
+  const protocolIcon = <ProviderIcon protocol={currentTransaction.protocol} className="h-4! w-4!" />
 
   return (
     <div className={clsx('rounded-lg border border-gray1 bg-bg0 p-3 dark:border-gray0d dark:bg-bg1d', className)}>

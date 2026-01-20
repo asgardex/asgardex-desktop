@@ -85,7 +85,7 @@ export const PoolsPeriodSelector = ({
         </ListboxButton>
         <ListboxOptions
           className={clsx(
-            'absolute z-[2000] mt-[0px] max-h-60 w-full overflow-auto',
+            'absolute z-2000 mt-0 max-h-60 w-full overflow-auto',
             'border border-gray0 bg-bg0 focus:outline-none dark:border-gray0d dark:bg-bg0d'
           )}>
           {FP.pipe(

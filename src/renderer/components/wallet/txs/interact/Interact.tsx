@@ -123,7 +123,7 @@ export const Interact = ({ interactType, interactTypeChanged, network, walletTyp
             <MenuItems
               anchor="bottom start"
               className={clsx(
-                'absolute z-10 mt-1 w-[--button-width] min-w-[12rem] rounded-md shadow-lg',
+                'absolute z-10 mt-1 w-(--button-width) min-w-48 rounded-md shadow-lg',
                 'border border-gray0 dark:border-gray0d',
                 'bg-bg0 focus:outline-none dark:bg-bg0d'
               )}>
@@ -139,7 +139,7 @@ export const Interact = ({ interactType, interactTypeChanged, network, walletTyp
                           className={clsx(
                             'block w-full px-3 py-2 text-left text-sm',
                             focus ? 'bg-turquoise/10 text-turquoise' : 'text-text0 dark:text-text0d',
-                            isActive && 'font-bold !text-turquoise'
+                            isActive && 'font-bold text-turquoise!'
                           )}>
                           {label}
                         </button>

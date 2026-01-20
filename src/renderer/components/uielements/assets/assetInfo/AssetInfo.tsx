@@ -102,7 +102,7 @@ export const AssetInfo = (props: Props): JSX.Element => {
       </div>
       <div className="mt-4 flex flex-col items-center">
         {price && (
-          <Label className="!text-[24px]" align="center">
+          <Label className="text-[24px]!" align="center">
             {price}
           </Label>
         )}

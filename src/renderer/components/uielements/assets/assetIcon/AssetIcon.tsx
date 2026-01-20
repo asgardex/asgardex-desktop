@@ -343,7 +343,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
             <img
               src={overlayIconSrc}
               alt=""
-              className="absolute bottom-0 right-0 z-[2] rounded-full bg-white/50"
+              className="absolute bottom-0 right-0 z-2 rounded-full bg-white/50"
               style={{
                 width: `${overlaySize}px`,
                 height: `${overlaySize}px`

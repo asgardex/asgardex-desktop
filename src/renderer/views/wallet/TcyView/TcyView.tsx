@@ -911,7 +911,7 @@ export const TcyView = () => {
                   <div className="flex items-center justify-between rounded-lg border border-gray0 px-4 py-2 dark:border-gray0d">
                     <div className="flex flex-col">
                       <InputBigNumber
-                        className="w-full !px-0 leading-none text-text0 !opacity-100 dark:text-text0d"
+                        className="w-full px-0! leading-none text-text0 opacity-100! dark:text-text0d"
                         value={baseToAsset(_amountToSend).amount()}
                         size="xlarge"
                         ghost
@@ -961,7 +961,7 @@ export const TcyView = () => {
                       <CheckButton
                         size="medium"
                         color="neutral"
-                        className="rounded-lg bg-gray0 !px-2 py-1 dark:bg-gray0d"
+                        className="rounded-lg bg-gray0 px-2! py-1 dark:bg-gray0d"
                         checked={useLedger}
                         clickHandler={() => setUseLedger(!useLedger)}>
                         {intl.formatMessage({ id: 'ledger.title' })}
@@ -998,7 +998,7 @@ export const TcyView = () => {
                         ghost
                         onChange={onChangeInput}
                         // override text style of input for acting as label only
-                        className={clsx('w-full !px-0 leading-none text-text0 !opacity-100 dark:text-text0d')}
+                        className={clsx('w-full px-0! leading-none text-text0 opacity-100! dark:text-text0d')}
                       />
 
                       <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
@@ -1043,7 +1043,7 @@ export const TcyView = () => {
                       <CheckButton
                         size="medium"
                         color="neutral"
-                        className="rounded-lg bg-gray0 !px-2 py-1 dark:bg-gray0d"
+                        className="rounded-lg bg-gray0 px-2! py-1 dark:bg-gray0d"
                         checked={useLedger}
                         clickHandler={() => setUseLedger(!useLedger)}>
                         {intl.formatMessage({ id: 'ledger.title' })}
@@ -1084,7 +1084,7 @@ export const TcyView = () => {
 
             <div className="flex flex-col space-y-2 px-4">
               <div className="flex items-center space-x-2">
-                <Label className="!w-auto" color="gray" size="big">
+                <Label className="w-auto!" color="gray" size="big">
                   {intl.formatMessage({ id: 'tcy.stakedAmount' })}
                 </Label>
                 <Tooltip title={intl.formatMessage({ id: 'tcy.stakedAmountTooltip' })}>
@@ -1106,7 +1106,7 @@ export const TcyView = () => {
             <div className="mt-4 flex flex-col space-y-2 px-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Label className="!w-auto" color="gray" size="big">
+                  <Label className="w-auto!" color="gray" size="big">
                     {intl.formatMessage({ id: 'tcy.walletBalance' })}
                   </Label>
                   <Tooltip title={intl.formatMessage({ id: 'tcy.walletBalanceTooltip' })}>

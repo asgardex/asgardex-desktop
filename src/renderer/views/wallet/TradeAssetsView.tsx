@@ -317,7 +317,7 @@ export const TradeAssetsView = (): JSX.Element => {
     <>
       <div className="flex w-full justify-between pb-20px">
         <Button
-          className="rounded-lg bg-turquoise !p-2 hover:bg-turquoise/80"
+          className="rounded-lg bg-turquoise p-2! hover:bg-turquoise/80"
           onClick={() => setShowDepositModal(true)}
           disabled={disableRefresh}>
           <Label size="big" color="white">

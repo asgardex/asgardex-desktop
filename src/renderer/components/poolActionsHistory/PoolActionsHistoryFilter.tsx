@@ -29,7 +29,7 @@ export const PoolActionsHistoryFilter = ({ currentFilter, onFilterChanged, class
         <div className="flex h-8 w-8 items-center justify-center">
           <AllIcon />
         </div>
-        <Label className="ml-10px !w-auto" size="big" textTransform="uppercase">
+        <Label className="ml-10px w-auto!" size="big" textTransform="uppercase">
           {intl.formatMessage({ id: 'common.all' })}
         </Label>
       </div>
@@ -60,7 +60,7 @@ export const PoolActionsHistoryFilter = ({ currentFilter, onFilterChanged, class
             'flex cursor-pointer items-center justify-between rounded border border-solid border-turquoise px-2 py-1',
             className
           )}>
-          <Label className="!w-auto" color="primary" size="big">
+          <Label className="w-auto!" color="primary" size="big">
             {currentFilter === 'ALL' ? intl.formatMessage({ id: 'common.all' }) : getTxTypeI18n(currentFilter, intl)}
           </Label>
           <ChevronRightIcon className="ml-4 text-turquoise" width={16} height={16} />

@@ -2025,9 +2025,9 @@ export const SymDeposit = (props: Props) => {
             <div className="flex-col">
               {intl.formatMessage({ id: 'common.tx.type.deposit' })}
               <div className="items-left justify-left m-2 flex">
-                <AssetIcon className="flex-shrink-0" size="small" asset={params.asset} network={network} />
-                <AssetLabel className="mx-2 flex-shrink-0" asset={params.asset} />
-                <Label className="flex-shrink-0">
+                <AssetIcon className="shrink-0" size="small" asset={params.asset} network={network} />
+                <AssetLabel className="mx-2 shrink-0" asset={params.asset} />
+                <Label className="shrink-0">
                   {formatAssetAmountCurrency({
                     asset: params.asset,
                     amount: baseToAsset(params.amount),
@@ -2195,8 +2195,8 @@ export const SymDeposit = (props: Props) => {
                 <div className="w-60px h-60px">
                   <BaseButton
                     size="small"
-                    className="group rounded-full border border-solid border-turquoise bg-bg0 !p-10px hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
-                    <PlusIcon className="ease h-[40px] w-[40px] text-turquoise" />
+                    className="group rounded-full border border-solid border-turquoise bg-bg0 p-10px! hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
+                    <PlusIcon className="ease h-40px w-40px text-turquoise" />
                   </BaseButton>
                 </div>
               </div>
@@ -2218,10 +2218,10 @@ export const SymDeposit = (props: Props) => {
               <div className="flex w-full items-center justify-between font-mainBold">
                 <BaseButton
                   disabled={RD.isPending(depositFeesRD) || RD.isInitial(depositFeesRD)}
-                  className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                  className="group p-0! font-mainBold! text-gray2! dark:text-gray2d!"
                   onClick={reloadFeesHandler}>
                   {intl.formatMessage({ id: 'common.fees.estimated' })}
-                  <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                  <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
                 </BaseButton>
                 <div>{priceDepositFeesLabel}</div>
               </div>
@@ -2318,10 +2318,10 @@ export const SymDeposit = (props: Props) => {
                 <div className="w-full pt-10px text-[14px]">
                   <BaseButton
                     disabled={walletBalancesLoading}
-                    className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                    className="group p-0! font-mainBold! text-gray2! dark:text-gray2d!"
                     onClick={reloadBalances}>
                     {intl.formatMessage({ id: 'common.balances' })}
-                    <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
                   </BaseButton>
                 </div>
                 {/* rune sender balance */}

@@ -99,7 +99,7 @@ const EditableUrl = (props: Props): JSX.Element => {
     return (
       <div className="flex items-center">
         <TextButton
-          className={clsx('flex items-center !p-0 text-[16px]', loading ? 'cursor-not-allowed' : 'cursor-pointer')}
+          className={clsx('flex items-center p-0! text-[16px]', loading ? 'cursor-not-allowed' : 'cursor-pointer')}
           color="neutral"
           uppercase={false}
           disabled={loading || RD.isPending(testUrlState)}
@@ -107,7 +107,7 @@ const EditableUrl = (props: Props): JSX.Element => {
           loading={loading}
           onClick={edit}>
           {url}
-          <PencilSquareIcon className="dark:text0d ml-[5px] h-[20px] w-[20px] text-turquoise" />
+          <PencilSquareIcon className="dark:text0d ml-5px h-20px w-20px text-turquoise" />
         </TextButton>
         <BorderButton
           className="ml-10px"
@@ -169,8 +169,8 @@ const EditableUrl = (props: Props): JSX.Element => {
             <Input
               id="url"
               className={clsx(
-                'flex w-auto min-w-[300px] flex-grow text-[16px]',
-                RD.isSuccess(testUrlState) ? '!ring-turquoise' : ''
+                'flex w-auto min-w-[300px] grow text-[16px]',
+                RD.isSuccess(testUrlState) ? 'ring-turquoise!' : ''
               )}
               size="normal"
               defaultValue={name}
@@ -180,11 +180,11 @@ const EditableUrl = (props: Props): JSX.Element => {
               error={!!errors.url || RD.isFailure(testUrlState)}
               onKeyDown={keyDownHandler}
             />
-            <BaseButton className="!p-0 text-turquoise" onClick={handleSubmit(submit)} type="submit">
-              <CheckCircleIcon className="ml-[5px] h-[24px] w-[24px]" />
+            <BaseButton className="p-0! text-turquoise" onClick={handleSubmit(submit)} type="submit">
+              <CheckCircleIcon className="ml-5px h-[24px] w-[24px]" />
             </BaseButton>
-            <BaseButton className="!p-0 text-error0" onClick={cancel}>
-              <XCircleIcon className="ml-[5px] h-[24px] w-[24px]" />
+            <BaseButton className="p-0! text-error0" onClick={cancel}>
+              <XCircleIcon className="ml-5px h-[24px] w-[24px]" />
             </BaseButton>
             <BorderButton
               className="ml-10px"

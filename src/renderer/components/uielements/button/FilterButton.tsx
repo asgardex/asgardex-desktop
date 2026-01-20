@@ -13,7 +13,7 @@ export const FilterButton = ({ active = false, className, children, onClick }: F
     <Button
       className={clsx(
         // Base styles
-        'mr-[10px] h-8 min-w-0 rounded-2xl border px-3 text-11 uppercase last:mr-0',
+        'mr-10px h-8 min-w-0 rounded-2xl border px-3 text-11 uppercase last:mr-0',
         // Active state
         active === true
           ? 'border-turquoise bg-turquoise text-white hover:bg-turquoise/90'

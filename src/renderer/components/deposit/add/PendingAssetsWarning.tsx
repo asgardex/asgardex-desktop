@@ -32,7 +32,7 @@ const AssetIconAmount = (props: AssetIconAmountProps): JSX.Element => {
       <AssetIcon className="mr-5px" size="small" asset={asset} network={network} />
       <AssetLabel className="p-0" asset={asset} />
       <Label
-        className="!md:text-[24px] !md:leading-[24px] !w-auto p-0 font-mainBold !text-[17px] !leading-[17px]"
+        className="!md:text-[24px] !md:leading-[24px] w-auto! p-0 font-mainBold text-[17px]! leading-[17px]!"
         loading={loading}>
         {formatAssetAmount({
           amount: baseToAsset(amount1e8),
@@ -67,10 +67,10 @@ export const PendingAssetsWarning = (props: PendingAssetsProps): JSX.Element => 
       <TextButton
         size="normal"
         color="neutral"
-        className="mr-10px whitespace-nowrap pl-0 !font-mainBold uppercase"
+        className="mr-10px whitespace-nowrap pl-0 font-mainBold! uppercase"
         onClick={() => setCollapsed((v) => !v)}>
         {intl.formatMessage({ id: 'common.informationMore' })}
-        <ChevronRightIcon className={clsx('ease h-[20px] w-[20px] text-turquoise', { 'rotate-90': collapsed })} />
+        <ChevronRightIcon className={clsx('ease h-20px w-20px text-turquoise', { 'rotate-90': collapsed })} />
       </TextButton>
 
       {collapsed && (

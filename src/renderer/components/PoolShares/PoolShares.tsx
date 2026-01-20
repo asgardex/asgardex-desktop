@@ -51,7 +51,7 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
           return (
             <div className="flex items-center justify-between">
               <AssetData asset={asset} network={network} />
-              <Label className="hidden !w-auto rounded bg-turquoise px-1 lg:flex" color="white">
+              <Label className="hidden w-auto! rounded bg-turquoise px-1 lg:flex" color="white">
                 {type}
               </Label>
             </div>
@@ -161,8 +161,8 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
     return network !== Network.Testnet ? (
       <div className="mb-4 mt-2 flex w-full justify-end">
         <div className="rounded-lg bg-turquoise/20 px-2 py-1">
-          <Button className="w-full !justify-between !p-0" typevalue="transparent" onClick={openShareInfo}>
-            <Label className="!w-auto" size="big" textTransform="uppercase">
+          <Button className="w-full justify-between! p-0!" typevalue="transparent" onClick={openShareInfo}>
+            <Label className="w-auto!" size="big" textTransform="uppercase">
               {intl.formatMessage({ id: 'common.analytics' })}
             </Label>
             <ArrowUpIcon className="h-4 w-4 rotate-45 stroke-turquoise" />

@@ -27,7 +27,7 @@ export const RefreshButton = (props: Props): JSX.Element => {
 
   return (
     <TextButton
-      className={clsx('group !p-0', className)}
+      className={clsx('group p-0!', className)}
       size={size}
       color={color}
       onClick={onClick}

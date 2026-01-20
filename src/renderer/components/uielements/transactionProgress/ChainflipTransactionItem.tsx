@@ -281,7 +281,7 @@ export const ChainflipTransactionItem = ({
               textToCopy={transaction.depositChannelId}
               label={transaction.depositChannelId}
               className="ml-1 text-xs text-text1 dark:text-text1d"
-              iconClassName="!w-4 !h-4"
+              iconClassName="w-4! h-4!"
             />
           </div>
           {transaction.swapId && (
@@ -293,7 +293,7 @@ export const ChainflipTransactionItem = ({
                 textToCopy={transaction.swapId}
                 label={transaction.swapId}
                 className="ml-1 text-xs text-text1 dark:text-text1d"
-                iconClassName="!w-4 !h-4"
+                iconClassName="w-4! h-4!"
               />
             </div>
           )}
@@ -306,7 +306,7 @@ export const ChainflipTransactionItem = ({
                 textToCopy={transaction.stages.depositTxHash}
                 label={truncateMiddle(transaction.stages.depositTxHash, { start: 6, end: 4 })}
                 className="ml-1 text-xs text-text1 dark:text-text1d"
-                iconClassName="!w-4 !h-4"
+                iconClassName="w-4! h-4!"
               />
             </div>
           )}
@@ -319,7 +319,7 @@ export const ChainflipTransactionItem = ({
                 textToCopy={transaction.stages.egressTxHash}
                 label={truncateMiddle(transaction.stages.egressTxHash)}
                 className="ml-1 text-xs text-text1 dark:text-text1d"
-                iconClassName="!w-4 !h-4"
+                iconClassName="w-4! h-4!"
               />
             </div>
           )}

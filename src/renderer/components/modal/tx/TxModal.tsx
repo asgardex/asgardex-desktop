@@ -85,7 +85,7 @@ export const TxModal = (props: Props): JSX.Element => {
   }, [intl, onClose, onFinish, renderExtraResult, txRD])
 
   return (
-    <Modal panelClassName="!max-w-[420px]" visible title={title} onCancel={onClose}>
+    <Modal panelClassName="max-w-[420px]!" visible title={title} onCancel={onClose}>
       <div className="flex w-full flex-col items-center justify-center border-b border-gray0 pb-8 dark:border-gray0d">
         {renderTimer}
         {renderExtra}

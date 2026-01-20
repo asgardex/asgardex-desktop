@@ -27,7 +27,7 @@ export const ReloadButton = (props: Props): JSX.Element => {
 
   return (
     <FlatButton
-      className={clsx('group !pl-10px', className)}
+      className={clsx('group pl-10px!', className)}
       size={size}
       color={color}
       onClick={onClick}

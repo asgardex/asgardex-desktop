@@ -13,7 +13,7 @@ export const NoContentView = (): JSX.Element => {
 
   return (
     <div className="flex flex-col items-center space-y-2 rounded-lg bg-bg0 p-4 dark:bg-bg0d">
-      <Label className="!w-auto text-9xl">404</Label>
+      <Label className="w-auto! text-9xl">404</Label>
       <Button className="rounded-lg bg-turquoise px-4 py-2 text-white" onClick={clickHandler}>
         Back
       </Button>

@@ -55,7 +55,7 @@ export const TransactionTracker = ({
   const activeTransactions = transactions.filter((tx) => !tx.isComplete)
   const completedTransactions = transactions.filter((tx) => tx.isComplete)
 
-  const protocolIcon = <ProviderIcon protocol={protocol} className="!h-4 !w-4" />
+  const protocolIcon = <ProviderIcon protocol={protocol} className="h-4! w-4!" />
 
   const protocolLabel = protocol === 'Mayachain' ? 'Maya' : 'THORChain'
 
@@ -69,7 +69,7 @@ export const TransactionTracker = ({
             {protocolLabel} {intl.formatMessage({ id: 'common.transaction.tracking' })}
           </span>
           {activeTransactions.length > 0 && (
-            <span className="min-w-[1.25rem] rounded-full bg-turquoise px-1.5 py-0.5 text-center text-xs text-white">
+            <span className="min-w-5 rounded-full bg-turquoise px-1.5 py-0.5 text-center text-xs text-white">
               {activeTransactions.length}
             </span>
           )}

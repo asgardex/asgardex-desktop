@@ -56,7 +56,7 @@ export const EditableWalletName = ({
         className={clsx('flex items-center text-[18px]', loading ? 'cursor-not-allowed' : 'cursor-pointer')}
         onClick={edit}>
         {name}
-        <PencilSquareIcon className="dark:text0d ml-[5px] h-[20px] w-[20px] text-turquoise" />
+        <PencilSquareIcon className="dark:text0d ml-5px h-20px w-20px text-turquoise" />
       </TextButton>
     )
   }, [loading, name])
@@ -99,10 +99,10 @@ export const EditableWalletName = ({
               error={!!errors.name}
               onKeyDown={keyDownHandler}
             />
-            <BaseButton className="!p-0 text-turquoise" onClick={handleSubmit(submit)} type="submit">
-              <CheckCircleIcon className="ml-[5px] h-[24px] w-[24px]" />
+            <BaseButton className="p-0! text-turquoise" onClick={handleSubmit(submit)} type="submit">
+              <CheckCircleIcon className="ml-5px h-[24px] w-[24px]" />
             </BaseButton>
-            <XCircleIcon className="ml-[5px] h-[24px] w-[24px] cursor-pointer text-error0" onClick={cancel} />
+            <XCircleIcon className="ml-5px h-[24px] w-[24px] cursor-pointer text-error0" onClick={cancel} />
           </div>
           {errors.name && <p className="mt-10px font-main text-[14px] uppercase text-error0">{errors.name.message}</p>}
         </form>

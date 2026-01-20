@@ -61,7 +61,7 @@ export const CheckButton = (props: Props): JSX.Element => {
       size={size}
       onClick={onClickHandler}
       disabled={disabled}
-      className={clsx('w-min-auto !px-0', className)}>
+      className={clsx('w-min-auto px-0!', className)}>
       <div className="flex items-center justify-between">
         <div className={clsx(iconSize[size], 'mr-5px')}>
           {checked ? (
