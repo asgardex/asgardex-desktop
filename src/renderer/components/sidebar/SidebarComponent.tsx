@@ -193,7 +193,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
 
   const renderMainNav = useMemo(
     () => (
-      <div className="mx-4 mt-8 gap-1">
+      <div className="mx-4 mt-8 flex flex-col gap-1">
         {items.map(({ label, key, path, icon: Icon }) => {
           const selected = activeKey === key
           return (

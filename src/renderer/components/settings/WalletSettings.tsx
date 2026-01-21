@@ -381,7 +381,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
             <div className="flex w-full flex-col md:w-auto lg:flex-row">
               <div className="mr-30px flex items-center md:mr-0">
                 <Button
-                  className="p-0! cursor-pointer gap-x-1 text-[12px]"
+                  className="p-0! flex cursor-pointer gap-1 text-[12px]"
                   sizevalue="small"
                   loading={loading}
                   typevalue="transparent"
@@ -505,7 +505,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         const { address, chain } = walletAddress
         return (
           <>
-            <div className="flex w-full items-center gap-x-1">
+            <div className="flex w-full items-center gap-1">
               <AddressEllipsis
                 address={address}
                 chain={chain}
@@ -818,7 +818,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         <div className="mr-30px flex items-center md:mr-0">
           <Button
             typevalue="transparent"
-            className="cursor-pointer gap-x-1 pl-0 text-[12px]"
+            className="flex cursor-pointer gap-1 pl-0 text-[12px]"
             onClick={handleAddAddress}>
             <PlusCircleIcon className="text-turquoise" width={20} height={20} />
             {intl.formatMessage({ id: 'common.store' })}

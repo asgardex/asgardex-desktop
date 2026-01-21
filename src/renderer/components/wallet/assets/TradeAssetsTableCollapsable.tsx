@@ -785,7 +785,7 @@ export const TradeAssetsTableCollapsable = ({
   }, [tradeAccountBalances, renderGroupedBalances, intl, hidePrivateData, disableRefresh, network, refreshHandler])
 
   return (
-    <div className="mt-2 gap-2">
+    <div className="mt-2 flex flex-col gap-2">
       {renderContent()}
       {renderWithdrawConfirm}
       {renderPasswordConfirmationModal}

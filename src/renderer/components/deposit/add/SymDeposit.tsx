@@ -2144,11 +2144,10 @@ export const SymDeposit = (props: Props) => {
 
   return (
     <div className="flex min-h-full w-full flex-col items-center justify-between">
-      <div className="mb-4 flex w-full max-w-[500px] items-center justify-start">
-        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
-      </div>
-
       <div className="flex max-w-[500px] flex-col">
+        <div className="mb-4 flex w-full items-center justify-start">
+          <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
+        </div>
         {hasPendingAssets && <div className="w-full pb-20px">{renderPendingAssets}</div>}
         {hasAsymDeposits && <div className="w-full pb-20px">{renderAsymDepositWarning}</div>}
         {hasAssetMismatch && <div className="w-full pb-20px">{renderAssetMismatch}</div>}
@@ -2195,7 +2194,7 @@ export const SymDeposit = (props: Props) => {
                 <div className="w-60px h-60px">
                   <BaseButton
                     size="small"
-                    className="group rounded-full border border-solid border-turquoise bg-bg0 p-10px! hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
+                    className="p-10px! group rounded-full border border-solid border-turquoise bg-bg0 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
                     <PlusIcon className="ease h-40px w-40px text-turquoise" />
                   </BaseButton>
                 </div>
@@ -2218,7 +2217,7 @@ export const SymDeposit = (props: Props) => {
               <div className="flex w-full items-center justify-between font-mainBold">
                 <BaseButton
                   disabled={RD.isPending(depositFeesRD) || RD.isInitial(depositFeesRD)}
-                  className="group p-0! font-mainBold! text-gray2! dark:text-gray2d!"
+                  className="p-0! font-mainBold! text-gray2! dark:text-gray2d! group"
                   onClick={reloadFeesHandler}>
                   {intl.formatMessage({ id: 'common.fees.estimated' })}
                   <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
@@ -2318,7 +2317,7 @@ export const SymDeposit = (props: Props) => {
                 <div className="w-full pt-10px text-[14px]">
                   <BaseButton
                     disabled={walletBalancesLoading}
-                    className="group p-0! font-mainBold! text-gray2! dark:text-gray2d!"
+                    className="p-0! font-mainBold! text-gray2! dark:text-gray2d! group"
                     onClick={reloadBalances}>
                     {intl.formatMessage({ id: 'common.balances' })}
                     <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />

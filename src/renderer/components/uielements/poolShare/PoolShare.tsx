@@ -104,7 +104,7 @@ export const PoolShare = ({
   }, [depositUnits, dexAssetDecimal])
 
   return (
-    <div className="w-full gap-2 p-2" ref={ref}>
+    <div className="flex w-full flex-col gap-2 p-2" ref={ref}>
       <PoolShareCard title={intl.formatMessage({ id: 'deposit.share.title' })}>
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
           <div className="gap-2 rounded-lg bg-turquoise/20 p-2">

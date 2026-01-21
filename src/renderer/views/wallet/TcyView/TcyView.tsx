@@ -791,7 +791,7 @@ export const TcyView = () => {
 
       <AssetsNav />
 
-      <div className="relative grid grid-cols-8 gap-0 gap-2 rounded-b-lg bg-bg1 px-4 py-8 dark:bg-bg1d sm:gap-0 sm:gap-2 sm:px-8">
+      <div className="relative grid grid-cols-8 gap-0 rounded-b-lg bg-bg1 px-4 py-8 dark:bg-bg1d sm:gap-2 sm:px-8">
         <div className="col-span-8 md:col-span-5">
           <div className="flex w-full flex-col rounded-lg border border-solid border-gray0 py-4 dark:border-gray0d">
             <div className="mb-4 flex flex-row gap-4 border-b border-solid border-gray0 px-4 pb-4 dark:border-gray0d">

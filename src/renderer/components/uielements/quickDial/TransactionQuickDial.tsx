@@ -117,7 +117,7 @@ export const TransactionQuickDial = ({
 
           {/* Transaction List */}
           <div className="max-h-96 overflow-y-auto">
-            <div className="gap-2 p-3">
+            <div className="flex flex-col gap-2 p-3">
               <div className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">
                 {intl.formatMessage({ id: 'common.transaction.active' })} ({activeTransactions.length})
               </div>

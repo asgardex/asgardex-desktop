@@ -569,7 +569,7 @@ export const PortfolioView = (): JSX.Element => {
             {isPrivate ? hiddenString : getCurrencyFormat(calculatedTotal)}
           </div>
         </div>
-        <div className="mt-4 gap-2">
+        <div className="mt-4">
           {activeIndex === PortfolioTabKey.CardView && (
             <div className="grid grid-cols-3 gap-4">
               {cardItemInfo.map(({ title, value, route }) => (

@@ -746,7 +746,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )}
       </div>
 
-      <div className="gap-2">
+      <div className="flex flex-col gap-2">
         {chainBalances.map((chainBalance, index) => {
           const isOpen = openPanelKeys.includes(index)
 

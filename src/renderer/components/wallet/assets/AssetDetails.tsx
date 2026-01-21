@@ -187,7 +187,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
         />
 
         <div className="w-full">
-          <div className="flex flex-col items-center justify-center gap-0 gap-1 sm:flex-row sm:gap-0 sm:gap-2">
+          <div className="flex flex-col items-center justify-center gap-1 sm:flex-row sm:gap-2">
             <ActionIconButton
               icon={<ArrowUpOnSquareIcon className="h-6 w-6" />}
               text={intl.formatMessage({ id: 'wallet.action.send' })}

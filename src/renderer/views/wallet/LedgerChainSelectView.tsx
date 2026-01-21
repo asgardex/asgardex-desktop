@@ -228,7 +228,7 @@ export const LedgerChainSelectView: React.FC = () => {
               }
             />
 
-            <div className="gap-3 text-center">
+            <div className="flex flex-col gap-3 text-center">
               <p className="text-14 text-text2 dark:text-text2d">
                 {standaloneLedgerState.detectionProgress?.currentChain
                   ? intl.formatMessage(

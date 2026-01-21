@@ -222,7 +222,7 @@ export const SwapDetailsPanel = ({
       <div className="w-full pt-10px text-[14px]">
         <BaseButton
           disabled={walletBalancesLoading}
-          className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
+          className="p-0! font-mainBold! text-text2! dark:text-text2d! group"
           onClick={reloadBalances}>
           {intl.formatMessage({ id: 'common.balances' })}
           <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
@@ -300,7 +300,7 @@ export const SwapDetailsPanel = ({
 
   const rateSection = (
     <div className="flex w-full justify-between font-mainBold text-[14px]">
-      <BaseButton className="group p-0! font-mainBold! text-text2! dark:text-text2d!" onClick={onToggleRateDirection}>
+      <BaseButton className="p-0! font-mainBold! text-text2! dark:text-text2d! group" onClick={onToggleRateDirection}>
         {intl.formatMessage({ id: 'common.rate' })}
         <ArrowsRightLeftIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
       </BaseButton>
@@ -312,7 +312,7 @@ export const SwapDetailsPanel = ({
     <div className="flex w-full items-center justify-between font-mainBold">
       <BaseButton
         disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-        className="group p-0! font-mainBold! text-text2! dark:text-text2d!"
+        className="p-0! font-mainBold! text-text2! dark:text-text2d! group"
         onClick={onReloadFees}>
         {intl.formatMessage({ id: 'common.fees.estimated' })}
         <ArrowPathIcon className="ease ml-5px h-15px w-15px group-hover:rotate-180" />
@@ -324,7 +324,7 @@ export const SwapDetailsPanel = ({
   const unlockedContent = (
     <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
       <BaseButton
-        className="group flex w-full justify-between p-0! font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+        className="justify-between! p-0! group flex w-full font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
         onClick={onToggleDetails}>
         {intl.formatMessage({ id: 'common.details' })}
         {showDetails ? (
@@ -356,7 +356,7 @@ export const SwapDetailsPanel = ({
             </div>
             <div className="flex w-full justify-between pl-10px text-[12px] text-text2 dark:text-text2d">
               <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-              <div className={clsx({ 'font-bold text-turquoise!': priceAffiliateFeeLabel === 'free' })}>
+              <div className={clsx({ 'text-turquoise! font-bold': priceAffiliateFeeLabel === 'free' })}>
                 {priceAffiliateFeeLabel}
               </div>
             </div>
@@ -391,7 +391,7 @@ export const SwapDetailsPanel = ({
         </div>
         <div className="flex w-full justify-between pl-10px text-[12px]">
           <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-          <div className={clsx({ 'font-bold text-turquoise!': priceAffiliateFeeLabel === 'free' })}>
+          <div className={clsx({ 'text-turquoise! font-bold': priceAffiliateFeeLabel === 'free' })}>
             {priceAffiliateFeeLabel}
           </div>
         </div>

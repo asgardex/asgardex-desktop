@@ -2831,7 +2831,7 @@ export const Swap = ({
             </div>
           </div>
         </div>
-        <div className="mt-1 gap-1">
+        <div className="mt-1 flex flex-col gap-1">
           {isFetchingEstimate ? (
             <Spin
               className="min-h-24 rounded-lg border border-gray0 dark:border-gray0d"
@@ -3178,10 +3178,10 @@ export const Swap = ({
                   <div
                     className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                     key="edit-address">
-                    <div className="flex items-center">
-                      <h3 className="mb-0! mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                    <div className="flex items-center gap-1">
+                      <span className="m-0 font-main text-[14px] text-text2 dark:text-text2d">
                         {intl.formatMessage({ id: 'common.recipient' })}
-                      </h3>
+                      </span>
                       <WalletTypeLabel key="target-w-type">
                         {getWalletTypeLabel(oTargetWalletType, intl)}
                       </WalletTypeLabel>

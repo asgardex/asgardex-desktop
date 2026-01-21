@@ -78,7 +78,7 @@ export const TransactionTracker = ({
 
       {/* Active transactions */}
       {activeTransactions.length > 0 && (
-        <div className="gap-2 p-2">
+        <div className="flex flex-col gap-2 p-2">
           <div className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">
             {intl.formatMessage({ id: 'common.transaction.active' })}
           </div>
@@ -90,7 +90,7 @@ export const TransactionTracker = ({
 
       {/* Completed transactions */}
       {completedTransactions.length > 0 && (
-        <div className="gap-2 border-t border-gray1 p-2 dark:border-gray1d">
+        <div className="flex flex-col gap-2 border-t border-gray1 p-2 dark:border-gray1d">
           <div className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">
             {intl.formatMessage({ id: 'common.transaction.completed' })}
           </div>

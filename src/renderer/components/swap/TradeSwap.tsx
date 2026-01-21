@@ -1979,7 +1979,7 @@ export const TradeSwap = ({
             </div>
           </div>
         </div>
-        <div className="mt-1 gap-1">
+        <div className="mt-1 flex flex-col gap-1">
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">
@@ -2017,7 +2017,7 @@ export const TradeSwap = ({
             {!isLocked(keystore) ? (
               <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                 <BaseButton
-                  className="p-0! group flex w-full justify-between font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                  className="p-0! justify-between! group flex w-full font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
                   onClick={() => setShowDetails((current) => !current)}>
                   {intl.formatMessage({ id: 'common.details' })}
                   {showDetails ? (
@@ -2354,10 +2354,10 @@ export const TradeSwap = ({
                 <div
                   className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                   key="edit-address">
-                  <div className="flex items-center">
-                    <h3 className="mb-0! mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                  <div className="flex items-center gap-1">
+                    <span className="m-0 font-main text-[14px] text-text2 dark:text-text2d">
                       {intl.formatMessage({ id: 'common.recipient' })}
-                    </h3>
+                    </span>
                     <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>
                   </div>
                   <EditableAddress
