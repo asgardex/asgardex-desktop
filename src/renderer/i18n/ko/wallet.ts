@@ -1,6 +1,7 @@
 import { WalletMessages } from '../types'
 
 const wallet: WalletMessages = {
+  'wallet.vultisig': 'Vultisig',
   'wallet.name': '지갑 이름',
   'wallet.name.maxChars': '최대 {max}자',
   'wallet.name.error.empty': '지갑 이름을 입력해 주세요.',
@@ -117,7 +118,27 @@ const wallet: WalletMessages = {
   // TODO: Need Korean translation by native speaker
   'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
   'wallet.derivationPath.taproot': 'Taproot P2TR',
-  'wallet.ledger.fetchDescription': '하드웨어 지갑에서 주소 가져오기'
+  'wallet.ledger.fetchDescription': '하드웨어 지갑에서 주소 가져오기',
+  'wallet.vultisig.import': 'Vultisig Vault 가져오기',
+  'wallet.vultisig.import.description': '.vult 파일에서 기존 vault 가져오기',
+  'wallet.vultisig.import.password': 'Vault 비밀번호 입력',
+  'wallet.vultisig.import.password.title': 'Vault 비밀번호 필요',
+  'wallet.vultisig.import.password.description': '이 vault는 암호화되어 있습니다. 비밀번호를 입력해 주세요.',
+  'wallet.vultisig.import.success': 'Vault를 성공적으로 가져왔습니다',
+  'wallet.vultisig.import.error': 'Vault 가져오기 실패',
+  'wallet.vultisig.import.error.invalidPassword': '잘못된 비밀번호',
+  'wallet.vultisig.confirm.title': 'Confirm Transaction',
+  'wallet.vultisig.confirm.enterPassword': 'Enter vault password to continue',
+  'wallet.vultisig.confirm.scanQr': 'Scan with Vultisig app to approve',
+  'wallet.vultisig.confirm.devicesJoined': 'Devices joined: {joined}/{required}',
+  'wallet.vultisig.confirm.signing': 'Signing transaction...',
+  'wallet.vultisig.confirm.signingStep': 'Step {step} of {total}',
+  'wallet.vultisig.confirm.success': 'Transaction sent!',
+  'wallet.vultisig.confirm.failed': 'Transaction failed',
+  'wallet.vultisig.confirm.qrError': 'Failed to generate QR code',
+  'wallet.vultisig.confirm.waiting': 'Preparing signing session...',
+  'wallet.vultisig.confirm.cancel': 'Cancel',
+  'wallet.vultisig.confirm.timeout': 'Signing timed out. Please try again.'
 }
 
 export default wallet

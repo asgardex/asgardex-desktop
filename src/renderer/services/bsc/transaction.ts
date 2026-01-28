@@ -19,7 +19,7 @@ import {
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
 import { getBlocktime } from '../../../shared/evm/provider'
-import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
+import { isError, isEvmHDMode, isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { addressInBscWhitelist, getEVMAssetAddress, isEVMTokenAsset } from '../../helpers/assetHelper'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { LiveData } from '../../helpers/rx/liveData'
@@ -37,6 +37,7 @@ import {
   Client$,
   Client as BscClient
 } from '../evm/types'
+import { createVultisigEvmTx } from '../evm/vultisigTx'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
@@ -360,11 +361,15 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
   }
 
+  // Vultisig transaction handler - MPC signing for BSC/BEP20
+  const sendVultisigTx = createVultisigEvmTx(client$, 'BSC')
+
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
       network$,
       RxOp.switchMap((network) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
 
         return common.sendTx(params)
       })

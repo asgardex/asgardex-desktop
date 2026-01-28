@@ -10,7 +10,7 @@ import { THORCHAIN_DECIMAL } from '../../renderer/helpers/assetHelper'
 import { EvmHDMode } from '../evm/types'
 import { Locale } from '../i18n/types'
 import { EnabledChain } from '../utils/chain'
-import { HDMode, WalletAddress } from '../wallet/types'
+import { HDMode, WalletAddress, WalletType } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 
 export type Dex = {
@@ -49,6 +49,13 @@ export type UserTrustedAddressStorage = TrustedAddresses & StorageVersion
 export type UserAssetStorage = AddedAssets & StorageVersion
 export type UserNodesStorage = Readonly<Record<Network, Address[]> & StorageVersion>
 export type UserBondProvidersStorage = Readonly<Record<Network, Address[]> & StorageVersion>
+
+// Unified type for tracking which wallet was last opened
+// Uses WalletType enum for consistency (values match string literals for backwards compat)
+export type LastOpenedWallet =
+  | { type: WalletType.Keystore; id: number }
+  | { type: WalletType.Vultisig; vaultId: string }
+
 export type CommonStorage = Readonly<
   {
     locale: Locale
@@ -59,6 +66,8 @@ export type CommonStorage = Readonly<
     thornodeApi: ApiUrls
     mayanodeRpc: ApiUrls
     mayanodeApi: ApiUrls
+    // Last opened wallet (keystore or vultisig)
+    lastOpenedWallet?: LastOpenedWallet
   } & StorageVersion
 >
 
@@ -176,6 +185,13 @@ export type ApiHDWallet = {
   getLedgerAddresses: () => Promise<E.Either<Error, IPCLedgerAddressesIO>>
 }
 
+// Renderer to main process logging
+export type ApiLog = {
+  info: (prefix: string, ...args: unknown[]) => void
+  warn: (prefix: string, ...args: unknown[]) => void
+  error: (prefix: string, ...args: unknown[]) => void
+}
+
 declare global {
   interface Window {
     /**
@@ -194,5 +210,6 @@ declare global {
     apiAssetStorage: ApiFileStoreService<StoreFileData<'userAssets'>>
     apiPoolsStorage: ApiFileStoreService<StoreFileData<'pools'>>
     apiAppUpdate: ApiAppUpdate
+    apiLog: ApiLog
   }
 }

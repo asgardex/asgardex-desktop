@@ -23,14 +23,16 @@ import {
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { Controller, useForm } from 'react-hook-form'
 import { FormattedMessage, useIntl } from 'react-intl'
 
 import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
 import { isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
-import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
+import { isKeystoreWallet, isLedgerWallet, isVultisigWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
+import { useWalletContext } from '../../../../contexts/WalletContext'
 import { useXrpContext } from '../../../../contexts/XrpContext'
 import { isMayaAsset, isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
 import { getChainAsset, getChainFeeBounds } from '../../../../helpers/chainHelper'
@@ -63,8 +65,18 @@ import { TxParams } from '../../../../services/evm/types'
 import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/mayaMidgard/types'
 import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
-import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
-import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
+import {
+  isStandaloneVultisigMode,
+  SelectedWalletAsset,
+  ValidatePasswordHandler,
+  VaultType,
+  WalletBalance
+} from '../../../../services/wallet/types'
+import {
+  LedgerConfirmationModal,
+  VultisigConfirmationModal,
+  WalletPasswordConfirmationModal
+} from '../../../modal/confirmation'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
@@ -136,6 +148,18 @@ export const SendForm = (props: Props): JSX.Element => {
   } = props
 
   const intl = useIntl()
+
+  // Get wallet context for Vultisig vault type
+  const { appWalletService } = useWalletContext()
+  const appWalletState = useObservableState(appWalletService.appWalletState$, null)
+
+  // Get vault type for Vultisig wallets (defaults to 'fast' if not available)
+  const vaultType: VaultType = useMemo(() => {
+    if (appWalletState && isStandaloneVultisigMode(appWalletState) && appWalletState.activeVault) {
+      return appWalletState.activeVault.type
+    }
+    return 'fast'
+  }, [appWalletState])
 
   const { asset } = balance
 
@@ -1015,6 +1039,30 @@ export const SendForm = (props: Props): JSX.Element => {
     watch
   ])
 
+  // Password validation - uses appropriate method based on wallet type
+  const validatePasswordAsync = useCallback(
+    async (password: string): Promise<boolean> => {
+      // For Vultisig wallets, use appWalletService.unlock (validates Vultisig vault password)
+      if (isVultisigWallet(walletType)) {
+        return appWalletService.unlock(password)
+      }
+      // For Keystore wallets, use keystoreService.validatePassword$
+      return new Promise((resolve) => {
+        validatePassword$(password).subscribe({
+          next: (result) => {
+            if (RD.isSuccess(result)) {
+              resolve(true)
+            } else if (RD.isFailure(result)) {
+              resolve(false)
+            }
+          },
+          error: () => resolve(false)
+        })
+      })
+    },
+    [walletType, appWalletService, validatePassword$]
+  )
+
   // Confirmation modal
   const renderConfirmationModal = useMemo(() => {
     const onSuccessHandler = () => {
@@ -1047,6 +1095,30 @@ export const SendForm = (props: Props): JSX.Element => {
         />
       )
     }
+    if (isVultisigWallet(walletType)) {
+      // For SecureVault, don't close modal on success - let txState watcher handle it
+      // For FastVault, close immediately like Keystore
+      const onVultisigSuccess = () => {
+        if (vaultType === 'fast') {
+          setShowConfirmationModal(false)
+        }
+        // Start the transaction - for SecureVault, modal stays open for QR flow
+        poolDeposit ? submitDepositTx() : submitTx()
+      }
+
+      return (
+        <VultisigConfirmationModal
+          visible={showConfirmationModal}
+          network={network}
+          chain={asset.chain}
+          vaultType={vaultType}
+          onSuccess={onVultisigSuccess}
+          onClose={onCloseHandler}
+          validatePassword$={validatePasswordAsync}
+          txState={sendTxState.status}
+        />
+      )
+    }
     return null
   }, [
     walletType,
@@ -1054,12 +1126,15 @@ export const SendForm = (props: Props): JSX.Element => {
     submitDepositTx,
     submitTx,
     validatePassword$,
+    validatePasswordAsync,
     network,
     showConfirmationModal,
     asset.chain,
     intl,
     walletAddress,
-    watch
+    watch,
+    vaultType,
+    sendTxState.status
   ])
 
   // Transaction modal

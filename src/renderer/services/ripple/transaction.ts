@@ -7,7 +7,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { IPCLedgerSendTxParams, ipcLedgerSendTxParamsIO } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { isLedgerWallet } from '../../../shared/utils/guard'
+import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { TxHashLD, ErrorId } from '../wallet/types'
@@ -58,11 +58,20 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
   }
 
+  // Vultisig transaction handler
+  const sendVultisigTx = ({ params }: { network: Network; params: SendTxParams }): TxHashLD => {
+    if (!params.vaultId) {
+      return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig transaction requires vaultId' }))
+    }
+    return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig XRP transactions not yet implemented' }))
+  }
+
   const sendTx = (params: SendTxParams): TxHashLD =>
     FP.pipe(
       network$,
       RxOp.switchMap((network) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
 
         // Map our XRP-specific params to the standard TxParams for the common service
         const txParams = {

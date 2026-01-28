@@ -12,7 +12,7 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { isLedgerWallet } from '../../../shared/utils/guard'
+import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { retryRequest } from '../../helpers/rx/retryRequest'
 import { Network$ } from '../app/types'
@@ -182,11 +182,20 @@ export const createTransactionService = (
     )
   }
 
+  // Vultisig transaction handler
+  const sendVultisigTx = ({ params }: { network: Network; clientUrl: ClientUrl; params: SendTxParams }): TxHashLD => {
+    if (!params.vaultId) {
+      return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig transaction requires vaultId' }))
+    }
+    return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig THOR transactions not yet implemented' }))
+  }
+
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
       Rx.combineLatest([network$, clientUrl$]),
       RxOp.switchMap(([network, clientUrl]) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, clientUrl, params })
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, clientUrl, params })
 
         return common.sendTx(params)
       })

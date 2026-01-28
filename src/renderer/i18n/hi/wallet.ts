@@ -1,6 +1,7 @@
 import { WalletMessages } from '../types'
 
 const wallet: WalletMessages = {
+  'wallet.vultisig': 'Vultisig',
   'wallet.name': 'वॉलेट का नाम',
   'wallet.name.maxChars': 'अधिकतम {max} अक्षर',
   'wallet.name.error.empty': 'कृपया अपने वॉलेट के लिए एक नाम दर्ज करें',
@@ -118,7 +119,27 @@ const wallet: WalletMessages = {
   // TODO: Need Hindi translation by native speaker
   'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
   'wallet.derivationPath.taproot': 'Taproot P2TR',
-  'wallet.ledger.fetchDescription': 'अपने हार्डवेयर वॉलेट से पता प्राप्त करें'
+  'wallet.ledger.fetchDescription': 'अपने हार्डवेयर वॉलेट से पता प्राप्त करें',
+  'wallet.vultisig.import': 'Vultisig Vault आयात करें',
+  'wallet.vultisig.import.description': '.vult फ़ाइल से मौजूदा vault आयात करें',
+  'wallet.vultisig.import.password': 'Vault पासवर्ड दर्ज करें',
+  'wallet.vultisig.import.password.title': 'Vault पासवर्ड आवश्यक',
+  'wallet.vultisig.import.password.description': 'यह vault एन्क्रिप्टेड है। कृपया पासवर्ड दर्ज करें।',
+  'wallet.vultisig.import.success': 'Vault सफलतापूर्वक आयात किया गया',
+  'wallet.vultisig.import.error': 'Vault आयात करने में विफल',
+  'wallet.vultisig.import.error.invalidPassword': 'अमान्य पासवर्ड',
+  'wallet.vultisig.confirm.title': 'Confirm Transaction',
+  'wallet.vultisig.confirm.enterPassword': 'Enter vault password to continue',
+  'wallet.vultisig.confirm.scanQr': 'Scan with Vultisig app to approve',
+  'wallet.vultisig.confirm.devicesJoined': 'Devices joined: {joined}/{required}',
+  'wallet.vultisig.confirm.signing': 'Signing transaction...',
+  'wallet.vultisig.confirm.signingStep': 'Step {step} of {total}',
+  'wallet.vultisig.confirm.success': 'Transaction sent!',
+  'wallet.vultisig.confirm.failed': 'Transaction failed',
+  'wallet.vultisig.confirm.qrError': 'Failed to generate QR code',
+  'wallet.vultisig.confirm.waiting': 'Preparing signing session...',
+  'wallet.vultisig.confirm.cancel': 'Cancel',
+  'wallet.vultisig.confirm.timeout': 'Signing timed out. Please try again.'
 }
 
 export default wallet

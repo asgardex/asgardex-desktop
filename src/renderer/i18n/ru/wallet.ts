@@ -1,6 +1,7 @@
 import { WalletMessages } from '../types'
 
 const wallet: WalletMessages = {
+  'wallet.vultisig': 'Vultisig',
   'wallet.name': 'Название кошелька',
   'wallet.name.maxChars': 'Макс. {max} символов',
   'wallet.name.error.empty': 'Пожалуйста, введите название для вашего кошелька',
@@ -118,7 +119,27 @@ const wallet: WalletMessages = {
   // TODO: Need Russian translation by native speaker
   'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
   'wallet.derivationPath.taproot': 'Taproot P2TR',
-  'wallet.ledger.fetchDescription': 'Получить адрес с вашего аппаратного кошелька'
+  'wallet.ledger.fetchDescription': 'Получить адрес с вашего аппаратного кошелька',
+  'wallet.vultisig.import': 'Импорт Vultisig Vault',
+  'wallet.vultisig.import.description': 'Импортировать существующий vault из файла .vult',
+  'wallet.vultisig.import.password': 'Введите пароль vault',
+  'wallet.vultisig.import.password.title': 'Требуется пароль Vault',
+  'wallet.vultisig.import.password.description': 'Этот vault зашифрован. Пожалуйста, введите пароль.',
+  'wallet.vultisig.import.success': 'Vault успешно импортирован',
+  'wallet.vultisig.import.error': 'Не удалось импортировать vault',
+  'wallet.vultisig.import.error.invalidPassword': 'Неверный пароль',
+  'wallet.vultisig.confirm.title': 'Confirm Transaction',
+  'wallet.vultisig.confirm.enterPassword': 'Enter vault password to continue',
+  'wallet.vultisig.confirm.scanQr': 'Scan with Vultisig app to approve',
+  'wallet.vultisig.confirm.devicesJoined': 'Devices joined: {joined}/{required}',
+  'wallet.vultisig.confirm.signing': 'Signing transaction...',
+  'wallet.vultisig.confirm.signingStep': 'Step {step} of {total}',
+  'wallet.vultisig.confirm.success': 'Transaction sent!',
+  'wallet.vultisig.confirm.failed': 'Transaction failed',
+  'wallet.vultisig.confirm.qrError': 'Failed to generate QR code',
+  'wallet.vultisig.confirm.waiting': 'Preparing signing session...',
+  'wallet.vultisig.confirm.cancel': 'Cancel',
+  'wallet.vultisig.confirm.timeout': 'Signing timed out. Please try again.'
 }
 
 export default wallet

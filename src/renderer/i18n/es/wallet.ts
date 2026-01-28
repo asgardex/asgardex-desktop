@@ -1,6 +1,7 @@
 import { WalletMessages } from '../types'
 
 const wallet: WalletMessages = {
+  'wallet.vultisig': 'Vultisig',
   'wallet.name': 'Nombre de la cartera',
   'wallet.name.maxChars': 'Máx. {max} caracteres',
   'wallet.name.error.empty': 'Introduzca un nombre para su monedero',
@@ -117,7 +118,27 @@ const wallet: WalletMessages = {
   'wallet.evmToken.tooltip': '¿No encuentras tu token? Ve a configuración y añádelo manualmente a la lista blanca.',
   'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
   'wallet.derivationPath.taproot': 'Taproot P2TR',
-  'wallet.ledger.fetchDescription': 'Obtener dirección de tu billetera de hardware'
+  'wallet.ledger.fetchDescription': 'Obtener dirección de tu billetera de hardware',
+  'wallet.vultisig.import': 'Importar Vultisig Vault',
+  'wallet.vultisig.import.description': 'Importar un vault existente desde archivo .vult',
+  'wallet.vultisig.import.password': 'Ingrese la contraseña del vault',
+  'wallet.vultisig.import.password.title': 'Contraseña del Vault Requerida',
+  'wallet.vultisig.import.password.description': 'Este vault está encriptado. Por favor ingrese la contraseña.',
+  'wallet.vultisig.import.success': 'Vault importado exitosamente',
+  'wallet.vultisig.import.error': 'Error al importar el vault',
+  'wallet.vultisig.import.error.invalidPassword': 'Contraseña inválida',
+  'wallet.vultisig.confirm.title': 'Confirm Transaction',
+  'wallet.vultisig.confirm.enterPassword': 'Enter vault password to continue',
+  'wallet.vultisig.confirm.scanQr': 'Scan with Vultisig app to approve',
+  'wallet.vultisig.confirm.devicesJoined': 'Devices joined: {joined}/{required}',
+  'wallet.vultisig.confirm.signing': 'Signing transaction...',
+  'wallet.vultisig.confirm.signingStep': 'Step {step} of {total}',
+  'wallet.vultisig.confirm.success': 'Transaction sent!',
+  'wallet.vultisig.confirm.failed': 'Transaction failed',
+  'wallet.vultisig.confirm.qrError': 'Failed to generate QR code',
+  'wallet.vultisig.confirm.waiting': 'Preparing signing session...',
+  'wallet.vultisig.confirm.cancel': 'Cancel',
+  'wallet.vultisig.confirm.timeout': 'Signing timed out. Please try again.'
 }
 
 export default wallet

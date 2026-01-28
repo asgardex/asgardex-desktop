@@ -20,7 +20,7 @@ import {
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
 import { getBlocktime } from '../../../shared/evm/provider'
-import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
+import { isError, isEvmHDMode, isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { addressInERC20Whitelist, getEVMAssetAddress, isEVMTokenAsset } from '../../helpers/assetHelper'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { LiveData } from '../../helpers/rx/liveData'
@@ -38,6 +38,7 @@ import {
   Client$,
   Client as EthClient
 } from '../evm/types'
+import { createVultisigEvmTx } from '../evm/vultisigTx'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
@@ -362,12 +363,24 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
   }
 
+  // Vultisig transaction handler - MPC signing for ETH/ERC20
+  const sendVultisigTx = createVultisigEvmTx(client$, 'ETH')
+
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
       network$,
       RxOp.switchMap((network) => {
-        if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
+        window.apiLog.info('[ETH Tx]', 'sendTx called', { walletType: params.walletType, sender: params.sender })
+        if (isLedgerWallet(params.walletType)) {
+          window.apiLog.info('[ETH Tx]', 'routing to Ledger')
+          return sendLedgerTx({ network, params })
+        }
+        if (isVultisigWallet(params.walletType)) {
+          window.apiLog.info('[ETH Tx]', 'routing to Vultisig')
+          return sendVultisigTx({ network, params })
+        }
 
+        window.apiLog.info('[ETH Tx]', 'routing to Keystore')
         return common.sendTx(params)
       })
     )

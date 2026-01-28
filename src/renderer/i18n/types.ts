@@ -305,6 +305,7 @@ type PoolsMessageKey =
 export type PoolsMessages = { [key in PoolsMessageKey]: string }
 
 type WalletMessageKey =
+  | 'wallet.vultisig'
   | 'wallet.name'
   | 'wallet.name.maxChars'
   | 'wallet.name.error.empty'
@@ -417,6 +418,26 @@ type WalletMessageKey =
   | 'wallet.derivationPath.nativeSegwit'
   | 'wallet.derivationPath.taproot'
   | 'wallet.ledger.fetchDescription'
+  | 'wallet.vultisig.import'
+  | 'wallet.vultisig.import.description'
+  | 'wallet.vultisig.import.password'
+  | 'wallet.vultisig.import.password.title'
+  | 'wallet.vultisig.import.password.description'
+  | 'wallet.vultisig.import.success'
+  | 'wallet.vultisig.import.error'
+  | 'wallet.vultisig.import.error.invalidPassword'
+  | 'wallet.vultisig.confirm.title'
+  | 'wallet.vultisig.confirm.enterPassword'
+  | 'wallet.vultisig.confirm.scanQr'
+  | 'wallet.vultisig.confirm.devicesJoined'
+  | 'wallet.vultisig.confirm.signing'
+  | 'wallet.vultisig.confirm.signingStep'
+  | 'wallet.vultisig.confirm.success'
+  | 'wallet.vultisig.confirm.failed'
+  | 'wallet.vultisig.confirm.qrError'
+  | 'wallet.vultisig.confirm.waiting'
+  | 'wallet.vultisig.confirm.cancel'
+  | 'wallet.vultisig.confirm.timeout'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }
 

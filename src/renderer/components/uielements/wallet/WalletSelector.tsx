@@ -4,11 +4,21 @@ import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { KeystoreId } from '../../../../shared/api/types'
-import { KeystoreWalletsUI } from '../../../services/wallet/types'
+import { WalletType } from '../../../../shared/wallet/types'
+import { KeystoreWalletsUI, VultisigVaultInfo } from '../../../services/wallet/types'
+
+// Local type for dropdown items - includes `selected` state for UI
+// Note: Different from centralized `Wallet` type which has no `selected` property
+type WalletSelectorItem =
+  | { type: WalletType.Keystore; id: KeystoreId; name: string; selected: boolean }
+  | { type: WalletType.Vultisig; id: string; name: string; selected: boolean }
 
 export type Props = {
   wallets: KeystoreWalletsUI
+  vultisigVaults?: VultisigVaultInfo[]
+  activeVultisigVaultId?: string | null
   onChange: (id: KeystoreId) => void
+  onVultisigSelect?: (vaultId: string) => void
   className?: string
   buttonClassName?: string
   disabled?: boolean
@@ -16,30 +26,52 @@ export type Props = {
 
 export const WalletSelector = ({
   wallets,
+  vultisigVaults = [],
+  activeVultisigVaultId,
   onChange,
+  onVultisigSelect,
   disabled = false,
   className = '',
   buttonClassName = ''
 }: Props): JSX.Element => {
+  // Combine keystore wallets and Vultisig vaults into unified list
+  const allWallets: WalletSelectorItem[] = [
+    ...wallets.map(({ id, name, selected }) => ({
+      type: WalletType.Keystore as const,
+      id,
+      name,
+      selected: activeVultisigVaultId ? false : selected // Deselect keystore if Vultisig is active
+    })),
+    ...vultisigVaults.map((v) => ({
+      type: WalletType.Vultisig as const,
+      id: v.id,
+      name: v.name,
+      selected: v.id === activeVultisigVaultId
+    }))
+  ]
+
   const oSelectedWallet = FP.pipe(
-    wallets,
+    allWallets,
     // get selected wallet
     A.findFirst(({ selected }) => selected),
     // use first if no wallet is selected
-    O.alt(() => A.head(wallets))
+    O.alt(() => A.head(allWallets))
   )
+
+  const handleChange = (wallet: WalletSelectorItem) => {
+    if (wallet.type === WalletType.Keystore) {
+      onChange(wallet.id)
+    } else if (onVultisigSelect) {
+      onVultisigSelect(wallet.id)
+    }
+  }
 
   return FP.pipe(
     oSelectedWallet,
     O.fold(
       () => <>No wallets</>,
       (selectedWallet) => (
-        <Listbox
-          value={selectedWallet}
-          disabled={disabled}
-          onChange={({ id }) => {
-            onChange(id)
-          }}>
+        <Listbox value={selectedWallet} disabled={disabled} onChange={handleChange}>
           <div className={clsx('relative', className)}>
             <ListboxButton
               as="div"
@@ -54,7 +86,12 @@ export const WalletSelector = ({
               )}>
               {({ open }) => (
                 <>
-                  <span className="w-full">{selectedWallet.name}</span>
+                  <span className="flex w-full items-center">
+                    {selectedWallet.name}
+                    {selectedWallet.type === WalletType.Vultisig && (
+                      <span className="text-10 ml-1 text-turquoise">(V)</span>
+                    )}
+                  </span>
                   <ChevronDownIcon
                     className={clsx('ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })}
                   />
@@ -67,12 +104,12 @@ export const WalletSelector = ({
                 'border border-gray0 bg-bg0 focus:outline-none dark:border-gray0d dark:bg-bg0d'
               )}>
               {FP.pipe(
-                wallets,
+                allWallets,
                 A.map((wallet) => {
-                  const selected = wallet.id === selectedWallet.id
+                  const isSelected = wallet.type === selectedWallet.type && wallet.id === selectedWallet.id
                   return (
                     <ListboxOption
-                      disabled={wallet.id === selectedWallet.id}
+                      disabled={isSelected}
                       className={({ selected }) =>
                         clsx(
                           'flex w-full select-none items-center justify-between',
@@ -82,10 +119,15 @@ export const WalletSelector = ({
                           selected ? '' : 'hover:bg-gray0 hover:text-text2 hover:dark:bg-gray0d hover:dark:text-text2d'
                         )
                       }
-                      key={wallet.id}
+                      key={`${wallet.type}-${wallet.id}`}
                       value={wallet}>
-                      {wallet.name}
-                      {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
+                      <span className="flex items-center">
+                        {wallet.name}
+                        {wallet.type === WalletType.Vultisig && (
+                          <span className="text-10 ml-1 text-turquoise">(V)</span>
+                        )}
+                      </span>
+                      {isSelected && <CheckIcon className="h-20px w-20px text-turquoise" />}
                     </ListboxOption>
                   )
                 })

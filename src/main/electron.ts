@@ -29,6 +29,7 @@ import {
   saveAddresses as saveLedgerAddresses
 } from './api/ledger'
 import { approveLedgerERC20Token } from './api/ledger/evm/approve'
+import { registerMpcIpcHandlers } from './api/mpc'
 import { openExternal } from './api/url'
 import IPCMessages from './ipc/messages'
 import { setMenu } from './menu'
@@ -164,6 +165,12 @@ const langChangeHandler = (locale: Locale) => {
 }
 
 const initIPC = () => {
+  // Renderer logging - routes console.log from renderer to main process log
+  ipcMain.on(IPCMessages.RENDERER_LOG, (_, level: string, prefix: string, ...args: unknown[]) => {
+    const message = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
+    const logFn = level === 'error' ? log.error : level === 'warn' ? log.warn : log.info
+    logFn(`[R] ${prefix} ${message}`)
+  })
   // Lang
   ipcMain.on(IPCMessages.UPDATE_LANG, (_, locale: Locale) => langChangeHandler(locale))
   // Keystore
@@ -218,6 +225,8 @@ const initIPC = () => {
   Object.entries(DEFAULT_STORAGES).forEach(([name, defaultValue]) => {
     getFileStoreService(name as StoreFileName, defaultValue).registerIpcHandlersMain()
   })
+  // MPC (Vultisig)
+  registerMpcIpcHandlers(ipcMain)
 }
 
 const init = async () => {

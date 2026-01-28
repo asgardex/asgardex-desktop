@@ -5,8 +5,8 @@ import { useObservableState } from 'observable-hooks'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { useWalletContext } from '../../contexts/WalletContext'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
-import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useMayaPrice } from '../../hooks/useMayaPrice'
 import { useNetwork } from '../../hooks/useNetwork'
@@ -20,8 +20,19 @@ import { SelectedPricePoolAsset } from '../../services/midgard/midgardTypes'
 import { HeaderComponent } from './HeaderComponent'
 
 export const Header = (): JSX.Element => {
-  const { lock, state: keystoreState, change$: changeWalletHandler$ } = useKeystoreState()
-  const { walletsUI } = useKeystoreWallets()
+  const { state: keystoreState } = useKeystoreState()
+  const { appWalletService } = useWalletContext()
+
+  // Use unified lock from appWalletService (routes to correct wallet type)
+  const lock = appWalletService.lock
+
+  // Subscribe to unified isLocked$ observable
+  const isLocked = useObservableState(appWalletService.isLocked$, true)
+
+  // Phase D: Subscribe to unified wallet observables
+  const allWallets = useObservableState(appWalletService.allWallets$, [])
+  const activeWallet = useObservableState(appWalletService.activeWallet$, O.none)
+
   const { mimir$ } = useThorchainContext()
   const mimir = useObservableState(mimir$, RD.initial)
   const { service: midgardService } = useMidgardContext()
@@ -58,9 +69,13 @@ export const Header = (): JSX.Element => {
     <HeaderComponent
       network={network}
       keystore={keystoreState}
-      wallets={walletsUI}
       lockHandler={lock}
-      changeWalletHandler$={changeWalletHandler$}
+      isLocked={isLocked}
+      // Phase D: Unified wallet props
+      allWallets={allWallets}
+      activeWallet={activeWallet}
+      selectWallet={appWalletService.selectWallet}
+      vaultManager={appWalletService.vaultManager}
       pricePools={pricePools}
       setSelectedPricePool={setSelectedPricePool}
       runePrice={runePriceRD}

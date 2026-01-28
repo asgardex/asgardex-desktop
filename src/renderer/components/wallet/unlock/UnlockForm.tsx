@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { CpuChipIcon } from '@heroicons/react/24/outline'
+import { CpuChipIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
@@ -20,7 +20,8 @@ import {
   ChangeKeystoreWalletRD,
   KeystoreState,
   KeystoreWalletsUI,
-  RemoveKeystoreWalletHandler
+  RemoveKeystoreWalletHandler,
+  VultisigVaultInfo
 } from '../../../services/wallet/types'
 import { isLocked, getWalletName } from '../../../services/wallet/util'
 import { RemoveWalletConfirmationModal } from '../../modal/confirmation/RemoveWalletConfirmationModal'
@@ -38,9 +39,28 @@ export type Props = {
   removeKeystore: RemoveKeystoreWalletHandler
   changeKeystore$: ChangeKeystoreWalletHandler
   wallets: KeystoreWalletsUI
+  vultisigVaults?: VultisigVaultInfo[]
+  activeVultisigVaultId?: string | null
+  onVultisigSelect?: (vaultId: string) => void
+  // Vultisig unlock props
+  isVultisigLocked?: boolean
+  onVultisigUnlock?: (password: string) => Promise<void>
+  vultisigError?: string
 }
 
-export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, wallets }: Props) => {
+export const UnlockForm = ({
+  keystore,
+  unlock,
+  removeKeystore,
+  changeKeystore$,
+  wallets,
+  vultisigVaults = [],
+  activeVultisigVaultId,
+  onVultisigSelect,
+  isVultisigLocked = false,
+  onVultisigUnlock,
+  vultisigError
+}: Props) => {
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -81,14 +101,25 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
     async ({ password }: FormData) => {
       setUnlockError(O.none)
       setUnlocking(true)
-      await unlock(password).catch((error) => {
-        setUnlockError(O.some(error))
+
+      try {
+        // Handle Vultisig vault unlock
+        if (isVultisigLocked && onVultisigUnlock) {
+          await onVultisigUnlock(password)
+          setValidPassword(true)
+        } else {
+          // Handle keystore unlock
+          await unlock(password)
+          setValidPassword(true)
+        }
+      } catch (error) {
+        setUnlockError(O.some(error as Error))
         setValidPassword(false)
-      })
+      }
+
       setUnlocking(false)
-      setValidPassword(true)
     },
-    [unlock]
+    [unlock, isVultisigLocked, onVultisigUnlock]
   )
 
   const showRemoveConfirm = useCallback(() => {
@@ -102,14 +133,18 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
   const renderUnlockError = useMemo(
     () =>
       O.fold(
-        () => <></>,
+        () =>
+          // Also show Vultisig error if present
+          vultisigError ? <p className="mt-2 font-main text-sm uppercase text-error0">{vultisigError}</p> : <></>,
         (_: Error) => (
           <p className="mt-2 font-main text-sm uppercase text-error0">
-            {intl.formatMessage({ id: 'wallet.unlock.error' })}
+            {isVultisigLocked
+              ? intl.formatMessage({ id: 'wallet.unlock.error' })
+              : intl.formatMessage({ id: 'wallet.unlock.error' })}
           </p>
         )
       )(unlockError),
-    [unlockError, intl]
+    [unlockError, intl, vultisigError, isVultisigLocked]
   )
 
   const removeConfirmed = useCallback(async () => {
@@ -159,6 +194,14 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
     navigate(walletRoutes.ledgerChainSelect.path())
   }, [navigate])
 
+  const useVultisigOnlyHandler = useCallback(() => {
+    navigate(walletRoutes.vultisigCreate.path())
+  }, [navigate])
+
+  const useVultisigSecureHandler = useCallback(() => {
+    navigate(walletRoutes.vultisigSecureCreate.path())
+  }, [navigate])
+
   const renderChangeWalletError = useMemo(
     () =>
       FP.pipe(
@@ -202,7 +245,10 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
 
             <WalletSelector
               wallets={wallets}
+              vultisigVaults={vultisigVaults}
+              activeVultisigVaultId={activeVultisigVaultId}
               onChange={changeWalletHandler}
+              onVultisigSelect={onVultisigSelect}
               disabled={RD.isPending(changeWalletState)}
               className="mb-2 min-w-[200px] rounded-lg"
               buttonClassName="!shadow-none !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
@@ -228,14 +274,17 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
               loading={unlocking}>
               {intl.formatMessage({ id: 'wallet.action.unlock' })}
             </FlatButton>
-            <BorderButton
-              className="w-full min-w-[200px] sm:mb-0"
-              size="normal"
-              color="error"
-              onClick={showRemoveConfirm}
-              disabled={unlocking}>
-              {intl.formatMessage({ id: 'wallet.remove.label' })}
-            </BorderButton>
+            {/* Only show remove button for keystore, not Vultisig */}
+            {!isVultisigLocked && (
+              <BorderButton
+                className="w-full min-w-[200px] sm:mb-0"
+                size="normal"
+                color="error"
+                onClick={showRemoveConfirm}
+                disabled={unlocking}>
+                {intl.formatMessage({ id: 'wallet.remove.label' })}
+              </BorderButton>
+            )}
             <div className="flex w-full flex-col items-center border-t border-solid border-gray1 dark:border-gray0d">
               <div className="flex w-full flex-col justify-between space-y-3 pt-4">
                 <BorderButton
@@ -246,6 +295,24 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
                   disabled={unlocking}>
                   <CpuChipIcon width={16} height={16} />
                   Use Only Ledger
+                </BorderButton>
+                <BorderButton
+                  className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                  size="normal"
+                  color="primary"
+                  onClick={useVultisigOnlyHandler}
+                  disabled={unlocking}>
+                  <ShieldCheckIcon width={16} height={16} />
+                  Use Only Vultisig
+                </BorderButton>
+                <BorderButton
+                  className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                  size="normal"
+                  color="primary"
+                  onClick={useVultisigSecureHandler}
+                  disabled={unlocking}>
+                  <ShieldCheckIcon className="text-turquoise" width={16} height={16} />
+                  Secure Vault (2-of-2)
                 </BorderButton>
                 {/* TODO: update locale */}
                 <h2 className="mb-2 w-full text-11 text-text2 dark:text-text2d">Don&apos;t you have a wallet yet?</h2>

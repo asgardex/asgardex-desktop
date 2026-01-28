@@ -31,6 +31,8 @@ import { SendView } from './wallet/send'
 import { TcyView } from './wallet/TcyView'
 import { TradeAssetsView } from './wallet/TradeAssetsView'
 import { UnlockView } from './wallet/UnlockView'
+import { SecureVaultCreateView } from './wallet/vultisig/SecureVaultCreateView'
+import { VaultCreateView } from './wallet/vultisig/VaultCreateView'
 import { WalletAuth } from './wallet/WalletAuth'
 
 export const ViewRoutes = (): JSX.Element => {
@@ -75,6 +77,8 @@ export const ViewRoutes = (): JSX.Element => {
       <Route path={walletRoutes.noWallet.template} element={<NoWalletView />} />
       <Route path={historyRoutes.base.template} element={<HistoryView />} />
       <Route path={walletRoutes.ledgerChainSelect.template} element={<LedgerChainSelectView />} />
+      <Route path={walletRoutes.vultisigCreate.template} element={<VaultCreateView />} />
+      <Route path={walletRoutes.vultisigSecureCreate.template} element={<SecureVaultCreateView />} />
       <Route path={`${walletRoutes.create.base.template}/*`} element={<CreateView />} />
       <Route path={walletRoutes.locked.template} element={<UnlockView />} />
       <Route path={walletRoutes.imports.keystore.template} element={<ImportKeystoreView />} />

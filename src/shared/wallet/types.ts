@@ -5,7 +5,8 @@ import { UtxoHDMode } from '../utxo/types'
 
 export enum WalletType {
   Keystore = 'keystore',
-  Ledger = 'ledger'
+  Ledger = 'ledger',
+  Vultisig = 'vultisig'
 }
 
 export type WalletBalanceType = 'all' | 'confirmed'

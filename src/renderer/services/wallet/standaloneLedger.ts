@@ -82,7 +82,7 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
     const chainToDetect = currentState.selectedChainForDetection
 
     if (!chainToDetect) {
-      console.warn('No chain selected for detection')
+      window.apiLog.warn('[Ledger]', 'No chain selected for detection')
       return undefined
     }
 
@@ -333,7 +333,7 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
     const currentState = standaloneLedgerState()
 
     if (!currentState.selectedChainForDetection) {
-      console.warn('Cannot start detection: no chain selected')
+      window.apiLog.warn('[Ledger]', 'Cannot start detection: no chain selected')
       return undefined
     }
 

@@ -33,9 +33,10 @@ export const isNetwork = (u: unknown): u is Network =>
 export const isFeeOption = (u: unknown): u is FeeOption =>
   u === FeeOption.Average || u === FeeOption.Fast || u === FeeOption.Fastest
 
-export const isWalletType = (u: unknown): u is WalletType => u === 'keystore' || u === 'ledger'
+export const isWalletType = (u: unknown): u is WalletType => u === 'keystore' || u === 'ledger' || u === 'vultisig'
 export const isLedgerWallet = (walletType: WalletType): boolean => walletType === WalletType.Ledger
 export const isKeystoreWallet = (walletType: WalletType): boolean => walletType === WalletType.Keystore
+export const isVultisigWallet = (walletType: WalletType): boolean => walletType === WalletType.Vultisig
 
 export const isEvmHDMode = (u: unknown): u is EvmHDMode => u === 'legacy' || u === 'ledgerlive' || u === 'metamask'
 

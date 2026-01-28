@@ -5,7 +5,7 @@ import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/ty
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { appWalletService } from '../wallet/appWallet'
-import { isStandaloneLedgerMode } from '../wallet/types'
+import { isStandaloneLedgerMode, isStandaloneVultisigMode } from '../wallet/types'
 import { client$, readOnlyClient$ } from './common'
 
 /**
@@ -17,8 +17,8 @@ const { get$: reloadBalances$, set: setReloadBalances } = observableState<boolea
 const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observableState<boolean>(false)
 
 /**
- * Enhanced client that falls back to read-only client for standalone ledger mode
- * When keystore is locked but we're in standalone ledger mode, use read-only client for balance queries
+ * Enhanced client that falls back to read-only client for standalone ledger/vultisig modes
+ * When keystore is locked but we're in standalone mode, use read-only client for balance queries
  */
 const enhancedClient$ = Rx.combineLatest([client$, readOnlyClient$, appWalletService.appWalletState$]).pipe(
   RxOp.map(([keystoreClient, readOnlyClient, appWalletState]) => {
@@ -27,8 +27,13 @@ const enhancedClient$ = Rx.combineLatest([client$, readOnlyClient$, appWalletSer
       return keystoreClient
     }
 
-    // If keystore is locked but we're in standalone ledger mode, use read-only client
-    if (appWalletState && isStandaloneLedgerMode(appWalletState) && O.isSome(readOnlyClient)) {
+    // If keystore is locked but we're in standalone ledger/vultisig mode, use read-only client
+    // NOTE: This is a band-aid fix - proper solution is Phase 8 unified balance architecture
+    if (
+      appWalletState &&
+      (isStandaloneLedgerMode(appWalletState) || isStandaloneVultisigMode(appWalletState)) &&
+      O.isSome(readOnlyClient)
+    ) {
       return readOnlyClient
     }
 

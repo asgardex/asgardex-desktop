@@ -14,24 +14,27 @@ import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { appWalletService } from '../wallet/appWallet'
-import { isStandaloneLedgerMode } from '../wallet/types'
+import { isStandaloneLedgerMode, isStandaloneVultisigMode } from '../wallet/types'
 import { client$, readOnlyClient$ } from './common'
 
 /**
- * Enhanced client that switches between keystore and read-only client for standalone ledger mode
+ * Enhanced client that switches between keystore and read-only client for standalone ledger/vultisig modes
  */
 const enhancedClient$ = FP.pipe(
   Rx.combineLatest([client$, readOnlyClient$, appWalletService.appWalletState$]),
   RxOp.map(([keystoreClient, readOnlyClient, appWalletState]) => {
-    const isStandalone = appWalletState && isStandaloneLedgerMode(appWalletState)
-
     // If keystore client is available, use it
     if (O.isSome(keystoreClient)) {
       return keystoreClient
     }
 
-    // If keystore is locked but we're in standalone ledger mode, use read-only client
-    if (isStandalone && O.isSome(readOnlyClient)) {
+    // If keystore is locked but we're in standalone ledger/vultisig mode, use read-only client
+    // NOTE: This is a band-aid fix - proper solution is Phase 8 unified balance architecture
+    if (
+      appWalletState &&
+      (isStandaloneLedgerMode(appWalletState) || isStandaloneVultisigMode(appWalletState)) &&
+      O.isSome(readOnlyClient)
+    ) {
       return readOnlyClient
     }
 

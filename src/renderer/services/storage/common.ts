@@ -2,7 +2,7 @@ import equal from 'fast-deep-equal'
 import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RxOp from 'rxjs/operators'
-import { CommonStorage } from '../../../shared/api/types'
+import { CommonStorage, LastOpenedWallet } from '../../../shared/api/types'
 import { DEFAULT_EVM_HD_MODE } from '../../../shared/evm/types'
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
@@ -75,6 +75,14 @@ const mayanodeRpc$ = pipe(
   RxOp.distinctUntilChanged(equal)
 )
 
+// Last opened wallet (keystore or vultisig) for restoring on app startup
+const lastOpenedWallet$ = pipe(
+  getStorageState$,
+  RxOp.map(O.map(({ lastOpenedWallet }) => lastOpenedWallet)),
+  RxOp.map(O.getOrElse<LastOpenedWallet | undefined>(() => undefined)),
+  RxOp.distinctUntilChanged(equal)
+)
+
 // Update function
 const modifyStorage = (oPartialData: StoragePartialState<CommonStorage>) => {
   pipe(
@@ -102,5 +110,6 @@ export {
   thornodeApi$,
   mayanodeApi$,
   thornodeRpc$,
-  mayanodeRpc$
+  mayanodeRpc$,
+  lastOpenedWallet$
 }

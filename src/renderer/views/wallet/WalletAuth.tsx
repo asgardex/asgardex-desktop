@@ -4,8 +4,8 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { ReferrerState } from '../../routes/types'
 import * as walletRoutes from '../../routes/wallet'
-import { isStandaloneLedgerMode } from '../../services/wallet/types'
-import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
+import { isStandaloneLedgerMode, isStandaloneVultisigMode } from '../../services/wallet/types'
+import { hasImportedKeystore } from '../../services/wallet/util'
 
 export const WalletAuth = ({ children }: { children: JSX.Element }): JSX.Element => {
   const { appWalletService } = useWalletContext()
@@ -20,25 +20,27 @@ export const WalletAuth = ({ children }: { children: JSX.Element }): JSX.Element
     return <></>
   }
 
-  // If we're in standalone ledger mode, no authentication is required
+  // Ledger mode has no authentication/lock concept
   if (isStandaloneLedgerMode(appWalletState)) {
     return children
   }
 
-  // For keystore mode, apply existing authentication logic
-  if (!hasImportedKeystore(appWalletState)) {
-    return (
-      <Navigate
-        to={{
-          pathname: walletRoutes.noWallet.path()
-        }}
-        replace
-      />
-    )
+  // Keystore mode requires an imported keystore
+  if (!isStandaloneLedgerMode(appWalletState) && !isStandaloneVultisigMode(appWalletState)) {
+    if (!hasImportedKeystore(appWalletState)) {
+      return (
+        <Navigate
+          to={{
+            pathname: walletRoutes.noWallet.path()
+          }}
+          replace
+        />
+      )
+    }
   }
 
-  // check lock status for keystore
-  if (isLocked(appWalletState)) {
+  // Unified lock check for both Keystore and Vultisig
+  if (appWalletService.isLocked()) {
     return (
       <Navigate
         to={{
