@@ -1,36 +1,13 @@
-import { function as FP, option as O } from 'fp-ts'
-import * as Rx from 'rxjs'
-import * as RxOp from 'rxjs/operators'
-
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
-import { appWalletService } from '../wallet/appWallet'
-import { isStandaloneLedgerMode } from '../wallet/types'
+import { createEnhancedClient$ } from '../clients'
 import { client$, readOnlyClient$ } from './common'
 
 /**
  * Enhanced client that switches between keystore and read-only client for standalone ledger mode
  */
-const enhancedClient$ = FP.pipe(
-  Rx.combineLatest([client$, readOnlyClient$, appWalletService.appWalletState$]),
-  RxOp.map(([keystoreClient, readOnlyClient, appWalletState]) => {
-    // If keystore client is available, use it
-    if (O.isSome(keystoreClient)) {
-      return keystoreClient
-    }
-
-    // If keystore is locked but we're in standalone ledger mode, use read-only client
-    if (appWalletState && isStandaloneLedgerMode(appWalletState) && O.isSome(readOnlyClient)) {
-      return readOnlyClient
-    }
-
-    // Otherwise, no client available
-    return O.none
-  }),
-  RxOp.distinctUntilChanged(),
-  RxOp.shareReplay({ bufferSize: 1, refCount: true })
-)
+const enhancedClient$ = createEnhancedClient$(client$, readOnlyClient$)
 
 /**
  * `ObservableState` to reload `Balances`
