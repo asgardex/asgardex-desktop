@@ -1,5 +1,6 @@
 export * from './address'
 export * from './common'
+export * from './enhancedClient'
 export * from './types'
 export * from './balances'
 export * from './transaction'
