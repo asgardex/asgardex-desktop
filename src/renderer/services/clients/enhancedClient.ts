@@ -5,6 +5,9 @@ import * as RxOp from 'rxjs/operators'
 import { appWalletService } from '../wallet/appWallet'
 import { isStandaloneLedgerMode } from '../wallet/types'
 
+// Custom equality for Option types using reference equality on the wrapped value
+const optionEq = <C>() => O.getEq<C>({ equals: (a, b) => a === b })
+
 /**
  * Factory to create an enhanced client observable that:
  * 1. Uses keystore client when available (phrase unlocked)
@@ -32,6 +35,6 @@ export const createEnhancedClient$ = <C>(
       // No client available
       return O.none
     }),
-    RxOp.distinctUntilChanged(),
+    RxOp.distinctUntilChanged((prev, curr) => optionEq<C>().equals(prev, curr)),
     RxOp.shareReplay({ bufferSize: 1, refCount: true })
   )
