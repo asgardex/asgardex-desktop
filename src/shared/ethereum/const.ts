@@ -126,3 +126,44 @@ export const defaultEthParams: EVMClientParams = {
   },
   rootDerivationPaths: ethRootDerivationPaths
 }
+
+/**
+ * Factory function to create ETH client params with custom RPC URL
+ */
+export const createEthParams = (rpcUrl: string, net: Network): EVMClientParams => {
+  // Create provider based on network
+  const isTestnet = net === Network.Testnet
+  const ethersNetwork = isTestnet ? EthersNetwork.from('sepolia') : 'homestead'
+  const chainId = isTestnet ? 11155111 : 1
+
+  const customProvider = new JsonRpcProvider(rpcUrl, ethersNetwork)
+
+  const customProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customProvider : ETH_MAINNET_ETHERS_PROVIDER,
+    [Network.Testnet]: net === Network.Testnet ? customProvider : ETH_TESTNET_ETHERS_PROVIDER,
+    [Network.Stagenet]: net === Network.Stagenet ? customProvider : ETH_MAINNET_ETHERS_PROVIDER
+  }
+
+  // Create data provider with custom RPC provider
+  const customDataProvider = new EtherscanProviderV2(
+    customProvider,
+    'https://api.etherscan.io/v2',
+    etherscanApiKey,
+    ETHChain,
+    AssetETH,
+    ETH_GAS_ASSET_DECIMAL,
+    chainId
+  )
+
+  const customDataProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customDataProvider : ETH_ONLINE_PROVIDER_MAINNET,
+    [Network.Testnet]: net === Network.Testnet ? customDataProvider : ETH_ONLINE_PROVIDER_TESTNET,
+    [Network.Stagenet]: net === Network.Stagenet ? customDataProvider : ETH_ONLINE_PROVIDER_MAINNET
+  }
+
+  return {
+    ...defaultEthParams,
+    providers: customProviders,
+    dataProviders: [customDataProviders]
+  }
+}

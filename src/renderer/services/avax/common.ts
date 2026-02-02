@@ -4,12 +4,13 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { defaultAvaxParams } from '../../../shared/avax/const'
+import { createAvaxParams } from '../../../shared/avax/const'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { WalletAddress$, ExplorerUrl$ } from '../clients/types'
 import { Client$, ClientState, ClientState$ } from '../evm/types'
+import { avaxRpc$ } from '../storage/common'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
 
@@ -21,16 +22,18 @@ import { getPhrase } from '../wallet/util'
  * A `AVAXClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, avaxRpc$]),
   RxOp.switchMap(
-    ([keystore, network]): ClientState$ =>
+    ([keystore, network, rpcUrls]): ClientState$ =>
       Rx.of(
         FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
+              const rpcUrl = rpcUrls[network]
+              const params = createAvaxParams(rpcUrl, network)
               const client = new Client({
-                ...defaultAvaxParams,
+                ...params,
                 network: network,
                 phrase: phrase
               })
@@ -55,12 +58,14 @@ const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareRepl
  * This client can be used for standalone ledger mode to query balances
  */
 const readOnlyClientState$: ClientState$ = FP.pipe(
-  clientNetwork$,
-  RxOp.map((network): ClientState => {
+  Rx.combineLatest([clientNetwork$, avaxRpc$]),
+  RxOp.map(([network, rpcUrls]): ClientState => {
     try {
+      const rpcUrl = rpcUrls[network]
+      const params = createAvaxParams(rpcUrl, network)
       // Create client without phrase - only for balance queries
       const client = new Client({
-        ...defaultAvaxParams,
+        ...params,
         network: network
         // No phrase - this limits functionality to read-only operations
       })

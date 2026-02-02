@@ -148,3 +148,57 @@ export const defaultAvaxParams: EVMClientParams = {
   },
   rootDerivationPaths: evmRootDerivationPaths
 }
+
+/**
+ * Factory function to create AVAX client params with custom RPC URL
+ */
+export const createAvaxParams = (rpcUrl: string, net: Network): EVMClientParams => {
+  const isTestnet = net === Network.Testnet
+  const chainId = isTestnet ? 43113 : 43114
+  const networkName = isTestnet ? 'fuji' : 'avalanche'
+
+  const customProvider = new JsonRpcProvider(rpcUrl, { name: networkName, chainId })
+
+  const customProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customProvider : AVALANCHE_MAINNET_ETHERS_PROVIDER,
+    [Network.Testnet]: net === Network.Testnet ? customProvider : AVALANCHE_TESTNET_ETHERS_PROVIDER,
+    [Network.Stagenet]: net === Network.Stagenet ? customProvider : AVALANCHE_MAINNET_ETHERS_PROVIDER
+  }
+
+  const customEtherscanProvider = new EtherscanProviderV2(
+    customProvider,
+    'https://api.etherscan.io/v2',
+    etherscanApiKey,
+    AVAXChain,
+    AssetAVAX,
+    AVAX_DECIMAL,
+    chainId
+  )
+
+  const customRoutescanProvider = new RoutescanProvider(
+    customProvider,
+    'https://api.routescan.io',
+    chainId,
+    AssetAVAX,
+    AVAX_DECIMAL,
+    isTestnet
+  )
+
+  const customAvaxProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customEtherscanProvider : AVAX_ONLINE_PROVIDER_MAINNET,
+    [Network.Testnet]: net === Network.Testnet ? customEtherscanProvider : AVAX_ONLINE_PROVIDER_TESTNET,
+    [Network.Stagenet]: net === Network.Stagenet ? customEtherscanProvider : AVAX_ONLINE_PROVIDER_MAINNET
+  }
+
+  const customRoutescanProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customRoutescanProvider : ROUTESCAN_PROVIDER_MAINNET,
+    [Network.Testnet]: net === Network.Testnet ? customRoutescanProvider : ROUTESCAN_PROVIDER_TESTNET,
+    [Network.Stagenet]: net === Network.Stagenet ? customRoutescanProvider : ROUTESCAN_PROVIDER_MAINNET
+  }
+
+  return {
+    ...defaultAvaxParams,
+    providers: customProviders,
+    dataProviders: [customAvaxProviders, customRoutescanProviders]
+  }
+}

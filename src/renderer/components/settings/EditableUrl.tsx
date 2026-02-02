@@ -99,7 +99,10 @@ const EditableUrl = (props: Props): JSX.Element => {
     return (
       <div className="flex items-center">
         <TextButton
-          className={clsx('flex items-center !p-0 text-[16px]', loading ? 'cursor-not-allowed' : 'cursor-pointer')}
+          className={clsx(
+            'flex items-center whitespace-nowrap !p-0 text-[16px]',
+            loading ? 'cursor-not-allowed' : 'cursor-pointer'
+          )}
           color="neutral"
           uppercase={false}
           disabled={loading || RD.isPending(testUrlState)}

@@ -121,3 +121,40 @@ export const defaultArbParams: EVMClientParams = {
   },
   rootDerivationPaths: evmRootDerivationPaths
 }
+
+/**
+ * Factory function to create ARB client params with custom RPC URL
+ */
+export const createArbParams = (rpcUrl: string, net: Network): EVMClientParams => {
+  const isTestnet = net === Network.Testnet
+  const chainId = isTestnet ? 421614 : 42161
+
+  const customProvider = new JsonRpcProvider(rpcUrl)
+
+  const customProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customProvider : ARBITRUM_MAINNET_ETHERS_PROVIDER,
+    [Network.Testnet]: net === Network.Testnet ? customProvider : ARBITRUM_TESTNET_ETHERS_PROVIDER,
+    [Network.Stagenet]: net === Network.Stagenet ? customProvider : ARBITRUM_MAINNET_ETHERS_PROVIDER
+  }
+
+  const customDataProvider = new RoutescanProvider(
+    customProvider,
+    'https://api.routescan.io',
+    chainId,
+    AssetAETH,
+    ARB_DECIMAL,
+    isTestnet
+  )
+
+  const customDataProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customDataProvider : ROUTESCAN_PROVIDER_MAINNET,
+    [Network.Testnet]: net === Network.Testnet ? customDataProvider : ROUTESCAN_PROVIDER_TESTNET,
+    [Network.Stagenet]: net === Network.Stagenet ? customDataProvider : ROUTESCAN_PROVIDER_MAINNET
+  }
+
+  return {
+    ...defaultArbParams,
+    providers: customProviders,
+    dataProviders: [customDataProviders]
+  }
+}

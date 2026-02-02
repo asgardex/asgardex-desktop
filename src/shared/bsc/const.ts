@@ -120,3 +120,41 @@ export const defaultBscParams: EVMClientParams = {
   },
   rootDerivationPaths: evmRootDerivationPaths
 }
+
+/**
+ * Factory function to create BSC client params with custom RPC URL
+ */
+export const createBscParams = (rpcUrl: string, net: Network): EVMClientParams => {
+  const isTestnet = net === Network.Testnet
+  const chainId = isTestnet ? 97 : 56
+
+  const customProvider = new JsonRpcProvider(rpcUrl)
+
+  const customProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customProvider : BSC_MAINNET_ETHERS_PROVIDER,
+    [Network.Testnet]: net === Network.Testnet ? customProvider : BSC_TESTNET_ETHERS_PROVIDER,
+    [Network.Stagenet]: net === Network.Stagenet ? customProvider : BSC_MAINNET_ETHERS_PROVIDER
+  }
+
+  const customDataProvider = new EtherscanProviderV2(
+    customProvider,
+    'https://api.etherscan.io/v2',
+    etherscanApiKey,
+    BSCChain,
+    AssetBSC,
+    BSC_GAS_ASSET_DECIMAL,
+    chainId
+  )
+
+  const customDataProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customDataProvider : BSC_ONLINE_PROVIDER_MAINNET,
+    [Network.Testnet]: net === Network.Testnet ? customDataProvider : BSC_ONLINE_PROVIDER_TESTNET,
+    [Network.Stagenet]: net === Network.Stagenet ? customDataProvider : BSC_ONLINE_PROVIDER_MAINNET
+  }
+
+  return {
+    ...defaultBscParams,
+    providers: customProviders,
+    dataProviders: [customDataProviders]
+  }
+}
