@@ -5,8 +5,8 @@ import { EtherscanProviderV2 } from '@xchainjs/xchain-evm-providers'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider, Network as EthersNetwork } from 'ethers'
 
-import { ApiUrls } from '../api/types'
 import { etherscanApiKey } from '../api/etherscan'
+import { ApiUrls } from '../api/types'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 

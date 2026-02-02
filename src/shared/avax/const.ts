@@ -5,8 +5,8 @@ import { EtherscanProviderV2, RoutescanProvider } from '@xchainjs/xchain-evm-pro
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
-import { ApiUrls } from '../api/types'
 import { etherscanApiKey } from '../api/etherscan'
+import { ApiUrls } from '../api/types'
 
 const LOWER_FEE_BOUND = 100000000
 

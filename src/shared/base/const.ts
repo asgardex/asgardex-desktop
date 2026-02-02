@@ -6,8 +6,8 @@ import { EtherscanProviderV2 } from '@xchainjs/xchain-evm-providers'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
-import { ApiUrls } from '../api/types'
 import { etherscanApiKey } from '../api/etherscan'
+import { ApiUrls } from '../api/types'
 
 // Default RPC URLs for user configuration
 export const DEFAULT_BASE_RPC_URLS: ApiUrls = {
