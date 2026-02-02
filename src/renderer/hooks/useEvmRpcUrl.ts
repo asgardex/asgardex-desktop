@@ -79,6 +79,9 @@ export const useEvmRpcUrl = (chain: EvmChain): EvmRpcUrlHook => {
   const defaultUrls = getDefaultForChain(chain)
   const storageKey = getStorageKeyForChain(chain)
 
+  // Track current URLs for all networks (to preserve custom URLs when updating)
+  const currentUrls = useObservableState(rpcUrls$, defaultUrls)
+
   const [rpcUrl, networkUpdated] = useObservableState<string, Network>(
     (network$) =>
       FP.pipe(
@@ -94,7 +97,6 @@ export const useEvmRpcUrl = (chain: EvmChain): EvmRpcUrlHook => {
 
   const setUrl = useCallback(
     (url: string) => {
-      const currentUrls = defaultUrls
       modifyStorage(
         O.some({
           [storageKey]: {
@@ -104,7 +106,7 @@ export const useEvmRpcUrl = (chain: EvmChain): EvmRpcUrlHook => {
         })
       )
     },
-    [network, storageKey, defaultUrls]
+    [network, storageKey, currentUrls]
   )
 
   const checkUrl$ = useCallback(

@@ -104,7 +104,7 @@ const commonStorageData: CommonStorage = {
   arbRpc: {
     mainnet: 'https://arb1.arbitrum.io/rpc',
     stagenet: 'https://arb1.arbitrum.io/rpc',
-    testnet: 'https://goerli-rollup.arbitrum.io/rpc'
+    testnet: 'https://sepolia-rollup.arbitrum.io/rpc'
   },
   avaxRpc: {
     mainnet: 'https://api.avax.network/ext/bc/C/rpc',

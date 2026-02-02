@@ -13,13 +13,13 @@ export const UPPER_FEE_BOUND = 2000000000
 export const DEFAULT_ARB_RPC_URLS: ApiUrls = {
   [Network.Mainnet]: 'https://arb1.arbitrum.io/rpc',
   [Network.Stagenet]: 'https://arb1.arbitrum.io/rpc',
-  [Network.Testnet]: 'https://goerli-rollup.arbitrum.io/rpc'
+  [Network.Testnet]: 'https://sepolia-rollup.arbitrum.io/rpc'
 }
 
 // =====JSON-RPC Providers=====
 // Define providers for ARB mainnet and testnet
 const ARBITRUM_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://arb1.arbitrum.io/rpc')
-const ARBITRUM_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://goerli-rollup.arbitrum.io/rpc')
+const ARBITRUM_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://sepolia-rollup.arbitrum.io/rpc')
 
 const ethersJSProviders = {
   [Network.Mainnet]: ARBITRUM_MAINNET_ETHERS_PROVIDER,
@@ -66,9 +66,9 @@ const ARB_MAINNET_EXPLORER = new ExplorerProvider(
   'https://arbiscan.io/tx/%%TX_ID%%'
 )
 const ARB_TESTNET_EXPLORER = new ExplorerProvider(
-  'https://goerli.arbiscan.io',
-  'https://goerli.arbiscan.io/address/%%ADDRESS%%',
-  'https://goerli.arbiscan.io/tx/%%TX_ID%%'
+  'https://sepolia.arbiscan.io',
+  'https://sepolia.arbiscan.io/address/%%ADDRESS%%',
+  'https://sepolia.arbiscan.io/tx/%%TX_ID%%'
 )
 const arbExplorerProviders = {
   [Network.Mainnet]: ARB_MAINNET_EXPLORER,
