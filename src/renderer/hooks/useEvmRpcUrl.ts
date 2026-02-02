@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -20,10 +20,14 @@ import { useNetwork } from './useNetwork'
 
 export type EvmChain = 'ETH' | 'BSC' | 'ARB' | 'AVAX' | 'BASE'
 
+export type RpcHealthStatus = 'unknown' | 'checking' | 'healthy' | 'unhealthy'
+
 type EvmRpcUrlHook = {
   url: string
   setUrl: (url: string) => void
   checkUrl$: (url: string) => LiveData<Error, string>
+  healthStatus: RpcHealthStatus
+  recheckHealth: () => void
 }
 
 const getObservableForChain = (chain: EvmChain): Rx.Observable<ApiUrls> => {
@@ -146,5 +150,54 @@ export const useEvmRpcUrl = (chain: EvmChain): EvmRpcUrlHook => {
     [intl]
   )
 
-  return { url: rpcUrl, setUrl, checkUrl$ }
+  // Health check status
+  const [healthStatus, setHealthStatus] = useState<RpcHealthStatus>('unknown')
+
+  // Function to check RPC health
+  const checkHealth = useCallback(async (urlToCheck: string) => {
+    setHealthStatus('checking')
+    try {
+      const response = await fetch(urlToCheck, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_blockNumber',
+          params: [],
+          id: 1
+        })
+      })
+      if (!response.ok) {
+        setHealthStatus('unhealthy')
+        return
+      }
+      const result = await response.json()
+      if (result?.result && typeof result.result === 'string' && result.result.startsWith('0x')) {
+        setHealthStatus('healthy')
+      } else {
+        setHealthStatus('unhealthy')
+      }
+    } catch {
+      setHealthStatus('unhealthy')
+    }
+  }, [])
+
+  // Run health check when URL changes or on mount
+  useEffect(() => {
+    if (rpcUrl) {
+      checkHealth(rpcUrl)
+    }
+  }, [rpcUrl, checkHealth])
+
+  // Manual recheck function
+  const recheckHealth = useCallback(() => {
+    if (rpcUrl) {
+      checkHealth(rpcUrl)
+    }
+  }, [rpcUrl, checkHealth])
+
+  return useMemo(
+    () => ({ url: rpcUrl, setUrl, checkUrl$, healthStatus, recheckHealth }),
+    [rpcUrl, setUrl, checkUrl$, healthStatus, recheckHealth]
+  )
 }

@@ -70,6 +70,7 @@ const settings: SettingMessages = {
   'settings.expert.evm.base.title': 'RPC Base',
   'settings.evm.rpc.error.url': 'Недействительный URL RPC EVM. Пожалуйста, проверьте и попробуйте снова',
   'settings.evm.rpc.valid': 'Действительный URL RPC EVM',
+  'settings.evm.rpc.unhealthy': 'Конечная точка RPC не отвечает. Проверьте подключение или попробуйте другой URL.',
   'settings.ledgerMode.lockWalletWarning': 'Сначала заблокируйте кошелек, чтобы войти в режим Ledger',
   'settings.wallet.whitelist': 'Белый список',
   'settings.wallet.customToken': 'Пользовательский токен'

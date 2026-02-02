@@ -71,6 +71,7 @@ const settings: SettingMessages = {
   'settings.expert.evm.base.title': 'Base RPC',
   'settings.evm.rpc.error.url': '유효하지 않은 EVM RPC URL입니다. 다시 확인하고 시도하세요',
   'settings.evm.rpc.valid': '유효한 EVM RPC URL',
+  'settings.evm.rpc.unhealthy': 'RPC 엔드포인트가 응답하지 않습니다. 연결을 확인하거나 다른 URL을 시도하세요.',
   'settings.ledgerMode.lockWalletWarning': 'Ledger 모드로 진입하려면 먼저 지갑을 잠금하세요',
   'settings.wallet.whitelist': '화이트리스트',
   'settings.wallet.customToken': '사용자 정의 토큰'

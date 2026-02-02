@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import { RpcHealthStatus } from '../../hooks/useEvmRpcUrl'
 import { LiveData } from '../../helpers/rx/liveData'
 import { CheckMayanodeNodeUrlHandler, CheckMayanodeRpcUrlHandler } from '../../services/mayachain/types'
 import {
@@ -24,6 +26,7 @@ type EvmRpcConfig = {
   url: string
   onChange: (url: string) => void
   checkUrl$: CheckEvmRpcUrlHandler
+  healthStatus: RpcHealthStatus
 }
 
 type Props = {
@@ -57,6 +60,8 @@ type SubSectionProps = {
   title: string
   children?: React.ReactNode
   className?: string
+  warning?: boolean
+  warningTooltip?: string
 }
 
 const expertModeDefault: Record<string, boolean> = {
@@ -65,14 +70,17 @@ const expertModeDefault: Record<string, boolean> = {
   evm: false
 }
 
-const SubSection = ({ title, className, children }: SubSectionProps) => (
+const SubSection = ({ title, className, children, warning, warningTooltip }: SubSectionProps) => (
   <div
     className={clsx(
       'flex w-full items-center justify-between px-4',
       'border-solid border-gray0 last:mb-3 last:border-none dark:border-gray0d',
       className
     )}>
-    <h2 className="mb-5px font-main text-[14px] uppercase text-gray1 dark:text-gray1d">{title}</h2>
+    <div className="flex items-center gap-2">
+      <h2 className="mb-5px font-main text-[14px] uppercase text-gray1 dark:text-gray1d">{title}</h2>
+      {warning && <ExclamationTriangleIcon className="h-5 w-5 text-warning0" title={warningTooltip} />}
+    </div>
     <div className="flex flex-col">{children}</div>
   </div>
 )
@@ -272,7 +280,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
         <div
           className={clsx('flex-col transition-all duration-300 ease-in-out', advancedActive.evm ? 'flex' : 'hidden')}>
           {ethRpc && (
-            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.eth.title' })}>
+            <SubSection
+              title={intl.formatMessage({ id: 'settings.expert.evm.eth.title' })}
+              warning={ethRpc.healthStatus === 'unhealthy'}
+              warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
               <EditableUrl
                 className="w-full xl:w-3/4"
                 url={ethRpc.url}
@@ -283,7 +294,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
             </SubSection>
           )}
           {bscRpc && (
-            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.bsc.title' })}>
+            <SubSection
+              title={intl.formatMessage({ id: 'settings.expert.evm.bsc.title' })}
+              warning={bscRpc.healthStatus === 'unhealthy'}
+              warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
               <EditableUrl
                 className="w-full xl:w-3/4"
                 url={bscRpc.url}
@@ -294,7 +308,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
             </SubSection>
           )}
           {arbRpc && (
-            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.arb.title' })}>
+            <SubSection
+              title={intl.formatMessage({ id: 'settings.expert.evm.arb.title' })}
+              warning={arbRpc.healthStatus === 'unhealthy'}
+              warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
               <EditableUrl
                 className="w-full xl:w-3/4"
                 url={arbRpc.url}
@@ -305,7 +322,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
             </SubSection>
           )}
           {avaxRpc && (
-            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.avax.title' })}>
+            <SubSection
+              title={intl.formatMessage({ id: 'settings.expert.evm.avax.title' })}
+              warning={avaxRpc.healthStatus === 'unhealthy'}
+              warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
               <EditableUrl
                 className="w-full xl:w-3/4"
                 url={avaxRpc.url}
@@ -316,7 +336,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
             </SubSection>
           )}
           {baseRpc && (
-            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.base.title' })}>
+            <SubSection
+              title={intl.formatMessage({ id: 'settings.expert.evm.base.title' })}
+              warning={baseRpc.healthStatus === 'unhealthy'}
+              warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
               <EditableUrl
                 className="w-full xl:w-3/4"
                 url={baseRpc.url}

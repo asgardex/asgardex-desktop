@@ -70,6 +70,7 @@ const settings: SettingMessages = {
   'settings.expert.evm.base.title': 'Base RPC',
   'settings.evm.rpc.error.url': 'अमान्य EVM RPC URL. कृपया दोबारा जांचें और फिर कोशिश करें',
   'settings.evm.rpc.valid': 'मान्य EVM RPC URL',
+  'settings.evm.rpc.unhealthy': 'RPC एंडपॉइंट प्रतिक्रिया नहीं दे रहा है। अपना कनेक्शन जांचें या कोई अलग URL आज़माएं।',
   'settings.ledgerMode.lockWalletWarning': 'Ledger मोड में प्रवेश करने के लिए पहले वॉलेट लॉक करें',
   'settings.wallet.whitelist': 'व्हाइटलिस्ट',
   'settings.wallet.customToken': 'कस्टम टोकन'

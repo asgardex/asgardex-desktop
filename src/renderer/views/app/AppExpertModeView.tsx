@@ -45,11 +45,36 @@ export const AppExpertModeView = (): JSX.Element => {
   } = useMayachainClientUrl()
 
   // EVM RPC hooks
-  const { url: ethRpcUrl, setUrl: setEthRpcUrl, checkUrl$: checkEthRpcUrl$ } = useEvmRpcUrl('ETH')
-  const { url: bscRpcUrl, setUrl: setBscRpcUrl, checkUrl$: checkBscRpcUrl$ } = useEvmRpcUrl('BSC')
-  const { url: arbRpcUrl, setUrl: setArbRpcUrl, checkUrl$: checkArbRpcUrl$ } = useEvmRpcUrl('ARB')
-  const { url: avaxRpcUrl, setUrl: setAvaxRpcUrl, checkUrl$: checkAvaxRpcUrl$ } = useEvmRpcUrl('AVAX')
-  const { url: baseRpcUrl, setUrl: setBaseRpcUrl, checkUrl$: checkBaseRpcUrl$ } = useEvmRpcUrl('BASE')
+  const {
+    url: ethRpcUrl,
+    setUrl: setEthRpcUrl,
+    checkUrl$: checkEthRpcUrl$,
+    healthStatus: ethHealthStatus
+  } = useEvmRpcUrl('ETH')
+  const {
+    url: bscRpcUrl,
+    setUrl: setBscRpcUrl,
+    checkUrl$: checkBscRpcUrl$,
+    healthStatus: bscHealthStatus
+  } = useEvmRpcUrl('BSC')
+  const {
+    url: arbRpcUrl,
+    setUrl: setArbRpcUrl,
+    checkUrl$: checkArbRpcUrl$,
+    healthStatus: arbHealthStatus
+  } = useEvmRpcUrl('ARB')
+  const {
+    url: avaxRpcUrl,
+    setUrl: setAvaxRpcUrl,
+    checkUrl$: checkAvaxRpcUrl$,
+    healthStatus: avaxHealthStatus
+  } = useEvmRpcUrl('AVAX')
+  const {
+    url: baseRpcUrl,
+    setUrl: setBaseRpcUrl,
+    checkUrl$: checkBaseRpcUrl$,
+    healthStatus: baseHealthStatus
+  } = useEvmRpcUrl('BASE')
 
   const updateMidgardUrlHandler = useCallback(
     (url: string) => {
@@ -85,11 +110,21 @@ export const AppExpertModeView = (): JSX.Element => {
       checkMayanodeRpcUrl$={checkMayanodeRpcUrl$}
       checkMayanodeNodeUrl$={checkMayanodeNodeUrl$}
       // EVM RPC configs
-      ethRpc={{ url: ethRpcUrl, onChange: setEthRpcUrl, checkUrl$: checkEthRpcUrl$ }}
-      bscRpc={{ url: bscRpcUrl, onChange: setBscRpcUrl, checkUrl$: checkBscRpcUrl$ }}
-      arbRpc={{ url: arbRpcUrl, onChange: setArbRpcUrl, checkUrl$: checkArbRpcUrl$ }}
-      avaxRpc={{ url: avaxRpcUrl, onChange: setAvaxRpcUrl, checkUrl$: checkAvaxRpcUrl$ }}
-      baseRpc={{ url: baseRpcUrl, onChange: setBaseRpcUrl, checkUrl$: checkBaseRpcUrl$ }}
+      ethRpc={{ url: ethRpcUrl, onChange: setEthRpcUrl, checkUrl$: checkEthRpcUrl$, healthStatus: ethHealthStatus }}
+      bscRpc={{ url: bscRpcUrl, onChange: setBscRpcUrl, checkUrl$: checkBscRpcUrl$, healthStatus: bscHealthStatus }}
+      arbRpc={{ url: arbRpcUrl, onChange: setArbRpcUrl, checkUrl$: checkArbRpcUrl$, healthStatus: arbHealthStatus }}
+      avaxRpc={{
+        url: avaxRpcUrl,
+        onChange: setAvaxRpcUrl,
+        checkUrl$: checkAvaxRpcUrl$,
+        healthStatus: avaxHealthStatus
+      }}
+      baseRpc={{
+        url: baseRpcUrl,
+        onChange: setBaseRpcUrl,
+        checkUrl$: checkBaseRpcUrl$,
+        healthStatus: baseHealthStatus
+      }}
     />
   )
 }

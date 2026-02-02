@@ -563,6 +563,7 @@ type SettingMessageKey =
   | 'settings.expert.evm.base.title'
   | 'settings.evm.rpc.error.url'
   | 'settings.evm.rpc.valid'
+  | 'settings.evm.rpc.unhealthy'
   | 'settings.ledgerMode.lockWalletWarning'
   | 'settings.wallet.whitelist'
   | 'settings.wallet.customToken'
