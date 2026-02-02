@@ -10,6 +10,11 @@ import {
   UserNodesStorage,
   UserTrustedAddressStorage
 } from './api/types'
+import { DEFAULT_ARB_RPC_URLS } from './arb/const'
+import { DEFAULT_AVAX_RPC_URLS } from './avax/const'
+import { DEFAULT_BASE_RPC_URLS } from './base/const'
+import { DEFAULT_BSC_RPC_URLS } from './bsc/const'
+import { DEFAULT_ETH_RPC_URLS } from './ethereum/const'
 import { DEFAULT_EVM_HD_MODE } from './evm/types'
 import { DEFAULT_LOCALE } from './i18n/const'
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from './mayachain/const'
@@ -133,7 +138,12 @@ export const DEFAULT_STORAGES: StoreFilesContent = {
     thornodeApi: DEFAULT_THORNODE_API_URLS,
     thornodeRpc: DEFAULT_THORNODE_RPC_URLS,
     mayanodeApi: DEFAULT_MAYANODE_API_URLS,
-    mayanodeRpc: DEFAULT_MAYANODE_RPC_URLS
+    mayanodeRpc: DEFAULT_MAYANODE_RPC_URLS,
+    ethRpc: DEFAULT_ETH_RPC_URLS,
+    bscRpc: DEFAULT_BSC_RPC_URLS,
+    arbRpc: DEFAULT_ARB_RPC_URLS,
+    avaxRpc: DEFAULT_AVAX_RPC_URLS,
+    baseRpc: DEFAULT_BASE_RPC_URLS
   },
   userChains: CHAINS_STORAGE_DEFAULT,
   userAddresses: ADDRESS_STORAGE_DEFAULT,

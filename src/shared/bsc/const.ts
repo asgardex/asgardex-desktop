@@ -6,8 +6,16 @@ import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
 import { etherscanApiKey } from '../api/etherscan'
+import { ApiUrls } from '../api/types'
 
 const LOWER_FEE_BOUND = 1000000
+
+// Default RPC URLs for user configuration
+export const DEFAULT_BSC_RPC_URLS: ApiUrls = {
+  [Network.Mainnet]: 'https://bsc-dataseed.binance.org/',
+  [Network.Stagenet]: 'https://bsc-dataseed.binance.org/',
+  [Network.Testnet]: 'https://data-seed-prebsc-1-s1.binance.org:8545/'
+}
 
 // =====JSON-RPC Providers=====
 // Define providers for BSC mainnet and testnet
@@ -111,4 +119,42 @@ export const defaultBscParams: EVMClientParams = {
     upper: UPPER_FEE_BOUND
   },
   rootDerivationPaths: evmRootDerivationPaths
+}
+
+/**
+ * Factory function to create BSC client params with custom RPC URL
+ */
+export const createBscParams = (rpcUrl: string, net: Network): EVMClientParams => {
+  const isTestnet = net === Network.Testnet
+  const chainId = isTestnet ? 97 : 56
+
+  const customProvider = new JsonRpcProvider(rpcUrl)
+
+  const customProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customProvider : BSC_MAINNET_ETHERS_PROVIDER,
+    [Network.Testnet]: net === Network.Testnet ? customProvider : BSC_TESTNET_ETHERS_PROVIDER,
+    [Network.Stagenet]: net === Network.Stagenet ? customProvider : BSC_MAINNET_ETHERS_PROVIDER
+  }
+
+  const customDataProvider = new EtherscanProviderV2(
+    customProvider,
+    'https://api.etherscan.io/v2',
+    etherscanApiKey,
+    BSCChain,
+    AssetBSC,
+    BSC_GAS_ASSET_DECIMAL,
+    chainId
+  )
+
+  const customDataProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customDataProvider : BSC_ONLINE_PROVIDER_MAINNET,
+    [Network.Testnet]: net === Network.Testnet ? customDataProvider : BSC_ONLINE_PROVIDER_TESTNET,
+    [Network.Stagenet]: net === Network.Stagenet ? customDataProvider : BSC_ONLINE_PROVIDER_MAINNET
+  }
+
+  return {
+    ...defaultBscParams,
+    providers: customProviders,
+    dataProviders: [customDataProviders]
+  }
 }

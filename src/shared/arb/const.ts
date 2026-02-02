@@ -5,12 +5,21 @@ import { RoutescanProvider } from '@xchainjs/xchain-evm-providers'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
+import { ApiUrls } from '../api/types'
+
 export const UPPER_FEE_BOUND = 2000000000
+
+// Default RPC URLs for user configuration
+export const DEFAULT_ARB_RPC_URLS: ApiUrls = {
+  [Network.Mainnet]: 'https://arb1.arbitrum.io/rpc',
+  [Network.Stagenet]: 'https://arb1.arbitrum.io/rpc',
+  [Network.Testnet]: 'https://sepolia-rollup.arbitrum.io/rpc'
+}
 
 // =====JSON-RPC Providers=====
 // Define providers for ARB mainnet and testnet
 const ARBITRUM_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://arb1.arbitrum.io/rpc')
-const ARBITRUM_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://goerli-rollup.arbitrum.io/rpc')
+const ARBITRUM_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://sepolia-rollup.arbitrum.io/rpc')
 
 const ethersJSProviders = {
   [Network.Mainnet]: ARBITRUM_MAINNET_ETHERS_PROVIDER,
@@ -57,9 +66,9 @@ const ARB_MAINNET_EXPLORER = new ExplorerProvider(
   'https://arbiscan.io/tx/%%TX_ID%%'
 )
 const ARB_TESTNET_EXPLORER = new ExplorerProvider(
-  'https://goerli.arbiscan.io',
-  'https://goerli.arbiscan.io/address/%%ADDRESS%%',
-  'https://goerli.arbiscan.io/tx/%%TX_ID%%'
+  'https://sepolia.arbiscan.io',
+  'https://sepolia.arbiscan.io/address/%%ADDRESS%%',
+  'https://sepolia.arbiscan.io/tx/%%TX_ID%%'
 )
 const arbExplorerProviders = {
   [Network.Mainnet]: ARB_MAINNET_EXPLORER,
@@ -111,4 +120,41 @@ export const defaultArbParams: EVMClientParams = {
     upper: UPPER_FEE_BOUND
   },
   rootDerivationPaths: evmRootDerivationPaths
+}
+
+/**
+ * Factory function to create ARB client params with custom RPC URL
+ */
+export const createArbParams = (rpcUrl: string, net: Network): EVMClientParams => {
+  const isTestnet = net === Network.Testnet
+  const chainId = isTestnet ? 421614 : 42161
+
+  const customProvider = new JsonRpcProvider(rpcUrl)
+
+  const customProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customProvider : ARBITRUM_MAINNET_ETHERS_PROVIDER,
+    [Network.Testnet]: net === Network.Testnet ? customProvider : ARBITRUM_TESTNET_ETHERS_PROVIDER,
+    [Network.Stagenet]: net === Network.Stagenet ? customProvider : ARBITRUM_MAINNET_ETHERS_PROVIDER
+  }
+
+  const customDataProvider = new RoutescanProvider(
+    customProvider,
+    'https://api.routescan.io',
+    chainId,
+    AssetAETH,
+    ARB_DECIMAL,
+    isTestnet
+  )
+
+  const customDataProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customDataProvider : ROUTESCAN_PROVIDER_MAINNET,
+    [Network.Testnet]: net === Network.Testnet ? customDataProvider : ROUTESCAN_PROVIDER_TESTNET,
+    [Network.Stagenet]: net === Network.Stagenet ? customDataProvider : ROUTESCAN_PROVIDER_MAINNET
+  }
+
+  return {
+    ...defaultArbParams,
+    providers: customProviders,
+    dataProviders: [customDataProviders]
+  }
 }
