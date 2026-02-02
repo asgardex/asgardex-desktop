@@ -59,6 +59,11 @@ export type CommonStorage = Readonly<
     thornodeApi: ApiUrls
     mayanodeRpc: ApiUrls
     mayanodeApi: ApiUrls
+    ethRpc: ApiUrls
+    bscRpc: ApiUrls
+    arbRpc: ApiUrls
+    avaxRpc: ApiUrls
+    baseRpc: ApiUrls
   } & StorageVersion
 >
 

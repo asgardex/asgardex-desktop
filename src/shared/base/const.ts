@@ -6,7 +6,15 @@ import { EtherscanProviderV2 } from '@xchainjs/xchain-evm-providers'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
+import { ApiUrls } from '../api/types'
 import { etherscanApiKey } from '../api/etherscan'
+
+// Default RPC URLs for user configuration
+export const DEFAULT_BASE_RPC_URLS: ApiUrls = {
+  [Network.Mainnet]: 'https://1rpc.io/base',
+  [Network.Stagenet]: 'https://1rpc.io/base',
+  [Network.Testnet]: 'https://base-sepolia-rpc.publicnode.com'
+}
 
 // =====JSON-RPC Providers=====
 // Define providers for BASE mainnet and testnet

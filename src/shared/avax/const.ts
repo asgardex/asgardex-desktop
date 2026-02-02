@@ -5,9 +5,17 @@ import { EtherscanProviderV2, RoutescanProvider } from '@xchainjs/xchain-evm-pro
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
+import { ApiUrls } from '../api/types'
 import { etherscanApiKey } from '../api/etherscan'
 
 const LOWER_FEE_BOUND = 100000000
+
+// Default RPC URLs for user configuration
+export const DEFAULT_AVAX_RPC_URLS: ApiUrls = {
+  [Network.Mainnet]: 'https://api.avax.network/ext/bc/C/rpc',
+  [Network.Stagenet]: 'https://api.avax.network/ext/bc/C/rpc',
+  [Network.Testnet]: 'https://api.avax-test.network/ext/bc/C/rpc'
+}
 
 // =====JSON-RPC Providers=====
 // Define providers for AVAX mainnet and testnet

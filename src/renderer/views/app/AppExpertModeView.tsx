@@ -6,6 +6,7 @@ import { useObservableState } from 'observable-hooks'
 import { AppExpertMode } from '../../components/settings/AppExpertMode'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useEvmRpcUrl } from '../../hooks/useEvmRpcUrl'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
@@ -43,6 +44,13 @@ export const AppExpertModeView = (): JSX.Element => {
     checkNode$: checkMayanodeNodeUrl$
   } = useMayachainClientUrl()
 
+  // EVM RPC hooks
+  const { url: ethRpcUrl, setUrl: setEthRpcUrl, checkUrl$: checkEthRpcUrl$ } = useEvmRpcUrl('ETH')
+  const { url: bscRpcUrl, setUrl: setBscRpcUrl, checkUrl$: checkBscRpcUrl$ } = useEvmRpcUrl('BSC')
+  const { url: arbRpcUrl, setUrl: setArbRpcUrl, checkUrl$: checkArbRpcUrl$ } = useEvmRpcUrl('ARB')
+  const { url: avaxRpcUrl, setUrl: setAvaxRpcUrl, checkUrl$: checkAvaxRpcUrl$ } = useEvmRpcUrl('AVAX')
+  const { url: baseRpcUrl, setUrl: setBaseRpcUrl, checkUrl$: checkBaseRpcUrl$ } = useEvmRpcUrl('BASE')
+
   const updateMidgardUrlHandler = useCallback(
     (url: string) => {
       setMidgardUrl(url, network)
@@ -76,6 +84,12 @@ export const AppExpertModeView = (): JSX.Element => {
       mayanodeNodeUrl={mayanodeNodeUrl}
       checkMayanodeRpcUrl$={checkMayanodeRpcUrl$}
       checkMayanodeNodeUrl$={checkMayanodeNodeUrl$}
+      // EVM RPC configs
+      ethRpc={{ url: ethRpcUrl, onChange: setEthRpcUrl, checkUrl$: checkEthRpcUrl$ }}
+      bscRpc={{ url: bscRpcUrl, onChange: setBscRpcUrl, checkUrl$: checkBscRpcUrl$ }}
+      arbRpc={{ url: arbRpcUrl, onChange: setArbRpcUrl, checkUrl$: checkArbRpcUrl$ }}
+      avaxRpc={{ url: avaxRpcUrl, onChange: setAvaxRpcUrl, checkUrl$: checkAvaxRpcUrl$ }}
+      baseRpc={{ url: baseRpcUrl, onChange: setBaseRpcUrl, checkUrl$: checkBaseRpcUrl$ }}
     />
   )
 }

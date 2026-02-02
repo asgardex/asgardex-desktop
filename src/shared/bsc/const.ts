@@ -5,9 +5,17 @@ import { EtherscanProviderV2 } from '@xchainjs/xchain-evm-providers'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
+import { ApiUrls } from '../api/types'
 import { etherscanApiKey } from '../api/etherscan'
 
 const LOWER_FEE_BOUND = 1000000
+
+// Default RPC URLs for user configuration
+export const DEFAULT_BSC_RPC_URLS: ApiUrls = {
+  [Network.Mainnet]: 'https://bsc-dataseed.binance.org/',
+  [Network.Stagenet]: 'https://bsc-dataseed.binance.org/',
+  [Network.Testnet]: 'https://data-seed-prebsc-1-s1.binance.org:8545/'
+}
 
 // =====JSON-RPC Providers=====
 // Define providers for BSC mainnet and testnet

@@ -91,7 +91,32 @@ const commonStorageData: CommonStorage = {
     stagenet: 'mayanode-api-stagenet',
     testnet: 'mayanode-api-testnet'
   },
-  version: '1'
+  ethRpc: {
+    mainnet: 'https://ethereum.publicnode.com',
+    stagenet: 'https://ethereum.publicnode.com',
+    testnet: 'https://ethereum-sepolia-rpc.publicnode.com'
+  },
+  bscRpc: {
+    mainnet: 'https://bsc-dataseed.binance.org/',
+    stagenet: 'https://bsc-dataseed.binance.org/',
+    testnet: 'https://data-seed-prebsc-1-s1.binance.org:8545/'
+  },
+  arbRpc: {
+    mainnet: 'https://arb1.arbitrum.io/rpc',
+    stagenet: 'https://arb1.arbitrum.io/rpc',
+    testnet: 'https://goerli-rollup.arbitrum.io/rpc'
+  },
+  avaxRpc: {
+    mainnet: 'https://api.avax.network/ext/bc/C/rpc',
+    stagenet: 'https://api.avax.network/ext/bc/C/rpc',
+    testnet: 'https://api.avax-test.network/ext/bc/C/rpc'
+  },
+  baseRpc: {
+    mainnet: 'https://1rpc.io/base',
+    stagenet: 'https://1rpc.io/base',
+    testnet: 'https://base-sepolia-rpc.publicnode.com'
+  },
+  version: '2'
 }
 
 export const apiCommonStorage: ApiFileStoreService<CommonStorage> = {

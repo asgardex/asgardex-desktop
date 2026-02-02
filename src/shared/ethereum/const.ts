@@ -5,15 +5,23 @@ import { EtherscanProviderV2 } from '@xchainjs/xchain-evm-providers'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider, Network as EthersNetwork } from 'ethers'
 
+import { ApiUrls } from '../api/types'
 import { etherscanApiKey } from '../api/etherscan'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
 const LOWER_FEE_BOUND = 1000000
 
+// Default RPC URLs for user configuration
+export const DEFAULT_ETH_RPC_URLS: ApiUrls = {
+  [Network.Mainnet]: 'https://ethereum.publicnode.com',
+  [Network.Stagenet]: 'https://ethereum.publicnode.com',
+  [Network.Testnet]: 'https://ethereum-sepolia-rpc.publicnode.com'
+}
+
 // =====JSON-RPC Providers=====
 // Define providers for ETH mainnet and testnet
-const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
+const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum.publicnode.com', 'homestead')
 const network = EthersNetwork.from('sepolia')
 const ETH_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com', network)
 

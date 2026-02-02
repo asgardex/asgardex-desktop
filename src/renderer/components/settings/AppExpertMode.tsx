@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import { LiveData } from '../../helpers/rx/liveData'
 import { CheckMayanodeNodeUrlHandler, CheckMayanodeRpcUrlHandler } from '../../services/mayachain/types'
 import {
   CheckMidgardUrlHandler,
@@ -16,6 +17,14 @@ import { CheckThornodeNodeUrlHandler, CheckThornodeRpcUrlHandler } from '../../s
 import { TextButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import EditableUrl from './EditableUrl'
+
+export type CheckEvmRpcUrlHandler = (url: string) => LiveData<Error, string>
+
+type EvmRpcConfig = {
+  url: string
+  onChange: (url: string) => void
+  checkUrl$: CheckEvmRpcUrlHandler
+}
 
 type Props = {
   midgardUrl: MidgardUrlRD
@@ -36,6 +45,12 @@ type Props = {
   checkMayanodeRpcUrl$: CheckMayanodeRpcUrlHandler
   onChangeThornodeRpcUrl: (url: string) => void
   onChangeMayanodeRpcUrl: (url: string) => void
+  // EVM RPC configs
+  ethRpc?: EvmRpcConfig
+  bscRpc?: EvmRpcConfig
+  arbRpc?: EvmRpcConfig
+  avaxRpc?: EvmRpcConfig
+  baseRpc?: EvmRpcConfig
 }
 
 type SubSectionProps = {
@@ -46,7 +61,8 @@ type SubSectionProps = {
 
 const expertModeDefault: Record<string, boolean> = {
   thorchain: true,
-  mayachain: true
+  mayachain: true,
+  evm: false
 }
 
 const SubSection = ({ title, className, children }: SubSectionProps) => (
@@ -98,7 +114,12 @@ export const AppExpertMode = (props: Props): JSX.Element => {
     thornodeRpcUrl,
     thornodeNodeUrl,
     mayanodeNodeUrl,
-    mayanodeRpcUrl
+    mayanodeRpcUrl,
+    ethRpc,
+    bscRpc,
+    arbRpc,
+    avaxRpc,
+    baseRpc
   } = props
 
   const intl = useIntl()
@@ -228,6 +249,83 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               successMsg={intl.formatMessage({ id: 'settings.mayanode.rpc.valid' })}
             />
           </SubSection>
+        </div>
+      </Section>
+      <Section
+        title={intl.formatMessage({ id: 'settings.expert.evm.title' })}
+        toggleHandler={
+          <div className="flex items-center justify-end px-4 py-6">
+            <TextButton
+              className={clsx(
+                'mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d',
+                advancedActive ? 'opacity-100' : 'opacity-60'
+              )}
+              onClick={() => setAdvancedActive((prev) => ({ ...prev, evm: !prev.evm }))}>
+              {intl.formatMessage({ id: 'common.advanced' })}
+            </TextButton>
+            <SwitchButton
+              active={advancedActive.evm}
+              onChange={(active) => setAdvancedActive({ ...advancedActive, evm: active })}
+            />
+          </div>
+        }>
+        <div
+          className={clsx('flex-col transition-all duration-300 ease-in-out', advancedActive.evm ? 'flex' : 'hidden')}>
+          {ethRpc && (
+            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.eth.title' })}>
+              <EditableUrl
+                className="w-full xl:w-3/4"
+                url={ethRpc.url}
+                onChange={ethRpc.onChange}
+                checkUrl$={ethRpc.checkUrl$}
+                successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
+              />
+            </SubSection>
+          )}
+          {bscRpc && (
+            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.bsc.title' })}>
+              <EditableUrl
+                className="w-full xl:w-3/4"
+                url={bscRpc.url}
+                onChange={bscRpc.onChange}
+                checkUrl$={bscRpc.checkUrl$}
+                successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
+              />
+            </SubSection>
+          )}
+          {arbRpc && (
+            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.arb.title' })}>
+              <EditableUrl
+                className="w-full xl:w-3/4"
+                url={arbRpc.url}
+                onChange={arbRpc.onChange}
+                checkUrl$={arbRpc.checkUrl$}
+                successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
+              />
+            </SubSection>
+          )}
+          {avaxRpc && (
+            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.avax.title' })}>
+              <EditableUrl
+                className="w-full xl:w-3/4"
+                url={avaxRpc.url}
+                onChange={avaxRpc.onChange}
+                checkUrl$={avaxRpc.checkUrl$}
+                successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
+              />
+            </SubSection>
+          )}
+          {baseRpc && (
+            <SubSection title={intl.formatMessage({ id: 'settings.expert.evm.base.title' })}>
+              <EditableUrl
+                className="w-full xl:w-3/4"
+                url={baseRpc.url}
+                onChange={baseRpc.onChange}
+                checkUrl$={baseRpc.checkUrl$}
+                successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
+              />
+            </SubSection>
+          )}
         </div>
       </Section>
     </div>

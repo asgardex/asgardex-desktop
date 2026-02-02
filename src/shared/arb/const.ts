@@ -5,7 +5,16 @@ import { RoutescanProvider } from '@xchainjs/xchain-evm-providers'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from 'ethers'
 
+import { ApiUrls } from '../api/types'
+
 export const UPPER_FEE_BOUND = 2000000000
+
+// Default RPC URLs for user configuration
+export const DEFAULT_ARB_RPC_URLS: ApiUrls = {
+  [Network.Mainnet]: 'https://arb1.arbitrum.io/rpc',
+  [Network.Stagenet]: 'https://arb1.arbitrum.io/rpc',
+  [Network.Testnet]: 'https://goerli-rollup.arbitrum.io/rpc'
+}
 
 // =====JSON-RPC Providers=====
 // Define providers for ARB mainnet and testnet
