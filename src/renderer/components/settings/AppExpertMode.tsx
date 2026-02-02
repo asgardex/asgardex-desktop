@@ -6,8 +6,8 @@ import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { RpcHealthStatus } from '../../hooks/useEvmRpcUrl'
 import { LiveData } from '../../helpers/rx/liveData'
+import { RpcHealthStatus } from '../../hooks/useEvmRpcUrl'
 import { CheckMayanodeNodeUrlHandler, CheckMayanodeRpcUrlHandler } from '../../services/mayachain/types'
 import {
   CheckMidgardUrlHandler,
