@@ -26,7 +26,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
-import { DEFAULT_WALLET_TYPE } from '../../const'
 import { eqBalancesRD } from '../../helpers/fp/eq'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import { liveData } from '../../helpers/rx/liveData'
@@ -82,30 +81,35 @@ export const createBalancesService = ({
   appWalletService: import('./types').AppWalletService
   isStandaloneLedgerMode: (state: import('./types').AppWalletState) => boolean
 }): BalancesService => {
-  // reload all balances
+  // reload all balances - derives wallet type from appWalletState$
   const reloadBalances: FP.Lazy<void> = () => {
-    userChains$.pipe(RxOp.take(1)).subscribe((enabledChains) => {
-      if (enabledChains.includes(BTCChain)) BTC.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(DASHChain)) DASH.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(BCHChain)) BCH.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(ETHChain)) ETH.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(ARBChain)) ARB.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(AVAXChain)) AVAX.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(BASEChain)) BASE.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(BSCChain)) BSC.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(THORChain)) THOR.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(MAYAChain)) MAYA.reloadBalances()
-      if (enabledChains.includes(LTCChain)) LTC.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(DOGEChain)) DOGE.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
-      if (enabledChains.includes(ADAChain)) ADA.reloadBalances()
-      if (enabledChains.includes(XRPChain)) XRP.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
-      if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
-      if (enabledChains.includes(TRONChain)) TRON.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(ZECChain)) ZEC.reloadBalances(DEFAULT_WALLET_TYPE)
-    })
+    Rx.combineLatest([userChains$, appWalletService.appWalletState$])
+      .pipe(RxOp.take(1))
+      .subscribe(([enabledChains, appWalletState]) => {
+        // Derive wallet type from app wallet state
+        const walletType = isStandaloneLedgerMode(appWalletState) ? WalletType.Ledger : WalletType.Keystore
+
+        if (enabledChains.includes(BTCChain)) BTC.reloadBalances(walletType)
+        if (enabledChains.includes(DASHChain)) DASH.reloadBalances(walletType)
+        if (enabledChains.includes(BCHChain)) BCH.reloadBalances(walletType)
+        if (enabledChains.includes(ETHChain)) ETH.reloadBalances(walletType)
+        if (enabledChains.includes(ARBChain)) ARB.reloadBalances(walletType)
+        if (enabledChains.includes(AVAXChain)) AVAX.reloadBalances(walletType)
+        if (enabledChains.includes(BASEChain)) BASE.reloadBalances(walletType)
+        if (enabledChains.includes(BSCChain)) BSC.reloadBalances(walletType)
+        if (enabledChains.includes(THORChain)) THOR.reloadBalances(walletType)
+        if (enabledChains.includes(MAYAChain)) MAYA.reloadBalances()
+        if (enabledChains.includes(LTCChain)) LTC.reloadBalances(walletType)
+        if (enabledChains.includes(DOGEChain)) DOGE.reloadBalances(walletType)
+        if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances(walletType)
+        if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
+        if (enabledChains.includes(ADAChain)) ADA.reloadBalances()
+        if (enabledChains.includes(XRPChain)) XRP.reloadBalances(walletType)
+        if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
+        if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
+        if (enabledChains.includes(TRONChain)) TRON.reloadBalances(walletType)
+        if (enabledChains.includes(ZECChain)) ZEC.reloadBalances(walletType)
+      })
   }
 
   // Returns lazy functions to reload balances by given chain
