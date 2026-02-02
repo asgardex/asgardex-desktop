@@ -62,7 +62,8 @@ import {
   KeystoreState,
   ChainBalance,
   GetLedgerAddressHandler,
-  StandaloneLedgerState
+  StandaloneLedgerState,
+  getWalletTypeFromState
 } from './types'
 import { hasImportedKeystore } from './util'
 
@@ -86,8 +87,7 @@ export const createBalancesService = ({
     Rx.combineLatest([userChains$, appWalletService.appWalletState$])
       .pipe(RxOp.take(1))
       .subscribe(([enabledChains, appWalletState]) => {
-        // Derive wallet type from app wallet state
-        const walletType = isStandaloneLedgerMode(appWalletState) ? WalletType.Ledger : WalletType.Keystore
+        const walletType = getWalletTypeFromState(appWalletState)
 
         if (enabledChains.includes(BTCChain)) BTC.reloadBalances(walletType)
         if (enabledChains.includes(DASHChain)) DASH.reloadBalances(walletType)

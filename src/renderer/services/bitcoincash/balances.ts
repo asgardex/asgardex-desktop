@@ -2,6 +2,7 @@ import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { createEnhancedClient$ } from '../clients'
+import { isKeystoreReloadTrigger } from '../wallet/types'
 import { client$, readOnlyClient$ } from './common'
 
 /**
@@ -18,7 +19,7 @@ const { get$: reloadBalances$, set: setReloadBalances } = observableState<boolea
 const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observableState<boolean>(false)
 
 const resetReloadBalances = (walletType: WalletType) => {
-  if (walletType === WalletType.Keystore) {
+  if (isKeystoreReloadTrigger(walletType)) {
     setReloadBalances(false)
   } else {
     setReloadLedgerBalances(false)
@@ -26,7 +27,7 @@ const resetReloadBalances = (walletType: WalletType) => {
 }
 
 const reloadBalances = (walletType: WalletType) => {
-  if (walletType === WalletType.Keystore) {
+  if (isKeystoreReloadTrigger(walletType)) {
     setReloadBalances(true)
   } else {
     setReloadLedgerBalances(true)
@@ -43,16 +44,20 @@ const balances$ = ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}): C.WalletBalancesLD =>
-  C.balances$({
+}): C.WalletBalancesLD => {
+  // Select trigger based on wallet type
+  const trigger$ = isKeystoreReloadTrigger(walletType) ? reloadBalances$ : reloadLedgerBalances$
+
+  return C.balances$({
     client$: enhancedClient$,
-    trigger$: reloadBalances$,
+    trigger$,
     walletType,
     walletAccount,
     walletIndex,
     hdMode,
     walletBalanceType: 'all'
   })
+}
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = C.balancesByAddress$({
