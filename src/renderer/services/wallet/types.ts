@@ -90,16 +90,16 @@ export const getWalletTypeFromState = (state: AppWalletState): WalletType => {
   if (isStandaloneLedgerMode(state)) {
     return WalletType.Ledger
   }
-  // Future: if (isVultisigMode(state)) return WalletType.Vultisig
+  if (isVultisigMode(state)) return WalletType.Vultisig
   return WalletType.Keystore
 }
 
 /**
  * Determines if the keystore reload trigger should be used for balance reloading.
+ * Keystore and Vultisig share the same reload mechanism; Ledger has its own.
  */
 export const isKeystoreReloadTrigger = (walletType: WalletType): boolean => {
-  return walletType === WalletType.Keystore
-  // Future: if (walletType === WalletType.Vultisig) ...
+  return walletType === WalletType.Keystore || walletType === WalletType.Vultisig
 }
 
 export type KeystoreLocked = { id: KeystoreId; name: string }

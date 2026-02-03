@@ -71,6 +71,8 @@ export type CommonStorage = Readonly<
     arbRpc: ApiUrls
     avaxRpc: ApiUrls
     baseRpc: ApiUrls
+    // Last opened wallet (keystore or vultisig)
+    lastOpenedWallet?: LastOpenedWallet
   } & StorageVersion
 >
 
