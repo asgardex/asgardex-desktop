@@ -44,16 +44,20 @@ export const send = async ({
   evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Derive chainId from the network parameter
+    // Arbitrum One mainnet: 42161, Arbitrum Sepolia testnet: 421614
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 421614 : 42161
+    const networkName = isTestnet ? 'arbitrum-sepolia' : 'arbitrum'
+
     // Use custom RPC URL if provided, otherwise use defaults
     const provider = evmRpcUrl
-      ? new JsonRpcProvider(evmRpcUrl, { name: 'arbitrum', chainId: 42161 })
-      : defaultArbParams.providers[Network.Mainnet]
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultArbParams.providers[network]
 
     const clientledger = new ARB.ClientLedger({
       ...defaultArbParams,
-      providers: evmRpcUrl
-        ? { ...defaultArbParams.providers, [Network.Mainnet]: provider }
-        : defaultArbParams.providers,
+      providers: evmRpcUrl ? { ...defaultArbParams.providers, [network]: provider } : defaultArbParams.providers,
       signer: new ARB.LedgerSigner({
         transport,
         provider,
@@ -121,16 +125,20 @@ export const deposit = async ({
 
     const isETHAddress = address === EVMZeroAddress
 
+    // Derive chainId from the network parameter
+    // Arbitrum One mainnet: 42161, Arbitrum Sepolia testnet: 421614
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 421614 : 42161
+    const networkName = isTestnet ? 'arbitrum-sepolia' : 'arbitrum'
+
     // Use custom RPC URL if provided, otherwise use defaults
     const rpcProvider = evmRpcUrl
-      ? new JsonRpcProvider(evmRpcUrl, { name: 'arbitrum', chainId: 42161 })
-      : defaultArbParams.providers[Network.Mainnet]
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultArbParams.providers[network]
 
     const clientledger = new ARB.ClientLedger({
       ...defaultArbParams,
-      providers: evmRpcUrl
-        ? { ...defaultArbParams.providers, [Network.Mainnet]: rpcProvider }
-        : defaultArbParams.providers,
+      providers: evmRpcUrl ? { ...defaultArbParams.providers, [network]: rpcProvider } : defaultArbParams.providers,
       signer: new ARB.LedgerSigner({
         transport,
         provider: rpcProvider,

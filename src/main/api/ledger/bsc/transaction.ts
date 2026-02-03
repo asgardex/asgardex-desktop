@@ -44,16 +44,19 @@ export const send = async ({
   evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Derive chainId from the network parameter
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 97 : 56
+    const networkName = isTestnet ? 'bnb-testnet' : 'bnb'
+
     // Use custom RPC URL if provided, otherwise use defaults
     const provider = evmRpcUrl
-      ? new JsonRpcProvider(evmRpcUrl, { name: 'bnb', chainId: 56 })
-      : defaultBscParams.providers[Network.Mainnet]
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBscParams.providers[network]
 
     const clientLedger = new BSC.ClientLedger({
       ...defaultBscParams,
-      providers: evmRpcUrl
-        ? { ...defaultBscParams.providers, [Network.Mainnet]: provider }
-        : defaultBscParams.providers,
+      providers: evmRpcUrl ? { ...defaultBscParams.providers, [network]: provider } : defaultBscParams.providers,
       signer: new BSC.LedgerSigner({
         transport,
         provider,
@@ -130,16 +133,19 @@ export const deposit = async ({
 
     const isETHAddress = address === EVMZeroAddress
 
+    // Derive chainId from the network parameter
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 97 : 56
+    const networkName = isTestnet ? 'bnb-testnet' : 'bnb'
+
     // Use custom RPC URL if provided, otherwise use defaults
     const rpcProvider = evmRpcUrl
-      ? new JsonRpcProvider(evmRpcUrl, { name: 'bnb', chainId: 56 })
-      : defaultBscParams.providers[Network.Mainnet]
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBscParams.providers[network]
 
     const clientledger = new BSC.ClientLedger({
       ...defaultBscParams,
-      providers: evmRpcUrl
-        ? { ...defaultBscParams.providers, [Network.Mainnet]: rpcProvider }
-        : defaultBscParams.providers,
+      providers: evmRpcUrl ? { ...defaultBscParams.providers, [network]: rpcProvider } : defaultBscParams.providers,
       signer: new BSC.LedgerSigner({
         transport,
         provider: rpcProvider,

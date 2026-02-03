@@ -53,16 +53,19 @@ export const send = async ({
   evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Derive chainId and network name from the network parameter
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 43113 : 43114
+    const networkName = isTestnet ? 'fuji' : 'avalanche'
+
     // Use custom RPC URL if provided, otherwise use defaults
     const provider = evmRpcUrl
-      ? new JsonRpcProvider(evmRpcUrl, { name: 'avalanche', chainId: 43114 })
-      : defaultAvaxParams.providers[Network.Mainnet]
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultAvaxParams.providers[network]
 
     const ledgerClient = new ClientLedger({
       ...defaultAvaxParams,
-      providers: evmRpcUrl
-        ? { ...defaultAvaxParams.providers, [Network.Mainnet]: provider }
-        : defaultAvaxParams.providers,
+      providers: evmRpcUrl ? { ...defaultAvaxParams.providers, [network]: provider } : defaultAvaxParams.providers,
       signer: new LedgerSigner({
         transport,
         provider,
@@ -136,16 +139,19 @@ export const deposit = async ({
       })
     }
 
+    // Derive chainId and network name from the network parameter
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 43113 : 43114
+    const networkName = isTestnet ? 'fuji' : 'avalanche'
+
     // Use custom RPC URL if provided, otherwise use defaults
     const rpcProvider = evmRpcUrl
-      ? new JsonRpcProvider(evmRpcUrl, { name: 'avalanche', chainId: 43114 })
-      : defaultAvaxParams.providers[Network.Mainnet]
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultAvaxParams.providers[network]
 
     const ledgerClient = new ClientLedger({
       ...defaultAvaxParams,
-      providers: evmRpcUrl
-        ? { ...defaultAvaxParams.providers, [Network.Mainnet]: rpcProvider }
-        : defaultAvaxParams.providers,
+      providers: evmRpcUrl ? { ...defaultAvaxParams.providers, [network]: rpcProvider } : defaultAvaxParams.providers,
       signer: new LedgerSigner({
         transport,
         provider: rpcProvider,

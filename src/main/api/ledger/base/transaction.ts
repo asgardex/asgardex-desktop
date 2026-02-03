@@ -53,16 +53,20 @@ export const send = async ({
   evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Derive chainId from the network parameter
+    // Base mainnet: 8453, Base Sepolia testnet: 84532
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 84532 : 8453
+    const networkName = isTestnet ? 'base-sepolia' : 'base'
+
     // Use custom RPC URL if provided, otherwise use defaults
     const provider = evmRpcUrl
-      ? new JsonRpcProvider(evmRpcUrl, { name: 'base', chainId: 8453 })
-      : defaultBaseParams.providers[Network.Mainnet]
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBaseParams.providers[network]
 
     const ledgerClient = new ClientLedger({
       ...defaultBaseParams,
-      providers: evmRpcUrl
-        ? { ...defaultBaseParams.providers, [Network.Mainnet]: provider }
-        : defaultBaseParams.providers,
+      providers: evmRpcUrl ? { ...defaultBaseParams.providers, [network]: provider } : defaultBaseParams.providers,
       signer: new LedgerSigner({
         transport,
         provider,
@@ -136,16 +140,20 @@ export const deposit = async ({
       })
     }
 
+    // Derive chainId from the network parameter
+    // Base mainnet: 8453, Base Sepolia testnet: 84532
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 84532 : 8453
+    const networkName = isTestnet ? 'base-sepolia' : 'base'
+
     // Use custom RPC URL if provided, otherwise use defaults
     const rpcProvider = evmRpcUrl
-      ? new JsonRpcProvider(evmRpcUrl, { name: 'base', chainId: 8453 })
-      : defaultBaseParams.providers[Network.Mainnet]
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBaseParams.providers[network]
 
     const ledgerClient = new ClientLedger({
       ...defaultBaseParams,
-      providers: evmRpcUrl
-        ? { ...defaultBaseParams.providers, [Network.Mainnet]: rpcProvider }
-        : defaultBaseParams.providers,
+      providers: evmRpcUrl ? { ...defaultBaseParams.providers, [network]: rpcProvider } : defaultBaseParams.providers,
       signer: new LedgerSigner({
         transport,
         provider: rpcProvider,
