@@ -1,6 +1,7 @@
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
+import { isKeystoreReloadTrigger } from '../wallet/types'
 import { client$ } from './common'
 
 /**
@@ -12,7 +13,7 @@ const { get$: reloadBalances$, set: setReloadBalances } = observableState<boolea
 const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observableState<boolean>(false)
 
 const resetReloadBalances = (walletType: WalletType) => {
-  if (walletType === WalletType.Keystore) {
+  if (isKeystoreReloadTrigger(walletType)) {
     setReloadBalances(false)
   } else {
     setReloadLedgerBalances(false)
@@ -20,7 +21,7 @@ const resetReloadBalances = (walletType: WalletType) => {
 }
 
 const reloadBalances = (walletType: WalletType) => {
-  if (walletType === WalletType.Keystore) {
+  if (isKeystoreReloadTrigger(walletType)) {
     setReloadBalances(true)
   } else {
     setReloadLedgerBalances(true)
@@ -38,17 +39,21 @@ const balances$ = ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}): C.WalletBalancesLD =>
+}): C.WalletBalancesLD => {
+  // Select trigger based on wallet type
+  const trigger$ = isKeystoreReloadTrigger(walletType) ? reloadBalances$ : reloadLedgerBalances$
+
   // For ZEC, we'll always use 'all' balance type since it might not support confirmed/unconfirmed distinction
-  C.balances$({
+  return C.balances$({
     client$,
-    trigger$: reloadBalances$,
+    trigger$,
     walletType,
     walletAccount,
     walletIndex,
     hdMode,
     walletBalanceType: 'all' // Force 'all' for ZEC
   })
+}
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (walletBalanceType: WalletBalanceType) =>

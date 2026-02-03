@@ -13,7 +13,7 @@ import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { createEnhancedClient$ } from '../clients'
 import { getUserAssetsByChain$ } from '../storage/userChainTokens'
-import { WalletBalance } from '../wallet/types'
+import { isKeystoreReloadTrigger, WalletBalance } from '../wallet/types'
 import { client$, readOnlyClient$ } from './common'
 
 /**
@@ -30,7 +30,7 @@ const { get$: reloadBalances$, set: setReloadBalances } = observableState<boolea
 const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observableState<boolean>(false)
 
 const resetReloadBalances = (walletType: WalletType) => {
-  if (walletType === WalletType.Keystore) {
+  if (isKeystoreReloadTrigger(walletType)) {
     setReloadBalances(false)
   } else {
     setReloadLedgerBalances(false)
@@ -38,7 +38,7 @@ const resetReloadBalances = (walletType: WalletType) => {
 }
 
 const reloadBalances = (walletType: WalletType) => {
-  if (walletType === WalletType.Keystore) {
+  if (isKeystoreReloadTrigger(walletType)) {
     setReloadBalances(true)
   } else {
     setReloadLedgerBalances(true)
@@ -70,12 +70,15 @@ const balances$: ({
   walletIndex: number
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
+  // Select trigger based on wallet type
+  const trigger$ = isKeystoreReloadTrigger(walletType) ? reloadBalances$ : reloadLedgerBalances$
+
   return FP.pipe(
     getUserAssetsByChain$(BSCChain),
     switchMap((assets) => {
       return C.balances$({
         client$: enhancedClient$,
-        trigger$: reloadBalances$,
+        trigger$,
         assets: assets,
         walletType,
         walletAccount,
@@ -91,7 +94,7 @@ const balances$: ({
         // Retry with fallback assets
         return C.balances$({
           client$: enhancedClient$,
-          trigger$: reloadBalances$,
+          trigger$,
           assets: BSCAssetsFallBack,
           walletType,
           walletAccount,
