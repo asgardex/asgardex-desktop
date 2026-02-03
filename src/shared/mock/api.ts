@@ -116,6 +116,7 @@ const commonStorageData: CommonStorage = {
     stagenet: 'https://1rpc.io/base',
     testnet: 'https://base-sepolia-rpc.publicnode.com'
   },
+  evmGasMultiplier: 1,
   version: '2'
 }
 

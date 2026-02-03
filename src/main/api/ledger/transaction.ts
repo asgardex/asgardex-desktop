@@ -23,7 +23,7 @@ import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
 
 import { IPCLedgerDepositTxParams, IPCLedgerSendTxParams } from '../../../shared/api/io'
-import { LedgerError, LedgerErrorId } from '../../../shared/api/types'
+import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { chainToString, isSupportedChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode, isUtxoHDMode } from '../../../shared/utils/guard'
 import * as ARB from './arb/transaction'
@@ -156,7 +156,13 @@ const chainSendFunctions: Record<
         msg: `Eth needs an api key ${chainToString(ETHChain)}`
       })
     }
-    return ETH.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, apiKey: params.apiKey })
+    return ETH.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      apiKey: params.apiKey,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [AVAXChain]: async (params) => {
     if (!params.asset) {
@@ -314,7 +320,9 @@ export const sendTx = async ({
   nodeUrl,
   hdMode,
   apiKey,
-  destinationTag
+  destinationTag,
+  evmRpcUrl,
+  gasMultiplier
 }: IPCLedgerSendTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const transport = await TransportNodeHidSingleton.default.create()
@@ -352,7 +360,9 @@ export const sendTx = async ({
       hdMode,
       feeAsset: undefined,
       apiKey,
-      destinationTag
+      destinationTag,
+      evmRpcUrl,
+      gasMultiplier
     })
     await transport.close()
     return res
@@ -398,7 +408,8 @@ const chainDepositFunctions: Record<
     walletIndex,
     feeOption,
     hdMode,
-    apiKey
+    apiKey,
+    gasMultiplier
   }) => {
     if (!router) {
       return E.left({
@@ -448,7 +459,8 @@ const chainDepositFunctions: Record<
       recipient,
       feeOption,
       evmHDMode: hdMode,
-      apiKey
+      apiKey,
+      gasMultiplier: (gasMultiplier ?? 1) as GasMultiplier
     })
   },
   [AVAXChain]: async (params) => {
@@ -650,7 +662,9 @@ export const deposit = async ({
   feeOption,
   nodeUrl,
   hdMode,
-  apiKey
+  apiKey,
+  evmRpcUrl,
+  gasMultiplier
 }: IPCLedgerDepositTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const transport = await TransportNodeHidSingleton.default.create()
@@ -684,7 +698,9 @@ export const deposit = async ({
       feeOption,
       nodeUrl,
       hdMode,
-      apiKey
+      apiKey,
+      evmRpcUrl,
+      gasMultiplier
     })
     await transport.close()
     return res

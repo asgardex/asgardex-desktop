@@ -6,6 +6,7 @@ import { useObservableState } from 'observable-hooks'
 import { AppExpertMode } from '../../components/settings/AppExpertMode'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useEvmGasMultiplier } from '../../hooks/useEvmGasMultiplier'
 import { useEvmRpcUrl } from '../../hooks/useEvmRpcUrl'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
@@ -76,6 +77,9 @@ export const AppExpertModeView = (): JSX.Element => {
     healthStatus: baseHealthStatus
   } = useEvmRpcUrl('BASE')
 
+  // EVM Gas multiplier
+  const { multiplier: gasMultiplier, setMultiplier: setGasMultiplier } = useEvmGasMultiplier()
+
   const updateMidgardUrlHandler = useCallback(
     (url: string) => {
       setMidgardUrl(url, network)
@@ -125,6 +129,9 @@ export const AppExpertModeView = (): JSX.Element => {
         checkUrl$: checkBaseRpcUrl$,
         healthStatus: baseHealthStatus
       }}
+      // EVM Gas multiplier
+      gasMultiplier={gasMultiplier}
+      onChangeGasMultiplier={setGasMultiplier}
     />
   )
 }

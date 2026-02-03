@@ -2,11 +2,13 @@ import equal from 'fast-deep-equal'
 import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RxOp from 'rxjs/operators'
+
 import { CommonStorage } from '../../../shared/api/types'
 import { DEFAULT_ARB_RPC_URLS } from '../../../shared/arb/const'
 import { DEFAULT_AVAX_RPC_URLS } from '../../../shared/avax/const'
 import { DEFAULT_BASE_RPC_URLS } from '../../../shared/base/const'
 import { DEFAULT_BSC_RPC_URLS } from '../../../shared/bsc/const'
+import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../shared/const'
 import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
 import { DEFAULT_EVM_HD_MODE } from '../../../shared/evm/types'
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
@@ -115,6 +117,14 @@ const baseRpc$ = pipe(
   RxOp.distinctUntilChanged(equal)
 )
 
+const evmGasMultiplier$ = pipe(
+  getStorageState$,
+  RxOp.map(O.map(({ evmGasMultiplier }) => evmGasMultiplier)),
+  // Cast to number to work with the observable types, but the value is always a valid GasMultiplier
+  RxOp.map(O.getOrElse((): number => DEFAULT_EVM_GAS_MULTIPLIER)),
+  RxOp.distinctUntilChanged()
+)
+
 // Update function
 const modifyStorage = (oPartialData: StoragePartialState<CommonStorage>) => {
   pipe(
@@ -147,5 +157,6 @@ export {
   bscRpc$,
   arbRpc$,
   avaxRpc$,
-  baseRpc$
+  baseRpc$,
+  evmGasMultiplier$
 }

@@ -6,7 +6,9 @@ import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import { GasMultiplier } from '../../../shared/api/types'
 import { LiveData } from '../../helpers/rx/liveData'
+import { GAS_MULTIPLIER_OPTIONS } from '../../hooks/useEvmGasMultiplier'
 import { RpcHealthStatus } from '../../hooks/useEvmRpcUrl'
 import { CheckMayanodeNodeUrlHandler, CheckMayanodeRpcUrlHandler } from '../../services/mayachain/types'
 import {
@@ -18,6 +20,7 @@ import {
 import { CheckThornodeNodeUrlHandler, CheckThornodeRpcUrlHandler } from '../../services/thorchain/types'
 import { TextButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
+import { RadioGroup } from '../uielements/radioGroup'
 import EditableUrl from './EditableUrl'
 
 export type CheckEvmRpcUrlHandler = (url: string) => LiveData<Error, string>
@@ -54,6 +57,9 @@ type Props = {
   arbRpc?: EvmRpcConfig
   avaxRpc?: EvmRpcConfig
   baseRpc?: EvmRpcConfig
+  // EVM Gas multiplier
+  gasMultiplier: number
+  onChangeGasMultiplier: (multiplier: GasMultiplier) => void
 }
 
 type SubSectionProps = {
@@ -127,7 +133,9 @@ export const AppExpertMode = (props: Props): JSX.Element => {
     bscRpc,
     arbRpc,
     avaxRpc,
-    baseRpc
+    baseRpc,
+    gasMultiplier,
+    onChangeGasMultiplier
   } = props
 
   const intl = useIntl()
@@ -350,6 +358,18 @@ export const AppExpertMode = (props: Props): JSX.Element => {
             </SubSection>
           )}
         </div>
+      </Section>
+      <Section title={intl.formatMessage({ id: 'settings.expert.gasMultiplier.title' })}>
+        <SubSection title={intl.formatMessage({ id: 'settings.expert.gasMultiplier.description' })}>
+          <RadioGroup
+            options={GAS_MULTIPLIER_OPTIONS.map((m) => ({
+              label: `${m}x`,
+              value: m
+            }))}
+            activeIndex={GAS_MULTIPLIER_OPTIONS.indexOf(gasMultiplier)}
+            onChange={(index) => onChangeGasMultiplier(GAS_MULTIPLIER_OPTIONS[index] as GasMultiplier)}
+          />
+        </SubSection>
       </Section>
     </div>
   )

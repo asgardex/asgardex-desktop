@@ -8,8 +8,9 @@ import { either as E } from 'fp-ts'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { EVMZeroAddress } from '../../../../renderer/services/evm/const'
-import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultEthParams } from '../../../../shared/ethereum/const'
+import { applyGasMultiplier } from '../../../../shared/evm/gas'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -35,7 +36,8 @@ export const send = async ({
   walletAccount,
   walletIndex,
   evmHDMode,
-  apiKey
+  apiKey,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   transport: Transport
@@ -48,6 +50,7 @@ export const send = async ({
   walletIndex: number
   evmHDMode: EvmHDMode
   apiKey: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const ethProviders = createEthProviders(apiKey)
@@ -69,13 +72,17 @@ export const send = async ({
       network
     })
 
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await ledgerClient.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+
     const txHash = await ledgerClient.transfer({
       walletIndex,
       asset: asset as Asset | TokenAsset,
       memo,
       amount,
       recipient,
-      feeOption
+      gasPrice: gasPrices[feeOption]
     })
 
     if (!txHash) {
@@ -109,7 +116,8 @@ export const deposit = async ({
   walletIndex,
   feeOption,
   evmHDMode,
-  apiKey
+  apiKey,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   router: Address
@@ -123,6 +131,7 @@ export const deposit = async ({
   feeOption: FeeOption
   evmHDMode: EvmHDMode
   apiKey: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -155,7 +164,9 @@ export const deposit = async ({
     })
 
     const provider = ledgerClient.getProvider()
-    const gasPrices = await ledgerClient.estimateGasPrices(Protocol.THORCHAIN) // fetch gas prices from thorchain
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await ledgerClient.estimateGasPrices(Protocol.THORCHAIN) // fetch gas prices from thorchain
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
@@ -184,7 +195,7 @@ export const deposit = async ({
       amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
       memo: unsignedTx.data,
       recipient: router,
-      gasPrice: gasPrices.fast,
+      gasPrice: gasPrices[feeOption],
       isMemoEncoded: true,
       gasLimit: new BigNumber(160000)
     })

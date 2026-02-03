@@ -123,7 +123,9 @@ export const ipcLedgerSendTxParamsIO = t.type({
   nodeUrl: t.union([t.string, t.undefined]),
   hdMode: hdModeIO,
   apiKey: t.union([t.string, t.undefined]),
-  destinationTag: t.union([t.number, t.undefined])
+  destinationTag: t.union([t.number, t.undefined]),
+  evmRpcUrl: t.union([t.string, t.undefined]),
+  gasMultiplier: t.union([t.number, t.undefined])
 })
 
 export type IPCLedgerSendTxParams = t.TypeOf<typeof ipcLedgerSendTxParamsIO>
@@ -141,7 +143,9 @@ export const ipcLedgerDepositTxParamsIO = t.type({
   feeOption: t.union([feeOptionIO, t.undefined]),
   nodeUrl: t.union([t.string, t.undefined]),
   hdMode: hdModeIO,
-  apiKey: t.union([t.string, t.undefined])
+  apiKey: t.union([t.string, t.undefined]),
+  evmRpcUrl: t.union([t.string, t.undefined]),
+  gasMultiplier: t.union([t.number, t.undefined])
 })
 
 export type IPCLedgerDepositTxParams = t.TypeOf<typeof ipcLedgerDepositTxParamsIO>
