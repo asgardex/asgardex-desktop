@@ -53,7 +53,8 @@ export const createTransactionService = (
       feeOption: undefined,
       nodeUrl: clientUrl[network].node,
       hdMode: params.hdMode,
-      apiKey: undefined
+      apiKey: undefined,
+      evmRpcUrl: undefined
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(depositLedgerTxParams)
     return FP.pipe(
@@ -158,7 +159,8 @@ export const createTransactionService = (
       nodeUrl: clientUrl[network].node,
       hdMode: 'default',
       apiKey: undefined,
-      destinationTag: undefined
+      destinationTag: undefined,
+      evmRpcUrl: undefined
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(sendLedgerTxParams)
 

@@ -10,6 +10,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { etherscanApiKey } from '../../../shared/api/etherscan'
+import { ApiUrls } from '../../../shared/api/types'
 import {
   IPCLedgerApproveERC20TokenParams,
   ipcLedgerApproveERC20TokenParamsIO,
@@ -40,7 +41,11 @@ import {
 } from '../evm/types'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 
-export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
+export const createTransactionService = (
+  client$: Client$,
+  network$: Network$,
+  evmRpc$: Rx.Observable<ApiUrls>
+): TransactionService => {
   const common = C.createTransactionService(client$)
 
   // Note: We don't use `client.deposit` to send "pool" txs to avoid repeating same requests we already do in ASGARDEX
@@ -112,7 +117,15 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
   }
 
-  const sendLedgerPoolTx = ({ network, params }: { network: Network; params: SendPoolTxParams }): TxHashLD => {
+  const sendLedgerPoolTx = ({
+    network,
+    params,
+    evmRpcUrl
+  }: {
+    network: Network
+    params: SendPoolTxParams
+    evmRpcUrl: string
+  }): TxHashLD => {
     const ipcParams: IPCLedgerDepositTxParams = {
       chain: ETHChain,
       network,
@@ -126,7 +139,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       feeOption: params.feeOption,
       nodeUrl: undefined,
       hdMode: params.hdMode,
-      apiKey: etherscanApiKey
+      apiKey: etherscanApiKey,
+      evmRpcUrl
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(ipcParams)
     return FP.pipe(
@@ -152,8 +166,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const sendPoolTx$ = (params: SendPoolTxParams): TxHashLD => {
     if (isLedgerWallet(params.walletType))
       return FP.pipe(
-        network$,
-        RxOp.switchMap((network) => sendLedgerPoolTx({ network, params }))
+        Rx.combineLatest([network$, evmRpc$]),
+        RxOp.switchMap(([network, rpcUrls]) => sendLedgerPoolTx({ network, params, evmRpcUrl: rpcUrls[network] }))
       )
 
     return FP.pipe(
@@ -205,8 +219,9 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     spenderAddress,
     walletAccount,
     walletIndex,
-    hdMode
-  }: ApproveParams): TxHashLD => {
+    hdMode,
+    evmRpcUrl
+  }: ApproveParams & { evmRpcUrl: string }): TxHashLD => {
     if (!isEvmHDMode(hdMode)) {
       return Rx.of(
         RD.failure({
@@ -224,7 +239,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       walletAccount,
       walletIndex,
       hdMode,
-      apiKey: etherscanApiKey
+      apiKey: etherscanApiKey,
+      evmRpcUrl
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
     return FP.pipe(
@@ -268,7 +284,11 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
         })
       )
 
-    if (isLedgerWallet(walletType)) return runApproveLedgerERC20Token$(params)
+    if (isLedgerWallet(walletType))
+      return FP.pipe(
+        evmRpc$,
+        RxOp.switchMap((rpcUrls) => runApproveLedgerERC20Token$({ ...params, evmRpcUrl: rpcUrls[network] }))
+      )
 
     return client$.pipe(
       RxOp.switchMap((oClient) =>
@@ -319,7 +339,15 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       )
     )
 
-  const sendLedgerTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD => {
+  const sendLedgerTx = ({
+    network,
+    params,
+    evmRpcUrl
+  }: {
+    network: Network
+    params: SendTxParams
+    evmRpcUrl: string
+  }): TxHashLD => {
     const ipcParams: IPCLedgerSendTxParams = {
       chain: ETHChain,
       network,
@@ -337,7 +365,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       nodeUrl: undefined,
       hdMode: params.hdMode,
       apiKey: etherscanApiKey,
-      destinationTag: undefined
+      destinationTag: undefined,
+      evmRpcUrl
     }
 
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)
@@ -364,9 +393,9 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
 
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
-      network$,
-      RxOp.switchMap((network) => {
-        if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
+      Rx.combineLatest([network$, evmRpc$]),
+      RxOp.switchMap(([network, rpcUrls]) => {
+        if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params, evmRpcUrl: rpcUrls[network] })
 
         return common.sendTx(params)
       })

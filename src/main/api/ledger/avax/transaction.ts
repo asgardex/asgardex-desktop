@@ -12,7 +12,7 @@ import {
   TokenAsset
 } from '@xchainjs/xchain-util'
 import { BigNumber } from 'bignumber.js'
-import { Contract, getAddress, ZeroAddress } from 'ethers'
+import { Contract, getAddress, JsonRpcProvider, ZeroAddress } from 'ethers'
 import { either as E } from 'fp-ts'
 
 import { isAvaxAsset, isEVMTokenAsset } from '../../../../renderer/helpers/assetHelper'
@@ -25,7 +25,7 @@ import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 
 /**
- * Sends ETH tx using Ledger
+ * Sends AVAX tx using Ledger
  */
 export const send = async ({
   asset,
@@ -37,7 +37,8 @@ export const send = async ({
   feeOption,
   walletAccount,
   walletIndex,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   transport: Transport
@@ -49,13 +50,22 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Use custom RPC URL if provided, otherwise use defaults
+    const provider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: 'avalanche', chainId: 43114 })
+      : defaultAvaxParams.providers[Network.Mainnet]
+
     const ledgerClient = new ClientLedger({
       ...defaultAvaxParams,
+      providers: evmRpcUrl
+        ? { ...defaultAvaxParams.providers, [Network.Mainnet]: provider }
+        : defaultAvaxParams.providers,
       signer: new LedgerSigner({
         transport,
-        provider: defaultAvaxParams.providers[Network.Mainnet],
+        provider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -87,7 +97,7 @@ export const send = async ({
 }
 
 /**
- * Sends Avax deposit txs using Ledger
+ * Sends AVAX deposit txs using Ledger
  */
 export const deposit = async ({
   asset,
@@ -100,7 +110,8 @@ export const deposit = async ({
   walletAccount,
   walletIndex,
   feeOption,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   router: Address
@@ -113,6 +124,7 @@ export const deposit = async ({
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isAvaxAsset(asset) ? getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -124,11 +136,19 @@ export const deposit = async ({
       })
     }
 
+    // Use custom RPC URL if provided, otherwise use defaults
+    const rpcProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: 'avalanche', chainId: 43114 })
+      : defaultAvaxParams.providers[Network.Mainnet]
+
     const ledgerClient = new ClientLedger({
       ...defaultAvaxParams,
+      providers: evmRpcUrl
+        ? { ...defaultAvaxParams.providers, [Network.Mainnet]: rpcProvider }
+        : defaultAvaxParams.providers,
       signer: new LedgerSigner({
         transport,
-        provider: defaultAvaxParams.providers[Network.Mainnet],
+        provider: rpcProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),

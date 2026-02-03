@@ -3,7 +3,7 @@ import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as ARB from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import { BigNumber } from 'bignumber.js'
-import { Contract } from 'ethers'
+import { Contract, JsonRpcProvider } from 'ethers'
 import { either as E } from 'fp-ts'
 
 import { isAethAsset } from '../../../../renderer/helpers/assetHelper'
@@ -16,7 +16,7 @@ import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 
 /**
- * Sends ETH tx using Ledger
+ * Sends ARB tx using Ledger
  */
 export const send = async ({
   asset,
@@ -28,7 +28,8 @@ export const send = async ({
   feeOption,
   walletAccount,
   walletIndex,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   transport: Transport
@@ -40,13 +41,22 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Use custom RPC URL if provided, otherwise use defaults
+    const provider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: 'arbitrum', chainId: 42161 })
+      : defaultArbParams.providers[Network.Mainnet]
+
     const clientledger = new ARB.ClientLedger({
       ...defaultArbParams,
+      providers: evmRpcUrl
+        ? { ...defaultArbParams.providers, [Network.Mainnet]: provider }
+        : defaultArbParams.providers,
       signer: new ARB.LedgerSigner({
         transport,
-        provider: defaultArbParams.providers[Network.Mainnet],
+        provider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       network: network
@@ -70,7 +80,7 @@ export const send = async ({
 }
 
 /**
- * Sends ETH deposit txs using Ledger
+ * Sends ARB deposit txs using Ledger
  */
 export const deposit = async ({
   asset,
@@ -83,7 +93,8 @@ export const deposit = async ({
   walletAccount,
   walletIndex,
   feeOption,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   router: Address
@@ -96,6 +107,7 @@ export const deposit = async ({
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isAethAsset(asset) ? ARB.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -109,11 +121,19 @@ export const deposit = async ({
 
     const isETHAddress = address === EVMZeroAddress
 
+    // Use custom RPC URL if provided, otherwise use defaults
+    const rpcProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: 'arbitrum', chainId: 42161 })
+      : defaultArbParams.providers[Network.Mainnet]
+
     const clientledger = new ARB.ClientLedger({
       ...defaultArbParams,
+      providers: evmRpcUrl
+        ? { ...defaultArbParams.providers, [Network.Mainnet]: rpcProvider }
+        : defaultArbParams.providers,
       signer: new ARB.LedgerSigner({
         transport,
-        provider: defaultArbParams.providers[Network.Mainnet],
+        provider: rpcProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       network: network
