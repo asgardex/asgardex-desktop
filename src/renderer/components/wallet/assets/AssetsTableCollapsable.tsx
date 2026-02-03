@@ -477,7 +477,10 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if ((isRuneNativeAsset(asset) || isCacaoAsset(asset) || isTCYAsset(asset)) && !isStandaloneLedger) {
+      if (
+        (isRuneNativeAsset(asset) || isTCYAsset(asset) || isCacaoAsset(asset) || isMayaAsset(asset)) &&
+        !isStandaloneLedger
+      ) {
         actions.push(createAction('wallet.action.deposit', () => assetHandler(walletAsset, 'deposit')))
       }
 
