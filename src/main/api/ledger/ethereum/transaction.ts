@@ -35,7 +35,8 @@ export const send = async ({
   walletAccount,
   walletIndex,
   evmHDMode,
-  apiKey
+  apiKey,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   transport: Transport
@@ -48,21 +49,27 @@ export const send = async ({
   walletIndex: number
   evmHDMode: EvmHDMode
   apiKey: string
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const ethProviders = createEthProviders(apiKey)
 
+    // Use custom RPC URL if provided, otherwise use defaults
+    const mainnetProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, 'homestead')
+      : new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
+
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
       providers: {
-        mainnet: new JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
+        mainnet: mainnetProvider,
         testnet: ETH_TESTNET_ETHERS_PROVIDER,
         stagenet: ETH_MAINNET_ETHERS_PROVIDER
       },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: new JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
+        provider: mainnetProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -109,7 +116,8 @@ export const deposit = async ({
   walletIndex,
   feeOption,
   evmHDMode,
-  apiKey
+  apiKey,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   router: Address
@@ -123,6 +131,7 @@ export const deposit = async ({
   feeOption: FeeOption
   evmHDMode: EvmHDMode
   apiKey: string
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -137,17 +146,22 @@ export const deposit = async ({
 
     const isETHAddress = address === EVMZeroAddress
 
+    // Use custom RPC URL if provided, otherwise use EtherscanProvider
+    const mainnetProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, 'homestead')
+      : new EtherscanProvider('homestead', apiKey)
+
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
       providers: {
-        mainnet: new EtherscanProvider('homestead', apiKey),
+        mainnet: mainnetProvider,
         testnet: ETH_TESTNET_ETHERS_PROVIDER,
         stagenet: ETH_MAINNET_ETHERS_PROVIDER
       },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: new EtherscanProvider('homestead', apiKey),
+        provider: mainnetProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),

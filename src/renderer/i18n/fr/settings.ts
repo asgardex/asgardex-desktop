@@ -70,7 +70,8 @@ const settings: SettingMessages = {
   'settings.expert.evm.base.title': 'RPC Base',
   'settings.evm.rpc.error.url': 'URL RPC EVM invalide. Veuillez vérifier et réessayer',
   'settings.evm.rpc.valid': 'URL RPC EVM valide',
-  'settings.evm.rpc.unhealthy': "Le point d'accès RPC ne répond pas. Vérifiez votre connexion ou essayez une autre URL.",
+  'settings.evm.rpc.unhealthy':
+    "Le point d'accès RPC ne répond pas. Vérifiez votre connexion ou essayez une autre URL.",
   'settings.ledgerMode.lockWalletWarning': "Verrouillez d'abord le portefeuille pour entrer en mode Ledger",
   'settings.wallet.whitelist': 'Liste blanche',
   'settings.wallet.customToken': 'Token personnalisé'

@@ -1,4 +1,5 @@
 import { network$ } from '../app/service'
+import { avaxRpc$ } from '../storage/common'
 import {
   reloadBalances,
   balances$,
@@ -22,7 +23,7 @@ const {
   sendPoolTx$,
   approveERC20Token$,
   isApprovedERC20Token$
-} = createTransactionService(client$, network$)
+} = createTransactionService(client$, network$, avaxRpc$)
 const { reloadFees, fees$, poolInTxFees$, approveFee$, reloadApproveFee } = createFeesService(enhancedClient$)
 
 export {

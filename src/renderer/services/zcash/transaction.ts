@@ -37,7 +37,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       nodeUrl: undefined,
       hdMode: 'default',
       apiKey: blockcypherApiKey,
-      destinationTag: undefined
+      destinationTag: undefined,
+      evmRpcUrl: undefined
     }
 
     const encoded = ipcLedgerSendTxParamsIO.encode(sendLedgerTxParams)
