@@ -10,7 +10,6 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { etherscanApiKey } from '../../../shared/api/etherscan'
-import { ApiUrls } from '../../../shared/api/types'
 import {
   IPCLedgerApproveERC20TokenParams,
   ipcLedgerApproveERC20TokenParamsIO,
@@ -19,7 +18,7 @@ import {
   IPCLedgerSendTxParams,
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
-import { LedgerError } from '../../../shared/api/types'
+import { ApiUrls, LedgerError } from '../../../shared/api/types'
 import { getBlocktime } from '../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
 import { addressInERC20Whitelist, getEVMAssetAddress, isEVMTokenAsset } from '../../helpers/assetHelper'
