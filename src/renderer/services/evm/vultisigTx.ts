@@ -69,11 +69,29 @@ export const createVultisigEvmTx = (
               FP.pipe(
                 // 1. Build unsigned transaction
                 Rx.defer(() => {
-                  window.apiLog.info('[Vultisig]', `${chainName} step 1: prepareTx`)
-                  return Rx.from(client.prepareTx({ sender, recipient, amount, memo }))
+                  window.apiLog.info('[Vultisig]', `${chainName} step 1: prepareTx`, {
+                    sender,
+                    recipient,
+                    amount: amount.amount().toString()
+                  })
+                  return Rx.from(client.prepareTx({ sender, recipient, amount, memo })).pipe(
+                    RxOp.tap((result) =>
+                      window.apiLog.info('[Vultisig]', `${chainName} prepareTx result`, {
+                        hasRawTx: !!result?.rawUnsignedTx
+                      })
+                    ),
+                    RxOp.catchError((err) => {
+                      window.apiLog.error('[Vultisig]', `${chainName} prepareTx failed`, {
+                        error: err?.message ?? String(err)
+                      })
+                      throw err
+                    })
+                  )
                 }),
                 RxOp.switchMap(({ rawUnsignedTx }) => {
-                  window.apiLog.info('[Vultisig]', `${chainName} step 2: parsing tx`)
+                  window.apiLog.info('[Vultisig]', `${chainName} step 2: parsing tx`, {
+                    rawTxLength: rawUnsignedTx?.length
+                  })
                   // 2. Parse into Transaction object
                   const tx = Transaction.from(rawUnsignedTx)
 

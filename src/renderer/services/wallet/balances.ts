@@ -24,14 +24,11 @@ import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'f
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ASGARDEX_TO_SDK_CHAIN } from '../../../shared/api/mpcTypes'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
-import { DEFAULT_WALLET_TYPE } from '../../const'
 import { eqBalancesRD } from '../../helpers/fp/eq'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import { liveData } from '../../helpers/rx/liveData'
-import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
 import { Network$ } from '../app/types'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
@@ -66,8 +63,7 @@ import {
   ChainBalance,
   GetLedgerAddressHandler,
   StandaloneLedgerState,
-  StandaloneVultisigState,
-  isStandaloneVultisigMode
+  getWalletTypeFromState
 } from './types'
 import { hasImportedKeystore } from './util'
 
@@ -86,31 +82,34 @@ export const createBalancesService = ({
   appWalletService: import('./types').AppWalletService
   isStandaloneLedgerMode: (state: import('./types').AppWalletState) => boolean
 }): BalancesService => {
-  // reload all balances
+  // reload all balances - derives wallet type from appWalletState$
   const reloadBalances: FP.Lazy<void> = () => {
-    userChains$.pipe(RxOp.take(1)).subscribe((enabledChains) => {
-      window.apiLog.info('[Balances]', `Reloading balances for ${enabledChains.length} chains`)
-      if (enabledChains.includes(BTCChain)) BTC.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(DASHChain)) DASH.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(BCHChain)) BCH.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(ETHChain)) ETH.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(ARBChain)) ARB.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(AVAXChain)) AVAX.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(BASEChain)) BASE.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(BSCChain)) BSC.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(THORChain)) THOR.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(MAYAChain)) MAYA.reloadBalances()
-      if (enabledChains.includes(LTCChain)) LTC.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(DOGEChain)) DOGE.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
-      if (enabledChains.includes(ADAChain)) ADA.reloadBalances()
-      if (enabledChains.includes(XRPChain)) XRP.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
-      if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
-      if (enabledChains.includes(TRONChain)) TRON.reloadBalances(DEFAULT_WALLET_TYPE)
-      if (enabledChains.includes(ZECChain)) ZEC.reloadBalances(DEFAULT_WALLET_TYPE)
-    })
+    Rx.combineLatest([userChains$, appWalletService.appWalletState$])
+      .pipe(RxOp.take(1))
+      .subscribe(([enabledChains, appWalletState]) => {
+        const walletType = getWalletTypeFromState(appWalletState)
+
+        if (enabledChains.includes(BTCChain)) BTC.reloadBalances(walletType)
+        if (enabledChains.includes(DASHChain)) DASH.reloadBalances(walletType)
+        if (enabledChains.includes(BCHChain)) BCH.reloadBalances(walletType)
+        if (enabledChains.includes(ETHChain)) ETH.reloadBalances(walletType)
+        if (enabledChains.includes(ARBChain)) ARB.reloadBalances(walletType)
+        if (enabledChains.includes(AVAXChain)) AVAX.reloadBalances(walletType)
+        if (enabledChains.includes(BASEChain)) BASE.reloadBalances(walletType)
+        if (enabledChains.includes(BSCChain)) BSC.reloadBalances(walletType)
+        if (enabledChains.includes(THORChain)) THOR.reloadBalances(walletType)
+        if (enabledChains.includes(MAYAChain)) MAYA.reloadBalances()
+        if (enabledChains.includes(LTCChain)) LTC.reloadBalances(walletType)
+        if (enabledChains.includes(DOGEChain)) DOGE.reloadBalances(walletType)
+        if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances(walletType)
+        if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
+        if (enabledChains.includes(ADAChain)) ADA.reloadBalances()
+        if (enabledChains.includes(XRPChain)) XRP.reloadBalances(walletType)
+        if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
+        if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
+        if (enabledChains.includes(TRONChain)) TRON.reloadBalances(walletType)
+        if (enabledChains.includes(ZECChain)) ZEC.reloadBalances(walletType)
+      })
   }
 
   // Returns lazy functions to reload balances by given chain
@@ -449,95 +448,82 @@ export const createBalancesService = ({
   }
 
   /**
-   * Transforms THOR balances into `ChainBalances`
+   * Factory to create a chain balance observable that uses dynamic wallet type from addressUI$
    */
-  const thorChainBalance$: ChainBalance$ = THOR.addressUI$.pipe(
-    RxOp.switchMap((oWalletAddress) =>
-      FP.pipe(
-        oWalletAddress,
-        O.fold(
-          () =>
-            Rx.of({
-              walletType: WalletType.Keystore,
-              chain: THORChain,
-              walletAddress: O.none,
-              walletAccount: 0,
-              walletIndex: 0,
-              balances: RD.initial,
-              balancesType: 'all' as const
-            }),
-          (walletAddress) =>
-            getChainBalance$({
-              chain: THORChain,
-              walletType: walletAddress.type, // Use dynamic wallet type from address
-              walletAccount: walletAddress.walletAccount,
-              walletIndex: walletAddress.walletIndex,
-              hdMode: walletAddress.hdMode,
-              walletBalanceType: 'all'
-            }).pipe(
-              RxOp.map((balances) => ({
-                walletType: walletAddress.type, // Use dynamic wallet type
-                chain: THORChain,
-                walletAddress: O.some(walletAddress.address),
+  const createChainBalance$ = ({
+    chain,
+    addressUI$,
+    walletBalanceType
+  }: {
+    chain: Chain
+    addressUI$: Rx.Observable<O.Option<WalletAddress>>
+    walletBalanceType: WalletBalanceType
+  }): ChainBalance$ =>
+    addressUI$.pipe(
+      RxOp.switchMap((oWalletAddress) =>
+        FP.pipe(
+          oWalletAddress,
+          O.fold(
+            () =>
+              Rx.of({
+                walletType: WalletType.Keystore,
+                chain,
+                walletAddress: O.none,
+                walletAccount: 0,
+                walletIndex: 0,
+                balances: RD.initial,
+                balancesType: walletBalanceType
+              }),
+            (walletAddress) =>
+              getChainBalance$({
+                chain,
+                walletType: walletAddress.type,
                 walletAccount: walletAddress.walletAccount,
                 walletIndex: walletAddress.walletIndex,
-                balances,
-                balancesType: 'all' as const
-              }))
-            )
+                hdMode: walletAddress.hdMode,
+                walletBalanceType
+              }).pipe(
+                RxOp.map((balances) => ({
+                  walletType: walletAddress.type,
+                  chain,
+                  walletAddress: O.some(walletAddress.address),
+                  walletAccount: walletAddress.walletAccount,
+                  walletIndex: walletAddress.walletIndex,
+                  balances,
+                  balancesType: walletBalanceType
+                }))
+              )
+          )
         )
       )
     )
-  )
+
+  /**
+   * Transforms THOR balances into `ChainBalances`
+   */
+  const thorChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: THORChain,
+    addressUI$: THOR.addressUI$,
+    walletBalanceType: 'all'
+  })
+
   /**
    * Transforms SOL balances into `ChainBalances`
    */
-  const solChainBalance$: ChainBalance$ = Rx.combineLatest([
-    SOL.addressUI$,
-    getChainBalance$({
-      chain: SOLChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: SOLChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const solChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: SOLChain,
+    addressUI$: SOL.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * Transforms MAYA balances into `ChainBalances`
    */
-  const mayaChainBalance$: ChainBalance$ = Rx.combineLatest([
-    MAYA.addressUI$,
-    getChainBalance$({
-      chain: MAYAChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: MAYAChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const mayaChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: MAYAChain,
+    addressUI$: MAYA.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * Factory to create a stream of ledger balances by given chain
@@ -608,139 +594,6 @@ export const createBalancesService = ({
     )
 
   /**
-   * Factory to create a stream of Vultisig balances by given chain
-   * Similar to ledgerChainBalance$, but gets address from Vultisig state
-   */
-  const vultisigChainBalance$ = ({
-    chain,
-    walletBalanceType,
-    getBalanceByAddress$
-  }: {
-    chain: Chain
-    walletBalanceType: WalletBalanceType
-    getBalanceByAddress$: ({
-      address,
-      walletAccount,
-      walletType,
-      walletIndex,
-      hdMode,
-      walletBalanceType
-    }: {
-      address: Address
-      walletType: WalletType
-      walletAccount: number
-      walletIndex: number
-      hdMode: HDMode
-      walletBalanceType: WalletBalanceType
-    }) => WalletBalancesLD
-  }): ChainBalance$ =>
-    FP.pipe(
-      appWalletService.appWalletState$,
-      RxOp.switchMap((appWalletState) => {
-        if (!appWalletState || !isStandaloneVultisigMode(appWalletState)) {
-          // Not in Vultisig mode, return initial (empty) balances
-          return Rx.of<ChainBalance>({
-            walletType: WalletType.Vultisig,
-            chain,
-            walletAddress: O.none,
-            balances: RD.initial,
-            balancesType: walletBalanceType
-          })
-        }
-
-        // Get Vultisig address for this chain
-        const sdkChainName = ASGARDEX_TO_SDK_CHAIN[chain] || chain
-        const vultisigAddress = appWalletState.addresses[sdkChainName]
-
-        if (!vultisigAddress) {
-          // No address for this chain, return initial (empty) balances
-          return Rx.of<ChainBalance>({
-            walletType: WalletType.Vultisig,
-            chain,
-            walletAddress: O.none,
-            balances: RD.initial,
-            balancesType: walletBalanceType
-          })
-        }
-
-        // Load balances by Vultisig address
-        return FP.pipe(
-          getBalanceByAddress$({
-            address: vultisigAddress,
-            walletType: WalletType.Vultisig,
-            walletAccount: 0,
-            walletIndex: 0,
-            walletBalanceType,
-            hdMode: 'default'
-          }),
-          RxOp.map<WalletBalancesRD, ChainBalance>((balances) => ({
-            walletType: WalletType.Vultisig,
-            chain,
-            walletAddress: O.some(vultisigAddress),
-            balances,
-            balancesType: walletBalanceType
-          }))
-        )
-      })
-    )
-
-  /**
-   * UNIFIED chain balance factory - works for ALL wallet types (Keystore, Ledger, Vultisig)
-   * Uses addressUI$ which already handles wallet type routing
-   * Uses getBalanceByAddress$ which works with any address
-   */
-  const unifiedChainBalance$ = ({
-    chain,
-    addressUI$,
-    getBalanceByAddress$
-  }: {
-    chain: Chain
-    addressUI$: Rx.Observable<O.Option<WalletAddress>>
-    getBalanceByAddress$: (params: {
-      address: Address
-      walletType: WalletType
-      walletAccount: number
-      walletIndex: number
-      hdMode: HDMode
-      walletBalanceType: WalletBalanceType
-    }) => WalletBalancesLD
-  }): ChainBalance$ =>
-    FP.pipe(
-      addressUI$,
-      RxOp.switchMap((oWalletAddress) => {
-        if (O.isNone(oWalletAddress)) {
-          return Rx.of<ChainBalance>({
-            walletType: WalletType.Keystore,
-            chain,
-            walletAddress: O.none,
-            balances: RD.initial,
-            balancesType: 'all'
-          })
-        }
-
-        const { address, type: walletType } = oWalletAddress.value
-
-        return FP.pipe(
-          getBalanceByAddress$({
-            address,
-            walletType,
-            walletAccount: 0,
-            walletIndex: 0,
-            hdMode: 'default',
-            walletBalanceType: 'all'
-          }),
-          RxOp.map<WalletBalancesRD, ChainBalance>((balances) => ({
-            walletType,
-            chain,
-            walletAddress: O.some(address),
-            balances,
-            balancesType: 'all'
-          }))
-        )
-      })
-    )
-
-  /**
    * THOR Ledger balances
    */
   const thorLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
@@ -761,48 +614,20 @@ export const createBalancesService = ({
   /**
    * Transforms LTC balances into `ChainBalances`
    */
-  const ltcBalance$: ChainBalance$ = Rx.combineLatest([
-    LTC.addressUI$,
-    getChainBalance$({
-      chain: LTCChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: LTCChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const ltcBalance$: ChainBalance$ = createChainBalance$({
+    chain: LTCChain,
+    addressUI$: LTC.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * Transforms Dash balances into `ChainBalances`
    */
-  const dashBalance$: ChainBalance$ = Rx.combineLatest([
-    DASH.addressUI$,
-    getChainBalance$({
-      chain: DASHChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: DASHChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const dashBalance$: ChainBalance$ = createChainBalance$({
+    chain: DASHChain,
+    addressUI$: DASH.addressUI$,
+    walletBalanceType: 'all'
+  })
   /**
    * DASH Ledger balances
    */
@@ -824,27 +649,11 @@ export const createBalancesService = ({
   /**
    * Transforms BCH balances into `ChainBalances`
    */
-  const bchChainBalance$: ChainBalance$ = Rx.combineLatest([
-    BCH.addressUI$,
-    getChainBalance$({
-      chain: BCHChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      walletBalanceType: 'all',
-      hdMode: 'default'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: BCHChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const bchChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: BCHChain,
+    addressUI$: BCH.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * BCH Ledger balances
@@ -875,100 +684,37 @@ export const createBalancesService = ({
   /**
    * Transforms BTC balances into `ChainBalance`
    */
-  const btcChainBalance$: ChainBalance$ = Rx.combineLatest([
-    BTC.addressUI$,
-    getChainBalance$({
-      chain: BTCChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: BTCChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const btcChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: BTCChain,
+    addressUI$: BTC.addressUI$,
+    walletBalanceType: 'all'
+  })
+
   /**
-   * Transforms BTC balances into `ChainBalance`
+   * Transforms BTC confirmed balances into `ChainBalance`
    */
-  const btcChainBalanceConfirmed$: ChainBalance$ = Rx.combineLatest([
-    BTC.addressUI$,
-    getChainBalance$({
-      chain: BTCChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'confirmed'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: BTCChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'confirmed'
-    }))
-  )
+  const btcChainBalanceConfirmed$: ChainBalance$ = createChainBalance$({
+    chain: BTCChain,
+    addressUI$: BTC.addressUI$,
+    walletBalanceType: 'confirmed'
+  })
 
   /**
    * Transforms DOGE balances into `ChainBalance`
    */
-  const dogeChainBalance$: ChainBalance$ = Rx.combineLatest([
-    DOGE.addressUI$,
-    getChainBalance$({
-      chain: DOGEChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: DOGEChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const dogeChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: DOGEChain,
+    addressUI$: DOGE.addressUI$,
+    walletBalanceType: 'all'
+  })
   /**
    * Transforms KUJI balances into `ChainBalance`
    */
-  const kujiChainBalance$: ChainBalance$ = Rx.combineLatest([
-    KUJI.addressUI$,
-    getChainBalance$({
-      chain: KUJIChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: KUJIChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const kujiChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: KUJIChain,
+    addressUI$: KUJI.addressUI$,
+    walletBalanceType: 'all'
+  })
   /**
    * KUJI Ledger balances
    */
@@ -981,27 +727,11 @@ export const createBalancesService = ({
   /**
    * Transforms ADA balances into `ChainBalance`
    */
-  const adaChainBalance$: ChainBalance$ = Rx.combineLatest([
-    ADA.addressUI$,
-    getChainBalance$({
-      chain: ADAChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: ADAChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const adaChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: ADAChain,
+    addressUI$: ADA.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * ADA Ledger balances
@@ -1022,162 +752,67 @@ export const createBalancesService = ({
   })
 
   /**
-   * UNIFIED ETH balance - works for Keystore, Ledger, AND Vultisig
+   * Transforms ETH data (address + `WalletBalance`) into `ChainBalance`
    */
-  const ethChainBalance$: ChainBalance$ = FP.pipe(
-    network$,
-    RxOp.switchMap((network) =>
-      unifiedChainBalance$({
-        chain: ETHChain,
-        addressUI$: ETH.addressUI$,
-        getBalanceByAddress$: ETH.getBalanceByAddress$(network)
-      })
-    )
-  )
-
-  const arbBalances$ = getChainBalance$({
-    chain: ARBChain,
-    walletType: WalletType.Keystore,
-    walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-    walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-    hdMode: 'default',
+  const ethChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: ETHChain,
+    addressUI$: ETH.addressUI$,
     walletBalanceType: 'all'
   })
 
   /**
    * Transforms ARB data (address + `WalletBalance`) into `ChainBalance`
    */
-  const arbChainBalance$: ChainBalance$ = Rx.combineLatest([ARB.addressUI$, arbBalances$]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: ARBChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
-
-  const avaxBalances$ = getChainBalance$({
-    chain: AVAXChain,
-    walletType: WalletType.Keystore,
-    walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-    walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-    hdMode: 'default',
+  const arbChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: ARBChain,
+    addressUI$: ARB.addressUI$,
     walletBalanceType: 'all'
   })
 
   /**
    * Transforms AVAX data (address + `WalletBalance`) into `ChainBalance`
    */
-  const avaxChainBalance$: ChainBalance$ = Rx.combineLatest([AVAX.addressUI$, avaxBalances$]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: AVAXChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
-  const baseBalances$ = getChainBalance$({
-    chain: BASEChain,
-    walletType: WalletType.Keystore,
-    walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-    walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-    hdMode: 'default',
+  const avaxChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: AVAXChain,
+    addressUI$: AVAX.addressUI$,
     walletBalanceType: 'all'
   })
+
   /**
    * Transforms BASE data (address + `WalletBalance`) into `ChainBalance`
    */
-  const baseChainBalance$: ChainBalance$ = Rx.combineLatest([BASE.addressUI$, baseBalances$]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: BASEChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
-
-  const bscBalances$ = getChainBalance$({
-    chain: BSCChain,
-    walletType: WalletType.Keystore,
-    walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-    walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-    hdMode: 'default',
+  const baseChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: BASEChain,
+    addressUI$: BASE.addressUI$,
     walletBalanceType: 'all'
   })
 
   /**
    * Transforms BSC data (address + `WalletBalance`) into `ChainBalance`
    */
-  const bscChainBalance$: ChainBalance$ = Rx.combineLatest([BSC.addressUI$, bscBalances$]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: BSCChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const bscChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: BSCChain,
+    addressUI$: BSC.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * Transforms COSMOS balances into `ChainBalance`
    */
-  const cosmosChainBalance$: ChainBalance$ = Rx.combineLatest([
-    COSMOS.addressUI$,
-    getChainBalance$({
-      chain: GAIAChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: GAIAChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const cosmosChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: GAIAChain,
+    addressUI$: COSMOS.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * Transforms Radix balances into `ChainBalance`
    */
-  const xrdChainBalance$: ChainBalance$ = Rx.combineLatest([
-    XRD.addressUI$,
-    getChainBalance$({
-      chain: RadixChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: RadixChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const xrdChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: RadixChain,
+    addressUI$: XRD.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * Cosmos Ledger balances
@@ -1209,27 +844,11 @@ export const createBalancesService = ({
   /**
    * Transforms TRON balances into `ChainBalance`
    */
-  const tronChainBalance$: ChainBalance$ = Rx.combineLatest([
-    TRON.addressUI$,
-    getChainBalance$({
-      chain: TRONChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: TRONChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const tronChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: TRONChain,
+    addressUI$: TRON.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * TRON Ledger balances
@@ -1245,6 +864,19 @@ export const createBalancesService = ({
     )
   )
 
+  /**
+   * ETH Ledger balances
+   */
+  const ethLedgerChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      ledgerChainBalance$({
+        chain: ETHChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: ETH.getBalanceByAddress$(network)
+      })
+    )
+  )
   /**
    * ARB Ledger balances
    */
@@ -1301,27 +933,11 @@ export const createBalancesService = ({
   /**
    * Transforms ZEC balances into `ChainBalance`
    */
-  const zecChainBalance$: ChainBalance$ = Rx.combineLatest([
-    ZEC.addressUI$,
-    getChainBalance$({
-      chain: ZECChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: ZECChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const zecChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: ZECChain,
+    addressUI$: ZEC.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * ZEC Ledger balances
@@ -1335,27 +951,11 @@ export const createBalancesService = ({
   /**
    * Transforms XRP balances into `ChainBalance`
    */
-  const xrpChainBalance$: ChainBalance$ = Rx.combineLatest([
-    XRP.addressUI$,
-    getChainBalance$({
-      chain: XRPChain,
-      walletType: WalletType.Keystore,
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: WalletType.Keystore,
-      chain: XRPChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      balances,
-      balancesType: 'all'
-    }))
-  )
+  const xrpChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: XRPChain,
+    addressUI$: XRP.addressUI$,
+    walletBalanceType: 'all'
+  })
 
   /**
    * XRP Ledger balances
@@ -1378,7 +978,7 @@ export const createBalancesService = ({
     BTC: [btcChainBalance$, btcChainBalanceConfirmed$, btcLedgerChainBalance$, btcLedgerChainBalanceConfirmed$],
     BCH: [bchChainBalance$, bchLedgerChainBalance$],
     DASH: [dashBalance$, dashLedgerChainBalance$],
-    ETH: [ethChainBalance$], // UNIFIED - handles Keystore, Ledger, AND Vultisig
+    ETH: [ethChainBalance$, ethLedgerChainBalance$],
     ARB: [arbChainBalance$, arbLedgerChainBalance$],
     AVAX: [avaxChainBalance$, avaxLedgerChainBalance$],
     BSC: [bscChainBalance$, bscLedgerChainBalance$],
@@ -1403,7 +1003,7 @@ export const createBalancesService = ({
     BTC: [btcLedgerChainBalance$, btcLedgerChainBalanceConfirmed$],
     BCH: [bchLedgerChainBalance$],
     DASH: [dashLedgerChainBalance$],
-    // ETH: removed - now using unified ethChainBalance$
+    ETH: [ethLedgerChainBalance$],
     ARB: [arbLedgerChainBalance$],
     AVAX: [avaxLedgerChainBalance$],
     BSC: [bscLedgerChainBalance$],
@@ -1420,140 +1020,25 @@ export const createBalancesService = ({
     XRP: [xrpLedgerChainBalance$]
   }
 
-  // this could be removed if the wallet balance fetcing was unified.
-
-  // Create Vultisig balance observables for supported chains
-  // Note: Only chains supported by Vultisig SDK are included
-  const thorVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: THORChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: THOR.getBalanceByAddress$
-  })
-
-  const mayaVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: MAYAChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: MAYA.getBalanceByAddress$
-  })
-
-  const btcVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: BTCChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: BTC.getBalanceByAddress$('all')
-  })
-
-  const bscVultisigChainBalance$: ChainBalance$ = FP.pipe(
-    network$,
-    RxOp.switchMap((network) =>
-      vultisigChainBalance$({
-        chain: BSCChain,
-        walletBalanceType: 'all',
-        getBalanceByAddress$: BSC.getBalanceByAddress$(network)
-      })
-    )
-  )
-
-  const avaxVultisigChainBalance$: ChainBalance$ = FP.pipe(
-    network$,
-    RxOp.switchMap((network) =>
-      vultisigChainBalance$({
-        chain: AVAXChain,
-        walletBalanceType: 'all',
-        getBalanceByAddress$: AVAX.getBalanceByAddress$(network)
-      })
-    )
-  )
-
-  const cosmosVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: GAIAChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: COSMOS.getBalanceByAddress$
-  })
-
-  const dogeVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: DOGEChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: DOGE.getBalanceByAddress$
-  })
-
-  const ltcVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: LTCChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: LTC.getBalanceByAddress$
-  })
-
-  const bchVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: BCHChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: BCH.getBalanceByAddress$
-  })
-
-  // Vultisig balance observables - only for chains supported by Vultisig SDK
-  // NOTE: ETH uses unified ethChainBalance$ from chainBalanceObservables
-  const vultisigBalanceObservables: Partial<Record<Chain, ChainBalance$[]>> = {
-    THOR: [thorVultisigChainBalance$],
-    MAYA: [mayaVultisigChainBalance$],
-    BTC: [btcVultisigChainBalance$],
-    // ETH: removed - now using unified ethChainBalance$
-    BSC: [bscVultisigChainBalance$],
-    AVAX: [avaxVultisigChainBalance$],
-    GAIA: [cosmosVultisigChainBalance$],
-    DOGE: [dogeVultisigChainBalance$],
-    LTC: [ltcVultisigChainBalance$],
-    BCH: [bchVultisigChainBalance$]
-  }
-
-  // Chains that use unified balance loading (work for ALL wallet types)
-  const unifiedChains: Chain[] = [ETHChain]
-
   // Combine enabled chains with their corresponding balance observables
-  // Filter based on wallet mode - in standalone ledger/vultisig mode, only show respective balances
+  // Filter based on wallet mode - in standalone ledger mode, only show ledger balances
   const chainBalances$: ChainBalances$ = FP.pipe(
     Rx.combineLatest([userChains$, appWalletService.appWalletState$]),
     RxOp.switchMap(([enabledChains, appWalletState]) => {
-      const isLedgerStandaloneMode = appWalletState && isStandaloneLedgerMode(appWalletState)
-      const isVultisigStandaloneMode = appWalletState && isStandaloneVultisigMode(appWalletState)
+      const isStandaloneMode = appWalletState && isStandaloneLedgerMode(appWalletState)
 
-      // Determine wallet mode for logging
-      const walletMode = isVultisigStandaloneMode ? 'Vultisig' : isLedgerStandaloneMode ? 'Ledger' : 'Keystore'
-      window.apiLog.info('[Balances]', `Loading balances for ${walletMode} wallet (${enabledChains.length} chains)`)
+      let observablesToUse: Record<Chain, ChainBalance$[]>
 
-      let observablesToUse: Partial<Record<Chain, ChainBalance$[]>>
-
-      if (isLedgerStandaloneMode) {
+      if (isStandaloneMode) {
         // In standalone ledger mode, only show balances for the connected chain
         const standaloneLedgerState = appWalletState as StandaloneLedgerState
         const connectedChain = standaloneLedgerState.connectedChain
+
+        // Only use observables for the connected chain
         observablesToUse =
           connectedChain && ledgerBalanceObservables[connectedChain]
             ? { [connectedChain]: ledgerBalanceObservables[connectedChain] }
             : {}
-        // Add unified chains (they work for all wallet types)
-        unifiedChains.forEach((chain) => {
-          if (chainBalanceObservables[chain]) {
-            observablesToUse[chain] = chainBalanceObservables[chain]
-          }
-        })
-      } else if (isVultisigStandaloneMode) {
-        // In standalone vultisig mode, show balances for all chains that have addresses
-        const vultisigState = appWalletState as StandaloneVultisigState
-        observablesToUse = Object.entries(vultisigBalanceObservables).reduce(
-          (acc, [chain, observables]) => {
-            const sdkChainName = ASGARDEX_TO_SDK_CHAIN[chain] || chain
-            if (vultisigState.addresses[sdkChainName] && observables) {
-              acc[chain as Chain] = observables
-            }
-            return acc
-          },
-          {} as Partial<Record<Chain, ChainBalance$[]>>
-        )
-        // Add unified chains (they work for all wallet types)
-        unifiedChains.forEach((chain) => {
-          const sdkChainName = ASGARDEX_TO_SDK_CHAIN[chain] || chain
-          if (vultisigState.addresses[sdkChainName] && chainBalanceObservables[chain]) {
-            observablesToUse[chain] = chainBalanceObservables[chain]
-          }
-        })
       } else {
         // In normal mode, show all balances (keystore + ledger)
         observablesToUse = chainBalanceObservables
@@ -1561,7 +1046,7 @@ export const createBalancesService = ({
 
       const enabledChainObservables: ChainBalance$[] = Object.entries(observablesToUse)
         .filter(([chain]) => enabledChains.includes(chain))
-        .flatMap(([, observables]) => observables || [])
+        .flatMap(([, observables]) => observables)
 
       return enabledChainObservables.length > 0 ? Rx.combineLatest(enabledChainObservables) : Rx.of([])
     }),

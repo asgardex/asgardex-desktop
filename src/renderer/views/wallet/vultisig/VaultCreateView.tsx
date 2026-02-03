@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { BackLinkButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import * as walletRoutes from '../../../routes/wallet'
-import { isStandaloneVultisigMode } from '../../../services/wallet/types'
+import { isVultisigMode } from '../../../services/wallet/types'
 
 type FormState = 'input' | 'creating' | 'verify' | 'success' | 'error'
 
@@ -17,7 +17,7 @@ export const VaultCreateView = () => {
   const { appWalletService } = useWalletContext()
 
   const appWalletState = useObservableState(appWalletService.appWalletState$)
-  const vultisigState = appWalletState && isStandaloneVultisigMode(appWalletState) ? appWalletState : null
+  const vultisigState = appWalletState && isVultisigMode(appWalletState) ? appWalletState : null
 
   const [formState, setFormState] = useState<FormState>('input')
   const [name, setName] = useState('')
@@ -82,7 +82,7 @@ export const VaultCreateView = () => {
 
   const handleGoToAssets = useCallback(() => {
     // Switch to Vultisig mode and navigate to assets
-    appWalletService.switchToStandaloneVultisigMode(true)
+    appWalletService.switchToVultisigMode(true)
     navigate(walletRoutes.assets.path())
   }, [appWalletService, navigate])
 

@@ -202,7 +202,7 @@ export const SecureVaultCreateView = () => {
     appWalletService.vaultManager.setActiveVault(vaultInfo, addresses)
 
     // Switch to standalone vultisig mode (this will use the state we just set)
-    appWalletService.switchToStandaloneVultisigMode(true)
+    appWalletService.switchToVultisigMode(true)
 
     navigate(walletRoutes.assets.path())
   }, [appWalletService, navigate, vaultInfo, addresses])

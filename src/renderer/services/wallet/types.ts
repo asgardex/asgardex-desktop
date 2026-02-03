@@ -48,16 +48,16 @@ export type VultisigVaultInfo = {
   chains: string[]
 }
 
-export type StandaloneVultisigPhase =
+export type VultisigPhase =
   | 'vault-selection' // List/select vault
   | 'vault-creation' // Creating new vault
   | 'verification' // Email verification (fast vault)
   | 'vault-locked' // Vault selected but needs password unlock
   | 'active' // Vault is active and unlocked, ready to use
 
-export type StandaloneVultisigState = {
+export type VultisigState = {
   mode: 'standalone-vultisig'
-  phase: StandaloneVultisigPhase
+  phase: VultisigPhase
   availableVaults: VultisigVaultInfo[] // All vaults from SDK
   activeVault: VultisigVaultInfo | null // Currently selected vault
   addresses: Record<string, string> // Chain -> address mapping
@@ -67,20 +67,20 @@ export type StandaloneVultisigState = {
 }
 
 // Application-level wallet state that can be keystore-based, standalone ledger, or standalone vultisig
-export type AppWalletState = KeystoreState | StandaloneLedgerState | StandaloneVultisigState
+export type AppWalletState = KeystoreState | StandaloneLedgerState | VultisigState
 
 // Type guards for wallet state
 export const isStandaloneLedgerMode = (state: AppWalletState): state is StandaloneLedgerState =>
   typeof state === 'object' && state !== null && 'mode' in state && state.mode === 'standalone-ledger'
 
-export const isStandaloneVultisigMode = (state: AppWalletState): state is StandaloneVultisigState =>
+export const isVultisigMode = (state: AppWalletState): state is VultisigState =>
   typeof state === 'object' && state !== null && 'mode' in state && state.mode === 'standalone-vultisig'
 
-export const isVultisigVaultLocked = (state: StandaloneVultisigState): boolean =>
+export const isVultisigVaultLocked = (state: VultisigState): boolean =>
   state.phase === 'vault-locked' || (state.phase !== 'active' && state.activeVault !== null)
 
 export const isKeystoreMode = (state: AppWalletState): state is KeystoreState =>
-  !isStandaloneLedgerMode(state) && !isStandaloneVultisigMode(state)
+  !isStandaloneLedgerMode(state) && !isVultisigMode(state)
 
 export type KeystoreLocked = { id: KeystoreId; name: string }
 export type KeystoreUnlocked = KeystoreLocked & { phrase: Phrase }
@@ -188,7 +188,7 @@ export type StandaloneLedgerService = {
 }
 
 // Standalone Vultisig Service Types
-export type StandaloneVultisigState$ = Rx.Observable<StandaloneVultisigState>
+export type VultisigState$ = Rx.Observable<VultisigState>
 
 export type CreateFastVaultParams = {
   name: string
@@ -212,8 +212,8 @@ export type CreateFastVaultParams = {
  */
 export type VaultManager = {
   // State observables
-  standaloneVultisigState$: StandaloneVultisigState$
-  standaloneVultisigState: () => StandaloneVultisigState
+  vultisigState$: VultisigState$
+  vultisigState: () => VultisigState
 
   // Mode management (for appWallet orchestration)
   enterStandaloneMode: () => void
@@ -247,7 +247,7 @@ export type AppWalletService = {
   vaultManager: VaultManager
   switchToKeystoreMode: () => void
   switchToStandaloneLedgerMode: (autoLock?: boolean) => void
-  switchToStandaloneVultisigMode: (autoLock?: boolean) => void
+  switchToVultisigMode: (autoLock?: boolean) => void
   // Unified wallet methods (Phase A-C)
   lock: () => Promise<void>
   unlock: (password: string) => Promise<boolean>

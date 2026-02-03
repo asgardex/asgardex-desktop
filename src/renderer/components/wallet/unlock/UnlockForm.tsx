@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { CpuChipIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
+import { CpuChipIcon, ShieldCheckIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
@@ -46,6 +46,8 @@ export type Props = {
   isVultisigLocked?: boolean
   onVultisigUnlock?: (password: string) => Promise<void>
   vultisigError?: string
+  // Vultisig import handler
+  onVultisigImport?: () => void
 }
 
 export const UnlockForm = ({
@@ -59,7 +61,8 @@ export const UnlockForm = ({
   onVultisigSelect,
   isVultisigLocked = false,
   onVultisigUnlock,
-  vultisigError
+  vultisigError,
+  onVultisigImport
 }: Props) => {
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const navigate = useNavigate()
@@ -194,10 +197,6 @@ export const UnlockForm = ({
     navigate(walletRoutes.ledgerChainSelect.path())
   }, [navigate])
 
-  const useVultisigOnlyHandler = useCallback(() => {
-    navigate(walletRoutes.vultisigCreate.path())
-  }, [navigate])
-
   const useVultisigSecureHandler = useCallback(() => {
     navigate(walletRoutes.vultisigSecureCreate.path())
   }, [navigate])
@@ -300,19 +299,10 @@ export const UnlockForm = ({
                   className="flex w-full min-w-[200px] items-center justify-center gap-2"
                   size="normal"
                   color="primary"
-                  onClick={useVultisigOnlyHandler}
-                  disabled={unlocking}>
-                  <ShieldCheckIcon width={16} height={16} />
-                  Use Only Vultisig
-                </BorderButton>
-                <BorderButton
-                  className="flex w-full min-w-[200px] items-center justify-center gap-2"
-                  size="normal"
-                  color="primary"
-                  onClick={useVultisigSecureHandler}
-                  disabled={unlocking}>
-                  <ShieldCheckIcon className="text-turquoise" width={16} height={16} />
-                  Secure Vault (2-of-2)
+                  onClick={onVultisigImport}
+                  disabled={unlocking || !onVultisigImport}>
+                  <ArrowDownTrayIcon width={16} height={16} />
+                  {intl.formatMessage({ id: 'wallet.vultisig.import' })}
                 </BorderButton>
                 {/* TODO: update locale */}
                 <h2 className="mb-2 w-full text-11 text-text2 dark:text-text2d">Don&apos;t you have a wallet yet?</h2>
@@ -339,6 +329,15 @@ export const UnlockForm = ({
                   onClick={importPhraseHandler}
                   disabled={unlocking}>
                   {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
+                </BorderButton>
+                <BorderButton
+                  className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                  size="normal"
+                  color="primary"
+                  onClick={useVultisigSecureHandler}
+                  disabled={unlocking}>
+                  <ShieldCheckIcon className="text-turquoise" width={16} height={16} />
+                  Secure Vault (2-of-2)
                 </BorderButton>
               </div>
 

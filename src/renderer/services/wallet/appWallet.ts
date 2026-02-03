@@ -18,10 +18,10 @@ import {
   AppWalletService,
   KeystoreState,
   StandaloneLedgerState,
-  StandaloneVultisigState,
+  VultisigState,
   Wallet,
   isStandaloneLedgerMode,
-  isStandaloneVultisigMode,
+  isVultisigMode,
   isKeystoreMode,
   isKeystoreUnlocked,
   isVultisigVaultLocked
@@ -51,11 +51,11 @@ export const createAppWalletService = (): AppWalletService => {
   // Listen to keystore state changes and update app wallet state accordingly
   const keystoreSub = keystoreService.keystoreState$.subscribe((keystoreState: KeystoreState) => {
     const currentAppState = appWalletState()
-    const inStandaloneMode = isStandaloneLedgerMode(currentAppState) || isStandaloneVultisigMode(currentAppState)
+    const inStandaloneMode = isStandaloneLedgerMode(currentAppState) || isVultisigMode(currentAppState)
     window.apiLog.info('[AppWallet]', 'keystoreState$ changed:', {
       hasKeystore: O.isSome(keystoreState),
       isUnlocked: O.isSome(keystoreState) && isKeystoreUnlocked(keystoreState.value),
-      isVultisigMode: isStandaloneVultisigMode(currentAppState),
+      isVultisigMode: isVultisigMode(currentAppState),
       isLedgerMode: isStandaloneLedgerMode(currentAppState),
       isKeystoreMode: isKeystoreMode(currentAppState)
     })
@@ -95,28 +95,26 @@ export const createAppWalletService = (): AppWalletService => {
   )
   subscriptions.push(ledgerSub)
 
-  // Listen to standalone vultisig state changes and update app wallet state accordingly
-  const vultisigSub = vaultManager.standaloneVultisigState$.subscribe(
-    (standaloneVultisigState: StandaloneVultisigState) => {
-      const currentAppState = appWalletState()
-      window.apiLog.info('[AppWallet]', 'standaloneVultisigState$ changed:', {
-        phase: standaloneVultisigState.phase,
-        activeVault: standaloneVultisigState.activeVault?.name,
-        addressCount: Object.keys(standaloneVultisigState.addresses).length,
-        addresses: standaloneVultisigState.addresses,
-        isVultisigMode: isStandaloneVultisigMode(currentAppState)
-      })
+  // Listen to vultisig state changes and update app wallet state accordingly
+  const vultisigSub = vaultManager.vultisigState$.subscribe((newVultisigState: VultisigState) => {
+    const currentAppState = appWalletState()
+    window.apiLog.info('[AppWallet]', 'vultisigState$ changed:', {
+      phase: newVultisigState.phase,
+      activeVault: newVultisigState.activeVault?.name,
+      addressCount: Object.keys(newVultisigState.addresses).length,
+      addresses: newVultisigState.addresses,
+      isVultisigMode: isVultisigMode(currentAppState)
+    })
 
-      // Only update if we're in standalone vultisig mode
-      if (isStandaloneVultisigMode(currentAppState)) {
-        window.apiLog.info('[AppWallet]', 'Propagating vultisig state to appWalletState$')
-        setAppWalletState(standaloneVultisigState)
-        window.apiLog.info('[AppWallet]', 'appWalletState$ updated with phase:', standaloneVultisigState.phase)
-      } else {
-        window.apiLog.info('[AppWallet]', 'NOT in vultisig mode, skipping state propagation')
-      }
+    // Only update if we're in vultisig mode
+    if (isVultisigMode(currentAppState)) {
+      window.apiLog.info('[AppWallet]', 'Propagating vultisig state to appWalletState$')
+      setAppWalletState(newVultisigState)
+      window.apiLog.info('[AppWallet]', 'appWalletState$ updated with phase:', newVultisigState.phase)
+    } else {
+      window.apiLog.info('[AppWallet]', 'NOT in vultisig mode, skipping state propagation')
     }
-  )
+  })
   subscriptions.push(vultisigSub)
 
   /**
@@ -177,12 +175,12 @@ export const createAppWalletService = (): AppWalletService => {
    * Switch to standalone vultisig mode - doesn't affect keystore but changes app state
    * @param autoLock - if true, will automatically lock the keystore before switching
    */
-  const switchToStandaloneVultisigMode = (autoLock = false) => {
-    window.apiLog.info('[AppWallet]', 'switchToStandaloneVultisigMode called, autoLock:', autoLock)
+  const switchToVultisigMode = (autoLock = false) => {
+    window.apiLog.info('[AppWallet]', 'switchToVultisigMode called, autoLock:', autoLock)
     const currentAppState = appWalletState()
 
     // If already in vultisig mode, just update the app state (don't re-enter)
-    if (isStandaloneVultisigMode(currentAppState)) {
+    if (isVultisigMode(currentAppState)) {
       window.apiLog.info('[AppWallet]', 'Already in vultisig mode, skipping enterStandaloneMode')
       return
     }
@@ -217,7 +215,7 @@ export const createAppWalletService = (): AppWalletService => {
     vaultManager.enterStandaloneMode()
 
     // Set app state to standalone vultisig state
-    const currentStandaloneState = FP.pipe(vaultManager.standaloneVultisigState$, RxOp.take(1))
+    const currentStandaloneState = FP.pipe(vaultManager.vultisigState$, RxOp.take(1))
     currentStandaloneState.subscribe((standaloneState) => {
       window.apiLog.info('[AppWallet]', 'Setting app state to vultisig state:', standaloneState.phase)
       setAppWalletState(standaloneState)
@@ -237,7 +235,7 @@ export const createAppWalletService = (): AppWalletService => {
   const lock = async (): Promise<void> => {
     const currentState = appWalletState()
 
-    if (isStandaloneVultisigMode(currentState)) {
+    if (isVultisigMode(currentState)) {
       await vaultManager.lockVault()
     } else if (!isStandaloneLedgerMode(currentState)) {
       // Keystore mode
@@ -255,7 +253,7 @@ export const createAppWalletService = (): AppWalletService => {
   const unlock = async (password: string): Promise<boolean> => {
     const currentState = appWalletState()
 
-    if (isStandaloneVultisigMode(currentState)) {
+    if (isVultisigMode(currentState)) {
       try {
         await vaultManager.unlockVault(password)
         return true
@@ -285,7 +283,7 @@ export const createAppWalletService = (): AppWalletService => {
   const isLocked = (): boolean => {
     const currentState = appWalletState()
 
-    if (isStandaloneVultisigMode(currentState)) {
+    if (isVultisigMode(currentState)) {
       return isVultisigVaultLocked(currentState)
     } else if (isStandaloneLedgerMode(currentState)) {
       // Ledger has no lock concept - always "unlocked"
@@ -305,7 +303,7 @@ export const createAppWalletService = (): AppWalletService => {
    */
   const isLocked$: Rx.Observable<boolean> = appWalletState$.pipe(
     RxOp.map((state) => {
-      if (isStandaloneVultisigMode(state)) {
+      if (isVultisigMode(state)) {
         return isVultisigVaultLocked(state)
       } else if (isStandaloneLedgerMode(state)) {
         return false
@@ -374,7 +372,7 @@ export const createAppWalletService = (): AppWalletService => {
       // Switch to Vultisig mode - enterStandaloneMode will restore the saved vault
       window.apiLog.info('[AppWallet]', 'Restoring Vultisig vault:', lastOpened.vaultId)
       // Use autoLock=false since keystore is already locked on startup
-      switchToStandaloneVultisigMode(false)
+      switchToVultisigMode(false)
     }
     // keystore type: already handled by keystoreWalletsPersistent$ subscription
     // which uses getInitialKeystoreData() with selected flag fallback
@@ -402,7 +400,7 @@ export const createAppWalletService = (): AppWalletService => {
    */
   const allWallets$: Rx.Observable<Wallet[]> = Rx.combineLatest([
     keystoreService.keystoreWalletsUI$,
-    vaultManager.standaloneVultisigState$
+    vaultManager.vultisigState$
   ]).pipe(
     RxOp.map(([keystoreWallets, vultisigState]) => [
       ...keystoreWallets.map(
@@ -428,7 +426,7 @@ export const createAppWalletService = (): AppWalletService => {
    */
   const activeWallet$: Rx.Observable<O.Option<Wallet>> = appWalletState$.pipe(
     RxOp.map((state) => {
-      if (isStandaloneVultisigMode(state) && state.activeVault) {
+      if (isVultisigMode(state) && state.activeVault) {
         return O.some<Wallet>({
           type: WalletType.Vultisig,
           id: state.activeVault.id,
@@ -475,9 +473,9 @@ export const createAppWalletService = (): AppWalletService => {
     } else if (wallet.type === WalletType.Vultisig) {
       // Selecting vultisig vault - switch to vultisig mode and select vault
       const currentState = appWalletState()
-      if (!isStandaloneVultisigMode(currentState)) {
+      if (!isVultisigMode(currentState)) {
         // Switch to vultisig mode first (auto-lock keystore)
-        switchToStandaloneVultisigMode(true)
+        switchToVultisigMode(true)
       }
       // Select the vault (this is async)
       await vaultManager.selectVault(wallet.id)
@@ -494,7 +492,7 @@ export const createAppWalletService = (): AppWalletService => {
       RxOp.map((state) => {
         if (!state) return O.none
 
-        if (isStandaloneVultisigMode(state)) {
+        if (isVultisigMode(state)) {
           const sdkChainName = ASGARDEX_TO_SDK_CHAIN[chain]
           if (!sdkChainName) return O.none
           return O.fromNullable(state.addresses[sdkChainName])
@@ -518,7 +516,7 @@ export const createAppWalletService = (): AppWalletService => {
    */
   const getCurrentWalletType = (): WalletType => {
     const state = appWalletState()
-    if (isStandaloneVultisigMode(state)) return WalletType.Vultisig
+    if (isVultisigMode(state)) return WalletType.Vultisig
     if (isStandaloneLedgerMode(state)) return WalletType.Ledger
     return WalletType.Keystore
   }
@@ -529,7 +527,7 @@ export const createAppWalletService = (): AppWalletService => {
    */
   const getActiveVaultId = (): string | undefined => {
     const state = appWalletState()
-    if (isStandaloneVultisigMode(state) && state.activeVault) {
+    if (isVultisigMode(state) && state.activeVault) {
       return state.activeVault.id
     }
     return undefined
@@ -556,7 +554,7 @@ export const createAppWalletService = (): AppWalletService => {
     vaultManager,
     switchToKeystoreMode,
     switchToStandaloneLedgerMode,
-    switchToStandaloneVultisigMode,
+    switchToVultisigMode,
     // Unified methods (Phase A-C)
     lock,
     unlock,

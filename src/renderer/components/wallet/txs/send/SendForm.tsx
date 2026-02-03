@@ -66,7 +66,7 @@ import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/may
 import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import {
-  isStandaloneVultisigMode,
+  isVultisigMode,
   SelectedWalletAsset,
   ValidatePasswordHandler,
   VaultType,
@@ -155,7 +155,7 @@ export const SendForm = (props: Props): JSX.Element => {
 
   // Get vault type for Vultisig wallets (defaults to 'fast' if not available)
   const vaultType: VaultType = useMemo(() => {
-    if (appWalletState && isStandaloneVultisigMode(appWalletState) && appWalletState.activeVault) {
+    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
       return appWalletState.activeVault.type
     }
     return 'fast'

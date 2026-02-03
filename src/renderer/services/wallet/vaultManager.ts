@@ -20,9 +20,9 @@ import { timer } from 'rxjs'
 import { WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import { getStorageState, modifyStorage } from '../storage/common'
-import { VaultManager, StandaloneVultisigState, VultisigVaultInfo, CreateFastVaultParams } from './types'
+import { VaultManager, VultisigState, VultisigVaultInfo, CreateFastVaultParams } from './types'
 
-const INITIAL_VULTISIG_STATE: StandaloneVultisigState = {
+const INITIAL_VULTISIG_STATE: VultisigState = {
   mode: 'standalone-vultisig',
   phase: 'vault-selection',
   availableVaults: [],
@@ -32,10 +32,10 @@ const INITIAL_VULTISIG_STATE: StandaloneVultisigState = {
 
 export const createVaultManager = (): VaultManager => {
   const {
-    get$: standaloneVultisigState$,
-    get: standaloneVultisigState,
-    set: setStandaloneVultisigState
-  } = observableState<StandaloneVultisigState>(INITIAL_VULTISIG_STATE)
+    get$: vultisigState$,
+    get: vultisigState,
+    set: setVultisigState
+  } = observableState<VultisigState>(INITIAL_VULTISIG_STATE)
 
   /**
    * Enter standalone Vultisig mode
@@ -43,7 +43,7 @@ export const createVaultManager = (): VaultManager => {
    * If a saved vault ID exists in storage, tries to restore it
    */
   const enterStandaloneMode = async () => {
-    const currentState = standaloneVultisigState()
+    const currentState = vultisigState()
 
     // If we're already active with a vault, don't reset
     if (currentState.phase === 'active' && currentState.activeVault) {
@@ -51,7 +51,7 @@ export const createVaultManager = (): VaultManager => {
       return
     }
 
-    setStandaloneVultisigState({
+    setVultisigState({
       ...currentState,
       phase: 'vault-selection'
     })
@@ -70,7 +70,7 @@ export const createVaultManager = (): VaultManager => {
           ? storageState.value.lastOpenedWallet.vaultId
           : undefined
       if (savedVaultId) {
-        const vaults = standaloneVultisigState().availableVaults
+        const vaults = vultisigState().availableVaults
         const savedVault = vaults.find((v) => v.id === savedVaultId)
         if (savedVault) {
           window.apiLog.info('[Vultisig]', 'Restoring saved vault:', savedVault.name)
@@ -82,8 +82,8 @@ export const createVaultManager = (): VaultManager => {
       }
     } catch (error) {
       window.apiLog.error('[Vultisig]', 'Failed to initialize:', error)
-      setStandaloneVultisigState({
-        ...standaloneVultisigState(),
+      setVultisigState({
+        ...vultisigState(),
         error: String(error)
       })
     }
@@ -95,10 +95,10 @@ export const createVaultManager = (): VaultManager => {
    */
   const exitStandaloneMode = () => {
     modifyStorage(O.some({ lastOpenedWallet: undefined }))
-    const currentState = standaloneVultisigState()
+    const currentState = vultisigState()
     // Preserve availableVaults so they're still visible in dropdown
     // Just reset the active state
-    setStandaloneVultisigState({
+    setVultisigState({
       ...INITIAL_VULTISIG_STATE,
       availableVaults: currentState.availableVaults
     })
@@ -117,10 +117,10 @@ export const createVaultManager = (): VaultManager => {
         isEncrypted: v.isEncrypted,
         chains: v.chains
       }))
-      setStandaloneVultisigState({ ...standaloneVultisigState(), availableVaults: vaultInfos, error: undefined })
+      setVultisigState({ ...vultisigState(), availableVaults: vaultInfos, error: undefined })
     } catch (error) {
       window.apiLog.error('[Vultisig]', 'Failed to load vaults:', error)
-      setStandaloneVultisigState({ ...standaloneVultisigState(), error: String(error) })
+      setVultisigState({ ...vultisigState(), error: String(error) })
     }
   }
 
@@ -132,7 +132,7 @@ export const createVaultManager = (): VaultManager => {
    */
   const selectVault = async (vaultId: string, requireUnlock = true) => {
     window.apiLog.info('[Vultisig]', 'selectVault called:', vaultId, 'requireUnlock:', requireUnlock)
-    const currentState = standaloneVultisigState()
+    const currentState = vultisigState()
     window.apiLog.info(
       '[Vultisig]',
       'currentState.phase:',
@@ -144,7 +144,7 @@ export const createVaultManager = (): VaultManager => {
 
     if (!vault) {
       window.apiLog.warn('[Vultisig]', 'Vault not found:', vaultId)
-      setStandaloneVultisigState({
+      setVultisigState({
         ...currentState,
         error: 'Vault not found'
       })
@@ -159,7 +159,7 @@ export const createVaultManager = (): VaultManager => {
       if (requireUnlock) {
         // Vault needs password - set to locked state
         window.apiLog.info('[Vultisig]', 'Setting vault to locked state:', vault.name)
-        setStandaloneVultisigState({
+        setVultisigState({
           ...currentState,
           phase: 'vault-locked',
           activeVault: vault,
@@ -173,7 +173,7 @@ export const createVaultManager = (): VaultManager => {
       // No unlock required (newly created vault) - get addresses and activate
       const addresses = await window.apiMpc.getAddresses(vaultId)
 
-      setStandaloneVultisigState({
+      setVultisigState({
         ...currentState,
         phase: 'active',
         activeVault: vault,
@@ -183,7 +183,7 @@ export const createVaultManager = (): VaultManager => {
       window.apiLog.info('[Vultisig]', 'Vault activated directly:', vault.name)
     } catch (error) {
       window.apiLog.error('[Vultisig]', 'Failed to select vault:', error)
-      setStandaloneVultisigState({
+      setVultisigState({
         ...currentState,
         error: String(error)
       })
@@ -194,15 +194,15 @@ export const createVaultManager = (): VaultManager => {
    * Create a new fast vault
    */
   const createFastVault = async (params: CreateFastVaultParams): Promise<string> => {
-    setStandaloneVultisigState({
-      ...standaloneVultisigState(),
+    setVultisigState({
+      ...vultisigState(),
       phase: 'vault-creation',
       error: undefined
     })
 
     // Subscribe to progress events - use functional update to avoid race conditions
     const unsubscribe = window.apiMpc.onCreationProgress((data) => {
-      setStandaloneVultisigState((currentState) => ({
+      setVultisigState((currentState) => ({
         ...currentState,
         creationProgress: data.step
       }))
@@ -212,8 +212,8 @@ export const createVaultManager = (): VaultManager => {
       const result = await window.apiMpc.createFastVault(params)
       unsubscribe()
 
-      setStandaloneVultisigState({
-        ...standaloneVultisigState(),
+      setVultisigState({
+        ...vultisigState(),
         phase: 'verification',
         pendingVaultId: result.vaultId,
         creationProgress: undefined
@@ -223,8 +223,8 @@ export const createVaultManager = (): VaultManager => {
     } catch (error) {
       unsubscribe()
       window.apiLog.error('[Vultisig]', 'Failed to create vault:', error)
-      setStandaloneVultisigState({
-        ...standaloneVultisigState(),
+      setVultisigState({
+        ...vultisigState(),
         phase: 'vault-selection',
         error: String(error),
         creationProgress: undefined
@@ -246,8 +246,8 @@ export const createVaultManager = (): VaultManager => {
       await selectVault(vault.id, false) // requireUnlock = false for new vaults
     } catch (error) {
       window.apiLog.error('[Vultisig]', 'Failed to verify vault:', error)
-      setStandaloneVultisigState({
-        ...standaloneVultisigState(),
+      setVultisigState({
+        ...vultisigState(),
         error: String(error)
       })
       throw error
@@ -262,12 +262,12 @@ export const createVaultManager = (): VaultManager => {
     try {
       await window.apiMpc.deleteVault(vaultId)
 
-      const currentState = standaloneVultisigState()
+      const currentState = vultisigState()
 
       // If deleting active vault, reset to selection and clear storage
       if (currentState.activeVault?.id === vaultId) {
         modifyStorage(O.some({ lastOpenedWallet: undefined }))
-        setStandaloneVultisigState({
+        setVultisigState({
           ...currentState,
           phase: 'vault-selection',
           activeVault: null,
@@ -278,8 +278,8 @@ export const createVaultManager = (): VaultManager => {
       await loadVaults()
     } catch (error) {
       window.apiLog.error('[Vultisig]', 'Failed to delete vault:', error)
-      setStandaloneVultisigState({
-        ...standaloneVultisigState(),
+      setVultisigState({
+        ...vultisigState(),
         error: String(error)
       })
     }
@@ -289,8 +289,8 @@ export const createVaultManager = (): VaultManager => {
    * Reset to vault selection phase
    */
   const resetToVaultSelection = () => {
-    setStandaloneVultisigState({
-      ...standaloneVultisigState(),
+    setVultisigState({
+      ...vultisigState(),
       phase: 'vault-selection',
       activeVault: null,
       addresses: {},
@@ -306,8 +306,8 @@ export const createVaultManager = (): VaultManager => {
    * Saves the vault ID to persistent storage for restoration
    */
   const setActiveVault = (vault: VultisigVaultInfo, addresses: Record<string, string>) => {
-    setStandaloneVultisigState({
-      ...standaloneVultisigState(),
+    setVultisigState({
+      ...vultisigState(),
       phase: 'active',
       activeVault: vault,
       addresses,
@@ -327,7 +327,7 @@ export const createVaultManager = (): VaultManager => {
       window.apiLog.info('[Vultisig]', 'Initializing SDK and loading vaults eagerly...')
       await window.apiMpc.init()
       await loadVaults()
-      window.apiLog.info('[Vultisig]', 'Vaults loaded:', standaloneVultisigState().availableVaults.length)
+      window.apiLog.info('[Vultisig]', 'Vaults loaded:', vultisigState().availableVaults.length)
     } catch (error) {
       window.apiLog.error('[Vultisig]', 'Failed to initialize eagerly:', error)
     }
@@ -339,7 +339,7 @@ export const createVaultManager = (): VaultManager => {
    * User can then unlock the same vault or select another wallet
    */
   const lockVault = async () => {
-    const currentState = standaloneVultisigState()
+    const currentState = vultisigState()
     if (!currentState.activeVault) {
       window.apiLog.warn('[Vultisig]', 'No active vault to lock')
       return
@@ -350,7 +350,7 @@ export const createVaultManager = (): VaultManager => {
 
     // Update UI state immediately (same pattern as keystore.lock())
     // This shows the unlock screen right away
-    setStandaloneVultisigState({ ...standaloneVultisigState(), phase: 'vault-locked', addresses: {} })
+    setVultisigState({ ...vultisigState(), phase: 'vault-locked', addresses: {} })
     window.apiLog.info('[Vultisig]', 'Vault locked:', vaultName)
 
     // Inform SDK to clear cached password (don't block UI on this)
@@ -364,7 +364,7 @@ export const createVaultManager = (): VaultManager => {
    * Sets phase to 'active' and fetches addresses
    */
   const unlockVault = async (password: string) => {
-    const currentState = standaloneVultisigState()
+    const currentState = vultisigState()
     window.apiLog.info('[Vultisig]', ' unlockVault called, currentPhase:', currentState.phase)
     if (!currentState.activeVault) {
       window.apiLog.info('[Vultisig]', ' unlockVault: No active vault to unlock')
@@ -391,12 +391,12 @@ export const createVaultManager = (): VaultManager => {
       })
 
       window.apiLog.info('[Vultisig]', ' unlockVault: Updating state to phase: active')
-      setStandaloneVultisigState({ ...standaloneVultisigState(), phase: 'active', addresses, error: undefined })
+      setVultisigState({ ...vultisigState(), phase: 'active', addresses, error: undefined })
       window.apiLog.info('[Vultisig]', ' unlockVault: State updated, vault unlocked:', vaultName)
     } catch (error) {
       window.apiLog.error('[Vultisig]', ' unlockVault: Failed to unlock vault:', error)
-      setStandaloneVultisigState({
-        ...standaloneVultisigState(),
+      setVultisigState({
+        ...vultisigState(),
         error: error instanceof Error ? error.message : String(error)
       })
       throw error
@@ -407,7 +407,7 @@ export const createVaultManager = (): VaultManager => {
    * Check if the active vault is locked
    */
   const isVaultLocked = (): boolean => {
-    const currentState = standaloneVultisigState()
+    const currentState = vultisigState()
     return currentState.phase === 'vault-locked'
   }
 
@@ -418,8 +418,8 @@ export const createVaultManager = (): VaultManager => {
   })
 
   return {
-    standaloneVultisigState$,
-    standaloneVultisigState,
+    vultisigState$,
+    vultisigState,
     enterStandaloneMode,
     exitStandaloneMode,
     loadVaults,

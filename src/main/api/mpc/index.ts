@@ -237,7 +237,27 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
     try {
       const result = await vault.export(password)
       log.info(`[MPC IPC] Vault exported: ${vault.name} (${result.filename})`)
-      return result.data // Return the .vult content string
+
+      // Show save dialog
+      const saveResult = await dialog.showSaveDialog({
+        title: 'Export Vultisig Vault',
+        defaultPath: result.filename,
+        filters: [
+          { name: 'Vultisig Vault', extensions: ['vult'] },
+          { name: 'All Files', extensions: ['*'] }
+        ]
+      })
+
+      if (saveResult.canceled || !saveResult.filePath) {
+        log.info('[MPC IPC] Export cancelled by user')
+        return { saved: false }
+      }
+
+      // Write to file (path from Electron save dialog is safe)
+      await fs.writeFile(saveResult.filePath, result.data, 'utf-8') // trunk-ignore(eslint/security/detect-non-literal-fs-filename)
+      log.info(`[MPC IPC] Vault saved to: ${saveResult.filePath}`)
+
+      return { saved: true, filePath: saveResult.filePath }
     } catch (error) {
       log.error(`[MPC IPC] Failed to export vault:`, error)
       throw error

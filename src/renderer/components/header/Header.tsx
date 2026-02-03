@@ -75,7 +75,6 @@ export const Header = (): JSX.Element => {
       allWallets={allWallets}
       activeWallet={activeWallet}
       selectWallet={appWalletService.selectWallet}
-      vaultManager={appWalletService.vaultManager}
       pricePools={pricePools}
       setSelectedPricePool={setSelectedPricePool}
       runePrice={runePriceRD}

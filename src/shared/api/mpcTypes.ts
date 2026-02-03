@@ -210,7 +210,7 @@ export type ApiMpc = {
 
   // Vault Import/Export
   importVault: (vultContent: string, password?: string) => Promise<SerializedVault>
-  exportVault: (vaultId: string, password?: string) => Promise<string>
+  exportVault: (vaultId: string, password?: string) => Promise<{ saved: boolean; filePath?: string }>
   openVaultFile: () => Promise<OpenVaultFileResult>
 
   // Vault Lock/Unlock

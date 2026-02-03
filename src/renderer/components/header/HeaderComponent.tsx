@@ -27,7 +27,7 @@ import {
   MidgardUrlRD as MidgardMayaUrlRD
 } from '../../services/midgard/midgardTypes'
 import { MimirRD } from '../../services/thorchain/types'
-import { KeystoreState, Wallet, VaultManager } from '../../services/wallet/types'
+import { KeystoreState, Wallet } from '../../services/wallet/types'
 import { PricePoolAsset, PricePoolAssets } from '../../views/pools/Pools.types'
 import { Drawer } from '../uielements/drawer'
 import { Label } from '../uielements/label'
@@ -61,8 +61,6 @@ export type Props = {
   allWallets: Wallet[]
   activeWallet: O.Option<Wallet>
   selectWallet: (wallet: Wallet) => Promise<void>
-  // VaultManager for import functionality
-  vaultManager: VaultManager
   setSelectedPricePool: (asset: PricePoolAsset) => void
   pricePools: O.Option<PricePools>
   runePrice: PriceRD
@@ -111,7 +109,6 @@ export const HeaderComponent = (props: Props): JSX.Element => {
     allWallets,
     activeWallet,
     selectWallet,
-    vaultManager,
     setSelectedPricePool,
     midgardUrl: midgardUrlRD,
     midgardMayaUrl: midgardMayaUrlRD,
@@ -310,7 +307,6 @@ export const HeaderComponent = (props: Props): JSX.Element => {
               allWallets={allWallets}
               activeWallet={activeWallet}
               selectWallet={selectWallet}
-              vaultManager={vaultManager}
             />
             {renderHeaderSettings}
           </div>

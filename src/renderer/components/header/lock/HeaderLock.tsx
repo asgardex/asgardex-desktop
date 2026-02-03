@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
-import { CheckIcon, ChevronDownIcon, PlusCircleIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, ChevronDownIcon, PlusCircleIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -10,9 +10,8 @@ import { useNavigate } from 'react-router-dom'
 import { WalletType } from '../../../../shared/wallet/types'
 import { truncateMiddle } from '../../../helpers/stringHelper'
 import * as walletRoutes from '../../../routes/wallet'
-import { KeystoreState, Wallet, VaultManager } from '../../../services/wallet/types'
+import { KeystoreState, Wallet } from '../../../services/wallet/types'
 import { LockIcon, UnlockIcon } from '../../icons'
-import { VaultPasswordModal } from '../../modal/VaultPasswordModal'
 import { BaseButton } from '../../uielements/button'
 import { Tooltip } from '../../uielements/tooltip'
 
@@ -25,8 +24,6 @@ export type Props = {
   allWallets: Wallet[]
   activeWallet: O.Option<Wallet>
   selectWallet: (wallet: Wallet) => Promise<void>
-  // VaultManager for import functionality
-  vaultManager: VaultManager
 }
 
 export const HeaderLock = (props: Props): JSX.Element => {
@@ -37,18 +34,13 @@ export const HeaderLock = (props: Props): JSX.Element => {
     // Phase D: Unified wallet props from appWalletService
     allWallets,
     activeWallet: oSelectedWallet,
-    selectWallet,
-    vaultManager
+    selectWallet
   } = props
 
   const intl = useIntl()
   const navigate = useNavigate()
 
   const hasWallets = allWallets.length > 0
-
-  // Vultisig vault import state
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
-  const [pendingVaultFile, setPendingVaultFile] = useState<{ content: string; filename: string } | null>(null)
 
   // Phase D → 4F: Selection handler simplified - just calls unified selectWallet
   const handleWalletChange = useCallback(
@@ -60,48 +52,6 @@ export const HeaderLock = (props: Props): JSX.Element => {
     },
     [selectWallet]
   )
-
-  // Import Vultisig vault from .vult file
-  const importVaultHandler = useCallback(async () => {
-    try {
-      const result = await window.apiMpc.openVaultFile()
-      if (!result) return // User canceled
-
-      if (result.isEncrypted) {
-        // Show password modal for encrypted vaults
-        setPendingVaultFile({ content: result.content, filename: result.filename })
-        setShowPasswordModal(true)
-      } else {
-        // Import unencrypted vault directly
-        const vault = await window.apiMpc.importVault(result.content)
-        await vaultManager.loadVaults()
-        await vaultManager.selectVault(vault.id, false)
-        navigate(walletRoutes.assets.template)
-      }
-    } catch (error) {
-      window.apiLog.error('[HeaderLock]', 'Failed to import vault:', error)
-    }
-  }, [navigate, vaultManager])
-
-  // Handle password submission for encrypted vault
-  const handlePasswordSubmit = useCallback(
-    async (password: string) => {
-      if (!pendingVaultFile) return
-
-      const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
-      await vaultManager.loadVaults()
-      await vaultManager.selectVault(vault.id, false)
-      setShowPasswordModal(false)
-      setPendingVaultFile(null)
-      navigate(walletRoutes.assets.template)
-    },
-    [pendingVaultFile, navigate, vaultManager]
-  )
-
-  const handlePasswordModalClose = useCallback(() => {
-    setShowPasswordModal(false)
-    setPendingVaultFile(null)
-  }, [])
 
   const renderWallets = useMemo(
     () =>
@@ -179,20 +129,6 @@ export const HeaderLock = (props: Props): JSX.Element => {
                         )
                       })
                     )}
-                    {/* Divider */}
-                    <div className="my-1 border-t border-gray0 dark:border-gray0d" />
-                    {/* Import vault option */}
-                    <div
-                      className={clsx(
-                        'flex cursor-pointer select-none items-center',
-                        'px-20px py-10px',
-                        'font-main text-14 text-text1 dark:text-text1d',
-                        'hover:bg-gray0 hover:text-gray2 hover:dark:bg-gray0d hover:dark:text-gray2d'
-                      )}
-                      onClick={importVaultHandler}>
-                      <ArrowDownTrayIcon className="h-16px w-16px mr-2" />
-                      {intl.formatMessage({ id: 'wallet.vultisig.import' })}
-                    </div>
                   </ListboxOptions>
                 </div>
               </Listbox>
@@ -201,7 +137,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
         )
       ),
 
-    [handleWalletChange, isLocked, oSelectedWallet, onPress, allWallets, intl, importVaultHandler]
+    [handleWalletChange, isLocked, oSelectedWallet, onPress, allWallets]
   )
 
   const renderAddWallet = useMemo(
@@ -215,15 +151,5 @@ export const HeaderLock = (props: Props): JSX.Element => {
     [intl, navigate]
   )
 
-  return (
-    <>
-      <div className="flex justify-center">{hasWallets ? renderWallets : renderAddWallet}</div>
-      <VaultPasswordModal
-        visible={showPasswordModal}
-        filename={pendingVaultFile?.filename || ''}
-        onSubmit={handlePasswordSubmit}
-        onClose={handlePasswordModalClose}
-      />
-    </>
-  )
+  return <div className="flex justify-center">{hasWallets ? renderWallets : renderAddWallet}</div>
 }

@@ -4,7 +4,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { ReferrerState } from '../../routes/types'
 import * as walletRoutes from '../../routes/wallet'
-import { isStandaloneLedgerMode, isStandaloneVultisigMode } from '../../services/wallet/types'
+import { isStandaloneLedgerMode, isVultisigMode } from '../../services/wallet/types'
 import { hasImportedKeystore } from '../../services/wallet/util'
 
 export const WalletAuth = ({ children }: { children: JSX.Element }): JSX.Element => {
@@ -26,7 +26,7 @@ export const WalletAuth = ({ children }: { children: JSX.Element }): JSX.Element
   }
 
   // Keystore mode requires an imported keystore
-  if (!isStandaloneLedgerMode(appWalletState) && !isStandaloneVultisigMode(appWalletState)) {
+  if (!isStandaloneLedgerMode(appWalletState) && !isVultisigMode(appWalletState)) {
     if (!hasImportedKeystore(appWalletState)) {
       return (
         <Navigate
