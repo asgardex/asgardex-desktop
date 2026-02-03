@@ -2,7 +2,12 @@ import equal from 'fast-deep-equal'
 import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RxOp from 'rxjs/operators'
-import { CommonStorage, LastOpenedWallet } from '../../../shared/api/types'
+import { CommonStorage } from '../../../shared/api/types'
+import { DEFAULT_ARB_RPC_URLS } from '../../../shared/arb/const'
+import { DEFAULT_AVAX_RPC_URLS } from '../../../shared/avax/const'
+import { DEFAULT_BASE_RPC_URLS } from '../../../shared/base/const'
+import { DEFAULT_BSC_RPC_URLS } from '../../../shared/bsc/const'
+import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
 import { DEFAULT_EVM_HD_MODE } from '../../../shared/evm/types'
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
@@ -75,11 +80,38 @@ const mayanodeRpc$ = pipe(
   RxOp.distinctUntilChanged(equal)
 )
 
-// Last opened wallet (keystore or vultisig) for restoring on app startup
-const lastOpenedWallet$ = pipe(
+const ethRpc$ = pipe(
   getStorageState$,
-  RxOp.map(O.map(({ lastOpenedWallet }) => lastOpenedWallet)),
-  RxOp.map(O.getOrElse<LastOpenedWallet | undefined>(() => undefined)),
+  RxOp.map(O.map(({ ethRpc }) => ethRpc)),
+  RxOp.map(O.getOrElse(() => DEFAULT_ETH_RPC_URLS)),
+  RxOp.distinctUntilChanged(equal)
+)
+
+const bscRpc$ = pipe(
+  getStorageState$,
+  RxOp.map(O.map(({ bscRpc }) => bscRpc)),
+  RxOp.map(O.getOrElse(() => DEFAULT_BSC_RPC_URLS)),
+  RxOp.distinctUntilChanged(equal)
+)
+
+const arbRpc$ = pipe(
+  getStorageState$,
+  RxOp.map(O.map(({ arbRpc }) => arbRpc)),
+  RxOp.map(O.getOrElse(() => DEFAULT_ARB_RPC_URLS)),
+  RxOp.distinctUntilChanged(equal)
+)
+
+const avaxRpc$ = pipe(
+  getStorageState$,
+  RxOp.map(O.map(({ avaxRpc }) => avaxRpc)),
+  RxOp.map(O.getOrElse(() => DEFAULT_AVAX_RPC_URLS)),
+  RxOp.distinctUntilChanged(equal)
+)
+
+const baseRpc$ = pipe(
+  getStorageState$,
+  RxOp.map(O.map(({ baseRpc }) => baseRpc)),
+  RxOp.map(O.getOrElse(() => DEFAULT_BASE_RPC_URLS)),
   RxOp.distinctUntilChanged(equal)
 )
 
@@ -111,5 +143,9 @@ export {
   mayanodeApi$,
   thornodeRpc$,
   mayanodeRpc$,
-  lastOpenedWallet$
+  ethRpc$,
+  bscRpc$,
+  arbRpc$,
+  avaxRpc$,
+  baseRpc$
 }

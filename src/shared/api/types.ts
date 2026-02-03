@@ -66,8 +66,11 @@ export type CommonStorage = Readonly<
     thornodeApi: ApiUrls
     mayanodeRpc: ApiUrls
     mayanodeApi: ApiUrls
-    // Last opened wallet (keystore or vultisig)
-    lastOpenedWallet?: LastOpenedWallet
+    ethRpc: ApiUrls
+    bscRpc: ApiUrls
+    arbRpc: ApiUrls
+    avaxRpc: ApiUrls
+    baseRpc: ApiUrls
   } & StorageVersion
 >
 

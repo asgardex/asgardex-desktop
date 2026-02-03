@@ -6,14 +6,22 @@ import BigNumber from 'bignumber.js'
 import { JsonRpcProvider, Network as EthersNetwork } from 'ethers'
 
 import { etherscanApiKey } from '../api/etherscan'
+import { ApiUrls } from '../api/types'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
 const LOWER_FEE_BOUND = 1000000
 
+// Default RPC URLs for user configuration
+export const DEFAULT_ETH_RPC_URLS: ApiUrls = {
+  [Network.Mainnet]: 'https://ethereum.publicnode.com',
+  [Network.Stagenet]: 'https://ethereum.publicnode.com',
+  [Network.Testnet]: 'https://ethereum-sepolia-rpc.publicnode.com'
+}
+
 // =====JSON-RPC Providers=====
 // Define providers for ETH mainnet and testnet
-const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
+const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum.publicnode.com', 'homestead')
 const network = EthersNetwork.from('sepolia')
 const ETH_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com', network)
 
@@ -117,4 +125,45 @@ export const defaultEthParams: EVMClientParams = {
     upper: UPPER_FEE_BOUND
   },
   rootDerivationPaths: ethRootDerivationPaths
+}
+
+/**
+ * Factory function to create ETH client params with custom RPC URL
+ */
+export const createEthParams = (rpcUrl: string, net: Network): EVMClientParams => {
+  // Create provider based on network
+  const isTestnet = net === Network.Testnet
+  const ethersNetwork = isTestnet ? EthersNetwork.from('sepolia') : 'homestead'
+  const chainId = isTestnet ? 11155111 : 1
+
+  const customProvider = new JsonRpcProvider(rpcUrl, ethersNetwork)
+
+  const customProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customProvider : ETH_MAINNET_ETHERS_PROVIDER,
+    [Network.Testnet]: net === Network.Testnet ? customProvider : ETH_TESTNET_ETHERS_PROVIDER,
+    [Network.Stagenet]: net === Network.Stagenet ? customProvider : ETH_MAINNET_ETHERS_PROVIDER
+  }
+
+  // Create data provider with custom RPC provider
+  const customDataProvider = new EtherscanProviderV2(
+    customProvider,
+    'https://api.etherscan.io/v2',
+    etherscanApiKey,
+    ETHChain,
+    AssetETH,
+    ETH_GAS_ASSET_DECIMAL,
+    chainId
+  )
+
+  const customDataProviders = {
+    [Network.Mainnet]: net === Network.Mainnet ? customDataProvider : ETH_ONLINE_PROVIDER_MAINNET,
+    [Network.Testnet]: net === Network.Testnet ? customDataProvider : ETH_ONLINE_PROVIDER_TESTNET,
+    [Network.Stagenet]: net === Network.Stagenet ? customDataProvider : ETH_ONLINE_PROVIDER_MAINNET
+  }
+
+  return {
+    ...defaultEthParams,
+    providers: customProviders,
+    dataProviders: [customDataProviders]
+  }
 }
