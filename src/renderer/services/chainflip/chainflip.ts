@@ -36,9 +36,10 @@ export const createChainflipService$ = () => {
     Rx.defer(() => assetsData.getValue()).pipe(
       RxOp.map((assets) => RD.success(assets)),
       RxOp.catchError((error) => {
-        // Log 429 and other API errors but don't crash the UI
+        // Log 429 and other API errors but don't block the swap page
+        // Return empty array so THORChain/MAYAChain swaps still work
         console.warn('Chainflip API error (assets data):', error)
-        return Rx.of(RD.failure(new Error('Chainflip sdk service temporarily unavailable')))
+        return Rx.of(RD.success([]))
       }),
       RxOp.shareReplay(1) // Cache the observable result
     )
@@ -64,9 +65,10 @@ export const createChainflipService$ = () => {
     RxOp.map((chains) => chains.map((chain) => cChainToXChain(chain.chain))),
     RxOp.map((chains) => RD.success(chains)),
     RxOp.catchError((error) => {
-      // Log 429 and other API errors but don't crash the UI
+      // Log 429 and other API errors but don't block the UI
+      // Return empty array so other protocols still work
       console.warn('Chainflip API error (supported chains):', error)
-      return Rx.of(RD.failure(new Error('Chainflip service temporarily unavailable')))
+      return Rx.of(RD.success([]))
     }),
     RxOp.shareReplay(1) // Prevent duplicate chain requests
   )
