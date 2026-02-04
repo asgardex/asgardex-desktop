@@ -1,5 +1,19 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.42.0 (2026-02-04)
+
+## Add
+
+- add EVM gas multiplier setting in Expert Mode to adjust gas fees for transactions [#969](https://github.com/asgardex/asgardex-desktop/pull/969)
+- add configurable EVM RPC endpoints in Expert Mode with per-network URL editing, validation, and health checks [#966](https://github.com/asgardex/asgardex-desktop/pull/966)
+- add custom RPC URL support for Ledger transactions on EVM chains [#968](https://github.com/asgardex/asgardex-desktop/pull/968)
+
+## Update/Fixes
+
+- fix Chainflip service errors from blocking the application when temporarily unavailable [#971](https://github.com/asgardex/asgardex-desktop/pull/971)
+- refactor balance reload logic to centralize wallet type determination [#967](https://github.com/asgardex/asgardex-desktop/pull/967)
+- refactor enhanced client logic into shared factory to reduce code duplication [#965](https://github.com/asgardex/asgardex-desktop/pull/965)
+
 # 1.41.5 (2025-12-12)
 
 ## Add
