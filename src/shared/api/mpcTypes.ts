@@ -117,16 +117,17 @@ export const ASGARDEX_TO_SDK_CHAIN: Record<string, string> = {
   ETH: 'Ethereum',
   THOR: 'THORChain',
   MAYA: 'MayaChain',
-  BSC: 'BinanceSmartChain',
+  BSC: 'BSC', // SDK uses 'BSC' not 'BinanceSmartChain'
   AVAX: 'Avalanche',
   GAIA: 'Cosmos',
   DOGE: 'Dogecoin',
   LTC: 'Litecoin',
-  BCH: 'BitcoinCash',
+  BCH: 'BCH', // SDK bug: derivation fails with "(0 , n[t]) is not a function" - report to Vultisig
   ARB: 'Arbitrum',
   BASE: 'Base',
   DASH: 'Dash',
-  XRP: 'Ripple'
+  XRP: 'Ripple',
+  SOL: 'Solana'
 }
 
 export const SDK_TO_ASGARDEX_CHAIN: Record<string, string> = Object.entries(ASGARDEX_TO_SDK_CHAIN).reduce(

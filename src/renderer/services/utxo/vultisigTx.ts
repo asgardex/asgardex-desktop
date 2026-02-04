@@ -7,12 +7,14 @@
  */
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { Chain } from '@xchainjs/xchain-util'
 import * as Bitcoin from 'bitcoinjs-lib'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { XChainClient$ } from '../clients/types'
+import { appWalletService } from '../wallet/appWallet'
 import { ErrorId, TxHashLD } from '../wallet/types'
 import { SendTxParams } from './types'
 
@@ -29,45 +31,83 @@ export const createVultisigUtxoTx = (
 ): (({ network, params }: { network: Network; params: SendTxParams }) => TxHashLD) => {
   // Note: network param is unused for Vultisig but included for API consistency with Ledger
   return ({ params }: { network: Network; params: SendTxParams }): TxHashLD => {
-    const { sender, recipient, amount, memo, feeRate, vaultId } = params
+    const { recipient, amount, memo, feeRate } = params
+
+    // Get vaultId from active wallet state (unified approach - same as EVM)
+    const vaultId = appWalletService.getActiveVaultId()
 
     if (!vaultId) {
-      return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig transaction requires vaultId' }))
-    }
-    if (!sender) {
-      return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Sender address required' }))
+      window.apiLog.error('[Vultisig]', `${chainName} tx failed: no active vault`)
+      return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'No active Vultisig vault' }))
     }
 
+    // Get sender address from unified address service and client
     return FP.pipe(
-      client$,
-      RxOp.switchMap((oClient) =>
-        FP.pipe(
+      Rx.combineLatest([client$, appWalletService.getAddressForChain$(chainName as Chain)]),
+      RxOp.switchMap(([oClient, oSender]) => {
+        const sender = O.toUndefined(oSender)
+
+        window.apiLog.info('[Vultisig]', `sendVultisigTx called for ${chainName}`, {
+          sender,
+          recipient,
+          vaultId,
+          amount: amount.amount().toString()
+        })
+
+        if (!sender) {
+          window.apiLog.error('[Vultisig]', `${chainName} tx failed: no sender address`)
+          return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: `No ${chainName} address available` }))
+        }
+
+        return FP.pipe(
           oClient,
           O.fold(
-            () => Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: `No ${chainName} client available` })),
+            () => {
+              window.apiLog.error('[Vultisig]', `${chainName} tx failed: no client available`)
+              return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: `No ${chainName} client available` }))
+            },
             (client) =>
               FP.pipe(
                 // 1. Build unsigned PSBT
-                // Cast params since UTXO clients extend base TxParams with sender/feeRate
-                Rx.from(
-                  client.prepareTx({ sender, recipient, amount, memo, feeRate } as Parameters<
-                    typeof client.prepareTx
-                  >[0])
-                ),
+                Rx.defer(() => {
+                  window.apiLog.info('[Vultisig]', `${chainName} step 1: prepareTx`, {
+                    sender,
+                    recipient,
+                    amount: amount.amount().toString()
+                  })
+                  return Rx.from(
+                    client.prepareTx({ sender, recipient, amount, memo, feeRate } as Parameters<
+                      typeof client.prepareTx
+                    >[0])
+                  )
+                }),
                 RxOp.switchMap(({ rawUnsignedTx }) => {
+                  window.apiLog.info('[Vultisig]', `${chainName} step 2: parsing PSBT`)
                   // 2. Parse PSBT from Base64
                   const psbt = Bitcoin.Psbt.fromBase64(rawUnsignedTx)
 
-                  // 3. Create MPC async signer - vaultId IS the ECDSA public key
+                  // 3. Create MPC async signer
+                  // Note: vaultId is the ECDSA public key hex from Vultisig SDK
+                  // The SDK returns vault.id as the compressed ECDSA public key (33 bytes = 66 hex chars)
                   const publicKey = Buffer.from(vaultId, 'hex')
+                  window.apiLog.info('[Vultisig]', `${chainName} step 3: creating MPC signer`, {
+                    publicKeyLength: publicKey.length,
+                    vaultIdLength: vaultId.length
+                  })
 
                   const mpcSignerAsync: Bitcoin.SignerAsync = {
                     publicKey,
                     sign: async (hash: Buffer): Promise<Buffer> => {
+                      window.apiLog.info('[Vultisig]', `${chainName} step 4: signing hash`, {
+                        hashHex: hash.toString('hex')
+                      })
                       const { signature } = await window.apiMpc.signBytes({
                         vaultId,
                         chain: chainName,
                         data: hash.toString('hex')
+                      })
+                      window.apiLog.info('[Vultisig]', `${chainName} step 4: got signature`, {
+                        signatureLength: signature.length
                       })
                       return Buffer.from(signature, 'hex')
                     }
@@ -77,31 +117,46 @@ export const createVultisigUtxoTx = (
                   return FP.pipe(
                     Rx.from(
                       (async () => {
+                        window.apiLog.info('[Vultisig]', `${chainName} step 5: signing all inputs`)
                         await psbt.signAllInputsAsync(mpcSignerAsync)
                         // 5. Finalize all inputs
+                        window.apiLog.info('[Vultisig]', `${chainName} step 6: finalizing inputs`)
                         psbt.finalizeAllInputs()
                         // 6. Extract signed transaction
-                        return psbt.extractTransaction().toHex()
+                        const txHex = psbt.extractTransaction().toHex()
+                        window.apiLog.info('[Vultisig]', `${chainName} step 7: extracted tx`, {
+                          txHexLength: txHex.length
+                        })
+                        return txHex
                       })()
                     ),
                     // 7. Broadcast
-                    RxOp.switchMap((txHex) => Rx.from(client.broadcastTx(txHex)))
+                    RxOp.switchMap((txHex) => {
+                      window.apiLog.info('[Vultisig]', `${chainName} step 8: broadcasting`)
+                      return Rx.from(client.broadcastTx(txHex))
+                    })
                   )
                 }),
-                RxOp.map((txHash) => RD.success(txHash)),
-                RxOp.catchError((error) =>
-                  Rx.of(
+                RxOp.map((txHash) => {
+                  window.apiLog.info('[Vultisig]', `${chainName} tx success`, { txHash })
+                  return RD.success(txHash)
+                }),
+                RxOp.catchError((error) => {
+                  window.apiLog.error('[Vultisig]', `${chainName} tx failed`, {
+                    error: error?.message ?? error.toString()
+                  })
+                  return Rx.of(
                     RD.failure({
                       errorId: ErrorId.SEND_TX,
                       msg: `Vultisig ${chainName} tx failed: ${error?.message ?? error.toString()}`
                     })
                   )
-                ),
+                }),
                 RxOp.startWith(RD.pending)
               )
           )
         )
-      )
+      })
     )
   }
 }

@@ -120,23 +120,23 @@ export const createAppWalletService = (): AppWalletService => {
   /**
    * Switch to keystore mode - clears standalone states
    */
-  const switchToKeystoreMode = () => {
+  const switchToKeystoreMode = async () => {
     // Exit standalone modes first
     standaloneLedgerService.exitStandaloneMode()
     vaultManager.exitStandaloneMode()
 
     // Set app state to current keystore state
-    const currentKeystoreState = FP.pipe(keystoreService.keystoreState$, RxOp.take(1))
-    currentKeystoreState.subscribe((keystoreState) => {
+    const keystoreState = await keystoreService.keystoreState$.pipe(RxOp.take(1)).toPromise()
+    if (keystoreState !== undefined) {
       setAppWalletState(keystoreState)
-    })
+    }
   }
 
   /**
    * Switch to standalone ledger mode - doesn't affect keystore but changes app state
    * @param autoLock - if true, will automatically lock the keystore before switching to ledger mode
    */
-  const switchToStandaloneLedgerMode = (autoLock = false) => {
+  const switchToStandaloneLedgerMode = async (autoLock = false) => {
     // Check if keystore is currently unlocked using the synchronous getter
     const currentKeystoreState = keystoreService.keystoreState()
 
@@ -165,17 +165,17 @@ export const createAppWalletService = (): AppWalletService => {
     standaloneLedgerService.enterStandaloneMode()
 
     // Set app state to standalone ledger state
-    const currentStandaloneState = FP.pipe(standaloneLedgerService.standaloneLedgerState$, RxOp.take(1))
-    currentStandaloneState.subscribe((standaloneState) => {
+    const standaloneState = await standaloneLedgerService.standaloneLedgerState$.pipe(RxOp.take(1)).toPromise()
+    if (standaloneState !== undefined) {
       setAppWalletState(standaloneState)
-    })
+    }
   }
 
   /**
    * Switch to standalone vultisig mode - doesn't affect keystore but changes app state
    * @param autoLock - if true, will automatically lock the keystore before switching
    */
-  const switchToVultisigMode = (autoLock = false) => {
+  const switchToVultisigMode = async (autoLock = false) => {
     window.apiLog.info('[AppWallet]', 'switchToVultisigMode called, autoLock:', autoLock)
     const currentAppState = appWalletState()
 
@@ -215,11 +215,11 @@ export const createAppWalletService = (): AppWalletService => {
     vaultManager.enterStandaloneMode()
 
     // Set app state to standalone vultisig state
-    const currentStandaloneState = FP.pipe(vaultManager.vultisigState$, RxOp.take(1))
-    currentStandaloneState.subscribe((standaloneState) => {
+    const standaloneState = await vaultManager.vultisigState$.pipe(RxOp.take(1)).toPromise()
+    if (standaloneState !== undefined) {
       window.apiLog.info('[AppWallet]', 'Setting app state to vultisig state:', standaloneState.phase)
       setAppWalletState(standaloneState)
-    })
+    }
   }
 
   // ============================================

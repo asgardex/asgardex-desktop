@@ -173,14 +173,25 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
     const vault = await sdk.getVaultById(vaultId)
     if (!vault) throw new Error(`Vault not found: ${vaultId}`)
 
-    // Use batch method instead of manual loop
-    try {
-      const addresses = await vault.addresses()
-      return addresses
-    } catch (error) {
-      log.warn(`[MPC IPC] Failed to get addresses:`, error)
-      return {}
+    // Derive addresses for all supported chains using vault.address(chain)
+    // This ensures all Asgardex-supported chains get addresses, not just the SDK default set
+    const addresses: Record<string, string> = {}
+    const sdkChains = Object.values(ASGARDEX_TO_SDK_CHAIN)
+
+    for (const sdkChain of sdkChains) {
+      try {
+        const address = await vault.address(sdkChain)
+        if (address) {
+          addresses[sdkChain] = address
+        }
+      } catch (error) {
+        log.warn(`[MPC IPC] Failed to get address for chain ${sdkChain}:`, error)
+        // Continue with other chains
+      }
     }
+
+    log.info(`[MPC IPC] Derived addresses for ${Object.keys(addresses).length} chains`)
+    return addresses
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_GET_BALANCES, async (_event, vaultId: string) => {
