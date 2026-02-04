@@ -39,8 +39,6 @@ dev-app-update.yml
 
 stats.html
 
-# Claude/RAG files
+# Claude
 CLAUDE.md
-mcp-rag-client.py
-rag-client-readme.md
 /docs
