@@ -8,8 +8,9 @@ import { either as E } from 'fp-ts'
 
 import { isBscAsset } from '../../../../renderer/helpers/assetHelper'
 import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'
-import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultBscParams } from '../../../../shared/bsc/const'
+import { applyGasMultiplier } from '../../../../shared/evm/gas'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -29,7 +30,8 @@ export const send = async ({
   walletAccount,
   walletIndex,
   evmHDMode,
-  evmRpcUrl
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   transport: Transport
@@ -42,6 +44,7 @@ export const send = async ({
   walletIndex: number
   evmHDMode: EvmHDMode
   evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     // Derive chainId from the network parameter
@@ -66,13 +69,17 @@ export const send = async ({
       network
     })
 
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await clientLedger.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+
     const txHash = await clientLedger.transfer({
       walletIndex,
       asset: asset as Asset | TokenAsset,
       recipient,
       amount,
       memo,
-      feeOption
+      gasPrice: gasPrices[feeOption]
     })
 
     if (!txHash) {
@@ -106,7 +113,8 @@ export const deposit = async ({
   walletIndex,
   feeOption,
   evmHDMode,
-  evmRpcUrl
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   router: Address
@@ -120,6 +128,7 @@ export const deposit = async ({
   feeOption: FeeOption
   evmHDMode: EvmHDMode
   evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isBscAsset(asset) ? BSC.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -157,7 +166,9 @@ export const deposit = async ({
 
     const provider = clientledger.getProvider()
 
-    const gasPrices = await clientledger.estimateGasPrices()
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await clientledger.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET

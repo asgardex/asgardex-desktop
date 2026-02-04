@@ -184,7 +184,13 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(AVAXChain)}`
       })
     }
-    return AVAX.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, evmRpcUrl: params.evmRpcUrl })
+    return AVAX.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [BASEChain]: async (params) => {
     if (!params.asset) {
@@ -205,7 +211,13 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BASEChain)}`
       })
     }
-    return BASE.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, evmRpcUrl: params.evmRpcUrl })
+    return BASE.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [BSCChain]: async (params) => {
     if (!params.asset) {
@@ -226,7 +238,13 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BSCChain)}`
       })
     }
-    return BSC.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, evmRpcUrl: params.evmRpcUrl })
+    return BSC.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [ARBChain]: async (params) => {
     if (!params.asset) {
@@ -247,7 +265,13 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(ARBChain)}`
       })
     }
-    return ARB.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, evmRpcUrl: params.evmRpcUrl })
+    return ARB.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [GAIAChain]: async (params) => {
     if (!params.asset) {
@@ -510,7 +534,8 @@ const chainDepositFunctions: Record<
       recipient: params.recipient,
       feeOption: params.feeOption,
       evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
     })
   },
   [BSCChain]: async (params) => {
@@ -557,7 +582,8 @@ const chainDepositFunctions: Record<
       recipient: params.recipient,
       feeOption: params.feeOption,
       evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
     })
   },
   [BASEChain]: async (params) => {
@@ -604,7 +630,8 @@ const chainDepositFunctions: Record<
       recipient: params.recipient,
       feeOption: params.feeOption,
       evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
     })
   },
   [ARBChain]: async (params) => {
@@ -651,7 +678,8 @@ const chainDepositFunctions: Record<
       recipient: params.recipient,
       feeOption: params.feeOption,
       evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
     })
   }
 }
