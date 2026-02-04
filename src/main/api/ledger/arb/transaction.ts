@@ -197,7 +197,7 @@ export const deposit = async ({
       amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
       memo: unsignedTx.data,
       recipient: router,
-      gasPrice: gasPrices.fast,
+      gasPrice: gasPrices[feeOption],
       isMemoEncoded: true,
       gasLimit: new BigNumber(160000)
     })
