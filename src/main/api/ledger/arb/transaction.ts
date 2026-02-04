@@ -3,20 +3,21 @@ import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as ARB from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import { BigNumber } from 'bignumber.js'
-import { Contract } from 'ethers'
+import { Contract, JsonRpcProvider } from 'ethers'
 import { either as E } from 'fp-ts'
 
 import { isAethAsset } from '../../../../renderer/helpers/assetHelper'
 import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'
-import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultArbParams } from '../../../../shared/arb/const'
+import { applyGasMultiplier } from '../../../../shared/evm/gas'
 import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 
 /**
- * Sends ETH tx using Ledger
+ * Sends ARB tx using Ledger
  */
 export const send = async ({
   asset,
@@ -28,7 +29,9 @@ export const send = async ({
   feeOption,
   walletAccount,
   walletIndex,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   transport: Transport
@@ -40,19 +43,45 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Derive chainId from the network parameter
+    // Arbitrum One mainnet: 42161, Arbitrum Sepolia testnet: 421614
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 421614 : 42161
+    const networkName = isTestnet ? 'arbitrum-sepolia' : 'arbitrum'
+
+    // Use custom RPC URL if provided, otherwise use defaults
+    const provider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultArbParams.providers[network]
+
     const clientledger = new ARB.ClientLedger({
       ...defaultArbParams,
+      providers: evmRpcUrl ? { ...defaultArbParams.providers, [network]: provider } : defaultArbParams.providers,
       signer: new ARB.LedgerSigner({
         transport,
-        provider: defaultArbParams.providers[Network.Mainnet],
+        provider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       network: network
     })
+
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await clientledger.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+
     const arbAsset = asset as ARB.CompatibleAsset
-    const txHash = await clientledger.transfer({ walletIndex, asset: arbAsset, recipient, amount, memo, feeOption })
+    const txHash = await clientledger.transfer({
+      walletIndex,
+      asset: arbAsset,
+      recipient,
+      amount,
+      memo,
+      gasPrice: gasPrices[feeOption]
+    })
     if (!txHash) {
       return E.left({
         errorId: LedgerErrorId.INVALID_RESPONSE,
@@ -70,7 +99,7 @@ export const send = async ({
 }
 
 /**
- * Sends ETH deposit txs using Ledger
+ * Sends ARB deposit txs using Ledger
  */
 export const deposit = async ({
   asset,
@@ -83,7 +112,9 @@ export const deposit = async ({
   walletAccount,
   walletIndex,
   feeOption,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   router: Address
@@ -96,6 +127,8 @@ export const deposit = async ({
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isAethAsset(asset) ? ARB.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -109,11 +142,23 @@ export const deposit = async ({
 
     const isETHAddress = address === EVMZeroAddress
 
+    // Derive chainId from the network parameter
+    // Arbitrum One mainnet: 42161, Arbitrum Sepolia testnet: 421614
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 421614 : 42161
+    const networkName = isTestnet ? 'arbitrum-sepolia' : 'arbitrum'
+
+    // Use custom RPC URL if provided, otherwise use defaults
+    const rpcProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultArbParams.providers[network]
+
     const clientledger = new ARB.ClientLedger({
       ...defaultArbParams,
+      providers: evmRpcUrl ? { ...defaultArbParams.providers, [network]: rpcProvider } : defaultArbParams.providers,
       signer: new ARB.LedgerSigner({
         transport,
-        provider: defaultArbParams.providers[Network.Mainnet],
+        provider: rpcProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       network: network
@@ -121,7 +166,9 @@ export const deposit = async ({
 
     const provider = clientledger.getProvider()
 
-    const gasPrices = await clientledger.estimateGasPrices()
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await clientledger.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
@@ -150,7 +197,7 @@ export const deposit = async ({
       amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
       memo: unsignedTx.data,
       recipient: router,
-      gasPrice: gasPrices.fast,
+      gasPrice: gasPrices[feeOption],
       isMemoEncoded: true,
       gasLimit: new BigNumber(160000)
     })

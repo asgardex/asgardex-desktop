@@ -69,6 +69,8 @@ const settings: SettingMessages = {
   'settings.expert.evm.arb.title': 'RPC de Arbitrum',
   'settings.expert.evm.avax.title': 'RPC de Avalanche',
   'settings.expert.evm.base.title': 'RPC de Base',
+  'settings.expert.gasMultiplier.title': 'Configuración de Gas EVM',
+  'settings.expert.gasMultiplier.description': 'Aumentar el precio del gas para acelerar las transacciones',
   'settings.evm.rpc.error.url': 'URL RPC EVM no válida. Vuelva a comprobarlo e inténtelo de nuevo',
   'settings.evm.rpc.valid': 'URL RPC EVM válida',
   'settings.evm.rpc.unhealthy': 'El endpoint RPC no responde. Verifica tu conexión o prueba con otra URL.',

@@ -23,7 +23,7 @@ import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
 
 import { IPCLedgerDepositTxParams, IPCLedgerSendTxParams } from '../../../shared/api/io'
-import { LedgerError, LedgerErrorId } from '../../../shared/api/types'
+import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { chainToString, isSupportedChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode, isUtxoHDMode } from '../../../shared/utils/guard'
 import * as ARB from './arb/transaction'
@@ -156,7 +156,14 @@ const chainSendFunctions: Record<
         msg: `Eth needs an api key ${chainToString(ETHChain)}`
       })
     }
-    return ETH.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, apiKey: params.apiKey })
+    return ETH.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      apiKey: params.apiKey,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [AVAXChain]: async (params) => {
     if (!params.asset) {
@@ -177,7 +184,13 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(AVAXChain)}`
       })
     }
-    return AVAX.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+    return AVAX.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [BASEChain]: async (params) => {
     if (!params.asset) {
@@ -198,7 +211,13 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BASEChain)}`
       })
     }
-    return BASE.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+    return BASE.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [BSCChain]: async (params) => {
     if (!params.asset) {
@@ -219,7 +238,13 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BSCChain)}`
       })
     }
-    return BSC.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+    return BSC.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [ARBChain]: async (params) => {
     if (!params.asset) {
@@ -240,7 +265,13 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(ARBChain)}`
       })
     }
-    return ARB.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+    return ARB.send({
+      ...params,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+    })
   },
   [GAIAChain]: async (params) => {
     if (!params.asset) {
@@ -314,7 +345,9 @@ export const sendTx = async ({
   nodeUrl,
   hdMode,
   apiKey,
-  destinationTag
+  destinationTag,
+  evmRpcUrl,
+  gasMultiplier
 }: IPCLedgerSendTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const transport = await TransportNodeHidSingleton.default.create()
@@ -352,7 +385,9 @@ export const sendTx = async ({
       hdMode,
       feeAsset: undefined,
       apiKey,
-      destinationTag
+      destinationTag,
+      evmRpcUrl,
+      gasMultiplier
     })
     await transport.close()
     return res
@@ -398,7 +433,9 @@ const chainDepositFunctions: Record<
     walletIndex,
     feeOption,
     hdMode,
-    apiKey
+    apiKey,
+    evmRpcUrl,
+    gasMultiplier
   }) => {
     if (!router) {
       return E.left({
@@ -448,7 +485,9 @@ const chainDepositFunctions: Record<
       recipient,
       feeOption,
       evmHDMode: hdMode,
-      apiKey
+      apiKey,
+      evmRpcUrl,
+      gasMultiplier: (gasMultiplier ?? 1) as GasMultiplier
     })
   },
   [AVAXChain]: async (params) => {
@@ -494,7 +533,9 @@ const chainDepositFunctions: Record<
       walletIndex: params.walletIndex,
       recipient: params.recipient,
       feeOption: params.feeOption,
-      evmHDMode: params.hdMode
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
     })
   },
   [BSCChain]: async (params) => {
@@ -540,7 +581,9 @@ const chainDepositFunctions: Record<
       walletIndex: params.walletIndex,
       recipient: params.recipient,
       feeOption: params.feeOption,
-      evmHDMode: params.hdMode
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
     })
   },
   [BASEChain]: async (params) => {
@@ -586,7 +629,9 @@ const chainDepositFunctions: Record<
       walletIndex: params.walletIndex,
       recipient: params.recipient,
       feeOption: params.feeOption,
-      evmHDMode: params.hdMode
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
     })
   },
   [ARBChain]: async (params) => {
@@ -632,7 +677,9 @@ const chainDepositFunctions: Record<
       walletIndex: params.walletIndex,
       recipient: params.recipient,
       feeOption: params.feeOption,
-      evmHDMode: params.hdMode
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl,
+      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
     })
   }
 }
@@ -650,7 +697,9 @@ export const deposit = async ({
   feeOption,
   nodeUrl,
   hdMode,
-  apiKey
+  apiKey,
+  evmRpcUrl,
+  gasMultiplier
 }: IPCLedgerDepositTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const transport = await TransportNodeHidSingleton.default.create()
@@ -684,7 +733,9 @@ export const deposit = async ({
       feeOption,
       nodeUrl,
       hdMode,
-      apiKey
+      apiKey,
+      evmRpcUrl,
+      gasMultiplier
     })
     await transport.close()
     return res

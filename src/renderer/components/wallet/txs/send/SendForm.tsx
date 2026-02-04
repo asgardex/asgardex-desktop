@@ -27,7 +27,7 @@ import { useObservableState } from 'observable-hooks'
 import { Controller, useForm } from 'react-hook-form'
 import { FormattedMessage, useIntl } from 'react-intl'
 
-import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
+import { GasMultiplier, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
 import { isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet, isVultisigWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -41,6 +41,7 @@ import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import * as PoolHelpers from '../../../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
+import { GAS_MULTIPLIER_OPTIONS, useEvmGasMultiplier } from '../../../../hooks/useEvmGasMultiplier'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
@@ -181,6 +182,7 @@ export const SendForm = (props: Props): JSX.Element => {
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
+  const { multiplier: gasMultiplier, setMultiplier: setGasMultiplier } = useEvmGasMultiplier()
   const pricePool = useMemo(
     () => (!isChainOfMaya(effectiveChain) ? pricePoolThor : pricePoolMaya),
     [effectiveChain, pricePoolThor, pricePoolMaya]
@@ -808,6 +810,33 @@ export const SendForm = (props: Props): JSX.Element => {
       </RadioGroup>
     )
   }, [isEVMChain, isUTXOChain, isLoading, selectedFeeOption, selectedFeeOptionKey, feeOptionsLabel])
+
+  const renderGasMultiplier = useMemo(() => {
+    if (!isEVMChain) return null
+
+    const disabled = isLoading
+
+    return (
+      <div className="mt-4">
+        <Label size="big" color="gray" textTransform="uppercase" className="mb-2">
+          {intl.formatMessage({ id: 'wallet.send.gasMultiplier' })}
+        </Label>
+        <RadioGroup
+          className="flex flex-row flex-wrap gap-2"
+          onChange={(value) => setGasMultiplier(parseFloat(value) as GasMultiplier)}
+          value={gasMultiplier.toString()}
+          disabled={disabled}>
+          {GAS_MULTIPLIER_OPTIONS.map((option) => (
+            <Radio value={option.toString()} key={option}>
+              <Label disabled={disabled} textTransform="uppercase">
+                {option}x
+              </Label>
+            </Radio>
+          ))}
+        </RadioGroup>
+      </div>
+    )
+  }, [isEVMChain, isLoading, gasMultiplier, setGasMultiplier, intl])
 
   const renderSlider = useMemo(() => {
     const amountValue = isEVMChain
@@ -1464,6 +1493,9 @@ export const SendForm = (props: Props): JSX.Element => {
                 />
               </div>
             )}
+
+            {/* Gas multiplier for EVM chains */}
+            {renderGasMultiplier}
 
             {/* Advanced Settings for EVM chains */}
             {isEVMChain && isEvmChainAsset(asset) && (

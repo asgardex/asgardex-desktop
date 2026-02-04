@@ -81,6 +81,7 @@ const wallet: WalletMessages = {
   'wallet.send.fastest': '가장 빠름',
   'wallet.send.fast': '빠름',
   'wallet.send.average': '보통',
+  'wallet.send.gasMultiplier': '가스 가격 배수',
   'wallet.send.max.doge':
     '예상 수수료를 기반으로 계산된 최대 값은 DOGE의 경우 때때로 잘못될 수 있습니다. "거래를 위한 잔액 부족" 오류 메시지가 표시되면 https://blockchair.com/dogecoin/transactions에서 최신 수수료 평균을 확인하고 거래를 보내기 전에 잔액에서 차감해 보세요.',
   'wallet.errors.balancesFailed': '잔액을 불러오는 데 실패했습니다. {errorMsg}',

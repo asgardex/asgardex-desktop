@@ -8,8 +8,9 @@ import { either as E } from 'fp-ts'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { EVMZeroAddress } from '../../../../renderer/services/evm/const'
-import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultEthParams } from '../../../../shared/ethereum/const'
+import { applyGasMultiplier } from '../../../../shared/evm/gas'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -35,7 +36,9 @@ export const send = async ({
   walletAccount,
   walletIndex,
   evmHDMode,
-  apiKey
+  apiKey,
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   transport: Transport
@@ -48,26 +51,37 @@ export const send = async ({
   walletIndex: number
   evmHDMode: EvmHDMode
   apiKey: string
+  evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const ethProviders = createEthProviders(apiKey)
 
+    // Use custom RPC URL if provided, otherwise use defaults
+    const mainnetProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, 'homestead')
+      : new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
+
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
       providers: {
-        mainnet: new JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
+        mainnet: mainnetProvider,
         testnet: ETH_TESTNET_ETHERS_PROVIDER,
         stagenet: ETH_MAINNET_ETHERS_PROVIDER
       },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: new JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
+        provider: mainnetProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network
     })
+
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await ledgerClient.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
 
     const txHash = await ledgerClient.transfer({
       walletIndex,
@@ -75,7 +89,7 @@ export const send = async ({
       memo,
       amount,
       recipient,
-      feeOption
+      gasPrice: gasPrices[feeOption]
     })
 
     if (!txHash) {
@@ -109,7 +123,9 @@ export const deposit = async ({
   walletIndex,
   feeOption,
   evmHDMode,
-  apiKey
+  apiKey,
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   router: Address
@@ -123,6 +139,8 @@ export const deposit = async ({
   feeOption: FeeOption
   evmHDMode: EvmHDMode
   apiKey: string
+  evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -137,17 +155,22 @@ export const deposit = async ({
 
     const isETHAddress = address === EVMZeroAddress
 
+    // Use custom RPC URL if provided, otherwise use EtherscanProvider
+    const mainnetProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, 'homestead')
+      : new EtherscanProvider('homestead', apiKey)
+
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
       providers: {
-        mainnet: new EtherscanProvider('homestead', apiKey),
+        mainnet: mainnetProvider,
         testnet: ETH_TESTNET_ETHERS_PROVIDER,
         stagenet: ETH_MAINNET_ETHERS_PROVIDER
       },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: new EtherscanProvider('homestead', apiKey),
+        provider: mainnetProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -155,7 +178,9 @@ export const deposit = async ({
     })
 
     const provider = ledgerClient.getProvider()
-    const gasPrices = await ledgerClient.estimateGasPrices(Protocol.THORCHAIN) // fetch gas prices from thorchain
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await ledgerClient.estimateGasPrices(Protocol.THORCHAIN) // fetch gas prices from thorchain
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
@@ -184,7 +209,7 @@ export const deposit = async ({
       amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
       memo: unsignedTx.data,
       recipient: router,
-      gasPrice: gasPrices.fast,
+      gasPrice: gasPrices[feeOption],
       isMemoEncoded: true,
       gasLimit: new BigNumber(160000)
     })

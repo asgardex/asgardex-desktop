@@ -8,7 +8,7 @@ import { JsonRpcProvider } from 'ethers'
 import { etherscanApiKey } from '../api/etherscan'
 import { ApiUrls } from '../api/types'
 
-const LOWER_FEE_BOUND = 100000000
+const LOWER_FEE_BOUND = 1000000
 
 // Default RPC URLs for user configuration
 export const DEFAULT_AVAX_RPC_URLS: ApiUrls = {

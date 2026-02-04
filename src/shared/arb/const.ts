@@ -1,4 +1,4 @@
-import { ARBChain, ARB_DECIMAL, ARB_GAS_ASSET_DECIMAL, AssetAETH, LOWER_FEE_BOUND } from '@xchainjs/xchain-arbitrum'
+import { ARBChain, ARB_DECIMAL, ARB_GAS_ASSET_DECIMAL, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { ExplorerProvider, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { RoutescanProvider } from '@xchainjs/xchain-evm-providers'
@@ -7,6 +7,7 @@ import { JsonRpcProvider } from 'ethers'
 
 import { ApiUrls } from '../api/types'
 
+const LOWER_FEE_BOUND = 1000000
 export const UPPER_FEE_BOUND = 2000000000
 
 // Default RPC URLs for user configuration

@@ -81,6 +81,7 @@ const wallet: WalletMessages = {
   'wallet.send.fastest': 'Наибыстро',
   'wallet.send.fast': 'Быстро',
   'wallet.send.average': 'Среднее',
+  'wallet.send.gasMultiplier': 'Множитель цены газа',
   'wallet.send.max.doge':
     'Рассчитанное макс. значение основано на приблизительных комиссиях, которые могут быть иногда неточны для DOGE. В случае появления сообщения об ошибке "Недостаточно средств для проведения операции" проверьте https://blockchair.com/dogecoin/transactions, чтобы получить среднее значение последних сборов и вычесть его из баланса перед отправкой транзакции.',
   'wallet.errors.balancesFailed': 'Нет загруженных балансов. {errorMsg}',

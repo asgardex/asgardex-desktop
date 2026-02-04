@@ -12,20 +12,21 @@ import {
   TokenAsset
 } from '@xchainjs/xchain-util'
 import { BigNumber } from 'bignumber.js'
-import { Contract, getAddress, ZeroAddress } from 'ethers'
+import { Contract, getAddress, JsonRpcProvider, ZeroAddress } from 'ethers'
 import { either as E } from 'fp-ts'
 
 import { isBaseAsset, isEVMTokenAsset } from '../../../../renderer/helpers/assetHelper'
 import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'
-import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultBaseParams } from '../../../../shared/base/const'
+import { applyGasMultiplier } from '../../../../shared/evm/gas'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 
 /**
- * Sends ETH tx using Ledger
+ * Sends BASE tx using Ledger
  */
 export const send = async ({
   asset,
@@ -37,7 +38,9 @@ export const send = async ({
   feeOption,
   walletAccount,
   walletIndex,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   transport: Transport
@@ -49,25 +52,44 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Derive chainId from the network parameter
+    // Base mainnet: 8453, Base Sepolia testnet: 84532
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 84532 : 8453
+    const networkName = isTestnet ? 'base-sepolia' : 'base'
+
+    // Use custom RPC URL if provided, otherwise use defaults
+    const provider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBaseParams.providers[network]
+
     const ledgerClient = new ClientLedger({
       ...defaultBaseParams,
+      providers: evmRpcUrl ? { ...defaultBaseParams.providers, [network]: provider } : defaultBaseParams.providers,
       signer: new LedgerSigner({
         transport,
-        provider: defaultBaseParams.providers[Network.Mainnet],
+        provider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network: network
     })
+
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await ledgerClient.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+
     const txHash = await ledgerClient.transfer({
       walletIndex,
       asset: asset as Asset | TokenAsset,
       recipient,
       amount,
       memo,
-      feeOption
+      gasPrice: gasPrices[feeOption]
     })
 
     if (!txHash) {
@@ -87,7 +109,7 @@ export const send = async ({
 }
 
 /**
- * Sends Base deposit txs using Ledger
+ * Sends BASE deposit txs using Ledger
  */
 export const deposit = async ({
   asset,
@@ -100,7 +122,9 @@ export const deposit = async ({
   walletAccount,
   walletIndex,
   feeOption,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   router: Address
@@ -113,6 +137,8 @@ export const deposit = async ({
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isBaseAsset(asset) ? getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -124,11 +150,23 @@ export const deposit = async ({
       })
     }
 
+    // Derive chainId from the network parameter
+    // Base mainnet: 8453, Base Sepolia testnet: 84532
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 84532 : 8453
+    const networkName = isTestnet ? 'base-sepolia' : 'base'
+
+    // Use custom RPC URL if provided, otherwise use defaults
+    const rpcProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBaseParams.providers[network]
+
     const ledgerClient = new ClientLedger({
       ...defaultBaseParams,
+      providers: evmRpcUrl ? { ...defaultBaseParams.providers, [network]: rpcProvider } : defaultBaseParams.providers,
       signer: new LedgerSigner({
         transport,
-        provider: defaultBaseParams.providers[Network.Mainnet],
+        provider: rpcProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -147,7 +185,9 @@ export const deposit = async ({
     const routerContract = new Contract(router, abi.router)
     const nativeAsset = ledgerClient.getAssetInfo()
 
-    const gasPrices = await ledgerClient.estimateGasPrices()
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await ledgerClient.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
 
     const unsignedTx = await routerContract.getFunction('depositWithExpiry').populateTransaction(...depositParams)
 

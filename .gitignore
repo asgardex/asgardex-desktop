@@ -6,6 +6,7 @@
 /build
 /release
 
+
 .DS_Store
 
 npm-debug.log*
@@ -40,3 +41,7 @@ stats.html
 
 # Dev logs
 log/*.log
+
+# Claude
+CLAUDE.md
+/docs

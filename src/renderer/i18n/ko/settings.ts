@@ -69,6 +69,8 @@ const settings: SettingMessages = {
   'settings.expert.evm.arb.title': 'Arbitrum RPC',
   'settings.expert.evm.avax.title': 'Avalanche RPC',
   'settings.expert.evm.base.title': 'Base RPC',
+  'settings.expert.gasMultiplier.title': 'EVM 가스 설정',
+  'settings.expert.gasMultiplier.description': '거래 속도를 높이려면 가스 가격을 인상하세요',
   'settings.evm.rpc.error.url': '유효하지 않은 EVM RPC URL입니다. 다시 확인하고 시도하세요',
   'settings.evm.rpc.valid': '유효한 EVM RPC URL',
   'settings.evm.rpc.unhealthy': 'RPC 엔드포인트가 응답하지 않습니다. 연결을 확인하거나 다른 URL을 시도하세요.',

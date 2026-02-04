@@ -56,6 +56,9 @@ export type LastOpenedWallet =
   | { type: WalletType.Keystore; id: number }
   | { type: WalletType.Vultisig; vaultId: string }
 
+// Gas price multiplier options (1x, 1.5x, 2x, 3x, 5x, 10x)
+export type GasMultiplier = 1 | 1.5 | 2 | 3 | 5 | 10
+
 export type CommonStorage = Readonly<
   {
     locale: Locale
@@ -73,6 +76,7 @@ export type CommonStorage = Readonly<
     baseRpc: ApiUrls
     // Last opened wallet (keystore or vultisig)
     lastOpenedWallet?: LastOpenedWallet
+    evmGasMultiplier: GasMultiplier
   } & StorageVersion
 >
 

@@ -68,6 +68,8 @@ const settings: SettingMessages = {
   'settings.expert.evm.arb.title': 'Arbitrum RPC',
   'settings.expert.evm.avax.title': 'Avalanche RPC',
   'settings.expert.evm.base.title': 'Base RPC',
+  'settings.expert.gasMultiplier.title': 'EVM गैस सेटिंग्स',
+  'settings.expert.gasMultiplier.description': 'लेन-देन को तेज़ करने के लिए गैस की कीमत बढ़ाएं',
   'settings.evm.rpc.error.url': 'अमान्य EVM RPC URL. कृपया दोबारा जांचें और फिर कोशिश करें',
   'settings.evm.rpc.valid': 'मान्य EVM RPC URL',
   'settings.evm.rpc.unhealthy': 'RPC एंडपॉइंट प्रतिक्रिया नहीं दे रहा है। अपना कनेक्शन जांचें या कोई अलग URL आज़माएं।',
