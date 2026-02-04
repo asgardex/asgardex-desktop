@@ -89,7 +89,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       nodeUrl: undefined,
       hdMode: params.hdMode,
       apiKey: undefined,
-      evmRpcUrl: undefined
+      evmRpcUrl: undefined,
+      gasMultiplier: undefined
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(ipcParams)
 
@@ -153,7 +154,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       hdMode: 'default',
       apiKey: undefined,
       destinationTag: undefined,
-      evmRpcUrl: undefined
+      evmRpcUrl: undefined,
+      gasMultiplier: undefined
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(sendLedgerTxParams)
 

@@ -82,6 +82,7 @@ const wallet: WalletMessages = {
   'wallet.send.fastest': 'Très rapide',
   'wallet.send.fast': 'Rapide',
   'wallet.send.average': 'Normal',
+  'wallet.send.gasMultiplier': 'Multiplicateur de prix du gaz',
   'wallet.send.max.doge':
     "Valeur calculée max. basée sur des frais estimés, qui peuvent être incorrects pour DOGE de temps à autre. En cas de message d'erreur 'Solde insuffisant pour la transaction', consultez https://blockchair.com/dogecoin/transactions pour obtenir une moyenne des derniers frais et essayez de la déduire de votre solde avant d'envoyer une transaction.",
   'wallet.errors.balancesFailed': 'Échec lors du chargement des soldes. {errorMsg}',

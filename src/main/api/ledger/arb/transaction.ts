@@ -8,8 +8,9 @@ import { either as E } from 'fp-ts'
 
 import { isAethAsset } from '../../../../renderer/helpers/assetHelper'
 import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'
-import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultArbParams } from '../../../../shared/arb/const'
+import { applyGasMultiplier } from '../../../../shared/evm/gas'
 import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -29,7 +30,8 @@ export const send = async ({
   walletAccount,
   walletIndex,
   evmHDMode,
-  evmRpcUrl
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   transport: Transport
@@ -42,6 +44,7 @@ export const send = async ({
   walletIndex: number
   evmHDMode: EvmHDMode
   evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     // Derive chainId from the network parameter
@@ -65,8 +68,20 @@ export const send = async ({
       }),
       network: network
     })
+
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await clientledger.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+
     const arbAsset = asset as ARB.CompatibleAsset
-    const txHash = await clientledger.transfer({ walletIndex, asset: arbAsset, recipient, amount, memo, feeOption })
+    const txHash = await clientledger.transfer({
+      walletIndex,
+      asset: arbAsset,
+      recipient,
+      amount,
+      memo,
+      gasPrice: gasPrices[feeOption]
+    })
     if (!txHash) {
       return E.left({
         errorId: LedgerErrorId.INVALID_RESPONSE,
@@ -98,7 +113,8 @@ export const deposit = async ({
   walletIndex,
   feeOption,
   evmHDMode,
-  evmRpcUrl
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   router: Address
@@ -112,6 +128,7 @@ export const deposit = async ({
   feeOption: FeeOption
   evmHDMode: EvmHDMode
   evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isAethAsset(asset) ? ARB.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -149,7 +166,9 @@ export const deposit = async ({
 
     const provider = clientledger.getProvider()
 
-    const gasPrices = await clientledger.estimateGasPrices()
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await clientledger.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
@@ -178,7 +197,7 @@ export const deposit = async ({
       amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
       memo: unsignedTx.data,
       recipient: router,
-      gasPrice: gasPrices.fast,
+      gasPrice: gasPrices[feeOption],
       isMemoEncoded: true,
       gasLimit: new BigNumber(160000)
     })

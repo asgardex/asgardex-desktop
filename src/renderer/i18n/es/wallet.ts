@@ -81,6 +81,7 @@ const wallet: WalletMessages = {
   'wallet.send.fastest': 'Más rápido',
   'wallet.send.fast': 'Rápido',
   'wallet.send.average': 'Media',
+  'wallet.send.gasMultiplier': 'Multiplicador de precio de gas',
   'wallet.send.max.doge':
     'El valor máximo calculado se basa en las tasas estimadas, que pueden ser incorrectas para DOGE de vez en cuando. En caso de que aparezca el mensaje de error "Saldo insuficiente para la transacción", consulte https://blockchair.com/dogecoin/transactions para obtener un promedio de las últimas comisiones e intente deducirlo de su saldo antes de enviar una transacción.',
   'wallet.errors.balancesFailed': 'Error en la carga de saldos. {errorMsg}',

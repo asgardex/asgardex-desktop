@@ -122,6 +122,9 @@ const POOLS_STORAGE_DEFAULT: PoolsStorageEncoded = {
   }
 }
 
+// Default gas multiplier (1x = normal gas price)
+export const DEFAULT_EVM_GAS_MULTIPLIER = 1 as const
+
 // increase it by `1` if you want to ignore previous version of `common` storage
 const COMMON_STORAGE_VERSION = '1'
 /**
@@ -143,7 +146,8 @@ export const DEFAULT_STORAGES: StoreFilesContent = {
     bscRpc: DEFAULT_BSC_RPC_URLS,
     arbRpc: DEFAULT_ARB_RPC_URLS,
     avaxRpc: DEFAULT_AVAX_RPC_URLS,
-    baseRpc: DEFAULT_BASE_RPC_URLS
+    baseRpc: DEFAULT_BASE_RPC_URLS,
+    evmGasMultiplier: DEFAULT_EVM_GAS_MULTIPLIER
   },
   userChains: CHAINS_STORAGE_DEFAULT,
   userAddresses: ADDRESS_STORAGE_DEFAULT,

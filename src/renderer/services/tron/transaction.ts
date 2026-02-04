@@ -70,8 +70,9 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       nodeUrl: undefined,
       hdMode: params.hdMode,
       apiKey: undefined,
-      destinationTag: undefined, // TRON doesn't need API key
-      evmRpcUrl: undefined
+      destinationTag: undefined,
+      evmRpcUrl: undefined,
+      gasMultiplier: undefined // TRON doesn't need API key
     }
 
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)

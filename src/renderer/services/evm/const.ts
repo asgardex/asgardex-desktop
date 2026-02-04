@@ -5,6 +5,9 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import BigNumber from 'bignumber.js'
 
+// Re-export for convenience
+export { applyGasMultiplier } from '../../../shared/evm/gas'
+
 export const ETH_OUT_TX_GAS_LIMIT = new BigNumber('35609')
 export const ERC20_OUT_TX_GAS_LIMIT = new BigNumber('49610')
 export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds

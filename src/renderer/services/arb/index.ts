@@ -1,5 +1,5 @@
 import { network$ } from '../app/service'
-import { arbRpc$ } from '../storage/common'
+import { arbRpc$, evmGasMultiplier$ } from '../storage/common'
 import {
   reloadBalances,
   balances$,
@@ -23,8 +23,11 @@ const {
   sendPoolTx$,
   approveERC20Token$,
   isApprovedERC20Token$
-} = createTransactionService(client$, network$, arbRpc$)
-const { reloadFees, fees$, poolInTxFees$, approveFee$, reloadApproveFee } = createFeesService(enhancedClient$)
+} = createTransactionService(client$, network$, arbRpc$, evmGasMultiplier$)
+const { reloadFees, fees$, poolInTxFees$, approveFee$, reloadApproveFee } = createFeesService(
+  enhancedClient$,
+  evmGasMultiplier$
+)
 
 export {
   client$,

@@ -8,6 +8,8 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../shared/const'
+import { applyGasMultiplier } from '../../../shared/evm/gas'
 import { isBscAsset } from '../../helpers/assetHelper'
 import { observableState } from '../../helpers/stateHelper'
 import { getChainGasPrices$ } from '../chain/fees/nodeapi'
@@ -16,20 +18,23 @@ import type { FeesLD } from '../clients'
 import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT, EVMZeroAddress } from '../evm/const'
 import { FeesService, PoolInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams, Client$ } from '../evm/types'
 
-export const createFeesService = (client$: Client$): FeesService => {
+export const createFeesService = (
+  client$: Client$,
+  gasMultiplier$: Rx.Observable<number> = Rx.of(DEFAULT_EVM_GAS_MULTIPLIER)
+): FeesService => {
   const { get$: reloadFees$, set: reloadFees } = observableState<TxParams>({
     amount: baseAmount(1),
     recipient: EVMZeroAddress
   })
 
   const fees$ = (params: TxParams): FeesLD =>
-    Rx.combineLatest([reloadFees$, client$]).pipe(
-      RxOp.switchMap(([reloadFeesParams, oClient]) =>
+    Rx.combineLatest([reloadFees$, client$, gasMultiplier$]).pipe(
+      RxOp.switchMap(([reloadFeesParams, oClient, gasMultiplier]) =>
         FP.pipe(
           oClient,
           O.fold(
             () => Rx.EMPTY,
-            (client) => Rx.from(estimateAndCalculateFees(client, reloadFeesParams || params))
+            (client) => Rx.from(estimateAndCalculateFees(client, reloadFeesParams || params, gasMultiplier))
           )
         )
       ),
@@ -38,9 +43,10 @@ export const createFeesService = (client$: Client$): FeesService => {
       RxOp.startWith(RD.pending)
     )
 
-  async function estimateAndCalculateFees(client: Client, params: TxParams) {
-    // Estimate gas prices
-    const gasPrices = await client.estimateGasPrices()
+  async function estimateAndCalculateFees(client: Client, params: TxParams, gasMultiplier: number) {
+    // Estimate gas prices and apply multiplier
+    const rawGasPrices = await client.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
     const { fast: fastGP, fastest: fastestGP, average: averageGP } = gasPrices
 
     // Estimate gas limit - with fallback for standalone ledger mode
@@ -78,8 +84,8 @@ export const createFeesService = (client$: Client$): FeesService => {
    * Fees for sending txs into pool on Bsc
    **/
   const poolInTxFees$ = (params: PoolInTxFeeParams): FeesLD =>
-    client$.pipe(
-      RxOp.switchMap((oClient) =>
+    Rx.combineLatest([client$, gasMultiplier$]).pipe(
+      RxOp.switchMap(([oClient, gasMultiplier]) =>
         FP.pipe(
           oClient,
           O.fold(
@@ -128,8 +134,10 @@ export const createFeesService = (client$: Client$): FeesService => {
                       () => Rx.of(RD.initial),
                       () => Rx.of(RD.pending),
                       (error) => Rx.of(RD.failure(error)),
-                      (gasPrices) =>
-                        Rx.of(
+                      (rawGasPrices) => {
+                        // Apply gas multiplier
+                        const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+                        return Rx.of(
                           RD.success({
                             type: FeeType.PerByte,
                             average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: BSC_GAS_ASSET_DECIMAL }),
@@ -137,6 +145,7 @@ export const createFeesService = (client$: Client$): FeesService => {
                             fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: BSC_GAS_ASSET_DECIMAL })
                           })
                         )
+                      }
                     )
                   )
                 ),
@@ -152,8 +161,8 @@ export const createFeesService = (client$: Client$): FeesService => {
    * Fees for approve Tx
    **/
   const approveTxFee$ = ({ spenderAddress, contractAddress, fromAddress }: ApproveParams): FeeLD =>
-    client$.pipe(
-      RxOp.switchMap((oClient) =>
+    Rx.combineLatest([client$, gasMultiplier$]).pipe(
+      RxOp.switchMap(([oClient, gasMultiplier]) =>
         FP.pipe(
           oClient,
           O.fold(
@@ -163,9 +172,10 @@ export const createFeesService = (client$: Client$): FeesService => {
                 client.estimateApprove({ contractAddress, spenderAddress, fromAddress }),
                 client.estimateGasPrices()
               ]).pipe(
-                RxOp.map(([gasLimit, gasPrices]) =>
-                  getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: BSC_GAS_ASSET_DECIMAL })
-                ),
+                RxOp.map(([gasLimit, rawGasPrices]) => {
+                  const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+                  return getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: BSC_GAS_ASSET_DECIMAL })
+                }),
                 RxOp.map(RD.success),
                 RxOp.catchError((error) => Rx.of(RD.failure(error))),
                 RxOp.startWith(RD.pending)

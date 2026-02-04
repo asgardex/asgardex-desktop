@@ -17,8 +17,9 @@ import { either as E } from 'fp-ts'
 
 import { isAvaxAsset, isEVMTokenAsset } from '../../../../renderer/helpers/assetHelper'
 import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'
-import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
+import { applyGasMultiplier } from '../../../../shared/evm/gas'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -38,7 +39,8 @@ export const send = async ({
   walletAccount,
   walletIndex,
   evmHDMode,
-  evmRpcUrl
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   transport: Transport
@@ -51,6 +53,7 @@ export const send = async ({
   walletIndex: number
   evmHDMode: EvmHDMode
   evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     // Derive chainId and network name from the network parameter
@@ -74,13 +77,18 @@ export const send = async ({
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network: network
     })
+
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await ledgerClient.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+
     const txHash = await ledgerClient.transfer({
       walletIndex,
       asset: asset as Asset | TokenAsset,
       recipient,
       amount,
       memo,
-      feeOption
+      gasPrice: gasPrices[feeOption]
     })
 
     if (!txHash) {
@@ -114,7 +122,8 @@ export const deposit = async ({
   walletIndex,
   feeOption,
   evmHDMode,
-  evmRpcUrl
+  evmRpcUrl,
+  gasMultiplier = 1
 }: {
   asset: AnyAsset
   router: Address
@@ -128,6 +137,7 @@ export const deposit = async ({
   feeOption: FeeOption
   evmHDMode: EvmHDMode
   evmRpcUrl?: string
+  gasMultiplier?: GasMultiplier
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isAvaxAsset(asset) ? getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -173,7 +183,9 @@ export const deposit = async ({
     const routerContract = new Contract(router, abi.router)
     const nativeAsset = ledgerClient.getAssetInfo()
 
-    const gasPrices = await ledgerClient.estimateGasPrices()
+    // Get gas prices and apply multiplier if configured
+    const rawGasPrices = await ledgerClient.estimateGasPrices()
+    const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
 
     const unsignedTx = await routerContract.getFunction('depositWithExpiry').populateTransaction(...depositParams)
 

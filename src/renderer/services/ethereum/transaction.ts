@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { abi, isApproved } from '@xchainjs/xchain-evm'
+import { abi, CompatibleAsset, isApproved } from '@xchainjs/xchain-evm'
 import { baseAmount, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { Contract, getAddress, ZeroAddress } from 'ethers'
@@ -19,6 +19,7 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { ApiUrls, LedgerError } from '../../../shared/api/types'
+import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../shared/const'
 import { getBlocktime } from '../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
 import { addressInERC20Whitelist, getEVMAssetAddress, isEVMTokenAsset } from '../../helpers/assetHelper'
@@ -27,7 +28,7 @@ import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
 import { ChainTxFeeOption } from '../chain/const'
 import * as C from '../clients'
-import { DEPOSIT_EXPIRATION_OFFSET } from '../evm/const'
+import { applyGasMultiplier, DEPOSIT_EXPIRATION_OFFSET } from '../evm/const'
 import {
   ApproveParams,
   TransactionService,
@@ -43,13 +44,14 @@ import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 export const createTransactionService = (
   client$: Client$,
   network$: Network$,
-  evmRpc$: Rx.Observable<ApiUrls>
+  evmRpc$: Rx.Observable<ApiUrls>,
+  gasMultiplier$: Rx.Observable<number> = Rx.of(DEFAULT_EVM_GAS_MULTIPLIER)
 ): TransactionService => {
   const common = C.createTransactionService(client$)
 
   // Note: We don't use `client.deposit` to send "pool" txs to avoid repeating same requests we already do in ASGARDEX
   // That's why we call `deposit` directly here
-  const runSendPoolTx$ = (client: EthClient, { ...params }: SendPoolTxParams): TxHashLD => {
+  const runSendPoolTx$ = (client: EthClient, { ...params }: SendPoolTxParams, gasMultiplier: number): TxHashLD => {
     // helper for failures
     const failure$ = (msg: string) =>
       Rx.of<RD.RemoteData<ApiError, never>>(
@@ -71,7 +73,9 @@ export const createTransactionService = (
               gasPrices: Rx.from(client.estimateGasPrices()),
               blockTime: Rx.from(getBlocktime(provider))
             }),
-            RxOp.switchMap(({ gasPrices, blockTime }) => {
+            RxOp.switchMap(({ gasPrices: rawGasPrices, blockTime }) => {
+              // Apply gas multiplier to increase fees if configured
+              const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
               const isERC20 = isEVMTokenAsset(params.asset as TokenAsset)
               const checkSummedContractAddress = isERC20
                 ? getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
@@ -119,11 +123,13 @@ export const createTransactionService = (
   const sendLedgerPoolTx = ({
     network,
     params,
-    evmRpcUrl
+    evmRpcUrl,
+    gasMultiplier
   }: {
     network: Network
     params: SendPoolTxParams
     evmRpcUrl: string
+    gasMultiplier: number
   }): TxHashLD => {
     const ipcParams: IPCLedgerDepositTxParams = {
       chain: ETHChain,
@@ -139,7 +145,8 @@ export const createTransactionService = (
       nodeUrl: undefined,
       hdMode: params.hdMode,
       apiKey: etherscanApiKey,
-      evmRpcUrl
+      evmRpcUrl,
+      gasMultiplier
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(ipcParams)
     return FP.pipe(
@@ -165,18 +172,20 @@ export const createTransactionService = (
   const sendPoolTx$ = (params: SendPoolTxParams): TxHashLD => {
     if (isLedgerWallet(params.walletType))
       return FP.pipe(
-        Rx.combineLatest([network$, evmRpc$]),
-        RxOp.switchMap(([network, rpcUrls]) => sendLedgerPoolTx({ network, params, evmRpcUrl: rpcUrls[network] }))
+        Rx.combineLatest([network$, evmRpc$, gasMultiplier$]),
+        RxOp.switchMap(([network, rpcUrls, gasMultiplier]) =>
+          sendLedgerPoolTx({ network, params, evmRpcUrl: rpcUrls[network], gasMultiplier })
+        )
       )
 
     return FP.pipe(
-      client$,
-      RxOp.switchMap((oClient) =>
+      Rx.combineLatest([client$, gasMultiplier$]),
+      RxOp.switchMap(([oClient, gasMultiplier]) =>
         FP.pipe(
           oClient,
           O.fold(
             () => Rx.of(RD.initial),
-            (client) => runSendPoolTx$(client, params)
+            (client) => runSendPoolTx$(client, params, gasMultiplier)
           )
         )
       )
@@ -341,11 +350,13 @@ export const createTransactionService = (
   const sendLedgerTx = ({
     network,
     params,
-    evmRpcUrl
+    evmRpcUrl,
+    gasMultiplier
   }: {
     network: Network
     params: SendTxParams
     evmRpcUrl: string
+    gasMultiplier: number
   }): TxHashLD => {
     const ipcParams: IPCLedgerSendTxParams = {
       chain: ETHChain,
@@ -365,7 +376,8 @@ export const createTransactionService = (
       hdMode: params.hdMode,
       apiKey: etherscanApiKey,
       destinationTag: undefined,
-      evmRpcUrl
+      evmRpcUrl,
+      gasMultiplier
     }
 
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)
@@ -390,13 +402,54 @@ export const createTransactionService = (
     )
   }
 
+  // Keystore send with gas multiplier applied
+  const runSendTx$ = (client: EthClient, params: SendTxParams, gasMultiplier: number): TxHashLD => {
+    const failure$ = (msg: string) =>
+      Rx.of<RD.RemoteData<ApiError, never>>(
+        RD.failure({
+          errorId: ErrorId.SEND_TX,
+          msg
+        })
+      )
+
+    return FP.pipe(
+      Rx.from(client.estimateGasPrices()),
+      RxOp.switchMap((rawGasPrices) => {
+        // Apply gas multiplier to increase fees if configured
+        const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+
+        return Rx.from(
+          client.transfer({
+            asset: params.asset as CompatibleAsset,
+            amount: params.amount,
+            recipient: params.recipient,
+            memo: params.memo,
+            gasPrice: gasPrices[params.feeOption],
+            walletIndex: params.walletIndex
+          })
+        )
+      }),
+      RxOp.map(RD.success),
+      RxOp.catchError((error): TxHashLD => failure$(error?.message ?? error.toString())),
+      RxOp.startWith(RD.pending)
+    )
+  }
+
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
-      Rx.combineLatest([network$, evmRpc$]),
-      RxOp.switchMap(([network, rpcUrls]) => {
-        if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params, evmRpcUrl: rpcUrls[network] })
+      Rx.combineLatest([client$, network$, evmRpc$, gasMultiplier$]),
+      RxOp.switchMap(([oClient, network, rpcUrls, gasMultiplier]) => {
+        if (isLedgerWallet(params.walletType))
+          return sendLedgerTx({ network, params, evmRpcUrl: rpcUrls[network], gasMultiplier })
 
-        return common.sendTx(params)
+        // For keystore mode, apply gas multiplier
+        return FP.pipe(
+          oClient,
+          O.fold(
+            () => Rx.of(RD.initial),
+            (client) => runSendTx$(client, params, gasMultiplier)
+          )
+        )
       })
     )
 
