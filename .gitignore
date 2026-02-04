@@ -5,7 +5,7 @@
 /coverage
 /build
 /release
-/docs
+
 
 .DS_Store
 
@@ -38,3 +38,9 @@ dev-app-update.yml
 .trunk/logs/
 
 stats.html
+
+# Claude/RAG files
+CLAUDE.md
+mcp-rag-client.py
+rag-client-readme.md
+/docs
