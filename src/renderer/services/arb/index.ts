@@ -1,5 +1,5 @@
 import { network$ } from '../app/service'
-import { evmGasMultiplier$ } from '../storage/common'
+import { arbRpc$, evmGasMultiplier$ } from '../storage/common'
 import {
   reloadBalances,
   balances$,
@@ -23,7 +23,7 @@ const {
   sendPoolTx$,
   approveERC20Token$,
   isApprovedERC20Token$
-} = createTransactionService(client$, network$, evmGasMultiplier$)
+} = createTransactionService(client$, network$, arbRpc$, evmGasMultiplier$)
 const { reloadFees, fees$, poolInTxFees$, approveFee$, reloadApproveFee } = createFeesService(
   enhancedClient$,
   evmGasMultiplier$

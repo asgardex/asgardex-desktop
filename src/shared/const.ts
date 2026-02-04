@@ -126,7 +126,7 @@ const POOLS_STORAGE_DEFAULT: PoolsStorageEncoded = {
 export const DEFAULT_EVM_GAS_MULTIPLIER = 1 as const
 
 // increase it by `1` if you want to ignore previous version of `common` storage
-const COMMON_STORAGE_VERSION = '2'
+const COMMON_STORAGE_VERSION = '1'
 /**
  * When adding a new store file do not forget to expose
  * public api for it at src/main/preload.ts

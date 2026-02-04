@@ -222,7 +222,7 @@ const common: CommonMessages = {
   'common.importTokens': 'Importer des tokens',
   'common.searchToken': 'Rechercher un token',
   'common.warning.token.import':
-    'N\'importe qui peut créer des tokens, y compris de fausses versions de tokens existants. Veuillez faire attention aux arnaques et aux risques de sécurité.'
+    "N'importe qui peut créer des tokens, y compris de fausses versions de tokens existants. Veuillez faire attention aux arnaques et aux risques de sécurité."
 }
 
 export default common

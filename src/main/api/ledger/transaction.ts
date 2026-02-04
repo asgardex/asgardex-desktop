@@ -161,6 +161,7 @@ const chainSendFunctions: Record<
       feeOption: params.feeOption,
       evmHDMode: params.hdMode,
       apiKey: params.apiKey,
+      evmRpcUrl: params.evmRpcUrl,
       gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
     })
   },
@@ -183,7 +184,7 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(AVAXChain)}`
       })
     }
-    return AVAX.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+    return AVAX.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, evmRpcUrl: params.evmRpcUrl })
   },
   [BASEChain]: async (params) => {
     if (!params.asset) {
@@ -204,7 +205,7 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BASEChain)}`
       })
     }
-    return BASE.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+    return BASE.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, evmRpcUrl: params.evmRpcUrl })
   },
   [BSCChain]: async (params) => {
     if (!params.asset) {
@@ -225,7 +226,7 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BSCChain)}`
       })
     }
-    return BSC.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+    return BSC.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, evmRpcUrl: params.evmRpcUrl })
   },
   [ARBChain]: async (params) => {
     if (!params.asset) {
@@ -246,7 +247,7 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(ARBChain)}`
       })
     }
-    return ARB.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+    return ARB.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, evmRpcUrl: params.evmRpcUrl })
   },
   [GAIAChain]: async (params) => {
     if (!params.asset) {
@@ -409,6 +410,7 @@ const chainDepositFunctions: Record<
     feeOption,
     hdMode,
     apiKey,
+    evmRpcUrl,
     gasMultiplier
   }) => {
     if (!router) {
@@ -460,6 +462,7 @@ const chainDepositFunctions: Record<
       feeOption,
       evmHDMode: hdMode,
       apiKey,
+      evmRpcUrl,
       gasMultiplier: (gasMultiplier ?? 1) as GasMultiplier
     })
   },
@@ -506,7 +509,8 @@ const chainDepositFunctions: Record<
       walletIndex: params.walletIndex,
       recipient: params.recipient,
       feeOption: params.feeOption,
-      evmHDMode: params.hdMode
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl
     })
   },
   [BSCChain]: async (params) => {
@@ -552,7 +556,8 @@ const chainDepositFunctions: Record<
       walletIndex: params.walletIndex,
       recipient: params.recipient,
       feeOption: params.feeOption,
-      evmHDMode: params.hdMode
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl
     })
   },
   [BASEChain]: async (params) => {
@@ -598,7 +603,8 @@ const chainDepositFunctions: Record<
       walletIndex: params.walletIndex,
       recipient: params.recipient,
       feeOption: params.feeOption,
-      evmHDMode: params.hdMode
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl
     })
   },
   [ARBChain]: async (params) => {
@@ -644,7 +650,8 @@ const chainDepositFunctions: Record<
       walletIndex: params.walletIndex,
       recipient: params.recipient,
       feeOption: params.feeOption,
-      evmHDMode: params.hdMode
+      evmHDMode: params.hdMode,
+      evmRpcUrl: params.evmRpcUrl
     })
   }
 }

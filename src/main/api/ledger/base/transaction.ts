@@ -12,7 +12,7 @@ import {
   TokenAsset
 } from '@xchainjs/xchain-util'
 import { BigNumber } from 'bignumber.js'
-import { Contract, getAddress, ZeroAddress } from 'ethers'
+import { Contract, getAddress, JsonRpcProvider, ZeroAddress } from 'ethers'
 import { either as E } from 'fp-ts'
 
 import { isBaseAsset, isEVMTokenAsset } from '../../../../renderer/helpers/assetHelper'
@@ -25,7 +25,7 @@ import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 
 /**
- * Sends ETH tx using Ledger
+ * Sends BASE tx using Ledger
  */
 export const send = async ({
   asset,
@@ -37,7 +37,8 @@ export const send = async ({
   feeOption,
   walletAccount,
   walletIndex,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   transport: Transport
@@ -49,13 +50,26 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Derive chainId from the network parameter
+    // Base mainnet: 8453, Base Sepolia testnet: 84532
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 84532 : 8453
+    const networkName = isTestnet ? 'base-sepolia' : 'base'
+
+    // Use custom RPC URL if provided, otherwise use defaults
+    const provider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBaseParams.providers[network]
+
     const ledgerClient = new ClientLedger({
       ...defaultBaseParams,
+      providers: evmRpcUrl ? { ...defaultBaseParams.providers, [network]: provider } : defaultBaseParams.providers,
       signer: new LedgerSigner({
         transport,
-        provider: defaultBaseParams.providers[Network.Mainnet],
+        provider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -87,7 +101,7 @@ export const send = async ({
 }
 
 /**
- * Sends Base deposit txs using Ledger
+ * Sends BASE deposit txs using Ledger
  */
 export const deposit = async ({
   asset,
@@ -100,7 +114,8 @@ export const deposit = async ({
   walletAccount,
   walletIndex,
   feeOption,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   router: Address
@@ -113,6 +128,7 @@ export const deposit = async ({
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isBaseAsset(asset) ? getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -124,11 +140,23 @@ export const deposit = async ({
       })
     }
 
+    // Derive chainId from the network parameter
+    // Base mainnet: 8453, Base Sepolia testnet: 84532
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 84532 : 8453
+    const networkName = isTestnet ? 'base-sepolia' : 'base'
+
+    // Use custom RPC URL if provided, otherwise use defaults
+    const rpcProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBaseParams.providers[network]
+
     const ledgerClient = new ClientLedger({
       ...defaultBaseParams,
+      providers: evmRpcUrl ? { ...defaultBaseParams.providers, [network]: rpcProvider } : defaultBaseParams.providers,
       signer: new LedgerSigner({
         transport,
-        provider: defaultBaseParams.providers[Network.Mainnet],
+        provider: rpcProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),

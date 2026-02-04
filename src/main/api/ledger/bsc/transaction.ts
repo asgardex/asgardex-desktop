@@ -2,7 +2,8 @@ import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as BSC from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
-import { Contract } from 'ethers'
+import BigNumber from 'bignumber.js'
+import { Contract, JsonRpcProvider } from 'ethers'
 import { either as E } from 'fp-ts'
 
 import { isBscAsset } from '../../../../renderer/helpers/assetHelper'
@@ -27,7 +28,8 @@ export const send = async ({
   feeOption,
   walletAccount,
   walletIndex,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   transport: Transport
@@ -39,13 +41,25 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    // Derive chainId from the network parameter
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 97 : 56
+    const networkName = isTestnet ? 'bnb-testnet' : 'bnb'
+
+    // Use custom RPC URL if provided, otherwise use defaults
+    const provider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBscParams.providers[network]
+
     const clientLedger = new BSC.ClientLedger({
       ...defaultBscParams,
+      providers: evmRpcUrl ? { ...defaultBscParams.providers, [network]: provider } : defaultBscParams.providers,
       signer: new BSC.LedgerSigner({
         transport,
-        provider: defaultBscParams.providers[Network.Mainnet],
+        provider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -91,7 +105,8 @@ export const deposit = async ({
   walletAccount,
   walletIndex,
   feeOption,
-  evmHDMode
+  evmHDMode,
+  evmRpcUrl
 }: {
   asset: AnyAsset
   router: Address
@@ -104,6 +119,7 @@ export const deposit = async ({
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
+  evmRpcUrl?: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isBscAsset(asset) ? BSC.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
@@ -117,11 +133,22 @@ export const deposit = async ({
 
     const isETHAddress = address === EVMZeroAddress
 
+    // Derive chainId from the network parameter
+    const isTestnet = network === Network.Testnet
+    const chainId = isTestnet ? 97 : 56
+    const networkName = isTestnet ? 'bnb-testnet' : 'bnb'
+
+    // Use custom RPC URL if provided, otherwise use defaults
+    const rpcProvider = evmRpcUrl
+      ? new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+      : defaultBscParams.providers[network]
+
     const clientledger = new BSC.ClientLedger({
       ...defaultBscParams,
+      providers: evmRpcUrl ? { ...defaultBscParams.providers, [network]: rpcProvider } : defaultBscParams.providers,
       signer: new BSC.LedgerSigner({
         transport,
-        provider: defaultBscParams.providers[Network.Mainnet],
+        provider: rpcProvider,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),

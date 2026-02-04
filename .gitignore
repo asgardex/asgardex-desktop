@@ -5,6 +5,7 @@
 /coverage
 /build
 /release
+/docs
 
 .DS_Store
 

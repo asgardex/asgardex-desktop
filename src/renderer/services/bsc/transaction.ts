@@ -17,7 +17,7 @@ import {
   IPCLedgerSendTxParams,
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
-import { LedgerError } from '../../../shared/api/types'
+import { ApiUrls, LedgerError } from '../../../shared/api/types'
 import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../shared/const'
 import { applyGasMultiplier } from '../../../shared/evm/gas'
 import { getBlocktime } from '../../../shared/evm/provider'
@@ -44,6 +44,7 @@ import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 export const createTransactionService = (
   client$: Client$,
   network$: Network$,
+  evmRpc$: Rx.Observable<ApiUrls>,
   gasMultiplier$: Rx.Observable<number> = Rx.of(DEFAULT_EVM_GAS_MULTIPLIER)
 ): TransactionService => {
   const common = C.createTransactionService(client$)
@@ -120,10 +121,12 @@ export const createTransactionService = (
   const sendLedgerPoolTx = ({
     network,
     params,
+    evmRpcUrl,
     gasMultiplier
   }: {
     network: Network
     params: SendPoolTxParams
+    evmRpcUrl: string
     gasMultiplier: number
   }): TxHashLD => {
     const ipcParams: IPCLedgerDepositTxParams = {
@@ -140,7 +143,7 @@ export const createTransactionService = (
       nodeUrl: undefined,
       hdMode: params.hdMode,
       apiKey: undefined,
-      evmRpcUrl: undefined,
+      evmRpcUrl,
       gasMultiplier
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(ipcParams)
@@ -168,8 +171,10 @@ export const createTransactionService = (
   const sendPoolTx$ = (params: SendPoolTxParams): TxHashLD => {
     if (isLedgerWallet(params.walletType))
       return FP.pipe(
-        Rx.combineLatest([network$, gasMultiplier$]),
-        RxOp.switchMap(([network, gasMultiplier]) => sendLedgerPoolTx({ network, params, gasMultiplier }))
+        Rx.combineLatest([network$, evmRpc$, gasMultiplier$]),
+        RxOp.switchMap(([network, rpcUrls, gasMultiplier]) =>
+          sendLedgerPoolTx({ network, params, evmRpcUrl: rpcUrls[network], gasMultiplier })
+        )
       )
 
     return FP.pipe(
@@ -221,8 +226,9 @@ export const createTransactionService = (
     spenderAddress,
     walletAccount,
     walletIndex,
-    hdMode
-  }: ApproveParams): TxHashLD => {
+    hdMode,
+    evmRpcUrl
+  }: ApproveParams & { evmRpcUrl: string }): TxHashLD => {
     if (!isEvmHDMode(hdMode)) {
       return Rx.of(
         RD.failure({
@@ -240,7 +246,8 @@ export const createTransactionService = (
       walletAccount,
       walletIndex,
       hdMode,
-      apiKey: undefined
+      apiKey: undefined,
+      evmRpcUrl
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
 
@@ -285,7 +292,11 @@ export const createTransactionService = (
         })
       )
 
-    if (isLedgerWallet(walletType)) return runApproveLedgerERC20Token$(params)
+    if (isLedgerWallet(walletType))
+      return FP.pipe(
+        evmRpc$,
+        RxOp.switchMap((rpcUrls) => runApproveLedgerERC20Token$({ ...params, evmRpcUrl: rpcUrls[network] }))
+      )
 
     return client$.pipe(
       RxOp.switchMap((oClient) =>
@@ -339,10 +350,12 @@ export const createTransactionService = (
   const sendLedgerTx = ({
     network,
     params,
+    evmRpcUrl,
     gasMultiplier
   }: {
     network: Network
     params: SendTxParams
+    evmRpcUrl: string
     gasMultiplier: number
   }): TxHashLD => {
     const ipcParams: IPCLedgerSendTxParams = {
@@ -363,7 +376,7 @@ export const createTransactionService = (
       hdMode: params.hdMode,
       apiKey: undefined,
       destinationTag: undefined,
-      evmRpcUrl: undefined,
+      evmRpcUrl,
       gasMultiplier
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)
@@ -423,9 +436,10 @@ export const createTransactionService = (
 
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
-      Rx.combineLatest([client$, network$, gasMultiplier$]),
-      RxOp.switchMap(([oClient, network, gasMultiplier]) => {
-        if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params, gasMultiplier })
+      Rx.combineLatest([client$, network$, evmRpc$, gasMultiplier$]),
+      RxOp.switchMap(([oClient, network, rpcUrls, gasMultiplier]) => {
+        if (isLedgerWallet(params.walletType))
+          return sendLedgerTx({ network, params, evmRpcUrl: rpcUrls[network], gasMultiplier })
 
         // For keystore mode, apply gas multiplier
         return FP.pipe(
