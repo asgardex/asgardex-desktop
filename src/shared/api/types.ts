@@ -49,8 +49,8 @@ export type UserTrustedAddressStorage = TrustedAddresses & StorageVersion
 export type UserAssetStorage = AddedAssets & StorageVersion
 export type UserNodesStorage = Readonly<Record<Network, Address[]> & StorageVersion>
 export type UserBondProvidersStorage = Readonly<Record<Network, Address[]> & StorageVersion>
-// Gas price multiplier options (1x, 1.5x, 2x, 3x)
-export type GasMultiplier = 1 | 1.5 | 2 | 3
+// Gas price multiplier options (1x, 1.5x, 2x, 3x, 5x, 10x)
+export type GasMultiplier = 1 | 1.5 | 2 | 3 | 5 | 10
 
 export type CommonStorage = Readonly<
   {

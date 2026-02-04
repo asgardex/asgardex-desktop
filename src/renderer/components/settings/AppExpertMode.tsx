@@ -58,7 +58,7 @@ type Props = {
   avaxRpc?: EvmRpcConfig
   baseRpc?: EvmRpcConfig
   // EVM Gas multiplier
-  gasMultiplier: number
+  gasMultiplier: GasMultiplier
   onChangeGasMultiplier: (multiplier: GasMultiplier) => void
 }
 

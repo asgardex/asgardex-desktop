@@ -7,11 +7,11 @@ import { GasMultiplier } from '../../shared/api/types'
 import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../shared/const'
 import { evmGasMultiplier$, modifyStorage } from '../services/storage/common'
 
-// Available gas multiplier options
-export const GAS_MULTIPLIER_OPTIONS: number[] = [1, 1.5, 2, 3, 5, 10]
+// Available gas multiplier options - must match GasMultiplier type
+export const GAS_MULTIPLIER_OPTIONS: GasMultiplier[] = [1, 1.5, 2, 3, 5, 10]
 
 type EvmGasMultiplierHook = {
-  multiplier: number
+  multiplier: GasMultiplier
   setMultiplier: (multiplier: GasMultiplier) => void
 }
 
@@ -29,7 +29,9 @@ export const useEvmGasMultiplier = (): EvmGasMultiplierHook => {
   return useMemo(
     () => ({
       // Ensure we always return a valid multiplier
-      multiplier: GAS_MULTIPLIER_OPTIONS.includes(multiplier) ? multiplier : DEFAULT_EVM_GAS_MULTIPLIER,
+      multiplier: (GAS_MULTIPLIER_OPTIONS as number[]).includes(multiplier)
+        ? (multiplier as GasMultiplier)
+        : DEFAULT_EVM_GAS_MULTIPLIER,
       setMultiplier
     }),
     [multiplier, setMultiplier]
