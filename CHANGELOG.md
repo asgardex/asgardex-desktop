@@ -1,5 +1,13 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.42.1
+
+## Update/Fixes
+
+- update `@xchainjs/xchain-zcash` to 1.1.0 for Zcash NU6.1 consensus support — fixes ZEC transaction broadcasting failures after the Nov 2025 network upgrade
+- update `@xchainjs/xchain-aggregator` to 2.0.33
+- update vite config to reference new `@xchainjs/zcash-js` package, remove stale `@mayaprotocol/zcash-js` alias
+
 # 1.42.0 (2026-02-04)
 
 ## Add
