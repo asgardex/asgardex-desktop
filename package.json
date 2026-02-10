@@ -115,7 +115,7 @@
     "@xchainjs/xchain-utxo-providers": "2.0.10",
     "@xchainjs/xchain-wallet": "2.0.20",
     "@xchainjs/xchain-zcash": "1.1.1",
-    "axios": "1.10.0",
+    "axios": "^1.13.5",
     "bignumber.js": "^9.0.0",
     "clsx": "^2.1.1",
     "dotenv": "16.4.5",

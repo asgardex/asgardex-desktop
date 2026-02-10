@@ -6830,7 +6830,7 @@ __metadata:
     ansis: "npm:^1.5.5"
     assert: "npm:^2.1.0"
     autoprefixer: "npm:^10.4.8"
-    axios: "npm:1.10.0"
+    axios: "npm:^1.13.5"
     bignumber.js: "npm:^9.0.0"
     buffer: "npm:^6.0.3"
     clsx: "npm:^2.1.1"
@@ -7051,17 +7051,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.10.0":
-  version: 1.10.0
-  resolution: "axios@npm:1.10.0"
-  dependencies:
-    follow-redirects: "npm:^1.15.6"
-    form-data: "npm:^4.0.0"
-    proxy-from-env: "npm:^1.1.0"
-  checksum: 10/d43c80316a45611fd395743e15d16ea69a95f2b7f7095f2bb12cb78f9ca0a905194a02e52a3bf4e0db9f85fd1186d6c690410644c10ecd8bb0a468e57c2040e4
-  languageName: node
-  linkType: hard
-
 "axios@npm:1.11.0":
   version: 1.11.0
   resolution: "axios@npm:1.11.0"
@@ -7073,7 +7062,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.13.5":
+"axios@npm:1.13.5, axios@npm:^1.13.5":
   version: 1.13.5
   resolution: "axios@npm:1.13.5"
   dependencies:
