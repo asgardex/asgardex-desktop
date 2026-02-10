@@ -5,12 +5,14 @@ import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ADA_DECIMALS } from '@xchainjs/xchain-cardano'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { CACAO_DECIMAL, MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { PoolDetail as MayaPoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
+
+import { isMayaAsset } from '../../helpers/assetHelper'
 import { TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { ZEC_DECIMAL } from '@xchainjs/xchain-zcash'
@@ -79,14 +81,19 @@ export const getDecimal = (
 ): Promise<number> => {
   const { chain } = asset
 
-  // Check hardcoded decimals first for native chain assets
+  // Check specific token decimals before chain-level defaults
+  if (isTCYAsset(asset)) {
+    return Promise.resolve(THORCHAIN_DECIMAL)
+  }
+
+  if (isMayaAsset(asset)) {
+    return Promise.resolve(MAYA_DECIMAL)
+  }
+
+  // Check hardcoded decimals for native chain assets
   const chainDecimal = CHAIN_DECIMAL_MAP.get(chain)
   if (chainDecimal !== undefined) {
     return Promise.resolve(chainDecimal)
-  }
-
-  if (isTCYAsset(asset)) {
-    return Promise.resolve(THORCHAIN_DECIMAL)
   }
 
   // Try to find the asset in MAYAChain pool details first

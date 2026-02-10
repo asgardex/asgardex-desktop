@@ -160,7 +160,15 @@ export const getPoolPriceValue = ({
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
 
-  const amount1e8 = isCacaoAsset(asset) ? amount : to1e8BaseAmount(amount)
+  // MAYA.MAYA (4 decimals): pool ratio uses raw amounts directly (t * R / A).
+  // to1e8BaseAmount scales raw 10000 → 100000000, making it look like 10000 MAYA instead of 1.
+  // Fix: re-tag raw amount to decimal 8 without scaling so the pool ratio is correct.
+  const amount1e8 = isCacaoAsset(asset)
+    ? amount
+    : isMayaAsset(asset)
+      ? baseAmount(amount.amount(), 8)
+      : to1e8BaseAmount(amount)
+
   return FP.pipe(
     getPoolDetail(poolDetails, asset),
     O.map(toPoolData),
@@ -218,9 +226,11 @@ export const getUSDValue = ({
       FP.pipe(
         O.fromNullable(poolDetail.assetPriceUSD), // Extract `assetPriceUSD` safely
         O.map((assetPriceUSD) => {
-          const amountDecimal = amount.amount().toNumber() // Convert amount to a decimal number
-          const usdValue = Number(assetPriceUSD) * amountDecimal // Multiply by the price in USD
-          return baseAmount(usdValue, amount.decimal) // Convert back to `BaseAmount` with 1e8 decimals
+          const amountRaw = amount.amount().toNumber() // Raw base amount
+          const usdValue = Number(assetPriceUSD) * amountRaw // assetPriceUSD is per 1e8-unit
+          // Use decimal 8 for MAYA.MAYA since assetPriceUSD is per 1e8-unit (not per human unit)
+          const decimal = isMayaAsset(asset) ? 8 : amount.decimal
+          return baseAmount(usdValue, decimal)
         })
       )
     )

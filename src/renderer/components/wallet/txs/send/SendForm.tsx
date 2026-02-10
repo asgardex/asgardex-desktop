@@ -918,8 +918,29 @@ export const SendForm = (props: Props): JSX.Element => {
       trimZeros: !isUSDAsset(asset)
     })
 
-    const price = isMayaAsset(asset)
-      ? RD.isSuccess(amountToSendMayaPrice)
+    // Use pool data price first, fall back to MayaScan for MAYA.MAYA
+    const poolPrice = FP.pipe(
+      O.some(amountPriceValue),
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : (() => {
+              const isVerySmallUSDAmount = isUSDAsset(cryptoAmount.asset) && cryptoAmount.assetAmount.amount().lt(0.01)
+              const decimalPlaces = isUSDAsset(cryptoAmount.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
+              return formatAssetAmountCurrency({
+                amount: cryptoAmount.assetAmount,
+                asset: cryptoAmount.asset,
+                decimal: decimalPlaces,
+                trimZeros: !isUSDAsset(cryptoAmount.asset)
+              })
+            })()
+      ),
+      O.getOrElse(() => '')
+    )
+
+    const price =
+      poolPrice ||
+      (isMayaAsset(asset) && RD.isSuccess(amountToSendMayaPrice)
         ? (() => {
             const isVerySmallUSDAmount =
               isUSDAsset(amountToSendMayaPrice.value.asset) && amountToSendMayaPrice.value.assetAmount.amount().lt(0.01)
@@ -931,26 +952,7 @@ export const SendForm = (props: Props): JSX.Element => {
               trimZeros: !isUSDAsset(amountToSendMayaPrice.value.asset)
             })
           })()
-        : ''
-      : FP.pipe(
-          O.some(amountPriceValue),
-          O.map((cryptoAmount: CryptoAmount) =>
-            eqAsset(asset, cryptoAmount.asset)
-              ? ''
-              : (() => {
-                  const isVerySmallUSDAmount =
-                    isUSDAsset(cryptoAmount.asset) && cryptoAmount.assetAmount.amount().lt(0.01)
-                  const decimalPlaces = isUSDAsset(cryptoAmount.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
-                  return formatAssetAmountCurrency({
-                    amount: cryptoAmount.assetAmount,
-                    asset: cryptoAmount.asset,
-                    decimal: decimalPlaces,
-                    trimZeros: !isUSDAsset(cryptoAmount.asset)
-                  })
-                })()
-          ),
-          O.getOrElse(() => '')
-        )
+        : '')
 
     return price ? `${price} (${amount}) ` : amount
   }, [amountPriceValue, amountToSend, amountToSendMayaPrice, asset, isEVMChain])
