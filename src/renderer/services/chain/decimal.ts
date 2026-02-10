@@ -12,7 +12,6 @@ import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 
-import { isMayaAsset } from '../../helpers/assetHelper'
 import { TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { ZEC_DECIMAL } from '@xchainjs/xchain-zcash'
@@ -20,7 +19,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
-import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { isMayaAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { KUJI_DECIMAL } from '../kuji/const'
 import { AssetWithDecimalLD } from './types'
 

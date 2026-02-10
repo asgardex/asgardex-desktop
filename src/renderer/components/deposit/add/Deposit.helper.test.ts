@@ -53,7 +53,8 @@ describe('deposit/Deposit.helper', () => {
         assetBalance,
         dexBalance,
         fees,
-        protocolDecimals: THORCHAIN_DECIMAL
+        protocolDecimals: THORCHAIN_DECIMAL,
+        poolAssetDecimals: THORCHAIN_DECIMAL
       })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
@@ -79,7 +80,8 @@ describe('deposit/Deposit.helper', () => {
         assetBalance,
         dexBalance,
         fees,
-        protocolDecimals: THORCHAIN_DECIMAL
+        protocolDecimals: THORCHAIN_DECIMAL,
+        poolAssetDecimals: THORCHAIN_DECIMAL
       })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
@@ -101,7 +103,13 @@ describe('deposit/Deposit.helper', () => {
 
   describe('maxAssetAmountToDeposit', () => {
     it('gas asset -> 450', () => {
-      const result = maxAssetAmountToDeposit({ poolData, assetBalance, dexBalance, fees })
+      const result = maxAssetAmountToDeposit({
+        poolData,
+        assetBalance,
+        dexBalance,
+        fees,
+        poolAssetDecimals: THORCHAIN_DECIMAL
+      })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 1000 (rune balance)
@@ -121,7 +129,13 @@ describe('deposit/Deposit.helper', () => {
     it('gas asset -> 9800', () => {
       const dexBalance = baseAmount(20000)
       const assetBalance = { asset: AssetBTC, amount: baseAmount(10000) }
-      const result = maxAssetAmountToDeposit({ poolData, assetBalance, dexBalance, fees })
+      const result = maxAssetAmountToDeposit({
+        poolData,
+        assetBalance,
+        dexBalance,
+        fees,
+        poolAssetDecimals: THORCHAIN_DECIMAL
+      })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 20000 (rune balance)
@@ -141,7 +155,13 @@ describe('deposit/Deposit.helper', () => {
     it('non gas asset -> 9950', () => {
       const dexBalance = baseAmount(20000)
       const assetBalance = { asset: AssetUSDTBSC, amount: baseAmount(10000) }
-      const result = maxAssetAmountToDeposit({ poolData, assetBalance, dexBalance, fees })
+      const result = maxAssetAmountToDeposit({
+        poolData,
+        assetBalance,
+        dexBalance,
+        fees,
+        poolAssetDecimals: THORCHAIN_DECIMAL
+      })
       // console.log('result', result.amount().toString())
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
@@ -163,12 +183,12 @@ describe('deposit/Deposit.helper', () => {
   describe('getRuneAmountToDeposit', () => {
     it('is 10000', () => {
       const assetAmount = baseAmount(5000)
-      const result = getDexAmountToDeposit(assetAmount, poolData, THORCHAIN_DECIMAL)
+      const result = getDexAmountToDeposit(assetAmount, poolData, THORCHAIN_DECIMAL, THORCHAIN_DECIMAL)
       expect(eqBaseAmount.equals(result, baseAmount(10000))).toBeTruthy()
     })
     it('is 5000', () => {
       const assetAmount = baseAmount(2500)
-      const result = getDexAmountToDeposit(assetAmount, poolData, THORCHAIN_DECIMAL)
+      const result = getDexAmountToDeposit(assetAmount, poolData, THORCHAIN_DECIMAL, THORCHAIN_DECIMAL)
       expect(eqBaseAmount.equals(result, baseAmount(5000))).toBeTruthy()
     })
   })
@@ -177,13 +197,23 @@ describe('deposit/Deposit.helper', () => {
     it('is 5000', () => {
       const runeAmount = baseAmount(10000)
       const assetDecimal = 6
-      const result = getAssetAmountToDeposit({ runeAmount, poolData, assetDecimal })
+      const result = getAssetAmountToDeposit({
+        runeAmount,
+        poolData,
+        assetDecimal,
+        poolAssetDecimals: THORCHAIN_DECIMAL
+      })
       expect(eqBaseAmount.equals(result, baseAmount(50, 6))).toBeTruthy()
     })
     it('is 2500', () => {
       const runeAmount = baseAmount(5000)
       const assetDecimal = 12
-      const result = getAssetAmountToDeposit({ runeAmount, poolData, assetDecimal })
+      const result = getAssetAmountToDeposit({
+        runeAmount,
+        poolData,
+        assetDecimal,
+        poolAssetDecimals: THORCHAIN_DECIMAL
+      })
       expect(eqBaseAmount.equals(result, baseAmount(2500, 8))).toBeTruthy()
     })
   })

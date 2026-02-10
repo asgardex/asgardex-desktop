@@ -224,6 +224,12 @@ export const SymDeposit = (props: Props) => {
     [protocol] // Dependency
   )
 
+  // Pool asset depth scale: THORChain always uses 1e8, MAYAChain uses native scale (e.g. 1e4 for MAYA.MAYA, 1e8 for BTC)
+  const poolAssetDecimals = useMemo(
+    () => (protocol === THORChain ? THORCHAIN_DECIMAL : Math.min(assetDecimal, THORCHAIN_DECIMAL)),
+    [protocol, assetDecimal]
+  )
+
   const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const isRuneLedger = isLedgerWallet(runeWalletType)
@@ -982,10 +988,11 @@ export const SymDeposit = (props: Props) => {
         dexBalance: dexAssetBalance,
         assetBalance: { asset, amount: assetBalance },
         fees: depositFees,
-        protocolDecimals
+        protocolDecimals,
+        poolAssetDecimals
       }),
 
-    [poolData, dexAssetBalance, asset, assetBalance, depositFees, protocolDecimals]
+    [poolData, dexAssetBalance, asset, assetBalance, depositFees, protocolDecimals, poolAssetDecimals]
   )
 
   // Update `dexAmountToDeposit` if `maxDexAmountToDeposit` has been updated
@@ -1004,10 +1011,11 @@ export const SymDeposit = (props: Props) => {
       poolData,
       dexBalance: dexAssetBalance,
       assetBalance: { asset, amount: assetBalance },
-      fees: depositFees
+      fees: depositFees,
+      poolAssetDecimals
     })
     return max1e8BaseAmount(maxAmount)
-  }, [asset, assetBalance, depositFees, poolData, dexAssetBalance])
+  }, [asset, assetBalance, depositFees, poolData, dexAssetBalance, poolAssetDecimals])
 
   const setAssetAmountToDepositMax1e8 = useCallback(
     (amountToDeposit: BaseAmount) => {
@@ -1119,11 +1127,17 @@ export const SymDeposit = (props: Props) => {
       const assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
         runeAmount,
         poolData,
-        assetDecimal
+        assetDecimal,
+        poolAssetDecimals
       })
 
       if (assetAmountMax1e8.gt(maxAssetAmountToDepositMax1e8)) {
-        runeAmount = Helper.getDexAmountToDeposit(maxAssetAmountToDepositMax1e8, poolData, protocolDecimals)
+        runeAmount = Helper.getDexAmountToDeposit(
+          maxAssetAmountToDepositMax1e8,
+          poolData,
+          protocolDecimals,
+          poolAssetDecimals
+        )
         setDexAmountToDeposit(runeAmount)
         setAssetAmountToDepositMax1e8(maxAssetAmountToDepositMax1e8)
       } else {
@@ -1133,6 +1147,7 @@ export const SymDeposit = (props: Props) => {
     },
     [
       assetDecimal,
+      poolAssetDecimals,
       protocolDecimals,
       maxAssetAmountToDepositMax1e8,
       maxDexAmountToDeposit,
@@ -1158,13 +1173,14 @@ export const SymDeposit = (props: Props) => {
         ? { ...maxAssetAmountToDepositMax1e8 } // Use copy to avoid  mismatch with values in input fields
         : { ...newAmountMax1e8 }
 
-      const dexAmount = Helper.getDexAmountToDeposit(assetAmountMax1e8, poolData, protocolDecimals)
+      const dexAmount = Helper.getDexAmountToDeposit(assetAmountMax1e8, poolData, protocolDecimals, poolAssetDecimals)
 
       if (dexAmount.gt(maxDexAmountToDeposit)) {
         assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
           runeAmount: dexAmount,
           poolData,
-          assetDecimal
+          assetDecimal,
+          poolAssetDecimals
         })
         setDexAmountToDeposit(maxDexAmountToDeposit)
         setAssetAmountToDepositMax1e8(assetAmountMax1e8)
@@ -1176,6 +1192,7 @@ export const SymDeposit = (props: Props) => {
     [
       assetBalanceMax1e8.decimal,
       assetDecimal,
+      poolAssetDecimals,
       maxAssetAmountToDepositMax1e8,
       maxDexAmountToDeposit,
       poolData,
@@ -1788,8 +1805,13 @@ export const SymDeposit = (props: Props) => {
           const missingAssets: AssetsWithAmount1e8 = pendingAssets.map((assetWB): AssetWithAmount1e8 => {
             const amount =
               protocolAsset !== assetWB.asset
-                ? Helper.getDexAmountToDeposit(assetWB.amount1e8, poolData, protocolDecimals)
-                : Helper.getAssetAmountToDeposit({ runeAmount: assetWB.amount1e8, poolData, assetDecimal })
+                ? Helper.getDexAmountToDeposit(assetWB.amount1e8, poolData, protocolDecimals, poolAssetDecimals)
+                : Helper.getAssetAmountToDeposit({
+                    runeAmount: assetWB.amount1e8,
+                    poolData,
+                    assetDecimal,
+                    poolAssetDecimals
+                  })
 
             const assetAmount: AssetWithAmount1e8 = {
               asset: protocolAsset === assetWB.asset ? asset : protocolAsset,
@@ -1802,7 +1824,7 @@ export const SymDeposit = (props: Props) => {
         }
       )
     )
-  }, [symPendingAssetsRD, network, protocolAsset, poolData, protocolDecimals, assetDecimal, asset])
+  }, [symPendingAssetsRD, network, protocolAsset, poolData, protocolDecimals, poolAssetDecimals, assetDecimal, asset])
 
   const prevHasAsymAssets = useRef<LiquidityProviderHasAsymAssets>({ dexAsset: false, asset: false })
 
