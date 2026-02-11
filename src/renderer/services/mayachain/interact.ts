@@ -5,7 +5,6 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { AssetCacao } from '../../../shared/utils/asset'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { liveData, LiveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
@@ -34,7 +33,7 @@ export const createInteractService$ =
     ) => LiveData<ApiError, string>,
     getTxStatus: (txHash: string, assetAddress: O.Option<Address>) => TxLD
   ) =>
-  ({ walletType, walletAccount, walletIndex, hdMode, amount, memo }: InteractParams): InteractState$ => {
+  ({ walletType, walletAccount, walletIndex, hdMode, amount, memo, asset }: InteractParams): InteractState$ => {
     // total of progress
     const total = O.some(100)
 
@@ -58,7 +57,7 @@ export const createInteractService$ =
         walletAccount,
         walletIndex,
         hdMode,
-        asset: AssetCacao,
+        asset,
         amount,
         memo
       }),

@@ -9,9 +9,7 @@ import {
   convertBaseAmountDecimal,
   isChainAsset,
   isUtxoAssetChain,
-  max1e8BaseAmount,
-  THORCHAIN_DECIMAL,
-  to1e8BaseAmount
+  max1e8BaseAmount
 } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { eqChain } from '../../../helpers/fp/eq'
@@ -61,24 +59,27 @@ export const maxRuneAmountToDeposit = ({
   dexBalance,
   assetBalance,
   fees: { asset: assetFees, rune: runeFees },
-  protocolDecimals
+  protocolDecimals,
+  poolAssetDecimals
 }: {
   poolData: PoolData
   dexBalance: BaseAmount
   assetBalance: AssetWithAmount
   fees: SymDepositFees
   protocolDecimals: number
+  /** Actual decimal scale of pool asset depths (e.g. 8 for BTC, 4 for MAYA.MAYA) */
+  poolAssetDecimals: number
 }): BaseAmount => {
   const { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
   const maxRuneBalance = maxRuneBalanceToDeposit(dexBalance, runeFees.inFee)
   const maxAssetBalance = maxAssetBalanceToDeposit(assetBalance, assetFees.inFee)
-  // asset balance needs to have `1e8` decimal to be in common with pool data (always `1e8`)
-  const maxAssetBalance1e8 = to1e8BaseAmount(maxAssetBalance)
+  // Convert asset balance to match pool asset depth scale
+  const maxAssetBalancePoolScale = convertBaseAmountDecimal(maxAssetBalance, poolAssetDecimals)
   const maxRuneAmount = baseAmount(
     poolRuneBalance
       .amount()
       .dividedBy(poolAssetBalance.amount())
-      .multipliedBy(maxAssetBalance1e8.amount())
+      .multipliedBy(maxAssetBalancePoolScale.amount())
       // don't accept decimal as values for `BaseAmount`
       .toFixed(0, BigNumber.ROUND_DOWN),
     protocolDecimals
@@ -96,31 +97,34 @@ export const maxAssetAmountToDeposit = ({
   poolData,
   dexBalance,
   assetBalance,
-  fees: { asset: assetFees, rune: runeFees }
+  fees: { asset: assetFees, rune: runeFees },
+  poolAssetDecimals
 }: {
   poolData: PoolData
   dexBalance: BaseAmount
   assetBalance: AssetWithAmount
   fees: SymDepositFees
+  /** Actual decimal scale of pool asset depths (e.g. 8 for BTC, 4 for MAYA.MAYA) */
+  poolAssetDecimals: number
 }): BaseAmount => {
   const { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
 
   const maxRuneBalance = maxRuneBalanceToDeposit(dexBalance, runeFees.inFee)
   const maxAssetBalance = maxAssetBalanceToDeposit(assetBalance, assetFees.inFee)
 
-  // All amounts of pool data are always 1e8 decimal based
-  const maxAssetAmount1e8: BaseAmount = baseAmount(
+  // Tag intermediate result with actual pool asset depth scale
+  const maxAssetAmountPoolScale: BaseAmount = baseAmount(
     poolAssetBalance
       .amount()
       .dividedBy(poolRuneBalance.amount())
       .multipliedBy(maxRuneBalance.amount())
       // don't accept decimal as values for `BaseAmount`
       .toFixed(0, BigNumber.ROUND_DOWN),
-    THORCHAIN_DECIMAL
+    poolAssetDecimals
   )
 
   // convert decimal to original decimal of assetBalance
-  const maxAssetAmount = convertBaseAmountDecimal(maxAssetAmount1e8, assetBalance.amount.decimal)
+  const maxAssetAmount = convertBaseAmountDecimal(maxAssetAmountPoolScale, assetBalance.amount.decimal)
 
   return maxAssetAmount.gt(maxAssetBalance) ? maxAssetBalance : maxAssetAmount
 }
@@ -128,13 +132,14 @@ export const maxAssetAmountToDeposit = ({
 export const getDexAmountToDeposit = (
   assetAmount: BaseAmount,
   { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance }: PoolData,
-  protocolDecimals: number
+  protocolDecimals: number,
+  poolAssetDecimals: number
 ): BaseAmount => {
-  // convert `assetAmount` to `1e8` to be similar with decimal of `PoolData`, which are always 1e8 decimal based
-  const assetAmount1e8 = to1e8BaseAmount(assetAmount)
+  // Convert asset amount to match pool asset depth scale
+  const assetAmountPoolScale = convertBaseAmountDecimal(assetAmount, poolAssetDecimals)
   return baseAmount(
     // formula: assetAmount * poolRuneBalance / poolAssetBalance
-    assetAmount1e8.amount().times(poolRuneBalance.amount().dividedBy(poolAssetBalance.amount())),
+    assetAmountPoolScale.amount().times(poolRuneBalance.amount().dividedBy(poolAssetBalance.amount())),
     protocolDecimals
   )
 }
@@ -148,26 +153,28 @@ export const getDexAmountToDeposit = (
 export const getAssetAmountToDeposit = ({
   runeAmount,
   poolData,
-  assetDecimal
+  assetDecimal,
+  poolAssetDecimals
 }: {
   runeAmount: BaseAmount
   poolData: PoolData
   assetDecimal: number
+  /** Actual decimal scale of pool asset depths (e.g. 8 for BTC, 4 for MAYA.MAYA) */
+  poolAssetDecimals: number
 }): BaseAmount => {
   const { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
-  const assetAmountToDeposit1e8 =
-    // formula: runeAmount * poolRuneBalance / poolAssetBalance
-    // Note: pool data are always 1e8 based,
+  const assetAmountToDepositPoolScale =
+    // formula: runeAmount * poolAssetBalance / poolRuneBalance
     baseAmount(
       runeAmount
         .amount()
-        .times(poolAssetBalance.amount().dividedBy(poolRuneBalance.amount())) // don't accept decimal as values for `BaseAmount`
+        .times(poolAssetBalance.amount().dividedBy(poolRuneBalance.amount()))
         .toFixed(0, BigNumber.ROUND_DOWN),
-      THORCHAIN_DECIMAL
+      poolAssetDecimals
     )
 
-  // Convert `assetAmountToDeposit1e8` back to original assetDecimal (it might be less than 1e8)
-  const assetAmountToDeposit = convertBaseAmountDecimal(assetAmountToDeposit1e8, assetDecimal)
+  // Convert back to original assetDecimal
+  const assetAmountToDeposit = convertBaseAmountDecimal(assetAmountToDepositPoolScale, assetDecimal)
   // And convert it again to have max. 1e8 (it might be greater by using assetDecimal before)
   return max1e8BaseAmount(assetAmountToDeposit)
 }
