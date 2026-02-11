@@ -2355,7 +2355,7 @@ export const TradeSwap = ({
                   className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                   key="edit-address">
                   <div className="flex items-center">
-                    <h3 className="mr-10px !mb-0 w-auto p-0 font-main font-[12px] text-text2 uppercase dark:text-text2d">
+                    <h3 className="mr-10px !mb-0 w-auto p-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
                       {intl.formatMessage({ id: 'common.recipient' })}
                     </h3>
                     <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>

@@ -110,7 +110,7 @@ export const AppGeneralSettings = (props: Props) => {
           <div
             key={l}
             className={clsx(
-              'dark:text-1 flex min-w-[222px] items-center px-10px py-2 font-main text-16 text-text1 uppercase dark:text-text1d',
+              'flex min-w-[222px] items-center px-10px py-2 font-main text-16 text-text1 uppercase dark:text-text1d',
               l === locale ? 'font-mainSemiBold' : 'font-main'
             )}
             onClick={() => changeLocale(l)}>
