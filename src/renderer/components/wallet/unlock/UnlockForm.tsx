@@ -104,7 +104,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
       O.fold(
         () => <></>,
         (_: Error) => (
-          <p className="mt-2 font-main text-sm uppercase text-error0">
+          <p className="mt-2 font-main text-sm text-error0 uppercase">
             {intl.formatMessage({ id: 'wallet.unlock.error' })}
           </p>
         )
@@ -167,7 +167,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
           () => <></>,
           () => <></>,
           (error) => (
-            <p className="px-5px font-main text-14 uppercase text-error0 dark:text-error0d">
+            <p className="px-5px font-main text-14 text-error0 uppercase dark:text-error0d">
               {intl.formatMessage({ id: 'wallet.change.error' })} {error.message || error.toString()}
             </p>
           ),
@@ -188,11 +188,11 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
           className={clsx(
             'flex h-full flex-col items-center justify-between',
             'rounded-lg bg-bg0 dark:bg-bg0d',
-            'px-30px pb-[35px] pt-[45px] sm:px-[60px] sm:pb-[70px] sm:pt-[90px]'
+            'px-30px pt-[45px] pb-[35px] sm:px-[60px] sm:pt-[90px] sm:pb-[70px]'
           )}>
           <div className="w-full max-w-[320px] space-y-3">
             <div className="flex flex-col">
-              <h1 className="mb-12px inline-block w-full font-mainSemiBold text-18 uppercase text-text1 dark:text-text1d">
+              <h1 className="mb-12px font-mainSemiBold inline-block w-full text-18 text-text1 uppercase dark:text-text1d">
                 {intl.formatMessage({ id: 'wallet.unlock.label' })}
               </h1>
               <h2 className="mb-30px w-full text-11 text-text2 dark:text-text2d">

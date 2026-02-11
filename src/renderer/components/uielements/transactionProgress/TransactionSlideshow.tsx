@@ -87,7 +87,7 @@ export const TransactionSlideshow = ({
     <div className={clsx('rounded-lg border border-gray1 bg-bg0 p-3 dark:border-gray0d dark:bg-bg1d', className)}>
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">Active Swaps</span>
+          <span className="text-xs font-medium tracking-wide text-text2 uppercase dark:text-text2d">Active Swaps</span>
           <span className="rounded bg-turquoise px-1.5 py-0.5 text-xs font-medium text-white">
             {currentIndex + 1}/{activeTransactions.length}
           </span>

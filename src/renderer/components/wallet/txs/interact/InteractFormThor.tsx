@@ -1164,15 +1164,15 @@ export const InteractFormThor = ({
                 )}
                 {userNodeInfo && (interactType === InteractType.Bond || interactType === InteractType.Unbond) && (
                   <div className="p-4">
-                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.nodeAddress' })}
                       <div className="truncate pl-10px font-main text-[12px]">{userNodeInfo.nodeAddress}</div>
                     </div>
-                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.address.self' })}
                       <div className="truncate pl-10px font-main text-[12px]">{walletAddress}</div>
                     </div>
-                    <div className="ml-[-2px] flex w-full justify-between py-10px font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="font-mainBold ml-[-2px] flex w-full justify-between py-10px text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'bonds.currentBond' })}
                       <div className="truncate pl-10px font-main text-[12px]">
                         {formatAssetAmountCurrency({
@@ -1522,7 +1522,7 @@ export const InteractFormThor = ({
         {/* memo */}
         <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
           <BaseButton
-            className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            className="group font-mainSemiBold flex w-full justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
             onClick={() => setShowDetails((current) => !current)}>
             {intl.formatMessage({ id: 'common.details' })}
             {showDetails ? (
@@ -1578,7 +1578,7 @@ export const InteractFormThor = ({
               )}
               {interactType === InteractType.RunePool && (
                 <>
-                  <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+                  <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
                     {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
                     <div className="truncate pl-10px font-main text-[12px]">
                       {RD.fold(
@@ -1602,7 +1602,7 @@ export const InteractFormThor = ({
                 </>
               )}
 
-              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+              <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
                 {amountLabel}
                 <div className="truncate pl-10px font-main text-[12px]">
                   {formatAssetAmountCurrency({
@@ -1615,9 +1615,9 @@ export const InteractFormThor = ({
                 </div>
               </div>
 
-              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+              <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}
-                <div className="overflow break-normal pl-10px font-main text-[12px]">{memoLabel}</div>
+                <div className="overflow pl-10px font-main text-[12px] break-normal">{memoLabel}</div>
               </div>
             </>
           )}

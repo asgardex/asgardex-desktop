@@ -34,7 +34,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
       ref={containerRef}
       className={clsx(
         'relative inline-flex cursor-pointer items-center justify-between rounded-full p-[1px]',
-        'select-none bg-gray-100 transition-colors dark:bg-gray-900'
+        'bg-gray-100 transition-colors select-none dark:bg-gray-900'
       )}
       onClick={handleToggle}
       animate={{ borderColor: colors[activeIndex] }}
@@ -46,7 +46,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
       }}>
       <motion.div
         layout
-        className="absolute left-[1px] top-[1px] h-[calc(100%-2px)] rounded-full"
+        className="absolute top-[1px] left-[1px] h-[calc(100%-2px)] rounded-full"
         style={{
           width: halfWidth ? `${halfWidth - 2}px` : '50%',
           border: `1px solid ${colors[activeIndex]}`,

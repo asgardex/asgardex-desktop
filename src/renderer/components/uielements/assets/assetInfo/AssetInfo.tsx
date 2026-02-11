@@ -89,7 +89,7 @@ export const AssetInfo = (props: Props): JSX.Element => {
     <div className="flex flex-col items-center">
       {renderAssetIcon}
       <div className="mt-2 flex items-center">
-        <div className="rounded-md bg-gray0 px-2 py-0.5 font-main text-[12px] uppercase text-text2 dark:bg-gray0d dark:text-text2d">
+        <div className="rounded-md bg-gray0 px-2 py-0.5 font-main text-[12px] text-text2 uppercase dark:bg-gray0d dark:text-text2d">
           {FP.pipe(
             oAsset,
             O.map(({ chain, type }) =>

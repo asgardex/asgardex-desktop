@@ -38,7 +38,7 @@ export const ConfirmationModal = ({ visible, title, okText, content, onSuccess, 
             'rounded-lg border border-solid border-gray0 dark:border-gray0d'
           )}>
           <div className="flex w-full items-center justify-between">
-            <h1 className="mb-4 text-center text-xl uppercase text-text2 dark:text-text2d">
+            <h1 className="mb-4 text-center text-xl text-text2 uppercase dark:text-text2d">
               {title || intl.formatMessage({ id: 'common.modal.confirmTitle' })}
             </h1>
           </div>

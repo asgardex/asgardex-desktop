@@ -1201,11 +1201,11 @@ export const InteractFormMaya = (props: Props) => {
           <>
             {userNodeInfo ? (
               <div className="p-4">
-                <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.nodeAddress' })}
                   <div className="truncate pl-10px font-main text-[12px]">{userNodeInfo.nodeAddress}</div>
                 </div>
-                <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.address.self' })}
                   <div className="truncate pl-10px font-main text-[12px]">{walletAddress}</div>
                 </div>
@@ -1249,7 +1249,7 @@ export const InteractFormMaya = (props: Props) => {
                 </div>
               </div>
             ) : (
-              <div className="mb-2 ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+              <div className="font-mainBold mb-2 ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                 {intl.formatMessage({ id: 'deposit.share.units' })}
                 <div className="truncate pl-10px font-main text-[12px]">
                   {intl.formatMessage({ id: 'common.noResult' })}
@@ -1535,7 +1535,7 @@ export const InteractFormMaya = (props: Props) => {
         {/* memo */}
         <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
           <BaseButton
-            className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            className="group font-mainSemiBold flex w-full justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
             onClick={() => setShowDetails((current) => !current)}>
             {intl.formatMessage({ id: 'common.details' })}
             {showDetails ? (
@@ -1583,7 +1583,7 @@ export const InteractFormMaya = (props: Props) => {
               )}
               {interactType === InteractType.CacaoPool && (
                 <>
-                  <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+                  <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
                     {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
                     <div className="truncate pl-10px font-main text-[12px]">
                       {RD.fold(
@@ -1606,7 +1606,7 @@ export const InteractFormMaya = (props: Props) => {
                   </div>
                 </>
               )}
-              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+              <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
                 {intl.formatMessage({ id: 'common.amount' })}
                 <div className="truncate pl-10px font-main text-[12px]">
                   {formatAssetAmountCurrency({
@@ -1618,9 +1618,9 @@ export const InteractFormMaya = (props: Props) => {
                 </div>
               </div>
 
-              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+              <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}
-                <div className="overflow break-normal pl-10px font-main text-[12px]">{memoLabel}</div>
+                <div className="overflow pl-10px font-main text-[12px] break-normal">{memoLabel}</div>
               </div>
             </>
           )}
@@ -1687,7 +1687,7 @@ const PoolShareItem = ({
   }
 
   return (
-    <div className="flex flex-col border-b pb-2 pt-2 first:pt-0 dark:border-gray1d">
+    <div className="flex flex-col border-b pt-2 pb-2 first:pt-0 dark:border-gray1d">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <AssetIcon asset={share.asset} network={network} />

@@ -104,7 +104,7 @@ export const EditableWalletName = ({
             </BaseButton>
             <XCircleIcon className="ml-[5px] h-[24px] w-[24px] cursor-pointer text-error0" onClick={cancel} />
           </div>
-          {errors.name && <p className="mt-10px font-main text-[14px] uppercase text-error0">{errors.name.message}</p>}
+          {errors.name && <p className="mt-10px font-main text-[14px] text-error0 uppercase">{errors.name.message}</p>}
         </form>
       )
     },
@@ -113,7 +113,7 @@ export const EditableWalletName = ({
 
   return (
     <div className={clsx('flex w-full flex-col items-center justify-center', className)}>
-      <h2 className="w-full text-center font-main text-[12px] uppercase text-text2 dark:text-text2d">
+      <h2 className="w-full text-center font-main text-[12px] text-text2 uppercase dark:text-text2d">
         {intl.formatMessage({ id: 'wallet.name' })}
         {/* show info about max. chars in editable mode only  */}
         {FP.pipe(

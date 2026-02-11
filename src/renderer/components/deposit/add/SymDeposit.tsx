@@ -1254,7 +1254,7 @@ export const SymDeposit = (props: Props) => {
       )
 
       return (
-        <p className="mb-20px p-0 text-center font-main text-[12px] uppercase text-error0 dark:text-error0d">{msg}</p>
+        <p className="mb-20px p-0 text-center font-main text-[12px] text-error0 uppercase dark:text-error0d">{msg}</p>
       )
     },
     [chain, intl]
@@ -1686,7 +1686,7 @@ export const SymDeposit = (props: Props) => {
           () => <></>,
           () => <></>,
           (error) => (
-            <p className="mb-20px p-0 text-center font-main uppercase text-error0 dark:text-error0d">{error.msg}</p>
+            <p className="mb-20px p-0 text-center font-main text-error0 uppercase dark:text-error0d">{error.msg}</p>
           ),
           () => <></>
         )
@@ -1731,7 +1731,7 @@ export const SymDeposit = (props: Props) => {
         () => <></>,
         () => <></>,
         (error) => (
-          <p className="mb-20px p-0 text-center font-main text-[12px] uppercase text-error0 dark:text-error0d">
+          <p className="mb-20px p-0 text-center font-main text-[12px] text-error0 uppercase dark:text-error0d">
             {intl.formatMessage({ id: 'common.approve.error' }, { asset: asset.ticker, error: error.msg })}
           </p>
         ),
@@ -2025,9 +2025,9 @@ export const SymDeposit = (props: Props) => {
             <div className="flex-col">
               {intl.formatMessage({ id: 'common.tx.type.deposit' })}
               <div className="items-left justify-left m-2 flex">
-                <AssetIcon className="flex-shrink-0" size="small" asset={params.asset} network={network} />
-                <AssetLabel className="mx-2 flex-shrink-0" asset={params.asset} />
-                <Label className="flex-shrink-0">
+                <AssetIcon className="shrink-0" size="small" asset={params.asset} network={network} />
+                <AssetLabel className="mx-2 shrink-0" asset={params.asset} />
+                <Label className="shrink-0">
                   {formatAssetAmountCurrency({
                     asset: params.asset,
                     amount: baseToAsset(params.amount),
@@ -2215,10 +2215,10 @@ export const SymDeposit = (props: Props) => {
           <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
             <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
               {/* fees */}
-              <div className="flex w-full items-center justify-between font-mainBold">
+              <div className="font-mainBold flex w-full items-center justify-between">
                 <BaseButton
                   disabled={RD.isPending(depositFeesRD) || RD.isInitial(depositFeesRD)}
-                  className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                  className="group !font-mainBold !p-0 !text-gray2 dark:!text-gray2d"
                   onClick={reloadFeesHandler}>
                   {intl.formatMessage({ id: 'common.fees.estimated' })}
                   <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2257,13 +2257,13 @@ export const SymDeposit = (props: Props) => {
 
               {/* addresses */}
               <>
-                <div className="w-full pt-10px font-mainBold text-[14px]">
+                <div className="font-mainBold w-full pt-10px text-[14px]">
                   {intl.formatMessage({ id: 'common.addresses' })}
                 </div>
                 {/* rune sender address */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                   <div>{intl.formatMessage({ id: 'common.rune' }, { dex: protocolAsset.chain })}</div>
-                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                  <div className="truncate pl-20px text-[13px] leading-normal normal-case">
                     {FP.pipe(
                       oDexAssetWB,
                       O.map(({ walletAddress: address }) => {
@@ -2281,7 +2281,7 @@ export const SymDeposit = (props: Props) => {
                 {/* asset sender address */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                   <div>{intl.formatMessage({ id: 'common.asset' })}</div>
-                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                  <div className="truncate pl-20px text-[13px] leading-normal normal-case">
                     {FP.pipe(
                       oAssetWB,
                       O.map(({ walletAddress: address }) => {
@@ -2304,7 +2304,7 @@ export const SymDeposit = (props: Props) => {
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
                         <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
                         <Tooltip title={address} size="big">
-                          <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
+                          <div className="truncate pl-20px text-[13px] leading-normal normal-case">{address}</div>
                         </Tooltip>
                       </div>
                     ) : null
@@ -2318,7 +2318,7 @@ export const SymDeposit = (props: Props) => {
                 <div className="w-full pt-10px text-[14px]">
                   <BaseButton
                     disabled={walletBalancesLoading}
-                    className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                    className="group !font-mainBold !p-0 !text-gray2 dark:!text-gray2d"
                     onClick={reloadBalances}>
                     {intl.formatMessage({ id: 'common.balances' })}
                     <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2327,18 +2327,18 @@ export const SymDeposit = (props: Props) => {
                 {/* rune sender balance */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                   <div>{intl.formatMessage({ id: 'common.rune' }, { dex: protocolAsset.chain })}</div>
-                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">{dexAssetBalanceLabel}</div>
+                  <div className="truncate pl-20px text-[13px] leading-normal normal-case">{dexAssetBalanceLabel}</div>
                 </div>
                 {/* asset sender balance */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                   <div>{intl.formatMessage({ id: 'common.asset' })}</div>
-                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">{assetBalanceLabel}</div>
+                  <div className="truncate pl-20px text-[13px] leading-normal normal-case">{assetBalanceLabel}</div>
                 </div>
               </>
 
               {/* memo */}
               <>
-                <div className="w-full pt-10px font-mainBold text-[14px]">
+                <div className="font-mainBold w-full pt-10px text-[14px]">
                   {intl.formatMessage({ id: 'common.memos' })}
                 </div>
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">

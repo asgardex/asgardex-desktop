@@ -66,7 +66,7 @@ export const PoolActionsHistoryList = ({
       return (
         <div
           key={H.getRowKey(action)}
-          className="flex flex-col border-b border-t-0 border-solid border-gray0/40 p-2 first:border-t last:border-b-0 dark:border-gray0d/40">
+          className="flex flex-col border-t-0 border-b border-solid border-gray0/40 p-2 first:border-t last:border-b-0 dark:border-gray0d/40">
           <div className="flex items-center justify-between">
             <TxType className="mr-2" type={action.type} showTypeIcon />
             {titleExtra}

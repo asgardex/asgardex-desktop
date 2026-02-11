@@ -39,7 +39,7 @@ export const LocaleDropdown = () => {
       anchor={{ to: 'bottom', gap: 4 }}
       trigger={
         <div className="flex cursor-pointer items-center justify-between gap-x-2 rounded-lg border border-solid border-gray0 px-2 py-1 dark:border-gray0d">
-          <h3 className="m-0 font-main text-[16px] uppercase leading-5 text-text1 dark:text-text1d">{currentLocale}</h3>
+          <h3 className="m-0 font-main text-[16px] leading-5 text-text1 uppercase dark:text-text1d">{currentLocale}</h3>
           <DownIcon />
         </div>
       }

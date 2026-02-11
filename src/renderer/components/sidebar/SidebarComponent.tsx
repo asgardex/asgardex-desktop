@@ -203,7 +203,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
                 'flex cursor-pointer rounded-lg',
                 'font-mainBold text-18 uppercase',
                 'transition duration-100 ease-in-out',
-                'focus-visible:outline-none',
+                'focus-visible:outline-hidden',
                 selected
                   ? 'bg-turquoise text-white hover:text-white'
                   : 'text-text2 hover:bg-turquoise/20 hover:text-turquoise dark:text-text2d'

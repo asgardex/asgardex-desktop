@@ -58,7 +58,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref): JSX.
       id={id}
       autoFocus={autoFocus}
       className={clsx(
-        'w-full appearance-none rounded-lg focus:outline-none',
+        'w-full appearance-none rounded-lg focus:outline-hidden',
         'bg-bg0 font-main dark:bg-bg0d',
         'placeholder:text-gray-300 dark:placeholder:text-gray-400',
         ghost ? 'border-0' : 'border',

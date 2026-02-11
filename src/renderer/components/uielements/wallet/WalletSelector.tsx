@@ -45,7 +45,7 @@ export const WalletSelector = ({
               as="div"
               className={clsx(
                 'group flex cursor-pointer items-center rounded-lg',
-                'bg-bg0 py-2 pl-3 pr-10px dark:bg-bg0d',
+                'bg-bg0 py-2 pr-10px pl-3 dark:bg-bg0d',
                 'border border-solid border-gray0 dark:border-gray0d',
                 'font-main text-14 text-text0 dark:text-text0d',
                 'transition duration-300 ease-in-out',
@@ -64,7 +64,7 @@ export const WalletSelector = ({
             <ListboxOptions
               className={clsx(
                 'absolute z-[2000] mt-0.5 max-h-60 w-full overflow-auto rounded-lg',
-                'border border-gray0 bg-bg0 focus:outline-none dark:border-gray0d dark:bg-bg0d'
+                'border border-gray0 bg-bg0 focus:outline-hidden dark:border-gray0d dark:bg-bg0d'
               )}>
               {FP.pipe(
                 wallets,
@@ -75,8 +75,8 @@ export const WalletSelector = ({
                       disabled={wallet.id === selectedWallet.id}
                       className={({ selected }) =>
                         clsx(
-                          'flex w-full select-none items-center justify-between',
-                          'py-10px pl-20px pr-10px',
+                          'flex w-full items-center justify-between select-none',
+                          'py-10px pr-10px pl-20px',
                           'font-main text-14 text-text0 dark:text-text0d',
                           selected ? 'cursor-disabled text-text2 dark:text-text2d' : 'cursor-pointer',
                           selected ? '' : 'hover:bg-gray0 hover:text-text2 hover:dark:bg-gray0d hover:dark:text-text2d'

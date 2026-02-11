@@ -38,7 +38,7 @@ export const TxModal = (props: Props): JSX.Element => {
             (error) => (
               // Show full error message without truncation
               <ErrorView
-                className="max-w-full overflow-auto whitespace-pre-wrap break-all p-2 text-sm leading-normal"
+                className="max-w-full overflow-auto p-2 text-sm leading-normal break-all whitespace-pre-wrap"
                 subTitle={error?.msg || intl.formatMessage({ id: 'common.error' })}
               />
             ),

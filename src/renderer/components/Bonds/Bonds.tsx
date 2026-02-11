@@ -155,7 +155,7 @@ export const Bonds = ({
 
       return (
         <BondsTable
-          className="border-b-1 mb-[25px] border-solid border-gray1 dark:border-gray1d"
+          className="mb-[25px] border-b-1 border-solid border-gray1 dark:border-gray1d"
           nodes={filteredNodes}
           protocol={protocol}
           watchlist={filteredWatchlist}
@@ -187,7 +187,7 @@ export const Bonds = ({
 
       return (
         <BondsTable
-          className="border-b-1 mb-[25px] border-solid border-gray1 dark:border-gray1d"
+          className="mb-[25px] border-b-1 border-solid border-gray1 dark:border-gray1d"
           nodes={filteredNodes}
           protocol={protocol}
           watchlist={filteredWatchlist}

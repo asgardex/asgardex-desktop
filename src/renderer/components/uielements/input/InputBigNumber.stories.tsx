@@ -59,7 +59,7 @@ const FormValidation = () => {
             <InputBigNumber value={value} onChange={onChange as unknown as (v: BigNumber) => void} />
           )}
         />
-        {errors.amount && <p className="text-red-500 mt-1 text-xs">{errors.amount.message}</p>}
+        {errors.amount && <p className="mt-1 text-xs text-red-500">{errors.amount.message}</p>}
       </div>
       <Button type="submit">Submit</Button>
     </form>

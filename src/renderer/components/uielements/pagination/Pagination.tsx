@@ -96,9 +96,9 @@ export function Pagination({
   }
 
   const btn =
-    'flex items-center justify-center min-w-9 px-3 h-9 text-sm rounded-md border border-gray0 dark:border-gray0d bg-bg1 dark:bg-bg1d text-turquoise hover:bg-bg2 hover:dark:bg-bg2d focus:outline-none disabled:cursor-not-allowed'
+    'flex items-center justify-center min-w-9 px-3 h-9 text-sm rounded-md border border-gray0 dark:border-gray0d bg-bg1 dark:bg-bg1d text-turquoise hover:bg-bg2 hover:dark:bg-bg2d focus:outline-hidden disabled:cursor-not-allowed'
   const active =
-    'flex items-center justify-center min-w-9 px-3 h-9 text-sm rounded-md border border-turquoise bg-turquoise text-white focus:outline-none'
+    'flex items-center justify-center min-w-9 px-3 h-9 text-sm rounded-md border border-turquoise bg-turquoise text-white focus:outline-hidden'
 
   const iconBtn =
     'flex items-center justify-center w-9 h-9 text-sm rounded-md border border-gray0 dark:border-gray0d bg-bg1 dark:bg-bg1d text-turquoise disabled:opacity-50 disabled:cursor-not-allowed'
@@ -117,7 +117,7 @@ export function Pagination({
         {/* Pages */}
         {range.map((item, i) =>
           item === DOTS ? (
-            <span key={`dots-${i}`} className="select-none px-2 text-sm text-turquoise" aria-hidden="true">
+            <span key={`dots-${i}`} className="px-2 text-sm text-turquoise select-none" aria-hidden="true">
               …
             </span>
           ) : (

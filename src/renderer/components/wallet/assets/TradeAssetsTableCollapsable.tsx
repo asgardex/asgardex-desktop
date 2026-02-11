@@ -200,10 +200,10 @@ export const TradeAssetsTableCollapsable = ({
             <div className="flex-col">
               <div className="m-2 flex items-center justify-between">
                 <div className="flex items-center">
-                  <AssetIcon className="flex-shrink-0" size="small" asset={params.asset} network={network} />
-                  <AssetLabel className="mx-2 flex-shrink-0" asset={params.asset} />
+                  <AssetIcon className="shrink-0" size="small" asset={params.asset} network={network} />
+                  <AssetLabel className="mx-2 shrink-0" asset={params.asset} />
                 </div>
-                <span className="flex-shrink-0 text-16 text-text0 dark:text-text0d">
+                <span className="shrink-0 text-16 text-text0 dark:text-text0d">
                   {formatAssetAmountCurrency({
                     asset: params.asset,
                     amount: baseToAsset(params.amount),

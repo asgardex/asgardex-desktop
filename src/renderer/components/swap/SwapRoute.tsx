@@ -85,7 +85,7 @@ const Route = ({
   const isChainflip = quote.protocol === 'Chainflip'
 
   return (
-    <div className={clsx('flex flex-grow flex-col', className)}>
+    <div className={clsx('flex grow flex-col', className)}>
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center space-x-2">
           <ProviderIcon protocol={quote.protocol} />

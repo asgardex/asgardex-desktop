@@ -343,7 +343,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
             <img
               src={overlayIconSrc}
               alt=""
-              className="absolute bottom-0 right-0 z-[2] rounded-full bg-white/50"
+              className="absolute right-0 bottom-0 z-[2] rounded-full bg-white/50"
               style={{
                 width: `${overlaySize}px`,
                 height: `${overlaySize}px`
@@ -392,7 +392,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
           ...(hasBorder && { borderWidth: `${borderWidth}px`, borderStyle: 'solid' })
         }}>
         <div
-          className="left-0 top-0 flex items-center justify-center rounded-full text-text3 dark:text-text3d"
+          className="top-0 left-0 flex items-center justify-center rounded-full text-text3 dark:text-text3d"
           style={{
             width: `${iconSize}px`,
             height: `${iconSize}px`,

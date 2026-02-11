@@ -19,7 +19,7 @@ export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network,
         A.mapWithIndex((index, { asset, amount }) => (
           <div key={`in-${index}`} className="flex items-center">
             {isDesktopView && <AssetIcon className="mx-1" size="xsmall" asset={asset} network={network} />}
-            <div className="whitespace-nowrap px-1 lg:px-0">
+            <div className="px-1 whitespace-nowrap lg:px-0">
               {formatAssetAmountCurrency({
                 trimZeros: true,
                 amount: baseToAsset(
@@ -42,7 +42,7 @@ export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network,
           return (
             <div key={`out-${index}`} className="flex items-center">
               {isDesktopView && <AssetIcon className="mx-1" size="xsmall" asset={asset} network={network} />}
-              <div className="whitespace-nowrap px-1 lg:px-0">
+              <div className="px-1 whitespace-nowrap lg:px-0">
                 {formatAssetAmountCurrency({
                   trimZeros: true,
                   amount: baseToAsset(
@@ -79,25 +79,25 @@ export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network,
       <div className="flex flex-wrap text-left last:mr-0 md:mr-4">
         <div
           className={clsx(
-            'flex items-center px-[5px] py-[3px] text-xs uppercase leading-[22px]',
+            'flex items-center px-[5px] py-[3px] text-xs leading-[22px] uppercase',
             'border border-gray2 bg-bg2 text-text0 dark:border-gray2d dark:bg-bg2d dark:text-text0d',
             'first:self-start first:rounded-l-[1.7rem] last:rounded-r-[1.7rem]',
             'md:px-[10px] md:py-[5px] md:text-sm'
           )}>
-          <span className="mr-1 text-xs uppercase text-text2 first:ml-1 first:mr-1 last:ml-1 only:m-0 dark:text-text2d">
+          <span className="mr-1 text-xs text-text2 uppercase first:mr-1 first:ml-1 last:ml-1 only:m-0 dark:text-text2d">
             in
           </span>
           {renderIncomes}
         </div>
         <div
           className={clsx(
-            'flex items-center px-[5px] py-[3px] text-xs uppercase leading-[22px]',
+            'flex items-center px-[5px] py-[3px] text-xs leading-[22px] uppercase',
             'border border-gray2 bg-bg2 text-text0 dark:border-gray2d dark:bg-bg2d dark:text-text0d',
             'first:self-start first:rounded-l-[1.7rem] last:rounded-r-[1.7rem]',
             'md:px-[10px] md:py-[5px] md:text-sm'
           )}>
           {renderOutgos}
-          <span className="mr-1 text-xs uppercase text-text2 first:ml-1 first:mr-1 last:ml-1 only:m-0 dark:text-text2d">
+          <span className="mr-1 text-xs text-text2 uppercase first:mr-1 first:ml-1 last:ml-1 only:m-0 dark:text-text2d">
             out
           </span>
         </div>

@@ -351,7 +351,7 @@ export const BondsTable = ({
       const walletType = matchedWalletInfo?.walletType || 'Unknown'
 
       return (
-        <div className="flex flex-grow flex-col">
+        <div className="flex grow flex-col">
           <div className="mt-4 w-full">
             <div className="flex items-center justify-between">
               <Label size="small" textTransform="uppercase">
@@ -408,7 +408,7 @@ export const BondsTable = ({
       <div className="flex justify-end">
         <BaseButton
           size="normal"
-          className="mx-4 mb-4 rounded-md border border-solid border-gray1 p-1 text-14 capitalize text-text2 dark:border-gray1d dark:text-text2d"
+          className="mx-4 mb-4 rounded-md border border-solid border-gray1 p-1 text-14 text-text2 capitalize dark:border-gray1d dark:text-text2d"
           onClick={handleCollapseAll}>
           {collapseAll
             ? intl.formatMessage({ id: 'common.collapseAll' })

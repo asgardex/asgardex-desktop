@@ -26,7 +26,7 @@ export const Tabs = ({
         {tabs.map(({ key, label, disabled }) => (
           <Tab key={key} as={Fragment} disabled={disabled}>
             {({ hover, selected }) => (
-              <div className={clsx('flex flex-col outline-none', disabled ? 'cursor-not-allowed' : 'cursor-pointer')}>
+              <div className={clsx('flex flex-col outline-hidden', disabled ? 'cursor-not-allowed' : 'cursor-pointer')}>
                 <Label
                   className="!w-auto p-6 !text-16 !leading-5"
                   color={hover || selected ? 'primary' : 'dark'}

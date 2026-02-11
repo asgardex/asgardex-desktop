@@ -49,7 +49,7 @@ const Section = ({ title, subtitle, className, children }: SectionProps) => (
       className
     )}>
     <div className="flex flex-col">
-      <h2 className="mb-5px font-main text-[16px] uppercase text-text2 dark:text-text2d">{title}</h2>
+      <h2 className="mb-5px font-main text-[16px] text-text2 uppercase dark:text-text2d">{title}</h2>
       <span className="font-main text-gray1 dark:text-gray1d">{subtitle}</span>
     </div>
     <div className="flex flex-col">{children}</div>
@@ -110,7 +110,7 @@ export const AppGeneralSettings = (props: Props) => {
           <div
             key={l}
             className={clsx(
-              'dark:text-1 flex min-w-[222px] items-center px-10px py-2 font-main text-16 uppercase text-text1 dark:text-text1d',
+              'dark:text-1 flex min-w-[222px] items-center px-10px py-2 font-main text-16 text-text1 uppercase dark:text-text1d',
               l === locale ? 'font-mainSemiBold' : 'font-main'
             )}
             onClick={() => changeLocale(l)}>
@@ -126,7 +126,7 @@ export const AppGeneralSettings = (props: Props) => {
       <Dropdown
         trigger={
           <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-            <h3 className="m-0 font-main text-[16px] uppercase leading-5 text-text1 dark:text-text1d">{locale}</h3>
+            <h3 className="m-0 font-main text-[16px] leading-5 text-text1 uppercase dark:text-text1d">{locale}</h3>
             <DownIcon />
           </div>
         }
@@ -172,7 +172,7 @@ export const AppGeneralSettings = (props: Props) => {
       <Dropdown
         trigger={
           <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-            <h3 className={clsx('m-0 font-main text-[16px] uppercase leading-5', networkTextColor(network))}>
+            <h3 className={clsx('m-0 font-main text-[16px] leading-5 uppercase', networkTextColor(network))}>
               {network}
             </h3>
             <DownIcon />
