@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useRef } from 'react'
+import { memo, useMemo, useCallback, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
@@ -32,7 +32,7 @@ type Props = {
   walletAddress: Address
 }
 
-export const TxsTable = (props: Props): JSX.Element => {
+export const TxsTable = memo(function TxsTable(props: Props): JSX.Element {
   const { txsPageRD, clickTxLinkHandler, changePaginationHandler, network, chain, walletAddress, reloadHandler } = props
   const intl = useIntl()
 
@@ -247,4 +247,4 @@ export const TxsTable = (props: Props): JSX.Element => {
   )
 
   return renderContent
-}
+})

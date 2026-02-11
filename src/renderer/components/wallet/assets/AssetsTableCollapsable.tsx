@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, QrCodeIcon } from '@heroicons/react/24/outline'
@@ -113,7 +113,7 @@ type Props = {
   disabledChains: EnabledChain[]
 }
 
-export const AssetsTableCollapsable = (props: Props): JSX.Element => {
+export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props: Props): JSX.Element {
   const {
     disableRefresh,
     chainBalances = [],
@@ -144,6 +144,11 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   const isStandaloneLedger = appWalletState && isStandaloneLedgerMode(appWalletState)
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
+
+  // Memoized event handler to prevent propagation - reusable across components
+  const stopPropagation = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+  }, [])
 
   const [openPanelKeys, setOpenPanelKeys] = useState<number[]>(() => {
     const cachedKeys = localStorage.getItem('openPanelKeys')
@@ -654,10 +659,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               {hidePrivateData ? hiddenString : truncateAddress(walletAddress, chain, network)}
             </Label>
             <div className="flex items-center justify-end space-x-2 pr-4">
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation()
-                }}>
+              <IconButton onClick={stopPropagation}>
                 <CopyLabel iconClassName="!text-text2 dark:!text-text2d" textToCopy={walletAddress} />
               </IconButton>
               <IconButton
@@ -680,7 +682,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         </div>
       )
     },
-    [disableRefresh, hidePrivateData, intl, network]
+    [disableRefresh, hidePrivateData, intl, network, stopPropagation]
   )
 
   const renderPanel = useCallback(
@@ -765,4 +767,4 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       </div>
     </>
   )
-}
+})

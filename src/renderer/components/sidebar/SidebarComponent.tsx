@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useRef } from 'react'
+import React, { memo, useMemo, useCallback, useRef } from 'react'
 
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
@@ -93,7 +93,7 @@ export type Props = {
   publicIP: string
 }
 
-export const SidebarComponent = (props: Props): JSX.Element => {
+export const SidebarComponent = memo(function SidebarComponent(props: Props): JSX.Element {
   const { network, commitHash, isDev, publicIP } = props
 
   const intl = useIntl()
@@ -330,4 +330,4 @@ export const SidebarComponent = (props: Props): JSX.Element => {
       </div>
     </div>
   )
-}
+})

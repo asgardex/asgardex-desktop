@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { memo, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Chain } from '@xchainjs/xchain-util'
@@ -47,7 +47,7 @@ export type Props = {
   dexWalletType: WalletType
 }
 
-export const Deposit = (props: Props) => {
+export const Deposit = memo(function Deposit(props: Props) {
   const {
     protocol,
     asset: assetWD,
@@ -192,4 +192,4 @@ export const Deposit = (props: Props) => {
       </div>
     </div>
   )
-}
+})

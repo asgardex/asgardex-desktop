@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 
 import { QuoteSwap } from '@xchainjs/xchain-aggregator'
 import clsx from 'clsx'
@@ -61,17 +61,7 @@ const formatTime = (seconds: number): string => {
   return `${hours > 0 ? `${hours}h ` : ''}${minutes > 0 ? `${minutes}m ` : ''}${secs}s`
 }
 
-const Route = ({
-  className,
-  isBoostable,
-  quote,
-  targetAsset,
-  isBestRate,
-  isFastest,
-  isBoostEnabled,
-  onToggleBoost,
-  quoteOnly
-}: {
+type RouteProps = {
   className?: string
   isBoostable: boolean
   quote: ExtendedQuoteSwap
@@ -81,8 +71,26 @@ const Route = ({
   isBoostEnabled?: boolean
   onToggleBoost?: (enabled: boolean) => void
   quoteOnly?: boolean
-}) => {
+}
+
+const Route = memo(function Route({
+  className,
+  isBoostable,
+  quote,
+  targetAsset,
+  isBestRate,
+  isFastest,
+  isBoostEnabled,
+  onToggleBoost,
+  quoteOnly
+}: RouteProps) {
   const isChainflip = quote.protocol === 'Chainflip'
+
+  // Memoize filtered errors to avoid calling getPreviewModeErrors multiple times
+  const filteredErrors = useMemo(() => {
+    if (!quote.errors || quote.errors.length === 0) return []
+    return getPreviewModeErrors(quote.errors, quoteOnly ?? false)
+  }, [quote.errors, quoteOnly])
 
   return (
     <div className={clsx('flex flex-grow flex-col', className)}>
@@ -124,14 +132,14 @@ const Route = ({
             </span>
           </div>
         )}
-        {quote.errors && quote.errors.length > 0 && (
+        {filteredErrors.length > 0 && (
           <div className="mt-1 text-[11px] text-error0">
-            {getPreviewModeErrors(quote.errors, quoteOnly ?? false).map((error, index) => (
+            {filteredErrors.map((error, index) => (
               <span key={index}>
                 {error.includes('price limit')
                   ? 'Price slippage too high. Please adjust your price tolerance settings.'
                   : error}
-                {index < getPreviewModeErrors(quote.errors, quoteOnly ?? false).length - 1 && ' | '}
+                {index < filteredErrors.length - 1 && ' | '}
               </span>
             ))}
           </div>
@@ -139,9 +147,16 @@ const Route = ({
       </div>
     </div>
   )
-}
+})
 
-export const SwapRoute = ({ isBoostable, targetAsset, quote, quotes, onSelectQuote, quoteOnly }: Props) => {
+export const SwapRoute = memo(function SwapRoute({
+  isBoostable,
+  targetAsset,
+  quote,
+  quotes,
+  onSelectQuote,
+  quoteOnly
+}: Props) {
   const { isBoostEnabled, setBoostEnabled } = useAggregator()
 
   const availableQuotes = useMemo(() => {
@@ -154,30 +169,50 @@ export const SwapRoute = ({ isBoostable, targetAsset, quote, quotes, onSelectQuo
     return quote.value
   }, [quote])
 
+  // Memoize the click handler to avoid creating new functions on each render
+  const handleQuoteSelect = useCallback(
+    (availableQuote: ExtendedQuoteSwap) => {
+      onSelectQuote(availableQuote)
+    },
+    [onSelectQuote]
+  )
+
   const { bestQuote, fastestQuote } = useMemo(() => {
     if (O.isNone(quotes)) {
       return { bestQuote: null, fastestQuote: null, numOfAvailableRoutes: 0 }
     }
 
-    // Only consider quotes that can actually swap for best/fastest calculations
     const validQuotes = quotes.value
+    if (validQuotes.length === 0) {
+      return { bestQuote: null, fastestQuote: null, numOfAvailableRoutes: 0 }
+    }
 
-    const sortedByAmount = [...validQuotes].sort((a, b) => {
-      const amountA = parseFloat(a.expectedAmount.assetAmount.amount().toString())
-      const amountB = parseFloat(b.expectedAmount.assetAmount.amount().toString())
-      return amountB - amountA
-    })
+    // Single O(n) pass to find both best quote (highest amount) and fastest quote (lowest time)
+    let bestQuote = validQuotes[0]
+    let fastestQuote = validQuotes[0]
+    let bestAmount = parseFloat(bestQuote.expectedAmount.assetAmount.amount().toString())
+    let fastestTime = fastestQuote.totalSwapSeconds
 
-    const sortedByTime = [...validQuotes].sort((a, b) => {
-      const timeA = a.totalSwapSeconds
-      const timeB = b.totalSwapSeconds
-      return timeA - timeB
-    })
+    for (let i = 1; i < validQuotes.length; i++) {
+      const quote = validQuotes[i]
+      const amount = parseFloat(quote.expectedAmount.assetAmount.amount().toString())
+      const time = quote.totalSwapSeconds
+
+      if (amount > bestAmount) {
+        bestAmount = amount
+        bestQuote = quote
+      }
+
+      if (time < fastestTime) {
+        fastestTime = time
+        fastestQuote = quote
+      }
+    }
 
     return {
-      bestQuote: sortedByAmount[0],
-      fastestQuote: sortedByTime[0],
-      numOfAvailableRoutes: quotes.value.length
+      bestQuote,
+      fastestQuote,
+      numOfAvailableRoutes: validQuotes.length
     }
   }, [quotes])
 
@@ -215,7 +250,7 @@ export const SwapRoute = ({ isBoostable, targetAsset, quote, quotes, onSelectQuo
                   'mx-2 mb-2 cursor-pointer rounded-lg border border-solid p-2',
                   'border-gray1 dark:border-gray0d'
                 )}
-                onClick={() => onSelectQuote(availableQuote)}>
+                onClick={() => handleQuoteSelect(availableQuote)}>
                 <Route
                   quote={availableQuote}
                   isBoostable={isBoostable}
@@ -234,4 +269,4 @@ export const SwapRoute = ({ isBoostable, targetAsset, quote, quotes, onSelectQuo
       )}
     </div>
   )
-}
+})
