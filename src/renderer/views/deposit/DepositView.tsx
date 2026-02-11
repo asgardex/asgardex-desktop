@@ -22,7 +22,7 @@ import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { getAssetFromNullableString } from '../../helpers/assetHelper'
+import { getAssetFromNullableString, isCacaoAsset, isRuneNativeAsset } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
@@ -114,13 +114,14 @@ export const DepositView = () => {
 
   // Set selected pool asset whenever an asset in route has been changed
   useEffect(() => {
-    // Function to determine if the dex and the asset's chain are equal
-    const isDexEqualAssetChain = (asset: AnyAsset) => protocol === asset.chain
+    // Block the protocol's base asset from being used as the LP asset side
+    // (RUNE on THORChain, CACAO on MAYAChain) but allow other same-chain assets (e.g. MAYA.MAYA)
+    const isProtocolBaseAsset = (asset: AnyAsset) => isRuneNativeAsset(asset) || isCacaoAsset(asset)
 
     O.fold(
       () => {},
       (asset: AnyAsset) => {
-        if (isDexEqualAssetChain(asset)) {
+        if (isProtocolBaseAsset(asset)) {
           // If dex and asset's chain are equal, set an alternative asset
           const alternativeAsset = getAlternativeAsset()
           O.fold(

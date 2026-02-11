@@ -83,8 +83,8 @@ export const AssetDetails = (props: Props): JSX.Element => {
 
   const isResumedOnThor = isChainOfThor(chain) && !haltedChainsThor.includes(chain)
   const isResumedOnMaya = isChainOfMaya(chain) && !haltedChainsMaya.includes(chain)
-  const disableSwap = (!isResumedOnThor && !isResumedOnMaya) || AssetHelper.isMayaAsset(asset)
-  const disableAdd = (!isResumedOnThor && !isResumedOnMaya) || AssetHelper.isMayaAsset(asset)
+  const disableSwap = !isResumedOnThor && !isResumedOnMaya
+  const disableAdd = !isResumedOnThor && !isResumedOnMaya
 
   // If the chain is not halted, perform the action
 

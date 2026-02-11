@@ -287,7 +287,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           price = formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) || price
         }
 
-        // Special case for Maya assets
+        // Fallback: if no pool price found, try MayaScan external API
         if (price === noDataString && isMayaAsset(asset)) {
           const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
           if (RD.isSuccess(mayaPrice)) {

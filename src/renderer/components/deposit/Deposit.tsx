@@ -172,7 +172,7 @@ export const Deposit = (props: Props) => {
         {walletIsImported && !walletIsLocked ? (
           <div className="grid w-full grid-cols-8 gap-4">
             <div className="col-span-8 bg-bg1 xl:col-span-5 dark:bg-bg1d">
-              <Tabs className="flex items-center justify-center" tabs={tabs} hasPadding defaultIndex={0} />
+              <Tabs className="items-center" tabs={tabs} hasPadding defaultIndex={0} />
             </div>
             <div className="col-span-8 xl:col-span-3">
               <div className="flex min-h-[300px] justify-center bg-bg0 xl:min-h-full dark:bg-bg0d">
