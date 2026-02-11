@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
@@ -220,6 +220,20 @@ export const SendForm = (props: Props): JSX.Element => {
   const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
   const [_notAllowed, _setNotAllowed] = useState<boolean>(false)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
+
+  // Debug: Log component mount/unmount to detect recreation
+  useEffect(() => {
+    window.apiLog?.info?.('[SendForm]', 'Component MOUNTED')
+    return () => {
+      window.apiLog?.info?.('[SendForm]', 'Component UNMOUNTING')
+    }
+  }, [])
+
+  // Debug: Log when confirmation modal state changes
+  useEffect(() => {
+    window.apiLog?.info?.('[SendForm]', 'showConfirmationModal changed', { value: showConfirmationModal })
+  }, [showConfirmationModal])
+
   const [destinationTagRequired, setDestinationTagRequired] = useState<boolean>(false)
   const [isRouterAddress, setIsRouterAddress] = useState<boolean>(false)
 
@@ -1071,9 +1085,9 @@ export const SendForm = (props: Props): JSX.Element => {
   // Password validation - uses appropriate method based on wallet type
   const validatePasswordAsync = useCallback(
     async (password: string): Promise<boolean> => {
-      // For Vultisig wallets, use appWalletService.unlock (validates Vultisig vault password)
+      // For Vultisig wallets, use validatePassword (checks password WITHOUT modifying global state)
       if (isVultisigWallet(walletType)) {
-        return appWalletService.unlock(password)
+        return appWalletService.validatePassword(password)
       }
       // For Keystore wallets, use keystoreService.validatePassword$
       return new Promise((resolve) => {
@@ -1092,21 +1106,28 @@ export const SendForm = (props: Props): JSX.Element => {
     [walletType, appWalletService, validatePassword$]
   )
 
-  // Confirmation modal
+  // Confirmation modal close handler (shared)
+  const onConfirmationModalClose = useCallback(() => {
+    setShowConfirmationModal(false)
+  }, [])
+
+  // Confirmation modal for Keystore/Ledger
   const renderConfirmationModal = useMemo(() => {
+    // Vultisig modal is rendered separately - return early to avoid any side effects
+    if (isVultisigWallet(walletType)) {
+      return null
+    }
+
     const onSuccessHandler = () => {
       setShowConfirmationModal(false)
       poolDeposit ? submitDepositTx() : submitTx()
-    }
-    const onCloseHandler = () => {
-      setShowConfirmationModal(false)
     }
 
     if (isKeystoreWallet(walletType)) {
       return (
         <WalletPasswordConfirmationModal
           onSuccess={onSuccessHandler}
-          onClose={onCloseHandler}
+          onClose={onConfirmationModalClose}
           validatePassword$={validatePassword$}
         />
       )
@@ -1116,35 +1137,11 @@ export const SendForm = (props: Props): JSX.Element => {
         <LedgerConfirmationModal
           network={network}
           onSuccess={onSuccessHandler}
-          onClose={onCloseHandler}
+          onClose={onConfirmationModalClose}
           visible={showConfirmationModal}
           chain={asset.chain}
           description2={intl.formatMessage({ id: 'ledger.sign' })}
           addresses={O.some({ sender: walletAddress, recipient: watch('recipient') })}
-        />
-      )
-    }
-    if (isVultisigWallet(walletType)) {
-      // For SecureVault, don't close modal on success - let txState watcher handle it
-      // For FastVault, close immediately like Keystore
-      const onVultisigSuccess = () => {
-        if (vaultType === 'fast') {
-          setShowConfirmationModal(false)
-        }
-        // Start the transaction - for SecureVault, modal stays open for QR flow
-        poolDeposit ? submitDepositTx() : submitTx()
-      }
-
-      return (
-        <VultisigConfirmationModal
-          visible={showConfirmationModal}
-          network={network}
-          chain={asset.chain}
-          vaultType={vaultType}
-          onSuccess={onVultisigSuccess}
-          onClose={onCloseHandler}
-          validatePassword$={validatePasswordAsync}
-          txState={sendTxState.status}
         />
       )
     }
@@ -1155,16 +1152,74 @@ export const SendForm = (props: Props): JSX.Element => {
     submitDepositTx,
     submitTx,
     validatePassword$,
-    validatePasswordAsync,
     network,
     showConfirmationModal,
     asset.chain,
     intl,
     walletAddress,
     watch,
-    vaultType,
-    sendTxState.status
+    onConfirmationModalClose
   ])
+
+  // Vultisig confirmation modal - rendered separately to prevent recreation when txState changes
+  // This ensures IPC event listeners aren't cleaned up during the signing flow
+  const onVultisigSuccess = useCallback(() => {
+    console.log('[SendForm] onVultisigSuccess called, vaultType:', vaultType)
+    window.apiLog?.info?.('[SendForm]', 'onVultisigSuccess', { vaultType })
+    if (vaultType === 'fast') {
+      console.log('[SendForm] Closing modal for fast vault')
+      setShowConfirmationModal(false)
+    } else {
+      console.log('[SendForm] Keeping modal open for secure vault')
+    }
+    // Start the transaction - for SecureVault, modal stays open for QR flow
+    poolDeposit ? submitDepositTx() : submitTx()
+  }, [vaultType, poolDeposit, submitDepositTx, submitTx])
+
+  // Track if we're in a Vultisig signing session using a ref for synchronous tracking
+  // This prevents race conditions where walletType changes before the useEffect can set state
+  const vultisigSessionRef = useRef(false)
+
+  // Synchronously start session when modal opens as Vultisig
+  // This runs during render, before any effects, to prevent race conditions
+  if (showConfirmationModal && isVultisigWallet(walletType) && !vultisigSessionRef.current) {
+    vultisigSessionRef.current = true
+    window.apiLog?.info?.('[SendForm]', 'Vultisig signing session started (sync)')
+  }
+
+  // End session when modal closes (via effect since we need to react to showConfirmationModal becoming false)
+  useEffect(() => {
+    if (!showConfirmationModal && vultisigSessionRef.current) {
+      window.apiLog?.info?.('[SendForm]', 'Vultisig signing session ended')
+      vultisigSessionRef.current = false
+    }
+  }, [showConfirmationModal])
+
+  // Log walletType changes for debugging
+  useEffect(() => {
+    window.apiLog?.info?.('[SendForm]', 'walletType info', {
+      walletType,
+      isVultisig: isVultisigWallet(walletType),
+      signingSessionRef: vultisigSessionRef.current
+    })
+  }, [walletType])
+
+  // Render Vultisig modal - keep mounted during active signing session
+  // The ref is checked synchronously so it won't miss the session start
+  const shouldRenderVultisigModal = vultisigSessionRef.current || isVultisigWallet(walletType)
+  const renderVultisigConfirmationModal = shouldRenderVultisigModal ? (
+    <VultisigConfirmationModal
+      key="vultisig-confirmation-modal"
+      visible={showConfirmationModal}
+      network={network}
+      chain={asset.chain}
+      vaultType={vaultType}
+      onSuccess={onVultisigSuccess}
+      onClose={onConfirmationModalClose}
+      validatePassword$={validatePasswordAsync}
+      txState={sendTxState.status}
+    />
+  ) : null
 
   // Transaction modal
   const renderTxModal = useMemo(() => {
@@ -1580,7 +1635,9 @@ export const SendForm = (props: Props): JSX.Element => {
       </div>
 
       {showConfirmationModal && renderConfirmationModal}
-      {renderTxModal}
+      {renderVultisigConfirmationModal}
+      {/* Don't show TxModal during Vultisig SecureVault signing flow - VultisigConfirmationModal handles the UX */}
+      {!(isVultisigWallet(walletType) && vaultType === 'secure' && showConfirmationModal) && renderTxModal}
     </>
   )
 }

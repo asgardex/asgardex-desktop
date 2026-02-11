@@ -404,6 +404,22 @@ export const createVaultManager = (): VaultManager => {
   }
 
   /**
+   * Validate vault password WITHOUT modifying global state
+   * Used by send confirmation modal to check password before triggering tx
+   * Unlike unlockVault(), this does not update phase, addresses, or error state
+   */
+  const validatePassword = async (password: string): Promise<boolean> => {
+    const currentState = vultisigState()
+    if (!currentState.activeVault) return false
+    try {
+      await window.apiMpc.unlockVault(currentState.activeVault.id, password)
+      return true
+    } catch {
+      return false // Don't update global state - this is just validation
+    }
+  }
+
+  /**
    * Check if the active vault is locked
    */
   const isVaultLocked = (): boolean => {
@@ -431,6 +447,7 @@ export const createVaultManager = (): VaultManager => {
     setActiveVault,
     lockVault,
     unlockVault,
+    validatePassword,
     isVaultLocked
   }
 }

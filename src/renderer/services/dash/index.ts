@@ -14,7 +14,10 @@ const combinedClient$ = Rx.combineLatest([client$, readOnlyClient$]).pipe(
   RxOp.shareReplay(1)
 )
 
-const { subscribeTx, txRD$, resetTx, sendTx, txs$, tx$, txStatus$ } = createTransactionService(client$, network$)
+const { subscribeTx, txRD$, resetTx, sendTx, txs$, tx$, txStatus$ } = createTransactionService(
+  combinedClient$,
+  network$
+)
 const { fees$, reloadFees, feesWithRates$, reloadFeesWithRates } = createFeesService(combinedClient$)
 
 export {

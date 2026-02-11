@@ -51,14 +51,12 @@ export const VultisigConfirmationModal = ({
   const [devicesRequired, setDevicesRequired] = useState(2)
   const [isValidating, setIsValidating] = useState(false)
 
+  // Track whether we've started the signing flow in THIS modal session
+  // This prevents reacting to stale txState from previous transactions
+  const [signingStarted, setSigningStarted] = useState(false)
+
   // Store cleanup functions for event listeners
   const cleanupFns = useRef<(() => void)[]>([])
-
-  // Clean up event listeners
-  const cleanupEventListeners = useCallback(() => {
-    cleanupFns.current.forEach((fn) => fn())
-    cleanupFns.current = []
-  }, [])
 
   // Reset state when modal opens
   useEffect(() => {
@@ -69,22 +67,31 @@ export const VultisigConfirmationModal = ({
       setQrPayload(null)
       setDevicesJoined(0)
       setIsValidating(false)
+      setSigningStarted(false) // Reset signing tracking for new modal session
     }
   }, [visible])
 
   // Set up signing event listeners for SecureVault
+  // These listeners receive IPC events from main process during MPC signing ceremony
+  // The signBytes$ Observable also sets up listeners, but having them here ensures
+  // the modal UI updates even if the Observable subscription changes
+  //
+  // IMPORTANT: Only depend on visible and vaultType for stable effect
+  // This ensures the effect doesn't re-run unnecessarily when the component re-renders
   useEffect(() => {
     if (!visible || vaultType !== 'secure') return
 
+    window.apiLog?.info?.('[VultisigConfirm]', 'Setting up SecureVault signing event listeners')
+
     const cleanupQR = window.apiMpc.onSignQRReady((payload) => {
-      console.log('[VultisigConfirm] Sign QR ready')
+      window.apiLog?.info?.('[VultisigConfirm]', 'Sign QR ready event received', { payloadLength: payload?.length })
       setQrPayload(payload)
       setPhase('qr-ready')
     })
 
     const cleanupDevice = window.apiMpc.onSignDeviceJoined(
       (data: { deviceId: string; totalJoined: number; required: number }) => {
-        console.log('[VultisigConfirm] Sign device joined:', data)
+        window.apiLog?.info?.('[VultisigConfirm]', 'Sign device joined event received', data)
         setDevicesJoined(data.totalJoined)
         setDevicesRequired(data.required)
         if (data.totalJoined >= data.required) {
@@ -96,26 +103,51 @@ export const VultisigConfirmationModal = ({
     )
 
     const cleanupProgress = window.apiMpc.onSignProgress((data) => {
-      console.log('[VultisigConfirm] Sign progress:', data)
+      window.apiLog?.info?.('[VultisigConfirm]', 'Sign progress event received', data)
     })
 
+    // Store cleanup functions in ref for later cleanup
     cleanupFns.current = [cleanupQR, cleanupDevice, cleanupProgress]
 
     return () => {
-      cleanupEventListeners()
+      window.apiLog?.info?.('[VultisigConfirm]', 'Cleaning up SecureVault signing event listeners (effect cleanup)')
+      // Cleanup directly from ref instead of using callback
+      cleanupFns.current.forEach((fn) => fn())
+      cleanupFns.current = []
     }
-  }, [visible, vaultType, cleanupEventListeners])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, vaultType])
+
+  // Track when txState becomes pending - this means the NEW transaction has started
+  // Only after seeing pending should we react to success/failure
+  useEffect(() => {
+    if (vaultType === 'secure' && phase !== 'password' && RD.isPending(txState)) {
+      window.apiLog?.info?.('[VultisigConfirm]', 'txState became pending, marking signing as started')
+      setSigningStarted(true)
+    }
+  }, [vaultType, phase, txState])
 
   // Watch txState to close modal on success/failure (SecureVault only)
+  // IMPORTANT: Only react to txState changes AFTER signing has started in THIS modal session
+  // This prevents closing the modal due to stale txState from previous transactions
   useEffect(() => {
-    if (vaultType === 'secure' && phase !== 'password') {
+    if (vaultType === 'secure' && signingStarted) {
+      window.apiLog?.info?.('[VultisigConfirm]', 'Checking txState for modal close', {
+        signingStarted,
+        phase,
+        isSuccess: RD.isSuccess(txState),
+        isFailure: RD.isFailure(txState),
+        isPending: RD.isPending(txState)
+      })
+
       if (RD.isSuccess(txState) || RD.isFailure(txState)) {
         // Transaction completed - close modal
-        cleanupEventListeners()
+        // Effect cleanup will handle listener cleanup when visible becomes false
+        window.apiLog?.info?.('[VultisigConfirm]', 'Transaction completed, closing modal')
         onClose()
       }
     }
-  }, [vaultType, phase, txState, onClose, cleanupEventListeners])
+  }, [vaultType, signingStarted, phase, txState, onClose])
 
   const handlePasswordSubmit = useCallback(async () => {
     if (!password) {
@@ -147,9 +179,15 @@ export const VultisigConfirmationModal = ({
   }, [password, vaultType, validatePassword$, onSuccess, intl])
 
   const handleCancel = useCallback(() => {
-    cleanupEventListeners()
+    // Don't allow closing during signing flow - only allow cancel from password phase
+    // This prevents HeadlessUI Dialog backdrop clicks from closing during MPC signing
+    if (phase !== 'password') {
+      window.apiLog?.info?.('[VultisigConfirm]', 'Ignoring close request during signing flow', { phase })
+      return
+    }
+    // Effect cleanup will handle listener cleanup when visible becomes false
     onClose()
-  }, [onClose, cleanupEventListeners])
+  }, [onClose, phase])
 
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
@@ -242,7 +280,9 @@ export const VultisigConfirmationModal = ({
   }
 
   return (
-    <Dialog as="div" className="relative z-10" open={visible} onClose={handleCancel}>
+    // Use static to prevent HeadlessUI from auto-closing on backdrop click during signing flow
+    // The handleCancel callback controls when closing is allowed
+    <Dialog static as="div" className="relative z-10" open={visible} onClose={handleCancel}>
       <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel

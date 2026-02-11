@@ -31,17 +31,25 @@ interface SDKVault {
   threshold?: number
   signers?: unknown[]
   isEncrypted?: boolean
-  signBytes: (options: SignBytesOptions) => Promise<{ signature: string; recovery?: number }>
+  signBytes: (
+    options: SDKSignBytesOptions,
+    signingOptions?: SDKSigningOptions
+  ) => Promise<{ signature: string; recovery?: number }>
 }
 
-// Sign options for vault.signBytes()
-interface SignBytesOptions {
+// First argument to vault.signBytes() - just data and chain
+interface SDKSignBytesOptions {
   data: string
   chain: string
+}
+
+// Second argument to vault.signBytes() - signal and callbacks
+// Note: onQRCodeReady and onDeviceJoined only apply to SecureVault.
+// The SDK ignores onProgress for signBytes (it's only used in vault creation).
+interface SDKSigningOptions {
   signal?: AbortSignal
   onQRCodeReady?: (qrPayload: string) => void
   onDeviceJoined?: (deviceId: string, totalJoined: number, required: number) => void
-  onProgress?: (step: { step: string; message: string; progress: number }) => void
 }
 
 /**
@@ -357,32 +365,34 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
     signingControllers.set(vaultId, controller)
 
     try {
-      // Build sign options with callbacks for secure vault
-      const signOptions: SignBytesOptions = {
+      // First argument: data and chain only
+      const signBytesOptions: SDKSignBytesOptions = {
         data, // Hex string - SDK accepts with or without 0x
-        chain: sdkChain,
+        chain: sdkChain
+      }
+
+      // Second argument: signal and callbacks
+      // SDK 0.4.2 expects callbacks in the SECOND parameter, not the first.
+      // For SecureVault: { signal, onQRCodeReady, onDeviceJoined }
+      // For FastVault:   { signal }
+      const signingOptions: SDKSigningOptions = {
         signal: controller.signal
       }
 
       // Add callbacks for secure vault signing (QR coordination)
       if (isSecureVault) {
-        signOptions.onQRCodeReady = (qrPayload: string) => {
-          log.info(`[MPC IPC] Sign QR code ready`)
+        signingOptions.onQRCodeReady = (qrPayload: string) => {
+          log.info(`[MPC IPC] Sign QR code ready (payload length: ${qrPayload?.length})`)
           _event.sender.send(MpcIPCMessages.MPC_SIGN_QR_READY, qrPayload)
         }
 
-        signOptions.onDeviceJoined = (deviceId: string, totalJoined: number, required: number) => {
+        signingOptions.onDeviceJoined = (deviceId: string, totalJoined: number, required: number) => {
           log.info(`[MPC IPC] Sign device joined: ${deviceId} (${totalJoined}/${required})`)
           _event.sender.send(MpcIPCMessages.MPC_SIGN_DEVICE_JOINED, { deviceId, totalJoined, required })
         }
-
-        signOptions.onProgress = (step: { step: string; message: string; progress: number }) => {
-          log.debug(`[MPC IPC] Sign progress: ${step.step} - ${step.message}`)
-          _event.sender.send(MpcIPCMessages.MPC_SIGN_PROGRESS, step)
-        }
       }
 
-      const signature = await vault.signBytes(signOptions)
+      const signature = await vault.signBytes(signBytesOptions, signingOptions)
 
       log.info(`[MPC IPC] Signing complete, signature length: ${signature.signature.length}`)
       return {

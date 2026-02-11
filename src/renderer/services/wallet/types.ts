@@ -253,6 +253,7 @@ export type VaultManager = {
   // Lock/unlock
   lockVault: () => Promise<void>
   unlockVault: (password: string) => Promise<void>
+  validatePassword: (password: string) => Promise<boolean>
   isVaultLocked: () => boolean
 }
 
@@ -271,6 +272,7 @@ export type AppWalletService = {
   // Unified wallet methods (Phase A-C)
   lock: () => Promise<void>
   unlock: (password: string) => Promise<boolean>
+  validatePassword: (password: string) => Promise<boolean>
   isLocked: () => boolean
   isLocked$: Rx.Observable<boolean>
   saveLastOpenedWallet: (wallet: import('../../../shared/api/types').LastOpenedWallet) => void

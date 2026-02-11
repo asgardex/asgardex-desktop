@@ -275,6 +275,15 @@ export const createAppWalletService = (): AppWalletService => {
   }
 
   /**
+   * Validate password WITHOUT modifying global state
+   * Used by send confirmation modal to check Vultisig vault password
+   * Unlike unlock(), this does not change phase, addresses, or error state on failure
+   */
+  const validatePassword = async (password: string): Promise<boolean> => {
+    return vaultManager.validatePassword(password)
+  }
+
+  /**
    * Unified isLocked check - returns lock state for current wallet mode
    * - Keystore: true if no phrase in memory
    * - Vultisig: true if vault is in locked phase
@@ -558,6 +567,7 @@ export const createAppWalletService = (): AppWalletService => {
     // Unified methods (Phase A-C)
     lock,
     unlock,
+    validatePassword,
     isLocked,
     isLocked$,
     saveLastOpenedWallet,

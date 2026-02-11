@@ -16,6 +16,7 @@ import * as RxOp from 'rxjs/operators'
 import { XChainClient$ } from '../clients/types'
 import { appWalletService } from '../wallet/appWallet'
 import { ErrorId, TxHashLD } from '../wallet/types'
+import { isSignatureEvent, signBytes$ } from '../wallet/vultisigSigning'
 import { SendTxParams } from './types'
 
 /**
@@ -98,18 +99,27 @@ export const createVultisigUtxoTx = (
                   const mpcSignerAsync: Bitcoin.SignerAsync = {
                     publicKey,
                     sign: async (hash: Buffer): Promise<Buffer> => {
-                      window.apiLog.info('[Vultisig]', `${chainName} step 4: signing hash`, {
+                      window.apiLog.info('[Vultisig]', `${chainName} step 4: signing hash with signBytes$`, {
                         hashHex: hash.toString('hex')
                       })
-                      const { signature } = await window.apiMpc.signBytes({
+                      // Use Observable wrapper for proper event handling (QR, device joined, progress)
+                      // Convert back to Promise using toPromise with first() for RxJS 6.x compatibility
+                      const result = await signBytes$({
                         vaultId,
                         chain: chainName,
                         data: hash.toString('hex')
                       })
+                        .pipe(RxOp.filter(isSignatureEvent), RxOp.first())
+                        .toPromise()
+
+                      if (!result) {
+                        throw new Error('MPC signing failed: no signature received')
+                      }
+
                       window.apiLog.info('[Vultisig]', `${chainName} step 4: got signature`, {
-                        signatureLength: signature.length
+                        signatureLength: result.signature.length
                       })
-                      return Buffer.from(signature, 'hex')
+                      return Buffer.from(result.signature, 'hex')
                     }
                   }
 
