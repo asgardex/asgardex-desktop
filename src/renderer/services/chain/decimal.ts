@@ -11,7 +11,6 @@ import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
-
 import { TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { ZEC_DECIMAL } from '@xchainjs/xchain-zcash'
