@@ -39,6 +39,8 @@ const wallet: WalletMessages = {
   'wallet.unlock.instruction': '지갑을 잠금 해제해 주세요.',
   'wallet.unlock.password': '비밀번호 입력',
   'wallet.unlock.error': '지갑을 잠금 해제할 수 없습니다. 비밀번호를 확인하고 다시 시도해 주세요.',
+  'wallet.unlock.useLedger': 'Ledger만 사용',
+  'wallet.unlock.noWallet': '아직 지갑이 없으신가요?',
   'wallet.imports.keystore.select': '키스토어 파일 선택',
   'wallet.imports.keystore.title': '지갑의 키스토어 파일을 선택해 주세요.',
   'wallet.imports.keystore.description': '기존 키스토어 지갑 가져오기',

@@ -58,7 +58,7 @@ export const BaseButton = (props: BaseButtonProps): JSX.Element => {
       className={clsx(
         'group flex appearance-none items-center justify-center',
         'transition duration-300 ease-in-out',
-        disabled ? 'opacity-60' : 'opcacity-100',
+        disabled ? 'opacity-60' : 'opacity-100',
         disabled ? 'cursor-not-allowed' : 'cursor-pointer',
         uppercase ? 'uppercase' : 'normal-case',
         fontFamily[font],

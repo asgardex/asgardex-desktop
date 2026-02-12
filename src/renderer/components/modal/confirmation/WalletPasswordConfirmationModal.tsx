@@ -111,7 +111,7 @@ const PasswordModal = (props: PasswordModalProps) => {
                 'rounded-md !px-4 !py-2',
                 'border border-solid border-gray1/20 dark:border-gray1d/20',
                 'text-text0 dark:text-text0d',
-                'hover:bg-gray1/20 hover:dark:bg-gray1d/20'
+                'hover:bg-gray1/20 dark:hover:bg-gray1d/20'
               )}
               onClick={onCancel}>
               {intl.formatMessage({ id: 'common.cancel' })}

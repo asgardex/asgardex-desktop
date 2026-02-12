@@ -34,7 +34,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
       ref={containerRef}
       className={clsx(
         'relative inline-flex cursor-pointer items-center justify-between rounded-full p-[1px]',
-        'bg-gray-100 transition-colors select-none dark:bg-gray-900'
+        'bg-bg1 transition-colors select-none dark:bg-bg1d'
       )}
       onClick={handleToggle}
       animate={{ borderColor: colors[activeIndex] }}
@@ -63,7 +63,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
       <div
         className={clsx(
           'relative z-10 flex flex-1 items-center justify-center px-4 text-center font-medium transition-colors',
-          active === labels[0] ? 'text-[var(--color-a)]' : 'text-gray-500'
+          active === labels[0] ? 'text-[var(--color-a)]' : 'text-gray1 dark:text-gray1d'
         )}
         style={{ '--color-a': colors[0] } as React.CSSProperties}>
         {labels[0]}
@@ -72,7 +72,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
       <div
         className={clsx(
           'relative z-10 flex flex-1 items-center justify-center px-2 text-center font-medium transition-colors',
-          active === labels[1] ? 'text-[var(--color-b)]' : 'text-gray-500'
+          active === labels[1] ? 'text-[var(--color-b)]' : 'text-gray1 dark:text-gray1d'
         )}
         style={{ '--color-b': colors[1] } as React.CSSProperties}>
         {labels[1]}

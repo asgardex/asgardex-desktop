@@ -24,7 +24,7 @@ export const Drawer = ({ title, isOpen, onClose, children }: PropsWithChildren<D
                 <button
                   type="button"
                   onClick={onClose}
-                  className="relative rounded-md text-gray-300 hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-hidden">
+                  className="relative rounded-md text-gray1 hover:text-text0 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-hidden dark:text-gray1d dark:hover:text-text0d">
                   <span className="absolute -inset-2.5" />
                   <span className="sr-only">Close panel</span>
                   <XMarkIcon aria-hidden="true" className="size-6" />

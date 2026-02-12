@@ -40,6 +40,8 @@ const wallet: WalletMessages = {
   'wallet.unlock.password': 'Introduzca su contraseña',
   'wallet.unlock.error':
     'No se ha podido desbloquear el monedero. Por favor, compruebe su contraseña e inténtelo de nuevo',
+  'wallet.unlock.useLedger': 'Usar solo Ledger',
+  'wallet.unlock.noWallet': '¿Aún no tienes una cartera?',
   'wallet.imports.keystore.select': 'Seleccione el archivo de almacén de claves',
   'wallet.imports.keystore.title': 'Por favor, elija el archivo keystore de su monedero',
   'wallet.imports.keystore.description': 'Importar una cartera de keystore existente',

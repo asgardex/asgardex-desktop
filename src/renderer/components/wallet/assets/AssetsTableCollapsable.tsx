@@ -737,7 +737,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
             </p>
             <div className="flex space-x-2">
               {disabledChains.map((chain) => (
-                <span key={chain} className="rounded bg-gray-200 px-2 py-1 dark:bg-gray0d">
+                <span key={chain} className="rounded bg-gray0 px-2 py-1 dark:bg-gray0d">
                   {chain}
                 </span>
               ))}

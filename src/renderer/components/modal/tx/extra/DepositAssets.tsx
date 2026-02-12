@@ -50,9 +50,9 @@ export const DepositAssets = (props: Props): JSX.Element => {
         {hasSource && (
           <div className="flex items-center justify-center p-2">
             {isWithdraw ? (
-              <ArrowLeftIcon className="h-8 w-8 text-gray-400" />
+              <ArrowLeftIcon className="h-8 w-8 text-gray1 dark:text-gray1d" />
             ) : (
-              <ArrowRightIcon className="h-8 w-8 text-gray-400" />
+              <ArrowRightIcon className="h-8 w-8 text-gray1 dark:text-gray1d" />
             )}
           </div>
         )}
