@@ -123,7 +123,7 @@ export const createBalancesService = ({
         // Convert to Set for O(1) lookups instead of O(n) .includes() calls
         const enabledChainsSet = new Set(enabledChains)
 
-// Collect all enabled reload functions (using Set for O(1) lookups)
+        // Collect all enabled reload functions (using Set for O(1) lookups)
         const reloadFunctions: Array<() => void> = []
 
         if (enabledChainsSet.has(BTCChain)) reloadFunctions.push(() => BTC.reloadBalances(walletType))
