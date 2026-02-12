@@ -85,24 +85,32 @@ export const createBalancesService = ({
   // Concurrency limit for balance requests - process in batches to prevent overwhelming APIs
   const BALANCE_BATCH_SIZE = 5
   const BATCH_DELAY_MS = 100
+  // Store pending timer IDs so they can be cancelled on subsequent reloads or disposal
+  let pendingTimers: ReturnType<typeof setTimeout>[] = []
 
   /**
    * Process balance reloads in batches with a delay between batches
    * This prevents overwhelming network/APIs with too many concurrent requests
    */
   const processBatchedReloads = (reloadFunctions: Array<() => void>): void => {
+    // Cancel any previously scheduled batches to prevent duplicate requests
+    pendingTimers.forEach(clearTimeout)
+    pendingTimers = []
+
     if (reloadFunctions.length === 0) return
 
     // Process first batch immediately
     const firstBatch = reloadFunctions.slice(0, BALANCE_BATCH_SIZE)
-    firstBatch.forEach((fn) => fn())
+    firstBatch.forEach((fn) => {
+      fn()
+    })
 
     // Process remaining batches with delays
     const remaining = reloadFunctions.slice(BALANCE_BATCH_SIZE)
     remaining.forEach((fn, index) => {
       const batchIndex = Math.floor(index / BALANCE_BATCH_SIZE)
       const delay = (batchIndex + 1) * BATCH_DELAY_MS
-      setTimeout(fn, delay)
+      pendingTimers.push(setTimeout(fn, delay))
     })
   }
 
@@ -1144,6 +1152,9 @@ export const createBalancesService = ({
    * Dispose references / subscriptions (if needed)
    */
   const dispose = () => {
+    // Cancel any pending batch timers
+    pendingTimers.forEach(clearTimeout)
+    pendingTimers = []
     networkSub.unsubscribe()
     keystoreSub.unsubscribe()
     walletBalancesState.clear()
