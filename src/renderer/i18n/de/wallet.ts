@@ -40,6 +40,8 @@ const wallet: WalletMessages = {
   'wallet.unlock.password': 'Bitte gib Dein Passwort ein',
   'wallet.unlock.error':
     'Die Wallet konnte nicht entsperrt werden. Bitte überprüfe Dein Passwort und versuche es erneut.',
+  'wallet.unlock.useLedger': 'Nur Ledger verwenden',
+  'wallet.unlock.noWallet': 'Hast du noch keine Wallet?',
   'wallet.imports.keystore.select': 'Keystore-Datei auswählen',
   'wallet.imports.keystore.title': 'Bitte wähle die Keystore-Datei Deiner Wallet',
   'wallet.imports.keystore.description': 'Eine vorhandene Keystore-Wallet importieren',

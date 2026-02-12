@@ -81,7 +81,7 @@ export const PoolsOverview = (): JSX.Element => {
               <Tab key={index} as={Fragment}>
                 {({ selected }) => (
                   // label wrapper
-                  <div className="group flex cursor-pointer items-center justify-center focus-visible:outline-hidden">
+                  <div className="group flex cursor-pointer items-center justify-center focus-visible:outline-none">
                     {/* label */}
                     <span
                       className={clsx(

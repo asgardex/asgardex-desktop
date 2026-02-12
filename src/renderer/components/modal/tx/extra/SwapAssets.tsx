@@ -33,7 +33,7 @@ export const SwapAssets = (props: Props): JSX.Element => {
           </Label>
         </div>
         <div className="flex items-center justify-center">
-          <ArrowsRightLeftIcon className="h-8 w-8 rotate-90 text-gray-400" />
+          <ArrowsRightLeftIcon className="h-8 w-8 rotate-90 text-gray1 dark:text-gray1d" />
         </div>
         <div className="flex w-full items-center justify-between px-10">
           <AssetData

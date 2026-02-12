@@ -39,6 +39,8 @@ const wallet: WalletMessages = {
   'wallet.unlock.instruction': 'Пожалуйста разблокируйте ваш кошелёк',
   'wallet.unlock.password': 'Введите ваш пароль',
   'wallet.unlock.error': 'Не получилось разблокировать кошелёк. Пожалуйста, проверьте пароль и попробуйте еще раз.',
+  'wallet.unlock.useLedger': 'Использовать только Ledger',
+  'wallet.unlock.noWallet': 'У вас ещё нет кошелька?',
   'wallet.imports.phrase.title': 'Пожалуйста, введите фразу вашего кошелька с одинарным пробелом между словами',
   'wallet.imports.wallet': 'Импортировать существующий кошелёк',
   'wallet.imports.keystore.select': 'Выберите keystore файл',

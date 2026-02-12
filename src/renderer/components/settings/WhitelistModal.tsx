@@ -193,7 +193,7 @@ export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
                 'flex items-center justify-between rounded-lg',
                 'px-4 py-[3px] pr-5',
                 'w-full cursor-pointer text-[14px]',
-                'hover:bg-gray0 hover:dark:bg-gray0d'
+                'hover:bg-gray0 dark:hover:bg-gray0d'
               )}>
               <AssetData asset={asset} network={Network.Mainnet} />
               <SwitchButton active={checkIsActive(asset)} onChange={(active) => onToggleAsset(active, asset)} />

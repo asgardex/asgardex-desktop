@@ -32,7 +32,7 @@ const typeClasses = {
   normal: 'border-b',
   default: 'border',
   outline: '!bg-transparent border',
-  ghost: '!bg-transparent border-0 hover:bg-gray-100 dark:hover:bg-gray-800',
+  ghost: '!bg-transparent border-0 hover:bg-bg1 dark:hover:bg-bg1d',
   transparent: '!bg-transparent border-0 !text-text0 dark:!text-text0d',
   underline: '!bg-transparent border-0 border-b hover:border-b'
 }

@@ -134,7 +134,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
                                 'font-main text-14 text-text1 dark:text-text1d',
                                 selected
                                   ? 'cursor-disabled text-gray2 dark:text-gray2d'
-                                  : 'cursor-pointer hover:bg-gray0 hover:text-gray2 hover:dark:bg-gray0d hover:dark:text-gray2d'
+                                  : 'cursor-pointer hover:bg-gray0 hover:text-gray2 dark:hover:bg-gray0d dark:hover:text-gray2d'
                               )
                             }
                             key={wallet.id}

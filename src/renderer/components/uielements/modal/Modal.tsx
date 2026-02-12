@@ -88,7 +88,7 @@ export const Modal = ({
 
                 {/* Footer — height 46px, two equal buttons, uppercase */}
                 {footer && (
-                  <div className="h-11 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+                  <div className="h-11 border-t border-gray0 bg-bg0 dark:border-gray0d dark:bg-bg0d">
                     <div className="flex h-full">
                       <button
                         type="button"
@@ -96,9 +96,9 @@ export const Modal = ({
                         className={clsx(
                           'cancel-ant-btn h-full flex-1 rounded-none border-0 font-[MainFontRegular] text-sm uppercase',
                           // text/background like palette('text',2)/(background,1)
-                          'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-200',
+                          'bg-bg0 text-gray2 dark:bg-bg0d dark:text-gray2d',
                           // first-child right border like your styled rule
-                          'border-r border-gray-200 dark:border-gray-700',
+                          'border-r border-gray0 dark:border-gray0d',
                           'hover:text-indigo-600 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 dark:hover:text-indigo-400',
                           cancelButtonProps?.className
                         )}
@@ -113,7 +113,7 @@ export const Modal = ({
                         className={clsx(
                           'ok-ant-btn h-full flex-1 rounded-none border-0 font-[MainFontRegular] text-sm uppercase',
                           // primary text like palette('primary',2)
-                          'bg-white text-indigo-600 dark:bg-gray-900 dark:text-indigo-400',
+                          'bg-bg0 text-turquoise dark:bg-bg0d dark:text-turquoise',
                           // hover gradient echoing palette('gradient',1)
                           'hover:bg-gradient-to-r hover:from-indigo-600/10 hover:to-teal-400/10',
                           'disabled:cursor-not-allowed disabled:opacity-50',
@@ -187,7 +187,7 @@ export const HeadlessModal = ({
           <div className="flex w-full items-center justify-between rounded-t-lg px-4">
             <h1 className="my-0 text-center text-xl text-text2 uppercase dark:text-text2d">{title}</h1>
             <BaseButton
-              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
+              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d dark:hover:text-gray2d"
               onClick={() => onClose()}>
               <XMarkIcon className="h-20px w-20px text-inherit" />
             </BaseButton>

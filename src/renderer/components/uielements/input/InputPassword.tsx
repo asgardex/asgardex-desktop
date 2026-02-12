@@ -17,7 +17,7 @@ export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props,
   return (
     <div className={className}>
       <div className="relative w-full">
-        <div className="bg:bg0 dark:bg:bg0d absolute right-0 flex h-full cursor-pointer items-center px-10px">
+        <div className="absolute right-0 flex h-full cursor-pointer items-center bg-bg0 px-10px dark:bg-bg0d">
           <Icon
             className={clsx(
               'h-20px w-20px',

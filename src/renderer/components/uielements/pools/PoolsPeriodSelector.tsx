@@ -71,7 +71,7 @@ export const PoolsPeriodSelector = ({
             'bg-bg0 text-text0 dark:bg-bg0d dark:text-text0d',
             'py-5px pr-10px pl-10px',
             'font-main text-[12px] whitespace-nowrap',
-            'transition duration-300 ease-in-out hover:shadow-full hover:dark:shadow-fulld',
+            'transition duration-300 ease-in-out hover:shadow-full dark:hover:shadow-fulld',
             { 'opacity-70': disabled }
           )}>
           {({ open }) => (
@@ -103,7 +103,7 @@ export const PoolsPeriodSelector = ({
                       'text-text0 dark:text-text0d',
                       selected
                         ? 'cursor-disabled text-gray2 dark:text-gray2d'
-                        : 'cursor-pointer hover:bg-gray0 hover:text-gray2 hover:dark:bg-gray0d hover:dark:text-gray2d'
+                        : 'cursor-pointer hover:bg-gray0 hover:text-gray2 dark:hover:bg-gray0d dark:hover:text-gray2d'
                     )
                   }
                   key={item.value}

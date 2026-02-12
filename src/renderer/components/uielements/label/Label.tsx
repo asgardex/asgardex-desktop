@@ -43,7 +43,7 @@ export const Label = React.forwardRef<HTMLDivElement, LabelProps>(
 
     return (
       <div ref={ref} className={baseClasses} onClick={onClick}>
-        {loading ? <div className="h-4 w-full animate-pulse rounded bg-gray-200" /> : children}
+        {loading ? <div className="h-4 w-full animate-pulse rounded bg-gray0 dark:bg-gray0d" /> : children}
       </div>
     )
   }

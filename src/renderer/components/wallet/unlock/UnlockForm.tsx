@@ -190,7 +190,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
             'rounded-lg bg-bg0 dark:bg-bg0d',
             'px-30px pt-[45px] pb-[35px] sm:px-[60px] sm:pt-[90px] sm:pb-[70px]'
           )}>
-          <div className="w-full max-w-[320px] space-y-3">
+          <div className="w-full max-w-[320px]">
             <div className="flex flex-col">
               <h1 className="mb-12px font-mainSemiBold inline-block w-full text-18 text-text1 uppercase dark:text-text1d">
                 {intl.formatMessage({ id: 'wallet.unlock.label' })}
@@ -200,83 +200,94 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
               </h2>
             </div>
 
-            <WalletSelector
-              wallets={wallets}
-              onChange={changeWalletHandler}
-              disabled={RD.isPending(changeWalletState)}
-              className="mb-2 min-w-[200px] rounded-lg"
-              buttonClassName="!shadow-none !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
-            />
-            <InputPassword
-              id="password"
-              className="mx-auto mb-20px flex h-[38px] w-full items-center justify-between rounded-lg border border-solid !border-gray0 dark:!border-gray0d"
-              inputClassName="!ring-0 w-full"
-              {...register('password', { required: true })}
-              placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
-              ghost
-              size="normal"
-              autoFocus={true}
-              error={errors.password ? intl.formatMessage({ id: 'wallet.password.empty' }) : ''}
-              disabled={unlocking}
-            />
-            <FlatButton
-              type="submit"
-              className="w-full min-w-[200px] sm:mb-0"
-              size="normal"
-              color="primary"
-              disabled={unlocking}
-              loading={unlocking}>
-              {intl.formatMessage({ id: 'wallet.action.unlock' })}
-            </FlatButton>
-            <BorderButton
-              className="w-full min-w-[200px] sm:mb-0"
-              size="normal"
-              color="error"
-              onClick={showRemoveConfirm}
-              disabled={unlocking}>
-              {intl.formatMessage({ id: 'wallet.remove.label' })}
-            </BorderButton>
-            <div className="flex w-full flex-col items-center border-t border-solid border-gray1 dark:border-gray0d">
-              <div className="flex w-full flex-col justify-between space-y-3 pt-4">
-                <BorderButton
-                  className="flex w-full min-w-[200px] items-center justify-center gap-2"
-                  size="normal"
-                  color="primary"
-                  onClick={useLedgerOnlyHandler}
-                  disabled={unlocking}>
-                  <CpuChipIcon width={16} height={16} />
-                  Use Only Ledger
-                </BorderButton>
-                {/* TODO: update locale */}
-                <h2 className="mb-2 w-full text-11 text-text2 dark:text-text2d">Don&apos;t you have a wallet yet?</h2>
-                <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0"
-                  size="normal"
-                  color="primary"
-                  onClick={createWalletHandler}
-                  disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.create' })}
-                </BorderButton>
-                <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0"
-                  size="normal"
-                  color="primary"
-                  onClick={importWalletHandler}
-                  disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.keystore' })}
-                </BorderButton>
-                <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0"
-                  size="normal"
-                  color="primary"
-                  onClick={importPhraseHandler}
-                  disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
-                </BorderButton>
-              </div>
-
-              {renderChangeWalletError}
+            <div className="flex flex-col gap-2">
+              <WalletSelector
+                wallets={wallets}
+                onChange={changeWalletHandler}
+                disabled={RD.isPending(changeWalletState)}
+                className="min-w-[200px] rounded-lg"
+                buttonClassName="!shadow-none dark:!shadow-none hover:!shadow-none dark:hover:!shadow-none"
+              />
+              <InputPassword
+                id="password"
+                className="mx-auto flex h-[38px] w-full items-center justify-between rounded-lg border border-solid !border-gray0 dark:!border-gray0d"
+                inputClassName="!ring-0 w-full"
+                {...register('password', { required: true })}
+                placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
+                ghost
+                size="normal"
+                autoFocus={true}
+                error={errors.password ? intl.formatMessage({ id: 'wallet.password.empty' }) : ''}
+                disabled={unlocking}
+              />
             </div>
+
+            <div className="mt-6 flex flex-col gap-2">
+              <FlatButton
+                type="submit"
+                className="w-full min-w-[200px]"
+                size="normal"
+                color="primary"
+                disabled={unlocking}
+                loading={unlocking}>
+                {intl.formatMessage({ id: 'wallet.action.unlock' })}
+              </FlatButton>
+              <BorderButton
+                className="w-full min-w-[200px]"
+                size="normal"
+                color="error"
+                onClick={showRemoveConfirm}
+                disabled={unlocking}>
+                {intl.formatMessage({ id: 'wallet.remove.label' })}
+              </BorderButton>
+            </div>
+
+            <div className="my-6 border-t border-solid border-gray0 dark:border-gray0d" />
+
+            <div className="flex flex-col gap-2">
+              <BorderButton
+                className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                size="normal"
+                color="primary"
+                onClick={useLedgerOnlyHandler}
+                disabled={unlocking}>
+                <CpuChipIcon width={16} height={16} />
+                {intl.formatMessage({ id: 'wallet.unlock.useLedger' })}
+              </BorderButton>
+            </div>
+
+            <h2 className="mt-6 mb-3 w-full text-11 text-text2 dark:text-text2d">
+              {intl.formatMessage({ id: 'wallet.unlock.noWallet' })}
+            </h2>
+
+            <div className="flex flex-col gap-2">
+              <BorderButton
+                className="w-full min-w-[200px]"
+                size="normal"
+                color="primary"
+                onClick={createWalletHandler}
+                disabled={unlocking}>
+                {intl.formatMessage({ id: 'wallet.action.create' })}
+              </BorderButton>
+              <BorderButton
+                className="w-full min-w-[200px]"
+                size="normal"
+                color="primary"
+                onClick={importWalletHandler}
+                disabled={unlocking}>
+                {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.keystore' })}
+              </BorderButton>
+              <BorderButton
+                className="w-full min-w-[200px]"
+                size="normal"
+                color="primary"
+                onClick={importPhraseHandler}
+                disabled={unlocking}>
+                {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
+              </BorderButton>
+            </div>
+
+            {renderChangeWalletError}
           </div>
           {renderUnlockError}
         </div>

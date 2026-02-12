@@ -49,7 +49,7 @@ export const ProviderModalContent = ({ open, onClose }: Props) => {
               {intl.formatMessage({ id: 'modal.provider.selectProtocols.title' })}
             </h1>
             <BaseButton
-              className="!p-0 text-gray1 hover:text-gray2 focus:ring-0 focus:outline-hidden dark:text-gray1d hover:dark:text-gray2d"
+              className="!p-0 text-gray1 hover:text-gray2 focus:ring-0 focus:outline-hidden dark:text-gray1d dark:hover:text-gray2d"
               onClick={onCloseMenu}>
               <XMarkIcon className="h-20px w-20px text-inherit" />
             </BaseButton>

@@ -1426,7 +1426,7 @@ export const SendForm = (props: Props): JSX.Element => {
 
             {/* Advanced Settings for EVM chains */}
             {isEVMChain && isEvmChainAsset(asset) && (
-              <div className="mt-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+              <div className="mt-2 rounded-lg bg-bg1 p-4 dark:bg-bg1d">
                 <div className="flex flex-wrap items-center gap-4 py-2.5">
                   <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)} active={poolDeposit} />
                   {poolDeposit ? (
@@ -1445,7 +1445,7 @@ export const SendForm = (props: Props): JSX.Element => {
                       </span>
                     </div>
                   ) : (
-                    <span className="text-gray-600 dark:text-gray-300">
+                    <span className="text-gray2 dark:text-gray2d">
                       <FormattedMessage
                         id="deposit.transferToken"
                         defaultMessage="Transfer token {ticker}"

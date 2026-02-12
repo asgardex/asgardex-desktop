@@ -174,10 +174,7 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardSta
       type="warning"
       description={warningMessage}
       action={
-        <BorderButton
-          size="small"
-          onClick={() => setIsCollapsed(true)}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800">
+        <BorderButton size="small" onClick={() => setIsCollapsed(true)} className="p-1 hover:bg-bg1 dark:hover:bg-bg1d">
           <XMarkIcon className="h-4 w-4" />
         </BorderButton>
       }

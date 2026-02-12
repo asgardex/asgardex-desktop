@@ -52,7 +52,7 @@ export const Slider = ({
           return (
             <span
               key={idx}
-              className="-bottom-6 text-sm text-gray-500 dark:text-gray-400"
+              className="-bottom-6 text-sm text-gray1 dark:text-gray1d"
               style={{ left: `${leftPercent}%` }}>
               {label}
             </span>

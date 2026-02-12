@@ -39,6 +39,8 @@ const wallet: WalletMessages = {
   'wallet.unlock.instruction': 'कृपया अपना वॉलेट अनलॉक करें',
   'wallet.unlock.password': 'अपना पासवर्ड दर्ज करें',
   'wallet.unlock.error': 'वॉलेट अनलॉक नहीं कर सका। कृपया अपना पासवर्ड जांचें और फिर से प्रयास करें',
+  'wallet.unlock.useLedger': 'केवल Ledger का उपयोग करें',
+  'wallet.unlock.noWallet': 'क्या आपके पास अभी तक वॉलेट नहीं है?',
   'wallet.imports.keystore.select': 'कीस्टोर फ़ाइल चुनें',
   'wallet.imports.keystore.title': 'कृपया अपने वॉलेट की कीस्टोर फ़ाइल चुनें',
   'wallet.imports.keystore.description': 'मौजूदा कीस्टोर वॉलेट आयात करें',

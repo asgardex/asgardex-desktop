@@ -79,7 +79,7 @@ export const WalletSelector = ({
                           'py-10px pr-10px pl-20px',
                           'font-main text-14 text-text0 dark:text-text0d',
                           selected ? 'cursor-disabled text-text2 dark:text-text2d' : 'cursor-pointer',
-                          selected ? '' : 'hover:bg-gray0 hover:text-text2 hover:dark:bg-gray0d hover:dark:text-text2d'
+                          selected ? '' : 'hover:bg-gray0 hover:text-text2 dark:hover:bg-gray0d dark:hover:text-text2d'
                         )
                       }
                       key={wallet.id}

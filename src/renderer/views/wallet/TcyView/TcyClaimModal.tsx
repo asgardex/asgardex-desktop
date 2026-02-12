@@ -54,7 +54,7 @@ export const TcyClaimModal = (props: Props) => {
           <div className="flex w-full items-center justify-between px-5">
             <h1 className="my-0 text-center text-xl text-text2 uppercase dark:text-text2d">Claim</h1>
             <BaseButton
-              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
+              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d dark:hover:text-gray2d"
               onClick={onClose}>
               <XMarkIcon className="h-20px w-20px text-inherit" />
             </BaseButton>

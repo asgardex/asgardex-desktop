@@ -341,6 +341,8 @@ type WalletMessageKey =
   | 'wallet.unlock.title'
   | 'wallet.unlock.password'
   | 'wallet.unlock.error'
+  | 'wallet.unlock.useLedger'
+  | 'wallet.unlock.noWallet'
   | 'wallet.imports.keystore.select'
   | 'wallet.imports.keystore.title'
   | 'wallet.imports.keystore.description'

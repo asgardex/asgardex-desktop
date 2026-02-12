@@ -96,7 +96,7 @@ export function Pagination({
   }
 
   const btn =
-    'flex items-center justify-center min-w-9 px-3 h-9 text-sm rounded-md border border-gray0 dark:border-gray0d bg-bg1 dark:bg-bg1d text-turquoise hover:bg-bg2 hover:dark:bg-bg2d focus:outline-hidden disabled:cursor-not-allowed'
+    'flex items-center justify-center min-w-9 px-3 h-9 text-sm rounded-md border border-gray0 dark:border-gray0d bg-bg1 dark:bg-bg1d text-turquoise hover:bg-bg2 dark:hover:bg-bg2d focus:outline-hidden disabled:cursor-not-allowed'
   const active =
     'flex items-center justify-center min-w-9 px-3 h-9 text-sm rounded-md border border-turquoise bg-turquoise text-white focus:outline-hidden'
 
