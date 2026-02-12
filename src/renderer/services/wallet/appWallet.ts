@@ -1,4 +1,5 @@
 import { function as FP, option as O } from 'fp-ts'
+import { Subscription } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { observableState } from '../../helpers/stateHelper'
@@ -24,6 +25,9 @@ export const createAppWalletService = (): AppWalletService => {
   // Create standalone ledger service
   const standaloneLedgerService = createStandaloneLedgerService({ network$ })
 
+  // Store subscriptions for cleanup
+  const subscriptions: Subscription[] = []
+
   // Internal app wallet state management
   const {
     get$: appWalletState$,
@@ -32,7 +36,7 @@ export const createAppWalletService = (): AppWalletService => {
   } = observableState<AppWalletState>(INITIAL_APP_WALLET_STATE)
 
   // Listen to keystore state changes and update app wallet state accordingly
-  keystoreService.keystoreState$.subscribe((keystoreState: KeystoreState) => {
+  const keystoreSub = keystoreService.keystoreState$.subscribe((keystoreState: KeystoreState) => {
     const currentAppState = appWalletState()
 
     // If keystore becomes unlocked and we're in standalone ledger mode, switch to keystore mode
@@ -51,16 +55,20 @@ export const createAppWalletService = (): AppWalletService => {
       setAppWalletState(keystoreState)
     }
   })
+  subscriptions.push(keystoreSub)
 
   // Listen to standalone ledger state changes and update app wallet state accordingly
-  standaloneLedgerService.standaloneLedgerState$.subscribe((standaloneLedgerState: StandaloneLedgerState) => {
-    const currentAppState = appWalletState()
+  const ledgerSub = standaloneLedgerService.standaloneLedgerState$.subscribe(
+    (standaloneLedgerState: StandaloneLedgerState) => {
+      const currentAppState = appWalletState()
 
-    // Only update if we're in standalone ledger mode
-    if (isStandaloneLedgerMode(currentAppState)) {
-      setAppWalletState(standaloneLedgerState)
+      // Only update if we're in standalone ledger mode
+      if (isStandaloneLedgerMode(currentAppState)) {
+        setAppWalletState(standaloneLedgerState)
+      }
     }
-  })
+  )
+  subscriptions.push(ledgerSub)
 
   /**
    * Switch to keystore mode - clears standalone ledger state
@@ -112,12 +120,21 @@ export const createAppWalletService = (): AppWalletService => {
     })
   }
 
+  /**
+   * Dispose all subscriptions to prevent memory leaks
+   */
+  const dispose = () => {
+    subscriptions.forEach((sub) => sub.unsubscribe())
+    subscriptions.length = 0
+  }
+
   return {
     appWalletState$,
     keystoreService,
     standaloneLedgerService,
     switchToKeystoreMode,
-    switchToStandaloneLedgerMode
+    switchToStandaloneLedgerMode,
+    dispose
   }
 }
 

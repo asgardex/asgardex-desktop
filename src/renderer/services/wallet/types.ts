@@ -178,6 +178,7 @@ export type AppWalletService = {
   standaloneLedgerService: StandaloneLedgerService
   switchToKeystoreMode: () => void
   switchToStandaloneLedgerMode: () => void
+  dispose: () => void
 }
 
 export type WalletAccount = {

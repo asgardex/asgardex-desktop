@@ -88,27 +88,29 @@ export const createBalancesService = ({
       .pipe(RxOp.take(1))
       .subscribe(([enabledChains, appWalletState]) => {
         const walletType = getWalletTypeFromState(appWalletState)
+        // Convert to Set for O(1) lookups instead of O(n) .includes() calls
+        const enabledChainsSet = new Set(enabledChains)
 
-        if (enabledChains.includes(BTCChain)) BTC.reloadBalances(walletType)
-        if (enabledChains.includes(DASHChain)) DASH.reloadBalances(walletType)
-        if (enabledChains.includes(BCHChain)) BCH.reloadBalances(walletType)
-        if (enabledChains.includes(ETHChain)) ETH.reloadBalances(walletType)
-        if (enabledChains.includes(ARBChain)) ARB.reloadBalances(walletType)
-        if (enabledChains.includes(AVAXChain)) AVAX.reloadBalances(walletType)
-        if (enabledChains.includes(BASEChain)) BASE.reloadBalances(walletType)
-        if (enabledChains.includes(BSCChain)) BSC.reloadBalances(walletType)
-        if (enabledChains.includes(THORChain)) THOR.reloadBalances(walletType)
-        if (enabledChains.includes(MAYAChain)) MAYA.reloadBalances()
-        if (enabledChains.includes(LTCChain)) LTC.reloadBalances(walletType)
-        if (enabledChains.includes(DOGEChain)) DOGE.reloadBalances(walletType)
-        if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances(walletType)
-        if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
-        if (enabledChains.includes(ADAChain)) ADA.reloadBalances()
-        if (enabledChains.includes(XRPChain)) XRP.reloadBalances(walletType)
-        if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
-        if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
-        if (enabledChains.includes(TRONChain)) TRON.reloadBalances(walletType)
-        if (enabledChains.includes(ZECChain)) ZEC.reloadBalances(walletType)
+        if (enabledChainsSet.has(BTCChain)) BTC.reloadBalances(walletType)
+        if (enabledChainsSet.has(DASHChain)) DASH.reloadBalances(walletType)
+        if (enabledChainsSet.has(BCHChain)) BCH.reloadBalances(walletType)
+        if (enabledChainsSet.has(ETHChain)) ETH.reloadBalances(walletType)
+        if (enabledChainsSet.has(ARBChain)) ARB.reloadBalances(walletType)
+        if (enabledChainsSet.has(AVAXChain)) AVAX.reloadBalances(walletType)
+        if (enabledChainsSet.has(BASEChain)) BASE.reloadBalances(walletType)
+        if (enabledChainsSet.has(BSCChain)) BSC.reloadBalances(walletType)
+        if (enabledChainsSet.has(THORChain)) THOR.reloadBalances(walletType)
+        if (enabledChainsSet.has(MAYAChain)) MAYA.reloadBalances()
+        if (enabledChainsSet.has(LTCChain)) LTC.reloadBalances(walletType)
+        if (enabledChainsSet.has(DOGEChain)) DOGE.reloadBalances(walletType)
+        if (enabledChainsSet.has(GAIAChain)) COSMOS.reloadBalances(walletType)
+        if (enabledChainsSet.has(KUJIChain)) KUJI.reloadBalances()
+        if (enabledChainsSet.has(ADAChain)) ADA.reloadBalances()
+        if (enabledChainsSet.has(XRPChain)) XRP.reloadBalances(walletType)
+        if (enabledChainsSet.has(RadixChain)) XRD.reloadBalances()
+        if (enabledChainsSet.has(SOLChain)) SOL.reloadBalances()
+        if (enabledChainsSet.has(TRONChain)) TRON.reloadBalances(walletType)
+        if (enabledChainsSet.has(ZECChain)) ZEC.reloadBalances(walletType)
       })
   }
 
@@ -1026,6 +1028,8 @@ export const createBalancesService = ({
     Rx.combineLatest([userChains$, appWalletService.appWalletState$]),
     RxOp.switchMap(([enabledChains, appWalletState]) => {
       const isStandaloneMode = appWalletState && isStandaloneLedgerMode(appWalletState)
+      // Convert to Set for O(1) lookups
+      const enabledChainsSet = new Set(enabledChains)
 
       let observablesToUse: Record<Chain, ChainBalance$[]>
 
@@ -1045,7 +1049,7 @@ export const createBalancesService = ({
       }
 
       const enabledChainObservables: ChainBalance$[] = Object.entries(observablesToUse)
-        .filter(([chain]) => enabledChains.includes(chain))
+        .filter(([chain]) => enabledChainsSet.has(chain))
         .flatMap(([, observables]) => observables)
 
       return enabledChainObservables.length > 0 ? Rx.combineLatest(enabledChainObservables) : Rx.of([])
