@@ -82,6 +82,38 @@ export const createBalancesService = ({
   appWalletService: import('./types').AppWalletService
   isStandaloneLedgerMode: (state: import('./types').AppWalletState) => boolean
 }): BalancesService => {
+  // Concurrency limit for balance requests - process in batches to prevent overwhelming APIs
+  const BALANCE_BATCH_SIZE = 5
+  const BATCH_DELAY_MS = 100
+  // Store pending timer IDs so they can be cancelled on subsequent reloads or disposal
+  let pendingTimers: ReturnType<typeof setTimeout>[] = []
+
+  /**
+   * Process balance reloads in batches with a delay between batches
+   * This prevents overwhelming network/APIs with too many concurrent requests
+   */
+  const processBatchedReloads = (reloadFunctions: Array<() => void>): void => {
+    // Cancel any previously scheduled batches to prevent duplicate requests
+    pendingTimers.forEach(clearTimeout)
+    pendingTimers = []
+
+    if (reloadFunctions.length === 0) return
+
+    // Process first batch immediately
+    const firstBatch = reloadFunctions.slice(0, BALANCE_BATCH_SIZE)
+    firstBatch.forEach((fn) => {
+      fn()
+    })
+
+    // Process remaining batches with delays
+    const remaining = reloadFunctions.slice(BALANCE_BATCH_SIZE)
+    remaining.forEach((fn, index) => {
+      const batchIndex = Math.floor(index / BALANCE_BATCH_SIZE)
+      const delay = (batchIndex + 1) * BATCH_DELAY_MS
+      pendingTimers.push(setTimeout(fn, delay))
+    })
+  }
+
   // reload all balances - derives wallet type from appWalletState$
   const reloadBalances: FP.Lazy<void> = () => {
     Rx.combineLatest([userChains$, appWalletService.appWalletState$])
@@ -91,26 +123,32 @@ export const createBalancesService = ({
         // Convert to Set for O(1) lookups instead of O(n) .includes() calls
         const enabledChainsSet = new Set(enabledChains)
 
-        if (enabledChainsSet.has(BTCChain)) BTC.reloadBalances(walletType)
-        if (enabledChainsSet.has(DASHChain)) DASH.reloadBalances(walletType)
-        if (enabledChainsSet.has(BCHChain)) BCH.reloadBalances(walletType)
-        if (enabledChainsSet.has(ETHChain)) ETH.reloadBalances(walletType)
-        if (enabledChainsSet.has(ARBChain)) ARB.reloadBalances(walletType)
-        if (enabledChainsSet.has(AVAXChain)) AVAX.reloadBalances(walletType)
-        if (enabledChainsSet.has(BASEChain)) BASE.reloadBalances(walletType)
-        if (enabledChainsSet.has(BSCChain)) BSC.reloadBalances(walletType)
-        if (enabledChainsSet.has(THORChain)) THOR.reloadBalances(walletType)
-        if (enabledChainsSet.has(MAYAChain)) MAYA.reloadBalances()
-        if (enabledChainsSet.has(LTCChain)) LTC.reloadBalances(walletType)
-        if (enabledChainsSet.has(DOGEChain)) DOGE.reloadBalances(walletType)
-        if (enabledChainsSet.has(GAIAChain)) COSMOS.reloadBalances(walletType)
-        if (enabledChainsSet.has(KUJIChain)) KUJI.reloadBalances()
-        if (enabledChainsSet.has(ADAChain)) ADA.reloadBalances()
-        if (enabledChainsSet.has(XRPChain)) XRP.reloadBalances(walletType)
-        if (enabledChainsSet.has(RadixChain)) XRD.reloadBalances()
-        if (enabledChainsSet.has(SOLChain)) SOL.reloadBalances()
-        if (enabledChainsSet.has(TRONChain)) TRON.reloadBalances(walletType)
-        if (enabledChainsSet.has(ZECChain)) ZEC.reloadBalances(walletType)
+        // Collect all enabled reload functions (using Set for O(1) lookups)
+        const reloadFunctions: Array<() => void> = []
+
+        if (enabledChainsSet.has(BTCChain)) reloadFunctions.push(() => BTC.reloadBalances(walletType))
+        if (enabledChainsSet.has(DASHChain)) reloadFunctions.push(() => DASH.reloadBalances(walletType))
+        if (enabledChainsSet.has(BCHChain)) reloadFunctions.push(() => BCH.reloadBalances(walletType))
+        if (enabledChainsSet.has(ETHChain)) reloadFunctions.push(() => ETH.reloadBalances(walletType))
+        if (enabledChainsSet.has(ARBChain)) reloadFunctions.push(() => ARB.reloadBalances(walletType))
+        if (enabledChainsSet.has(AVAXChain)) reloadFunctions.push(() => AVAX.reloadBalances(walletType))
+        if (enabledChainsSet.has(BASEChain)) reloadFunctions.push(() => BASE.reloadBalances(walletType))
+        if (enabledChainsSet.has(BSCChain)) reloadFunctions.push(() => BSC.reloadBalances(walletType))
+        if (enabledChainsSet.has(THORChain)) reloadFunctions.push(() => THOR.reloadBalances(walletType))
+        if (enabledChainsSet.has(MAYAChain)) reloadFunctions.push(() => MAYA.reloadBalances())
+        if (enabledChainsSet.has(LTCChain)) reloadFunctions.push(() => LTC.reloadBalances(walletType))
+        if (enabledChainsSet.has(DOGEChain)) reloadFunctions.push(() => DOGE.reloadBalances(walletType))
+        if (enabledChainsSet.has(GAIAChain)) reloadFunctions.push(() => COSMOS.reloadBalances(walletType))
+        if (enabledChainsSet.has(KUJIChain)) reloadFunctions.push(() => KUJI.reloadBalances())
+        if (enabledChainsSet.has(ADAChain)) reloadFunctions.push(() => ADA.reloadBalances())
+        if (enabledChainsSet.has(XRPChain)) reloadFunctions.push(() => XRP.reloadBalances(walletType))
+        if (enabledChainsSet.has(RadixChain)) reloadFunctions.push(() => XRD.reloadBalances())
+        if (enabledChainsSet.has(SOLChain)) reloadFunctions.push(() => SOL.reloadBalances())
+        if (enabledChainsSet.has(TRONChain)) reloadFunctions.push(() => TRON.reloadBalances(walletType))
+        if (enabledChainsSet.has(ZECChain)) reloadFunctions.push(() => ZEC.reloadBalances(walletType))
+
+        // Process in batches to limit concurrency
+        processBatchedReloads(reloadFunctions)
       })
   }
 
@@ -1114,6 +1152,9 @@ export const createBalancesService = ({
    * Dispose references / subscriptions (if needed)
    */
   const dispose = () => {
+    // Cancel any pending batch timers
+    pendingTimers.forEach(clearTimeout)
+    pendingTimers = []
     networkSub.unsubscribe()
     keystoreSub.unsubscribe()
     walletBalancesState.clear()
