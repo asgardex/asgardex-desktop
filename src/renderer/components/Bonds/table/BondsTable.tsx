@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { TvIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
@@ -51,7 +51,7 @@ type Props = {
   walletAddresses: Record<'THOR' | 'MAYA', WalletAddressInfo[]>
 }
 
-export const BondsTable = ({
+export const BondsTable = memo(function BondsTable({
   nodes,
   protocol,
   watchlist = [],
@@ -63,7 +63,7 @@ export const BondsTable = ({
   goToAction,
   walletAddresses,
   loading = false
-}: Props) => {
+}: Props) {
   const intl = useIntl()
   const { MINIMUMBONDINRUNE: minBondInRune } = useMimirConstants(['MINIMUMBONDINRUNE'])
   const [nodeToRemove, setNodeToRemove] = useState<O.Option<Address>>(O.none)
@@ -241,24 +241,33 @@ export const BondsTable = ({
 
   useEffect(() => {
     const updateMatchedNodes = (nodeList: ThorNodeInfo[] | MayaNodeInfo[]) => {
-      const chains: (keyof typeof walletAddresses)[] = ['THOR', 'MAYA']
+      const networkPrefix = network === 'mainnet' ? '' : 's'
+
+      // Build a Set of all valid wallet addresses upfront - O(w)
+      // This converts the triple-nested loop from O(n × m × c × w) to O(n × m + w)
+      const validWalletAddressSet = new Set<string>()
+      for (const chain of ['THOR', 'MAYA'] as const) {
+        for (const walletAddress of walletAddresses[chain]) {
+          if (
+            walletAddress.address.startsWith(`${networkPrefix}thor`) ||
+            walletAddress.address.startsWith(`${networkPrefix}maya`)
+          ) {
+            validWalletAddressSet.add(walletAddress.address)
+          }
+        }
+      }
+
       const matchedKeys: string[] = []
 
+      // Now iterate through nodes and providers - O(n × m)
+      // with O(1) Set lookup instead of O(c × w) nested loops
       for (const node of nodeList) {
-        node.bondProviders.providers.some((provider) =>
-          chains.some((chain) =>
-            walletAddresses[chain].some((walletAddress) => {
-              const networkPrefix = network === 'mainnet' ? '' : 's'
-              const isMatch =
-                (walletAddress.address.startsWith(`${networkPrefix}thor`) ||
-                  walletAddress.address.startsWith(`${networkPrefix}maya`)) &&
-                walletAddress.address === provider.bondAddress
-
-              if (isMatch) matchedKeys.push(node.address)
-              return isMatch
-            })
-          )
-        )
+        for (const provider of node.bondProviders.providers) {
+          if (validWalletAddressSet.has(provider.bondAddress)) {
+            matchedKeys.push(node.address)
+            break // Found a match for this node, no need to check other providers
+          }
+        }
       }
 
       setMatchedNodeAddress(matchedKeys)
@@ -363,25 +372,34 @@ export const BondsTable = ({
             </div>
             <div className="mt-2 flex items-center justify-between">{renderSubWalletType(bondAddress)}</div>
           </div>
-          <div className="mt-4 flex items-center justify-center space-x-2">
+          <div className="mt-4 grid grid-cols-3 gap-1">
             <TextButton
-              className={clsx({ 'rounded-md bg-turquoise !text-white': isWalletAddress })}
+              className={clsx('w-full justify-center rounded-md px-2 py-1.5 text-xs', {
+                'bg-turquoise !text-white': isWalletAddress,
+                'bg-gray0/50 dark:bg-gray0d/50': !isWalletAddress
+              })}
               disabled={!isWalletAddress}
-              size="normal"
+              size="small"
               onClick={() => goToAction('bond', matchedAddresses[0] || nodeAddress, walletType)}>
               {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
             </TextButton>
             <TextButton
-              className={clsx({ 'rounded-md bg-turquoise !text-white': !(!isWalletAddress || unbondDisabled) })}
+              className={clsx('w-full justify-center rounded-md px-2 py-1.5 text-xs', {
+                'bg-turquoise !text-white': isWalletAddress && !unbondDisabled,
+                'bg-gray0/50 dark:bg-gray0d/50': !isWalletAddress || unbondDisabled
+              })}
               disabled={!isWalletAddress || unbondDisabled}
-              size="normal"
+              size="small"
               onClick={() => goToAction('unbond', matchedAddresses[0] || nodeAddress, walletType)}>
               {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
             </TextButton>
             <TextButton
-              className={clsx({ 'rounded-md bg-turquoise !text-white': !(!isWalletAddress || !isLeaveEligible) })}
+              className={clsx('w-full justify-center rounded-md px-2 py-1.5 text-xs', {
+                'bg-turquoise !text-white': isWalletAddress && isLeaveEligible,
+                'bg-gray0/50 dark:bg-gray0d/50': !isWalletAddress || !isLeaveEligible
+              })}
               disabled={!isWalletAddress || !isLeaveEligible}
-              size="normal"
+              size="small"
               onClick={() => goToAction('leave', matchedAddresses[0] || nodeAddress, walletType)}>
               {intl.formatMessage({ id: 'deposit.interact.actions.leave' })}
             </TextButton>
@@ -512,4 +530,4 @@ export const BondsTable = ({
       <ConfirmationModal {...removeConfirmationProps} />
     </>
   )
-}
+})
