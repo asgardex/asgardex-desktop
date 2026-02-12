@@ -85,7 +85,7 @@ export const AssetsNav = (): JSX.Element => {
 
   return (
     <nav className="w-full">
-      <ul className="mb-0 hidden items-center justify-center gap-2 rounded-t-lg border-b border-gray0 bg-bg0 px-2 dark:border-gray0d dark:bg-bg0d md:flex">
+      <ul className="mb-0 hidden items-center justify-center gap-2 rounded-t-lg border-b border-gray0 bg-bg0 px-2 md:flex dark:border-gray0d dark:bg-bg0d">
         {menuItems.map(({ key, label, path }) => {
           const isActive = key === activeMenu
 
@@ -132,7 +132,7 @@ export const AssetsNav = (): JSX.Element => {
               className={clsx(
                 'absolute z-10 mt-1 w-[--button-width] min-w-[12rem] rounded-md shadow-lg',
                 'border border-gray0 dark:border-gray0d',
-                'bg-bg0 focus:outline-none dark:bg-bg0d'
+                'bg-bg0 focus:outline-hidden dark:bg-bg0d'
               )}>
               <div className="py-1">
                 {menuItems.map(({ key, label, path }) => {

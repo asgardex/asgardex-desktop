@@ -57,7 +57,7 @@ export const SwapSettings = ({
           <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>
             <BaseButton
               onClick={onReset}
-              className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+              className="rounded-full group-hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
               <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
             </BaseButton>
           </Tooltip>

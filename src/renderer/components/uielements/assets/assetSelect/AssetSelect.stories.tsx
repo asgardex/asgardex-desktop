@@ -54,8 +54,8 @@ const meta: Meta<typeof Template> = {
   decorators: [
     (Story) => (
       <div className="flex min-h-full w-full flex-col items-center justify-center bg-white">
-        <h1 className="uppercase text-gray2">Random headline</h1>
-        <p className="uppercase text-gray1">Some random text</p>
+        <h1 className="text-gray2 uppercase">Random headline</h1>
+        <p className="text-gray1 uppercase">Some random text</p>
         <Story />
       </div>
     )

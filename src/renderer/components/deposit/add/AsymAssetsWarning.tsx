@@ -21,7 +21,7 @@ type AsymAssetsWarningProps = {
 }
 
 const Description = ({ children }: { children: React.ReactNode }): JSX.Element => (
-  <p className="p-0 pb-10px font-main text-[12px] uppercase leading-[17px]">{children}</p>
+  <p className="p-0 pb-10px font-main text-[12px] leading-[17px] uppercase">{children}</p>
 )
 
 export const AsymAssetsWarning = (props: AsymAssetsWarningProps): JSX.Element => {
@@ -36,7 +36,7 @@ export const AsymAssetsWarning = (props: AsymAssetsWarningProps): JSX.Element =>
       <TextButton
         size="normal"
         color="neutral"
-        className="mr-10px whitespace-nowrap pl-0 !font-mainBold uppercase"
+        className="!font-mainBold mr-10px pl-0 whitespace-nowrap uppercase"
         onClick={() => setCollapsed((v) => !v)}>
         {intl.formatMessage({ id: 'common.informationMore' })}
         <ChevronRightIcon className={clsx('ease h-[20px] w-[20px] text-turquoise', { 'rotate-90': collapsed })} />
@@ -53,7 +53,7 @@ export const AsymAssetsWarning = (props: AsymAssetsWarningProps): JSX.Element =>
               values={{
                 url: (
                   <span
-                    className="cursor-pointer uppercase text-inherit underline hover:text-turquoise"
+                    className="cursor-pointer text-inherit uppercase underline hover:text-turquoise"
                     onClick={onClickOpenAsymTool}>
                     {ASYM_DEPOSIT_TOOL_URL[network]}
                   </span>

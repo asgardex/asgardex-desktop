@@ -23,7 +23,7 @@ export const Dropdown = ({
         transition
         anchor={anchor}
         className={clsx(
-          'data-closed:scale-95 data-closed:opacity-0 z-10 origin-top-right rounded-xl border border-solid border-gray0 bg-bg0 p-2 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none dark:border-gray0d dark:bg-bg0d',
+          'z-10 origin-top-right rounded-xl border border-solid border-gray0 bg-bg0 p-2 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 dark:border-gray0d dark:bg-bg0d',
           className
         )}>
         {options.map((option, index) => (

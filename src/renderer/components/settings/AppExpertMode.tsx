@@ -84,7 +84,7 @@ const SubSection = ({ title, className, children, warning, warningTooltip }: Sub
       className
     )}>
     <div className="flex items-center gap-2">
-      <h2 className="mb-5px font-main text-[14px] uppercase text-gray1 dark:text-gray1d">{title}</h2>
+      <h2 className="mb-5px font-main text-[14px] text-gray1 uppercase dark:text-gray1d">{title}</h2>
       {warning && <ExclamationTriangleIcon className="h-5 w-5 text-warning0" title={warningTooltip} />}
     </div>
     <div className="flex flex-col">{children}</div>
@@ -102,7 +102,7 @@ const Section = ({
 }) => (
   <div className="flex flex-col border-t border-solid border-gray0 first:border-none dark:border-gray0d">
     <div className="flex items-center justify-between">
-      <h2 className="mb-5px px-4 py-3 font-main text-[18px] uppercase text-text2 dark:text-text2d">{title}</h2>
+      <h2 className="mb-5px px-4 py-3 font-main text-[18px] text-text2 uppercase dark:text-text2d">{title}</h2>
       {toggleHandler}
     </div>
     {children}
@@ -167,7 +167,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
           <div className="flex items-center justify-end px-4 py-6">
             <TextButton
               className={clsx(
-                'mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d',
+                'mb-0 !py-0 !pr-10px !pl-0 font-main !text-14 text-text0 uppercase dark:text-text0d',
                 advancedActive ? 'opacity-100' : 'opacity-60'
               )}
               onClick={() => setAdvancedActive((prev) => ({ ...prev, thorchain: !prev.thorchain }))}>
@@ -220,7 +220,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
           <div className="flex items-center justify-end px-4 py-6">
             <TextButton
               className={clsx(
-                'mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d',
+                'mb-0 !py-0 !pr-10px !pl-0 font-main !text-14 text-text0 uppercase dark:text-text0d',
                 advancedActive ? 'opacity-100' : 'opacity-60'
               )}
               onClick={() => setAdvancedActive((prev) => ({ ...prev, mayachain: !prev.mayachain }))}>
@@ -273,7 +273,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
           <div className="flex items-center justify-end px-4 py-6">
             <TextButton
               className={clsx(
-                'mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d',
+                'mb-0 !py-0 !pr-10px !pl-0 font-main !text-14 text-text0 uppercase dark:text-text0d',
                 advancedActive ? 'opacity-100' : 'opacity-60'
               )}
               onClick={() => setAdvancedActive((prev) => ({ ...prev, evm: !prev.evm }))}>

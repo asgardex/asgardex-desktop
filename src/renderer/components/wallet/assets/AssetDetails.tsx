@@ -187,7 +187,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
         />
 
         <div className="w-full">
-          <div className="flex flex-col items-center justify-center space-x-0 space-y-1 sm:flex-row sm:space-x-2 sm:space-y-0">
+          <div className="flex flex-col items-center justify-center space-y-1 space-x-0 sm:flex-row sm:space-y-0 sm:space-x-2">
             <ActionIconButton
               icon={<ArrowUpOnSquareIcon className="h-6 w-6" />}
               text={intl.formatMessage({ id: 'wallet.action.send' })}
@@ -226,7 +226,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
       </div>
       <div>
         <div>
-          <TextButton className="!px-0 pb-20px pt-40px" size="large" color="neutral" onClick={openExplorerAddressUrl}>
+          <TextButton className="!px-0 pt-40px pb-20px" size="large" color="neutral" onClick={openExplorerAddressUrl}>
             <Label size="large" weight="bold">
               {intl.formatMessage({ id: 'wallet.txs.history' })}
             </Label>

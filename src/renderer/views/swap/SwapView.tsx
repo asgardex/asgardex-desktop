@@ -514,7 +514,7 @@ const SuccessRouteView = ({
     <>
       <div className="relative mb-4 flex items-center justify-between">
         <BackLinkButton className="absolute !m-0" />
-        <h2 className="m-0 w-full text-center font-mainSemiBold text-16 uppercase text-turquoise">
+        <h2 className="font-mainSemiBold m-0 w-full text-center text-16 text-turquoise uppercase">
           {intl.formatMessage({ id: 'common.swap' })}
         </h2>
         <RefreshButton className="absolute right-0" onClick={reloadHandler} />
@@ -1067,7 +1067,7 @@ const SuccessTradeRouteView = ({
     <>
       <div className="relative mb-4 flex items-center justify-between">
         <BackLinkButton className="absolute !m-0" />
-        <h2 className="m-0 w-full text-center font-mainSemiBold text-16 uppercase text-turquoise">
+        <h2 className="font-mainSemiBold m-0 w-full text-center text-16 text-turquoise uppercase">
           {intl.formatMessage({ id: 'common.swap' })}
         </h2>
         <RefreshButton className="absolute right-0" onClick={reloadHandler} />

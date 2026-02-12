@@ -40,7 +40,7 @@ export const LinkButton = (props: Props): JSX.Element => {
         thickness[size],
         decorationOffset[size],
         decorationColor[color],
-        { 'hover:text-opacity-80': !disabled },
+        { 'hover:opacity-80': !disabled },
         className
       )}
       {...otherProps}>

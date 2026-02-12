@@ -365,7 +365,7 @@ export const BondsView = (): JSX.Element => {
       <div className="flex w-full justify-end pb-10px">
         <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
       </div>
-      <div className="flex flex-col items-center justify-center rounded-t-lg bg-bg1 px-4 pb-8 pt-4 dark:bg-bg1d">
+      <div className="flex flex-col items-center justify-center rounded-t-lg bg-bg1 px-4 pt-4 pb-8 dark:bg-bg1d">
         <div className="relative flex w-full items-center justify-center">
           <div className="flex items-center">
             <Label className="!w-auto" align="center" color="input" textTransform="uppercase">

@@ -17,7 +17,7 @@ export const SwapAssets = (props: Props): JSX.Element => {
   const { source, target, stepDescription, network } = props
   return (
     <div className="flex w-full flex-col items-center justify-center">
-      <Label size="small" color="gray" className="w-full px-[10px] pb-[15px] pt-[10px] text-center font-main uppercase">
+      <Label size="small" color="gray" className="w-full px-[10px] pt-[10px] pb-[15px] text-center font-main uppercase">
         {stepDescription}
       </Label>
       <div className="relative flex w-full flex-col items-center justify-center gap-1">

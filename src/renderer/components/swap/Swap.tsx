@@ -2750,7 +2750,7 @@ export const Swap = ({
         <div className="flex flex-wrap">
           <div className="mb-3 flex w-full items-center justify-between">
             <FlatButton
-              className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld"
+              className="rounded-full group-hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld"
               size="small"
               color={quoteOnly ? 'warning' : 'primary'}
               onClick={quoteOnlyButton}>
@@ -2905,7 +2905,7 @@ export const Swap = ({
                     key="standalone-recipient-address">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <h3 className="!mb-0 mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                        <h3 className="mr-10px !mb-0 w-auto p-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
                           {intl.formatMessage({ id: 'common.recipient' })}
                         </h3>
                         <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
@@ -2944,7 +2944,7 @@ export const Swap = ({
                                 {(['BTC', 'LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) ||
                                   ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain)) && (
                                   <div className="border-b border-gray0 p-3 dark:border-gray0d">
-                                    <div className="mb-2 text-[12px] font-medium uppercase text-text2 dark:text-text2d">
+                                    <div className="mb-2 text-[12px] font-medium text-text2 uppercase dark:text-text2d">
                                       Derivation Path
                                     </div>
                                     <div className="flex items-end gap-3">
@@ -2956,7 +2956,7 @@ export const Swap = ({
                                           onChange={(e) =>
                                             setTargetWalletAccount(Math.max(0, parseInt(e.target.value) || 0))
                                           }
-                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
+                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
                                           min="0"
                                         />
                                       </div>
@@ -2968,7 +2968,7 @@ export const Swap = ({
                                           onChange={(e) =>
                                             setTargetWalletIndex(Math.max(0, parseInt(e.target.value) || 0))
                                           }
-                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
+                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
                                           min="0"
                                         />
                                       </div>
@@ -2978,7 +2978,7 @@ export const Swap = ({
                                           <select
                                             value={targetHDMode}
                                             onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
-                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
+                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
                                             <option value="p2wpkh">
                                               {intl.formatMessage({ id: 'common.nativeSegwit' })}
                                             </option>
@@ -2992,7 +2992,7 @@ export const Swap = ({
                                           <select
                                             value={targetHDMode}
                                             onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
-                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
+                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
                                             <option value="default">Default</option>
                                           </select>
                                         </div>
@@ -3003,7 +3003,7 @@ export const Swap = ({
                                           <select
                                             value={targetHDMode}
                                             onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
-                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
+                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
                                             <option value="ledgerlive">Ledger Live</option>
                                             <option value="legacy">Legacy</option>
                                             <option value="metamask">MetaMask</option>
@@ -3029,7 +3029,7 @@ export const Swap = ({
                                   }}>
                                   <div className="flex items-center space-x-3">
                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-turquoise/10">
-                                      <div className="h-4 w-4 rounded-sm bg-turquoise"></div>
+                                      <div className="h-4 w-4 rounded-xs bg-turquoise"></div>
                                     </div>
                                     <div className="text-left">
                                       <div className="font-medium text-text0 dark:text-text0d">
@@ -3054,7 +3054,7 @@ export const Swap = ({
                                 }}>
                                 <div className="flex items-center space-x-3">
                                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-warning0/10">
-                                    <div className="h-4 w-4 rounded-sm bg-warning0"></div>
+                                    <div className="h-4 w-4 rounded-xs bg-warning0"></div>
                                   </div>
                                   <div className="text-left">
                                     <div className="font-medium text-text0 dark:text-text0d">Enter Manually</div>
@@ -3179,7 +3179,7 @@ export const Swap = ({
                     className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                     key="edit-address">
                     <div className="flex items-center">
-                      <h3 className="!mb-0 mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                      <h3 className="mr-10px !mb-0 w-auto p-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
                         {intl.formatMessage({ id: 'common.recipient' })}
                       </h3>
                       <WalletTypeLabel key="target-w-type">
@@ -3263,7 +3263,7 @@ export const Swap = ({
             {/* Only show wallet messages in keystore mode - standalone ledger shouldn't reach here */}
             {!(appWalletState && isStandaloneLedgerMode(appWalletState)) && (
               <>
-                <p className="center mb-0 mt-30px font-main text-[12px] uppercase text-text2 dark:text-text2d">
+                <p className="center mt-30px mb-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
                   {!hasImportedKeystore(keystore)
                     ? intl.formatMessage({ id: 'swap.note.nowallet' })
                     : isLocked(keystore) && intl.formatMessage({ id: 'swap.note.lockedWallet' })}

@@ -550,7 +550,7 @@ export const Withdraw = ({
           </Label>
           {/* show pricing if price asset is different only */}
           {!eqAsset.equals(protocolAsset, selectedPriceAsset) && (
-            <Label className="whitespace-normal text-[11px] leading-[11px] md:text-[13px] md:leading-[13px]">
+            <Label className="text-[11px] leading-[11px] whitespace-normal md:text-[13px] md:leading-[13px]">
               {formatAssetAmountCurrency({
                 amount: getTwoSigfigAssetAmount(
                   baseToAsset(baseAmount(runeAmountToWithdraw.amount().times(dexPrice), protocolAssetDecimal))
@@ -584,7 +584,7 @@ export const Withdraw = ({
             })}
             {/* show pricing if price asset is different only */}
             {!eqAsset.equals(asset, selectedPriceAsset) && (
-              <Label className="whitespace-normal text-[11px] leading-[11px] md:text-[13px] md:leading-[13px]">
+              <Label className="text-[11px] leading-[11px] whitespace-normal md:text-[13px] md:leading-[13px]">
                 {formatAssetAmountCurrency({
                   amount: getTwoSigfigAssetAmount(baseToAsset(assetPriceToWithdraw1e8)),
                   asset: selectedPriceAsset,
@@ -607,13 +607,13 @@ export const Withdraw = ({
           {intl.formatMessage({ id: 'common.withdraw' })}
         </FlatButton>
       </div>
-      <div className="w-full pt-10px font-mainBold text-[14px] text-text2 dark:text-text2d">
+      <div className="font-mainBold w-full pt-10px text-[14px] text-text2 dark:text-text2d">
         {intl.formatMessage({ id: 'common.memos' })}
       </div>
       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
         <div className="">
           <CopyLabel
-            className="whitespace-nowrap pl-0 text-gray2 dark:text-gray2d"
+            className="pl-0 whitespace-nowrap text-gray2 dark:text-gray2d"
             label={intl.formatMessage({ id: 'common.transaction.short.rune' }, { dex: protocolAsset.chain })}
             textToCopy={memo}
           />

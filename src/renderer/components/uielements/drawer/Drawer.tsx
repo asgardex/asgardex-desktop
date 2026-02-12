@@ -13,18 +13,18 @@ export const Drawer = ({ title, isOpen, onClose, children }: PropsWithChildren<D
     <Dialog transition open={isOpen} onClose={onClose} className="relative z-10">
       <DialogBackdrop
         transition
-        className="data-closed:opacity-0 fixed inset-0 bg-black/75 transition duration-500 ease-in-out"
+        className="fixed inset-0 bg-black/75 transition duration-500 ease-in-out data-closed:opacity-0"
       />
 
       <div className="fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
-            <DialogPanel className="data-closed:translate-x-full pointer-events-auto relative w-screen max-w-md transform transition duration-500 ease-in-out sm:duration-700">
-              <div className="data-closed:opacity-0 absolute right-0 top-0 -ml-8 flex pr-2 pt-4 duration-500 ease-in-out sm:-ml-10 sm:pr-4">
+            <DialogPanel className="pointer-events-auto relative w-screen max-w-md transform transition duration-500 ease-in-out data-closed:translate-x-full sm:duration-700">
+              <div className="absolute top-0 right-0 -ml-8 flex pt-4 pr-2 duration-500 ease-in-out data-closed:opacity-0 sm:-ml-10 sm:pr-4">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="focus-visible:outline-hidden relative rounded-md text-gray-300 hover:text-white focus-visible:ring-2 focus-visible:ring-white">
+                  className="relative rounded-md text-gray-300 hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-hidden">
                   <span className="absolute -inset-2.5" />
                   <span className="sr-only">Close panel</span>
                   <XMarkIcon aria-hidden="true" className="size-6" />

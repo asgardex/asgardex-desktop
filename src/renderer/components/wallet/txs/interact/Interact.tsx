@@ -65,7 +65,7 @@ export const Interact = ({ interactType, interactTypeChanged, network, walletTyp
   return (
     <div className="flex min-h-full w-full max-w-[690px] flex-col p-2.5 sm:p-[35px_50px_150px]">
       <div className="mb-5 flex flex-col items-center justify-center sm:flex-row sm:justify-start">
-        <AssetIcon className="mb-10px mr-0 sm:mb-0 sm:mr-4" network={network} asset={asset} size="big" />
+        <AssetIcon className="mr-0 mb-10px sm:mr-4 sm:mb-0" network={network} asset={asset} size="big" />
         <div>
           <div className="flex items-center justify-center sm:justify-start">
             <Label className="w-auto text-center text-[24px] sm:text-left" textTransform="uppercase">
@@ -81,7 +81,7 @@ export const Interact = ({ interactType, interactTypeChanged, network, walletTyp
         </div>
       </div>
 
-      <ul className="hidden items-center gap-2 border-b border-gray0 dark:border-gray0d md:flex">
+      <ul className="hidden items-center gap-2 border-b border-gray0 md:flex dark:border-gray0d">
         {tabs.map(({ type, label }) => {
           const isActive = type === interactType
           return (
@@ -125,7 +125,7 @@ export const Interact = ({ interactType, interactTypeChanged, network, walletTyp
               className={clsx(
                 'absolute z-10 mt-1 w-[--button-width] min-w-[12rem] rounded-md shadow-lg',
                 'border border-gray0 dark:border-gray0d',
-                'bg-bg0 focus:outline-none dark:bg-bg0d'
+                'bg-bg0 focus:outline-hidden dark:bg-bg0d'
               )}>
               <div className="py-1">
                 {tabs.map(({ type, label }) => {

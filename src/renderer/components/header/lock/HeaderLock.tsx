@@ -98,7 +98,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
                     className={clsx(
                       'group flex cursor-pointer items-center',
                       'font-main text-14 text-text1 dark:text-text1d',
-                      'pl-5px pr-10px',
+                      'pr-10px pl-5px',
                       'transition duration-300 ease-in-out'
                     )}>
                     {({ open }) => (
@@ -114,10 +114,10 @@ export const HeaderLock = (props: Props): JSX.Element => {
                   </ListboxButton>
                   <ListboxOptions
                     className={clsx(
-                      'absolute left-[-100px] top-[35px]',
+                      'absolute top-[35px] left-[-100px]',
                       'z-[2000] mt-1 max-h-60 w-[200px]',
                       'overflow-auto bg-bg0 dark:bg-bg0d',
-                      'drop-shadow-lg focus:outline-none',
+                      'drop-shadow-lg focus:outline-hidden',
                       'rounded-md border border-solid border-gray0 dark:border-gray0d'
                     )}>
                     {FP.pipe(
@@ -129,7 +129,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
                             disabled={selected}
                             className={({ selected }) =>
                               clsx(
-                                'flex select-none items-center justify-between',
+                                'flex items-center justify-between select-none',
                                 'px-20px py-10px',
                                 'font-main text-14 text-text1 dark:text-text1d',
                                 selected

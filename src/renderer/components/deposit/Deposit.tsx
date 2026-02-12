@@ -171,11 +171,11 @@ export const Deposit = (props: Props) => {
       <div className="flex min-h-full w-full flex-wrap">
         {walletIsImported && !walletIsLocked ? (
           <div className="grid w-full grid-cols-8 gap-4">
-            <div className="col-span-8 bg-bg1 dark:bg-bg1d xl:col-span-5">
+            <div className="col-span-8 bg-bg1 xl:col-span-5 dark:bg-bg1d">
               <Tabs className="items-center" tabs={tabs} hasPadding defaultIndex={0} />
             </div>
             <div className="col-span-8 xl:col-span-3">
-              <div className="flex min-h-[300px] justify-center bg-bg0 dark:bg-bg0d xl:min-h-full">
+              <div className="flex min-h-[300px] justify-center bg-bg0 xl:min-h-full dark:bg-bg0d">
                 <ShareContent
                   protocol={protocol}
                   poolDetail={poolDetailRD}

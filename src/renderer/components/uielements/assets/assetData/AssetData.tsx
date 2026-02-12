@@ -40,12 +40,12 @@ export const AssetData = (props: Props): JSX.Element => {
       </div>
       {!noTicker && (
         <div className="flex flex-col items-start">
-          <Label className="h-[18px] pl-2 pr-4 leading-[18px]" size="xbig" textTransform="uppercase" weight="bold">
+          <Label className="h-[18px] pr-4 pl-2 leading-[18px]" size="xbig" textTransform="uppercase" weight="bold">
             {asset.ticker}
           </Label>
           <div className="flex items-center">
             {!isSynthAsset(asset) && !isSecuredAsset(asset) && (
-              <Label className="h-[18px] pl-2 pr-4 font-medium leading-[18px]" color="input">
+              <Label className="h-[18px] pr-4 pl-2 leading-[18px] font-medium" color="input">
                 {asset.chain}
               </Label>
             )}

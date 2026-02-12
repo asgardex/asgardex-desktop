@@ -284,7 +284,7 @@ export const LedgerChainSelectView: React.FC = () => {
               <div className="inline-flex items-center gap-4 rounded-lg bg-bg1 p-4 dark:bg-bg1d">
                 {/* Account input */}
                 <div className="flex items-center gap-2">
-                  <Label size="small" className="text-12 uppercase text-gray2 dark:text-gray2d">
+                  <Label size="small" className="text-12 text-gray2 uppercase dark:text-gray2d">
                     {intl.formatMessage({ id: 'settings.wallet.account' })}
                   </Label>
                   <Input
@@ -298,7 +298,7 @@ export const LedgerChainSelectView: React.FC = () => {
 
                 {/* Index input */}
                 <div className="flex items-center gap-2">
-                  <Label size="small" className="text-12 uppercase text-gray2 dark:text-gray2d">
+                  <Label size="small" className="text-12 text-gray2 uppercase dark:text-gray2d">
                     {intl.formatMessage({ id: 'settings.wallet.index' })}
                   </Label>
                   <Input

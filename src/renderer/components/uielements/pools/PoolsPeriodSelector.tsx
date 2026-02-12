@@ -69,8 +69,8 @@ export const PoolsPeriodSelector = ({
           className={clsx(
             'group flex cursor-pointer items-center',
             'bg-bg0 text-text0 dark:bg-bg0d dark:text-text0d',
-            'py-5px pl-10px pr-10px',
-            'whitespace-nowrap font-main text-[12px]',
+            'py-5px pr-10px pl-10px',
+            'font-main text-[12px] whitespace-nowrap',
             'transition duration-300 ease-in-out hover:shadow-full hover:dark:shadow-fulld',
             { 'opacity-70': disabled }
           )}>
@@ -86,7 +86,7 @@ export const PoolsPeriodSelector = ({
         <ListboxOptions
           className={clsx(
             'absolute z-[2000] mt-[0px] max-h-60 w-full overflow-auto',
-            'border border-gray0 bg-bg0 focus:outline-none dark:border-gray0d dark:bg-bg0d'
+            'border border-gray0 bg-bg0 focus:outline-hidden dark:border-gray0d dark:bg-bg0d'
           )}>
           {FP.pipe(
             listItems,
@@ -97,8 +97,8 @@ export const PoolsPeriodSelector = ({
                   disabled={item.value === selectedItem.value}
                   className={({ selected }) =>
                     clsx(
-                      'flex w-full select-none justify-center whitespace-nowrap',
-                      'py-10px pl-20px pr-10px',
+                      'flex w-full justify-center whitespace-nowrap select-none',
+                      'py-10px pr-10px pl-20px',
                       'font-main text-[12px]',
                       'text-text0 dark:text-text0d',
                       selected

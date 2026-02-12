@@ -131,10 +131,10 @@ export const EditableAddress = ({
     const displayedAddress = hidePrivateData ? hiddenString : truncatedAddress
 
     return (
-      <div className="flex items-center overflow-hidden font-main text-[16px] normal-case text-text2 dark:text-text2d">
+      <div className="flex items-center overflow-hidden font-main text-[16px] text-text2 normal-case dark:text-text2d">
         <Tooltip title={displayedAddress} size="big">
           <BaseButton
-            className="!px-0 normal-case !text-text2 dark:!text-text2d"
+            className="!px-0 !text-text2 normal-case dark:!text-text2d"
             onClick={() => {
               setEditableAddress(O.fromNullable(address))
               onChangeEditableMode(true)

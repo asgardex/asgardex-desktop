@@ -83,7 +83,7 @@ const PasswordModal = (props: PasswordModalProps) => {
           )}>
           <div className="mb-2 flex w-full flex-col">
             <WalletIcon className="h-1/5 w-1/5 self-center text-turquoise" />
-            <h1 className="mb-4 text-center text-xl uppercase text-text2 dark:text-text2d">
+            <h1 className="mb-4 text-center text-xl text-text2 uppercase dark:text-text2d">
               {intl.formatMessage({ id: 'wallet.password.confirmation.title' })}
             </h1>
             <Label className="mb-1" size="normal" color="gray">

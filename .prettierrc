@@ -8,7 +8,7 @@
     }
   ],
   "plugins": ["prettier-plugin-tailwindcss"],
-  "tailwindConfig": "./tailwind.config.cjs",
+  "tailwindStylesheet": "./src/renderer/index.css",
   "tailwindAttributes": ["className"],
   "tailwindFunctions": ["clsx"],
   "useTabs": false,

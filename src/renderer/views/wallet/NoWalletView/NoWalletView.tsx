@@ -43,11 +43,11 @@ export const NoWalletView = () => {
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-center gap-8 bg-bg1 dark:bg-bg1d">
       {keystore && hasImportedKeystore(keystore) && (
-        <div className="absolute left-4 top-4 z-10">
+        <div className="absolute top-4 left-4 z-10">
           <BackLinkButton />
         </div>
       )}
-      <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
         <LocaleDropdown />
         <HeaderTheme isDesktopView />
       </div>

@@ -60,7 +60,7 @@ export const ShowDetails = ({
     <>
       <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
         <div className="font-mainBold">{intl.formatMessage({ id: 'common.recipient' })}</div>
-        <div className="truncate text-[13px] normal-case leading-normal">{recipient}</div>
+        <div className="truncate text-[13px] leading-normal normal-case">{recipient}</div>
       </div>
       <div className="flex w-full justify-between">
         <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.amount' })}</div>
@@ -94,7 +94,7 @@ export const ShowDetails = ({
         </div>
       )}
 
-      <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+      <div className="font-mainBold flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
         {intl.formatMessage({ id: 'common.memo' })}
         <Tooltip size="big" title={currentMemo}>
           <div className="truncate pl-10px font-main text-[12px] leading-normal">{currentMemo}</div>

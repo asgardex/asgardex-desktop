@@ -791,7 +791,7 @@ export const TcyView = () => {
 
       <AssetsNav />
 
-      <div className="relative grid grid-cols-8 gap-2 space-x-0 space-y-2 rounded-b-lg bg-bg1 px-4 py-8 dark:bg-bg1d sm:space-x-2 sm:space-y-0 sm:px-8">
+      <div className="relative grid grid-cols-8 gap-2 space-y-2 space-x-0 rounded-b-lg bg-bg1 px-4 py-8 sm:space-y-0 sm:space-x-2 sm:px-8 dark:bg-bg1d">
         <div className="col-span-8 md:col-span-5">
           <div className="flex w-full flex-col rounded-lg border border-solid border-gray0 py-4 dark:border-gray0d">
             <div className="mb-4 flex flex-row space-x-4 border-b border-solid border-gray0 px-4 pb-4 dark:border-gray0d">
@@ -881,7 +881,7 @@ export const TcyView = () => {
                                   </div>
                                 </div>
                                 <FlatButton
-                                  className="cursor-pointer rounded-lg bg-turquoise p-2 text-11 uppercase text-white"
+                                  className="cursor-pointer rounded-lg bg-turquoise p-2 text-11 text-white uppercase"
                                   onClick={() =>
                                     handleClaim({
                                       asset: tcyData.asset,

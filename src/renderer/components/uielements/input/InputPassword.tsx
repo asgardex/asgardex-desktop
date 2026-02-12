@@ -41,7 +41,7 @@ export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props,
           {...otherProps}
         />
       </div>
-      {error && <p className="mt-2 font-main text-sm uppercase text-error0">{error}</p>}
+      {error && <p className="mt-2 font-main text-sm text-error0 uppercase">{error}</p>}
     </div>
   )
 })
