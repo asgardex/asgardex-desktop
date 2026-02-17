@@ -28,6 +28,7 @@ type Props = {
   onClose: FP.Lazy<void>
   validatePassword$: (password: string) => Promise<boolean>
   txState: RD.RemoteData<ApiError, TxHash>
+  getActiveVaultId: () => string | undefined
 }
 
 export const VultisigConfirmationModal = ({
@@ -38,7 +39,8 @@ export const VultisigConfirmationModal = ({
   network,
   vaultType,
   validatePassword$,
-  txState
+  txState,
+  getActiveVaultId
 }: Props) => {
   const intl = useIntl()
   const asset = getChainAsset(chain)
@@ -67,6 +69,7 @@ export const VultisigConfirmationModal = ({
       setQrPayload(null)
       setDevicesJoined(0)
       setIsValidating(false)
+      setIsCancelling(false)
       setSigningStarted(false) // Reset signing tracking for new modal session
     }
   }, [visible])
@@ -178,16 +181,31 @@ export const VultisigConfirmationModal = ({
     }
   }, [password, vaultType, validatePassword$, onSuccess, intl])
 
-  const handleCancel = useCallback(() => {
-    // Don't allow closing during signing flow - only allow cancel from password phase
-    // This prevents HeadlessUI Dialog backdrop clicks from closing during MPC signing
-    if (phase !== 'password') {
-      window.apiLog?.info?.('[VultisigConfirm]', 'Ignoring close request during signing flow', { phase })
+  const [isCancelling, setIsCancelling] = useState(false)
+
+  const handleCancel = useCallback(async () => {
+    if (phase === 'password') {
+      // Password phase - just close
+      onClose()
       return
     }
-    // Effect cleanup will handle listener cleanup when visible becomes false
+
+    // During signing flow - abort the MPC session and close
+    const vaultId = getActiveVaultId()
+    if (vaultId) {
+      setIsCancelling(true)
+      window.apiLog?.info?.('[VultisigConfirm]', 'Cancelling signing session', { phase, vaultId })
+      try {
+        await window.apiMpc.cancelSigning(vaultId)
+        window.apiLog?.info?.('[VultisigConfirm]', 'Signing cancelled successfully')
+      } catch (err) {
+        window.apiLog?.error?.('[VultisigConfirm]', 'Cancel signing failed', err)
+      } finally {
+        setIsCancelling(false)
+      }
+    }
     onClose()
-  }, [onClose, phase])
+  }, [onClose, phase, getActiveVaultId])
 
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
@@ -303,8 +321,15 @@ export const VultisigConfirmationModal = ({
                 'hover:bg-gray1/20 hover:dark:bg-gray1d/20'
               )}
               onClick={handleCancel}
-              disabled={isValidating}>
-              {intl.formatMessage({ id: 'common.cancel' })}
+              disabled={isValidating || isCancelling}>
+              {isCancelling ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  {intl.formatMessage({ id: 'common.cancel' })}
+                </div>
+              ) : (
+                intl.formatMessage({ id: 'common.cancel' })
+              )}
             </BaseButton>
             {phase === 'password' && (
               <BaseButton

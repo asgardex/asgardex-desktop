@@ -1218,6 +1218,7 @@ export const SendForm = (props: Props): JSX.Element => {
       onClose={onConfirmationModalClose}
       validatePassword$={validatePasswordAsync}
       txState={sendTxState.status}
+      getActiveVaultId={appWalletService.getActiveVaultId}
     />
   ) : null
 

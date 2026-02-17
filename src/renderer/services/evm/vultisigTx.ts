@@ -247,13 +247,19 @@ export const createVultisigEvmTx = (
                   return RD.success(txHash)
                 }),
                 RxOp.catchError((error) => {
-                  window.apiLog.error('[Vultisig]', `${chainName} tx failed`, {
-                    error: error?.message ?? error.toString()
-                  })
+                  const errorMsg = error?.message ?? error.toString()
+
+                  // User-initiated cancellation - reset to initial state (no error shown)
+                  if (errorMsg.includes('Signing cancelled')) {
+                    window.apiLog.info('[Vultisig]', `${chainName} tx cancelled by user`)
+                    return Rx.of(RD.initial)
+                  }
+
+                  window.apiLog.error('[Vultisig]', `${chainName} tx failed`, { error: errorMsg })
                   return Rx.of(
                     RD.failure({
                       errorId: ErrorId.SEND_TX,
-                      msg: `Vultisig ${chainName} tx failed: ${error?.message ?? error.toString()}`
+                      msg: `Vultisig ${chainName} tx failed: ${errorMsg}`
                     })
                   )
                 }),

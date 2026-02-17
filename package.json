@@ -82,7 +82,7 @@
     "@ledgerhq/hw-transport-node-hid-singleton": "^6.31.6",
     "@reduxjs/toolkit": "^2.3.0",
     "@tanstack/react-table": "^8.21.3",
-    "@vultisig/sdk": "^0.4.2",
+    "@vultisig/sdk": "^0.4.3",
     "@xchainjs/xchain-aggregator": "2.0.32",
     "@xchainjs/xchain-arbitrum": "2.0.13",
     "@xchainjs/xchain-avax": "2.0.13",
