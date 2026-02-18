@@ -53,7 +53,8 @@ import {
   isEVMTokenAsset,
   getEVMTokenAddressForChain,
   isRujiAsset,
-  convertBaseAmountDecimal
+  convertBaseAmountDecimal,
+  isUtxoAssetChain
 } from '../../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../../helpers/assetProtocolHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
@@ -473,6 +474,10 @@ export const Swap = ({
     amountToSwap,
     _setAmountToSwap /* private - never set it directly, use setAmountToSwap() instead */
   ] = useState(initialAmountToSwap)
+
+  const [isSendMax, setIsSendMax] = useState<boolean>(false)
+
+  const isSourceUTXO = useMemo(() => isUtxoAssetChain(sourceAsset), [sourceAsset])
 
   const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
@@ -1187,12 +1192,13 @@ export const Swap = ({
 
   const onInputChange = useCallback(
     (amount: BaseAmount) => {
+      if (isSourceUTXO) setIsSendMax(false)
       // Immediately update display state for smooth typing
       setInputDisplayAmount(amount)
       // Debounce the actual swap state update
       debouncedSetAmountToSwap(amount)
     },
-    [debouncedSetAmountToSwap]
+    [debouncedSetAmountToSwap, isSourceUTXO]
   )
 
   // Cleanup debounced input handler on unmount
@@ -1513,7 +1519,8 @@ export const Swap = ({
           walletAccount: finalWalletAccount,
           walletIndex: finalWalletIndex,
           hdMode: finalHDMode,
-          protocol: poolAddress.protocol
+          protocol: poolAddress.protocol,
+          sendMax: isSourceUTXO ? isSendMax : undefined
         }
       })
     )
@@ -1530,7 +1537,9 @@ export const Swap = ({
     sourceChainAssetAmount,
     swapFees.inFee.amount,
     appWalletState,
-    standaloneLedgerState?.address
+    standaloneLedgerState?.address,
+    isSourceUTXO,
+    isSendMax
   ])
 
   const oCFSwapParams: O.Option<SendTxParams> = useMemo(() => {
@@ -1560,11 +1569,21 @@ export const Swap = ({
           walletAccount,
           walletIndex,
           hdMode,
-          protocol: quoteSwap.protocol
+          protocol: quoteSwap.protocol,
+          sendMax: isSourceUTXO ? isSendMax : undefined
         }
       })
     )
-  }, [oSourceAssetWB, oQuoteProtocol, amountToSwap, sourceAsset, sourceChainAssetAmount, swapFees.inFee.amount])
+  }, [
+    oSourceAssetWB,
+    oQuoteProtocol,
+    amountToSwap,
+    sourceAsset,
+    sourceChainAssetAmount,
+    swapFees.inFee.amount,
+    isSourceUTXO,
+    isSendMax
+  ])
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -1966,15 +1985,24 @@ export const Swap = ({
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
   const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
 
+  const onChangeSwapAmount = useCallback(
+    (amount: BaseAmount) => {
+      if (isSourceUTXO) setIsSendMax(false)
+      setAmountToSwap(amount)
+    },
+    [isSourceUTXO, setAmountToSwap]
+  )
+
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
+      if (isSourceUTXO) setIsSendMax(percents === 100)
       const amountFromPercentage = maxAmountToSwap.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmountToSwap.decimal)
       setAmountToSwap(newAmount)
       // Note: Removed immediate fetchSwap call here because the debounced handler will fetch the quote
       return newAmount
     },
-    [maxAmountToSwap, setAmountToSwap]
+    [maxAmountToSwap, setAmountToSwap, isSourceUTXO]
   )
 
   // Function to reset the slider to default position

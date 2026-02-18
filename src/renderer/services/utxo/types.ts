@@ -22,6 +22,7 @@ export type SendTxParams = {
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
+  sendMax?: boolean
 }
 
 export type TransactionService = C.TransactionService<SendTxParams>

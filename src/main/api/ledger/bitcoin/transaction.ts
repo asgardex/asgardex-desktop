@@ -119,9 +119,15 @@ export const send = async ({
     }
     return E.right(txHash)
   } catch (error) {
+    const msg =
+      error && typeof error === 'object' && 'getUserFriendlyMessage' in error
+        ? (error as { getUserFriendlyMessage: () => string }).getUserFriendlyMessage()
+        : isError(error)
+          ? (error?.message ?? error.toString())
+          : `${error}`
     return E.left({
       errorId: LedgerErrorId.SEND_TX_FAILED,
-      msg: isError(error) ? (error?.message ?? error.toString()) : `${error}`
+      msg
     })
   }
 }

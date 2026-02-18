@@ -72,7 +72,8 @@ export const sendTx$ = ({
   walletIndex,
   hdMode,
   allowOwnerOffCurve,
-  destinationTag
+  destinationTag,
+  sendMax
 }: SendTxParams): TxHashLD => {
   const { chain } =
     asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.SECURED ? { chain: THORChain } : asset
@@ -97,7 +98,8 @@ export const sendTx$ = ({
             walletAccount,
             walletIndex,
             hdMode,
-            sender
+            sender,
+            sendMax
           })
         })
       )
@@ -209,7 +211,8 @@ export const sendTx$ = ({
             walletAccount,
             walletIndex,
             hdMode,
-            sender
+            sender,
+            sendMax
           })
         )
       )
@@ -233,7 +236,8 @@ export const sendTx$ = ({
             walletAccount,
             walletIndex,
             hdMode,
-            sender
+            sender,
+            sendMax
           })
         )
       )
@@ -257,7 +261,8 @@ export const sendTx$ = ({
             walletAccount,
             walletIndex,
             hdMode,
-            sender
+            sender,
+            sendMax
           })
         })
       )
@@ -280,7 +285,8 @@ export const sendTx$ = ({
             walletAccount,
             walletIndex,
             hdMode,
-            sender
+            sender,
+            sendMax
           })
         })
       )
@@ -303,7 +309,8 @@ export const sendTx$ = ({
             walletAccount,
             walletIndex,
             hdMode,
-            sender
+            sender,
+            sendMax
           })
         })
       )
@@ -327,7 +334,8 @@ export const sendPoolTx$ = ({
   amount,
   memo,
   feeOption = DEFAULT_FEE_OPTION,
-  protocol
+  protocol,
+  sendMax
 }: SendPoolTxParams): TxHashLD => {
   const { chain } = getAssetChain(asset, protocol)
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
@@ -441,7 +449,8 @@ export const sendPoolTx$ = ({
         feeOption,
         walletAccount,
         walletIndex,
-        hdMode
+        hdMode,
+        sendMax
       })
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
