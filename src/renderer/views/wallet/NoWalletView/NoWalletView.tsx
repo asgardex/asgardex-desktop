@@ -100,7 +100,7 @@ export const NoWalletView = () => {
 
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-center gap-8 bg-bg1 dark:bg-bg1d">
-      {keystore && hasImportedKeystore(keystore) && (
+      {((keystore && hasImportedKeystore(keystore)) || vaultManager.vultisigState().availableVaults.length > 0) && (
         <div className="absolute left-4 top-4 z-10">
           <BackLinkButton />
         </div>

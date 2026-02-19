@@ -48,8 +48,19 @@ export const createAppWalletService = (): AppWalletService => {
   // Subscription storage for cleanup
   const subscriptions: Subscription[] = []
 
+  // Flag to suppress keystoreSub during intentional mode switches.
+  // When switchToVultisigMode or switchToStandaloneLedgerMode calls keystoreService.lock(),
+  // the resulting keystoreState$ emission should NOT overwrite the app state mid-transition.
+  let _modeTransitioning = false
+
   // Listen to keystore state changes and update app wallet state accordingly
   const keystoreSub = keystoreService.keystoreState$.subscribe((keystoreState: KeystoreState) => {
+    // Skip during intentional mode switches (e.g., switchToVultisigMode calling lock())
+    if (_modeTransitioning) {
+      window.apiLog.info('[AppWallet]', 'keystoreState$ changed during mode transition, skipping')
+      return
+    }
+
     const currentAppState = appWalletState()
     const inStandaloneMode = isStandaloneLedgerMode(currentAppState) || isVultisigMode(currentAppState)
     window.apiLog.info('[AppWallet]', 'keystoreState$ changed:', {
@@ -137,29 +148,26 @@ export const createAppWalletService = (): AppWalletService => {
    * @param autoLock - if true, will automatically lock the keystore before switching to ledger mode
    */
   const switchToStandaloneLedgerMode = async (autoLock = false) => {
-    // Check if keystore is currently unlocked using the synchronous getter
-    const currentKeystoreState = keystoreService.keystoreState()
-
-    // Prevent switching to ledger-only mode if keystore is unlocked
-    if (
-      FP.pipe(
-        currentKeystoreState,
-        O.map(isKeystoreUnlocked),
-        O.getOrElse(() => false)
-      )
-    ) {
+    // Check if any wallet (keystore or vultisig) is currently unlocked
+    if (!isLocked()) {
       if (autoLock) {
-        // Lock the keystore first
-        keystoreService.lock()
+        _modeTransitioning = true
+        try {
+          // Lock the current wallet — suppress keystoreSub so it doesn't overwrite state
+          await lock()
+        } finally {
+          _modeTransitioning = false
+        }
       } else {
         // This shouldn't happen if UI is properly disabled, but keep as safety check
-        window.apiLog.warn('[AppWallet]', 'Cannot switch to ledger-only mode while keystore is unlocked')
+        window.apiLog.warn('[AppWallet]', 'Cannot switch to ledger-only mode while a wallet is unlocked')
         return
       }
     }
 
-    // Exit vultisig mode if active
-    vaultManager.exitStandaloneMode()
+    // NOTE: Do NOT call vaultManager.exitStandaloneMode() here.
+    // Vault state is preserved so it can be restored when exiting Ledger mode.
+    // The vultisigSub won't propagate changes since appWalletState is now Ledger mode.
 
     // Enter standalone ledger mode
     standaloneLedgerService.enterStandaloneMode()
@@ -185,40 +193,44 @@ export const createAppWalletService = (): AppWalletService => {
       return
     }
 
-    // Check if keystore is currently unlocked using the synchronous getter
-    const currentKeystoreState = keystoreService.keystoreState()
+    _modeTransitioning = true
+    try {
+      // Check if keystore is currently unlocked using the synchronous getter
+      const currentKeystoreState = keystoreService.keystoreState()
 
-    // Prevent switching to vultisig-only mode if keystore is unlocked
-    if (
-      FP.pipe(
-        currentKeystoreState,
-        O.map(isKeystoreUnlocked),
-        O.getOrElse(() => false)
-      )
-    ) {
-      if (autoLock) {
-        window.apiLog.info('[AppWallet]', 'Locking keystore before switching to vultisig mode')
-        // Lock the keystore first
-        keystoreService.lock()
-      } else {
-        // This shouldn't happen if UI is properly disabled, but keep as safety check
-        window.apiLog.warn('[AppWallet]', 'Cannot switch to vultisig-only mode while keystore is unlocked')
-        return
+      // Prevent switching to vultisig-only mode if keystore is unlocked
+      if (
+        FP.pipe(
+          currentKeystoreState,
+          O.map(isKeystoreUnlocked),
+          O.getOrElse(() => false)
+        )
+      ) {
+        if (autoLock) {
+          window.apiLog.info('[AppWallet]', 'Locking keystore before switching to vultisig mode')
+          // Lock the keystore — keystoreSub is suppressed by _modeTransitioning flag
+          keystoreService.lock()
+        } else {
+          // This shouldn't happen if UI is properly disabled, but keep as safety check
+          window.apiLog.warn('[AppWallet]', 'Cannot switch to vultisig-only mode while keystore is unlocked')
+          return
+        }
       }
-    }
 
-    // Exit ledger mode if active
-    standaloneLedgerService.exitStandaloneMode()
+      // Exit ledger mode if active
+      standaloneLedgerService.exitStandaloneMode()
 
-    // Enter standalone vultisig mode
-    window.apiLog.info('[AppWallet]', 'Entering standalone vultisig mode')
-    vaultManager.enterStandaloneMode()
+      // Enter standalone vultisig mode and AWAIT completion
+      // enterStandaloneMode is async (SDK init, vault loading, vault restoration)
+      window.apiLog.info('[AppWallet]', 'Entering standalone vultisig mode')
+      await vaultManager.enterStandaloneMode()
 
-    // Set app state to standalone vultisig state
-    const standaloneState = await vaultManager.vultisigState$.pipe(RxOp.take(1)).toPromise()
-    if (standaloneState !== undefined) {
+      // Use synchronous getter — enterStandaloneMode has completed, state is final
+      const standaloneState = vaultManager.vultisigState()
       window.apiLog.info('[AppWallet]', 'Setting app state to vultisig state:', standaloneState.phase)
       setAppWalletState(standaloneState)
+    } finally {
+      _modeTransitioning = false
     }
   }
 
@@ -295,8 +307,9 @@ export const createAppWalletService = (): AppWalletService => {
     if (isVultisigMode(currentState)) {
       return isVultisigVaultLocked(currentState)
     } else if (isStandaloneLedgerMode(currentState)) {
-      // Ledger has no lock concept - always "unlocked"
-      return false
+      // In Ledger mode, the underlying wallet is always locked
+      // (locking is a prerequisite for entering Ledger mode)
+      return true
     } else {
       // Keystore mode
       return FP.pipe(
@@ -315,7 +328,7 @@ export const createAppWalletService = (): AppWalletService => {
       if (isVultisigMode(state)) {
         return isVultisigVaultLocked(state)
       } else if (isStandaloneLedgerMode(state)) {
-        return false
+        return true
       } else {
         return FP.pipe(
           state,
@@ -355,13 +368,15 @@ export const createAppWalletService = (): AppWalletService => {
   // ============================================
 
   /**
-   * Restore last opened wallet on startup
-   * - If vultisig type → switch to Vultisig mode (enterStandaloneMode handles vault selection)
-   * - If keystore type → already handled by keystoreWalletsPersistent$ subscription
-   * - If not found → fallback to selected flag (existing behavior)
+   * Restore last opened wallet from storage.
+   * Used on startup AND when exiting Ledger mode — same logic:
+   * - If vultisig → switch to Vultisig mode (enterStandaloneMode handles vault selection)
+   * - If keystore or absent → switch to Keystore mode (existing keystore flow)
    */
-  const restoreLastOpenedWallet = (): void => {
-    // Get last opened wallet from storage synchronously
+  const restoreLastOpenedWallet = async (): Promise<void> => {
+    // Exit ledger standalone mode if active
+    standaloneLedgerService.exitStandaloneMode()
+
     const storageState = getStorageState()
     const lastOpened = FP.pipe(
       storageState,
@@ -371,20 +386,13 @@ export const createAppWalletService = (): AppWalletService => {
 
     window.apiLog.info('[AppWallet]', 'restoreLastOpenedWallet:', lastOpened)
 
-    if (!lastOpened) {
-      // No lastOpenedWallet saved - let default flows handle (selected flag fallback)
-      window.apiLog.info('[AppWallet]', 'No lastOpenedWallet, using default keystore selection')
-      return
-    }
-
-    if (lastOpened.type === 'vultisig') {
-      // Switch to Vultisig mode - enterStandaloneMode will restore the saved vault
+    if (lastOpened?.type === WalletType.Vultisig) {
       window.apiLog.info('[AppWallet]', 'Restoring Vultisig vault:', lastOpened.vaultId)
-      // Use autoLock=false since keystore is already locked on startup
-      switchToVultisigMode(false)
+      await switchToVultisigMode(false)
+    } else {
+      window.apiLog.info('[AppWallet]', 'Restoring Keystore mode')
+      await switchToKeystoreMode()
     }
-    // keystore type: already handled by keystoreWalletsPersistent$ subscription
-    // which uses getInitialKeystoreData() with selected flag fallback
   }
 
   // Trigger wallet restoration after keystore data is loaded
@@ -433,17 +441,39 @@ export const createAppWalletService = (): AppWalletService => {
    * Active wallet - currently selected wallet (keystore or vultisig)
    * Derived from appWalletState$
    */
-  const activeWallet$: Rx.Observable<O.Option<Wallet>> = appWalletState$.pipe(
-    RxOp.map((state) => {
+  const activeWallet$: Rx.Observable<O.Option<Wallet>> = Rx.combineLatest([
+    appWalletState$,
+    vaultManager.vultisigState$,
+    keystoreService.keystoreState$
+  ]).pipe(
+    RxOp.map(([state, vultisigState, keystoreState]) => {
       if (isVultisigMode(state) && state.activeVault) {
         return O.some<Wallet>({
           type: WalletType.Vultisig,
           id: state.activeVault.id,
           name: state.activeVault.name
         })
+      } else if (isStandaloneLedgerMode(state)) {
+        // In Ledger mode, show the previously active wallet.
+        // Vault state is preserved (not cleared on Ledger entry).
+        if (vultisigState.activeVault) {
+          return O.some<Wallet>({
+            type: WalletType.Vultisig,
+            id: vultisigState.activeVault.id,
+            name: vultisigState.activeVault.name
+          })
+        }
+        return FP.pipe(
+          keystoreState,
+          O.map(
+            (kc): Wallet => ({
+              type: WalletType.Keystore,
+              id: kc.id,
+              name: kc.name
+            })
+          )
+        )
       } else if (isKeystoreMode(state)) {
-        // When isKeystoreMode(state) is true, state IS KeystoreState = O.Option<KeystoreContent>
-        // So we use O.map on state directly
         return FP.pipe(
           state,
           O.map(
@@ -484,7 +514,8 @@ export const createAppWalletService = (): AppWalletService => {
       const currentState = appWalletState()
       if (!isVultisigMode(currentState)) {
         // Switch to vultisig mode first (auto-lock keystore)
-        switchToVultisigMode(true)
+        // Await so enterStandaloneMode completes (SDK init, vault loading) before selectVault
+        await switchToVultisigMode(true)
       }
       // Select the vault (this is async)
       await vaultManager.selectVault(wallet.id)
@@ -564,6 +595,7 @@ export const createAppWalletService = (): AppWalletService => {
     switchToKeystoreMode,
     switchToStandaloneLedgerMode,
     switchToVultisigMode,
+    restoreLastOpenedWallet,
     // Unified methods (Phase A-C)
     lock,
     unlock,

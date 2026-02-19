@@ -14,7 +14,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { LOCALES } from '../../i18n'
 import * as walletRoutes from '../../routes/wallet'
 import { AVAILABLE_NETWORKS } from '../../services/const'
-import { isStandaloneLedgerMode, isKeystoreUnlocked } from '../../services/wallet/types'
+import { isStandaloneLedgerMode } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 import { DownIcon } from '../icons'
 import { BorderButton } from '../uielements/button'
@@ -73,22 +73,16 @@ export const AppGeneralSettings = (props: Props) => {
   const navigate = useNavigate()
   const { appWalletService } = useWalletContext()
 
-  // Get current wallet mode and keystore state
+  // Get current wallet mode and unified lock state
   const appWalletState = useObservableState(appWalletService.appWalletState$)
-  const keystoreState = useObservableState(appWalletService.keystoreService.keystoreState$, O.none)
+  const isWalletLocked = useObservableState(appWalletService.isLocked$, true)
   const isInStandaloneLedgerMode = appWalletState && isStandaloneLedgerMode(appWalletState)
-
-  // Check if keystore is currently unlocked
-  const isUnlocked = FP.pipe(
-    keystoreState,
-    O.map(isKeystoreUnlocked),
-    O.getOrElse(() => false)
-  )
+  const isUnlocked = !isWalletLocked
 
   const handleLedgerModeClick = useCallback(() => {
     if (isInStandaloneLedgerMode) {
-      // Switch back to keystore mode
-      appWalletService.switchToKeystoreMode()
+      // Restore previous wallet (Vultisig or Keystore)
+      appWalletService.restoreLastOpenedWallet()
     } else if (!isUnlocked) {
       // Only navigate to ledger chain selector if keystore is locked
       navigate(walletRoutes.ledgerChainSelect.path())

@@ -378,6 +378,7 @@ type WalletMessageKey =
   | 'wallet.remove.label'
   | 'wallet.remove.label.title'
   | 'wallet.remove.label.description'
+  | 'wallet.remove.label.description.vultisig'
   | 'wallet.send.success'
   | 'wallet.send.fastest'
   | 'wallet.send.fast'

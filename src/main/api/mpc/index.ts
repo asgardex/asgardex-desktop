@@ -31,6 +31,7 @@ interface SDKVault {
   threshold?: number
   signers?: unknown[]
   isEncrypted?: boolean
+  rename: (newName: string) => Promise<void>
   signBytes: (
     options: SDKSignBytesOptions,
     signingOptions?: SDKSigningOptions
@@ -174,6 +175,23 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       log.info(`[MPC IPC] Deleting vault: ${vaultId}`)
       await sdk.deleteVault(vault)
     }
+  })
+
+  ipcMain.handle(MpcIPCMessages.MPC_RENAME_VAULT, async (_event, vaultId: string, newName: string) => {
+    // Sanitize input: trim, enforce max length, reject control characters
+    const sanitized = newName
+      .trim()
+      .slice(0, 50)
+      .replace(/[\x00-\x1f\x7f]/g, '')
+    if (!sanitized) throw new Error('Vault name cannot be empty')
+
+    const sdk = getSDK()
+    const vault = await sdk.getVaultById(vaultId)
+    if (!vault) throw new Error(`Vault not found: ${vaultId}`)
+
+    log.info(`[MPC IPC] Renaming vault ${vaultId} to: ${sanitized}`)
+    await vault.rename(sanitized)
+    log.info(`[MPC IPC] Vault renamed successfully: ${sanitized}`)
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_GET_ADDRESSES, async (_event, vaultId: string) => {

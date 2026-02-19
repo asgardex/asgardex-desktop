@@ -102,6 +102,7 @@ const apiMpc: ApiMpc = {
   createSecureVault: (params) => ipcRenderer.invoke(MpcIPCMessages.MPC_CREATE_SECURE_VAULT, params),
   verifyVault: (vaultId, code) => ipcRenderer.invoke(MpcIPCMessages.MPC_VERIFY_VAULT, vaultId, code),
   deleteVault: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_DELETE_VAULT, vaultId),
+  renameVault: (vaultId, newName) => ipcRenderer.invoke(MpcIPCMessages.MPC_RENAME_VAULT, vaultId, newName),
   getAddresses: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_GET_ADDRESSES, vaultId),
   getBalances: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_GET_BALANCES, vaultId),
 

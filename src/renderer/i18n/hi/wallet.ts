@@ -77,6 +77,8 @@ const wallet: WalletMessages = {
   'wallet.remove.label.title': 'क्या आप वाकई में "{name}" को भूलना चाहते हैं?',
   'wallet.remove.label.description':
     'आपको अपने वॉलेट को पुनः बनाने के लिए अपना वाक्यांश प्रदान करना होगा। कृपया आगे बढ़ने से पहले सुनिश्चित करें कि आपका वाक्यांश सुरक्षित स्थान पर सहेजा गया है।',
+  'wallet.remove.label.description.vultisig':
+    'You will need to import your vault backup file to restore this vault. Please ensure you have exported your vault before you proceed.',
   'wallet.send.success': 'लेन-देन सफल रहा।',
   'wallet.send.fastest': 'सबसे तेज़',
   'wallet.send.fast': 'तेज़',

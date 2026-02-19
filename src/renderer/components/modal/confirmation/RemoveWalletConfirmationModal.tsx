@@ -1,17 +1,23 @@
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import { WalletType } from '../../../../shared/wallet/types'
+
 import { ConfirmationModal } from './ConfirmationModal'
 
 type Props = {
   visible: boolean
   walletName: string
+  walletType?: WalletType
   onSuccess: FP.Lazy<void>
   onClose: FP.Lazy<void>
 }
 
-export const RemoveWalletConfirmationModal = ({ visible, onClose, onSuccess, walletName }: Props) => {
+export const RemoveWalletConfirmationModal = ({ visible, onClose, onSuccess, walletName, walletType }: Props) => {
   const intl = useIntl()
+
+  const descriptionId =
+    walletType === WalletType.Vultisig ? 'wallet.remove.label.description.vultisig' : 'wallet.remove.label.description'
 
   return (
     <ConfirmationModal
@@ -26,7 +32,7 @@ export const RemoveWalletConfirmationModal = ({ visible, onClose, onSuccess, wal
             {intl.formatMessage({ id: 'wallet.remove.label.title' }, { name: walletName })}
           </span>
           <span className="font-main text-14 text-text2 dark:text-text2d">
-            {intl.formatMessage({ id: 'wallet.remove.label.description' })}
+            {intl.formatMessage({ id: descriptionId })}
           </span>
         </div>
       }

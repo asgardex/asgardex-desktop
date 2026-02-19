@@ -38,6 +38,7 @@ import { function as FP, array as A, option as O } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
+import { ASGARDEX_TO_SDK_CHAIN, SDK_TO_ASGARDEX_CHAIN } from '../../../shared/api/mpcTypes'
 import { KeystoreId, TrustedAddress, TrustedAddresses } from '../../../shared/api/types'
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
@@ -78,7 +79,9 @@ import {
   VerifiedLedgerAddressLD,
   LedgerAddressRD,
   LedgerAddressLD,
-  VerifiedLedgerAddressRD
+  VerifiedLedgerAddressRD,
+  VultisigState,
+  VultisigVaultInfo
 } from '../../services/wallet/types'
 import { walletTypeToI18n } from '../../services/wallet/util'
 import { useApp } from '../../store/app/hooks'
@@ -147,10 +150,20 @@ const ActionButton = ({
   )
 }
 
-type Props = {
+// Common props shared by both keystore and vultisig modes
+type CommonProps = {
   network: Network
-  walletAccounts: O.Option<WalletAccounts>
+  wallets: KeystoreWalletsUI
   lockWallet: FP.Lazy<void>
+  clickAddressLinkHandler: (chain: Chain, address: Address) => void
+  validatePassword$: ValidatePasswordHandler
+}
+
+// Keystore-specific props (walletMode defaults to Keystore for backwards compatibility)
+type KeystoreProps = CommonProps & {
+  walletMode?: WalletType.Keystore
+  walletAccounts: O.Option<WalletAccounts>
+  keystoreUnlocked: KeystoreUnlocked
   removeKeystoreWallet: RemoveKeystoreWalletHandler
   changeKeystoreWallet$: ChangeKeystoreWalletHandler
   renameKeystoreWallet$: RenameKeystoreWalletHandler
@@ -168,13 +181,26 @@ type Props = {
     hdMode: HDMode
   }) => VerifiedLedgerAddressLD
   removeLedgerAddress: (chain: Chain) => void
-  keystoreUnlocked: KeystoreUnlocked
-  wallets: KeystoreWalletsUI
-  clickAddressLinkHandler: (chain: Chain, address: Address) => void
-  validatePassword$: ValidatePasswordHandler
   evmHDMode: EvmHDMode
   updateEvmHDMode: (mode: EvmHDMode) => void
 }
+
+// Vultisig-specific props
+type VultisigProps = CommonProps & {
+  walletMode: WalletType.Vultisig
+  vultisigState: VultisigState
+  vultisigVaults: VultisigVaultInfo[]
+  activeVaultId: string | null
+  removeVault: (vaultId: string) => Promise<void>
+  renameVault: (vaultId: string, newName: string) => Promise<void>
+  exportVault: (vaultId: string) => Promise<void>
+  changeVault: (vaultId: string) => Promise<void>
+}
+
+type Props = KeystoreProps | VultisigProps
+
+// Type guard matching existing project pattern (isVultisigMode, isKeystoreMode, etc.)
+const isVultisigWalletProps = (p: Props): p is VultisigProps => p.walletMode === WalletType.Vultisig
 
 type AddressToVerify = O.Option<{ address: Address; chain: Chain }>
 
@@ -202,24 +228,33 @@ const initialMap = {
 }
 
 export const WalletSettings = (props: Props): JSX.Element => {
-  const {
-    network,
-    walletAccounts: oWalletAccounts,
-    lockWallet,
-    removeKeystoreWallet,
-    changeKeystoreWallet$,
-    renameKeystoreWallet$,
-    exportKeystore,
-    addLedgerAddress$,
-    verifyLedgerAddress$,
-    removeLedgerAddress,
-    keystoreUnlocked: { phrase, name: walletName, id: walletId },
-    wallets,
-    clickAddressLinkHandler,
-    validatePassword$,
-    updateEvmHDMode,
-    evmHDMode
-  } = props
+  const isVultisig = isVultisigWalletProps(props)
+
+  // Common props
+  const { network, wallets, lockWallet, clickAddressLinkHandler, validatePassword$ } = props
+
+  // Keystore-specific props (type guard narrows props — no double-check needed)
+  const oWalletAccounts = !isVultisig ? props.walletAccounts : O.none
+  const removeKeystoreWallet = !isVultisig ? props.removeKeystoreWallet : undefined
+  const changeKeystoreWallet$ = !isVultisig ? props.changeKeystoreWallet$ : undefined
+  const renameKeystoreWallet$ = !isVultisig ? props.renameKeystoreWallet$ : undefined
+  const exportKeystore = !isVultisig ? props.exportKeystore : undefined
+  const addLedgerAddress$ = !isVultisig ? props.addLedgerAddress$ : undefined
+  const verifyLedgerAddress$ = !isVultisig ? props.verifyLedgerAddress$ : undefined
+  const removeLedgerAddress = !isVultisig ? props.removeLedgerAddress : undefined
+  const evmHDMode = !isVultisig ? props.evmHDMode : ('ledgerlive' as EvmHDMode)
+  const updateEvmHDMode = !isVultisig ? props.updateEvmHDMode : undefined
+
+  // Keystore identity
+  const walletName = !isVultisig ? props.keystoreUnlocked.name : (props.vultisigState.activeVault?.name ?? 'Vault')
+  const walletId = !isVultisig ? props.keystoreUnlocked.id : -1
+  const phrase = !isVultisig ? props.keystoreUnlocked.phrase : ''
+
+  // Vultisig-specific props
+  const vultisigState = isVultisig ? props.vultisigState : undefined
+  const vultisigVaults = isVultisig ? props.vultisigVaults : []
+  const activeVaultId = isVultisig ? props.activeVaultId : null
+
   const { isWhitelistModalOpen, setIsWhitelistModalOpen } = useApp()
 
   const intl = useIntl()
@@ -231,16 +266,28 @@ export const WalletSettings = (props: Props): JSX.Element => {
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
   const closeQrModal = useCallback(() => setShowQRModal(O.none), [setShowQRModal])
 
+  // Destructure vultisig-specific props for stable callback references
+  const vultisigRemoveVault = isVultisig ? props.removeVault : undefined
+  const vultisigActiveVaultId = isVultisig ? props.activeVaultId : null
+  const vultisigExportVault = isVultisig ? props.exportVault : undefined
+  const vultisigChangeVault = isVultisig ? props.changeVault : undefined
+  const vultisigRenameVault = isVultisig ? props.renameVault : undefined
+
   const removeWalletHandler = useCallback(async () => {
-    const noWallets = await removeKeystoreWallet()
-    if (noWallets >= 1) {
-      // goto unlock screen to unlock another wallet
-      navigate(walletRoutes.locked.path())
-    } else {
-      // no wallet -> go to homepage
+    if (vultisigRemoveVault && vultisigActiveVaultId) {
+      await vultisigRemoveVault(vultisigActiveVaultId)
       navigate(appRoutes.base.template)
+    } else if (removeKeystoreWallet) {
+      const noWallets = await removeKeystoreWallet()
+      if (noWallets >= 1) {
+        // goto unlock screen to unlock another wallet
+        navigate(walletRoutes.locked.path())
+      } else {
+        // no wallet -> go to homepage
+        navigate(appRoutes.base.template)
+      }
     }
-  }, [removeKeystoreWallet, navigate])
+  }, [vultisigRemoveVault, vultisigActiveVaultId, removeKeystoreWallet, navigate])
 
   const onSuccessPassword = useCallback(() => {
     setShowPasswordModal(false)
@@ -307,6 +354,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
 
   const addLedgerAddress = useCallback(
     (chain: Chain, walletAccount: number, walletIndex: number) => {
+      if (!addLedgerAddress$) return // Guard: Ledger not available in Vultisig mode
       resetAddLedgerAddressRD()
       setLedgerChainToAdd(O.some(chain))
 
@@ -326,11 +374,12 @@ export const WalletSettings = (props: Props): JSX.Element => {
         })
       )
     },
-    [resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, addLedgerAddress$, evmHDMode, derivationPathIndex]
+    [addLedgerAddress$, resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, evmHDMode, derivationPathIndex]
   )
 
   const verifyLedgerAddressHandler = useCallback(
     (walletAddress: WalletAddress) => {
+      if (!verifyLedgerAddress$) return // Guard: Ledger not available in Vultisig mode
       const { chain, walletAccount, walletIndex, address, hdMode } = walletAddress
       setLedgerAddressToVerify(O.some({ chain, address }))
       subscribeVerifyLedgerAddressRD(
@@ -342,14 +391,14 @@ export const WalletSettings = (props: Props): JSX.Element => {
         })
       )
     },
-    [subscribeVerifyLedgerAddressRD, verifyLedgerAddress$]
+    [verifyLedgerAddress$, subscribeVerifyLedgerAddressRD]
   )
 
   const renderLedgerAddress = useCallback(
     (chain: EnabledChain, oAddress: O.Option<WalletAddress>) => {
       const renderAddAddress = () => {
         const onChangeEvmDerivationMode = (evmMode: EvmHDMode) => {
-          updateEvmHDMode(evmMode)
+          updateEvmHDMode?.(evmMode)
         }
         const selectedAccountIndex = walletAccountMap[chain]
         const selectedWalletIndex = walletIndexMap[chain]
@@ -551,7 +600,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   },
                   { chain }
                 )}>
-                <RemoveIcon className="h-4 w-4" onClick={() => removeLedgerAddress(chain)} />
+                <RemoveIcon className="h-4 w-4" onClick={() => removeLedgerAddress?.(chain)} />
               </Tooltip>
             </div>
           </>
@@ -618,14 +667,12 @@ export const WalletSettings = (props: Props): JSX.Element => {
     ]
   )
 
-  const renderKeystoreAddress = useCallback(
-    (chain: Chain, { address }: WalletAddress) => {
-      // Render addresses depending on its loading state
+  // Unified address renderer — same layout for keystore, vultisig, ledger. Only the label differs.
+  const renderWalletAddress = useCallback(
+    (chain: Chain, address: string, type: WalletType) => {
       return (
         <>
-          <WalletTypeLabel className="ml-10 inline-block">
-            {walletTypeToI18n(WalletType.Keystore, intl)}
-          </WalletTypeLabel>
+          <WalletTypeLabel className="ml-10 inline-block">{walletTypeToI18n(type, intl)}</WalletTypeLabel>
           <div className="my-0 w-full overflow-hidden px-40px">
             <div className="flex w-full items-center gap-x-1">
               <AddressEllipsis
@@ -660,6 +707,12 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [intl, network, clickAddressLinkHandler]
   )
 
+  // Convenience wrappers for backward compat with existing call sites
+  const renderKeystoreAddress = useCallback(
+    (chain: Chain, { address }: WalletAddress) => renderWalletAddress(chain, address, WalletType.Keystore),
+    [renderWalletAddress]
+  )
+
   const renderVerifyAddressModal = useCallback(
     (oAddress: AddressToVerify) =>
       FP.pipe(
@@ -674,7 +727,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
             const onCancel = () => {
               resetVerifyLedgerAddressRD()
               setLedgerAddressToVerify(O.none)
-              removeLedgerAddress(chain)
+              removeLedgerAddress?.(chain)
             }
 
             return (
@@ -756,15 +809,19 @@ export const WalletSettings = (props: Props): JSX.Element => {
   // TODO (@Veado) Render `exportKeystoreErrorMsg`
   const [_ /* exportKeystoreErrorMsg */, setExportKeystoreErrorMsg] = useState(emptyString)
 
-  const exportKeystoreHandler = useCallback(async () => {
+  const exportHandler = useCallback(async () => {
     try {
       setExportKeystoreErrorMsg(emptyString)
-      await exportKeystore()
+      if (vultisigExportVault && vultisigActiveVaultId) {
+        await vultisigExportVault(vultisigActiveVaultId)
+      } else if (exportKeystore) {
+        await exportKeystore()
+      }
     } catch (error) {
       const errorMsg = isError(error) ? (error?.message ?? error.toString()) : `${error}`
       setExportKeystoreErrorMsg(errorMsg)
     }
-  }, [exportKeystore, setExportKeystoreErrorMsg])
+  }, [vultisigExportVault, vultisigActiveVaultId, exportKeystore, setExportKeystoreErrorMsg])
 
   const [trustedAddresses, setTrustedAddresses] = useState<TrustedAddresses>()
   const [newAddress, setNewAddress] = useState<Partial<TrustedAddress>>({})
@@ -850,57 +907,50 @@ export const WalletSettings = (props: Props): JSX.Element => {
     },
     [trustedAddresses?.addresses, network, handleRemoveAddress]
   )
-  const renderAccounts = useMemo(
-    () =>
-      FP.pipe(
-        oFilteredWalletAccounts,
-        O.map((walletAccounts) => (
-          <div className="flex flex-col" key="wallet-accounts">
-            {walletAccounts.map(({ chain, accounts: { keystore, ledger: oLedger } }, i: number) => (
-              <div key={i} className="flex flex-col border-b border-solid border-b-gray0 p-4 dark:border-b-gray0d">
-                <div className="flex w-full items-center justify-start">
-                  <ChainIcon chain={chain} size="small" />
-                  <Label className="p-0 pl-[10px] text-xl leading-[25px] tracking-[2px]" textTransform="uppercase">
-                    {chainToString(chain)}
-                  </Label>
-                </div>
-                <div className="mt-10px w-full">
-                  {/* Render keystore and ledger addresses as before */}
-                  {renderKeystoreAddress(chain, keystore)}
-                  {isEnabledLedger(chain, network) && isSupportedChain(chain)
-                    ? renderLedgerAddress(chain, oLedger)
-                    : renderLedgerNotSupported}
-                </div>
-                <div className="mt-10px flex w-full items-center px-40px">
-                  <SwitchButton active={enabledChains.includes(chain)} onChange={() => toggleChain(chain)} />
-                  <span className="ml-2 text-text0 dark:text-text0d">
-                    {enabledChains.includes(chain)
-                      ? intl.formatMessage({ id: 'common.enable' }, { chain })
-                      : intl.formatMessage({ id: 'common.disable' }, { chain })}
-                  </span>
-                </div>
-
-                {/* Render Trusted Addresses */}
-                <div className="mt-10px w-full px-40px">
-                  {/* {renderAddAddressForm(chain)} */}
-                  {trustedAddresses?.addresses.some((addr) => addr.chain === chain) && (
-                    <div className="text-text0 dark:text-text0d">
-                      <h4 className="text-text0 dark:text-text0d">
-                        {intl.formatMessage({ id: 'common.savedAddresses' })}
-                      </h4>
-                      {renderTrustedAddresses(chain)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+  // Unified chain row renderer — shared by keystore and vultisig modes.
+  // Each row: ChainIcon + name → address with label → optional ledger → toggle → trusted addresses
+  const renderChainRow = useCallback(
+    (chain: Chain, address: string, type: WalletType, oLedger?: O.Option<WalletAddress>) => (
+      <div key={chain} className="flex flex-col border-b border-solid border-b-gray0 p-4 dark:border-b-gray0d">
+        <div className="flex w-full items-center justify-start">
+          <ChainIcon chain={chain} size="small" />
+          <Label className="p-0 pl-[10px] text-xl leading-[25px] tracking-[2px]" textTransform="uppercase">
+            {chainToString(chain)}
+          </Label>
+        </div>
+        <div className="mt-10px w-full">
+          {renderWalletAddress(chain, address, type)}
+          {!isVultisig && oLedger && isEnabledLedger(chain, network) && isSupportedChain(chain)
+            ? renderLedgerAddress(chain, oLedger)
+            : !isVultisig && renderLedgerNotSupported}
+        </div>
+        {isSupportedChain(chain) && (
+          <div className="mt-10px flex w-full items-center px-40px">
+            <SwitchButton
+              active={enabledChains.includes(chain as EnabledChain)}
+              onChange={() => toggleChain(chain as EnabledChain)}
+            />
+            <span className="ml-2 text-text0 dark:text-text0d">
+              {enabledChains.includes(chain as EnabledChain)
+                ? intl.formatMessage({ id: 'common.enable' }, { chain })
+                : intl.formatMessage({ id: 'common.disable' }, { chain })}
+            </span>
           </div>
-        )),
-        O.getOrElse(() => <></>)
-      ),
+        )}
+        {/* Trusted Addresses */}
+        <div className="mt-10px w-full px-40px">
+          {trustedAddresses?.addresses.some((addr) => addr.chain === chain) && (
+            <div className="text-text0 dark:text-text0d">
+              <h4 className="text-text0 dark:text-text0d">{intl.formatMessage({ id: 'common.savedAddresses' })}</h4>
+              {renderTrustedAddresses(chain)}
+            </div>
+          )}
+        </div>
+      </div>
+    ),
     [
-      oFilteredWalletAccounts,
-      renderKeystoreAddress,
+      isVultisig,
+      renderWalletAddress,
       network,
       renderLedgerAddress,
       renderLedgerNotSupported,
@@ -911,6 +961,52 @@ export const WalletSettings = (props: Props): JSX.Element => {
       toggleChain
     ]
   )
+
+  // Unified account list — keystore mode uses walletAccounts, vultisig mode uses vultisigState.addresses
+  const renderAccounts = useMemo(() => {
+    if (isVultisig) {
+      // Vultisig: derive chain rows from SDK addresses
+      if (!vultisigState) return <></>
+      const entries = Object.entries(vultisigState.addresses)
+      if (entries.length === 0) {
+        return <div className="py-4 text-center text-text2 dark:text-text2d">No addresses available</div>
+      }
+
+      const filteredEntries = entries.filter(([sdkChain]) => {
+        const asgardexChain = SDK_TO_ASGARDEX_CHAIN[sdkChain]
+        if (!asgardexChain) return !accountFilter
+        if (!accountFilter) return true
+        return (
+          asgardexChain.toLowerCase().startsWith(accountFilter) ||
+          sdkChain.toLowerCase().startsWith(accountFilter) ||
+          chainToString(asgardexChain).toLowerCase().startsWith(accountFilter)
+        )
+      })
+
+      return (
+        <div className="flex flex-col" key="wallet-accounts">
+          {filteredEntries.map(([sdkChain, address]) => {
+            const chain = SDK_TO_ASGARDEX_CHAIN[sdkChain]
+            if (!chain) return null
+            return renderChainRow(chain as Chain, address, WalletType.Vultisig)
+          })}
+        </div>
+      )
+    }
+
+    // Keystore: derive chain rows from walletAccounts observable
+    return FP.pipe(
+      oFilteredWalletAccounts,
+      O.map((walletAccounts) => (
+        <div className="flex flex-col" key="wallet-accounts">
+          {walletAccounts.map(({ chain, accounts: { keystore, ledger: oLedger } }) =>
+            renderChainRow(chain, keystore.address, WalletType.Keystore, oLedger)
+          )}
+        </div>
+      )),
+      O.getOrElse(() => <></>)
+    )
+  }, [isVultisig, vultisigState, accountFilter, oFilteredWalletAccounts, renderChainRow])
 
   const { state: changeWalletState, subscribe: subscribeChangeWalletState } =
     useSubscriptionState<ChangeKeystoreWalletRD>(RD.initial)
@@ -927,9 +1023,21 @@ export const WalletSettings = (props: Props): JSX.Element => {
 
   const changeWalletHandler = useCallback(
     (id: KeystoreId) => {
-      subscribeChangeWalletState(changeKeystoreWallet$(id))
+      if (changeKeystoreWallet$) {
+        subscribeChangeWalletState(changeKeystoreWallet$(id))
+      }
     },
     [changeKeystoreWallet$, subscribeChangeWalletState]
+  )
+
+  // Vultisig vault change handler
+  const changeVaultHandler = useCallback(
+    async (vaultId: string) => {
+      if (vultisigChangeVault) {
+        await vultisigChangeVault(vaultId)
+      }
+    },
+    [vultisigChangeVault]
   )
 
   const renderChangeWalletError = useMemo(
@@ -962,10 +1070,16 @@ export const WalletSettings = (props: Props): JSX.Element => {
     useSubscriptionState<RenameKeystoreWalletRD>(RD.initial)
 
   const changeWalletNameHandler = useCallback(
-    (walletName: string) => {
-      subscribeRenameWalletState(renameKeystoreWallet$(walletId, walletName))
+    (newName: string) => {
+      if (vultisigRenameVault && vultisigActiveVaultId) {
+        // Vultisig: rename vault via SDK
+        vultisigRenameVault(vultisigActiveVaultId, newName)
+      } else if (renameKeystoreWallet$) {
+        // Keystore: rename via observable
+        subscribeRenameWalletState(renameKeystoreWallet$(walletId, newName))
+      }
     },
-    [renameKeystoreWallet$, subscribeRenameWalletState, walletId]
+    [vultisigRenameVault, vultisigActiveVaultId, renameKeystoreWallet$, subscribeRenameWalletState, walletId]
   )
 
   const renderRenameWalletError = useMemo(
@@ -995,7 +1109,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
           onClose={() => setShowPasswordModal(false)}
         />
       )}
-      {showPhraseModal && (
+      {!isVultisig && showPhraseModal && (
         <PhraseCopyModal
           phrase={phrase}
           visible={showPhraseModal}
@@ -1009,10 +1123,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
         onClose={() => setShowRemoveWalletModal(false)}
         onSuccess={() => removeWalletHandler()}
         walletName={walletName}
+        walletType={isVultisig ? WalletType.Vultisig : WalletType.Keystore}
       />
       {renderQRCodeModal}
 
-      {renderVerifyAddressModal(ledgerAddressToVerify)}
+      {!isVultisig && renderVerifyAddressModal(ledgerAddressToVerify)}
       <div className="w-full px-4">
         <div className="flex flex-row items-center justify-between">
           <h1 className="font-main text-16 uppercase text-text0 dark:text-text0d">
@@ -1023,7 +1138,10 @@ export const WalletSettings = (props: Props): JSX.Element => {
               className="min-w-[200px]"
               disabled={RD.isPending(changeWalletState)}
               wallets={wallets}
+              vultisigVaults={vultisigVaults}
+              activeVultisigVaultId={activeVaultId}
               onChange={changeWalletHandler}
+              onVultisigSelect={changeVaultHandler}
             />
             <FlatButton size="normal" color="primary" onClick={() => navigate(walletRoutes.noWallet.path())}>
               {intl.formatMessage({ id: 'wallet.add.label' })}
@@ -1039,23 +1157,38 @@ export const WalletSettings = (props: Props): JSX.Element => {
           onChange={changeWalletNameHandler}
           loading={RD.isPending(renameWalletState)}
         />
+        {isVultisig && vultisigState?.activeVault && (
+          <div className="mt-2 flex justify-center">
+            <span
+              className={clsx(
+                'rounded-full px-3 py-1 text-xs font-medium uppercase',
+                vultisigState.activeVault.type === 'fast'
+                  ? 'bg-turquoise/20 text-turquoise'
+                  : 'bg-warning0/20 text-warning0'
+              )}>
+              {vultisigState.activeVault.type === 'fast' ? 'Fast Vault' : 'Secure Vault'}
+            </span>
+          </div>
+        )}
         {renderRenameWalletError}
         <div className="mt-10 flex flex-row items-center justify-center space-x-2">
           <ActionButton
             icon={<ArrowUpTrayIcon width={24} height={24} />}
             text={intl.formatMessage({ id: 'settings.export.title' })}
-            onClick={exportKeystoreHandler}
+            onClick={exportHandler}
           />
           <ActionButton
             icon={<LockClosedIcon width={24} height={24} />}
             text={intl.formatMessage({ id: 'settings.lock.title' })}
             onClick={lockWallet}
           />
-          <ActionButton
-            icon={<EyeIcon width={24} height={24} />}
-            text={intl.formatMessage({ id: 'settings.view.phrase.title' })}
-            onClick={() => setShowPasswordModal(true)}
-          />
+          {!isVultisig && (
+            <ActionButton
+              icon={<EyeIcon width={24} height={24} />}
+              text={intl.formatMessage({ id: 'settings.view.phrase.title' })}
+              onClick={() => setShowPasswordModal(true)}
+            />
+          )}
           <ActionButton
             icon={<TrashIcon width={24} height={24} />}
             text={intl.formatMessage({ id: 'wallet.remove.label' })}

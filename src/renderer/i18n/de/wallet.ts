@@ -79,6 +79,8 @@ const wallet: WalletMessages = {
   'wallet.remove.label.title': 'Bist Du sicher, dass Du "{name}" entfernen möchtest?',
   'wallet.remove.label.description':
     'Zur Wiederherstellung Deiner Wallet benötigst Du Deine Phrase. Bitte stelle sicher, dass Du diese bereits an einem sicheren Ort abgelegt hast',
+  'wallet.remove.label.description.vultisig':
+    'You will need to import your vault backup file to restore this vault. Please ensure you have exported your vault before you proceed.',
   'wallet.send.success': 'Transaktion war erfolgreich.',
   'wallet.send.fastest': 'Am schnellsten',
   'wallet.send.fast': 'Schnell',

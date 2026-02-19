@@ -66,7 +66,7 @@ export const createVaultManager = (): VaultManager => {
       // Try to restore saved vault
       const storageState = getStorageState()
       const savedVaultId =
-        O.isSome(storageState) && storageState.value.lastOpenedWallet?.type === 'vultisig'
+        O.isSome(storageState) && storageState.value.lastOpenedWallet?.type === WalletType.Vultisig
           ? storageState.value.lastOpenedWallet.vaultId
           : undefined
       if (savedVaultId) {
@@ -286,6 +286,49 @@ export const createVaultManager = (): VaultManager => {
   }
 
   /**
+   * Rename a vault
+   * Updates the name in the SDK and refreshes the vault list
+   */
+  const renameVault = async (vaultId: string, newName: string) => {
+    try {
+      await window.apiMpc.renameVault(vaultId, newName)
+      await loadVaults() // Refresh vault list
+
+      // If renaming the active vault, update activeVault name in the refreshed state
+      const updatedState = vultisigState()
+      if (updatedState.activeVault?.id === vaultId) {
+        setVultisigState({
+          ...updatedState,
+          activeVault: { ...updatedState.activeVault, name: newName }
+        })
+      }
+
+      window.apiLog.info('[Vultisig]', 'Vault renamed:', vaultId, '->', newName)
+    } catch (error) {
+      window.apiLog.error('[Vultisig]', 'Failed to rename vault:', error)
+      setVultisigState({
+        ...vultisigState(),
+        error: String(error)
+      })
+      throw error
+    }
+  }
+
+  /**
+   * Export a vault as a .vult file
+   * Triggers a "Save As" dialog in the main process
+   */
+  const exportVault = async (vaultId: string) => {
+    try {
+      await window.apiMpc.exportVault(vaultId)
+      window.apiLog.info('[Vultisig]', 'Vault exported:', vaultId)
+    } catch (error) {
+      window.apiLog.error('[Vultisig]', 'Failed to export vault:', error)
+      throw error
+    }
+  }
+
+  /**
    * Reset to vault selection phase
    */
   const resetToVaultSelection = () => {
@@ -443,6 +486,8 @@ export const createVaultManager = (): VaultManager => {
     createFastVault,
     verifyVault,
     deleteVault,
+    renameVault,
+    exportVault,
     resetToVaultSelection,
     setActiveVault,
     lockVault,

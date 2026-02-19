@@ -77,6 +77,8 @@ const wallet: WalletMessages = {
   'wallet.remove.label.title': 'Вы уверены, что хотите забыть "{name}"?',
   'wallet.remove.label.description':
     'Для повторного создания кошелька вам потребуется указать свою фразу. Пожалуйста, убедитесь, что ваша фраза сохранена в надежном месте, прежде чем продолжить.',
+  'wallet.remove.label.description.vultisig':
+    'You will need to import your vault backup file to restore this vault. Please ensure you have exported your vault before you proceed.',
   'wallet.send.success': 'Транзакция завершена.',
   'wallet.send.fastest': 'Наибыстро',
   'wallet.send.fast': 'Быстро',

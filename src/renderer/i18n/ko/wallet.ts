@@ -77,6 +77,8 @@ const wallet: WalletMessages = {
   'wallet.remove.label.title': '"{name}" 지갑을 삭제하시겠습니까?',
   'wallet.remove.label.description':
     '지갑을 다시 생성하려면 시드 구문이 필요합니다. 진행하기 전에 시드 구문을 안전한 곳에 저장했는지 확인하세요.',
+  'wallet.remove.label.description.vultisig':
+    'You will need to import your vault backup file to restore this vault. Please ensure you have exported your vault before you proceed.',
   'wallet.send.success': '거래가 성공적으로 완료되었습니다.',
   'wallet.send.fastest': '가장 빠름',
   'wallet.send.fast': '빠름',

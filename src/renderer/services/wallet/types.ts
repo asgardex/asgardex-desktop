@@ -236,7 +236,7 @@ export type VaultManager = {
   vultisigState: () => VultisigState
 
   // Mode management (for appWallet orchestration)
-  enterStandaloneMode: () => void
+  enterStandaloneMode: () => Promise<void>
   exitStandaloneMode: () => void
 
   // Vault CRUD operations
@@ -245,6 +245,8 @@ export type VaultManager = {
   createFastVault: (params: CreateFastVaultParams) => Promise<string>
   verifyVault: (vaultId: string, code: string) => Promise<void>
   deleteVault: (vaultId: string) => Promise<void>
+  renameVault: (vaultId: string, newName: string) => Promise<void>
+  exportVault: (vaultId: string) => Promise<void>
 
   // State management
   resetToVaultSelection: () => void
@@ -269,6 +271,7 @@ export type AppWalletService = {
   switchToKeystoreMode: () => void
   switchToStandaloneLedgerMode: (autoLock?: boolean) => void
   switchToVultisigMode: (autoLock?: boolean) => void
+  restoreLastOpenedWallet: () => Promise<void>
   // Unified wallet methods (Phase A-C)
   lock: () => Promise<void>
   unlock: (password: string) => Promise<boolean>

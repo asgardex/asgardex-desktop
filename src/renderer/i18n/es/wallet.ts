@@ -78,6 +78,8 @@ const wallet: WalletMessages = {
   'wallet.remove.label.title': '¿Estás seguro de que quieres olvidar "{name}"?',
   'wallet.remove.label.description':
     'Deberá proporcionar su frase para volver a crear su monedero. Asegúrate de tener tu frase guardada en un lugar seguro antes de continuar.',
+  'wallet.remove.label.description.vultisig':
+    'You will need to import your vault backup file to restore this vault. Please ensure you have exported your vault before you proceed.',
   'wallet.send.success': 'Transacción realizada.',
   'wallet.send.fastest': 'Más rápido',
   'wallet.send.fast': 'Rápido',

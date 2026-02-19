@@ -58,7 +58,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
       FP.pipe(
         oSelectedWallet,
         O.fold(
-          () => <>no selected wallet</>,
+          () => <></>,
           (selectedWallet) => (
             <div className="ease z-10 flex h-[25px] items-center rounded-full bg-bg0 drop-shadow dark:bg-gray0d">
               <div
@@ -136,7 +136,6 @@ export const HeaderLock = (props: Props): JSX.Element => {
           )
         )
       ),
-
     [handleWalletChange, isLocked, oSelectedWallet, onPress, allWallets]
   )
 

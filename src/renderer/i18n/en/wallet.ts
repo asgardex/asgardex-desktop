@@ -77,6 +77,8 @@ const wallet: WalletMessages = {
   'wallet.remove.label.title': 'Are you sure you want to forget "{name}"?',
   'wallet.remove.label.description':
     'You will need to provide your phrase to re-create your wallet. Please ensure you have your phrase saved at a safe place before you proceed.',
+  'wallet.remove.label.description.vultisig':
+    'You will need to import your vault backup file to restore this vault. Please ensure you have exported your vault before you proceed.',
   'wallet.send.success': 'Transaction succeeded.',
   'wallet.send.fastest': 'Fastest',
   'wallet.send.fast': 'Fast',

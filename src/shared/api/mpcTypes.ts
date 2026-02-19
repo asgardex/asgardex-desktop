@@ -154,6 +154,7 @@ export enum MpcIPCMessages {
   MPC_CREATE_SECURE_VAULT = 'mpc:createSecureVault',
   MPC_VERIFY_VAULT = 'mpc:verifyVault',
   MPC_DELETE_VAULT = 'mpc:deleteVault',
+  MPC_RENAME_VAULT = 'mpc:renameVault',
   MPC_GET_ADDRESSES = 'mpc:getAddresses',
   MPC_GET_BALANCES = 'mpc:getBalances',
 
@@ -206,6 +207,7 @@ export type ApiMpc = {
   createSecureVault: (params: CreateSecureVaultParams) => Promise<SerializedVault>
   verifyVault: (vaultId: string, code: string) => Promise<VerifyVaultResult>
   deleteVault: (vaultId: string) => Promise<void>
+  renameVault: (vaultId: string, newName: string) => Promise<void>
   getAddresses: (vaultId: string) => Promise<GetAddressesResult>
   getBalances: (vaultId: string) => Promise<GetBalancesResult>
 
