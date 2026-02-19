@@ -38,7 +38,7 @@ import { function as FP, array as A, option as O } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { ASGARDEX_TO_SDK_CHAIN, SDK_TO_ASGARDEX_CHAIN } from '../../../shared/api/mpcTypes'
+import { SDK_TO_ASGARDEX_CHAIN } from '../../../shared/api/mpcTypes'
 import { KeystoreId, TrustedAddress, TrustedAddresses } from '../../../shared/api/types'
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
@@ -705,12 +705,6 @@ export const WalletSettings = (props: Props): JSX.Element => {
       )
     },
     [intl, network, clickAddressLinkHandler]
-  )
-
-  // Convenience wrappers for backward compat with existing call sites
-  const renderKeystoreAddress = useCallback(
-    (chain: Chain, { address }: WalletAddress) => renderWalletAddress(chain, address, WalletType.Keystore),
-    [renderWalletAddress]
   )
 
   const renderVerifyAddressModal = useCallback(

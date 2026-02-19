@@ -182,6 +182,7 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
     const sanitized = newName
       .trim()
       .slice(0, 50)
+      // eslint-disable-next-line no-control-regex
       .replace(/[\x00-\x1f\x7f]/g, '')
     if (!sanitized) throw new Error('Vault name cannot be empty')
 
