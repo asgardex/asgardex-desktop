@@ -41,12 +41,7 @@ export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props,
           onClick={() => {
             setShowPw((current) => !current)
           }}>
-          <Icon
-            className={clsx(
-              'h-20px w-20px',
-              error ? 'text-error0' : 'text-gray1 dark:text-gray1d'
-            )}
-          />
+          <Icon className={clsx('h-20px w-20px', error ? 'text-error0' : 'text-gray1 dark:text-gray1d')} />
         </div>
       </div>
       {error && <p className="mt-2 font-main text-sm text-error0 uppercase">{error}</p>}

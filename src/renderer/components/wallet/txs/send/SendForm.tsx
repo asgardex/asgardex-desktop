@@ -866,7 +866,7 @@ export const SendForm = (props: Props): JSX.Element => {
         disabled={isLoading}
       />
     )
-  }, [amountToSend, maxAmount, isLoading, isEVMChain, setValue])
+  }, [isEVMChain, amountToSend, maxAmount, isLoading, isUTXOChain, setValue])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
