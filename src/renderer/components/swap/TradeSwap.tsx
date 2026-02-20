@@ -46,7 +46,8 @@ import {
   THORCHAIN_DECIMAL,
   isUSDAsset,
   isRuneNativeAsset,
-  isCacaoAsset
+  isCacaoAsset,
+  isUtxoAssetChain
 } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChain, isEvmChainToken } from '../../helpers/evmHelper'
@@ -452,6 +453,10 @@ export const TradeSwap = ({
     amountToSwapMax1e8,
     _setAmountToSwapMax1e8 /* private - never set it directly, use setAmountToSwapMax1e8() instead */
   ] = useState(initialAmountToSwapMax1e8)
+
+  const [isSendMax, setIsSendMax] = useState<boolean>(false)
+
+  const isSourceUTXO = useMemo(() => isUtxoAssetChain(sourceAsset), [sourceAsset])
 
   const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
@@ -1026,7 +1031,8 @@ export const TradeSwap = ({
         walletAccount,
         walletIndex,
         hdMode,
-        protocol: protocol
+        protocol: protocol,
+        sendMax: isSourceUTXO ? isSendMax : undefined
       }))
     )
   }, [
@@ -1041,6 +1047,8 @@ export const TradeSwap = ({
     oPoolAddressThor,
     oPoolAddressMaya,
     amountToSwapMax1e8,
+    isSourceUTXO,
+    isSendMax,
     sourceAssetAmount.decimal
   ])
 
@@ -1222,12 +1230,21 @@ export const TradeSwap = ({
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
 
+  const onChangeSwapAmount = useCallback(
+    (amount: BaseAmount) => {
+      if (isSourceUTXO) setIsSendMax(false)
+      setAmountToSwapMax1e8(amount)
+    },
+    [isSourceUTXO, setAmountToSwapMax1e8]
+  )
+
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
+      if (isSourceUTXO) setIsSendMax(percents === 100)
       const amountFromPercentage = maxAmountToSwapMax1e8.amount().multipliedBy(percents / 100)
       return setAmountToSwapMax1e8(baseAmount(amountFromPercentage, maxAmountToSwapMax1e8.decimal))
     },
-    [maxAmountToSwapMax1e8, setAmountToSwapMax1e8]
+    [maxAmountToSwapMax1e8, setAmountToSwapMax1e8, isSourceUTXO]
   )
 
   // Function to reset the slider to default position
@@ -1941,7 +1958,7 @@ export const TradeSwap = ({
           network={network}
           hasAmountShortcut
           onChangeAsset={setSourceAsset}
-          onChange={setAmountToSwapMax1e8}
+          onChange={onChangeSwapAmount}
           onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
           showError={minAmountError}

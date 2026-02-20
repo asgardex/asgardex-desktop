@@ -107,6 +107,7 @@ export type SendTxParams = {
   hdMode: HDMode
   allowOwnerOffCurve?: boolean
   destinationTag?: number
+  sendMax?: boolean
 }
 
 export type SendPoolTxParams = SendTxParams & {
@@ -156,6 +157,7 @@ export type SwapTxParams = {
   readonly walletIndex: number
   readonly hdMode: HDMode
   readonly protocol: Chain
+  readonly sendMax?: boolean
 }
 
 export type SwapStateHandler = (p: SwapTxParams) => SwapState$

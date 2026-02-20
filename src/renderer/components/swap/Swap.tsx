@@ -53,7 +53,8 @@ import {
   isEVMTokenAsset,
   getEVMTokenAddressForChain,
   isRujiAsset,
-  convertBaseAmountDecimal
+  convertBaseAmountDecimal,
+  isUtxoAssetChain
 } from '../../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../../helpers/assetProtocolHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
@@ -178,7 +179,7 @@ export const Swap = ({
   const { chain: targetChain } =
     targetAsset.type === AssetType.SYNTH
       ? AssetCacao
-      : sourceAsset.type === AssetType.SECURED
+      : targetAsset.type === AssetType.SECURED
         ? AssetRuneNative
         : targetAsset
 
@@ -260,7 +261,7 @@ export const Swap = ({
       const sourceChain = sourceAsset.chain
       const isChainConnected = appWalletState.connectedChain === sourceChain
 
-      if (isChainConnected && appWalletState.connectedChain !== sourceChain) {
+      if (!isChainConnected) {
         // Use ref to avoid dependency loop
         appWalletService.standaloneLedgerService.setSelectedChain(sourceChain)
       }
@@ -426,6 +427,13 @@ export const Swap = ({
     return result
   }, [sourceAsset, allBalances, sourceWalletType])
 
+  // Only block the UI while the *source* chain balance is still loading,
+  // rather than waiting for every enabled chain to finish.
+  const sourceBalanceLoading = useMemo(
+    () => walletBalancesLoading && O.isNone(oSourceAssetWB),
+    [walletBalancesLoading, oSourceAssetWB]
+  )
+
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(
     () =>
@@ -473,6 +481,10 @@ export const Swap = ({
     amountToSwap,
     _setAmountToSwap /* private - never set it directly, use setAmountToSwap() instead */
   ] = useState(initialAmountToSwap)
+
+  const [isSendMax, setIsSendMax] = useState<boolean>(false)
+
+  const isSourceUTXO = useMemo(() => isUtxoAssetChain(sourceAsset), [sourceAsset])
 
   const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
@@ -1187,12 +1199,13 @@ export const Swap = ({
 
   const onInputChange = useCallback(
     (amount: BaseAmount) => {
+      if (isSourceUTXO) setIsSendMax(false)
       // Immediately update display state for smooth typing
       setInputDisplayAmount(amount)
       // Debounce the actual swap state update
       debouncedSetAmountToSwap(amount)
     },
-    [debouncedSetAmountToSwap]
+    [debouncedSetAmountToSwap, isSourceUTXO]
   )
 
   // Cleanup debounced input handler on unmount
@@ -1513,7 +1526,8 @@ export const Swap = ({
           walletAccount: finalWalletAccount,
           walletIndex: finalWalletIndex,
           hdMode: finalHDMode,
-          protocol: poolAddress.protocol
+          protocol: poolAddress.protocol,
+          sendMax: isSourceUTXO ? isSendMax : undefined
         }
       })
     )
@@ -1530,7 +1544,9 @@ export const Swap = ({
     sourceChainAssetAmount,
     swapFees.inFee.amount,
     appWalletState,
-    standaloneLedgerState?.address
+    standaloneLedgerState?.address,
+    isSourceUTXO,
+    isSendMax
   ])
 
   const oCFSwapParams: O.Option<SendTxParams> = useMemo(() => {
@@ -1560,11 +1576,21 @@ export const Swap = ({
           walletAccount,
           walletIndex,
           hdMode,
-          protocol: quoteSwap.protocol
+          protocol: quoteSwap.protocol,
+          sendMax: isSourceUTXO ? isSendMax : undefined
         }
       })
     )
-  }, [oSourceAssetWB, oQuoteProtocol, amountToSwap, sourceAsset, sourceChainAssetAmount, swapFees.inFee.amount])
+  }, [
+    oSourceAssetWB,
+    oQuoteProtocol,
+    amountToSwap,
+    sourceAsset,
+    sourceChainAssetAmount,
+    swapFees.inFee.amount,
+    isSourceUTXO,
+    isSendMax
+  ])
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -1968,13 +1994,14 @@ export const Swap = ({
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
+      if (isSourceUTXO) setIsSendMax(percents === 100)
       const amountFromPercentage = maxAmountToSwap.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmountToSwap.decimal)
       setAmountToSwap(newAmount)
       // Note: Removed immediate fetchSwap call here because the debounced handler will fetch the quote
       return newAmount
     },
-    [maxAmountToSwap, setAmountToSwap]
+    [maxAmountToSwap, setAmountToSwap, isSourceUTXO]
   )
 
   // Function to reset the slider to default position
@@ -2156,10 +2183,11 @@ export const Swap = ({
     }
 
     const onSucceess = () => {
-      if (showLedgerModal === ModalState.Swap) {
+      if (showLedgerModal === ModalState.Swap && O.isSome(oSwapParams)) {
         submitSwapTx()
-      }
-      if (showLedgerModal === ModalState.Approve) {
+      } else if (showLedgerModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
+        submitCFTx()
+      } else if (showLedgerModal === ModalState.Approve) {
         submitApproveTx()
       }
       setShowLedgerModal(ModalState.None)
@@ -2213,7 +2241,9 @@ export const Swap = ({
     sourceAsset,
     network,
     oSwapParams,
+    oCFSwapParams,
     submitSwapTx,
+    submitCFTx,
     submitApproveTx,
     useSourceAssetLedger
   ])
@@ -2373,8 +2403,8 @@ export const Swap = ({
       !isApproveFeeError ||
       // Don't render anything if chainAssetBalance is not available (still loading)
       O.isNone(oSourceAssetWB) ||
-      // Don't render error if walletBalances are still loading
-      walletBalancesLoading
+      // Don't render error if source balance is still loading
+      sourceBalanceLoading
     ) {
       return <></>
     }
@@ -2401,7 +2431,7 @@ export const Swap = ({
   }, [
     isApproveFeeError,
     oSourceAssetWB,
-    walletBalancesLoading,
+    sourceBalanceLoading,
     intl,
     sourceChainAsset,
     sourceChainAssetAmount,
@@ -2515,7 +2545,7 @@ export const Swap = ({
 
   useEffect(() => {
     // reset data whenever source asset has been changed
-    if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
+    if (O.isSome(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
       reloadFees({
         inAsset: sourceAsset,
         memo: swapMemo,
@@ -2609,7 +2639,7 @@ export const Swap = ({
       (lockedWallet ||
         quoteOnly ||
         isZeroAmountToSwap ||
-        walletBalancesLoading ||
+        sourceBalanceLoading ||
         sourceChainFeeError ||
         RD.isPending(swapFeesRD) ||
         RD.isPending(approveState) ||
@@ -2627,7 +2657,7 @@ export const Swap = ({
       lockedWallet,
       quoteOnly,
       isZeroAmountToSwap,
-      walletBalancesLoading,
+      sourceBalanceLoading,
       sourceChainFeeError,
       swapFeesRD,
       approveState,
@@ -2644,8 +2674,8 @@ export const Swap = ({
   )
 
   const disableSubmitApprove = useMemo(
-    () => isApproveFeeError || walletBalancesLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
-    [isApproveFeeError, walletBalancesLoading, oApproveParams, approveState]
+    () => isApproveFeeError || sourceBalanceLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
+    [isApproveFeeError, sourceBalanceLoading, oApproveParams, approveState]
   )
 
   const onChangeRecipientAddress = useCallback(
@@ -3208,13 +3238,13 @@ export const Swap = ({
         </div>
       </div>
 
-      {(walletBalancesLoading || isFetchingEstimate) && (
+      {(sourceBalanceLoading || isFetchingEstimate) && (
         <Spin
           className="w-full pt-10px"
           tip={
             isFetchingEstimate
               ? intl.formatMessage({ id: 'common.loading' })
-              : walletBalancesLoading
+              : sourceBalanceLoading
                 ? intl.formatMessage({ id: 'common.balance.loading' })
                 : undefined
           }

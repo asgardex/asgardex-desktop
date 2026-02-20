@@ -105,7 +105,8 @@ describe('shared/io', () => {
         apiKey: 'apikey',
         destinationTag: 1234,
         evmRpcUrl: undefined,
-        gasMultiplier: undefined
+        gasMultiplier: undefined,
+        sendMax: undefined
       })
       expect(encoded).toEqual({
         chain: 'BTC',
@@ -126,7 +127,8 @@ describe('shared/io', () => {
         apiKey: 'apikey',
         destinationTag: 1234,
         evmRpcUrl: undefined,
-        gasMultiplier: undefined
+        gasMultiplier: undefined,
+        sendMax: undefined
       })
     })
 
@@ -150,7 +152,8 @@ describe('shared/io', () => {
         apiKey: 'apikey',
         destinationTag: 1234,
         evmRpcUrl: undefined,
-        gasMultiplier: undefined
+        gasMultiplier: undefined,
+        sendMax: undefined
       })
 
       expect(encoded).toEqual({
@@ -172,7 +175,8 @@ describe('shared/io', () => {
         apiKey: 'apikey',
         destinationTag: 1234,
         evmRpcUrl: undefined,
-        gasMultiplier: undefined
+        gasMultiplier: undefined,
+        sendMax: undefined
       })
     })
 

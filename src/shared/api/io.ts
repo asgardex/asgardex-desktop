@@ -125,7 +125,8 @@ export const ipcLedgerSendTxParamsIO = t.type({
   apiKey: t.union([t.string, t.undefined]),
   destinationTag: t.union([t.number, t.undefined]),
   evmRpcUrl: t.union([t.string, t.undefined]),
-  gasMultiplier: t.union([t.number, t.undefined])
+  gasMultiplier: t.union([t.number, t.undefined]),
+  sendMax: t.union([t.boolean, t.undefined])
 })
 
 export type IPCLedgerSendTxParams = t.TypeOf<typeof ipcLedgerSendTxParamsIO>

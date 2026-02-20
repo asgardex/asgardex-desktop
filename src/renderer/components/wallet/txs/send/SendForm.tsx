@@ -198,6 +198,7 @@ export const SendForm = (props: Props): JSX.Element => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [destinationTagRequired, setDestinationTagRequired] = useState<boolean>(false)
   const [isRouterAddress, setIsRouterAddress] = useState<boolean>(false)
+  const [isSendMax, setIsSendMax] = useState<boolean>(false)
 
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
@@ -353,8 +354,7 @@ export const SendForm = (props: Props): JSX.Element => {
       return FP.pipe(
         selectedFee,
         O.map((fee) => {
-          const utxoSafetyBuffer = baseAmount(10000, balance.amount.decimal)
-          const max = balance.amount.minus(fee).minus(utxoSafetyBuffer)
+          const max = balance.amount.minus(fee)
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }),
@@ -678,6 +678,8 @@ export const SendForm = (props: Props): JSX.Element => {
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
+      if (isUTXOChain) setIsSendMax(false)
+
       const validationResult = await amountValidator(value)
       const newValue = validationResult === true ? assetToBase(assetAmount(value, balance.amount.decimal)) : null
 
@@ -702,7 +704,7 @@ export const SendForm = (props: Props): JSX.Element => {
         }
       })
     },
-    [amountValidator, balance.amount.decimal, isEVMChain]
+    [amountValidator, balance.amount.decimal, isEVMChain, isUTXOChain]
   )
 
   const onChangeAddress = useCallback(
@@ -737,8 +739,9 @@ export const SendForm = (props: Props): JSX.Element => {
         return prev
       })
     }
+    if (isUTXOChain) setIsSendMax(true)
     setValue('amount', baseToAsset(maxAmount).amount())
-  }, [isEVMChain, maxAmount, setValue])
+  }, [isEVMChain, isUTXOChain, maxAmount, setValue])
 
   const feeOptionsLabel: Record<FeeOption, string> = useMemo(
     () => ({
@@ -833,6 +836,8 @@ export const SendForm = (props: Props): JSX.Element => {
       const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmount.decimal)
 
+      if (isUTXOChain) setIsSendMax(percents === 100)
+
       if (isEVMChain) {
         setAmountToSend((prev) => {
           const prevAmount = O.getOrElse(() => ZERO_BASE_AMOUNT)(prev as O.Option<BaseAmount>)
@@ -861,7 +866,7 @@ export const SendForm = (props: Props): JSX.Element => {
         disabled={isLoading}
       />
     )
-  }, [amountToSend, maxAmount, isLoading, isEVMChain, setValue])
+  }, [isEVMChain, amountToSend, maxAmount, isLoading, isUTXOChain, setValue])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -1025,11 +1030,14 @@ export const SendForm = (props: Props): JSX.Element => {
         amount,
         feeOption: isEVMChain ? selectedFeeOption : selectedFeeOptionKey,
         memo: currentMemo,
-        destinationTag: watch('destinationTag')
+        destinationTag: watch('destinationTag'),
+        sendMax: isUTXOChain ? isSendMax : undefined
       })
     )
   }, [
     isEVMChain,
+    isUTXOChain,
+    isSendMax,
     amountToSend,
     recipientAddress,
     subscribeSendTxState,
