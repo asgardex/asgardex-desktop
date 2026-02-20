@@ -427,6 +427,13 @@ export const Swap = ({
     return result
   }, [sourceAsset, allBalances, sourceWalletType])
 
+  // Only block the UI while the *source* chain balance is still loading,
+  // rather than waiting for every enabled chain to finish.
+  const sourceBalanceLoading = useMemo(
+    () => walletBalancesLoading && O.isNone(oSourceAssetWB),
+    [walletBalancesLoading, oSourceAssetWB]
+  )
+
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(
     () =>
@@ -1985,14 +1992,6 @@ export const Swap = ({
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
   const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
 
-  const onChangeSwapAmount = useCallback(
-    (amount: BaseAmount) => {
-      if (isSourceUTXO) setIsSendMax(false)
-      setAmountToSwap(amount)
-    },
-    [isSourceUTXO, setAmountToSwap]
-  )
-
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
       if (isSourceUTXO) setIsSendMax(percents === 100)
@@ -2401,8 +2400,8 @@ export const Swap = ({
       !isApproveFeeError ||
       // Don't render anything if chainAssetBalance is not available (still loading)
       O.isNone(oSourceAssetWB) ||
-      // Don't render error if walletBalances are still loading
-      walletBalancesLoading
+      // Don't render error if source balance is still loading
+      sourceBalanceLoading
     ) {
       return <></>
     }
@@ -2429,7 +2428,7 @@ export const Swap = ({
   }, [
     isApproveFeeError,
     oSourceAssetWB,
-    walletBalancesLoading,
+    sourceBalanceLoading,
     intl,
     sourceChainAsset,
     sourceChainAssetAmount,
@@ -2637,7 +2636,7 @@ export const Swap = ({
       (lockedWallet ||
         quoteOnly ||
         isZeroAmountToSwap ||
-        walletBalancesLoading ||
+        sourceBalanceLoading ||
         sourceChainFeeError ||
         RD.isPending(swapFeesRD) ||
         RD.isPending(approveState) ||
@@ -2655,7 +2654,7 @@ export const Swap = ({
       lockedWallet,
       quoteOnly,
       isZeroAmountToSwap,
-      walletBalancesLoading,
+      sourceBalanceLoading,
       sourceChainFeeError,
       swapFeesRD,
       approveState,
@@ -2672,8 +2671,8 @@ export const Swap = ({
   )
 
   const disableSubmitApprove = useMemo(
-    () => isApproveFeeError || walletBalancesLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
-    [isApproveFeeError, walletBalancesLoading, oApproveParams, approveState]
+    () => isApproveFeeError || sourceBalanceLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
+    [isApproveFeeError, sourceBalanceLoading, oApproveParams, approveState]
   )
 
   const onChangeRecipientAddress = useCallback(
@@ -3236,13 +3235,13 @@ export const Swap = ({
         </div>
       </div>
 
-      {(walletBalancesLoading || isFetchingEstimate) && (
+      {(sourceBalanceLoading || isFetchingEstimate) && (
         <Spin
           className="w-full pt-10px"
           tip={
             isFetchingEstimate
               ? intl.formatMessage({ id: 'common.loading' })
-              : walletBalancesLoading
+              : sourceBalanceLoading
                 ? intl.formatMessage({ id: 'common.balance.loading' })
                 : undefined
           }
