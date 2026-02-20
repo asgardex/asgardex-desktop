@@ -179,7 +179,7 @@ export const Swap = ({
   const { chain: targetChain } =
     targetAsset.type === AssetType.SYNTH
       ? AssetCacao
-      : sourceAsset.type === AssetType.SECURED
+      : targetAsset.type === AssetType.SECURED
         ? AssetRuneNative
         : targetAsset
 
@@ -261,7 +261,7 @@ export const Swap = ({
       const sourceChain = sourceAsset.chain
       const isChainConnected = appWalletState.connectedChain === sourceChain
 
-      if (isChainConnected && appWalletState.connectedChain !== sourceChain) {
+      if (!isChainConnected) {
         // Use ref to avoid dependency loop
         appWalletService.standaloneLedgerService.setSelectedChain(sourceChain)
       }
@@ -2183,10 +2183,11 @@ export const Swap = ({
     }
 
     const onSucceess = () => {
-      if (showLedgerModal === ModalState.Swap) {
+      if (showLedgerModal === ModalState.Swap && O.isSome(oSwapParams)) {
         submitSwapTx()
-      }
-      if (showLedgerModal === ModalState.Approve) {
+      } else if (showLedgerModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
+        submitCFTx()
+      } else if (showLedgerModal === ModalState.Approve) {
         submitApproveTx()
       }
       setShowLedgerModal(ModalState.None)
@@ -2240,7 +2241,9 @@ export const Swap = ({
     sourceAsset,
     network,
     oSwapParams,
+    oCFSwapParams,
     submitSwapTx,
+    submitCFTx,
     submitApproveTx,
     useSourceAssetLedger
   ])
@@ -2542,7 +2545,7 @@ export const Swap = ({
 
   useEffect(() => {
     // reset data whenever source asset has been changed
-    if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
+    if (O.isSome(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
       reloadFees({
         inAsset: sourceAsset,
         memo: swapMemo,
