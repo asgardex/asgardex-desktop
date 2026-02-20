@@ -399,6 +399,13 @@ export const TradeSwap = ({
     }
   }, [sourceAsset, protocolBalance, sourceWalletType, tradeAccountBalances])
 
+  // Only block the UI while the *source* chain balance is still loading,
+  // rather than waiting for every enabled chain to finish.
+  const sourceBalanceLoading = useMemo(
+    () => walletBalancesLoading && O.isNone(oSourceAssetWB),
+    [walletBalancesLoading, oSourceAssetWB]
+  )
+
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(
     () =>
@@ -1313,6 +1320,13 @@ export const TradeSwap = ({
     return () => clearInterval(timer)
   }, [])
 
+  // Track quote expiry separately to avoid setState inside useMemo
+  useEffect(() => {
+    const remainingTime = swapExpiry.getTime() - currentDate.getTime()
+    const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
+    setQuoteExpired(remainingTimeInMinutes < 1)
+  }, [swapExpiry, currentDate])
+
   const renderSwapExpiry = useMemo(() => {
     const quoteValidTime = 15 * 60 * 1000 // 15 minutes in milliseconds
 
@@ -1320,7 +1334,6 @@ export const TradeSwap = ({
     const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
 
     const progress = Math.max(0, (remainingTime / quoteValidTime) * 100)
-    setQuoteExpired(remainingTimeInMinutes < 1)
     const expiryLabel =
       remainingTimeInMinutes < 0 ? `Quote Expired` : `Quote expiring in ${remainingTimeInMinutes} minutes`
 
@@ -1490,7 +1503,7 @@ export const TradeSwap = ({
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
             network={network}
             trackable={false}
-            protocol={O.some('Thorchain')}
+            protocol={O.some(protocol === THORChain ? 'Thorchain' : 'Mayachain')}
           />
         }
         timerValue={timerValue}
@@ -1507,7 +1520,8 @@ export const TradeSwap = ({
     network,
     extraTxModalContent,
     intl,
-    sourceAsset.chain
+    sourceAsset.chain,
+    protocol
   ])
 
   const renderPasswordConfirmationModal = useMemo(() => {
@@ -1610,9 +1624,10 @@ export const TradeSwap = ({
     }
 
     // Extract numerical value from error string
-    const match = error[1].match(/(\d+)/)
+    const errorDetail = error[1] ?? ''
+    const match = errorDetail.match(/(\d+)/)
     const numberString = match ? match[1] : null
-    const remainingText = error[1].replace(/\d+/g, '').trim()
+    const remainingText = errorDetail.replace(/\d+/g, '').trim()
 
     const assetAmount = numberString
       ? new CryptoAmount(convertBaseAmountDecimal(baseAmount(numberString), sourceAssetDecimal), sourceAsset)
@@ -1691,7 +1706,7 @@ export const TradeSwap = ({
 
   useEffect(() => {
     // reset data whenever source asset has been changed
-    if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
+    if (O.isSome(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
       reloadFeesHandler()
     } else {
       prevSourceAsset.current = O.some(sourceAsset)
@@ -1737,7 +1752,7 @@ export const TradeSwap = ({
         lockedWallet ||
         quoteOnly ||
         isZeroAmountToSwap ||
-        walletBalancesLoading ||
+        sourceBalanceLoading ||
         sourceChainFeeError ||
         RD.isPending(swapFeesRD) ||
         minAmountError ||
@@ -1755,7 +1770,7 @@ export const TradeSwap = ({
       lockedWallet,
       quoteOnly,
       isZeroAmountToSwap,
-      walletBalancesLoading,
+      sourceBalanceLoading,
       sourceChainFeeError,
       swapFeesRD,
       minAmountError,

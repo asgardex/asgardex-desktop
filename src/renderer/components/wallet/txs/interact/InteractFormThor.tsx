@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
@@ -337,8 +337,7 @@ export const InteractFormThor = ({
       FP.pipe(
         oFee,
         O.fold(
-          // Missing (or loading) fees does not mean we can't sent something. No error then.
-          () => !O.isNone(oFee),
+          () => false,
           (fee) => balance.amount.amount().isLessThan(fee.amount())
         )
       ),
@@ -420,7 +419,7 @@ export const InteractFormThor = ({
     })
 
     if (
-      (maxAmount && interactType === InteractType.Bond) ||
+      interactType === InteractType.Bond ||
       interactType === InteractType.Custom ||
       interactType === InteractType.RunePool
     ) {
@@ -486,32 +485,45 @@ export const InteractFormThor = ({
     [interactType, intl, maxAmount]
   )
 
-  const debouncedFetch = debounce(
-    async (thorname, setThorname, setThornameAvailable, setThornameUpdate, setIsOwner, thorchainQuery, balance) => {
-      try {
-        const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
-        if (thornameDetails) {
-          setThorname(O.some(thornameDetails))
-
-          setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
-          setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
-          setThornameRegister(thornameDetails.name === '')
-          setIsOwner(balance.walletAddress === thornameDetails.owner)
+  const debouncedFetchRef = useRef(
+    debounce(
+      async (
+        thorname: string,
+        setThornameFn: (v: O.Option<ThornameDetails>) => void,
+        setThornameAvailableFn: (v: boolean) => void,
+        setThornameUpdateFn: (v: boolean) => void,
+        setIsOwnerFn: (v: boolean) => void,
+        query: ThorchainQuery,
+        bal: { walletAddress: string }
+      ) => {
+        try {
+          const thornameDetails = await query.getThornameDetails(thorname)
+          if (thornameDetails) {
+            setThornameFn(O.some(thornameDetails))
+            setThornameAvailableFn(thornameDetails.owner === '' || bal.walletAddress === thornameDetails.owner)
+            setThornameUpdateFn(thorname === thornameDetails.name && thornameDetails.owner === '')
+            setThornameRegister(thornameDetails.name === '')
+            setIsOwnerFn(bal.walletAddress === thornameDetails.owner)
+          }
+        } catch (_error) {
+          setThornameAvailableFn(true)
         }
-      } catch (_error) {
-        setThornameAvailable(true)
-      }
-      // setThorname(O.none)
-    },
-    500
+      },
+      500
+    )
   )
+
+  useEffect(() => {
+    const debounced = debouncedFetchRef.current
+    return () => debounced.cancel()
+  }, [])
 
   const thornameHandler = useCallback(() => {
     const thorname = watch('thorname')
     setThornameQuoteValid(false)
     setMemo('')
     if (thorname !== '') {
-      debouncedFetch(
+      debouncedFetchRef.current(
         thorname,
         setThorname,
         setThornameAvailable,
@@ -521,7 +533,7 @@ export const InteractFormThor = ({
         balance
       )
     }
-  }, [balance, debouncedFetch, watch, thorchainQuery])
+  }, [balance, watch, thorchainQuery])
 
   const estimateThornameHandler = useCallback(() => {
     const currentDate = new Date()

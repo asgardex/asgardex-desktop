@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
@@ -194,7 +194,6 @@ export const SendForm = (props: Props): JSX.Element => {
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const [currentMemo, setCurrentMemo] = useState<string>('')
   const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
-  const [_notAllowed, _setNotAllowed] = useState<boolean>(false)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [destinationTagRequired, setDestinationTagRequired] = useState<boolean>(false)
   const [isRouterAddress, setIsRouterAddress] = useState<boolean>(false)
@@ -205,7 +204,6 @@ export const SendForm = (props: Props): JSX.Element => {
   const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feeRate, setFeeRate] = useState<number>(0)
 
-  const _mayascanPriceInUsd = calculateMayaValueInUSD(balance.amount, mayaScanPrice)
   const amountToSendMayaPrice = useMemo(() => {
     const amount = isEVMChain
       ? O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend as O.Option<BaseAmount>)
@@ -261,41 +259,42 @@ export const SendForm = (props: Props): JSX.Element => {
     if (isEVMChain) {
       return FP.pipe(
         oFees,
-        O.map((fees) => {
-          setAssetFee(new CryptoAmount(fees[selectedFeeOption], getChainAsset(effectiveChain)))
-          return fees[selectedFeeOption]
-        })
+        O.map((fees) => fees[selectedFeeOption])
       )
     }
     if (isUTXOChain) {
       return FP.pipe(
         oFeesWithRates,
-        O.map(({ fees, rates }) => {
-          const feeAmount = fees[selectedFeeOptionKey]
-          const feeRate = rates[selectedFeeOptionKey]
-          const roundedFeeRate = Math.ceil(feeRate)
-          setFeeRate(roundedFeeRate)
-          setAssetFee(new CryptoAmount(feeAmount, asset))
-          return feeAmount
-        })
+        O.map(({ fees }) => fees[selectedFeeOptionKey])
       )
     }
     if (isCOSMOSChain) {
       return oFee
     }
     return O.none
-  }, [
-    isEVMChain,
-    isUTXOChain,
-    isCOSMOSChain,
-    oFees,
-    oFeesWithRates,
-    oFee,
-    selectedFeeOption,
-    selectedFeeOptionKey,
-    asset,
-    effectiveChain
-  ])
+  }, [isEVMChain, isUTXOChain, isCOSMOSChain, oFees, oFeesWithRates, oFee, selectedFeeOption, selectedFeeOptionKey])
+
+  // Sync fee-related state when selectedFee changes (moved out of useMemo)
+  useEffect(() => {
+    if (isEVMChain) {
+      FP.pipe(
+        oFees,
+        O.map((fees) => {
+          setAssetFee(new CryptoAmount(fees[selectedFeeOption], getChainAsset(effectiveChain)))
+          return true
+        })
+      )
+    } else if (isUTXOChain) {
+      FP.pipe(
+        oFeesWithRates,
+        O.map(({ fees, rates }) => {
+          setFeeRate(Math.ceil(rates[selectedFeeOptionKey]))
+          setAssetFee(new CryptoAmount(fees[selectedFeeOptionKey], asset))
+          return true
+        })
+      )
+    }
+  }, [isEVMChain, isUTXOChain, oFees, oFeesWithRates, selectedFeeOption, selectedFeeOptionKey, asset, effectiveChain])
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     if (isEVMChain) {
@@ -959,6 +958,7 @@ export const SendForm = (props: Props): JSX.Element => {
 
   const submitDepositTx = useCallback(() => {
     if (!isEVMChain || !deposit$) return
+    sendTxStartTimeRef.current = Date.now()
 
     const amount = O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend as O.Option<BaseAmount>)
 
@@ -1003,8 +1003,11 @@ export const SendForm = (props: Props): JSX.Element => {
     currentMemo
   ])
 
+  const sendTxStartTimeRef = useRef<number>(Date.now())
+
   // Transaction submission
   const submitTx = useCallback(() => {
+    sendTxStartTimeRef.current = Date.now()
     const amount = isEVMChain
       ? O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend as O.Option<BaseAmount>)
       : (amountToSend as BaseAmount)
@@ -1111,7 +1114,7 @@ export const SendForm = (props: Props): JSX.Element => {
               network,
               depositState,
               resetDepositState,
-              sendTxStartTime: Date.now(),
+              sendTxStartTime: sendTxStartTimeRef.current,
               openExplorerTxUrl,
               getExplorerTxUrl,
               intl
@@ -1126,7 +1129,7 @@ export const SendForm = (props: Props): JSX.Element => {
       network,
       sendTxState,
       resetSendTxState,
-      sendTxStartTime: Date.now(),
+      sendTxStartTime: sendTxStartTimeRef.current,
       openExplorerTxUrl,
       getExplorerTxUrl,
       intl
@@ -1164,10 +1167,7 @@ export const SendForm = (props: Props): JSX.Element => {
     if (isCOSMOSChain && feeRD) {
       return FP.pipe(
         feeRD,
-        RD.map((fee) => {
-          setAssetFee(new CryptoAmount(fee, sourceChainAsset))
-          return [{ asset: sourceChainAsset, amount: fee }]
-        })
+        RD.map((fee) => [{ asset: sourceChainAsset, amount: fee }])
       )
     }
     return RD.initial
@@ -1184,6 +1184,19 @@ export const SendForm = (props: Props): JSX.Element => {
     sourceChainAsset,
     effectiveChain
   ])
+
+  // Sync COSMOS assetFee when fee loads (moved out of useMemo)
+  useEffect(() => {
+    if (isCOSMOSChain && feeRD) {
+      FP.pipe(
+        feeRD,
+        RD.map((fee) => {
+          setAssetFee(new CryptoAmount(fee, sourceChainAsset))
+          return true
+        })
+      )
+    }
+  }, [isCOSMOSChain, feeRD, sourceChainAsset])
 
   // Wallet type detection
   const oMatchedWalletType: O.Option<WalletType> = useMemo(() => {
@@ -1243,7 +1256,10 @@ export const SendForm = (props: Props): JSX.Element => {
                   disabled={isLoading}
                   value={field.value || ''}
                   onBlur={handleMemo}
-                  onChange={field.onChange}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(e)
+                    setCurrentMemo(e.target.value)
+                  }}
                 />
               )}
             />
@@ -1259,208 +1275,205 @@ export const SendForm = (props: Props): JSX.Element => {
       <div className="flex min-h-full w-full max-w-[630px] flex-col p-2.5 sm:p-[35px_50px_150px]">
         <AccountSelector selectedWallet={balance} network={network} />
         <form onSubmit={handleSubmit(() => setShowConfirmationModal(true))}>
-          <div className="max-w-[630px]">
-            {renderSavedAddressesDropdown}
-            <Label className="mt-2 flex items-center" size="big" color="gray" textTransform="uppercase">
-              {intl.formatMessage({ id: 'common.address' })}
-              {renderWalletType}
-            </Label>
-            <div className="flex flex-col">
-              <Controller
-                name="recipient"
-                control={control}
-                rules={{
-                  required: intl.formatMessage({ id: 'wallet.errors.address.empty' }),
-                  validate: addressValidator
-                }}
-                render={({ field }) => (
-                  <Input
-                    size="large"
-                    disabled={isLoading}
-                    value={field.value || ''}
-                    onChange={(e) => {
-                      field.onChange(e)
-                      onChangeAddress(e)
-                    }}
-                    error={!!errors.recipient}
-                  />
-                )}
-              />
-              {errors.recipient && (
-                <span className="mt-1 text-xs text-error0 dark:text-error0d">
-                  {typeof errors.recipient === 'string' ? errors.recipient : errors.recipient.message}
-                </span>
+          {renderSavedAddressesDropdown}
+          <Label className="mt-2 flex items-center" size="big" color="gray" textTransform="uppercase">
+            {intl.formatMessage({ id: 'common.address' })}
+            {renderWalletType}
+          </Label>
+          <div className="flex flex-col">
+            <Controller
+              name="recipient"
+              control={control}
+              rules={{
+                required: intl.formatMessage({ id: 'wallet.errors.address.empty' }),
+                validate: addressValidator
+              }}
+              render={({ field }) => (
+                <Input
+                  size="large"
+                  disabled={isLoading}
+                  value={field.value || ''}
+                  onChange={(e) => {
+                    field.onChange(e)
+                    onChangeAddress(e)
+                  }}
+                  error={!!errors.recipient}
+                />
               )}
-            </div>
-            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d">{warningMessage}</div>}
-
-            {/* Destination Tag field for XRP - show for all XRP transfers */}
-            {isXrpChain && (
-              <>
-                <Label className="mt-2 flex items-center" size="big" color="gray" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.destinationTag' })}
-                  {destinationTagRequired && <span className="text-error0 dark:text-error0d"> *</span>}
-                </Label>
-                <div className="flex flex-col">
-                  <Controller
-                    name="destinationTag"
-                    control={control}
-                    rules={{
-                      required: destinationTagRequired
-                        ? intl.formatMessage({ id: 'wallet.errors.destinationTag.required' })
-                        : false,
-                      validate: (value) => {
-                        // If destination tag is required and not provided
-                        if (destinationTagRequired && (value === undefined || value === null)) {
-                          return intl.formatMessage({ id: 'wallet.errors.destinationTag.required' })
-                        }
-
-                        // If value is provided, validate the format
-                        if (value !== undefined && value !== null) {
-                          const numValue = typeof value === 'string' ? parseInt(value, 10) : value
-                          if (!Number.isInteger(numValue) || numValue < 0 || numValue > 4294967295) {
-                            return intl.formatMessage({ id: 'wallet.errors.destinationTag.invalid' })
-                          }
-                        }
-                        return true
-                      }
-                    }}
-                    render={({ field }) => (
-                      <Input
-                        size="large"
-                        disabled={isLoading}
-                        value={field.value?.toString() || ''}
-                        onChange={(e) => {
-                          const value = e.target.value.trim()
-                          field.onChange(value ? parseInt(value, 10) : undefined)
-                        }}
-                        placeholder={
-                          destinationTagRequired
-                            ? intl.formatMessage({ id: 'common.destinationTag.required.placeholder' })
-                            : intl.formatMessage({ id: 'common.destinationTag.placeholder' })
-                        }
-                        type="number"
-                        error={!!errors.destinationTag}
-                      />
-                    )}
-                  />
-                  {errors.destinationTag && (
-                    <span className="mt-1 text-xs text-error0 dark:text-error0d">
-                      {typeof errors.destinationTag === 'string'
-                        ? errors.destinationTag
-                        : errors.destinationTag.message}
-                    </span>
-                  )}
-                </div>
-              </>
+            />
+            {errors.recipient && (
+              <span className="mt-1 text-xs text-error0 dark:text-error0d">
+                {typeof errors.recipient === 'string' ? errors.recipient : errors.recipient.message}
+              </span>
             )}
+          </div>
+          {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d">{warningMessage}</div>}
 
-            <Label size="big" className="mt-2" textTransform="uppercase" color="gray">
-              {intl.formatMessage({ id: 'common.amount' })}
-            </Label>
-            <div className="flex flex-col">
-              <Controller
-                name="amount"
-                control={control}
-                rules={{
-                  required: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
-                  validate: amountValidator
-                }}
-                render={({ field }) => (
-                  <InputBigNumber
-                    min={0}
-                    size="large"
-                    disabled={isLoading}
-                    decimal={balance.amount.decimal}
-                    value={field.value}
-                    onChange={(value) => {
-                      field.onChange(value)
-                      onChangeInput(value)
-                    }}
-                    error={!!errors.amount}
-                  />
-                )}
-              />
-              {errors.amount && (
-                <span className="mt-1 text-xs text-error0 dark:text-error0d">{errors.amount.message}</span>
-              )}
-            </div>
-
-            <MaxBalanceButton
-              className="mb-10px"
-              color="neutral"
-              balance={{ amount: maxAmount, asset: asset }}
-              maxDollarValue={maxAmountPriceValue}
-              onClick={addMaxAmountHandler}
-              disabled={isLoading}
-            />
-
-            <div className="w-full py-2">{renderSlider}</div>
-
-            <UIFees
-              className="p-0 pb-5"
-              fees={uiFeesRD}
-              reloadFees={
-                typeof reloadFeesHandler === 'function' && reloadFeesHandler.length === 0
-                  ? (reloadFeesHandler as () => void)
-                  : undefined
-              }
-              disabled={isLoading}
-            />
-
-            {renderFeeError}
-
-            {/* Fee options for EVM and UTXO chains */}
-            {(isEVMChain || isUTXOChain) && (
+          {/* Destination Tag field for XRP - show for all XRP transfers */}
+          {isXrpChain && (
+            <>
+              <Label className="mt-2 flex items-center" size="big" color="gray" textTransform="uppercase">
+                {intl.formatMessage({ id: 'common.destinationTag' })}
+                {destinationTagRequired && <span className="text-error0 dark:text-error0d"> *</span>}
+              </Label>
               <div className="flex flex-col">
                 <Controller
-                  name={isEVMChain ? 'fee' : 'feeRate'}
+                  name="destinationTag"
                   control={control}
-                  render={({ field }) => <div onChange={(e) => field.onChange(e)}>{renderFeeOptions}</div>}
+                  rules={{
+                    required: destinationTagRequired
+                      ? intl.formatMessage({ id: 'wallet.errors.destinationTag.required' })
+                      : false,
+                    validate: (value) => {
+                      // If destination tag is required and not provided
+                      if (destinationTagRequired && (value === undefined || value === null)) {
+                        return intl.formatMessage({ id: 'wallet.errors.destinationTag.required' })
+                      }
+
+                      // If value is provided, validate the format
+                      if (value !== undefined && value !== null) {
+                        const numValue = typeof value === 'string' ? parseInt(value, 10) : value
+                        if (!Number.isInteger(numValue) || numValue < 0 || numValue > 4294967295) {
+                          return intl.formatMessage({ id: 'wallet.errors.destinationTag.invalid' })
+                        }
+                      }
+                      return true
+                    }
+                  }}
+                  render={({ field }) => (
+                    <Input
+                      size="large"
+                      disabled={isLoading}
+                      value={field.value?.toString() || ''}
+                      onChange={(e) => {
+                        const value = e.target.value.trim()
+                        const parsed = value ? parseInt(value, 10) : undefined
+                        field.onChange(parsed !== undefined && Number.isNaN(parsed) ? undefined : parsed)
+                      }}
+                      placeholder={
+                        destinationTagRequired
+                          ? intl.formatMessage({ id: 'common.destinationTag.required.placeholder' })
+                          : intl.formatMessage({ id: 'common.destinationTag.placeholder' })
+                      }
+                      type="number"
+                      error={!!errors.destinationTag}
+                    />
+                  )}
                 />
+                {errors.destinationTag && (
+                  <span className="mt-1 text-xs text-error0 dark:text-error0d">
+                    {typeof errors.destinationTag === 'string' ? errors.destinationTag : errors.destinationTag.message}
+                  </span>
+                )}
               </div>
+            </>
+          )}
+
+          <Label size="big" className="mt-2" textTransform="uppercase" color="gray">
+            {intl.formatMessage({ id: 'common.amount' })}
+          </Label>
+          <div className="flex flex-col">
+            <Controller
+              name="amount"
+              control={control}
+              rules={{
+                required: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+                validate: amountValidator
+              }}
+              render={({ field }) => (
+                <InputBigNumber
+                  min={0}
+                  size="large"
+                  disabled={isLoading}
+                  decimal={balance.amount.decimal}
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(value)
+                    onChangeInput(value)
+                  }}
+                  error={!!errors.amount}
+                />
+              )}
+            />
+            {errors.amount && (
+              <span className="mt-1 text-xs text-error0 dark:text-error0d">{errors.amount.message}</span>
             )}
+          </div>
 
-            {/* Gas multiplier for EVM chains */}
-            {renderGasMultiplier}
+          <MaxBalanceButton
+            className="mb-10px"
+            color="neutral"
+            balance={{ amount: maxAmount, asset: asset }}
+            maxDollarValue={maxAmountPriceValue}
+            onClick={addMaxAmountHandler}
+            disabled={isLoading}
+          />
 
-            {/* Advanced Settings for EVM chains */}
-            {isEVMChain && isEvmChainAsset(asset) && (
-              <div className="mt-2 rounded-lg bg-bg1 p-4 dark:bg-bg1d">
-                <div className="flex flex-wrap items-center gap-4 py-2.5">
-                  <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)} active={poolDeposit} />
-                  {poolDeposit ? (
-                    <div className="flex max-w-full flex-1 items-center rounded-lg border border-error0/[0.25] bg-error0/[0.13] px-3 py-2 sm:max-w-[500px]">
-                      <span className="text-sm leading-[1.4] text-error0 dark:text-error0d">
-                        <FormattedMessage
-                          id="deposit.poolTransactionWarning"
-                          defaultMessage="Send pool transaction on {protocol}. Dev use only or risk losing your funds"
-                          values={{
-                            protocol: FP.pipe(
-                              oProtocol,
-                              O.getOrElse(() => 'an unknown protocol')
-                            )
-                          }}
-                        />
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-gray2 dark:text-gray2d">
+          <div className="w-full py-2">{renderSlider}</div>
+
+          <UIFees
+            className="p-0 pb-5"
+            fees={uiFeesRD}
+            reloadFees={
+              typeof reloadFeesHandler === 'function' && reloadFeesHandler.length === 0
+                ? (reloadFeesHandler as () => void)
+                : undefined
+            }
+            disabled={isLoading}
+          />
+
+          {renderFeeError}
+
+          {/* Fee options for EVM and UTXO chains */}
+          {(isEVMChain || isUTXOChain) && (
+            <div className="flex flex-col">
+              <Controller
+                name={isEVMChain ? 'fee' : 'feeRate'}
+                control={control}
+                render={({ field }) => <div onChange={(e) => field.onChange(e)}>{renderFeeOptions}</div>}
+              />
+            </div>
+          )}
+
+          {/* Gas multiplier for EVM chains */}
+          {renderGasMultiplier}
+
+          {/* Advanced Settings for EVM chains */}
+          {isEVMChain && isEvmChainAsset(asset) && (
+            <div className="mt-2 rounded-lg bg-bg1 p-4 dark:bg-bg1d">
+              <div className="flex flex-wrap items-center gap-4 py-2.5">
+                <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)} active={poolDeposit} />
+                {poolDeposit ? (
+                  <div className="flex max-w-full flex-1 items-center rounded-lg border border-error0/[0.25] bg-error0/[0.13] px-3 py-2 sm:max-w-[500px]">
+                    <span className="text-sm leading-[1.4] text-error0 dark:text-error0d">
                       <FormattedMessage
-                        id="deposit.transferToken"
-                        defaultMessage="Transfer token {ticker}"
-                        values={{ ticker: asset.ticker }}
+                        id="deposit.poolTransactionWarning"
+                        defaultMessage="Send pool transaction on {protocol}. Dev use only or risk losing your funds"
+                        values={{
+                          protocol: FP.pipe(
+                            oProtocol,
+                            O.getOrElse(() => 'an unknown protocol')
+                          )
+                        }}
                       />
                     </span>
-                  )}
-                </div>
-                <div className="mt-4">{renderMemo()}</div>
+                  </div>
+                ) : (
+                  <span className="text-gray2 dark:text-gray2d">
+                    <FormattedMessage
+                      id="deposit.transferToken"
+                      defaultMessage="Transfer token {ticker}"
+                      values={{ ticker: asset.ticker }}
+                    />
+                  </span>
+                )}
               </div>
-            )}
+              <div className="mt-4">{renderMemo()}</div>
+            </div>
+          )}
 
-            {/* Memo field for UTXO, COSMOS chains, and EVM tokens (non-chain assets) */}
-            {(!isEVMChain || (isEVMChain && !isEvmChainAsset(asset))) && renderMemo()}
-          </div>
+          {/* Memo field for UTXO, COSMOS chains, and EVM tokens (non-chain assets) */}
+          {(!isEVMChain || (isEVMChain && !isEvmChainAsset(asset))) && renderMemo()}
 
           <FlatButton
             className="mt-40px w-full min-w-[200px]"
@@ -1474,35 +1487,33 @@ export const SendForm = (props: Props): JSX.Element => {
           </FlatButton>
         </form>
 
-        <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
-          <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
-            <BaseButton
-              className="group font-mainSemiBold flex w-full justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-              onClick={() => setShowDetails((current) => !current)}>
-              {intl.formatMessage({ id: 'common.details' })}
-              {showDetails ? (
-                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-              ) : (
-                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-              )}
-            </BaseButton>
-            {showDetails && (
-              <ShowDetails
-                recipient={
-                  isEVMChain
-                    ? O.getOrElse(() => '')(recipientAddress as O.Option<Address>)
-                    : (recipientAddress as Address)
-                }
-                amountLabel={amountLabel}
-                priceFeeLabel={priceFeeLabel}
-                currentMemo={currentMemo}
-                asset={asset}
-                upperFeeBound={isUTXOChain ? getChainFeeBounds(asset.chain) : undefined}
-                feeRate={isUTXOChain ? feeRate : undefined}
-                destinationTag={isXrpChain ? watch('destinationTag') : undefined}
-              />
+        <div className="mt-20px w-full font-main text-[12px] text-gray2 uppercase dark:text-gray2d">
+          <BaseButton
+            className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            onClick={() => setShowDetails((current) => !current)}>
+            {intl.formatMessage({ id: 'common.details' })}
+            {showDetails ? (
+              <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+            ) : (
+              <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
             )}
-          </div>
+          </BaseButton>
+          {showDetails && (
+            <ShowDetails
+              recipient={
+                isEVMChain
+                  ? O.getOrElse(() => '')(recipientAddress as O.Option<Address>)
+                  : (recipientAddress as Address)
+              }
+              amountLabel={amountLabel}
+              priceFeeLabel={priceFeeLabel}
+              currentMemo={currentMemo}
+              asset={asset}
+              upperFeeBound={isUTXOChain ? getChainFeeBounds(asset.chain) : undefined}
+              feeRate={isUTXOChain ? feeRate : undefined}
+              destinationTag={isXrpChain ? watch('destinationTag') : undefined}
+            />
+          )}
         </div>
       </div>
 
