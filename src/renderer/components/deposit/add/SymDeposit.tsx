@@ -32,6 +32,7 @@ import {
   convertBaseAmountDecimal,
   getEVMTokenAddressForChain,
   isEVMTokenAsset,
+  isCacaoAsset,
   isRuneNativeAsset,
   isUSDAsset,
   max1e8BaseAmount,
@@ -209,7 +210,8 @@ export const SymDeposit = (props: Props) => {
     if (
       (!isChainOfMaya(asset.chain) && protocol === MAYAChain) ||
       (!isChainOfThor(asset.chain) && protocol === THORChain) ||
-      (isRuneNativeAsset(asset) && protocol === THORChain)
+      (isRuneNativeAsset(asset) && protocol === THORChain) ||
+      (isCacaoAsset(asset) && protocol === MAYAChain)
     )
       onChangeAsset({ asset: AssetBTC, assetWalletType, runeWalletType })
   }, [asset, assetWalletType, onChangeAsset, protocol, runeWalletType])
@@ -859,25 +861,32 @@ export const SymDeposit = (props: Props) => {
     () =>
       FP.pipe(
         sequenceTOption(oDepositParams, oFailedAssetAmount),
-        O.map(([params, { asset, amount1e8 }]) => {
-          setFailedWalletType(protocolAsset === asset ? params.runeWalletType : params.assetWalletType)
-          const result = {
-            poolAddress: params.poolAddress,
-            asset: asset,
-            amount: protocolAsset === asset ? amount1e8 : convertBaseAmountDecimal(amount1e8, assetDecimal),
-            memo: protocolAsset === asset ? params.memos.rune : params.memos.asset,
-            walletType: protocolAsset === asset ? params.runeWalletType : params.assetWalletType,
-            sender: protocolAsset === asset ? params.runeSender : params.assetSender,
-            walletAccount: protocolAsset === asset ? params.runeWalletAccount : params.assetWalletAccount,
-            walletIndex: protocolAsset === asset ? params.runeWalletIndex : params.assetWalletIndex,
-            hdMode: protocolAsset === asset ? params.runeHDMode : params.assetHDMode,
-            protocol: params.poolAddress.protocol
-          }
-          return result
-        })
+        O.map(([params, { asset, amount1e8 }]) => ({
+          poolAddress: params.poolAddress,
+          asset: asset,
+          amount: protocolAsset === asset ? amount1e8 : convertBaseAmountDecimal(amount1e8, assetDecimal),
+          memo: protocolAsset === asset ? params.memos.rune : params.memos.asset,
+          walletType: protocolAsset === asset ? params.runeWalletType : params.assetWalletType,
+          sender: protocolAsset === asset ? params.runeSender : params.assetSender,
+          walletAccount: protocolAsset === asset ? params.runeWalletAccount : params.assetWalletAccount,
+          walletIndex: protocolAsset === asset ? params.runeWalletIndex : params.assetWalletIndex,
+          hdMode: protocolAsset === asset ? params.runeHDMode : params.assetHDMode,
+          protocol: params.poolAddress.protocol
+        }))
       ),
     [oDepositParams, oFailedAssetAmount, protocolAsset, assetDecimal]
   )
+
+  // Sync failedWalletType when asymDepositParams change (moved out of useMemo)
+  useEffect(() => {
+    FP.pipe(
+      sequenceTOption(oDepositParams, oFailedAssetAmount),
+      O.map(([params, { asset }]) => {
+        setFailedWalletType(protocolAsset === asset ? params.runeWalletType : params.assetWalletType)
+        return true
+      })
+    )
+  }, [oDepositParams, oFailedAssetAmount, protocolAsset])
 
   const reloadFeesHandler = useCallback(() => {
     reloadFees(asset, protocolAsset)
@@ -1177,7 +1186,7 @@ export const SymDeposit = (props: Props) => {
 
       if (dexAmount.gt(maxDexAmountToDeposit)) {
         assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
-          runeAmount: dexAmount,
+          runeAmount: maxDexAmountToDeposit,
           poolData,
           assetDecimal,
           poolAssetDecimals
@@ -1629,7 +1638,7 @@ export const SymDeposit = (props: Props) => {
 
   const isApproveFeeError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return FP.pipe(
       oChainAssetBalance,
@@ -1713,7 +1722,7 @@ export const SymDeposit = (props: Props) => {
 
   const isApproved = useMemo(
     () =>
-      !needApprovement ||
+      O.isNone(needApprovement) ||
       RD.isSuccess(approveState) ||
       FP.pipe(
         isApprovedState,
@@ -1726,14 +1735,14 @@ export const SymDeposit = (props: Props) => {
   )
 
   const checkIsApproved = useMemo(() => {
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
     // ignore initial + loading states for `isApprovedState`
     return RD.isPending(isApprovedState)
   }, [isApprovedState, needApprovement])
 
   const checkIsApprovedError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return RD.isFailure(isApprovedState)
   }, [needApprovement, isApprovedState])
@@ -1813,18 +1822,39 @@ export const SymDeposit = (props: Props) => {
                     poolAssetDecimals
                   })
 
-            const assetAmount: AssetWithAmount1e8 = {
+            return {
               asset: protocolAsset === assetWB.asset ? asset : protocolAsset,
               amount1e8: amount
             }
-            setFailedAssetAmount(O.some(assetAmount))
-            return assetAmount
           })
           return render(pendingAssets, missingAssets, false)
         }
       )
     )
   }, [symPendingAssetsRD, network, protocolAsset, poolData, protocolDecimals, poolAssetDecimals, assetDecimal, asset])
+
+  // Sync failedAssetAmount from pending assets (moved out of useMemo)
+  // Only update on success to preserve previous value during reloads (pending/failure)
+  useEffect(() => {
+    if (RD.isSuccess(symPendingAssetsRD)) {
+      const pendingAssets = symPendingAssetsRD.value
+      const last = pendingAssets[pendingAssets.length - 1]
+      if (!last) {
+        setFailedAssetAmount(O.none)
+        return
+      }
+      const amount =
+        protocolAsset !== last.asset
+          ? Helper.getDexAmountToDeposit(last.amount1e8, poolData, protocolDecimals, poolAssetDecimals)
+          : Helper.getAssetAmountToDeposit({
+              runeAmount: last.amount1e8,
+              poolData,
+              assetDecimal,
+              poolAssetDecimals
+            })
+      setFailedAssetAmount(O.some({ asset: protocolAsset === last.asset ? asset : protocolAsset, amount1e8: amount }))
+    }
+  }, [symPendingAssetsRD, protocolAsset, poolData, protocolDecimals, poolAssetDecimals, assetDecimal, asset])
 
   const prevHasAsymAssets = useRef<LiquidityProviderHasAsymAssets>({ dexAsset: false, asset: false })
 

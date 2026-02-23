@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
@@ -227,9 +227,13 @@ export const InteractFormMaya = (props: Props) => {
     }, [cacaoPoolProviderRd, mayachainLastblockRd, mimirKeys])
   }
 
-  const mimirKeys = FP.pipe(
-    mimirRD,
-    RD.getOrElse(() => ({}) as { [key: string]: number })
+  const mimirKeys = useMemo(
+    () =>
+      FP.pipe(
+        mimirRD,
+        RD.getOrElse(() => ({}) as { [key: string]: number })
+      ),
+    [mimirRD]
   )
 
   const cacaoPoolData = useCacaoPoolProviderMaturity(cacaoPoolProviderRd, mayachainLastblockRD, mimirKeys)
@@ -334,19 +338,12 @@ export const InteractFormMaya = (props: Props) => {
       FP.pipe(
         oFee,
         O.fold(
-          // Missing (or loading) fees does not mean we can't sent something. No error then.
-          () => !O.isNone(oFee),
+          () => false,
           (fee) => balance.amount.amount().isLessThan(fee.amount())
         )
       ),
     [balance, oFee]
   )
-  const _handleMemo = useCallback(() => {
-    const memoValue = watch('memo')
-    // Update the state with the adjusted memo value
-    setCurrentMemo(memoValue)
-  }, [watch])
-
   const renderFeeError = useMemo(
     () => (
       <Label size="big" color="error">
@@ -413,7 +410,7 @@ export const InteractFormMaya = (props: Props) => {
     })
 
     if (
-      (maxAmount && interactType === InteractType.Bond) ||
+      interactType === InteractType.Bond ||
       interactType === InteractType.Custom ||
       interactType === InteractType.CacaoPool
     ) {
@@ -479,42 +476,58 @@ export const InteractFormMaya = (props: Props) => {
     [interactType, intl, maxAmount]
   )
 
-  const debouncedFetch = debounce(
-    async (mayaname, setMayaname, setMayanameAvailable, setMayanameUpdate, setMayanameRegister, mayachainQuery) => {
-      try {
-        const mayanameDetails = await mayachainQuery.getMAYANameDetails(mayaname)
-        if (mayanameDetails) {
-          setMayaname(O.some(mayanameDetails))
-          setMayanameAvailable(mayanameDetails.owner === '' || balance.walletAddress === mayanameDetails.owner)
-          setMayanameUpdate(mayaname === mayanameDetails.name && mayanameDetails.owner === '')
-          setMayanameRegister(mayanameDetails.name === '')
-          setIsOwner(balance.walletAddress === mayanameDetails.owner)
+  const debouncedFetchRef = useRef(
+    debounce(
+      async (
+        mayaname: string,
+        setMayanameFn: (v: O.Option<MAYANameDetails>) => void,
+        setMayanameAvailableFn: (v: boolean) => void,
+        setMayanameUpdateFn: (v: boolean) => void,
+        setMayanameRegisterFn: (v: boolean) => void,
+        query: MayachainQuery,
+        walletAddr: string
+      ) => {
+        try {
+          const mayanameDetails = await query.getMAYANameDetails(mayaname)
+          if (mayanameDetails) {
+            setMayanameFn(O.some(mayanameDetails))
+            setMayanameAvailableFn(mayanameDetails.owner === '' || walletAddr === mayanameDetails.owner)
+            setMayanameUpdateFn(mayaname === mayanameDetails.name && mayanameDetails.owner === '')
+            setMayanameRegisterFn(mayanameDetails.name === '')
+            setIsOwner(walletAddr === mayanameDetails.owner)
+          }
+          if (mayanameDetails === undefined) {
+            setMayanameAvailableFn(true)
+            setMayanameRegisterFn(true)
+          }
+        } catch (error) {
+          // Handle error silently or with appropriate error handling
         }
-        if (mayanameDetails === undefined) {
-          setMayanameAvailable(true)
-          setMayanameRegister(true)
-        }
-      } catch (error) {
-        // Handle error silently or with appropriate error handling
-      }
-    },
-    500
+      },
+      500
+    )
   )
+
+  useEffect(() => {
+    const debounced = debouncedFetchRef.current
+    return () => debounced.cancel()
+  }, [])
 
   const mayanameHandler = useCallback(() => {
     const mayaname = watch('mayaname')
     setMemo('')
     if (mayaname !== '') {
-      debouncedFetch(
+      debouncedFetchRef.current(
         mayaname,
         setMayaname,
         setMayanameAvailable,
         setMayanameUpdate,
         setMayanameRegister,
-        mayachainQuery
+        mayachainQuery,
+        balance.walletAddress
       )
     }
-  }, [debouncedFetch, watch, mayachainQuery])
+  }, [watch, mayachainQuery, balance.walletAddress])
 
   const estimateMayanameHandler = useCallback(() => {
     const currentDate = new Date()
@@ -644,8 +657,8 @@ export const InteractFormMaya = (props: Props) => {
     async (value: BigNumber) => {
       // we have to validate input before storing into the state
       amountValidator(value)
-        .then((isValid) => {
-          if (isValid) {
+        .then((result) => {
+          if (result === true) {
             const newAmountToSend = assetToBase(assetAmount(value, CACAO_DECIMAL))
             setAmountToSend(newAmountToSend)
             setValue('amount', value)
@@ -782,6 +795,7 @@ export const InteractFormMaya = (props: Props) => {
             txHash={oTxHash}
             onClick={openExplorerTxUrl}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            network={network}
           />
         }
         timerValue={FP.pipe(
@@ -872,14 +886,17 @@ export const InteractFormMaya = (props: Props) => {
     getMemo()
   }, [whitelisting, getMemo])
 
-  const handleUnbond = (nodeAddress: string, pool: MayaLpUnits) => {
-    const unitsToUnbond = pool.units.toString()
-    const asset = assetToString(pool.asset)
-    setValue('mayaAddress', nodeAddress)
-    setValue('bondLpUnits', unitsToUnbond)
-    setValue('assetPool', asset)
-    getMemo()
-  }
+  const handleUnbond = useCallback(
+    (nodeAddress: string, pool: MayaLpUnits) => {
+      const unitsToUnbond = pool.units.toString()
+      const asset = assetToString(pool.asset)
+      setValue('mayaAddress', nodeAddress)
+      setValue('bondLpUnits', unitsToUnbond)
+      setValue('assetPool', asset)
+      getMemo()
+    },
+    [setValue, getMemo]
+  )
 
   const handleLearn = useCallback(() => {
     window.apiUrl.openExternal('https://docs.mayaprotocol.com/mayachain-dev-docs/concepts/transaction-memos')
