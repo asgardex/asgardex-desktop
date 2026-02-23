@@ -107,7 +107,7 @@ const Route = memo(function Route({
           <div className="flex items-center space-x-2">
             <div className="flex items-center">
               <img src={BoostIcon} alt="Boost" className="h-5 w-5" />
-              <span className="text-11 text-[#FF33AF]">Boost</span>
+              <span className="text-11 text-boost">Boost</span>
             </div>
             <SwitchButton active={isBoostEnabled} onChange={onToggleBoost} />
           </div>

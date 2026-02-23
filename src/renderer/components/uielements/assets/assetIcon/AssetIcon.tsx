@@ -309,7 +309,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
         : isTrade
           ? 'border-turquoise'
           : isSecured
-            ? 'border-[#B224EC]'
+            ? 'border-secured'
             : 'border-transparent'
       const shadowClass = isSynth
         ? 'shadow-[0px_0px_15px_5px_rgba(80,227,194,0.8)]'
