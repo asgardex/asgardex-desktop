@@ -1,7 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  MagnifyingGlassIcon,
+  MagnifyingGlassMinusIcon,
+  MagnifyingGlassPlusIcon,
+  UserIcon
+} from '@heroicons/react/24/outline'
 import { AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
@@ -23,7 +30,6 @@ import {
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
-import { debounce } from 'lodash'
 import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
@@ -74,8 +80,6 @@ import { Fees, UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
-import { RadioGroup, Radio } from '../../../uielements/radio'
-import { Switch } from '../../../uielements/switch'
 import { Tooltip } from '../../../uielements/tooltip'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
@@ -361,14 +365,6 @@ export const InteractFormMaya = (props: Props) => {
     ),
     [intl, balance.amount]
   )
-  const renderMayanameError = useMemo(
-    () => (
-      <Label size="big" color="error">
-        {intl.formatMessage({ id: 'common.mayanameError' })}
-      </Label>
-    ),
-    [intl]
-  )
 
   const renderCacaoPoolWarning = useMemo(
     () => (
@@ -476,58 +472,56 @@ export const InteractFormMaya = (props: Props) => {
     [interactType, intl, maxAmount]
   )
 
-  const debouncedFetchRef = useRef(
-    debounce(
-      async (
-        mayaname: string,
-        setMayanameFn: (v: O.Option<MAYANameDetails>) => void,
-        setMayanameAvailableFn: (v: boolean) => void,
-        setMayanameUpdateFn: (v: boolean) => void,
-        setMayanameRegisterFn: (v: boolean) => void,
-        query: MayachainQuery,
-        walletAddr: string
-      ) => {
-        try {
-          const mayanameDetails = await query.getMAYANameDetails(mayaname)
-          if (mayanameDetails) {
-            setMayanameFn(O.some(mayanameDetails))
-            setMayanameAvailableFn(mayanameDetails.owner === '' || walletAddr === mayanameDetails.owner)
-            setMayanameUpdateFn(mayaname === mayanameDetails.name && mayanameDetails.owner === '')
-            setMayanameRegisterFn(mayanameDetails.name === '')
-            setIsOwner(walletAddr === mayanameDetails.owner)
-          }
-          if (mayanameDetails === undefined) {
-            setMayanameAvailableFn(true)
-            setMayanameRegisterFn(true)
-          }
-        } catch (error) {
-          // Handle error silently or with appropriate error handling
-        }
-      },
-      500
-    )
-  )
+  const [isLookingUp, setIsLookingUp] = useState(false)
+  const [lookupMode, setLookupMode] = useState<'name' | 'owner'>('name')
+  const [ownerAddress, setOwnerAddress] = useState('')
+  const [ownerNames, setOwnerNames] = useState<MAYANameDetails[]>([])
+  const [isLookingUpOwner, setIsLookingUpOwner] = useState(false)
+  const [ownerSearchDone, setOwnerSearchDone] = useState(false)
 
-  useEffect(() => {
-    const debounced = debouncedFetchRef.current
-    return () => debounced.cancel()
-  }, [])
-
-  const mayanameHandler = useCallback(() => {
+  const mayanameHandler = useCallback(async () => {
     const mayaname = watch('mayaname')
     setMemo('')
-    if (mayaname !== '') {
-      debouncedFetchRef.current(
-        mayaname,
-        setMayaname,
-        setMayanameAvailable,
-        setMayanameUpdate,
-        setMayanameRegister,
-        mayachainQuery,
-        balance.walletAddress
-      )
+    if (mayaname === '') return
+
+    setIsLookingUp(true)
+    try {
+      const mayanameDetails = await mayachainQuery.getMAYANameDetails(mayaname)
+      if (mayanameDetails) {
+        setMayaname(O.some(mayanameDetails))
+        setMayanameAvailable(mayanameDetails.owner === '' || balance.walletAddress === mayanameDetails.owner)
+        setMayanameUpdate(mayaname === mayanameDetails.name && mayanameDetails.owner === '')
+        setMayanameRegister(mayanameDetails.name === '')
+        setIsOwner(balance.walletAddress === mayanameDetails.owner)
+      }
+      if (mayanameDetails === undefined) {
+        setMayanameAvailable(true)
+        setMayanameRegister(true)
+      }
+    } catch (_error) {
+      setMayanameAvailable(false)
+    } finally {
+      setIsLookingUp(false)
     }
   }, [watch, mayachainQuery, balance.walletAddress])
+
+  const ownerLookupHandler = useCallback(async () => {
+    if (ownerAddress === '') return
+    setIsLookingUpOwner(true)
+    setOwnerNames([])
+    setOwnerSearchDone(false)
+    try {
+      const details = await mayachainQuery.getMAYANamesByOwner(ownerAddress)
+      if (details && details.length > 0) {
+        setOwnerNames(details)
+      }
+    } catch (_error) {
+      // no names found
+    } finally {
+      setIsLookingUpOwner(false)
+      setOwnerSearchDone(true)
+    }
+  }, [ownerAddress, mayachainQuery])
 
   const estimateMayanameHandler = useCallback(() => {
     const currentDate = new Date()
@@ -733,6 +727,8 @@ export const InteractFormMaya = (props: Props) => {
     setMayanameQuoteValid(false)
     setMayanameUpdate(false)
     setMayanameAvailable(false)
+    setOwnerNames([])
+    setOwnerSearchDone(false)
   }, [reset, resetInteractState, balance.walletAddress, interactType])
 
   const renderConfirmationModal = useMemo(() => {
@@ -1098,15 +1094,30 @@ export const InteractFormMaya = (props: Props) => {
         {/** Cacao Pool */}
         {interactType === InteractType.CacaoPool && (
           <div className="mb-2">
-            <span className="inline-block">
-              <Switch
-                labels={['DEPOSIT', 'WITHDRAW']}
-                colors={['#3B82F6', '#EF4444']}
-                onChange={(value) => {
-                  setCacaoPoolAction(value === 'DEPOSIT' ? Action.add : Action.withdraw)
-                }}
-              />
-            </span>
+            <div className="flex border-b border-gray0 dark:border-gray0d">
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  cacaoPoolAction === Action.add
+                    ? 'border-b-2 border-turquoise text-turquoise'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setCacaoPoolAction(Action.add)}>
+                <ArrowDownTrayIcon className="h-4 w-4" />
+                DEPOSIT
+              </button>
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  cacaoPoolAction === Action.withdraw
+                    ? 'border-b-2 border-error0 text-error0 dark:border-error0d dark:text-error0d'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setCacaoPoolAction(Action.withdraw)}>
+                <ArrowUpTrayIcon className="h-4 w-4" />
+                WITHDRAW
+              </button>
+            </div>
             {cacaoPoolProvider.value.gt(0) && cacaoPoolAction === Action.add && renderCacaoPoolWarning}
           </div>
         )}
@@ -1285,56 +1296,229 @@ export const InteractFormMaya = (props: Props) => {
         {/* Mayaname Button and Details*/}
         {interactType === InteractType.MAYAName && (
           <div className="w-full sm:max-w-[630px]">
-            <div className="flex w-full items-center text-[12px]">
-              <Label color="input" size="big" textTransform="uppercase">
-                {intl.formatMessage({ id: 'common.mayaname' })}
-              </Label>
-              <InfoIcon
-                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                color="primary"
-                tooltip={intl.formatMessage({ id: 'common.mayanameRegistrationSpecifics' })}
-              />
+            {/* Tab navigation */}
+            <div className="mb-4 flex border-b border-gray0 dark:border-gray0d">
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  lookupMode === 'name'
+                    ? 'border-b-2 border-turquoise text-turquoise'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setLookupMode('name')}>
+                <MagnifyingGlassIcon className="h-4 w-4" />
+                Lookup Name
+              </button>
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  lookupMode === 'owner'
+                    ? 'border-b-2 border-turquoise text-turquoise'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setLookupMode('owner')}>
+                <UserIcon className="h-4 w-4" />
+                Names by Owner
+              </button>
             </div>
 
-            <div>
-              <Input
-                {...register('mayaname', {
-                  required:
-                    interactType === InteractType.MAYAName
-                      ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
-                      : false,
-                  onChange: () => mayanameHandler()
-                })}
-                disabled={isLoading}
-                size="large"
-              />
-              {errors.mayaname && (
-                <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.mayaname.message}</div>
-              )}
-            </div>
-            {O.isSome(oMayaname) && !mayanameAvailable && !isOwner && renderMayanameError}
+            {lookupMode === 'name' && (
+              <>
+                <div className="flex items-center text-[12px]">
+                  <Label color="input" size="big" textTransform="uppercase">
+                    {intl.formatMessage({ id: 'common.mayaname' })}
+                  </Label>
+                  <InfoIcon
+                    className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                    color="primary"
+                    tooltip={intl.formatMessage({ id: 'common.mayanameRegistrationSpecifics' })}
+                  />
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <div className="flex-1">
+                    <Input
+                      {...register('mayaname', {
+                        required:
+                          interactType === InteractType.MAYAName && lookupMode === 'name'
+                            ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                            : false
+                      })}
+                      disabled={isLoading || isLookingUp}
+                      size="large"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          mayanameHandler()
+                        }
+                      }}
+                    />
+                    {errors.mayaname && (
+                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.mayaname.message}</div>
+                    )}
+                  </div>
+                  <FlatButton
+                    className="h-[40px] min-w-[100px]"
+                    size="normal"
+                    color="primary"
+                    disabled={isLoading || isLookingUp || !watch('mayaname')}
+                    loading={isLookingUp}
+                    onClick={mayanameHandler}>
+                    Lookup
+                  </FlatButton>
+                </div>
+              </>
+            )}
+
+            {lookupMode === 'owner' && (
+              <>
+                <Label color="input" size="big" textTransform="uppercase">
+                  Owner Address
+                </Label>
+                <Input
+                  value={ownerAddress}
+                  onChange={(e) => setOwnerAddress(e.target.value)}
+                  disabled={isLoading || isLookingUpOwner}
+                  size="large"
+                  placeholder="maya1... or any chain address"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      ownerLookupHandler()
+                    }
+                  }}
+                />
+                <FlatButton
+                  className="mt-4 w-full"
+                  size="large"
+                  color="primary"
+                  disabled={isLoading || isLookingUpOwner || !ownerAddress}
+                  loading={isLookingUpOwner}
+                  onClick={ownerLookupHandler}>
+                  <UserIcon className="mr-2 h-5 w-5" />
+                  Find Names
+                </FlatButton>
+                {/* Owner lookup results */}
+                {ownerSearchDone && !isLookingUpOwner && ownerNames.length === 0 && (
+                  <div className="mt-4 text-center text-[14px] text-gray2 dark:text-gray2d">
+                    No names found for this address
+                  </div>
+                )}
+                {!isLookingUpOwner && ownerNames.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {ownerNames.map((details) => {
+                      const currentBlock = FP.pipe(
+                        mayachainLastblockRD,
+                        RD.toOption,
+                        O.chain((blocks) => O.fromNullable(blocks.find((b) => b.mayachain))),
+                        O.map((b) => b.mayachain),
+                        O.toUndefined
+                      )
+                      const estimatedExpiry =
+                        currentBlock && details.expireBlockHeight
+                          ? (() => {
+                              const blocksLeft = details.expireBlockHeight - currentBlock
+                              const secondsLeft = blocksLeft * 6
+                              const daysLeft = Math.round(secondsLeft / 86400)
+                              const expiryDate = new Date(Date.now() + secondsLeft * 1000)
+                              return { date: expiryDate, daysLeft }
+                            })()
+                          : undefined
+
+                      return (
+                        <div key={details.name} className="rounded-lg border border-gray0 p-4 dark:border-gray0d">
+                          <div className="flex gap-6">
+                            <div className="flex-1">
+                              <div className="text-[11px] text-gray2 dark:text-gray2d">
+                                {intl.formatMessage({ id: 'common.mayaname' })}
+                              </div>
+                              <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                {details.name}
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-[11px] text-gray2 dark:text-gray2d">Expiry</div>
+                              {estimatedExpiry ? (
+                                <>
+                                  <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                    {estimatedExpiry.date.toLocaleDateString(undefined, {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    })}{' '}
+                                    <span className="text-[12px] text-gray2 dark:text-gray2d">
+                                      (~{estimatedExpiry.daysLeft} days)
+                                    </span>
+                                  </div>
+                                  <div className="text-[11px] text-gray2 dark:text-gray2d">
+                                    Block {details.expireBlockHeight?.toLocaleString()}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                  Block {details.expireBlockHeight?.toLocaleString()}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <div className="text-[11px] text-gray2 dark:text-gray2d">
+                              {intl.formatMessage({ id: 'common.owner' })}
+                            </div>
+                            <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">
+                              {details.owner}
+                            </div>
+                          </div>
+                          {details.aliases && details.aliases.length > 0 && (
+                            <div className="mt-3">
+                              <div className="mb-1 text-[11px] text-gray2 dark:text-gray2d">
+                                Chain Aliases ({details.aliases.length})
+                              </div>
+                              <div className="space-y-1">
+                                {details.aliases.map((alias, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-baseline gap-3 rounded bg-bg1 px-3 py-2 dark:bg-bg1d">
+                                    <span className="font-mainSemiBold w-[50px] shrink-0 text-[12px] text-text0 dark:text-text0d">
+                                      {alias.chain}
+                                    </span>
+                                    <span className="font-mono text-[12px] break-all text-gray2 dark:text-gray2d">
+                                      {alias.address}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
         {/** Form item for unregistered mayaname */}
-        {mayanameAvailable && (
-          <div className="w-full sm:max-w-[630px]">
-            {isOwner ? (
-              <CheckButton
-                checked={mayanameUpdate || isOwner}
-                clickHandler={() => setMayanameUpdate(true)}
-                disabled={isLoading}>
-                {intl.formatMessage({ id: 'common.isUpdateMayaname' })}
-              </CheckButton>
-            ) : (
-              <></>
+        {lookupMode === 'name' && mayanameAvailable && (
+          <div className="mt-4 w-full rounded-lg border border-gray0 p-5 sm:max-w-[630px] dark:border-gray0d">
+            {isOwner && (
+              <div className="mb-4">
+                <CheckButton
+                  checked={mayanameUpdate || isOwner}
+                  clickHandler={() => setMayanameUpdate(true)}
+                  disabled={isLoading}>
+                  {intl.formatMessage({ id: 'common.isUpdateMayaname' })}
+                </CheckButton>
+              </div>
             )}
             {!mayanameRegister ? (
-              <>
-                {/* Add input fields for aliasChain, aliasAddress, and expiry */}
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.aliasChain' })}
-                </Label>
+              <div className="space-y-5">
+                {/* Alias Chain */}
                 <div>
+                  <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                    {intl.formatMessage({ id: 'common.aliasChain' })}
+                  </div>
                   <Controller
                     name="aliasChain"
                     control={control}
@@ -1342,37 +1526,42 @@ export const InteractFormMaya = (props: Props) => {
                       required: interactType === InteractType.MAYAName ? 'Please provide an alias chain.' : false
                     }}
                     render={({ field }) => (
-                      <RadioGroup
-                        {...field}
-                        value={aliasChain}
-                        onChange={(value) => {
-                          field.onChange(value)
-                          handleRadioChainChange(value)
-                          estimateMayanameHandler()
-                        }}>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetAETH.chain}>
-                          ARB
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
-                          BTC
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
-                          ETH
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
-                          RUNE
-                        </Radio>
-                      </RadioGroup>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { value: AssetAETH.chain, label: 'ARB' },
+                          { value: AssetBTC.chain, label: 'BTC' },
+                          { value: AssetETH.chain, label: 'ETH' },
+                          { value: AssetRuneNative.chain, label: 'RUNE' }
+                        ].map((item) => (
+                          <button
+                            key={item.value}
+                            type="button"
+                            className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
+                              aliasChain === item.value
+                                ? 'border-turquoise bg-turquoise/10 text-turquoise'
+                                : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
+                            }`}
+                            onClick={() => {
+                              field.onChange(item.value)
+                              handleRadioChainChange(item.value)
+                              estimateMayanameHandler()
+                            }}>
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
                     )}
                   />
                   {errors.aliasChain && (
                     <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasChain.message}</div>
                   )}
                 </div>
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.aliasAddress' })}
-                </Label>
+
+                {/* Alias Address */}
                 <div>
+                  <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                    {intl.formatMessage({ id: 'common.aliasAddress' })}
+                  </div>
                   <Input
                     {...register('aliasAddress', {
                       required: interactType === InteractType.MAYAName ? 'Please provide an alias address.' : false,
@@ -1385,47 +1574,53 @@ export const InteractFormMaya = (props: Props) => {
                     <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasAddress.message}</div>
                   )}
                 </div>
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.expiry' })}
-                </Label>
+
+                {/* Expiry */}
                 <div>
+                  <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                    {intl.formatMessage({ id: 'common.expiry' })}
+                  </div>
                   <Controller
                     name="expiry"
                     control={control}
                     render={({ field }) => (
-                      <RadioGroup
-                        {...field}
-                        onChange={(value) => {
-                          field.onChange(value)
-                          estimateMayanameHandler()
-                        }}>
-                        <Radio className="text-gray2 dark:text-gray2d" value="1">
-                          1 year
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="2">
-                          2 years
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="3">
-                          3 years
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="5">
-                          5 years
-                        </Radio>
-                      </RadioGroup>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { value: '1', label: '1 year' },
+                          { value: '2', label: '2 years' },
+                          { value: '3', label: '3 years' },
+                          { value: '5', label: '5 years' }
+                        ].map((item) => (
+                          <button
+                            key={item.value}
+                            type="button"
+                            className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
+                              field.value === item.value
+                                ? 'border-turquoise bg-turquoise/10 text-turquoise'
+                                : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
+                            }`}
+                            onClick={() => {
+                              field.onChange(item.value)
+                              estimateMayanameHandler()
+                            }}>
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
                     )}
                   />
                   {errors.expiry && (
                     <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
                   )}
                 </div>
-              </>
+              </div>
             ) : (
-              <>
-                {/* Initial values needed for tns or mns register */}
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.aliasChain' })}
-                </Label>
+              <div className="space-y-5">
+                {/* Initial registration — chain locked to MAYA */}
                 <div>
+                  <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                    {intl.formatMessage({ id: 'common.aliasChain' })}
+                  </div>
                   <Controller
                     name="chain"
                     control={control}
@@ -1433,26 +1628,29 @@ export const InteractFormMaya = (props: Props) => {
                       required: interactType === InteractType.MAYAName ? 'Please provide an alias chain.' : false
                     }}
                     render={({ field }) => (
-                      <RadioGroup
-                        {...field}
-                        onChange={(value) => {
-                          field.onChange(value)
-                          estimateMayanameHandler()
-                        }}>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetCacao.chain}>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className="rounded-full border border-turquoise bg-turquoise/10 px-4 py-1.5 font-main text-[13px] text-turquoise"
+                          onClick={() => {
+                            field.onChange(AssetCacao.chain)
+                            estimateMayanameHandler()
+                          }}>
                           MAYA
-                        </Radio>
-                      </RadioGroup>
+                        </button>
+                      </div>
                     )}
                   />
                   {errors.chain && (
                     <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chain.message}</div>
                   )}
                 </div>
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.aliasAddress' })}
-                </Label>
+
+                {/* Alias Address */}
                 <div>
+                  <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                    {intl.formatMessage({ id: 'common.aliasAddress' })}
+                  </div>
                   <Input
                     {...register('chainAddress', {
                       required: interactType === InteractType.MAYAName ? 'Please provide an alias address.' : false,
@@ -1465,50 +1663,54 @@ export const InteractFormMaya = (props: Props) => {
                     <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chainAddress.message}</div>
                   )}
                 </div>
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.expiry' })}
-                </Label>
+
+                {/* Expiry */}
                 <div>
+                  <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                    {intl.formatMessage({ id: 'common.expiry' })}
+                  </div>
                   <Controller
                     name="expiry"
                     control={control}
-                    rules={{
-                      required: interactType === InteractType.MAYAName ? true : false
-                    }}
+                    rules={{ required: interactType === InteractType.MAYAName }}
                     render={({ field }) => (
-                      <RadioGroup
-                        {...field}
-                        onChange={(value) => {
-                          field.onChange(value)
-                          estimateMayanameHandler()
-                        }}>
-                        <Radio className="text-gray2 dark:text-gray2d" value="1">
-                          1 year
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="2">
-                          2 years
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="3">
-                          3 years
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="5">
-                          5 years
-                        </Radio>
-                      </RadioGroup>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { value: '1', label: '1 year' },
+                          { value: '2', label: '2 years' },
+                          { value: '3', label: '3 years' },
+                          { value: '5', label: '5 years' }
+                        ].map((item) => (
+                          <button
+                            key={item.value}
+                            type="button"
+                            className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
+                              field.value === item.value
+                                ? 'border-turquoise bg-turquoise/10 text-turquoise'
+                                : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
+                            }`}
+                            onClick={() => {
+                              field.onChange(item.value)
+                              estimateMayanameHandler()
+                            }}>
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
                     )}
                   />
                   {errors.expiry && (
                     <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
                   )}
                 </div>
-              </>
+              </div>
             )}
-            <Fees className="mt-10px pb-5" fees={mayaNamefees} disabled={isLoading} />
+            <Fees className="mt-5 pb-5" fees={mayaNamefees} disabled={isLoading} />
           </div>
         )}
       </div>
       <div className="flex items-center justify-center">
-        {mayanameQuoteValid && (
+        {lookupMode === 'name' && mayanameQuoteValid && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
@@ -1552,7 +1754,7 @@ export const InteractFormMaya = (props: Props) => {
         {/* memo */}
         <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
           <BaseButton
-            className="group font-mainSemiBold flex w-full justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
             onClick={() => setShowDetails((current) => !current)}>
             {intl.formatMessage({ id: 'common.details' })}
             {showDetails ? (
@@ -1565,33 +1767,92 @@ export const InteractFormMaya = (props: Props) => {
             <>
               {FP.pipe(
                 oMayaname,
-                O.map(({ owner, expireBlockHeight, aliases }) => {
-                  if (owner || expireBlockHeight || aliases) {
-                    return (
-                      <>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          {intl.formatMessage({ id: 'common.owner' })}
-                          <div>{owner}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div>{intl.formatMessage({ id: 'common.expirationBlock' })}</div>
-                          <div>{expireBlockHeight}</div>
-                        </div>
+                O.map(({ owner, name, expireBlockHeight, aliases }) => {
+                  if (owner || name || expireBlockHeight || aliases) {
+                    // Estimate expiry date from block height
+                    const currentBlock = FP.pipe(
+                      mayachainLastblockRD,
+                      RD.toOption,
+                      O.chain((blocks) => O.fromNullable(blocks.find((b) => b.mayachain))),
+                      O.map((b) => b.mayachain),
+                      O.toUndefined
+                    )
+                    const estimatedExpiry =
+                      currentBlock && expireBlockHeight
+                        ? (() => {
+                            const blocksLeft = expireBlockHeight - currentBlock
+                            const secondsLeft = blocksLeft * 6
+                            const daysLeft = Math.round(secondsLeft / 86400)
+                            const expiryDate = new Date(Date.now() + secondsLeft * 1000)
+                            return { date: expiryDate, daysLeft }
+                          })()
+                        : undefined
 
-                        {aliases &&
-                          aliases.map((alias, index) => (
-                            <div key={index}>
-                              <div className="flex w-full justify-between pl-10px text-[12px]">
-                                {intl.formatMessage({ id: 'common.aliasChain' })}
-                                <div>{alias.chain}</div>
-                              </div>
-                              <div className="flex w-full justify-between pl-10px text-[12px]">
-                                {intl.formatMessage({ id: 'common.aliasAddress' })}
-                                <div>{alias.address}</div>
-                              </div>
+                    return (
+                      <div key={name} className="mt-2 rounded-lg border border-gray0 p-4 dark:border-gray0d">
+                        {/* Name + Expiry row */}
+                        <div className="flex gap-6">
+                          <div className="flex-1">
+                            <div className="text-[11px] text-gray2 dark:text-gray2d">
+                              {intl.formatMessage({ id: 'common.mayaname' })}
                             </div>
-                          ))}
-                      </>
+                            <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">{name}</div>
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-[11px] text-gray2 dark:text-gray2d">Expiry</div>
+                            {estimatedExpiry ? (
+                              <>
+                                <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                  {estimatedExpiry.date.toLocaleDateString(undefined, {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}{' '}
+                                  <span className="text-[12px] text-gray2 dark:text-gray2d">
+                                    (~{estimatedExpiry.daysLeft} days)
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-gray2 dark:text-gray2d">
+                                  Block {expireBlockHeight?.toLocaleString()}
+                                </div>
+                              </>
+                            ) : (
+                              <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                Block {expireBlockHeight?.toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {/* Owner */}
+                        <div className="mt-3">
+                          <div className="text-[11px] text-gray2 dark:text-gray2d">
+                            {intl.formatMessage({ id: 'common.owner' })}
+                          </div>
+                          <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">{owner}</div>
+                        </div>
+                        {/* Chain Aliases */}
+                        {aliases && aliases.length > 0 && (
+                          <div className="mt-3">
+                            <div className="mb-1 text-[11px] text-gray2 dark:text-gray2d">
+                              Chain Aliases ({aliases.length})
+                            </div>
+                            <div className="space-y-1">
+                              {aliases.map((alias, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-baseline gap-3 rounded bg-bg1 px-3 py-2 dark:bg-bg1d">
+                                  <span className="font-mainSemiBold w-[50px] shrink-0 text-[12px] text-text0 dark:text-text0d">
+                                    {alias.chain}
+                                  </span>
+                                  <span className="font-mono text-[12px] break-all text-gray2 dark:text-gray2d">
+                                    {alias.address}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )
                   }
                   return null

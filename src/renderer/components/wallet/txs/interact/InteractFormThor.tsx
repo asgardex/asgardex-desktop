@@ -1,7 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  MagnifyingGlassIcon,
+  MagnifyingGlassMinusIcon,
+  MagnifyingGlassPlusIcon,
+  UserIcon
+} from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -20,7 +27,6 @@ import {
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
-import { debounce } from 'lodash'
 import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
@@ -69,8 +75,6 @@ import { Fees, UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
-import { RadioGroup, Radio } from '../../../uielements/radio'
-import { Switch } from '../../../uielements/switch'
 import { Tooltip } from '../../../uielements/tooltip'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
@@ -368,14 +372,6 @@ export const InteractFormThor = ({
     [intl, balance.amount]
   )
 
-  const renderThornameError = useMemo(
-    () => (
-      <Label size="big" color="error">
-        {intl.formatMessage({ id: 'common.thornameError' })}
-      </Label>
-    ),
-    [intl]
-  )
   const renderRunePoolWarning = useMemo(
     () => (
       <Label size="big" color="warning">
@@ -485,55 +481,55 @@ export const InteractFormThor = ({
     [interactType, intl, maxAmount]
   )
 
-  const debouncedFetchRef = useRef(
-    debounce(
-      async (
-        thorname: string,
-        setThornameFn: (v: O.Option<ThornameDetails>) => void,
-        setThornameAvailableFn: (v: boolean) => void,
-        setThornameUpdateFn: (v: boolean) => void,
-        setIsOwnerFn: (v: boolean) => void,
-        query: ThorchainQuery,
-        bal: { walletAddress: string }
-      ) => {
-        try {
-          const thornameDetails = await query.getThornameDetails(thorname)
-          if (thornameDetails) {
-            setThornameFn(O.some(thornameDetails))
-            setThornameAvailableFn(thornameDetails.owner === '' || bal.walletAddress === thornameDetails.owner)
-            setThornameUpdateFn(thorname === thornameDetails.name && thornameDetails.owner === '')
-            setThornameRegister(thornameDetails.name === '')
-            setIsOwnerFn(bal.walletAddress === thornameDetails.owner)
-          }
-        } catch (_error) {
-          setThornameAvailableFn(true)
-        }
-      },
-      500
-    )
-  )
+  const [isLookingUp, setIsLookingUp] = useState(false)
+  const [lookupMode, setLookupMode] = useState<'name' | 'owner'>('name')
+  const [ownerAddress, setOwnerAddress] = useState('')
+  const [ownerNames, setOwnerNames] = useState<ThornameDetails[]>([])
+  const [isLookingUpOwner, setIsLookingUpOwner] = useState(false)
+  const [ownerSearchDone, setOwnerSearchDone] = useState(false)
 
-  useEffect(() => {
-    const debounced = debouncedFetchRef.current
-    return () => debounced.cancel()
-  }, [])
-
-  const thornameHandler = useCallback(() => {
+  const thornameHandler = useCallback(async () => {
     const thorname = watch('thorname')
     setThornameQuoteValid(false)
     setMemo('')
-    if (thorname !== '') {
-      debouncedFetchRef.current(
-        thorname,
-        setThorname,
-        setThornameAvailable,
-        setThornameUpdate,
-        setIsOwner,
-        thorchainQuery,
-        balance
-      )
+    if (thorname === '') return
+
+    setIsLookingUp(true)
+    try {
+      const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
+      if (thornameDetails) {
+        setThorname(O.some(thornameDetails))
+        setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
+        setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
+        setThornameRegister(thornameDetails.name === '')
+        setIsOwner(balance.walletAddress === thornameDetails.owner)
+      }
+    } catch (_error) {
+      setThornameAvailable(true)
+    } finally {
+      setIsLookingUp(false)
     }
-  }, [balance, watch, thorchainQuery])
+  }, [balance.walletAddress, watch, thorchainQuery])
+
+  const ownerLookupHandler = useCallback(async () => {
+    if (ownerAddress === '') return
+    setIsLookingUpOwner(true)
+    setOwnerNames([])
+    setOwnerSearchDone(false)
+    try {
+      const names =
+        await thorchainQuery.thorchainCache.midgardQuery.midgardCache.midgard.getTHORNameReverseLookup(ownerAddress)
+      if (names && names.length > 0) {
+        const details = await Promise.all(names.map((n) => thorchainQuery.getThornameDetails(n)))
+        setOwnerNames(details.filter((d) => d && !d.error?.length))
+      }
+    } catch (_error) {
+      // no names found
+    } finally {
+      setIsLookingUpOwner(false)
+      setOwnerSearchDone(true)
+    }
+  }, [ownerAddress, thorchainQuery])
 
   const estimateThornameHandler = useCallback(() => {
     const currentDate = new Date()
@@ -726,6 +722,8 @@ export const InteractFormThor = ({
     setThornameQuoteValid(false)
     setThornameUpdate(false)
     setThornameAvailable(false)
+    setOwnerNames([])
+    setOwnerSearchDone(false)
   }, [reset, resetInteractState, watch, balance.walletAddress])
 
   const renderConfirmationModal = useMemo(() => {
@@ -1021,18 +1019,35 @@ export const InteractFormThor = ({
         {/** Rune Pool */}
         {interactType === InteractType.RunePool && (
           <div className="mb-2">
-            <span className="inline-block">
-              <Switch
-                labels={['DEPOSIT', 'WITHDRAW']}
-                colors={['#3B82F6', '#EF4444']}
-                onChange={(value) => {
-                  setRunePoolAction(value === 'DEPOSIT' ? Action.add : Action.withdraw)
-                }}
-              />
-            </span>
-            <span className="ml-2 inline-block">
-              {!runePoolAvailable && intl.formatMessage({ id: 'protocolPool.detail.availability' })}
-            </span>
+            <div className="flex border-b border-gray0 dark:border-gray0d">
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  runePoolAction === Action.add
+                    ? 'border-b-2 border-turquoise text-turquoise'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setRunePoolAction(Action.add)}>
+                <ArrowDownTrayIcon className="h-4 w-4" />
+                DEPOSIT
+              </button>
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  runePoolAction === Action.withdraw
+                    ? 'border-b-2 border-error0 text-error0 dark:border-error0d dark:text-error0d'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setRunePoolAction(Action.withdraw)}>
+                <ArrowUpTrayIcon className="h-4 w-4" />
+                WITHDRAW
+              </button>
+            </div>
+            {!runePoolAvailable && (
+              <span className="mt-2 inline-block text-[14px]">
+                {intl.formatMessage({ id: 'protocolPool.detail.availability' })}
+              </span>
+            )}
             {runePoolProvider.value.gt(0) && runePoolAction === Action.add && renderRunePoolWarning}
           </div>
         )}
@@ -1233,126 +1248,317 @@ export const InteractFormThor = ({
         <>
           {interactType === InteractType.THORName && (
             <div className="w-full sm:max-w-[630px]">
-              <div className="flex w-full items-center text-[12px]">
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.thorname' })}
-                </Label>
-                <InfoIcon
-                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                  tooltip={intl.formatMessage({ id: 'common.thornameRegistrationSpecifics' })}
-                  color="primary"
-                />
+              {/* Tab navigation */}
+              <div className="mb-4 flex border-b border-gray0 dark:border-gray0d">
+                <button
+                  type="button"
+                  className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                    lookupMode === 'name'
+                      ? 'border-b-2 border-turquoise text-turquoise'
+                      : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                  }`}
+                  onClick={() => setLookupMode('name')}>
+                  <MagnifyingGlassIcon className="h-4 w-4" />
+                  Lookup Name
+                </button>
+                <button
+                  type="button"
+                  className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                    lookupMode === 'owner'
+                      ? 'border-b-2 border-turquoise text-turquoise'
+                      : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                  }`}
+                  onClick={() => setLookupMode('owner')}>
+                  <UserIcon className="h-4 w-4" />
+                  Names by Owner
+                </button>
               </div>
 
-              <div>
-                <Input
-                  {...register('thorname', {
-                    required:
-                      interactType === InteractType.THORName
-                        ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
-                        : false,
-                    onChange: () => thornameHandler()
-                  })}
-                  disabled={isLoading}
-                  size="large"
-                />
-                {errors.thorname && (
-                  <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.thorname.message}</div>
-                )}
-              </div>
-              {O.isSome(oThorname) && !thornameAvailable && !isOwner && renderThornameError}
+              {lookupMode === 'name' && (
+                <>
+                  <div className="flex items-center text-[12px]">
+                    <Label color="input" size="big" textTransform="uppercase">
+                      {intl.formatMessage({ id: 'common.thorname' })}
+                    </Label>
+                    <InfoIcon
+                      className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                      tooltip={intl.formatMessage({ id: 'common.thornameRegistrationSpecifics' })}
+                      color="primary"
+                    />
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1">
+                      <Input
+                        {...register('thorname', {
+                          required:
+                            interactType === InteractType.THORName && lookupMode === 'name'
+                              ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
+                              : false
+                        })}
+                        disabled={isLoading || isLookingUp}
+                        size="large"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            thornameHandler()
+                          }
+                        }}
+                      />
+                      {errors.thorname && (
+                        <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.thorname.message}</div>
+                      )}
+                    </div>
+                    <FlatButton
+                      className="h-[40px] min-w-[100px]"
+                      size="normal"
+                      color="primary"
+                      disabled={isLoading || isLookingUp || !watch('thorname')}
+                      loading={isLookingUp}
+                      onClick={thornameHandler}>
+                      Lookup
+                    </FlatButton>
+                  </div>
+                </>
+              )}
+
+              {lookupMode === 'owner' && (
+                <>
+                  <Label color="input" size="big" textTransform="uppercase">
+                    Owner Address
+                  </Label>
+                  <Input
+                    value={ownerAddress}
+                    onChange={(e) => setOwnerAddress(e.target.value)}
+                    disabled={isLoading || isLookingUpOwner}
+                    size="large"
+                    placeholder="thor1... or any chain address"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        ownerLookupHandler()
+                      }
+                    }}
+                  />
+                  <FlatButton
+                    className="mt-4 w-full"
+                    size="large"
+                    color="primary"
+                    disabled={isLoading || isLookingUpOwner || !ownerAddress}
+                    loading={isLookingUpOwner}
+                    onClick={ownerLookupHandler}>
+                    <UserIcon className="mr-2 h-5 w-5" />
+                    Find Names
+                  </FlatButton>
+                  {/* Owner lookup results */}
+                  {ownerSearchDone && !isLookingUpOwner && ownerNames.length === 0 && (
+                    <div className="mt-4 text-center text-[14px] text-gray2 dark:text-gray2d">
+                      No names found for this address
+                    </div>
+                  )}
+                  {!isLookingUpOwner && ownerNames.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      {ownerNames.map((details) => {
+                        const currentBlock = FP.pipe(
+                          thorchainLastblockRd,
+                          RD.toOption,
+                          O.chain((blocks) => O.fromNullable(blocks.find((b) => b.thorchain))),
+                          O.map((b) => b.thorchain),
+                          O.toUndefined
+                        )
+                        const estimatedExpiry =
+                          currentBlock && details.expireBlockHeight
+                            ? (() => {
+                                const blocksLeft = details.expireBlockHeight - currentBlock
+                                const secondsLeft = blocksLeft * 6
+                                const daysLeft = Math.round(secondsLeft / 86400)
+                                const expiryDate = new Date(Date.now() + secondsLeft * 1000)
+                                return { date: expiryDate, daysLeft }
+                              })()
+                            : undefined
+
+                        return (
+                          <div key={details.name} className="rounded-lg border border-gray0 p-4 dark:border-gray0d">
+                            <div className="flex gap-6">
+                              <div className="flex-1">
+                                <div className="text-[11px] text-gray2 dark:text-gray2d">
+                                  {intl.formatMessage({ id: 'common.thorname' })}
+                                </div>
+                                <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                  {details.name}
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-[11px] text-gray2 dark:text-gray2d">Expiry</div>
+                                {estimatedExpiry ? (
+                                  <>
+                                    <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                      {estimatedExpiry.date.toLocaleDateString(undefined, {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })}{' '}
+                                      <span className="text-[12px] text-gray2 dark:text-gray2d">
+                                        (~{estimatedExpiry.daysLeft} days)
+                                      </span>
+                                    </div>
+                                    <div className="text-[11px] text-gray2 dark:text-gray2d">
+                                      Block {details.expireBlockHeight?.toLocaleString()}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                    Block {details.expireBlockHeight?.toLocaleString()}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              <div className="text-[11px] text-gray2 dark:text-gray2d">
+                                {intl.formatMessage({ id: 'common.owner' })}
+                              </div>
+                              <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">
+                                {details.owner}
+                              </div>
+                            </div>
+                            {details.preferredAsset && (
+                              <div className="mt-3">
+                                <div className="text-[11px] text-gray2 dark:text-gray2d">
+                                  {intl.formatMessage({ id: 'common.preferredAsset' })}
+                                </div>
+                                <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">
+                                  {details.preferredAsset}
+                                </div>
+                              </div>
+                            )}
+                            {details.aliases && details.aliases.length > 0 && (
+                              <div className="mt-3">
+                                <div className="mb-1 text-[11px] text-gray2 dark:text-gray2d">
+                                  Chain Aliases ({details.aliases.length})
+                                </div>
+                                <div className="space-y-1">
+                                  {details.aliases.map((alias, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-baseline gap-3 rounded bg-bg1 px-3 py-2 dark:bg-bg1d">
+                                      <span className="font-mainSemiBold w-[50px] shrink-0 text-[12px] text-text0 dark:text-text0d">
+                                        {alias.chain}
+                                      </span>
+                                      <span className="font-mono text-[12px] break-all text-gray2 dark:text-gray2d">
+                                        {alias.address}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
           {/** Form item for unregistered thorname */}
-          {thornameAvailable && (
-            <div className="w-full sm:max-w-[630px]">
-              {isOwner ? (
-                <CheckButton
-                  checked={thornameUpdate || isOwner}
-                  clickHandler={() => setThornameUpdate(true)}
-                  disabled={isLoading}>
-                  {intl.formatMessage({ id: 'common.isUpdateThorname' })}
-                </CheckButton>
-              ) : (
-                <></>
+          {lookupMode === 'name' && thornameAvailable && (
+            <div className="mt-4 w-full rounded-lg border border-gray0 p-5 sm:max-w-[630px] dark:border-gray0d">
+              {isOwner && (
+                <div className="mb-4">
+                  <CheckButton
+                    checked={thornameUpdate || isOwner}
+                    clickHandler={() => setThornameUpdate(true)}
+                    disabled={isLoading}>
+                    {intl.formatMessage({ id: 'common.isUpdateThorname' })}
+                  </CheckButton>
+                </div>
               )}
               {!thornameRegister ? (
-                <>
-                  <div className="flex w-full items-center text-[12px]">
-                    <Label color="input" size="big" textTransform="uppercase">
-                      {intl.formatMessage({ id: 'common.preferredAsset' })}
-                    </Label>
-                  </div>
+                <div className="space-y-5">
+                  {/* Preferred Asset */}
                   <div>
+                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.preferredAsset' })}
+                    </div>
                     <Controller
                       name="preferredAsset"
                       control={control}
                       render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          value={preferredAsset}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            handleRadioAssetChange(value)
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.symbol}>
-                            BTC
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.symbol}>
-                            ETH
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetUSDT.symbol}>
-                            USDT
-                          </Radio>
-                        </RadioGroup>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { value: AssetBTC.symbol, label: 'BTC' },
+                            { value: AssetETH.symbol, label: 'ETH' },
+                            { value: AssetUSDT.symbol, label: 'USDT' }
+                          ].map((item) => (
+                            <button
+                              key={item.value}
+                              type="button"
+                              className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
+                                preferredAsset === item.value
+                                  ? 'border-turquoise bg-turquoise/10 text-turquoise'
+                                  : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
+                              }`}
+                              onClick={() => {
+                                field.onChange(item.value)
+                                handleRadioAssetChange(item.value)
+                              }}>
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
                       )}
                     />
                     {errors.preferredAsset && (
                       <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.preferredAsset.message}</div>
                     )}
                   </div>
-                  {/* Add input fields for aliasChain, aliasAddress, and expiry */}
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.aliasChain' })}
-                  </Label>
+
+                  {/* Alias Chain */}
                   <div>
+                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.aliasChain' })}
+                    </div>
                     <Controller
                       name="aliasChain"
                       control={control}
-                      rules={{
-                        required: 'Please provide an alias chain.'
-                      }}
+                      rules={{ required: 'Please provide an alias chain.' }}
                       render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          value={aliasChain}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            handleRadioChainChange(value)
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetAVAX.chain}>
-                            AVAX
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
-                            BTC
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
-                            ETH
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetDOGE.chain}>
-                            DOGE
-                          </Radio>
-                        </RadioGroup>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { value: AssetAVAX.chain, label: 'AVAX' },
+                            { value: AssetBTC.chain, label: 'BTC' },
+                            { value: AssetETH.chain, label: 'ETH' },
+                            { value: AssetDOGE.chain, label: 'DOGE' }
+                          ].map((item) => (
+                            <button
+                              key={item.value}
+                              type="button"
+                              className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
+                                aliasChain === item.value
+                                  ? 'border-turquoise bg-turquoise/10 text-turquoise'
+                                  : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
+                              }`}
+                              onClick={() => {
+                                field.onChange(item.value)
+                                handleRadioChainChange(item.value)
+                              }}>
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
                       )}
                     />
                     {errors.aliasChain && (
                       <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasChain.message}</div>
                     )}
                   </div>
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.aliasAddress' })}
-                  </Label>
+
+                  {/* Alias Address */}
                   <div>
+                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.aliasAddress' })}
+                    </div>
                     <Input
                       {...register('aliasAddress', {
                         required: 'Please provide an alias address.',
@@ -1365,74 +1571,81 @@ export const InteractFormThor = ({
                       <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasAddress.message}</div>
                     )}
                   </div>
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.expiry' })}
-                  </Label>
+
+                  {/* Expiry */}
                   <div>
+                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.expiry' })}
+                    </div>
                     <Controller
                       name="expiry"
                       control={control}
                       render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            estimateThornameHandler()
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value="1">
-                            1 year
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="2">
-                            2 years
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="3">
-                            3 years
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="5">
-                            5 years
-                          </Radio>
-                        </RadioGroup>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { value: '1', label: '1 year' },
+                            { value: '2', label: '2 years' },
+                            { value: '3', label: '3 years' },
+                            { value: '5', label: '5 years' }
+                          ].map((item) => (
+                            <button
+                              key={item.value}
+                              type="button"
+                              className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
+                                field.value === item.value
+                                  ? 'border-turquoise bg-turquoise/10 text-turquoise'
+                                  : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
+                              }`}
+                              onClick={() => {
+                                field.onChange(item.value)
+                                estimateThornameHandler()
+                              }}>
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
                       )}
                     />
                     {errors.expiry && (
                       <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
                     )}
                   </div>
-                </>
+                </div>
               ) : (
-                <>
-                  {/* Initial values needed for tns register */}
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.aliasChain' })}
-                  </Label>
+                <div className="space-y-5">
+                  {/* Initial registration — chain locked to THOR */}
                   <div>
+                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.aliasChain' })}
+                    </div>
                     <Controller
                       name="chain"
                       control={control}
-                      rules={{
-                        required: 'Please provide an alias chain.'
-                      }}
+                      rules={{ required: 'Please provide an alias chain.' }}
                       render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            estimateThornameHandler()
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="rounded-full border border-turquoise bg-turquoise/10 px-4 py-1.5 font-main text-[13px] text-turquoise"
+                            onClick={() => {
+                              field.onChange(AssetRuneNative.chain)
+                              estimateThornameHandler()
+                            }}>
                             THOR
-                          </Radio>
-                        </RadioGroup>
+                          </button>
+                        </div>
                       )}
                     />
                     {errors.chain && (
                       <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chain.message}</div>
                     )}
                   </div>
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.aliasAddress' })}
-                  </Label>
+
+                  {/* Alias Address */}
                   <div>
+                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.aliasAddress' })}
+                    </div>
                     <Input
                       {...register('chainAddress', {
                         required: 'Please provide an alias address.',
@@ -1445,51 +1658,55 @@ export const InteractFormThor = ({
                       <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chainAddress.message}</div>
                     )}
                   </div>
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.expiry' })}
-                  </Label>
+
+                  {/* Expiry */}
                   <div>
+                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.expiry' })}
+                    </div>
                     <Controller
                       name="expiry"
                       control={control}
-                      rules={{
-                        required: true
-                      }}
+                      rules={{ required: true }}
                       render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            estimateThornameHandler()
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value="1">
-                            1 year
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="2">
-                            2 years
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="3">
-                            3 years
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="5">
-                            5 years
-                          </Radio>
-                        </RadioGroup>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { value: '1', label: '1 year' },
+                            { value: '2', label: '2 years' },
+                            { value: '3', label: '3 years' },
+                            { value: '5', label: '5 years' }
+                          ].map((item) => (
+                            <button
+                              key={item.value}
+                              type="button"
+                              className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
+                                field.value === item.value
+                                  ? 'border-turquoise bg-turquoise/10 text-turquoise'
+                                  : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
+                              }`}
+                              onClick={() => {
+                                field.onChange(item.value)
+                                estimateThornameHandler()
+                              }}>
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
                       )}
                     />
                     {errors.expiry && (
                       <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
                     )}
                   </div>
-                </>
+                </div>
               )}
-              <Fees className="mt-10px" fees={thorNamefees} disabled={isLoading} />
+              <Fees className="mt-5" fees={thorNamefees} disabled={isLoading} />
             </div>
           )}
         </>
       </div>
       <div className="flex items-center justify-center">
-        {thornameQuoteValid && (
+        {lookupMode === 'name' && thornameQuoteValid && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
@@ -1534,7 +1751,7 @@ export const InteractFormThor = ({
         {/* memo */}
         <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
           <BaseButton
-            className="group font-mainSemiBold flex w-full justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
             onClick={() => setShowDetails((current) => !current)}>
             {intl.formatMessage({ id: 'common.details' })}
             {showDetails ? (
@@ -1549,39 +1766,101 @@ export const InteractFormThor = ({
                 oThorname,
                 O.map(({ owner, name, aliases, preferredAsset, expireBlockHeight }) => {
                   if (owner || name || aliases || preferredAsset || expireBlockHeight) {
-                    return (
-                      <>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div>{intl.formatMessage({ id: 'common.thorname' })}</div>
-                          <div>{name}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          {intl.formatMessage({ id: 'common.owner' })}
-                          <div>{owner}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div>{intl.formatMessage({ id: 'common.expirationBlock' })}</div>
-                          <div>{expireBlockHeight}</div>
-                        </div>
+                    // Estimate expiry date from block height
+                    const currentBlock = FP.pipe(
+                      thorchainLastblockRd,
+                      RD.toOption,
+                      O.chain((blocks) => O.fromNullable(blocks.find((b) => b.thorchain))),
+                      O.map((b) => b.thorchain),
+                      O.toUndefined
+                    )
+                    const estimatedExpiry =
+                      currentBlock && expireBlockHeight
+                        ? (() => {
+                            const blocksLeft = expireBlockHeight - currentBlock
+                            const secondsLeft = blocksLeft * 6
+                            const daysLeft = Math.round(secondsLeft / 86400)
+                            const expiryDate = new Date(Date.now() + secondsLeft * 1000)
+                            return { date: expiryDate, daysLeft }
+                          })()
+                        : undefined
 
-                        {aliases &&
-                          aliases.map((alias, index) => (
-                            <div key={index}>
-                              <div className="flex w-full justify-between pl-10px text-[12px]">
-                                {intl.formatMessage({ id: 'common.aliasChain' })}
-                                <div>{alias.chain}</div>
-                              </div>
-                              <div className="flex w-full justify-between pl-10px text-[12px]">
-                                {intl.formatMessage({ id: 'common.aliasAddress' })}
-                                <div>{alias.address}</div>
-                              </div>
+                    return (
+                      <div key={name} className="mt-2 rounded-lg border border-gray0 p-4 dark:border-gray0d">
+                        {/* Name + Expiry row */}
+                        <div className="flex gap-6">
+                          <div className="flex-1">
+                            <div className="text-[11px] text-gray2 dark:text-gray2d">
+                              {intl.formatMessage({ id: 'common.thorname' })}
                             </div>
-                          ))}
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          {intl.formatMessage({ id: 'common.preferredAsset' })}
-                          <div>{preferredAsset}</div>
+                            <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">{name}</div>
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-[11px] text-gray2 dark:text-gray2d">Expiry</div>
+                            {estimatedExpiry ? (
+                              <>
+                                <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                  {estimatedExpiry.date.toLocaleDateString(undefined, {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}{' '}
+                                  <span className="text-[12px] text-gray2 dark:text-gray2d">
+                                    (~{estimatedExpiry.daysLeft} days)
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-gray2 dark:text-gray2d">
+                                  Block {expireBlockHeight?.toLocaleString()}
+                                </div>
+                              </>
+                            ) : (
+                              <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                                Block {expireBlockHeight?.toLocaleString()}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </>
+                        {/* Owner */}
+                        <div className="mt-3">
+                          <div className="text-[11px] text-gray2 dark:text-gray2d">
+                            {intl.formatMessage({ id: 'common.owner' })}
+                          </div>
+                          <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">{owner}</div>
+                        </div>
+                        {/* Preferred Asset */}
+                        {preferredAsset && (
+                          <div className="mt-3">
+                            <div className="text-[11px] text-gray2 dark:text-gray2d">
+                              {intl.formatMessage({ id: 'common.preferredAsset' })}
+                            </div>
+                            <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">
+                              {preferredAsset}
+                            </div>
+                          </div>
+                        )}
+                        {/* Chain Aliases */}
+                        {aliases && aliases.length > 0 && (
+                          <div className="mt-3">
+                            <div className="mb-1 text-[11px] text-gray2 dark:text-gray2d">
+                              Chain Aliases ({aliases.length})
+                            </div>
+                            <div className="space-y-1">
+                              {aliases.map((alias, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-baseline gap-3 rounded bg-bg1 px-3 py-2 dark:bg-bg1d">
+                                  <span className="font-mainSemiBold w-[50px] shrink-0 text-[12px] text-text0 dark:text-text0d">
+                                    {alias.chain}
+                                  </span>
+                                  <span className="font-mono text-[12px] break-all text-gray2 dark:text-gray2d">
+                                    {alias.address}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )
                   }
                   return null

@@ -210,7 +210,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
               />
               <InputPassword
                 id="password"
-                className="mx-auto flex h-[38px] w-full items-center justify-between rounded-lg border border-solid !border-gray0 dark:!border-gray0d"
+                className="mx-auto flex h-[38px] w-full items-center justify-between"
                 inputClassName="!ring-0 w-full"
                 {...register('password', { required: true })}
                 placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
