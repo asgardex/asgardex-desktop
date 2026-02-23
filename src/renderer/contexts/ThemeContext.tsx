@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from 'react'
 
-import t, { ThemeType, Theme } from '@asgardex/asgardex-theme'
+import t, { ThemeType } from '@asgardex/asgardex-theme'
+import type { Theme } from '@asgardex/asgardex-theme'
 import { Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
 

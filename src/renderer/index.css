@@ -1,9 +1,15 @@
 @import 'tailwindcss';
+@import '@asgardex/asgardex-theme/theme.css';
 
 /* Class-based dark mode (matches v3 darkMode: 'class') */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  /* New tokens from theme package (register for Tailwind utilities) */
+  --color-boost: var(--color-boost);
+  --color-secured: var(--color-secured);
+  --color-bg-hover: var(--color-bg-hover);
+
   /* Fonts */
   --font-main: 'MainFontRegular';
   --font-main-bold: 'MainFontBold';

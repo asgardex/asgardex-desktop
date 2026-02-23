@@ -153,7 +153,7 @@ export const Table = <T extends object>({
           rows.map((row) => (
             <Fragment key={row.id}>
               <tr
-                className="group cursor-pointer hover:bg-[#ededed] dark:hover:bg-[#252c33]"
+                className="group cursor-pointer hover:bg-bg-hover"
                 onClick={(e) => {
                   e.stopPropagation()
                   if (onClickRow) onClickRow(row.original)
