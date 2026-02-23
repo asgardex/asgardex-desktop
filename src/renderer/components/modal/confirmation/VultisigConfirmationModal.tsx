@@ -143,10 +143,15 @@ export const VultisigConfirmationModal = ({
         isPending: RD.isPending(txState)
       })
 
-      if (RD.isSuccess(txState) || RD.isFailure(txState)) {
-        // Transaction completed - close modal
-        // Effect cleanup will handle listener cleanup when visible becomes false
-        window.apiLog?.info?.('[VultisigConfirm]', 'Transaction completed, closing modal')
+      if (RD.isSuccess(txState)) {
+        window.apiLog?.info?.('[VultisigConfirm]', 'Transaction succeeded, closing modal')
+        onClose()
+      } else if (RD.isFailure(txState)) {
+        const error = txState.error
+        window.apiLog?.error?.('[VultisigConfirm]', 'Transaction failed, closing modal', {
+          errorId: error?.errorId,
+          msg: error?.msg
+        })
         onClose()
       }
     }

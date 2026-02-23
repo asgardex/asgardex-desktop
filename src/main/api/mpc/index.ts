@@ -17,12 +17,16 @@ import {
   CreateFastVaultParams,
   CreateSecureVaultParams,
   MpcIPCMessages,
+  SendTransactionParams,
   SerializedVault,
   SignBytesParams
 } from '../../../shared/api/mpcTypes'
 import { disposeSDK, getSDK, initializeSDK, isSDKInitialized } from './sdk'
 
 // SDK Vault type (minimal interface for what we access)
+// Keep this minimal — only the properties used by serializeVault and signBytes.
+// The sendTransaction handler uses `as any` for SDK-native pipeline methods
+// because their types (KeysignPayload, Chain, Signature) are complex SDK internals.
 interface SDKVault {
   id: string
   name: string
@@ -32,6 +36,7 @@ interface SDKVault {
   signers?: unknown[]
   isEncrypted?: boolean
   rename: (newName: string) => Promise<void>
+  address: (chain: string) => Promise<string>
   signBytes: (
     options: SDKSignBytesOptions,
     signingOptions?: SDKSigningOptions
@@ -46,11 +51,11 @@ interface SDKSignBytesOptions {
 
 // Second argument to vault.signBytes() - signal and callbacks
 // Note: onQRCodeReady and onDeviceJoined only apply to SecureVault.
-// The SDK ignores onProgress for signBytes (it's only used in vault creation).
 interface SDKSigningOptions {
   signal?: AbortSignal
   onQRCodeReady?: (qrPayload: string) => void
   onDeviceJoined?: (deviceId: string, totalJoined: number, required: number) => void
+  onProgress?: (step: { step: string; message: string; progress: number }) => void
 }
 
 /**
@@ -374,14 +379,33 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
     const sdkChain = ASGARDEX_TO_SDK_CHAIN[chain]
     if (!sdkChain) throw new Error(`Unsupported chain: ${chain}`)
 
-    log.info(`[MPC IPC] Signing bytes for chain ${chain} (SDK: ${sdkChain})`)
-
     // Check if this is a secure vault that needs QR coordination
     const isSecureVault = vault.type === 'secure' || (vault.signers && vault.signers.length > 1)
+
+    log.info(`[MPC IPC] Signing bytes for chain ${chain} (SDK: ${sdkChain})`, {
+      vaultId,
+      vaultType: vault.type,
+      isSecureVault,
+      threshold: vault.threshold,
+      signerCount: vault.signers?.length ?? 0,
+      dataLength: data?.length,
+      dataPrefix: data?.slice(0, 16) + '...'
+    })
 
     // Create abort controller for cancellation support
     const controller = new AbortController()
     signingControllers.set(vaultId, controller)
+
+    // Heartbeat timer to log during long MPC ceremony
+    let heartbeatCount = 0
+    const heartbeat = setInterval(() => {
+      heartbeatCount++
+      log.info(`[MPC IPC] Signing in progress... (${heartbeatCount * 10}s elapsed)`, {
+        chain,
+        vaultType: vault.type,
+        aborted: controller.signal.aborted
+      })
+    }, 10000)
 
     try {
       // First argument: data and chain only
@@ -391,11 +415,15 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       }
 
       // Second argument: signal and callbacks
-      // SDK 0.4.2 expects callbacks in the SECOND parameter, not the first.
-      // For SecureVault: { signal, onQRCodeReady, onDeviceJoined }
-      // For FastVault:   { signal }
+      // SDK 0.4.x expects callbacks in the SECOND parameter, not the first.
+      // For SecureVault: { signal, onQRCodeReady, onDeviceJoined, onProgress }
+      // For FastVault:   { signal, onProgress }
       const signingOptions: SDKSigningOptions = {
-        signal: controller.signal
+        signal: controller.signal,
+        onProgress: (step) => {
+          log.info(`[MPC IPC] Sign progress: ${step.step} - ${step.message} (${step.progress}%)`)
+          _event.sender.send(MpcIPCMessages.MPC_SIGN_PROGRESS, step)
+        }
       }
 
       // Add callbacks for secure vault signing (QR coordination)
@@ -408,12 +436,28 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
         signingOptions.onDeviceJoined = (deviceId: string, totalJoined: number, required: number) => {
           log.info(`[MPC IPC] Sign device joined: ${deviceId} (${totalJoined}/${required})`)
           _event.sender.send(MpcIPCMessages.MPC_SIGN_DEVICE_JOINED, { deviceId, totalJoined, required })
+          if (totalJoined >= required) {
+            log.info(`[MPC IPC] All devices joined (${totalJoined}/${required}), MPC ceremony starting...`)
+          }
         }
       }
 
+      log.info(`[MPC IPC] Calling vault.signBytes()`, {
+        chain: sdkChain,
+        isSecureVault,
+        hasQRCallback: !!signingOptions.onQRCodeReady,
+        hasDeviceCallback: !!signingOptions.onDeviceJoined,
+        hasProgressCallback: !!signingOptions.onProgress
+      })
+
       const signature = await vault.signBytes(signBytesOptions, signingOptions)
 
-      log.info(`[MPC IPC] Signing complete, signature length: ${signature.signature.length}`)
+      log.info(`[MPC IPC] Signing complete`, {
+        chain,
+        signatureLength: signature.signature.length,
+        recovery: signature.recovery,
+        signaturePrefix: signature.signature.slice(0, 16) + '...'
+      })
       return {
         signature: signature.signature,
         recovery: signature.recovery
@@ -421,13 +465,151 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
     } catch (error: unknown) {
       const isAbortError = error instanceof Error && error.name === 'AbortError'
       if (isAbortError || controller.signal.aborted) {
-        log.warn(`[MPC IPC] Signing cancelled by user`)
+        log.warn(`[MPC IPC] Signing cancelled by user`, { chain })
         throw new Error('Signing cancelled')
       }
       log.error(`[MPC IPC] Signing failed:`, error)
       throw error
     } finally {
-      // Clean up controller
+      clearInterval(heartbeat)
+      signingControllers.delete(vaultId)
+    }
+  })
+
+  // ============================================
+  // Native SDK Transaction Pipeline
+  // ============================================
+
+  ipcMain.handle(MpcIPCMessages.MPC_SEND_TX, async (_event, params: SendTransactionParams) => {
+    const sdk = getSDK()
+    const { vaultId, chain, receiver, amount, memo, decimals, ticker } = params
+
+    const vault = await sdk.getVaultById(vaultId)
+    if (!vault) throw new Error(`Vault not found: ${vaultId}`)
+
+    const sdkChain = ASGARDEX_TO_SDK_CHAIN[chain]
+    if (!sdkChain) throw new Error(`Unsupported chain: ${chain}`)
+
+    const isSecureVault = vault.type === 'secure' || (vault.signers && vault.signers.length > 1)
+
+    log.info(`[MPC IPC] sendTransaction starting`, {
+      chain,
+      sdkChain,
+      vaultType: vault.type,
+      isSecureVault,
+      receiver,
+      amount,
+      decimals,
+      ticker,
+      memo: memo || '(none)'
+    })
+
+    // Create abort controller for cancellation
+    const controller = new AbortController()
+    signingControllers.set(vaultId, controller)
+
+    // Heartbeat timer for long MPC ceremonies
+    let heartbeatCount = 0
+    const heartbeat = setInterval(() => {
+      heartbeatCount++
+      log.info(`[MPC IPC] sendTransaction in progress... (${heartbeatCount * 10}s elapsed)`, { chain })
+    }, 10000)
+
+    // Cast to any for SDK-native pipeline methods (prepareSendTx, extractMessageHashes, sign, broadcastTx).
+    // These methods exist on the real VaultBase but aren't in our minimal SDKVault interface
+    // because their parameter types (KeysignPayload, Chain, Signature) are complex SDK internals.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sdkVault = vault as any
+
+    try {
+      // Step 1: Get sender address from vault
+      const senderAddress: string = await sdkVault.address(sdkChain)
+      log.info(`[MPC IPC] Step 1: sender address`, { chain, senderAddress })
+
+      // Step 2: Build AccountCoin for SDK
+      const coin = {
+        chain: sdkChain,
+        address: senderAddress,
+        decimals,
+        ticker
+      }
+
+      // Step 3: Prepare transaction (SDK handles gas, nonce, fees)
+      log.info(`[MPC IPC] Step 2: prepareSendTx`, { coin, receiver, amount, memo })
+      const keysignPayload = await sdkVault.prepareSendTx({
+        coin,
+        receiver,
+        amount: BigInt(amount),
+        memo
+      })
+      log.info(`[MPC IPC] Step 2: prepareSendTx complete`)
+
+      // Step 4: Extract message hashes
+      log.info(`[MPC IPC] Step 3: extractMessageHashes`)
+      const messageHashes: string[] = await sdkVault.extractMessageHashes(keysignPayload)
+      log.info(`[MPC IPC] Step 3: extractMessageHashes complete`, {
+        hashCount: messageHashes.length,
+        hashes: messageHashes.map((h: string) => h.slice(0, 16) + '...')
+      })
+
+      // Step 5: Sign with full transaction context
+      const signingPayload = {
+        transaction: keysignPayload,
+        chain: sdkChain,
+        messageHashes
+      }
+
+      const signOptions: Record<string, unknown> = {
+        signal: controller.signal
+      }
+
+      // Add callbacks for SecureVault (same events as signBytes)
+      if (isSecureVault) {
+        signOptions.onQRCodeReady = (qrPayload: string) => {
+          log.info(`[MPC IPC] sendTx QR code ready (payload length: ${qrPayload?.length})`)
+          _event.sender.send(MpcIPCMessages.MPC_SIGN_QR_READY, qrPayload)
+        }
+
+        signOptions.onDeviceJoined = (deviceId: string, totalJoined: number, required: number) => {
+          log.info(`[MPC IPC] sendTx device joined: ${deviceId} (${totalJoined}/${required})`)
+          _event.sender.send(MpcIPCMessages.MPC_SIGN_DEVICE_JOINED, { deviceId, totalJoined, required })
+          if (totalJoined >= required) {
+            log.info(`[MPC IPC] All devices joined, MPC ceremony starting...`)
+          }
+        }
+      }
+
+      log.info(`[MPC IPC] Step 4: sign (full payload)`, {
+        isSecureVault,
+        hashCount: messageHashes.length
+      })
+      const signature = await sdkVault.sign(signingPayload, signOptions)
+      log.info(`[MPC IPC] Step 4: sign complete`, {
+        signatureLength: signature?.signature?.length,
+        format: signature?.format,
+        recovery: signature?.recovery
+      })
+
+      // Step 6: Broadcast via SDK
+      log.info(`[MPC IPC] Step 5: broadcastTx`)
+      const txHash: string = await sdkVault.broadcastTx({
+        chain: sdkChain,
+        keysignPayload,
+        signature
+      })
+      log.info(`[MPC IPC] Step 5: broadcastTx complete`, { txHash })
+
+      return { txHash }
+    } catch (error: unknown) {
+      const isAbortError = error instanceof Error && error.name === 'AbortError'
+      if (isAbortError || controller.signal.aborted) {
+        log.warn(`[MPC IPC] sendTransaction cancelled by user`, { chain })
+        throw new Error('Signing cancelled')
+      }
+      log.error(`[MPC IPC] sendTransaction failed:`, error)
+      throw error
+    } finally {
+      clearInterval(heartbeat)
       signingControllers.delete(vaultId)
     }
   })

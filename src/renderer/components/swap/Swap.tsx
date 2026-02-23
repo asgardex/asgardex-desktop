@@ -86,7 +86,13 @@ import { PoolAddress } from '../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { addAsset } from '../../services/storage/userChainTokens'
-import { TxHashRD, WalletBalance, WalletBalances, isStandaloneLedgerMode } from '../../services/wallet/types'
+import {
+  TxHashRD,
+  WalletBalance,
+  WalletBalances,
+  isKeystoreMode,
+  isStandaloneLedgerMode
+} from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { useAggregator } from '../../store/aggregator/hooks'
 import { useCoingecko } from '../../store/gecko/hooks'
@@ -182,15 +188,7 @@ export const Swap = ({
         ? AssetRuneNative
         : targetAsset
 
-  const lockedWallet: boolean = useMemo(() => {
-    // In standalone ledger mode, bypass keystore authentication
-    if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
-      return false
-    }
-
-    // Normal keystore authentication logic
-    return isLocked(keystore) || !hasImportedKeystore(keystore)
-  }, [keystore, appWalletState])
+  const lockedWallet = useObservableState(appWalletService.isLocked$, true)
 
   // Function to fetch target address for standalone ledger mode
   const fetchStandaloneLedgerTargetAddress = useCallback(
@@ -3260,8 +3258,8 @@ export const Swap = ({
           </>
         ) : (
           <>
-            {/* Only show wallet messages in keystore mode - standalone ledger shouldn't reach here */}
-            {!(appWalletState && isStandaloneLedgerMode(appWalletState)) && (
+            {/* Keystore-specific messages (import/unlock) — only in keystore mode */}
+            {appWalletState && isKeystoreMode(appWalletState) && (
               <>
                 <p className="center mb-0 mt-30px font-main text-[12px] uppercase text-text2 dark:text-text2d">
                   {!hasImportedKeystore(keystore)

@@ -89,6 +89,28 @@ export type SignProgressData = {
 }
 
 // ============================================
+// SDK Native Transaction Pipeline Types
+// ============================================
+
+/**
+ * Parameters for the native SDK sendTransaction pipeline.
+ * Runs entirely in main process: prepareSendTx → extractMessageHashes → sign → broadcastTx
+ */
+export type SendTransactionParams = {
+  vaultId: string
+  chain: string // Asgardex chain ID (BTC, ETH, THOR, etc.)
+  receiver: string
+  amount: string // Base amount as string (BigInt serialization)
+  memo?: string
+  decimals: number // Native asset decimals (e.g., 18 for ETH, 8 for BTC)
+  ticker: string // Native asset ticker (e.g., 'ETH', 'BTC')
+}
+
+export type SendTransactionResult = {
+  txHash: string
+}
+
+// ============================================
 // Vault Import/Export Types
 // ============================================
 
@@ -174,6 +196,7 @@ export enum MpcIPCMessages {
 
   // Transaction Signing
   MPC_SIGN_BYTES = 'mpc:signBytes',
+  MPC_SEND_TX = 'mpc:sendTransaction',
   MPC_CANCEL_SIGNING = 'mpc:cancelSigning',
 
   // Signing Events (main -> renderer, SecureVault only)
@@ -222,6 +245,7 @@ export type ApiMpc = {
 
   // Transaction Signing
   signBytes: (params: SignBytesParams) => Promise<SignBytesResult>
+  sendTransaction: (params: SendTransactionParams) => Promise<SendTransactionResult>
   cancelSigning: (vaultId: string) => Promise<{ cancelled: boolean }>
 
   // Event Listeners (return cleanup function)

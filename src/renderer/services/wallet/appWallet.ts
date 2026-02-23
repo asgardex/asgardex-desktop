@@ -328,7 +328,7 @@ export const createAppWalletService = (): AppWalletService => {
       if (isVultisigMode(state)) {
         return isVultisigVaultLocked(state)
       } else if (isStandaloneLedgerMode(state)) {
-        return true
+        return false // Ledger is hardware-connected, never "locked" in keystore sense
       } else {
         return FP.pipe(
           state,

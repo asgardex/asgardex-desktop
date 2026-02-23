@@ -117,6 +117,7 @@ const apiMpc: ApiMpc = {
 
   // Transaction Signing
   signBytes: (params) => ipcRenderer.invoke(MpcIPCMessages.MPC_SIGN_BYTES, params),
+  sendTransaction: (params) => ipcRenderer.invoke(MpcIPCMessages.MPC_SEND_TX, params),
   cancelSigning: (vaultId: string) => ipcRenderer.invoke(MpcIPCMessages.MPC_CANCEL_SIGNING, vaultId),
 
   // Event Listeners (return cleanup function)
