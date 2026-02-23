@@ -223,7 +223,18 @@ const common: CommonMessages = {
   'common.importTokens': '토큰 가져오기',
   'common.searchToken': '토큰 검색',
   'common.warning.token.import':
-    '누구나 토큰을 생성할 수 있으며, 기존 토큰의 가짜 버전도 포함됩니다. 사기 및 보안 위험에 주의하시기 바랍니다.'
+    '누구나 토큰을 생성할 수 있으며, 기존 토큰의 가짜 버전도 포함됩니다. 사기 및 보안 위험에 주의하시기 바랍니다.',
+  'common.lookupName': '이름 조회',
+  'common.namesByOwner': '소유자별 이름',
+  'common.registerUpdate': '등록 / 업데이트',
+  'common.ownerAddress': '소유자 주소',
+  'common.ownerAddress.placeholder': 'thor1... 또는 체인 주소',
+  'common.noNamesFound': '이 주소에 대한 이름을 찾을 수 없습니다',
+  'common.lookup': '조회',
+  'common.findNames': '이름 찾기',
+  'common.chainAliases': '체인 별칭 ({count})',
+  'common.daysApprox': '(~{days}일)',
+  'common.block': '블록 {block}'
 }
 
 export default common

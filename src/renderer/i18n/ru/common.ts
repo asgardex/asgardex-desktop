@@ -224,7 +224,18 @@ const common: CommonMessages = {
   'common.importTokens': 'Импортировать токены',
   'common.searchToken': 'Поиск токена',
   'common.warning.token.import':
-    'Любой может создавать токены, включая поддельные версии существующих. Пожалуйста, будьте осторожны с мошенничеством и рисками безопасности.'
+    'Любой может создавать токены, включая поддельные версии существующих. Пожалуйста, будьте осторожны с мошенничеством и рисками безопасности.',
+  'common.lookupName': 'Поиск имени',
+  'common.namesByOwner': 'Имена по владельцу',
+  'common.registerUpdate': 'Регистрация / Обновление',
+  'common.ownerAddress': 'Адрес владельца',
+  'common.ownerAddress.placeholder': 'thor1... или любой адрес цепочки',
+  'common.noNamesFound': 'Имена для этого адреса не найдены',
+  'common.lookup': 'Поиск',
+  'common.findNames': 'Найти имена',
+  'common.chainAliases': 'Псевдонимы цепочек ({count})',
+  'common.daysApprox': '(~{days} дней)',
+  'common.block': 'Блок {block}'
 }
 
 export default common

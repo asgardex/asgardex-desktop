@@ -1,14 +1,9 @@
 import { useIntl } from 'react-intl'
 
-import { EstimatedExpiry } from './types'
+import { EstimatedExpiry, NameDetails } from './types'
 
-type Props = {
-  name: string
-  owner: string
-  expireBlockHeight?: number
+type Props = NameDetails & {
   estimatedExpiry?: EstimatedExpiry
-  preferredAsset?: string
-  aliases?: { chain: string; address: string }[]
   nameLabel: string
 }
 
@@ -40,13 +35,17 @@ export const NameDetailsCard = ({
                   month: 'short',
                   year: 'numeric'
                 })}{' '}
-                <span className="text-[12px] text-gray2 dark:text-gray2d">(~{estimatedExpiry.daysLeft} days)</span>
+                <span className="text-[12px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'common.daysApprox' }, { days: estimatedExpiry.daysLeft })}
+                </span>
               </div>
-              <div className="text-[11px] text-gray2 dark:text-gray2d">Block {expireBlockHeight?.toLocaleString()}</div>
+              <div className="text-[11px] text-gray2 dark:text-gray2d">
+                {intl.formatMessage({ id: 'common.block' }, { block: expireBlockHeight?.toLocaleString() })}
+              </div>
             </>
           ) : (
             <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
-              Block {expireBlockHeight?.toLocaleString()}
+              {intl.formatMessage({ id: 'common.block' }, { block: expireBlockHeight?.toLocaleString() })}
             </div>
           )}
         </div>
@@ -65,7 +64,9 @@ export const NameDetailsCard = ({
       )}
       {aliases && aliases.length > 0 && (
         <div className="mt-3">
-          <div className="mb-1 text-[11px] text-gray2 dark:text-gray2d">Chain Aliases ({aliases.length})</div>
+          <div className="mb-1 text-[11px] text-gray2 dark:text-gray2d">
+            {intl.formatMessage({ id: 'common.chainAliases' }, { count: aliases.length })}
+          </div>
           <div className="space-y-1">
             {aliases.map((alias, index) => (
               <div key={index} className="flex items-baseline gap-3 rounded bg-bg1 px-3 py-2 dark:bg-bg1d">

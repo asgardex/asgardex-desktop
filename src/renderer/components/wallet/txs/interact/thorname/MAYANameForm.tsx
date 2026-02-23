@@ -389,7 +389,7 @@ export const MAYANameForm = ({
           }`}
           onClick={() => setActiveTab('lookup')}>
           <MagnifyingGlassIcon className="h-4 w-4" />
-          Lookup Name
+          {intl.formatMessage({ id: 'common.lookupName' })}
         </button>
         <button
           type="button"
@@ -400,7 +400,7 @@ export const MAYANameForm = ({
           }`}
           onClick={() => setActiveTab('owner')}>
           <UserIcon className="h-4 w-4" />
-          Names by Owner
+          {intl.formatMessage({ id: 'common.namesByOwner' })}
         </button>
         <button
           type="button"
@@ -410,7 +410,7 @@ export const MAYANameForm = ({
               : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
           }`}
           onClick={() => setActiveTab('register')}>
-          Register / Update
+          {intl.formatMessage({ id: 'common.registerUpdate' })}
         </button>
       </div>
 
@@ -449,7 +449,7 @@ export const MAYANameForm = ({
               disabled={isLookingUp || !lookupName}
               loading={isLookingUp}
               onClick={handleLookup}>
-              Lookup
+              {intl.formatMessage({ id: 'common.lookup' })}
             </FlatButton>
           </div>
 
@@ -477,14 +477,14 @@ export const MAYANameForm = ({
       {activeTab === 'owner' && (
         <>
           <Label color="input" size="big" textTransform="uppercase">
-            Owner Address
+            {intl.formatMessage({ id: 'common.ownerAddress' })}
           </Label>
           <Input
             value={ownerAddress}
             onChange={(e) => setOwnerAddress(e.target.value)}
             disabled={isLookingUpOwner}
             size="large"
-            placeholder="maya1... or any chain address"
+            placeholder={intl.formatMessage({ id: 'common.ownerAddress.placeholder' })}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault()
@@ -500,12 +500,12 @@ export const MAYANameForm = ({
             loading={isLookingUpOwner}
             onClick={handleOwnerLookup}>
             <UserIcon className="mr-2 h-5 w-5" />
-            Find Names
+            {intl.formatMessage({ id: 'common.findNames' })}
           </FlatButton>
 
           {ownerSearchDone && !isLookingUpOwner && ownerNames.length === 0 && (
             <div className="mt-4 text-center text-[14px] text-gray2 dark:text-gray2d">
-              No names found for this address
+              {intl.formatMessage({ id: 'common.noNamesFound' })}
             </div>
           )}
           {!isLookingUpOwner && ownerNames.length > 0 && (

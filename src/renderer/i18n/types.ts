@@ -222,6 +222,17 @@ export type CommonMessageKey =
   | 'common.searchToken'
   | 'common.warning.token.import'
   | 'common.noData'
+  | 'common.lookupName'
+  | 'common.namesByOwner'
+  | 'common.registerUpdate'
+  | 'common.ownerAddress'
+  | 'common.ownerAddress.placeholder'
+  | 'common.noNamesFound'
+  | 'common.lookup'
+  | 'common.findNames'
+  | 'common.chainAliases'
+  | 'common.daysApprox'
+  | 'common.block'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string

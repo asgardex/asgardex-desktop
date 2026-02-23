@@ -223,6 +223,17 @@ const common: CommonMessages = {
   'common.importTokens': 'टोकन आयात करें',
   'common.searchToken': 'टोकन खोजें',
   'common.warning.token.import':
-    'कोई भी टोकन बना सकता है, जिसमें मौजूदा टोकन के नकली संस्करण शामिल हैं। कृपया घोटालों और सुरक्षा जोखिमों से सावधान रहें।'
+    'कोई भी टोकन बना सकता है, जिसमें मौजूदा टोकन के नकली संस्करण शामिल हैं। कृपया घोटालों और सुरक्षा जोखिमों से सावधान रहें।',
+  'common.lookupName': 'नाम खोजें',
+  'common.namesByOwner': 'स्वामी द्वारा नाम',
+  'common.registerUpdate': 'पंजीकरण / अपडेट',
+  'common.ownerAddress': 'स्वामी का पता',
+  'common.ownerAddress.placeholder': 'thor1... या कोई भी चेन पता',
+  'common.noNamesFound': 'इस पते के लिए कोई नाम नहीं मिला',
+  'common.lookup': 'खोजें',
+  'common.findNames': 'नाम खोजें',
+  'common.chainAliases': 'चेन उपनाम ({count})',
+  'common.daysApprox': '(~{days} दिन)',
+  'common.block': 'ब्लॉक {block}'
 }
 export default common

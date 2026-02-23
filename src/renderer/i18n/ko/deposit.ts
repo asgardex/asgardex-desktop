@@ -14,7 +14,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.buyMayaname': 'MAYAName 구매',
   'deposit.interact.actions.checkThorname': '사용 가능 여부 확인',
   'deposit.interact.actions.addBondProvider': '채권 제공자 추가',
-  'deposit.interact.actions.getQuote': 'Get Quote',
+  'deposit.interact.actions.getQuote': '견적 받기',
   'deposit.share.title': '당신의 풀 지분',
   'deposit.share.units': '유동성 단위',
   'deposit.share.total': '총 가치',

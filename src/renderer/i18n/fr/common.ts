@@ -222,7 +222,18 @@ const common: CommonMessages = {
   'common.importTokens': 'Importer des tokens',
   'common.searchToken': 'Rechercher un token',
   'common.warning.token.import':
-    "N'importe qui peut créer des tokens, y compris de fausses versions de tokens existants. Veuillez faire attention aux arnaques et aux risques de sécurité."
+    "N'importe qui peut créer des tokens, y compris de fausses versions de tokens existants. Veuillez faire attention aux arnaques et aux risques de sécurité.",
+  'common.lookupName': 'Rechercher un nom',
+  'common.namesByOwner': 'Noms par propriétaire',
+  'common.registerUpdate': 'Enregistrer / Mettre à jour',
+  'common.ownerAddress': 'Adresse du propriétaire',
+  'common.ownerAddress.placeholder': 'thor1... ou toute adresse de chaîne',
+  'common.noNamesFound': 'Aucun nom trouvé pour cette adresse',
+  'common.lookup': 'Rechercher',
+  'common.findNames': 'Trouver des noms',
+  'common.chainAliases': 'Alias de chaîne ({count})',
+  'common.daysApprox': '(~{days} jours)',
+  'common.block': 'Bloc {block}'
 }
 
 export default common

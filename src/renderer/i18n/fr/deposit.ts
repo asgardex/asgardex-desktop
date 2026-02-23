@@ -14,7 +14,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.buyMayaname': 'Acheter MAYAName',
   'deposit.interact.actions.checkThorname': 'Vérifier la disponibilité',
   'deposit.interact.actions.addBondProvider': 'Ajouter un fournisseur de caution',
-  'deposit.interact.actions.getQuote': 'Get Quote',
+  'deposit.interact.actions.getQuote': 'Obtenir un devis',
   'deposit.share.title': 'Votre part dans la pool',
   'deposit.share.units': 'Unités de liquidité',
   'deposit.share.total': 'Valeur totale',

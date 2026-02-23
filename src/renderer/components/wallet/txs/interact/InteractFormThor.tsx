@@ -66,7 +66,7 @@ import { SendAsset } from '../../../modal/tx/extra/SendAsset'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
-import { Fees, UIFees, UIFeesRD } from '../../../uielements/fees'
+import { Fees, UIFeesRD } from '../../../uielements/fees'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
 import { Tooltip } from '../../../uielements/tooltip'
@@ -517,17 +517,7 @@ export const InteractFormThor = ({
     }
     setMemo(createMemo)
     return createMemo
-  }, [
-    _amountToSend,
-    currentMemo,
-    watch,
-    interactType,
-    memo,
-    network,
-    runePoolAction,
-    runePoolProvider.value,
-    whitelisting
-  ])
+  }, [_amountToSend, currentMemo, watch, interactType, network, runePoolAction, runePoolProvider.value, whitelisting])
 
   const onChangeInput = useCallback(
     (value: BigNumber) => {

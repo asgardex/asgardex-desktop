@@ -509,17 +509,7 @@ export const InteractFormMaya = (props: Props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [
-    watch,
-    interactType,
-    whitelisting,
-    cacaoPoolAction,
-    cacaoPoolProvider.value,
-    _amountToSend,
-    network,
-    currentMemo,
-    memo
-  ])
+  }, [watch, interactType, whitelisting, cacaoPoolAction, cacaoPoolProvider.value, _amountToSend, network, currentMemo])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
