@@ -633,6 +633,7 @@ type DepositMessageKey =
   | 'deposit.interact.actions.buyThorname'
   | 'deposit.interact.actions.buyMayaname'
   | 'deposit.interact.actions.checkThorname'
+  | 'deposit.interact.actions.getQuote'
   | 'deposit.share.title'
   | 'deposit.share.units'
   | 'deposit.share.poolshare'

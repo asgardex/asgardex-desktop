@@ -4,18 +4,14 @@ import * as RD from '@devexperts/remote-data-ts'
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
-  MagnifyingGlassIcon,
   MagnifyingGlassMinusIcon,
-  MagnifyingGlassPlusIcon,
-  UserIcon
+  MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { QuoteTHORNameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
+import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
-  AnyAsset,
-  Asset,
   assetAmount,
   assetToBase,
   baseAmount,
@@ -31,10 +27,10 @@ import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../../../../shared/mock/amount'
-import { AssetAVAX, AssetBTC, AssetDOGE, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
-import { AssetUSDT, ZERO_BASE_AMOUNT } from '../../../../const'
+import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import {
@@ -68,17 +64,16 @@ import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../
 import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
-import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
 import { Fees, UIFees, UIFeesRD } from '../../../uielements/fees'
-import { InfoIcon } from '../../../uielements/info'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
 import { Tooltip } from '../../../uielements/tooltip'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import { InteractType } from './Interact.types'
+import { THORNameForm } from './thorname/THORNameForm'
 
 type FormValues = {
   memo: string
@@ -86,13 +81,6 @@ type FormValues = {
   providerAddress: string
   operatorFee: number
   amount: BigNumber
-  thorname: string
-  chainAddress: string
-  chain: string
-  preferredAsset: string
-  expiry: string
-  aliasChain: string
-  aliasAddress: string
 }
 type UserNodeInfo = {
   nodeAddress: string
@@ -121,12 +109,6 @@ type Props = {
   nodes: NodeInfosRD
   runePoolProvider: RunePoolProviderRD
   thorchainLastblock: ThorchainLastblockRD
-}
-
-const preferredAssetMap: Record<string, AnyAsset> = {
-  [AssetBTC.symbol]: AssetBTC,
-  [AssetETH.symbol]: AssetETH,
-  [AssetUSDT.symbol]: AssetUSDT
 }
 
 export const InteractFormThor = ({
@@ -269,8 +251,6 @@ export const InteractFormThor = ({
     switch (interactType) {
       case InteractType.Bond:
       case InteractType.Custom:
-      case InteractType.THORName:
-      case InteractType.MAYAName:
         return _amountToSend
       case InteractType.Whitelist:
         return ONE_RUNE_BASE_AMOUNT
@@ -284,6 +264,8 @@ export const InteractFormThor = ({
       case InteractType.CacaoPool: {
         return ZERO_BASE_AMOUNT
       }
+      default:
+        return ZERO_BASE_AMOUNT
     }
   }, [_amountToSend, interactType, runePoolAction])
 
@@ -311,28 +293,11 @@ export const InteractFormThor = ({
       thorAddress: '',
       providerAddress: '',
       operatorFee: 0,
-      amount: bn(0),
-      thorname: '',
-      chainAddress: balance.walletAddress,
-      chain: THORChain,
-      preferredAsset: '',
-      expiry: '1',
-      aliasChain: '',
-      aliasAddress: ''
+      amount: bn(0)
     }
   })
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
-
-  // state variable for thornames
-  const [oThorname, setThorname] = useState<O.Option<ThornameDetails>>(O.none)
-  const [thornameAvailable, setThornameAvailable] = useState<boolean>(false) // if thorname is available
-  const [thornameUpdate, setThornameUpdate] = useState<boolean>(false) // allow to update
-  const [thornameRegister, setThornameRegister] = useState<boolean>(false) // allow to update
-  const [thornameQuoteValid, setThornameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
-  const [isOwner, setIsOwner] = useState<boolean>(false) // if the thorname.owner is the wallet address then allow to update
-  const [preferredAsset, setPreferredAsset] = useState<string>()
-  const [aliasChain, setAliasChain] = useState<string>('')
 
   const [currentMemo, setCurrentMemo] = useState('')
 
@@ -481,104 +446,6 @@ export const InteractFormThor = ({
     [interactType, intl, maxAmount]
   )
 
-  const [isLookingUp, setIsLookingUp] = useState(false)
-  const [lookupMode, setLookupMode] = useState<'name' | 'owner'>('name')
-  const [ownerAddress, setOwnerAddress] = useState('')
-  const [ownerNames, setOwnerNames] = useState<ThornameDetails[]>([])
-  const [isLookingUpOwner, setIsLookingUpOwner] = useState(false)
-  const [ownerSearchDone, setOwnerSearchDone] = useState(false)
-
-  const thornameHandler = useCallback(async () => {
-    const thorname = watch('thorname')
-    setThornameQuoteValid(false)
-    setMemo('')
-    if (thorname === '') return
-
-    setIsLookingUp(true)
-    try {
-      const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
-      if (thornameDetails) {
-        setThorname(O.some(thornameDetails))
-        setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
-        setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
-        setThornameRegister(thornameDetails.name === '')
-        setIsOwner(balance.walletAddress === thornameDetails.owner)
-      }
-    } catch (_error) {
-      setThornameAvailable(true)
-    } finally {
-      setIsLookingUp(false)
-    }
-  }, [balance.walletAddress, watch, thorchainQuery])
-
-  const ownerLookupHandler = useCallback(async () => {
-    if (ownerAddress === '') return
-    setIsLookingUpOwner(true)
-    setOwnerNames([])
-    setOwnerSearchDone(false)
-    try {
-      const names =
-        await thorchainQuery.thorchainCache.midgardQuery.midgardCache.midgard.getTHORNameReverseLookup(ownerAddress)
-      if (names && names.length > 0) {
-        const details = await Promise.all(names.map((n) => thorchainQuery.getThornameDetails(n)))
-        setOwnerNames(details.filter((d) => d && !d.error?.length))
-      }
-    } catch (_error) {
-      // no names found
-    } finally {
-      setIsLookingUpOwner(false)
-      setOwnerSearchDone(true)
-    }
-  }, [ownerAddress, thorchainQuery])
-
-  const estimateThornameHandler = useCallback(() => {
-    const currentDate = new Date()
-
-    const name = watch('thorname')
-    const chain = thornameRegister ? watch('chain') : watch('aliasChain')
-    const yearsToAdd = parseInt(watch('expiry') || '1')
-    const expiry =
-      yearsToAdd === 1
-        ? undefined
-        : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
-    const chainAddress = thornameRegister ? watch('chainAddress') : watch('aliasAddress')
-    const owner = balance.walletAddress
-    if (name !== undefined && chain !== undefined && chainAddress !== undefined) {
-      const fetchThornameQuote = async () => {
-        try {
-          const params: QuoteTHORNameParams = {
-            name,
-            chain,
-            chainAddress,
-            owner,
-            preferredAsset: preferredAsset ? (preferredAssetMap[preferredAsset] as Asset) : undefined,
-            expiry,
-            isUpdate: thornameUpdate || isOwner
-          }
-
-          const thornameQuote = await thorchainQuery.estimateThorname(params)
-
-          if (thornameQuote) {
-            setMemo(thornameQuote.memo)
-            setAmountToSend(thornameQuote.value.baseAmount)
-            setThornameQuoteValid(true)
-          }
-        } catch (error) {
-          console.error('Error fetching fetchThornameQuote:', error)
-        }
-      }
-      fetchThornameQuote()
-    }
-  }, [balance.walletAddress, watch, isOwner, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
-
-  const handleRadioAssetChange = useCallback((asset: string) => {
-    setPreferredAsset(asset)
-  }, [])
-
-  const handleRadioChainChange = useCallback((chain: string) => {
-    setAliasChain(chain)
-  }, [])
-
   const addMaxAmountHandler = useCallback(
     (maxAmount: BaseAmount) => {
       setAmountToSend(maxAmount)
@@ -647,10 +514,6 @@ export const InteractFormThor = ({
         createMemo = currentMemo
         break
       }
-      case InteractType.THORName: {
-        createMemo = memo
-        break
-      }
     }
     setMemo(createMemo)
     return createMemo
@@ -705,26 +568,12 @@ export const InteractFormThor = ({
       thorAddress: watch('thorAddress'), // Keep thorAddress value
       providerAddress: '',
       operatorFee: 0,
-      amount: bn(0),
-      thorname: '',
-      chainAddress: balance.walletAddress,
-      chain: THORChain,
-      preferredAsset: '',
-      expiry: '1',
-      aliasChain: '',
-      aliasAddress: ''
+      amount: bn(0)
     })
     setHasProviderAddress(false)
     setMemo('')
     setAmountToSend(ZERO_BASE_AMOUNT)
-    setThorname(O.none)
-    setIsOwner(false)
-    setThornameQuoteValid(false)
-    setThornameUpdate(false)
-    setThornameAvailable(false)
-    setOwnerNames([])
-    setOwnerSearchDone(false)
-  }, [reset, resetInteractState, watch, balance.walletAddress])
+  }, [reset, resetInteractState, watch])
 
   const renderConfirmationModal = useMemo(() => {
     const onSuccessHandler = () => {
@@ -860,10 +709,6 @@ export const InteractFormThor = ({
         })} ${intl.formatMessage({
           id: 'common.amount'
         })}`
-      case InteractType.THORName:
-        return intl.formatMessage({
-          id: 'common.amount'
-        })
     }
   }, [interactType, intl])
 
@@ -892,14 +737,8 @@ export const InteractFormThor = ({
       }
       case InteractType.Custom:
         return intl.formatMessage({ id: 'wallet.action.send' })
-      case InteractType.THORName:
-        if (isOwner) {
-          return intl.formatMessage({ id: 'common.isUpdateThorname' })
-        } else {
-          return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
-        }
     }
-  }, [interactType, hasProviderAddress, intl, whitelisting, isOwner, runePoolAction])
+  }, [interactType, hasProviderAddress, intl, whitelisting, runePoolAction])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -928,11 +767,6 @@ export const InteractFormThor = ({
     // Whenever `amountToSend` has been updated, we put it back into input field
     setValue('amount', baseToAsset(_amountToSend).amount())
   }, [_amountToSend, setValue])
-
-  const thorNamefees: UIFeesRD = useMemo(() => {
-    const fees: UIFees = [{ asset: AssetRuneNative, amount: _amountToSend }]
-    return RD.success(fees)
-  }, [_amountToSend])
 
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
@@ -1244,479 +1078,27 @@ export const InteractFormThor = ({
             )}
           </>
         )}
-        {/* Thorname Button and Details*/}
-        <>
-          {interactType === InteractType.THORName && (
-            <div className="w-full sm:max-w-[630px]">
-              {/* Tab navigation */}
-              <div className="mb-4 flex border-b border-gray0 dark:border-gray0d">
-                <button
-                  type="button"
-                  className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
-                    lookupMode === 'name'
-                      ? 'border-b-2 border-turquoise text-turquoise'
-                      : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
-                  }`}
-                  onClick={() => setLookupMode('name')}>
-                  <MagnifyingGlassIcon className="h-4 w-4" />
-                  Lookup Name
-                </button>
-                <button
-                  type="button"
-                  className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
-                    lookupMode === 'owner'
-                      ? 'border-b-2 border-turquoise text-turquoise'
-                      : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
-                  }`}
-                  onClick={() => setLookupMode('owner')}>
-                  <UserIcon className="h-4 w-4" />
-                  Names by Owner
-                </button>
-              </div>
-
-              {lookupMode === 'name' && (
-                <>
-                  <div className="flex items-center text-[12px]">
-                    <Label color="input" size="big" textTransform="uppercase">
-                      {intl.formatMessage({ id: 'common.thorname' })}
-                    </Label>
-                    <InfoIcon
-                      className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                      tooltip={intl.formatMessage({ id: 'common.thornameRegistrationSpecifics' })}
-                      color="primary"
-                    />
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <div className="flex-1">
-                      <Input
-                        {...register('thorname', {
-                          required:
-                            interactType === InteractType.THORName && lookupMode === 'name'
-                              ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
-                              : false
-                        })}
-                        disabled={isLoading || isLookingUp}
-                        size="large"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault()
-                            thornameHandler()
-                          }
-                        }}
-                      />
-                      {errors.thorname && (
-                        <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.thorname.message}</div>
-                      )}
-                    </div>
-                    <FlatButton
-                      className="h-[40px] min-w-[100px]"
-                      size="normal"
-                      color="primary"
-                      disabled={isLoading || isLookingUp || !watch('thorname')}
-                      loading={isLookingUp}
-                      onClick={thornameHandler}>
-                      Lookup
-                    </FlatButton>
-                  </div>
-                </>
-              )}
-
-              {lookupMode === 'owner' && (
-                <>
-                  <Label color="input" size="big" textTransform="uppercase">
-                    Owner Address
-                  </Label>
-                  <Input
-                    value={ownerAddress}
-                    onChange={(e) => setOwnerAddress(e.target.value)}
-                    disabled={isLoading || isLookingUpOwner}
-                    size="large"
-                    placeholder="thor1... or any chain address"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        ownerLookupHandler()
-                      }
-                    }}
-                  />
-                  <FlatButton
-                    className="mt-4 w-full"
-                    size="large"
-                    color="primary"
-                    disabled={isLoading || isLookingUpOwner || !ownerAddress}
-                    loading={isLookingUpOwner}
-                    onClick={ownerLookupHandler}>
-                    <UserIcon className="mr-2 h-5 w-5" />
-                    Find Names
-                  </FlatButton>
-                  {/* Owner lookup results */}
-                  {ownerSearchDone && !isLookingUpOwner && ownerNames.length === 0 && (
-                    <div className="mt-4 text-center text-[14px] text-gray2 dark:text-gray2d">
-                      No names found for this address
-                    </div>
-                  )}
-                  {!isLookingUpOwner && ownerNames.length > 0 && (
-                    <div className="mt-4 space-y-3">
-                      {ownerNames.map((details) => {
-                        const currentBlock = FP.pipe(
-                          thorchainLastblockRd,
-                          RD.toOption,
-                          O.chain((blocks) => O.fromNullable(blocks.find((b) => b.thorchain))),
-                          O.map((b) => b.thorchain),
-                          O.toUndefined
-                        )
-                        const estimatedExpiry =
-                          currentBlock && details.expireBlockHeight
-                            ? (() => {
-                                const blocksLeft = details.expireBlockHeight - currentBlock
-                                const secondsLeft = blocksLeft * 6
-                                const daysLeft = Math.round(secondsLeft / 86400)
-                                const expiryDate = new Date(Date.now() + secondsLeft * 1000)
-                                return { date: expiryDate, daysLeft }
-                              })()
-                            : undefined
-
-                        return (
-                          <div key={details.name} className="rounded-lg border border-gray0 p-4 dark:border-gray0d">
-                            <div className="flex gap-6">
-                              <div className="flex-1">
-                                <div className="text-[11px] text-gray2 dark:text-gray2d">
-                                  {intl.formatMessage({ id: 'common.thorname' })}
-                                </div>
-                                <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
-                                  {details.name}
-                                </div>
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-[11px] text-gray2 dark:text-gray2d">Expiry</div>
-                                {estimatedExpiry ? (
-                                  <>
-                                    <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
-                                      {estimatedExpiry.date.toLocaleDateString(undefined, {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year: 'numeric'
-                                      })}{' '}
-                                      <span className="text-[12px] text-gray2 dark:text-gray2d">
-                                        (~{estimatedExpiry.daysLeft} days)
-                                      </span>
-                                    </div>
-                                    <div className="text-[11px] text-gray2 dark:text-gray2d">
-                                      Block {details.expireBlockHeight?.toLocaleString()}
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
-                                    Block {details.expireBlockHeight?.toLocaleString()}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="mt-3">
-                              <div className="text-[11px] text-gray2 dark:text-gray2d">
-                                {intl.formatMessage({ id: 'common.owner' })}
-                              </div>
-                              <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">
-                                {details.owner}
-                              </div>
-                            </div>
-                            {details.preferredAsset && (
-                              <div className="mt-3">
-                                <div className="text-[11px] text-gray2 dark:text-gray2d">
-                                  {intl.formatMessage({ id: 'common.preferredAsset' })}
-                                </div>
-                                <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">
-                                  {details.preferredAsset}
-                                </div>
-                              </div>
-                            )}
-                            {details.aliases && details.aliases.length > 0 && (
-                              <div className="mt-3">
-                                <div className="mb-1 text-[11px] text-gray2 dark:text-gray2d">
-                                  Chain Aliases ({details.aliases.length})
-                                </div>
-                                <div className="space-y-1">
-                                  {details.aliases.map((alias, index) => (
-                                    <div
-                                      key={index}
-                                      className="flex items-baseline gap-3 rounded bg-bg1 px-3 py-2 dark:bg-bg1d">
-                                      <span className="font-mainSemiBold w-[50px] shrink-0 text-[12px] text-text0 dark:text-text0d">
-                                        {alias.chain}
-                                      </span>
-                                      <span className="font-mono text-[12px] break-all text-gray2 dark:text-gray2d">
-                                        {alias.address}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-          {/** Form item for unregistered thorname */}
-          {lookupMode === 'name' && thornameAvailable && (
-            <div className="mt-4 w-full rounded-lg border border-gray0 p-5 sm:max-w-[630px] dark:border-gray0d">
-              {isOwner && (
-                <div className="mb-4">
-                  <CheckButton
-                    checked={thornameUpdate || isOwner}
-                    clickHandler={() => setThornameUpdate(true)}
-                    disabled={isLoading}>
-                    {intl.formatMessage({ id: 'common.isUpdateThorname' })}
-                  </CheckButton>
-                </div>
-              )}
-              {!thornameRegister ? (
-                <div className="space-y-5">
-                  {/* Preferred Asset */}
-                  <div>
-                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
-                      {intl.formatMessage({ id: 'common.preferredAsset' })}
-                    </div>
-                    <Controller
-                      name="preferredAsset"
-                      control={control}
-                      render={({ field }) => (
-                        <div className="flex flex-wrap gap-2">
-                          {[
-                            { value: AssetBTC.symbol, label: 'BTC' },
-                            { value: AssetETH.symbol, label: 'ETH' },
-                            { value: AssetUSDT.symbol, label: 'USDT' }
-                          ].map((item) => (
-                            <button
-                              key={item.value}
-                              type="button"
-                              className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
-                                preferredAsset === item.value
-                                  ? 'border-turquoise bg-turquoise/10 text-turquoise'
-                                  : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
-                              }`}
-                              onClick={() => {
-                                field.onChange(item.value)
-                                handleRadioAssetChange(item.value)
-                              }}>
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    />
-                    {errors.preferredAsset && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.preferredAsset.message}</div>
-                    )}
-                  </div>
-
-                  {/* Alias Chain */}
-                  <div>
-                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
-                      {intl.formatMessage({ id: 'common.aliasChain' })}
-                    </div>
-                    <Controller
-                      name="aliasChain"
-                      control={control}
-                      rules={{ required: 'Please provide an alias chain.' }}
-                      render={({ field }) => (
-                        <div className="flex flex-wrap gap-2">
-                          {[
-                            { value: AssetAVAX.chain, label: 'AVAX' },
-                            { value: AssetBTC.chain, label: 'BTC' },
-                            { value: AssetETH.chain, label: 'ETH' },
-                            { value: AssetDOGE.chain, label: 'DOGE' }
-                          ].map((item) => (
-                            <button
-                              key={item.value}
-                              type="button"
-                              className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
-                                aliasChain === item.value
-                                  ? 'border-turquoise bg-turquoise/10 text-turquoise'
-                                  : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
-                              }`}
-                              onClick={() => {
-                                field.onChange(item.value)
-                                handleRadioChainChange(item.value)
-                              }}>
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    />
-                    {errors.aliasChain && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasChain.message}</div>
-                    )}
-                  </div>
-
-                  {/* Alias Address */}
-                  <div>
-                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
-                      {intl.formatMessage({ id: 'common.aliasAddress' })}
-                    </div>
-                    <Input
-                      {...register('aliasAddress', {
-                        required: 'Please provide an alias address.',
-                        onChange: () => estimateThornameHandler()
-                      })}
-                      disabled={isLoading}
-                      size="large"
-                    />
-                    {errors.aliasAddress && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasAddress.message}</div>
-                    )}
-                  </div>
-
-                  {/* Expiry */}
-                  <div>
-                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
-                      {intl.formatMessage({ id: 'common.expiry' })}
-                    </div>
-                    <Controller
-                      name="expiry"
-                      control={control}
-                      render={({ field }) => (
-                        <div className="flex flex-wrap gap-2">
-                          {[
-                            { value: '1', label: '1 year' },
-                            { value: '2', label: '2 years' },
-                            { value: '3', label: '3 years' },
-                            { value: '5', label: '5 years' }
-                          ].map((item) => (
-                            <button
-                              key={item.value}
-                              type="button"
-                              className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
-                                field.value === item.value
-                                  ? 'border-turquoise bg-turquoise/10 text-turquoise'
-                                  : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
-                              }`}
-                              onClick={() => {
-                                field.onChange(item.value)
-                                estimateThornameHandler()
-                              }}>
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    />
-                    {errors.expiry && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {/* Initial registration — chain locked to THOR */}
-                  <div>
-                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
-                      {intl.formatMessage({ id: 'common.aliasChain' })}
-                    </div>
-                    <Controller
-                      name="chain"
-                      control={control}
-                      rules={{ required: 'Please provide an alias chain.' }}
-                      render={({ field }) => (
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            className="rounded-full border border-turquoise bg-turquoise/10 px-4 py-1.5 font-main text-[13px] text-turquoise"
-                            onClick={() => {
-                              field.onChange(AssetRuneNative.chain)
-                              estimateThornameHandler()
-                            }}>
-                            THOR
-                          </button>
-                        </div>
-                      )}
-                    />
-                    {errors.chain && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chain.message}</div>
-                    )}
-                  </div>
-
-                  {/* Alias Address */}
-                  <div>
-                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
-                      {intl.formatMessage({ id: 'common.aliasAddress' })}
-                    </div>
-                    <Input
-                      {...register('chainAddress', {
-                        required: 'Please provide an alias address.',
-                        onChange: () => estimateThornameHandler()
-                      })}
-                      disabled={isLoading}
-                      size="large"
-                    />
-                    {errors.chainAddress && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chainAddress.message}</div>
-                    )}
-                  </div>
-
-                  {/* Expiry */}
-                  <div>
-                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
-                      {intl.formatMessage({ id: 'common.expiry' })}
-                    </div>
-                    <Controller
-                      name="expiry"
-                      control={control}
-                      rules={{ required: true }}
-                      render={({ field }) => (
-                        <div className="flex flex-wrap gap-2">
-                          {[
-                            { value: '1', label: '1 year' },
-                            { value: '2', label: '2 years' },
-                            { value: '3', label: '3 years' },
-                            { value: '5', label: '5 years' }
-                          ].map((item) => (
-                            <button
-                              key={item.value}
-                              type="button"
-                              className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
-                                field.value === item.value
-                                  ? 'border-turquoise bg-turquoise/10 text-turquoise'
-                                  : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
-                              }`}
-                              onClick={() => {
-                                field.onChange(item.value)
-                                estimateThornameHandler()
-                              }}>
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    />
-                    {errors.expiry && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
-                    )}
-                  </div>
-                </div>
-              )}
-              <Fees className="mt-5" fees={thorNamefees} disabled={isLoading} />
-            </div>
-          )}
-        </>
+        {/* THORName — delegated to standalone component */}
+        {interactType === InteractType.THORName && (
+          <THORNameForm
+            walletType={walletType}
+            walletAccount={walletAccount}
+            walletIndex={walletIndex}
+            hdMode={hdMode}
+            balance={balance}
+            interact$={interact$}
+            openExplorerTxUrl={openExplorerTxUrl}
+            getExplorerTxUrl={getExplorerTxUrl}
+            validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
+            network={network}
+            fee={feeRD}
+            reloadFeesHandler={reloadFeesHandler}
+            thorchainLastblock={thorchainLastblockRd}
+          />
+        )}
       </div>
       <div className="flex items-center justify-center">
-        {lookupMode === 'name' && thornameQuoteValid && (
-          <FlatButton
-            className="mt-10px min-w-[200px]"
-            loading={isLoading}
-            disabled={isLoading || !isValid}
-            type="submit"
-            size="large">
-            {submitLabel}
-          </FlatButton>
-        )}
-
         {interactType === InteractType.RunePool && (
           <FlatButton
             className="mt-20px min-w-[200px]"
@@ -1747,173 +1129,74 @@ export const InteractFormThor = ({
           </FlatButton>
         )}
       </div>
-      <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
-        {/* memo */}
-        <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
-          <BaseButton
-            className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-            onClick={() => setShowDetails((current) => !current)}>
-            {intl.formatMessage({ id: 'common.details' })}
-            {showDetails ? (
-              <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-            ) : (
-              <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-            )}
-          </BaseButton>
-          {showDetails && (
-            <>
-              {FP.pipe(
-                oThorname,
-                O.map(({ owner, name, aliases, preferredAsset, expireBlockHeight }) => {
-                  if (owner || name || aliases || preferredAsset || expireBlockHeight) {
-                    // Estimate expiry date from block height
-                    const currentBlock = FP.pipe(
-                      thorchainLastblockRd,
-                      RD.toOption,
-                      O.chain((blocks) => O.fromNullable(blocks.find((b) => b.thorchain))),
-                      O.map((b) => b.thorchain),
-                      O.toUndefined
-                    )
-                    const estimatedExpiry =
-                      currentBlock && expireBlockHeight
-                        ? (() => {
-                            const blocksLeft = expireBlockHeight - currentBlock
-                            const secondsLeft = blocksLeft * 6
-                            const daysLeft = Math.round(secondsLeft / 86400)
-                            const expiryDate = new Date(Date.now() + secondsLeft * 1000)
-                            return { date: expiryDate, daysLeft }
-                          })()
-                        : undefined
-
-                    return (
-                      <div key={name} className="mt-2 rounded-lg border border-gray0 p-4 dark:border-gray0d">
-                        {/* Name + Expiry row */}
-                        <div className="flex gap-6">
-                          <div className="flex-1">
-                            <div className="text-[11px] text-gray2 dark:text-gray2d">
-                              {intl.formatMessage({ id: 'common.thorname' })}
-                            </div>
-                            <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">{name}</div>
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-[11px] text-gray2 dark:text-gray2d">Expiry</div>
-                            {estimatedExpiry ? (
-                              <>
-                                <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
-                                  {estimatedExpiry.date.toLocaleDateString(undefined, {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    year: 'numeric'
-                                  })}{' '}
-                                  <span className="text-[12px] text-gray2 dark:text-gray2d">
-                                    (~{estimatedExpiry.daysLeft} days)
-                                  </span>
-                                </div>
-                                <div className="text-[11px] text-gray2 dark:text-gray2d">
-                                  Block {expireBlockHeight?.toLocaleString()}
-                                </div>
-                              </>
-                            ) : (
-                              <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
-                                Block {expireBlockHeight?.toLocaleString()}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        {/* Owner */}
-                        <div className="mt-3">
-                          <div className="text-[11px] text-gray2 dark:text-gray2d">
-                            {intl.formatMessage({ id: 'common.owner' })}
-                          </div>
-                          <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">{owner}</div>
-                        </div>
-                        {/* Preferred Asset */}
-                        {preferredAsset && (
-                          <div className="mt-3">
-                            <div className="text-[11px] text-gray2 dark:text-gray2d">
-                              {intl.formatMessage({ id: 'common.preferredAsset' })}
-                            </div>
-                            <div className="font-mono text-[12px] break-all text-text0 dark:text-text0d">
-                              {preferredAsset}
-                            </div>
-                          </div>
-                        )}
-                        {/* Chain Aliases */}
-                        {aliases && aliases.length > 0 && (
-                          <div className="mt-3">
-                            <div className="mb-1 text-[11px] text-gray2 dark:text-gray2d">
-                              Chain Aliases ({aliases.length})
-                            </div>
-                            <div className="space-y-1">
-                              {aliases.map((alias, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-baseline gap-3 rounded bg-bg1 px-3 py-2 dark:bg-bg1d">
-                                  <span className="font-mainSemiBold w-[50px] shrink-0 text-[12px] text-text0 dark:text-text0d">
-                                    {alias.chain}
-                                  </span>
-                                  <span className="font-mono text-[12px] break-all text-gray2 dark:text-gray2d">
-                                    {alias.address}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  }
-                  return null
-                }),
-                O.toNullable
+      {/* THORName has its own details section — skip parent's */}
+      {interactType !== InteractType.THORName && (
+        <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+          {/* memo */}
+          <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
+            <BaseButton
+              className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              onClick={() => setShowDetails((current) => !current)}>
+              {intl.formatMessage({ id: 'common.details' })}
+              {showDetails ? (
+                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+              ) : (
+                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
               )}
-              {interactType === InteractType.RunePool && (
-                <>
-                  <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
-                    {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
-                    <div className="truncate pl-10px font-main text-[12px]">
-                      {RD.fold(
-                        () => <p>{emptyString}</p>,
-                        () => <p>{emptyString}</p>,
-                        (error: Error) => (
-                          <p>
-                            {intl.formatMessage({ id: 'common.error' })}: {error.message}
-                          </p>
-                        ),
-                        (data: { daysLeft: number; blocksLeft: number }) => (
-                          <div>
+            </BaseButton>
+            {showDetails && (
+              <>
+                {interactType === InteractType.RunePool && (
+                  <>
+                    <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                      {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
+                      <div className="truncate pl-10px font-main text-[12px]">
+                        {RD.fold(
+                          () => <p>{emptyString}</p>,
+                          () => <p>{emptyString}</p>,
+                          (error: Error) => (
                             <p>
-                              {intl.formatMessage({ id: 'common.time.days' }, { days: `${data.daysLeft.toFixed(1)}` })}
+                              {intl.formatMessage({ id: 'common.error' })}: {error.message}
                             </p>
-                          </div>
-                        )
-                      )(runePoolData)}
+                          ),
+                          (data: { daysLeft: number; blocksLeft: number }) => (
+                            <div>
+                              <p>
+                                {intl.formatMessage(
+                                  { id: 'common.time.days' },
+                                  { days: `${data.daysLeft.toFixed(1)}` }
+                                )}
+                              </p>
+                            </div>
+                          )
+                        )(runePoolData)}
+                      </div>
                     </div>
+                  </>
+                )}
+
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                  {amountLabel}
+                  <div className="truncate pl-10px font-main text-[12px]">
+                    {formatAssetAmountCurrency({
+                      amount:
+                        interactType === InteractType.Unbond ? baseToAsset(_amountToSend) : baseToAsset(amountToSend),
+                      asset: AssetRuneNative,
+                      decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
+                      trimZeros: !isUSDAsset(AssetRuneNative)
+                    })}
                   </div>
-                </>
-              )}
-
-              <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
-                {amountLabel}
-                <div className="truncate pl-10px font-main text-[12px]">
-                  {formatAssetAmountCurrency({
-                    amount:
-                      interactType === InteractType.Unbond ? baseToAsset(_amountToSend) : baseToAsset(amountToSend),
-                    asset: AssetRuneNative,
-                    decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
-                    trimZeros: !isUSDAsset(AssetRuneNative)
-                  })}
                 </div>
-              </div>
 
-              <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
-                {intl.formatMessage({ id: 'common.memo' })}
-                <div className="overflow pl-10px font-main text-[12px] break-normal">{memoLabel}</div>
-              </div>
-            </>
-          )}
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                  {intl.formatMessage({ id: 'common.memo' })}
+                  <div className="overflow pl-10px font-main text-[12px] break-normal">{memoLabel}</div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
     </form>
