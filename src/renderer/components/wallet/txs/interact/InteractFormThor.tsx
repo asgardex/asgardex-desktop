@@ -18,6 +18,7 @@ import {
   BaseAmount,
   baseToAsset,
   bn,
+  Chain,
   CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
@@ -48,6 +49,7 @@ import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
+import { WalletAddress$ } from '../../../../services/clients/types'
 import { INITIAL_INTERACT_STATE } from '../../../../services/thorchain/const'
 import {
   InteractState,
@@ -66,7 +68,7 @@ import { SendAsset } from '../../../modal/tx/extra/SendAsset'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
-import { Fees, UIFees, UIFeesRD } from '../../../uielements/fees'
+import { Fees, UIFeesRD } from '../../../uielements/fees'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
 import { Tooltip } from '../../../uielements/tooltip'
@@ -109,6 +111,7 @@ type Props = {
   nodes: NodeInfosRD
   runePoolProvider: RunePoolProviderRD
   thorchainLastblock: ThorchainLastblockRD
+  addressByChain$: (chain: Chain) => WalletAddress$
 }
 
 export const InteractFormThor = ({
@@ -130,7 +133,8 @@ export const InteractFormThor = ({
   network,
   nodes: nodesRD,
   runePoolProvider: runePoolProviderRd,
-  thorchainLastblock: thorchainLastblockRd
+  thorchainLastblock: thorchainLastblockRd,
+  addressByChain$
 }: Props) => {
   const intl = useIntl()
 
@@ -517,17 +521,7 @@ export const InteractFormThor = ({
     }
     setMemo(createMemo)
     return createMemo
-  }, [
-    _amountToSend,
-    currentMemo,
-    watch,
-    interactType,
-    memo,
-    network,
-    runePoolAction,
-    runePoolProvider.value,
-    whitelisting
-  ])
+  }, [_amountToSend, currentMemo, watch, interactType, network, runePoolAction, runePoolProvider.value, whitelisting])
 
   const onChangeInput = useCallback(
     (value: BigNumber) => {
@@ -1095,6 +1089,7 @@ export const InteractFormThor = ({
             fee={feeRD}
             reloadFeesHandler={reloadFeesHandler}
             thorchainLastblock={thorchainLastblockRd}
+            addressByChain$={addressByChain$}
           />
         )}
       </div>

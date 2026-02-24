@@ -27,6 +27,7 @@ const common: CommonMessages = {
   'common.expirationBlock': '만료 블록',
   'common.aliasChain': '별칭 체인',
   'common.aliasAddress': '별칭 주소',
+  'common.useWalletAddress': '지갑 주소 사용',
   'common.expiry': '만료일',
   'common.isUpdateThorname': 'THORName 업데이트',
   'common.isUpdateMayaname': 'MAYAName 업데이트',

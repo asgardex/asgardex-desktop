@@ -10,9 +10,11 @@ import {
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { QuoteTHORNameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
-import { AnyAsset, Asset, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, Chain, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import * as Rx from 'rxjs'
 
 import { AssetBTC, AssetDOGE, AssetETH, AssetRuneNative, AssetAVAX } from '../../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../../shared/utils/guard'
@@ -21,6 +23,7 @@ import { AssetUSDT, ZERO_BASE_AMOUNT } from '../../../../../const'
 import { useSubscriptionState } from '../../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../../services/clients'
+import { WalletAddress$ } from '../../../../../services/clients/types'
 import { INITIAL_INTERACT_STATE } from '../../../../../services/thorchain/const'
 import { InteractState, InteractStateHandler, ThorchainLastblockRD } from '../../../../../services/thorchain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../../services/wallet/types'
@@ -59,6 +62,7 @@ type Props = {
   fee: FeeRD
   reloadFeesHandler: FP.Lazy<void>
   thorchainLastblock: ThorchainLastblockRD
+  addressByChain$: (chain: Chain) => WalletAddress$
 }
 
 type Tab = 'lookup' | 'owner' | 'register'
@@ -77,7 +81,8 @@ export const THORNameForm = ({
   network,
   fee: feeRD,
   reloadFeesHandler,
-  thorchainLastblock: thorchainLastblockRd
+  thorchainLastblock: thorchainLastblockRd,
+  addressByChain$
 }: Props) => {
   const intl = useIntl()
   const { asset, walletAddress } = balance
@@ -97,7 +102,6 @@ export const THORNameForm = ({
   const [ownerSearchDone, setOwnerSearchDone] = useState(false)
 
   // Register tab state
-  const [regMode, setRegMode] = useState<'register' | 'update'>('register')
   const [regName, setRegName] = useState('')
   const [regChainAddress, setRegChainAddress] = useState(walletAddress)
   const [regPreferredAsset, setRegPreferredAsset] = useState<string>('')
@@ -107,6 +111,26 @@ export const THORNameForm = ({
   const [nameAvailable, setNameAvailable] = useState(false)
   const [isNewRegistration, setIsNewRegistration] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
+
+  // Wallet address for selected alias chain
+  const oAliasChainWalletAddress = useObservableState(
+    useMemo(() => (regAliasChain ? addressByChain$(regAliasChain) : Rx.of(O.none)), [regAliasChain, addressByChain$]),
+    O.none
+  )
+
+  const handleUseWalletAddress = useCallback(() => {
+    FP.pipe(
+      oAliasChainWalletAddress,
+      O.map((wa) => {
+        if (isNewRegistration) {
+          setRegChainAddress(wa.address)
+        } else {
+          setRegAliasAddress(wa.address)
+        }
+        return wa
+      })
+    )
+  }, [oAliasChainWalletAddress, isNewRegistration])
 
   // Quote state (two-phase flow)
   const [quoteState, setQuoteState] = useState<QuoteState>({ status: 'idle' })
@@ -171,18 +195,12 @@ export const THORNameForm = ({
         setNameAvailable(available)
         setIsNewRegistration(details.name === '')
         setIsOwner(walletAddress === details.owner)
-        if (available && walletAddress === details.owner) {
-          setRegMode('update')
-        } else {
-          setRegMode('register')
-        }
       }
     } catch (_error) {
       // Name not found = available for registration
       setNameAvailable(true)
       setIsNewRegistration(true)
       setIsOwner(false)
-      setRegMode('register')
     } finally {
       setIsLookingUp(false)
     }
@@ -267,7 +285,6 @@ export const THORNameForm = ({
     setRegAliasChain('')
     setRegAliasAddress('')
     setRegExpiry('1')
-    setRegMode('register')
     setOwnerNames([])
     setOwnerSearchDone(false)
     setLookupResult(O.none)
@@ -681,6 +698,14 @@ export const THORNameForm = ({
                       disabled={isLoading}
                       size="large"
                     />
+                  )}
+                  {O.isSome(oAliasChainWalletAddress) && (isNewRegistration || regAliasChain) && (
+                    <button
+                      type="button"
+                      className="mt-1 font-main text-[12px] text-turquoise hover:text-turquoise/80"
+                      onClick={handleUseWalletAddress}>
+                      {intl.formatMessage({ id: 'common.useWalletAddress' })}
+                    </button>
                   )}
                 </div>
 

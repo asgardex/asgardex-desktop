@@ -14,9 +14,11 @@ import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { MayachainQuery, QuoteMAYANameParams, MAYANameDetails } from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, Chain, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import * as Rx from 'rxjs'
 
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../../shared/wallet/types'
@@ -24,6 +26,7 @@ import { ZERO_BASE_AMOUNT } from '../../../../../const'
 import { useSubscriptionState } from '../../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../../services/clients'
+import { WalletAddress$ } from '../../../../../services/clients/types'
 import { INITIAL_INTERACT_STATE } from '../../../../../services/mayachain/const'
 import { InteractState, InteractStateHandler, LastblockItems } from '../../../../../services/mayachain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../../services/wallet/types'
@@ -41,6 +44,11 @@ import * as H from '../Interact.helpers'
 import { NameDetailsCard } from './NameDetailsCard'
 import { QuoteState, estimateExpiry } from './types'
 
+const preferredAssetMap: Record<string, AnyAsset> = {
+  [AssetBTC.symbol]: AssetBTC,
+  [AssetETH.symbol]: AssetETH
+}
+
 type Props = {
   walletType: WalletType
   walletAccount: number
@@ -56,6 +64,7 @@ type Props = {
   fee: FeeRD
   reloadFeesHandler: FP.Lazy<void>
   mayachainLastblockRD: RD.RemoteData<Error, LastblockItems>
+  addressByChain$: (chain: Chain) => WalletAddress$
 }
 
 type Tab = 'lookup' | 'owner' | 'register'
@@ -74,7 +83,8 @@ export const MAYANameForm = ({
   network,
   fee: feeRD,
   reloadFeesHandler,
-  mayachainLastblockRD
+  mayachainLastblockRD,
+  addressByChain$
 }: Props) => {
   const intl = useIntl()
   const { asset, walletAddress } = balance
@@ -102,6 +112,27 @@ export const MAYANameForm = ({
   const [nameAvailable, setNameAvailable] = useState(false)
   const [isNewRegistration, setIsNewRegistration] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
+  const [regPreferredAsset, setRegPreferredAsset] = useState<string>('')
+
+  // Wallet address for selected alias chain
+  const oAliasChainWalletAddress = useObservableState(
+    useMemo(() => (regAliasChain ? addressByChain$(regAliasChain) : Rx.of(O.none)), [regAliasChain, addressByChain$]),
+    O.none
+  )
+
+  const handleUseWalletAddress = useCallback(() => {
+    FP.pipe(
+      oAliasChainWalletAddress,
+      O.map((wa) => {
+        if (isNewRegistration) {
+          setRegChainAddress(wa.address)
+        } else {
+          setRegAliasAddress(wa.address)
+        }
+        return wa
+      })
+    )
+  }, [oAliasChainWalletAddress, isNewRegistration])
 
   // Quote state (two-phase flow)
   const [quoteState, setQuoteState] = useState<QuoteState>({ status: 'idle' })
@@ -199,6 +230,7 @@ export const MAYANameForm = ({
         chain,
         chainAddress,
         owner: walletAddress,
+        preferredAsset: regPreferredAsset ? (preferredAssetMap[regPreferredAsset] as Asset) : undefined,
         expiry,
         isUpdate: isOwner
       }
@@ -221,6 +253,7 @@ export const MAYANameForm = ({
     regAliasAddress,
     regChainAddress,
     regExpiry,
+    regPreferredAsset,
     walletAddress,
     isNewRegistration,
     isOwner,
@@ -254,6 +287,7 @@ export const MAYANameForm = ({
     setRegChainAddress(walletAddress)
     setRegAliasChain('')
     setRegAliasAddress('')
+    setRegPreferredAsset('')
     setRegExpiry('1')
     setOwnerNames([])
     setOwnerSearchDone(false)
@@ -582,6 +616,33 @@ export const MAYANameForm = ({
               )}
 
               <div className="space-y-5">
+                {/* Preferred Asset (update mode only) */}
+                {!isNewRegistration && (
+                  <div>
+                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.preferredAsset' })}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: AssetBTC.symbol, label: 'BTC' },
+                        { value: AssetETH.symbol, label: 'ETH' }
+                      ].map((item) => (
+                        <button
+                          key={item.value}
+                          type="button"
+                          className={`rounded-full border px-4 py-1.5 font-main text-[13px] transition-colors ${
+                            regPreferredAsset === item.value
+                              ? 'border-turquoise bg-turquoise/10 text-turquoise'
+                              : 'border-gray0 text-gray2 hover:border-gray2 dark:border-gray0d dark:text-gray2d dark:hover:border-gray2d'
+                          }`}
+                          onClick={() => setRegPreferredAsset(item.value)}>
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Alias Chain */}
                 <div>
                   <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
@@ -638,6 +699,14 @@ export const MAYANameForm = ({
                       disabled={isLoading}
                       size="large"
                     />
+                  )}
+                  {O.isSome(oAliasChainWalletAddress) && (isNewRegistration || regAliasChain) && (
+                    <button
+                      type="button"
+                      className="mt-1 font-main text-[12px] text-turquoise hover:text-turquoise/80"
+                      onClick={handleUseWalletAddress}>
+                      {intl.formatMessage({ id: 'common.useWalletAddress' })}
+                    </button>
                   )}
                 </div>
 

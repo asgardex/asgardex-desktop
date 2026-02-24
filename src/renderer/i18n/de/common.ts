@@ -27,6 +27,7 @@ const common: CommonMessages = {
   'common.expirationBlock': 'Verfallsblock',
   'common.aliasChain': 'Alias-Kette',
   'common.aliasAddress': 'Alias-Adresse',
+  'common.useWalletAddress': 'Wallet-Adresse verwenden',
   'common.expiry': 'Verfallsdatum',
   'common.isUpdateThorname': 'THORName aktualisieren',
   'common.isUpdateMayaname': 'MAYAName aktualisieren',

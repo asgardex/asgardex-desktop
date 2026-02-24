@@ -27,6 +27,7 @@ const common: CommonMessages = {
   'common.expirationBlock': 'блок истечения',
   'common.aliasChain': 'Цепочка псевдонима',
   'common.aliasAddress': 'Адрес псевдонима',
+  'common.useWalletAddress': 'Использовать адрес кошелька',
   'common.expiry': 'Срок действия',
   'common.isUpdateThorname': 'Обновить THORName',
   'common.isUpdateMayaname': 'Обновить MAYAName',

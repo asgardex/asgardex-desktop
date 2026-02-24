@@ -13,6 +13,7 @@ import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import {
   BaseAmount,
+  Chain,
   CryptoAmount,
   assetAmount,
   assetToBase,
@@ -49,6 +50,7 @@ import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
+import { WalletAddress$ } from '../../../../services/clients/types'
 import { INITIAL_INTERACT_STATE } from '../../../../services/mayachain/const'
 import {
   InteractState,
@@ -115,6 +117,7 @@ type Props = {
   cacaoPoolProvider: CacaoPoolProviderRD
   mayachainLastblockRD: RD.RemoteData<Error, LastblockItems>
   mimirRD: RD.RemoteData<Error, { [key: string]: number }>
+  addressByChain$: (chain: Chain) => WalletAddress$
 }
 export const InteractFormMaya = (props: Props) => {
   const {
@@ -138,7 +141,8 @@ export const InteractFormMaya = (props: Props) => {
     poolShares,
     cacaoPoolProvider: cacaoPoolProviderRd,
     mayachainLastblockRD,
-    mimirRD
+    mimirRD,
+    addressByChain$
   } = props
   const intl = useIntl()
 
@@ -509,17 +513,7 @@ export const InteractFormMaya = (props: Props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [
-    watch,
-    interactType,
-    whitelisting,
-    cacaoPoolAction,
-    cacaoPoolProvider.value,
-    _amountToSend,
-    network,
-    currentMemo,
-    memo
-  ])
+  }, [watch, interactType, whitelisting, cacaoPoolAction, cacaoPoolProvider.value, _amountToSend, network, currentMemo])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -1152,6 +1146,7 @@ export const InteractFormMaya = (props: Props) => {
             fee={feeRD}
             reloadFeesHandler={reloadFeesHandler}
             mayachainLastblockRD={mayachainLastblockRD}
+            addressByChain$={addressByChain$}
           />
         )}
       </div>

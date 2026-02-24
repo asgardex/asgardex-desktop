@@ -23,6 +23,7 @@ export type CommonMessageKey =
   | 'common.preferredAsset'
   | 'common.aliasChain'
   | 'common.aliasAddress'
+  | 'common.useWalletAddress'
   | 'common.expirationBlock'
   | 'common.expiry'
   | 'common.isUpdateThorname'

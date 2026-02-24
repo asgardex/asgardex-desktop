@@ -27,6 +27,7 @@ const common: CommonMessages = {
   'common.expirationBlock': 'समाप्ति ब्लॉक',
   'common.aliasChain': 'उपनाम श्रृंखला',
   'common.aliasAddress': 'उपनाम पता',
+  'common.useWalletAddress': 'वॉलेट पता उपयोग करें',
   'common.expiry': 'समाप्ति',
   'common.isUpdateThorname': 'THORName अपडेट करें',
   'common.isUpdateMayaname': 'MAYAName अपडेट करें',
