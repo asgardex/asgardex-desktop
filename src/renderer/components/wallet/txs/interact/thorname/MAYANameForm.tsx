@@ -13,7 +13,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { MayachainQuery, QuoteMAYANameParams, MAYANameDetails } from '@xchainjs/xchain-mayachain-query'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Asset, Chain, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -28,7 +28,7 @@ import { FeeRD } from '../../../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../../services/clients'
 import { WalletAddress$ } from '../../../../../services/clients/types'
 import { INITIAL_INTERACT_STATE } from '../../../../../services/mayachain/const'
-import { InteractState, InteractStateHandler, LastblockItems } from '../../../../../services/mayachain/types'
+import { InteractState, InteractStateHandler, MayachainLastblockRD } from '../../../../../services/mayachain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../../modal/confirmation'
 import { TxModal } from '../../../../modal/tx'
@@ -63,7 +63,7 @@ type Props = {
   network: Network
   fee: FeeRD
   reloadFeesHandler: FP.Lazy<void>
-  mayachainLastblockRD: RD.RemoteData<Error, LastblockItems>
+  mayachainLastblockRD: MayachainLastblockRD
   addressByChain$: (chain: Chain) => WalletAddress$
 }
 
@@ -121,17 +121,14 @@ export const MAYANameForm = ({
   )
 
   const handleUseWalletAddress = useCallback(() => {
-    FP.pipe(
-      oAliasChainWalletAddress,
-      O.map((wa) => {
-        if (isNewRegistration) {
-          setRegChainAddress(wa.address)
-        } else {
-          setRegAliasAddress(wa.address)
-        }
-        return wa
-      })
-    )
+    if (O.isSome(oAliasChainWalletAddress)) {
+      const { address } = oAliasChainWalletAddress.value
+      if (isNewRegistration) {
+        setRegChainAddress(address)
+      } else {
+        setRegAliasAddress(address)
+      }
+    }
   }, [oAliasChainWalletAddress, isNewRegistration])
 
   // Quote state (two-phase flow)
@@ -242,10 +239,13 @@ export const MAYANameForm = ({
           amount: quote.value.baseAmount
         })
       } else {
-        setQuoteState({ status: 'error', message: 'No quote returned' })
+        setQuoteState({ status: 'error', message: intl.formatMessage({ id: 'common.noQuoteReturned' }) })
       }
     } catch (error) {
-      setQuoteState({ status: 'error', message: error instanceof Error ? error.message : 'Quote failed' })
+      setQuoteState({
+        status: 'error',
+        message: error instanceof Error ? error.message : intl.formatMessage({ id: 'common.quoteFailed' })
+      })
     }
   }, [
     regName,
@@ -257,7 +257,8 @@ export const MAYANameForm = ({
     walletAddress,
     isNewRegistration,
     isOwner,
-    mayachainQuery
+    mayachainQuery,
+    intl
   ])
 
   // Submit tx (Phase 2)
@@ -423,7 +424,7 @@ export const MAYANameForm = ({
           }`}
           onClick={() => setActiveTab('lookup')}>
           <MagnifyingGlassIcon className="h-4 w-4" />
-          Lookup Name
+          {intl.formatMessage({ id: 'common.lookupName' })}
         </button>
         <button
           type="button"
@@ -434,7 +435,7 @@ export const MAYANameForm = ({
           }`}
           onClick={() => setActiveTab('owner')}>
           <UserIcon className="h-4 w-4" />
-          Names by Owner
+          {intl.formatMessage({ id: 'common.namesByOwner' })}
         </button>
         <button
           type="button"
@@ -444,7 +445,7 @@ export const MAYANameForm = ({
               : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
           }`}
           onClick={() => setActiveTab('register')}>
-          Register / Update
+          {intl.formatMessage({ id: 'common.registerOrUpdate' })}
         </button>
       </div>
 
@@ -483,7 +484,7 @@ export const MAYANameForm = ({
               disabled={isLookingUp || !lookupName}
               loading={isLookingUp}
               onClick={handleLookup}>
-              Lookup
+              {intl.formatMessage({ id: 'common.lookup' })}
             </FlatButton>
           </div>
 
@@ -497,6 +498,7 @@ export const MAYANameForm = ({
                   owner={details.owner}
                   expireBlockHeight={details.expireBlockHeight}
                   estimatedExpiry={estimateExpiry(currentBlock, details.expireBlockHeight)}
+                  preferredAsset={details.preferredAsset}
                   aliases={details.aliases}
                   nameLabel={intl.formatMessage({ id: 'common.mayaname' })}
                 />
@@ -511,7 +513,7 @@ export const MAYANameForm = ({
       {activeTab === 'owner' && (
         <>
           <Label color="input" size="big" textTransform="uppercase">
-            Owner Address
+            {intl.formatMessage({ id: 'common.ownerAddress' })}
           </Label>
           <Input
             value={ownerAddress}
@@ -534,12 +536,12 @@ export const MAYANameForm = ({
             loading={isLookingUpOwner}
             onClick={handleOwnerLookup}>
             <UserIcon className="mr-2 h-5 w-5" />
-            Find Names
+            {intl.formatMessage({ id: 'common.findNames' })}
           </FlatButton>
 
           {ownerSearchDone && !isLookingUpOwner && ownerNames.length === 0 && (
             <div className="mt-4 text-center text-[14px] text-gray2 dark:text-gray2d">
-              No names found for this address
+              {intl.formatMessage({ id: 'common.noNamesFound' })}
             </div>
           )}
           {!isLookingUpOwner && ownerNames.length > 0 && (
@@ -551,6 +553,7 @@ export const MAYANameForm = ({
                   owner={details.owner}
                   expireBlockHeight={details.expireBlockHeight}
                   estimatedExpiry={estimateExpiry(currentBlock, details.expireBlockHeight)}
+                  preferredAsset={details.preferredAsset}
                   aliases={details.aliases}
                   nameLabel={intl.formatMessage({ id: 'common.mayaname' })}
                 />
@@ -600,7 +603,7 @@ export const MAYANameForm = ({
               disabled={isLoading || isLookingUp || !regName}
               loading={isLookingUp}
               onClick={handleCheckName}>
-              {intl.formatMessage({ id: 'deposit.interact.actions.checkThorname' })}
+              {intl.formatMessage({ id: 'deposit.interact.actions.checkMayaname' })}
             </FlatButton>
           </div>
 
@@ -662,7 +665,7 @@ export const MAYANameForm = ({
                         { value: AssetAETH.chain, label: 'ARB' },
                         { value: AssetBTC.chain, label: 'BTC' },
                         { value: AssetETH.chain, label: 'ETH' },
-                        { value: AssetRuneNative.chain, label: 'RUNE' }
+                        { value: THORChain, label: 'RUNE' }
                       ].map((item) => (
                         <button
                           key={item.value}
