@@ -26,7 +26,9 @@ export const estimateExpiry = (
   if (!currentBlock || !expireBlockHeight) return undefined
   const blocksLeft = expireBlockHeight - currentBlock
   if (blocksLeft <= 0) return undefined
-  const secondsLeft = blocksLeft * 6
+  // Both THORChain and MAYAChain produce blocks approximately every 6 seconds
+  const BLOCK_TIME_SECONDS = 6
+  const secondsLeft = blocksLeft * BLOCK_TIME_SECONDS
   const daysLeft = Math.round(secondsLeft / 86400)
   const date = new Date(Date.now() + secondsLeft * 1000)
   return { date, daysLeft }

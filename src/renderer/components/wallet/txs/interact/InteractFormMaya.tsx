@@ -262,7 +262,7 @@ export const InteractFormMaya = (props: Props) => {
       case InteractType.Whitelist:
         return ONE_CACAO_BASE_AMOUNT
       case InteractType.Custom:
-      case InteractType.THORName:
+      case InteractType.MAYAName:
       case InteractType.RunePool:
         return _amountToSend
       case InteractType.Unbond:

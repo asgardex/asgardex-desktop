@@ -13,6 +13,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.buyThorname': 'Acheter THORName',
   'deposit.interact.actions.buyMayaname': 'Acheter MAYAName',
   'deposit.interact.actions.checkThorname': 'Vérifier la disponibilité',
+  'deposit.interact.actions.checkMayaname': 'Vérifier la disponibilité',
   'deposit.interact.actions.addBondProvider': 'Ajouter un fournisseur de caution',
   'deposit.interact.actions.getQuote': 'Get Quote',
   'deposit.share.title': 'Votre part dans la pool',

@@ -13,6 +13,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.buyThorname': 'THORName 구매',
   'deposit.interact.actions.buyMayaname': 'MAYAName 구매',
   'deposit.interact.actions.checkThorname': '사용 가능 여부 확인',
+  'deposit.interact.actions.checkMayaname': '사용 가능 여부 확인',
   'deposit.interact.actions.addBondProvider': '채권 제공자 추가',
   'deposit.interact.actions.getQuote': 'Get Quote',
   'deposit.share.title': '당신의 풀 지분',
