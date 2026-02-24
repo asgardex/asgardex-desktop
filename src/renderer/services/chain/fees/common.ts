@@ -55,7 +55,6 @@ import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import { inboundAddressesShared$ as mayaInboundAddresses$ } from '../../mayachain'
-import { InboundAddress as MayaInboundAddress } from '../../mayachain/types'
 import { service as midgardMayaService } from '../../midgard/mayaMidgard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import * as XRD from '../../radix'
@@ -64,7 +63,7 @@ import * as SOL from '../../solana'
 import { ZERO_ADDRESS } from '../../solana/fees'
 import * as THOR from '../../thorchain'
 import { inboundAddressesShared$ as thorInboundAddresses$ } from '../../thorchain'
-import { InboundAddress as ThorInboundAddress } from '../../thorchain/types'
+import { InboundAddress as ThorInboundAddress, InboundAddressesLD } from '../../thorchain/types'
 import * as TRON from '../../tron'
 import { FeesWithRatesLD } from '../../utxo/types'
 import * as ZEC from '../../zcash'
@@ -84,14 +83,11 @@ const {
 /**
  * Helper to get inbound address for a chain from inbound addresses
  */
-const getInboundAddress = (
-  inboundAddresses: (ThorInboundAddress | MayaInboundAddress)[],
-  chain: Chain
-): O.Option<Address> => {
+const getInboundAddress = (inboundAddresses: ThorInboundAddress[], chain: Chain): O.Option<Address> => {
   return FP.pipe(
     inboundAddresses,
     A.findFirst((item) => item.chain === chain),
-    O.chain((item: ThorInboundAddress | MayaInboundAddress) => O.fromNullable(item.address)),
+    O.chain((item) => O.fromNullable(item.address)),
     O.filter((address) => address.length > 0)
   )
 }
@@ -99,9 +95,9 @@ const getInboundAddress = (
 /**
  * Get inbound addresses observable based on chain protocol
  */
-const getInboundAddresses$ = (chain: Chain) => {
+const getInboundAddresses$ = (chain: Chain): InboundAddressesLD => {
   const protocol = getChainNodeProtocol(chain)
-  return protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$
+  return (protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$) as InboundAddressesLD
 }
 
 /**

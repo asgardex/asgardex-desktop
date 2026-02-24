@@ -11,6 +11,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.buyMayaname': 'Купить MAYAName',
   'deposit.interact.actions.checkThorname': 'Проверить доступность',
   'deposit.interact.actions.addBondProvider': 'Добавить поставщика обеспечения',
+  'deposit.interact.actions.getQuote': 'Get Quote',
   'deposit.interact.title': 'Вклад',
   'deposit.interact.subtitle': 'Взаимодействие с {chain}Chain',
   'deposit.interact.label.bondprovider': 'Поставщик бондов (опционально)',

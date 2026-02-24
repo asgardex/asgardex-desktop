@@ -11,6 +11,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.buyMayaname': 'MAYAName खरीदें',
   'deposit.interact.actions.checkThorname': 'उपलब्धता जांचें',
   'deposit.interact.actions.addBondProvider': 'बांड प्रदाता जोड़ें',
+  'deposit.interact.actions.getQuote': 'Get Quote',
   'deposit.interact.title': 'जमा',
   'deposit.interact.subtitle': '{chain}Chain के साथ इंटरैक्ट करें',
   'deposit.interact.label.bondprovider': 'बांड प्रदाता (वैकल्पिक)',

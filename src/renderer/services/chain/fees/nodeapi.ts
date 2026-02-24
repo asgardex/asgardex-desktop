@@ -3,9 +3,8 @@ import { baseAmount, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O, array as A } from 'fp-ts'
 
 import { isChainOfMaya } from '../../../../shared/utils/chain'
-import { liveData } from '../../../helpers/rx/liveData'
+import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import { inboundAddressesShared$ as mayaInboundAddresses$ } from '../../mayachain'
-import { InboundAddress as MayaInboundAddress } from '../../mayachain/types'
 import { inboundAddressesShared$ as thorInboundAddresses$ } from '../../thorchain'
 import { InboundAddress as ThorInboundAddress } from '../../thorchain/types'
 
@@ -14,7 +13,7 @@ export enum NodeProtocol {
   MAYACHAIN = 'MAYACHAIN'
 }
 
-type InboundAddress = ThorInboundAddress | MayaInboundAddress
+type InboundAddress = ThorInboundAddress
 
 /**
  * Determines which node protocol serves a given chain
@@ -160,7 +159,9 @@ export const getNodeGasPrices$ = (
   protocol: NodeProtocol = NodeProtocol.THORCHAIN,
   decimals: number = 18
 ) => {
-  const inboundAddresses$ = protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$
+  const inboundAddresses$ = (
+    protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$
+  ) as LiveData<Error, InboundAddress[]>
   const nodeName = protocol === NodeProtocol.THORCHAIN ? 'THORNode' : 'MAYANode'
 
   return FP.pipe(
@@ -215,7 +216,9 @@ export const getNodeOutboundFee$ = (
   protocol: NodeProtocol = NodeProtocol.THORCHAIN,
   assetDecimals: number = 18
 ) => {
-  const inboundAddresses$ = protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$
+  const inboundAddresses$ = (
+    protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$
+  ) as LiveData<Error, InboundAddress[]>
 
   return FP.pipe(
     inboundAddresses$,
