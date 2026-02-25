@@ -16,7 +16,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { AssetXRP, XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
-import { SOLChain } from '@xchainjs/xchain-solana'
+import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain, TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import {
@@ -348,6 +348,12 @@ export const getOutboundAssetFeeByChain = (
             amount: baseAmount(value, XRP_DECIMAL),
             asset: AssetXRP
           })
+        case SOLChain:
+          return O.some({
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e9 (SOL)
+            amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), SOL_DECIMALS),
+            asset: SOLAsset
+          })
         // 'THORChain can be ignored - fees for asset side only
         // Other chains can be ignored since they are for mayachain
         case THORChain:
@@ -357,7 +363,6 @@ export const getOutboundAssetFeeByChain = (
         case ADAChain:
         case ARBChain:
         case RadixChain:
-        case SOLChain:
           return O.none
         default:
           return O.none
