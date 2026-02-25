@@ -2,7 +2,6 @@ import path, { join } from 'path'
 
 import { BrowserWindow, app, ipcMain, nativeImage } from 'electron'
 import electronDebug from 'electron-debug'
-import isDev from 'electron-is-dev'
 import log, { warn } from 'electron-log'
 import windowStateKeeper from 'electron-window-state'
 import { either as E, function as FP } from 'fp-ts'
@@ -34,7 +33,7 @@ import IPCMessages from './ipc/messages'
 import { setMenu } from './menu'
 import { sanitizePathSegment } from './utils/file'
 
-export const IS_DEV = isDev && import.meta.env.VITE_NODE_ENV !== 'production'
+export const IS_DEV = !app.isPackaged && import.meta.env.VITE_NODE_ENV !== 'production'
 export const PORT = import.meta.env.VITE_PORT || 3000
 
 export const APP_ROOT = join(__dirname, '..', '..')

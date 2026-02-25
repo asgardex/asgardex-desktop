@@ -1,6 +1,5 @@
 import { useState, useRef, useLayoutEffect } from 'react'
 import clsx from 'clsx'
-import { motion } from 'framer-motion'
 
 interface SwitchProps {
   /** Labels for the two options */
@@ -30,34 +29,29 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
   }
 
   return (
-    <motion.div
+    <div
       ref={containerRef}
       className={clsx(
         'relative inline-flex cursor-pointer items-center justify-between rounded-full p-[1px]',
-        'bg-bg1 transition-colors select-none dark:bg-bg1d'
+        'bg-bg1 select-none dark:bg-bg1d'
       )}
       onClick={handleToggle}
-      animate={{ borderColor: colors[activeIndex] }}
-      transition={{ type: 'tween', duration: 0.25 }}
       style={{
         border: `1px solid ${colors[activeIndex]}`,
         height: '40px',
-        minWidth: '180px'
+        minWidth: '180px',
+        transition: 'border-color 0.25s ease'
       }}>
-      <motion.div
-        layout
+      <div
         className="absolute top-[1px] left-[1px] h-[calc(100%-2px)] rounded-full"
         style={{
           width: halfWidth ? `${halfWidth - 2}px` : '50%',
           border: `1px solid ${colors[activeIndex]}`,
-          backgroundColor: colors[activeIndex] + '1A'
+          backgroundColor: colors[activeIndex] + '1A',
+          transform: `translateX(${activeIndex === 0 ? 0 : halfWidth - 2}px)`,
+          transition:
+            'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s ease, background-color 0.25s ease'
         }}
-        animate={{
-          x: activeIndex === 0 ? 0 : halfWidth - 2,
-          borderColor: colors[activeIndex],
-          backgroundColor: colors[activeIndex] + '1A'
-        }}
-        transition={{ type: 'spring', stiffness: 260, damping: 24 }}
       />
 
       <div
@@ -77,6 +71,6 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
         style={{ '--color-b': colors[1] } as React.CSSProperties}>
         {labels[1]}
       </div>
-    </motion.div>
+    </div>
   )
 }
