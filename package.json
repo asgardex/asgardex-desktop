@@ -26,8 +26,7 @@
     "generate:baseErc20whitelist": "npm run generate:erc20whitelist -- BASE",
     "generate:trontrc20whitelist": "npm run generate:erc20whitelist -- TRON",
     "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" storybook dev -p 9009 ",
-    "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=8192\" storybook build",
-    "analyze": "NODE_OPTIONS=\"--max-old-space-size=12000\" yarn build:dev && source-map-explorer 'build/renderer/assets/*.js'"
+    "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=8192\" storybook build"
   },
   "repository": {
     "type": "git",
@@ -127,7 +126,6 @@
     "electron-window-state": "^5.0.3",
     "ethers": "^6.14.3",
     "fp-ts": "^2.12.1",
-    "framer-motion": "^12.23.24",
     "fs-extra": "^10.1.0",
     "io-ts": "^2.2.16",
     "io-ts-types": "^0.5.19",
@@ -145,7 +143,6 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "3",
     "@electron/notarize": "^2.5.0",
     "@eslint/compat": "1.1.1",
     "@eslint/eslintrc": "^3.3.1",
@@ -201,9 +198,7 @@
     "prettier-plugin-tailwindcss": "^0.7.2",
     "process": "^0.11.10",
     "rimraf": "5.0.10",
-    "rollup-plugin-visualizer": "^5.14.0",
     "simple-git": "^3.27.0",
-    "source-map-explorer": "^2.5.2",
     "storybook": "^8.6.12",
     "stream-browserify": "^3.0.0",
     "tailwindcss": "^4.1.18",

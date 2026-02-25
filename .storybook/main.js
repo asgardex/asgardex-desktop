@@ -22,8 +22,7 @@ const config = {
         viewport: false,
         docs: false
       }
-    },
-    '@chromatic-com/storybook'
+    }
   ],
   viteFinal: async (config, { configType: _ }) => {
     return mergeConfig(config, customViteConfig)

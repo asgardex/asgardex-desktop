@@ -42,10 +42,6 @@ lint:
     - actionlint@1.7.7 # GitHub Actions workflows
 
   definitions:
-    - name: stylelint
-      commands:
-        - run: stylelint --config .stylelint.config.js ${target}
-
     - name: codespell
       commands:
         - run: codespell --uri-ignore-words-list=* --ignore-words-list=liquify,TE,iif,afterAll,amountIn ${target}
@@ -61,9 +57,6 @@ lint:
         - src/renderer/i18n/**
         - src/renderer/types/generated/**
         - .storybook/**
-    - linters: [eslint]
-      paths:
-        - .stylelint.config.js
     - linters: [codespell]
       paths:
         - scripts/**
