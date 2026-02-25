@@ -63,6 +63,12 @@ import {
 import { TxParams } from '../../../../services/evm/types'
 import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/mayaMidgard/types'
 import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
+import type { CoinControlState } from '../../../../services/utxo/coinControl.types'
+import {
+  CoinControlStrategy,
+  INITIAL_COIN_CONTROL_STATE,
+  strategyToPreferences
+} from '../../../../services/utxo/coinControl.types'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -78,6 +84,7 @@ import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import { matchedWalletType, renderedWalletType } from '../TxForm.helpers'
 import { validateTxAmountInput } from '../TxForm.util'
+import { CoinControlPanel } from './coinControl'
 import { DEFAULT_FEE_OPTION } from './Send.const'
 import * as Shared from './Send.shared'
 
@@ -198,6 +205,7 @@ export const SendForm = (props: Props): JSX.Element => {
   const [destinationTagRequired, setDestinationTagRequired] = useState<boolean>(false)
   const [isRouterAddress, setIsRouterAddress] = useState<boolean>(false)
   const [isSendMax, setIsSendMax] = useState<boolean>(false)
+  const [coinControlState, setCoinControlState] = useState<CoinControlState>(INITIAL_COIN_CONTROL_STATE)
 
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
@@ -296,6 +304,37 @@ export const SendForm = (props: Props): JSX.Element => {
       )
     }
   }, [isEVMChain, isUTXOChain, oFees, oFeesWithRates, selectedFeeOption, selectedFeeOptionKey, asset, effectiveChain])
+
+  // When manual UTXOs are selected, auto-fill the amount (total selected minus fee).
+  // When leaving manual mode, clear the stale isSendMax flag.
+  useEffect(() => {
+    const isManualWithSelection =
+      isUTXOChain &&
+      coinControlState.isEnabled &&
+      coinControlState.strategy === CoinControlStrategy.MANUAL &&
+      coinControlState.selectedUtxos.length > 0
+
+    if (!isManualWithSelection) {
+      // Reset isSendMax when coin control is not in manual-with-selection mode
+      // to prevent stale max-send behavior on subsequent submits
+      if (isUTXOChain && isSendMax) {
+        setIsSendMax(false)
+      }
+      return
+    }
+
+    const totalSats = coinControlState.selectedUtxos.reduce((sum, u) => sum + u.value, 0)
+    const feeAmount = FP.pipe(
+      selectedFee,
+      O.getOrElse(() => ZERO_BASE_AMOUNT)
+    )
+    const netSats = totalSats - feeAmount.amount().toNumber()
+    const netAmount = baseAmount(Math.max(netSats, 0), balance.amount.decimal)
+
+    setAmountToSend(netAmount)
+    setValue('amount', baseToAsset(netAmount).amount())
+    setIsSendMax(true)
+  }, [coinControlState, isUTXOChain, selectedFee, balance.amount.decimal, setValue, isSendMax])
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     if (isEVMChain) {
@@ -1021,6 +1060,17 @@ export const SendForm = (props: Props): JSX.Element => {
       ? O.getOrElse(() => '')(recipientAddress as O.Option<Address>)
       : (recipientAddress as Address)
 
+    // Build coin control params for UTXO chains
+    const ccSelectedUtxos =
+      isUTXOChain &&
+      coinControlState.isEnabled &&
+      coinControlState.strategy === CoinControlStrategy.MANUAL &&
+      coinControlState.selectedUtxos.length > 0
+        ? coinControlState.selectedUtxos
+        : undefined
+    const ccPreferences =
+      isUTXOChain && coinControlState.isEnabled ? strategyToPreferences(coinControlState.strategy) : undefined
+
     subscribeSendTxState(
       transfer$({
         walletType,
@@ -1034,7 +1084,9 @@ export const SendForm = (props: Props): JSX.Element => {
         feeOption: isEVMChain ? selectedFeeOption : selectedFeeOptionKey,
         memo: currentMemo,
         destinationTag: watch('destinationTag'),
-        sendMax: isUTXOChain ? isSendMax : undefined
+        sendMax: isUTXOChain ? isSendMax : undefined,
+        selectedUtxos: ccSelectedUtxos,
+        utxoSelectionPreferences: ccPreferences
       })
     )
   }, [
@@ -1054,7 +1106,8 @@ export const SendForm = (props: Props): JSX.Element => {
     selectedFeeOption,
     selectedFeeOptionKey,
     currentMemo,
-    watch
+    watch,
+    coinControlState
   ])
 
   // Confirmation modal
@@ -1441,6 +1494,28 @@ export const SendForm = (props: Props): JSX.Element => {
                 render={({ field }) => <div onChange={(e) => field.onChange(e)}>{renderFeeOptions}</div>}
               />
             </div>
+          )}
+
+          {/* Coin Control for UTXO chains */}
+          {isUTXOChain && (
+            <CoinControlPanel
+              chain={effectiveChain}
+              asset={asset}
+              address={walletAddress}
+              walletType={walletType}
+              disabled={isLoading}
+              targetAmount={FP.pipe(
+                selectedFee,
+                O.map((fee) => {
+                  const sendAmt = isEVMChain
+                    ? O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend as O.Option<BaseAmount>)
+                    : (amountToSend as BaseAmount)
+                  return sendAmt.amount().toNumber() + fee.amount().toNumber()
+                }),
+                O.toUndefined
+              )}
+              onChange={setCoinControlState}
+            />
           )}
 
           {/* Gas multiplier for EVM chains */}

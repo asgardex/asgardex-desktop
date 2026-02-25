@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, FeesWithRates } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
+import type { UTXO } from '@xchainjs/xchain-utxo-providers'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
@@ -23,6 +24,8 @@ export type SendTxParams = {
   walletIndex: number
   hdMode: HDMode
   sendMax?: boolean
+  selectedUtxos?: UTXO[]
+  utxoSelectionPreferences?: { minimizeFee?: boolean; minimizeInputs?: boolean; consolidateSmallUtxos?: boolean }
 }
 
 export type TransactionService = C.TransactionService<SendTxParams>
