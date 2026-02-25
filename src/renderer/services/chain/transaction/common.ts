@@ -73,7 +73,9 @@ export const sendTx$ = ({
   hdMode,
   allowOwnerOffCurve,
   destinationTag,
-  sendMax
+  sendMax,
+  selectedUtxos,
+  utxoSelectionPreferences
 }: SendTxParams): TxHashLD => {
   const { chain } =
     asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.SECURED ? { chain: THORChain } : asset
@@ -99,7 +101,9 @@ export const sendTx$ = ({
             walletIndex,
             hdMode,
             sender,
-            sendMax
+            sendMax,
+            selectedUtxos,
+            utxoSelectionPreferences
           })
         })
       )
@@ -212,7 +216,9 @@ export const sendTx$ = ({
             walletIndex,
             hdMode,
             sender,
-            sendMax
+            sendMax,
+            selectedUtxos,
+            utxoSelectionPreferences
           })
         )
       )
@@ -237,7 +243,9 @@ export const sendTx$ = ({
             walletIndex,
             hdMode,
             sender,
-            sendMax
+            sendMax,
+            selectedUtxos,
+            utxoSelectionPreferences
           })
         )
       )
@@ -262,7 +270,9 @@ export const sendTx$ = ({
             walletIndex,
             hdMode,
             sender,
-            sendMax
+            sendMax,
+            selectedUtxos,
+            utxoSelectionPreferences
           })
         })
       )
@@ -286,7 +296,9 @@ export const sendTx$ = ({
             walletIndex,
             hdMode,
             sender,
-            sendMax
+            sendMax,
+            selectedUtxos,
+            utxoSelectionPreferences
           })
         })
       )
@@ -310,7 +322,9 @@ export const sendTx$ = ({
             walletIndex,
             hdMode,
             sender,
-            sendMax
+            sendMax,
+            selectedUtxos,
+            utxoSelectionPreferences
           })
         })
       )

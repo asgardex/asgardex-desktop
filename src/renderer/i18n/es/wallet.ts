@@ -120,7 +120,19 @@ const wallet: WalletMessages = {
   'wallet.evmToken.tooltip': '¿No encuentras tu token? Ve a configuración y añádelo manualmente a la lista blanca.',
   'wallet.derivationPath.nativeSegwit': 'Native Segwit P2WPKH',
   'wallet.derivationPath.taproot': 'Taproot P2TR',
-  'wallet.ledger.fetchDescription': 'Obtener dirección de tu billetera de hardware'
+  'wallet.ledger.fetchDescription': 'Obtener dirección de tu billetera de hardware',
+  'wallet.send.coinControl': 'Coin Control',
+  'wallet.send.coinControl.strategy': 'Selection Strategy',
+  'wallet.send.coinControl.auto': 'Automatic',
+  'wallet.send.coinControl.manual': 'Manual',
+  'wallet.send.coinControl.minimizeFee': 'Minimize Fee',
+  'wallet.send.coinControl.largestFirst': 'Largest First',
+  'wallet.send.coinControl.smallestFirst': 'Smallest First',
+  'wallet.send.coinControl.selected': '{count} UTXOs selected',
+  'wallet.send.coinControl.totalSelected': 'Total Selected',
+  'wallet.send.coinControl.change': 'Change',
+  'wallet.send.coinControl.insufficient': 'Selected UTXOs insufficient for amount + fee',
+  'wallet.send.coinControl.manualKeystoreOnly': 'Manual selection available for Keystore wallets only'
 }
 
 export default wallet

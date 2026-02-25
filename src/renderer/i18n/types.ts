@@ -420,6 +420,18 @@ type WalletMessageKey =
   | 'wallet.evmToken.tooltip'
   | 'wallet.derivationPath.nativeSegwit'
   | 'wallet.derivationPath.taproot'
+  | 'wallet.send.coinControl'
+  | 'wallet.send.coinControl.strategy'
+  | 'wallet.send.coinControl.auto'
+  | 'wallet.send.coinControl.manual'
+  | 'wallet.send.coinControl.minimizeFee'
+  | 'wallet.send.coinControl.largestFirst'
+  | 'wallet.send.coinControl.smallestFirst'
+  | 'wallet.send.coinControl.selected'
+  | 'wallet.send.coinControl.totalSelected'
+  | 'wallet.send.coinControl.change'
+  | 'wallet.send.coinControl.insufficient'
+  | 'wallet.send.coinControl.manualKeystoreOnly'
   | 'wallet.ledger.fetchDescription'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }

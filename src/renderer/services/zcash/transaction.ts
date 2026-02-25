@@ -23,7 +23,15 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     FP.pipe(
       client$,
       RxOp.switchMap(FP.flow(O.fold<Client, Rx.Observable<Client>>(() => Rx.EMPTY, Rx.of))),
-      RxOp.switchMap((client) => Rx.from(client.transferMax({ recipient: params.recipient, memo: params.memo }))),
+      RxOp.switchMap((client) =>
+        Rx.from(
+          client.transferMax({
+            recipient: params.recipient,
+            memo: params.memo,
+            selectedUtxos: params.selectedUtxos
+          })
+        )
+      ),
       RxOp.map((result: { hash: string }) => RD.success(result.hash)),
       RxOp.catchError((e): TxHashLD => {
         const msg = getUtxoErrorMessage(e) ?? e?.message ?? e.toString()

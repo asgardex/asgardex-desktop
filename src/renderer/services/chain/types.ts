@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, Network, Tx } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import type { UTXO } from '@xchainjs/xchain-utxo-providers'
 import BigNumber from 'bignumber.js'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -108,6 +109,8 @@ export type SendTxParams = {
   allowOwnerOffCurve?: boolean
   destinationTag?: number
   sendMax?: boolean
+  selectedUtxos?: UTXO[]
+  utxoSelectionPreferences?: { minimizeFee?: boolean; minimizeInputs?: boolean; consolidateSmallUtxos?: boolean }
 }
 
 export type SendPoolTxParams = SendTxParams & {
