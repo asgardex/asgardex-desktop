@@ -18,6 +18,6 @@
     "isolatedModules": true,
     "types": ["vitest/globals"]
   },
-  "include": ["src/shared", "src/renderer", "src/setupTests.ts", "./jest-setup.ts", "src/vite-env.d.ts"],
+  "include": ["src/shared", "src/renderer", "src/setupTests.ts", "src/vite-env.d.ts"],
   "exclude": ["src/main/"]
 }
