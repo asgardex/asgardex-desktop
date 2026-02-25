@@ -5,7 +5,7 @@ import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import { function as FP } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { getChainAsset } from '../../../helpers/chainHelper'
@@ -57,6 +57,16 @@ export const VultisigConfirmationModal = ({
   // This prevents reacting to stale txState from previous transactions
   const [signingStarted, setSigningStarted] = useState(false)
 
+  // Ref to hold latest onClose without triggering effect re-runs.
+  // onClose is an inline arrow in the parent, creating a new reference each render.
+  // Without this ref, the txState-watching effect would re-run on every parent render
+  // and call onClose() repeatedly after success.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
+  // Guard: ensure we only call onClose once per signing session
+  const closedRef = useRef(false)
+
   // Store cleanup functions for event listeners
   const cleanupFns = useRef<(() => void)[]>([])
 
@@ -70,7 +80,8 @@ export const VultisigConfirmationModal = ({
       setDevicesJoined(0)
       setIsValidating(false)
       setIsCancelling(false)
-      setSigningStarted(false) // Reset signing tracking for new modal session
+      setSigningStarted(false)
+      closedRef.current = false
     }
   }, [visible])
 
@@ -131,31 +142,26 @@ export const VultisigConfirmationModal = ({
   }, [vaultType, phase, txState])
 
   // Watch txState to close modal on success/failure (SecureVault only)
-  // IMPORTANT: Only react to txState changes AFTER signing has started in THIS modal session
-  // This prevents closing the modal due to stale txState from previous transactions
+  // Uses refs for onClose and closedRef to:
+  //  - Avoid re-running when parent re-renders (onClose is inline, new ref each render)
+  //  - Ensure onClose is called exactly once per signing session
   useEffect(() => {
-    if (vaultType === 'secure' && signingStarted) {
-      window.apiLog?.info?.('[VultisigConfirm]', 'Checking txState for modal close', {
-        signingStarted,
-        phase,
-        isSuccess: RD.isSuccess(txState),
-        isFailure: RD.isFailure(txState),
-        isPending: RD.isPending(txState)
-      })
-
+    if (vaultType === 'secure' && signingStarted && !closedRef.current) {
       if (RD.isSuccess(txState)) {
         window.apiLog?.info?.('[VultisigConfirm]', 'Transaction succeeded, closing modal')
-        onClose()
+        closedRef.current = true
+        onCloseRef.current()
       } else if (RD.isFailure(txState)) {
         const error = txState.error
         window.apiLog?.error?.('[VultisigConfirm]', 'Transaction failed, closing modal', {
           errorId: error?.errorId,
           msg: error?.msg
         })
-        onClose()
+        closedRef.current = true
+        onCloseRef.current()
       }
     }
-  }, [vaultType, signingStarted, phase, txState, onClose])
+  }, [vaultType, signingStarted, txState])
 
   const handlePasswordSubmit = useCallback(async () => {
     if (!password) {

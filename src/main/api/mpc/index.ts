@@ -22,6 +22,7 @@ import {
   SignBytesParams
 } from '../../../shared/api/mpcTypes'
 import { disposeSDK, getSDK, initializeSDK, isSDKInitialized } from './sdk'
+import { createErc20ApprovePayload } from './protobuf'
 
 // SDK Vault type (minimal interface for what we access)
 // Keep this minimal — only the properties used by serializeVault and signBytes.
@@ -482,7 +483,7 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
 
   ipcMain.handle(MpcIPCMessages.MPC_SEND_TX, async (_event, params: SendTransactionParams) => {
     const sdk = getSDK()
-    const { vaultId, chain, receiver, amount, memo, decimals, ticker } = params
+    const { vaultId, chain, receiver, amount, memo, decimals, ticker, id, approve } = params
 
     const vault = await sdk.getVaultById(vaultId)
     if (!vault) throw new Error(`Vault not found: ${vaultId}`)
@@ -531,11 +532,12 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
         chain: sdkChain,
         address: senderAddress,
         decimals,
-        ticker
+        ticker,
+        ...(id ? { id } : {})
       }
 
       // Step 3: Prepare transaction (SDK handles gas, nonce, fees)
-      log.info(`[MPC IPC] Step 2: prepareSendTx`, { coin, receiver, amount, memo })
+      log.info(`[MPC IPC] Step 2: prepareSendTx`, { coin, receiver, amount, memo, approve: approve || '(none)' })
       const keysignPayload = await sdkVault.prepareSendTx({
         coin,
         receiver,
@@ -543,6 +545,19 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
         memo
       })
       log.info(`[MPC IPC] Step 2: prepareSendTx complete`)
+
+      // ERC20 approve: set erc20ApprovePayload so the EVM resolver builds an approve tx
+      // instead of a transfer. The coin must have `id` (token) to bypass refineKeysignAmount.
+      // Must be a real protobuf Message (not a plain object) so it serializes correctly
+      // into the QR payload for SecureVault phone signing.
+      if (approve) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(keysignPayload as any).erc20ApprovePayload = createErc20ApprovePayload({
+          amount: approve.amount,
+          spender: approve.spender
+        })
+        log.info(`[MPC IPC] Set erc20ApprovePayload`, { spender: approve.spender, amount: approve.amount })
+      }
 
       // Step 4: Extract message hashes
       log.info(`[MPC IPC] Step 3: extractMessageHashes`)

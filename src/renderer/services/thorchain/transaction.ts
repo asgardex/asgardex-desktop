@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { DepositParam, THORChain } from '@xchainjs/xchain-thorchain'
+import { DepositParam, getDenom, RUNE_DENOM, THORChain } from '@xchainjs/xchain-thorchain'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -18,6 +19,7 @@ import { retryRequest } from '../../helpers/rx/retryRequest'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { TxHashLD, ErrorId } from '../wallet/types'
+import { createVultisigCosmosTx } from '../cosmos/vultisigTx'
 import { ClientUrl, TransactionService, Client$, ClientUrl$, SendTxParams } from './types'
 
 export const createTransactionService = (
@@ -130,6 +132,10 @@ export const createTransactionService = (
             clientUrl,
             params: { walletAccount, walletIndex, hdMode, asset, amount, memo }
           })
+        if (isVultisigWallet(walletType)) {
+          if (!asset) return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'No asset provided for THOR deposit' }))
+          return vultisigTx({ network, params: { recipient: '', amount, asset: asset as AnyAsset, memo } })
+        }
         return depositTx({ walletIndex, asset, amount, memo })
       })
     )
@@ -186,13 +192,16 @@ export const createTransactionService = (
     )
   }
 
-  // Vultisig transaction handler
-  const sendVultisigTx = ({ params }: { network: Network; clientUrl: ClientUrl; params: SendTxParams }): TxHashLD => {
-    if (!params.vaultId) {
-      return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig transaction requires vaultId' }))
-    }
-    return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig THOR transactions not yet implemented' }))
-  }
+  // Vultisig transaction handler — SDK native pipeline
+  const vultisigTx = createVultisigCosmosTx('THOR', getDenom, RUNE_DENOM)
+  const sendVultisigTx = ({
+    network,
+    params
+  }: {
+    network: Network
+    clientUrl: ClientUrl
+    params: SendTxParams
+  }): TxHashLD => vultisigTx({ network, params })
 
   const sendTx = (params: SendTxParams) =>
     FP.pipe(

@@ -36,11 +36,12 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
+import { ASGARDEX_TO_SDK_CHAIN } from '../../../shared/api/mpcTypes'
 import { ASGARDEX_AFFILIATE_FEE_MIN, getAsgardexAffiliateFee, getAsgardexThorname } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
 import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
-import { isLedgerWallet } from '../../../shared/utils/guard'
+import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
@@ -88,17 +89,23 @@ import { userChains$ } from '../../services/storage/userChains'
 import { addAsset } from '../../services/storage/userChainTokens'
 import {
   TxHashRD,
+  VaultType,
   WalletBalance,
   WalletBalances,
   isKeystoreMode,
-  isStandaloneLedgerMode
+  isStandaloneLedgerMode,
+  isVultisigMode
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { useAggregator } from '../../store/aggregator/hooks'
 import { useCoingecko } from '../../store/gecko/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
 import { GECKO_MAP } from '../../types/generated/geckoMap'
-import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
+import {
+  LedgerConfirmationModal,
+  VultisigConfirmationModal,
+  WalletPasswordConfirmationModal
+} from '../modal/confirmation'
 import { ProviderModal } from '../modal/provider'
 import { SwapAssets } from '../modal/tx/extra'
 import { AssetInput } from '../uielements/assets/assetInput'
@@ -249,7 +256,17 @@ export const Swap = ({
   }, [appWalletState, initialSourceWalletType])
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
 
-  const oSourceWalletAddress = useSourceAssetLedger ? oSourceLedgerAddress : oInitialSourceKeystoreAddress
+  // Resolve source wallet address: Ledger → Vultisig (from vault state) → Keystore
+  const oSourceWalletAddress = useMemo(() => {
+    if (useSourceAssetLedger) return oSourceLedgerAddress
+    // In Vultisig mode, get address from vault state
+    if (appWalletState && isVultisigMode(appWalletState)) {
+      const sdkChain = ASGARDEX_TO_SDK_CHAIN[sourceChain]
+      const addr = sdkChain ? appWalletState.addresses[sdkChain] : undefined
+      return addr ? O.some(addr) : O.none
+    }
+    return oInitialSourceKeystoreAddress
+  }, [useSourceAssetLedger, oSourceLedgerAddress, appWalletState, sourceChain, oInitialSourceKeystoreAddress])
 
   // Auto-select chain for standalone ledger
   useEffect(() => {
@@ -407,10 +424,10 @@ export const Swap = ({
     },
     [oTargetLedgerAddress, oTargetKeystoreAddress]
   )
-  const sourceWalletType: WalletType = useMemo(
-    () => (useSourceAssetLedger ? WalletType.Ledger : WalletType.Keystore),
-    [useSourceAssetLedger]
-  )
+  const sourceWalletType: WalletType = useMemo(() => {
+    if (useSourceAssetLedger) return WalletType.Ledger
+    return initialSourceWalletType
+  }, [useSourceAssetLedger, initialSourceWalletType])
 
   // `AssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
   const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
@@ -421,19 +438,40 @@ export const Swap = ({
       walletType: sourceWalletType
     })
 
+    // DEBUG: Log wallet balance lookup
+    console.log('[Swap DEBUG] sourceAssetDecimal (from prop):', sourceAssetDecimal)
+    console.log('[Swap DEBUG] sourceWalletType:', sourceWalletType)
+    console.log('[Swap DEBUG] sourceAsset:', sourceAsset.chain, sourceAsset.symbol)
+    FP.pipe(
+      result,
+      O.fold(
+        () => console.log('[Swap DEBUG] oSourceAssetWB: NONE (no balance found)'),
+        (wb) =>
+          console.log('[Swap DEBUG] oSourceAssetWB:', {
+            amount: wb.amount.amount().toString(),
+            decimal: wb.amount.decimal,
+            walletType: wb.walletType,
+            walletAddress: wb.walletAddress
+          })
+      )
+    )
+
     return result
-  }, [sourceAsset, allBalances, sourceWalletType])
+  }, [sourceAsset, allBalances, sourceWalletType, sourceAssetDecimal])
 
   // User balance for source asset
-  const sourceAssetAmount: BaseAmount = useMemo(
-    () =>
-      FP.pipe(
-        oSourceAssetWB,
-        O.map(({ amount }) => amount),
-        O.getOrElse(() => baseAmount(0, sourceAssetDecimal))
-      ),
-    [oSourceAssetWB, sourceAssetDecimal]
-  )
+  const sourceAssetAmount: BaseAmount = useMemo(() => {
+    const result = FP.pipe(
+      oSourceAssetWB,
+      O.map(({ amount }) => amount),
+      O.getOrElse(() => baseAmount(0, sourceAssetDecimal))
+    )
+    console.log('[Swap DEBUG] sourceAssetAmount:', {
+      amount: result.amount().toString(),
+      decimal: result.decimal
+    })
+    return result
+  }, [oSourceAssetWB, sourceAssetDecimal])
 
   /** Balance of source asset in native form */
   const sourceAssetAmountNative: BaseAmount = useMemo(() => {
@@ -528,15 +566,21 @@ export const Swap = ({
     return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
   }, [sourceAsset, targetAsset])
 
-  // Compute effective recipient address: use standalone ledger address when available, otherwise use provided recipient address
+  // Compute effective recipient address: standalone ledger → Vultisig vault → provided recipient
   const effectiveRecipientAddress: O.Option<Address> = useMemo(() => {
     if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
       // In standalone ledger mode, use the fetched target address
       return standaloneLedgerTargetAddress
     }
+    // In Vultisig mode, resolve target address from vault state if no recipient is provided
+    if (appWalletState && isVultisigMode(appWalletState) && O.isNone(oRecipientAddress)) {
+      const sdkChain = ASGARDEX_TO_SDK_CHAIN[targetChain]
+      const addr = sdkChain ? appWalletState.addresses[sdkChain] : undefined
+      return addr ? O.some(addr) : O.none
+    }
     // In normal mode, use the provided recipient address
     return oRecipientAddress
-  }, [appWalletState, standaloneLedgerTargetAddress, oRecipientAddress])
+  }, [appWalletState, standaloneLedgerTargetAddress, oRecipientAddress, targetChain])
 
   // Helper to get effective recipient address as string (single source of truth)
   const effectiveRecipientAddressString = useMemo(
@@ -1062,6 +1106,12 @@ export const Swap = ({
       setIsFetchingEstimate(true)
 
       try {
+        // DEBUG: Log the amount going into the quote
+        console.log('[Swap DEBUG] fetchSwap amount:', {
+          amountBase: amount.amount().toString(),
+          amountDecimal: amount.decimal,
+          sourceAsset: `${sourceAsset.chain}.${sourceAsset.symbol}`
+        })
         const swapParams = {
           fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
           destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
@@ -1846,7 +1896,10 @@ export const Swap = ({
   // // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
     if (lockedWallet || quoteOnly) {
-      setQuoteOnly(true)
+      // Only force quoteOnly if wallet is actually locked - don't re-set if just quoteOnly is true
+      if (lockedWallet) {
+        setQuoteOnly(true)
+      }
       const poolDetailMaya = getPoolDetailMaya(poolDetailsMaya, sourceAsset)
       const poolDetailThor = getPoolDetail(poolDetailsThor, sourceAsset)
 
@@ -1963,6 +2016,21 @@ export const Swap = ({
 
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
   const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
+  const [showVultisigModal, setShowVultisigModal] = useState(ModalState.None)
+
+  // Vultisig detection
+  const useSourceAssetVultisig = useMemo(
+    () => (appWalletState && isVultisigMode(appWalletState)) || isVultisigWallet(initialSourceWalletType),
+    [appWalletState, initialSourceWalletType]
+  )
+
+  // Get vault type for Vultisig wallets (defaults to 'fast' if not available)
+  const vaultType: VaultType = useMemo(() => {
+    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
+      return appWalletState.activeVault.type
+    }
+    return 'fast'
+  }, [appWalletState])
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
@@ -2070,10 +2138,12 @@ export const Swap = ({
   const onSubmit = useCallback(() => {
     if (useSourceAssetLedger) {
       setShowLedgerModal(ModalState.Swap)
+    } else if (useSourceAssetVultisig) {
+      setShowVultisigModal(ModalState.Swap)
     } else {
       setShowPasswordModal(ModalState.Swap)
     }
-  }, [setShowLedgerModal, useSourceAssetLedger])
+  }, [setShowLedgerModal, useSourceAssetLedger, useSourceAssetVultisig])
 
   const extraTxModalContent = useMemo(() => {
     const { swapTx } = swapState
@@ -2215,6 +2285,82 @@ export const Swap = ({
     submitApproveTx,
     useSourceAssetLedger
   ])
+
+  // --- Vultisig Confirmation Modal ---
+
+  // Password validation for Vultisig (non-destructive check, same as SendForm.tsx)
+  const validatePasswordAsync = useCallback(
+    async (password: string): Promise<boolean> => {
+      if (isVultisigWallet(sourceWalletType)) {
+        return appWalletService.validatePassword(password)
+      }
+      return new Promise((resolve) => {
+        validatePassword$(password).subscribe({
+          next: (result) => {
+            if (RD.isSuccess(result)) {
+              resolve(true)
+            } else if (RD.isFailure(result)) {
+              resolve(false)
+            }
+          },
+          error: () => resolve(false)
+        })
+      })
+    },
+    [sourceWalletType, appWalletService, validatePassword$]
+  )
+
+  const onVultisigSuccess = useCallback(() => {
+    window.apiLog?.info?.('[Swap]', 'onVultisigSuccess', { vaultType })
+    if (vaultType === 'fast') {
+      setShowVultisigModal(ModalState.None)
+    }
+    // For SecureVault, modal stays open for QR/MPC flow
+
+    if (showVultisigModal === ModalState.Swap) {
+      if (O.isSome(oSwapParams)) {
+        submitSwapTx()
+      } else if (O.isSome(oCFSwapParams)) {
+        submitCFTx()
+      }
+    } else if (showVultisigModal === ModalState.Approve) {
+      submitApproveTx()
+    }
+  }, [vaultType, showVultisigModal, oSwapParams, oCFSwapParams, submitSwapTx, submitCFTx, submitApproveTx])
+
+  // Track Vultisig signing session to keep modal mounted during MPC ceremony
+  const vultisigSessionRef = useRef(false)
+
+  // Synchronously start session when modal opens as Vultisig
+  if (showVultisigModal !== ModalState.None && useSourceAssetVultisig && !vultisigSessionRef.current) {
+    vultisigSessionRef.current = true
+    window.apiLog?.info?.('[Swap]', 'Vultisig signing session started (sync)')
+  }
+
+  // End session when modal closes
+  useEffect(() => {
+    if (showVultisigModal === ModalState.None && vultisigSessionRef.current) {
+      window.apiLog?.info?.('[Swap]', 'Vultisig signing session ended')
+      vultisigSessionRef.current = false
+    }
+  }, [showVultisigModal])
+
+  // Render Vultisig modal - keep mounted during active signing session
+  const shouldRenderVultisigModal = vultisigSessionRef.current || useSourceAssetVultisig
+  const renderVultisigConfirmationModal = shouldRenderVultisigModal ? (
+    <VultisigConfirmationModal
+      key="vultisig-swap-confirmation-modal"
+      visible={showVultisigModal !== ModalState.None}
+      network={network}
+      chain={sourceChain}
+      vaultType={vaultType}
+      onSuccess={onVultisigSuccess}
+      onClose={() => setShowVultisigModal(ModalState.None)}
+      validatePassword$={validatePasswordAsync}
+      txState={swapState.swapTx}
+      getActiveVaultId={appWalletService.getActiveVaultId}
+    />
+  ) : null
 
   const sourceChainFeeError: boolean = useMemo(() => {
     // ignore error check by having zero amounts or min amount errors
@@ -2409,10 +2555,12 @@ export const Swap = ({
   const onApprove = useCallback(() => {
     if (useSourceAssetLedger) {
       setShowLedgerModal(ModalState.Approve)
+    } else if (useSourceAssetVultisig) {
+      setShowVultisigModal(ModalState.Approve)
     } else {
       setShowPasswordModal(ModalState.Approve)
     }
-  }, [setShowLedgerModal, useSourceAssetLedger])
+  }, [setShowLedgerModal, useSourceAssetLedger, useSourceAssetVultisig])
 
   const renderApproveError = useMemo(
     () =>
@@ -3278,17 +3426,21 @@ export const Swap = ({
       </div>
       {renderPasswordConfirmationModal}
       {renderLedgerConfirmationModal}
-      <SwapTxModal
-        swapState={swapState}
-        swapStartTime={swapStartTime}
-        sourceChain={sourceChain}
-        extraTxModalContent={extraTxModalContent}
-        oQuoteProtocol={oQuoteProtocol}
-        goToTransaction={openExplorer.openExplorerTxUrl}
-        getExplorerTxUrl={openExplorer.getExplorerTxUrl}
-        onCloseTxModal={onCloseTxModal}
-        onFinishTxModal={onFinishTxModal}
-      />
+      {renderVultisigConfirmationModal}
+      {/* Don't show SwapTxModal during Vultisig SecureVault signing flow — VultisigConfirmationModal handles the UX */}
+      {!(useSourceAssetVultisig && vaultType === 'secure' && showVultisigModal !== ModalState.None) && (
+        <SwapTxModal
+          swapState={swapState}
+          swapStartTime={swapStartTime}
+          sourceChain={sourceChain}
+          extraTxModalContent={extraTxModalContent}
+          oQuoteProtocol={oQuoteProtocol}
+          goToTransaction={openExplorer.openExplorerTxUrl}
+          getExplorerTxUrl={openExplorer.getExplorerTxUrl}
+          onCloseTxModal={onCloseTxModal}
+          onFinishTxModal={onFinishTxModal}
+        />
+      )}
     </div>
   )
 }

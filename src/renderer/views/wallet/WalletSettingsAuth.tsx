@@ -1,39 +1,39 @@
-import { useCallback } from 'react'
-
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import * as RxOp from 'rxjs/operators'
 
-import { UnlockWalletSettings } from '../../components/settings'
 import { useWalletContext } from '../../contexts/WalletContext'
 import * as walletRoutes from '../../routes/wallet'
-import { isKeystoreUnlocked, isVultisigMode, isStandaloneLedgerMode } from '../../services/wallet/types'
+import {
+  isKeystoreUnlocked,
+  isVultisigMode,
+  isVultisigVaultLocked,
+  isStandaloneLedgerMode
+} from '../../services/wallet/types'
+import { hasImportedKeystore } from '../../services/wallet/util'
 import { VultisigSettingsView } from './VultisigSettingsView'
 import { WalletSettingsView } from './WalletSettingsView'
 
 export const WalletSettingsAuth = (): JSX.Element => {
-  const navigate = useNavigate()
   const location = useLocation()
   const { appWalletService } = useWalletContext()
 
   // Unified app wallet state with short delay to prevent flash during wallet changes.
   // Without the delay, changing wallets in WalletSettingsView immediately emits a locked
-  // keystore state, causing a brief jump to UnlockWalletSettings before the view processes
-  // the change. Applied uniformly across all modes for consistency.
+  // keystore state, causing a brief jump before the view processes the change.
   const appWalletState = useObservableState(FP.pipe(appWalletService.appWalletState$, RxOp.delay(100)), undefined)
-
-  const unlockWalletHandler = useCallback(() => {
-    navigate(walletRoutes.base.path(location.pathname))
-  }, [location.pathname, navigate])
 
   // Don't render anything during initialization
   if (appWalletState === undefined) {
     return <div className="flex items-center justify-center bg-bg0 px-40px py-30px dark:bg-bg0d" />
   }
 
-  // Vultisig mode: route through unified WalletSettings (with vultisig props)
+  // Vultisig mode: redirect to unlock page if locked, otherwise full settings
   if (isVultisigMode(appWalletState)) {
+    if (isVultisigVaultLocked(appWalletState)) {
+      return <Navigate to={{ pathname: walletRoutes.locked.path() }} state={{ referrer: location.pathname }} replace />
+    }
     return <VultisigSettingsView vultisigState={appWalletState} />
   }
 
@@ -46,15 +46,17 @@ export const WalletSettingsAuth = (): JSX.Element => {
     )
   }
 
-  // Keystore mode: appWalletState is KeystoreState (O.Option<KeystoreContent>)
+  // Keystore mode: redirect to no-wallet page if no keystore imported
+  if (!hasImportedKeystore(appWalletState)) {
+    return <Navigate to={{ pathname: walletRoutes.noWallet.path() }} replace />
+  }
+
+  // Keystore mode: redirect to unlock page if locked, otherwise show settings
   return FP.pipe(
     appWalletState,
-    // Get unlocked state only
     O.chain(FP.flow(O.fromPredicate(isKeystoreUnlocked))),
     O.fold(
-      // keystore locked / not imported
-      () => <UnlockWalletSettings keystoreState={appWalletState} unlockHandler={unlockWalletHandler} />,
-      // keystore unlocked
+      () => <Navigate to={{ pathname: walletRoutes.locked.path() }} state={{ referrer: location.pathname }} replace />,
       (keystoreUnlocked) => <WalletSettingsView keystoreUnlocked={keystoreUnlocked} />
     )
   )

@@ -12,6 +12,7 @@ import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { TxHashLD, ErrorId } from '../wallet/types'
 import { Client$, SendTxParams, TransactionService } from './types'
+import { createVultisigXrpTx } from './vultisigTx'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
@@ -60,13 +61,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
   }
 
-  // Vultisig transaction handler
-  const sendVultisigTx = ({ params }: { network: Network; params: SendTxParams }): TxHashLD => {
-    if (!params.vaultId) {
-      return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig transaction requires vaultId' }))
-    }
-    return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig XRP transactions not yet implemented' }))
-  }
+  // Vultisig transaction handler - MPC signing for XRP
+  const sendVultisigTx = createVultisigXrpTx()
 
   const sendTx = (params: SendTxParams): TxHashLD =>
     FP.pipe(

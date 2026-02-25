@@ -39,7 +39,7 @@ import {
   Client$,
   Client as BscClient
 } from '../evm/types'
-import { createVultisigEvmTx } from '../evm/vultisigTx'
+import { createVultisigEvmApprove, createVultisigEvmPoolTx, createVultisigEvmTx } from '../evm/vultisigTx'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 
 export const createTransactionService = (
@@ -178,6 +178,8 @@ export const createTransactionService = (
         )
       )
 
+    if (isVultisigWallet(params.walletType)) return sendVultisigPoolTx({ params })
+
     return FP.pipe(
       Rx.combineLatest([client$, gasMultiplier$]),
       RxOp.switchMap(([oClient, gasMultiplier]) =>
@@ -298,6 +300,8 @@ export const createTransactionService = (
         evmRpc$,
         RxOp.switchMap((rpcUrls) => runApproveLedgerERC20Token$({ ...params, evmRpcUrl: rpcUrls[network] }))
       )
+
+    if (isVultisigWallet(walletType)) return sendVultisigApprove(params)
 
     return client$.pipe(
       RxOp.switchMap((oClient) =>
@@ -435,8 +439,10 @@ export const createTransactionService = (
     )
   }
 
-  // Vultisig transaction handler - MPC signing for BSC/BEP20
+  // Vultisig transaction handlers - MPC signing for BSC/BEP20
   const sendVultisigTx = createVultisigEvmTx(client$, 'BSC')
+  const sendVultisigPoolTx = createVultisigEvmPoolTx(client$, 'BSC')
+  const sendVultisigApprove = createVultisigEvmApprove(client$, 'BSC')
 
   const sendTx = (params: SendTxParams) =>
     FP.pipe(

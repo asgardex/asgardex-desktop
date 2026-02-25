@@ -1151,19 +1151,6 @@ export const WalletSettings = (props: Props): JSX.Element => {
           onChange={changeWalletNameHandler}
           loading={RD.isPending(renameWalletState)}
         />
-        {isVultisig && vultisigState?.activeVault && (
-          <div className="mt-2 flex justify-center">
-            <span
-              className={clsx(
-                'rounded-full px-3 py-1 text-xs font-medium uppercase',
-                vultisigState.activeVault.type === 'fast'
-                  ? 'bg-turquoise/20 text-turquoise'
-                  : 'bg-warning0/20 text-warning0'
-              )}>
-              {vultisigState.activeVault.type === 'fast' ? 'Fast Vault' : 'Secure Vault'}
-            </span>
-          </div>
-        )}
         {renderRenameWalletError}
         <div className="mt-10 flex flex-row items-center justify-center space-x-2">
           <ActionButton

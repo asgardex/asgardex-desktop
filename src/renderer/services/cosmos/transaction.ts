@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { Client, GAIAChain } from '@xchainjs/xchain-cosmos'
+import { ATOM_DENOM, Client, GAIAChain, getDenom } from '@xchainjs/xchain-cosmos'
 import { Asset } from '@xchainjs/xchain-util'
 import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -13,6 +13,7 @@ import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { ErrorId, TxHashLD } from '../wallet/types'
 import { TransactionService, Client$, SendTxParams } from './types'
+import { createVultisigCosmosTx } from './vultisigTx'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
@@ -85,13 +86,10 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
   }
 
-  // Vultisig transaction handler
-  const sendVultisigTx = ({ params }: { network: Network; params: SendTxParams }): TxHashLD => {
-    if (!params.vaultId) {
-      return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig transaction requires vaultId' }))
-    }
-    return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'Vultisig COSMOS transactions not yet implemented' }))
-  }
+  // Vultisig transaction handler — SDK native pipeline
+  const vultisigTx = createVultisigCosmosTx('GAIA', getDenom, ATOM_DENOM)
+  const sendVultisigTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD =>
+    vultisigTx({ network, params })
 
   const sendTx = (params: SendTxParams) =>
     FP.pipe(

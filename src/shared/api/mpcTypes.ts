@@ -104,6 +104,8 @@ export type SendTransactionParams = {
   memo?: string
   decimals: number // Native asset decimals (e.g., 18 for ETH, 8 for BTC)
   ticker: string // Native asset ticker (e.g., 'ETH', 'BTC')
+  id?: string // Token identifier: denom (Cosmos), contract address (EVM), mint (Solana). Omit for native coins.
+  approve?: { spender: string; amount: string } // ERC20 approve: SDK sets erc20ApprovePayload on keysign payload
 }
 
 export type SendTransactionResult = {
