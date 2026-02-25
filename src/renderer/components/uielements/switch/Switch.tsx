@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useState, useRef, useLayoutEffect, useCallback } from 'react'
 import clsx from 'clsx'
 
 interface SwitchProps {
@@ -15,18 +15,30 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
   const activeIndex = active === labels[0] ? 0 : 1
   const containerRef = useRef<HTMLDivElement>(null)
   const [halfWidth, setHalfWidth] = useState(0)
+  const labelA = labels[0]
+  const labelB = labels[1]
 
   useLayoutEffect(() => {
     if (containerRef.current) {
       setHalfWidth(containerRef.current.offsetWidth / 2)
     }
-  }, [labels, active])
+  }, [labelA, labelB])
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     const next = active === labels[0] ? labels[1] : labels[0]
     setActive(next)
     onChange?.(next)
-  }
+  }, [active, labels, onChange])
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault()
+        handleToggle()
+      }
+    },
+    [handleToggle]
+  )
 
   return (
     <div
@@ -35,7 +47,11 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
         'relative inline-flex cursor-pointer items-center justify-between rounded-full p-[1px]',
         'bg-bg1 select-none dark:bg-bg1d'
       )}
+      role="switch"
+      aria-checked={activeIndex === 1}
+      tabIndex={0}
       onClick={handleToggle}
+      onKeyDown={handleKeyDown}
       style={{
         border: `1px solid ${colors[activeIndex]}`,
         height: '40px',
@@ -47,7 +63,7 @@ export function Switch({ labels = ['A', 'B'], colors = ['#3B82F6', '#EF4444'], o
         style={{
           width: halfWidth ? `${halfWidth - 2}px` : '50%',
           border: `1px solid ${colors[activeIndex]}`,
-          backgroundColor: colors[activeIndex] + '1A',
+          backgroundColor: `color-mix(in srgb, ${colors[activeIndex]} 10%, transparent)`,
           transform: `translateX(${activeIndex === 0 ? 0 : halfWidth - 2}px)`,
           transition:
             'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s ease, background-color 0.25s ease'
