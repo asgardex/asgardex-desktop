@@ -1,10 +1,15 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
+import { AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
+import { BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ADA_DECIMALS } from '@xchainjs/xchain-cardano'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
+import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { PoolDetail as MayaPoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
@@ -32,11 +37,16 @@ import { AssetWithDecimalLD } from './types'
 // Chain decimal lookup map for better performance
 const CHAIN_DECIMAL_MAP = new Map([
   ['ARB', ARB_GAS_ASSET_DECIMAL],
+  ['AVAX', AVAX_GAS_ASSET_DECIMAL],
+  ['BASE', BASE_GAS_ASSET_DECIMAL],
   ['BSC', BSC_GAS_ASSET_DECIMAL],
   ['THOR', THORCHAIN_DECIMAL],
   ['MAYA', CACAO_DECIMAL],
   ['DASH', DASH_DECIMAL],
+  ['DOGE', DOGE_DECIMAL],
+  ['ETH', ETH_GAS_ASSET_DECIMAL],
   ['KUJI', KUJI_DECIMAL],
+  ['LTC', LTC_DECIMAL],
   ['XRD', XRD_DECIMAL],
   ['BTC', BTC_DECIMAL],
   ['BCH', BCH_DECIMAL],
