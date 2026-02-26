@@ -2,11 +2,38 @@
 
 # 1.42.1
 
+## Add
+
+- add coin control for UTXO chains — select specific UTXOs for BTC, BCH, LTC, DOGE transactions [#990](https://github.com/asgardex/asgardex-desktop/pull/990)
+- integrate xchainjs UTXO 2.1.0 with sendMax, enhanced UTXO selection, and typed errors [#983](https://github.com/asgardex/asgardex-desktop/pull/983)
+- add THORName/MAYAName reverse lookup and modernize interact forms [#986](https://github.com/asgardex/asgardex-desktop/pull/986)
+- enable SOL swaps on THORChain [#991](https://github.com/asgardex/asgardex-desktop/pull/991)
+
 ## Update/Fixes
 
-- update `@xchainjs/xchain-zcash` to 1.1.0 for Zcash NU6.1 consensus support — fixes ZEC transaction broadcasting failures after the Nov 2025 network upgrade
-- update `@xchainjs/xchain-aggregator` to 2.0.33
-- update vite config to reference new `@xchainjs/zcash-js` package, remove stale `@mayaprotocol/zcash-js` alias
+- fix MAYA.MAYA support for swaps, LP deposits, pricing, and UI [#976](https://github.com/asgardex/asgardex-desktop/pull/976)
+- fix loading from pools page bug [#995](https://github.com/asgardex/asgardex-desktop/pull/995)
+- fix trade swap stale fee asset and unlock password error [#994](https://github.com/asgardex/asgardex-desktop/pull/994)
+- fix coin control threading through Ledger IPC pipeline [#993](https://github.com/asgardex/asgardex-desktop/pull/993)
+- fix THORName/MAYAName extraction bugs and add missing i18n keys [#989](https://github.com/asgardex/asgardex-desktop/pull/989)
+- fix bugs across major component files [#984](https://github.com/asgardex/asgardex-desktop/pull/984)
+- fix Tailwind v4 styling issues across codebase [#982](https://github.com/asgardex/asgardex-desktop/pull/982)
+- update `@xchainjs/xchain-zcash` to 1.3.1 for Zcash NU6.1 consensus support [#975](https://github.com/asgardex/asgardex-desktop/pull/975) [#988](https://github.com/asgardex/asgardex-desktop/pull/988)
+- upgrade xchain packages [#988](https://github.com/asgardex/asgardex-desktop/pull/988)
+
+## Performance
+
+- optimize React rendering with memoization and reduced re-renders [#978](https://github.com/asgardex/asgardex-desktop/pull/978)
+- limit concurrent balance requests with batched reloading [#979](https://github.com/asgardex/asgardex-desktop/pull/979)
+- optimize combineShares and pool detail lookups from O(n²) to O(n) [#980](https://github.com/asgardex/asgardex-desktop/pull/980)
+- RxJS memory and retry optimizations [#981](https://github.com/asgardex/asgardex-desktop/pull/981)
+
+## Chores
+
+- upgrade Tailwind CSS from v3 to v4 [#977](https://github.com/asgardex/asgardex-desktop/pull/977)
+- remove dead CRA artifacts, unused deps, and replace framer-motion with CSS [#992](https://github.com/asgardex/asgardex-desktop/pull/992)
+- remove unused deps, upgrade theme package, replace hardcoded colors [#985](https://github.com/asgardex/asgardex-desktop/pull/985)
+- update GH actions configuration [#973](https://github.com/asgardex/asgardex-desktop/pull/973)
 
 # 1.42.0 (2026-02-04)
 
