@@ -81,12 +81,15 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
     async ({ password }: FormData) => {
       setUnlockError(O.none)
       setUnlocking(true)
-      await unlock(password).catch((error) => {
-        setUnlockError(O.some(error))
+      try {
+        await unlock(password)
+        setValidPassword(true)
+      } catch (error) {
+        setUnlockError(O.some(error as Error))
         setValidPassword(false)
-      })
-      setUnlocking(false)
-      setValidPassword(true)
+      } finally {
+        setUnlocking(false)
+      }
     },
     [unlock]
   )
