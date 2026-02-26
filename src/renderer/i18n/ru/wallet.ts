@@ -123,17 +123,15 @@ const wallet: WalletMessages = {
   'wallet.derivationPath.taproot': 'Taproot P2TR',
   'wallet.ledger.fetchDescription': 'Получить адрес с вашего аппаратного кошелька',
   'wallet.send.coinControl': 'Coin Control',
-  'wallet.send.coinControl.strategy': 'Selection Strategy',
-  'wallet.send.coinControl.auto': 'Automatic',
-  'wallet.send.coinControl.manual': 'Manual',
-  'wallet.send.coinControl.minimizeFee': 'Minimize Fee',
-  'wallet.send.coinControl.largestFirst': 'Largest First',
-  'wallet.send.coinControl.smallestFirst': 'Smallest First',
-  'wallet.send.coinControl.selected': '{count} UTXOs selected',
-  'wallet.send.coinControl.totalSelected': 'Total Selected',
-  'wallet.send.coinControl.change': 'Change',
-  'wallet.send.coinControl.insufficient': 'Selected UTXOs insufficient for amount + fee',
-  'wallet.send.coinControl.manualKeystoreOnly': 'Manual selection available for Keystore wallets only'
+  'wallet.send.coinControl.strategy': 'Стратегия выбора',
+  'wallet.send.coinControl.auto': 'Автоматически',
+  'wallet.send.coinControl.manual': 'Вручную',
+  'wallet.send.coinControl.minimizeFee': 'Минимизировать комиссию',
+  'wallet.send.coinControl.largestFirst': 'Сначала крупные',
+  'wallet.send.coinControl.smallestFirst': 'Сначала мелкие',
+  'wallet.send.coinControl.selected': '{count} UTXOs выбрано',
+  'wallet.send.coinControl.totalSelected': 'Итого выбрано',
+  'wallet.send.coinControl.insufficient': 'Выбранных UTXOs недостаточно для суммы + комиссии'
 }
 
 export default wallet

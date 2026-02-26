@@ -7,7 +7,6 @@ import { Radio, RadioGroup } from '../../../../uielements/radio'
 type Props = {
   strategy: CoinControlStrategy
   onChange: (strategy: CoinControlStrategy) => void
-  manualDisabled: boolean
   disabled: boolean
 }
 
@@ -19,7 +18,7 @@ const STRATEGY_I18N: Record<CoinControlStrategy, string> = {
   [CoinControlStrategy.SMALLEST_FIRST]: 'wallet.send.coinControl.smallestFirst'
 }
 
-export const StrategySelector = ({ strategy, onChange, manualDisabled, disabled }: Props): JSX.Element => {
+export const StrategySelector = ({ strategy, onChange, disabled }: Props): JSX.Element => {
   const intl = useIntl()
 
   return (
@@ -28,25 +27,13 @@ export const StrategySelector = ({ strategy, onChange, manualDisabled, disabled 
         {intl.formatMessage({ id: 'wallet.send.coinControl.strategy' })}
       </Label>
       <RadioGroup className="flex flex-row flex-wrap gap-2" value={strategy} onChange={onChange} disabled={disabled}>
-        {Object.values(CoinControlStrategy).map((s) => {
-          const isManual = s === CoinControlStrategy.MANUAL
-          const isDisabledOption = isManual && manualDisabled
-
-          return (
-            <Radio value={s} key={s} disabled={isDisabledOption}>
-              <span
-                title={
-                  isDisabledOption
-                    ? intl.formatMessage({ id: 'wallet.send.coinControl.manualKeystoreOnly' })
-                    : undefined
-                }>
-                <Label disabled={disabled || isDisabledOption} textTransform="uppercase">
-                  {intl.formatMessage({ id: STRATEGY_I18N[s] })}
-                </Label>
-              </span>
-            </Radio>
-          )
-        })}
+        {Object.values(CoinControlStrategy).map((s) => (
+          <Radio value={s} key={s}>
+            <Label disabled={disabled} textTransform="uppercase">
+              {intl.formatMessage({ id: STRATEGY_I18N[s] })}
+            </Label>
+          </Radio>
+        ))}
       </RadioGroup>
     </div>
   )

@@ -438,9 +438,7 @@ type WalletMessageKey =
   | 'wallet.send.coinControl.smallestFirst'
   | 'wallet.send.coinControl.selected'
   | 'wallet.send.coinControl.totalSelected'
-  | 'wallet.send.coinControl.change'
   | 'wallet.send.coinControl.insufficient'
-  | 'wallet.send.coinControl.manualKeystoreOnly'
   | 'wallet.ledger.fetchDescription'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }

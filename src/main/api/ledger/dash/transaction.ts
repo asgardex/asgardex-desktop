@@ -30,7 +30,9 @@ export const send = async ({
   memo,
   walletAccount,
   walletIndex,
-  apiKey
+  apiKey,
+  selectedUtxos,
+  utxoSelectionPreferences
 }: {
   transport: Transport
   network: Network
@@ -42,6 +44,8 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   apiKey: string
+  selectedUtxos?: Array<{ hash: string; index: number; value: number }>
+  utxoSelectionPreferences?: { minimizeFee?: boolean; minimizeInputs?: boolean; consolidateSmallUtxos?: boolean }
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
     return E.left({
@@ -76,6 +80,34 @@ export const send = async ({
       network: network
     })
     const newMemo = memo !== undefined ? removeAffiliate(memo) : memo // removes affilaite to shorten memo.
+
+    // Ledger's transfer() doesn't accept selectedUtxos/utxoSelectionPreferences — use transferMax() for coin control
+    // IPC only sends {hash, index, value} identifiers; re-fetch full UTXOs (with witnessUtxo) from the data provider
+    if ((selectedUtxos && selectedUtxos.length > 0) || utxoSelectionPreferences) {
+      let fullSelectedUtxos
+      if (selectedUtxos && selectedUtxos.length > 0) {
+        const allUtxos = await dashClient.getUTXOs(sender)
+        const selectedSet = new Set(selectedUtxos.map((u) => `${u.hash}:${u.index}`))
+        fullSelectedUtxos = allUtxos.filter((u) => selectedSet.has(`${u.hash}:${u.index}`))
+      }
+
+      const result = await dashClient.transferMax({
+        walletIndex,
+        recipient,
+        memo: newMemo,
+        feeRate,
+        selectedUtxos: fullSelectedUtxos,
+        utxoSelectionPreferences
+      })
+      if (!result?.hash) {
+        return E.left({
+          errorId: LedgerErrorId.INVALID_RESPONSE,
+          msg: `Post request to send DASH transaction using Ledger failed`
+        })
+      }
+      return E.right(result.hash)
+    }
+
     const txHash = await dashClient.transfer({
       asset: AssetDASH,
       recipient,

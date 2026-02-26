@@ -43,7 +43,20 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
 
   const sendLedgerTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD => {
-    const { amount, sender, recipient, memo, walletAccount, walletIndex, feeRate, feeOption, hdMode, sendMax } = params
+    const {
+      amount,
+      sender,
+      recipient,
+      memo,
+      walletAccount,
+      walletIndex,
+      feeRate,
+      feeOption,
+      hdMode,
+      sendMax,
+      selectedUtxos,
+      utxoSelectionPreferences
+    } = params
     const sendLedgerTxParams: IPCLedgerSendTxParams = {
       chain: BCHChain,
       asset: AssetBCH,
@@ -64,7 +77,9 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       destinationTag: undefined,
       evmRpcUrl: undefined,
       gasMultiplier: undefined,
-      sendMax
+      sendMax,
+      selectedUtxos: selectedUtxos?.map(({ hash, index, value }) => ({ hash, index, value })),
+      utxoSelectionPreferences
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(sendLedgerTxParams)
 

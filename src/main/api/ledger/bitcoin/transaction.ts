@@ -34,7 +34,9 @@ export const send = async ({
   walletIndex,
   hdMode,
   addressFormat,
-  apiKey
+  apiKey,
+  selectedUtxos,
+  utxoSelectionPreferences
 }: {
   transport: Transport
   network: Network
@@ -48,6 +50,8 @@ export const send = async ({
   hdMode?: HDMode
   addressFormat?: AddressFormat
   apiKey: string
+  selectedUtxos?: Array<{ hash: string; index: number; value: number }>
+  utxoSelectionPreferences?: { minimizeFee?: boolean; minimizeInputs?: boolean; consolidateSmallUtxos?: boolean }
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
     return E.left({
@@ -103,13 +107,38 @@ export const send = async ({
     const fee = await clientLedger.getFeesWithRates({ sender, memo })
     const feeRate = fee.rates[feeOption]
 
+    // Ledger's transfer() doesn't accept selectedUtxos — use transferMax() when UTXOs are specified
+    // IPC only sends {hash, index, value} identifiers; re-fetch full UTXOs (with witnessUtxo) from the data provider
+    if (selectedUtxos && selectedUtxos.length > 0) {
+      const allUtxos = await clientLedger.getUTXOs(sender)
+      const selectedSet = new Set(selectedUtxos.map((u) => `${u.hash}:${u.index}`))
+      const fullSelectedUtxos = allUtxos.filter((u) => selectedSet.has(`${u.hash}:${u.index}`))
+
+      const result = await clientLedger.transferMax({
+        walletIndex,
+        recipient,
+        memo,
+        feeRate,
+        selectedUtxos: fullSelectedUtxos,
+        utxoSelectionPreferences
+      })
+      if (!result?.hash) {
+        return E.left({
+          errorId: LedgerErrorId.INVALID_RESPONSE,
+          msg: `Post request to send BTC transaction using Ledger failed`
+        })
+      }
+      return E.right(result.hash)
+    }
+
     const txHash = await clientLedger.transfer({
       walletIndex,
       asset: AssetBTC,
       recipient,
       amount,
       memo,
-      feeRate
+      feeRate,
+      utxoSelectionPreferences
     })
     if (!txHash) {
       return E.left({

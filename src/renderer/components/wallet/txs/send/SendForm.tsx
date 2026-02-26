@@ -317,9 +317,7 @@ export const SendForm = (props: Props): JSX.Element => {
     if (!isManualWithSelection) {
       // Reset isSendMax when coin control is not in manual-with-selection mode
       // to prevent stale max-send behavior on subsequent submits
-      if (isUTXOChain && isSendMax) {
-        setIsSendMax(false)
-      }
+      setIsSendMax(false)
       return
     }
 
@@ -334,7 +332,7 @@ export const SendForm = (props: Props): JSX.Element => {
     setAmountToSend(netAmount)
     setValue('amount', baseToAsset(netAmount).amount())
     setIsSendMax(true)
-  }, [coinControlState, isUTXOChain, selectedFee, balance.amount.decimal, setValue, isSendMax])
+  }, [coinControlState, isUTXOChain, selectedFee, balance.amount.decimal, setValue])
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     if (isEVMChain) {
@@ -1502,14 +1500,11 @@ export const SendForm = (props: Props): JSX.Element => {
               chain={effectiveChain}
               asset={asset}
               address={walletAddress}
-              walletType={walletType}
               disabled={isLoading}
               targetAmount={FP.pipe(
                 selectedFee,
                 O.map((fee) => {
-                  const sendAmt = isEVMChain
-                    ? O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend as O.Option<BaseAmount>)
-                    : (amountToSend as BaseAmount)
+                  const sendAmt = amountToSend as BaseAmount
                   return sendAmt.amount().toNumber() + fee.amount().toNumber()
                 }),
                 O.toUndefined

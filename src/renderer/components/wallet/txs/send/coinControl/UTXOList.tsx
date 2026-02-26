@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import * as RD from '@devexperts/remote-data-ts'
 import type { AnyAsset } from '@xchainjs/xchain-util'
 import type { UTXO } from '@xchainjs/xchain-utxo-providers'
@@ -18,7 +20,10 @@ type Props = {
 export const UTXOList = ({ utxosRD, asset, selectedUtxos, disabled, onToggle }: Props): JSX.Element => {
   const intl = useIntl()
 
-  const isSelected = (utxo: UTXO): boolean => selectedUtxos.some((s) => s.hash === utxo.hash && s.index === utxo.index)
+  const isSelected = useCallback(
+    (utxo: UTXO): boolean => selectedUtxos.some((s) => s.hash === utxo.hash && s.index === utxo.index),
+    [selectedUtxos]
+  )
 
   return FP.pipe(
     utxosRD,
