@@ -8,10 +8,10 @@ import * as Rx from 'rxjs'
 
 import { WalletType, WalletAddress, HDMode } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
-import type { UtxoSelectionPreferences } from '../utxo/coinControl.types'
 import { AssetWithDecimal, AssetWithAmount } from '../../types/asgardex'
 import { PoolAddress } from '../midgard/midgardTypes'
 import { TxStagesRD } from '../thorchain/types'
+import type { UtxoSelectionPreferences } from '../utxo/coinControl.types'
 import { ApiError, TxHashRD } from '../wallet/types'
 
 export type TxTypes = 'DEPOSIT' | 'SWAP' | 'WITHDRAW' | 'APPROVE' | 'SEND'
