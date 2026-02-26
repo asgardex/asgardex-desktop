@@ -109,17 +109,20 @@ export const send = async ({
     const fee = await clientLedger.getFeesWithRates({ sender, memo })
     const feeRate = fee.rates[feeOption]
 
-    // Ledger's transfer() doesn't accept selectedUtxos — use transferMax() when UTXOs are specified
+    // Ledger's transfer() doesn't accept selectedUtxos/utxoSelectionPreferences — use transferMax() for coin control
     // IPC only sends {hash, index, value} identifiers; re-fetch full UTXOs (with witnessUtxo) from the data provider
-    if (selectedUtxos && selectedUtxos.length > 0) {
-      const allUtxos = await clientLedger.getUTXOs(sender)
-      const selectedSet = new Set(selectedUtxos.map((u) => `${u.hash}:${u.index}`))
-      const fullSelectedUtxos = allUtxos.filter((u) => selectedSet.has(`${u.hash}:${u.index}`))
-      if (fullSelectedUtxos.length !== selectedUtxos.length) {
-        return E.left({
-          errorId: LedgerErrorId.INVALID_RESPONSE,
-          msg: `Some selected BTC UTXOs are no longer available. Please refresh and retry.`
-        })
+    if ((selectedUtxos && selectedUtxos.length > 0) || utxoSelectionPreferences) {
+      let fullSelectedUtxos
+      if (selectedUtxos && selectedUtxos.length > 0) {
+        const allUtxos = await clientLedger.getUTXOs(sender)
+        const selectedSet = new Set(selectedUtxos.map((u) => `${u.hash}:${u.index}`))
+        fullSelectedUtxos = allUtxos.filter((u) => selectedSet.has(`${u.hash}:${u.index}`))
+        if (fullSelectedUtxos.length !== selectedUtxos.length) {
+          return E.left({
+            errorId: LedgerErrorId.INVALID_RESPONSE,
+            msg: `Some selected BTC UTXOs are no longer available. Please refresh and retry.`
+          })
+        }
       }
 
       const result = await clientLedger.transferMax({
@@ -145,8 +148,7 @@ export const send = async ({
         walletIndex,
         recipient,
         memo,
-        feeRate,
-        utxoSelectionPreferences
+        feeRate
       })
       if (!result?.hash) {
         return E.left({
@@ -163,8 +165,7 @@ export const send = async ({
       recipient,
       amount,
       memo,
-      feeRate,
-      utxoSelectionPreferences
+      feeRate
     })
     if (!txHash) {
       return E.left({
