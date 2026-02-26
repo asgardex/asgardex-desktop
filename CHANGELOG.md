@@ -18,7 +18,7 @@
 - fix THORName/MAYAName extraction bugs and add missing i18n keys [#989](https://github.com/asgardex/asgardex-desktop/pull/989)
 - fix bugs across major component files [#984](https://github.com/asgardex/asgardex-desktop/pull/984)
 - fix Tailwind v4 styling issues across codebase [#982](https://github.com/asgardex/asgardex-desktop/pull/982)
-- update `@xchainjs/xchain-zcash` to 1.1.0 for Zcash NU6.1 consensus support [#975](https://github.com/asgardex/asgardex-desktop/pull/975)
+- update `@xchainjs/xchain-zcash` to 1.3.1 for Zcash NU6.1 consensus support [#975](https://github.com/asgardex/asgardex-desktop/pull/975) [#988](https://github.com/asgardex/asgardex-desktop/pull/988)
 - upgrade xchain packages [#988](https://github.com/asgardex/asgardex-desktop/pull/988)
 
 ## Performance
