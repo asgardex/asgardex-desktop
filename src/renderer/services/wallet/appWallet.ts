@@ -587,14 +587,6 @@ export const createAppWalletService = (): AppWalletService => {
     window.apiLog.info('[AppWallet]', 'Disposed all subscriptions')
   }
 
-  /**
-   * Dispose all subscriptions to prevent memory leaks
-   */
-  const dispose = () => {
-    subscriptions.forEach((sub) => sub.unsubscribe())
-    subscriptions.length = 0
-  }
-
   return {
     appWalletState$,
     keystoreService,
