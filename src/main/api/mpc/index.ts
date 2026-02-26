@@ -22,7 +22,6 @@ import {
   SignBytesParams
 } from '../../../shared/api/mpcTypes'
 import { disposeSDK, getSDK, initializeSDK, isSDKInitialized } from './sdk'
-import { createErc20ApprovePayload } from './protobuf'
 
 // SDK Vault type (minimal interface for what we access)
 // Keep this minimal — only the properties used by serializeVault and signBytes.
@@ -536,27 +535,50 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
         ...(id ? { id } : {})
       }
 
+      // ERC20 approve: ABI-encode calldata and put in memo as native coin contract call.
+      const isApprove = !!approve
+      let txMemo = memo
+      if (isApprove) {
+        const selector = '095ea7b3'
+        const paddedSpender = approve.spender.replace('0x', '').toLowerCase().padStart(64, '0')
+        const amountHex = BigInt(approve.amount).toString(16).padStart(64, '0')
+        txMemo = `0x${selector}${paddedSpender}${amountHex}`
+        delete coin.id // Must be native for EVM resolver to use memo as tx data
+        log.info(`[MPC IPC] Approve mode: ABI calldata in memo`, {
+          spender: approve.spender,
+          calldataLength: txMemo.length
+        })
+      }
+
+      // Zero-amount native contract calls (ERC20 approve, ERC20 pool tx via depositWithExpiry)
+      // fail refineKeysignAmount because it rejects amount <= 0 for native/fee coins.
+      // Workaround: pass amount=1 to survive validation, then override toAmount="0" after.
+      let txAmount = BigInt(amount)
+      const isZeroAmountContractCall = txAmount === 0n && !coin.id && txMemo?.startsWith('0x')
+      if (isZeroAmountContractCall) {
+        txAmount = 1n
+        log.info(`[MPC IPC] Zero-amount contract call: using amount=1 to pass validation (will override to 0)`)
+      }
+
       // Step 3: Prepare transaction (SDK handles gas, nonce, fees)
-      log.info(`[MPC IPC] Step 2: prepareSendTx`, { coin, receiver, amount, memo, approve: approve || '(none)' })
+      log.info(`[MPC IPC] Step 2: prepareSendTx`, {
+        coin,
+        receiver,
+        amount: String(txAmount),
+        memo: txMemo ? `${txMemo.slice(0, 20)}...` : '(none)'
+      })
       const keysignPayload = await sdkVault.prepareSendTx({
         coin,
         receiver,
-        amount: BigInt(amount),
-        memo
+        amount: txAmount,
+        memo: txMemo
       })
       log.info(`[MPC IPC] Step 2: prepareSendTx complete`)
 
-      // ERC20 approve: set erc20ApprovePayload so the EVM resolver builds an approve tx
-      // instead of a transfer. The coin must have `id` (token) to bypass refineKeysignAmount.
-      // Must be a real protobuf Message (not a plain object) so it serializes correctly
-      // into the QR payload for SecureVault phone signing.
-      if (approve) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(keysignPayload as any).erc20ApprovePayload = createErc20ApprovePayload({
-          amount: approve.amount,
-          spender: approve.spender
-        })
-        log.info(`[MPC IPC] Set erc20ApprovePayload`, { spender: approve.spender, amount: approve.amount })
+      // Restore toAmount to 0 — the 1 wei was only to pass refineKeysignAmount.
+      if (isZeroAmountContractCall) {
+        keysignPayload.toAmount = '0'
+        log.info(`[MPC IPC] Overrode toAmount to "0" (zero-amount contract call)`)
       }
 
       // Step 4: Extract message hashes

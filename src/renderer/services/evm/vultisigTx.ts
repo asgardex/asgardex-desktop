@@ -9,7 +9,7 @@
  *   The 0x-prefixed calldata is passed as memo, which the SDK places in the tx data field.
  *
  * - createVultisigEvmApprove: ERC20 APPROVE handler
- *   Uses SDK native erc20ApprovePayload mechanism (no ABI encoding needed).
+ *   Passes approve params to IPC handler which ABI-encodes calldata as memo on native coin.
  */
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -238,21 +238,17 @@ export const createVultisigEvmPoolTx = (
 /**
  * Creates a Vultisig ERC20 approve handler for EVM chains.
  *
- * Uses the SDK's native erc20ApprovePayload mechanism instead of ABI-encoding calldata.
- * The coin is sent as a token (with id = contract address) so refineKeysignAmount
- * bypasses zero-amount validation, and the approve payload tells the EVM resolver
- * to build an approve transaction.
+ * Passes approve params to the IPC handler which ABI-encodes the calldata,
+ * uses a native coin so the EVM resolver puts it in tx data, and overrides
+ * the amount to 0 after validation (approve is non-payable).
  *
- * @param client$ - EVM chain client (unused — kept for API consistency)
+ * @param client$ - EVM chain client (needed for native asset ticker/decimals)
  * @param chainName - Chain identifier (e.g., 'ETH', 'BSC', 'AVAX', 'ARB', 'BASE')
  */
 export const createVultisigEvmApprove = (
   client$: Client$,
   chainName: string
 ): ((params: ApproveParams) => TxHashLD) => {
-  // Suppress unused warning — client$ kept for API consistency with keystore/ledger handlers
-  void client$
-
   return (params: ApproveParams): TxHashLD => {
     const { contractAddress, spenderAddress } = params
 
@@ -262,46 +258,59 @@ export const createVultisigEvmApprove = (
       return Rx.of(RD.failure({ errorId: ErrorId.APPROVE_TX, msg: 'No active Vultisig vault' }))
     }
 
-    // Token contract address with 0x prefix for SDK/viem
-    const id = contractAddress.startsWith('0x') ? contractAddress : `0x${contractAddress}`
+    return FP.pipe(
+      client$,
+      RxOp.switchMap((oClient) =>
+        FP.pipe(
+          oClient,
+          O.fold(
+            () => Rx.of(RD.initial),
+            (client): TxHashLD => {
+              const nativeAsset = client.getAssetInfo()
 
-    const txParams: SendTransactionParams = {
-      vaultId,
-      chain: chainName,
-      receiver: contractAddress,
-      amount: '0',
-      decimals: 18, // ERC20 approve doesn't transfer value; decimals are for the token coin
-      ticker: contractAddress, // Placeholder — the coin identity comes from `id`
-      id,
-      approve: { spender: spenderAddress, amount: MAX_APPROVAL.toFixed() }
-    }
+              // Native coin (no id) — the IPC handler ABI-encodes the approve calldata
+              // and puts it in memo, which the EVM resolver uses as tx data.
+              const txParams: SendTransactionParams = {
+                vaultId,
+                chain: chainName,
+                receiver: contractAddress,
+                amount: '0', // IPC handler overrides to 1 for validation, then back to 0
+                decimals: nativeAsset.decimal,
+                ticker: nativeAsset.asset.ticker,
+                approve: { spender: spenderAddress, amount: MAX_APPROVAL.toFixed() }
+              }
 
-    window.apiLog.info('[Vultisig]', `${chainName} ERC20 approve via SDK erc20ApprovePayload`, {
-      contractAddress,
-      spenderAddress,
-      vaultId
-    })
+              window.apiLog.info('[Vultisig]', `${chainName} ERC20 approve via native calldata`, {
+                contractAddress,
+                spenderAddress,
+                vaultId
+              })
 
-    return Rx.from(window.apiMpc.sendTransaction(txParams)).pipe(
-      RxOp.map(({ txHash }) => {
-        window.apiLog.info('[Vultisig]', `${chainName} approve success`, { txHash })
-        return RD.success(txHash)
-      }),
-      RxOp.catchError((error) => {
-        const errorMsg = error?.message ?? error.toString()
-        if (errorMsg.includes('Signing cancelled')) {
-          window.apiLog.info('[Vultisig]', `${chainName} approve cancelled by user`)
-          return Rx.of(RD.initial)
-        }
-        window.apiLog.error('[Vultisig]', `${chainName} approve failed`, { error: errorMsg })
-        return Rx.of(
-          RD.failure({
-            errorId: ErrorId.APPROVE_TX,
-            msg: `Vultisig ${chainName} approve failed: ${errorMsg}`
-          })
+              return Rx.from(window.apiMpc.sendTransaction(txParams)).pipe(
+                RxOp.map(({ txHash }) => {
+                  window.apiLog.info('[Vultisig]', `${chainName} approve success`, { txHash })
+                  return RD.success(txHash)
+                }),
+                RxOp.catchError((error) => {
+                  const errorMsg = error?.message ?? error.toString()
+                  if (errorMsg.includes('Signing cancelled')) {
+                    window.apiLog.info('[Vultisig]', `${chainName} approve cancelled by user`)
+                    return Rx.of(RD.initial)
+                  }
+                  window.apiLog.error('[Vultisig]', `${chainName} approve failed`, { error: errorMsg })
+                  return Rx.of(
+                    RD.failure({
+                      errorId: ErrorId.APPROVE_TX,
+                      msg: `Vultisig ${chainName} approve failed: ${errorMsg}`
+                    })
+                  )
+                }),
+                RxOp.startWith(RD.pending)
+              )
+            }
+          )
         )
-      }),
-      RxOp.startWith(RD.pending)
+      )
     )
   }
 }

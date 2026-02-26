@@ -21,7 +21,7 @@ export const QRCode = ({ text, qrError }: Props) => {
     setCanvasRd(RD.pending)
 
     const timeout = setTimeout(() => {
-      QRCodeLib.toCanvas(text, { errorCorrectionLevel: 'H', scale: 6 }, (err, canvas) => {
+      QRCodeLib.toCanvas(text, { errorCorrectionLevel: 'L', scale: 6 }, (err, canvas) => {
         if (err) {
           setCanvasRd(RD.failure(qrError))
         } else {
