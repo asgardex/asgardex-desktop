@@ -85,7 +85,7 @@ export const ActivePools = (): JSX.Element => {
   )
 
   const keystore = useObservableState(keystoreState$, O.none)
-  const hasKeystore = !hasImportedKeystore(keystore)
+  const hasKeystore = hasImportedKeystore(keystore)
 
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('active')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
