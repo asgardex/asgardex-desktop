@@ -7,6 +7,7 @@ import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Memo } from '../chain/types'
 import * as C from '../clients'
+import type { UtxoSelectionPreferences } from './coinControl.types'
 
 export type FeesWithRatesRD = RD.RemoteData<Error, FeesWithRates>
 export type FeesWithRatesLD = LiveData<Error, FeesWithRates>
@@ -25,7 +26,7 @@ export type SendTxParams = {
   hdMode: HDMode
   sendMax?: boolean
   selectedUtxos?: UTXO[]
-  utxoSelectionPreferences?: { minimizeFee?: boolean; minimizeInputs?: boolean; consolidateSmallUtxos?: boolean }
+  utxoSelectionPreferences?: UtxoSelectionPreferences
 }
 
 export type TransactionService = C.TransactionService<SendTxParams>

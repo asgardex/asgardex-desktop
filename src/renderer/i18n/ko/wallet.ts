@@ -122,17 +122,15 @@ const wallet: WalletMessages = {
   'wallet.derivationPath.taproot': 'Taproot P2TR',
   'wallet.ledger.fetchDescription': '하드웨어 지갑에서 주소 가져오기',
   'wallet.send.coinControl': 'Coin Control',
-  'wallet.send.coinControl.strategy': 'Selection Strategy',
-  'wallet.send.coinControl.auto': 'Automatic',
-  'wallet.send.coinControl.manual': 'Manual',
-  'wallet.send.coinControl.minimizeFee': 'Minimize Fee',
-  'wallet.send.coinControl.largestFirst': 'Largest First',
-  'wallet.send.coinControl.smallestFirst': 'Smallest First',
-  'wallet.send.coinControl.selected': '{count} UTXOs selected',
-  'wallet.send.coinControl.totalSelected': 'Total Selected',
-  'wallet.send.coinControl.change': 'Change',
-  'wallet.send.coinControl.insufficient': 'Selected UTXOs insufficient for amount + fee',
-  'wallet.send.coinControl.manualKeystoreOnly': 'Manual selection available for Keystore wallets only'
+  'wallet.send.coinControl.strategy': '선택 전략',
+  'wallet.send.coinControl.auto': '자동',
+  'wallet.send.coinControl.manual': '수동',
+  'wallet.send.coinControl.minimizeFee': '수수료 최소화',
+  'wallet.send.coinControl.largestFirst': '큰 금액 우선',
+  'wallet.send.coinControl.smallestFirst': '작은 금액 우선',
+  'wallet.send.coinControl.selected': '{count}개 UTXOs 선택됨',
+  'wallet.send.coinControl.totalSelected': '선택된 총액',
+  'wallet.send.coinControl.insufficient': '선택된 UTXOs가 금액 + 수수료에 부족합니다'
 }
 
 export default wallet

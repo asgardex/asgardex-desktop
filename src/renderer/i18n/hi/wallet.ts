@@ -123,17 +123,15 @@ const wallet: WalletMessages = {
   'wallet.derivationPath.taproot': 'Taproot P2TR',
   'wallet.ledger.fetchDescription': 'अपने हार्डवेयर वॉलेट से पता प्राप्त करें',
   'wallet.send.coinControl': 'Coin Control',
-  'wallet.send.coinControl.strategy': 'Selection Strategy',
-  'wallet.send.coinControl.auto': 'Automatic',
-  'wallet.send.coinControl.manual': 'Manual',
-  'wallet.send.coinControl.minimizeFee': 'Minimize Fee',
-  'wallet.send.coinControl.largestFirst': 'Largest First',
-  'wallet.send.coinControl.smallestFirst': 'Smallest First',
-  'wallet.send.coinControl.selected': '{count} UTXOs selected',
-  'wallet.send.coinControl.totalSelected': 'Total Selected',
-  'wallet.send.coinControl.change': 'Change',
-  'wallet.send.coinControl.insufficient': 'Selected UTXOs insufficient for amount + fee',
-  'wallet.send.coinControl.manualKeystoreOnly': 'Manual selection available for Keystore wallets only'
+  'wallet.send.coinControl.strategy': 'चयन रणनीति',
+  'wallet.send.coinControl.auto': 'स्वचालित',
+  'wallet.send.coinControl.manual': 'मैन्युअल',
+  'wallet.send.coinControl.minimizeFee': 'शुल्क न्यूनतम करें',
+  'wallet.send.coinControl.largestFirst': 'सबसे बड़ा पहले',
+  'wallet.send.coinControl.smallestFirst': 'सबसे छोटा पहले',
+  'wallet.send.coinControl.selected': '{count} UTXOs चयनित',
+  'wallet.send.coinControl.totalSelected': 'कुल चयनित',
+  'wallet.send.coinControl.insufficient': 'चयनित UTXOs राशि + शुल्क के लिए अपर्याप्त हैं'
 }
 
 export default wallet

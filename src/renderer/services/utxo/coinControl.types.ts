@@ -20,12 +20,16 @@ export const INITIAL_COIN_CONTROL_STATE: CoinControlState = {
   isEnabled: false
 }
 
+export type UtxoSelectionPreferences = {
+  minimizeFee?: boolean
+  minimizeInputs?: boolean
+  consolidateSmallUtxos?: boolean
+}
+
 /**
  * Maps CoinControlStrategy to xchainjs UtxoSelectionPreferences
  */
-export const strategyToPreferences = (
-  strategy: CoinControlStrategy
-): { minimizeFee?: boolean; minimizeInputs?: boolean; consolidateSmallUtxos?: boolean } | undefined => {
+export const strategyToPreferences = (strategy: CoinControlStrategy): UtxoSelectionPreferences | undefined => {
   switch (strategy) {
     case CoinControlStrategy.MINIMIZE_FEE:
       return { minimizeFee: true }

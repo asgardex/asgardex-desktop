@@ -18,6 +18,7 @@ const { fees$, feesWithRates$, reloadFees, reloadFeesWithRates } = createFeesSer
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$ } = createTransactionService(client$, network$)
 
 export {
+  combinedClient$,
   client$,
   clientState$,
   explorerUrl$,

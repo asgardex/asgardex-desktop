@@ -129,9 +129,7 @@ const wallet: WalletMessages = {
   'wallet.send.coinControl.smallestFirst': 'Smallest First',
   'wallet.send.coinControl.selected': '{count} UTXOs selected',
   'wallet.send.coinControl.totalSelected': 'Total Selected',
-  'wallet.send.coinControl.change': 'Change',
-  'wallet.send.coinControl.insufficient': 'Selected UTXOs insufficient for amount + fee',
-  'wallet.send.coinControl.manualKeystoreOnly': 'Manual selection available for Keystore wallets only'
+  'wallet.send.coinControl.insufficient': 'Selected UTXOs insufficient for amount + fee'
 }
 
 export default wallet

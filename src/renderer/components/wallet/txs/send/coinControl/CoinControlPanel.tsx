@@ -2,11 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Address, AnyAsset, Chain } from '@xchainjs/xchain-util'
+
 import type { UTXO } from '@xchainjs/xchain-utxo-providers'
 import { useIntl } from 'react-intl'
 
-import { isKeystoreWallet } from '../../../../../../shared/utils/guard'
-import { WalletType } from '../../../../../../shared/wallet/types'
 import { utxosByChain$, UTXOsRD } from '../../../../../services/utxo/coinControl'
 import {
   CoinControlStrategy,
@@ -23,21 +22,12 @@ type Props = {
   chain: Chain
   asset: AnyAsset
   address: Address
-  walletType: WalletType
   disabled: boolean
   targetAmount?: number
   onChange: (state: CoinControlState) => void
 }
 
-export const CoinControlPanel = ({
-  chain,
-  asset,
-  address,
-  walletType,
-  disabled,
-  targetAmount,
-  onChange
-}: Props): JSX.Element => {
+export const CoinControlPanel = ({ chain, asset, address, disabled, targetAmount, onChange }: Props): JSX.Element => {
   const intl = useIntl()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -46,7 +36,6 @@ export const CoinControlPanel = ({
   const [utxosRD, setUtxosRD] = useState<UTXOsRD>(RD.initial)
 
   const isManual = strategy === CoinControlStrategy.MANUAL
-  const manualDisabled = !isKeystoreWallet(walletType)
 
   // Fetch UTXOs when panel is opened
   useEffect(() => {
@@ -69,8 +58,8 @@ export const CoinControlPanel = ({
       isEnabled: true
     })
 
-    // We intentionally don't include onChange in deps to avoid re-render loop.
-    // The parent sets onChange via useCallback and it stays stable.
+    // onChange is a useState setter (setCoinControlState) and is inherently stable,
+    // so we intentionally omit it from deps to avoid unnecessary re-renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, strategy, selectedUtxos, isManual])
 
@@ -110,12 +99,7 @@ export const CoinControlPanel = ({
     <div className="mt-2">
       <Collapse header={header} isOpen={isOpen} onToggle={() => setIsOpen((prev) => !prev)}>
         <div className="flex flex-col gap-3 px-4 pb-4">
-          <StrategySelector
-            strategy={strategy}
-            onChange={handleStrategyChange}
-            manualDisabled={manualDisabled}
-            disabled={disabled}
-          />
+          <StrategySelector strategy={strategy} onChange={handleStrategyChange} disabled={disabled} />
 
           {isManual && (
             <UTXOList
