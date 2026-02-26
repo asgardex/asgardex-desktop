@@ -24,6 +24,7 @@ export const send = async ({
   walletAccount,
   walletIndex,
   apiKey,
+  sendMax,
   selectedUtxos,
   utxoSelectionPreferences
 }: {
@@ -37,6 +38,7 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   apiKey: string
+  sendMax?: boolean
   selectedUtxos?: Array<{ hash: string; index: number; value: number }>
   utxoSelectionPreferences?: { minimizeFee?: boolean; minimizeInputs?: boolean; consolidateSmallUtxos?: boolean }
 }): Promise<E.Either<LedgerError, TxHash>> => {
@@ -86,6 +88,12 @@ export const send = async ({
         const allUtxos = await dogeClient.getUTXOs(sender)
         const selectedSet = new Set(selectedUtxos.map((u) => `${u.hash}:${u.index}`))
         fullSelectedUtxos = allUtxos.filter((u) => selectedSet.has(`${u.hash}:${u.index}`))
+        if (fullSelectedUtxos.length !== selectedUtxos.length) {
+          return E.left({
+            errorId: LedgerErrorId.INVALID_RESPONSE,
+            msg: `Some selected DOGE UTXOs are no longer available. Please refresh and retry.`
+          })
+        }
       }
 
       const result = await dogeClient.transferMax({
@@ -95,6 +103,23 @@ export const send = async ({
         feeRate,
         selectedUtxos: fullSelectedUtxos,
         utxoSelectionPreferences
+      })
+      if (!result?.hash) {
+        return E.left({
+          errorId: LedgerErrorId.INVALID_RESPONSE,
+          msg: `Post request to send DOGE transaction using Ledger failed`
+        })
+      }
+      return E.right(result.hash)
+    }
+
+    // Use transferMax() when sendMax is true (user pressed "Max")
+    if (sendMax) {
+      const result = await dogeClient.transferMax({
+        walletIndex,
+        recipient,
+        memo: newMemo,
+        feeRate
       })
       if (!result?.hash) {
         return E.left({

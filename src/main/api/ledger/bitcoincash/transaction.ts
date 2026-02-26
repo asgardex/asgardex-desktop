@@ -21,6 +21,7 @@ export const send = async ({
   memo,
   walletAccount,
   walletIndex,
+  sendMax,
   selectedUtxos,
   utxoSelectionPreferences
 }: {
@@ -34,6 +35,7 @@ export const send = async ({
   memo?: string
   walletAccount: number
   walletIndex: number
+  sendMax?: boolean
   selectedUtxos?: Array<{ hash: string; index: number; value: number }>
   utxoSelectionPreferences?: { minimizeFee?: boolean; minimizeInputs?: boolean; consolidateSmallUtxos?: boolean }
 }): Promise<E.Either<LedgerError, TxHash>> => {
@@ -62,6 +64,12 @@ export const send = async ({
         const allUtxos = await clientLedger.getUTXOs(sender)
         const selectedSet = new Set(selectedUtxos.map((u) => `${u.hash}:${u.index}`))
         fullSelectedUtxos = allUtxos.filter((u) => selectedSet.has(`${u.hash}:${u.index}`))
+        if (fullSelectedUtxos.length !== selectedUtxos.length) {
+          return E.left({
+            errorId: LedgerErrorId.INVALID_RESPONSE,
+            msg: `Some selected BCH UTXOs are no longer available. Please refresh and retry.`
+          })
+        }
       }
 
       const result = await clientLedger.transferMax({
@@ -71,6 +79,23 @@ export const send = async ({
         feeRate,
         selectedUtxos: fullSelectedUtxos,
         utxoSelectionPreferences
+      })
+      if (!result?.hash) {
+        return E.left({
+          errorId: LedgerErrorId.INVALID_RESPONSE,
+          msg: `Post request to send BCH transaction using Ledger failed`
+        })
+      }
+      return E.right(result.hash)
+    }
+
+    // Use transferMax() when sendMax is true (user pressed "Max")
+    if (sendMax) {
+      const result = await clientLedger.transferMax({
+        walletIndex,
+        recipient,
+        memo,
+        feeRate
       })
       if (!result?.hash) {
         return E.left({
