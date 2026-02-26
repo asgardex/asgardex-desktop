@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { memo, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Chain } from '@xchainjs/xchain-util'
@@ -47,7 +47,7 @@ export type Props = {
   dexWalletType: WalletType
 }
 
-export const Deposit = (props: Props) => {
+export const Deposit = memo(function Deposit(props: Props) {
   const {
     protocol,
     asset: assetWD,
@@ -171,11 +171,11 @@ export const Deposit = (props: Props) => {
       <div className="flex min-h-full w-full flex-wrap">
         {walletIsImported && !walletIsLocked ? (
           <div className="grid w-full grid-cols-8 gap-4">
-            <div className="col-span-8 bg-bg1 dark:bg-bg1d xl:col-span-5">
-              <Tabs className="flex items-center justify-center" tabs={tabs} hasPadding defaultIndex={0} />
+            <div className="col-span-8 bg-bg1 xl:col-span-5 dark:bg-bg1d">
+              <Tabs className="items-center" tabs={tabs} hasPadding defaultIndex={0} />
             </div>
             <div className="col-span-8 xl:col-span-3">
-              <div className="flex min-h-[300px] justify-center bg-bg0 dark:bg-bg0d xl:min-h-full">
+              <div className="flex min-h-[300px] justify-center bg-bg0 xl:min-h-full dark:bg-bg0d">
                 <ShareContent
                   protocol={protocol}
                   poolDetail={poolDetailRD}
@@ -192,4 +192,4 @@ export const Deposit = (props: Props) => {
       </div>
     </div>
   )
-}
+})

@@ -118,9 +118,9 @@ export const UnlockForm = ({
       } catch (error) {
         setUnlockError(O.some(error as Error))
         setValidPassword(false)
+      } finally {
+        setUnlocking(false)
       }
-
-      setUnlocking(false)
     },
     [unlock, isVultisigLocked, onVultisigUnlock]
   )
@@ -140,10 +140,8 @@ export const UnlockForm = ({
           // Also show Vultisig error if present
           vultisigError ? <p className="mt-2 font-main text-sm uppercase text-error0">{vultisigError}</p> : <></>,
         (_: Error) => (
-          <p className="mt-2 font-main text-sm uppercase text-error0">
-            {isVultisigLocked
-              ? intl.formatMessage({ id: 'wallet.unlock.error' })
-              : intl.formatMessage({ id: 'wallet.unlock.error' })}
+          <p className="mt-2 font-main text-sm text-error0 uppercase">
+            {intl.formatMessage({ id: 'wallet.unlock.error' })}
           </p>
         )
       )(unlockError),
@@ -209,7 +207,7 @@ export const UnlockForm = ({
           () => <></>,
           () => <></>,
           (error) => (
-            <p className="px-5px font-main text-14 uppercase text-error0 dark:text-error0d">
+            <p className="px-5px font-main text-14 text-error0 uppercase dark:text-error0d">
               {intl.formatMessage({ id: 'wallet.change.error' })} {error.message || error.toString()}
             </p>
           ),
@@ -230,11 +228,11 @@ export const UnlockForm = ({
           className={clsx(
             'flex h-full flex-col items-center justify-between',
             'rounded-lg bg-bg0 dark:bg-bg0d',
-            'px-30px pb-[35px] pt-[45px] sm:px-[60px] sm:pb-[70px] sm:pt-[90px]'
+            'px-30px pt-[45px] pb-[35px] sm:px-[60px] sm:pt-[90px] sm:pb-[70px]'
           )}>
-          <div className="w-full max-w-[320px] space-y-3">
+          <div className="w-full max-w-[320px]">
             <div className="flex flex-col">
-              <h1 className="mb-12px inline-block w-full font-mainSemiBold text-18 uppercase text-text1 dark:text-text1d">
+              <h1 className="mb-12px font-mainSemiBold inline-block w-full text-18 text-text1 uppercase dark:text-text1d">
                 {intl.formatMessage({ id: 'wallet.unlock.label' })}
               </h1>
               <h2 className="mb-30px w-full text-11 text-text2 dark:text-text2d">
@@ -242,107 +240,118 @@ export const UnlockForm = ({
               </h2>
             </div>
 
-            <WalletSelector
-              wallets={wallets}
-              vultisigVaults={vultisigVaults}
-              activeVultisigVaultId={activeVultisigVaultId}
-              onChange={changeWalletHandler}
-              onVultisigSelect={onVultisigSelect}
-              disabled={RD.isPending(changeWalletState)}
-              className="mb-2 min-w-[200px] rounded-lg"
-              buttonClassName="!shadow-none !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
-            />
-            <InputPassword
-              id="password"
-              className="mx-auto mb-20px flex h-[38px] w-full items-center justify-between rounded-lg border border-solid !border-gray0 dark:!border-gray0d"
-              inputClassName="!ring-0 w-full"
-              {...register('password', { required: true })}
-              placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
-              ghost
-              size="normal"
-              autoFocus={true}
-              error={errors.password ? intl.formatMessage({ id: 'wallet.password.empty' }) : ''}
-              disabled={unlocking}
-            />
-            <FlatButton
-              type="submit"
-              className="w-full min-w-[200px] sm:mb-0"
-              size="normal"
-              color="primary"
-              disabled={unlocking}
-              loading={unlocking}>
-              {intl.formatMessage({ id: 'wallet.action.unlock' })}
-            </FlatButton>
-            {/* Only show remove button for keystore, not Vultisig */}
-            {!isVultisigLocked && (
-              <BorderButton
-                className="w-full min-w-[200px] sm:mb-0"
+            <div className="flex flex-col gap-2">
+              <WalletSelector
+                wallets={wallets}
+                vultisigVaults={vultisigVaults}
+                activeVultisigVaultId={activeVultisigVaultId}
+                onChange={changeWalletHandler}
+                onVultisigSelect={onVultisigSelect}
+                disabled={RD.isPending(changeWalletState)}
+                className="min-w-[200px] rounded-lg"
+                buttonClassName="!shadow-none dark:!shadow-none hover:!shadow-none dark:hover:!shadow-none"
+              />
+              <InputPassword
+                id="password"
+                className="mx-auto flex h-[38px] w-full items-center justify-between"
+                inputClassName="!ring-0 w-full"
+                {...register('password', { required: true })}
+                placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
+                ghost
                 size="normal"
-                color="error"
-                onClick={showRemoveConfirm}
-                disabled={unlocking}>
-                {intl.formatMessage({ id: 'wallet.remove.label' })}
-              </BorderButton>
-            )}
-            <div className="flex w-full flex-col items-center border-t border-solid border-gray1 dark:border-gray0d">
-              <div className="flex w-full flex-col justify-between space-y-3 pt-4">
-                <BorderButton
-                  className="flex w-full min-w-[200px] items-center justify-center gap-2"
-                  size="normal"
-                  color="primary"
-                  onClick={useLedgerOnlyHandler}
-                  disabled={unlocking}>
-                  <CpuChipIcon width={16} height={16} />
-                  Use Only Ledger
-                </BorderButton>
-                <BorderButton
-                  className="flex w-full min-w-[200px] items-center justify-center gap-2"
-                  size="normal"
-                  color="primary"
-                  onClick={onVultisigImport}
-                  disabled={unlocking || !onVultisigImport}>
-                  <ArrowDownTrayIcon width={16} height={16} />
-                  {intl.formatMessage({ id: 'wallet.vultisig.import' })}
-                </BorderButton>
-                {/* TODO: update locale */}
-                <h2 className="mb-2 w-full text-11 text-text2 dark:text-text2d">Don&apos;t you have a wallet yet?</h2>
-                <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0"
-                  size="normal"
-                  color="primary"
-                  onClick={createWalletHandler}
-                  disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.create' })}
-                </BorderButton>
-                <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0"
-                  size="normal"
-                  color="primary"
-                  onClick={importWalletHandler}
-                  disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.keystore' })}
-                </BorderButton>
-                <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0"
-                  size="normal"
-                  color="primary"
-                  onClick={importPhraseHandler}
-                  disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
-                </BorderButton>
-                <BorderButton
-                  className="flex w-full min-w-[200px] items-center justify-center gap-2"
-                  size="normal"
-                  color="primary"
-                  onClick={useVultisigSecureHandler}
-                  disabled={unlocking}>
-                  <ShieldCheckIcon className="text-turquoise" width={16} height={16} />
-                  Secure Vault (2-of-2)
-                </BorderButton>
-              </div>
-
-              {renderChangeWalletError}
+                autoFocus={true}
+                error={errors.password ? intl.formatMessage({ id: 'wallet.password.empty' }) : ''}
+                disabled={unlocking}
+              />
             </div>
+
+            <div className="mt-6 flex flex-col gap-2">
+              <FlatButton
+                type="submit"
+                className="w-full min-w-[200px]"
+                size="normal"
+                color="primary"
+                disabled={unlocking}
+                loading={unlocking}>
+                {intl.formatMessage({ id: 'wallet.action.unlock' })}
+              </FlatButton>
+              {/* Only show remove button for keystore, not Vultisig */}
+              {!isVultisigLocked && (
+                <BorderButton
+                  className="w-full min-w-[200px]"
+                  size="normal"
+                  color="error"
+                  onClick={showRemoveConfirm}
+                  disabled={unlocking}>
+                  {intl.formatMessage({ id: 'wallet.remove.label' })}
+                </BorderButton>
+              )}
+            </div>
+
+            <div className="my-6 border-t border-solid border-gray0 dark:border-gray0d" />
+
+            <div className="flex flex-col gap-2">
+              <BorderButton
+                className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                size="normal"
+                color="primary"
+                onClick={useLedgerOnlyHandler}
+                disabled={unlocking}>
+                <CpuChipIcon width={16} height={16} />
+                {intl.formatMessage({ id: 'wallet.unlock.useLedger' })}
+              </BorderButton>
+              <BorderButton
+                className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                size="normal"
+                color="primary"
+                onClick={onVultisigImport}
+                disabled={unlocking || !onVultisigImport}>
+                <ArrowDownTrayIcon width={16} height={16} />
+                {intl.formatMessage({ id: 'wallet.vultisig.import' })}
+              </BorderButton>
+            </div>
+
+            <h2 className="mt-6 mb-3 w-full text-11 text-text2 dark:text-text2d">
+              {intl.formatMessage({ id: 'wallet.unlock.noWallet' })}
+            </h2>
+
+            <div className="flex flex-col gap-2">
+              <BorderButton
+                className="w-full min-w-[200px]"
+                size="normal"
+                color="primary"
+                onClick={createWalletHandler}
+                disabled={unlocking}>
+                {intl.formatMessage({ id: 'wallet.action.create' })}
+              </BorderButton>
+              <BorderButton
+                className="w-full min-w-[200px]"
+                size="normal"
+                color="primary"
+                onClick={importWalletHandler}
+                disabled={unlocking}>
+                {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.keystore' })}
+              </BorderButton>
+              <BorderButton
+                className="w-full min-w-[200px]"
+                size="normal"
+                color="primary"
+                onClick={importPhraseHandler}
+                disabled={unlocking}>
+                {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
+              </BorderButton>
+              <BorderButton
+                className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                size="normal"
+                color="primary"
+                onClick={useVultisigSecureHandler}
+                disabled={unlocking}>
+                <ShieldCheckIcon className="text-turquoise" width={16} height={16} />
+                Secure Vault (2-of-2)
+              </BorderButton>
+            </div>
+
+            {renderChangeWalletError}
           </div>
           {renderUnlockError}
         </div>

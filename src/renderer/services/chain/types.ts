@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, Network, Tx } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import type { UTXO } from '@xchainjs/xchain-utxo-providers'
 import BigNumber from 'bignumber.js'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -10,6 +11,7 @@ import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithDecimal, AssetWithAmount } from '../../types/asgardex'
 import { PoolAddress } from '../midgard/midgardTypes'
 import { TxStagesRD } from '../thorchain/types'
+import type { UtxoSelectionPreferences } from '../utxo/coinControl.types'
 import { ApiError, TxHashRD } from '../wallet/types'
 
 export type TxTypes = 'DEPOSIT' | 'SWAP' | 'WITHDRAW' | 'APPROVE' | 'SEND'
@@ -107,6 +109,9 @@ export type SendTxParams = {
   hdMode: HDMode
   allowOwnerOffCurve?: boolean
   destinationTag?: number
+  sendMax?: boolean
+  selectedUtxos?: UTXO[]
+  utxoSelectionPreferences?: UtxoSelectionPreferences
 }
 
 export type SendPoolTxParams = SendTxParams & {
@@ -156,6 +161,7 @@ export type SwapTxParams = {
   readonly walletIndex: number
   readonly hdMode: HDMode
   readonly protocol: Chain
+  readonly sendMax?: boolean
 }
 
 export type SwapStateHandler = (p: SwapTxParams) => SwapState$

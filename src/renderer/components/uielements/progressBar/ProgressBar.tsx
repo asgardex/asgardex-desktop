@@ -70,7 +70,7 @@ export const ProgressBar = ({
         </div>
 
         {/* Error overlay border */}
-        {hasError && <div className="ring-red-500/70 pointer-events-none absolute inset-0 rounded-full ring-2" />}
+        {hasError && <div className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-red-500/70" />}
 
         {/* Center info */}
         <Transition
@@ -84,7 +84,7 @@ export const ProgressBar = ({
           <div
             className="pointer-events-none absolute inset-0 flex items-center justify-center"
             aria-hidden={!showInfo}>
-            <span className="px-1 text-[11px] font-medium text-gray-700 dark:text-gray-200">{customInfo}</span>
+            <span className="px-1 text-[11px] font-medium text-gray2 dark:text-gray2d">{customInfo}</span>
           </div>
         </Transition>
       </div>

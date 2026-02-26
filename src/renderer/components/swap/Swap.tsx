@@ -54,7 +54,8 @@ import {
   isEVMTokenAsset,
   getEVMTokenAddressForChain,
   isRujiAsset,
-  convertBaseAmountDecimal
+  convertBaseAmountDecimal,
+  isUtxoAssetChain
 } from '../../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../../helpers/assetProtocolHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
@@ -191,7 +192,7 @@ export const Swap = ({
   const { chain: targetChain } =
     targetAsset.type === AssetType.SYNTH
       ? AssetCacao
-      : sourceAsset.type === AssetType.SECURED
+      : targetAsset.type === AssetType.SECURED
         ? AssetRuneNative
         : targetAsset
 
@@ -275,7 +276,7 @@ export const Swap = ({
       const sourceChain = sourceAsset.chain
       const isChainConnected = appWalletState.connectedChain === sourceChain
 
-      if (isChainConnected && appWalletState.connectedChain !== sourceChain) {
+      if (!isChainConnected) {
         // Use ref to avoid dependency loop
         appWalletService.standaloneLedgerService.setSelectedChain(sourceChain)
       }
@@ -459,6 +460,13 @@ export const Swap = ({
     return result
   }, [sourceAsset, allBalances, sourceWalletType, sourceAssetDecimal])
 
+  // Only block the UI while the *source* chain balance is still loading,
+  // rather than waiting for every enabled chain to finish.
+  const sourceBalanceLoading = useMemo(
+    () => walletBalancesLoading && O.isNone(oSourceAssetWB),
+    [walletBalancesLoading, oSourceAssetWB]
+  )
+
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(() => {
     const result = FP.pipe(
@@ -509,6 +517,10 @@ export const Swap = ({
     amountToSwap,
     _setAmountToSwap /* private - never set it directly, use setAmountToSwap() instead */
   ] = useState(initialAmountToSwap)
+
+  const [isSendMax, setIsSendMax] = useState<boolean>(false)
+
+  const isSourceUTXO = useMemo(() => isUtxoAssetChain(sourceAsset), [sourceAsset])
 
   const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
@@ -1235,12 +1247,13 @@ export const Swap = ({
 
   const onInputChange = useCallback(
     (amount: BaseAmount) => {
+      if (isSourceUTXO) setIsSendMax(false)
       // Immediately update display state for smooth typing
       setInputDisplayAmount(amount)
       // Debounce the actual swap state update
       debouncedSetAmountToSwap(amount)
     },
-    [debouncedSetAmountToSwap]
+    [debouncedSetAmountToSwap, isSourceUTXO]
   )
 
   // Cleanup debounced input handler on unmount
@@ -1561,7 +1574,8 @@ export const Swap = ({
           walletAccount: finalWalletAccount,
           walletIndex: finalWalletIndex,
           hdMode: finalHDMode,
-          protocol: poolAddress.protocol
+          protocol: poolAddress.protocol,
+          sendMax: isSourceUTXO ? isSendMax : undefined
         }
       })
     )
@@ -1578,7 +1592,9 @@ export const Swap = ({
     sourceChainAssetAmount,
     swapFees.inFee.amount,
     appWalletState,
-    standaloneLedgerState?.address
+    standaloneLedgerState?.address,
+    isSourceUTXO,
+    isSendMax
   ])
 
   const oCFSwapParams: O.Option<SendTxParams> = useMemo(() => {
@@ -1608,11 +1624,21 @@ export const Swap = ({
           walletAccount,
           walletIndex,
           hdMode,
-          protocol: quoteSwap.protocol
+          protocol: quoteSwap.protocol,
+          sendMax: isSourceUTXO ? isSendMax : undefined
         }
       })
     )
-  }, [oSourceAssetWB, oQuoteProtocol, amountToSwap, sourceAsset, sourceChainAssetAmount, swapFees.inFee.amount])
+  }, [
+    oSourceAssetWB,
+    oQuoteProtocol,
+    amountToSwap,
+    sourceAsset,
+    sourceChainAssetAmount,
+    swapFees.inFee.amount,
+    isSourceUTXO,
+    isSendMax
+  ])
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -2034,13 +2060,14 @@ export const Swap = ({
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
+      if (isSourceUTXO) setIsSendMax(percents === 100)
       const amountFromPercentage = maxAmountToSwap.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmountToSwap.decimal)
       setAmountToSwap(newAmount)
       // Note: Removed immediate fetchSwap call here because the debounced handler will fetch the quote
       return newAmount
     },
-    [maxAmountToSwap, setAmountToSwap]
+    [maxAmountToSwap, setAmountToSwap, isSourceUTXO]
   )
 
   // Function to reset the slider to default position
@@ -2224,10 +2251,11 @@ export const Swap = ({
     }
 
     const onSucceess = () => {
-      if (showLedgerModal === ModalState.Swap) {
+      if (showLedgerModal === ModalState.Swap && O.isSome(oSwapParams)) {
         submitSwapTx()
-      }
-      if (showLedgerModal === ModalState.Approve) {
+      } else if (showLedgerModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
+        submitCFTx()
+      } else if (showLedgerModal === ModalState.Approve) {
         submitApproveTx()
       }
       setShowLedgerModal(ModalState.None)
@@ -2281,7 +2309,9 @@ export const Swap = ({
     sourceAsset,
     network,
     oSwapParams,
+    oCFSwapParams,
     submitSwapTx,
+    submitCFTx,
     submitApproveTx,
     useSourceAssetLedger
   ])
@@ -2517,8 +2547,8 @@ export const Swap = ({
       !isApproveFeeError ||
       // Don't render anything if chainAssetBalance is not available (still loading)
       O.isNone(oSourceAssetWB) ||
-      // Don't render error if walletBalances are still loading
-      walletBalancesLoading
+      // Don't render error if source balance is still loading
+      sourceBalanceLoading
     ) {
       return <></>
     }
@@ -2545,7 +2575,7 @@ export const Swap = ({
   }, [
     isApproveFeeError,
     oSourceAssetWB,
-    walletBalancesLoading,
+    sourceBalanceLoading,
     intl,
     sourceChainAsset,
     sourceChainAssetAmount,
@@ -2661,7 +2691,7 @@ export const Swap = ({
 
   useEffect(() => {
     // reset data whenever source asset has been changed
-    if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
+    if (O.isSome(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
       reloadFees({
         inAsset: sourceAsset,
         memo: swapMemo,
@@ -2755,7 +2785,7 @@ export const Swap = ({
       (lockedWallet ||
         quoteOnly ||
         isZeroAmountToSwap ||
-        walletBalancesLoading ||
+        sourceBalanceLoading ||
         sourceChainFeeError ||
         RD.isPending(swapFeesRD) ||
         RD.isPending(approveState) ||
@@ -2773,7 +2803,7 @@ export const Swap = ({
       lockedWallet,
       quoteOnly,
       isZeroAmountToSwap,
-      walletBalancesLoading,
+      sourceBalanceLoading,
       sourceChainFeeError,
       swapFeesRD,
       approveState,
@@ -2790,8 +2820,8 @@ export const Swap = ({
   )
 
   const disableSubmitApprove = useMemo(
-    () => isApproveFeeError || walletBalancesLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
-    [isApproveFeeError, walletBalancesLoading, oApproveParams, approveState]
+    () => isApproveFeeError || sourceBalanceLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
+    [isApproveFeeError, sourceBalanceLoading, oApproveParams, approveState]
   )
 
   const onChangeRecipientAddress = useCallback(
@@ -2896,7 +2926,7 @@ export const Swap = ({
         <div className="flex flex-wrap">
           <div className="mb-3 flex w-full items-center justify-between">
             <FlatButton
-              className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld"
+              className="rounded-full group-hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld"
               size="small"
               color={quoteOnly ? 'warning' : 'primary'}
               onClick={quoteOnlyButton}>
@@ -3051,7 +3081,7 @@ export const Swap = ({
                     key="standalone-recipient-address">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <h3 className="!mb-0 mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                        <h3 className="mr-10px !mb-0 w-auto p-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
                           {intl.formatMessage({ id: 'common.recipient' })}
                         </h3>
                         <WalletTypeLabel key="target-w-type">Ledger</WalletTypeLabel>
@@ -3090,7 +3120,7 @@ export const Swap = ({
                                 {(['BTC', 'LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain) ||
                                   ['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain)) && (
                                   <div className="border-b border-gray0 p-3 dark:border-gray0d">
-                                    <div className="mb-2 text-[12px] font-medium uppercase text-text2 dark:text-text2d">
+                                    <div className="mb-2 text-[12px] font-medium text-text2 uppercase dark:text-text2d">
                                       Derivation Path
                                     </div>
                                     <div className="flex items-end gap-3">
@@ -3102,7 +3132,7 @@ export const Swap = ({
                                           onChange={(e) =>
                                             setTargetWalletAccount(Math.max(0, parseInt(e.target.value) || 0))
                                           }
-                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
+                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
                                           min="0"
                                         />
                                       </div>
@@ -3114,7 +3144,7 @@ export const Swap = ({
                                           onChange={(e) =>
                                             setTargetWalletIndex(Math.max(0, parseInt(e.target.value) || 0))
                                           }
-                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
+                                          className="h-6 w-14 rounded border border-gray0 bg-bg0 px-2 text-center text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise"
                                           min="0"
                                         />
                                       </div>
@@ -3124,7 +3154,7 @@ export const Swap = ({
                                           <select
                                             value={targetHDMode}
                                             onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
-                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
+                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
                                             <option value="p2wpkh">
                                               {intl.formatMessage({ id: 'common.nativeSegwit' })}
                                             </option>
@@ -3138,7 +3168,7 @@ export const Swap = ({
                                           <select
                                             value={targetHDMode}
                                             onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
-                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
+                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
                                             <option value="default">Default</option>
                                           </select>
                                         </div>
@@ -3149,7 +3179,7 @@ export const Swap = ({
                                           <select
                                             value={targetHDMode}
                                             onChange={(e) => setTargetHDMode(e.target.value as HDMode)}
-                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
+                                            className="h-6 rounded border border-gray0 bg-bg0 px-2 py-1 text-xs text-text0 transition-colors focus:border-turquoise focus:outline-hidden dark:border-gray0d dark:bg-bg0d dark:text-text0d dark:focus:border-turquoise">
                                             <option value="ledgerlive">Ledger Live</option>
                                             <option value="legacy">Legacy</option>
                                             <option value="metamask">MetaMask</option>
@@ -3175,7 +3205,7 @@ export const Swap = ({
                                   }}>
                                   <div className="flex items-center space-x-3">
                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-turquoise/10">
-                                      <div className="h-4 w-4 rounded-sm bg-turquoise"></div>
+                                      <div className="h-4 w-4 rounded-xs bg-turquoise"></div>
                                     </div>
                                     <div className="text-left">
                                       <div className="font-medium text-text0 dark:text-text0d">
@@ -3200,7 +3230,7 @@ export const Swap = ({
                                 }}>
                                 <div className="flex items-center space-x-3">
                                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-warning0/10">
-                                    <div className="h-4 w-4 rounded-sm bg-warning0"></div>
+                                    <div className="h-4 w-4 rounded-xs bg-warning0"></div>
                                   </div>
                                   <div className="text-left">
                                     <div className="font-medium text-text0 dark:text-text0d">Enter Manually</div>
@@ -3325,7 +3355,7 @@ export const Swap = ({
                     className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                     key="edit-address">
                     <div className="flex items-center">
-                      <h3 className="!mb-0 mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                      <h3 className="mr-10px !mb-0 w-auto p-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
                         {intl.formatMessage({ id: 'common.recipient' })}
                       </h3>
                       <WalletTypeLabel key="target-w-type">
@@ -3354,13 +3384,13 @@ export const Swap = ({
         </div>
       </div>
 
-      {(walletBalancesLoading || isFetchingEstimate) && (
+      {(sourceBalanceLoading || isFetchingEstimate) && (
         <Spin
           className="w-full pt-10px"
           tip={
             isFetchingEstimate
               ? intl.formatMessage({ id: 'common.loading' })
-              : walletBalancesLoading
+              : sourceBalanceLoading
                 ? intl.formatMessage({ id: 'common.balance.loading' })
                 : undefined
           }
@@ -3409,7 +3439,7 @@ export const Swap = ({
             {/* Keystore-specific messages (import/unlock) — only in keystore mode */}
             {appWalletState && isKeystoreMode(appWalletState) && (
               <>
-                <p className="center mb-0 mt-30px font-main text-[12px] uppercase text-text2 dark:text-text2d">
+                <p className="center mt-30px mb-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
                   {!hasImportedKeystore(keystore)
                     ? intl.formatMessage({ id: 'swap.note.nowallet' })
                     : isLocked(keystore) && intl.formatMessage({ id: 'swap.note.lockedWallet' })}

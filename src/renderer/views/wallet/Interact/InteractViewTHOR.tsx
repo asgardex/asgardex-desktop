@@ -16,6 +16,7 @@ import { getInteractTypeFromNullableString } from '../../../components/wallet/tx
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
 import { InteractFormThor } from '../../../components/wallet/txs/interact/InteractFormThor'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
+import { useChainContext } from '../../../contexts/ChainContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
@@ -94,6 +95,7 @@ export const InteractViewTHOR = () => {
   const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
   const intl = useIntl()
 
+  const { addressByChain$ } = useChainContext()
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(assetChain))
 
   const { validateAddress } = useValidateAddress(assetChain)
@@ -287,6 +289,7 @@ export const InteractViewTHOR = () => {
                       nodes={nodeInfos}
                       runePoolProvider={runePoolProviderRD}
                       thorchainLastblock={thorchainLastblockRD}
+                      addressByChain$={addressByChain$}
                     />
                   </Interact>
                 )

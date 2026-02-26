@@ -78,6 +78,27 @@ const midgardUrl$: MidgardUrlLD = Rx.combineLatest([network$, getMidgardUrl$]).p
 )
 
 /**
+ * Exponential backoff retry strategy
+ * Retries with delays: 1s, 2s, 4s (for 3 retries)
+ */
+const retryWithBackoff = <T>(maxRetries: number = MIDGARD_MAX_RETRY) =>
+  RxOp.retryWhen<T>((errors) =>
+    errors.pipe(
+      RxOp.scan((retryCount, error) => {
+        if (retryCount >= maxRetries) {
+          throw error
+        }
+        return retryCount + 1
+      }, 0),
+      RxOp.delayWhen((retryCount) => {
+        // Exponential backoff: 1s, 2s, 4s, 8s...
+        const delayMs = Math.pow(2, retryCount - 1) * 1000
+        return Rx.timer(delayMs)
+      })
+    )
+  )
+
+/**
  * Loads data of `NetworkInfo`
  */
 const loadNetworkInfo$ = (): Rx.Observable<NetworkInfoRD> =>
@@ -89,7 +110,7 @@ const loadNetworkInfo$ = (): Rx.Observable<NetworkInfoRD> =>
         RxOp.map((response) => RD.success(response.data)), // Extract data from AxiosResponse
         RxOp.startWith(RD.pending),
         RxOp.catchError((e: Error) => Rx.of(RD.failure(e))),
-        RxOp.retry(MIDGARD_MAX_RETRY)
+        retryWithBackoff(MIDGARD_MAX_RETRY)
       )
     )
   )

@@ -1,0 +1,1 @@
+export { CoinControlPanel } from './CoinControlPanel'

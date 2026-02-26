@@ -88,7 +88,7 @@ export const PoolsOverview = (): JSX.Element => {
                         'ease border-y-[2px] border-solid border-transparent px-5px',
                         'font-mainSemiBold text-[16px] uppercase',
                         'mr-0 md:mr-10px',
-                        'hover:text-turquoise group-hover:border-b-turquoise',
+                        'group-hover:border-b-turquoise hover:text-turquoise',
                         selected
                           ? 'border-b-turquoise text-turquoise'
                           : 'border-b-transparent text-text2 dark:text-text2d'

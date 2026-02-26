@@ -33,7 +33,7 @@ const Section = ({ title, subtitle, className, children }: SectionProps) => (
       className
     )}>
     <div className="flex flex-col">
-      <h2 className="mb-5px font-main text-[16px] uppercase text-text2 dark:text-text2d">{title}</h2>
+      <h2 className="mb-5px font-main text-[16px] text-text2 uppercase dark:text-text2d">{title}</h2>
       <span className="font-main text-gray1 dark:text-gray1d">{subtitle}</span>
     </div>
     <div className="flex flex-col">{children}</div>
@@ -119,7 +119,7 @@ export const AppDexSettingsView = (): JSX.Element => {
           'border-b border-solid border-gray0 last:border-none dark:border-gray0d'
         )}>
         <div className="flex flex-col">
-          <h2 className="mb-5px font-main text-[16px] uppercase text-text2 dark:text-text2d">Slippage Tolerance</h2>
+          <h2 className="mb-5px font-main text-[16px] text-text2 uppercase dark:text-text2d">Slippage Tolerance</h2>
         </div>
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">

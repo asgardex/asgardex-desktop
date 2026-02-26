@@ -83,7 +83,7 @@ export const Fees = ({ fees, reloadFees, disabled = false, className }: Props) =
           className={clsx(
             'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-turquoise dark:border-turquoise',
             'transition-colors duration-200',
-            'hover:bg-gray-100 hover:dark:bg-gray-800',
+            'hover:bg-bg1 dark:hover:bg-bg1d',
             (isLoading || disabled) && 'pointer-events-none cursor-not-allowed opacity-50'
           )}>
           <ArrowPathIcon className={clsx('h-3 w-3 text-text0 dark:text-text0d', isLoading && 'animate-spin')} />

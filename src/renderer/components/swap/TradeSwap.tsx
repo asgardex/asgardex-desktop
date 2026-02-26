@@ -46,7 +46,8 @@ import {
   THORCHAIN_DECIMAL,
   isUSDAsset,
   isRuneNativeAsset,
-  isCacaoAsset
+  isCacaoAsset,
+  isUtxoAssetChain
 } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChain, isEvmChainToken } from '../../helpers/evmHelper'
@@ -119,7 +120,7 @@ import * as Utils from './Swap.utils'
 
 const ErrorLabel = ({ children, className }: { children: ReactNode; className?: string }): JSX.Element => (
   <div
-    className={clsx('mb-[14px] text-center font-main text-[12px] uppercase text-error0 dark:text-error0d', className)}>
+    className={clsx('mb-[14px] text-center font-main text-[12px] text-error0 uppercase dark:text-error0d', className)}>
     {children}
   </div>
 )
@@ -399,6 +400,13 @@ export const TradeSwap = ({
     }
   }, [sourceAsset, protocolBalance, sourceWalletType, tradeAccountBalances])
 
+  // Only block the UI while the *source* chain balance is still loading,
+  // rather than waiting for every enabled chain to finish.
+  const sourceBalanceLoading = useMemo(
+    () => walletBalancesLoading && O.isNone(oSourceAssetWB),
+    [walletBalancesLoading, oSourceAssetWB]
+  )
+
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(
     () =>
@@ -452,6 +460,10 @@ export const TradeSwap = ({
     amountToSwapMax1e8,
     _setAmountToSwapMax1e8 /* private - never set it directly, use setAmountToSwapMax1e8() instead */
   ] = useState(initialAmountToSwapMax1e8)
+
+  const [isSendMax, setIsSendMax] = useState<boolean>(false)
+
+  const isSourceUTXO = useMemo(() => isUtxoAssetChain(sourceAsset), [sourceAsset])
 
   const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
@@ -1026,7 +1038,8 @@ export const TradeSwap = ({
         walletAccount,
         walletIndex,
         hdMode,
-        protocol: protocol
+        protocol: protocol,
+        sendMax: isSourceUTXO ? isSendMax : undefined
       }))
     )
   }, [
@@ -1041,6 +1054,8 @@ export const TradeSwap = ({
     oPoolAddressThor,
     oPoolAddressMaya,
     amountToSwapMax1e8,
+    isSourceUTXO,
+    isSendMax,
     sourceAssetAmount.decimal
   ])
 
@@ -1222,12 +1237,21 @@ export const TradeSwap = ({
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
 
+  const onChangeSwapAmount = useCallback(
+    (amount: BaseAmount) => {
+      if (isSourceUTXO) setIsSendMax(false)
+      setAmountToSwapMax1e8(amount)
+    },
+    [isSourceUTXO, setAmountToSwapMax1e8]
+  )
+
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
+      if (isSourceUTXO) setIsSendMax(percents === 100)
       const amountFromPercentage = maxAmountToSwapMax1e8.amount().multipliedBy(percents / 100)
       return setAmountToSwapMax1e8(baseAmount(amountFromPercentage, maxAmountToSwapMax1e8.decimal))
     },
-    [maxAmountToSwapMax1e8, setAmountToSwapMax1e8]
+    [maxAmountToSwapMax1e8, setAmountToSwapMax1e8, isSourceUTXO]
   )
 
   // Function to reset the slider to default position
@@ -1313,6 +1337,13 @@ export const TradeSwap = ({
     return () => clearInterval(timer)
   }, [])
 
+  // Track quote expiry separately to avoid setState inside useMemo
+  useEffect(() => {
+    const remainingTime = swapExpiry.getTime() - currentDate.getTime()
+    const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
+    setQuoteExpired(remainingTimeInMinutes < 1)
+  }, [swapExpiry, currentDate])
+
   const renderSwapExpiry = useMemo(() => {
     const quoteValidTime = 15 * 60 * 1000 // 15 minutes in milliseconds
 
@@ -1320,7 +1351,6 @@ export const TradeSwap = ({
     const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
 
     const progress = Math.max(0, (remainingTime / quoteValidTime) * 100)
-    setQuoteExpired(remainingTimeInMinutes < 1)
     const expiryLabel =
       remainingTimeInMinutes < 0 ? `Quote Expired` : `Quote expiring in ${remainingTimeInMinutes} minutes`
 
@@ -1490,7 +1520,7 @@ export const TradeSwap = ({
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
             network={network}
             trackable={false}
-            protocol={O.some('Thorchain')}
+            protocol={O.some(protocol === THORChain ? 'Thorchain' : 'Mayachain')}
           />
         }
         timerValue={timerValue}
@@ -1507,7 +1537,8 @@ export const TradeSwap = ({
     network,
     extraTxModalContent,
     intl,
-    sourceAsset.chain
+    sourceAsset.chain,
+    protocol
   ])
 
   const renderPasswordConfirmationModal = useMemo(() => {
@@ -1610,9 +1641,10 @@ export const TradeSwap = ({
     }
 
     // Extract numerical value from error string
-    const match = error[1].match(/(\d+)/)
+    const errorDetail = error[1] ?? ''
+    const match = errorDetail.match(/(\d+)/)
     const numberString = match ? match[1] : null
-    const remainingText = error[1].replace(/\d+/g, '').trim()
+    const remainingText = errorDetail.replace(/\d+/g, '').trim()
 
     const assetAmount = numberString
       ? new CryptoAmount(convertBaseAmountDecimal(baseAmount(numberString), sourceAssetDecimal), sourceAsset)
@@ -1691,7 +1723,7 @@ export const TradeSwap = ({
 
   useEffect(() => {
     // reset data whenever source asset has been changed
-    if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
+    if (O.isSome(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
       reloadFeesHandler()
     } else {
       prevSourceAsset.current = O.some(sourceAsset)
@@ -1737,7 +1769,7 @@ export const TradeSwap = ({
         lockedWallet ||
         quoteOnly ||
         isZeroAmountToSwap ||
-        walletBalancesLoading ||
+        sourceBalanceLoading ||
         sourceChainFeeError ||
         RD.isPending(swapFeesRD) ||
         minAmountError ||
@@ -1755,7 +1787,7 @@ export const TradeSwap = ({
       lockedWallet,
       quoteOnly,
       isZeroAmountToSwap,
-      walletBalancesLoading,
+      sourceBalanceLoading,
       sourceChainFeeError,
       swapFeesRD,
       minAmountError,
@@ -1906,7 +1938,7 @@ export const TradeSwap = ({
         {/* Note: Input value is shown as AssetAmount */}
         <div className="flex flex-wrap">
           <FlatButton
-            className="mb-3 rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld"
+            className="mb-3 rounded-full group-hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld"
             size="small"
             color={quoteOnly ? 'warning' : 'primary'}
             onClick={quoteOnlyButton}>
@@ -1941,7 +1973,7 @@ export const TradeSwap = ({
           network={network}
           hasAmountShortcut
           onChangeAsset={setSourceAsset}
-          onChange={setAmountToSwapMax1e8}
+          onChange={onChangeSwapAmount}
           onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
           showError={minAmountError}
@@ -1999,7 +2031,7 @@ export const TradeSwap = ({
                 <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>
                   <BaseButton
                     onClick={resetToDefault}
-                    className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+                    className="rounded-full group-hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
                     <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
                   </BaseButton>
                 </Tooltip>
@@ -2017,7 +2049,7 @@ export const TradeSwap = ({
             {!isLocked(keystore) ? (
               <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                 <BaseButton
-                  className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                  className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
                   onClick={() => setShowDetails((current) => !current)}>
                   {intl.formatMessage({ id: 'common.details' })}
                   {showDetails ? (
@@ -2029,9 +2061,9 @@ export const TradeSwap = ({
 
                 <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
                   {/* Rate */}
-                  <div className="flex w-full justify-between font-mainBold text-[14px]">
+                  <div className="font-mainBold flex w-full justify-between text-[14px]">
                     <BaseButton
-                      className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                      className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d"
                       onClick={() =>
                         // toggle rate
                         setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
@@ -2042,10 +2074,10 @@ export const TradeSwap = ({
                     <div className="text-text2 dark:text-text2d">{rateLabel}</div>
                   </div>
                   {/* fees */}
-                  <div className="flex w-full items-center justify-between font-mainBold">
+                  <div className="font-mainBold flex w-full items-center justify-between">
                     <BaseButton
                       disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                      className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                      className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d"
                       onClick={reloadFeesHandler}>
                       {intl.formatMessage({ id: 'common.fees.estimated' })}
                       <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2067,7 +2099,7 @@ export const TradeSwap = ({
                   <>
                     <div
                       className={clsx(
-                        'flex w-full justify-between font-mainBold text-[14px]',
+                        'font-mainBold flex w-full justify-between text-[14px]',
                         showDetails ? 'pt-10px' : '',
                         isCausedSlippage ? 'text-error0 dark:text-error0d' : ''
                       )}>
@@ -2115,7 +2147,7 @@ export const TradeSwap = ({
                   <>
                     <div
                       className={clsx(
-                        'flex w-full justify-between font-mainBold text-[14px]',
+                        'font-mainBold flex w-full justify-between text-[14px]',
                         showDetails ? 'pt-10px' : ''
                       )}>
                       <div className="text-text2 dark:text-text2d">
@@ -2157,13 +2189,13 @@ export const TradeSwap = ({
                   {/* addresses */}
                   {showDetails && (
                     <>
-                      <div className="w-full pt-10px font-mainBold text-[14px] text-text2 dark:text-text2d">
+                      <div className="font-mainBold w-full pt-10px text-[14px] text-text2 dark:text-text2d">
                         {intl.formatMessage({ id: 'common.addresses' })}
                       </div>
                       {/* sender address */}
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                         <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.sender' })}</div>
-                        <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
+                        <div className="truncate pl-20px text-[13px] leading-normal text-text2 normal-case dark:text-text2d">
                           {FP.pipe(
                             oSourceWalletAddress,
                             O.map((address) => {
@@ -2183,7 +2215,7 @@ export const TradeSwap = ({
                         <div className="text-text2 dark:text-text2d">
                           {intl.formatMessage({ id: 'common.recipient' })}
                         </div>
-                        <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
+                        <div className="truncate pl-20px text-[13px] leading-normal text-text2 normal-case dark:text-text2d">
                           {FP.pipe(
                             oRecipientAddress,
                             O.map((address) => {
@@ -2207,7 +2239,7 @@ export const TradeSwap = ({
                       <div className="w-full pt-10px text-[14px] text-text2 dark:text-text2d">
                         <BaseButton
                           disabled={walletBalancesLoading}
-                          className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                          className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d"
                           onClick={reloadBalances}>
                           {intl.formatMessage({ id: 'common.balances' })}
                           <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2216,7 +2248,7 @@ export const TradeSwap = ({
                       {/* sender balance */}
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                         <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.sender' })}</div>
-                        <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
+                        <div className="truncate pl-20px text-[13px] leading-normal text-text2 normal-case dark:text-text2d">
                           {walletBalancesLoading
                             ? loadingString
                             : hidePrivateData
@@ -2234,7 +2266,7 @@ export const TradeSwap = ({
                   {/* memo */}
                   {showDetails && (
                     <>
-                      <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px] text-text2 dark:text-text2d">
+                      <div className="font-mainBold ml-[-2px] flex w-full items-start pt-10px text-[14px] text-text2 dark:text-text2d">
                         {memoTitle}
                       </div>
                       <div className="truncate pl-10px font-main text-[12px] text-text2 dark:text-text2d">
@@ -2249,9 +2281,9 @@ export const TradeSwap = ({
                 <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                   <div className="font-main text-[14px] text-gray2 dark:text-gray2d">
                     {/* Rate */}
-                    <div className="flex w-full justify-between font-mainBold text-[14px]">
+                    <div className="font-mainBold flex w-full justify-between text-[14px]">
                       <BaseButton
-                        className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                        className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d"
                         onClick={() =>
                           // toggle rate
                           setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
@@ -2262,10 +2294,10 @@ export const TradeSwap = ({
                       <div className="text-text2 dark:text-text2d">{rateLabel}</div>
                     </div>
                     {/* fees */}
-                    <div className="flex w-full items-center justify-between font-mainBold">
+                    <div className="font-mainBold flex w-full items-center justify-between">
                       <BaseButton
                         disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                        className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+                        className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d"
                         onClick={reloadFeesHandler}>
                         {intl.formatMessage({ id: 'common.fees.estimated' })}
                         <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2296,7 +2328,7 @@ export const TradeSwap = ({
                     <>
                       <div
                         className={clsx(
-                          'flex w-full justify-between font-mainBold text-[14px]',
+                          'font-mainBold flex w-full justify-between text-[14px]',
                           showDetails ? 'pt-10px' : ''
                         )}>
                         <div className="text-text2 dark:text-text2d">
@@ -2355,7 +2387,7 @@ export const TradeSwap = ({
                   className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                   key="edit-address">
                   <div className="flex items-center">
-                    <h3 className="!mb-0 mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
+                    <h3 className="mr-10px !mb-0 w-auto p-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
                       {intl.formatMessage({ id: 'common.recipient' })}
                     </h3>
                     <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>
@@ -2395,7 +2427,7 @@ export const TradeSwap = ({
           </>
         ) : (
           <>
-            <p className="center mb-0 mt-30px font-main text-[12px] uppercase text-text2 dark:text-text2d">
+            <p className="center mt-30px mb-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
               {!hasImportedKeystore(keystore)
                 ? intl.formatMessage({ id: 'swap.note.nowallet' })
                 : isLocked(keystore) && intl.formatMessage({ id: 'swap.note.lockedWallet' })}

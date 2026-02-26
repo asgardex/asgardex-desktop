@@ -44,4 +44,5 @@ log/*.log
 
 # Claude
 CLAUDE.md
+.claude/
 /docs

@@ -128,9 +128,9 @@ export const ImportPhrase = (props: Props): JSX.Element => {
               className={clsx(
                 'w-full rounded-lg bg-bg0 p-2 text-14 dark:bg-bg0d',
                 'border border-solid',
-                'placeholder:text-gray-300 dark:placeholder:text-gray-400',
+                'placeholder:text-gray1 dark:placeholder:text-gray1d',
                 'text-text0 dark:text-text0d',
-                'font-main focus:outline-none',
+                'font-main outline-hidden',
                 errors.phrase ? 'border-error0 dark:border-error0d' : 'border-gray0 dark:border-gray0d'
               )}
               placeholder={intl.formatMessage({ id: 'wallet.imports.enterphrase' })}
@@ -148,7 +148,7 @@ export const ImportPhrase = (props: Props): JSX.Element => {
                 }
               })}
             />
-            {errors.phrase && <p className="mt-2 font-main text-sm uppercase text-error0">{errors.phrase.message}</p>}
+            {errors.phrase && <p className="mt-2 font-main text-sm text-error0 uppercase">{errors.phrase.message}</p>}
           </div>
 
           {renderImportError}

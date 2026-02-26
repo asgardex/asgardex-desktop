@@ -32,6 +32,7 @@ import {
   convertBaseAmountDecimal,
   getEVMTokenAddressForChain,
   isEVMTokenAsset,
+  isCacaoAsset,
   isRuneNativeAsset,
   isUSDAsset,
   max1e8BaseAmount,
@@ -209,7 +210,8 @@ export const SymDeposit = (props: Props) => {
     if (
       (!isChainOfMaya(asset.chain) && protocol === MAYAChain) ||
       (!isChainOfThor(asset.chain) && protocol === THORChain) ||
-      (isRuneNativeAsset(asset) && protocol === THORChain)
+      (isRuneNativeAsset(asset) && protocol === THORChain) ||
+      (isCacaoAsset(asset) && protocol === MAYAChain)
     )
       onChangeAsset({ asset: AssetBTC, assetWalletType, runeWalletType })
   }, [asset, assetWalletType, onChangeAsset, protocol, runeWalletType])
@@ -222,6 +224,12 @@ export const SymDeposit = (props: Props) => {
   const protocolDecimals = useMemo(
     () => (protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL),
     [protocol] // Dependency
+  )
+
+  // Pool asset depth scale: THORChain always uses 1e8, MAYAChain uses native scale (e.g. 1e4 for MAYA.MAYA, 1e8 for BTC)
+  const poolAssetDecimals = useMemo(
+    () => (protocol === THORChain ? THORCHAIN_DECIMAL : Math.min(assetDecimal, THORCHAIN_DECIMAL)),
+    [protocol, assetDecimal]
   )
 
   const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
@@ -853,25 +861,32 @@ export const SymDeposit = (props: Props) => {
     () =>
       FP.pipe(
         sequenceTOption(oDepositParams, oFailedAssetAmount),
-        O.map(([params, { asset, amount1e8 }]) => {
-          setFailedWalletType(protocolAsset === asset ? params.runeWalletType : params.assetWalletType)
-          const result = {
-            poolAddress: params.poolAddress,
-            asset: asset,
-            amount: protocolAsset === asset ? amount1e8 : convertBaseAmountDecimal(amount1e8, assetDecimal),
-            memo: protocolAsset === asset ? params.memos.rune : params.memos.asset,
-            walletType: protocolAsset === asset ? params.runeWalletType : params.assetWalletType,
-            sender: protocolAsset === asset ? params.runeSender : params.assetSender,
-            walletAccount: protocolAsset === asset ? params.runeWalletAccount : params.assetWalletAccount,
-            walletIndex: protocolAsset === asset ? params.runeWalletIndex : params.assetWalletIndex,
-            hdMode: protocolAsset === asset ? params.runeHDMode : params.assetHDMode,
-            protocol: params.poolAddress.protocol
-          }
-          return result
-        })
+        O.map(([params, { asset, amount1e8 }]) => ({
+          poolAddress: params.poolAddress,
+          asset: asset,
+          amount: protocolAsset === asset ? amount1e8 : convertBaseAmountDecimal(amount1e8, assetDecimal),
+          memo: protocolAsset === asset ? params.memos.rune : params.memos.asset,
+          walletType: protocolAsset === asset ? params.runeWalletType : params.assetWalletType,
+          sender: protocolAsset === asset ? params.runeSender : params.assetSender,
+          walletAccount: protocolAsset === asset ? params.runeWalletAccount : params.assetWalletAccount,
+          walletIndex: protocolAsset === asset ? params.runeWalletIndex : params.assetWalletIndex,
+          hdMode: protocolAsset === asset ? params.runeHDMode : params.assetHDMode,
+          protocol: params.poolAddress.protocol
+        }))
       ),
     [oDepositParams, oFailedAssetAmount, protocolAsset, assetDecimal]
   )
+
+  // Sync failedWalletType when asymDepositParams change (moved out of useMemo)
+  useEffect(() => {
+    FP.pipe(
+      sequenceTOption(oDepositParams, oFailedAssetAmount),
+      O.map(([params, { asset }]) => {
+        setFailedWalletType(protocolAsset === asset ? params.runeWalletType : params.assetWalletType)
+        return true
+      })
+    )
+  }, [oDepositParams, oFailedAssetAmount, protocolAsset])
 
   const reloadFeesHandler = useCallback(() => {
     reloadFees(asset, protocolAsset)
@@ -982,10 +997,11 @@ export const SymDeposit = (props: Props) => {
         dexBalance: dexAssetBalance,
         assetBalance: { asset, amount: assetBalance },
         fees: depositFees,
-        protocolDecimals
+        protocolDecimals,
+        poolAssetDecimals
       }),
 
-    [poolData, dexAssetBalance, asset, assetBalance, depositFees, protocolDecimals]
+    [poolData, dexAssetBalance, asset, assetBalance, depositFees, protocolDecimals, poolAssetDecimals]
   )
 
   // Update `dexAmountToDeposit` if `maxDexAmountToDeposit` has been updated
@@ -1004,10 +1020,11 @@ export const SymDeposit = (props: Props) => {
       poolData,
       dexBalance: dexAssetBalance,
       assetBalance: { asset, amount: assetBalance },
-      fees: depositFees
+      fees: depositFees,
+      poolAssetDecimals
     })
     return max1e8BaseAmount(maxAmount)
-  }, [asset, assetBalance, depositFees, poolData, dexAssetBalance])
+  }, [asset, assetBalance, depositFees, poolData, dexAssetBalance, poolAssetDecimals])
 
   const setAssetAmountToDepositMax1e8 = useCallback(
     (amountToDeposit: BaseAmount) => {
@@ -1119,11 +1136,17 @@ export const SymDeposit = (props: Props) => {
       const assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
         runeAmount,
         poolData,
-        assetDecimal
+        assetDecimal,
+        poolAssetDecimals
       })
 
       if (assetAmountMax1e8.gt(maxAssetAmountToDepositMax1e8)) {
-        runeAmount = Helper.getDexAmountToDeposit(maxAssetAmountToDepositMax1e8, poolData, protocolDecimals)
+        runeAmount = Helper.getDexAmountToDeposit(
+          maxAssetAmountToDepositMax1e8,
+          poolData,
+          protocolDecimals,
+          poolAssetDecimals
+        )
         setDexAmountToDeposit(runeAmount)
         setAssetAmountToDepositMax1e8(maxAssetAmountToDepositMax1e8)
       } else {
@@ -1133,6 +1156,7 @@ export const SymDeposit = (props: Props) => {
     },
     [
       assetDecimal,
+      poolAssetDecimals,
       protocolDecimals,
       maxAssetAmountToDepositMax1e8,
       maxDexAmountToDeposit,
@@ -1158,13 +1182,14 @@ export const SymDeposit = (props: Props) => {
         ? { ...maxAssetAmountToDepositMax1e8 } // Use copy to avoid  mismatch with values in input fields
         : { ...newAmountMax1e8 }
 
-      const dexAmount = Helper.getDexAmountToDeposit(assetAmountMax1e8, poolData, protocolDecimals)
+      const dexAmount = Helper.getDexAmountToDeposit(assetAmountMax1e8, poolData, protocolDecimals, poolAssetDecimals)
 
       if (dexAmount.gt(maxDexAmountToDeposit)) {
         assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
-          runeAmount: dexAmount,
+          runeAmount: maxDexAmountToDeposit,
           poolData,
-          assetDecimal
+          assetDecimal,
+          poolAssetDecimals
         })
         setDexAmountToDeposit(maxDexAmountToDeposit)
         setAssetAmountToDepositMax1e8(assetAmountMax1e8)
@@ -1176,6 +1201,7 @@ export const SymDeposit = (props: Props) => {
     [
       assetBalanceMax1e8.decimal,
       assetDecimal,
+      poolAssetDecimals,
       maxAssetAmountToDepositMax1e8,
       maxDexAmountToDeposit,
       poolData,
@@ -1254,7 +1280,7 @@ export const SymDeposit = (props: Props) => {
       )
 
       return (
-        <p className="mb-20px p-0 text-center font-main text-[12px] uppercase text-error0 dark:text-error0d">{msg}</p>
+        <p className="mb-20px p-0 text-center font-main text-[12px] text-error0 uppercase dark:text-error0d">{msg}</p>
       )
     },
     [chain, intl]
@@ -1612,7 +1638,7 @@ export const SymDeposit = (props: Props) => {
 
   const isApproveFeeError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return FP.pipe(
       oChainAssetBalance,
@@ -1686,7 +1712,7 @@ export const SymDeposit = (props: Props) => {
           () => <></>,
           () => <></>,
           (error) => (
-            <p className="mb-20px p-0 text-center font-main uppercase text-error0 dark:text-error0d">{error.msg}</p>
+            <p className="mb-20px p-0 text-center font-main text-error0 uppercase dark:text-error0d">{error.msg}</p>
           ),
           () => <></>
         )
@@ -1696,7 +1722,7 @@ export const SymDeposit = (props: Props) => {
 
   const isApproved = useMemo(
     () =>
-      !needApprovement ||
+      O.isNone(needApprovement) ||
       RD.isSuccess(approveState) ||
       FP.pipe(
         isApprovedState,
@@ -1709,14 +1735,14 @@ export const SymDeposit = (props: Props) => {
   )
 
   const checkIsApproved = useMemo(() => {
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
     // ignore initial + loading states for `isApprovedState`
     return RD.isPending(isApprovedState)
   }, [isApprovedState, needApprovement])
 
   const checkIsApprovedError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return RD.isFailure(isApprovedState)
   }, [needApprovement, isApprovedState])
@@ -1731,7 +1757,7 @@ export const SymDeposit = (props: Props) => {
         () => <></>,
         () => <></>,
         (error) => (
-          <p className="mb-20px p-0 text-center font-main text-[12px] uppercase text-error0 dark:text-error0d">
+          <p className="mb-20px p-0 text-center font-main text-[12px] text-error0 uppercase dark:text-error0d">
             {intl.formatMessage({ id: 'common.approve.error' }, { asset: asset.ticker, error: error.msg })}
           </p>
         ),
@@ -1788,21 +1814,47 @@ export const SymDeposit = (props: Props) => {
           const missingAssets: AssetsWithAmount1e8 = pendingAssets.map((assetWB): AssetWithAmount1e8 => {
             const amount =
               protocolAsset !== assetWB.asset
-                ? Helper.getDexAmountToDeposit(assetWB.amount1e8, poolData, protocolDecimals)
-                : Helper.getAssetAmountToDeposit({ runeAmount: assetWB.amount1e8, poolData, assetDecimal })
+                ? Helper.getDexAmountToDeposit(assetWB.amount1e8, poolData, protocolDecimals, poolAssetDecimals)
+                : Helper.getAssetAmountToDeposit({
+                    runeAmount: assetWB.amount1e8,
+                    poolData,
+                    assetDecimal,
+                    poolAssetDecimals
+                  })
 
-            const assetAmount: AssetWithAmount1e8 = {
+            return {
               asset: protocolAsset === assetWB.asset ? asset : protocolAsset,
               amount1e8: amount
             }
-            setFailedAssetAmount(O.some(assetAmount))
-            return assetAmount
           })
           return render(pendingAssets, missingAssets, false)
         }
       )
     )
-  }, [symPendingAssetsRD, network, protocolAsset, poolData, protocolDecimals, assetDecimal, asset])
+  }, [symPendingAssetsRD, network, protocolAsset, poolData, protocolDecimals, poolAssetDecimals, assetDecimal, asset])
+
+  // Sync failedAssetAmount from pending assets (moved out of useMemo)
+  // Only update on success to preserve previous value during reloads (pending/failure)
+  useEffect(() => {
+    if (RD.isSuccess(symPendingAssetsRD)) {
+      const pendingAssets = symPendingAssetsRD.value
+      const last = pendingAssets[pendingAssets.length - 1]
+      if (!last) {
+        setFailedAssetAmount(O.none)
+        return
+      }
+      const amount =
+        protocolAsset !== last.asset
+          ? Helper.getDexAmountToDeposit(last.amount1e8, poolData, protocolDecimals, poolAssetDecimals)
+          : Helper.getAssetAmountToDeposit({
+              runeAmount: last.amount1e8,
+              poolData,
+              assetDecimal,
+              poolAssetDecimals
+            })
+      setFailedAssetAmount(O.some({ asset: protocolAsset === last.asset ? asset : protocolAsset, amount1e8: amount }))
+    }
+  }, [symPendingAssetsRD, protocolAsset, poolData, protocolDecimals, poolAssetDecimals, assetDecimal, asset])
 
   const prevHasAsymAssets = useRef<LiquidityProviderHasAsymAssets>({ dexAsset: false, asset: false })
 
@@ -2025,9 +2077,9 @@ export const SymDeposit = (props: Props) => {
             <div className="flex-col">
               {intl.formatMessage({ id: 'common.tx.type.deposit' })}
               <div className="items-left justify-left m-2 flex">
-                <AssetIcon className="flex-shrink-0" size="small" asset={params.asset} network={network} />
-                <AssetLabel className="mx-2 flex-shrink-0" asset={params.asset} />
-                <Label className="flex-shrink-0">
+                <AssetIcon className="shrink-0" size="small" asset={params.asset} network={network} />
+                <AssetLabel className="mx-2 shrink-0" asset={params.asset} />
+                <Label className="shrink-0">
                   {formatAssetAmountCurrency({
                     asset: params.asset,
                     amount: baseToAsset(params.amount),
@@ -2215,10 +2267,10 @@ export const SymDeposit = (props: Props) => {
           <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
             <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
               {/* fees */}
-              <div className="flex w-full items-center justify-between font-mainBold">
+              <div className="font-mainBold flex w-full items-center justify-between">
                 <BaseButton
                   disabled={RD.isPending(depositFeesRD) || RD.isInitial(depositFeesRD)}
-                  className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                  className="group !font-mainBold !p-0 !text-gray2 dark:!text-gray2d"
                   onClick={reloadFeesHandler}>
                   {intl.formatMessage({ id: 'common.fees.estimated' })}
                   <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2257,13 +2309,13 @@ export const SymDeposit = (props: Props) => {
 
               {/* addresses */}
               <>
-                <div className="w-full pt-10px font-mainBold text-[14px]">
+                <div className="font-mainBold w-full pt-10px text-[14px]">
                   {intl.formatMessage({ id: 'common.addresses' })}
                 </div>
                 {/* rune sender address */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                   <div>{intl.formatMessage({ id: 'common.rune' }, { dex: protocolAsset.chain })}</div>
-                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                  <div className="truncate pl-20px text-[13px] leading-normal normal-case">
                     {FP.pipe(
                       oDexAssetWB,
                       O.map(({ walletAddress: address }) => {
@@ -2281,7 +2333,7 @@ export const SymDeposit = (props: Props) => {
                 {/* asset sender address */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                   <div>{intl.formatMessage({ id: 'common.asset' })}</div>
-                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                  <div className="truncate pl-20px text-[13px] leading-normal normal-case">
                     {FP.pipe(
                       oAssetWB,
                       O.map(({ walletAddress: address }) => {
@@ -2304,7 +2356,7 @@ export const SymDeposit = (props: Props) => {
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
                         <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
                         <Tooltip title={address} size="big">
-                          <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
+                          <div className="truncate pl-20px text-[13px] leading-normal normal-case">{address}</div>
                         </Tooltip>
                       </div>
                     ) : null
@@ -2318,7 +2370,7 @@ export const SymDeposit = (props: Props) => {
                 <div className="w-full pt-10px text-[14px]">
                   <BaseButton
                     disabled={walletBalancesLoading}
-                    className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                    className="group !font-mainBold !p-0 !text-gray2 dark:!text-gray2d"
                     onClick={reloadBalances}>
                     {intl.formatMessage({ id: 'common.balances' })}
                     <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2327,18 +2379,18 @@ export const SymDeposit = (props: Props) => {
                 {/* rune sender balance */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                   <div>{intl.formatMessage({ id: 'common.rune' }, { dex: protocolAsset.chain })}</div>
-                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">{dexAssetBalanceLabel}</div>
+                  <div className="truncate pl-20px text-[13px] leading-normal normal-case">{dexAssetBalanceLabel}</div>
                 </div>
                 {/* asset sender balance */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
                   <div>{intl.formatMessage({ id: 'common.asset' })}</div>
-                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">{assetBalanceLabel}</div>
+                  <div className="truncate pl-20px text-[13px] leading-normal normal-case">{assetBalanceLabel}</div>
                 </div>
               </>
 
               {/* memo */}
               <>
-                <div className="w-full pt-10px font-mainBold text-[14px]">
+                <div className="font-mainBold w-full pt-10px text-[14px]">
                   {intl.formatMessage({ id: 'common.memos' })}
                 </div>
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">

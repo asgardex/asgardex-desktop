@@ -106,27 +106,38 @@ export const feeOptionIO = new t.Type(
   t.identity
 )
 
-export const ipcLedgerSendTxParamsIO = t.type({
-  chain: chainIO,
-  network: networkIO,
-  sender: t.union([t.string, t.undefined]),
-  recipient: t.string,
-  asset: assetIO,
-  feeAsset: t.union([assetIO, t.undefined]),
-  amount: baseAmountIO,
-  memo: t.union([t.string, t.undefined]),
-  walletAccount: t.number,
-  walletIndex: t.number,
-  feeRate: t.number,
-  feeOption: t.union([feeOptionIO, t.undefined]),
-  feeAmount: t.union([baseAmountIO, t.undefined]),
-  nodeUrl: t.union([t.string, t.undefined]),
-  hdMode: hdModeIO,
-  apiKey: t.union([t.string, t.undefined]),
-  destinationTag: t.union([t.number, t.undefined]),
-  evmRpcUrl: t.union([t.string, t.undefined]),
-  gasMultiplier: t.union([t.number, t.undefined])
-})
+export const ipcLedgerSendTxParamsIO = t.intersection([
+  t.type({
+    chain: chainIO,
+    network: networkIO,
+    sender: t.union([t.string, t.undefined]),
+    recipient: t.string,
+    asset: assetIO,
+    feeAsset: t.union([assetIO, t.undefined]),
+    amount: baseAmountIO,
+    memo: t.union([t.string, t.undefined]),
+    walletAccount: t.number,
+    walletIndex: t.number,
+    feeRate: t.number,
+    feeOption: t.union([feeOptionIO, t.undefined]),
+    feeAmount: t.union([baseAmountIO, t.undefined]),
+    nodeUrl: t.union([t.string, t.undefined]),
+    hdMode: hdModeIO,
+    apiKey: t.union([t.string, t.undefined]),
+    destinationTag: t.union([t.number, t.undefined]),
+    evmRpcUrl: t.union([t.string, t.undefined]),
+    gasMultiplier: t.union([t.number, t.undefined]),
+    sendMax: t.union([t.boolean, t.undefined])
+  }),
+  t.partial({
+    selectedUtxos: t.array(t.type({ hash: t.string, index: t.number, value: t.number })),
+    utxoSelectionPreferences: t.partial({
+      minimizeFee: t.boolean,
+      minimizeInputs: t.boolean,
+      consolidateSmallUtxos: t.boolean
+    })
+  })
+])
 
 export type IPCLedgerSendTxParams = t.TypeOf<typeof ipcLedgerSendTxParamsIO>
 

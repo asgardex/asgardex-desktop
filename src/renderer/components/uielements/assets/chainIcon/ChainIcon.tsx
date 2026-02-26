@@ -161,7 +161,7 @@ export const ChainIcon = ({ size = 'small', className = '', chain }: Props): JSX
           height: `${sizes[size]}px`
         }}>
         <div
-          className="left-0 top-0 flex items-center justify-center rounded-full text-text3 dark:text-text3d"
+          className="top-0 left-0 flex items-center justify-center rounded-full text-text3 dark:text-text3d"
           style={{
             width: `${iconSize}px`,
             height: `${iconSize}px`,

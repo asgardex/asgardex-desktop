@@ -270,7 +270,6 @@ export type MayanodePool = {
   synthSupply: string
   pendingCacaoInbound: BaseAmount
   pendingAssetInbound: BaseAmount
-  saversUnits: string
   synthMintPaused: boolean
   bondable: boolean
 }

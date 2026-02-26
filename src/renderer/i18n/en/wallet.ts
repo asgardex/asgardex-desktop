@@ -40,6 +40,8 @@ const wallet: WalletMessages = {
   'wallet.unlock.instruction': 'Please unlock your wallet',
   'wallet.unlock.password': 'Enter your password',
   'wallet.unlock.error': 'Could not unlock the wallet. Please check your password and try it again',
+  'wallet.unlock.useLedger': 'Use Only Ledger',
+  'wallet.unlock.noWallet': "Don't you have a wallet yet?",
   'wallet.imports.keystore.select': 'Select keystore file',
   'wallet.imports.keystore.title': 'Please choose the keystore file of your wallet',
   'wallet.imports.keystore.description': 'Import an existing keystore wallet',
@@ -141,6 +143,16 @@ const wallet: WalletMessages = {
   'wallet.vultisig.confirm.waiting': 'Preparing signing session...',
   'wallet.vultisig.confirm.cancel': 'Cancel',
   'wallet.vultisig.confirm.timeout': 'Signing timed out. Please try again.'
+  'wallet.send.coinControl': 'Coin Control',
+  'wallet.send.coinControl.strategy': 'Selection Strategy',
+  'wallet.send.coinControl.auto': 'Automatic',
+  'wallet.send.coinControl.manual': 'Manual',
+  'wallet.send.coinControl.minimizeFee': 'Minimize Fee',
+  'wallet.send.coinControl.largestFirst': 'Largest First',
+  'wallet.send.coinControl.smallestFirst': 'Smallest First',
+  'wallet.send.coinControl.selected': '{count} UTXOs selected',
+  'wallet.send.coinControl.totalSelected': 'Total Selected',
+  'wallet.send.coinControl.insufficient': 'Selected UTXOs insufficient for amount + fee'
 }
 
 export default wallet

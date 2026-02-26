@@ -21,12 +21,12 @@ export const Tabs = ({
   onChange = (_: number) => {}
 }: Props): JSX.Element => {
   return (
-    <TabGroup className={className} defaultIndex={defaultIndex} onChange={onChange}>
-      <TabList className={clsx('flex gap-4 border-b border-solid border-gray0 dark:border-gray0d', className)}>
+    <TabGroup className={clsx('flex flex-col', className)} defaultIndex={defaultIndex} onChange={onChange}>
+      <TabList className="flex justify-center gap-4 border-b border-solid border-gray0 dark:border-gray0d">
         {tabs.map(({ key, label, disabled }) => (
           <Tab key={key} as={Fragment} disabled={disabled}>
             {({ hover, selected }) => (
-              <div className={clsx('flex flex-col outline-none', disabled ? 'cursor-not-allowed' : 'cursor-pointer')}>
+              <div className={clsx('flex flex-col outline-hidden', disabled ? 'cursor-not-allowed' : 'cursor-pointer')}>
                 <Label
                   className="!w-auto p-6 !text-16 !leading-5"
                   color={hover || selected ? 'primary' : 'dark'}

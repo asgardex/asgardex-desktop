@@ -69,7 +69,7 @@ export const LedgerConfirmationModal = ({
           {/* Sender */}
           <div className="flex flex-col pt-5">
             <div className="flex flex-col items-center normal-case">
-              <p className="m-0 p-0 font-mainBold text-[10px] text-inherit">
+              <p className="font-mainBold m-0 p-0 text-[10px] text-inherit">
                 {intl.formatMessage({ id: 'common.sender' })} (CashAddr)
               </p>
               <AddressEllipsis
@@ -80,7 +80,7 @@ export const LedgerConfirmationModal = ({
               />
             </div>
             <div className="flex flex-col items-center normal-case">
-              <p className="m-0 p-0 font-mainBold text-[10px] text-inherit">
+              <p className="font-mainBold m-0 p-0 text-[10px] text-inherit">
                 {intl.formatMessage({ id: 'common.sender' })} (Legacy)
               </p>
               <AddressEllipsis network={network} chain={chain} address={toLegacyAddress(sender)} enableCopy />
@@ -89,7 +89,7 @@ export const LedgerConfirmationModal = ({
           {/* Recipient */}
           <div className="flex flex-col pt-5">
             <div className="flex flex-col items-center normal-case">
-              <p className="m-0 p-0 font-mainBold text-[10px] text-inherit">
+              <p className="font-mainBold m-0 p-0 text-[10px] text-inherit">
                 {intl.formatMessage({ id: 'common.recipient' })} (CashAddr)
               </p>
               <AddressEllipsis
@@ -100,7 +100,7 @@ export const LedgerConfirmationModal = ({
               />
             </div>
             <div className="flex flex-col items-center normal-case">
-              <p className="m-0 p-0 font-mainBold text-[10px] text-inherit">
+              <p className="font-mainBold m-0 p-0 text-[10px] text-inherit">
                 {intl.formatMessage({ id: 'common.recipient' })} (Legacy)
               </p>
               <AddressEllipsis network={network} chain={chain} address={toLegacyAddress(recipient)} enableCopy />
@@ -126,7 +126,7 @@ export const LedgerConfirmationModal = ({
         <div className="flex flex-col">
           <div className="relative mb-5 flex flex-col items-center">
             <LedgerConnectUI className="scale-[0.65] md:scale-[0.85]" />
-            <div className="absolute left-[180px] top-5 scale-[0.7] md:left-[170px] md:top-[21px] md:scale-[0.9]">
+            <div className="absolute top-5 left-[180px] scale-[0.7] md:top-[21px] md:left-[170px] md:scale-[0.9]">
               <AssetIcon asset={asset} network={network} size="small" />
             </div>
           </div>

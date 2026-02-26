@@ -32,11 +32,11 @@ export const PhraseCopyModal = (props: Props) => {
             'rounded-lg border border-solid border-gray1 dark:border-gray0d'
           )}>
           <div className="flex w-full items-center justify-between px-5">
-            <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">
+            <h1 className="my-0 text-center text-xl text-text2 uppercase dark:text-text2d">
               {intl.formatMessage({ id: 'settings.view.phrase.title' })}
             </h1>
             <BaseButton
-              className="!p-0 text-gray1 hover:text-gray2 focus:outline-none focus:ring-0 dark:text-gray1d hover:dark:text-gray2d"
+              className="!p-0 text-gray1 hover:text-gray2 focus:ring-0 focus:outline-hidden dark:text-gray1d dark:hover:text-gray2d"
               onClick={onClose}>
               <XMarkIcon className="h-20px w-20px text-inherit" />
             </BaseButton>

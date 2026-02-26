@@ -195,7 +195,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
               activeKey === key ? 'text-turquoise' : 'text-text1 dark:text-text1d',
               { 'border-t': index === 0 }
             )}>
-            <Icon className="ml-6 mr-3" />
+            <Icon className="mr-3 ml-6" />
             <Label color="dark" size="large" textTransform="uppercase" weight="bold">
               {label}
             </Label>

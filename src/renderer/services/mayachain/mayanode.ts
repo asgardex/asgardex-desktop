@@ -13,7 +13,6 @@ import {
   LiquidityProvidersApi,
   LiquidityProviderSummary,
   LiquidityProvidersResponse,
-  Saver,
   LiquidityProvider,
   PoolsApi,
   PoolsResponse,
@@ -24,7 +23,7 @@ import {
   CACAOProvider,
   CACAOPoolApi
 } from '@xchainjs/xchain-mayanode'
-import { SaversApi } from '@xchainjs/xchain-thornode'
+import { Saver, SaversApi } from '@xchainjs/xchain-thornode'
 import {
   Address,
   AnyAsset,
@@ -519,7 +518,6 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
               synthSupply: pool.synth_supply,
               pendingCacaoInbound: baseAmount(pool.pending_inbound_cacao, CACAO_DECIMAL),
               pendingAssetInbound: baseAmount(pool.pending_inbound_asset),
-              saversUnits: pool.savers_units,
               synthMintPaused: pool.synth_mint_paused,
               bondable: pool.bondable
             }

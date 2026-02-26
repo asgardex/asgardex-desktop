@@ -1,34 +1,37 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  MagnifyingGlassMinusIcon,
+  MagnifyingGlassPlusIcon
+} from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { QuoteTHORNameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
+import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
-  AnyAsset,
-  Asset,
   assetAmount,
   assetToBase,
   baseAmount,
   BaseAmount,
   baseToAsset,
   bn,
+  Chain,
   CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
-import { debounce } from 'lodash'
 import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../../../../shared/mock/amount'
-import { AssetAVAX, AssetBTC, AssetDOGE, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
-import { AssetUSDT, ZERO_BASE_AMOUNT } from '../../../../const'
+import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import {
@@ -46,6 +49,7 @@ import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
+import { WalletAddress$ } from '../../../../services/clients/types'
 import { INITIAL_INTERACT_STATE } from '../../../../services/thorchain/const'
 import {
   InteractState,
@@ -62,19 +66,16 @@ import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../
 import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
-import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
-import { Fees, UIFees, UIFeesRD } from '../../../uielements/fees'
-import { InfoIcon } from '../../../uielements/info'
+import { Fees, UIFeesRD } from '../../../uielements/fees'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
-import { RadioGroup, Radio } from '../../../uielements/radio'
-import { Switch } from '../../../uielements/switch'
 import { Tooltip } from '../../../uielements/tooltip'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import { InteractType } from './Interact.types'
+import { THORNameForm } from './thorname/THORNameForm'
 
 type FormValues = {
   memo: string
@@ -82,13 +83,6 @@ type FormValues = {
   providerAddress: string
   operatorFee: number
   amount: BigNumber
-  thorname: string
-  chainAddress: string
-  chain: string
-  preferredAsset: string
-  expiry: string
-  aliasChain: string
-  aliasAddress: string
 }
 type UserNodeInfo = {
   nodeAddress: string
@@ -117,12 +111,7 @@ type Props = {
   nodes: NodeInfosRD
   runePoolProvider: RunePoolProviderRD
   thorchainLastblock: ThorchainLastblockRD
-}
-
-const preferredAssetMap: Record<string, AnyAsset> = {
-  [AssetBTC.symbol]: AssetBTC,
-  [AssetETH.symbol]: AssetETH,
-  [AssetUSDT.symbol]: AssetUSDT
+  addressByChain$: (chain: Chain) => WalletAddress$
 }
 
 export const InteractFormThor = ({
@@ -144,7 +133,8 @@ export const InteractFormThor = ({
   network,
   nodes: nodesRD,
   runePoolProvider: runePoolProviderRd,
-  thorchainLastblock: thorchainLastblockRd
+  thorchainLastblock: thorchainLastblockRd,
+  addressByChain$
 }: Props) => {
   const intl = useIntl()
 
@@ -265,8 +255,6 @@ export const InteractFormThor = ({
     switch (interactType) {
       case InteractType.Bond:
       case InteractType.Custom:
-      case InteractType.THORName:
-      case InteractType.MAYAName:
         return _amountToSend
       case InteractType.Whitelist:
         return ONE_RUNE_BASE_AMOUNT
@@ -280,6 +268,8 @@ export const InteractFormThor = ({
       case InteractType.CacaoPool: {
         return ZERO_BASE_AMOUNT
       }
+      default:
+        return ZERO_BASE_AMOUNT
     }
   }, [_amountToSend, interactType, runePoolAction])
 
@@ -307,28 +297,11 @@ export const InteractFormThor = ({
       thorAddress: '',
       providerAddress: '',
       operatorFee: 0,
-      amount: bn(0),
-      thorname: '',
-      chainAddress: balance.walletAddress,
-      chain: THORChain,
-      preferredAsset: '',
-      expiry: '1',
-      aliasChain: '',
-      aliasAddress: ''
+      amount: bn(0)
     }
   })
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
-
-  // state variable for thornames
-  const [oThorname, setThorname] = useState<O.Option<ThornameDetails>>(O.none)
-  const [thornameAvailable, setThornameAvailable] = useState<boolean>(false) // if thorname is available
-  const [thornameUpdate, setThornameUpdate] = useState<boolean>(false) // allow to update
-  const [thornameRegister, setThornameRegister] = useState<boolean>(false) // allow to update
-  const [thornameQuoteValid, setThornameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
-  const [isOwner, setIsOwner] = useState<boolean>(false) // if the thorname.owner is the wallet address then allow to update
-  const [preferredAsset, setPreferredAsset] = useState<string>()
-  const [aliasChain, setAliasChain] = useState<string>('')
 
   const [currentMemo, setCurrentMemo] = useState('')
 
@@ -337,8 +310,7 @@ export const InteractFormThor = ({
       FP.pipe(
         oFee,
         O.fold(
-          // Missing (or loading) fees does not mean we can't sent something. No error then.
-          () => !O.isNone(oFee),
+          () => false,
           (fee) => balance.amount.amount().isLessThan(fee.amount())
         )
       ),
@@ -369,14 +341,6 @@ export const InteractFormThor = ({
     [intl, balance.amount]
   )
 
-  const renderThornameError = useMemo(
-    () => (
-      <Label size="big" color="error">
-        {intl.formatMessage({ id: 'common.thornameError' })}
-      </Label>
-    ),
-    [intl]
-  )
   const renderRunePoolWarning = useMemo(
     () => (
       <Label size="big" color="warning">
@@ -420,7 +384,7 @@ export const InteractFormThor = ({
     })
 
     if (
-      (maxAmount && interactType === InteractType.Bond) ||
+      interactType === InteractType.Bond ||
       interactType === InteractType.Custom ||
       interactType === InteractType.RunePool
     ) {
@@ -485,91 +449,6 @@ export const InteractFormThor = ({
     },
     [interactType, intl, maxAmount]
   )
-
-  const debouncedFetch = debounce(
-    async (thorname, setThorname, setThornameAvailable, setThornameUpdate, setIsOwner, thorchainQuery, balance) => {
-      try {
-        const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
-        if (thornameDetails) {
-          setThorname(O.some(thornameDetails))
-
-          setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
-          setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
-          setThornameRegister(thornameDetails.name === '')
-          setIsOwner(balance.walletAddress === thornameDetails.owner)
-        }
-      } catch (_error) {
-        setThornameAvailable(true)
-      }
-      // setThorname(O.none)
-    },
-    500
-  )
-
-  const thornameHandler = useCallback(() => {
-    const thorname = watch('thorname')
-    setThornameQuoteValid(false)
-    setMemo('')
-    if (thorname !== '') {
-      debouncedFetch(
-        thorname,
-        setThorname,
-        setThornameAvailable,
-        setThornameUpdate,
-        setIsOwner,
-        thorchainQuery,
-        balance
-      )
-    }
-  }, [balance, debouncedFetch, watch, thorchainQuery])
-
-  const estimateThornameHandler = useCallback(() => {
-    const currentDate = new Date()
-
-    const name = watch('thorname')
-    const chain = thornameRegister ? watch('chain') : watch('aliasChain')
-    const yearsToAdd = parseInt(watch('expiry') || '1')
-    const expiry =
-      yearsToAdd === 1
-        ? undefined
-        : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
-    const chainAddress = thornameRegister ? watch('chainAddress') : watch('aliasAddress')
-    const owner = balance.walletAddress
-    if (name !== undefined && chain !== undefined && chainAddress !== undefined) {
-      const fetchThornameQuote = async () => {
-        try {
-          const params: QuoteTHORNameParams = {
-            name,
-            chain,
-            chainAddress,
-            owner,
-            preferredAsset: preferredAsset ? (preferredAssetMap[preferredAsset] as Asset) : undefined,
-            expiry,
-            isUpdate: thornameUpdate || isOwner
-          }
-
-          const thornameQuote = await thorchainQuery.estimateThorname(params)
-
-          if (thornameQuote) {
-            setMemo(thornameQuote.memo)
-            setAmountToSend(thornameQuote.value.baseAmount)
-            setThornameQuoteValid(true)
-          }
-        } catch (error) {
-          console.error('Error fetching fetchThornameQuote:', error)
-        }
-      }
-      fetchThornameQuote()
-    }
-  }, [balance.walletAddress, watch, isOwner, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
-
-  const handleRadioAssetChange = useCallback((asset: string) => {
-    setPreferredAsset(asset)
-  }, [])
-
-  const handleRadioChainChange = useCallback((chain: string) => {
-    setAliasChain(chain)
-  }, [])
 
   const addMaxAmountHandler = useCallback(
     (maxAmount: BaseAmount) => {
@@ -639,24 +518,10 @@ export const InteractFormThor = ({
         createMemo = currentMemo
         break
       }
-      case InteractType.THORName: {
-        createMemo = memo
-        break
-      }
     }
     setMemo(createMemo)
     return createMemo
-  }, [
-    _amountToSend,
-    currentMemo,
-    watch,
-    interactType,
-    memo,
-    network,
-    runePoolAction,
-    runePoolProvider.value,
-    whitelisting
-  ])
+  }, [_amountToSend, currentMemo, watch, interactType, network, runePoolAction, runePoolProvider.value, whitelisting])
 
   const onChangeInput = useCallback(
     (value: BigNumber) => {
@@ -697,24 +562,12 @@ export const InteractFormThor = ({
       thorAddress: watch('thorAddress'), // Keep thorAddress value
       providerAddress: '',
       operatorFee: 0,
-      amount: bn(0),
-      thorname: '',
-      chainAddress: balance.walletAddress,
-      chain: THORChain,
-      preferredAsset: '',
-      expiry: '1',
-      aliasChain: '',
-      aliasAddress: ''
+      amount: bn(0)
     })
     setHasProviderAddress(false)
     setMemo('')
     setAmountToSend(ZERO_BASE_AMOUNT)
-    setThorname(O.none)
-    setIsOwner(false)
-    setThornameQuoteValid(false)
-    setThornameUpdate(false)
-    setThornameAvailable(false)
-  }, [reset, resetInteractState, watch, balance.walletAddress])
+  }, [reset, resetInteractState, watch])
 
   const renderConfirmationModal = useMemo(() => {
     const onSuccessHandler = () => {
@@ -850,10 +703,6 @@ export const InteractFormThor = ({
         })} ${intl.formatMessage({
           id: 'common.amount'
         })}`
-      case InteractType.THORName:
-        return intl.formatMessage({
-          id: 'common.amount'
-        })
     }
   }, [interactType, intl])
 
@@ -882,14 +731,8 @@ export const InteractFormThor = ({
       }
       case InteractType.Custom:
         return intl.formatMessage({ id: 'wallet.action.send' })
-      case InteractType.THORName:
-        if (isOwner) {
-          return intl.formatMessage({ id: 'common.isUpdateThorname' })
-        } else {
-          return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
-        }
     }
-  }, [interactType, hasProviderAddress, intl, whitelisting, isOwner, runePoolAction])
+  }, [interactType, hasProviderAddress, intl, whitelisting, runePoolAction])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -918,11 +761,6 @@ export const InteractFormThor = ({
     // Whenever `amountToSend` has been updated, we put it back into input field
     setValue('amount', baseToAsset(_amountToSend).amount())
   }, [_amountToSend, setValue])
-
-  const thorNamefees: UIFeesRD = useMemo(() => {
-    const fees: UIFees = [{ asset: AssetRuneNative, amount: _amountToSend }]
-    return RD.success(fees)
-  }, [_amountToSend])
 
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
@@ -1009,18 +847,35 @@ export const InteractFormThor = ({
         {/** Rune Pool */}
         {interactType === InteractType.RunePool && (
           <div className="mb-2">
-            <span className="inline-block">
-              <Switch
-                labels={['DEPOSIT', 'WITHDRAW']}
-                colors={['#3B82F6', '#EF4444']}
-                onChange={(value) => {
-                  setRunePoolAction(value === 'DEPOSIT' ? Action.add : Action.withdraw)
-                }}
-              />
-            </span>
-            <span className="ml-2 inline-block">
-              {!runePoolAvailable && intl.formatMessage({ id: 'protocolPool.detail.availability' })}
-            </span>
+            <div className="flex border-b border-gray0 dark:border-gray0d">
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  runePoolAction === Action.add
+                    ? 'border-b-2 border-turquoise text-turquoise'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setRunePoolAction(Action.add)}>
+                <ArrowDownTrayIcon className="h-4 w-4" />
+                DEPOSIT
+              </button>
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  runePoolAction === Action.withdraw
+                    ? 'border-b-2 border-error0 text-error0 dark:border-error0d dark:text-error0d'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setRunePoolAction(Action.withdraw)}>
+                <ArrowUpTrayIcon className="h-4 w-4" />
+                WITHDRAW
+              </button>
+            </div>
+            {!runePoolAvailable && (
+              <span className="mt-2 inline-block text-[14px]">
+                {intl.formatMessage({ id: 'protocolPool.detail.availability' })}
+              </span>
+            )}
             {runePoolProvider.value.gt(0) && runePoolAction === Action.add && renderRunePoolWarning}
           </div>
         )}
@@ -1164,15 +1019,15 @@ export const InteractFormThor = ({
                 )}
                 {userNodeInfo && (interactType === InteractType.Bond || interactType === InteractType.Unbond) && (
                   <div className="p-4">
-                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.nodeAddress' })}
                       <div className="truncate pl-10px font-main text-[12px]">{userNodeInfo.nodeAddress}</div>
                     </div>
-                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.address.self' })}
                       <div className="truncate pl-10px font-main text-[12px]">{walletAddress}</div>
                     </div>
-                    <div className="ml-[-2px] flex w-full justify-between py-10px font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="font-mainBold ml-[-2px] flex w-full justify-between py-10px text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'bonds.currentBond' })}
                       <div className="truncate pl-10px font-main text-[12px]">
                         {formatAssetAmountCurrency({
@@ -1217,277 +1072,28 @@ export const InteractFormThor = ({
             )}
           </>
         )}
-        {/* Thorname Button and Details*/}
-        <>
-          {interactType === InteractType.THORName && (
-            <div className="w-full sm:max-w-[630px]">
-              <div className="flex w-full items-center text-[12px]">
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.thorname' })}
-                </Label>
-                <InfoIcon
-                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                  tooltip={intl.formatMessage({ id: 'common.thornameRegistrationSpecifics' })}
-                  color="primary"
-                />
-              </div>
-
-              <div>
-                <Input
-                  {...register('thorname', {
-                    required:
-                      interactType === InteractType.THORName
-                        ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
-                        : false,
-                    onChange: () => thornameHandler()
-                  })}
-                  disabled={isLoading}
-                  size="large"
-                />
-                {errors.thorname && (
-                  <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.thorname.message}</div>
-                )}
-              </div>
-              {O.isSome(oThorname) && !thornameAvailable && !isOwner && renderThornameError}
-            </div>
-          )}
-          {/** Form item for unregistered thorname */}
-          {thornameAvailable && (
-            <div className="w-full sm:max-w-[630px]">
-              {isOwner ? (
-                <CheckButton
-                  checked={thornameUpdate || isOwner}
-                  clickHandler={() => setThornameUpdate(true)}
-                  disabled={isLoading}>
-                  {intl.formatMessage({ id: 'common.isUpdateThorname' })}
-                </CheckButton>
-              ) : (
-                <></>
-              )}
-              {!thornameRegister ? (
-                <>
-                  <div className="flex w-full items-center text-[12px]">
-                    <Label color="input" size="big" textTransform="uppercase">
-                      {intl.formatMessage({ id: 'common.preferredAsset' })}
-                    </Label>
-                  </div>
-                  <div>
-                    <Controller
-                      name="preferredAsset"
-                      control={control}
-                      render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          value={preferredAsset}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            handleRadioAssetChange(value)
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.symbol}>
-                            BTC
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.symbol}>
-                            ETH
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetUSDT.symbol}>
-                            USDT
-                          </Radio>
-                        </RadioGroup>
-                      )}
-                    />
-                    {errors.preferredAsset && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.preferredAsset.message}</div>
-                    )}
-                  </div>
-                  {/* Add input fields for aliasChain, aliasAddress, and expiry */}
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.aliasChain' })}
-                  </Label>
-                  <div>
-                    <Controller
-                      name="aliasChain"
-                      control={control}
-                      rules={{
-                        required: 'Please provide an alias chain.'
-                      }}
-                      render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          value={aliasChain}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            handleRadioChainChange(value)
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetAVAX.chain}>
-                            AVAX
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
-                            BTC
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
-                            ETH
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetDOGE.chain}>
-                            DOGE
-                          </Radio>
-                        </RadioGroup>
-                      )}
-                    />
-                    {errors.aliasChain && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasChain.message}</div>
-                    )}
-                  </div>
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.aliasAddress' })}
-                  </Label>
-                  <div>
-                    <Input
-                      {...register('aliasAddress', {
-                        required: 'Please provide an alias address.',
-                        onChange: () => estimateThornameHandler()
-                      })}
-                      disabled={isLoading}
-                      size="large"
-                    />
-                    {errors.aliasAddress && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasAddress.message}</div>
-                    )}
-                  </div>
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.expiry' })}
-                  </Label>
-                  <div>
-                    <Controller
-                      name="expiry"
-                      control={control}
-                      render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            estimateThornameHandler()
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value="1">
-                            1 year
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="2">
-                            2 years
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="3">
-                            3 years
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="5">
-                            5 years
-                          </Radio>
-                        </RadioGroup>
-                      )}
-                    />
-                    {errors.expiry && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Initial values needed for tns register */}
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.aliasChain' })}
-                  </Label>
-                  <div>
-                    <Controller
-                      name="chain"
-                      control={control}
-                      rules={{
-                        required: 'Please provide an alias chain.'
-                      }}
-                      render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            estimateThornameHandler()
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
-                            THOR
-                          </Radio>
-                        </RadioGroup>
-                      )}
-                    />
-                    {errors.chain && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chain.message}</div>
-                    )}
-                  </div>
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.aliasAddress' })}
-                  </Label>
-                  <div>
-                    <Input
-                      {...register('chainAddress', {
-                        required: 'Please provide an alias address.',
-                        onChange: () => estimateThornameHandler()
-                      })}
-                      disabled={isLoading}
-                      size="large"
-                    />
-                    {errors.chainAddress && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chainAddress.message}</div>
-                    )}
-                  </div>
-                  <Label color="input" size="big" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.expiry' })}
-                  </Label>
-                  <div>
-                    <Controller
-                      name="expiry"
-                      control={control}
-                      rules={{
-                        required: true
-                      }}
-                      render={({ field }) => (
-                        <RadioGroup
-                          {...field}
-                          onChange={(value) => {
-                            field.onChange(value)
-                            estimateThornameHandler()
-                          }}>
-                          <Radio className="text-gray2 dark:text-gray2d" value="1">
-                            1 year
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="2">
-                            2 years
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="3">
-                            3 years
-                          </Radio>
-                          <Radio className="text-gray2 dark:text-gray2d" value="5">
-                            5 years
-                          </Radio>
-                        </RadioGroup>
-                      )}
-                    />
-                    {errors.expiry && (
-                      <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
-                    )}
-                  </div>
-                </>
-              )}
-              <Fees className="mt-10px" fees={thorNamefees} disabled={isLoading} />
-            </div>
-          )}
-        </>
+        {/* THORName — delegated to standalone component */}
+        {interactType === InteractType.THORName && (
+          <THORNameForm
+            walletType={walletType}
+            walletAccount={walletAccount}
+            walletIndex={walletIndex}
+            hdMode={hdMode}
+            balance={balance}
+            interact$={interact$}
+            openExplorerTxUrl={openExplorerTxUrl}
+            getExplorerTxUrl={getExplorerTxUrl}
+            validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
+            network={network}
+            fee={feeRD}
+            reloadFeesHandler={reloadFeesHandler}
+            thorchainLastblock={thorchainLastblockRd}
+            addressByChain$={addressByChain$}
+          />
+        )}
       </div>
       <div className="flex items-center justify-center">
-        {thornameQuoteValid && (
-          <FlatButton
-            className="mt-10px min-w-[200px]"
-            loading={isLoading}
-            disabled={isLoading || !isValid}
-            type="submit"
-            size="large">
-            {submitLabel}
-          </FlatButton>
-        )}
-
         {interactType === InteractType.RunePool && (
           <FlatButton
             className="mt-20px min-w-[200px]"
@@ -1518,111 +1124,74 @@ export const InteractFormThor = ({
           </FlatButton>
         )}
       </div>
-      <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
-        {/* memo */}
-        <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
-          <BaseButton
-            className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-            onClick={() => setShowDetails((current) => !current)}>
-            {intl.formatMessage({ id: 'common.details' })}
-            {showDetails ? (
-              <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-            ) : (
-              <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-            )}
-          </BaseButton>
-          {showDetails && (
-            <>
-              {FP.pipe(
-                oThorname,
-                O.map(({ owner, name, aliases, preferredAsset, expireBlockHeight }) => {
-                  if (owner || name || aliases || preferredAsset || expireBlockHeight) {
-                    return (
-                      <>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div>{intl.formatMessage({ id: 'common.thorname' })}</div>
-                          <div>{name}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          {intl.formatMessage({ id: 'common.owner' })}
-                          <div>{owner}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div>{intl.formatMessage({ id: 'common.expirationBlock' })}</div>
-                          <div>{expireBlockHeight}</div>
-                        </div>
-
-                        {aliases &&
-                          aliases.map((alias, index) => (
-                            <div key={index}>
-                              <div className="flex w-full justify-between pl-10px text-[12px]">
-                                {intl.formatMessage({ id: 'common.aliasChain' })}
-                                <div>{alias.chain}</div>
-                              </div>
-                              <div className="flex w-full justify-between pl-10px text-[12px]">
-                                {intl.formatMessage({ id: 'common.aliasAddress' })}
-                                <div>{alias.address}</div>
-                              </div>
-                            </div>
-                          ))}
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          {intl.formatMessage({ id: 'common.preferredAsset' })}
-                          <div>{preferredAsset}</div>
-                        </div>
-                      </>
-                    )
-                  }
-                  return null
-                }),
-                O.toNullable
+      {/* THORName has its own details section — skip parent's */}
+      {interactType !== InteractType.THORName && (
+        <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+          {/* memo */}
+          <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
+            <BaseButton
+              className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              onClick={() => setShowDetails((current) => !current)}>
+              {intl.formatMessage({ id: 'common.details' })}
+              {showDetails ? (
+                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+              ) : (
+                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
               )}
-              {interactType === InteractType.RunePool && (
-                <>
-                  <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
-                    {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
-                    <div className="truncate pl-10px font-main text-[12px]">
-                      {RD.fold(
-                        () => <p>{emptyString}</p>,
-                        () => <p>{emptyString}</p>,
-                        (error: Error) => (
-                          <p>
-                            {intl.formatMessage({ id: 'common.error' })}: {error.message}
-                          </p>
-                        ),
-                        (data: { daysLeft: number; blocksLeft: number }) => (
-                          <div>
+            </BaseButton>
+            {showDetails && (
+              <>
+                {interactType === InteractType.RunePool && (
+                  <>
+                    <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                      {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
+                      <div className="truncate pl-10px font-main text-[12px]">
+                        {RD.fold(
+                          () => <p>{emptyString}</p>,
+                          () => <p>{emptyString}</p>,
+                          (error: Error) => (
                             <p>
-                              {intl.formatMessage({ id: 'common.time.days' }, { days: `${data.daysLeft.toFixed(1)}` })}
+                              {intl.formatMessage({ id: 'common.error' })}: {error.message}
                             </p>
-                          </div>
-                        )
-                      )(runePoolData)}
+                          ),
+                          (data: { daysLeft: number; blocksLeft: number }) => (
+                            <div>
+                              <p>
+                                {intl.formatMessage(
+                                  { id: 'common.time.days' },
+                                  { days: `${data.daysLeft.toFixed(1)}` }
+                                )}
+                              </p>
+                            </div>
+                          )
+                        )(runePoolData)}
+                      </div>
                     </div>
+                  </>
+                )}
+
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                  {amountLabel}
+                  <div className="truncate pl-10px font-main text-[12px]">
+                    {formatAssetAmountCurrency({
+                      amount:
+                        interactType === InteractType.Unbond ? baseToAsset(_amountToSend) : baseToAsset(amountToSend),
+                      asset: AssetRuneNative,
+                      decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
+                      trimZeros: !isUSDAsset(AssetRuneNative)
+                    })}
                   </div>
-                </>
-              )}
-
-              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
-                {amountLabel}
-                <div className="truncate pl-10px font-main text-[12px]">
-                  {formatAssetAmountCurrency({
-                    amount:
-                      interactType === InteractType.Unbond ? baseToAsset(_amountToSend) : baseToAsset(amountToSend),
-                    asset: AssetRuneNative,
-                    decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
-                    trimZeros: !isUSDAsset(AssetRuneNative)
-                  })}
                 </div>
-              </div>
 
-              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
-                {intl.formatMessage({ id: 'common.memo' })}
-                <div className="overflow break-normal pl-10px font-main text-[12px]">{memoLabel}</div>
-              </div>
-            </>
-          )}
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                  {intl.formatMessage({ id: 'common.memo' })}
+                  <div className="overflow pl-10px font-main text-[12px] break-normal">{memoLabel}</div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
     </form>

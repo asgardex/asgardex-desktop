@@ -40,6 +40,8 @@ const wallet: WalletMessages = {
   'wallet.unlock.instruction': 'Пожалуйста разблокируйте ваш кошелёк',
   'wallet.unlock.password': 'Введите ваш пароль',
   'wallet.unlock.error': 'Не получилось разблокировать кошелёк. Пожалуйста, проверьте пароль и попробуйте еще раз.',
+  'wallet.unlock.useLedger': 'Использовать только Ledger',
+  'wallet.unlock.noWallet': 'У вас ещё нет кошелька?',
   'wallet.imports.phrase.title': 'Пожалуйста, введите фразу вашего кошелька с одинарным пробелом между словами',
   'wallet.imports.wallet': 'Импортировать существующий кошелёк',
   'wallet.imports.keystore.select': 'Выберите keystore файл',
@@ -143,6 +145,16 @@ const wallet: WalletMessages = {
   'wallet.vultisig.confirm.waiting': 'Preparing signing session...',
   'wallet.vultisig.confirm.cancel': 'Cancel',
   'wallet.vultisig.confirm.timeout': 'Signing timed out. Please try again.'
+  'wallet.send.coinControl': 'Coin Control',
+  'wallet.send.coinControl.strategy': 'Стратегия выбора',
+  'wallet.send.coinControl.auto': 'Автоматически',
+  'wallet.send.coinControl.manual': 'Вручную',
+  'wallet.send.coinControl.minimizeFee': 'Минимизировать комиссию',
+  'wallet.send.coinControl.largestFirst': 'Сначала крупные',
+  'wallet.send.coinControl.smallestFirst': 'Сначала мелкие',
+  'wallet.send.coinControl.selected': '{count} UTXOs выбрано',
+  'wallet.send.coinControl.totalSelected': 'Итого выбрано',
+  'wallet.send.coinControl.insufficient': 'Выбранных UTXOs недостаточно для суммы + комиссии'
 }
 
 export default wallet

@@ -26,7 +26,7 @@ export const AppUpdate = (props: AppUpdateModalProps) => {
       <div className="flex items-center justify-between rounded-xl border border-solid border-turquoise bg-turquoise/10 p-2">
         <div className="flex items-center space-x-2">
           <ArrowDownTrayIcon className="h-6 w-6 text-turquoise" />
-          <span className="uppercase text-turquoise">
+          <span className="text-turquoise uppercase">
             {intl.formatMessage({ id: 'update.description' }, { version: props.version })}
           </span>
         </div>

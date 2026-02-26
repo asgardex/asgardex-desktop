@@ -21,6 +21,7 @@ const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$ } = createTran
 const { reloadFees, fees$, feesWithRates$, reloadFeesWithRates } = createFeesService(combinedClient$)
 
 export {
+  combinedClient$,
   client$,
   clientState$,
   address$,

@@ -159,7 +159,7 @@ export const TransactionProgressBar: React.FC<TransactionProgressBarProps> = ({ 
 
             {/* Stage label */}
             <span
-              className={clsx('text-center text-xs font-medium leading-tight', {
+              className={clsx('text-center text-xs leading-tight font-medium', {
                 'text-turquoise': stage.completed,
                 'text-text1 dark:text-text1d': stage.current,
                 'text-text2 dark:text-text2d': !stage.completed && !stage.current,

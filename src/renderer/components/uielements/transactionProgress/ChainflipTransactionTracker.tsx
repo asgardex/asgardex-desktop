@@ -75,7 +75,7 @@ export const ChainflipTransactionTracker: React.FC<ChainflipTransactionTrackerPr
       {/* Active transactions */}
       {activeTransactions.length > 0 && (
         <div className="space-y-2 p-2">
-          <div className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">
+          <div className="text-xs font-medium tracking-wide text-text2 uppercase dark:text-text2d">
             {intl.formatMessage({ id: 'common.transaction.active' })}
           </div>
           {activeTransactions.map((transaction) => (
@@ -92,7 +92,7 @@ export const ChainflipTransactionTracker: React.FC<ChainflipTransactionTrackerPr
       {/* Completed transactions */}
       {completedTransactions.length > 0 && (
         <div className="space-y-2 border-t border-gray1 p-2 dark:border-gray1d">
-          <div className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">
+          <div className="text-xs font-medium tracking-wide text-text2 uppercase dark:text-text2d">
             {intl.formatMessage({ id: 'common.transaction.completed' })}
           </div>
           {completedTransactions.map((transaction) => (

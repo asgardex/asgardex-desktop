@@ -60,7 +60,7 @@ export const PoolActionsHistory = (props: Props) => {
   return (
     <>
       {HeaderContent && (
-        <div className="flex flex-col items-center bg-bg1 p-5 dark:bg-bg1d md:flex-row">{HeaderContent}</div>
+        <div className="flex flex-col items-center bg-bg1 p-5 md:flex-row dark:bg-bg1d">{HeaderContent}</div>
       )}
       {isDesktopView ? (
         <PoolActionsHistoryTable prevHistoryPage={prevHistoryPageRef.current} {...tableProps} />

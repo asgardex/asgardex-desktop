@@ -40,6 +40,8 @@ const wallet: WalletMessages = {
   'wallet.unlock.instruction': '지갑을 잠금 해제해 주세요.',
   'wallet.unlock.password': '비밀번호 입력',
   'wallet.unlock.error': '지갑을 잠금 해제할 수 없습니다. 비밀번호를 확인하고 다시 시도해 주세요.',
+  'wallet.unlock.useLedger': 'Ledger만 사용',
+  'wallet.unlock.noWallet': '아직 지갑이 없으신가요?',
   'wallet.imports.keystore.select': '키스토어 파일 선택',
   'wallet.imports.keystore.title': '지갑의 키스토어 파일을 선택해 주세요.',
   'wallet.imports.keystore.description': '기존 키스토어 지갑 가져오기',
@@ -142,6 +144,16 @@ const wallet: WalletMessages = {
   'wallet.vultisig.confirm.waiting': 'Preparing signing session...',
   'wallet.vultisig.confirm.cancel': 'Cancel',
   'wallet.vultisig.confirm.timeout': 'Signing timed out. Please try again.'
+  'wallet.send.coinControl': 'Coin Control',
+  'wallet.send.coinControl.strategy': '선택 전략',
+  'wallet.send.coinControl.auto': '자동',
+  'wallet.send.coinControl.manual': '수동',
+  'wallet.send.coinControl.minimizeFee': '수수료 최소화',
+  'wallet.send.coinControl.largestFirst': '큰 금액 우선',
+  'wallet.send.coinControl.smallestFirst': '작은 금액 우선',
+  'wallet.send.coinControl.selected': '{count}개 UTXOs 선택됨',
+  'wallet.send.coinControl.totalSelected': '선택된 총액',
+  'wallet.send.coinControl.insufficient': '선택된 UTXOs가 금액 + 수수료에 부족합니다'
 }
 
 export default wallet

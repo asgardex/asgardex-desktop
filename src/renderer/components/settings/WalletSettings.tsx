@@ -335,7 +335,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
     () => (
       <div className="mt-10px w-full">
         <WalletTypeLabel className="ml-10 inline-block">{walletTypeToI18n(WalletType.Ledger, intl)}</WalletTypeLabel>
-        <div className="ml-40px flex items-center pt-5px text-[12px] uppercase text-text2 dark:text-text2d">
+        <div className="ml-40px flex items-center pt-5px text-[12px] text-text2 uppercase dark:text-text2d">
           <ExclamationTriangleIcon className="mr-2" width={24} height={24} />
           {intl.formatMessage({ id: 'common.notsupported.fornetwork' }, { network })}
         </div>
@@ -416,7 +416,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
           RD.fold(
             empty,
             empty,
-            (error) => <p className="pt-10px font-main text-[12px] uppercase text-error0">{error.msg}</p>,
+            (error) => <p className="pt-10px font-main text-[12px] text-error0 uppercase">{error.msg}</p>,
             empty
           )
         )
@@ -440,11 +440,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 </Button>
 
                 <>
-                  <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
+                  <div className="ml-2 text-[12px] text-text2 uppercase dark:text-text2d">
                     {intl.formatMessage({ id: 'settings.wallet.account' })}
                   </div>
                   <WalletIndexInput
-                    className="ml-2 mr-1 w-16"
+                    className="mr-1 ml-2 w-16"
                     value={selectedAccountIndex.toString()}
                     disabled={loading || (isEvmChain(chain) && evmHDMode !== 'ledgerlive')}
                     onChange={(value) => {
@@ -454,11 +454,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   />
                   <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.account.info' })} />
 
-                  <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
+                  <div className="ml-2 text-[12px] text-text2 uppercase dark:text-text2d">
                     {intl.formatMessage({ id: 'settings.wallet.index' })}
                   </div>
                   <WalletIndexInput
-                    className="ml-2 mr-1 w-16"
+                    className="mr-1 ml-2 w-16"
                     value={selectedWalletIndex.toString()}
                     onChange={(value) =>
                       value !== null && +value >= 0 && setWalletIndexMap({ ...walletIndexMap, [chain]: +value })
@@ -612,15 +612,15 @@ export const WalletSettings = (props: Props): JSX.Element => {
           <>
             <div className="flex w-full space-x-4">
               <>
-                <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                <div className="text-[12px] text-text2 uppercase dark:text-text2d">
                   <div>{intl.formatMessage({ id: 'settings.wallet.account' })}</div>
                 </div>
-                <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
+                <div className="text-[12px] text-text2 uppercase dark:text-text2d">{walletAccount}</div>
               </>
-              <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+              <div className="text-[12px] text-text2 uppercase dark:text-text2d">
                 {intl.formatMessage({ id: 'settings.wallet.index' })}
               </div>
-              <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletIndex}</div>
+              <div className="text-[12px] text-text2 uppercase dark:text-text2d">{walletIndex}</div>
               {/* Show derivation path for all chains */}
               <div className="text-[12px] text-text2 dark:text-text2d">
                 {isEvmChain(chain)
@@ -637,10 +637,10 @@ export const WalletSettings = (props: Props): JSX.Element => {
       return (
         <>
           <div className="flex-row">
-            <WalletTypeLabel className="ml-40px mt-10px inline-block">
+            <WalletTypeLabel className="mt-10px ml-40px inline-block">
               {walletTypeToI18n(WalletType.Ledger, intl)}
             </WalletTypeLabel>
-            <div className="ml-40px mt-10px inline-block">
+            <div className="mt-10px ml-40px inline-block">
               {O.isSome(oAddress) ? renderAccount(oAddress.value) : <span></span>}
             </div>
           </div>
@@ -739,7 +739,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                     id="wallet.ledger.verifyAddress.modal.description"
                     values={{
                       address: (
-                        <span className="block transform-none font-mainBold text-[16px] text-inherit">{address}</span>
+                        <span className="font-mainBold block transform-none text-[16px] text-inherit">{address}</span>
                       )
                     }}
                   />
@@ -1042,7 +1042,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
           () => <></>,
           () => <></>,
           (error) => (
-            <p className="px-5px font-main text-14 uppercase text-error0 dark:text-error0d">
+            <p className="px-5px font-main text-14 text-error0 uppercase dark:text-error0d">
               {intl.formatMessage({ id: 'wallet.change.error' })} {error.message || error.toString()}
             </p>
           ),
@@ -1084,7 +1084,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
           () => <></>,
           () => <></>,
           (error) => (
-            <p className="text-center font-main text-[14px] uppercase text-error0">
+            <p className="text-center font-main text-[14px] text-error0 uppercase">
               {intl.formatMessage({ id: 'wallet.name.error.rename' })} {error?.message ?? error.toString()}
             </p>
           ),
@@ -1124,7 +1124,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
       {!isVultisig && renderVerifyAddressModal(ledgerAddressToVerify)}
       <div className="w-full px-4">
         <div className="flex flex-row items-center justify-between">
-          <h1 className="font-main text-16 uppercase text-text0 dark:text-text0d">
+          <h1 className="font-main text-16 text-text0 uppercase dark:text-text0d">
             {intl.formatMessage({ id: 'settings.wallet.management' })}
           </h1>
           <div className="flex flex-row items-center space-x-2">
@@ -1178,7 +1178,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         </div>
       </div>
       <div key="accounts" className="mt-4 w-full border-t border-solid border-bg2 dark:border-bg2d">
-        <Label className="pl-5 pt-5 text-center text-base md:text-left" textTransform="uppercase">
+        <Label className="pt-5 pl-5 text-center text-base md:text-left" textTransform="uppercase">
           {intl.formatMessage({ id: 'settings.accounts.title' })}
         </Label>
         <div className="mt-30px flex justify-center md:ml-4 md:justify-start">
@@ -1190,13 +1190,13 @@ export const WalletSettings = (props: Props): JSX.Element => {
         </div>
         <div className="mt-10px border-b border-solid border-bg2 px-4 dark:border-bg2d">{renderAddAddressForm()}</div>
         <div className="flex items-center justify-center">
-          <Label className="pl-5 pt-5 text-center text-base md:text-left" textTransform="uppercase">
+          <Label className="pt-5 pl-5 text-center text-base md:text-left" textTransform="uppercase">
             {intl.formatMessage({ id: 'common.chainManagement' })}
           </Label>
           <FlatButton
             size="normal"
             color="primary"
-            className="mr-5 mt-5 w-[160px]"
+            className="mt-5 mr-5 w-[160px]"
             onClick={() => setIsWhitelistModalOpen(true)}>
             {intl.formatMessage({ id: 'common.importTokens' })}
           </FlatButton>

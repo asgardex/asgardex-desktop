@@ -382,7 +382,8 @@ export const createTransactionService = (
       apiKey: etherscanApiKey,
       destinationTag: undefined,
       evmRpcUrl,
-      gasMultiplier
+      gasMultiplier,
+      sendMax: undefined
     }
 
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)

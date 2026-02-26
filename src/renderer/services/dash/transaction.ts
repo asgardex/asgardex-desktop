@@ -9,6 +9,7 @@ import { blockcypherApiKey } from '../../../shared/api/blockcypher'
 import { IPCLedgerSendTxParams, ipcLedgerSendTxParamsIO } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
 import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
+import { getUtxoErrorMessage } from '../../helpers/utxoErrorHelper'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { SendTxParams, TransactionService } from '../utxo/types'
@@ -26,21 +27,51 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       RxOp.switchMap(FP.flow(O.fold<Client, Rx.Observable<Client>>(() => Rx.EMPTY, Rx.of))),
       RxOp.switchMap((client) => Rx.from(client.transfer({ asset: AssetDASH, recipient, amount, memo, feeRate: 1 }))),
       RxOp.map(RD.success),
-      RxOp.catchError(
-        (e): TxHashLD =>
-          Rx.of(
-            RD.failure({
-              msg: e?.message ?? e.toString(),
-              errorId: ErrorId.SEND_TX
-            })
-          )
-      ),
+      RxOp.catchError((e): TxHashLD => {
+        const msg = getUtxoErrorMessage(e) ?? e?.message ?? e.toString()
+        return Rx.of(RD.failure({ msg, errorId: ErrorId.SEND_TX }))
+      }),
       RxOp.startWith(RD.pending)
     )
   }
 
+  const sendKeystoreMaxTx = (params: SendTxParams): TxHashLD =>
+    FP.pipe(
+      client$,
+      RxOp.switchMap(FP.flow(O.fold<Client, Rx.Observable<Client>>(() => Rx.EMPTY, Rx.of))),
+      RxOp.switchMap((client) =>
+        Rx.from(
+          client.transferMax({
+            recipient: params.recipient,
+            memo: params.memo,
+            feeRate: params.feeRate,
+            selectedUtxos: params.selectedUtxos,
+            utxoSelectionPreferences: params.utxoSelectionPreferences
+          })
+        )
+      ),
+      RxOp.map((result: { hash: string }) => RD.success(result.hash)),
+      RxOp.catchError((e): TxHashLD => {
+        const msg = getUtxoErrorMessage(e) ?? e?.message ?? e.toString()
+        return Rx.of(RD.failure({ msg, errorId: ErrorId.SEND_TX }))
+      }),
+      RxOp.startWith(RD.pending)
+    )
+
   const sendLedgerTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD => {
-    const { amount, sender, recipient, memo, walletIndex, feeRate, walletAccount, hdMode } = params
+    const {
+      amount,
+      sender,
+      recipient,
+      memo,
+      walletIndex,
+      feeRate,
+      walletAccount,
+      hdMode,
+      sendMax,
+      selectedUtxos,
+      utxoSelectionPreferences
+    } = params
     const sendLedgerTxParams: IPCLedgerSendTxParams = {
       chain: DASHChain,
       asset: AssetDASH,
@@ -60,7 +91,10 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       apiKey: blockcypherApiKey,
       destinationTag: undefined,
       evmRpcUrl: undefined,
-      gasMultiplier: undefined
+      gasMultiplier: undefined,
+      sendMax,
+      selectedUtxos: selectedUtxos?.map(({ hash, index, value }) => ({ hash, index, value })),
+      utxoSelectionPreferences
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(sendLedgerTxParams)
     return FP.pipe(
@@ -92,6 +126,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       RxOp.switchMap((network) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
         if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
+
+        if (params.sendMax) return sendKeystoreMaxTx(params)
 
         return sendKeystoreTx(params)
       })

@@ -23,7 +23,7 @@ import { Color, Label } from '../../uielements/label'
 
 export const NodeAddress = ({ address, network }: { address: Address; network: Network }) => (
   <AddressEllipsis
-    className="text-[12px] font-light normal-case tracking-[1px] text-text1 dark:text-text1d"
+    className="text-[12px] font-light tracking-[1px] text-text1 normal-case dark:text-text1d"
     address={address}
     chain={address.startsWith('thor') ? THORChain : MAYAChain}
     network={network}

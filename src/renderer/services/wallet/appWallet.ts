@@ -38,15 +38,15 @@ export const createAppWalletService = (): AppWalletService => {
   const standaloneLedgerService = createStandaloneLedgerService({ network$ })
   const vaultManager = createVaultManager()
 
+  // Store subscriptions for cleanup
+  const subscriptions: Subscription[] = []
+
   // Internal app wallet state management
   const {
     get$: appWalletState$,
     get: appWalletState,
     set: setAppWalletState
   } = observableState<AppWalletState>(INITIAL_APP_WALLET_STATE)
-
-  // Subscription storage for cleanup
-  const subscriptions: Subscription[] = []
 
   // Flag to suppress keystoreSub during intentional mode switches.
   // When switchToVultisigMode or switchToStandaloneLedgerMode calls keystoreService.lock(),
@@ -585,6 +585,14 @@ export const createAppWalletService = (): AppWalletService => {
     subscriptions.forEach((sub) => sub.unsubscribe())
     subscriptions.length = 0 // Clear array
     window.apiLog.info('[AppWallet]', 'Disposed all subscriptions')
+  }
+
+  /**
+   * Dispose all subscriptions to prevent memory leaks
+   */
+  const dispose = () => {
+    subscriptions.forEach((sub) => sub.unsubscribe())
+    subscriptions.length = 0
   }
 
   return {

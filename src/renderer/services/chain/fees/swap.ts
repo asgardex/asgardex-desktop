@@ -1,6 +1,7 @@
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, AssetType, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
+import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ZERO_BASE_AMOUNT } from '../../../const'
@@ -71,11 +72,12 @@ const reloadSwapFees = (params: SwapFeesParams) => {
 }
 
 const swapFees$: SwapFeesHandler = (initialParams) => {
-  return updateSwapFeesParams$.pipe(
+  // Seed each subscriber with O.none so it uses its own initialParams,
+  // skipping the BehaviorSubject's replayed value which may be stale
+  // from a previously viewed swap page.
+  return Rx.concat(Rx.of(O.none as O.Option<SwapFeesParams>), updateSwapFeesParams$.pipe(RxOp.skip(1))).pipe(
     RxOp.debounceTime(300),
     RxOp.switchMap((oReloadParams) => {
-      // Since `oReloadParams` is `none` by default,
-      // `initialParams` will be used as first value
       const { inAsset, memo, outAsset } = FP.pipe(
         oReloadParams,
         O.getOrElse(() => initialParams)

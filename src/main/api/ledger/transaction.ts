@@ -347,7 +347,10 @@ export const sendTx = async ({
   apiKey,
   destinationTag,
   evmRpcUrl,
-  gasMultiplier
+  gasMultiplier,
+  sendMax,
+  selectedUtxos,
+  utxoSelectionPreferences
 }: IPCLedgerSendTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const transport = await TransportNodeHidSingleton.default.create()
@@ -387,7 +390,10 @@ export const sendTx = async ({
       apiKey,
       destinationTag,
       evmRpcUrl,
-      gasMultiplier
+      gasMultiplier,
+      sendMax,
+      selectedUtxos,
+      utxoSelectionPreferences
     })
     await transport.close()
     return res

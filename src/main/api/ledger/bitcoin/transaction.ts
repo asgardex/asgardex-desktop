@@ -34,7 +34,10 @@ export const send = async ({
   walletIndex,
   hdMode,
   addressFormat,
-  apiKey
+  apiKey,
+  sendMax,
+  selectedUtxos,
+  utxoSelectionPreferences
 }: {
   transport: Transport
   network: Network
@@ -48,6 +51,9 @@ export const send = async ({
   hdMode?: HDMode
   addressFormat?: AddressFormat
   apiKey: string
+  sendMax?: boolean
+  selectedUtxos?: Array<{ hash: string; index: number; value: number }>
+  utxoSelectionPreferences?: { minimizeFee?: boolean; minimizeInputs?: boolean; consolidateSmallUtxos?: boolean }
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
     return E.left({
@@ -103,6 +109,56 @@ export const send = async ({
     const fee = await clientLedger.getFeesWithRates({ sender, memo })
     const feeRate = fee.rates[feeOption]
 
+    // Ledger's transfer() doesn't accept selectedUtxos/utxoSelectionPreferences — use transferMax() for coin control
+    // IPC only sends {hash, index, value} identifiers; re-fetch full UTXOs (with witnessUtxo) from the data provider
+    if ((selectedUtxos && selectedUtxos.length > 0) || utxoSelectionPreferences) {
+      let fullSelectedUtxos
+      if (selectedUtxos && selectedUtxos.length > 0) {
+        const allUtxos = await clientLedger.getUTXOs(sender)
+        const selectedSet = new Set(selectedUtxos.map((u) => `${u.hash}:${u.index}`))
+        fullSelectedUtxos = allUtxos.filter((u) => selectedSet.has(`${u.hash}:${u.index}`))
+        if (fullSelectedUtxos.length !== selectedUtxos.length) {
+          return E.left({
+            errorId: LedgerErrorId.INVALID_RESPONSE,
+            msg: `Some selected BTC UTXOs are no longer available. Please refresh and retry.`
+          })
+        }
+      }
+
+      const result = await clientLedger.transferMax({
+        walletIndex,
+        recipient,
+        memo,
+        feeRate,
+        selectedUtxos: fullSelectedUtxos,
+        utxoSelectionPreferences
+      })
+      if (!result?.hash) {
+        return E.left({
+          errorId: LedgerErrorId.INVALID_RESPONSE,
+          msg: `Post request to send BTC transaction using Ledger failed`
+        })
+      }
+      return E.right(result.hash)
+    }
+
+    // Use transferMax() when sendMax is true (user pressed "Max")
+    if (sendMax) {
+      const result = await clientLedger.transferMax({
+        walletIndex,
+        recipient,
+        memo,
+        feeRate
+      })
+      if (!result?.hash) {
+        return E.left({
+          errorId: LedgerErrorId.INVALID_RESPONSE,
+          msg: `Post request to send BTC transaction using Ledger failed`
+        })
+      }
+      return E.right(result.hash)
+    }
+
     const txHash = await clientLedger.transfer({
       walletIndex,
       asset: AssetBTC,
@@ -119,9 +175,15 @@ export const send = async ({
     }
     return E.right(txHash)
   } catch (error) {
+    const msg =
+      error && typeof error === 'object' && 'getUserFriendlyMessage' in error
+        ? (error as { getUserFriendlyMessage: () => string }).getUserFriendlyMessage()
+        : isError(error)
+          ? (error?.message ?? error.toString())
+          : `${error}`
     return E.left({
       errorId: LedgerErrorId.SEND_TX_FAILED,
-      msg: isError(error) ? (error?.message ?? error.toString()) : `${error}`
+      msg
     })
   }
 }

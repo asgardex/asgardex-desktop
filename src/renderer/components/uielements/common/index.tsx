@@ -59,7 +59,7 @@ export const AssetSecuredLabel = ({ children, className, ...props }: LabelProps)
   <Label
     textTransform="uppercase"
     size="small"
-    className={clsx('!w-auto rounded-[5px] bg-[#b224ec] px-[7px] py-[1px] font-main text-text3', className)}
+    className={clsx('!w-auto rounded-[5px] bg-secured px-[7px] py-[1px] font-main text-text3', className)}
     {...props}>
     {children}
   </Label>

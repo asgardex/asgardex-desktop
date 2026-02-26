@@ -119,6 +119,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
       nodes={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
       runePoolProvider={RD.success(mockRunePoolProvider)}
       thorchainLastblock={RD.success([])}
+      addressByChain$={() => Rx.of(O.none)}
     />
   )
 }

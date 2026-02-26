@@ -83,7 +83,7 @@ const PasswordModal = (props: PasswordModalProps) => {
           )}>
           <div className="mb-2 flex w-full flex-col">
             <WalletIcon className="h-1/5 w-1/5 self-center text-turquoise" />
-            <h1 className="mb-4 text-center text-xl uppercase text-text2 dark:text-text2d">
+            <h1 className="mb-4 text-center text-xl text-text2 uppercase dark:text-text2d">
               {intl.formatMessage({ id: 'wallet.password.confirmation.title' })}
             </h1>
             <Label className="mb-1" size="normal" color="gray">
@@ -111,7 +111,7 @@ const PasswordModal = (props: PasswordModalProps) => {
                 'rounded-md !px-4 !py-2',
                 'border border-solid border-gray1/20 dark:border-gray1d/20',
                 'text-text0 dark:text-text0d',
-                'hover:bg-gray1/20 hover:dark:bg-gray1d/20'
+                'hover:bg-gray1/20 dark:hover:bg-gray1d/20'
               )}
               onClick={onCancel}>
               {intl.formatMessage({ id: 'common.cancel' })}

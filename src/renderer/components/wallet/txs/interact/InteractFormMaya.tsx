@@ -1,17 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
-import { AssetAETH } from '@xchainjs/xchain-arbitrum'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  MagnifyingGlassMinusIcon,
+  MagnifyingGlassPlusIcon
+} from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { MayachainQuery, QuoteMAYANameParams, MAYANameDetails } from '@xchainjs/xchain-mayachain-query'
+import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
   BaseAmount,
+  Chain,
   CryptoAmount,
   assetAmount,
   assetToBase,
@@ -23,7 +25,6 @@ import {
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
-import { debounce } from 'lodash'
 import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
@@ -49,6 +50,7 @@ import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
+import { WalletAddress$ } from '../../../../services/clients/types'
 import { INITIAL_INTERACT_STATE } from '../../../../services/mayachain/const'
 import {
   InteractState,
@@ -67,19 +69,16 @@ import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
 import { AssetIcon } from '../../../uielements/assets/assetIcon'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
-import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
-import { Fees, UIFees, UIFeesRD } from '../../../uielements/fees'
-import { InfoIcon } from '../../../uielements/info'
+import { Fees, UIFeesRD } from '../../../uielements/fees'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
-import { RadioGroup, Radio } from '../../../uielements/radio'
-import { Switch } from '../../../uielements/switch'
 import { Tooltip } from '../../../uielements/tooltip'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import { InteractType } from './Interact.types'
+import { MAYANameForm } from './thorname/MAYANameForm'
 
 type FormValues = {
   memo: string
@@ -87,15 +86,8 @@ type FormValues = {
   providerAddress: string
   operatorFee: number
   amount: BigNumber
-  mayaname: string
-  chainAddress: string
-  chain: string
-  preferredAsset: string
-  expiry: string
   bondLpUnits: string
   assetPool: string
-  aliasChain: string
-  aliasAddress: string
 }
 type UserNodeInfo = {
   nodeAddress: string
@@ -125,6 +117,7 @@ type Props = {
   cacaoPoolProvider: CacaoPoolProviderRD
   mayachainLastblockRD: RD.RemoteData<Error, LastblockItems>
   mimirRD: RD.RemoteData<Error, { [key: string]: number }>
+  addressByChain$: (chain: Chain) => WalletAddress$
 }
 export const InteractFormMaya = (props: Props) => {
   const {
@@ -148,7 +141,8 @@ export const InteractFormMaya = (props: Props) => {
     poolShares,
     cacaoPoolProvider: cacaoPoolProviderRd,
     mayachainLastblockRD,
-    mimirRD
+    mimirRD,
+    addressByChain$
   } = props
   const intl = useIntl()
 
@@ -227,9 +221,13 @@ export const InteractFormMaya = (props: Props) => {
     }, [cacaoPoolProviderRd, mayachainLastblockRd, mimirKeys])
   }
 
-  const mimirKeys = FP.pipe(
-    mimirRD,
-    RD.getOrElse(() => ({}) as { [key: string]: number })
+  const mimirKeys = useMemo(
+    () =>
+      FP.pipe(
+        mimirRD,
+        RD.getOrElse(() => ({}) as { [key: string]: number })
+      ),
+    [mimirRD]
   )
 
   const cacaoPoolData = useCacaoPoolProviderMaturity(cacaoPoolProviderRd, mayachainLastblockRD, mimirKeys)
@@ -265,7 +263,6 @@ export const InteractFormMaya = (props: Props) => {
         return ONE_CACAO_BASE_AMOUNT
       case InteractType.Custom:
       case InteractType.MAYAName:
-      case InteractType.THORName:
       case InteractType.RunePool:
         return _amountToSend
       case InteractType.Unbond:
@@ -275,6 +272,8 @@ export const InteractFormMaya = (props: Props) => {
         const amnt = cacaoPoolAction === Action.add ? _amountToSend : ZERO_BASE_AMOUNT
         return amnt
       }
+      default:
+        return ZERO_BASE_AMOUNT
     }
   }, [_amountToSend, interactType, cacaoPoolAction])
 
@@ -300,18 +299,11 @@ export const InteractFormMaya = (props: Props) => {
     defaultValues: {
       mayaAddress: '',
       amount: bn(0),
-      chain: MAYAChain,
-      chainAddress: balance.walletAddress,
-      expiry: '1',
       memo: '',
       providerAddress: '',
       operatorFee: 0,
-      mayaname: '',
-      preferredAsset: '',
       bondLpUnits: '',
-      assetPool: '',
-      aliasChain: '',
-      aliasAddress: ''
+      assetPool: ''
     }
   })
   const [currentMemo, setCurrentMemo] = useState('')
@@ -319,34 +311,17 @@ export const InteractFormMaya = (props: Props) => {
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
-  // state variable for mayanames
-  const [oMayaname, setMayaname] = useState<O.Option<MAYANameDetails>>(O.none)
-  const [mayanameAvailable, setMayanameAvailable] = useState<boolean>(false) // if Mayaname is available
-  const [mayanameUpdate, setMayanameUpdate] = useState<boolean>(false) // allow to update
-  const [mayanameRegister, setMayanameRegister] = useState<boolean>(false) // allow to update
-  const [mayanameQuoteValid, setMayanameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
-  const [isOwner, setIsOwner] = useState<boolean>(false) // if the mayaname.owner is the wallet address then allow to update
-  // const [preferredAsset, setPreferredAsset] = useState<AnyAsset>()
-  const [aliasChain, setAliasChain] = useState<string>('')
-
   const isFeeError = useMemo(
     () =>
       FP.pipe(
         oFee,
         O.fold(
-          // Missing (or loading) fees does not mean we can't sent something. No error then.
-          () => !O.isNone(oFee),
+          () => false,
           (fee) => balance.amount.amount().isLessThan(fee.amount())
         )
       ),
     [balance, oFee]
   )
-  const _handleMemo = useCallback(() => {
-    const memoValue = watch('memo')
-    // Update the state with the adjusted memo value
-    setCurrentMemo(memoValue)
-  }, [watch])
-
   const renderFeeError = useMemo(
     () => (
       <Label size="big" color="error">
@@ -363,14 +338,6 @@ export const InteractFormMaya = (props: Props) => {
       </Label>
     ),
     [intl, balance.amount]
-  )
-  const renderMayanameError = useMemo(
-    () => (
-      <Label size="big" color="error">
-        {intl.formatMessage({ id: 'common.mayanameError' })}
-      </Label>
-    ),
-    [intl]
   )
 
   const renderCacaoPoolWarning = useMemo(
@@ -413,7 +380,7 @@ export const InteractFormMaya = (props: Props) => {
     })
 
     if (
-      (maxAmount && interactType === InteractType.Bond) ||
+      interactType === InteractType.Bond ||
       interactType === InteractType.Custom ||
       interactType === InteractType.CacaoPool
     ) {
@@ -479,84 +446,6 @@ export const InteractFormMaya = (props: Props) => {
     [interactType, intl, maxAmount]
   )
 
-  const debouncedFetch = debounce(
-    async (mayaname, setMayaname, setMayanameAvailable, setMayanameUpdate, setMayanameRegister, mayachainQuery) => {
-      try {
-        const mayanameDetails = await mayachainQuery.getMAYANameDetails(mayaname)
-        if (mayanameDetails) {
-          setMayaname(O.some(mayanameDetails))
-          setMayanameAvailable(mayanameDetails.owner === '' || balance.walletAddress === mayanameDetails.owner)
-          setMayanameUpdate(mayaname === mayanameDetails.name && mayanameDetails.owner === '')
-          setMayanameRegister(mayanameDetails.name === '')
-          setIsOwner(balance.walletAddress === mayanameDetails.owner)
-        }
-        if (mayanameDetails === undefined) {
-          setMayanameAvailable(true)
-          setMayanameRegister(true)
-        }
-      } catch (error) {
-        // Handle error silently or with appropriate error handling
-      }
-    },
-    500
-  )
-
-  const mayanameHandler = useCallback(() => {
-    const mayaname = watch('mayaname')
-    setMemo('')
-    if (mayaname !== '') {
-      debouncedFetch(
-        mayaname,
-        setMayaname,
-        setMayanameAvailable,
-        setMayanameUpdate,
-        setMayanameRegister,
-        mayachainQuery
-      )
-    }
-  }, [debouncedFetch, watch, mayachainQuery])
-
-  const estimateMayanameHandler = useCallback(() => {
-    const currentDate = new Date()
-
-    const mayaname = watch('mayaname')
-    const chain = mayanameRegister ? watch('chain') : watch('aliasChain')
-    const yearsToAdd = parseInt(watch('expiry'))
-    const expirity =
-      yearsToAdd === 1
-        ? undefined
-        : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
-    const chainAddress = mayanameRegister ? watch('chainAddress') : watch('aliasAddress')
-    const owner = balance.walletAddress
-    if (mayaname !== undefined && chain !== undefined && chainAddress !== undefined) {
-      const fetchMayanameQuote = async () => {
-        try {
-          const params: QuoteMAYANameParams = {
-            name: mayaname,
-            chain,
-            chainAddress,
-            owner,
-            expiry: expirity,
-            isUpdate: mayanameUpdate || isOwner
-          }
-          const mayanameQuote = await mayachainQuery.estimateMAYAName(params)
-          if (mayanameQuote) {
-            setMemo(mayanameQuote.memo)
-            setAmountToSend(mayanameQuote.value.baseAmount)
-            setMayanameQuoteValid(true)
-          }
-        } catch (error) {
-          console.error('Error fetching fetchMAYANameQuote:', error)
-        }
-      }
-      fetchMayanameQuote()
-    }
-  }, [balance.walletAddress, watch, isOwner, mayachainQuery, mayanameRegister, mayanameUpdate])
-
-  const handleRadioChainChange = useCallback((radioChain: string) => {
-    setAliasChain(radioChain)
-  }, [])
-
   const addMaxAmountHandler = useCallback(
     (maxAmount: BaseAmount) => {
       setAmountToSend(maxAmount)
@@ -621,31 +510,17 @@ export const InteractFormMaya = (props: Props) => {
         createMemo = currentMemo
         break
       }
-      case InteractType.MAYAName: {
-        createMemo = memo
-        break
-      }
     }
     setMemo(createMemo)
     return createMemo
-  }, [
-    watch,
-    interactType,
-    whitelisting,
-    cacaoPoolAction,
-    cacaoPoolProvider.value,
-    _amountToSend,
-    network,
-    currentMemo,
-    memo
-  ])
+  }, [watch, interactType, whitelisting, cacaoPoolAction, cacaoPoolProvider.value, _amountToSend, network, currentMemo])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
       // we have to validate input before storing into the state
       amountValidator(value)
-        .then((isValid) => {
-          if (isValid) {
+        .then((result) => {
+          if (result === true) {
             const newAmountToSend = assetToBase(assetAmount(value, CACAO_DECIMAL))
             setAmountToSend(newAmountToSend)
             setValue('amount', value)
@@ -695,18 +570,11 @@ export const InteractFormMaya = (props: Props) => {
     reset({
       mayaAddress: '',
       amount: bn(0),
-      chain: MAYAChain,
-      chainAddress: balance.walletAddress,
-      expiry: '1',
       memo: '',
       providerAddress: '',
       operatorFee: 0,
-      mayaname: '',
-      preferredAsset: '',
       bondLpUnits: '',
-      assetPool: '',
-      aliasChain: '',
-      aliasAddress: ''
+      assetPool: ''
     })
     setMemo('')
     // Reset amount appropriately based on interaction type
@@ -715,12 +583,7 @@ export const InteractFormMaya = (props: Props) => {
     } else {
       setAmountToSend(ZERO_BASE_AMOUNT)
     }
-    setMayaname(O.none)
-    setIsOwner(false)
-    setMayanameQuoteValid(false)
-    setMayanameUpdate(false)
-    setMayanameAvailable(false)
-  }, [reset, resetInteractState, balance.walletAddress, interactType])
+  }, [reset, resetInteractState, interactType])
 
   const renderConfirmationModal = useMemo(() => {
     const onSuccessHandler = () => {
@@ -782,6 +645,7 @@ export const InteractFormMaya = (props: Props) => {
             txHash={oTxHash}
             onClick={openExplorerTxUrl}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            network={network}
           />
         }
         timerValue={FP.pipe(
@@ -847,14 +711,8 @@ export const InteractFormMaya = (props: Props) => {
             : intl.formatMessage({ id: 'deposit.withdraw.sym' })
         return label
       }
-      case InteractType.MAYAName:
-        if (isOwner) {
-          return intl.formatMessage({ id: 'common.isUpdateMayaname' })
-        } else {
-          return intl.formatMessage({ id: 'deposit.interact.actions.buyMayaname' })
-        }
     }
-  }, [interactType, intl, isOwner, whitelisting, cacaoPoolAction])
+  }, [interactType, intl, whitelisting, cacaoPoolAction])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -872,14 +730,17 @@ export const InteractFormMaya = (props: Props) => {
     getMemo()
   }, [whitelisting, getMemo])
 
-  const handleUnbond = (nodeAddress: string, pool: MayaLpUnits) => {
-    const unitsToUnbond = pool.units.toString()
-    const asset = assetToString(pool.asset)
-    setValue('mayaAddress', nodeAddress)
-    setValue('bondLpUnits', unitsToUnbond)
-    setValue('assetPool', asset)
-    getMemo()
-  }
+  const handleUnbond = useCallback(
+    (nodeAddress: string, pool: MayaLpUnits) => {
+      const unitsToUnbond = pool.units.toString()
+      const asset = assetToString(pool.asset)
+      setValue('mayaAddress', nodeAddress)
+      setValue('bondLpUnits', unitsToUnbond)
+      setValue('assetPool', asset)
+      getMemo()
+    },
+    [setValue, getMemo]
+  )
 
   const handleLearn = useCallback(() => {
     window.apiUrl.openExternal('https://docs.mayaprotocol.com/mayachain-dev-docs/concepts/transaction-memos')
@@ -889,11 +750,6 @@ export const InteractFormMaya = (props: Props) => {
     // Whenever `amountToSend` has been updated, we put it back into input field
     setValue('amount', baseToAsset(_amountToSend).amount())
   }, [_amountToSend, setValue])
-
-  const mayaNamefees: UIFeesRD = useMemo(() => {
-    const fees: UIFees = [{ asset: AssetCacao, amount: _amountToSend }]
-    return RD.success(fees)
-  }, [_amountToSend])
 
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
@@ -908,13 +764,6 @@ export const InteractFormMaya = (props: Props) => {
       setMemo('')
     }
   }, [cacaoPoolAction, resetForm, interactType])
-
-  // Call estimate handler when mayaname becomes available
-  useEffect(() => {
-    if (mayanameAvailable && interactType === InteractType.MAYAName) {
-      estimateMayanameHandler()
-    }
-  }, [mayanameAvailable, interactType, estimateMayanameHandler])
 
   // Updated renderPoolShares
   const renderPoolShares = useMemo(() => {
@@ -1081,15 +930,30 @@ export const InteractFormMaya = (props: Props) => {
         {/** Cacao Pool */}
         {interactType === InteractType.CacaoPool && (
           <div className="mb-2">
-            <span className="inline-block">
-              <Switch
-                labels={['DEPOSIT', 'WITHDRAW']}
-                colors={['#3B82F6', '#EF4444']}
-                onChange={(value) => {
-                  setCacaoPoolAction(value === 'DEPOSIT' ? Action.add : Action.withdraw)
-                }}
-              />
-            </span>
+            <div className="flex border-b border-gray0 dark:border-gray0d">
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  cacaoPoolAction === Action.add
+                    ? 'border-b-2 border-turquoise text-turquoise'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setCacaoPoolAction(Action.add)}>
+                <ArrowDownTrayIcon className="h-4 w-4" />
+                DEPOSIT
+              </button>
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 px-4 pb-2 font-main text-[14px] transition-colors ${
+                  cacaoPoolAction === Action.withdraw
+                    ? 'border-b-2 border-error0 text-error0 dark:border-error0d dark:text-error0d'
+                    : 'text-gray2 hover:text-text0 dark:text-gray2d dark:hover:text-text0d'
+                }`}
+                onClick={() => setCacaoPoolAction(Action.withdraw)}>
+                <ArrowUpTrayIcon className="h-4 w-4" />
+                WITHDRAW
+              </button>
+            </div>
             {cacaoPoolProvider.value.gt(0) && cacaoPoolAction === Action.add && renderCacaoPoolWarning}
           </div>
         )}
@@ -1201,11 +1065,11 @@ export const InteractFormMaya = (props: Props) => {
           <>
             {userNodeInfo ? (
               <div className="p-4">
-                <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.nodeAddress' })}
                   <div className="truncate pl-10px font-main text-[12px]">{userNodeInfo.nodeAddress}</div>
                 </div>
-                <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.address.self' })}
                   <div className="truncate pl-10px font-main text-[12px]">{walletAddress}</div>
                 </div>
@@ -1249,7 +1113,7 @@ export const InteractFormMaya = (props: Props) => {
                 </div>
               </div>
             ) : (
-              <div className="mb-2 ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+              <div className="font-mainBold mb-2 ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
                 {intl.formatMessage({ id: 'deposit.share.units' })}
                 <div className="truncate pl-10px font-main text-[12px]">
                   {intl.formatMessage({ id: 'common.noResult' })}
@@ -1265,243 +1129,28 @@ export const InteractFormMaya = (props: Props) => {
         )}
         {isFeeError && renderFeeError}
 
-        {/* Mayaname Button and Details*/}
+        {/* MAYAName — delegated to standalone component */}
         {interactType === InteractType.MAYAName && (
-          <div className="w-full sm:max-w-[630px]">
-            <div className="flex w-full items-center text-[12px]">
-              <Label color="input" size="big" textTransform="uppercase">
-                {intl.formatMessage({ id: 'common.mayaname' })}
-              </Label>
-              <InfoIcon
-                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                color="primary"
-                tooltip={intl.formatMessage({ id: 'common.mayanameRegistrationSpecifics' })}
-              />
-            </div>
-
-            <div>
-              <Input
-                {...register('mayaname', {
-                  required:
-                    interactType === InteractType.MAYAName
-                      ? intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
-                      : false,
-                  onChange: () => mayanameHandler()
-                })}
-                disabled={isLoading}
-                size="large"
-              />
-              {errors.mayaname && (
-                <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.mayaname.message}</div>
-              )}
-            </div>
-            {O.isSome(oMayaname) && !mayanameAvailable && !isOwner && renderMayanameError}
-          </div>
-        )}
-        {/** Form item for unregistered mayaname */}
-        {mayanameAvailable && (
-          <div className="w-full sm:max-w-[630px]">
-            {isOwner ? (
-              <CheckButton
-                checked={mayanameUpdate || isOwner}
-                clickHandler={() => setMayanameUpdate(true)}
-                disabled={isLoading}>
-                {intl.formatMessage({ id: 'common.isUpdateMayaname' })}
-              </CheckButton>
-            ) : (
-              <></>
-            )}
-            {!mayanameRegister ? (
-              <>
-                {/* Add input fields for aliasChain, aliasAddress, and expiry */}
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.aliasChain' })}
-                </Label>
-                <div>
-                  <Controller
-                    name="aliasChain"
-                    control={control}
-                    rules={{
-                      required: interactType === InteractType.MAYAName ? 'Please provide an alias chain.' : false
-                    }}
-                    render={({ field }) => (
-                      <RadioGroup
-                        {...field}
-                        value={aliasChain}
-                        onChange={(value) => {
-                          field.onChange(value)
-                          handleRadioChainChange(value)
-                          estimateMayanameHandler()
-                        }}>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetAETH.chain}>
-                          ARB
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
-                          BTC
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
-                          ETH
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
-                          RUNE
-                        </Radio>
-                      </RadioGroup>
-                    )}
-                  />
-                  {errors.aliasChain && (
-                    <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasChain.message}</div>
-                  )}
-                </div>
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.aliasAddress' })}
-                </Label>
-                <div>
-                  <Input
-                    {...register('aliasAddress', {
-                      required: interactType === InteractType.MAYAName ? 'Please provide an alias address.' : false,
-                      onChange: () => estimateMayanameHandler()
-                    })}
-                    disabled={isLoading}
-                    size="large"
-                  />
-                  {errors.aliasAddress && (
-                    <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.aliasAddress.message}</div>
-                  )}
-                </div>
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.expiry' })}
-                </Label>
-                <div>
-                  <Controller
-                    name="expiry"
-                    control={control}
-                    render={({ field }) => (
-                      <RadioGroup
-                        {...field}
-                        onChange={(value) => {
-                          field.onChange(value)
-                          estimateMayanameHandler()
-                        }}>
-                        <Radio className="text-gray2 dark:text-gray2d" value="1">
-                          1 year
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="2">
-                          2 years
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="3">
-                          3 years
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="5">
-                          5 years
-                        </Radio>
-                      </RadioGroup>
-                    )}
-                  />
-                  {errors.expiry && (
-                    <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Initial values needed for tns or mns register */}
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.aliasChain' })}
-                </Label>
-                <div>
-                  <Controller
-                    name="chain"
-                    control={control}
-                    rules={{
-                      required: interactType === InteractType.MAYAName ? 'Please provide an alias chain.' : false
-                    }}
-                    render={({ field }) => (
-                      <RadioGroup
-                        {...field}
-                        onChange={(value) => {
-                          field.onChange(value)
-                          estimateMayanameHandler()
-                        }}>
-                        <Radio className="text-gray2 dark:text-gray2d" value={AssetCacao.chain}>
-                          MAYA
-                        </Radio>
-                      </RadioGroup>
-                    )}
-                  />
-                  {errors.chain && (
-                    <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chain.message}</div>
-                  )}
-                </div>
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.aliasAddress' })}
-                </Label>
-                <div>
-                  <Input
-                    {...register('chainAddress', {
-                      required: interactType === InteractType.MAYAName ? 'Please provide an alias address.' : false,
-                      onChange: () => estimateMayanameHandler()
-                    })}
-                    disabled={isLoading}
-                    size="large"
-                  />
-                  {errors.chainAddress && (
-                    <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.chainAddress.message}</div>
-                  )}
-                </div>
-                <Label color="input" size="big" textTransform="uppercase">
-                  {intl.formatMessage({ id: 'common.expiry' })}
-                </Label>
-                <div>
-                  <Controller
-                    name="expiry"
-                    control={control}
-                    rules={{
-                      required: interactType === InteractType.MAYAName ? true : false
-                    }}
-                    render={({ field }) => (
-                      <RadioGroup
-                        {...field}
-                        onChange={(value) => {
-                          field.onChange(value)
-                          estimateMayanameHandler()
-                        }}>
-                        <Radio className="text-gray2 dark:text-gray2d" value="1">
-                          1 year
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="2">
-                          2 years
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="3">
-                          3 years
-                        </Radio>
-                        <Radio className="text-gray2 dark:text-gray2d" value="5">
-                          5 years
-                        </Radio>
-                      </RadioGroup>
-                    )}
-                  />
-                  {errors.expiry && (
-                    <div className="mt-1 text-sm text-error0 dark:text-error0d">{errors.expiry.message}</div>
-                  )}
-                </div>
-              </>
-            )}
-            <Fees className="mt-10px pb-5" fees={mayaNamefees} disabled={isLoading} />
-          </div>
+          <MAYANameForm
+            walletType={walletType}
+            walletAccount={walletAccount}
+            walletIndex={walletIndex}
+            hdMode={hdMode}
+            balance={balance}
+            interactMaya$={interactMaya$}
+            openExplorerTxUrl={openExplorerTxUrl}
+            getExplorerTxUrl={getExplorerTxUrl}
+            validatePassword$={validatePassword$}
+            mayachainQuery={mayachainQuery}
+            network={network}
+            fee={feeRD}
+            reloadFeesHandler={reloadFeesHandler}
+            mayachainLastblockRD={mayachainLastblockRD}
+            addressByChain$={addressByChain$}
+          />
         )}
       </div>
       <div className="flex items-center justify-center">
-        {mayanameQuoteValid && (
-          <FlatButton
-            className="mt-10px min-w-[200px]"
-            loading={isLoading}
-            disabled={isLoading}
-            type="submit"
-            size="large">
-            {submitLabel}
-          </FlatButton>
-        )}
-
         {interactType === InteractType.CacaoPool && (
           <FlatButton
             className="mt-20px min-w-[200px]"
@@ -1531,101 +1180,72 @@ export const InteractFormMaya = (props: Props) => {
           </FlatButton>
         )}
       </div>
-      <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
-        {/* memo */}
-        <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
-          <BaseButton
-            className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-            onClick={() => setShowDetails((current) => !current)}>
-            {intl.formatMessage({ id: 'common.details' })}
-            {showDetails ? (
-              <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-            ) : (
-              <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-            )}
-          </BaseButton>
-          {showDetails && (
-            <>
-              {FP.pipe(
-                oMayaname,
-                O.map(({ owner, expireBlockHeight, aliases }) => {
-                  if (owner || expireBlockHeight || aliases) {
-                    return (
-                      <>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          {intl.formatMessage({ id: 'common.owner' })}
-                          <div>{owner}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div>{intl.formatMessage({ id: 'common.expirationBlock' })}</div>
-                          <div>{expireBlockHeight}</div>
-                        </div>
-
-                        {aliases &&
-                          aliases.map((alias, index) => (
-                            <div key={index}>
-                              <div className="flex w-full justify-between pl-10px text-[12px]">
-                                {intl.formatMessage({ id: 'common.aliasChain' })}
-                                <div>{alias.chain}</div>
-                              </div>
-                              <div className="flex w-full justify-between pl-10px text-[12px]">
-                                {intl.formatMessage({ id: 'common.aliasAddress' })}
-                                <div>{alias.address}</div>
-                              </div>
-                            </div>
-                          ))}
-                      </>
-                    )
-                  }
-                  return null
-                }),
-                O.toNullable
+      {/* MAYAName has its own details section — skip parent's */}
+      {interactType !== InteractType.MAYAName && (
+        <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+          {/* memo */}
+          <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
+            <BaseButton
+              className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              onClick={() => setShowDetails((current) => !current)}>
+              {intl.formatMessage({ id: 'common.details' })}
+              {showDetails ? (
+                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+              ) : (
+                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
               )}
-              {interactType === InteractType.CacaoPool && (
-                <>
-                  <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
-                    {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
-                    <div className="truncate pl-10px font-main text-[12px]">
-                      {RD.fold(
-                        () => <p>{emptyString}</p>,
-                        () => <p>{emptyString}</p>,
-                        (error: Error) => (
-                          <p>
-                            {intl.formatMessage({ id: 'common.error' })}: {error.message}
-                          </p>
-                        ),
-                        (data: { daysLeft: number; blocksLeft: number }) => (
-                          <div>
+            </BaseButton>
+            {showDetails && (
+              <>
+                {interactType === InteractType.CacaoPool && (
+                  <>
+                    <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                      {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
+                      <div className="truncate pl-10px font-main text-[12px]">
+                        {RD.fold(
+                          () => <p>{emptyString}</p>,
+                          () => <p>{emptyString}</p>,
+                          (error: Error) => (
                             <p>
-                              {intl.formatMessage({ id: 'common.time.days' }, { days: `${data.daysLeft.toFixed(1)}` })}
+                              {intl.formatMessage({ id: 'common.error' })}: {error.message}
                             </p>
-                          </div>
-                        )
-                      )(cacaoPoolData)}
+                          ),
+                          (data: { daysLeft: number; blocksLeft: number }) => (
+                            <div>
+                              <p>
+                                {intl.formatMessage(
+                                  { id: 'common.time.days' },
+                                  { days: `${data.daysLeft.toFixed(1)}` }
+                                )}
+                              </p>
+                            </div>
+                          )
+                        )(cacaoPoolData)}
+                      </div>
                     </div>
+                  </>
+                )}
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                  {intl.formatMessage({ id: 'common.amount' })}
+                  <div className="truncate pl-10px font-main text-[12px]">
+                    {formatAssetAmountCurrency({
+                      amount: baseToAsset(_amountToSend), // Find the value of swap slippage
+                      asset: AssetCacao,
+                      decimal: isUSDAsset(AssetCacao) ? 2 : 6,
+                      trimZeros: !isUSDAsset(AssetCacao)
+                    })}
                   </div>
-                </>
-              )}
-              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
-                {intl.formatMessage({ id: 'common.amount' })}
-                <div className="truncate pl-10px font-main text-[12px]">
-                  {formatAssetAmountCurrency({
-                    amount: baseToAsset(_amountToSend), // Find the value of swap slippage
-                    asset: AssetCacao,
-                    decimal: isUSDAsset(AssetCacao) ? 2 : 6,
-                    trimZeros: !isUSDAsset(AssetCacao)
-                  })}
                 </div>
-              </div>
 
-              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
-                {intl.formatMessage({ id: 'common.memo' })}
-                <div className="overflow break-normal pl-10px font-main text-[12px]">{memoLabel}</div>
-              </div>
-            </>
-          )}
+                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                  {intl.formatMessage({ id: 'common.memo' })}
+                  <div className="overflow pl-10px font-main text-[12px] break-normal">{memoLabel}</div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
     </form>
@@ -1687,7 +1307,7 @@ const PoolShareItem = ({
   }
 
   return (
-    <div className="flex flex-col border-b pb-2 pt-2 first:pt-0 dark:border-gray1d">
+    <div className="flex flex-col border-b pt-2 pb-2 first:pt-0 dark:border-gray1d">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <AssetIcon asset={share.asset} network={network} />

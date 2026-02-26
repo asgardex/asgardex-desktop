@@ -38,7 +38,7 @@ export const ConfirmationModal = ({ visible, title, okText, content, onSuccess, 
             'rounded-lg border border-solid border-gray0 dark:border-gray0d'
           )}>
           <div className="flex w-full items-center justify-between">
-            <h1 className="mb-4 text-center text-xl uppercase text-text2 dark:text-text2d">
+            <h1 className="mb-4 text-center text-xl text-text2 uppercase dark:text-text2d">
               {title || intl.formatMessage({ id: 'common.modal.confirmTitle' })}
             </h1>
           </div>
@@ -49,7 +49,7 @@ export const ConfirmationModal = ({ visible, title, okText, content, onSuccess, 
                 'rounded-md !px-4 !py-2',
                 'border border-solid border-gray1/20 dark:border-gray1d/20',
                 'text-text0 dark:text-text0d',
-                'hover:bg-gray1/20 hover:dark:bg-gray1d/20'
+                'hover:bg-gray1/20 dark:hover:bg-gray1d/20'
               )}
               onClick={onClose}>
               {intl.formatMessage({ id: 'common.cancel' })}

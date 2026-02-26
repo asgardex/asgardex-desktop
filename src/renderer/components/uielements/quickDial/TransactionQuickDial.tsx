@@ -74,7 +74,7 @@ export const TransactionQuickDial = ({
   }
 
   return (
-    <div className={clsx('fixed bottom-4 right-4 z-50', className)}>
+    <div className={clsx('fixed right-4 bottom-4 z-50', className)}>
       <div
         className={clsx(
           'relative h-14 w-14 cursor-pointer rounded-full shadow-lg',
@@ -86,7 +86,7 @@ export const TransactionQuickDial = ({
           e.stopPropagation()
         }}>
         {isExpanded ? <XMarkIcon className="h-6 w-6 text-white" /> : <SwapIcon className="h-8 w-8 text-white" />}
-        <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-error0">
+        <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-error0">
           <Label align="center" size="small">
             {activeTransactions.length}
           </Label>
@@ -97,7 +97,7 @@ export const TransactionQuickDial = ({
       {isExpanded && (
         <div
           className={clsx(
-            'absolute bottom-16 right-0 w-80',
+            'absolute right-0 bottom-16 w-80',
             'rounded-lg border border-gray0 bg-white shadow-xl dark:border-gray0d dark:bg-bg1d',
             'transition-all duration-200 ease-out',
             'origin-bottom-right transform',
@@ -118,7 +118,7 @@ export const TransactionQuickDial = ({
           {/* Transaction List */}
           <div className="max-h-96 overflow-y-auto">
             <div className="space-y-2 p-3">
-              <div className="text-xs font-medium uppercase tracking-wide text-text2 dark:text-text2d">
+              <div className="text-xs font-medium tracking-wide text-text2 uppercase dark:text-text2d">
                 {intl.formatMessage({ id: 'common.transaction.active' })} ({activeTransactions.length})
               </div>
 

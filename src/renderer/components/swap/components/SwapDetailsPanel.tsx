@@ -167,7 +167,7 @@ export const SwapDetailsPanel = ({
         <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
           <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
           <Tooltip size="big" title={address}>
-            <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
+            <div className="truncate pl-20px text-[13px] leading-normal normal-case">{address}</div>
           </Tooltip>
         </div>
       ) : null
@@ -187,7 +187,7 @@ export const SwapDetailsPanel = ({
 
   const memoSection = showDetails && (
     <>
-      <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px] text-text2 dark:text-text2d">
+      <div className="font-mainBold ml-[-2px] flex w-full items-start pt-10px text-[14px] text-text2 dark:text-text2d">
         {memoTitle}
       </div>
       <div className="truncate pl-10px font-main text-[12px] text-text2 dark:text-text2d">
@@ -198,18 +198,18 @@ export const SwapDetailsPanel = ({
 
   const addressSection = showDetails && (
     <>
-      <div className="w-full pt-10px font-mainBold text-[14px] text-text2 dark:text-text2d">
+      <div className="font-mainBold w-full pt-10px text-[14px] text-text2 dark:text-text2d">
         {intl.formatMessage({ id: 'common.addresses' })}
       </div>
       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
         <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.sender' })}</div>
-        <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
+        <div className="truncate pl-20px text-[13px] leading-normal text-text2 normal-case dark:text-text2d">
           {senderAddressNode}
         </div>
       </div>
       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
         <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.recipient' })}</div>
-        <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
+        <div className="truncate pl-20px text-[13px] leading-normal text-text2 normal-case dark:text-text2d">
           {recipientAddressNode}
         </div>
       </div>
@@ -222,7 +222,7 @@ export const SwapDetailsPanel = ({
       <div className="w-full pt-10px text-[14px]">
         <BaseButton
           disabled={walletBalancesLoading}
-          className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+          className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d"
           onClick={reloadBalances}>
           {intl.formatMessage({ id: 'common.balances' })}
           <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -230,7 +230,7 @@ export const SwapDetailsPanel = ({
       </div>
       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
         <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.sender' })}</div>
-        <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
+        <div className="truncate pl-20px text-[13px] leading-normal text-text2 normal-case dark:text-text2d">
           {senderBalance}
         </div>
       </div>
@@ -241,7 +241,7 @@ export const SwapDetailsPanel = ({
     <>
       <div
         className={clsx(
-          'flex w-full justify-between font-mainBold text-[14px]',
+          'font-mainBold flex w-full justify-between text-[14px]',
           { 'pt-10px': showDetails },
           { 'text-error0 dark:text-error0d': isCausedSlippage }
         )}>
@@ -299,8 +299,8 @@ export const SwapDetailsPanel = ({
   )
 
   const rateSection = (
-    <div className="flex w-full justify-between font-mainBold text-[14px]">
-      <BaseButton className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d" onClick={onToggleRateDirection}>
+    <div className="font-mainBold flex w-full justify-between text-[14px]">
+      <BaseButton className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d" onClick={onToggleRateDirection}>
         {intl.formatMessage({ id: 'common.rate' })}
         <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
       </BaseButton>
@@ -309,10 +309,10 @@ export const SwapDetailsPanel = ({
   )
 
   const feesSection = (
-    <div className="flex w-full items-center justify-between font-mainBold">
+    <div className="font-mainBold flex w-full items-center justify-between">
       <BaseButton
         disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-        className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
+        className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d"
         onClick={onReloadFees}>
         {intl.formatMessage({ id: 'common.fees.estimated' })}
         <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -324,7 +324,7 @@ export const SwapDetailsPanel = ({
   const unlockedContent = (
     <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
       <BaseButton
-        className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+        className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
         onClick={onToggleDetails}>
         {intl.formatMessage({ id: 'common.details' })}
         {showDetails ? (

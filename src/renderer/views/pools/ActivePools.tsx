@@ -85,7 +85,7 @@ export const ActivePools = (): JSX.Element => {
   )
 
   const keystore = useObservableState(keystoreState$, O.none)
-  const hasKeystore = !hasImportedKeystore(keystore)
+  const hasKeystore = hasImportedKeystore(keystore)
 
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('active')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
@@ -233,14 +233,14 @@ export const ActivePools = (): JSX.Element => {
                 const { asset, depthAmount, depthPrice } = row.original
                 return (
                   <div className="flex flex-col items-end justify-center font-main">
-                    <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">
+                    <div className="text-16 whitespace-nowrap text-text0 dark:text-text0d">
                       {formatAssetAmountCurrency({
                         amount: baseToAsset(depthAmount),
                         asset,
                         decimal: 2
                       })}
                     </div>
-                    <div className="whitespace-nowrap text-14 text-gray2 dark:text-gray2d">
+                    <div className="text-14 whitespace-nowrap text-gray2 dark:text-gray2d">
                       {formatAssetAmountCurrency({
                         amount: baseToAsset(depthPrice),
                         asset: pricePool.asset,
@@ -260,14 +260,14 @@ export const ActivePools = (): JSX.Element => {
                 return (
                   <Label className="!text-16" align="right" nowrap>
                     <div className="flex flex-col items-end justify-center font-main">
-                      <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">
+                      <div className="text-16 whitespace-nowrap text-text0 dark:text-text0d">
                         {formatAssetAmountCurrency({
                           amount: baseToAsset(volumeAmount),
                           asset,
                           decimal: 2
                         })}
                       </div>
-                      <div className="whitespace-nowrap text-14 text-gray2 dark:text-gray2d">
+                      <div className="text-14 whitespace-nowrap text-gray2 dark:text-gray2d">
                         {formatAssetAmountCurrency({
                           amount: baseToAsset(volumePrice),
                           asset: pricePool.asset,

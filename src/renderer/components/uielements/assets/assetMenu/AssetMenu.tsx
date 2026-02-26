@@ -112,14 +112,14 @@ export const AssetMenu = (props: Props): JSX.Element => {
             !synthDisabled ? (
               <div className="flex h-full w-[calc(100%-32px)] flex-col items-center justify-center rounded-lg border border-solid border-gray0 p-1 px-20px py-50px dark:border-gray0d">
                 <ArchiveBoxXMarkIcon className="h-[75px] w-[75px] text-gray0 dark:text-gray0d" />
-                <h2 className="mb-10px text-[14px] uppercase text-gray1 dark:text-gray1d">
+                <h2 className="mb-10px text-[14px] text-gray1 uppercase dark:text-gray1d">
                   {intl.formatMessage({ id: 'common.noResult' })}
                 </h2>
               </div>
             ) : (
               <div className="flex h-full w-[calc(100%-32px)] flex-col items-center justify-center rounded-lg border border-solid border-gray0 p-1 px-20px py-50px dark:border-gray0d">
                 <ExclamationTriangleIcon className="h-[75px] w-[75px] text-warning0 dark:text-warning0d" />
-                <h2 className="mb-10px text-center text-[14px] uppercase text-warning0 dark:text-warning0d">
+                <h2 className="mb-10px text-center text-[14px] text-warning0 uppercase dark:text-warning0d">
                   {intl.formatMessage({ id: 'swap.synth.warning' })}
                 </h2>
               </div>
@@ -132,7 +132,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
                   const selected = eqAsset.equals(asset, assetInList)
                   return (
                     <BaseButton
-                      className="w-full !justify-between rounded-lg !pr-20px hover:bg-gray0 hover:dark:bg-gray0d"
+                      className="w-full !justify-between rounded-lg !pr-20px hover:bg-gray0 dark:hover:bg-gray0d"
                       key={assetToString(assetInList)}
                       onClick={() => handleChangeAsset(assetInList)}
                       disabled={selected}>
@@ -234,9 +234,9 @@ export const AssetMenu = (props: Props): JSX.Element => {
             'rounded-lg border border-solid border-gray1 dark:border-gray0d'
           )}>
           <div className="flex w-full items-center justify-between px-5">
-            {headline && <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">{headline}</h1>}
+            {headline && <h1 className="my-0 text-center text-xl text-text2 uppercase dark:text-text2d">{headline}</h1>}
             <BaseButton
-              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
+              className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d dark:hover:text-gray2d"
               onClick={onCloseMenu}>
               <XMarkIcon className="h-20px w-20px text-inherit" />
             </BaseButton>

@@ -17,6 +17,7 @@ import { getInteractTypeFromNullableString } from '../../../components/wallet/tx
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
 import { InteractFormMaya } from '../../../components/wallet/txs/interact/InteractFormMaya'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
+import { useChainContext } from '../../../contexts/ChainContext'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
 import { useMayachainQueryContext } from '../../../contexts/MayachainQueryContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
@@ -93,6 +94,7 @@ export const InteractViewMAYA = () => {
   const poolsRD = useObservableState(poolsState$, RD.pending)
   const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
+  const { addressByChain$ } = useChainContext()
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(assetChain))
 
   const { validateAddress } = useValidateAddress(assetChain)
@@ -266,6 +268,7 @@ export const InteractViewMAYA = () => {
                       cacaoPoolProvider={cacaoPoolProviderRD}
                       mayachainLastblockRD={mayachainLastblockRD}
                       mimirRD={mimirRD}
+                      addressByChain$={addressByChain$}
                     />
                   </Interact>
                 )

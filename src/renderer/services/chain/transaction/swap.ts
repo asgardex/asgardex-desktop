@@ -33,7 +33,8 @@ export const swap$ = ({
   walletAccount,
   walletIndex,
   hdMode,
-  protocol
+  protocol,
+  sendMax
 }: SwapTxParams): SwapTxState$ => {
   const { chain } = getAssetChain(asset, protocol)
   const requests$ = Rx.of(poolAddresses).pipe(
@@ -69,7 +70,8 @@ export const swap$ = ({
         walletAccount,
         walletIndex,
         hdMode,
-        protocol
+        protocol,
+        sendMax
       })
     ),
     // Map the result to the expected SwapTx structure

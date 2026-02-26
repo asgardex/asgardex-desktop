@@ -159,7 +159,7 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
 
   const renderAnalyticsInfo = useMemo(() => {
     return network !== Network.Testnet ? (
-      <div className="mb-4 mt-2 flex w-full justify-end">
+      <div className="mt-2 mb-4 flex w-full justify-end">
         <div className="rounded-lg bg-turquoise/20 px-2 py-1">
           <Button className="w-full !justify-between !p-0" typevalue="transparent" onClick={openShareInfo}>
             <Label className="!w-auto" size="big" textTransform="uppercase">

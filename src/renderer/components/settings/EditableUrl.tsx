@@ -83,9 +83,9 @@ const EditableUrl = (props: Props): JSX.Element => {
           () => <></>,
           () => <></>,
           (error) => (
-            <p className="mt-10px font-main text-[14px] uppercase text-error0">{error?.message ?? error.toString()}</p>
+            <p className="mt-10px font-main text-[14px] text-error0 uppercase">{error?.message ?? error.toString()}</p>
           ),
-          (_) => <p className="mt-10px font-main text-[14px] uppercase text-turquoise">{successMsg}</p>
+          (_) => <p className="mt-10px font-main text-[14px] text-turquoise uppercase">{successMsg}</p>
         )
       ),
     [successMsg, testUrlState]
@@ -100,7 +100,7 @@ const EditableUrl = (props: Props): JSX.Element => {
       <div className="flex items-center">
         <TextButton
           className={clsx(
-            'flex items-center whitespace-nowrap !p-0 text-[16px]',
+            'flex items-center !p-0 text-[16px] whitespace-nowrap',
             loading ? 'cursor-not-allowed' : 'cursor-pointer'
           )}
           color="neutral"
@@ -172,7 +172,7 @@ const EditableUrl = (props: Props): JSX.Element => {
             <Input
               id="url"
               className={clsx(
-                'flex w-auto min-w-[300px] flex-grow text-[16px]',
+                'flex w-auto min-w-[300px] grow text-[16px]',
                 RD.isSuccess(testUrlState) ? '!ring-turquoise' : ''
               )}
               size="normal"
@@ -199,7 +199,7 @@ const EditableUrl = (props: Props): JSX.Element => {
               {intl.formatMessage({ id: 'common.test' })}
             </BorderButton>
           </div>
-          {errors.url && <p className="mt-10px font-main text-[14px] uppercase text-error0">{errors.url.message}</p>}
+          {errors.url && <p className="mt-10px font-main text-[14px] text-error0 uppercase">{errors.url.message}</p>}
         </form>
       )
     },

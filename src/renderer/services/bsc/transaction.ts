@@ -382,7 +382,8 @@ export const createTransactionService = (
       apiKey: undefined,
       destinationTag: undefined,
       evmRpcUrl,
-      gasMultiplier
+      gasMultiplier,
+      sendMax: undefined
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)
 

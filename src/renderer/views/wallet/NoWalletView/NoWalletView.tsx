@@ -101,11 +101,11 @@ export const NoWalletView = () => {
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-center gap-8 bg-bg1 dark:bg-bg1d">
       {((keystore && hasImportedKeystore(keystore)) || vaultManager.vultisigState().availableVaults.length > 0) && (
-        <div className="absolute left-4 top-4 z-10">
+        <div className="absolute top-4 left-4 z-10">
           <BackLinkButton />
         </div>
       )}
-      <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
         <LocaleDropdown />
         <HeaderTheme isDesktopView />
       </div>
@@ -117,62 +117,68 @@ export const NoWalletView = () => {
         <div
           className={clsx(
             'flex items-center gap-4',
-            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 hover:dark:bg-bg2d/40',
+            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 dark:hover:bg-bg2d/40',
             'cursor-pointer rounded-lg p-6 text-center transition duration-300 ease-in-out'
           )}
           onClick={createWalletHandler}>
-          <KeyIcon className="text-gray-500" width={40} height={40} />
+          <KeyIcon className="text-gray1 dark:text-gray1d" width={40} height={40} />
           <div className="flex flex-col items-start">
             <span className="text-lg text-text1 dark:text-text1d">
               {intl.formatMessage({ id: 'wallet.action.create' })} {intl.formatMessage({ id: 'common.keystore' })}
             </span>
-            <span className="text-gray-500">{intl.formatMessage({ id: 'wallet.create.error.phrase.empty' })}</span>
+            <span className="text-gray1 dark:text-gray1d">
+              {intl.formatMessage({ id: 'wallet.create.error.phrase.empty' })}
+            </span>
           </div>
         </div>
 
         <div
           className={clsx(
             'flex items-center gap-4',
-            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 hover:dark:bg-bg2d/40',
+            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 dark:hover:bg-bg2d/40',
             'cursor-pointer rounded-lg p-6 text-center transition duration-300 ease-in-out'
           )}
           onClick={importKeystoreHandler}>
-          <FolderKeyIcon className="text-gray-500" width={40} height={40} />
+          <FolderKeyIcon className="text-gray1 dark:text-gray1d" width={40} height={40} />
           <div className="flex flex-col items-start">
             <span className="text-lg text-text1 dark:text-text1d">
               {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.keystore' })}
             </span>
-            <span className="text-gray-500">{intl.formatMessage({ id: 'wallet.imports.keystore.description' })}</span>
+            <span className="text-gray1 dark:text-gray1d">
+              {intl.formatMessage({ id: 'wallet.imports.keystore.description' })}
+            </span>
           </div>
         </div>
 
         <div
           className={clsx(
             'flex items-center gap-4',
-            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 hover:dark:bg-bg2d/40',
+            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 dark:hover:bg-bg2d/40',
             'cursor-pointer rounded-lg p-6 text-center transition duration-300 ease-in-out'
           )}
           onClick={importPhraseHandler}>
-          <SproutIcon className="text-gray-500" width={40} height={40} />
+          <SproutIcon className="text-gray1 dark:text-gray1d" width={40} height={40} />
           <div className="flex flex-col items-start">
             <span className="text-lg text-text1 dark:text-text1d">
               {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
             </span>
-            <span className="text-gray-500">{intl.formatMessage({ id: 'wallet.imports.phrase.description' })}</span>
+            <span className="text-gray1 dark:text-gray1d">
+              {intl.formatMessage({ id: 'wallet.imports.phrase.description' })}
+            </span>
           </div>
         </div>
 
         <div
           className={clsx(
             'flex items-center gap-4',
-            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 hover:dark:bg-bg2d/40',
+            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 dark:hover:bg-bg2d/40',
             'cursor-pointer rounded-lg p-6 text-center transition duration-300 ease-in-out'
           )}
           onClick={useLedgerHandler}>
-          <CpuChipIcon className="text-gray-500" width={40} height={40} />
+          <CpuChipIcon className="text-gray1 dark:text-gray1d" width={40} height={40} />
           <div className="flex flex-col items-start">
             <span className="text-lg text-text1 dark:text-text1d">Use Ledger Device</span>
-            <span className="text-gray-500">Connect your hardware wallet for secure trading</span>
+            <span className="text-gray1 dark:text-gray1d">Connect your hardware wallet for secure trading</span>
           </div>
         </div>
 

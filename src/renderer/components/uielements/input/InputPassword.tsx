@@ -16,21 +16,13 @@ export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props,
 
   return (
     <div className={className}>
-      <div className="relative w-full">
-        <div className="bg:bg0 dark:bg:bg0d absolute right-0 flex h-full cursor-pointer items-center px-10px">
-          <Icon
-            className={clsx(
-              'h-20px w-20px',
-              error ? 'text-error0' : 'text-gray1 dark:text-gray1d',
-              disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-            )}
-            onClick={() => {
-              setShowPw((current) => !current)
-            }}
-          />
-        </div>
+      <div
+        className={clsx(
+          'flex w-full items-center rounded-lg border bg-bg0 dark:bg-bg0d',
+          error ? 'border-error0 dark:border-error0d' : 'border-gray0 dark:border-gray0d'
+        )}>
         <Input
-          className={clsx('placeholder:uppercase', inputClassName)}
+          className={clsx('!border-0 placeholder:uppercase', inputClassName)}
           ref={ref}
           error={!!error}
           id={id}
@@ -38,10 +30,21 @@ export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props,
           type={showPw ? 'text' : 'password'}
           autoComplete="off"
           uppercase={false}
+          ghost
           {...otherProps}
         />
+        <div
+          className={clsx(
+            'flex shrink-0 cursor-pointer items-center px-10px',
+            disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+          )}
+          onClick={() => {
+            setShowPw((current) => !current)
+          }}>
+          <Icon className={clsx('h-20px w-20px', error ? 'text-error0' : 'text-gray1 dark:text-gray1d')} />
+        </div>
       </div>
-      {error && <p className="mt-2 font-main text-sm uppercase text-error0">{error}</p>}
+      {error && <p className="mt-2 font-main text-sm text-error0 uppercase">{error}</p>}
     </div>
   )
 })

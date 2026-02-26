@@ -158,7 +158,7 @@ export const TxTimer = ({
         'txTimer-wrapper relative mx-auto flex h-[120px] w-[120px] flex-col items-center justify-center',
         className
       )}>
-      <div className="timerchart-icon absolute left-0 top-0 flex h-full w-full items-center justify-center">
+      <div className="timerchart-icon absolute top-0 left-0 flex h-full w-full items-center justify-center">
         {!active && (
           <div className="flex h-3/4 w-3/4 items-center justify-center rounded-full bg-turquoise/40">
             {!refunded ? <CheckCircleIcon className="h-[35px] w-[35px] text-turquoise" /> : <RefundIcon />}

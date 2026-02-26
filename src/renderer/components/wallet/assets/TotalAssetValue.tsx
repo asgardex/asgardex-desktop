@@ -75,7 +75,7 @@ export const TotalAssetValue = (props: Props): JSX.Element => {
   const filteredChartData = chartData.filter((entry) => entry.value !== 0.0)
 
   return (
-    <div className="flex flex-col items-center justify-center bg-bg1 px-4 pb-8 pt-4 dark:bg-bg1d">
+    <div className="flex flex-col items-center justify-center bg-bg1 px-4 pt-4 pb-8 dark:bg-bg1d">
       <div className="flex items-center">
         <Label className="!w-auto" align="center" color="input" textTransform="uppercase">
           {title}
@@ -84,7 +84,7 @@ export const TotalAssetValue = (props: Props): JSX.Element => {
       </div>
 
       <BaseButton
-        className="flex justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+        className="font-mainSemiBold flex justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
         onClick={() => setShowDetails((current) => !current)}>
         <div className="m-4">{totalBalanceDisplay}</div>
         {isChartVisible &&

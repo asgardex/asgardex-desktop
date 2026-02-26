@@ -16,7 +16,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { AssetXRP, XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
-import { SOLChain } from '@xchainjs/xchain-solana'
+import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain, TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import {
@@ -164,29 +164,59 @@ export const pricePoolSelectorFromRD = (
   )
 
 /**
+ * Creates a normalized key for asset lookups (case-insensitive)
+ */
+const createAssetKey = (chain: string, symbol: string, ticker: string): string =>
+  `${chain.toUpperCase()}:${symbol.toUpperCase()}:${ticker.toUpperCase()}`
+
+/**
+ * Creates a Map from PoolDetails for O(1) lookups
+ * Use this when performing multiple lookups on the same details array
+ */
+export const createPoolDetailsMap = (details: PoolDetails): Map<string, PoolDetail> => {
+  const map = new Map<string, PoolDetail>()
+
+  for (const detail of details) {
+    const parsed = assetFromString(detail.asset)
+    if (parsed) {
+      const key = createAssetKey(parsed.chain, parsed.symbol, parsed.ticker)
+      map.set(key, detail)
+    }
+  }
+
+  return map
+}
+
+/**
+ * Gets a `PoolDetail` by given Asset from a pre-built Map (O(1) lookup)
+ */
+export const getPoolDetailFromMap = (detailsMap: Map<string, PoolDetail>, asset: AnyAsset): O.Option<PoolDetail> => {
+  const key = createAssetKey(asset.chain, asset.symbol, asset.ticker)
+  return O.fromNullable(detailsMap.get(key))
+}
+
+/**
  * Gets a `PoolDetail by given Asset
  * It returns `None` if no `PoolDetail` has been found
  * Adjusted to handle synth assets
+ *
+ * Note: For repeated lookups on the same details array, use createPoolDetailsMap + getPoolDetailFromMap for O(1) performance
  */
-export const getPoolDetail = (details: PoolDetails, asset: AnyAsset): O.Option<PoolDetail> =>
-  FP.pipe(
-    details.find((detail: PoolDetail) =>
-      FP.pipe(
-        detail.asset,
-        assetFromString,
-        O.fromNullable,
-        O.map((detailAsset) => {
-          const res =
-            detailAsset.chain.toUpperCase() === asset.chain.toUpperCase() &&
-            detailAsset.symbol.toUpperCase() === asset.symbol.toUpperCase() &&
-            detailAsset.ticker.toUpperCase() === asset.ticker.toUpperCase()
-          return res
-        }),
-        O.getOrElse(() => false)
-      )
-    ),
-    O.fromNullable
-  )
+export const getPoolDetail = (details: PoolDetails, asset: AnyAsset): O.Option<PoolDetail> => {
+  const key = createAssetKey(asset.chain, asset.symbol, asset.ticker)
+
+  for (const detail of details) {
+    const parsed = assetFromString(detail.asset)
+    if (parsed) {
+      const detailKey = createAssetKey(parsed.chain, parsed.symbol, parsed.ticker)
+      if (detailKey === key) {
+        return O.some(detail)
+      }
+    }
+  }
+
+  return O.none
+}
 
 /**
  * Converts `PoolDetails` to `PoolsDataMap`
@@ -318,6 +348,12 @@ export const getOutboundAssetFeeByChain = (
             amount: baseAmount(value, XRP_DECIMAL),
             asset: AssetXRP
           })
+        case SOLChain:
+          return O.some({
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e9 (SOL)
+            amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), SOL_DECIMALS),
+            asset: SOLAsset
+          })
         // 'THORChain can be ignored - fees for asset side only
         // Other chains can be ignored since they are for mayachain
         case THORChain:
@@ -327,7 +363,6 @@ export const getOutboundAssetFeeByChain = (
         case ADAChain:
         case ARBChain:
         case RadixChain:
-        case SOLChain:
           return O.none
         default:
           return O.none
@@ -357,26 +392,27 @@ export const inboundToPoolAddresses = (
  * Combines 'asym` + `sym` `Poolshare`'s of an `Asset` into a single `Poolshare` for this `Asset`
  *
  * @returns `PoolShares` List of combined `PoolShare` items for each `Asset`
+ *
+ * Uses Map for O(1) lookups instead of O(n) array search, reducing overall complexity from O(n²) to O(n)
  */
-export const combineShares = (shares: PoolShares): PoolShares =>
-  FP.pipe(
-    shares,
-    A.reduce<PoolShare, PoolShares>([], (acc, cur) =>
-      FP.pipe(
-        acc,
-        A.findFirst(({ asset }) => eqAsset.equals(asset, cur.asset)),
-        O.fold(
-          () => [...acc, { ...cur, type: 'all' }],
-          (value) => {
-            value.units = cur.units.plus(value.units)
-            value.assetAddedAmount = baseAmount(cur.assetAddedAmount.amount().plus(value.assetAddedAmount.amount()))
-            value.type = 'all'
-            return acc
-          }
-        )
-      )
-    )
-  )
+export const combineShares = (shares: PoolShares): PoolShares => {
+  const shareMap = new Map<string, PoolShare>()
+
+  for (const share of shares) {
+    const key = assetToString(share.asset)
+    const existing = shareMap.get(key)
+
+    if (existing) {
+      existing.units = share.units.plus(existing.units)
+      existing.assetAddedAmount = baseAmount(share.assetAddedAmount.amount().plus(existing.assetAddedAmount.amount()))
+      existing.type = 'all'
+    } else {
+      shareMap.set(key, { ...share, type: 'all' })
+    }
+  }
+
+  return Array.from(shareMap.values())
+}
 
 /**
  * Combines 'asym` + `sym` `Poolshare`'s into a single `Poolshare` by given `Asset` only
