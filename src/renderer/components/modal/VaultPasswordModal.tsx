@@ -65,7 +65,7 @@ export const VaultPasswordModal = ({ visible, filename, onSubmit, onClose }: Pro
             'bg-bg0 dark:bg-bg0d',
             'rounded-lg border border-solid border-gray0 dark:border-gray0d'
           )}>
-          <h1 className="mb-2 w-full text-center text-lg font-semibold uppercase text-text1 dark:text-text1d">
+          <h1 className="mb-2 w-full text-center text-lg font-semibold text-text1 uppercase dark:text-text1d">
             {intl.formatMessage({ id: 'wallet.vultisig.import.password.title' })}
           </h1>
           <p className="mb-4 w-full text-center text-sm text-text2 dark:text-text2d">

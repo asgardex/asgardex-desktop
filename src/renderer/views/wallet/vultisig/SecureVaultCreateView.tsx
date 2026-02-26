@@ -221,7 +221,7 @@ export const SecureVaultCreateView = () => {
 
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-center gap-6 bg-bg1 p-8 dark:bg-bg1d">
-      <div className="absolute left-4 top-4">
+      <div className="absolute top-4 left-4">
         <BackLinkButton path={walletRoutes.noWallet.path()} />
       </div>
 
@@ -384,7 +384,7 @@ export const SecureVaultCreateView = () => {
                 .map(([chain, address]) => (
                   <div key={chain} className="flex flex-col">
                     <span className="text-xs font-medium text-turquoise">{chain}</span>
-                    <span className="break-all text-xs text-text1 dark:text-text1d">{address}</span>
+                    <span className="text-xs break-all text-text1 dark:text-text1d">{address}</span>
                   </div>
                 ))}
               {Object.keys(addresses).length > 5 && (

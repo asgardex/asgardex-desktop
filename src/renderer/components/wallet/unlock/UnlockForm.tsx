@@ -138,14 +138,14 @@ export const UnlockForm = ({
       O.fold(
         () =>
           // Also show Vultisig error if present
-          vultisigError ? <p className="mt-2 font-main text-sm uppercase text-error0">{vultisigError}</p> : <></>,
+          vultisigError ? <p className="mt-2 font-main text-sm text-error0 uppercase">{vultisigError}</p> : <></>,
         (_: Error) => (
           <p className="mt-2 font-main text-sm text-error0 uppercase">
             {intl.formatMessage({ id: 'wallet.unlock.error' })}
           </p>
         )
       )(unlockError),
-    [unlockError, intl, vultisigError, isVultisigLocked]
+    [unlockError, intl, vultisigError]
   )
 
   const removeConfirmed = useCallback(async () => {

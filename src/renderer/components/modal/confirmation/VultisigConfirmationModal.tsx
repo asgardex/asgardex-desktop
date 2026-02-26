@@ -5,7 +5,7 @@ import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import { function as FP, option as O } from 'fp-ts'
+import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { getChainAsset } from '../../../helpers/chainHelper'

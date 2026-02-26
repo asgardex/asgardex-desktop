@@ -46,3 +46,6 @@ log/*.log
 CLAUDE.md
 .claude/
 /docs
+
+# Test wallets / vault files
+wallets/

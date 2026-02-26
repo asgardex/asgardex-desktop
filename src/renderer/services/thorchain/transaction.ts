@@ -18,8 +18,8 @@ import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { retryRequest } from '../../helpers/rx/retryRequest'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
-import { TxHashLD, ErrorId } from '../wallet/types'
 import { createVultisigCosmosTx } from '../cosmos/vultisigTx'
+import { TxHashLD, ErrorId } from '../wallet/types'
 import { ClientUrl, TransactionService, Client$, ClientUrl$, SendTxParams } from './types'
 
 export const createTransactionService = (
