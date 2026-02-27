@@ -1688,32 +1688,70 @@ export const Swap = ({
   ])
 
   const [awaitingApprovalConfirmation, setAwaitingApprovalConfirmation] = useState(false)
+  // Capture approve params at time of approval so polling survives oApproveParams going O.none during re-fetch
+  const approvalParamsRef = useRef<ApproveParams | null>(null)
+  // Guard against double-handling of confirmation
+  const approvalHandledRef = useRef(false)
 
-  // Trigger approval check with polling retry after approval tx succeeds
+  // Trigger approval check with sequential polling after approval tx succeeds
   useEffect(() => {
-    if (!RD.isSuccess(approveState)) return
+    if (!RD.isSuccess(approveState)) {
+      approvalHandledRef.current = false
+      return
+    }
 
-    const params = FP.pipe(oApproveParams, O.toUndefined)
-    if (!params) return
+    // Capture params once — don't depend on oApproveParams for ongoing polling
+    if (!approvalParamsRef.current) {
+      const params = FP.pipe(oApproveParams, O.toUndefined)
+      if (!params) return
+      approvalParamsRef.current = params
+    }
 
-    let cancelled = false
+    const params = approvalParamsRef.current
     prevApproveParams.current = O.some(params)
     setAwaitingApprovalConfirmation(true)
+
+    let cancelled = false
 
     const pollApproval = async () => {
       // Initial delay to allow on-chain confirmation
       await delay(10000)
 
-      // Poll up to 3 times, 5s apart
-      for (let attempt = 0; attempt < 3; attempt++) {
-        if (cancelled) return
-        checkApprovedStatus(params)
-        // Wait 5s before next attempt (skip wait on last attempt)
-        if (attempt < 2) await delay(5000)
-      }
+      // Sequential polling — wait for each check to complete before starting the next
+      while (!cancelled && !approvalHandledRef.current) {
+        try {
+          const approved = await new Promise<boolean>((resolve) => {
+            const sub = isApprovedERC20Token$({
+              contractAddress: params.contractAddress,
+              spenderAddress: params.spenderAddress,
+              fromAddress: params.fromAddress
+            }).subscribe((rd) => {
+              if (RD.isSuccess(rd)) {
+                sub.unsubscribe()
+                resolve(rd.value)
+              }
+              if (RD.isFailure(rd)) {
+                sub.unsubscribe()
+                resolve(false)
+              }
+              // Skip RD.pending — wait for resolution
+            })
+          })
 
-      if (!cancelled) {
-        setAwaitingApprovalConfirmation(false)
+          if (cancelled || approvalHandledRef.current) break
+
+          if (approved) {
+            approvalHandledRef.current = true
+            setAwaitingApprovalConfirmation(false)
+            fetchSwap(amountToSwap)
+            break
+          }
+        } catch {
+          // RPC error — continue polling
+        }
+
+        // Wait before next attempt
+        await delay(5000)
       }
     }
 
@@ -1723,16 +1761,17 @@ export const Swap = ({
       cancelled = true
       setAwaitingApprovalConfirmation(false)
     }
-  }, [approveState, oApproveParams, checkApprovedStatus])
+    // Intentionally exclude oApproveParams — we capture params via ref to survive re-fetch clearing the quote
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [approveState, isApprovedERC20Token$, fetchSwap, amountToSwap])
 
-  // Refetch quote when approval is confirmed
+  // Reset approval tracking when approveState resets (e.g. asset change)
   useEffect(() => {
-    if (RD.isSuccess(approveState) && RD.isSuccess(isApprovedState)) {
+    if (RD.isInitial(approveState)) {
+      approvalParamsRef.current = null
       setAwaitingApprovalConfirmation(false)
-      fetchSwap(amountToSwap)
-      resetIsApprovedState()
     }
-  }, [approveState, isApprovedState, amountToSwap, fetchSwap, resetIsApprovedState])
+  }, [approveState])
 
   const reloadFeesHandler = useCallback(() => {
     reloadFees({
@@ -2488,9 +2527,11 @@ export const Swap = ({
   const isApproved = useMemo(() => {
     // No approval needed if not an ERC20 token
     if (O.isNone(needApprovement)) return true
-    // Approved if no approval error in quote AND no pending approval
-    return !needsApproval || RD.isSuccess(approveState)
-  }, [needApprovement, needsApproval, approveState])
+    // Still waiting for on-chain confirmation — keep showing approve button
+    if (awaitingApprovalConfirmation) return false
+    // Approved if quote has no approval error
+    return !needsApproval
+  }, [needApprovement, needsApproval, awaitingApprovalConfirmation])
 
   const priceApproveFee: CryptoAmount = useMemo(() => {
     const assetAmount = isApproved
