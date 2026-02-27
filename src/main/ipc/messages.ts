@@ -1,6 +1,4 @@
 enum IPCMessages {
-  // logging
-  RENDERER_LOG = 'RENDERER_LOG',
   // lang
   UPDATE_LANG = 'UPDATE_LANG',
   // keystore
