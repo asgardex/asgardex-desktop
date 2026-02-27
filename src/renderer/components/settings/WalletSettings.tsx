@@ -692,7 +692,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                     id="wallet.ledger.verifyAddress.modal.description"
                     values={{
                       address: (
-                        <span className="font-mainBold block transform-none text-[16px] text-inherit">{address}</span>
+                        <span className="block transform-none font-main-bold text-[16px] text-inherit">{address}</span>
                       )
                     }}
                   />

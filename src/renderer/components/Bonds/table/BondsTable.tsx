@@ -297,7 +297,7 @@ export const BondsTable = memo(function BondsTable({
           <FormattedMessage
             id="bonds.node.removeMessage"
             values={{
-              node: <span className="font-mainBold text-16 font-bold">{nodeAddress}</span>
+              node: <span className="font-main-bold text-16 font-bold">{nodeAddress}</span>
             }}
           />
         </Label>

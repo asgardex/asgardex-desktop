@@ -30,7 +30,7 @@ import { eqChain } from './fp/eq'
 
 export const truncateAddress = (addr: Address, chain: Chain, network: Network): string => {
   const first = addr.substring(0, Math.max(getAddressPrefixLength(chain, network) + 3, 6))
-  const last = addr.substring(addr.length - 3, addr.length)
+  const last = addr.substring(addr.length - 5, addr.length)
   return `${first}...${last}`
 }
 

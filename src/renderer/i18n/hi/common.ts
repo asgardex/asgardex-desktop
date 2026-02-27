@@ -146,6 +146,7 @@ const common: CommonMessages = {
   'common.accept': 'स्वीकार करें',
   'common.allocationByType': 'प्रकार के अनुसार आवंटन',
   'common.allocationByChain': 'चेन के अनुसार आवंटन',
+  'common.approve.waiting': 'पुष्टि की प्रतीक्षा...',
   'common.approve.checking': '{asset} के लिए स्वीकृति जाँच रहे हैं',
   'common.approve.error': '{asset} के लिए स्वीकृति जाँच में त्रुटि: {error}',
   'common.step': 'चरण {current}/{total}',

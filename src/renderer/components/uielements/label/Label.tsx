@@ -25,7 +25,7 @@ export const Label = React.forwardRef<HTMLDivElement, LabelProps>(
       sizeMap[size],
       colorMap[color],
       {
-        'font-mainBold font-bold': weight === 'bold',
+        'font-main-bold font-bold': weight === 'bold',
         'font-main font-normal': weight !== 'bold',
         uppercase: textTransform === 'uppercase',
         lowercase: textTransform === 'lowercase',

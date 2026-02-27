@@ -112,7 +112,7 @@
 @font-face {
   font-family: 'MainFontBold';
   font-style: normal;
-  font-weight: normal;
+  font-weight: bold;
   src:
     local('MainFontBold'),
     url(./assets/fonts/Exo2-Bold.otf) format('opentype');
@@ -120,7 +120,7 @@
 @font-face {
   font-family: 'MainFontSemiBold';
   font-style: normal;
-  font-weight: normal;
+  font-weight: 600;
   src:
     local('MainFontSemiBold'),
     url(./assets/fonts/Exo2-SemiBold.otf) format('opentype');

@@ -111,7 +111,7 @@ export const AppGeneralSettings = (props: Props) => {
             key={l}
             className={clsx(
               'flex min-w-[222px] items-center px-10px py-2 font-main text-16 text-text1 uppercase dark:text-text1d',
-              l === locale ? 'font-mainSemiBold' : 'font-main'
+              l === locale ? 'font-main-semi-bold' : 'font-main'
             )}
             onClick={() => changeLocale(l)}>
             {l}
@@ -157,7 +157,7 @@ export const AppGeneralSettings = (props: Props) => {
           key={n}
           className={clsx(
             'flex min-w-[222px] items-center px-10px py-2 text-16 uppercase',
-            n === network ? 'font-mainSemiBold' : 'font-main',
+            n === network ? 'font-main-semi-bold' : 'font-main',
             networkTextColor(n)
           )}
           onClick={() => changeNetwork(n)}>

@@ -248,7 +248,7 @@ export const DepositView = () => {
     () => (
       <div className="relative mb-4 flex items-center justify-between">
         <BackLinkButton className="absolute !m-0" />
-        <h2 className="font-mainSemiBold m-0 w-full text-center text-16 text-turquoise uppercase">
+        <h2 className="m-0 w-full text-center font-main-semi-bold text-16 text-turquoise uppercase">
           {intl.formatMessage({ id: 'common.liquidity' })}
         </h2>
         <RefreshButton className="absolute right-0" disabled={refreshButtonDisabled} onClick={reloadHandler} />
