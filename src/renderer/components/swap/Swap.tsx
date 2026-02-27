@@ -1675,6 +1675,12 @@ export const Swap = ({
   const approvalParamsRef = useRef<ApproveParams | null>(null)
   // Guard against double-handling of confirmation
   const approvalHandledRef = useRef(false)
+  // Capture amountToSwap so polling doesn't restart when user changes input
+  const amountToSwapRef = useRef(amountToSwap)
+  amountToSwapRef.current = amountToSwap
+
+  // Max polling attempts (~2.5 min: 10s initial + 24 × 5s)
+  const MAX_APPROVAL_POLLS = 24
 
   // Trigger approval check with sequential polling after approval tx succeeds
   useEffect(() => {
@@ -1701,7 +1707,7 @@ export const Swap = ({
       await delay(10000)
 
       // Sequential polling — wait for each check to complete before starting the next
-      while (!cancelled && !approvalHandledRef.current) {
+      for (let attempt = 0; attempt < MAX_APPROVAL_POLLS && !cancelled && !approvalHandledRef.current; attempt++) {
         try {
           const approved = await new Promise<boolean>((resolve) => {
             const sub = isApprovedERC20Token$({
@@ -1726,7 +1732,7 @@ export const Swap = ({
           if (approved) {
             approvalHandledRef.current = true
             setAwaitingApprovalConfirmation(false)
-            fetchSwap(amountToSwap)
+            fetchSwap(amountToSwapRef.current)
             break
           }
         } catch {
@@ -1734,7 +1740,12 @@ export const Swap = ({
         }
 
         // Wait before next attempt
-        await delay(5000)
+        if (!cancelled) await delay(5000)
+      }
+
+      // Timed out without confirmation
+      if (!cancelled && !approvalHandledRef.current) {
+        setAwaitingApprovalConfirmation(false)
       }
     }
 
@@ -1746,7 +1757,7 @@ export const Swap = ({
     }
     // Intentionally exclude oApproveParams — we capture params via ref to survive re-fetch clearing the quote
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [approveState, isApprovedERC20Token$, fetchSwap, amountToSwap])
+  }, [approveState, isApprovedERC20Token$, fetchSwap])
 
   // Reset approval tracking when approveState resets (e.g. asset change)
   useEffect(() => {
