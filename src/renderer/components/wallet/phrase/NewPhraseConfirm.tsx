@@ -132,7 +132,7 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
   return (
     <div className="flex w-full flex-col">
       <form onSubmit={handleFormSubmit}>
-        <h2 className="font-mainSemiBold mb-20px text-sm text-text0 dark:text-text0d">
+        <h2 className="mb-20px font-main-semi-bold text-sm text-text0 dark:text-text0d">
           {intl.formatMessage({ id: 'wallet.create.enter.phrase' })}
         </h2>
         <div className="flex w-full flex-col items-center justify-center">
@@ -146,7 +146,7 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
 
           <span className="px-2 text-xs text-red">{mnemonicError}</span>
 
-          <h2 className="font-mainSemiBold mt-8 flex w-full items-center text-sm text-text0 dark:text-text0d">
+          <h2 className="mt-8 flex w-full items-center font-main-semi-bold text-sm text-text0 dark:text-text0d">
             {intl.formatMessage({ id: 'wallet.create.words.click' })}
             <FlatButton onClick={handleResetPhrase} color="neutral" className="ml-10px">
               <RedoOutlined className="h-4 w-4" />

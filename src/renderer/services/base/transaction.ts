@@ -336,7 +336,9 @@ export const createTransactionService = (
 
   const isApprovedERC20Token$ = (params: IsApproveParams): IsApprovedLD =>
     client$.pipe(
-      RxOp.debounceTime(300),
+      // Use take(1) to grab the current client immediately
+      // instead of waiting for a new client$ emission (which won't happen after approval tx)
+      RxOp.take(1),
       RxOp.switchMap((oClient) =>
         FP.pipe(
           oClient,

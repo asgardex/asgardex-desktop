@@ -185,6 +185,13 @@ export type ApiHDWallet = {
   getLedgerAddresses: () => Promise<E.Either<Error, IPCLedgerAddressesIO>>
 }
 
+// Renderer to main process logging
+export type ApiLog = {
+  info: (prefix: string, ...args: unknown[]) => void
+  warn: (prefix: string, ...args: unknown[]) => void
+  error: (prefix: string, ...args: unknown[]) => void
+}
+
 declare global {
   interface Window {
     /**
@@ -203,5 +210,6 @@ declare global {
     apiAssetStorage: ApiFileStoreService<StoreFileData<'userAssets'>>
     apiPoolsStorage: ApiFileStoreService<StoreFileData<'pools'>>
     apiAppUpdate: ApiAppUpdate
+    apiLog: ApiLog
   }
 }

@@ -618,7 +618,7 @@ export const THORNameForm = ({
                 {/* Preferred Asset (update mode only) */}
                 {!isNewRegistration && (
                   <div>
-                    <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                    <div className="mb-2 font-main-semi-bold text-[12px] text-gray2 uppercase dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.preferredAsset' })}
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -645,7 +645,7 @@ export const THORNameForm = ({
 
                 {/* Alias Chain */}
                 <div>
-                  <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                  <div className="mb-2 font-main-semi-bold text-[12px] text-gray2 uppercase dark:text-gray2d">
                     {intl.formatMessage({ id: 'common.aliasChain' })}
                   </div>
                   {isNewRegistration ? (
@@ -682,7 +682,7 @@ export const THORNameForm = ({
 
                 {/* Alias Address */}
                 <div>
-                  <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                  <div className="mb-2 font-main-semi-bold text-[12px] text-gray2 uppercase dark:text-gray2d">
                     {intl.formatMessage({ id: 'common.aliasAddress' })}
                   </div>
                   {isNewRegistration ? (
@@ -712,7 +712,7 @@ export const THORNameForm = ({
 
                 {/* Expiry */}
                 <div>
-                  <div className="font-mainSemiBold mb-2 text-[12px] text-gray2 uppercase dark:text-gray2d">
+                  <div className="mb-2 font-main-semi-bold text-[12px] text-gray2 uppercase dark:text-gray2d">
                     {intl.formatMessage({ id: 'common.expiry' })}
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -769,7 +769,7 @@ export const THORNameForm = ({
                       <div className="text-[11px] text-gray2 dark:text-gray2d">
                         {intl.formatMessage({ id: 'common.amount' })}
                       </div>
-                      <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+                      <div className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">
                         {formatAssetAmountCurrency({
                           amount: baseToAsset(quoteState.amount),
                           asset: AssetRuneNative,
@@ -816,7 +816,7 @@ export const THORNameForm = ({
         <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
           <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
             <BaseButton
-              className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              className="group flex w-full !justify-between !p-0 font-main-semi-bold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
               onClick={() => setShowDetails((current) => !current)}>
               {intl.formatMessage({ id: 'common.details' })}
               {showDetails ? (
@@ -827,7 +827,7 @@ export const THORNameForm = ({
             </BaseButton>
             {showDetails && (
               <>
-                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                <div className="ml-[-2px] flex w-full justify-between pt-10px font-main-bold text-[14px]">
                   {intl.formatMessage({ id: 'common.amount' })}
                   <div className="truncate pl-10px font-main text-[12px]">
                     {formatAssetAmountCurrency({
@@ -837,7 +837,7 @@ export const THORNameForm = ({
                     })}
                   </div>
                 </div>
-                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                <div className="ml-[-2px] flex w-full justify-between pt-10px font-main-bold text-[14px]">
                   {intl.formatMessage({ id: 'common.memo' })}
                   <div className="overflow pl-10px font-main text-[12px] break-normal">
                     <Tooltip title={quoteState.memo}>{quoteState.memo}</Tooltip>

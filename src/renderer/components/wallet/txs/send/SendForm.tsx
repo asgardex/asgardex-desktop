@@ -1567,7 +1567,7 @@ export const SendForm = (props: Props): JSX.Element => {
 
         <div className="mt-20px w-full font-main text-[12px] text-gray2 uppercase dark:text-gray2d">
           <BaseButton
-            className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            className="group flex w-full !justify-between !p-0 font-main-semi-bold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
             onClick={() => setShowDetails((current) => !current)}>
             {intl.formatMessage({ id: 'common.details' })}
             {showDetails ? (

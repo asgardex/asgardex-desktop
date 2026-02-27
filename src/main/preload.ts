@@ -84,3 +84,13 @@ const apiAppUpdate = {
   checkForAppUpdates: (): Promise<AppUpdateRD> => ipcRenderer.invoke(IPCMessages.APP_CHECK_FOR_UPDATE)
 }
 contextBridge.exposeInMainWorld('apiAppUpdate', apiAppUpdate)
+
+//
+// `apiLog` object - Renderer to main process logging
+//
+const apiLog = {
+  info: (prefix: string, ...args: unknown[]) => ipcRenderer.send(IPCMessages.RENDERER_LOG, 'info', prefix, ...args),
+  warn: (prefix: string, ...args: unknown[]) => ipcRenderer.send(IPCMessages.RENDERER_LOG, 'warn', prefix, ...args),
+  error: (prefix: string, ...args: unknown[]) => ipcRenderer.send(IPCMessages.RENDERER_LOG, 'error', prefix, ...args)
+}
+contextBridge.exposeInMainWorld('apiLog', apiLog)

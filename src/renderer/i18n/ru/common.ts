@@ -146,6 +146,7 @@ const common: CommonMessages = {
   'common.accept': 'Принять',
   'common.allocationByType': 'Распределение по типу',
   'common.allocationByChain': 'Распределение по цепочке',
+  'common.approve.waiting': 'Ожидание подтверждения...',
   'common.approve.checking': 'Проверяем подтверждение для {asset}',
   'common.approve.error': 'Ошибка проверки подтверждения для {asset}: {error}',
   'common.step': 'Шаг {current}/{total}',

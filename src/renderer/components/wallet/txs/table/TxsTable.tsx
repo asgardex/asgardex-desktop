@@ -41,9 +41,8 @@ export const TxsTable = memo(function TxsTable(props: Props): JSX.Element {
 
   const renderTextWithBreak = useCallback(
     (text: string, key: string) => (
-      <Label key={key} color="dark" textTransform="lowercase">
+      <Label key={key} size="big" color="dark" textTransform="lowercase">
         {text}
-        <br key={`${key}-br`} />
       </Label>
     ),
     []
@@ -52,11 +51,11 @@ export const TxsTable = memo(function TxsTable(props: Props): JSX.Element {
   const renderAddressWithBreak = useCallback(
     (address: Address, key: string) =>
       walletAddress === address ? (
-        <Label key={key} color="dark" textTransform="uppercase">
+        <Label key={key} size="big" color="dark" textTransform="uppercase">
           {intl.formatMessage({ id: 'common.address.self' })}
         </Label>
       ) : (
-        <Label key={key} color="dark" textTransform="lowercase">
+        <Label key={key} size="big" color="dark" textTransform="lowercase">
           <AddressEllipsis address={address} chain={chain} network={network} />
         </Label>
       ),
@@ -101,10 +100,10 @@ export const TxsTable = memo(function TxsTable(props: Props): JSX.Element {
   const renderDateColumn = useCallback(
     ({ date }: Tx) => (
       <div className="flex flex-col">
-        <Label color="dark" textTransform="lowercase">
+        <Label size="big" color="dark" textTransform="lowercase">
           <CustomFormattedDate date={date} />
         </Label>
-        <Label color="dark" textTransform="lowercase">
+        <Label size="big" color="dark" textTransform="lowercase">
           <FormattedTime hour="2-digit" minute="2-digit" second="2-digit" hour12={false} value={date} />
         </Label>
       </div>
@@ -148,7 +147,7 @@ export const TxsTable = memo(function TxsTable(props: Props): JSX.Element {
         header: intl.formatMessage({ id: 'common.from' }),
         cell: ({ row }) => renderFromColumn(row.original),
         enableSorting: false,
-        size: 80
+        size: 140
       },
       {
         accessorKey: 'toAddr',
@@ -167,7 +166,7 @@ export const TxsTable = memo(function TxsTable(props: Props): JSX.Element {
         header: intl.formatMessage({ id: 'common.date' }),
         cell: ({ row }) => renderDateColumn(row.original),
         enableSorting: false,
-        size: 100
+        size: 130
       },
       {
         accessorKey: 'txHash',

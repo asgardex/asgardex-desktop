@@ -47,8 +47,8 @@ export const BaseButton = (props: BaseButtonProps): JSX.Element => {
 
   const fontFamily: Record<Font, string> = {
     normal: 'font-main',
-    semi: 'font-mainSemiBold',
-    bold: 'font-mainBold'
+    semi: 'font-main-semi-bold',
+    bold: 'font-main-bold'
   }
 
   return (

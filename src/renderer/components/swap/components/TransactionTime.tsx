@@ -34,7 +34,7 @@ export const TransactionTime = ({ intl, showDetails, sourceChain, targetAsset, o
 
   return (
     <>
-      <div className={clsx('font-mainBold flex w-full justify-between text-[14px]', { 'pt-10px': showDetails })}>
+      <div className={clsx('flex w-full justify-between font-main-bold text-[14px]', { 'pt-10px': showDetails })}>
         <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.time.title' })}</div>
         <div className="text-text2 dark:text-text2d">{formatSwapTime(transactionTime)}</div>
       </div>

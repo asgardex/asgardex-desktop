@@ -829,7 +829,7 @@ export const InteractFormThor = ({
                   <div
                     key={index}
                     className="mb-2 flex items-center justify-between text-[12px] text-text2 dark:text-text2d">
-                    <span className="font-mainBold">{example.type}:</span>
+                    <span className="font-main-bold">{example.type}:</span>
                     <span className="font-main">{example.memo}</span>
                   </div>
                 ))}
@@ -1019,15 +1019,15 @@ export const InteractFormThor = ({
                 )}
                 {userNodeInfo && (interactType === InteractType.Bond || interactType === InteractType.Unbond) && (
                   <div className="p-4">
-                    <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="ml-[-2px] flex w-full justify-between font-main-bold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.nodeAddress' })}
                       <div className="truncate pl-10px font-main text-[12px]">{userNodeInfo.nodeAddress}</div>
                     </div>
-                    <div className="font-mainBold ml-[-2px] flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="ml-[-2px] flex w-full justify-between font-main-bold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.address.self' })}
                       <div className="truncate pl-10px font-main text-[12px]">{walletAddress}</div>
                     </div>
-                    <div className="font-mainBold ml-[-2px] flex w-full justify-between py-10px text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="ml-[-2px] flex w-full justify-between py-10px font-main-bold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'bonds.currentBond' })}
                       <div className="truncate pl-10px font-main text-[12px]">
                         {formatAssetAmountCurrency({
@@ -1130,7 +1130,7 @@ export const InteractFormThor = ({
           {/* memo */}
           <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
             <BaseButton
-              className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              className="group flex w-full !justify-between !p-0 font-main-semi-bold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
               onClick={() => setShowDetails((current) => !current)}>
               {intl.formatMessage({ id: 'common.details' })}
               {showDetails ? (
@@ -1143,7 +1143,7 @@ export const InteractFormThor = ({
               <>
                 {interactType === InteractType.RunePool && (
                   <>
-                    <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                    <div className="ml-[-2px] flex w-full justify-between pt-10px font-main-bold text-[14px]">
                       {intl.formatMessage({ id: 'protocolPool.detail.daysLeft' })}
                       <div className="truncate pl-10px font-main text-[12px]">
                         {RD.fold(
@@ -1170,7 +1170,7 @@ export const InteractFormThor = ({
                   </>
                 )}
 
-                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                <div className="ml-[-2px] flex w-full justify-between pt-10px font-main-bold text-[14px]">
                   {amountLabel}
                   <div className="truncate pl-10px font-main text-[12px]">
                     {formatAssetAmountCurrency({
@@ -1183,7 +1183,7 @@ export const InteractFormThor = ({
                   </div>
                 </div>
 
-                <div className="font-mainBold ml-[-2px] flex w-full justify-between pt-10px text-[14px]">
+                <div className="ml-[-2px] flex w-full justify-between pt-10px font-main-bold text-[14px]">
                   {intl.formatMessage({ id: 'common.memo' })}
                   <div className="overflow pl-10px font-main text-[12px] break-normal">{memoLabel}</div>
                 </div>

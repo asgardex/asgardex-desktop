@@ -163,6 +163,12 @@ const langChangeHandler = (locale: Locale) => {
 }
 
 const initIPC = () => {
+  // Renderer logging - routes console.log from renderer to main process log
+  ipcMain.on(IPCMessages.RENDERER_LOG, (_, level: string, prefix: string, ...args: unknown[]) => {
+    const message = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
+    const logFn = level === 'error' ? log.error : level === 'warn' ? log.warn : log.info
+    logFn(`[R] ${prefix} ${message}`)
+  })
   // Lang
   ipcMain.on(IPCMessages.UPDATE_LANG, (_, locale: Locale) => langChangeHandler(locale))
   // Keystore

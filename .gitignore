@@ -37,6 +37,9 @@ dev-app-update.yml
 .trunk/out/
 .trunk/logs/
 
+# Dev logs
+log/*.log
+
 stats.html
 
 # Claude

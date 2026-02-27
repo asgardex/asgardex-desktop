@@ -607,7 +607,7 @@ export const Withdraw = ({
           {intl.formatMessage({ id: 'common.withdraw' })}
         </FlatButton>
       </div>
-      <div className="font-mainBold w-full pt-10px text-[14px] text-text2 dark:text-text2d">
+      <div className="w-full pt-10px font-main-bold text-[14px] text-text2 dark:text-text2d">
         {intl.formatMessage({ id: 'common.memos' })}
       </div>
       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
