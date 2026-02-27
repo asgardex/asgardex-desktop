@@ -1011,24 +1011,7 @@ export const Swap = ({
   } = useSubscriptionState<TxHashRD>(RD.initial)
 
   // State for values of `isApprovedERC20Token$`
-  const {
-    state: isApprovedState,
-    reset: resetIsApprovedState,
-    subscribe: subscribeIsApprovedState
-  } = useSubscriptionState<IsApprovedRD>(RD.initial)
-
-  const checkApprovedStatus = useCallback(
-    ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
-      subscribeIsApprovedState(
-        isApprovedERC20Token$({
-          contractAddress,
-          spenderAddress,
-          fromAddress
-        })
-      )
-    },
-    [isApprovedERC20Token$, subscribeIsApprovedState]
-  )
+  const { reset: resetIsApprovedState } = useSubscriptionState<IsApprovedRD>(RD.initial)
 
   const fetchSwap = useCallback(
     async (amount: BaseAmount) => {
