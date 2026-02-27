@@ -337,8 +337,7 @@ export const createTransactionService = (
               errorId: ErrorId.APPROVE_TX
             })
           )
-      ),
-      RxOp.startWith(RD.pending)
+      )
     )
   }
 
