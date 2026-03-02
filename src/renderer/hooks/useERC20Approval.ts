@@ -5,7 +5,6 @@ import { Network } from '@xchainjs/xchain-client'
 import { function as FP, option as O } from 'fp-ts'
 import { Observable, Subscription } from 'rxjs'
 
-import { eqOApproveParams } from '../helpers/fp/eq'
 import { ApproveParams, IsApproveParams, IsApprovedRD } from '../services/evm/types'
 import { TxHashRD } from '../services/wallet/types'
 
@@ -66,11 +65,12 @@ export const useERC20Approval = ({
   // Whether we're polling for confirmation after tx success
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
 
-  // Refs for subscription cleanup and dedup
+  // Refs for subscription cleanup
   const activeSubRef = useRef<Subscription | null>(null)
+  const checkSubRef = useRef<Subscription | null>(null)
+  const checkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const approvalHandledRef = useRef(false)
   const paramsRef = useRef<ApproveParams | null>(null)
-  const prevCheckParamsRef = useRef<O.Option<ApproveParams>>(O.none)
   const onApprovalConfirmedRef = useRef(onApprovalConfirmed)
 
   // Keep callback ref stable
@@ -80,9 +80,6 @@ export const useERC20Approval = ({
 
   // Initial check: when oApproveParams changes, check on-chain status
   useEffect(() => {
-    if (eqOApproveParams.equals(oApproveParams, prevCheckParamsRef.current)) return
-    prevCheckParamsRef.current = oApproveParams
-
     return FP.pipe(
       oApproveParams,
       O.fold(
@@ -97,21 +94,29 @@ export const useERC20Approval = ({
             fromAddress: params.fromAddress
           }).subscribe((rd) => {
             if (RD.isSuccess(rd) || RD.isFailure(rd)) {
-              clearTimeout(timeout)
+              if (checkTimeoutRef.current) clearTimeout(checkTimeoutRef.current)
+              checkTimeoutRef.current = null
               setIsApprovedState(rd)
               sub.unsubscribe()
+              checkSubRef.current = null
             }
           })
 
+          checkSubRef.current = sub
+
           // Timeout guard
-          const timeout = setTimeout(() => {
+          checkTimeoutRef.current = setTimeout(() => {
             sub.unsubscribe()
+            checkSubRef.current = null
+            checkTimeoutRef.current = null
             setIsApprovedState(RD.initial)
           }, CHECK_TIMEOUT)
 
           return () => {
-            clearTimeout(timeout)
-            sub.unsubscribe()
+            if (checkTimeoutRef.current) clearTimeout(checkTimeoutRef.current)
+            checkTimeoutRef.current = null
+            checkSubRef.current?.unsubscribe()
+            checkSubRef.current = null
           }
         }
       )
@@ -218,18 +223,25 @@ export const useERC20Approval = ({
       activeSubRef.current?.unsubscribe()
       activeSubRef.current = null
     }
-  }, [approveState, oApproveParams, isApprovedERC20Token$])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [approveState, isApprovedERC20Token$])
 
   // Full reset
   const resetApproval = useCallback(() => {
+    // Cancel any in-flight initial check
+    if (checkTimeoutRef.current) clearTimeout(checkTimeoutRef.current)
+    checkTimeoutRef.current = null
+    checkSubRef.current?.unsubscribe()
+    checkSubRef.current = null
+    // Cancel any polling subscription
+    activeSubRef.current?.unsubscribe()
+    activeSubRef.current = null
+    // Reset all state
     resetApproveState()
     setIsApprovedState(RD.initial)
     setAwaitingConfirmation(false)
     approvalHandledRef.current = false
     paramsRef.current = null
-    prevCheckParamsRef.current = O.none
-    activeSubRef.current?.unsubscribe()
-    activeSubRef.current = null
   }, [resetApproveState])
 
   // Reset when approveState goes back to initial (external reset)
