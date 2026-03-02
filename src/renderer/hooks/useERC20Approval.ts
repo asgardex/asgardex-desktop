@@ -6,12 +6,11 @@ import { function as FP, option as O } from 'fp-ts'
 import { Observable, Subscription } from 'rxjs'
 
 import { eqOApproveParams } from '../helpers/fp/eq'
-import { ApproveParams, IsApproveParams } from '../services/evm/types'
+import { ApproveParams, IsApproveParams, IsApprovedRD } from '../services/evm/types'
 import { TxHashRD } from '../services/wallet/types'
 
 import { useSubscriptionState } from './useSubscriptionState'
 
-type IsApprovedRD = RD.RemoteData<{ msg: string }, boolean>
 type IsApprovedLD = Observable<IsApprovedRD>
 
 type UseERC20ApprovalParams = {
