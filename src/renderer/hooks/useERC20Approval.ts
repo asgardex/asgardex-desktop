@@ -91,7 +91,6 @@ export const useERC20Approval = ({
         () => () => undefined,
         (params) => {
           setIsApprovedState(RD.pending)
-          let timeout: ReturnType<typeof setTimeout> | undefined
 
           const sub = isApprovedERC20Token$({
             contractAddress: params.contractAddress,
@@ -99,20 +98,20 @@ export const useERC20Approval = ({
             fromAddress: params.fromAddress
           }).subscribe((rd) => {
             if (RD.isSuccess(rd) || RD.isFailure(rd)) {
-              if (timeout) clearTimeout(timeout)
+              clearTimeout(timeout)
               setIsApprovedState(rd)
               sub.unsubscribe()
             }
           })
 
           // Timeout guard
-          timeout = setTimeout(() => {
+          const timeout = setTimeout(() => {
             sub.unsubscribe()
             setIsApprovedState(RD.initial)
           }, CHECK_TIMEOUT)
 
           return () => {
-            if (timeout) clearTimeout(timeout)
+            clearTimeout(timeout)
             sub.unsubscribe()
           }
         }
