@@ -1,17 +1,9 @@
 import { BaseAmount, Address, AnyAsset } from '@xchainjs/xchain-util'
-import type { option } from 'fp-ts'
-
-type Option<T> = option.Option<T>
 
 import { WalletType } from '../../shared/wallet/types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FixmeType = any
-
-export type Pair = {
-  source: Option<string>
-  target: Option<string>
-}
 
 export type AssetWithAmount = {
   asset: AnyAsset
