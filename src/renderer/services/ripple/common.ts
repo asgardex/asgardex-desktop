@@ -31,7 +31,7 @@ const clientState$: ClientState$ = FP.pipe(
               const client = new XRPClient({ ...defaultXRPParams, phrase, network })
               return RD.success(client)
             } catch (error) {
-              logger.error('Failed to create XRD client', error)
+              logger.error('Failed to create XRP client', error)
               return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
           }),
