@@ -7,8 +7,8 @@ import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
 import { useChainContext } from '../contexts/ChainContext'
-import { logger } from '../helpers/logger'
 import { eqChain } from '../helpers/fp/eq'
+import { logger } from '../helpers/logger'
 import { AddressValidation, AddressValidationAsync } from '../services/clients'
 
 export const useValidateAddress = (

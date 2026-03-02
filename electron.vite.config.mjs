@@ -99,7 +99,8 @@ export default defineConfig(async ({ mode }) => {
         global: 'globalThis',
         $COMMIT_HASH: JSON.stringify(commitHash || 'dev'),
         $VERSION: JSON.stringify(pkg.version),
-        $IS_DEV: JSON.stringify(process.env.NODE_ENV !== 'production')
+        $IS_DEV: JSON.stringify(process.env.NODE_ENV !== 'production'),
+        $LOG: JSON.stringify(process.env.VITE_LOG === 'true')
       },
       server: {
         port: 3000,

@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path, { join } from 'path'
 
 import { BrowserWindow, app, ipcMain, nativeImage } from 'electron'
@@ -54,6 +55,16 @@ const initLogger = () => {
     }
     // Production logs go to ~/.config/{appName}/logs/
     return path.join(app.getPath('userData'), 'logs', safeFileName)
+  }
+
+  // Clear dev log on startup so each session starts clean
+  if (IS_DEV) {
+    const devLogPath = path.join(APP_ROOT, 'logs', 'main.log')
+    try {
+      fs.writeFileSync(devLogPath, '', { flag: 'w' })
+    } catch (_e) {
+      // logs dir may not exist yet — electron-log will create it
+    }
   }
 }
 

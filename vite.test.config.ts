@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [react()],
   define: {
     $IS_DEV: JSON.stringify(true),
+    $LOG: JSON.stringify(true),
     $COMMIT_HASH: JSON.stringify('test'),
     $VERSION: JSON.stringify('0.0.0-test')
   },

@@ -1,7 +1,7 @@
 const NOOP = (..._args: unknown[]): void => {}
 
 const createLogger = (level: 'error' | 'warn' | 'info' | 'debug', prefix: string) => {
-  if (!$IS_DEV) return NOOP
+  if (!$IS_DEV || !$LOG) return NOOP
   return (...args: unknown[]): void => {
     const timestamp = new Date().toISOString()
     console[level](`[${prefix}][${timestamp}]`, ...args)

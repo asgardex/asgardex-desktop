@@ -25,7 +25,6 @@ import { Input } from '../../components/uielements/input'
 import { Label } from '../../components/uielements/label'
 import { Spin } from '../../components/uielements/spin'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { logger } from '../../helpers/logger'
 import {
   getChainAsset,
   isBtcChain,
@@ -41,6 +40,7 @@ import {
   isSolChain
 } from '../../helpers/chainHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
+import { logger } from '../../helpers/logger'
 import { useNetwork } from '../../hooks/useNetwork'
 import * as walletRoutes from '../../routes/wallet'
 import { isStandaloneLedgerMode } from '../../services/wallet/types'

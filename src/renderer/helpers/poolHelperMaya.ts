@@ -21,10 +21,10 @@ import {
   getValueOfRuneInAsset
 } from '../views/pools/Pools.utils'
 import { convertBaseAmountDecimal, isCacaoAsset, isMayaAsset, to1e10BaseAmount, to1e8BaseAmount } from './assetHelper'
-import { logger } from './logger'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
+import { logger } from './logger'
 import { emptyString } from './stringHelper'
 
 export const sortByDepth = (a: { depthPrice: BaseAmount }, b: { depthPrice: BaseAmount }) =>

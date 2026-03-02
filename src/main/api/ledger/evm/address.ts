@@ -1,5 +1,4 @@
 import type Transport from '@ledgerhq/hw-transport'
-import log from 'electron-log'
 import { ARBChain, defaultArbParams } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain, defaultBaseParams } from '@xchainjs/xchain-base'
@@ -8,6 +7,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { ETHChain, defaultEthParams } from '@xchainjs/xchain-ethereum'
 import { ClientLedger, LedgerSigner } from '@xchainjs/xchain-evm'
 import { Chain } from '@xchainjs/xchain-util'
+import log from 'electron-log'
 import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
