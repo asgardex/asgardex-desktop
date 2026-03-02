@@ -1,7 +1,7 @@
 import { logger, createScopedLogger } from './logger'
 
 describe('helpers/logger', () => {
-  // In the test env, $IS_DEV=true and $LOG=true, so loggers are active
+  // In the test env, $IS_DEV=true and $LOG_LEVEL='debug', so all levels are active
 
   describe('logger', () => {
     it('has all log level methods', () => {

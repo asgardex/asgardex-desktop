@@ -6,7 +6,7 @@
   "main": "build/main/electron.js",
   "scripts": {
     "dev": "electron-vite dev",
-    "dev:log": "cross-env VITE_LOG=true electron-vite dev",
+    "dev:log": "cross-env VITE_LOG_LEVEL=info electron-vite dev",
     "force-rebuild-native-deps": "rimraf ./node_modules/prebuild-install",
     "preview": "cross-env VITE_NODE_ENV=production NODE_OPTIONS=\"--max-old-space-size=8192\" electron-vite preview",
     "build": "cross-env VITE_NODE_ENV=production NODE_OPTIONS=\"--max-old-space-size=8192\" CI=false electron-vite build",

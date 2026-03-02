@@ -56,7 +56,7 @@ export default [
       globals: {
         $COMMIT_HASH: 'readonly',
         $IS_DEV: 'readonly',
-        $LOG: 'readonly',
+        $LOG_LEVEL: 'readonly',
         $VERSION: 'readonly'
       },
 

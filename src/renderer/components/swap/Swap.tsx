@@ -1128,6 +1128,10 @@ export const Swap = ({
         }
 
         sortAndSetDefaultQuote(allQuotes)
+        logger.info(
+          `Swap quotes fetched: ${allQuotes.length} routes`,
+          allQuotes.map((q) => q.protocol)
+        )
       } catch (err) {
         logger.error('Failed to fetch estimate:', err)
 
