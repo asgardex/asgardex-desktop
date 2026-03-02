@@ -4,6 +4,7 @@ import { isSuccess } from '@devexperts/remote-data-ts'
 import { assetToString } from '@xchainjs/xchain-util'
 
 import { useMayachainContext } from '../contexts/MayachainContext'
+import { logger } from '../helpers/logger'
 import { MayanodePool, MayanodePoolsLD } from '../services/mayachain/types' // Ensure MayanodePool is imported
 
 export const useBondableAssets = (): string[] => {
@@ -24,7 +25,7 @@ export const useBondableAssets = (): string[] => {
         }
       },
       error: (err: Error) => {
-        console.error('Error fetching pools:', err)
+        logger.error('Error fetching pools:', err)
         setBondableAssets([]) // Reset to empty array on error
       }
     })

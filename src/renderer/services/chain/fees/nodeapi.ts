@@ -3,10 +3,13 @@ import { baseAmount, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O, array as A } from 'fp-ts'
 
 import { isChainOfMaya } from '../../../../shared/utils/chain'
+import { createScopedLogger } from '../../../helpers/logger'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import { inboundAddressesShared$ as mayaInboundAddresses$ } from '../../mayachain'
 import { inboundAddressesShared$ as thorInboundAddresses$ } from '../../thorchain'
 import { InboundAddress as ThorInboundAddress } from '../../thorchain/types'
+
+const logger = createScopedLogger('nodeapi')
 
 export enum NodeProtocol {
   THORCHAIN = 'THORCHAIN',
@@ -44,21 +47,21 @@ export const convertNodeGasRate = (chain: Chain, gasRate: number, gasRateUnits?:
       // nAVAX = nano AVAX = 10^-9 AVAX = gwei equivalent
       // Already in the right unit for EVM client
       if (gasRateUnits && gasRateUnits !== 'nAVAX') {
-        console.warn(`Unexpected gas_rate_units for AVAX: ${gasRateUnits}`)
+        logger.warn(`Unexpected gas_rate_units for AVAX: ${gasRateUnits}`)
       }
       return gasRate
 
     case 'ETH':
       // Already in gwei, which is what EVM client expects
       if (gasRateUnits && gasRateUnits !== 'gwei') {
-        console.warn(`Unexpected gas_rate_units for ETH: ${gasRateUnits}`)
+        logger.warn(`Unexpected gas_rate_units for ETH: ${gasRateUnits}`)
       }
       return gasRate
 
     case 'BSC':
       // Already in gwei, which is what EVM client expects
       if (gasRateUnits && gasRateUnits !== 'gwei') {
-        console.warn(`Unexpected gas_rate_units for BSC: ${gasRateUnits}`)
+        logger.warn(`Unexpected gas_rate_units for BSC: ${gasRateUnits}`)
       }
       return gasRate
 
@@ -68,7 +71,7 @@ export const convertNodeGasRate = (chain: Chain, gasRate: number, gasRateUnits?:
       if (gasRateUnits === 'mwei') {
         return gasRate / 1e3
       }
-      console.warn(`Unexpected gas_rate_units for BASE: ${gasRateUnits}`)
+      logger.warn(`Unexpected gas_rate_units for BASE: ${gasRateUnits}`)
       return gasRate
 
     case 'ARB':
@@ -77,7 +80,7 @@ export const convertNodeGasRate = (chain: Chain, gasRate: number, gasRateUnits?:
       if (gasRateUnits === 'centigwei') {
         return gasRate / 100
       }
-      console.warn(`Unexpected gas_rate_units for ARB: ${gasRateUnits}`)
+      logger.warn(`Unexpected gas_rate_units for ARB: ${gasRateUnits}`)
       return gasRate
 
     case 'BTC':
@@ -86,7 +89,7 @@ export const convertNodeGasRate = (chain: Chain, gasRate: number, gasRateUnits?:
     case 'DOGE':
       // UTXO chains return satsperbyte, which is what clients expect
       if (gasRateUnits && gasRateUnits !== 'satsperbyte') {
-        console.warn(`Unexpected gas_rate_units for ${chain}: ${gasRateUnits}`)
+        logger.warn(`Unexpected gas_rate_units for ${chain}: ${gasRateUnits}`)
       }
       return gasRate
 
@@ -98,7 +101,7 @@ export const convertNodeGasRate = (chain: Chain, gasRate: number, gasRateUnits?:
     case 'GAIA':
       // Returns uatom (micro atom), which is the smallest unit
       if (gasRateUnits && gasRateUnits !== 'uatom') {
-        console.warn(`Unexpected gas_rate_units for GAIA: ${gasRateUnits}`)
+        logger.warn(`Unexpected gas_rate_units for GAIA: ${gasRateUnits}`)
       }
       return gasRate
 
@@ -111,7 +114,7 @@ export const convertNodeGasRate = (chain: Chain, gasRate: number, gasRateUnits?:
     case 'XRP':
       // Returns in drops (smallest unit)
       if (gasRateUnits && gasRateUnits !== 'drop') {
-        console.warn(`Unexpected gas_rate_units for XRP: ${gasRateUnits}`)
+        logger.warn(`Unexpected gas_rate_units for XRP: ${gasRateUnits}`)
       }
       return gasRate
 
@@ -124,7 +127,7 @@ export const convertNodeGasRate = (chain: Chain, gasRate: number, gasRateUnits?:
       return gasRate
 
     default:
-      console.warn(`Unknown chain ${chain} with gas_rate_units: ${gasRateUnits}`)
+      logger.warn(`Unknown chain ${chain} with gas_rate_units: ${gasRateUnits}`)
       return gasRate
   }
 }

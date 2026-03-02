@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { defaultWalletName } from '../../../../shared/utils/wallet'
+import { logger } from '../../../helpers/logger'
 import { KeystoreClientStates } from '../../../hooks/useKeystoreClientStates'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
@@ -61,7 +62,7 @@ export const ImportKeystore = (props: Props): JSX.Element => {
             name: name || defaultWalletName(walletId)
           })
         } catch {
-          console.error('Error importing keystore')
+          logger.error('Error importing keystore')
         }
       }
     },

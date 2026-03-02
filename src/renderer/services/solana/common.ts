@@ -7,6 +7,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { envOrDefault } from '../../../shared/utils/env'
 import { isError } from '../../../shared/utils/guard'
+import { logger } from '../../helpers/logger'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
@@ -48,7 +49,7 @@ const clientState$: ClientState$ = FP.pipe(
               const client = new SolClient(solInitParams)
               return RD.success(client)
             } catch (error) {
-              console.error('Failed to create SOL client', error)
+              logger.error('Failed to create SOL client', error)
               return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
           }),
@@ -81,7 +82,7 @@ const readOnlyClientState$: ClientState$ = FP.pipe(
       const client = new SolClient(solInitParams)
       return RD.success(client)
     } catch (error) {
-      console.error('Failed to create read-only SOL client', error)
+      logger.error('Failed to create read-only SOL client', error)
       return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only SOL client'))
     }
   }),

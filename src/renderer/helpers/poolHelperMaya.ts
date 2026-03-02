@@ -24,6 +24,7 @@ import { convertBaseAmountDecimal, isCacaoAsset, isMayaAsset, to1e10BaseAmount, 
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
+import { logger } from './logger'
 import { emptyString } from './stringHelper'
 
 export const sortByDepth = (a: { depthPrice: BaseAmount }, b: { depthPrice: BaseAmount }) =>
@@ -183,7 +184,7 @@ export const getPoolPriceValue = ({
           () => O.none, // Initial state
           () => O.none, // Loading state
           (error) => {
-            console.error('Failed to fetch Maya price:', error)
+            logger.error('Failed to fetch Maya price:', error)
             return O.none
           },
           (mayaScanPrice: MayaScanPrice) => {

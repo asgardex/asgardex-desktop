@@ -2,6 +2,7 @@ import { function as FP, option as O } from 'fp-ts'
 import { Subscription } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { logger } from '../../helpers/logger'
 import { observableState } from '../../helpers/stateHelper'
 import { network$ } from '../app/service'
 import { keystoreService } from './keystore'
@@ -105,7 +106,7 @@ export const createAppWalletService = (): AppWalletService => {
         keystoreService.lock()
       } else {
         // This shouldn't happen if UI is properly disabled, but keep as safety check
-        console.warn('Cannot switch to ledger-only mode while keystore is unlocked')
+        logger.warn('Cannot switch to ledger-only mode while keystore is unlocked')
         return
       }
     }

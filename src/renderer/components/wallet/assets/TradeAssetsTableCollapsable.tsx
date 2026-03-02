@@ -32,6 +32,7 @@ import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { isCacaoAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import { logger } from '../../../helpers/logger'
 import { Action, getTradeMemo } from '../../../helpers/memoHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import {
@@ -180,7 +181,7 @@ export const TradeAssetsTableCollapsable = ({
         oTradeWithdrawParams,
         O.map((params) => params.walletType),
         O.fold(
-          () => console.warn('No wallet type available'),
+          () => logger.warn('No wallet type available'),
           (walletType) => {
             if (walletType === WalletType.Ledger) {
               setShowLedgerModal('deposit')

@@ -40,6 +40,7 @@ import {
   isSolChain
 } from '../../helpers/chainHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
+import { logger } from '../../helpers/logger'
 import { useNetwork } from '../../hooks/useNetwork'
 import * as walletRoutes from '../../routes/wallet'
 import { isStandaloneLedgerMode } from '../../services/wallet/types'
@@ -151,7 +152,7 @@ export const LedgerChainSelectView: React.FC = () => {
 
       await appWalletService.standaloneLedgerService.startDetection()
     } catch (error) {
-      console.error('Error during single chain detection for chain:', selectedChain, error)
+      logger.error('Error during single chain detection for chain:', selectedChain, error)
     }
   }, [selectedChain, selectedHDMode, walletAccount, walletIndex, appWalletService.standaloneLedgerService])
 
@@ -172,7 +173,7 @@ export const LedgerChainSelectView: React.FC = () => {
       // Navigate to assets page without any URL parameters
       navigate(walletRoutes.assets.path(), { replace: true })
     } catch (error) {
-      console.error('Error completing standalone ledger setup:', error)
+      logger.error('Error completing standalone ledger setup:', error)
     }
   }, [appWalletService, navigate, standaloneLedgerState?.connectedChain, reloadBalancesByChain, reloadBalances])
 

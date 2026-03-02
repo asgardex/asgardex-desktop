@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { DocumentDuplicateIcon, CheckIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 
+import { logger } from '../../../helpers/logger'
+
 type Props = {
   label?: string
   textToCopy: string
@@ -28,7 +30,7 @@ export const CopyLabel = ({ label, textToCopy, className = '', iconClassName = '
       if (timerRef.current) clearTimeout(timerRef.current)
       timerRef.current = setTimeout(() => setCopied(false), 1500)
     } catch (err) {
-      console.error('Failed to copy text', err)
+      logger.error('Failed to copy text', err)
     }
   }, [textToCopy])
 

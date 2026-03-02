@@ -5,6 +5,12 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    $IS_DEV: JSON.stringify(true),
+    $LOG_LEVEL: JSON.stringify('debug'),
+    $COMMIT_HASH: JSON.stringify('test'),
+    $VERSION: JSON.stringify('0.0.0-test')
+  },
   resolve: {
     alias: {
       '@ledgerhq/evm-tools/': path.resolve(__dirname, 'node_modules/@ledgerhq/evm-tools/lib/selectors'),

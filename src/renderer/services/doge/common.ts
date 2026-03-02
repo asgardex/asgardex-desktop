@@ -9,6 +9,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { blockcypherApiKey, blockcypherUrl } from '../../../shared/api/blockcypher'
 import { isError } from '../../../shared/utils/guard'
+import { logger } from '../../helpers/logger'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
@@ -61,7 +62,7 @@ const clientState$: ClientState$ = FP.pipe(
               const client = new DogeClient(dogeInitParams)
               return RD.success(client)
             } catch (error) {
-              console.error('Failed to create DOGE client', error)
+              logger.error('Failed to create DOGE client', error)
               return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
           }),

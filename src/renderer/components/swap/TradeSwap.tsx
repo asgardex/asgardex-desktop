@@ -54,6 +54,7 @@ import { isEvmChain, isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
+import { logger } from '../../helpers/logger'
 import { getSwapMemo, updateMemoWithFullAsset } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
@@ -703,7 +704,7 @@ export const TradeSwap = ({
           })
           .catch((error) => {
             setQuote(O.none)
-            console.error('Failed to get quote:', error)
+            logger.error('Failed to get quote:', error)
             setErrorProtocol(O.some(error as Error))
           })
       } else {
@@ -714,7 +715,7 @@ export const TradeSwap = ({
           })
           .catch((error) => {
             setQuoteMaya(O.none)
-            console.error('Failed to get quote:', error)
+            logger.error('Failed to get quote:', error)
             setErrorProtocol(O.some(error as Error))
           })
       }

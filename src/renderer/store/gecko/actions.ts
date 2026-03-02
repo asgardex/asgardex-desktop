@@ -1,6 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios'
 
+import { logger } from '../../helpers/logger'
+
 export const fetchPrice = createAsyncThunk('coingecko/price', async (coinIds: string) => {
   try {
     const { data: geckoPrice } = await axios.get(
@@ -9,7 +11,7 @@ export const fetchPrice = createAsyncThunk('coingecko/price', async (coinIds: st
 
     return geckoPrice
   } catch (error) {
-    console.error(error)
+    logger.error(error)
     throw error
   }
 })

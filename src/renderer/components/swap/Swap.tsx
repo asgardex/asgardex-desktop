@@ -63,6 +63,7 @@ import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
+import { logger } from '../../helpers/logger'
 import { getSwapMemo, updateMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
@@ -1127,8 +1128,12 @@ export const Swap = ({
         }
 
         sortAndSetDefaultQuote(allQuotes)
+        logger.info(
+          `Swap quotes fetched: ${allQuotes.length} routes`,
+          allQuotes.map((q) => q.protocol)
+        )
       } catch (err) {
-        console.error('Failed to fetch estimate:', err)
+        logger.error('Failed to fetch estimate:', err)
 
         // Ensure we always have a proper Error object with a valid message
         let errorToSet: Error
@@ -1386,7 +1391,7 @@ export const Swap = ({
                 const usdValue = swapResultAmountMax.baseAmount.times(geckoPrice)
                 return usdValue
               } catch (error) {
-                console.warn('Error calculating Chainflip USD value:', error)
+                logger.warn('Error calculating Chainflip USD value:', error)
                 return baseAmount(0, THORCHAIN_DECIMAL)
               }
             }

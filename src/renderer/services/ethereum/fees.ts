@@ -11,6 +11,7 @@ import * as RxOp from 'rxjs/operators'
 import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../shared/const'
 import { applyGasMultiplier } from '../../../shared/evm/gas'
 import { isEthAsset } from '../../helpers/assetHelper'
+import { logger } from '../../helpers/logger'
 import { observableState } from '../../helpers/stateHelper'
 import { getChainGasPrices$ } from '../chain/fees/nodeapi'
 import type { FeeLD } from '../chain/types'
@@ -98,7 +99,7 @@ export const createFeesService = (
                 })
               ).pipe(
                 RxOp.catchError((error) => {
-                  console.error('Gas limit estimation failed, using fallback:', error)
+                  logger.error('Gas limit estimation failed, using fallback:', error)
                   // Use same fallback logic as in estimateAndCalculateFees
                   const fallbackGasLimit =
                     params.asset && isEthAsset(params.asset as Asset)

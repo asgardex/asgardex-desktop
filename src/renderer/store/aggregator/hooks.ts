@@ -4,6 +4,7 @@ import { QuoteSwapParams } from '@xchainjs/xchain-aggregator'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { useSelector } from 'react-redux'
 
+import { logger } from '../../helpers/logger'
 import { getCurrentNetworkState } from '../../services/app/service'
 import { RootState, useAppDispatch } from '../store'
 import * as xchainActions from './actions'
@@ -42,7 +43,7 @@ export const useAggregator = () => {
         ).unwrap()
         return result
       } catch (error) {
-        console.error('Failed to fetch estimate:', error)
+        logger.error('Failed to fetch estimate:', error)
         throw error
       }
     },

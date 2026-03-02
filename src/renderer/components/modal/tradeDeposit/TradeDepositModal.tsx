@@ -27,6 +27,7 @@ import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { getEVMTokenAddressForChain } from '../../../helpers/assetHelper'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
+import { logger } from '../../../helpers/logger'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { INITIAL_DEPOSIT_STATE } from '../../../services/chain/const'
 import { tradeDeposit$, generateTradeMemo } from '../../../services/chain/transaction/tradeDeposit'
@@ -530,19 +531,19 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     const poolAddress = currentProtocol === THORChain ? selectedPoolAddressThor : selectedPoolAddressMaya
 
     if (O.isNone(poolAddress)) {
-      console.error('Pool address not available')
+      logger.error('Pool address not available')
       return
     }
 
     FP.pipe(
       selectedAssetBalance,
       O.fold(
-        () => console.error('No balance found'),
+        () => logger.error('No balance found'),
         (balance) => {
           FP.pipe(
             selectedAsset,
             O.fold(
-              () => console.error('No asset selected'),
+              () => logger.error('No asset selected'),
               (asset) => {
                 // Convert amount to BaseAmount
                 const userAmount = parseFloat(amount)

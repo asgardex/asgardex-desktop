@@ -51,6 +51,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { assetInList, getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqChain, eqNetwork } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
+import { logger } from '../../helpers/logger'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } from '../../helpers/walletHelper'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
@@ -139,7 +140,7 @@ const SuccessRouteView = ({
       getAssetsData$().pipe(
         RxOp.catchError(() => {
           // If Chainflip fails (429 or other errors), return empty array instead of failing
-          console.warn('Chainflip assets unavailable, continuing without Chainflip support')
+          logger.warn('Chainflip assets unavailable, continuing without Chainflip support')
           return Rx.of(RD.success([]))
         }),
         RxOp.startWith(RD.success([])) // Ensure we always start with a success state

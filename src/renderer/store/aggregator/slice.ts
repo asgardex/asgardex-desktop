@@ -19,6 +19,7 @@ import {
   ASGARDEX_AFFILIATE_BROKERS_ADDRESS
 } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
+import { logger } from '../../helpers/logger'
 import { getProtocolFromStorage, setValueToStorage, StorageKey } from '../../helpers/storage'
 import { getCurrentNetworkState } from '../../services/app/service'
 import { State } from './types'
@@ -40,14 +41,14 @@ const getAffiliateBrokers = () => {
       }
     ]
   }
-  console.warn('Invalid or missing affiliate broker address in slice initialization, using empty array')
+  logger.warn('Invalid or missing affiliate broker address in slice initialization, using empty array')
   return []
 }
 
 // Validate broker URL
 const getBrokerUrl = () => {
   if (!ASGARDEX_BROKER_URL || typeof ASGARDEX_BROKER_URL !== 'string' || ASGARDEX_BROKER_URL.trim() === '') {
-    console.warn('Invalid broker URL in slice initialization, using empty string')
+    logger.warn('Invalid broker URL in slice initialization, using empty string')
     return ''
   }
   return ASGARDEX_BROKER_URL
