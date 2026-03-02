@@ -38,14 +38,24 @@ const polar = (cx: number, cy: number, r: number, angle: number) => ({
 const usdFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
 const buildSlices = (data: { name: string; value: number }[], outerR: number, innerR: number): SliceData[] => {
-  const n = data.length
+  // Normalize: treat non-finite / non-positive values as 0
+  const normalized = data.map((d) => ({
+    ...d,
+    value: Number.isFinite(d.value) && d.value > 0 ? d.value : 0
+  }))
+  const n = normalized.length
   if (n === 0) return []
 
-  const total = data.reduce((s, d) => s + d.value, 0)
+  const total = normalized.reduce((s, d) => s + d.value, 0)
   if (total === 0) return []
 
-  // Single item: full donut ring (two semicircular arcs to avoid SVG limitation)
-  if (n === 1) {
+  // Filter to only positive entries for geometry
+  const positiveCount = normalized.filter((d) => d.value > 0).length
+
+  // Single positive item: full donut ring (two semicircular arcs to avoid SVG limitation)
+  if (positiveCount === 1) {
+    const idx = normalized.findIndex((d) => d.value > 0)
+    const d = normalized[idx]
     const t = polar(CX, CY, outerR, -Math.PI / 2)
     const b = polar(CX, CY, outerR, Math.PI / 2)
     const ti = polar(CX, CY, innerR, -Math.PI / 2)
@@ -55,9 +65,9 @@ const buildSlices = (data: { name: string; value: number }[], outerR: number, in
         startAngle: -Math.PI / 2,
         endAngle: (3 * Math.PI) / 2,
         midAngle: Math.PI / 2,
-        color: ChartColors[0],
-        name: data[0].name,
-        value: data[0].value,
+        color: ChartColors[idx % ChartColors.length],
+        name: d.name,
+        value: d.value,
         path: [
           `M${t.x},${t.y}`,
           `A${outerR},${outerR} 0 1 1 ${b.x},${b.y}`,
@@ -72,8 +82,10 @@ const buildSlices = (data: { name: string; value: number }[], outerR: number, in
   }
 
   // Calculate proportional angles with total padding removed
-  const available = Math.max(2 * Math.PI - PAD_ANGLE * n, 0)
-  const angles = data.map((d) => (d.value / total) * available)
+  const available = Math.max(2 * Math.PI - PAD_ANGLE * positiveCount, 0)
+  // Scale minAngle down if too many slices to fit
+  const minAngle = positiveCount > 0 ? Math.min(MIN_ANGLE, available / positiveCount) : 0
+  const angles = normalized.map((d) => (d.value > 0 ? (d.value / total) * available : 0))
 
   // Clamp small slices to minAngle, redistribute deficit from larger slices
   for (let iter = 0; iter < 10; iter++) {
@@ -81,49 +93,54 @@ const buildSlices = (data: { name: string; value: number }[], outerR: number, in
     let shrinkable = 0
     let changed = false
     for (let i = 0; i < n; i++) {
-      if (angles[i] < MIN_ANGLE) {
-        deficit += MIN_ANGLE - angles[i]
-        angles[i] = MIN_ANGLE
+      if (angles[i] > 0 && angles[i] < minAngle) {
+        deficit += minAngle - angles[i]
+        angles[i] = minAngle
         changed = true
-      } else {
+      } else if (angles[i] > minAngle) {
         shrinkable += angles[i]
       }
     }
     if (!changed || shrinkable === 0) break
     for (let i = 0; i < n; i++) {
-      if (angles[i] > MIN_ANGLE) angles[i] -= deficit * (angles[i] / shrinkable)
+      if (angles[i] > minAngle) angles[i] -= deficit * (angles[i] / shrinkable)
     }
   }
 
   // Build slice paths starting from top (−π/2), going clockwise
   let cur = -Math.PI / 2
-  return data.map((d, i) => {
-    const start = cur + PAD_ANGLE / 2
-    const end = start + angles[i]
-    cur = end + PAD_ANGLE / 2
+  return normalized
+    .map((d, i) => {
+      // Skip zero-value entries
+      if (angles[i] <= 0) return null
 
-    const os = polar(CX, CY, outerR, start)
-    const oe = polar(CX, CY, outerR, end)
-    const ie = polar(CX, CY, innerR, end)
-    const is_ = polar(CX, CY, innerR, start)
-    const large = angles[i] > Math.PI ? 1 : 0
+      const start = cur + PAD_ANGLE / 2
+      const end = start + angles[i]
+      cur = end + PAD_ANGLE / 2
 
-    return {
-      startAngle: start,
-      endAngle: end,
-      midAngle: (start + end) / 2,
-      color: ChartColors[i % ChartColors.length],
-      name: d.name,
-      value: d.value,
-      path: [
-        `M${os.x},${os.y}`,
-        `A${outerR},${outerR} 0 ${large} 1 ${oe.x},${oe.y}`,
-        `L${ie.x},${ie.y}`,
-        `A${innerR},${innerR} 0 ${large} 0 ${is_.x},${is_.y}`,
-        'Z'
-      ].join(' ')
-    }
-  })
+      const os = polar(CX, CY, outerR, start)
+      const oe = polar(CX, CY, outerR, end)
+      const ie = polar(CX, CY, innerR, end)
+      const is_ = polar(CX, CY, innerR, start)
+      const large = angles[i] > Math.PI ? 1 : 0
+
+      return {
+        startAngle: start,
+        endAngle: end,
+        midAngle: (start + end) / 2,
+        color: ChartColors[i % ChartColors.length],
+        name: d.name,
+        value: d.value,
+        path: [
+          `M${os.x},${os.y}`,
+          `A${outerR},${outerR} 0 ${large} 1 ${oe.x},${oe.y}`,
+          `L${ie.x},${ie.y}`,
+          `A${innerR},${innerR} 0 ${large} 0 ${is_.x},${is_.y}`,
+          'Z'
+        ].join(' ')
+      }
+    })
+    .filter((s): s is SliceData => s !== null)
 }
 
 export const PieChart = ({
@@ -163,6 +180,9 @@ export const PieChart = ({
             key={i}
             d={s.path}
             fill={s.color}
+            role="img"
+            tabIndex={0}
+            aria-label={`${s.name}: ${isPrivate ? hiddenString : usdFormatter.format(s.value)}`}
             style={{
               opacity: hovered !== null && hovered !== i ? 0.6 : 1,
               transition: 'opacity 0.2s',
@@ -171,6 +191,8 @@ export const PieChart = ({
             onMouseEnter={() => setHovered(i)}
             onMouseMove={handleMouseMove}
             onMouseLeave={() => setHovered(null)}
+            onFocus={() => setHovered(i)}
+            onBlur={() => setHovered(null)}
           />
         ))}
 
