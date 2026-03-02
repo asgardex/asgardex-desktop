@@ -8,7 +8,10 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { WalletType } from '../../../../shared/wallet/types'
+import { createScopedLogger } from '../../../helpers/logger'
 import { truncateMiddle } from '../../../helpers/stringHelper'
+
+const logger = createScopedLogger('HeaderLock')
 import * as walletRoutes from '../../../routes/wallet'
 import { KeystoreState, Wallet } from '../../../services/wallet/types'
 import { LockIcon, UnlockIcon } from '../../icons'
@@ -47,7 +50,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
     (wallet: Wallet) => {
       selectWallet(wallet).catch((error) => {
         // UI handles error display
-        window.apiLog.error('[HeaderLock]', 'Failed to select wallet:', error)
+        logger.error('Failed to select wallet:', error)
       })
     },
     [selectWallet]

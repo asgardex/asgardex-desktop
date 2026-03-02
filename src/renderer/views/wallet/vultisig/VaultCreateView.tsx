@@ -10,6 +10,9 @@ import { BackLinkButton } from '../../../components/uielements/button'
 import { Input } from '../../../components/uielements/input/Input'
 import { InputPassword } from '../../../components/uielements/input/InputPassword'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { createScopedLogger } from '../../../helpers/logger'
+
+const logger = createScopedLogger('FastVault')
 import * as walletRoutes from '../../../routes/wallet'
 import { isVultisigMode } from '../../../services/wallet/types'
 
@@ -55,7 +58,7 @@ export const VaultCreateView = () => {
       setPendingVaultId(vaultId)
       setFormState('verify')
     } catch (err) {
-      window.apiLog.error('[FastVault]', 'Failed to create vault:', err)
+      logger.error('Failed to create vault:', err)
       if (!mountedRef.current) return
       setError(String(err))
       setFormState('error')
@@ -86,7 +89,7 @@ export const VaultCreateView = () => {
 
       setFormState('success')
     } catch (err) {
-      window.apiLog.error('[FastVault]', 'Failed to verify vault:', err)
+      logger.error('Failed to verify vault:', err)
       if (!mountedRef.current) return
       setError(String(err))
       setFormState('verify') // Stay on verify to retry

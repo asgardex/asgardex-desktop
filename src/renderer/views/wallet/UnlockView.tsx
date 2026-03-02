@@ -9,7 +9,10 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import * as walletRoutes from '../../routes/wallet'
+import { createScopedLogger } from '../../helpers/logger'
 import { isVultisigMode } from '../../services/wallet/types'
+
+const logger = createScopedLogger('UnlockView')
 
 export const UnlockView = (): JSX.Element => {
   const { state: keystore, unlock, remove, change$ } = useKeystoreState()
@@ -82,7 +85,7 @@ export const UnlockView = (): JSX.Element => {
         navigate(walletRoutes.assets.path())
       }
     } catch (error) {
-      window.apiLog.error('[UnlockView]', 'Failed to import vault:', error)
+      logger.error('Failed to import vault:', error)
     }
   }, [navigate, appWalletService.vaultManager])
 

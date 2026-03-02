@@ -2371,7 +2371,7 @@ export const Swap = ({
   )
 
   const onVultisigSuccess = useCallback(() => {
-    window.apiLog?.info?.('[Swap]', 'onVultisigSuccess', { vaultType })
+    logger.info('onVultisigSuccess', { vaultType })
     if (vaultType === 'fast') {
       setShowVultisigModal(ModalState.None)
     }
@@ -2394,13 +2394,13 @@ export const Swap = ({
   // Synchronously start session when modal opens as Vultisig
   if (showVultisigModal !== ModalState.None && useSourceAssetVultisig && !vultisigSessionRef.current) {
     vultisigSessionRef.current = true
-    window.apiLog?.info?.('[Swap]', 'Vultisig signing session started (sync)')
+    logger.info('Vultisig signing session started (sync)')
   }
 
   // End session when modal closes
   useEffect(() => {
     if (showVultisigModal === ModalState.None && vultisigSessionRef.current) {
-      window.apiLog?.info?.('[Swap]', 'Vultisig signing session ended')
+      logger.info('Vultisig signing session ended')
       vultisigSessionRef.current = false
     }
   }, [showVultisigModal])

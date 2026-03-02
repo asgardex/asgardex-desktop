@@ -155,13 +155,3 @@ const apiMpc: ApiMpc = {
   }
 }
 contextBridge.exposeInMainWorld('apiMpc', apiMpc)
-
-//
-// `apiLog` object - Renderer to main process logging
-//
-const apiLog = {
-  info: (prefix: string, ...args: unknown[]) => ipcRenderer.send(IPCMessages.RENDERER_LOG, 'info', prefix, ...args),
-  warn: (prefix: string, ...args: unknown[]) => ipcRenderer.send(IPCMessages.RENDERER_LOG, 'warn', prefix, ...args),
-  error: (prefix: string, ...args: unknown[]) => ipcRenderer.send(IPCMessages.RENDERER_LOG, 'error', prefix, ...args)
-}
-contextBridge.exposeInMainWorld('apiLog', apiLog)

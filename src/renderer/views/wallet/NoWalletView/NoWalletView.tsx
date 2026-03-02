@@ -15,7 +15,10 @@ import { VaultPasswordModal } from '../../../components/modal/VaultPasswordModal
 import { BackLinkButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import * as walletRoutes from '../../../routes/wallet'
+import { createScopedLogger } from '../../../helpers/logger'
 import { hasImportedKeystore } from '../../../services/wallet/util'
+
+const logger = createScopedLogger('NoWalletView')
 
 export const NoWalletView = () => {
   const navigate = useNavigate()
@@ -74,7 +77,7 @@ export const NoWalletView = () => {
         navigate(walletRoutes.assets.template)
       }
     } catch (error) {
-      window.apiLog.error('[NoWalletView]', 'Failed to import vault:', error)
+      logger.error('Failed to import vault:', error)
     }
   }, [navigate, vaultManager])
 

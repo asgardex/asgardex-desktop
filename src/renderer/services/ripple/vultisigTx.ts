@@ -10,6 +10,9 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { SendTransactionParams } from '../../../shared/api/mpcTypes'
+import { createScopedLogger } from '../../helpers/logger'
+
+const logger = createScopedLogger('Vultisig')
 import { appWalletService } from '../wallet/appWallet'
 import { ErrorId, TxHashLD } from '../wallet/types'
 import { SendTxParams } from './types'
@@ -32,7 +35,7 @@ export const createVultisigXrpTx = (): ((args: { network: Network; params: SendT
 
     const vaultId = appWalletService.getActiveVaultId()
     if (!vaultId) {
-      window.apiLog.error('[Vultisig]', 'XRP tx failed: no active vault')
+      logger.error('XRP tx failed: no active vault')
       return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'No active Vultisig vault' }))
     }
 
@@ -50,7 +53,7 @@ export const createVultisigXrpTx = (): ((args: { network: Network; params: SendT
       ticker: asset.ticker
     }
 
-    window.apiLog.info('[Vultisig]', 'XRP sendTransaction via SDK pipeline', {
+    logger.info('XRP sendTransaction via SDK pipeline', {
       receiver: recipient,
       amount: amount.amount().toFixed(),
       memo: effectiveMemo || '(none)',
@@ -61,18 +64,18 @@ export const createVultisigXrpTx = (): ((args: { network: Network; params: SendT
 
     return Rx.from(window.apiMpc.sendTransaction(txParams)).pipe(
       RxOp.map(({ txHash }) => {
-        window.apiLog.info('[Vultisig]', 'XRP tx success', { txHash })
+        logger.info('XRP tx success', { txHash })
         return RD.success(txHash)
       }),
       RxOp.catchError((error) => {
         const errorMsg = error?.message ?? error.toString()
 
         if (errorMsg.includes('Signing cancelled')) {
-          window.apiLog.info('[Vultisig]', 'XRP tx cancelled by user')
+          logger.info('XRP tx cancelled by user')
           return Rx.of(RD.initial)
         }
 
-        window.apiLog.error('[Vultisig]', 'XRP tx failed', { error: errorMsg })
+        logger.error('XRP tx failed', { error: errorMsg })
         return Rx.of(
           RD.failure({
             errorId: ErrorId.SEND_TX,

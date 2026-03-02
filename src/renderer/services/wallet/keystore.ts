@@ -9,7 +9,10 @@ import { ipcKeystoreWalletsIO, KeystoreWallets } from '../../../shared/api/io'
 import { KeystoreId } from '../../../shared/api/types'
 import { isError } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
+import { createScopedLogger } from '../../helpers/logger'
 import { liveData } from '../../helpers/rx/liveData'
+
+const logger = createScopedLogger('Keystore')
 import { observableState, triggerStream } from '../../helpers/stateHelper'
 import { modifyStorage } from '../storage/common'
 import { INITIAL_KEYSTORE_STATE } from './const'
@@ -122,7 +125,7 @@ export const removeKeystoreWallet = async () => {
 }
 
 const changeKeystoreWallet: ChangeKeystoreWalletHandler = (keystoreId: KeystoreId) => {
-  window.apiLog.info('[Keystore]', 'changeKeystoreWallet called with id:', keystoreId)
+  logger.info('changeKeystoreWallet called with id:', keystoreId)
   const wallets = keystoreWallets()
   // Get selected wallet
   const selectedWallet = FP.pipe(
@@ -132,7 +135,7 @@ const changeKeystoreWallet: ChangeKeystoreWalletHandler = (keystoreId: KeystoreI
   )
 
   if (!selectedWallet) {
-    window.apiLog.warn('[Keystore]', 'Wallet not found in list')
+    logger.warn('Wallet not found in list')
     return Rx.of(RD.failure(Error(`Could not find a wallet in wallet list with id ${keystoreId}`)))
   }
 
@@ -154,11 +157,11 @@ const changeKeystoreWallet: ChangeKeystoreWalletHandler = (keystoreId: KeystoreI
         E.fold(
           (error) => RD.failure(Error(`Could not save wallets on disk ${error?.message ?? error.toString()}`)),
           (_) => {
-            window.apiLog.info('[Keystore]', 'Saved wallets to disk, updating state for wallet:', name)
+            logger.info('Saved wallets to disk, updating state for wallet:', name)
             // Update states
             setKeystoreWallets(updatedWallets)
             // set selected wallet as locked wallet
-            window.apiLog.info('[Keystore]', 'Setting keystoreState to locked wallet:', { id, name })
+            logger.info('Setting keystoreState to locked wallet:', { id, name })
             setKeystoreState(O.some({ id, name }))
             // Save to unified storage for app restart
             modifyStorage(O.some({ lastOpenedWallet: { type: WalletType.Keystore, id } }))

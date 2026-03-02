@@ -19,7 +19,10 @@ import { timer } from 'rxjs'
 
 import { LastOpenedWallet } from '../../../shared/api/types'
 import { WalletType } from '../../../shared/wallet/types'
+import { createScopedLogger } from '../../helpers/logger'
 import { observableState } from '../../helpers/stateHelper'
+
+const logger = createScopedLogger('Vultisig')
 import { getStorageState } from '../storage/common'
 import { VaultManager, VultisigState, VultisigVaultInfo, CreateFastVaultParams } from './types'
 
@@ -51,7 +54,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
 
     // If we're already active with a vault, don't reset
     if (currentState.phase === 'active' && currentState.activeVault) {
-      window.apiLog.info('[Vultisig]', 'Already in active state, preserving vault')
+      logger.info('Already in active state, preserving vault')
       return
     }
 
@@ -78,15 +81,15 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
         const vaults = vultisigState().availableVaults
         const savedVault = vaults.find((v) => v.id === savedVaultId)
         if (savedVault) {
-          window.apiLog.info('[Vultisig]', 'Restoring saved vault:', savedVault.name)
+          logger.info('Restoring saved vault:', savedVault.name)
           await selectVault(savedVaultId)
         } else {
-          window.apiLog.info('[Vultisig]', 'Saved vault not found, clearing storage')
+          logger.info('Saved vault not found, clearing storage')
           onSaveWallet(undefined)
         }
       }
     } catch (error) {
-      window.apiLog.error('[Vultisig]', 'Failed to initialize:', error)
+      logger.error('Failed to initialize:', error)
       setVultisigState((prev) => ({
         ...prev,
         error: String(error)
@@ -124,7 +127,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
       }))
       setVultisigState((prev) => ({ ...prev, availableVaults: vaultInfos, error: undefined }))
     } catch (error) {
-      window.apiLog.error('[Vultisig]', 'Failed to load vaults:', error)
+      logger.error('Failed to load vaults:', error)
       setVultisigState((prev) => ({ ...prev, error: String(error) }))
     }
   }
@@ -136,10 +139,9 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
    * Saves the vault ID to persistent storage for restoration
    */
   const selectVault = async (vaultId: string, requireUnlock = true) => {
-    window.apiLog.info('[Vultisig]', 'selectVault called:', vaultId, 'requireUnlock:', requireUnlock)
+    logger.info('selectVault called:', vaultId, 'requireUnlock:', requireUnlock)
     const currentState = vultisigState()
-    window.apiLog.info(
-      '[Vultisig]',
+    logger.info(
       'currentState.phase:',
       currentState.phase,
       'availableVaults:',
@@ -148,7 +150,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     const vault = currentState.availableVaults.find((v) => v.id === vaultId)
 
     if (!vault) {
-      window.apiLog.warn('[Vultisig]', 'Vault not found:', vaultId)
+      logger.warn('Vault not found:', vaultId)
       setVultisigState((prev) => ({
         ...prev,
         error: 'Vault not found'
@@ -163,7 +165,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
       // Require password unlock (unless this is a newly created/verified vault)
       if (requireUnlock) {
         // Vault needs password - set to locked state
-        window.apiLog.info('[Vultisig]', 'Setting vault to locked state:', vault.name)
+        logger.info('Setting vault to locked state:', vault.name)
         setVultisigState((prev) => ({
           ...prev,
           phase: 'vault-locked',
@@ -171,7 +173,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
           addresses: {},
           error: undefined
         }))
-        window.apiLog.info('[Vultisig]', 'Vault selected, waiting for password:', vault.name)
+        logger.info('Vault selected, waiting for password:', vault.name)
         return
       }
 
@@ -185,9 +187,9 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
         addresses,
         error: undefined
       }))
-      window.apiLog.info('[Vultisig]', 'Vault activated directly:', vault.name)
+      logger.info('Vault activated directly:', vault.name)
     } catch (error) {
-      window.apiLog.error('[Vultisig]', 'Failed to select vault:', error)
+      logger.error('Failed to select vault:', error)
       setVultisigState((prev) => ({
         ...prev,
         error: String(error)
@@ -227,7 +229,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
       return result.vaultId
     } catch (error) {
       unsubscribe()
-      window.apiLog.error('[Vultisig]', 'Failed to create vault:', error)
+      logger.error('Failed to create vault:', error)
       setVultisigState((prev) => ({
         ...prev,
         phase: 'vault-selection',
@@ -250,7 +252,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
       await loadVaults()
       await selectVault(vault.id, false) // requireUnlock = false for new vaults
     } catch (error) {
-      window.apiLog.error('[Vultisig]', 'Failed to verify vault:', error)
+      logger.error('Failed to verify vault:', error)
       setVultisigState((prev) => ({
         ...prev,
         error: String(error)
@@ -282,7 +284,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
 
       await loadVaults()
     } catch (error) {
-      window.apiLog.error('[Vultisig]', 'Failed to delete vault:', error)
+      logger.error('Failed to delete vault:', error)
       setVultisigState((prev) => ({
         ...prev,
         error: String(error)
@@ -307,9 +309,9 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
         return prev
       })
 
-      window.apiLog.info('[Vultisig]', 'Vault renamed:', vaultId, '->', newName)
+      logger.info('Vault renamed:', vaultId, '->', newName)
     } catch (error) {
-      window.apiLog.error('[Vultisig]', 'Failed to rename vault:', error)
+      logger.error('Failed to rename vault:', error)
       setVultisigState((prev) => ({
         ...prev,
         error: String(error)
@@ -325,9 +327,9 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
   const exportVault = async (vaultId: string) => {
     try {
       await window.apiMpc.exportVault(vaultId)
-      window.apiLog.info('[Vultisig]', 'Vault exported:', vaultId)
+      logger.info('Vault exported:', vaultId)
     } catch (error) {
-      window.apiLog.error('[Vultisig]', 'Failed to export vault:', error)
+      logger.error('Failed to export vault:', error)
       throw error
     }
   }
@@ -371,12 +373,12 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
    */
   const initializeAndLoadVaults = async () => {
     try {
-      window.apiLog.info('[Vultisig]', 'Initializing SDK and loading vaults eagerly...')
+      logger.info('Initializing SDK and loading vaults eagerly...')
       await window.apiMpc.init()
       await loadVaults()
-      window.apiLog.info('[Vultisig]', 'Vaults loaded:', vultisigState().availableVaults.length)
+      logger.info('Vaults loaded:', vultisigState().availableVaults.length)
     } catch (error) {
-      window.apiLog.error('[Vultisig]', 'Failed to initialize eagerly:', error)
+      logger.error('Failed to initialize eagerly:', error)
     }
   }
 
@@ -388,7 +390,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
   const lockVault = async () => {
     const currentState = vultisigState()
     if (!currentState.activeVault) {
-      window.apiLog.warn('[Vultisig]', 'No active vault to lock')
+      logger.warn('No active vault to lock')
       return
     }
 
@@ -398,13 +400,13 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     // Update UI state immediately (same pattern as keystore.lock())
     // This shows the unlock screen right away
     setVultisigState((prev) => ({ ...prev, phase: 'vault-locked', addresses: {} }))
-    window.apiLog.info('[Vultisig]', 'Vault locked:', vaultName)
+    logger.info('Vault locked:', vaultName)
 
     // Inform SDK to clear cached password
     try {
       await window.apiMpc.lockVault(vaultId)
     } catch (error) {
-      window.apiLog.error('[Vultisig]', 'Failed to lock vault in SDK:', error)
+      logger.error('Failed to lock vault in SDK:', error)
     }
   }
 
@@ -414,36 +416,36 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
    */
   const unlockVault = async (password: string) => {
     const currentState = vultisigState()
-    window.apiLog.info('[Vultisig]', ' unlockVault called, currentPhase:', currentState.phase)
+    logger.info(' unlockVault called, currentPhase:', currentState.phase)
     if (!currentState.activeVault) {
-      window.apiLog.info('[Vultisig]', ' unlockVault: No active vault to unlock')
+      logger.info(' unlockVault: No active vault to unlock')
       throw new Error('No active vault to unlock')
     }
 
     const vaultId = currentState.activeVault.id
     const vaultName = currentState.activeVault.name
-    window.apiLog.info('[Vultisig]', ' unlockVault: Attempting to unlock vault:', vaultName, 'id:', vaultId)
+    logger.info(' unlockVault: Attempting to unlock vault:', vaultName, 'id:', vaultId)
 
     try {
       // Unlock the vault with password
-      window.apiLog.info('[Vultisig]', ' unlockVault: Calling apiMpc.unlockVault...')
+      logger.info(' unlockVault: Calling apiMpc.unlockVault...')
       await window.apiMpc.unlockVault(vaultId, password)
-      window.apiLog.info('[Vultisig]', ' unlockVault: apiMpc.unlockVault succeeded')
+      logger.info(' unlockVault: apiMpc.unlockVault succeeded')
 
       // Get addresses now that vault is unlocked
-      window.apiLog.info('[Vultisig]', ' unlockVault: Fetching addresses via apiMpc.getAddresses...')
+      logger.info(' unlockVault: Fetching addresses via apiMpc.getAddresses...')
       const addresses = await window.apiMpc.getAddresses(vaultId)
-      window.apiLog.info('[Vultisig]', ' unlockVault: Addresses received:', {
+      logger.info(' unlockVault: Addresses received:', {
         chainCount: Object.keys(addresses).length,
         chains: Object.keys(addresses),
         addresses: addresses
       })
 
-      window.apiLog.info('[Vultisig]', ' unlockVault: Updating state to phase: active')
+      logger.info(' unlockVault: Updating state to phase: active')
       setVultisigState((prev) => ({ ...prev, phase: 'active', addresses, error: undefined }))
-      window.apiLog.info('[Vultisig]', ' unlockVault: State updated, vault unlocked:', vaultName)
+      logger.info(' unlockVault: State updated, vault unlocked:', vaultName)
     } catch (error) {
-      window.apiLog.error('[Vultisig]', ' unlockVault: Failed to unlock vault:', error)
+      logger.error(' unlockVault: Failed to unlock vault:', error)
       setVultisigState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : String(error)

@@ -8,7 +8,9 @@ import * as RxOp from 'rxjs/operators'
 import { ASGARDEX_TO_SDK_CHAIN } from '../../../shared/api/mpcTypes'
 import { LastOpenedWallet } from '../../../shared/api/types'
 import { WalletType } from '../../../shared/wallet/types'
-import { logger } from '../../helpers/logger'
+import { createScopedLogger } from '../../helpers/logger'
+
+const logger = createScopedLogger('AppWallet')
 import { observableState } from '../../helpers/stateHelper'
 import { network$ } from '../app/service'
 import { getStorageState, modifyStorage } from '../storage/common'
@@ -68,13 +70,13 @@ export const createAppWalletService = (): AppWalletService => {
   const keystoreSub = keystoreService.keystoreState$.subscribe((keystoreState: KeystoreState) => {
     // Skip during intentional mode switches (e.g., switchToVultisigMode calling lock())
     if (_modeTransitioning) {
-      window.apiLog.info('[AppWallet]', 'keystoreState$ changed during mode transition, skipping')
+      logger.info('keystoreState$ changed during mode transition, skipping')
       return
     }
 
     const currentAppState = appWalletState()
     const inStandaloneMode = isStandaloneLedgerMode(currentAppState) || isVultisigMode(currentAppState)
-    window.apiLog.info('[AppWallet]', 'keystoreState$ changed:', {
+    logger.info('keystoreState$ changed:', {
       hasKeystore: O.isSome(keystoreState),
       isUnlocked: O.isSome(keystoreState) && isKeystoreUnlocked(keystoreState.value),
       isVultisigMode: isVultisigMode(currentAppState),
@@ -87,7 +89,7 @@ export const createAppWalletService = (): AppWalletService => {
     // This handles the case where user selects a keystore wallet from the dropdown
     // while in Vultisig or Ledger mode.
     if (O.isSome(keystoreState) && inStandaloneMode) {
-      window.apiLog.info('[AppWallet]', 'Keystore selected while in standalone mode, switching to keystore mode')
+      logger.info('Keystore selected while in standalone mode, switching to keystore mode')
       // IMPORTANT: Set app state FIRST to prevent race condition where
       // exitStandaloneMode triggers subscription that overwrites this state
       setAppWalletState(keystoreState)
@@ -100,7 +102,7 @@ export const createAppWalletService = (): AppWalletService => {
 
     // Only update if we're in keystore mode or transitioning to it
     if (isKeystoreMode(currentAppState) || O.isSome(keystoreState)) {
-      window.apiLog.info('[AppWallet]', 'Updating app wallet state to keystore state')
+      logger.info('Updating app wallet state to keystore state')
       setAppWalletState(keystoreState)
     }
   })
@@ -120,7 +122,7 @@ export const createAppWalletService = (): AppWalletService => {
   // Listen to vultisig state changes and update app wallet state accordingly
   const vultisigSub = vaultManager.vultisigState$.subscribe((newVultisigState: VultisigState) => {
     const currentAppState = appWalletState()
-    window.apiLog.info('[AppWallet]', 'vultisigState$ changed:', {
+    logger.info('vultisigState$ changed:', {
       phase: newVultisigState.phase,
       activeVault: newVultisigState.activeVault?.name,
       addressCount: Object.keys(newVultisigState.addresses).length,
@@ -130,11 +132,11 @@ export const createAppWalletService = (): AppWalletService => {
 
     // Only update if we're in vultisig mode
     if (isVultisigMode(currentAppState)) {
-      window.apiLog.info('[AppWallet]', 'Propagating vultisig state to appWalletState$')
+      logger.info('Propagating vultisig state to appWalletState$')
       setAppWalletState(newVultisigState)
-      window.apiLog.info('[AppWallet]', 'appWalletState$ updated with phase:', newVultisigState.phase)
+      logger.info('appWalletState$ updated with phase:', newVultisigState.phase)
     } else {
-      window.apiLog.info('[AppWallet]', 'NOT in vultisig mode, skipping state propagation')
+      logger.info('NOT in vultisig mode, skipping state propagation')
     }
   })
   subscriptions.push(vultisigSub)
@@ -195,12 +197,12 @@ export const createAppWalletService = (): AppWalletService => {
    * @param autoLock - if true, will automatically lock the keystore before switching
    */
   const switchToVultisigMode = async (autoLock = false) => {
-    window.apiLog.info('[AppWallet]', 'switchToVultisigMode called, autoLock:', autoLock)
+    logger.info('switchToVultisigMode called, autoLock:', autoLock)
     const currentAppState = appWalletState()
 
     // If already in vultisig mode, just update the app state (don't re-enter)
     if (isVultisigMode(currentAppState)) {
-      window.apiLog.info('[AppWallet]', 'Already in vultisig mode, skipping enterStandaloneMode')
+      logger.info('Already in vultisig mode, skipping enterStandaloneMode')
       return
     }
 
@@ -218,12 +220,12 @@ export const createAppWalletService = (): AppWalletService => {
         )
       ) {
         if (autoLock) {
-          window.apiLog.info('[AppWallet]', 'Locking keystore before switching to vultisig mode')
+          logger.info('Locking keystore before switching to vultisig mode')
           // Lock the keystore — keystoreSub is suppressed by _modeTransitioning flag
           keystoreService.lock()
         } else {
           // This shouldn't happen if UI is properly disabled, but keep as safety check
-          window.apiLog.warn('[AppWallet]', 'Cannot switch to vultisig-only mode while keystore is unlocked')
+          logger.warn('Cannot switch to vultisig-only mode while keystore is unlocked')
           return
         }
       }
@@ -233,12 +235,12 @@ export const createAppWalletService = (): AppWalletService => {
 
       // Enter standalone vultisig mode and AWAIT completion
       // enterStandaloneMode is async (SDK init, vault loading, vault restoration)
-      window.apiLog.info('[AppWallet]', 'Entering standalone vultisig mode')
+      logger.info('Entering standalone vultisig mode')
       await vaultManager.enterStandaloneMode()
 
       // Use synchronous getter — enterStandaloneMode has completed, state is final
       const standaloneState = vaultManager.vultisigState()
-      window.apiLog.info('[AppWallet]', 'Setting app state to vultisig state:', standaloneState.phase)
+      logger.info('Setting app state to vultisig state:', standaloneState.phase)
       setAppWalletState(standaloneState)
     } finally {
       _modeTransitioning = false
@@ -372,13 +374,13 @@ export const createAppWalletService = (): AppWalletService => {
       O.toUndefined
     )
 
-    window.apiLog.info('[AppWallet]', 'restoreLastOpenedWallet:', lastOpened)
+    logger.info('restoreLastOpenedWallet:', lastOpened)
 
     if (lastOpened?.type === WalletType.Vultisig) {
-      window.apiLog.info('[AppWallet]', 'Restoring Vultisig vault:', lastOpened.vaultId)
+      logger.info('Restoring Vultisig vault:', lastOpened.vaultId)
       await switchToVultisigMode(false)
     } else {
-      window.apiLog.info('[AppWallet]', 'Restoring Keystore mode')
+      logger.info('Restoring Keystore mode')
       await switchToKeystoreMode()
     }
   }
@@ -391,7 +393,7 @@ export const createAppWalletService = (): AppWalletService => {
       RxOp.take(1) // Only run once on startup
     )
     .subscribe(() => {
-      window.apiLog.info('[AppWallet]', 'Keystore data loaded, restoring last opened wallet')
+      logger.info('Keystore data loaded, restoring last opened wallet')
       restoreLastOpenedWallet()
     })
   subscriptions.push(startupSub)
@@ -485,7 +487,7 @@ export const createAppWalletService = (): AppWalletService => {
    * Returns Promise for consistency (vultisig selectVault is async)
    */
   const selectWallet = async (wallet: Wallet): Promise<void> => {
-    window.apiLog.info('[AppWallet]', 'selectWallet:', wallet)
+    logger.info('selectWallet:', wallet)
 
     if (wallet.type === WalletType.Keystore) {
       // Selecting keystore wallet - let keystoreService handle it
@@ -575,7 +577,7 @@ export const createAppWalletService = (): AppWalletService => {
   const dispose = (): void => {
     subscriptions.forEach((sub) => sub.unsubscribe())
     subscriptions.length = 0 // Clear array
-    window.apiLog.info('[AppWallet]', 'Disposed all subscriptions')
+    logger.info('Disposed all subscriptions')
   }
 
   return {

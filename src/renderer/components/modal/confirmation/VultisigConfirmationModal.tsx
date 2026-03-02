@@ -9,6 +9,9 @@ import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { getChainAsset } from '../../../helpers/chainHelper'
+import { createScopedLogger } from '../../../helpers/logger'
+
+const logger = createScopedLogger('VultisigConfirm')
 import { ApiError } from '../../../services/wallet/types'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton } from '../../uielements/button'
@@ -95,17 +98,17 @@ export const VultisigConfirmationModal = ({
   useEffect(() => {
     if (!visible || vaultType !== 'secure') return
 
-    window.apiLog?.info?.('[VultisigConfirm]', 'Setting up SecureVault signing event listeners')
+    logger.info('Setting up SecureVault signing event listeners')
 
     const cleanupQR = window.apiMpc.onSignQRReady((payload) => {
-      window.apiLog?.info?.('[VultisigConfirm]', 'Sign QR ready event received', { payloadLength: payload?.length })
+      logger.info('Sign QR ready event received', { payloadLength: payload?.length })
       setQrPayload(payload)
       setPhase('qr-ready')
     })
 
     const cleanupDevice = window.apiMpc.onSignDeviceJoined(
       (data: { deviceId: string; totalJoined: number; required: number }) => {
-        window.apiLog?.info?.('[VultisigConfirm]', 'Sign device joined event received', data)
+        logger.info('Sign device joined event received', data)
         setDevicesJoined(data.totalJoined)
         setDevicesRequired(data.required)
         if (data.totalJoined >= data.required) {
@@ -117,14 +120,14 @@ export const VultisigConfirmationModal = ({
     )
 
     const cleanupProgress = window.apiMpc.onSignProgress((data) => {
-      window.apiLog?.info?.('[VultisigConfirm]', 'Sign progress event received', data)
+      logger.info('Sign progress event received', data)
     })
 
     // Store cleanup functions in ref for later cleanup
     cleanupFns.current = [cleanupQR, cleanupDevice, cleanupProgress]
 
     return () => {
-      window.apiLog?.info?.('[VultisigConfirm]', 'Cleaning up SecureVault signing event listeners (effect cleanup)')
+      logger.info('Cleaning up SecureVault signing event listeners (effect cleanup)')
       // Cleanup directly from ref instead of using callback
       cleanupFns.current.forEach((fn) => fn())
       cleanupFns.current = []
@@ -136,7 +139,7 @@ export const VultisigConfirmationModal = ({
   // Only after seeing pending should we react to success/failure
   useEffect(() => {
     if (vaultType === 'secure' && phase !== 'password' && RD.isPending(txState)) {
-      window.apiLog?.info?.('[VultisigConfirm]', 'txState became pending, marking signing as started')
+      logger.info('txState became pending, marking signing as started')
       setSigningStarted(true)
     }
   }, [vaultType, phase, txState])
@@ -148,12 +151,12 @@ export const VultisigConfirmationModal = ({
   useEffect(() => {
     if (vaultType === 'secure' && signingStarted && !closedRef.current) {
       if (RD.isSuccess(txState)) {
-        window.apiLog?.info?.('[VultisigConfirm]', 'Transaction succeeded, closing modal')
+        logger.info('Transaction succeeded, closing modal')
         closedRef.current = true
         onCloseRef.current()
       } else if (RD.isFailure(txState)) {
         const error = txState.error
-        window.apiLog?.error?.('[VultisigConfirm]', 'Transaction failed, closing modal', {
+        logger.error('Transaction failed, closing modal', {
           errorId: error?.errorId,
           msg: error?.msg
         })
@@ -205,12 +208,12 @@ export const VultisigConfirmationModal = ({
     const vaultId = getActiveVaultId()
     if (vaultId) {
       setIsCancelling(true)
-      window.apiLog?.info?.('[VultisigConfirm]', 'Cancelling signing session', { phase, vaultId })
+      logger.info('Cancelling signing session', { phase, vaultId })
       try {
         await window.apiMpc.cancelSigning(vaultId)
-        window.apiLog?.info?.('[VultisigConfirm]', 'Signing cancelled successfully')
+        logger.info('Signing cancelled successfully')
       } catch (err) {
-        window.apiLog?.error?.('[VultisigConfirm]', 'Cancel signing failed', err)
+        logger.error('Cancel signing failed', err)
       } finally {
         setIsCancelling(false)
       }

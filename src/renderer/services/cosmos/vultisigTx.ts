@@ -11,6 +11,9 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { SendTransactionParams } from '../../../shared/api/mpcTypes'
+import { createScopedLogger } from '../../helpers/logger'
+
+const logger = createScopedLogger('Vultisig')
 import { appWalletService } from '../wallet/appWallet'
 import { ErrorId, TxHashLD } from '../wallet/types'
 
@@ -43,7 +46,7 @@ export const createVultisigCosmosTx = (
 
     const vaultId = appWalletService.getActiveVaultId()
     if (!vaultId) {
-      window.apiLog.error('[Vultisig]', `${chainName} tx failed: no active vault`)
+      logger.error(`${chainName} tx failed: no active vault`)
       return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'No active Vultisig vault' }))
     }
 
@@ -62,7 +65,7 @@ export const createVultisigCosmosTx = (
       id
     }
 
-    window.apiLog.info('[Vultisig]', `${chainName} sendTransaction via SDK pipeline`, {
+    logger.info(`${chainName} sendTransaction via SDK pipeline`, {
       receiver: recipient,
       amount: amount.amount().toFixed(),
       memo: memo || '(none)',
@@ -73,18 +76,18 @@ export const createVultisigCosmosTx = (
 
     return Rx.from(window.apiMpc.sendTransaction(txParams)).pipe(
       RxOp.map(({ txHash }) => {
-        window.apiLog.info('[Vultisig]', `${chainName} tx success`, { txHash })
+        logger.info(`${chainName} tx success`, { txHash })
         return RD.success(txHash)
       }),
       RxOp.catchError((error) => {
         const errorMsg = error?.message ?? error.toString()
 
         if (errorMsg.includes('Signing cancelled')) {
-          window.apiLog.info('[Vultisig]', `${chainName} tx cancelled by user`)
+          logger.info(`${chainName} tx cancelled by user`)
           return Rx.of(RD.initial)
         }
 
-        window.apiLog.error('[Vultisig]', `${chainName} tx failed`, { error: errorMsg })
+        logger.error(`${chainName} tx failed`, { error: errorMsg })
         return Rx.of(
           RD.failure({
             errorId: ErrorId.SEND_TX,

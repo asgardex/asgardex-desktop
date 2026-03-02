@@ -10,6 +10,9 @@ import { Input } from '../../../components/uielements/input/Input'
 import { InputPassword } from '../../../components/uielements/input/InputPassword'
 import { QRCode } from '../../../components/uielements/qrCode/QRCode'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { createScopedLogger } from '../../../helpers/logger'
+
+const logger = createScopedLogger('SecureVault')
 import * as walletRoutes from '../../../routes/wallet'
 import type { VultisigVaultInfo } from '../../../services/wallet/types'
 
@@ -49,7 +52,7 @@ export const SecureVaultCreateView = () => {
     if (!hasActiveSession.current) return
 
     setIsCleaningUp(true)
-    window.apiLog.info('[SecureVault]', 'Cancelling and cleaning up session...')
+    logger.info('Cancelling and cleaning up session...')
 
     // Clean up event listeners first
     cleanupEventListeners()
@@ -57,17 +60,17 @@ export const SecureVaultCreateView = () => {
     try {
       // First cancel any ongoing keygen operation
       await window.apiMpc.cancelKeygen()
-      window.apiLog.info('[SecureVault]', 'Keygen cancelled')
+      logger.info('Keygen cancelled')
     } catch (err) {
-      window.apiLog.warn('[SecureVault]', 'Error cancelling keygen:', err)
+      logger.warn('Error cancelling keygen:', err)
     }
 
     try {
       // Then dispose the SDK
       await window.apiMpc.dispose()
-      window.apiLog.info('[SecureVault]', 'SDK disposed')
+      logger.info('SDK disposed')
     } catch (err) {
-      window.apiLog.warn('[SecureVault]', 'Error disposing SDK:', err)
+      logger.warn('Error disposing SDK:', err)
     }
 
     hasActiveSession.current = false
@@ -89,13 +92,13 @@ export const SecureVaultCreateView = () => {
   // Set up event listeners
   useEffect(() => {
     const cleanupQR = window.apiMpc.onQRCodeReady((payload) => {
-      window.apiLog.info('[SecureVault]', 'QR code ready')
+      logger.info('QR code ready')
       setQrPayload(payload)
       setFormState('qr-ready')
     })
 
     const cleanupDeviceJoined = window.apiMpc.onDeviceJoined((data) => {
-      window.apiLog.info('[SecureVault]', 'Device joined:', data)
+      logger.info('Device joined:', data)
       setDevicesJoined(data.totalJoined)
       setDevicesRequired(data.required)
       if (data.totalJoined >= data.required) {
@@ -106,7 +109,7 @@ export const SecureVaultCreateView = () => {
     })
 
     const cleanupProgress = window.apiMpc.onCreationProgress((data) => {
-      window.apiLog.info('[SecureVault]', 'Progress:', data)
+      logger.info('Progress:', data)
       setProgressMessage(data.message || data.step)
     })
 
@@ -132,14 +135,14 @@ export const SecureVaultCreateView = () => {
   useEffect(() => {
     return () => {
       if (hasActiveSession.current) {
-        window.apiLog.info('[SecureVault]', 'Component unmounting, cleaning up...')
+        logger.info('Component unmounting, cleaning up...')
         // Cancel any ongoing keygen first, then dispose
         window.apiMpc
           .cancelKeygen()
-          .catch((err) => window.apiLog.warn('[SecureVault]', 'Error cancelling on unmount:', err))
+          .catch((err) => logger.warn('Error cancelling on unmount:', err))
           .finally(() => {
             window.apiMpc.dispose().catch((err) => {
-              window.apiLog.warn('[SecureVault]', 'Error disposing on unmount:', err)
+              logger.warn('Error disposing on unmount:', err)
             })
           })
       }
@@ -189,7 +192,7 @@ export const SecureVaultCreateView = () => {
 
       setFormState('success')
     } catch (err) {
-      window.apiLog.error('[SecureVault]', 'Failed to create secure vault:', err)
+      logger.error('Failed to create secure vault:', err)
       setError(String(err))
       setFormState('error')
       // Keep hasActiveSession true so cleanup can run on retry
@@ -198,7 +201,7 @@ export const SecureVaultCreateView = () => {
 
   const handleGoToAssets = useCallback(() => {
     if (!vaultInfo) {
-      window.apiLog.error('[SecureVault]', 'No vault info available')
+      logger.error('No vault info available')
       return
     }
 
@@ -212,13 +215,13 @@ export const SecureVaultCreateView = () => {
   }, [appWalletService, navigate, vaultInfo, addresses])
 
   const handleCancel = useCallback(async () => {
-    window.apiLog.info('[SecureVault]', 'User cancelled')
+    logger.info('User cancelled')
     await cleanupSession()
     resetState()
   }, [cleanupSession, resetState])
 
   const handleRetry = useCallback(async () => {
-    window.apiLog.info('[SecureVault]', 'Retrying...')
+    logger.info('Retrying...')
     await cleanupSession()
     resetState()
   }, [cleanupSession, resetState])

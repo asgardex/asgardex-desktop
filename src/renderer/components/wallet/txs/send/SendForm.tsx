@@ -37,6 +37,9 @@ import { useXrpContext } from '../../../../contexts/XrpContext'
 import { isMayaAsset, isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
 import { getChainAsset, getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { isEvmChain, isEvmChainAsset } from '../../../../helpers/evmHelper'
+import { createScopedLogger } from '../../../../helpers/logger'
+
+const sendFormLogger = createScopedLogger('SendForm')
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import * as PoolHelpers from '../../../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../../../helpers/poolHelperMaya'
@@ -229,15 +232,15 @@ export const SendForm = (props: Props): JSX.Element => {
 
   // Debug: Log component mount/unmount to detect recreation
   useEffect(() => {
-    window.apiLog?.info?.('[SendForm]', 'Component MOUNTED')
+    sendFormLogger.info('Component MOUNTED')
     return () => {
-      window.apiLog?.info?.('[SendForm]', 'Component UNMOUNTING')
+      sendFormLogger.info('Component UNMOUNTING')
     }
   }, [])
 
   // Debug: Log when confirmation modal state changes
   useEffect(() => {
-    window.apiLog?.info?.('[SendForm]', 'showConfirmationModal changed', { value: showConfirmationModal })
+    sendFormLogger.info('showConfirmationModal changed', { value: showConfirmationModal })
   }, [showConfirmationModal])
 
   const [destinationTagRequired, setDestinationTagRequired] = useState<boolean>(false)
@@ -1229,7 +1232,7 @@ export const SendForm = (props: Props): JSX.Element => {
   // This ensures IPC event listeners aren't cleaned up during the signing flow
   const onVultisigSuccess = useCallback(() => {
     console.log('[SendForm] onVultisigSuccess called, vaultType:', vaultType)
-    window.apiLog?.info?.('[SendForm]', 'onVultisigSuccess', { vaultType })
+    sendFormLogger.info('onVultisigSuccess', { vaultType })
     if (vaultType === 'fast') {
       console.log('[SendForm] Closing modal for fast vault')
       setShowConfirmationModal(false)
@@ -1248,20 +1251,20 @@ export const SendForm = (props: Props): JSX.Element => {
   // This runs during render, before any effects, to prevent race conditions
   if (showConfirmationModal && isVultisigWallet(walletType) && !vultisigSessionRef.current) {
     vultisigSessionRef.current = true
-    window.apiLog?.info?.('[SendForm]', 'Vultisig signing session started (sync)')
+    sendFormLogger.info('Vultisig signing session started (sync)')
   }
 
   // End session when modal closes (via effect since we need to react to showConfirmationModal becoming false)
   useEffect(() => {
     if (!showConfirmationModal && vultisigSessionRef.current) {
-      window.apiLog?.info?.('[SendForm]', 'Vultisig signing session ended')
+      sendFormLogger.info('Vultisig signing session ended')
       vultisigSessionRef.current = false
     }
   }, [showConfirmationModal])
 
   // Log walletType changes for debugging
   useEffect(() => {
-    window.apiLog?.info?.('[SendForm]', 'walletType info', {
+    sendFormLogger.info('walletType info', {
       walletType,
       isVultisig: isVultisigWallet(walletType),
       signingSessionRef: vultisigSessionRef.current
