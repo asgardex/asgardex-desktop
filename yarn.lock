@@ -7030,8 +7030,6 @@ __metadata:
     cross-env: "npm:^7.0.3"
     crypto-browserify: "npm:^3.12.0"
     dotenv: "npm:16.4.5"
-    echarts: "npm:^5.5.1"
-    echarts-for-react: "npm:^3.0.2"
     electron: "npm:^35"
     electron-builder: "npm:^24.13.3"
     electron-debug: "npm:^3.2.0"
@@ -9029,29 +9027,6 @@ __metadata:
   version: 0.2.0
   resolution: "eastasianwidth@npm:0.2.0"
   checksum: 10/9b1d3e1baefeaf7d70799db8774149cef33b97183a6addceeba0cf6b85ba23ee2686f302f14482006df32df75d32b17c509c143a3689627929e4a8efaf483952
-  languageName: node
-  linkType: hard
-
-"echarts-for-react@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "echarts-for-react@npm:3.0.2"
-  dependencies:
-    fast-deep-equal: "npm:^3.1.3"
-    size-sensor: "npm:^1.0.1"
-  peerDependencies:
-    echarts: ^3.0.0 || ^4.0.0 || ^5.0.0
-    react: ^15.0.0 || >=16.0.0
-  checksum: 10/be9107e7c174fd8105d12e15c1ae4bbb828c4ca9a66ef99eec1660fc0c5db92e652f69a81c5c11c2b7b826b13ae79260569a6d74aea965ae4f31f0b4d18462e9
-  languageName: node
-  linkType: hard
-
-"echarts@npm:^5.5.1":
-  version: 5.5.1
-  resolution: "echarts@npm:5.5.1"
-  dependencies:
-    tslib: "npm:2.3.0"
-    zrender: "npm:5.6.0"
-  checksum: 10/573ebfd6795a8976c2320225b3de49daca518e41192bf86d7afb53ce793b072932ae913a027b8de613fda319dacccb53fb23a73d5f128bfed6de808fe2d476c5
   languageName: node
   linkType: hard
 
@@ -15136,13 +15111,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"size-sensor@npm:^1.0.1":
-  version: 1.0.2
-  resolution: "size-sensor@npm:1.0.2"
-  checksum: 10/de7050178ae9afee3388eb9191af0902b30ef83c26e8c9d9c203e1b560e270b947d978e4f56d211802112d09ef296931fa612f69155a483900f3b4717a0750d7
-  languageName: node
-  linkType: hard
-
 "slash@npm:^3.0.0":
   version: 3.0.0
   resolution: "slash@npm:3.0.0"
@@ -15951,13 +15919,6 @@ __metadata:
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10/3e2e043d5c2316461cb54e5c7fe02c30ef6dccb3384717ca22ae5c6b5bc95232a6241df19c622d9c73b809bea33b187f6dbc73030963e29950c2141bc32a79f7
-  languageName: node
-  linkType: hard
-
-"tslib@npm:2.3.0":
-  version: 2.3.0
-  resolution: "tslib@npm:2.3.0"
-  checksum: 10/9c55c9abd5ecd94e5fd37573db27e26933fb6c33506431403fb4627dcb8aa9a45b772afa6d05dd2c25dc1de22a213193251e6303742f3bcdc179e523a9295bfd
   languageName: node
   linkType: hard
 
@@ -17115,14 +17076,5 @@ __metadata:
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10/f0c963ec40cd96858451d1690404d603d36507c1fc9682f2dae59ab38b578687d542708a7fdbf645f77926f78c9ed558f57c3d3aa226c285f798df0c4da16995
-  languageName: node
-  linkType: hard
-
-"zrender@npm:5.6.0":
-  version: 5.6.0
-  resolution: "zrender@npm:5.6.0"
-  dependencies:
-    tslib: "npm:2.3.0"
-  checksum: 10/7904bb17818fcf3c4a2729712991d8e29776404d8dc7aa58bc69cd853bdbb4cf8c8b302aaf10c1392a63bffbe07aad82ffef1d037537aab3d8a2f564940dd78d
   languageName: node
   linkType: hard
