@@ -17,8 +17,14 @@ import { SendTxParams } from './types'
 /**
  * Creates a Vultisig send handler for XRP
  *
- * Note: XRP destination tags are not yet supported through the SDK pipeline.
- * The SDK's Ripple chain handler may support them via memo or internally.
+ * SDK memo convention for Ripple:
+ * - Pure integer memo → SDK sets it as XRP destinationTag
+ * - Non-integer memo → SDK sets it as text MemoData (e.g. THORChain swap instructions)
+ * - No memo → plain payment
+ *
+ * When the user provides a destinationTag and no memo, we pass it as the memo string.
+ * When there IS a memo (swap/deposit), the memo takes precedence — Dex inbound
+ * addresses don't require destination tags.
  */
 export const createVultisigXrpTx = (): ((args: { network: Network; params: SendTxParams }) => TxHashLD) => {
   return ({ params }): TxHashLD => {
@@ -30,12 +36,16 @@ export const createVultisigXrpTx = (): ((args: { network: Network; params: SendT
       return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'No active Vultisig vault' }))
     }
 
+    // SDK memo-as-integer convention: pure integer memo = destinationTag
+    // If there's a text memo (swap routing), it takes precedence over destinationTag
+    const effectiveMemo = memo || (params.destinationTag !== undefined ? String(params.destinationTag) : undefined)
+
     const txParams: SendTransactionParams = {
       vaultId,
       chain: 'XRP',
       receiver: recipient,
       amount: amount.amount().toFixed(),
-      memo,
+      memo: effectiveMemo,
       decimals: amount.decimal,
       ticker: asset.ticker
     }
@@ -43,7 +53,7 @@ export const createVultisigXrpTx = (): ((args: { network: Network; params: SendT
     window.apiLog.info('[Vultisig]', 'XRP sendTransaction via SDK pipeline', {
       receiver: recipient,
       amount: amount.amount().toFixed(),
-      memo: memo || '(none)',
+      memo: effectiveMemo || '(none)',
       destinationTag: params.destinationTag,
       vaultId,
       ticker: asset.ticker

@@ -146,7 +146,7 @@ export const ASGARDEX_TO_SDK_CHAIN: Record<string, string> = {
   GAIA: 'Cosmos',
   DOGE: 'Dogecoin',
   LTC: 'Litecoin',
-  BCH: 'BCH', // SDK bug: derivation fails with "(0 , n[t]) is not a function" - report to Vultisig
+  BCH: 'Bitcoin-Cash',
   ARB: 'Arbitrum',
   BASE: 'Base',
   DASH: 'Dash',

@@ -2,9 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { CheckCircleIcon, ExclamationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
+import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { BackLinkButton } from '../../../components/uielements/button'
+import { Input } from '../../../components/uielements/input/Input'
+import { InputPassword } from '../../../components/uielements/input/InputPassword'
 import { QRCode } from '../../../components/uielements/qrCode/QRCode'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import * as walletRoutes from '../../../routes/wallet'
@@ -14,6 +17,7 @@ type FormState = 'input' | 'waiting-qr' | 'qr-ready' | 'device-joined' | 'creati
 
 export const SecureVaultCreateView = () => {
   const navigate = useNavigate()
+  const intl = useIntl()
   const { appWalletService } = useWalletContext()
 
   const [formState, setFormState] = useState<FormState>('input')
@@ -144,7 +148,7 @@ export const SecureVaultCreateView = () => {
 
   const handleCreateVault = useCallback(async () => {
     if (!name) {
-      setError('Please enter a vault name')
+      setError(intl.formatMessage({ id: 'wallet.vultisig.secureCreate.enterName' }))
       return
     }
 
@@ -190,7 +194,7 @@ export const SecureVaultCreateView = () => {
       setFormState('error')
       // Keep hasActiveSession true so cleanup can run on retry
     }
-  }, [name, password])
+  }, [name, password, intl])
 
   const handleGoToAssets = useCallback(() => {
     if (!vaultInfo) {
@@ -219,43 +223,59 @@ export const SecureVaultCreateView = () => {
     resetState()
   }, [cleanupSession, resetState])
 
+  const cancelButton = (
+    <button
+      onClick={handleCancel}
+      disabled={isCleaningUp}
+      className="hover:border-error hover:text-error mt-2 flex items-center gap-2 rounded-lg border border-gray2/30 px-4 py-2 text-sm text-gray2 transition-colors dark:text-gray2d">
+      <XMarkIcon className="h-4 w-4" />
+      {isCleaningUp
+        ? intl.formatMessage({ id: 'wallet.vultisig.secureCreate.cancelling' })
+        : intl.formatMessage({ id: 'common.cancel' })}
+    </button>
+  )
+
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-center gap-6 bg-bg1 p-8 dark:bg-bg1d">
       <div className="absolute top-4 left-4">
         <BackLinkButton path={walletRoutes.noWallet.path()} />
       </div>
 
-      <h1 className="text-2xl font-bold text-text1 dark:text-text1d">Create Secure Vault (2-of-2)</h1>
+      <h1 className="text-2xl font-bold text-text1 dark:text-text1d">
+        {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.title' })}
+      </h1>
 
       {/* Input Form */}
       {formState === 'input' && (
         <div className="flex w-full max-w-md flex-col gap-4">
           <p className="text-center text-sm text-gray2 dark:text-gray2d">
-            Create a 2-of-2 vault with your Vultisig mobile app. You&apos;ll need to scan a QR code.
+            {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.description' })}
           </p>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-gray2 dark:text-gray2d">Vault Name</label>
-            <input
-              type="text"
+            <label className="text-sm text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'wallet.vultisig.create.vaultName' })}
+            </label>
+            <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="My Secure Vault"
-              className="rounded-lg border border-gray2/20 bg-bg2 p-3 text-text1 outline-none focus:border-turquoise dark:border-gray2d/20 dark:bg-bg2d dark:text-text1d"
+              placeholder={intl.formatMessage({ id: 'wallet.vultisig.secureCreate.vaultName.placeholder' })}
+              size="large"
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-gray2 dark:text-gray2d">Password (Optional)</label>
-            <input
-              type="password"
+            <label className="text-sm text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.password.optional' })}
+            </label>
+            <InputPassword
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Optional encryption password"
-              className="rounded-lg border border-gray2/20 bg-bg2 p-3 text-text1 outline-none focus:border-turquoise dark:border-gray2d/20 dark:bg-bg2d dark:text-text1d"
+              placeholder={intl.formatMessage({ id: 'wallet.vultisig.secureCreate.password.placeholder' })}
+              size="large"
             />
             <span className="text-xs text-gray2 dark:text-gray2d">
-              If set, this password will be required for signing transactions.
+              {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.password.hint' })}
             </span>
           </div>
 
@@ -274,7 +294,7 @@ export const SecureVaultCreateView = () => {
               'bg-turquoise text-black hover:bg-turquoise/80',
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}>
-            Create Secure Vault
+            {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.submit' })}
           </button>
         </div>
       )}
@@ -283,14 +303,10 @@ export const SecureVaultCreateView = () => {
       {formState === 'waiting-qr' && (
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-turquoise border-t-transparent" />
-          <p className="text-gray2 dark:text-gray2d">Initializing secure vault session...</p>
-          <button
-            onClick={handleCancel}
-            disabled={isCleaningUp}
-            className="hover:text-error mt-2 flex items-center gap-2 text-sm text-gray2 dark:text-gray2d">
-            <XMarkIcon className="h-4 w-4" />
-            {isCleaningUp ? 'Cancelling...' : 'Cancel'}
-          </button>
+          <p className="text-gray2 dark:text-gray2d">
+            {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.waitingQr' })}
+          </p>
+          {cancelButton}
         </div>
       )}
 
@@ -298,27 +314,24 @@ export const SecureVaultCreateView = () => {
       {formState === 'qr-ready' && qrPayload && (
         <div className="flex w-full max-w-md flex-col items-center gap-4">
           <div className="rounded-lg bg-turquoise/10 p-4 text-center">
-            <p className="text-turquoise">Scan with Vultisig App</p>
+            <p className="text-turquoise">{intl.formatMessage({ id: 'wallet.vultisig.secureCreate.scanQr' })}</p>
             <p className="mt-1 text-sm text-gray2 dark:text-gray2d">
-              Open Vultisig on your phone and scan this QR code to join the vault
+              {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.scanQr.description' })}
             </p>
           </div>
 
           <div className="rounded-lg bg-white p-4">
-            <QRCode text={qrPayload} qrError="Failed to generate QR code" />
+            <QRCode text={qrPayload} qrError={intl.formatMessage({ id: 'wallet.vultisig.confirm.qrError' })} />
           </div>
 
           <p className="text-sm text-gray2 dark:text-gray2d">
-            Waiting for device... ({devicesJoined + 1}/{devicesRequired} devices)
+            {intl.formatMessage(
+              { id: 'wallet.vultisig.secureCreate.waitingDevice' },
+              { joined: devicesJoined + 1, required: devicesRequired }
+            )}
           </p>
 
-          <button
-            onClick={handleCancel}
-            disabled={isCleaningUp}
-            className="hover:border-error hover:text-error mt-2 flex items-center gap-2 rounded-lg border border-gray2/30 px-4 py-2 text-sm text-gray2 transition-colors dark:text-gray2d">
-            <XMarkIcon className="h-4 w-4" />
-            {isCleaningUp ? 'Cancelling...' : 'Cancel'}
-          </button>
+          {cancelButton}
         </div>
       )}
 
@@ -326,25 +339,26 @@ export const SecureVaultCreateView = () => {
       {formState === 'device-joined' && qrPayload && (
         <div className="flex w-full max-w-md flex-col items-center gap-4">
           <div className="rounded-lg bg-turquoise/10 p-4 text-center">
-            <p className="text-turquoise">Device Connected!</p>
-            <p className="mt-1 text-sm text-gray2 dark:text-gray2d">Waiting for more devices to join...</p>
+            <p className="text-turquoise">
+              {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.deviceConnected' })}
+            </p>
+            <p className="mt-1 text-sm text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.waitingMore' })}
+            </p>
           </div>
 
           <div className="rounded-lg bg-white p-4">
-            <QRCode text={qrPayload} qrError="Failed to generate QR code" />
+            <QRCode text={qrPayload} qrError={intl.formatMessage({ id: 'wallet.vultisig.confirm.qrError' })} />
           </div>
 
           <p className="text-sm text-gray2 dark:text-gray2d">
-            {devicesJoined}/{devicesRequired} devices joined
+            {intl.formatMessage(
+              { id: 'wallet.vultisig.confirm.devicesJoined' },
+              { joined: devicesJoined, required: devicesRequired }
+            )}
           </p>
 
-          <button
-            onClick={handleCancel}
-            disabled={isCleaningUp}
-            className="hover:border-error hover:text-error mt-2 flex items-center gap-2 rounded-lg border border-gray2/30 px-4 py-2 text-sm text-gray2 transition-colors dark:text-gray2d">
-            <XMarkIcon className="h-4 w-4" />
-            {isCleaningUp ? 'Cancelling...' : 'Cancel'}
-          </button>
+          {cancelButton}
         </div>
       )}
 
@@ -353,20 +367,19 @@ export const SecureVaultCreateView = () => {
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-turquoise border-t-transparent" />
           <p className="text-lg font-medium text-text1 dark:text-text1d">
-            All devices joined! ({devicesJoined}/{devicesRequired})
+            {intl.formatMessage(
+              { id: 'wallet.vultisig.secureCreate.allJoined' },
+              { joined: devicesJoined, required: devicesRequired }
+            )}
           </p>
-          <p className="text-gray2 dark:text-gray2d">{progressMessage || 'Running MPC keygen...'}</p>
+          <p className="text-gray2 dark:text-gray2d">
+            {progressMessage || intl.formatMessage({ id: 'wallet.vultisig.secureCreate.runningKeygen' })}
+          </p>
           <p className="text-xs text-gray2 dark:text-gray2d">
-            This may take a moment. Please keep both devices active.
+            {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.keepActive' })}
           </p>
 
-          <button
-            onClick={handleCancel}
-            disabled={isCleaningUp}
-            className="hover:border-error hover:text-error mt-4 flex items-center gap-2 rounded-lg border border-gray2/30 px-4 py-2 text-sm text-gray2 transition-colors dark:text-gray2d">
-            <XMarkIcon className="h-4 w-4" />
-            {isCleaningUp ? 'Cancelling...' : 'Cancel'}
-          </button>
+          {cancelButton}
         </div>
       )}
 
@@ -374,10 +387,14 @@ export const SecureVaultCreateView = () => {
       {formState === 'success' && (
         <div className="flex w-full max-w-md flex-col items-center gap-4">
           <CheckCircleIcon className="h-16 w-16 text-turquoise" />
-          <h2 className="text-xl font-bold text-text1 dark:text-text1d">Secure Vault Created!</h2>
+          <h2 className="text-xl font-bold text-text1 dark:text-text1d">
+            {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.success' })}
+          </h2>
 
           <div className="w-full rounded-lg bg-bg2 p-4 dark:bg-bg2d">
-            <h3 className="mb-3 text-sm font-medium text-gray2 dark:text-gray2d">Your Addresses</h3>
+            <h3 className="mb-3 text-sm font-medium text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'wallet.vultisig.create.success.addresses' })}
+            </h3>
             <div className="flex flex-col gap-2">
               {Object.entries(addresses)
                 .slice(0, 5)
@@ -389,7 +406,10 @@ export const SecureVaultCreateView = () => {
                 ))}
               {Object.keys(addresses).length > 5 && (
                 <span className="text-xs text-gray2 dark:text-gray2d">
-                  +{Object.keys(addresses).length - 5} more chains
+                  {intl.formatMessage(
+                    { id: 'wallet.vultisig.create.success.moreChains' },
+                    { count: Object.keys(addresses).length - 5 }
+                  )}
                 </span>
               )}
             </div>
@@ -398,7 +418,7 @@ export const SecureVaultCreateView = () => {
           <button
             onClick={handleGoToAssets}
             className="mt-4 w-full rounded-lg bg-turquoise px-6 py-3 font-medium text-black transition-colors hover:bg-turquoise/80">
-            Go to Wallet
+            {intl.formatMessage({ id: 'wallet.vultisig.create.goToWallet' })}
           </button>
         </div>
       )}
@@ -407,7 +427,9 @@ export const SecureVaultCreateView = () => {
       {formState === 'error' && (
         <div className="flex w-full max-w-md flex-col items-center gap-4">
           <ExclamationCircleIcon className="text-error h-16 w-16" />
-          <h2 className="text-xl font-bold text-text1 dark:text-text1d">Failed to Create Vault</h2>
+          <h2 className="text-xl font-bold text-text1 dark:text-text1d">
+            {intl.formatMessage({ id: 'wallet.vultisig.create.failed' })}
+          </h2>
           <p className="text-center text-gray2 dark:text-gray2d">{error}</p>
 
           <button
@@ -418,7 +440,9 @@ export const SecureVaultCreateView = () => {
               'bg-turquoise text-black hover:bg-turquoise/80',
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}>
-            {isCleaningUp ? 'Cleaning up...' : 'Try Again'}
+            {isCleaningUp
+              ? intl.formatMessage({ id: 'wallet.vultisig.secureCreate.cancelling' })
+              : intl.formatMessage({ id: 'wallet.vultisig.create.tryAgain' })}
           </button>
         </div>
       )}

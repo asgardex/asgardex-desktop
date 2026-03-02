@@ -10,7 +10,7 @@ import { LastOpenedWallet } from '../../../shared/api/types'
 import { WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import { network$ } from '../app/service'
-import { modifyStorage, getStorageState } from '../storage/common'
+import { getStorageState, modifyStorage } from '../storage/common'
 import { keystoreService } from './keystore'
 import { createStandaloneLedgerService } from './standaloneLedger'
 import {
@@ -36,7 +36,17 @@ const INITIAL_APP_WALLET_STATE: AppWalletState = O.none // Start with no keystor
 export const createAppWalletService = (): AppWalletService => {
   // Create standalone services
   const standaloneLedgerService = createStandaloneLedgerService({ network$ })
-  const vaultManager = createVaultManager()
+
+  /**
+   * Centralized storage write for the last opened wallet.
+   * All wallet modes (keystore, vultisig) should use this instead of calling modifyStorage directly.
+   * Pass `undefined` to clear the saved wallet.
+   */
+  const saveLastOpenedWallet = (wallet: LastOpenedWallet | undefined): void => {
+    modifyStorage(O.some({ lastOpenedWallet: wallet }))
+  }
+
+  const vaultManager = createVaultManager(saveLastOpenedWallet)
 
   // Store subscriptions for cleanup
   const subscriptions: Subscription[] = []
@@ -235,7 +245,7 @@ export const createAppWalletService = (): AppWalletService => {
   }
 
   // ============================================
-  // Unified Wallet Methods (Phase A)
+  // Unified Wallet Methods
   // ============================================
 
   /**
@@ -307,9 +317,9 @@ export const createAppWalletService = (): AppWalletService => {
     if (isVultisigMode(currentState)) {
       return isVultisigVaultLocked(currentState)
     } else if (isStandaloneLedgerMode(currentState)) {
-      // In Ledger mode, the underlying wallet is always locked
-      // (locking is a prerequisite for entering Ledger mode)
-      return true
+      // Ledger is hardware-connected, never "locked" in keystore sense
+      // Matches isLocked$ behavior
+      return false
     } else {
       // Keystore mode
       return FP.pipe(
@@ -340,31 +350,8 @@ export const createAppWalletService = (): AppWalletService => {
     RxOp.distinctUntilChanged()
   )
 
-  /**
-   * Save last opened wallet with dual-write for backwards compatibility
-   * - Writes to `lastOpenedWallet` in CommonStorage (new unified format)
-   * - If keystore, also updates `selected` flag on keystores (old format)
-   */
-  const saveLastOpenedWallet = (wallet: LastOpenedWallet): void => {
-    window.apiLog.info('[AppWallet]', 'saveLastOpenedWallet:', wallet)
-
-    // Write to unified storage
-    FP.pipe(
-      getStorageState(),
-      O.map((currentStorage) => ({
-        ...currentStorage,
-        lastOpenedWallet: wallet
-      })),
-      modifyStorage
-    )
-
-    // Dual-write: If keystore, also update selected flag for backwards compat
-    // This is handled by keystoreService when changing wallets, so we don't need to do it here
-    // The keystoreService.changeKeystoreWallet already updates the selected flag
-  }
-
   // ============================================
-  // Startup Loading (Phase C)
+  // Startup Loading
   // ============================================
 
   /**
@@ -397,7 +384,7 @@ export const createAppWalletService = (): AppWalletService => {
 
   // Trigger wallet restoration after keystore data is loaded
   // This ensures we don't try to restore before services are ready
-  keystoreService.keystoreWalletsPersistent$
+  const startupSub = keystoreService.keystoreWalletsPersistent$
     .pipe(
       RxOp.filter(RD.isSuccess), // Only proceed when keystore data is loaded
       RxOp.take(1) // Only run once on startup
@@ -406,9 +393,10 @@ export const createAppWalletService = (): AppWalletService => {
       window.apiLog.info('[AppWallet]', 'Keystore data loaded, restoring last opened wallet')
       restoreLastOpenedWallet()
     })
+  subscriptions.push(startupSub)
 
   // ============================================
-  // Unified Wallet List and Selection (Phase D)
+  // Unified Wallet List and Selection
   // ============================================
 
   /**
@@ -434,7 +422,8 @@ export const createAppWalletService = (): AppWalletService => {
           name: v.name
         })
       )
-    ])
+    ]),
+    RxOp.shareReplay(1)
   )
 
   /**
@@ -486,7 +475,8 @@ export const createAppWalletService = (): AppWalletService => {
         )
       }
       return O.none
-    })
+    }),
+    RxOp.shareReplay(1)
   )
 
   /**
@@ -574,7 +564,7 @@ export const createAppWalletService = (): AppWalletService => {
   }
 
   // ============================================
-  // Cleanup (Phase 7C)
+  // Cleanup
   // ============================================
 
   /**
@@ -596,13 +586,13 @@ export const createAppWalletService = (): AppWalletService => {
     switchToStandaloneLedgerMode,
     switchToVultisigMode,
     restoreLastOpenedWallet,
+    saveLastOpenedWallet,
     // Unified methods (Phase A-C)
     lock,
     unlock,
     validatePassword,
     isLocked,
     isLocked$,
-    saveLastOpenedWallet,
     // Unified wallet list and selection (Phase D)
     allWallets$,
     activeWallet$,

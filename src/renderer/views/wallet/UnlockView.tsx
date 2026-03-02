@@ -79,7 +79,7 @@ export const UnlockView = (): JSX.Element => {
         const vault = await window.apiMpc.importVault(result.content)
         await appWalletService.vaultManager.loadVaults()
         await appWalletService.vaultManager.selectVault(vault.id, false)
-        navigate(walletRoutes.assets.template)
+        navigate(walletRoutes.assets.path())
       }
     } catch (error) {
       window.apiLog.error('[UnlockView]', 'Failed to import vault:', error)
@@ -96,7 +96,7 @@ export const UnlockView = (): JSX.Element => {
       await appWalletService.vaultManager.selectVault(vault.id, false)
       setShowPasswordModal(false)
       setPendingVaultFile(null)
-      navigate(walletRoutes.assets.template)
+      navigate(walletRoutes.assets.path())
     },
     [pendingVaultFile, navigate, appWalletService.vaultManager]
   )

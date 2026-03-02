@@ -10,6 +10,7 @@ import log from 'electron-log'
 
 let sdkInstance: Vultisig | null = null
 let sdkModule: typeof import('@vultisig/sdk') | null = null
+let initPromise: Promise<Vultisig> | null = null
 
 // Password cache TTL (5 minutes)
 const PASSWORD_CACHE_TTL = 5 * 60 * 1000
@@ -24,23 +25,37 @@ export async function initializeSDK(): Promise<Vultisig> {
     return sdkInstance
   }
 
-  log.info('[MPC SDK] Initializing...')
+  // If another caller is already initializing, wait on the same promise
+  if (initPromise) {
+    log.debug('[MPC SDK] Init already in progress, waiting...')
+    return initPromise
+  }
 
-  // Dynamic import - SDK uses conditional exports for Electron
-  sdkModule = await import('@vultisig/sdk')
-  const { Vultisig } = sdkModule
+  initPromise = (async () => {
+    log.info('[MPC SDK] Initializing...')
 
-  // SDK uses FileStorage by default in Electron (stores at ~/.vultisig)
-  // Password handling is done via direct unlockVault() calls from UI
-  sdkInstance = new Vultisig({
-    passwordCache: {
-      defaultTTL: PASSWORD_CACHE_TTL
-    }
-  })
+    // Dynamic import - SDK uses conditional exports for Electron
+    sdkModule = await import('@vultisig/sdk')
+    const { Vultisig } = sdkModule
 
-  await sdkInstance.initialize()
-  log.info('[MPC SDK] Initialized successfully')
-  return sdkInstance
+    // SDK uses FileStorage by default in Electron (stores at ~/.vultisig)
+    // Password handling is done via direct unlockVault() calls from UI
+    sdkInstance = new Vultisig({
+      passwordCache: {
+        defaultTTL: PASSWORD_CACHE_TTL
+      }
+    })
+
+    await sdkInstance.initialize()
+    log.info('[MPC SDK] Initialized successfully')
+    return sdkInstance
+  })()
+
+  try {
+    return await initPromise
+  } finally {
+    initPromise = null
+  }
 }
 
 /**
@@ -64,6 +79,7 @@ export function disposeSDK(): void {
     sdkInstance = null
     sdkModule = null
   }
+  initPromise = null
 }
 
 /**

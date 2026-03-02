@@ -1,11 +1,14 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
+import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { BackLinkButton } from '../../../components/uielements/button'
+import { Input } from '../../../components/uielements/input/Input'
+import { InputPassword } from '../../../components/uielements/input/InputPassword'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import * as walletRoutes from '../../../routes/wallet'
 import { isVultisigMode } from '../../../services/wallet/types'
@@ -14,6 +17,7 @@ type FormState = 'input' | 'creating' | 'verify' | 'success' | 'error'
 
 export const VaultCreateView = () => {
   const navigate = useNavigate()
+  const intl = useIntl()
   const { appWalletService } = useWalletContext()
 
   const appWalletState = useObservableState(appWalletService.appWalletState$)
@@ -28,9 +32,17 @@ export const VaultCreateView = () => {
   const [pendingVaultId, setPendingVaultId] = useState<string | null>(null)
   const [addresses, setAddresses] = useState<Record<string, string>>({})
 
+  // Track mounted state to guard async setState calls
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
   const handleCreateVault = useCallback(async () => {
     if (!name || !email || !password) {
-      setError('Please fill in all fields')
+      setError(intl.formatMessage({ id: 'wallet.vultisig.create.fillAllFields' }))
       return
     }
 
@@ -38,23 +50,21 @@ export const VaultCreateView = () => {
     setError(null)
 
     try {
-      // Initialize SDK first
-      await window.apiMpc.init()
-
-      // Create fast vault
-      const result = await window.apiMpc.createFastVault({ name, email, password })
-      setPendingVaultId(result.vaultId)
+      const vaultId = await appWalletService.vaultManager.createFastVault({ name, email, password })
+      if (!mountedRef.current) return
+      setPendingVaultId(vaultId)
       setFormState('verify')
     } catch (err) {
       window.apiLog.error('[FastVault]', 'Failed to create vault:', err)
+      if (!mountedRef.current) return
       setError(String(err))
       setFormState('error')
     }
-  }, [name, email, password])
+  }, [name, email, password, appWalletService, intl])
 
   const handleVerify = useCallback(async () => {
     if (!pendingVaultId || !verificationCode) {
-      setError('Please enter the verification code')
+      setError(intl.formatMessage({ id: 'wallet.vultisig.create.verify.enterCode' }))
       return
     }
 
@@ -62,11 +72,13 @@ export const VaultCreateView = () => {
     setError(null)
 
     try {
-      const vault = await window.apiMpc.verifyVault(pendingVaultId, verificationCode)
+      // vaultManager.verifyVault handles loadVaults + selectVault(id, false) internally
+      await appWalletService.vaultManager.verifyVault(pendingVaultId, verificationCode)
+      if (!mountedRef.current) return
 
-      // Get addresses
-      const addrs = await window.apiMpc.getAddresses(vault.id)
-      setAddresses(addrs)
+      // Get addresses from vaultManager state (set by verifyVault → selectVault)
+      const state = appWalletService.vaultManager.vultisigState()
+      setAddresses(state.addresses)
 
       // Clear sensitive data from state
       setPassword('')
@@ -75,13 +87,15 @@ export const VaultCreateView = () => {
       setFormState('success')
     } catch (err) {
       window.apiLog.error('[FastVault]', 'Failed to verify vault:', err)
+      if (!mountedRef.current) return
       setError(String(err))
       setFormState('verify') // Stay on verify to retry
     }
-  }, [pendingVaultId, verificationCode])
+  }, [pendingVaultId, verificationCode, appWalletService, intl])
 
   const handleGoToAssets = useCallback(() => {
-    // Switch to Vultisig mode and navigate to assets
+    // vaultManager.verifyVault already set the active vault via selectVault(id, false)
+    // Just switch to Vultisig mode and navigate
     appWalletService.switchToVultisigMode(true)
     navigate(walletRoutes.assets.path())
   }, [appWalletService, navigate])
@@ -92,44 +106,50 @@ export const VaultCreateView = () => {
         <BackLinkButton path={walletRoutes.noWallet.path()} />
       </div>
 
-      <h1 className="text-2xl font-bold text-text1 dark:text-text1d">Create Vultisig Vault</h1>
+      <h1 className="text-2xl font-bold text-text1 dark:text-text1d">
+        {intl.formatMessage({ id: 'wallet.vultisig.create.title' })}
+      </h1>
 
       {/* Input Form */}
       {formState === 'input' && (
         <div className="flex w-full max-w-md flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-gray2 dark:text-gray2d">Vault Name</label>
-            <input
-              type="text"
+            <label className="text-sm text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'wallet.vultisig.create.vaultName' })}
+            </label>
+            <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="My Vault"
-              className="rounded-lg border border-gray2/20 bg-bg2 p-3 text-text1 outline-none focus:border-turquoise dark:border-gray2d/20 dark:bg-bg2d dark:text-text1d"
+              placeholder={intl.formatMessage({ id: 'wallet.vultisig.create.vaultName.placeholder' })}
+              size="large"
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-gray2 dark:text-gray2d">Email Address</label>
-            <input
+            <label className="text-sm text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'wallet.vultisig.create.email' })}
+            </label>
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="rounded-lg border border-gray2/20 bg-bg2 p-3 text-text1 outline-none focus:border-turquoise dark:border-gray2d/20 dark:bg-bg2d dark:text-text1d"
+              placeholder={intl.formatMessage({ id: 'wallet.vultisig.create.email.placeholder' })}
+              size="large"
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-gray2 dark:text-gray2d">Password</label>
-            <input
-              type="password"
+            <label className="text-sm text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'common.password' })}
+            </label>
+            <InputPassword
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              className="rounded-lg border border-gray2/20 bg-bg2 p-3 text-text1 outline-none focus:border-turquoise dark:border-gray2d/20 dark:bg-bg2d dark:text-text1d"
+              placeholder={intl.formatMessage({ id: 'wallet.vultisig.create.password.placeholder' })}
+              size="large"
             />
             <span className="text-xs text-gray2 dark:text-gray2d">
-              This password will encrypt your vault. Remember it - you&apos;ll need it to sign transactions.
+              {intl.formatMessage({ id: 'wallet.vultisig.create.password.hint' })}
             </span>
           </div>
 
@@ -148,7 +168,7 @@ export const VaultCreateView = () => {
               'bg-turquoise text-black hover:bg-turquoise/80',
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}>
-            Create Fast Vault
+            {intl.formatMessage({ id: 'wallet.vultisig.create.submit' })}
           </button>
         </div>
       )}
@@ -157,7 +177,9 @@ export const VaultCreateView = () => {
       {formState === 'creating' && (
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-turquoise border-t-transparent" />
-          <p className="text-gray2 dark:text-gray2d">{vultisigState?.creationProgress || 'Creating vault...'}</p>
+          <p className="text-gray2 dark:text-gray2d">
+            {vultisigState?.creationProgress || intl.formatMessage({ id: 'wallet.vultisig.create.creating' })}
+          </p>
         </div>
       )}
 
@@ -165,18 +187,20 @@ export const VaultCreateView = () => {
       {formState === 'verify' && (
         <div className="flex w-full max-w-md flex-col gap-4">
           <div className="rounded-lg bg-turquoise/10 p-4 text-center">
-            <p className="text-turquoise">Check your email for a verification code</p>
+            <p className="text-turquoise">{intl.formatMessage({ id: 'wallet.vultisig.create.verify.checkEmail' })}</p>
             <p className="mt-1 text-sm text-gray2 dark:text-gray2d">{email}</p>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-gray2 dark:text-gray2d">Verification Code</label>
-            <input
-              type="text"
+            <label className="text-sm text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'wallet.vultisig.create.verify.code' })}
+            </label>
+            <Input
               value={verificationCode}
               onChange={(e) => setVerificationCode(e.target.value)}
-              placeholder="Enter code from email"
-              className="rounded-lg border border-gray2/20 bg-bg2 p-3 text-center text-xl tracking-widest text-text1 outline-none focus:border-turquoise dark:border-gray2d/20 dark:bg-bg2d dark:text-text1d"
+              placeholder={intl.formatMessage({ id: 'wallet.vultisig.create.verify.code.placeholder' })}
+              size="large"
+              className="text-center text-xl tracking-widest"
             />
           </div>
 
@@ -195,7 +219,7 @@ export const VaultCreateView = () => {
               'bg-turquoise text-black hover:bg-turquoise/80',
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}>
-            Verify & Complete
+            {intl.formatMessage({ id: 'wallet.vultisig.create.verify.submit' })}
           </button>
         </div>
       )}
@@ -204,10 +228,14 @@ export const VaultCreateView = () => {
       {formState === 'success' && (
         <div className="flex w-full max-w-md flex-col items-center gap-4">
           <CheckCircleIcon className="h-16 w-16 text-turquoise" />
-          <h2 className="text-xl font-bold text-text1 dark:text-text1d">Vault Created Successfully!</h2>
+          <h2 className="text-xl font-bold text-text1 dark:text-text1d">
+            {intl.formatMessage({ id: 'wallet.vultisig.create.success' })}
+          </h2>
 
           <div className="w-full rounded-lg bg-bg2 p-4 dark:bg-bg2d">
-            <h3 className="mb-3 text-sm font-medium text-gray2 dark:text-gray2d">Your Addresses</h3>
+            <h3 className="mb-3 text-sm font-medium text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'wallet.vultisig.create.success.addresses' })}
+            </h3>
             <div className="flex flex-col gap-2">
               {Object.entries(addresses)
                 .slice(0, 5)
@@ -219,7 +247,10 @@ export const VaultCreateView = () => {
                 ))}
               {Object.keys(addresses).length > 5 && (
                 <span className="text-xs text-gray2 dark:text-gray2d">
-                  +{Object.keys(addresses).length - 5} more chains
+                  {intl.formatMessage(
+                    { id: 'wallet.vultisig.create.success.moreChains' },
+                    { count: Object.keys(addresses).length - 5 }
+                  )}
                 </span>
               )}
             </div>
@@ -228,7 +259,7 @@ export const VaultCreateView = () => {
           <button
             onClick={handleGoToAssets}
             className="mt-4 w-full rounded-lg bg-turquoise px-6 py-3 font-medium text-black transition-colors hover:bg-turquoise/80">
-            Go to Wallet
+            {intl.formatMessage({ id: 'wallet.vultisig.create.goToWallet' })}
           </button>
         </div>
       )}
@@ -237,13 +268,15 @@ export const VaultCreateView = () => {
       {formState === 'error' && (
         <div className="flex w-full max-w-md flex-col items-center gap-4">
           <ExclamationCircleIcon className="text-error h-16 w-16" />
-          <h2 className="text-xl font-bold text-text1 dark:text-text1d">Failed to Create Vault</h2>
+          <h2 className="text-xl font-bold text-text1 dark:text-text1d">
+            {intl.formatMessage({ id: 'wallet.vultisig.create.failed' })}
+          </h2>
           <p className="text-center text-gray2 dark:text-gray2d">{error}</p>
 
           <button
             onClick={() => setFormState('input')}
             className="mt-4 rounded-lg bg-turquoise px-6 py-3 font-medium text-black transition-colors hover:bg-turquoise/80">
-            Try Again
+            {intl.formatMessage({ id: 'wallet.vultisig.create.tryAgain' })}
           </button>
         </div>
       )}

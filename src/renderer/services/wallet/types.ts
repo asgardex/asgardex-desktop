@@ -10,7 +10,7 @@ type NonEmptyArray<T> = nonEmptyArray.NonEmptyArray<T>
 const { getMonoid } = array
 
 import { KeystoreWallet, KeystoreWallets } from '../../../shared/api/io'
-import { KeystoreId, LedgerError } from '../../../shared/api/types'
+import { KeystoreId, LastOpenedWallet, LedgerError } from '../../../shared/api/types'
 import { EnabledChain } from '../../../shared/utils/chain'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
@@ -272,23 +272,23 @@ export type AppWalletService = {
   switchToStandaloneLedgerMode: (autoLock?: boolean) => void
   switchToVultisigMode: (autoLock?: boolean) => void
   restoreLastOpenedWallet: () => Promise<void>
-  // Unified wallet methods (Phase A-C)
+  saveLastOpenedWallet: (wallet: LastOpenedWallet | undefined) => void
+  // Unified wallet methods
   lock: () => Promise<void>
   unlock: (password: string) => Promise<boolean>
   validatePassword: (password: string) => Promise<boolean>
   isLocked: () => boolean
   isLocked$: Rx.Observable<boolean>
-  saveLastOpenedWallet: (wallet: import('../../../shared/api/types').LastOpenedWallet) => void
-  // Unified wallet list and selection (Phase D → 4F)
+  // Unified wallet list and selection
   allWallets$: Wallets$
   activeWallet$: Rx.Observable<O.Option<Wallet>>
   selectWallet: (wallet: Wallet) => Promise<void>
-  // Unified address access (Phase 5C)
+  // Unified address access
   // ONE call to know wallet state - no scattered mode checks needed
   getAddressForChain$: (chain: Chain) => Rx.Observable<O.Option<Address>>
   getCurrentWalletType: () => WalletType
   getActiveVaultId: () => string | undefined
-  // Cleanup (Phase 7C)
+  // Cleanup
   dispose: () => void
 }
 
@@ -487,7 +487,7 @@ export type KeystoreWalletsUI = KeystoreWalletUI[]
 export type KeystoreWalletsUI$ = Rx.Observable<KeystoreWalletsUI>
 
 // ============================================
-// Unified Wallet Types (Phase D → 4F)
+// Unified Wallet Types
 // ============================================
 
 /**
