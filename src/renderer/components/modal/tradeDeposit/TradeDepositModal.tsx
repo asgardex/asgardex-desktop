@@ -23,6 +23,7 @@ import { useIntl } from 'react-intl'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { useEvmContext } from '../../../contexts/EvmContext'
+import { logger } from '../../../helpers/logger'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { getEVMTokenAddressForChain } from '../../../helpers/assetHelper'
@@ -530,19 +531,19 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     const poolAddress = currentProtocol === THORChain ? selectedPoolAddressThor : selectedPoolAddressMaya
 
     if (O.isNone(poolAddress)) {
-      console.error('Pool address not available')
+      logger.error('Pool address not available')
       return
     }
 
     FP.pipe(
       selectedAssetBalance,
       O.fold(
-        () => console.error('No balance found'),
+        () => logger.error('No balance found'),
         (balance) => {
           FP.pipe(
             selectedAsset,
             O.fold(
-              () => console.error('No asset selected'),
+              () => logger.error('No asset selected'),
               (asset) => {
                 // Convert amount to BaseAmount
                 const userAmount = parseFloat(amount)

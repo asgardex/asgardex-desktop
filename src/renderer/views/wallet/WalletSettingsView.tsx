@@ -55,6 +55,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { useXrdContext } from '../../contexts/XrdContext'
 import { useXrpContext } from '../../contexts/XrpContext'
 import { useZcashContext } from '../../contexts/ZcashContext'
+import { logger } from '../../helpers/logger'
 import {
   filterEnabledChains,
   isBchChain,
@@ -388,7 +389,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     }
 
     if (!isSupportedChain(chain)) {
-      console.warn(`${chain} is not supported for 'clickAddressLinkHandler'`)
+      logger.warn(`${chain} is not supported for 'clickAddressLinkHandler'`)
     }
 
     switch (chain) {

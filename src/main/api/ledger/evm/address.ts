@@ -1,4 +1,5 @@
 import type Transport from '@ledgerhq/hw-transport'
+import log from 'electron-log'
 import { ARBChain, defaultArbParams } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain, defaultBaseParams } from '@xchainjs/xchain-base'
@@ -195,7 +196,7 @@ export const verifyEVMAddress = async ({
       }
       break
     default:
-      console.error(`Unsupported chain for verification: ${chain}`)
+      log.error(`Unsupported chain for verification: ${chain}`)
       return false
   }
 
@@ -204,7 +205,7 @@ export const verifyEVMAddress = async ({
     await client.getAddressAsync(walletIndex, true) // Verify address on device
     return true
   } catch (error) {
-    console.error(`Verification error: ${isError(error) ? error?.message : `${error}`}`)
+    log.error(`Verification error: ${isError(error) ? error?.message : `${error}`}`)
     return false
   }
 }

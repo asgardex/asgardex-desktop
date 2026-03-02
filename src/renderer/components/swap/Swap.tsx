@@ -43,6 +43,7 @@ import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } fr
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
+import { logger } from '../../helpers/logger'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import {
@@ -1128,7 +1129,7 @@ export const Swap = ({
 
         sortAndSetDefaultQuote(allQuotes)
       } catch (err) {
-        console.error('Failed to fetch estimate:', err)
+        logger.error('Failed to fetch estimate:', err)
 
         // Ensure we always have a proper Error object with a valid message
         let errorToSet: Error
@@ -1386,7 +1387,7 @@ export const Swap = ({
                 const usdValue = swapResultAmountMax.baseAmount.times(geckoPrice)
                 return usdValue
               } catch (error) {
-                console.warn('Error calculating Chainflip USD value:', error)
+                logger.warn('Error calculating Chainflip USD value:', error)
                 return baseAmount(0, THORCHAIN_DECIMAL)
               }
             }

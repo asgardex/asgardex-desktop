@@ -7,6 +7,7 @@ import * as RxOp from 'rxjs/operators'
 import { LedgerErrorId } from '../../../shared/api/types'
 import { DEFAULT_EVM_HD_MODE } from '../../../shared/evm/types'
 import { isError } from '../../../shared/utils/guard'
+import { logger } from '../../helpers/logger'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { liveData } from '../../helpers/rx/liveData'
@@ -82,7 +83,7 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
     const chainToDetect = currentState.selectedChainForDetection
 
     if (!chainToDetect) {
-      console.warn('No chain selected for detection')
+      logger.warn('No chain selected for detection')
       return undefined
     }
 
@@ -333,7 +334,7 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
     const currentState = standaloneLedgerState()
 
     if (!currentState.selectedChainForDetection) {
-      console.warn('Cannot start detection: no chain selected')
+      logger.warn('Cannot start detection: no chain selected')
       return undefined
     }
 

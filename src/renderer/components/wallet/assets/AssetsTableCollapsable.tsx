@@ -29,6 +29,7 @@ import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../..
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
+import { logger } from '../../../helpers/logger'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import {
@@ -155,7 +156,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
     try {
       return cachedKeys ? JSON.parse(cachedKeys).map((item: string) => parseInt(item)) : []
     } catch (error) {
-      console.error('Failed to parse openPanelKeys from localStorage:', error)
+      logger.error('Failed to parse openPanelKeys from localStorage:', error)
       return []
     }
   })

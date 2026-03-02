@@ -6,6 +6,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { adaApiKey } from '../../../shared/api/blockfrost'
+import { logger } from '../../helpers/logger'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -48,7 +49,7 @@ const clientState$: ClientState$ = FP.pipe(
               const client = new ADAClient(adaInitParams)
               return RD.success(client)
             } catch (error) {
-              console.error('Failed to create ADA client', error)
+              logger.error('Failed to create ADA client', error)
               return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
           }),

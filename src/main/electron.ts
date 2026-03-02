@@ -47,8 +47,12 @@ const APP_ICON = join(APP_ROOT, 'resources', process.platform.match('win32') ? '
 
 const initLogger = () => {
   log.transports.file.resolvePath = (variables: log.PathVariables) => {
-    // Logs go into ~/.config/{appName}/logs/ dir
     const safeFileName = sanitizePathSegment(variables.fileName as string, 'log file name')
+    if (IS_DEV) {
+      // Dev logs go to ./logs/ in the project root for easy access
+      return path.join(APP_ROOT, 'logs', safeFileName)
+    }
+    // Production logs go to ~/.config/{appName}/logs/
     return path.join(app.getPath('userData'), 'logs', safeFileName)
   }
 }

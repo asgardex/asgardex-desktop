@@ -21,6 +21,7 @@ import {
   getValueOfRuneInAsset
 } from '../views/pools/Pools.utils'
 import { convertBaseAmountDecimal, isCacaoAsset, isMayaAsset, to1e10BaseAmount, to1e8BaseAmount } from './assetHelper'
+import { logger } from './logger'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
@@ -183,7 +184,7 @@ export const getPoolPriceValue = ({
           () => O.none, // Initial state
           () => O.none, // Loading state
           (error) => {
-            console.error('Failed to fetch Maya price:', error)
+            logger.error('Failed to fetch Maya price:', error)
             return O.none
           },
           (mayaScanPrice: MayaScanPrice) => {

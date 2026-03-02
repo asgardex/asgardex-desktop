@@ -9,6 +9,7 @@ import { useIntl } from 'react-intl'
 import { useLocation } from 'react-router-dom'
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
 import { envOrDefault } from '../../../shared/utils/env'
+import { logger } from '../../helpers/logger'
 import { Header } from '../../components/header'
 import { Sidebar } from '../../components/sidebar'
 import { Alert } from '../../components/uielements/alert'
@@ -166,7 +167,7 @@ export const AppView = (): JSX.Element => {
   useEffect(() => {
     getPublicIP()
       .then((ip) => setPublicIP(ip))
-      .catch((err) => console.error(err))
+      .catch((err) => logger.error(err))
   }, [])
 
   return (

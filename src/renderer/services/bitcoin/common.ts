@@ -17,6 +17,7 @@ import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { blockcypherApiKey } from '../../../shared/api/blockcypher'
+import { logger } from '../../helpers/logger'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -85,7 +86,7 @@ const clientState$: ClientState$ = FP.pipe(
               const client = new BitcoinClient(btcInitParams)
               return RD.success(client)
             } catch (error) {
-              console.error('Failed to create BTC client', error)
+              logger.error('Failed to create BTC client', error)
               return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
           }),
@@ -123,7 +124,7 @@ const readOnlyClientState$: Observable<RD.RemoteData<Error, BitcoinClient>> = FP
       const client = new BitcoinClient(btcInitParams)
       return RD.success(client)
     } catch (error) {
-      console.error('Failed to create read-only BTC client', error)
+      logger.error('Failed to create read-only BTC client', error)
       return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
     }
   }),

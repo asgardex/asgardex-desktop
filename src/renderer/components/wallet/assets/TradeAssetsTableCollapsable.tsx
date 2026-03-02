@@ -28,6 +28,7 @@ import { chainToString, EnabledChain } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../shared/wallet/types'
 import { CHAIN_WEIGHTS_THOR, ZERO_BASE_AMOUNT } from '../../../const'
+import { logger } from '../../../helpers/logger'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
@@ -180,7 +181,7 @@ export const TradeAssetsTableCollapsable = ({
         oTradeWithdrawParams,
         O.map((params) => params.walletType),
         O.fold(
-          () => console.warn('No wallet type available'),
+          () => logger.warn('No wallet type available'),
           (walletType) => {
             if (walletType === WalletType.Ledger) {
               setShowLedgerModal('deposit')

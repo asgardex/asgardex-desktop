@@ -7,6 +7,7 @@ import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
 import { useChainContext } from '../contexts/ChainContext'
+import { logger } from '../helpers/logger'
 import { eqChain } from '../helpers/fp/eq'
 import { AddressValidation, AddressValidationAsync } from '../services/clients'
 
@@ -37,7 +38,7 @@ export const useValidateAddress = (
           if (client && typeof client.validateAddress === 'function') {
             return client.validateAddress(address)
           }
-          console.warn(`Client for chain ${chain} does not have validateAddress method`)
+          logger.warn(`Client for chain ${chain} does not have validateAddress method`)
           return true
         }),
         // In case client is not available (it should never happen), skip validation by returning always `true`
@@ -54,7 +55,7 @@ export const useValidateAddress = (
           if (client && typeof client.validateAddress === 'function') {
             return client.validateAddress(address)
           }
-          console.warn(`Client for chain ${chain} does not have validateAddress method`)
+          logger.warn(`Client for chain ${chain} does not have validateAddress method`)
           return true
         }),
         // In case client is not available (it should never happen), skip validation by returning always `true`

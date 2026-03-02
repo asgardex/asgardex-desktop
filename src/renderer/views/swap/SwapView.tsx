@@ -49,6 +49,7 @@ import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useThorchainQueryContext } from '../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { assetInList, getAssetFromNullableString } from '../../helpers/assetHelper'
+import { logger } from '../../helpers/logger'
 import { eqChain, eqNetwork } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -139,7 +140,7 @@ const SuccessRouteView = ({
       getAssetsData$().pipe(
         RxOp.catchError(() => {
           // If Chainflip fails (429 or other errors), return empty array instead of failing
-          console.warn('Chainflip assets unavailable, continuing without Chainflip support')
+          logger.warn('Chainflip assets unavailable, continuing without Chainflip support')
           return Rx.of(RD.success([]))
         }),
         RxOp.startWith(RD.success([])) // Ensure we always start with a success state

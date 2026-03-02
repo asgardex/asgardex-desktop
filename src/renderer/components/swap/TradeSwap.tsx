@@ -39,6 +39,7 @@ import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
+import { logger } from '../../helpers/logger'
 import {
   max1e8BaseAmount,
   convertBaseAmountDecimal,
@@ -703,7 +704,7 @@ export const TradeSwap = ({
           })
           .catch((error) => {
             setQuote(O.none)
-            console.error('Failed to get quote:', error)
+            logger.error('Failed to get quote:', error)
             setErrorProtocol(O.some(error as Error))
           })
       } else {
@@ -714,7 +715,7 @@ export const TradeSwap = ({
           })
           .catch((error) => {
             setQuoteMaya(O.none)
-            console.error('Failed to get quote:', error)
+            logger.error('Failed to get quote:', error)
             setErrorProtocol(O.some(error as Error))
           })
       }

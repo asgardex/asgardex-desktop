@@ -8,6 +8,7 @@ import { BehaviorSubject } from 'rxjs'
 import { startWith } from 'rxjs/operators'
 
 import { AssetUSDC } from '../const'
+import { logger } from '../helpers/logger'
 import { AssetWithAmount } from '../types/asgardex'
 
 type MayaPriceResponse = {
@@ -46,7 +47,7 @@ const fetchMayaPrice = async () => {
     })
     mayaScanPriceSubject.next(newPriceState)
   } catch (error) {
-    console.error('Failed to fetch Maya price:', error)
+    logger.error('Failed to fetch Maya price:', error)
     mayaScanPriceSubject.next(RD.failure(error as Error))
   }
 }

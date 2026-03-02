@@ -20,6 +20,10 @@ declare module '*.png' {
   export default src
 }
 
+declare const $COMMIT_HASH: string
+declare const $VERSION: string
+declare const $IS_DEV: boolean
+
 interface ImportMetaEnv {
   [key: `VITE_${string}`]: string
 }
