@@ -61,7 +61,7 @@ const initLogger = () => {
   if (IS_DEV) {
     const devLogPath = path.join(APP_ROOT, 'logs', 'main.log')
     try {
-      fs.writeFileSync(devLogPath, '', { flag: 'w' })
+      fs.writeFileSync(devLogPath, '', { flag: 'w' }) // eslint-disable-line security/detect-non-literal-fs-filename
     } catch (_e) {
       // logs dir may not exist yet — electron-log will create it
     }
