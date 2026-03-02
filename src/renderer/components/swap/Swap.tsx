@@ -75,6 +75,7 @@ import {
   getWalletTypeLabel,
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
+import { useERC20Approval } from '../../hooks/useERC20Approval'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
@@ -82,7 +83,7 @@ import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
 import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState, SendTxParams } from '../../services/chain/types'
-import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
+import { ApproveParams } from '../../services/evm/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../services/midgard/mayaMidgard/utils'
 import { PoolAddress } from '../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
@@ -1005,32 +1006,6 @@ export const Swap = ({
     return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, oApplyBps, network, sourceAsset])
 
-  const {
-    state: approveState,
-    reset: resetApproveState,
-    subscribe: subscribeApproveState
-  } = useSubscriptionState<TxHashRD>(RD.initial)
-
-  // State for values of `isApprovedERC20Token$`
-  const {
-    state: isApprovedState,
-    reset: resetIsApprovedState,
-    subscribe: subscribeIsApprovedState
-  } = useSubscriptionState<IsApprovedRD>(RD.initial)
-
-  const checkApprovedStatus = useCallback(
-    ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
-      subscribeIsApprovedState(
-        isApprovedERC20Token$({
-          contractAddress,
-          spenderAddress,
-          fromAddress
-        })
-      )
-    },
-    [isApprovedERC20Token$, subscribeIsApprovedState]
-  )
-
   const fetchSwap = useCallback(
     async (amount: BaseAmount) => {
       if (amount.amount().isZero()) {
@@ -1692,52 +1667,19 @@ export const Swap = ({
     sourceChain
   ])
 
-  const [awaitingApprovalConfirmation, setAwaitingApprovalConfirmation] = useState(false)
-
-  // Trigger approval check with polling retry after approval tx succeeds
+  // Keep a ref to amountToSwap for the onApprovalConfirmed callback
+  const amountToSwapRef = useRef(amountToSwap)
   useEffect(() => {
-    if (!RD.isSuccess(approveState)) return
+    amountToSwapRef.current = amountToSwap
+  }, [amountToSwap])
 
-    const params = FP.pipe(oApproveParams, O.toUndefined)
-    if (!params) return
-
-    let cancelled = false
-    prevApproveParams.current = O.some(params)
-    setAwaitingApprovalConfirmation(true)
-
-    const pollApproval = async () => {
-      // Initial delay to allow on-chain confirmation
-      await delay(10000)
-
-      // Poll up to 3 times, 5s apart
-      for (let attempt = 0; attempt < 3; attempt++) {
-        if (cancelled) return
-        checkApprovedStatus(params)
-        // Wait 5s before next attempt (skip wait on last attempt)
-        if (attempt < 2) await delay(5000)
-      }
-
-      if (!cancelled) {
-        setAwaitingApprovalConfirmation(false)
-      }
-    }
-
-    pollApproval()
-
-    return () => {
-      cancelled = true
-      setAwaitingApprovalConfirmation(false)
-    }
-  }, [approveState, oApproveParams, checkApprovedStatus])
-
-  // Refetch quote when approval is confirmed
-  useEffect(() => {
-    if (RD.isSuccess(approveState) && RD.isSuccess(isApprovedState)) {
-      setAwaitingApprovalConfirmation(false)
-      fetchSwap(amountToSwap)
-      resetIsApprovedState()
-    }
-  }, [approveState, isApprovedState, amountToSwap, fetchSwap, resetIsApprovedState])
+  const { approveState, resetApproval, submitApproveTx, awaitingConfirmation } = useERC20Approval({
+    isApprovedERC20Token$,
+    approveERC20Token$,
+    oApproveParams,
+    network,
+    onApprovalConfirmed: () => fetchSwap(amountToSwapRef.current)
+  })
 
   const reloadFeesHandler = useCallback(() => {
     reloadFees({
@@ -1809,7 +1751,7 @@ export const Swap = ({
 
   const setSourceAsset = useCallback(
     async (asset: AnyAsset) => {
-      resetIsApprovedState()
+      resetApproval()
       await delay(100)
       setAmountToSwap(initialAmountToSwap)
       onChangeAsset({
@@ -1826,7 +1768,7 @@ export const Swap = ({
       effectiveRecipientAddress,
       oTargetWalletType,
       onChangeAsset,
-      resetIsApprovedState,
+      resetApproval,
       setAmountToSwap,
       targetAsset
     ]
@@ -1834,7 +1776,7 @@ export const Swap = ({
 
   const setTargetAsset = useCallback(
     async (asset: AnyAsset) => {
-      resetIsApprovedState()
+      resetApproval()
       // Step 2: Switch target asset
       await delay(100) // Optional delay to ensure state updates properly
       onChangeAsset({
@@ -1846,9 +1788,9 @@ export const Swap = ({
         recipientAddress: O.none
       })
       await delay(100) // Optional delay to ensure state updates properly
-      resetIsApprovedState()
+      resetApproval()
     },
-    [onChangeAsset, resetIsApprovedState, sourceAsset, sourceWalletType]
+    [onChangeAsset, resetApproval, sourceAsset, sourceWalletType]
   )
   const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
   const lastTrackedTxHashRef = useRef<string | null>(null)
@@ -2105,26 +2047,6 @@ export const Swap = ({
       })
     )
   }, [oCFSwapParams, subscribeSwapState, swapCF$])
-
-  const submitApproveTx = useCallback(() => {
-    FP.pipe(
-      oApproveParams,
-      O.map(({ walletAccount, walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
-        subscribeApproveState(
-          approveERC20Token$({
-            network,
-            contractAddress,
-            spenderAddress,
-            fromAddress,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            walletType
-          })
-        )
-      )
-    )
-  }, [approveERC20Token$, network, oApproveParams, subscribeApproveState])
 
   const onSubmit = useCallback(() => {
     if (useSourceAssetLedger) {
@@ -2581,13 +2503,13 @@ export const Swap = ({
         memo: swapMemo,
         outAsset: targetAsset
       })
-      resetApproveState()
+      resetApproval()
     }
     prevSourceAsset.current = O.some(sourceAsset)
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
       prevTargetAsset.current = O.some(targetAsset)
     }
-  }, [reloadFees, resetApproveState, resetSwapState, sourceAsset, targetAsset, swapMemo])
+  }, [reloadFees, resetApproval, resetSwapState, sourceAsset, targetAsset, swapMemo])
 
   // Track successful swap transactions (THORChain and Maya)
   useEffect(() => {
@@ -3303,10 +3225,10 @@ export const Swap = ({
                   className="my-30px min-w-[200px]"
                   size="large"
                   color="warning"
-                  disabled={disableSubmitApprove || awaitingApprovalConfirmation}
+                  disabled={disableSubmitApprove || awaitingConfirmation}
                   onClick={onApprove}
-                  loading={RD.isPending(approveState) || awaitingApprovalConfirmation}>
-                  {awaitingApprovalConfirmation
+                  loading={RD.isPending(approveState) || awaitingConfirmation}>
+                  {awaitingConfirmation
                     ? intl.formatMessage({ id: 'common.approve.waiting' })
                     : intl.formatMessage({ id: 'common.approve' })}
                 </FlatButton>
