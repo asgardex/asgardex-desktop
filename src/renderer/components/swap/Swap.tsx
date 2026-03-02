@@ -2415,9 +2415,11 @@ export const Swap = ({
   const isApproved = useMemo(() => {
     // No approval needed if not an ERC20 token
     if (O.isNone(needApprovement)) return true
-    // Approved if no approval error in quote AND no pending approval
-    return !needsApproval || RD.isSuccess(approveState)
-  }, [needApprovement, needsApproval, approveState])
+    // Still waiting for on-chain confirmation after tx success
+    if (awaitingConfirmation) return false
+    // Approved if no approval error in quote
+    return !needsApproval
+  }, [needApprovement, needsApproval, awaitingConfirmation])
 
   const priceApproveFee: CryptoAmount = useMemo(() => {
     const assetAmount = isApproved
@@ -2595,6 +2597,7 @@ export const Swap = ({
         sourceChainFeeError ||
         RD.isPending(swapFeesRD) ||
         RD.isPending(approveState) ||
+        awaitingConfirmation ||
         isCausedSlippage ||
         !swapResultAmountMax.baseAmount ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax) ||
@@ -2613,6 +2616,7 @@ export const Swap = ({
       sourceChainFeeError,
       swapFeesRD,
       approveState,
+      awaitingConfirmation,
       isCausedSlippage,
       swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax,

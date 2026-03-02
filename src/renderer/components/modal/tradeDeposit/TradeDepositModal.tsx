@@ -254,7 +254,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     )
   }, [selectedAsset, currentProtocol, selectedPoolAddressThor, selectedPoolAddressMaya, selectedAssetBalance, network])
 
-  const { approveState, resetApproval, submitApproveTx, isApprovedState } = useERC20Approval({
+  const { approveState, resetApproval, submitApproveTx, isApprovedState, awaitingConfirmation } = useERC20Approval({
     isApprovedERC20Token$,
     approveERC20Token$,
     oApproveParams,
@@ -410,9 +410,9 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
   const isApproved = useMemo(() => {
     // No approval needed if not an ERC20 token
     if (O.isNone(needApprovement)) return true
-    // Check if approved
-    return RD.isSuccess(approveState) || (RD.isSuccess(isApprovedState) && isApprovedState.value)
-  }, [needApprovement, approveState, isApprovedState])
+    // Check if on-chain allowance is confirmed
+    return RD.isSuccess(isApprovedState) && isApprovedState.value
+  }, [needApprovement, isApprovedState])
 
   const isValidAmount = useMemo(() => {
     return FP.pipe(
@@ -629,31 +629,23 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
   // Render approval transaction progress modal
   const renderApproveTxModal = useMemo(() => {
     if (RD.isPending(approveState) || RD.isSuccess(approveState) || RD.isFailure(approveState)) {
+      const onCloseOrFinish = () => {
+        resetApproval()
+        // Only proceed to deposit if on-chain allowance is confirmed
+        if (!awaitingConfirmation && RD.isSuccess(isApprovedState) && isApprovedState.value) {
+          if (isLedgerWalletSelected) {
+            setShowLedgerModal(ModalState.Deposit)
+          } else {
+            setShowPasswordModal(ModalState.Deposit)
+          }
+        }
+      }
+
       return (
         <TxModal
           title={intl.formatMessage({ id: 'common.approve' })}
-          onClose={() => {
-            resetApproval()
-            if (RD.isSuccess(approveState)) {
-              // After successful approval, trigger deposit
-              if (isLedgerWalletSelected) {
-                setShowLedgerModal(ModalState.Deposit)
-              } else {
-                setShowPasswordModal(ModalState.Deposit)
-              }
-            }
-          }}
-          onFinish={() => {
-            resetApproval()
-            // After successful approval, trigger deposit
-            if (RD.isSuccess(approveState)) {
-              if (isLedgerWalletSelected) {
-                setShowLedgerModal(ModalState.Deposit)
-              } else {
-                setShowPasswordModal(ModalState.Deposit)
-              }
-            }
-          }}
+          onClose={onCloseOrFinish}
+          onFinish={onCloseOrFinish}
           startTime={Date.now()}
           txRD={RD.map(() => true)(approveState)}
           extraResult={
@@ -678,7 +670,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
       )
     }
     return null
-  }, [approveState, intl, resetApproval, selectedAsset, isLedgerWalletSelected])
+  }, [approveState, intl, resetApproval, selectedAsset, isLedgerWalletSelected, awaitingConfirmation, isApprovedState])
 
   // Render transaction progress modal
   const renderTxModal = useMemo(() => {

@@ -84,33 +84,35 @@ export const useERC20Approval = ({
     if (eqOApproveParams.equals(oApproveParams, prevCheckParamsRef.current)) return
     prevCheckParamsRef.current = oApproveParams
 
-    FP.pipe(
+    return FP.pipe(
       oApproveParams,
       O.fold(
-        () => {
-          // params went to None — nothing to check
-        },
+        // params went to None — nothing to check, no cleanup needed
+        () => () => undefined,
         (params) => {
           setIsApprovedState(RD.pending)
+          let timeout: ReturnType<typeof setTimeout> | undefined
+
           const sub = isApprovedERC20Token$({
             contractAddress: params.contractAddress,
             spenderAddress: params.spenderAddress,
             fromAddress: params.fromAddress
           }).subscribe((rd) => {
             if (RD.isSuccess(rd) || RD.isFailure(rd)) {
+              if (timeout) clearTimeout(timeout)
               setIsApprovedState(rd)
               sub.unsubscribe()
             }
           })
 
           // Timeout guard
-          const timeout = setTimeout(() => {
+          timeout = setTimeout(() => {
             sub.unsubscribe()
             setIsApprovedState(RD.initial)
           }, CHECK_TIMEOUT)
 
           return () => {
-            clearTimeout(timeout)
+            if (timeout) clearTimeout(timeout)
             sub.unsubscribe()
           }
         }
