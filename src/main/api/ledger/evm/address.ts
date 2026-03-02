@@ -7,6 +7,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { ETHChain, defaultEthParams } from '@xchainjs/xchain-ethereum'
 import { ClientLedger, LedgerSigner } from '@xchainjs/xchain-evm'
 import { Chain } from '@xchainjs/xchain-util'
+import log from 'electron-log'
 import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
@@ -195,7 +196,7 @@ export const verifyEVMAddress = async ({
       }
       break
     default:
-      console.error(`Unsupported chain for verification: ${chain}`)
+      log.error(`Unsupported chain for verification: ${chain}`)
       return false
   }
 
@@ -204,7 +205,7 @@ export const verifyEVMAddress = async ({
     await client.getAddressAsync(walletIndex, true) // Verify address on device
     return true
   } catch (error) {
-    console.error(`Verification error: ${isError(error) ? error?.message : `${error}`}`)
+    log.error(`Verification error: ${isError(error) ? error?.message : `${error}`}`)
     return false
   }
 }

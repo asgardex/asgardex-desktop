@@ -84,7 +84,7 @@ export const TotalAssetValue = (props: Props): JSX.Element => {
       </div>
 
       <BaseButton
-        className="font-mainSemiBold flex justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+        className="flex justify-between !p-0 font-main-semi-bold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
         onClick={() => setShowDetails((current) => !current)}>
         <div className="m-4">{totalBalanceDisplay}</div>
         {isChartVisible &&

@@ -232,7 +232,7 @@ export const UnlockForm = ({
           )}>
           <div className="w-full max-w-[320px]">
             <div className="flex flex-col">
-              <h1 className="mb-12px font-mainSemiBold inline-block w-full text-18 text-text1 uppercase dark:text-text1d">
+              <h1 className="mb-12px inline-block w-full font-main-semi-bold text-18 text-text1 uppercase dark:text-text1d">
                 {intl.formatMessage({ id: 'wallet.unlock.label' })}
               </h1>
               <h2 className="mb-30px w-full text-11 text-text2 dark:text-text2d">

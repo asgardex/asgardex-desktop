@@ -187,7 +187,7 @@ export const SwapDetailsPanel = ({
 
   const memoSection = showDetails && (
     <>
-      <div className="font-mainBold ml-[-2px] flex w-full items-start pt-10px text-[14px] text-text2 dark:text-text2d">
+      <div className="ml-[-2px] flex w-full items-start pt-10px font-main-bold text-[14px] text-text2 dark:text-text2d">
         {memoTitle}
       </div>
       <div className="truncate pl-10px font-main text-[12px] text-text2 dark:text-text2d">
@@ -198,7 +198,7 @@ export const SwapDetailsPanel = ({
 
   const addressSection = showDetails && (
     <>
-      <div className="font-mainBold w-full pt-10px text-[14px] text-text2 dark:text-text2d">
+      <div className="w-full pt-10px font-main-bold text-[14px] text-text2 dark:text-text2d">
         {intl.formatMessage({ id: 'common.addresses' })}
       </div>
       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
@@ -222,7 +222,7 @@ export const SwapDetailsPanel = ({
       <div className="w-full pt-10px text-[14px]">
         <BaseButton
           disabled={walletBalancesLoading}
-          className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d"
+          className="group !p-0 !font-main-bold !text-text2 dark:!text-text2d"
           onClick={reloadBalances}>
           {intl.formatMessage({ id: 'common.balances' })}
           <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -241,7 +241,7 @@ export const SwapDetailsPanel = ({
     <>
       <div
         className={clsx(
-          'font-mainBold flex w-full justify-between text-[14px]',
+          'flex w-full justify-between font-main-bold text-[14px]',
           { 'pt-10px': showDetails },
           { 'text-error0 dark:text-error0d': isCausedSlippage }
         )}>
@@ -299,8 +299,8 @@ export const SwapDetailsPanel = ({
   )
 
   const rateSection = (
-    <div className="font-mainBold flex w-full justify-between text-[14px]">
-      <BaseButton className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d" onClick={onToggleRateDirection}>
+    <div className="flex w-full justify-between font-main-bold text-[14px]">
+      <BaseButton className="group !p-0 !font-main-bold !text-text2 dark:!text-text2d" onClick={onToggleRateDirection}>
         {intl.formatMessage({ id: 'common.rate' })}
         <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
       </BaseButton>
@@ -309,10 +309,10 @@ export const SwapDetailsPanel = ({
   )
 
   const feesSection = (
-    <div className="font-mainBold flex w-full items-center justify-between">
+    <div className="flex w-full items-center justify-between font-main-bold">
       <BaseButton
         disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-        className="group !font-mainBold !p-0 !text-text2 dark:!text-text2d"
+        className="group !p-0 !font-main-bold !text-text2 dark:!text-text2d"
         onClick={onReloadFees}>
         {intl.formatMessage({ id: 'common.fees.estimated' })}
         <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -324,7 +324,7 @@ export const SwapDetailsPanel = ({
   const unlockedContent = (
     <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
       <BaseButton
-        className="group font-mainSemiBold flex w-full !justify-between !p-0 text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+        className="group flex w-full !justify-between !p-0 font-main-semi-bold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
         onClick={onToggleDetails}>
         {intl.formatMessage({ id: 'common.details' })}
         {showDetails ? (

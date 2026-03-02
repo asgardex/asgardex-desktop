@@ -39,8 +39,8 @@ dev-app-update.yml
 
 stats.html
 
-# Dev logs
-log/*.log
+# Dev logs (electron-log in dev mode)
+/logs
 
 # Claude
 CLAUDE.md

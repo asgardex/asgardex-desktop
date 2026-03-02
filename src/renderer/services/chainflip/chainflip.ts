@@ -15,8 +15,11 @@ import {
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { createScopedLogger } from '../../helpers/logger'
 import { createChainflipTransactionTrackingService } from './transactionTracking'
 import { cChainToXChain, xAssetToCAsset } from './utils'
+
+const logger = createScopedLogger('chainflip')
 
 // Create singleton instances to prevent multiple instances and cache invalidation
 const sdk = new SwapSDK({
@@ -38,7 +41,7 @@ export const createChainflipService$ = () => {
       RxOp.catchError((error) => {
         // Log 429 and other API errors but don't block the swap page
         // Return empty array so THORChain/MAYAChain swaps still work
-        console.warn('Chainflip API error (assets data):', error)
+        logger.warn('Chainflip API error (assets data):', error)
         return Rx.of(RD.success([]))
       }),
       RxOp.shareReplay(1) // Cache the observable result
@@ -52,7 +55,7 @@ export const createChainflipService$ = () => {
       RxOp.catchError((error) => {
         // Handle specific error messages from Chainflip SDK
         if (error.message && error.message.includes('disabled')) {
-          console.warn('Asset %s is disabled in Chainflip:', asset.ticker, error.message)
+          logger.warn('Asset %s is disabled in Chainflip:', asset.ticker, error.message)
         }
         return Rx.of(false)
       }),
@@ -67,7 +70,7 @@ export const createChainflipService$ = () => {
     RxOp.catchError((error) => {
       // Log 429 and other API errors but don't block the UI
       // Return empty array so other protocols still work
-      console.warn('Chainflip API error (supported chains):', error)
+      logger.warn('Chainflip API error (supported chains):', error)
       return Rx.of(RD.success([]))
     }),
     RxOp.shareReplay(1) // Prevent duplicate chain requests
@@ -90,7 +93,7 @@ export const createChainflipService$ = () => {
     } catch (error) {
       // Handle 429 rate limit and other API errors gracefully
       // Log the error but don't crash the app
-      console.warn('Chainflip API error (asset data fetch):', error)
+      logger.warn('Chainflip API error (asset data fetch):', error)
 
       // Handle specific "disabled" error messages from Chainflip SDK
       if (error instanceof Error && error.message && error.message.toLowerCase().includes('disabled')) {

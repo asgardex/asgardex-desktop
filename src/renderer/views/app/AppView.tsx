@@ -20,6 +20,7 @@ import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { logger } from '../../helpers/logger'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedgerAddresses } from '../../hooks/useLedgerAddresses'
@@ -166,7 +167,7 @@ export const AppView = (): JSX.Element => {
   useEffect(() => {
     getPublicIP()
       .then((ip) => setPublicIP(ip))
-      .catch((err) => console.error(err))
+      .catch((err) => logger.error(err))
   }, [])
 
   return (

@@ -201,7 +201,7 @@ export const SidebarComponent = memo(function SidebarComponent(props: Props): JS
               key={key}
               className={clsx(
                 'flex cursor-pointer rounded-lg',
-                'font-mainBold text-18 uppercase',
+                'font-main-bold text-18 uppercase',
                 'transition duration-100 ease-in-out',
                 'focus-visible:outline-none',
                 selected

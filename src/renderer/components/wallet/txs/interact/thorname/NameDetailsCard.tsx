@@ -28,13 +28,13 @@ export const NameDetailsCard = ({
       <div className="flex gap-6">
         <div className="flex-1">
           <div className="text-[11px] text-gray2 dark:text-gray2d">{nameLabel}</div>
-          <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">{name}</div>
+          <div className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">{name}</div>
         </div>
         <div className="flex-1">
           <div className="text-[11px] text-gray2 dark:text-gray2d">{intl.formatMessage({ id: 'common.expiry' })}</div>
           {estimatedExpiry ? (
             <>
-              <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+              <div className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">
                 {estimatedExpiry.date.toLocaleDateString(undefined, {
                   day: 'numeric',
                   month: 'short',
@@ -45,7 +45,7 @@ export const NameDetailsCard = ({
               <div className="text-[11px] text-gray2 dark:text-gray2d">Block {expireBlockHeight?.toLocaleString()}</div>
             </>
           ) : (
-            <div className="font-mainSemiBold text-[14px] text-text0 dark:text-text0d">
+            <div className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">
               Block {expireBlockHeight?.toLocaleString()}
             </div>
           )}
@@ -69,7 +69,7 @@ export const NameDetailsCard = ({
           <div className="space-y-1">
             {aliases.map((alias, index) => (
               <div key={index} className="flex items-baseline gap-3 rounded bg-bg1 px-3 py-2 dark:bg-bg1d">
-                <span className="font-mainSemiBold w-[50px] shrink-0 text-[12px] text-text0 dark:text-text0d">
+                <span className="w-[50px] shrink-0 font-main-semi-bold text-[12px] text-text0 dark:text-text0d">
                   {alias.chain}
                 </span>
                 <span className="font-mono text-[12px] break-all text-gray2 dark:text-gray2d">{alias.address}</span>

@@ -318,7 +318,7 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
       {isExpanded && (
         <div className="border-t border-gray1 p-2 dark:border-gray1d">
           {/* Additional details */}
-          <div className="space-y-1 text-xs">
+          <div className="space-y-1.5 text-sm">
             <div className="flex justify-between">
               <span className="text-text2 dark:text-text2d">Started:</span>
               <span className="text-text1 dark:text-text1d">
@@ -329,11 +329,10 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
             <div className="flex justify-between">
               <span className="text-text2 dark:text-text2d">Hash:</span>
               <CopyLabel
-                label={`${transaction.txHash.slice(0, 6)}...${transaction.txHash.slice(-4)}`}
+                label={`${transaction.txHash.slice(0, 8)}...${transaction.txHash.slice(-5)}`}
                 textToCopy={transaction.txHash}
                 iconClassName="!w-4 !h-4"
               />
-              {/* <span className="text-text1 dark:text-text1d font-mono text-xs break-all">{transaction.txHash}</span> */}
             </div>
 
             {transaction.completedAt ? (

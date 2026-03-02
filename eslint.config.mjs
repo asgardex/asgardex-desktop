@@ -54,8 +54,10 @@ export default [
 
     languageOptions: {
       globals: {
-        $COMMIT_HASH: true,
-        $IS_DEV: true
+        $COMMIT_HASH: 'readonly',
+        $IS_DEV: 'readonly',
+        $LOG_LEVEL: 'readonly',
+        $VERSION: 'readonly'
       },
 
       parser: tsParser,
@@ -162,7 +164,13 @@ export default [
           args: 'after-used',
           argsIgnorePattern: '^_'
         }
-      ]
+      ],
+
+      'no-console': 'warn'
     }
+  },
+  {
+    files: ['**/*.stories.{ts,tsx}', '**/mock/**', '**/helpers/logger.ts', 'src/main/**', 'scripts/**'],
+    rules: { 'no-console': 'off' }
   }
 ]

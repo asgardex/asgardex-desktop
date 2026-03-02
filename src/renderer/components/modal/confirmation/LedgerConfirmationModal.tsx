@@ -69,7 +69,7 @@ export const LedgerConfirmationModal = ({
           {/* Sender */}
           <div className="flex flex-col pt-5">
             <div className="flex flex-col items-center normal-case">
-              <p className="font-mainBold m-0 p-0 text-[10px] text-inherit">
+              <p className="m-0 p-0 font-main-bold text-[10px] text-inherit">
                 {intl.formatMessage({ id: 'common.sender' })} (CashAddr)
               </p>
               <AddressEllipsis
@@ -80,7 +80,7 @@ export const LedgerConfirmationModal = ({
               />
             </div>
             <div className="flex flex-col items-center normal-case">
-              <p className="font-mainBold m-0 p-0 text-[10px] text-inherit">
+              <p className="m-0 p-0 font-main-bold text-[10px] text-inherit">
                 {intl.formatMessage({ id: 'common.sender' })} (Legacy)
               </p>
               <AddressEllipsis network={network} chain={chain} address={toLegacyAddress(sender)} enableCopy />
@@ -89,7 +89,7 @@ export const LedgerConfirmationModal = ({
           {/* Recipient */}
           <div className="flex flex-col pt-5">
             <div className="flex flex-col items-center normal-case">
-              <p className="font-mainBold m-0 p-0 text-[10px] text-inherit">
+              <p className="m-0 p-0 font-main-bold text-[10px] text-inherit">
                 {intl.formatMessage({ id: 'common.recipient' })} (CashAddr)
               </p>
               <AddressEllipsis
@@ -100,7 +100,7 @@ export const LedgerConfirmationModal = ({
               />
             </div>
             <div className="flex flex-col items-center normal-case">
-              <p className="font-mainBold m-0 p-0 text-[10px] text-inherit">
+              <p className="m-0 p-0 font-main-bold text-[10px] text-inherit">
                 {intl.formatMessage({ id: 'common.recipient' })} (Legacy)
               </p>
               <AddressEllipsis network={network} chain={chain} address={toLegacyAddress(recipient)} enableCopy />

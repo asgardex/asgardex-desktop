@@ -146,6 +146,7 @@ const common: CommonMessages = {
   'common.accept': '수락',
   'common.allocationByType': '유형별 할당',
   'common.allocationByChain': '체인별 할당',
+  'common.approve.waiting': '확인 대기 중...',
   'common.approve.checking': '{asset}에 대한 승인 확인 중',
   'common.approve.error': '{asset} 승인 확인 오류: {error}',
   'common.step': '단계 {current}/{total}',

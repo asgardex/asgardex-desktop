@@ -349,7 +349,8 @@ export const createTransactionService = (
 
   const isApprovedERC20Token$ = (params: IsApproveParams): IsApprovedLD =>
     client$.pipe(
-      RxOp.debounceTime(300),
+      RxOp.filter(O.isSome),
+      RxOp.take(1),
       RxOp.switchMap((oClient) =>
         FP.pipe(
           oClient,
@@ -358,7 +359,8 @@ export const createTransactionService = (
             (client) => runIsApprovedERC20Token$(client, params)
           )
         )
-      )
+      ),
+      RxOp.startWith(RD.pending)
     )
 
   const sendLedgerTx = ({

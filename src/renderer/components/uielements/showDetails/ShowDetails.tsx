@@ -59,21 +59,21 @@ export const ShowDetails = ({
   return (
     <>
       <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
-        <div className="font-mainBold">{intl.formatMessage({ id: 'common.recipient' })}</div>
+        <div className="font-main-bold">{intl.formatMessage({ id: 'common.recipient' })}</div>
         <div className="truncate text-[13px] leading-normal normal-case">{recipient}</div>
       </div>
       <div className="flex w-full justify-between">
-        <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.amount' })}</div>
+        <div className="font-main-bold text-[14px]">{intl.formatMessage({ id: 'common.amount' })}</div>
         <div className="truncate pl-10px font-main text-[12px]">{amountLabel}</div>
       </div>
       <div className="flex w-full justify-between">
-        <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
+        <div className="font-main-bold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
         <div>{priceFeeLabel}</div>
       </div>
       <div className="flex w-full justify-between">
         {feeRate && upperFeeBound && (
           <>
-            <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.feeRate' })}</div>
+            <div className="font-main-bold text-[14px]">{intl.formatMessage({ id: 'common.feeRate' })}</div>
             <div className={feeRate >= upperFeeBound ? 'text-warning0 dark:text-warning0d' : ''}>
               {`${feeRate} ${denom}`}
             </div>
@@ -82,19 +82,19 @@ export const ShowDetails = ({
       </div>
       {expectedTxMined && (
         <div className="flex w-full justify-between">
-          <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+          <div className="font-main-bold text-[14px]">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
           <div>{expectedTxMined}</div>
         </div>
       )}
 
       {destinationTag !== undefined && (
         <div className="flex w-full justify-between">
-          <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.destinationTag' })}</div>
+          <div className="font-main-bold text-[14px]">{intl.formatMessage({ id: 'common.destinationTag' })}</div>
           <div className="font-main text-[12px]">{destinationTag}</div>
         </div>
       )}
 
-      <div className="font-mainBold flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
+      <div className="flex w-full items-center justify-between font-main-bold text-[14px] text-gray2 dark:text-gray2d">
         {intl.formatMessage({ id: 'common.memo' })}
         <Tooltip size="big" title={currentMemo}>
           <div className="truncate pl-10px font-main text-[12px] leading-normal">{currentMemo}</div>

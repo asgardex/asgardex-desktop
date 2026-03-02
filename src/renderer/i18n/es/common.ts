@@ -145,6 +145,7 @@ const common: CommonMessages = {
   'common.accept': 'Acepte',
   'common.allocationByType': 'Asignación por tipo',
   'common.allocationByChain': 'Asignación por cadena',
+  'common.approve.waiting': 'Esperando confirmación...',
   'common.approve.checking': 'Comprobación de la asignación para {asset}',
   'common.approve.error': 'Error al comprobar la asignación de {asset}: {error}',
   'common.step': 'Paso {current}/{total}',

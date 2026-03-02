@@ -25,27 +25,56 @@ export const TransactionSlideshow = ({
   className
 }: TransactionSlideshowProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
+  // Tick counter to force re-evaluation of activeTransactions when completed txs age out
+  const [tick, setTick] = useState(0)
 
   // Get transactions from all services
   const thorTransactionsRD = useObservableState(thorchainTransactionTrackingService.getTransactions$, RD.initial)
   const mayaTransactionsRD = useObservableState(mayachainTransactionTrackingService.getTransactions$, RD.initial)
   const chainflipTransactionsRD = useObservableState(chainflipTransactionTrackingService.getTransactions$, RD.initial)
 
-  // Combine and filter active transactions
+  // Minimum time (ms) to keep completed transactions visible in the slideshow
+  const COMPLETED_VISIBILITY_MS = 30000
+
+  // Combine transactions, keeping recently completed ones visible
   const activeTransactions = useMemo(() => {
     const thorTransactions = RD.isSuccess(thorTransactionsRD) ? thorTransactionsRD.value : []
     const mayaTransactions = RD.isSuccess(mayaTransactionsRD) ? mayaTransactionsRD.value : []
     const chainflipTransactions = RD.isSuccess(chainflipTransactionsRD) ? chainflipTransactionsRD.value : []
 
-    // Combine all transactions and filter for active ones
     const allTransactions = [
       ...thorTransactions.map((tx) => ({ ...tx, protocol: 'Thorchain' as const })),
       ...mayaTransactions.map((tx) => ({ ...tx, protocol: 'Mayachain' as const })),
       ...chainflipTransactions.map((tx) => ({ ...tx, txHash: tx.depositChannelId, protocol: 'Chainflip' as const }))
     ]
 
-    return allTransactions.filter((tx) => !tx.isComplete)
-  }, [thorTransactionsRD, mayaTransactionsRD, chainflipTransactionsRD])
+    const now = Date.now()
+    // Show active transactions + recently completed ones (within visibility window)
+    return allTransactions.filter(
+      (tx) => !tx.isComplete || (tx.completedAt && now - tx.completedAt < COMPLETED_VISIBILITY_MS)
+    )
+    // tick dependency forces re-evaluation when visibility timer expires
+  }, [thorTransactionsRD, mayaTransactionsRD, chainflipTransactionsRD, tick]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Schedule a re-render to remove completed transactions once the visibility window expires
+  useEffect(() => {
+    const recentlyCompleted = activeTransactions.filter((tx) => tx.isComplete && tx.completedAt)
+    if (recentlyCompleted.length === 0) return
+
+    // Find the soonest expiry among recently completed txs
+    const now = Date.now()
+    const soonestExpiry = Math.min(
+      ...recentlyCompleted.map((tx) => (tx.completedAt ?? now) + COMPLETED_VISIBILITY_MS - now)
+    )
+
+    if (soonestExpiry <= 0) {
+      setTick((t) => t + 1)
+      return
+    }
+
+    const timer = setTimeout(() => setTick((t) => t + 1), soonestExpiry + 100)
+    return () => clearTimeout(timer)
+  }, [activeTransactions, COMPLETED_VISIBILITY_MS])
 
   // Reset index if it's out of bounds
   useEffect(() => {

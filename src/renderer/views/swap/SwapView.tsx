@@ -51,6 +51,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { assetInList, getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqChain, eqNetwork } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
+import { logger } from '../../helpers/logger'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } from '../../helpers/walletHelper'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
@@ -139,7 +140,7 @@ const SuccessRouteView = ({
       getAssetsData$().pipe(
         RxOp.catchError(() => {
           // If Chainflip fails (429 or other errors), return empty array instead of failing
-          console.warn('Chainflip assets unavailable, continuing without Chainflip support')
+          logger.warn('Chainflip assets unavailable, continuing without Chainflip support')
           return Rx.of(RD.success([]))
         }),
         RxOp.startWith(RD.success([])) // Ensure we always start with a success state
@@ -524,7 +525,7 @@ const SuccessRouteView = ({
     <>
       <div className="relative mb-4 flex items-center justify-between">
         <BackLinkButton className="absolute !m-0" />
-        <h2 className="font-mainSemiBold m-0 w-full text-center text-16 text-turquoise uppercase">
+        <h2 className="m-0 w-full text-center font-main-semi-bold text-16 text-turquoise uppercase">
           {intl.formatMessage({ id: 'common.swap' })}
         </h2>
         <RefreshButton className="absolute right-0" onClick={reloadHandler} />
@@ -1077,7 +1078,7 @@ const SuccessTradeRouteView = ({
     <>
       <div className="relative mb-4 flex items-center justify-between">
         <BackLinkButton className="absolute !m-0" />
-        <h2 className="font-mainSemiBold m-0 w-full text-center text-16 text-turquoise uppercase">
+        <h2 className="m-0 w-full text-center font-main-semi-bold text-16 text-turquoise uppercase">
           {intl.formatMessage({ id: 'common.swap' })}
         </h2>
         <RefreshButton className="absolute right-0" onClick={reloadHandler} />

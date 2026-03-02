@@ -7,6 +7,7 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { logger } from '../../../helpers/logger'
 import { ApiError, ErrorId, TxLD } from '../../wallet/types'
 import { TxsPageLD, TxsParams } from '../types'
 
@@ -49,7 +50,7 @@ export const loadTxs$ = ({
       ).pipe(
         RxOp.map(RD.success),
         RxOp.catchError((error) => {
-          console.error('getTransactions error:', error)
+          logger.error('getTransactions error:', error)
           return Rx.of(
             RD.failure<ApiError>({
               errorId: ErrorId.GET_ASSET_TXS,

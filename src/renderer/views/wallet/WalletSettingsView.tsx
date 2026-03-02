@@ -79,6 +79,7 @@ import {
   isXrpChain
 } from '../../helpers/chainHelper'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
+import { logger } from '../../helpers/logger'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedger } from '../../hooks/useLedger'
@@ -388,7 +389,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     }
 
     if (!isSupportedChain(chain)) {
-      console.warn(`${chain} is not supported for 'clickAddressLinkHandler'`)
+      logger.warn(`${chain} is not supported for 'clickAddressLinkHandler'`)
     }
 
     switch (chain) {

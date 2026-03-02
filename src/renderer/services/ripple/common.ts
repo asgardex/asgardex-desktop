@@ -5,6 +5,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isError } from '../../../shared/utils/guard'
+import { logger } from '../../helpers/logger'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
@@ -30,7 +31,7 @@ const clientState$: ClientState$ = FP.pipe(
               const client = new XRPClient({ ...defaultXRPParams, phrase, network })
               return RD.success(client)
             } catch (error) {
-              console.error('Failed to create XRD client', error)
+              logger.error('Failed to create XRP client', error)
               return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
           }),
@@ -57,7 +58,7 @@ const readOnlyClientState$: Rx.Observable<RD.RemoteData<Error, XRPClient>> = FP.
       const client = new XRPClient({ ...defaultXRPParams, network })
       return RD.success(client)
     } catch (error) {
-      console.error('Failed to create read-only XRP client', error)
+      logger.error('Failed to create read-only XRP client', error)
       return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
     }
   }),

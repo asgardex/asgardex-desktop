@@ -2267,10 +2267,10 @@ export const SymDeposit = (props: Props) => {
           <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
             <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
               {/* fees */}
-              <div className="font-mainBold flex w-full items-center justify-between">
+              <div className="flex w-full items-center justify-between font-main-bold">
                 <BaseButton
                   disabled={RD.isPending(depositFeesRD) || RD.isInitial(depositFeesRD)}
-                  className="group !font-mainBold !p-0 !text-gray2 dark:!text-gray2d"
+                  className="group !p-0 !font-main-bold !text-gray2 dark:!text-gray2d"
                   onClick={reloadFeesHandler}>
                   {intl.formatMessage({ id: 'common.fees.estimated' })}
                   <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2309,7 +2309,7 @@ export const SymDeposit = (props: Props) => {
 
               {/* addresses */}
               <>
-                <div className="font-mainBold w-full pt-10px text-[14px]">
+                <div className="w-full pt-10px font-main-bold text-[14px]">
                   {intl.formatMessage({ id: 'common.addresses' })}
                 </div>
                 {/* rune sender address */}
@@ -2370,7 +2370,7 @@ export const SymDeposit = (props: Props) => {
                 <div className="w-full pt-10px text-[14px]">
                   <BaseButton
                     disabled={walletBalancesLoading}
-                    className="group !font-mainBold !p-0 !text-gray2 dark:!text-gray2d"
+                    className="group !p-0 !font-main-bold !text-gray2 dark:!text-gray2d"
                     onClick={reloadBalances}>
                     {intl.formatMessage({ id: 'common.balances' })}
                     <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2390,7 +2390,7 @@ export const SymDeposit = (props: Props) => {
 
               {/* memo */}
               <>
-                <div className="font-mainBold w-full pt-10px text-[14px]">
+                <div className="w-full pt-10px font-main-bold text-[14px]">
                   {intl.formatMessage({ id: 'common.memos' })}
                 </div>
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">

@@ -64,6 +64,7 @@ import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
+import { logger } from '../../helpers/logger'
 import { getSwapMemo, updateMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
@@ -1175,8 +1176,12 @@ export const Swap = ({
         }
 
         sortAndSetDefaultQuote(allQuotes)
+        logger.info(
+          `Swap quotes fetched: ${allQuotes.length} routes`,
+          allQuotes.map((q) => q.protocol)
+        )
       } catch (err) {
-        console.error('Failed to fetch estimate:', err)
+        logger.error('Failed to fetch estimate:', err)
 
         // Ensure we always have a proper Error object with a valid message
         let errorToSet: Error
@@ -1434,7 +1439,7 @@ export const Swap = ({
                 const usdValue = swapResultAmountMax.baseAmount.times(geckoPrice)
                 return usdValue
               } catch (error) {
-                console.warn('Error calculating Chainflip USD value:', error)
+                logger.warn('Error calculating Chainflip USD value:', error)
                 return baseAmount(0, THORCHAIN_DECIMAL)
               }
             }
@@ -1735,23 +1740,48 @@ export const Swap = ({
     sourceChain
   ])
 
-  // Trigger approval check after approval succeeds
+  const [awaitingApprovalConfirmation, setAwaitingApprovalConfirmation] = useState(false)
+
+  // Trigger approval check with polling retry after approval tx succeeds
   useEffect(() => {
-    if (RD.isSuccess(approveState)) {
-      FP.pipe(
-        oApproveParams,
-        O.map((params) => {
-          prevApproveParams.current = O.some(params)
-          checkApprovedStatus(params)
-          return true
-        })
-      )
+    if (!RD.isSuccess(approveState)) return
+
+    const params = FP.pipe(oApproveParams, O.toUndefined)
+    if (!params) return
+
+    let cancelled = false
+    prevApproveParams.current = O.some(params)
+    setAwaitingApprovalConfirmation(true)
+
+    const pollApproval = async () => {
+      // Initial delay to allow on-chain confirmation
+      await delay(10000)
+
+      // Poll up to 3 times, 5s apart
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (cancelled) return
+        checkApprovedStatus(params)
+        // Wait 5s before next attempt (skip wait on last attempt)
+        if (attempt < 2) await delay(5000)
+      }
+
+      if (!cancelled) {
+        setAwaitingApprovalConfirmation(false)
+      }
+    }
+
+    pollApproval()
+
+    return () => {
+      cancelled = true
+      setAwaitingApprovalConfirmation(false)
     }
   }, [approveState, oApproveParams, checkApprovedStatus])
 
   // Refetch quote when approval is confirmed
   useEffect(() => {
     if (RD.isSuccess(approveState) && RD.isSuccess(isApprovedState)) {
+      setAwaitingApprovalConfirmation(false)
       fetchSwap(amountToSwap)
       resetIsApprovedState()
     }
@@ -2889,7 +2919,7 @@ export const Swap = ({
         O.getOrElse(() => emptyString),
         (memo: string) => (
           <CopyLabel
-            className="!font-mainBold text-[14px] text-gray2 dark:text-gray2d"
+            className="!font-main-bold text-[14px] text-gray2 dark:text-gray2d"
             label={intl.formatMessage({ id: 'common.memo' })}
             textToCopy={memo}
           />
@@ -3419,10 +3449,12 @@ export const Swap = ({
                   className="my-30px min-w-[200px]"
                   size="large"
                   color="warning"
-                  disabled={disableSubmitApprove}
+                  disabled={disableSubmitApprove || awaitingApprovalConfirmation}
                   onClick={onApprove}
-                  loading={RD.isPending(approveState)}>
-                  {intl.formatMessage({ id: 'common.approve' })}
+                  loading={RD.isPending(approveState) || awaitingApprovalConfirmation}>
+                  {awaitingApprovalConfirmation
+                    ? intl.formatMessage({ id: 'common.approve.waiting' })
+                    : intl.formatMessage({ id: 'common.approve' })}
                 </FlatButton>
 
                 {renderApproveFeeError}

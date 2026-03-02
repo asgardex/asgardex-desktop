@@ -340,7 +340,10 @@ export const createTransactionService = (
 
   const isApprovedERC20Token$ = (params: IsApproveParams): IsApprovedLD =>
     client$.pipe(
-      RxOp.debounceTime(300),
+      // Skip initial O.none emissions — wait for a real client before checking
+      RxOp.filter(O.isSome),
+      // take(1) grabs the current client immediately (one-shot, no deadlock on re-emission)
+      RxOp.take(1),
       RxOp.switchMap((oClient) =>
         FP.pipe(
           oClient,
@@ -349,7 +352,9 @@ export const createTransactionService = (
             (client) => runIsApprovedERC20Token$(client, params)
           )
         )
-      )
+      ),
+      // Show loading state while waiting for client
+      RxOp.startWith(RD.pending)
     )
 
   const sendLedgerTx = ({

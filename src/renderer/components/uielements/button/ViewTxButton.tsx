@@ -6,6 +6,7 @@ import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { sequenceTOption } from '../../../helpers/fpHelpers'
+import { logger } from '../../../helpers/logger'
 import { ExternalLinkIcon } from '../common'
 import { CopyLabel } from '../label'
 import { Button } from './Button'
@@ -58,7 +59,7 @@ export const ViewTxButton = ({
                 channelId,
                 O.fold(
                   () => {
-                    console.warn('Channel ID required for Chainflip tracking')
+                    logger.warn('Channel ID required for Chainflip tracking')
                     return undefined
                   },
                   (channelIdValue) => {

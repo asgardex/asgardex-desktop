@@ -4,6 +4,7 @@ import { function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { logger } from '../../helpers/logger'
 import { LiveData } from '../../helpers/rx/liveData'
 import { triggerStream } from '../../helpers/stateHelper'
 
@@ -71,7 +72,7 @@ export const createChainflipTransactionTrackingService = (
     return Rx.defer(() => swapSDK.getStatusV2(request)).pipe(
       RxOp.map((status) => RD.success(status)),
       RxOp.catchError((error) => {
-        console.warn('Chainflip swap status error:', error)
+        logger.warn('Chainflip swap status error:', error)
         return Rx.of(RD.failure(new Error(`Failed to get Chainflip swap status: ${error.message}`)))
       }),
       RxOp.shareReplay(1)

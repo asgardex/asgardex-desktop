@@ -44,6 +44,7 @@ import { WalletType } from '../../../shared/wallet/types'
 import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { sequenceTOption } from '../../helpers/fpHelpers'
+import { logger } from '../../helpers/logger'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { triggerStream } from '../../helpers/stateHelper'
 import { Network$ } from '../app/types'
@@ -277,7 +278,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.startWith(RD.initial),
     RxOp.shareReplay(1),
     RxOp.catchError((e: Error) => {
-      console.error('Error fetching node infos:', e)
+      logger.error('Error fetching node infos:', e)
       return Rx.of(RD.failure(e))
     })
   )

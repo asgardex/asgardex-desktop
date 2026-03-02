@@ -142,6 +142,7 @@ export type CommonMessageKey =
   | 'common.withdraw'
   | 'common.approve'
   | 'common.accept'
+  | 'common.approve.waiting'
   | 'common.approve.checking'
   | 'common.approve.error'
   | 'common.step'

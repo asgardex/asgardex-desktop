@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path, { join } from 'path'
 
 import { BrowserWindow, app, ipcMain, nativeImage } from 'electron'
@@ -48,9 +49,23 @@ const APP_ICON = join(APP_ROOT, 'resources', process.platform.match('win32') ? '
 
 const initLogger = () => {
   log.transports.file.resolvePath = (variables: log.PathVariables) => {
-    // Logs go into ~/.config/{appName}/logs/ dir
     const safeFileName = sanitizePathSegment(variables.fileName as string, 'log file name')
+    if (IS_DEV) {
+      // Dev logs go to ./logs/ in the project root for easy access
+      return path.join(APP_ROOT, 'logs', safeFileName)
+    }
+    // Production logs go to ~/.config/{appName}/logs/
     return path.join(app.getPath('userData'), 'logs', safeFileName)
+  }
+
+  // Clear dev log on startup so each session starts clean
+  if (IS_DEV) {
+    const devLogPath = path.join(APP_ROOT, 'logs', 'main.log')
+    try {
+      fs.writeFileSync(devLogPath, '', { flag: 'w' }) // eslint-disable-line security/detect-non-literal-fs-filename
+    } catch (_e) {
+      // logs dir may not exist yet — electron-log will create it
+    }
   }
 }
 

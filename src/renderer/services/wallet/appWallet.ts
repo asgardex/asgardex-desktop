@@ -8,6 +8,7 @@ import * as RxOp from 'rxjs/operators'
 import { ASGARDEX_TO_SDK_CHAIN } from '../../../shared/api/mpcTypes'
 import { LastOpenedWallet } from '../../../shared/api/types'
 import { WalletType } from '../../../shared/wallet/types'
+import { logger } from '../../helpers/logger'
 import { observableState } from '../../helpers/stateHelper'
 import { network$ } from '../app/service'
 import { getStorageState, modifyStorage } from '../storage/common'
@@ -170,7 +171,7 @@ export const createAppWalletService = (): AppWalletService => {
         }
       } else {
         // This shouldn't happen if UI is properly disabled, but keep as safety check
-        window.apiLog.warn('[AppWallet]', 'Cannot switch to ledger-only mode while a wallet is unlocked')
+        logger.warn('Cannot switch to ledger-only mode while keystore is unlocked')
         return
       }
     }

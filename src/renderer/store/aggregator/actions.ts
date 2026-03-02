@@ -20,6 +20,7 @@ import {
   ASGARDEX_AFFILIATE_BROKERS_ADDRESS
 } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
+import { logger } from '../../helpers/logger'
 
 export const getEstimate = createAsyncThunk(
   'aggregator/estimate',
@@ -59,7 +60,7 @@ export const getEstimate = createAsyncThunk(
       const brokerUrl =
         !ASGARDEX_BROKER_URL || typeof ASGARDEX_BROKER_URL !== 'string' || ASGARDEX_BROKER_URL.trim() === ''
           ? (() => {
-              console.warn(
+              logger.warn(
                 'Invalid or missing broker URL: ASGARDEX_BROKER_URL must be a non-empty string, using empty string'
               )
               return ''
@@ -79,7 +80,7 @@ export const getEstimate = createAsyncThunk(
           commissionBps: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0
         })
       } else {
-        console.warn('Invalid or missing affiliate broker address, skipping affiliate broker configuration')
+        logger.warn('Invalid or missing affiliate broker address, skipping affiliate broker configuration')
       }
 
       // Fetch estimates for all selected protocols
@@ -102,7 +103,7 @@ export const getEstimate = createAsyncThunk(
       // Return all estimates
       return estimate
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       throw error
     }
   }

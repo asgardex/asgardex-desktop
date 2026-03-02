@@ -6,7 +6,7 @@
   "main": "build/main/electron.js",
   "scripts": {
     "dev": "electron-vite dev",
-    "dev:log": "echo '' > log/dev.log && electron-vite dev 2>&1 | tee log/dev.log",
+    "dev:log": "cross-env VITE_LOG_LEVEL=info electron-vite dev",
     "force-rebuild-native-deps": "rimraf ./node_modules/prebuild-install",
     "preview": "cross-env VITE_NODE_ENV=production NODE_OPTIONS=\"--max-old-space-size=8192\" electron-vite preview",
     "build": "cross-env VITE_NODE_ENV=production NODE_OPTIONS=\"--max-old-space-size=8192\" CI=false electron-vite build",
@@ -120,8 +120,6 @@
     "axios": "^1.13.5",
     "bignumber.js": "^9.0.0",
     "clsx": "^2.1.1",
-    "echarts": "^5.5.1",
-    "echarts-for-react": "^3.0.2",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
     "electron-updater": "6.3.4",

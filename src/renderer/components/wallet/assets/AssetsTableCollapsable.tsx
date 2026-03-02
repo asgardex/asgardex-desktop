@@ -41,6 +41,7 @@ import {
 } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { isEvmChain } from '../../../helpers/evmHelper'
+import { logger } from '../../../helpers/logger'
 import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
@@ -155,7 +156,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
     try {
       return cachedKeys ? JSON.parse(cachedKeys).map((item: string) => parseInt(item)) : []
     } catch (error) {
-      console.error('Failed to parse openPanelKeys from localStorage:', error)
+      logger.error('Failed to parse openPanelKeys from localStorage:', error)
       return []
     }
   })

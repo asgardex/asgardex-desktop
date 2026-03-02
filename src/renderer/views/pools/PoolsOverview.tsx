@@ -86,7 +86,7 @@ export const PoolsOverview = (): JSX.Element => {
                     <span
                       className={clsx(
                         'ease border-y-[2px] border-solid border-transparent px-5px',
-                        'font-mainSemiBold text-[16px] uppercase',
+                        'font-main-semi-bold text-[16px] uppercase',
                         'mr-0 md:mr-10px',
                         'group-hover:border-b-turquoise hover:text-turquoise',
                         selected
