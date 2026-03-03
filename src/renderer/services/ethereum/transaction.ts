@@ -45,7 +45,8 @@ export const createTransactionService = (
   client$: Client$,
   network$: Network$,
   evmRpc$: Rx.Observable<ApiUrls>,
-  gasMultiplier$: Rx.Observable<number> = Rx.of(DEFAULT_EVM_GAS_MULTIPLIER)
+  gasMultiplier$: Rx.Observable<number> = Rx.of(DEFAULT_EVM_GAS_MULTIPLIER),
+  readOnlyClient$: Client$ = client$
 ): TransactionService => {
   const common = C.createTransactionService(client$)
 
@@ -333,11 +334,11 @@ export const createTransactionService = (
     )
   }
 
+  // Use readOnlyClient$ (enhanced client with Ledger/Vultisig fallback) for read-only approval checks.
+  // This prevents the observable from hanging when client$ is O.none in non-keystore wallet modes.
   const isApprovedERC20Token$ = (params: IsApproveParams): IsApprovedLD =>
-    client$.pipe(
-      // Skip initial O.none emissions — wait for a real client before checking
+    readOnlyClient$.pipe(
       RxOp.filter(O.isSome),
-      // take(1) grabs the current client immediately (one-shot, no deadlock on re-emission)
       RxOp.take(1),
       RxOp.switchMap((oClient) =>
         FP.pipe(
@@ -348,7 +349,6 @@ export const createTransactionService = (
           )
         )
       ),
-      // Show loading state while waiting for client
       RxOp.startWith(RD.pending)
     )
 
