@@ -50,6 +50,7 @@ import { getUSDValue } from '../../../helpers/poolHelperMaya'
 import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
+import { useERC20Approval } from '../../../hooks/useERC20Approval'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { INITIAL_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
 import {
@@ -66,13 +67,7 @@ import {
   DepositParams
 } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
-import {
-  ApproveFeeHandler,
-  ApproveParams,
-  IsApprovedRD,
-  IsApproveParams,
-  LoadApproveFeeHandler
-} from '../../../services/evm/types'
+import { ApproveFeeHandler, ApproveParams, IsApproveParams, LoadApproveFeeHandler } from '../../../services/evm/types'
 import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMidgard/types'
 import { PoolAddress, PoolData, PoolDetails, PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import {
@@ -88,7 +83,6 @@ import {
   ApiError,
   BalancesState,
   TxHashLD,
-  TxHashRD,
   ValidatePasswordHandler,
   WalletBalance,
   WalletBalances
@@ -924,25 +918,12 @@ export const SymDeposit = (props: Props) => {
     [approveFeeRD]
   )
 
-  // State for values of `isApprovedERC20Token$`
-  const {
-    state: isApprovedState,
-    reset: resetIsApprovedState,
-    subscribe: subscribeIsApprovedState
-  } = useSubscriptionState<IsApprovedRD>(RD.initial)
-
-  const checkApprovedStatus = useCallback(
-    ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
-      subscribeIsApprovedState(
-        isApprovedERC20Token$({
-          contractAddress,
-          spenderAddress,
-          fromAddress
-        })
-      )
-    },
-    [isApprovedERC20Token$, subscribeIsApprovedState]
-  )
+  const { approveState, resetApproval, submitApproveTx, isApprovedState } = useERC20Approval({
+    isApprovedERC20Token$,
+    approveERC20Token$,
+    oApproveParams,
+    network
+  })
 
   // Update `approveFeesRD` whenever `oApproveParams` has been changed
   useEffect(() => {
@@ -955,14 +936,13 @@ export const SymDeposit = (props: Props) => {
         prevApproveParams.current = O.some(params)
         return params
       }),
-      // Trigger update for `approveFeesRD` + `checkApprove`
+      // Trigger update for `approveFeesRD`
       O.map((params) => {
         approveFeesParamsUpdated(params)
-        checkApprovedStatus(params)
         return true
       })
     )
-  }, [approveFeesParamsUpdated, checkApprovedStatus, oApproveParams, oPoolAddress])
+  }, [approveFeesParamsUpdated, oApproveParams, oPoolAddress])
 
   const reloadApproveFeesHandler = useCallback(() => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
@@ -1670,12 +1650,6 @@ export const SymDeposit = (props: Props) => {
     chain
   ])
 
-  const {
-    state: approveState,
-    reset: resetApproveState,
-    subscribe: subscribeApproveState
-  } = useSubscriptionState<TxHashRD>(RD.initial)
-
   const onApprove = useCallback(() => {
     if (isAssetLedger) {
       setShowLedgerModal('approve')
@@ -1683,26 +1657,6 @@ export const SymDeposit = (props: Props) => {
       setShowPasswordModal('approve')
     }
   }, [isAssetLedger])
-
-  const submitApproveTx = useCallback(() => {
-    FP.pipe(
-      oApproveParams,
-      O.map(({ walletAccount, walletIndex, walletType, contractAddress, spenderAddress, fromAddress, hdMode }) =>
-        subscribeApproveState(
-          approveERC20Token$({
-            network,
-            contractAddress,
-            spenderAddress,
-            fromAddress,
-            walletAccount,
-            walletIndex,
-            walletType,
-            hdMode
-          })
-        )
-      )
-    )
-  }, [approveERC20Token$, network, oApproveParams, subscribeApproveState])
 
   const renderApproveError = useMemo(
     () =>
@@ -2113,10 +2067,8 @@ export const SymDeposit = (props: Props) => {
       resetDepositState()
       // set values to zero
       changePercentHandler(0)
-      // reset isApproved state
-      resetIsApprovedState()
-      // reset approve state
-      resetApproveState()
+      // reset approval state
+      resetApproval()
       // reset fees
       prevDepositFees.current = O.none
       // reload fees
@@ -2126,8 +2078,7 @@ export const SymDeposit = (props: Props) => {
     asset,
     reloadShares,
     reloadFeesHandler,
-    resetApproveState,
-    resetIsApprovedState,
+    resetApproval,
     reloadSelectedPoolDetail,
     resetDepositState,
     changePercentHandler,

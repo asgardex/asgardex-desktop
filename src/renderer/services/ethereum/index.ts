@@ -23,7 +23,7 @@ const {
   sendPoolTx$,
   approveERC20Token$,
   isApprovedERC20Token$
-} = createTransactionService(client$, network$, ethRpc$, evmGasMultiplier$)
+} = createTransactionService(client$, network$, ethRpc$, evmGasMultiplier$, enhancedClient$)
 const { reloadFees, fees$, poolInTxFees$, approveFee$, reloadApproveFee } = createFeesService(
   enhancedClient$,
   evmGasMultiplier$
