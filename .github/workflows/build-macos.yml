@@ -15,9 +15,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macOS-13
-            os-name: Ventura
-            os-version: 13
           - os: macOS-14
             os-name: Sonoma
             os-version: 14
