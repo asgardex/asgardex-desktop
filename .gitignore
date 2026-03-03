@@ -46,3 +46,7 @@ stats.html
 CLAUDE.md
 .claude/
 /docs
+
+# Release signing (local only)
+scripts/sign_bin.sh
+/release-signing

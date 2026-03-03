@@ -22,15 +22,6 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v4
 
-        # Cache Yarn dependencies
-      - name: Cache Yarn dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -51,7 +42,7 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=7168
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_ENV: production
-          VITE_NODE_ENV: ${{ env.NODE_ENV }}
+          VITE_NODE_ENV: production
           VITE_BLOCKCYPHER_API_KEY: ${{ secrets.REACT_APP_BLOCKCYPHER_API_KEY }}
           VITE_ETHERSCAN_API_KEY: ${{ secrets.REACT_APP_ETHERSCAN_API_KEY }}
           VITE_ASGARDEX_THORNAME: ${{ secrets.REACT_APP_ASGARDEX_THORNAME }}
