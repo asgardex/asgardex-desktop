@@ -1,10 +1,6 @@
-import { apply as AP, function as FP, taskEither as TE, option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import * as IO from 'io-ts'
 import * as PR from 'io-ts/lib/PathReporter'
-
-// Note: Since `TE.taskEither` is deprecated, use `TE.ApplySey` in `sequenceT`
-// @see https://github.com/gcanti/fp-ts/issues/1491#issuecomment-889976079
-export const sequenceTTaskEither = AP.sequenceT(TE.ApplySeq)
 
 export const optionFromNullableString = O.fromPredicate<string | undefined | null, string>((s): s is string => !!s)
 

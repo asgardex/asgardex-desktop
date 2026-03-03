@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { function as FP, option as O } from 'fp-ts'
 import QRCodeLib from 'qrcode'
-import { createRoot } from 'react-dom/client'
-import { useIntl } from 'react-intl'
 import { Spin } from '../spin'
 
 type Props = {
@@ -13,15 +10,16 @@ type Props = {
 }
 export const QRCode = ({ text, qrError }: Props) => {
   const canvasContainer = useRef<HTMLDivElement>(null)
-  const intl = useIntl()
 
   const [canvasRd, setCanvasRd] = useState<RD.RemoteData<string, HTMLCanvasElement>>(RD.initial)
 
   useEffect(() => {
+    let isActive = true
     setCanvasRd(RD.pending)
 
     const timeout = setTimeout(() => {
       QRCodeLib.toCanvas(text, { errorCorrectionLevel: 'H', scale: 6 }, (err, canvas) => {
+        if (!isActive) return
         if (err) {
           setCanvasRd(RD.failure(qrError))
         } else {
@@ -31,37 +29,27 @@ export const QRCode = ({ text, qrError }: Props) => {
     }, 500)
 
     return () => {
+      isActive = false
       clearTimeout(timeout)
     }
-  }, [intl, text, setCanvasRd, qrError])
+  }, [text, qrError])
 
+  // Append canvas element to container on success
   useEffect(() => {
-    FP.pipe(
-      canvasRd,
-      RD.fold(
-        () => {},
-        () => {
-          if (canvasContainer?.current) {
-            createRoot(canvasContainer.current).render(<Spin />)
-          }
-        },
-        (e) => {
-          if (canvasContainer?.current) {
-            createRoot(canvasContainer.current).render(<>{e}</>)
-          }
-        },
-        (canvas) => {
-          FP.pipe(
-            O.fromNullable(canvasContainer.current?.firstChild),
-            O.fold(
-              () => canvasContainer.current?.appendChild(canvas),
-              (firstChild) => canvasContainer.current?.replaceChild(canvas, firstChild)
-            )
-          )
-        }
-      )
-    )
+    if (RD.isSuccess(canvasRd) && canvasContainer.current) {
+      const container = canvasContainer.current
+      while (container.firstChild) {
+        container.removeChild(container.firstChild)
+      }
+      container.appendChild(canvasRd.value)
+    }
   }, [canvasRd])
 
-  return <div ref={canvasContainer} className="flex h-72 items-center justify-center [&>canvas]:rounded-2xl" />
+  return (
+    <div className="flex h-72 items-center justify-center">
+      {(RD.isInitial(canvasRd) || RD.isPending(canvasRd)) && <Spin />}
+      {RD.isFailure(canvasRd) && <>{canvasRd.error}</>}
+      {RD.isSuccess(canvasRd) && <div ref={canvasContainer} className="[&>canvas]:rounded-2xl" />}
+    </div>
+  )
 }

@@ -109,8 +109,6 @@ export const isLocked = (state: KeystoreState) =>
 export const isUnlocked = (state: KeystoreState): boolean =>
   FP.pipe(state, O.chain(O.fromPredicate(isKeystoreUnlocked)), O.isSome)
 
-// const url: O.Option<string> = FP.pipe(txUrl, O.fromPredicate(P.not(S.isEmpty)))
-
 export const filterNullableBalances = (balances: WalletBalances): WalletBalances => {
   return FP.pipe(
     balances,

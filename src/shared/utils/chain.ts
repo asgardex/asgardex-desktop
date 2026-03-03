@@ -20,7 +20,7 @@ import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 
-export const CHAIN_STRINGS: Record<Chain, string> = {
+const CHAIN_STRINGS: Record<Chain, string> = {
   [BCHChain]: 'Bitcoin Cash',
   [BTCChain]: 'Bitcoin',
   [GAIAChain]: 'Cosmos',

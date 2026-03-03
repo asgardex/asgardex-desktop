@@ -254,8 +254,6 @@ export type KeystoreWallet = ReturnType<typeof ipcKeystoreWalletIO.encode>
 
 export const ipcKeystoreWalletsIO = t.array(ipcKeystoreWalletIO)
 
-export type IPCKeystoreWallets = t.TypeOf<typeof ipcKeystoreWalletsIO>
-
 export type KeystoreWallets = ReturnType<typeof ipcKeystoreWalletsIO.encode>
 
 export const ipcLedgerAddressIO = t.type({

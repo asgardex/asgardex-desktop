@@ -41,8 +41,6 @@ const assetToMemoString = ({ chain, symbol, type }: AnyAsset) => {
  *
  * Memo is based on definitions in https://gitlab.com/thorchain/thornode/-/blob/develop/x/thorchain/memo/memo.go#L38-65
  */
-export const getSwitchMemo = (address: string) => mkMemo(['SWITCH', address])
-
 /**
  * Memo to bond
  *
@@ -217,19 +215,6 @@ export const getWhitelistMemo = (
       ? mkMemo(['UNBOND', nodeAddress, whitelistAddress])
       : mkMemo(['UNBOND::', nodeAddress, whitelistAddress])
 }
-
-// /**
-//  * Memo to Unwhitelist
-//  *
-//  * @param nodeAddress address to bond to
-//  * @param whitelistAddress address to whitelist
-//  *
-//  */
-// export const getUnWhitelistMemo = (protocol: Chain, nodeAddress: string, whitelistAddress: string) => {
-//   return protocol === THORChain
-//     ? mkMemo(['UNBOND', nodeAddress, whitelistAddress])
-//     : mkMemo(['UNBOND::', nodeAddress, whitelistAddress])
-// }
 
 /**
  * Memo to deposit

@@ -194,8 +194,6 @@ export const symDeposit$ = ({
 }: SymDepositParams): SymDepositState$ => {
   // total of progress
   const total = O.some(100)
-  // const isMock = true
-  // const sendTx$ = isMock ? sendMockTx$ : sendPoolTx$
 
   const { chain } = asset
   // Observable state of to reflect status of all needed steps

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
 import { Address, Chain } from '@xchainjs/xchain-util'
@@ -46,22 +46,32 @@ export const AddressEllipsis = (props: Props) => {
     [chain, network, enableCopy]
   )
 
-  const prepareEllipse = () => {}
+  const resizeListenerRef = useRef<(() => void) | null>(null)
 
   const measuredParent = useCallback(
     (node: HTMLElement | null) => {
+      // Remove previous listener if any
+      if (resizeListenerRef.current) {
+        window.removeEventListener('resize', resizeListenerRef.current)
+        resizeListenerRef.current = null
+      }
       if (node !== null) {
-        const prepareEllipse = () =>
-          prepEllipse(node, node.childNodes[0] as HTMLElement, node.childNodes[1] as HTMLElement)
-        window.addEventListener('resize', prepareEllipse)
-        prepareEllipse()
+        const handler = () => prepEllipse(node, node.childNodes[0] as HTMLElement, node.childNodes[1] as HTMLElement)
+        resizeListenerRef.current = handler
+        window.addEventListener('resize', handler)
+        handler()
       }
     },
     [prepEllipse]
   )
 
   useEffect(() => {
-    return () => window.removeEventListener('resize', prepareEllipse)
+    return () => {
+      if (resizeListenerRef.current) {
+        window.removeEventListener('resize', resizeListenerRef.current)
+        resizeListenerRef.current = null
+      }
+    }
   }, [])
 
   return (
