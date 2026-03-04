@@ -2,11 +2,11 @@ import { ETHChain, Client, ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethere
 
 import { etherscanApiKey } from '../../../shared/api/etherscan'
 import { createEthParams } from '../../../shared/ethereum/const'
-import { isEthAsset, addressInERC20Whitelist } from '../../helpers/assetHelper'
 import { ETHAssetsFallBack, ETHAssetsTestnet } from '../../const'
+import { isEthAsset, addressInERC20Whitelist } from '../../helpers/assetHelper'
 import { network$ } from '../app/service'
-import { ethRpc$, evmGasMultiplier$ } from '../storage/common'
 import { createEvmChainService } from '../evm/factory'
+import { ethRpc$, evmGasMultiplier$ } from '../storage/common'
 
 const {
   client$,

@@ -2,12 +2,12 @@ import { BASEChain, Client, BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base
 import { baseAmount } from '@xchainjs/xchain-util'
 
 import { createBaseParams } from '../../../shared/base/const'
-import { isBASEAsset, addressInBaseWhitelist } from '../../helpers/assetHelper'
 import { BASEAssetsFallback } from '../../const'
+import { isBASEAsset, addressInBaseWhitelist } from '../../helpers/assetHelper'
 import { network$ } from '../app/service'
-import { baseRpc$, evmGasMultiplier$ } from '../storage/common'
 import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
+import { baseRpc$, evmGasMultiplier$ } from '../storage/common'
 
 const {
   client$,

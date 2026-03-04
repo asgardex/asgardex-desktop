@@ -2,12 +2,12 @@ import { AVAXChain, Client, AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax
 import { baseAmount } from '@xchainjs/xchain-util'
 
 import { createAvaxParams } from '../../../shared/avax/const'
-import { isAvaxAsset, addressInAvaxWhitelist } from '../../helpers/assetHelper'
 import { AVAXAssetsFallback, AvaxAssetsTestnet } from '../../const'
+import { isAvaxAsset, addressInAvaxWhitelist } from '../../helpers/assetHelper'
 import { network$ } from '../app/service'
-import { avaxRpc$, evmGasMultiplier$ } from '../storage/common'
 import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
+import { avaxRpc$, evmGasMultiplier$ } from '../storage/common'
 
 const {
   client$,

@@ -2,13 +2,13 @@ import { BSCChain, Client, BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { baseAmount } from '@xchainjs/xchain-util'
 
 import { createBscParams } from '../../../shared/bsc/const'
-import { isBscAsset, addressInBscWhitelist } from '../../helpers/assetHelper'
 import { BSCAssetsFallBack, BscAssetsTestnet } from '../../const'
+import { isBscAsset, addressInBscWhitelist } from '../../helpers/assetHelper'
 import { network$ } from '../app/service'
-import { bscRpc$, evmGasMultiplier$ } from '../storage/common'
 import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
 import { replaceSymbol } from '../evm/utils'
+import { bscRpc$, evmGasMultiplier$ } from '../storage/common'
 import { WalletBalance } from '../wallet/types'
 
 const {

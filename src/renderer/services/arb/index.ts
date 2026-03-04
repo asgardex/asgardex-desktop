@@ -2,12 +2,12 @@ import { ARBChain, Client, ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitr
 import { baseAmount } from '@xchainjs/xchain-util'
 
 import { createArbParams } from '../../../shared/arb/const'
-import { isAethAsset, addressInArbWhitelist } from '../../helpers/assetHelper'
 import { ARBAssetsFallback, ArbAssetsTestnet } from '../../const'
+import { isAethAsset, addressInArbWhitelist } from '../../helpers/assetHelper'
 import { network$ } from '../app/service'
-import { arbRpc$, evmGasMultiplier$ } from '../storage/common'
 import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
+import { arbRpc$, evmGasMultiplier$ } from '../storage/common'
 
 const {
   client$,
