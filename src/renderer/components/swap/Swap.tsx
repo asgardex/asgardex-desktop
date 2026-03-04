@@ -1798,19 +1798,21 @@ export const Swap = ({
   // whenever `oApproveParams` has been updated,
   // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
   useEffect(() => {
+    let timerId: ReturnType<typeof setTimeout> | undefined
     FP.pipe(
       oApproveParams,
       O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
       O.map((params) => {
         prevApproveParams.current = O.some(params)
         // Using setTimeout to delay the execution of subsequent actions
-        setTimeout(() => {
+        timerId = setTimeout(() => {
           approveFeeParamsUpdated(params)
         }, 100) // Delay of 100 milliseconds
 
         return true
       })
     )
+    return () => clearTimeout(timerId)
   }, [approveFeeParamsUpdated, oApproveParams])
 
   const minAmountError = useMemo(() => {

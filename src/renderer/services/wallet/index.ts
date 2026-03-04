@@ -63,7 +63,13 @@ const enhancedGetLedgerAddress$ = (chain: Chain) => {
   )
 }
 
-const { reloadBalances, reloadBalancesByChain, balancesState$, chainBalances$ } = createBalancesService({
+const {
+  reloadBalances,
+  reloadBalancesByChain,
+  balancesState$,
+  chainBalances$,
+  dispose: disposeBalances
+} = createBalancesService({
   keystore$: keystoreService.keystoreState$,
   network$,
   getLedgerAddress$: enhancedGetLedgerAddress$,
@@ -71,6 +77,24 @@ const { reloadBalances, reloadBalancesByChain, balancesState$, chainBalances$ } 
   appWalletService,
   isStandaloneLedgerMode
 })
+
+const cleanupWalletServices = () => {
+  disposeBalances()
+  appWalletService.dispose()
+}
+
+// Clean up on real page unload
+window.addEventListener('beforeunload', cleanupWalletServices, { once: true })
+
+// Clean up on hot-reload module replacement (dev only)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const hot = (import.meta as any).hot
+if (hot) {
+  hot.dispose(() => {
+    window.removeEventListener('beforeunload', cleanupWalletServices)
+    cleanupWalletServices()
+  })
+}
 
 /**
  * Exports all functions and observables needed at UI level (provided by `WalletContext`)

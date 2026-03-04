@@ -168,17 +168,6 @@ export type SwapStateHandler = (p: SwapTxParams) => SwapState$
 export type SwapHandler = (p: SwapTxParams) => SwapTxState$
 export type SwapCFHandler = (p: SendTxParams) => SwapCFTxState$
 
-/**
- * Types of swap txs
- **/
-
-export type SwapTxType = 'in' | ' out'
-
-export type SwapOutTx = {
-  readonly asset: AnyAsset
-  readonly memo: Memo
-}
-
 export type PoolFeeLD = LiveData<Error, AssetWithAmount>
 
 export type SwapFees = {
@@ -218,8 +207,9 @@ export type DepositState$ = Rx.Observable<DepositState>
 
 export type DepositStateHandler = (p: DepositParams) => DepositState$
 
-export type SymDepositValidationResult = { pool: boolean; node: boolean }
 export type SymDepositTxs = { rune: TxHashRD; asset: TxHashRD }
+
+export type SymDepositValidationResult = { pool: boolean; node: boolean }
 export type SymDepositFinalityResult = { rune: Tx; asset: Tx }
 
 /**
