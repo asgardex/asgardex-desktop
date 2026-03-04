@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Fees, FeeType } from '@xchainjs/xchain-client'
 import { getFee, GasPrices, Client, CompatibleAsset } from '@xchainjs/xchain-evm'
-import { AnyAsset, Asset } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -18,9 +18,9 @@ import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT } from '../const'
 import { FeesService, PoolInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams, Client$ } from '../types'
 
 export type EvmFeesConfig = {
+  chain: Chain
   gasAssetDecimal: number
   isChainAsset: (asset: AnyAsset) => boolean
-  chainName: string
   initialReloadFeesParams?: TxParams
 }
 
@@ -29,7 +29,7 @@ export const createEvmFeesService = (
   client$: Client$,
   gasMultiplier$: Rx.Observable<number> = Rx.of(DEFAULT_EVM_GAS_MULTIPLIER)
 ): FeesService => {
-  const { gasAssetDecimal, isChainAsset, chainName, initialReloadFeesParams } = config
+  const { chain, gasAssetDecimal, isChainAsset, initialReloadFeesParams } = config
 
   const { get$: reloadFees$, set: reloadFees } = observableState<TxParams | undefined>(initialReloadFeesParams)
 
@@ -107,7 +107,7 @@ export const createEvmFeesService = (
               )
 
               const gasPrices$: Rx.Observable<RD.RemoteData<Error, GasPrices>> = FP.pipe(
-                getChainGasPrices$(chainName, gasAssetDecimal),
+                getChainGasPrices$(chain, gasAssetDecimal),
                 RxOp.map((rd) =>
                   RD.isFailure(rd) ? RD.failure(new Error(String(rd.error))) : (rd as RD.RemoteData<Error, GasPrices>)
                 ),

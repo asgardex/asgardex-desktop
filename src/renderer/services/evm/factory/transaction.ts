@@ -116,6 +116,7 @@ export const createEvmTransactionService = (
                       isMemoEncoded: true
                     }
                     return Rx.from(client.estimateGasLimit(tx)).pipe(
+                      RxOp.catchError(() => Rx.of(new BigNumber(defaultGasLimit))),
                       RxOp.switchMap((gasLimit) =>
                         Rx.from(
                           client.transfer({

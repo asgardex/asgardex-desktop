@@ -72,9 +72,9 @@ export const createEvmChainService = (config: EvmChainConfig) => {
   const createFeesService = (feesClient$: Client$, gasMultiplier$?: Rx.Observable<number>) =>
     createEvmFeesService(
       {
+        chain: config.chain,
         gasAssetDecimal: config.gasAssetDecimal,
         isChainAsset: config.isChainAsset,
-        chainName: config.chainName,
         initialReloadFeesParams: config.initialReloadFeesParams
       },
       feesClient$,

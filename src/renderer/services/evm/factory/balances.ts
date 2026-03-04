@@ -57,8 +57,9 @@ export const createEvmBalancesService = (config: EvmBalancesConfig, client$: Cli
     walletAccount: number
     walletIndex: number
     hdMode: HDMode
-  }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
+  }) => C.WalletBalancesLD = ({ walletType, network, walletAccount, walletIndex, hdMode }) => {
     const trigger$ = isKeystoreReloadTrigger(walletType) ? reloadBalances$ : reloadLedgerBalances$
+    const fallbackAssets = network === Network.Testnet ? assetsTestnet : assetsFallback
 
     const base$ = FP.pipe(
       getUserAssetsByChain$(chain),
@@ -79,7 +80,7 @@ export const createEvmBalancesService = (config: EvmBalancesConfig, client$: Cli
           return C.balances$({
             client$: enhancedClient$,
             trigger$,
-            assets: assetsFallback,
+            assets: fallbackAssets,
             walletType,
             walletAccount,
             walletIndex,
