@@ -28,18 +28,13 @@ import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { getEVMTokenAddressForChain } from '../../../helpers/assetHelper'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { logger } from '../../../helpers/logger'
+import { useERC20Approval } from '../../../hooks/useERC20Approval'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { INITIAL_DEPOSIT_STATE } from '../../../services/chain/const'
 import { tradeDeposit$, generateTradeMemo } from '../../../services/chain/transaction/tradeDeposit'
 import { DepositState } from '../../../services/chain/types'
-import { ApproveParams, IsApproveParams } from '../../../services/evm/types'
-import {
-  ChainBalance,
-  WalletBalance,
-  ValidatePasswordHandler,
-  TxHashRD,
-  ApiError
-} from '../../../services/wallet/types'
+import { ApproveParams } from '../../../services/evm/types'
+import { ChainBalance, WalletBalance, ValidatePasswordHandler } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { AssetInput } from '../../uielements/assets/assetInput'
 import { Button, BaseButton } from '../../uielements/button'
@@ -116,19 +111,6 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     reset: resetDepositState,
     subscribe: subscribeDepositState
   } = useSubscriptionState<DepositState>(INITIAL_DEPOSIT_STATE)
-
-  // ERC20 Approval state management
-  const {
-    state: approveState,
-    reset: resetApproveState,
-    subscribe: subscribeApproveState
-  } = useSubscriptionState<TxHashRD>(RD.initial)
-
-  const {
-    state: isApprovedState,
-    reset: resetIsApprovedState,
-    subscribe: subscribeIsApprovedState
-  } = useSubscriptionState<RD.RemoteData<ApiError, boolean>>(RD.initial)
 
   // Get the current protocol address based on selected protocol and wallet type
   const protocolAddress = useMemo(() => {
@@ -272,17 +254,12 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     )
   }, [selectedAsset, currentProtocol, selectedPoolAddressThor, selectedPoolAddressMaya, selectedAssetBalance, network])
 
-  // Generate isApprove parameters for checking approval status
-  const oIsApproveParams: O.Option<IsApproveParams> = useMemo(() => {
-    return FP.pipe(
-      oApproveParams,
-      O.map((params) => ({
-        contractAddress: params.contractAddress,
-        spenderAddress: params.spenderAddress,
-        fromAddress: params.fromAddress
-      }))
-    )
-  }, [oApproveParams])
+  const { approveState, resetApproval, submitApproveTx, isApprovedState, awaitingConfirmation } = useERC20Approval({
+    isApprovedERC20Token$,
+    approveERC20Token$,
+    oApproveParams,
+    network
+  })
 
   // Get unique assets (combine from different wallet types)
   const uniqueAssets = useMemo(() => {
@@ -429,29 +406,13 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     [selectedAssetBalance]
   )
 
-  // Check approval status
-  const checkApprovedStatus = useCallback(
-    (params: IsApproveParams) => {
-      subscribeIsApprovedState(isApprovedERC20Token$(params))
-    },
-    [isApprovedERC20Token$, subscribeIsApprovedState]
-  )
-
-  // Submit approval transaction
-  const submitApproveTx = useCallback(() => {
-    FP.pipe(
-      oApproveParams,
-      O.map((params) => subscribeApproveState(approveERC20Token$(params)))
-    )
-  }, [oApproveParams, subscribeApproveState, approveERC20Token$])
-
   // Determine if approval is needed (approved or not an ERC20 token)
   const isApproved = useMemo(() => {
     // No approval needed if not an ERC20 token
     if (O.isNone(needApprovement)) return true
-    // Check if approved
-    return RD.isSuccess(approveState) || RD.isSuccess(isApprovedState)
-  }, [needApprovement, approveState, isApprovedState])
+    // Check if on-chain allowance is confirmed
+    return RD.isSuccess(isApprovedState) && isApprovedState.value
+  }, [needApprovement, isApprovedState])
 
   const isValidAmount = useMemo(() => {
     return FP.pipe(
@@ -476,14 +437,6 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     setAmount('')
     setSelectedWalletType(WalletType.Keystore)
   }, [])
-
-  // Check approval status when approval params change
-  useEffect(() => {
-    if (O.isSome(oIsApproveParams)) {
-      resetIsApprovedState()
-      FP.pipe(oIsApproveParams, O.map(checkApprovedStatus))
-    }
-  }, [oIsApproveParams, checkApprovedStatus, resetIsApprovedState])
 
   // Set selectedPoolAsset when user selects an asset for trade deposit
   useEffect(() => {
@@ -676,31 +629,23 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
   // Render approval transaction progress modal
   const renderApproveTxModal = useMemo(() => {
     if (RD.isPending(approveState) || RD.isSuccess(approveState) || RD.isFailure(approveState)) {
+      const onCloseOrFinish = () => {
+        resetApproval()
+        // Only proceed to deposit if on-chain allowance is confirmed
+        if (!awaitingConfirmation && RD.isSuccess(isApprovedState) && isApprovedState.value) {
+          if (isLedgerWalletSelected) {
+            setShowLedgerModal(ModalState.Deposit)
+          } else {
+            setShowPasswordModal(ModalState.Deposit)
+          }
+        }
+      }
+
       return (
         <TxModal
           title={intl.formatMessage({ id: 'common.approve' })}
-          onClose={() => {
-            resetApproveState()
-            if (RD.isSuccess(approveState)) {
-              // After successful approval, trigger deposit
-              if (isLedgerWalletSelected) {
-                setShowLedgerModal(ModalState.Deposit)
-              } else {
-                setShowPasswordModal(ModalState.Deposit)
-              }
-            }
-          }}
-          onFinish={() => {
-            resetApproveState()
-            // After successful approval, trigger deposit
-            if (RD.isSuccess(approveState)) {
-              if (isLedgerWalletSelected) {
-                setShowLedgerModal(ModalState.Deposit)
-              } else {
-                setShowPasswordModal(ModalState.Deposit)
-              }
-            }
-          }}
+          onClose={onCloseOrFinish}
+          onFinish={onCloseOrFinish}
           startTime={Date.now()}
           txRD={RD.map(() => true)(approveState)}
           extraResult={
@@ -725,7 +670,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
       )
     }
     return null
-  }, [approveState, intl, resetApproveState, selectedAsset, isLedgerWalletSelected])
+  }, [approveState, intl, resetApproval, selectedAsset, isLedgerWalletSelected, awaitingConfirmation, isApprovedState])
 
   // Render transaction progress modal
   const renderTxModal = useMemo(() => {

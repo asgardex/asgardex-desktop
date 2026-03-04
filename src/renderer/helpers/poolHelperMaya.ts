@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
-import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount, AnyAsset } from '@xchainjs/xchain-util'
+import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O, ord as Ord } from 'fp-ts'
 
@@ -14,12 +14,7 @@ import { PoolDetails } from '../services/midgard/mayaMidgard/types'
 import { getPoolDetail, toPoolData } from '../services/midgard/mayaMidgard/utils'
 import { PoolAddress, PoolData, PricePool } from '../services/midgard/midgardTypes'
 import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
-import {
-  getPoolTableRowDataMaya,
-  getValueOfAsset1InAsset2,
-  getValueOfAssetInRune,
-  getValueOfRuneInAsset
-} from '../views/pools/Pools.utils'
+import { getPoolTableRowDataMaya, getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../views/pools/Pools.utils'
 import { convertBaseAmountDecimal, isCacaoAsset, isMayaAsset, to1e10BaseAmount, to1e8BaseAmount } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
@@ -232,46 +227,6 @@ export const getUSDValue = ({
           // Use decimal 8 for MAYA.MAYA since assetPriceUSD is per 1e8-unit (not per human unit)
           const decimal = isMayaAsset(asset) ? 8 : amount.decimal
           return baseAmount(usdValue, decimal)
-        })
-      )
-    )
-  )
-}
-
-/**
- * Helper to get an asset amount from its USD value in THOR pools
- */
-export const getAssetAmountFromUSDValue = ({
-  usdValue,
-  poolDetails,
-  asset,
-  amount,
-  pricePool: { asset: priceAsset, poolData: pricePoolData }
-}: {
-  usdValue: BaseAmount
-  poolDetails: PoolDetails
-  asset: AnyAsset
-  amount: BaseAmount
-  pricePool: PricePool
-}): O.Option<BaseAmount> => {
-  // no pricing logic needed if asset === price pool asset
-  if (eqAsset.equals(asset, priceAsset)) return O.some(usdValue)
-
-  // Handle Rune as a special case
-  if (isCacaoAsset(asset)) {
-    return O.some(getValueOfAssetInRune(usdValue, pricePoolData))
-  }
-
-  // For other assets
-  return FP.pipe(
-    getPoolDetail(poolDetails, asset), // Get the pool detail for the asset
-    O.chain((poolDetail) =>
-      FP.pipe(
-        O.fromNullable(poolDetail.assetPriceUSD), // Extract `assetPriceUSD` safely
-        O.map((assetPriceUSD) => {
-          const usdDecimal = usdValue.amount().toNumber() // Convert USD value to a decimal number
-          const assetAmount = usdDecimal / Number(assetPriceUSD) // Divide USD value by the asset price in USD
-          return baseAmount(assetAmount, amount.decimal) // Convert back to `BaseAmount`
         })
       )
     )

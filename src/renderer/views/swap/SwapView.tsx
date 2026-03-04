@@ -1053,24 +1053,24 @@ const SuccessTradeRouteView = ({
   const [tradeAccountBalanceRD, setTradeAccountBalanceRD] = useState<RD.RemoteData<Error, TradeAccount[]>>(RD.pending)
 
   useEffect(() => {
+    let subscription: Rx.Subscription | undefined
     FP.pipe(
       sourceWalletType === WalletType.Keystore ? oSourceKeystoreAddress : oSourceLedgerAddress,
       O.fold(
         () => setTradeAccountBalanceRD(RD.initial),
         (sourceAddress) => {
           setTradeAccountBalanceRD(RD.pending)
-          if (protocol === THORChain) {
-            getTradeAccount$(sourceAddress, sourceWalletType).subscribe((result) => {
-              setTradeAccountBalanceRD(result)
-            })
-          } else {
-            getTradeAccountMaya$(sourceAddress, sourceWalletType).subscribe((result) => {
-              setTradeAccountBalanceRD(result)
-            })
-          }
+          const stream$ =
+            protocol === THORChain
+              ? getTradeAccount$(sourceAddress, sourceWalletType)
+              : getTradeAccountMaya$(sourceAddress, sourceWalletType)
+          subscription = stream$.subscribe((result) => {
+            setTradeAccountBalanceRD(result)
+          })
         }
       )
     )
+    return () => subscription?.unsubscribe()
   }, [getTradeAccount$, getTradeAccountMaya$, oSourceKeystoreAddress, oSourceLedgerAddress, protocol, sourceWalletType])
 
   const { validateSwapAddress } = useValidateAddress(targetChain)

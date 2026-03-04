@@ -22,15 +22,6 @@ export const ASSETS_MAINNET: AssetsMainnet = {
 
 type ERCAssets = 'USDT'
 
-export const ERC20_MAINNET: Record<ERCAssets, AnyAsset> = {
-  USDT: {
-    chain: ETHChain,
-    symbol: 'USDT-0xdac17f958d2ee523a2206206994597c13d831ec7',
-    ticker: 'USDT',
-    type: AssetType.TOKEN
-  }
-}
-
 export const ERC20_TESTNET: Record<ERCAssets, AnyAsset> = {
   USDT: {
     chain: ETHChain,

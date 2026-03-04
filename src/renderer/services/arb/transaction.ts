@@ -46,7 +46,8 @@ export const createTransactionService = (
   client$: Client$,
   network$: Network$,
   evmRpc$: Rx.Observable<ApiUrls>,
-  gasMultiplier$: Rx.Observable<number> = Rx.of(DEFAULT_EVM_GAS_MULTIPLIER)
+  gasMultiplier$: Rx.Observable<number> = Rx.of(DEFAULT_EVM_GAS_MULTIPLIER),
+  readOnlyClient$: Client$ = client$
 ): TransactionService => {
   const common = C.createTransactionService(client$)
 
@@ -347,8 +348,10 @@ export const createTransactionService = (
     )
   }
 
+  // Use readOnlyClient$ (enhanced client with Ledger/Vultisig fallback) for read-only approval checks.
+  // This prevents the observable from hanging when client$ is O.none in non-keystore wallet modes.
   const isApprovedERC20Token$ = (params: IsApproveParams): IsApprovedLD =>
-    client$.pipe(
+    readOnlyClient$.pipe(
       RxOp.filter(O.isSome),
       RxOp.take(1),
       RxOp.switchMap((oClient) =>

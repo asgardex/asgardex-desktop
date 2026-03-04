@@ -49,3 +49,7 @@ CLAUDE.md
 
 # Test wallets / vault files
 wallets/
+
+# Release signing (local only)
+scripts/sign_bin.sh
+/release-signing
