@@ -151,8 +151,12 @@ export const AppExpertMode = (props: Props): JSX.Element => {
   }, [midgardMayaUrlRD])
 
   const [advancedActive, setAdvancedActive] = useState<Record<string, boolean>>(() => {
-    const cachedValue = localStorage.getItem('advanceActive')
-    return cachedValue ? JSON.parse(cachedValue) : expertModeDefault
+    try {
+      const cachedValue = localStorage.getItem('advanceActive')
+      return cachedValue ? JSON.parse(cachedValue) : expertModeDefault
+    } catch {
+      return expertModeDefault
+    }
   })
 
   useEffect(() => {

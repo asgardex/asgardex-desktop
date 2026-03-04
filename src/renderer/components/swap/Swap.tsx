@@ -1161,19 +1161,20 @@ export const Swap = ({
     setInputDisplayAmount(amountToSwap)
   }, [amountToSwap])
 
+  const fetchTimerRef = useRef<ReturnType<typeof setTimeout>>()
+
   const debouncedSetAmountToSwap = useMemo(
     () =>
       debounce((amount: BaseAmount) => {
-        // Only update swap state after user stops typing
         setAmountToSwap(amount)
 
-        // Fetch quote after longer delay
-        setTimeout(() => {
+        clearTimeout(fetchTimerRef.current)
+        fetchTimerRef.current = setTimeout(() => {
           if (amount.gt(baseAmount(0, amount.decimal))) {
             fetchSwap(amount)
           }
         }, 1000)
-      }, 500), // Longer delay before updating swap state
+      }, 500),
     [setAmountToSwap, fetchSwap]
   )
 
@@ -1188,10 +1189,10 @@ export const Swap = ({
     [debouncedSetAmountToSwap, isSourceUTXO]
   )
 
-  // Cleanup debounced input handler on unmount
   useEffect(() => {
     return () => {
       debouncedSetAmountToSwap.cancel()
+      clearTimeout(fetchTimerRef.current)
     }
   }, [debouncedSetAmountToSwap])
 

@@ -25,12 +25,6 @@ const mockNodeInfo = (address: Address) => ({
 })
 
 export const Default: StoryFn = () => {
-  // const nodesSelect: Record<Address, RDStatus> = {
-  //   thor1766mazrxs5asuscepa227r6ekr657234f8p7nf: firstNodeRdKnob,
-  //   thor1766mazrxs5asuscepa227r6ekr657234f9asda: secondNodeRdKnob,
-  //   thor1766mazrxs5asuscepa227r6ekr657234fkswjh: thirdNodeRdKnob
-  // }
-
   const [nodesList, setNodesList] = useState<Address[]>([
     'thor1766mazrxs5asuscepa227r6ekr657234f8p7nf',
     'thor1766mazrxs5asuscepa227r6ekr657234f9asda',

@@ -1,9 +1,6 @@
 import { ApiUrls } from '../api/types'
 import { envOrDefault } from '../utils/env'
 
-// expose env (needed to access ENVs by `envOrDefault`) in `main` thread)
-// require('dotenv').config()
-
 const TESTNET_URL = envOrDefault(import.meta.env.VITE_MIDGARD_TESTNET_URL, 'https://testnet.midgard.thorchain.info')
 
 const STAGENET_URL = envOrDefault(
