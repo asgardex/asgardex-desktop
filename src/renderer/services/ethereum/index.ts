@@ -1,16 +1,42 @@
+import { ETHChain, Client, ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
+
+import { etherscanApiKey } from '../../../shared/api/etherscan'
+import { createEthParams } from '../../../shared/ethereum/const'
+import { isEthAsset, addressInERC20Whitelist } from '../../helpers/assetHelper'
+import { ETHAssetsFallBack, ETHAssetsTestnet } from '../../const'
 import { network$ } from '../app/service'
 import { ethRpc$, evmGasMultiplier$ } from '../storage/common'
-import {
+import { createEvmChainService } from '../evm/factory'
+
+const {
+  client$,
+  clientState$,
+  address$,
+  addressUI$,
+  explorerUrl$,
   reloadBalances,
   balances$,
   reloadBalances$,
   resetReloadBalances,
   getBalanceByAddress$,
-  enhancedClient$
-} from './balances'
-import { client$, clientState$, address$, addressUI$, explorerUrl$ } from './common'
-import { createFeesService } from './fees'
-import { createTransactionService } from './transaction'
+  enhancedClient$,
+  createTransactionService,
+  createFeesService
+} = createEvmChainService({
+  chain: ETHChain,
+  chainName: 'ETH',
+  gasAssetDecimal: ETH_GAS_ASSET_DECIMAL,
+  isChainAsset: isEthAsset,
+  createClientParams: createEthParams,
+  ClientClass: Client,
+  rpc$: ethRpc$,
+  apiKey: etherscanApiKey,
+  addressInWhitelist: addressInERC20Whitelist,
+  assetsFallback: ETHAssetsFallBack,
+  assetsTestnet: ETHAssetsTestnet,
+  defaultGasLimit: 160000,
+  initialReloadFeesParams: undefined
+})
 
 const {
   txs$,

@@ -1,16 +1,48 @@
+import { BSCChain, Client, BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
+import { baseAmount } from '@xchainjs/xchain-util'
+
+import { createBscParams } from '../../../shared/bsc/const'
+import { isBscAsset, addressInBscWhitelist } from '../../helpers/assetHelper'
+import { BSCAssetsFallBack, BscAssetsTestnet } from '../../const'
 import { network$ } from '../app/service'
 import { bscRpc$, evmGasMultiplier$ } from '../storage/common'
-import {
+import { EVMZeroAddress } from '../evm/const'
+import { createEvmChainService } from '../evm/factory'
+import { replaceSymbol } from '../evm/utils'
+import { WalletBalance } from '../wallet/types'
+
+const {
+  client$,
+  clientState$,
+  address$,
+  addressUI$,
+  explorerUrl$,
   reloadBalances,
   balances$,
   reloadBalances$,
   resetReloadBalances,
   getBalanceByAddress$,
-  enhancedClient$
-} from './balances'
-import { client$, clientState$, address$, addressUI$, explorerUrl$ } from './common'
-import { createFeesService } from './fees'
-import { createTransactionService } from './transaction'
+  enhancedClient$,
+  createTransactionService,
+  createFeesService
+} = createEvmChainService({
+  chain: BSCChain,
+  chainName: 'BSC',
+  gasAssetDecimal: BSC_GAS_ASSET_DECIMAL,
+  isChainAsset: isBscAsset,
+  createClientParams: createBscParams,
+  ClientClass: Client,
+  rpc$: bscRpc$,
+  addressInWhitelist: addressInBscWhitelist,
+  assetsFallback: BSCAssetsFallBack,
+  assetsTestnet: BscAssetsTestnet,
+  defaultGasLimit: 160000,
+  balanceTransform: (balance: WalletBalance) => ({
+    ...balance,
+    asset: replaceSymbol(balance.asset)
+  }),
+  initialReloadFeesParams: { amount: baseAmount(1), recipient: EVMZeroAddress }
+})
 
 const {
   txs$,
