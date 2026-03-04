@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { CpuChipIcon, ShieldCheckIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
+import { CpuChipIcon, ShieldCheckIcon, ArrowDownTrayIcon, BoltIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
@@ -195,6 +195,10 @@ export const UnlockForm = ({
     navigate(walletRoutes.ledgerChainSelect.path())
   }, [navigate])
 
+  const useVultisigFastHandler = useCallback(() => {
+    navigate(walletRoutes.vultisigCreate.path())
+  }, [navigate])
+
   const useVultisigSecureHandler = useCallback(() => {
     navigate(walletRoutes.vultisigSecureCreate.path())
   }, [navigate])
@@ -322,7 +326,7 @@ export const UnlockForm = ({
                 color="primary"
                 onClick={createWalletHandler}
                 disabled={unlocking}>
-                {intl.formatMessage({ id: 'wallet.action.create' })}
+                {intl.formatMessage({ id: 'wallet.action.create' })} {intl.formatMessage({ id: 'common.keystore' })}
               </BorderButton>
               <BorderButton
                 className="w-full min-w-[200px]"
@@ -344,10 +348,19 @@ export const UnlockForm = ({
                 className="flex w-full min-w-[200px] items-center justify-center gap-2"
                 size="normal"
                 color="primary"
+                onClick={useVultisigFastHandler}
+                disabled={unlocking}>
+                <BoltIcon className="text-turquoise" width={16} height={16} />
+                {intl.formatMessage({ id: 'wallet.vultisig.create.submit' })}
+              </BorderButton>
+              <BorderButton
+                className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                size="normal"
+                color="primary"
                 onClick={useVultisigSecureHandler}
                 disabled={unlocking}>
                 <ShieldCheckIcon className="text-turquoise" width={16} height={16} />
-                Secure Vault (2-of-2)
+                {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.title' })}
               </BorderButton>
             </div>
 

@@ -135,7 +135,7 @@ export const createTransactionService = (
           })
         if (isVultisigWallet(walletType)) {
           if (!asset) return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'No asset provided for MAYA deposit' }))
-          return vultisigTx({ network, params: { recipient: '', amount, asset: asset as AnyAsset, memo } })
+          return vultisigTx({ network, params: { amount, asset: asset as AnyAsset, memo } })
         }
         return depositTx({ walletIndex, asset, amount, memo })
       })

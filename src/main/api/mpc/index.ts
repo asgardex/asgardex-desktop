@@ -522,10 +522,13 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
 
   ipcMain.handle(MpcIPCMessages.MPC_SEND_TX, async (_event, params: SendTransactionParams) => {
     const sdk = getSDK()
-    const { vaultId, chain, receiver, amount, memo, decimals, ticker, id, approve } = params
+    const { vaultId, chain, receiver, amount, memo, decimals, ticker, id, approve, isDeposit } = params
     assertString(vaultId, 'vaultId')
     assertString(chain, 'chain')
-    assertString(receiver, 'receiver')
+    // For native deposits (MsgDeposit on THOR/MAYA), receiver is empty — sender is used as signer
+    if (!isDeposit) {
+      assertString(receiver, 'receiver')
+    }
     assertBigIntString(amount, 'amount')
 
     const vault = await sdk.getVaultById(vaultId)
@@ -541,11 +544,12 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       sdkChain,
       vaultType: vault.type,
       isSecureVault,
-      receiver,
+      receiver: isDeposit ? '(deposit - MsgDeposit)' : receiver,
       amount,
       decimals,
       ticker,
-      memo: memo || '(none)'
+      memo: memo || '(none)',
+      isDeposit: !!isDeposit
     })
 
     // Abort any existing signing session for this vault before starting a new one
@@ -607,19 +611,29 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       }
 
       // Step 3: Prepare transaction (SDK handles gas, nonce, fees)
+      // For deposits, use sender address as receiver (SDK validation requires a valid address,
+      // but MsgDeposit ignores receiver — the signer is used instead)
+      const txReceiver = isDeposit ? senderAddress : receiver
       log.info(`[MPC IPC] Step 2: prepareSendTx`, {
         coin,
-        receiver,
+        receiver: txReceiver,
         amount: String(txAmount),
-        memo: txMemo ? `${txMemo.slice(0, 20)}...` : '(none)'
+        memo: txMemo ? `${txMemo.slice(0, 20)}...` : '(none)',
+        isDeposit: !!isDeposit
       })
       const keysignPayload = await vault.prepareSendTx({
         coin,
-        receiver,
+        receiver: txReceiver,
         amount: txAmount,
         memo: txMemo
       })
       log.info(`[MPC IPC] Step 2: prepareSendTx complete`)
+
+      // Native DEX deposits (MsgDeposit) — only THOR and MAYA support this
+      if (isDeposit && (chain === 'THOR' || chain === 'MAYA')) {
+        keysignPayload.blockchainSpecific.value.isDeposit = true
+        log.info(`[MPC IPC] Patched ${chain} blockchainSpecific with isDeposit=true`)
+      }
 
       // Restore toAmount to 0 — the 1 wei was only to pass refineKeysignAmount.
       if (isZeroAmountContractCall) {

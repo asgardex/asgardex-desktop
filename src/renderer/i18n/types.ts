@@ -502,6 +502,7 @@ type WalletMessageKey =
   | 'wallet.vultisig.secureCreate.keepActive'
   | 'wallet.vultisig.secureCreate.success'
   | 'wallet.vultisig.secureCreate.cancelling'
+  | 'wallet.vultisig.notImplemented'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }
 

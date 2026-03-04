@@ -1,12 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { option as O } from 'fp-ts'
-import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
-import { appWalletService } from '../wallet/appWallet'
-import { isStandaloneLedgerMode } from '../wallet/types'
+import { createEnhancedClient$ } from '../clients/enhancedClient'
 import { client$, readOnlyClient$ } from './common'
 
 /**
@@ -25,29 +23,11 @@ const reloadBalances = () => {
 }
 
 /**
- * Enhanced client that falls back to read-only client for standalone ledger mode
+ * Enhanced client that falls back to read-only client for standalone modes (Ledger, Vultisig)
  */
-const enhancedClient$ = Rx.combineLatest([
+const enhancedClient$ = createEnhancedClient$(
   client$,
-  readOnlyClient$.pipe(RxOp.map(RD.toOption)),
-  appWalletService.appWalletState$
-]).pipe(
-  RxOp.map(([client, readOnlyClient, appWalletState]) => {
-    // If we have a regular client, use it
-    if (O.isSome(client)) {
-      return client
-    }
-
-    // If we're in standalone ledger mode and have read-only client, use read-only
-    if (appWalletState && isStandaloneLedgerMode(appWalletState) && O.isSome(readOnlyClient)) {
-      return readOnlyClient
-    }
-
-    // Otherwise, no client available
-    return O.none
-  }),
-  RxOp.distinctUntilChanged(),
-  RxOp.shareReplay({ bufferSize: 1, refCount: true })
+  readOnlyClient$.pipe(RxOp.map(RD.toOption))
 )
 
 // State of balances loaded by Client

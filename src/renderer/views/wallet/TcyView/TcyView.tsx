@@ -24,6 +24,7 @@ import { map, shareReplay, switchMap } from 'rxjs/operators'
 
 import { chainToString, getChainsForDex } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
+import { WarningView } from '../../../components/shared/warning'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
 import { TxModal } from '../../../components/modal/tx'
 import { ClaimAsset } from '../../../components/modal/tx/extra'
@@ -129,7 +130,8 @@ export const TcyView = () => {
   )
   const intl = useIntl()
   const {
-    keystoreService: { validatePassword$ }
+    keystoreService: { validatePassword$ },
+    appWalletService
   } = useWalletContext()
 
   const [balancesState] = useObservableState(
@@ -782,6 +784,16 @@ export const TcyView = () => {
       />
     )
   }, [showLedgerModal, sourceAsset, intl, network, oPoolAddress, claimAddress, onSuccess])
+
+  // Guard: TCY not yet implemented for Vultisig wallet
+  if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
+    return (
+      <>
+        <AssetsNav />
+        <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
+      </>
+    )
+  }
 
   return (
     <>

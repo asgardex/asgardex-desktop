@@ -19,7 +19,7 @@ import { ErrorId, TxHashLD } from '../wallet/types'
 
 /** Minimal params shape shared by THOR, MAYA, and GAIA SendTxParams */
 type CosmosSendParams = {
-  recipient: string
+  recipient?: string
   amount: BaseAmount
   asset: AnyAsset
   memo?: string
@@ -54,24 +54,30 @@ export const createVultisigCosmosTx = (
     const denom = getDenom(asset)
     const id = denom && denom !== nativeDenom ? denom : undefined
 
+    // Native chain deposits (RUNE on THOR, CACAO on MAYA) use MsgDeposit, not MsgSend.
+    // These have no receiver (pool address is empty). The SDK uses the sender as signer.
+    const isDeposit = !recipient
+
     const txParams: SendTransactionParams = {
       vaultId,
       chain: chainName,
-      receiver: recipient,
+      receiver: recipient || '',
       amount: amount.amount().toFixed(),
       memo,
       decimals: amount.decimal,
       ticker: asset.ticker,
-      id
+      id,
+      isDeposit
     }
 
     logger.info(`${chainName} sendTransaction via SDK pipeline`, {
-      receiver: recipient,
+      receiver: recipient || '(deposit - no receiver)',
       amount: amount.amount().toFixed(),
       memo: memo || '(none)',
       vaultId,
       ticker: asset.ticker,
-      id: id || '(native)'
+      id: id || '(native)',
+      isDeposit
     })
 
     return Rx.from(window.apiMpc.sendTransaction(txParams)).pipe(

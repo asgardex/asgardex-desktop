@@ -45,6 +45,8 @@ import { NodeInfo as NodeInfoMaya, Providers as MayaProviders } from '../../serv
 import { NodeInfo as NodeInfoThor } from '../../services/thorchain/types'
 import { balancesState$ } from '../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
+import { WalletType } from '../../../shared/wallet/types'
+import { WarningView } from '../../components/shared/warning'
 import { WalletBalances } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 import { getValueOfRuneInAsset } from '../pools/Pools.utils'
@@ -79,7 +81,7 @@ export const BondsView = (): JSX.Element => {
   const intl = useIntl()
   const { isPrivate } = useApp()
   const navigate = useNavigate()
-  const { setSelectedAsset } = useWalletContext()
+  const { setSelectedAsset, appWalletService } = useWalletContext()
 
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
   const oClientMaya = useObservableState<O.Option<MayachainClient>>(clientMaya$, O.none)
@@ -359,6 +361,11 @@ export const BondsView = (): JSX.Element => {
     pricePoolDataMaya,
     selectedPricePoolMaya.asset
   ])
+
+  // Guard: Bonds not yet implemented for Vultisig wallet
+  if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
+    return <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
+  }
 
   return (
     <>

@@ -439,7 +439,9 @@ export const sendPoolTx$ = ({
         : THOR.sendTx({ sender, walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
     case MAYAChain:
-      return MAYA.sendPoolTx$({ walletType, amount, asset, memo, walletAccount, walletIndex, hdMode })
+      return protocol === MAYAChain
+        ? MAYA.sendPoolTx$({ walletType, amount, asset, memo, walletAccount, walletIndex, hdMode })
+        : MAYA.sendTx({ sender, walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
     case BTCChain:
     case BCHChain:

@@ -162,9 +162,9 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
       // Save active vault ID to storage for restoration on app restart
       onSaveWallet({ type: WalletType.Vultisig, vaultId })
 
-      // Require password unlock (unless this is a newly created/verified vault)
-      if (requireUnlock) {
-        // Vault needs password - set to locked state
+      // Require password unlock (unless this is a newly created/verified vault or unencrypted vault)
+      if (requireUnlock && vault.isEncrypted) {
+        // Vault is encrypted and needs password - set to locked state
         logger.info('Setting vault to locked state:', vault.name)
         setVultisigState((prev) => ({
           ...prev,

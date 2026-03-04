@@ -63,5 +63,10 @@ export const QRCode = ({ text, qrError }: Props) => {
     )
   }, [canvasRd])
 
-  return <div ref={canvasContainer} className="flex h-72 items-center justify-center [&>canvas]:rounded-2xl" />
+  return (
+    <div
+      ref={canvasContainer}
+      className="flex max-h-72 max-w-full items-center justify-center [&>canvas]:h-auto [&>canvas]:max-w-full [&>canvas]:rounded-2xl"
+    />
+  )
 }

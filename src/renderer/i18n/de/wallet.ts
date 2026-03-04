@@ -190,6 +190,7 @@ const wallet: WalletMessages = {
   'wallet.vultisig.secureCreate.keepActive': 'This may take a moment. Please keep both devices active.',
   'wallet.vultisig.secureCreate.success': 'Secure Vault Created!',
   'wallet.vultisig.secureCreate.cancelling': 'Cancelling...',
+  'wallet.vultisig.notImplemented': 'Diese Funktion ist für Vultisig-Wallets noch nicht verfügbar',
   'wallet.send.coinControl': 'Coin Control',
   'wallet.send.coinControl.strategy': 'Auswahlstrategie',
   'wallet.send.coinControl.auto': 'Automatisch',

@@ -10,13 +10,16 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
+import { WalletType } from '../../../shared/wallet/types'
 import { PoolShares as PoolSharesTable } from '../../components/PoolShares'
 import { PoolShareTableRowData } from '../../components/PoolShares/PoolShares.types'
 import { ErrorView } from '../../components/shared/error'
+import { WarningView } from '../../components/shared/warning'
 import { Button, RefreshButton } from '../../components/uielements/button'
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { AssetsNav, TotalAssetValue } from '../../components/wallet/assets'
 import { useChainContext } from '../../contexts/ChainContext'
+import { useWalletContext } from '../../contexts/WalletContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { sequenceTOption } from '../../helpers/fpHelpers'
@@ -70,6 +73,7 @@ export const PoolShareView = (): JSX.Element => {
   const allPoolDetails$ = protocol === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
   const poolsRD = useObservableState(protocol === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
   const { addressByChain$ } = useChainContext()
+  const { appWalletService } = useWalletContext()
 
   useEffect(() => {
     if (protocol === THORChain) {
@@ -228,6 +232,16 @@ export const PoolShareView = (): JSX.Element => {
       reloadAllMayaPools()
     }
   }, [protocol, reloadAllMayaPools, reloadAllPools])
+
+  // Guard: LP Shares not yet implemented for Vultisig wallet
+  if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
+    return (
+      <>
+        <AssetsNav />
+        <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
+      </>
+    )
+  }
 
   return (
     <>

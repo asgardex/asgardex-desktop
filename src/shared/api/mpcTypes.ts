@@ -106,6 +106,7 @@ export type SendTransactionParams = {
   ticker: string // Native asset ticker (e.g., 'ETH', 'BTC')
   id?: string // Token identifier: denom (Cosmos), contract address (EVM), mint (Solana). Omit for native coins.
   approve?: { spender: string; amount: string } // ERC20 approve: SDK sets erc20ApprovePayload on keysign payload
+  isDeposit?: boolean // Native chain deposit (MsgDeposit for THOR/MAYA). Receiver is ignored; uses sender as signer.
 }
 
 export type SendTransactionResult = {

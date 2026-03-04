@@ -28,6 +28,7 @@ import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
+import { useWalletContext } from '../../contexts/WalletContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import * as appRoutes from '../../routes/app'
@@ -100,6 +101,7 @@ export const SidebarComponent = memo(function SidebarComponent(props: Props): JS
   const { transactionTrackingService } = useThorchainContext()
   const { transactionTrackingService: mayaTransactionTrackingService } = useMayachainContext()
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
+  const { appWalletService } = useWalletContext()
 
   const navigate = useNavigate()
 
@@ -152,8 +154,8 @@ export const SidebarComponent = memo(function SidebarComponent(props: Props): JS
         path: poolsRoutes.swap.path({
           source: assetToString(AssetBTC),
           target: assetToString(AssetRuneNative),
-          sourceWalletType: DEFAULT_WALLET_TYPE,
-          targetWalletType: DEFAULT_WALLET_TYPE
+          sourceWalletType: appWalletService.getCurrentWalletType(),
+          targetWalletType: appWalletService.getCurrentWalletType()
         }),
         icon: SwapIcon
       },

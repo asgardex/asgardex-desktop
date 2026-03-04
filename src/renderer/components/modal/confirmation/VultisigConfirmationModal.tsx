@@ -282,15 +282,16 @@ export const VultisigConfirmationModal = ({
     if (phase === 'qr-ready' || phase === 'device-joined') {
       return (
         <div className="flex flex-col items-center gap-4">
-          <Label align="center" size="big">
+          <AssetIcon asset={asset} network={network} size="big" />
+          <Label align="center" size="big" className="uppercase">
             {intl.formatMessage({ id: 'wallet.vultisig.confirm.scanQr' })}
           </Label>
           {qrPayload && (
-            <div className="rounded-lg bg-white p-4">
+            <div className="rounded-xl border-2 border-solid border-turquoise bg-white p-5 shadow-md">
               <QRCode text={qrPayload} qrError={intl.formatMessage({ id: 'wallet.vultisig.confirm.qrError' })} />
             </div>
           )}
-          <Label align="center">
+          <Label align="center" color="gray" size="normal">
             {intl.formatMessage(
               { id: 'wallet.vultisig.confirm.devicesJoined' },
               { joined: devicesJoined, required: devicesRequired }

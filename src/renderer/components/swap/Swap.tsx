@@ -1862,8 +1862,7 @@ export const Swap = ({
       setAmountToSwap(initialAmountToSwap)
       onChangeAsset({
         source: asset,
-        // back to default 'keystore' type
-        sourceWalletType: WalletType.Keystore,
+        sourceWalletType: appWalletService.getCurrentWalletType(),
         target: targetAsset,
         targetWalletType: oTargetWalletType,
         recipientAddress: effectiveRecipientAddress
@@ -1889,8 +1888,7 @@ export const Swap = ({
         source: sourceAsset,
         sourceWalletType,
         target: asset,
-        // Reset the wallet type for the new target asset
-        targetWalletType: O.some(WalletType.Keystore),
+        targetWalletType: O.some(appWalletService.getCurrentWalletType()),
         recipientAddress: O.none
       })
       await delay(100) // Optional delay to ensure state updates properly
@@ -2788,7 +2786,7 @@ export const Swap = ({
     setQuoteProtocol(O.none)
     const walletType = FP.pipe(
       oTargetWalletType,
-      O.getOrElse<WalletType>(() => WalletType.Keystore)
+      O.getOrElse<WalletType>(() => appWalletService.getCurrentWalletType())
     )
 
     onChangeAsset({
@@ -2882,7 +2880,7 @@ export const Swap = ({
       onChangeAsset({
         source: sourceAsset,
         target: targetAsset,
-        sourceWalletType: useLedger ? WalletType.Ledger : WalletType.Keystore,
+        sourceWalletType: useLedger ? WalletType.Ledger : appWalletService.getCurrentWalletType(),
         targetWalletType: oTargetWalletType,
         recipientAddress: effectiveRecipientAddress
       })
@@ -2892,6 +2890,7 @@ export const Swap = ({
       effectiveRecipientAddress,
       oTargetWalletType,
       onChangeAsset,
+      appWalletService,
       setAmountToSwap,
       sourceAsset,
       targetAsset
@@ -2904,11 +2903,11 @@ export const Swap = ({
         source: sourceAsset,
         target: targetAsset,
         sourceWalletType,
-        targetWalletType: O.some(useLedger ? WalletType.Ledger : WalletType.Keystore),
+        targetWalletType: O.some(useLedger ? WalletType.Ledger : appWalletService.getCurrentWalletType()),
         recipientAddress: useLedger ? oTargetLedgerAddress : oTargetKeystoreAddress
       })
     },
-    [oTargetLedgerAddress, oTargetKeystoreAddress, onChangeAsset, sourceAsset, sourceWalletType, targetAsset]
+    [oTargetLedgerAddress, oTargetKeystoreAddress, onChangeAsset, sourceAsset, sourceWalletType, targetAsset, appWalletService]
   )
 
   const memoTitle = useMemo(
