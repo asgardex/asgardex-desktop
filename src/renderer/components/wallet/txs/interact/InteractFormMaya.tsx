@@ -26,7 +26,6 @@ import {
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
 
-import { logger } from '../../../../helpers/logger'
 import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
@@ -36,6 +35,7 @@ import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
+import { logger } from '../../../../helpers/logger'
 import {
   getBondMemoMayanode,
   getLeaveMemo,
