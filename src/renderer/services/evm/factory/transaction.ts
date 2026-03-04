@@ -1,8 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { abi, CompatibleAsset, isApproved } from '@xchainjs/xchain-evm'
-import { baseAmount, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
+import { Address, baseAmount, Chain, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { Contract, getAddress, ZeroAddress } from 'ethers'
 import { either as E, function as FP, option as O } from 'fp-ts'
@@ -16,19 +15,20 @@ import {
   ipcLedgerDepositTxParamsIO,
   IPCLedgerSendTxParams,
   ipcLedgerSendTxParamsIO
-} from '../../../shared/api/io'
-import { ApiUrls, LedgerError } from '../../../shared/api/types'
-import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../shared/const'
-import { applyGasMultiplier } from '../../../shared/evm/gas'
-import { getBlocktime } from '../../../shared/evm/provider'
-import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
-import { addressInBscWhitelist, getEVMAssetAddress, isEVMTokenAsset } from '../../helpers/assetHelper'
-import { sequenceSOption } from '../../helpers/fpHelpers'
-import { LiveData } from '../../helpers/rx/liveData'
-import { Network$ } from '../app/types'
-import { ChainTxFeeOption } from '../chain/const'
-import * as C from '../clients'
-import { DEPOSIT_EXPIRATION_OFFSET } from '../evm/const'
+} from '../../../../shared/api/io'
+import { ApiUrls, LedgerError } from '../../../../shared/api/types'
+import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../../shared/const'
+import { applyGasMultiplier } from '../../../../shared/evm/gas'
+import { getBlocktime } from '../../../../shared/evm/provider'
+import { isError, isEvmHDMode, isLedgerWallet } from '../../../../shared/utils/guard'
+import { getEVMAssetAddress, isEVMTokenAsset } from '../../../helpers/assetHelper'
+import { sequenceSOption } from '../../../helpers/fpHelpers'
+import { LiveData } from '../../../helpers/rx/liveData'
+import { Network$ } from '../../app/types'
+import { ChainTxFeeOption } from '../../chain/const'
+import * as C from '../../clients'
+import { ApiError, ErrorId, TxHashLD } from '../../wallet/types'
+import { DEPOSIT_EXPIRATION_OFFSET } from '../const'
 import {
   ApproveParams,
   TransactionService,
@@ -36,24 +36,32 @@ import {
   SendPoolTxParams,
   IsApproveParams,
   SendTxParams,
+  EvmTxParams,
   Client$,
-  Client as BscClient
-} from '../evm/types'
-import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
+  Client as EvmClient
+} from '../types'
 
-export const createTransactionService = (
+export type EvmTransactionConfig = {
+  chain: Chain
+  chainName: string
+  apiKey?: string
+  addressInWhitelist: (addr: Address) => boolean
+  defaultGasLimit: number
+  useEstimateGasLimit?: boolean
+}
+
+export const createEvmTransactionService = (
+  config: EvmTransactionConfig,
   client$: Client$,
   network$: Network$,
   evmRpc$: Rx.Observable<ApiUrls>,
   gasMultiplier$: Rx.Observable<number> = Rx.of(DEFAULT_EVM_GAS_MULTIPLIER),
   readOnlyClient$: Client$ = client$
 ): TransactionService => {
+  const { chain, chainName, apiKey, addressInWhitelist, defaultGasLimit, useEstimateGasLimit } = config
   const common = C.createTransactionService(client$)
 
-  // Note: We don't use `client.deposit` to send "pool" txs to avoid repeating same requests we already do in ASGARDEX
-  // That's why we call `deposit` directly here
-  const runSendPoolTx$ = (client: BscClient, { ...params }: SendPoolTxParams, gasMultiplier: number): TxHashLD => {
-    // helper for failures
+  const runSendPoolTx$ = (client: EvmClient, { ...params }: SendPoolTxParams, gasMultiplier: number): TxHashLD => {
     const failure$ = (msg: string) =>
       Rx.of<RD.RemoteData<ApiError, never>>(
         RD.failure({
@@ -61,6 +69,8 @@ export const createTransactionService = (
           msg
         })
       )
+
+    const provider = client.getProvider()
 
     return FP.pipe(
       sequenceSOption({ address: getEVMAssetAddress(params.asset), router: params.router }),
@@ -70,10 +80,9 @@ export const createTransactionService = (
           FP.pipe(
             Rx.forkJoin({
               gasPrices: Rx.from(client.estimateGasPrices()),
-              blockTime: Rx.from(getBlocktime(client.getProvider()))
+              blockTime: Rx.from(getBlocktime(provider))
             }),
             RxOp.switchMap(({ gasPrices: rawGasPrices, blockTime }) => {
-              // Apply gas multiplier to increase fees if configured
               const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
               const isERC20 = isEVMTokenAsset(params.asset as TokenAsset)
               const checkSummedContractAddress = isERC20
@@ -95,8 +104,31 @@ export const createTransactionService = (
               return Rx.from(
                 routerContract.getFunction('depositWithExpiry').populateTransaction(...depositParams)
               ).pipe(
-                RxOp.switchMap((unsignedTx) =>
-                  Rx.from(
+                RxOp.switchMap((unsignedTx) => {
+                  if (useEstimateGasLimit) {
+                    // ARB: estimate gas limit dynamically
+                    const tx: EvmTxParams = {
+                      asset: nativeAsset.asset,
+                      amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
+                      memo: unsignedTx.data,
+                      recipient: router,
+                      gasPrice: gasPrices[params.feeOption],
+                      isMemoEncoded: true
+                    }
+                    return Rx.from(client.estimateGasLimit(tx)).pipe(
+                      RxOp.catchError(() => Rx.of(new BigNumber(defaultGasLimit))),
+                      RxOp.switchMap((gasLimit) =>
+                        Rx.from(
+                          client.transfer({
+                            ...tx,
+                            gasLimit
+                          })
+                        )
+                      )
+                    )
+                  }
+                  // Default: use fixed gas limit
+                  return Rx.from(
                     client.transfer({
                       asset: nativeAsset.asset,
                       amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
@@ -104,10 +136,10 @@ export const createTransactionService = (
                       recipient: router,
                       gasPrice: gasPrices[params.feeOption],
                       isMemoEncoded: true,
-                      gasLimit: new BigNumber(160000)
+                      gasLimit: new BigNumber(defaultGasLimit)
                     })
                   )
-                )
+                })
               )
             }),
             RxOp.map((txResult) => txResult),
@@ -131,7 +163,7 @@ export const createTransactionService = (
     gasMultiplier: number
   }): TxHashLD => {
     const ipcParams: IPCLedgerDepositTxParams = {
-      chain: BSCChain,
+      chain,
       network,
       asset: params.asset,
       router: O.toUndefined(params.router),
@@ -143,7 +175,7 @@ export const createTransactionService = (
       feeOption: params.feeOption,
       nodeUrl: undefined,
       hdMode: params.hdMode,
-      apiKey: undefined,
+      apiKey,
       evmRpcUrl,
       gasMultiplier
     }
@@ -158,7 +190,7 @@ export const createTransactionService = (
               Rx.of(
                 RD.failure({
                   errorId: ErrorId.DEPOSIT_LEDGER_TX_ERROR,
-                  msg: `Deposit Ledger Bsc/ERC20 tx failed. (${msg})`
+                  msg: `Deposit Ledger ${chainName}/ERC20 tx failed. (${msg})`
                 })
               ),
             (txHash) => Rx.of(RD.success(txHash))
@@ -193,10 +225,9 @@ export const createTransactionService = (
   }
 
   const runApproveERC20Token$ = (
-    client: BscClient,
+    client: EvmClient,
     { walletIndex, contractAddress, spenderAddress }: ApproveParams
   ): TxHashLD => {
-    // send approve tx
     return FP.pipe(
       Rx.from(
         client.approve({
@@ -234,20 +265,20 @@ export const createTransactionService = (
       return Rx.of(
         RD.failure({
           errorId: ErrorId.APPROVE_LEDGER_TX,
-          msg: `Invalid BscHDMode ${hdMode} - needed for Ledger to send ERC20 token.`
+          msg: `Invalid ${chainName}HDMode ${hdMode} - needed for Ledger to send ERC20 token.`
         })
       )
     }
 
     const ipcParams: IPCLedgerApproveERC20TokenParams = {
-      chain: BSCChain,
+      chain,
       network,
       contractAddress,
       spenderAddress,
       walletAccount,
       walletIndex,
       hdMode,
-      apiKey: undefined,
+      apiKey,
       evmRpcUrl
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
@@ -284,8 +315,7 @@ export const createTransactionService = (
 
   const approveERC20Token$ = (params: ApproveParams): TxHashLD => {
     const { contractAddress, network, walletType } = params
-    // check contract address before approving
-    if (network === Network.Mainnet && !addressInBscWhitelist(contractAddress))
+    if (network === Network.Mainnet && !addressInWhitelist(contractAddress))
       return Rx.of(
         RD.failure({
           msg: `Contract address ${contractAddress} is black listed`,
@@ -313,7 +343,7 @@ export const createTransactionService = (
   }
 
   const runIsApprovedERC20Token$ = (
-    client: BscClient,
+    client: EvmClient,
     { contractAddress, spenderAddress, fromAddress }: IsApproveParams
   ): LiveData<ApiError, boolean> => {
     const provider = client.getProvider()
@@ -334,8 +364,6 @@ export const createTransactionService = (
     )
   }
 
-  // Use readOnlyClient$ (enhanced client with Ledger/Vultisig fallback) for read-only approval checks.
-  // This prevents the observable from hanging when client$ is O.none in non-keystore wallet modes.
   const isApprovedERC20Token$ = (params: IsApproveParams): IsApprovedLD =>
     readOnlyClient$.pipe(
       RxOp.filter(O.isSome),
@@ -364,7 +392,7 @@ export const createTransactionService = (
     gasMultiplier: number
   }): TxHashLD => {
     const ipcParams: IPCLedgerSendTxParams = {
-      chain: BSCChain,
+      chain,
       network,
       asset: params.asset,
       feeAsset: undefined,
@@ -379,7 +407,7 @@ export const createTransactionService = (
       feeAmount: undefined,
       nodeUrl: undefined,
       hdMode: params.hdMode,
-      apiKey: undefined,
+      apiKey,
       destinationTag: undefined,
       evmRpcUrl,
       gasMultiplier,
@@ -396,7 +424,7 @@ export const createTransactionService = (
               Rx.of(
                 RD.failure({
                   errorId: ErrorId.SEND_LEDGER_TX,
-                  msg: `Sending Ledger ETH/ERC20 tx failed. (${msg})`
+                  msg: `Sending Ledger ${chainName}/ERC20 tx failed. (${msg})`
                 })
               ),
             (txHash) => Rx.of(RD.success(txHash))
@@ -407,8 +435,7 @@ export const createTransactionService = (
     )
   }
 
-  // Keystore send with gas multiplier applied
-  const runSendTx$ = (client: BscClient, params: SendTxParams, gasMultiplier: number): TxHashLD => {
+  const runSendTx$ = (client: EvmClient, params: SendTxParams, gasMultiplier: number): TxHashLD => {
     const failure$ = (msg: string) =>
       Rx.of<RD.RemoteData<ApiError, never>>(
         RD.failure({
@@ -420,7 +447,6 @@ export const createTransactionService = (
     return FP.pipe(
       Rx.from(client.estimateGasPrices()),
       RxOp.switchMap((rawGasPrices) => {
-        // Apply gas multiplier to increase fees if configured
         const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
 
         return Rx.from(
@@ -447,7 +473,6 @@ export const createTransactionService = (
         if (isLedgerWallet(params.walletType))
           return sendLedgerTx({ network, params, evmRpcUrl: rpcUrls[network], gasMultiplier })
 
-        // For keystore mode, apply gas multiplier
         return FP.pipe(
           oClient,
           O.fold(
