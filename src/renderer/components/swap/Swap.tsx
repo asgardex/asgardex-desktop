@@ -1161,21 +1161,12 @@ export const Swap = ({
     setInputDisplayAmount(amountToSwap)
   }, [amountToSwap])
 
-  const fetchTimerRef = useRef<ReturnType<typeof setTimeout>>()
-
   const debouncedSetAmountToSwap = useMemo(
     () =>
       debounce((amount: BaseAmount) => {
         setAmountToSwap(amount)
-
-        clearTimeout(fetchTimerRef.current)
-        fetchTimerRef.current = setTimeout(() => {
-          if (amount.gt(baseAmount(0, amount.decimal))) {
-            fetchSwap(amount)
-          }
-        }, 1000)
       }, 500),
-    [setAmountToSwap, fetchSwap]
+    [setAmountToSwap]
   )
 
   const onInputChange = useCallback(
@@ -1192,7 +1183,6 @@ export const Swap = ({
   useEffect(() => {
     return () => {
       debouncedSetAmountToSwap.cancel()
-      clearTimeout(fetchTimerRef.current)
     }
   }, [debouncedSetAmountToSwap])
 
