@@ -189,7 +189,7 @@ export const SidebarComponent = memo(function SidebarComponent(props: Props): JS
         icon: SettingsIcon
       }
     ],
-    [intl]
+    [intl, appWalletService]
   )
 
   const renderMainNav = useMemo(

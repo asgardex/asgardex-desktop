@@ -249,10 +249,10 @@ const SuccessRouteView = ({
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
-  // DEBUG: Log the resolved source asset decimal
+  // Log the resolved source asset decimal
   useEffect(() => {
     if (RD.isSuccess(sourceAssetRD)) {
-      console.log('[SwapView DEBUG] sourceAssetRD resolved:', {
+      logger.debug('[SwapView] sourceAssetRD resolved:', {
         asset: `${sourceAssetRD.value.asset.chain}.${sourceAssetRD.value.asset.symbol}`,
         decimal: sourceAssetRD.value.decimal
       })

@@ -23,10 +23,10 @@ import * as RxOp from 'rxjs/operators'
 import { SendTransactionParams } from '../../../shared/api/mpcTypes'
 import { getBlocktime } from '../../../shared/evm/provider'
 import { getEVMAssetAddress, isEVMTokenAsset } from '../../helpers/assetHelper'
+import { sequenceSOption } from '../../helpers/fpHelpers'
 import { createScopedLogger } from '../../helpers/logger'
 
 const logger = createScopedLogger('Vultisig')
-import { sequenceSOption } from '../../helpers/fpHelpers'
 import { appWalletService } from '../wallet/appWallet'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 import { DEPOSIT_EXPIRATION_OFFSET } from './const'

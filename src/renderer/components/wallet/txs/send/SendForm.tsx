@@ -37,10 +37,10 @@ import { useXrpContext } from '../../../../contexts/XrpContext'
 import { isMayaAsset, isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
 import { getChainAsset, getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { isEvmChain, isEvmChainAsset } from '../../../../helpers/evmHelper'
+import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { createScopedLogger } from '../../../../helpers/logger'
 
 const sendFormLogger = createScopedLogger('SendForm')
-import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import * as PoolHelpers from '../../../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
@@ -1231,13 +1231,12 @@ export const SendForm = (props: Props): JSX.Element => {
   // Vultisig confirmation modal - rendered separately to prevent recreation when txState changes
   // This ensures IPC event listeners aren't cleaned up during the signing flow
   const onVultisigSuccess = useCallback(() => {
-    console.log('[SendForm] onVultisigSuccess called, vaultType:', vaultType)
     sendFormLogger.info('onVultisigSuccess', { vaultType })
     if (vaultType === 'fast') {
-      console.log('[SendForm] Closing modal for fast vault')
+      sendFormLogger.debug('Closing modal for fast vault')
       setShowConfirmationModal(false)
     } else {
-      console.log('[SendForm] Keeping modal open for secure vault')
+      sendFormLogger.debug('Keeping modal open for secure vault')
     }
     // Start the transaction - for SecureVault, modal stays open for QR flow
     poolDeposit ? submitDepositTx() : submitTx()
