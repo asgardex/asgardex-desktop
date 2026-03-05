@@ -141,12 +141,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
   const selectVault = async (vaultId: string, requireUnlock = true) => {
     logger.info('selectVault called:', vaultId, 'requireUnlock:', requireUnlock)
     const currentState = vultisigState()
-    logger.info(
-      'currentState.phase:',
-      currentState.phase,
-      'availableVaults:',
-      currentState.availableVaults.length
-    )
+    logger.info('currentState.phase:', currentState.phase, 'availableVaults:', currentState.availableVaults.length)
     const vault = currentState.availableVaults.find((v) => v.id === vaultId)
 
     if (!vault) {

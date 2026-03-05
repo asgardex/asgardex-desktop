@@ -91,7 +91,6 @@ import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { addAsset } from '../../services/storage/userChainTokens'
 import {
-  TxHashRD,
   VaultType,
   WalletBalance,
   WalletBalances,
@@ -442,15 +441,15 @@ export const Swap = ({
     })
 
     // DEBUG: Log wallet balance lookup
-    console.log('[Swap DEBUG] sourceAssetDecimal (from prop):', sourceAssetDecimal)
-    console.log('[Swap DEBUG] sourceWalletType:', sourceWalletType)
-    console.log('[Swap DEBUG] sourceAsset:', sourceAsset.chain, sourceAsset.symbol)
+    logger.debug('[Swap] sourceAssetDecimal (from prop):', sourceAssetDecimal)
+    logger.debug('[Swap] sourceWalletType:', sourceWalletType)
+    logger.debug('[Swap] sourceAsset:', sourceAsset.chain, sourceAsset.symbol)
     FP.pipe(
       result,
       O.fold(
-        () => console.log('[Swap DEBUG] oSourceAssetWB: NONE (no balance found)'),
+        () => logger.debug('[Swap] oSourceAssetWB: NONE (no balance found)'),
         (wb) =>
-          console.log('[Swap DEBUG] oSourceAssetWB:', {
+          logger.debug('[Swap] oSourceAssetWB:', {
             amount: wb.amount.amount().toString(),
             decimal: wb.amount.decimal,
             walletType: wb.walletType,
@@ -476,7 +475,7 @@ export const Swap = ({
       O.map(({ amount }) => amount),
       O.getOrElse(() => baseAmount(0, sourceAssetDecimal))
     )
-    console.log('[Swap DEBUG] sourceAssetAmount:', {
+    logger.debug('[Swap] sourceAssetAmount:', {
       amount: result.amount().toString(),
       decimal: result.decimal
     })
@@ -1095,7 +1094,7 @@ export const Swap = ({
 
       try {
         // DEBUG: Log the amount going into the quote
-        console.log('[Swap DEBUG] fetchSwap amount:', {
+        logger.debug('[Swap] fetchSwap amount:', {
           amountBase: amount.amount().toString(),
           amountDecimal: amount.decimal,
           sourceAsset: `${sourceAsset.chain}.${sourceAsset.symbol}`
@@ -1811,6 +1810,7 @@ export const Swap = ({
       })
     },
     [
+      appWalletService,
       initialAmountToSwap,
       effectiveRecipientAddress,
       oTargetWalletType,
@@ -1836,7 +1836,7 @@ export const Swap = ({
       await delay(100) // Optional delay to ensure state updates properly
       resetApproval()
     },
-    [onChangeAsset, resetApproval, sourceAsset, sourceWalletType]
+    [appWalletService, onChangeAsset, resetApproval, sourceAsset, sourceWalletType]
   )
   const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
   const lastTrackedTxHashRef = useRef<string | null>(null)
@@ -2339,7 +2339,7 @@ export const Swap = ({
       onSuccess={onVultisigSuccess}
       onClose={() => setShowVultisigModal(ModalState.None)}
       validatePassword$={validatePasswordAsync}
-      txState={swapState.swapTx}
+      txState={showVultisigModal === ModalState.Approve ? approveState : swapState.swapTx}
       getActiveVaultId={appWalletService.getActiveVaultId}
     />
   ) : null
@@ -2723,6 +2723,7 @@ export const Swap = ({
       recipientAddress: oSourceWalletAddress
     })
   }, [
+    appWalletService,
     initialAmountToSwap,
     oSourceWalletAddress,
     oTargetWalletType,
@@ -2835,7 +2836,15 @@ export const Swap = ({
         recipientAddress: useLedger ? oTargetLedgerAddress : oTargetKeystoreAddress
       })
     },
-    [oTargetLedgerAddress, oTargetKeystoreAddress, onChangeAsset, sourceAsset, sourceWalletType, targetAsset, appWalletService]
+    [
+      oTargetLedgerAddress,
+      oTargetKeystoreAddress,
+      onChangeAsset,
+      sourceAsset,
+      sourceWalletType,
+      targetAsset,
+      appWalletService
+    ]
   )
 
   const memoTitle = useMemo(

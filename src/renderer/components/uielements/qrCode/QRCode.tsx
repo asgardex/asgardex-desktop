@@ -23,6 +23,8 @@ export const QRCode = ({ text, qrError }: Props) => {
         if (err) {
           setCanvasRd(RD.failure(qrError))
         } else {
+          canvas.style.maxWidth = '100%'
+          canvas.style.height = 'auto'
           setCanvasRd(RD.success(canvas))
         }
       })
@@ -46,7 +48,7 @@ export const QRCode = ({ text, qrError }: Props) => {
   }, [canvasRd])
 
   return (
-    <div className="flex h-72 items-center justify-center">
+    <div className="flex h-72 items-center justify-center overflow-hidden">
       {(RD.isInitial(canvasRd) || RD.isPending(canvasRd)) && <Spin />}
       {RD.isFailure(canvasRd) && <>{canvasRd.error}</>}
       {RD.isSuccess(canvasRd) && <div ref={canvasContainer} className="[&>canvas]:rounded-2xl" />}

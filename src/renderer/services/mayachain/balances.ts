@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { option as O } from 'fp-ts'
 import * as RxOp from 'rxjs/operators'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
@@ -25,10 +24,7 @@ const reloadBalances = () => {
 /**
  * Enhanced client that falls back to read-only client for standalone modes (Ledger, Vultisig)
  */
-const enhancedClient$ = createEnhancedClient$(
-  client$,
-  readOnlyClient$.pipe(RxOp.map(RD.toOption))
-)
+const enhancedClient$ = createEnhancedClient$(client$, readOnlyClient$.pipe(RxOp.map(RD.toOption)))
 
 // State of balances loaded by Client
 const balances$ = ({

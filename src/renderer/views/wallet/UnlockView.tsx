@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom'
 import { VaultPasswordModal } from '../../components/modal/VaultPasswordModal'
 import { UnlockForm } from '../../components/wallet/unlock'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { createScopedLogger } from '../../helpers/logger'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import * as walletRoutes from '../../routes/wallet'
-import { createScopedLogger } from '../../helpers/logger'
 import { isVultisigMode } from '../../services/wallet/types'
 
 const logger = createScopedLogger('UnlockView')

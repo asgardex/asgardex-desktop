@@ -14,8 +14,8 @@ import { LocaleDropdown } from '../../../components/LayoutlessWrapper/LocaleDrop
 import { VaultPasswordModal } from '../../../components/modal/VaultPasswordModal'
 import { BackLinkButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
-import * as walletRoutes from '../../../routes/wallet'
 import { createScopedLogger } from '../../../helpers/logger'
+import * as walletRoutes from '../../../routes/wallet'
 import { hasImportedKeystore } from '../../../services/wallet/util'
 
 const logger = createScopedLogger('NoWalletView')

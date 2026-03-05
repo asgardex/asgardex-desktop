@@ -188,19 +188,16 @@ export const createVultisigEvmPoolTx = (
                               ticker: nativeAsset.asset.ticker
                             }
 
-                            logger.info(
-                              `${chainName} pool tx (depositWithExpiry) via SDK pipeline`,
-                              {
-                                router,
-                                recipient: params.recipient,
-                                amount: params.amount.amount().toString(),
-                                sendAmount,
-                                isERC20,
-                                memo: params.memo || '(none)',
-                                calldataLength: unsignedTx.data?.length ?? 0,
-                                vaultId
-                              }
-                            )
+                            logger.info(`${chainName} pool tx (depositWithExpiry) via SDK pipeline`, {
+                              router,
+                              recipient: params.recipient,
+                              amount: params.amount.amount().toString(),
+                              sendAmount,
+                              isERC20,
+                              memo: params.memo || '(none)',
+                              calldataLength: unsignedTx.data?.length ?? 0,
+                              vaultId
+                            })
 
                             return Rx.from(window.apiMpc.sendTransaction(txParams)).pipe(
                               RxOp.map(({ txHash }) => {
