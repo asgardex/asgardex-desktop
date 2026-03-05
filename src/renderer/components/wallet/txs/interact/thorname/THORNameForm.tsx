@@ -169,8 +169,15 @@ export const THORNameForm = ({
       const names =
         await thorchainQuery.thorchainCache.midgardQuery.midgardCache.midgard.getTHORNameReverseLookup(ownerAddress)
       if (names && names.length > 0) {
-        const details = await Promise.all(names.map((n) => thorchainQuery.getThornameDetails(n)))
-        setOwnerNames(details.filter((d) => d && !d.error?.length))
+        const results = await Promise.allSettled(names.map((n) => thorchainQuery.getThornameDetails(n)))
+        const details = results
+          .filter(
+            (r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof thorchainQuery.getThornameDetails>>> =>
+              r.status === 'fulfilled'
+          )
+          .map((r) => r.value)
+          .filter((d) => d && !d.error?.length)
+        setOwnerNames(details)
       }
     } catch (_error) {
       // no names found

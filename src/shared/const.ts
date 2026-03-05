@@ -24,8 +24,6 @@ import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from './thorchai
 import { DEFAULT_ENABLED_CHAINS, EnabledChain } from './utils/chain'
 import { envOrDefault } from './utils/env'
 
-// require('dotenv').config()
-
 export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
 export const ASGARDEX_AFFILIATE_FEE = 30

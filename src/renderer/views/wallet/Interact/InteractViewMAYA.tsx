@@ -164,10 +164,11 @@ export const InteractViewMAYA = () => {
   const [cacaoPoolProviderRD, setCacaoPoolProviderRD] = useState<CacaoPoolProviderRD>(RD.initial)
 
   useEffect(() => {
+    let subscription: Rx.Subscription | undefined
     if (O.isSome(oWalletBalance)) {
-      setCacaoPoolProviderRD(RD.pending) // Set to pending while fetching data
+      setCacaoPoolProviderRD(RD.pending)
 
-      const subscription = getCacaoPoolProvider$(
+      subscription = getCacaoPoolProvider$(
         oWalletBalance.value.walletAddress,
         oWalletBalance.value.walletType
       ).subscribe({
@@ -182,17 +183,12 @@ export const InteractViewMAYA = () => {
             )
           )
         },
-        error: (error) => {
-          setCacaoPoolProviderRD(RD.failure(error))
-        }
+        error: (error) => setCacaoPoolProviderRD(RD.failure(error))
       })
-
-      return () => {
-        subscription.unsubscribe()
-      } // Cleanup on unmount or when dependencies change
     } else {
-      setCacaoPoolProviderRD(RD.initial) // Set to initial if no wallet balance
+      setCacaoPoolProviderRD(RD.initial)
     }
+    return () => subscription?.unsubscribe()
   }, [oWalletBalance, getCacaoPoolProvider$])
 
   const interactTypeChanged = useCallback(
