@@ -105,7 +105,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const { network } = useNetwork()
 
   const { address$: thorAddressUI$ } = useThorchainContext()
-  const { addressUI$: ethAddressUI$, ethHDMode$, updateEvmHDMode } = useEthereumContext()
+  const { addressUI$: ethAddressUI$, evmHDMode$, updateEvmHDMode } = useEthereumContext()
   const { addressUI$: arbAddressUI$ } = useArbContext()
   const { addressUI$: avaxAddressUI$ } = useAvaxContext()
   const { addressUI$: baseAddressUI$ } = useBaseContext()
@@ -125,7 +125,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const { addressUI$: zecAddressUI$ } = useZcashContext()
   const { addressUI$: xrpAddressUI$ } = useXrpContext()
 
-  const evmHDMode: EvmHDMode = useObservableState(ethHDMode$, DEFAULT_EVM_HD_MODE)
+  const evmHDMode: EvmHDMode = useObservableState(evmHDMode$, DEFAULT_EVM_HD_MODE)
 
   const {
     addAddress: addLedgerThorAddress,

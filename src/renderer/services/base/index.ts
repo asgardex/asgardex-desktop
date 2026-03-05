@@ -1,16 +1,42 @@
+import { BASEChain, Client, BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
+import { baseAmount } from '@xchainjs/xchain-util'
+
+import { createBaseParams } from '../../../shared/base/const'
+import { BASEAssetsFallback } from '../../const'
+import { isBASEAsset, addressInBaseWhitelist } from '../../helpers/assetHelper'
 import { network$ } from '../app/service'
+import { EVMZeroAddress } from '../evm/const'
+import { createEvmChainService } from '../evm/factory'
 import { baseRpc$, evmGasMultiplier$ } from '../storage/common'
-import {
+
+const {
+  client$,
+  clientState$,
+  address$,
+  addressUI$,
+  explorerUrl$,
   reloadBalances,
   balances$,
   reloadBalances$,
   resetReloadBalances,
   getBalanceByAddress$,
-  enhancedClient$
-} from './balances'
-import { client$, clientState$, address$, addressUI$, explorerUrl$ } from './common'
-import { createFeesService } from './fees'
-import { createTransactionService } from './transaction'
+  enhancedClient$,
+  createTransactionService,
+  createFeesService
+} = createEvmChainService({
+  chain: BASEChain,
+  chainName: 'BASE',
+  gasAssetDecimal: BASE_GAS_ASSET_DECIMAL,
+  isChainAsset: isBASEAsset,
+  createClientParams: createBaseParams,
+  ClientClass: Client,
+  rpc$: baseRpc$,
+  addressInWhitelist: addressInBaseWhitelist,
+  assetsFallback: BASEAssetsFallback,
+  assetsTestnet: BASEAssetsFallback,
+  defaultGasLimit: 200000,
+  initialReloadFeesParams: { amount: baseAmount(1), recipient: EVMZeroAddress }
+})
 
 const {
   txs$,

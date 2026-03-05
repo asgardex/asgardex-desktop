@@ -260,11 +260,6 @@ export const Withdraw = ({
     [asset, assetDecimal, poolsData, withdrawFees.asset]
   )
 
-  // const minAssetAmountError = useMemo(
-  //   () => !zeroWithdrawPercent && minAssetAmountToWithdrawMax1e8.gt(assetAmountToWithdraw),
-  //   [assetAmountToWithdraw, minAssetAmountToWithdrawMax1e8, zeroWithdrawPercent]
-  // )
-
   // Withdraw start time
   const [withdrawStartTime, setWithdrawStartTime] = useState<number>(0)
 

@@ -150,13 +150,19 @@ export const AppExpertMode = (props: Props): JSX.Element => {
     return FP.pipe(midgardMayaUrlRD, RD.fold(empty, empty, empty, FP.identity))
   }, [midgardMayaUrlRD])
 
+  const ADVANCED_ACTIVE_STORAGE_KEY = 'openPanelKeys'
+
   const [advancedActive, setAdvancedActive] = useState<Record<string, boolean>>(() => {
-    const cachedValue = localStorage.getItem('advanceActive')
-    return cachedValue ? JSON.parse(cachedValue) : expertModeDefault
+    try {
+      const cachedValue = localStorage.getItem(ADVANCED_ACTIVE_STORAGE_KEY)
+      return cachedValue ? JSON.parse(cachedValue) : expertModeDefault
+    } catch {
+      return expertModeDefault
+    }
   })
 
   useEffect(() => {
-    localStorage.setItem('openPanelKeys', JSON.stringify(advancedActive))
+    localStorage.setItem(ADVANCED_ACTIVE_STORAGE_KEY, JSON.stringify(advancedActive))
   }, [advancedActive])
 
   return (

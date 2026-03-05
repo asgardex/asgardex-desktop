@@ -8,7 +8,7 @@ import { catchError, startWith, map, shareReplay, debounceTime } from 'rxjs/oper
 
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { liveData } from '../../helpers/rx/liveData'
-import { replaceSymbol } from '../bsc/balances'
+import { replaceSymbol } from '../evm/utils'
 import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { ApiError, ErrorId, WalletBalance } from '../wallet/types'
 import { WalletBalancesLD, XChainClient$ } from './types'
