@@ -26,7 +26,7 @@ export const approveLedgerERC20Token = async ({
   }
 
   const transport = await TransportNodeHidSingleton.default.create()
-  const provider = resolveEvmProvider(config, network, evmRpcUrl, { forDeposit: true, apiKey })
+  const provider = resolveEvmProvider(config, network, evmRpcUrl)
   const providers = buildProvidersMap(config, network, provider, evmRpcUrl)
 
   const client = new ClientLedger({

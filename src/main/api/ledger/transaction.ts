@@ -67,10 +67,10 @@ const evmChainSend = async (
       msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(params.chain)}`
     })
   }
-  if (config.chain === ETHChain && params.apiKey === undefined) {
+  if (config.chain === ETHChain && !params.apiKey) {
     return E.left({
       errorId: LedgerErrorId.INVALID_DATA,
-      msg: `Eth needs an api key ${chainToString(ETHChain)}`
+      msg: `API key is required for ${chainToString(ETHChain)} Ledger transactions`
     })
   }
   return evmSend({
@@ -125,7 +125,7 @@ const evmChainDeposit = async (
   if (config.chain === ETHChain && !params.apiKey) {
     return E.left({
       errorId: LedgerErrorId.INVALID_DATA,
-      msg: `Eth needs an api key ${chainToString(ETHChain)}`
+      msg: `API key is required for ${chainToString(ETHChain)} Ledger transactions`
     })
   }
   return evmDeposit({

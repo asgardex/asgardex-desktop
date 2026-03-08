@@ -197,7 +197,7 @@ export const evmDeposit = async ({
       ]
     } else {
       // AVAX/BASE: flat params without tx options
-      depositParams = [recipient, tokenAddress, amount.amount().toFixed(), memo, expiration]
+      depositParams = [recipient, tokenAddress, amount.amount().toFixed(0, BigNumber.ROUND_DOWN), memo, expiration]
     }
 
     const routerContract = new Contract(router, abi.router)

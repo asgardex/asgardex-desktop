@@ -100,9 +100,12 @@ export const resolveEvmProvider = (
   const isTestnet = network === Network.Testnet
 
   if (config.chain === ETHChain) {
-    if (evmRpcUrl) return new JsonRpcProvider(evmRpcUrl, 'homestead')
+    const ethNetworkName = isTestnet ? 'sepolia' : 'homestead'
+    if (evmRpcUrl) return new JsonRpcProvider(evmRpcUrl, ethNetworkName)
     // ETH deposit defaults to EtherscanProvider; send defaults to llamarpc
-    if (options?.forDeposit) return new EtherscanProvider('homestead', options.apiKey)
+    if (options?.forDeposit) return new EtherscanProvider(ethNetworkName, options.apiKey)
+    // llamarpc is mainnet-only; fall back to static testnet provider
+    if (isTestnet) return ETH_TESTNET_ETHERS_PROVIDER
     return new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
   }
 
