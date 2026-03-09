@@ -48,6 +48,7 @@ import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
+import { logger } from '../../../helpers/logger'
 import { getClaimMemo, getStakeMemo, getUnstakeMemo } from '../../../helpers/memoHelper'
 import { filterWalletBalancesByAssetsClaimOnly, getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -397,7 +398,7 @@ export const TcyView = () => {
             setCurrentMemo(getUnstakeMemo(bps))
           }
         })
-        .catch(() => {})
+        .catch((e) => logger.error('Amount validation failed unexpectedly', e))
     },
     [activeTab, amountValidator, maxAmountToUnstake, tcyStakePosRD]
   )

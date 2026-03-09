@@ -193,10 +193,11 @@ export const InteractViewTHOR = () => {
   const [runePoolProviderRD, setRunePoolProviderRD] = useState<RunePoolProviderRD>(RD.initial)
 
   useEffect(() => {
+    let subscription: Rx.Subscription | undefined
     if (O.isSome(oWalletBalance)) {
-      setRunePoolProviderRD(RD.pending) // Set to pending while fetching data
+      setRunePoolProviderRD(RD.pending)
 
-      const subscription = getRunePoolProvider$(
+      subscription = getRunePoolProvider$(
         oWalletBalance.value.walletAddress,
         oWalletBalance.value.walletType
       ).subscribe({
@@ -213,11 +214,10 @@ export const InteractViewTHOR = () => {
         },
         error: (error) => setRunePoolProviderRD(RD.failure(error))
       })
-
-      return () => subscription.unsubscribe() // Cleanup on unmount or when dependencies change
     } else {
-      setRunePoolProviderRD(RD.initial) // Set to initial if no wallet balance
+      setRunePoolProviderRD(RD.initial)
     }
+    return () => subscription?.unsubscribe()
   }, [oWalletBalance, getRunePoolProvider$])
   const interactTypeChanged = useCallback(
     (type: InteractType) => {

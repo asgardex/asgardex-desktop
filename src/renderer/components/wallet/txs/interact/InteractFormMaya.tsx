@@ -25,6 +25,7 @@ import {
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { either as E, function as FP, option as O } from 'fp-ts'
+
 import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
@@ -34,6 +35,7 @@ import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
+import { logger } from '../../../../helpers/logger'
 import {
   getBondMemoMayanode,
   getLeaveMemo,
@@ -518,6 +520,7 @@ export const InteractFormMaya = (props: Props) => {
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
       // we have to validate input before storing into the state
+      // Validation errors are handled by react-hook-form — only log unexpected failures
       amountValidator(value)
         .then((result) => {
           if (result === true) {
@@ -526,8 +529,7 @@ export const InteractFormMaya = (props: Props) => {
             setValue('amount', value)
           }
         })
-        .catch(() => {})
-      // do nothing, react-hook-form handles validation
+        .catch((e) => logger.error('Amount validation failed unexpectedly', e))
     },
     [amountValidator, setValue]
   )
@@ -1295,12 +1297,12 @@ const PoolShareItem = ({
 
   const handleCustomPercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    if (value === '' || (/^\d*\.?\d*$/.test(value) && parseFloat(value) <= 100)) {
+    const parsed = parseFloat(value)
+    if (value === '' || (/^\d*\.?\d*$/.test(value) && !isNaN(parsed) && parsed <= 100)) {
       setCustomPercentage(value)
 
-      if (value !== '') {
-        const percentage = parseFloat(value)
-        const unitsToBond = share.units.times(percentage).div(100).toFixed(0)
+      if (value !== '' && !isNaN(parsed)) {
+        const unitsToBond = share.units.times(parsed).div(100).toFixed(0)
         handleBondClick(unitsToBond, assetString)
       }
     }

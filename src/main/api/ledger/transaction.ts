@@ -26,16 +26,13 @@ import { IPCLedgerDepositTxParams, IPCLedgerSendTxParams } from '../../../shared
 import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { chainToString, isSupportedChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode, isUtxoHDMode } from '../../../shared/utils/guard'
-import * as ARB from './arb/transaction'
-import * as AVAX from './avax/transaction'
-import * as BASE from './base/transaction'
 import * as BTC from './bitcoin/transaction'
 import * as BCH from './bitcoincash/transaction'
-import * as BSC from './bsc/transaction'
 import * as COSMOS from './cosmos/transaction'
 import * as DASH from './dash/transaction'
 import * as DOGE from './doge/transaction'
-import * as ETH from './ethereum/transaction'
+import { EVM_LEDGER_CHAINS } from './evm/common'
+import { evmDeposit, evmSend } from './evm/transaction'
 import * as LTC from './litecoin/transaction'
 import * as MAYA from './mayachain/transaction'
 import * as XRP from './ripple/transaction'
@@ -44,6 +41,111 @@ import * as THOR from './thorchain/transaction'
 import * as TRON from './tron/transaction'
 
 const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
+
+const evmChainSend = async (
+  params: IPCLedgerSendTxParams & { transport: Transport }
+): Promise<E.Either<LedgerError, TxHash>> => {
+  const config = EVM_LEDGER_CHAINS[params.chain]
+  if (!config) {
+    return E.left({ errorId: LedgerErrorId.NOT_IMPLEMENTED, msg: `${params.chain} is not a supported EVM chain` })
+  }
+  if (!params.asset) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(params.chain)}`
+    })
+  }
+  if (!params.feeOption) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(params.chain)}`
+    })
+  }
+  if (!isEvmHDMode(params.hdMode)) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(params.chain)}`
+    })
+  }
+  if (config.chain === ETHChain && !params.apiKey) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `API key is required for ${chainToString(ETHChain)} Ledger transactions`
+    })
+  }
+  return evmSend({
+    config,
+    ...params,
+    asset: params.asset,
+    feeOption: params.feeOption,
+    evmHDMode: params.hdMode,
+    apiKey: params.apiKey,
+    evmRpcUrl: params.evmRpcUrl,
+    gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+  })
+}
+
+const evmChainDeposit = async (
+  params: IPCLedgerDepositTxParams & { transport: Transport }
+): Promise<E.Either<LedgerError, TxHash>> => {
+  const config = EVM_LEDGER_CHAINS[params.chain]
+  if (!config) {
+    return E.left({ errorId: LedgerErrorId.NOT_IMPLEMENTED, msg: `${params.chain} is not a supported EVM chain` })
+  }
+  if (!params.router) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `Router address needs to be defined to send Ledger transaction on ${chainToString(params.chain)}`
+    })
+  }
+  if (!params.asset) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(params.chain)}`
+    })
+  }
+  if (!params.recipient) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(params.chain)}`
+    })
+  }
+  if (!params.feeOption) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(params.chain)}`
+    })
+  }
+  if (!isEvmHDMode(params.hdMode)) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(params.chain)}`
+    })
+  }
+  if (config.chain === ETHChain && !params.apiKey) {
+    return E.left({
+      errorId: LedgerErrorId.INVALID_DATA,
+      msg: `API key is required for ${chainToString(ETHChain)} Ledger transactions`
+    })
+  }
+  return evmDeposit({
+    config,
+    asset: params.asset,
+    router: params.router,
+    transport: params.transport,
+    network: params.network,
+    amount: params.amount,
+    memo: params.memo,
+    walletAccount: params.walletAccount,
+    walletIndex: params.walletIndex,
+    recipient: params.recipient,
+    feeOption: params.feeOption,
+    evmHDMode: params.hdMode,
+    apiKey: params.apiKey,
+    evmRpcUrl: params.evmRpcUrl,
+    gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
+  })
+}
 
 const chainSendFunctions: Record<
   Chain,
@@ -131,148 +233,11 @@ const chainSendFunctions: Record<
     }
     return DASH.send({ ...params, apiKey: params.apiKey })
   },
-  [ETHChain]: async (params) => {
-    if (!params.asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(ETHChain)}`
-      })
-    }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(ETHChain)}`
-      })
-    }
-    if (!isEvmHDMode(params.hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(ETHChain)}`
-      })
-    }
-    if (params.apiKey === undefined) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Eth needs an api key ${chainToString(ETHChain)}`
-      })
-    }
-    return ETH.send({
-      ...params,
-      feeOption: params.feeOption,
-      evmHDMode: params.hdMode,
-      apiKey: params.apiKey,
-      evmRpcUrl: params.evmRpcUrl,
-      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
-    })
-  },
-  [AVAXChain]: async (params) => {
-    if (!params.asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(AVAXChain)}`
-      })
-    }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(AVAXChain)}`
-      })
-    }
-    if (!isEvmHDMode(params.hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(AVAXChain)}`
-      })
-    }
-    return AVAX.send({
-      ...params,
-      feeOption: params.feeOption,
-      evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl,
-      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
-    })
-  },
-  [BASEChain]: async (params) => {
-    if (!params.asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
-      })
-    }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(BASEChain)}`
-      })
-    }
-    if (!isEvmHDMode(params.hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BASEChain)}`
-      })
-    }
-    return BASE.send({
-      ...params,
-      feeOption: params.feeOption,
-      evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl,
-      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
-    })
-  },
-  [BSCChain]: async (params) => {
-    if (!params.asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(BSCChain)}`
-      })
-    }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(BSCChain)}`
-      })
-    }
-    if (!isEvmHDMode(params.hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BSCChain)}`
-      })
-    }
-    return BSC.send({
-      ...params,
-      feeOption: params.feeOption,
-      evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl,
-      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
-    })
-  },
-  [ARBChain]: async (params) => {
-    if (!params.asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(ARBChain)}`
-      })
-    }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(ARBChain)}`
-      })
-    }
-    if (!isEvmHDMode(params.hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(ARBChain)}`
-      })
-    }
-    return ARB.send({
-      ...params,
-      feeOption: params.feeOption,
-      evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl,
-      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
-    })
-  },
+  [ETHChain]: evmChainSend,
+  [AVAXChain]: evmChainSend,
+  [BASEChain]: evmChainSend,
+  [BSCChain]: evmChainSend,
+  [ARBChain]: evmChainSend,
   [GAIAChain]: async (params) => {
     if (!params.asset) {
       return E.left({
@@ -427,267 +392,11 @@ const chainDepositFunctions: Record<
     }
     return MAYA.deposit({ transport, network, amount, asset, memo, walletAccount, walletIndex })
   },
-  [ETHChain]: async ({
-    transport,
-    network,
-    asset,
-    router,
-    recipient,
-    amount,
-    memo,
-    walletAccount,
-    walletIndex,
-    feeOption,
-    hdMode,
-    apiKey,
-    evmRpcUrl,
-    gasMultiplier
-  }) => {
-    if (!router) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Router address needs to be defined to send Ledger transaction on ${chainToString(ETHChain)}`
-      })
-    }
-    if (!asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(ETHChain)}`
-      })
-    }
-    if (!recipient) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(ETHChain)}`
-      })
-    }
-    if (!feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(ETHChain)}`
-      })
-    }
-    if (!isEvmHDMode(hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(ETHChain)}`
-      })
-    }
-    if (!apiKey) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Eth needs an api key ${chainToString(ETHChain)}`
-      })
-    }
-    return ETH.deposit({
-      asset,
-      router,
-      transport,
-      network,
-      amount,
-      memo,
-      walletAccount,
-      walletIndex,
-      recipient,
-      feeOption,
-      evmHDMode: hdMode,
-      apiKey,
-      evmRpcUrl,
-      gasMultiplier: (gasMultiplier ?? 1) as GasMultiplier
-    })
-  },
-  [AVAXChain]: async (params) => {
-    if (!params.router) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Router address needs to be defined to send Ledger transaction on ${chainToString(AVAXChain)}`
-      })
-    }
-    if (!params.asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(AVAXChain)}`
-      })
-    }
-    if (!params.recipient) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(AVAXChain)}`
-      })
-    }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(AVAXChain)}`
-      })
-    }
-    if (!isEvmHDMode(params.hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(AVAXChain)}`
-      })
-    }
-    return AVAX.deposit({
-      ...params,
-      asset: params.asset,
-      router: params.router,
-      transport: params.transport,
-      network: params.network,
-      amount: params.amount,
-      memo: params.memo,
-      walletAccount: params.walletAccount,
-      walletIndex: params.walletIndex,
-      recipient: params.recipient,
-      feeOption: params.feeOption,
-      evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl,
-      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
-    })
-  },
-  [BSCChain]: async (params) => {
-    if (!params.router) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Router address needs to be defined to send Ledger transaction on ${chainToString(BSCChain)}`
-      })
-    }
-    if (!params.asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(BSCChain)}`
-      })
-    }
-    if (!params.recipient) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(BSCChain)}`
-      })
-    }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(BSCChain)}`
-      })
-    }
-    if (!isEvmHDMode(params.hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(BSCChain)}`
-      })
-    }
-    return BSC.deposit({
-      ...params,
-      asset: params.asset,
-      router: params.router,
-      transport: params.transport,
-      network: params.network,
-      amount: params.amount,
-      memo: params.memo,
-      walletAccount: params.walletAccount,
-      walletIndex: params.walletIndex,
-      recipient: params.recipient,
-      feeOption: params.feeOption,
-      evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl,
-      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
-    })
-  },
-  [BASEChain]: async (params) => {
-    if (!params.router) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Router address needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
-      })
-    }
-    if (!params.asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
-      })
-    }
-    if (!params.recipient) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
-      })
-    }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
-      })
-    }
-    if (!isEvmHDMode(params.hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(BASEChain)}`
-      })
-    }
-    return BASE.deposit({
-      ...params,
-      asset: params.asset,
-      router: params.router,
-      transport: params.transport,
-      network: params.network,
-      amount: params.amount,
-      memo: params.memo,
-      walletAccount: params.walletAccount,
-      walletIndex: params.walletIndex,
-      recipient: params.recipient,
-      feeOption: params.feeOption,
-      evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl,
-      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
-    })
-  },
-  [ARBChain]: async (params) => {
-    if (!params.router) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Router address needs to be defined to send Ledger transaction on ${chainToString(ARBChain)}`
-      })
-    }
-    if (!params.asset) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(ARBChain)}`
-      })
-    }
-    if (!params.recipient) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(ARBChain)}`
-      })
-    }
-    if (!params.feeOption) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(ARBChain)}`
-      })
-    }
-    if (!isEvmHDMode(params.hdMode)) {
-      return E.left({
-        errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(ARBChain)}`
-      })
-    }
-    return ARB.deposit({
-      ...params,
-      asset: params.asset,
-      router: params.router,
-      transport: params.transport,
-      network: params.network,
-      amount: params.amount,
-      memo: params.memo,
-      walletAccount: params.walletAccount,
-      walletIndex: params.walletIndex,
-      recipient: params.recipient,
-      feeOption: params.feeOption,
-      evmHDMode: params.hdMode,
-      evmRpcUrl: params.evmRpcUrl,
-      gasMultiplier: (params.gasMultiplier ?? 1) as GasMultiplier
-    })
-  }
+  [ETHChain]: evmChainDeposit,
+  [AVAXChain]: evmChainDeposit,
+  [BSCChain]: evmChainDeposit,
+  [BASEChain]: evmChainDeposit,
+  [ARBChain]: evmChainDeposit
 }
 
 export const deposit = async ({
