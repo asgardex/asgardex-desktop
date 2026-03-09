@@ -5,8 +5,6 @@ import { JsonRpcProvider, Network as EthersNetwork } from 'ethers'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
-export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
-
 export const ETHAddress = '0x0000000000000000000000000000000000000000'
 
 export const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
