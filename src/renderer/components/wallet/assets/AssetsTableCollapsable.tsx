@@ -268,7 +268,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
           price =
             (isMayachainNonEmpty &&
               getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
-            (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+            (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), mayaPricePool.asset)) ||
             price
         } else if (isChainOfThor(asset.chain)) {
           // Chain is supported only by THOR

@@ -200,8 +200,7 @@ export const getUSDValue = ({
         O.map((assetPriceUSD) => {
           // Normalize to CACAO_DECIMAL (1e10) since MAYA pool prices are per 1e10-unit
           const amount1e10 = convertBaseAmountDecimal(amount, CACAO_DECIMAL)
-          const amountRaw = amount1e10.amount().toNumber()
-          const usdValue = Number(assetPriceUSD) * amountRaw
+          const usdValue = bnOrZero(assetPriceUSD).multipliedBy(amount1e10.amount()).integerValue(BigNumber.ROUND_DOWN)
           return baseAmount(usdValue, CACAO_DECIMAL)
         })
       )
