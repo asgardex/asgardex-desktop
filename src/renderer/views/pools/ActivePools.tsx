@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -177,6 +177,12 @@ export const ActivePools = (): JSX.Element => {
 
       return (
         <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
+          <button
+            onClick={() => navigate(poolsRoutes.detail.path({ asset: assetToString(asset) }))}
+            className="flex items-center justify-center rounded p-1 text-text2 transition-colors hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            title={intl.formatMessage({ id: 'pools.chart' })}>
+            <ChartBarIcon className="h-5 w-5" />
+          </button>
           <ActionButton size="normal" actions={actions} />
         </div>
       )

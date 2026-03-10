@@ -18,7 +18,12 @@ const pools: PoolsMessages = {
   'pools.incentivependulum.info': 'प्रोत्साहन पेंडुलम: {percentage}%',
   'pools.incentivependulum.tooltip': 'पूलों में {pooled} जमा किया गया, नोड्स में {bonded} बंधक रखा गया',
   'pools.incentivependulum.error': 'प्रोत्साहन पेंडुलम डेटा लोड करते समय त्रुटि',
-  'pools.bondable': 'बंधन योग्य'
+  'pools.bondable': 'बंधन योग्य',
+  'pools.chart': 'चार्ट',
+  'pools.chart.noData': 'कोई चार्ट डेटा उपलब्ध नहीं',
+  'pools.chart.source.binance': 'Binance',
+  'pools.chart.source.midgard': 'THORChain',
+  'pools.chart.spread': 'स्प्रेड'
 }
 
 export default pools

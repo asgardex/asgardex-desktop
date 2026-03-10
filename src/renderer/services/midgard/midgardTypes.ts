@@ -319,6 +319,7 @@ export type PoolsService = {
   apiGetLiquidityHistory$: (params: GetLiquidityHistoryRequest) => PoolLiquidityHistoryLD
   reloadSwapHistory: FP.Lazy<void>
   getDepthHistory$: (params: GetDepthHistoryParams) => DepthHistoryLD
+  apiGetDepthHistory$: (params: ApiGetDepthHistoryParams) => DepthHistoryLD
   reloadDepthHistory: FP.Lazy<void>
   priceRatio$: Rx.Observable<BigNumber>
   availableAssets$: PoolAssetsLD

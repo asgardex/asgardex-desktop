@@ -18,7 +18,12 @@ const pools: PoolsMessages = {
   'pools.incentivependulum.info': 'Incentive Pendulum: {percentage}%',
   'pools.incentivependulum.tooltip': '{pooled} pooled in pools, {bonded} bonded in nodes',
   'pools.incentivependulum.error': 'Error while loading data of Incentive Pendulum',
-  'pools.bondable': 'Bondable'
+  'pools.bondable': 'Bondable',
+  'pools.chart': 'Chart',
+  'pools.chart.noData': 'No chart data available',
+  'pools.chart.source.binance': 'Binance',
+  'pools.chart.source.midgard': 'THORChain',
+  'pools.chart.spread': 'Spread'
 }
 
 export default pools

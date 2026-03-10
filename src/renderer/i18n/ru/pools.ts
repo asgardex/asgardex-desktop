@@ -18,7 +18,12 @@ const pools: PoolsMessages = {
   'pools.incentivependulum.info': 'Маятник поощрения: {percentage}%',
   'pools.incentivependulum.tooltip': '{pooled} внесено в пулы, {bonded} заложено в нодах',
   'pools.incentivependulum.error': 'Ошибка при загрузке данных маятника поощрения',
-  'pools.bondable': 'Бондируемо'
+  'pools.bondable': 'Бондируемо',
+  'pools.chart': 'График',
+  'pools.chart.noData': 'Данные графика недоступны',
+  'pools.chart.source.binance': 'Binance',
+  'pools.chart.source.midgard': 'THORChain',
+  'pools.chart.spread': 'Спред'
 }
 
 export default pools
