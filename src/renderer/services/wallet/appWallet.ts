@@ -127,7 +127,6 @@ export const createAppWalletService = (): AppWalletService => {
       phase: newVultisigState.phase,
       activeVault: newVultisigState.activeVault?.name,
       addressCount: Object.keys(newVultisigState.addresses).length,
-      addresses: newVultisigState.addresses,
       isVultisigMode: isVultisigMode(currentAppState)
     })
 

@@ -107,10 +107,10 @@ export const VaultCreateView = () => {
     }
   }, [pendingVaultId, verificationCode, appWalletService, intl])
 
-  const handleGoToAssets = useCallback(() => {
+  const handleGoToAssets = useCallback(async () => {
     // vaultManager.verifyVault already set the active vault via selectVault(id, false)
     // Just switch to Vultisig mode and navigate
-    appWalletService.switchToVultisigMode(true)
+    await appWalletService.switchToVultisigMode(true)
     navigate(walletRoutes.assets.path())
   }, [appWalletService, navigate])
 

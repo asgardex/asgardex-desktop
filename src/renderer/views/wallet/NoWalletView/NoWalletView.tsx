@@ -86,12 +86,17 @@ export const NoWalletView = () => {
     async (password: string) => {
       if (!pendingVaultFile) return
 
-      const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
-      await vaultManager.loadVaults()
-      await vaultManager.selectVault(vault.id, false)
-      setShowPasswordModal(false)
-      setPendingVaultFile(null)
-      navigate(walletRoutes.assets.template)
+      try {
+        const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
+        await vaultManager.loadVaults()
+        await vaultManager.selectVault(vault.id, false)
+        setShowPasswordModal(false)
+        setPendingVaultFile(null)
+        navigate(walletRoutes.assets.template)
+      } catch (error) {
+        logger.error('Failed to import vault with password:', error)
+        throw error
+      }
     },
     [pendingVaultFile, navigate, vaultManager]
   )

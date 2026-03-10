@@ -50,7 +50,7 @@ export const UnlockView = (): JSX.Element => {
   // - Set phase to 'vault-locked' if password needed
   // - Set phase to 'active' if already unlocked (then useEffect navigates)
   const selectVultisigVault = async (vaultId: string) => {
-    appWalletService.switchToVultisigMode(true)
+    await appWalletService.switchToVultisigMode(true)
     await appWalletService.vaultManager.selectVault(vaultId)
   }
 
@@ -94,12 +94,17 @@ export const UnlockView = (): JSX.Element => {
     async (password: string) => {
       if (!pendingVaultFile) return
 
-      const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
-      await appWalletService.vaultManager.loadVaults()
-      await appWalletService.vaultManager.selectVault(vault.id, false)
-      setShowPasswordModal(false)
-      setPendingVaultFile(null)
-      navigate(walletRoutes.assets.path())
+      try {
+        const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
+        await appWalletService.vaultManager.loadVaults()
+        await appWalletService.vaultManager.selectVault(vault.id, false)
+        setShowPasswordModal(false)
+        setPendingVaultFile(null)
+        navigate(walletRoutes.assets.path())
+      } catch (error) {
+        logger.error('Failed to import vault with password:', error)
+        throw error
+      }
     },
     [pendingVaultFile, navigate, appWalletService.vaultManager]
   )

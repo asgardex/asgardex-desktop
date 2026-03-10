@@ -141,77 +141,92 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_CREATE_FAST_VAULT, async (_event, params: CreateFastVaultParams) => {
-    const sdk = getSDK()
-    log.info(`[MPC IPC] Creating fast vault: ${params.name}`)
+    try {
+      const sdk = getSDK()
+      log.info(`[MPC IPC] Creating fast vault: ${params.name}`)
 
-    const vaultId = await sdk.createFastVault({
-      name: params.name,
-      email: params.email,
-      password: params.password,
-      onProgress: (step) => {
-        // SDK may pass a string or an object {step, message, progress}
-        const normalized =
-          typeof step === 'object' && step !== null
-            ? {
-                step: step.step || step.message || '',
-                message: step.message,
-                progress: step.progress
-              }
-            : { step: String(step) }
-        log.debug(`[MPC IPC] Vault creation progress: ${normalized.step}`)
-        safeSend(_event, MpcIPCMessages.MPC_CREATION_PROGRESS, normalized)
-      }
-    })
+      const vaultId = await sdk.createFastVault({
+        name: params.name,
+        email: params.email,
+        password: params.password,
+        onProgress: (step) => {
+          // SDK may pass a string or an object {step, message, progress}
+          const normalized =
+            typeof step === 'object' && step !== null
+              ? {
+                  step: step.step || step.message || '',
+                  message: step.message,
+                  progress: step.progress
+                }
+              : { step: String(step) }
+          log.debug(`[MPC IPC] Vault creation progress: ${normalized.step}`)
+          safeSend(_event, MpcIPCMessages.MPC_CREATION_PROGRESS, normalized)
+        }
+      })
 
-    log.info(`[MPC IPC] Fast vault created, awaiting verification: ${vaultId}`)
-    return { vaultId }
+      log.info(`[MPC IPC] Fast vault created, awaiting verification: ${vaultId}`)
+      return { vaultId }
+    } catch (error) {
+      log.error('[MPC IPC] Failed to create fast vault:', error)
+      throw wrapSDKError(error)
+    }
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_CREATE_SECURE_VAULT, async (_event, params: CreateSecureVaultParams) => {
-    const sdk = getSDK()
-    const { name, password, devices = 2, threshold = 2 } = params
-    log.info(`[MPC IPC] Creating secure vault: ${name} (${threshold}-of-${devices})`)
+    try {
+      const sdk = getSDK()
+      const { name, password, devices = 2, threshold = 2 } = params
+      log.info(`[MPC IPC] Creating secure vault: ${name} (${threshold}-of-${devices})`)
 
-    const { vault } = await sdk.createSecureVault({
-      name,
-      password: password || '',
-      devices,
-      threshold,
+      const { vault } = await sdk.createSecureVault({
+        name,
+        password: password || '',
+        devices,
+        threshold,
 
-      onQRCodeReady: (qrPayload: string) => {
-        log.info(`[MPC IPC] QR code ready for secure vault`)
-        safeSend(_event, MpcIPCMessages.MPC_SECURE_VAULT_QR_READY, qrPayload)
-      },
+        onQRCodeReady: (qrPayload: string) => {
+          log.info(`[MPC IPC] QR code ready for secure vault`)
+          safeSend(_event, MpcIPCMessages.MPC_SECURE_VAULT_QR_READY, qrPayload)
+        },
 
-      onDeviceJoined: (deviceId: string, totalJoined: number, required: number) => {
-        log.info(`[MPC IPC] Device joined: ${deviceId} (${totalJoined}/${required})`)
-        safeSend(_event, MpcIPCMessages.MPC_DEVICE_JOINED, { deviceId, totalJoined, required })
-      },
+        onDeviceJoined: (deviceId: string, totalJoined: number, required: number) => {
+          log.info(`[MPC IPC] Device joined: ${deviceId} (${totalJoined}/${required})`)
+          safeSend(_event, MpcIPCMessages.MPC_DEVICE_JOINED, { deviceId, totalJoined, required })
+        },
 
-      onProgress: (step: { step: string; message: string; progress: number }) => {
-        log.debug(`[MPC IPC] Secure vault progress: ${step.step} - ${step.message} (${step.progress}%)`)
-        safeSend(_event, MpcIPCMessages.MPC_CREATION_PROGRESS, {
-          step: step.step,
-          message: step.message,
-          progress: step.progress
-        })
-      }
-    })
+        onProgress: (step: { step: string; message: string; progress: number }) => {
+          log.debug(`[MPC IPC] Secure vault progress: ${step.step} - ${step.message} (${step.progress}%)`)
+          safeSend(_event, MpcIPCMessages.MPC_CREATION_PROGRESS, {
+            step: step.step,
+            message: step.message,
+            progress: step.progress
+          })
+        }
+      })
 
-    log.info(`[MPC IPC] Secure vault created: ${vault.name} (${vault.id})`)
-    return serializeVault(vault)
+      log.info(`[MPC IPC] Secure vault created: ${vault.name} (${vault.id})`)
+      return serializeVault(vault)
+    } catch (error) {
+      log.error('[MPC IPC] Failed to create secure vault:', error)
+      throw wrapSDKError(error)
+    }
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_VERIFY_VAULT, async (_event, vaultId: string, code: string) => {
-    assertString(vaultId, 'vaultId')
-    assertString(code, 'code')
-    const sdk = getSDK()
-    log.info(`[MPC IPC] Verifying vault: ${vaultId}`)
+    try {
+      assertString(vaultId, 'vaultId')
+      assertString(code, 'code')
+      const sdk = getSDK()
+      log.info(`[MPC IPC] Verifying vault: ${vaultId}`)
 
-    const vault = await sdk.verifyVault(vaultId, code)
-    log.info(`[MPC IPC] Vault verified: ${vault.name}`)
+      const vault = await sdk.verifyVault(vaultId, code)
+      log.info(`[MPC IPC] Vault verified: ${vault.name}`)
 
-    return serializeVault(vault)
+      return serializeVault(vault)
+    } catch (error) {
+      log.error('[MPC IPC] Failed to verify vault:', error)
+      throw wrapSDKError(error)
+    }
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_DELETE_VAULT, async (_event, vaultId: string) => {
@@ -229,23 +244,28 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_RENAME_VAULT, async (_event, vaultId: string, newName: string) => {
-    assertString(vaultId, 'vaultId')
-    assertString(newName, 'newName')
-    // Sanitize input: trim, enforce max length, reject control characters
-    const sanitized = newName
-      .trim()
-      .slice(0, 50)
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\x00-\x1f\x7f]/g, '')
-    if (!sanitized) throw new Error('Vault name cannot be empty')
+    try {
+      assertString(vaultId, 'vaultId')
+      assertString(newName, 'newName')
+      // Sanitize input: trim, enforce max length, reject control characters
+      const sanitized = newName
+        .trim()
+        .slice(0, 50)
+        // eslint-disable-next-line no-control-regex
+        .replace(/[\x00-\x1f\x7f]/g, '')
+      if (!sanitized) throw new Error('Vault name cannot be empty')
 
-    const sdk = getSDK()
-    const vault = await sdk.getVaultById(vaultId)
-    if (!vault) throw new Error(`Vault not found: ${vaultId}`)
+      const sdk = getSDK()
+      const vault = await sdk.getVaultById(vaultId)
+      if (!vault) throw new Error(`Vault not found: ${vaultId}`)
 
-    log.info(`[MPC IPC] Renaming vault ${vaultId} to: ${sanitized}`)
-    await vault.rename(sanitized)
-    log.info(`[MPC IPC] Vault renamed successfully: ${sanitized}`)
+      log.info(`[MPC IPC] Renaming vault ${vaultId} to: ${sanitized}`)
+      await vault.rename(sanitized)
+      log.info(`[MPC IPC] Vault renamed successfully: ${sanitized}`)
+    } catch (error) {
+      log.error('[MPC IPC] Failed to rename vault:', error)
+      throw wrapSDKError(error)
+    }
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_GET_ADDRESSES, async (_event, vaultId: string) => {
@@ -293,12 +313,12 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_GET_BALANCES, async (_event, vaultId: string) => {
-    const sdk = getSDK()
-    const vault = await sdk.getVaultById(vaultId)
-    if (!vault) throw new Error(`Vault not found: ${vaultId}`)
-
-    // Use batch method instead of manual loop
     try {
+      const sdk = getSDK()
+      const vault = await sdk.getVaultById(vaultId)
+      if (!vault) throw new Error(`Vault not found: ${vaultId}`)
+
+      // Use batch method instead of manual loop
       const sdkBalances = await vault.balances()
       const balances: Record<string, BalanceResult> = {}
 
@@ -374,7 +394,6 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_OPEN_VAULT_FILE, async () => {
-    const sdk = getSDK()
     log.info('[MPC IPC] Opening vault file dialog')
 
     try {
@@ -395,6 +414,7 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       const filePath = result.filePaths[0]
       const filename = path.basename(filePath)
       const content = await fs.readFile(filePath, 'utf-8') // trunk-ignore(eslint/security/detect-non-literal-fs-filename)
+      const sdk = getSDK()
       const isEncrypted = sdk.isVaultEncrypted(content)
 
       log.info(`[MPC IPC] Vault file selected: ${filename}, encrypted: ${isEncrypted}`)

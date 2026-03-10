@@ -413,36 +413,36 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
    */
   const unlockVault = async (password: string) => {
     const currentState = vultisigState()
-    logger.info(' unlockVault called, currentPhase:', currentState.phase)
+    logger.info('unlockVault called, currentPhase:', currentState.phase)
     if (!currentState.activeVault) {
-      logger.info(' unlockVault: No active vault to unlock')
+      logger.info('unlockVault: No active vault to unlock')
       throw new Error('No active vault to unlock')
     }
 
     const vaultId = currentState.activeVault.id
     const vaultName = currentState.activeVault.name
-    logger.info(' unlockVault: Attempting to unlock vault:', vaultName, 'id:', vaultId)
+    logger.info('unlockVault: Attempting to unlock vault:', vaultName, 'id:', vaultId)
 
     try {
       // Unlock the vault with password
-      logger.info(' unlockVault: Calling apiMpc.unlockVault...')
+      logger.info('unlockVault: Calling apiMpc.unlockVault...')
       await window.apiMpc.unlockVault(vaultId, password)
-      logger.info(' unlockVault: apiMpc.unlockVault succeeded')
+      logger.info('unlockVault: apiMpc.unlockVault succeeded')
 
       // Get addresses now that vault is unlocked
-      logger.info(' unlockVault: Fetching addresses via apiMpc.getAddresses...')
+      logger.info('unlockVault: Fetching addresses via apiMpc.getAddresses...')
       const addresses = await window.apiMpc.getAddresses(vaultId)
-      logger.info(' unlockVault: Addresses received:', {
+      logger.info('unlockVault: Addresses received:', {
         chainCount: Object.keys(addresses).length,
         chains: Object.keys(addresses),
-        addresses: addresses
+        addressCount: Object.keys(addresses).length
       })
 
-      logger.info(' unlockVault: Updating state to phase: active')
+      logger.info('unlockVault: Updating state to phase: active')
       setVultisigState((prev) => ({ ...prev, phase: VultisigPhase.Active, addresses, error: undefined }))
-      logger.info(' unlockVault: State updated, vault unlocked:', vaultName)
+      logger.info('unlockVault: State updated, vault unlocked:', vaultName)
     } catch (error) {
-      logger.error(' unlockVault: Failed to unlock vault:', error)
+      logger.error('unlockVault: Failed to unlock vault:', error)
       setVultisigState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : String(error)
