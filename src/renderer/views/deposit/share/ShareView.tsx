@@ -17,7 +17,7 @@ import { PoolShare as PoolShareUI } from '../../../components/uielements/poolSha
 import { Spin } from '../../../components/uielements/spin'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
-import { to1e8BaseAmount } from '../../../helpers/assetHelper'
+import { convertBaseAmountDecimal } from '../../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
@@ -74,15 +74,17 @@ export const ShareView = ({
       const assetShare: BaseAmount = ShareHelpers.getAssetShare({
         liquidityUnits: units,
         detail: poolDetail,
-        assetDecimal: assetWD.decimal
+        assetDecimal: assetWD.decimal,
+        ...(protocol !== THORChain && { dexDecimal: CACAO_DECIMAL })
       })
       const poolShare: BigNumber = ShareHelpers.getPoolShare(units, poolDetail)
       const poolData = toPoolData(poolDetail)
 
+      const dexDecimal = protocol === THORChain ? 8 : CACAO_DECIMAL
       const assetPrice: BaseAmount = getValueOfAsset1InAsset2(
-        // Note: `assetShare` needs to be converted to 1e8,
+        // Note: `assetShare` needs to be converted to dex decimal,
         // since it based on asset decimal, which might be different
-        to1e8BaseAmount(assetShare),
+        convertBaseAmountDecimal(assetShare, dexDecimal),
         poolData,
         pricePoolData
       )

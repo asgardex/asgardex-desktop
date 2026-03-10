@@ -35,7 +35,6 @@ import {
   isBtcAsset,
   isBtcSecuredAsset,
   isCacaoAsset,
-  isMayaAsset,
   isRuneNativeAsset,
   isUSDAsset
 } from '../../../helpers/assetHelper'
@@ -46,7 +45,6 @@ import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../.
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
 import { useBreakpoint } from '../../../hooks/useBreakpoint'
-import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../hooks/useMayascanPrice'
 import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
 import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMidgard/types'
@@ -90,7 +88,6 @@ type GetPoolPriceValueFnMaya = (params: {
   balance: Balance
   poolDetails: PoolDetailsMaya
   pricePool: PricePool
-  mayaPriceRD: MayaScanPriceRD
 }) => O.Option<BaseAmount>
 
 type Props = {
@@ -110,7 +107,6 @@ type Props = {
   network: Network
   mimirHalt: MimirHaltRD
   hidePrivateData: boolean
-  mayaScanPrice: MayaScanPriceRD
   disabledChains: EnabledChain[]
 }
 
@@ -130,7 +126,6 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
     assetHandler,
     network,
     hidePrivateData,
-    mayaScanPrice,
     disabledChains
   } = props
 
@@ -242,14 +237,12 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
       const getPriceMaya = (
         getPoolPriceValueFn: GetPoolPriceValueFnMaya,
         poolDetails: PoolDetailsMaya,
-        pricePool: PricePool,
-        mayaPriceRD: MayaScanPriceRD
+        pricePool: PricePool
       ) => {
         const priceOption = getPoolPriceValueFn({
           balance: { asset, amount },
           poolDetails,
-          pricePool,
-          mayaPriceRD
+          pricePool
         })
         return formatPrice(priceOption, pricePool.asset)
       }
@@ -267,14 +260,14 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
           price =
             (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
             (isMayachainNonEmpty &&
-              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
+              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
             (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
             price
         } else if (isChainOfMaya(asset.chain)) {
           // Chain is supported only by MAYA
           price =
             (isMayachainNonEmpty &&
-              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
+              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
             (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
             price
         } else if (isChainOfThor(asset.chain)) {
@@ -292,26 +285,13 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
           })
           price = formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) || price
         }
-
-        // Fallback: if no pool price found, try MayaScan external API
-        if (price === noDataString && isMayaAsset(asset)) {
-          const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
-          if (RD.isSuccess(mayaPrice)) {
-            price = formatAssetAmountCurrency({
-              amount: mayaPrice.value.assetAmount,
-              asset: mayaPrice.value.asset,
-              decimal: isUSDAsset(mayaPrice.value.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(mayaPrice.value.asset)
-            })
-          }
-        }
       }
       return {
         balance,
         price
       }
     },
-    [geckoPriceData, mayaPricePool, mayaScanPrice, pendingPoolDetails, poolDetails, poolDetailsMaya, pricePool]
+    [geckoPriceData, mayaPricePool, pendingPoolDetails, poolDetails, poolDetailsMaya, pricePool]
   )
 
   const onRowHandler = useCallback(

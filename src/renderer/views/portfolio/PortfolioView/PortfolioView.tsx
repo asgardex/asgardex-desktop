@@ -36,7 +36,6 @@ import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { filterWalletBalancesByAssets } from '../../../helpers/walletHelper'
 import { useRunePoolProviders } from '../../../hooks/useAllRunePoolProviders'
-import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useThorNodeInfos } from '../../../hooks/useNodeInfos'
 import { useMayaNodeInfos } from '../../../hooks/useNodeInfosMaya'
 import { usePoolShares } from '../../../hooks/usePoolShares'
@@ -105,8 +104,7 @@ export const PortfolioView = (): JSX.Element => {
       }),
     INITIAL_BALANCES_STATE
   )
-  const { mayaScanPriceRD } = useObserveMayaScanPrice()
-  const combinedBalances$ = useTotalWalletBalance(mayaScanPriceRD)
+  const combinedBalances$ = useTotalWalletBalance()
 
   const [enabledChains, setEnabledChains] = useState<Set<EnabledChain>>(new Set())
 

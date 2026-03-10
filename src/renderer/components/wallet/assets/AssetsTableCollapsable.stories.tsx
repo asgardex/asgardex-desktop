@@ -190,7 +190,6 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       network={Network.Testnet}
       mimirHalt={RD.initial}
       hidePrivateData={false}
-      mayaScanPrice={RD.initial}
       disabledChains={[]}
     />
   )

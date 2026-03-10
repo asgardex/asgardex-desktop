@@ -35,7 +35,7 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
   const intl = useIntl()
 
   const protocolAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
-  const protocolUrl = useMemo(() => (protocol === THORChain ? 'runescan.io' : 'Mayascan.com'), [protocol])
+  const protocolUrl = useMemo(() => (protocol === THORChain ? 'runescan.io' : 'explorer.mayachain.info'), [protocol])
 
   const isDesktopView = useBreakpoint()?.lg ?? false
   const isXLargeScreen = useBreakpoint()?.xl ?? false
