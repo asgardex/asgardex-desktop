@@ -13,7 +13,7 @@ import { getPoolDetail, toPoolData } from '../services/midgard/mayaMidgard/utils
 import { PoolAddress, PoolData, PricePool } from '../services/midgard/midgardTypes'
 import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
 import { getPoolTableRowDataMaya, getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../views/pools/Pools.utils'
-import { convertBaseAmountDecimal, isCacaoAsset, to1e10BaseAmount } from './assetHelper'
+import { convertBaseAmountDecimal, isCacaoAsset, isMayaAsset, to1e8BaseAmount, to1e10BaseAmount } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
@@ -151,18 +151,24 @@ export const getPoolPriceValue = ({
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
 
-  // MAYA pool depths are in 1e10 (CACAO base units), so normalize all amounts to CACAO_DECIMAL
-  const amount1e10 = convertBaseAmountDecimal(amount, CACAO_DECIMAL)
+  // Maya Midgard reports assetDepth in 1e8 for most assets, but in native decimal for MAYA.MAYA (1e4).
+  // runeDepth is always in 1e10. getValueOfAsset1InAsset2 uses 1e8 internally,
+  // so input must match the assetDepth scale for correct pool ratios.
+  const amountNormalized = isCacaoAsset(asset)
+    ? amount // CACAO: native 1e10, used in getValueOfRuneInAsset where it matches runeDepth scale
+    : isMayaAsset(asset)
+      ? baseAmount(amount.amount(), 8) // MAYA: re-tag to decimal 8 without scaling (assetDepth is in native 1e4)
+      : to1e8BaseAmount(amount) // All other assets: assetDepth is in 1e8
 
   return FP.pipe(
     getPoolDetail(poolDetails, asset),
     O.map(toPoolData),
     // calculate value based on `pricePoolData`
-    O.map((poolData) => getValueOfAsset1InAsset2(amount1e10, poolData, pricePoolData)),
+    O.map((poolData) => getValueOfAsset1InAsset2(amountNormalized, poolData, pricePoolData)),
     O.alt(() => {
       // Calculate CACAO values based on `pricePoolData`
       if (isCacaoAsset(asset)) {
-        return O.some(getValueOfRuneInAsset(amount1e10, pricePoolData))
+        return O.some(getValueOfRuneInAsset(amountNormalized, pricePoolData))
       }
       // In all other cases we don't have any price pool and no price
       return O.none
