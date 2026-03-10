@@ -34,11 +34,13 @@ export const getRuneShare = (
 export const getAssetShare = ({
   liquidityUnits,
   detail: { assetDepth, units: poolUnits },
-  assetDecimal
+  assetDecimal,
+  dexDecimal = THORCHAIN_DECIMAL
 }: {
   liquidityUnits: BigNumber
   detail: Pick<PoolDetail, 'assetDepth' | 'units'>
   assetDecimal: number
+  dexDecimal?: number
 }): BaseAmount => {
   const assetDepthBN = bnOrZero(assetDepth)
   // Default is 1 as neutral element for division
@@ -51,8 +53,8 @@ export const getAssetShare = ({
     // don't use decimal for `BigNumber`s used in `BaseAmount`
     // and always round down for currencies
     .decimalPlaces(0, BigNumber.ROUND_DOWN)
-  const assetShare1e8 = baseAmount(assetShareBN, THORCHAIN_DECIMAL)
-  return convertBaseAmountDecimal(assetShare1e8, assetDecimal)
+  const assetShare = baseAmount(assetShareBN, dexDecimal)
+  return convertBaseAmountDecimal(assetShare, assetDecimal)
 }
 
 /**

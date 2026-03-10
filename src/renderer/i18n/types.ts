@@ -222,7 +222,7 @@ export type CommonMessageKey =
   | 'common.txUrl'
   | 'common.txHash'
   | 'common.runeScan'
-  | 'common.mayaScan'
+  | 'common.mayaExplorer'
   | 'common.whitelist'
   | 'common.fetchFromLedger'
   | 'common.nativeSegwit'

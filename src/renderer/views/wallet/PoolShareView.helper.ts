@@ -35,10 +35,13 @@ export const getSharesTotal = (
             poolDetail,
             protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
           )
+          const dexDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+          const assetDecimal = parseInt(poolDetail.nativeDecimal || '8', 10) || 8
           const assetShare = ShareHelpers.getAssetShare({
             liquidityUnits: units,
             detail: poolDetail,
-            assetDecimal: 8
+            assetDecimal,
+            dexDecimal
           })
           const poolData = protocol === THORChain ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
           // 2. price asset + rune
@@ -71,12 +74,13 @@ export const getPoolShareTableData = (
             poolDetail,
             protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
           )
-          // FIXME: (@Veado) Fix decimal
-          // https://github.com/thorchain/asgardex-electron/issues/1163
+          const dexDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+          const assetDecimal = parseInt(poolDetail.nativeDecimal || '8', 10) || 8
           const assetShare = ShareHelpers.getAssetShare({
             liquidityUnits: units,
             detail: poolDetail,
-            assetDecimal: 8 /* FIXME: see previous comment ^ */
+            assetDecimal,
+            dexDecimal
           })
           const sharePercent = ShareHelpers.getPoolShare(units, poolDetail)
           const poolData = protocol === THORChain ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)

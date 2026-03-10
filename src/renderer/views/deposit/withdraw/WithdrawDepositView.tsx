@@ -211,7 +211,12 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
               poolDetail,
               protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
             ),
-            asset: ShareHelpers.getAssetShare({ liquidityUnits, detail: poolDetail, assetDecimal })
+            asset: ShareHelpers.getAssetShare({
+              liquidityUnits,
+              detail: poolDetail,
+              assetDecimal,
+              ...(protocol !== THORChain && { dexDecimal: CACAO_DECIMAL })
+            })
           }}
           asset={assetWD}
           fees$={symWithdrawFee$}

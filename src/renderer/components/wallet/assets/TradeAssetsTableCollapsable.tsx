@@ -41,7 +41,6 @@ import {
 } from '../../../helpers/poolHelperMaya'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { useBreakpoint } from '../../../hooks/useBreakpoint'
-import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import * as poolsRoutes from '../../../routes/pools'
@@ -116,7 +115,6 @@ export const TradeAssetsTableCollapsable = ({
   const intl = useIntl()
   const navigate = useNavigate()
   const isXLargeView = useBreakpoint()?.xl ?? false
-  const { mayaScanPriceRD } = useObserveMayaScanPrice()
   const { setProtocol } = useApp()
 
   const { tradeWithdraw$ } = useChainContext()
@@ -581,8 +579,7 @@ export const TradeAssetsTableCollapsable = ({
               ? getPoolPriceValueMaya({
                   balance: { asset, amount },
                   poolDetails: poolDetailsMaya,
-                  pricePool: pricePoolMaya,
-                  mayaPriceRD: mayaScanPriceRD
+                  pricePool: pricePoolMaya
                 })
               : getPoolPriceValue({
                   balance: { asset, amount },
@@ -605,17 +602,7 @@ export const TradeAssetsTableCollapsable = ({
         size: isXLargeView ? 120 : 250
       }
     ],
-    [
-      hidePrivateData,
-      isXLargeView,
-      mayaScanPriceRD,
-      network,
-      poolDetails,
-      poolDetailsMaya,
-      pricePool,
-      pricePoolMaya,
-      renderActionColumn
-    ]
+    [hidePrivateData, isXLargeView, network, poolDetails, poolDetailsMaya, pricePool, pricePoolMaya, renderActionColumn]
   )
 
   const renderAssetsTable = useCallback(

@@ -116,7 +116,7 @@ export const PoolShareView = (): JSX.Element => {
       O.map(([dexAddress, _]) =>
         protocol === THORChain
           ? `https://runescan.io/address/${dexAddress}`
-          : `https://www.mayascan.org/address/${dexAddress}`
+          : `https://www.explorer.mayachain.info/address/${dexAddress}`
       ),
       O.map(window.apiUrl.openExternal)
     )

@@ -66,7 +66,7 @@ export const WalletPoolActionsHistoryHeader = (props: Props) => {
           onClick={onClickAddressIcon}>
           {protocol === THORChain
             ? intl.formatMessage({ id: 'common.runeScan' })
-            : intl.formatMessage({ id: 'common.mayaScan' })}
+            : intl.formatMessage({ id: 'common.mayaExplorer' })}
           <ExternalLinkIcon className="ml-1" />
         </Label>
       </div>
