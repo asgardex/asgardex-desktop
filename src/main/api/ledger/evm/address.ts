@@ -1,21 +1,16 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { ARBChain, defaultArbParams } from '@xchainjs/xchain-arbitrum'
-import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BASEChain, defaultBaseParams } from '@xchainjs/xchain-base'
-import { BSCChain, defaultBscParams } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
-import { ETHChain, defaultEthParams } from '@xchainjs/xchain-ethereum'
 import { ClientLedger, LedgerSigner } from '@xchainjs/xchain-evm'
 import { Chain } from '@xchainjs/xchain-util'
 import log from 'electron-log'
 import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../../../shared/wallet/types'
+import { EVM_LEDGER_CHAINS, resolveEvmProvider } from './common'
 
 export const getEVMAddress = async ({
   chain,
@@ -32,72 +27,27 @@ export const getEVMAddress = async ({
   evmHDMode: EvmHDMode
   network: Network
 }): Promise<E.Either<LedgerError, WalletAddress>> => {
-  let clientParams
-
-  switch (chain) {
-    case ETHChain:
-      clientParams = {
-        ...defaultEthParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultEthParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    case ARBChain:
-      clientParams = {
-        ...defaultArbParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultArbParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    case AVAXChain:
-      clientParams = {
-        ...defaultAvaxParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultAvaxParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    case BSCChain:
-      clientParams = {
-        ...defaultBscParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultBscParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    case BASEChain:
-      clientParams = {
-        ...defaultBaseParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultBaseParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    default:
-      throw new Error(`Unsupported chain: ${chain}`)
+  const config = EVM_LEDGER_CHAINS[chain]
+  if (!config) {
+    return E.left({
+      errorId: LedgerErrorId.GET_ADDRESS_FAILED,
+      msg: `Unsupported chain: ${chain}`
+    })
   }
+
+  const provider = resolveEvmProvider(config, network)
+
+  const clientParams = {
+    ...config.defaultParams,
+    signer: new LedgerSigner({
+      transport,
+      provider,
+      derivationPath: getDerivationPath(walletAccount, evmHDMode)
+    }),
+    rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
+    network
+  }
+
   try {
     const client = new ClientLedger(clientParams)
     const address = await client.getAddressAsync(walletIndex)
@@ -133,71 +83,23 @@ export const verifyEVMAddress = async ({
   evmHDMode: EvmHDMode
   network: Network
 }): Promise<boolean> => {
-  let clientParams
-  switch (chain) {
-    case ETHChain:
-      clientParams = {
-        ...defaultEthParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultEthParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    case ARBChain:
-      clientParams = {
-        ...defaultArbParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultArbParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    case AVAXChain:
-      clientParams = {
-        ...defaultAvaxParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultAvaxParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    case BSCChain:
-      clientParams = {
-        ...defaultBscParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultBscParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    case BASEChain:
-      clientParams = {
-        ...defaultBaseParams,
-        signer: new LedgerSigner({
-          transport,
-          provider: defaultBaseParams.providers[Network.Mainnet],
-          derivationPath: getDerivationPath(walletAccount, evmHDMode)
-        }),
-        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
-        network: network
-      }
-      break
-    default:
-      log.error(`Unsupported chain for verification: ${chain}`)
-      return false
+  const config = EVM_LEDGER_CHAINS[chain]
+  if (!config) {
+    log.error(`Unsupported chain for verification: ${chain}`)
+    return false
+  }
+
+  const provider = resolveEvmProvider(config, network)
+
+  const clientParams = {
+    ...config.defaultParams,
+    signer: new LedgerSigner({
+      transport,
+      provider,
+      derivationPath: getDerivationPath(walletAccount, evmHDMode)
+    }),
+    rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
+    network
   }
 
   try {
