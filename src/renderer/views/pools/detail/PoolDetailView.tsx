@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetFromString, assetToString } from '@xchainjs/xchain-util'
-import { option as O, function as FP } from 'fp-ts'
+import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -44,24 +44,17 @@ export const PoolDetailView = () => {
   const poolAsset = useMemo(() => (routeAsset ? assetFromString(routeAsset) : null), [routeAsset])
 
   const midgardDataRD = useOHLCVData({ poolAsset, timeframe, dateRange })
-  const { dataRD: binanceDataRD, binanceSymbol } = useBinanceOHLCV({ poolAsset, timeframe, dateRange })
+  const { dataRD: binanceDataRD, hasBinance } = useBinanceOHLCV({ poolAsset, timeframe, dateRange })
   const spreadInfoRD = usePriceSpread(midgardDataRD, binanceDataRD)
-
-  const hasBinance = O.isSome(binanceSymbol)
 
   // Use Binance as primary when available and loaded, otherwise fall back to Midgard
   const chartDataRD: OHLCVDataRD = useMemo(() => {
     if (!hasBinance) return midgardDataRD
-    // If Binance succeeded, use it; if it failed, fall back to Midgard
-    return FP.pipe(
-      binanceDataRD,
-      RD.fold(
-        () => midgardDataRD, // initial → use Midgard
-        () => RD.pending, // pending → show loading
-        () => midgardDataRD, // failure → fall back to Midgard
-        (data) => (data.length > 0 ? RD.success(data) : midgardDataRD)
-      )
-    )
+    if (RD.isPending(binanceDataRD)) return RD.pending
+    if (RD.isInitial(binanceDataRD) || RD.isFailure(binanceDataRD)) return midgardDataRD
+    // Binance succeeded — use it if non-empty, otherwise fall back
+    const data = binanceDataRD.value
+    return data.length > 0 ? RD.success(data) : midgardDataRD
   }, [hasBinance, binanceDataRD, midgardDataRD])
 
   const handleSwap = useCallback(() => {
@@ -76,17 +69,6 @@ export const PoolDetailView = () => {
       })
     )
   }, [poolAsset, protocol, navigate])
-
-  const handleDeposit = useCallback(() => {
-    if (!poolAsset) return
-    navigate(
-      poolsRoutes.deposit.path({
-        asset: assetToString(poolAsset),
-        assetWalletType: DEFAULT_WALLET_TYPE,
-        dexWalletType: DEFAULT_WALLET_TYPE
-      })
-    )
-  }, [poolAsset, navigate])
 
   if (!poolAsset) {
     return (
@@ -159,11 +141,6 @@ export const PoolDetailView = () => {
           onClick={handleSwap}
           className="rounded-lg bg-turquoise px-6 py-2 font-main text-14 text-white transition-opacity hover:opacity-80">
           {intl.formatMessage({ id: 'common.swap' })}
-        </button>
-        <button
-          onClick={handleDeposit}
-          className="rounded-lg border border-turquoise px-6 py-2 font-main text-14 text-turquoise transition-opacity hover:opacity-80">
-          {intl.formatMessage({ id: 'common.add' })}
         </button>
       </div>
     </div>

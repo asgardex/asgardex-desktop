@@ -12,9 +12,9 @@ import {
   poolAssetToBinanceSymbol,
   timeframeToBinanceInterval,
   dateRangeToStartTime,
-  binanceKlineToCandle,
-  BinanceKline
+  binanceKlineToCandle
 } from '../helpers/binanceHelper'
+import type { BinanceKline } from '../helpers/binanceHelper'
 import type { CandleTimeframe, ChartDateRange, OHLCVData, OHLCVDataRD } from '../views/pools/detail/types'
 
 const BINANCE_KLINES_URL = 'https://api.binance.com/api/v3/klines'
@@ -27,47 +27,42 @@ type Params = {
 
 type Result = {
   dataRD: OHLCVDataRD
-  binanceSymbol: O.Option<string>
+  hasBinance: boolean
 }
 
 export const useBinanceOHLCV = ({ poolAsset, timeframe, dateRange }: Params): Result => {
-  const binanceSymbol = useMemo(() => (poolAsset ? poolAssetToBinanceSymbol(poolAsset) : O.none), [poolAsset])
+  // Use primitive string as dependency to avoid Option object identity issues
+  const symbolStr = useMemo(
+    () => (poolAsset ? FP.pipe(poolAssetToBinanceSymbol(poolAsset), O.toNullable) : null),
+    [poolAsset]
+  )
 
   const data$ = useMemo(() => {
-    return FP.pipe(
-      binanceSymbol,
-      O.fold(
-        () => Rx.of(RD.initial as OHLCVDataRD),
-        (symbol) => {
-          const interval = timeframeToBinanceInterval(timeframe)
-          const startTime = dateRangeToStartTime(dateRange)
+    if (!symbolStr) return Rx.of(RD.initial as OHLCVDataRD)
 
-          return FP.pipe(
-            Rx.defer(() =>
-              Rx.from(
-                axios.get<BinanceKline[]>(BINANCE_KLINES_URL, {
-                  params: {
-                    symbol,
-                    interval,
-                    startTime,
-                    limit: 1000
-                  }
-                })
-              )
-            ),
-            RxOp.map(({ data: klines }) => {
-              const candles: OHLCVData = klines.map(binanceKlineToCandle).sort((a, b) => a.time - b.time)
-              return RD.success<Error, OHLCVData>(candles)
-            }),
-            RxOp.startWith(RD.pending as OHLCVDataRD),
-            RxOp.catchError((e: Error) => Rx.of(RD.failure<Error, OHLCVData>(e)))
-          )
-        }
+    const interval = timeframeToBinanceInterval(timeframe)
+    const startTime = dateRangeToStartTime(dateRange)
+
+    return FP.pipe(
+      Rx.defer(() =>
+        Rx.from(
+          axios.get<BinanceKline[]>(BINANCE_KLINES_URL, {
+            params: { symbol: symbolStr, interval, startTime, limit: 1000 }
+          })
+        )
+      ),
+      RxOp.map(({ data: klines }) => {
+        const candles: OHLCVData = klines.map(binanceKlineToCandle).sort((a, b) => a.time - b.time)
+        return RD.success<Error, OHLCVData>(candles)
+      }),
+      RxOp.startWith(RD.pending as OHLCVDataRD),
+      RxOp.catchError((e: unknown) =>
+        Rx.of(RD.failure<Error, OHLCVData>(e instanceof Error ? e : new Error(String(e))))
       )
     )
-  }, [binanceSymbol, timeframe, dateRange])
+  }, [symbolStr, timeframe, dateRange])
 
-  const dataRD = useObservableState(data$, O.isSome(binanceSymbol) ? RD.pending : RD.initial)
+  const dataRD = useObservableState(data$, symbolStr ? RD.pending : RD.initial)
 
-  return { dataRD, binanceSymbol }
+  return { dataRD, hasBinance: symbolStr !== null }
 }
