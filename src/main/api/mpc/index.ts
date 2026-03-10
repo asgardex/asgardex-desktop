@@ -131,9 +131,13 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   // ============================================
 
   ipcMain.handle(MpcIPCMessages.MPC_LIST_VAULTS, async () => {
-    const sdk = getSDK()
-    const vaults = await sdk.listVaults()
-    return vaults.map(serializeVault)
+    try {
+      const sdk = getSDK()
+      const vaults = await sdk.listVaults()
+      return vaults.map(serializeVault)
+    } catch (error) {
+      throw wrapSDKError(error)
+    }
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_CREATE_FAST_VAULT, async (_event, params: CreateFastVaultParams) => {
@@ -145,8 +149,17 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       email: params.email,
       password: params.password,
       onProgress: (step) => {
-        log.debug(`[MPC IPC] Vault creation progress: ${step}`)
-        safeSend(_event, MpcIPCMessages.MPC_CREATION_PROGRESS, { step })
+        // SDK may pass a string or an object {step, message, progress}
+        const normalized =
+          typeof step === 'object' && step !== null
+            ? {
+                step: step.step || step.message || '',
+                message: step.message,
+                progress: step.progress
+              }
+            : { step: String(step) }
+        log.debug(`[MPC IPC] Vault creation progress: ${normalized.step}`)
+        safeSend(_event, MpcIPCMessages.MPC_CREATION_PROGRESS, normalized)
       }
     })
 
@@ -177,7 +190,11 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
 
       onProgress: (step: { step: string; message: string; progress: number }) => {
         log.debug(`[MPC IPC] Secure vault progress: ${step.step} - ${step.message} (${step.progress}%)`)
-        safeSend(_event, MpcIPCMessages.MPC_CREATION_PROGRESS, step)
+        safeSend(_event, MpcIPCMessages.MPC_CREATION_PROGRESS, {
+          step: step.step,
+          message: step.message,
+          progress: step.progress
+        })
       }
     })
 
@@ -198,11 +215,16 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_DELETE_VAULT, async (_event, vaultId: string) => {
-    const sdk = getSDK()
-    const vault = await sdk.getVaultById(vaultId)
-    if (vault) {
-      log.info(`[MPC IPC] Deleting vault: ${vaultId}`)
-      await sdk.deleteVault(vault)
+    try {
+      assertString(vaultId, 'vaultId')
+      const sdk = getSDK()
+      const vault = await sdk.getVaultById(vaultId)
+      if (vault) {
+        log.info(`[MPC IPC] Deleting vault: ${vaultId}`)
+        await sdk.deleteVault(vault)
+      }
+    } catch (error) {
+      throw wrapSDKError(error)
     }
   })
 
@@ -227,30 +249,47 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_GET_ADDRESSES, async (_event, vaultId: string) => {
-    assertString(vaultId, 'vaultId')
-    const sdk = getSDK()
-    const vault = await sdk.getVaultById(vaultId)
-    if (!vault) throw new Error(`Vault not found: ${vaultId}`)
+    try {
+      assertString(vaultId, 'vaultId')
+      const sdk = getSDK()
+      const vault = await sdk.getVaultById(vaultId)
+      if (!vault) throw new Error(`Vault not found: ${vaultId}`)
 
-    // Derive addresses for all supported chains using vault.address(chain)
-    // This ensures all Asgardex-supported chains get addresses, not just the SDK default set
-    const addresses: Record<string, string> = {}
-    const sdkChains = Object.values(ASGARDEX_TO_SDK_CHAIN)
+      // Ensure all Asgardex-supported chains are enabled on the vault
+      // vault.chains only contains what was added at creation — SDK supports 36 chains
+      const desiredChains = Object.values(ASGARDEX_TO_SDK_CHAIN)
+      const vaultChainsBefore = vault.chains || []
+      const missingChains = desiredChains.filter((c) => !vaultChainsBefore.includes(c))
 
-    for (const sdkChain of sdkChains) {
-      try {
-        const address = await vault.address(sdkChain)
-        if (address) {
-          addresses[sdkChain] = address
-        }
-      } catch (error) {
-        log.warn(`[MPC IPC] Failed to get address for chain ${sdkChain}:`, error)
-        // Continue with other chains
+      if (missingChains.length > 0) {
+        log.info(
+          `[MPC IPC] Adding ${missingChains.length} missing chains to vault "${vault.name}": ${JSON.stringify(missingChains)}`
+        )
+        await vault.setChains([...vaultChainsBefore, ...missingChains])
       }
-    }
 
-    log.info(`[MPC IPC] Derived addresses for ${Object.keys(addresses).length} chains`)
-    return addresses
+      log.info(`[MPC IPC] Vault "${vault.name}" chains: ${JSON.stringify(vault.chains || [])}`)
+
+      // Derive addresses for all Asgardex-supported chains
+      const addresses: Record<string, string> = {}
+
+      for (const sdkChain of desiredChains) {
+        try {
+          const address = await vault.address(sdkChain)
+          if (address) {
+            addresses[sdkChain] = address
+          }
+        } catch (error) {
+          log.warn(`[MPC IPC] Failed to get address for chain ${sdkChain}:`, error)
+          // Continue with other chains
+        }
+      }
+
+      log.info(`[MPC IPC] Derived addresses for ${Object.keys(addresses).length}/${desiredChains.length} chains`)
+      return addresses
+    } catch (error) {
+      throw wrapSDKError(error)
+    }
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_GET_BALANCES, async (_event, vaultId: string) => {
@@ -371,23 +410,32 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   // ============================================
 
   ipcMain.handle(MpcIPCMessages.MPC_LOCK_VAULT, async (_event, vaultId: string) => {
-    const sdk = getSDK()
-    const vault = await sdk.getVaultById(vaultId)
-    if (!vault) throw new Error(`Vault not found: ${vaultId}`)
+    try {
+      assertString(vaultId, 'vaultId')
+      const sdk = getSDK()
+      const vault = await sdk.getVaultById(vaultId)
+      if (!vault) throw new Error(`Vault not found: ${vaultId}`)
 
-    log.info(`[MPC IPC] Locking vault: ${vaultId}`)
-    vault.lock() // Synchronous in SDK v0.3.0
+      log.info(`[MPC IPC] Locking vault: ${vaultId}`)
+      vault.lock() // Synchronous in SDK v0.3.0
+    } catch (error) {
+      throw wrapSDKError(error)
+    }
   })
 
   ipcMain.handle(MpcIPCMessages.MPC_UNLOCK_VAULT, async (_event, vaultId: string, password: string) => {
-    assertString(vaultId, 'vaultId')
-    assertString(password, 'password')
-    const sdk = getSDK()
-    const vault = await sdk.getVaultById(vaultId)
-    if (!vault) throw new Error(`Vault not found: ${vaultId}`)
+    try {
+      assertString(vaultId, 'vaultId')
+      assertString(password, 'password')
+      const sdk = getSDK()
+      const vault = await sdk.getVaultById(vaultId)
+      if (!vault) throw new Error(`Vault not found: ${vaultId}`)
 
-    log.info(`[MPC IPC] Unlocking vault: ${vaultId}`)
-    await vault.unlock(password)
+      log.info(`[MPC IPC] Unlocking vault: ${vaultId}`)
+      await vault.unlock(password)
+    } catch (error) {
+      throw wrapSDKError(error)
+    }
   })
 
   // ============================================

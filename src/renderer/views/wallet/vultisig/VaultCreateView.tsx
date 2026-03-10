@@ -14,7 +14,6 @@ import { createScopedLogger } from '../../../helpers/logger'
 
 const logger = createScopedLogger('FastVault')
 import * as walletRoutes from '../../../routes/wallet'
-import { isVultisigMode } from '../../../services/wallet/types'
 
 type FormState = 'input' | 'creating' | 'verify' | 'success' | 'error'
 
@@ -23,8 +22,9 @@ export const VaultCreateView = () => {
   const intl = useIntl()
   const { appWalletService } = useWalletContext()
 
-  const appWalletState = useObservableState(appWalletService.appWalletState$)
-  const vultisigState = appWalletState && isVultisigMode(appWalletState) ? appWalletState : null
+  // Read creation progress directly from vaultManager (not appWalletState$)
+  // Creation phases are not propagated to appWalletState$ to avoid cascading re-renders
+  const vaultManagerState = useObservableState(appWalletService.vaultManager.vultisigState$)
 
   const [formState, setFormState] = useState<FormState>('input')
   const [name, setName] = useState('')
@@ -38,7 +38,9 @@ export const VaultCreateView = () => {
   // Track mounted state to guard async setState calls
   const mountedRef = useRef(true)
   useEffect(() => {
+    logger.info('Component MOUNTED')
     return () => {
+      logger.info('Component UNMOUNTED')
       mountedRef.current = false
     }
   }, [])
@@ -53,13 +55,22 @@ export const VaultCreateView = () => {
     setError(null)
 
     try {
+      logger.info('Calling createFastVault...')
       const vaultId = await appWalletService.vaultManager.createFastVault({ name, email, password })
-      if (!mountedRef.current) return
+      logger.info('createFastVault returned, vaultId:', vaultId, 'mountedRef:', mountedRef.current)
+      if (!mountedRef.current) {
+        logger.warn('Component UNMOUNTED during createFastVault — skipping state update')
+        return
+      }
       setPendingVaultId(vaultId)
       setFormState('verify')
+      logger.info('formState set to verify')
     } catch (err) {
       logger.error('Failed to create vault:', err)
-      if (!mountedRef.current) return
+      if (!mountedRef.current) {
+        logger.warn('Component UNMOUNTED during createFastVault error — skipping state update')
+        return
+      }
       setError(String(err))
       setFormState('error')
     }
@@ -181,7 +192,7 @@ export const VaultCreateView = () => {
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-turquoise border-t-transparent" />
           <p className="text-gray2 dark:text-gray2d">
-            {vultisigState?.creationProgress || intl.formatMessage({ id: 'wallet.vultisig.create.creating' })}
+            {vaultManagerState?.creationProgress || intl.formatMessage({ id: 'wallet.vultisig.create.creating' })}
           </p>
         </div>
       )}

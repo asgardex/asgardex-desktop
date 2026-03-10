@@ -142,7 +142,7 @@ export const ASGARDEX_TO_SDK_CHAIN: Record<string, string> = {
   ETH: 'Ethereum',
   THOR: 'THORChain',
   MAYA: 'MayaChain',
-  BSC: 'BSC', // SDK uses 'BSC' not 'BinanceSmartChain'
+  BSC: 'BSC',
   AVAX: 'Avalanche',
   GAIA: 'Cosmos',
   DOGE: 'Dogecoin',
@@ -152,7 +152,12 @@ export const ASGARDEX_TO_SDK_CHAIN: Record<string, string> = {
   BASE: 'Base',
   DASH: 'Dash',
   XRP: 'Ripple',
-  SOL: 'Solana'
+  SOL: 'Solana',
+  ZEC: 'Zcash',
+  KUJI: 'Kujira',
+  ADA: 'Cardano',
+  TRON: 'Tron',
+  XRD: 'Radix'
 }
 
 export const SDK_TO_ASGARDEX_CHAIN: Record<string, string> = Object.entries(ASGARDEX_TO_SDK_CHAIN).reduce(

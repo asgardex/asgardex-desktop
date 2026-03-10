@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { useWalletContext } from '../../contexts/WalletContext'
 import * as walletRoutes from '../../routes/wallet'
-import { KeystoreState, isKeystoreUnlocked } from '../../services/wallet/types'
+import { KeystoreState, VultisigPhase, isKeystoreUnlocked } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { FlatButton, BorderButton } from '../uielements/button'
 
@@ -25,7 +25,7 @@ export const UnlockWalletSettings = ({ keystoreState, unlockHandler }: Props): J
   // Vultisig vault state
   const vultisigState = useObservableState(appWalletService.vaultManager.vultisigState$, {
     mode: 'standalone-vultisig' as const,
-    phase: 'vault-selection' as const,
+    phase: VultisigPhase.VaultSelection,
     availableVaults: [],
     activeVault: null,
     addresses: {}

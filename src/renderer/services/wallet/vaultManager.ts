@@ -24,14 +24,14 @@ import { observableState } from '../../helpers/stateHelper'
 
 const logger = createScopedLogger('Vultisig')
 import { getStorageState } from '../storage/common'
-import { VaultManager, VultisigState, VultisigVaultInfo, CreateFastVaultParams } from './types'
+import { VaultManager, VultisigPhase, VultisigState, VultisigVaultInfo, CreateFastVaultParams } from './types'
 
 /** Callback type for saving the last opened wallet to persistent storage */
 type SaveWalletCallback = (wallet: LastOpenedWallet | undefined) => void
 
 const INITIAL_VULTISIG_STATE: VultisigState = {
   mode: 'standalone-vultisig',
-  phase: 'vault-selection',
+  phase: VultisigPhase.VaultSelection,
   availableVaults: [],
   activeVault: null,
   addresses: {}
@@ -53,14 +53,14 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     const currentState = vultisigState()
 
     // If we're already active with a vault, don't reset
-    if (currentState.phase === 'active' && currentState.activeVault) {
+    if (currentState.phase === VultisigPhase.Active && currentState.activeVault) {
       logger.info('Already in active state, preserving vault')
       return
     }
 
     setVultisigState({
       ...currentState,
-      phase: 'vault-selection'
+      phase: VultisigPhase.VaultSelection
     })
 
     // Initialize SDK (idempotent — promise-lock in main process)
@@ -163,7 +163,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
         logger.info('Setting vault to locked state:', vault.name)
         setVultisigState((prev) => ({
           ...prev,
-          phase: 'vault-locked',
+          phase: VultisigPhase.VaultLocked,
           activeVault: vault,
           addresses: {},
           error: undefined
@@ -177,7 +177,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
 
       setVultisigState((prev) => ({
         ...prev,
-        phase: 'active',
+        phase: VultisigPhase.Active,
         activeVault: vault,
         addresses,
         error: undefined
@@ -198,7 +198,9 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
   const createFastVault = async (params: CreateFastVaultParams): Promise<string> => {
     setVultisigState((prev) => ({
       ...prev,
-      phase: 'vault-creation',
+      phase: VultisigPhase.VaultCreation,
+      activeVault: null,
+      addresses: {},
       error: undefined
     }))
 
@@ -206,7 +208,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     const unsubscribe = window.apiMpc.onCreationProgress((data) => {
       setVultisigState((currentState) => ({
         ...currentState,
-        creationProgress: data.step
+        creationProgress: data.message || data.step
       }))
     })
 
@@ -216,7 +218,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
 
       setVultisigState((prev) => ({
         ...prev,
-        phase: 'verification',
+        phase: VultisigPhase.Verification,
         pendingVaultId: result.vaultId,
         creationProgress: undefined
       }))
@@ -227,7 +229,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
       logger.error('Failed to create vault:', error)
       setVultisigState((prev) => ({
         ...prev,
-        phase: 'vault-selection',
+        phase: VultisigPhase.VaultSelection,
         error: String(error),
         creationProgress: undefined
       }))
@@ -271,7 +273,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
         onSaveWallet(undefined)
         setVultisigState((prev) => ({
           ...prev,
-          phase: 'vault-selection',
+          phase: VultisigPhase.VaultSelection,
           activeVault: null,
           addresses: {}
         }))
@@ -335,7 +337,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
   const resetToVaultSelection = () => {
     setVultisigState((prev) => ({
       ...prev,
-      phase: 'vault-selection',
+      phase: VultisigPhase.VaultSelection,
       activeVault: null,
       addresses: {},
       pendingVaultId: undefined,
@@ -352,7 +354,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
   const setActiveVault = (vault: VultisigVaultInfo, addresses: Record<string, string>) => {
     setVultisigState((prev) => ({
       ...prev,
-      phase: 'active',
+      phase: VultisigPhase.Active,
       activeVault: vault,
       addresses,
       error: undefined
@@ -394,7 +396,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
 
     // Update UI state immediately (same pattern as keystore.lock())
     // This shows the unlock screen right away
-    setVultisigState((prev) => ({ ...prev, phase: 'vault-locked', addresses: {} }))
+    setVultisigState((prev) => ({ ...prev, phase: VultisigPhase.VaultLocked, addresses: {} }))
     logger.info('Vault locked:', vaultName)
 
     // Inform SDK to clear cached password
@@ -437,7 +439,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
       })
 
       logger.info(' unlockVault: Updating state to phase: active')
-      setVultisigState((prev) => ({ ...prev, phase: 'active', addresses, error: undefined }))
+      setVultisigState((prev) => ({ ...prev, phase: VultisigPhase.Active, addresses, error: undefined }))
       logger.info(' unlockVault: State updated, vault unlocked:', vaultName)
     } catch (error) {
       logger.error(' unlockVault: Failed to unlock vault:', error)
@@ -450,9 +452,16 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
   }
 
   /**
-   * Validate vault password WITHOUT modifying global state
-   * Used by send confirmation modal to check password before triggering tx
-   * Unlike unlockVault(), this does not update phase, addresses, or error state
+   * Validate vault password without modifying VaultManager state.
+   *
+   * Used by send confirmation modal to verify the password before triggering a tx.
+   * Unlike {@link unlockVault}, this does NOT update phase, addresses, or error state.
+   *
+   * **Side-effect:** Calls `vault.unlock()` in the SDK, which resets the password
+   * cache TTL (extends the unlock window). The SDK has no dedicated password-check
+   * method. This is acceptable because every caller that validates a password is
+   * about to perform an operation (signing, sending) that requires the vault to be
+   * unlocked anyway, so extending the TTL is the desired behaviour.
    */
   const validatePassword = async (password: string): Promise<boolean> => {
     const currentState = vultisigState()
@@ -461,7 +470,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
       await window.apiMpc.unlockVault(currentState.activeVault.id, password)
       return true
     } catch {
-      return false // Don't update global state - this is just validation
+      return false
     }
   }
 
@@ -470,7 +479,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
    */
   const isVaultLocked = (): boolean => {
     const currentState = vultisigState()
-    return currentState.phase === 'vault-locked'
+    return currentState.phase === VultisigPhase.VaultLocked
   }
 
   // Eagerly load vaults on service creation (for dropdown)

@@ -48,12 +48,13 @@ export type VultisigVaultInfo = {
   chains: string[]
 }
 
-export type VultisigPhase =
-  | 'vault-selection' // List/select vault
-  | 'vault-creation' // Creating new vault
-  | 'verification' // Email verification (fast vault)
-  | 'vault-locked' // Vault selected but needs password unlock
-  | 'active' // Vault is active and unlocked, ready to use
+export enum VultisigPhase {
+  VaultSelection = 'vault-selection', // List/select vault
+  VaultCreation = 'vault-creation', // Creating new vault
+  Verification = 'verification', // Email verification (fast vault)
+  VaultLocked = 'vault-locked', // Vault selected but needs password unlock
+  Active = 'active' // Vault is active and unlocked, ready to use
+}
 
 export type VultisigState = {
   mode: 'standalone-vultisig'
@@ -76,8 +77,7 @@ export const isStandaloneLedgerMode = (state: AppWalletState): state is Standalo
 export const isVultisigMode = (state: AppWalletState): state is VultisigState =>
   typeof state === 'object' && state !== null && 'mode' in state && state.mode === 'standalone-vultisig'
 
-export const isVultisigVaultLocked = (state: VultisigState): boolean =>
-  state.phase === 'vault-locked' || (state.phase !== 'active' && state.activeVault !== null)
+export const isVultisigVaultLocked = (state: VultisigState): boolean => state.phase === VultisigPhase.VaultLocked
 
 export const isKeystoreMode = (state: AppWalletState): state is KeystoreState =>
   !isStandaloneLedgerMode(state) && !isVultisigMode(state)

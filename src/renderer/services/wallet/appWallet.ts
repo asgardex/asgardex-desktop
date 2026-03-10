@@ -27,7 +27,8 @@ import {
   isVultisigMode,
   isKeystoreMode,
   isKeystoreUnlocked,
-  isVultisigVaultLocked
+  isVultisigVaultLocked,
+  VultisigPhase
 } from './types'
 import { createVaultManager } from './vaultManager'
 
@@ -132,6 +133,16 @@ export const createAppWalletService = (): AppWalletService => {
 
     // Only update if we're in vultisig mode
     if (isVultisigMode(currentAppState)) {
+      // Skip transient creation phases — these only matter to VaultCreateView
+      // which manages its own formState. Propagating them causes cascading
+      // re-renders that crash downstream components.
+      if (
+        newVultisigState.phase === VultisigPhase.VaultCreation ||
+        newVultisigState.phase === VultisigPhase.Verification
+      ) {
+        logger.info('Skipping transient phase propagation:', newVultisigState.phase)
+        return
+      }
       logger.info('Propagating vultisig state to appWalletState$')
       setAppWalletState(newVultisigState)
       logger.info('appWalletState$ updated with phase:', newVultisigState.phase)
@@ -492,16 +503,29 @@ export const createAppWalletService = (): AppWalletService => {
     if (wallet.type === WalletType.Keystore) {
       // Selecting keystore wallet - let keystoreService handle it
       // This will trigger keystoreState$ change which updates appWalletState$
-      // Note: changeKeystoreWallet returns LiveData, we convert to Promise
-      return new Promise((resolve, reject) => {
-        keystoreService.changeKeystoreWallet(wallet.id).subscribe({
-          next: (rd) => {
-            if (RD.isSuccess(rd)) resolve()
-            if (RD.isFailure(rd)) reject(rd.error)
-          },
-          error: reject
+      // Filter for terminal state + timeout to prevent hanging
+      const rd = await keystoreService
+        .changeKeystoreWallet(wallet.id)
+        .pipe(
+          RxOp.filter((rd) => RD.isSuccess(rd) || RD.isFailure(rd)),
+          RxOp.take(1),
+          RxOp.timeout(30_000)
+        )
+        .toPromise()
+        .then((result) => {
+          if (result === undefined) throw new Error('Wallet selection completed without result')
+          return result
         })
-      })
+        .catch((err) => {
+          const error = err instanceof Error ? err : new Error('Wallet selection timed out or completed without result')
+          logger.error('selectWallet failed:', error.message)
+          throw error
+        })
+      if (RD.isFailure(rd)) {
+        logger.error('selectWallet: keystore wallet change failed:', rd.error)
+        throw rd.error
+      }
+      return
     } else if (wallet.type === WalletType.Vultisig) {
       // Selecting vultisig vault - switch to vultisig mode and select vault
       const currentState = appWalletState()

@@ -194,7 +194,7 @@ export const NoWalletView = () => {
           onClick={useVultisigHandler}>
           <ShieldCheckIcon className="text-gray-500" width={40} height={40} />
           <div className="flex flex-col items-start">
-            <span className="text-lg text-text1 dark:text-text1d">Use Vultisig Vault</span>
+            <span className="text-lg text-text1 dark:text-text1d">Create Vultisig Fast Vault</span>
             <span className="text-gray-500">MPC threshold signature wallet - no seed phrase needed</span>
           </div>
         </div>

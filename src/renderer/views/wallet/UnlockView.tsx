@@ -10,7 +10,7 @@ import { createScopedLogger } from '../../helpers/logger'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import * as walletRoutes from '../../routes/wallet'
-import { isVultisigMode } from '../../services/wallet/types'
+import { isVultisigMode, VultisigPhase } from '../../services/wallet/types'
 
 const logger = createScopedLogger('UnlockView')
 
@@ -26,7 +26,7 @@ export const UnlockView = (): JSX.Element => {
   // Get Vultisig vaults
   const vultisigState = useObservableState(appWalletService.vaultManager.vultisigState$, {
     mode: 'standalone-vultisig' as const,
-    phase: 'vault-selection' as const,
+    phase: VultisigPhase.VaultSelection,
     availableVaults: [],
     activeVault: null,
     addresses: {}
@@ -38,7 +38,7 @@ export const UnlockView = (): JSX.Element => {
     if (
       appWalletState &&
       isVultisigMode(appWalletState) &&
-      vultisigState.phase === 'active' &&
+      vultisigState.phase === VultisigPhase.Active &&
       vultisigState.activeVault
     ) {
       navigate(walletRoutes.assets.path())
@@ -61,7 +61,7 @@ export const UnlockView = (): JSX.Element => {
   }
 
   // Determine if we're showing Vultisig unlock screen
-  const isVultisigLocked = vultisigState.phase === 'vault-locked' && vultisigState.activeVault !== null
+  const isVultisigLocked = vultisigState.phase === VultisigPhase.VaultLocked && vultisigState.activeVault !== null
 
   // Vultisig vault import state
   const [showPasswordModal, setShowPasswordModal] = useState(false)

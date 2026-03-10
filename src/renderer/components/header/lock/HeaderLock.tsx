@@ -85,8 +85,13 @@ export const HeaderLock = (props: Props): JSX.Element => {
                     )}>
                     {({ open }) => (
                       <>
-                        <span className="w-full">
+                        <span className="flex w-full items-center">
                           {truncateMiddle(selectedWallet.name, { start: 3, end: 3, max: 6 })}
+                          {selectedWallet.type === WalletType.Vultisig && (
+                            <span className="ml-1 rounded-full bg-warning0 px-[5px] py-[1px] text-[9px] leading-tight font-bold text-white">
+                              BETA
+                            </span>
+                          )}
                         </span>
                         <ChevronDownIcon
                           className={clsx('ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })}
@@ -124,7 +129,12 @@ export const HeaderLock = (props: Props): JSX.Element => {
                             <span className="flex items-center">
                               {truncateMiddle(wallet.name, { start: 9, end: 9, max: 20 })}
                               {wallet.type === WalletType.Vultisig && (
-                                <span className="text-10 ml-1 text-turquoise">(V)</span>
+                                <>
+                                  <span className="text-10 ml-1 text-turquoise">(V)</span>
+                                  <span className="ml-1 rounded-full bg-warning0 px-[5px] py-[1px] text-[9px] leading-tight font-bold text-white">
+                                    BETA
+                                  </span>
+                                </>
                               )}
                             </span>
                             {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
