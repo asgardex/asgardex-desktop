@@ -48,14 +48,13 @@ export const SecureVaultCreateView = () => {
   }, [])
 
   // Cleanup function to cancel keygen and dispose SDK
+  // NOTE: Does NOT clean up event listeners — they are registered once on mount
+  // and must survive cancel/retry cycles. Only unmount and terminal success clean them up.
   const cleanupSession = useCallback(async () => {
     if (!hasActiveSession.current) return
 
     setIsCleaningUp(true)
     logger.info('Cancelling and cleaning up session...')
-
-    // Clean up event listeners first
-    cleanupEventListeners()
 
     try {
       // First cancel any ongoing keygen operation
@@ -124,9 +123,10 @@ export const SecureVaultCreateView = () => {
     }
   }, [])
 
-  // Clean up event listeners when entering terminal states (success/error)
+  // Clean up event listeners on success (no longer needed).
+  // On error, listeners are kept alive so retry works without re-mounting.
   useEffect(() => {
-    if (formState === 'success' || formState === 'error') {
+    if (formState === 'success') {
       cleanupEventListeners()
     }
   }, [formState, cleanupEventListeners])

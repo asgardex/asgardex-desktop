@@ -40,19 +40,25 @@ export async function initializeSDK(): Promise<Vultisig> {
 
     // SDK uses FileStorage by default in Electron (stores at ~/.vultisig)
     // Password handling is done via direct unlockVault() calls from UI
-    sdkInstance = new Vultisig({
+    const instance = new Vultisig({
       passwordCache: {
         defaultTTL: PASSWORD_CACHE_TTL
       }
     })
 
-    await sdkInstance.initialize()
+    await instance.initialize()
+    // Only assign after successful initialization
+    sdkInstance = instance
     log.info('[MPC SDK] Initialized successfully')
     return sdkInstance
   })()
 
   try {
     return await initPromise
+  } catch (error) {
+    // Ensure broken instance is not left behind on failure
+    sdkInstance = null
+    throw error
   } finally {
     initPromise = null
   }

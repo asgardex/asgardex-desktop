@@ -496,7 +496,6 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
     if (existingController) {
       log.warn(`[MPC IPC] Aborting existing signing session for vault: ${vaultId}`)
       existingController.abort()
-      signingControllers.delete(vaultId)
     }
 
     // Create abort controller for cancellation support
@@ -580,7 +579,9 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       throw wrapSDKError(error)
     } finally {
       clearInterval(heartbeat)
-      signingControllers.delete(vaultId)
+      if (signingControllers.get(vaultId) === controller) {
+        signingControllers.delete(vaultId)
+      }
     }
   })
 
@@ -625,7 +626,6 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
     if (existingSendController) {
       log.warn(`[MPC IPC] Aborting existing signing session for vault: ${vaultId}`)
       existingSendController.abort()
-      signingControllers.delete(vaultId)
     }
 
     // Create abort controller for cancellation
@@ -776,7 +776,9 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       throw wrapSDKError(error)
     } finally {
       clearInterval(heartbeat)
-      signingControllers.delete(vaultId)
+      if (signingControllers.get(vaultId) === controller) {
+        signingControllers.delete(vaultId)
+      }
     }
   })
 

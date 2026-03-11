@@ -11,9 +11,9 @@ import { Input } from '../../../components/uielements/input/Input'
 import { InputPassword } from '../../../components/uielements/input/InputPassword'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { createScopedLogger } from '../../../helpers/logger'
+import * as walletRoutes from '../../../routes/wallet'
 
 const logger = createScopedLogger('FastVault')
-import * as walletRoutes from '../../../routes/wallet'
 
 type FormState = 'input' | 'creating' | 'verify' | 'success' | 'error'
 

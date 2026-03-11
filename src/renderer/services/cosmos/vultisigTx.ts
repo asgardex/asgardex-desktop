@@ -56,7 +56,9 @@ export const createVultisigCosmosTx = (
 
     // Native chain deposits (RUNE on THOR, CACAO on MAYA) use MsgDeposit, not MsgSend.
     // These have no receiver (pool address is empty). The SDK uses the sender as signer.
-    const isDeposit = !recipient
+    // Only THOR and MAYA support native deposits — other Cosmos chains (GAIA etc.) should never set isDeposit.
+    const isNativeAsset = denom === nativeDenom || !denom
+    const isDeposit = !recipient && isNativeAsset && (chainName === 'THOR' || chainName === 'MAYA')
 
     const txParams: SendTransactionParams = {
       vaultId,
