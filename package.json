@@ -129,6 +129,7 @@
     "fs-extra": "^10.1.0",
     "io-ts": "^2.2.16",
     "io-ts-types": "^0.5.19",
+    "lightweight-charts": "^5.1.0",
     "lodash": "^4.17.21",
     "observable-hooks": "^4.2.1",
     "qrcode": "^1.5.3",
