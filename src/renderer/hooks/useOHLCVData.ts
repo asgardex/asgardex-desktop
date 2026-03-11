@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { AnyAsset, assetFromString, assetToString } from '@xchainjs/xchain-util'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AnyAsset, assetFromString, assetToString } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'

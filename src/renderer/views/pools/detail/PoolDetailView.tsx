@@ -10,7 +10,6 @@ import { useIntl } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { AssetRuneNative, AssetCacao } from '../../../../shared/utils/asset'
-import { Spin } from '../../../components/uielements/spin'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { BackLinkButton } from '../../../components/uielements/button'
 import {
@@ -21,6 +20,7 @@ import {
   IndicatorToolbar
 } from '../../../components/uielements/chart'
 import { Label } from '../../../components/uielements/label'
+import { Spin } from '../../../components/uielements/spin'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useAppContext } from '../../../contexts/AppContext'
 import { useBinanceOHLCV } from '../../../hooks/useBinanceOHLCV'
