@@ -166,7 +166,6 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
   // when oWalletBalance changes from None to Some (which would lose signing state)
   const balance = FP.pipe(
     oWalletBalance,
-<<<<<<< HEAD
     O.getOrElse(() => emptyBalance)
   )
 

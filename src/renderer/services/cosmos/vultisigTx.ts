@@ -12,10 +12,10 @@ import * as RxOp from 'rxjs/operators'
 
 import { SendTransactionParams } from '../../../shared/api/mpcTypes'
 import { createScopedLogger } from '../../helpers/logger'
-
-const logger = createScopedLogger('Vultisig')
 import { appWalletService } from '../wallet/appWallet'
 import { ErrorId, TxHashLD } from '../wallet/types'
+
+const logger = createScopedLogger('Vultisig')
 
 /** Minimal params shape shared by THOR, MAYA, and GAIA SendTxParams */
 type CosmosSendParams = {

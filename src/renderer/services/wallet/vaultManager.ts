@@ -369,6 +369,11 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
    * This is called on service creation so vaults are available immediately
    */
   const initializeAndLoadVaults = async () => {
+    // Guard: apiMpc is only available in Electron (not in test environment)
+    if (!window.apiMpc) {
+      logger.debug('apiMpc not available, skipping eager initialization')
+      return
+    }
     try {
       logger.info('Initializing SDK and loading vaults eagerly...')
       await window.apiMpc.init()

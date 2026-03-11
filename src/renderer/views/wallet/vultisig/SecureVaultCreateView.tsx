@@ -74,7 +74,7 @@ export const SecureVaultCreateView = () => {
 
     hasActiveSession.current = false
     setIsCleaningUp(false)
-  }, [cleanupEventListeners])
+  }, [])
 
   // Reset all form state
   const resetState = useCallback(() => {

@@ -80,6 +80,7 @@ export const UnlockView = (): JSX.Element => {
       } else {
         // Import unencrypted vault directly
         const vault = await window.apiMpc.importVault(result.content)
+        await appWalletService.switchToVultisigMode(true)
         await appWalletService.vaultManager.loadVaults()
         await appWalletService.vaultManager.selectVault(vault.id, false)
         navigate(walletRoutes.assets.path())
@@ -87,7 +88,7 @@ export const UnlockView = (): JSX.Element => {
     } catch (error) {
       logger.error('Failed to import vault:', error)
     }
-  }, [navigate, appWalletService.vaultManager])
+  }, [navigate, appWalletService])
 
   // Handle password submission for encrypted vault
   const handlePasswordSubmit = useCallback(
@@ -96,6 +97,7 @@ export const UnlockView = (): JSX.Element => {
 
       try {
         const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
+        await appWalletService.switchToVultisigMode(true)
         await appWalletService.vaultManager.loadVaults()
         await appWalletService.vaultManager.selectVault(vault.id, false)
         setShowPasswordModal(false)
@@ -106,7 +108,7 @@ export const UnlockView = (): JSX.Element => {
         throw error
       }
     },
-    [pendingVaultFile, navigate, appWalletService.vaultManager]
+    [pendingVaultFile, navigate, appWalletService]
   )
 
   const handlePasswordModalClose = useCallback(() => {

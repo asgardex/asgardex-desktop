@@ -13,11 +13,11 @@ import * as RxOp from 'rxjs/operators'
 
 import { SendTransactionParams } from '../../../shared/api/mpcTypes'
 import { createScopedLogger } from '../../helpers/logger'
-
-const logger = createScopedLogger('Vultisig')
 import { appWalletService } from '../wallet/appWallet'
 import { ErrorId, TxHashLD } from '../wallet/types'
 import { SendTxParams } from './types'
+
+const logger = createScopedLogger('Vultisig')
 
 /**
  * Creates a Vultisig send handler for Solana

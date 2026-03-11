@@ -415,10 +415,9 @@ export const createBalancesService = ({
    * to give to the user last balances he loaded without re-requesting
    * balances data which might be very expensive.
    */
-  const walletBalancesState: Map<
-    { chain: Chain; walletType: WalletType; walletBalanceType: WalletBalanceType },
-    WalletBalancesRD
-  > = new Map()
+  const walletBalancesState: Map<string, WalletBalancesRD> = new Map()
+  const balanceCacheKey = (chain: Chain, walletType: WalletType, walletBalanceType: WalletBalanceType): string =>
+    `${chain}|${walletType}|${walletBalanceType}`
 
   // Whenever network is changed, reset stored balances
   const networkSub = network$.subscribe(() => {
@@ -467,7 +466,7 @@ export const createBalancesService = ({
     return FP.pipe(
       reload$,
       RxOp.switchMap((shouldReloadData) => {
-        const savedResult = walletBalancesState.get({ chain, walletType, walletBalanceType })
+        const savedResult = walletBalancesState.get(balanceCacheKey(chain, walletType, walletBalanceType))
         // For every new simple subscription return cached results if they exist
         if (!shouldReloadData && savedResult) {
           return Rx.of(savedResult)
@@ -481,7 +480,7 @@ export const createBalancesService = ({
           // For every successful load save results to the memory-based cache
           // to avoid unwanted data re-requesting.
           liveData.map((balances) => {
-            walletBalancesState.set({ chain, walletType, walletBalanceType }, RD.success(balances))
+            walletBalancesState.set(balanceCacheKey(chain, walletType, walletBalanceType), RD.success(balances))
             return balances
           }),
           RxOp.startWith(savedResult || RD.initial)

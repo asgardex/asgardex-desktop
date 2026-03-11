@@ -74,7 +74,7 @@ export const NoWalletView = () => {
         const vault = await window.apiMpc.importVault(result.content)
         await vaultManager.loadVaults()
         await vaultManager.selectVault(vault.id, false)
-        navigate(walletRoutes.assets.template)
+        navigate(walletRoutes.assets.path())
       }
     } catch (error) {
       logger.error('Failed to import vault:', error)
@@ -92,7 +92,7 @@ export const NoWalletView = () => {
         await vaultManager.selectVault(vault.id, false)
         setShowPasswordModal(false)
         setPendingVaultFile(null)
-        navigate(walletRoutes.assets.template)
+        navigate(walletRoutes.assets.path())
       } catch (error) {
         logger.error('Failed to import vault with password:', error)
         throw error

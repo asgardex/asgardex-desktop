@@ -146,7 +146,7 @@ export const createAppWalletService = (): AppWalletService => {
       setAppWalletState(newVultisigState)
       logger.info('appWalletState$ updated with phase:', newVultisigState.phase)
     } else {
-      logger.info('NOT in vultisig mode, skipping state propagation')
+      logger.debug('NOT in vultisig mode, skipping state propagation')
     }
   })
   subscriptions.push(vultisigSub)
@@ -404,7 +404,10 @@ export const createAppWalletService = (): AppWalletService => {
     )
     .subscribe(() => {
       logger.info('Keystore data loaded, restoring last opened wallet')
-      restoreLastOpenedWallet()
+      void restoreLastOpenedWallet().catch((error) => {
+        logger.error('Failed to restore last opened wallet', error)
+        void switchToKeystoreMode()
+      })
     })
   subscriptions.push(startupSub)
 
