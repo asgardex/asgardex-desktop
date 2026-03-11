@@ -29,7 +29,7 @@ export const mayaDetails: Dex = {
   chain: MAYAChain,
   asset: AssetCacao,
   decimals: CACAO_DECIMAL,
-  url: 'Mayascan.com'
+  url: 'explorer.mayachain.info'
 }
 
 export type TrustedAddress = {

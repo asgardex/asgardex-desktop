@@ -24,7 +24,6 @@ import { getChainAsset } from '../../../helpers/chainHelper'
 import { isEvmChain } from '../../../helpers/evmHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddress, getWalletBalanceByAssetAndWalletType } from '../../../helpers/walletHelper'
-import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
@@ -53,7 +52,6 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
   const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
-  const { mayaScanPriceRD } = useObserveMayaScanPrice()
 
   const {
     balancesState$,
@@ -168,6 +166,7 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
   // when oWalletBalance changes from None to Some (which would lose signing state)
   const balance = FP.pipe(
     oWalletBalance,
+<<<<<<< HEAD
     O.getOrElse(() => emptyBalance)
   )
 
@@ -196,7 +195,6 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
           validatePassword$={validatePassword$}
           network={network}
           poolDetails={poolDetails}
-          mayaScanPrice={mayaScanPriceRD}
           oPoolAddress={oPoolAddress}
           oPoolAddressMaya={oPoolAddressMaya}
         />
