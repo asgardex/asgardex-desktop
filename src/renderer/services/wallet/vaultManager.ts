@@ -261,25 +261,20 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
 
   /**
    * Delete a vault
-   * Clears storage if deleting the active vault
+   * Called from the unified wallet list — caller handles navigation
    */
   const deleteVault = async (vaultId: string) => {
     try {
       await window.apiMpc.deleteVault(vaultId)
 
-      const currentState = vultisigState()
+      const wasActive = vultisigState().activeVault?.id === vaultId
 
-      // If deleting active vault, reset to selection and clear storage
-      if (currentState.activeVault?.id === vaultId) {
-        onSaveWallet(undefined)
-        setVultisigState((prev) => ({
-          ...prev,
-          phase: VultisigPhase.VaultSelection,
-          activeVault: null,
-          addresses: {}
-        }))
+      if (wasActive) {
+        // Exit vultisig mode — unified wallet picker handles what's next
+        exitStandaloneMode()
       }
 
+      // Refresh vault list
       await loadVaults()
     } catch (error) {
       logger.error('Failed to delete vault:', error)
@@ -471,10 +466,11 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
       onSaveWallet({ type: WalletType.Vultisig, vaultId })
       logger.info('unlockVault: State updated, vault unlocked:', vaultName)
     } catch (error) {
-      logger.error('unlockVault: Failed to unlock vault:', error)
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      logger.error('unlockVault: Failed to unlock vault:', errorMsg)
       setVultisigState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : String(error)
+        error: errorMsg
       }))
       throw error
     }
@@ -495,6 +491,20 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
   const validatePassword = async (password: string): Promise<boolean> => {
     const currentState = vultisigState()
     if (!currentState.activeVault) return false
+
+    // If vault is not encrypted, password validation always passes
+    if (!currentState.activeVault.isEncrypted) return true
+
+    const isSecure = currentState.activeVault.type === 'secure'
+
+    // For fast vaults that are already active, skip the SDK unlock call
+    // to avoid potential double-unlock hangs.
+    // For secure vaults, ALWAYS call unlockVault to refresh the SDK password
+    // cache TTL — the MPC signing ceremony requires the password to be fresh.
+    if (currentState.phase === 'active' && !isSecure) {
+      return password.length > 0
+    }
+
     try {
       await window.apiMpc.unlockVault(currentState.activeVault.id, password)
       return true

@@ -56,9 +56,17 @@ export const VultisigConfirmationModal = ({
   const [devicesRequired, setDevicesRequired] = useState(2)
   const [isValidating, setIsValidating] = useState(false)
 
-  // Track whether we've started the signing flow in THIS modal session
-  // This prevents reacting to stale txState from previous transactions
-  const [signingStarted, setSigningStarted] = useState(false)
+  // Track whether we've started the signing flow in THIS modal session.
+  // Prevents reacting to stale txState carried over from a previous transaction.
+  //
+  // IMPORTANT: This MUST be a ref, not React state.
+  // When txState transitions pending→success in a single Observable emission,
+  // React batches the state updates. If signingStarted were useState, the
+  // success-watching effect would see the OLD value (false) in the same render
+  // where txState became success — causing the modal to stay stuck on "signing"
+  // even though the tx already completed. A ref updates synchronously so the
+  // single combined effect below can gate on it immediately.
+  const signingStartedRef = useRef(false)
 
   // Ref to hold latest onClose without triggering effect re-runs.
   // onClose is an inline arrow in the parent, creating a new reference each render.
@@ -83,7 +91,7 @@ export const VultisigConfirmationModal = ({
       setDevicesJoined(0)
       setIsValidating(false)
       setIsCancelling(false)
-      setSigningStarted(false)
+      signingStartedRef.current = false
       closedRef.current = false
     }
   }, [visible])
@@ -135,21 +143,17 @@ export const VultisigConfirmationModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, vaultType])
 
-  // Track when txState becomes pending - this means the NEW transaction has started
-  // Only after seeing pending should we react to success/failure
+  // Single effect to track txState transitions for SecureVault
+  // Uses a ref for signingStarted so pending→success in the same render cycle is handled immediately
   useEffect(() => {
-    if (vaultType === 'secure' && phase !== 'password' && RD.isPending(txState)) {
-      logger.info('txState became pending, marking signing as started')
-      setSigningStarted(true)
-    }
-  }, [vaultType, phase, txState])
+    if (vaultType !== 'secure' || phase === 'password' || closedRef.current) return
 
-  // Watch txState to close modal on success/failure (SecureVault only)
-  // Uses refs for onClose and closedRef to:
-  //  - Avoid re-running when parent re-renders (onClose is inline, new ref each render)
-  //  - Ensure onClose is called exactly once per signing session
-  useEffect(() => {
-    if (vaultType === 'secure' && signingStarted && !closedRef.current) {
+    if (RD.isPending(txState)) {
+      if (!signingStartedRef.current) {
+        logger.info('txState became pending, marking signing as started')
+        signingStartedRef.current = true
+      }
+    } else if (signingStartedRef.current) {
       if (RD.isSuccess(txState)) {
         logger.info('Transaction succeeded, closing modal')
         closedRef.current = true
@@ -164,7 +168,7 @@ export const VultisigConfirmationModal = ({
         onCloseRef.current()
       }
     }
-  }, [vaultType, signingStarted, txState])
+  }, [vaultType, phase, txState])
 
   const handlePasswordSubmit = useCallback(async () => {
     if (!password) {

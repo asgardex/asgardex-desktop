@@ -472,9 +472,10 @@ export const createEvmTransactionService = (
   }
 
   // Vultisig transaction handlers - MPC signing
-  const sendVultisigTx = createVultisigEvmTx(client$, chain)
-  const sendVultisigPoolTx = createVultisigEvmPoolTx(client$, chain)
-  const sendVultisigApprove = createVultisigEvmApprove(client$, chain)
+  // Use readOnlyClient$ (enhancedClient$) so pool/approve handlers work without keystore
+  const sendVultisigTx = createVultisigEvmTx(readOnlyClient$, chain)
+  const sendVultisigPoolTx = createVultisigEvmPoolTx(readOnlyClient$, chain)
+  const sendVultisigApprove = createVultisigEvmApprove(readOnlyClient$, chain)
 
   const sendTx = (params: SendTxParams) =>
     FP.pipe(

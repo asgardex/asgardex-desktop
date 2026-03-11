@@ -275,19 +275,20 @@ export const WalletSettings = (props: Props): JSX.Element => {
 
   const removeWalletHandler = useCallback(async () => {
     if (vultisigRemoveVault && vultisigActiveVaultId) {
+      // Delete vault and exit vultisig mode — unified wallet picker handles what's next
       await vultisigRemoveVault(vultisigActiveVaultId)
-      navigate(appRoutes.base.template)
     } else if (removeKeystoreWallet) {
-      const noWallets = await removeKeystoreWallet()
-      if (noWallets >= 1) {
-        // goto unlock screen to unlock another wallet
-        navigate(walletRoutes.locked.path())
-      } else {
-        // no wallet -> go to homepage
-        navigate(appRoutes.base.template)
-      }
+      await removeKeystoreWallet()
     }
-  }, [vultisigRemoveVault, vultisigActiveVaultId, removeKeystoreWallet, navigate])
+    // Navigate based on remaining wallets (keystore + vultisig)
+    if (wallets.length >= 1) {
+      // Other wallets exist — go to unlock screen
+      navigate(walletRoutes.locked.path())
+    } else {
+      // No wallets left — go to homepage
+      navigate(appRoutes.base.template)
+    }
+  }, [vultisigRemoveVault, vultisigActiveVaultId, removeKeystoreWallet, wallets.length, navigate])
 
   const onSuccessPassword = useCallback(() => {
     setShowPasswordModal(false)
