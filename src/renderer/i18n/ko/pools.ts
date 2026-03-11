@@ -18,7 +18,15 @@ const pools: PoolsMessages = {
   'pools.incentivependulum.info': '인센티브 펜듈럼: {percentage}%',
   'pools.incentivependulum.tooltip': '풀에 {pooled} 풀링됨, 노드에 {bonded} 보관됨',
   'pools.incentivependulum.error': '인센티브 펜듈럼 데이터를 불러오는 중 오류 발생',
-  'pools.bondable': '결합 가능'
+  'pools.bondable': '결합 가능',
+  'pools.chart': '차트',
+  'pools.chart.noData': '차트 데이터가 없습니다',
+  'pools.chart.source.binance': 'Binance',
+  'pools.chart.source.midgard': 'THORChain',
+  'pools.chart.spread': '스프레드',
+  'pools.chart.indicator.sma': 'SMA',
+  'pools.chart.indicator.ema': 'EMA',
+  'pools.chart.indicator.bb': '볼린저'
 }
 
 export default pools

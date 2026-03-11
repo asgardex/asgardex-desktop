@@ -7054,6 +7054,7 @@ __metadata:
     happy-dom: "npm:^17.4.6"
     io-ts: "npm:^2.2.16"
     io-ts-types: "npm:^0.5.19"
+    lightweight-charts: "npm:^5.1.0"
     lodash: "npm:^4.17.21"
     observable-hooks: "npm:^4.2.1"
     postcss: "npm:8.4.47"
@@ -10146,6 +10147,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fancy-canvas@npm:2.1.0":
+  version: 2.1.0
+  resolution: "fancy-canvas@npm:2.1.0"
+  checksum: 10/b23f666446b0a77054f047e282a4186444d65482d97824ebfbd7ae2bf5b41700de1f449226d6b4a6161eddd6dbb1fd75c4f815d92ee49d59e0654a2d4a63451a
+  languageName: node
+  linkType: hard
+
 "fast-deep-equal@npm:^3.1.1, fast-deep-equal@npm:^3.1.3":
   version: 3.1.3
   resolution: "fast-deep-equal@npm:3.1.3"
@@ -12135,6 +12143,15 @@ __metadata:
     lightningcss-win32-x64-msvc:
       optional: true
   checksum: 10/d6cc06d9bac295589a49446e9c45a241dfa16f4f81a7318c26cbc0be3e189003ec0da5d9a0fd9bdffc63a3ce05878cc7329277eaac77a826e8b68c73dc96cfda
+  languageName: node
+  linkType: hard
+
+"lightweight-charts@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "lightweight-charts@npm:5.1.0"
+  dependencies:
+    fancy-canvas: "npm:2.1.0"
+  checksum: 10/8fbe3809838727a2513435cbf4470128eafd1753a23fe29e00eee16c81ae016faf824ac21a95c69778f486f40dcb75cd685992964aa1df499703cda7e0fa7804
   languageName: node
   linkType: hard
 
