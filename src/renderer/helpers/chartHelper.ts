@@ -44,10 +44,7 @@ const MIDGARD_MAX_COUNT = 400
 export const getCount = (dateRange: ChartDateRange, timeframe: CandleTimeframe): number => {
   const days: Record<ChartDateRange, number> = {
     '7d': 7,
-    '30d': 30,
-    '90d': 90,
-    '180d': 180,
-    '365d': 365
+    '30d': 30
   }
   const hoursPerInterval: Record<CandleTimeframe, number> = {
     '1H': 1,

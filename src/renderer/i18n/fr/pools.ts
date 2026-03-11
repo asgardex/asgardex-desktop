@@ -23,7 +23,10 @@ const pools: PoolsMessages = {
   'pools.chart.noData': 'Aucune donnée graphique disponible',
   'pools.chart.source.binance': 'Binance',
   'pools.chart.source.midgard': 'THORChain',
-  'pools.chart.spread': 'Écart'
+  'pools.chart.spread': 'Écart',
+  'pools.chart.indicator.sma': 'SMA',
+  'pools.chart.indicator.ema': 'EMA',
+  'pools.chart.indicator.bb': 'Bollinger'
 }
 
 export default pools

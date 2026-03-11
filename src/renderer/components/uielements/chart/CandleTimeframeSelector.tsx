@@ -17,9 +17,7 @@ export const CandleTimeframeSelector = ({ selected, onChange }: Props) => (
         onClick={() => onChange(tf)}
         className={clsx(
           'text-12 rounded px-3 py-1 font-main transition-colors',
-          tf === selected
-            ? 'bg-turquoise text-bg0 dark:text-bg0d'
-            : 'text-text2 hover:text-text0 dark:text-text2d dark:hover:text-text0d'
+          tf === selected ? 'bg-turquoise text-white' : 'text-gray-400 hover:text-white'
         )}>
         {tf}
       </button>

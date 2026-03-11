@@ -17,7 +17,8 @@ import {
   CandleTimeframeSelector,
   ChartDateRangeSelector,
   TradingChart,
-  SpreadLabel
+  SpreadLabel,
+  IndicatorToolbar
 } from '../../../components/uielements/chart'
 import { Label } from '../../../components/uielements/label'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
@@ -28,7 +29,13 @@ import { usePriceSpread } from '../../../hooks/usePriceSpread'
 import * as poolsRoutes from '../../../routes/pools'
 import { DEFAULT_NETWORK } from '../../../services/const'
 import { useApp } from '../../../store/app/hooks'
-import type { CandleTimeframe, ChartDateRange, OHLCVDataRD } from './types'
+import type { CandleTimeframe, ChartDateRange, IndicatorConfig, OHLCVDataRD } from './types'
+
+const DEFAULT_INDICATORS: IndicatorConfig[] = [
+  { type: 'SMA', enabled: false, period: 20, color: '#FF6B6B' },
+  { type: 'EMA', enabled: false, period: 20, color: '#4ECDC4' },
+  { type: 'BB', enabled: false, period: 20, color: '#FFE66D' }
+]
 
 export const PoolDetailView = () => {
   const { asset: routeAsset } = useParams<{ asset: string }>()
@@ -38,8 +45,9 @@ export const PoolDetailView = () => {
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
 
-  const [timeframe, setTimeframe] = useState<CandleTimeframe>('1D')
+  const [timeframe, setTimeframe] = useState<CandleTimeframe>('4H')
   const [dateRange, setDateRange] = useState<ChartDateRange>('30d')
+  const [indicators, setIndicators] = useState<IndicatorConfig[]>(DEFAULT_INDICATORS)
 
   const poolAsset = useMemo(() => (routeAsset ? assetFromString(routeAsset) : null), [routeAsset])
 
@@ -83,57 +91,65 @@ export const PoolDetailView = () => {
       {/* Header */}
       <div className="flex items-center gap-4">
         <BackLinkButton className="!m-0" />
-        <AssetIcon asset={poolAsset} size="normal" network={network} />
+        <AssetIcon asset={poolAsset} size="normal" network={network} className="pointer-events-none" />
         <h2 className="font-main text-18 text-text0 dark:text-text0d">{poolAsset.ticker}</h2>
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-between">
-        <CandleTimeframeSelector selected={timeframe} onChange={setTimeframe} />
-        <ChartDateRangeSelector selected={dateRange} onChange={setDateRange} />
-      </div>
+      {/* Chart panel — always dark themed */}
+      <div className="flex flex-col gap-3 rounded-lg bg-[#131722] p-4">
+        {/* Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <CandleTimeframeSelector selected={timeframe} onChange={setTimeframe} />
+            <ChartDateRangeSelector selected={dateRange} onChange={setDateRange} />
+          </div>
+          <div className="flex items-center gap-2">
+            <IndicatorToolbar indicators={indicators} onChange={setIndicators} />
+          </div>
+        </div>
 
-      {/* Spread label — only when Binance data is available */}
-      {hasBinance &&
-        FP.pipe(
-          spreadInfoRD,
+        {/* Spread label — only when Binance data is available */}
+        {hasBinance &&
+          FP.pipe(
+            spreadInfoRD,
+            RD.fold(
+              () => null,
+              () => null,
+              () => null,
+              (spread) => <SpreadLabel spread={spread} />
+            )
+          )}
+
+        {/* Chart */}
+        {FP.pipe(
+          chartDataRD,
           RD.fold(
-            () => null,
-            () => null,
-            () => null,
-            (spread) => <SpreadLabel spread={spread} />
+            () => (
+              <div className="flex h-[500px] items-center justify-center">
+                <Spin />
+              </div>
+            ),
+            () => (
+              <div className="flex h-[500px] items-center justify-center">
+                <Spin />
+              </div>
+            ),
+            (error) => (
+              <div className="flex h-[500px] items-center justify-center">
+                <Label className="text-error0 dark:text-error0d">{error.message}</Label>
+              </div>
+            ),
+            (data) =>
+              data.length === 0 ? (
+                <div className="flex h-[500px] items-center justify-center">
+                  <Label className="text-gray2">{intl.formatMessage({ id: 'pools.chart.noData' })}</Label>
+                </div>
+              ) : (
+                <TradingChart data={data} indicators={indicators} />
+              )
           )
         )}
-
-      {/* Chart */}
-      {FP.pipe(
-        chartDataRD,
-        RD.fold(
-          () => (
-            <div className="flex h-[500px] items-center justify-center">
-              <Spin />
-            </div>
-          ),
-          () => (
-            <div className="flex h-[500px] items-center justify-center">
-              <Spin />
-            </div>
-          ),
-          (error) => (
-            <div className="flex h-[500px] items-center justify-center">
-              <Label className="text-error0 dark:text-error0d">{error.message}</Label>
-            </div>
-          ),
-          (data) =>
-            data.length === 0 ? (
-              <div className="flex h-[500px] items-center justify-center">
-                <Label>{intl.formatMessage({ id: 'pools.chart.noData' })}</Label>
-              </div>
-            ) : (
-              <TradingChart data={data} />
-            )
-        )
-      )}
+      </div>
 
       {/* Actions */}
       <div className="flex justify-center gap-4">

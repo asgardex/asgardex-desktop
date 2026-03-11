@@ -79,8 +79,8 @@ describe('chartHelper', () => {
       expect(getCount('30d', '1D')).toBe(30)
     })
 
-    it('returns ~53 for 365d/1W', () => {
-      expect(getCount('365d', '1W')).toBe(Math.ceil(365 / 7))
+    it('returns ~4 for 30d/1W', () => {
+      expect(getCount('30d', '1W')).toBe(Math.ceil(30 / 7))
     })
   })
 

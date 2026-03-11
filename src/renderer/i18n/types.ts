@@ -317,6 +317,9 @@ type PoolsMessageKey =
   | 'pools.chart.source.binance'
   | 'pools.chart.source.midgard'
   | 'pools.chart.spread'
+  | 'pools.chart.indicator.sma'
+  | 'pools.chart.indicator.ema'
+  | 'pools.chart.indicator.bb'
 
 export type PoolsMessages = { [key in PoolsMessageKey]: string }
 

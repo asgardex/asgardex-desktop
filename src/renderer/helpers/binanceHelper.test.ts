@@ -74,11 +74,11 @@ describe('binanceHelper', () => {
       expect(diffDays).toBeCloseTo(30, 0)
     })
 
-    it('returns a timestamp ~365 days ago for 365d', () => {
+    it('returns a timestamp ~30 days ago for 30d', () => {
       const now = Date.now()
-      const start = dateRangeToStartTime('365d')
+      const start = dateRangeToStartTime('30d')
       const diffDays = (now - start) / (24 * 60 * 60 * 1000)
-      expect(diffDays).toBeCloseTo(365, 0)
+      expect(diffDays).toBeCloseTo(30, 0)
     })
   })
 

@@ -4,26 +4,31 @@ import {
   createChart,
   CandlestickSeries,
   HistogramSeries,
+  LineSeries,
   ColorType,
   type IChartApi,
   type ISeriesApi,
   type UTCTimestamp
 } from 'lightweight-charts'
 
-import type { OHLCVData } from '../../../views/pools/detail/types'
+import { calculateSMA, calculateEMA, calculateBollingerBands } from '../../../helpers/indicatorHelper'
+import type { IndicatorConfig, OHLCVData } from '../../../views/pools/detail/types'
 
 type Props = {
   data: OHLCVData
+  indicators?: IndicatorConfig[]
 }
 
+const CHART_BG = '#131722'
 const BULLISH_COLOR = '#50E3C2'
 const BEARISH_COLOR = '#FF4D4F'
 
-export const TradingChart = ({ data }: Props) => {
+export const TradingChart = ({ data, indicators = [] }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null)
+  const indicatorSeriesRefs = useRef<ISeriesApi<'Line'>[]>([])
 
   // Create chart on mount
   useEffect(() => {
@@ -32,16 +37,17 @@ export const TradingChart = ({ data }: Props) => {
 
     const chart = createChart(container, {
       layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: '#999'
+        background: { type: ColorType.Solid, color: CHART_BG },
+        textColor: '#999',
+        fontFamily: "'MainFontRegular', sans-serif"
       },
       grid: {
         vertLines: { color: 'rgba(255, 255, 255, 0.06)' },
         horzLines: { color: 'rgba(255, 255, 255, 0.06)' }
       },
       crosshair: {
-        vertLine: { color: 'rgba(255, 255, 255, 0.2)' },
-        horzLine: { color: 'rgba(255, 255, 255, 0.2)' }
+        vertLine: { color: 'rgba(255, 255, 255, 0.25)', labelBackgroundColor: '#333' },
+        horzLine: { color: 'rgba(255, 255, 255, 0.25)', labelBackgroundColor: '#333' }
       },
       timeScale: {
         borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -74,7 +80,6 @@ export const TradingChart = ({ data }: Props) => {
     candleSeriesRef.current = candleSeries
     volumeSeriesRef.current = volumeSeries
 
-    // Responsive resize
     const resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0]
       if (!entry) return
@@ -89,10 +94,11 @@ export const TradingChart = ({ data }: Props) => {
       chartRef.current = null
       candleSeriesRef.current = null
       volumeSeriesRef.current = null
+      indicatorSeriesRefs.current = []
     }
   }, [])
 
-  // Update data
+  // Update candle + volume data
   useEffect(() => {
     if (!candleSeriesRef.current || !volumeSeriesRef.current || data.length === 0) return
 
@@ -107,7 +113,7 @@ export const TradingChart = ({ data }: Props) => {
     const volumeData = data.map((d) => ({
       time: d.time as UTCTimestamp,
       value: d.volume,
-      color: d.close >= d.open ? `${BULLISH_COLOR}40` : `${BEARISH_COLOR}40`
+      color: d.close >= d.open ? `${BULLISH_COLOR}30` : `${BEARISH_COLOR}30`
     }))
 
     candleSeriesRef.current.setData(candleData)
@@ -115,5 +121,58 @@ export const TradingChart = ({ data }: Props) => {
     chartRef.current?.timeScale().fitContent()
   }, [data])
 
-  return <div ref={containerRef} className="h-[500px] w-full" />
+  // Update indicator overlay series
+  useEffect(() => {
+    const chart = chartRef.current
+    if (!chart || data.length === 0) return
+
+    for (const series of indicatorSeriesRefs.current) {
+      chart.removeSeries(series)
+    }
+    indicatorSeriesRefs.current = []
+
+    const closes = data.map((d) => d.close)
+    const times = data.map((d) => d.time as UTCTimestamp)
+
+    const addLineSeries = (values: (number | null)[], color: string, lineWidth: 1 | 2 = 2) => {
+      const series = chart.addSeries(LineSeries, {
+        color,
+        lineWidth,
+        priceLineVisible: false,
+        lastValueVisible: false,
+        crosshairMarkerVisible: false
+      })
+      const lineData = values
+        .map((v, i) => (v !== null ? { time: times[i], value: v } : null))
+        .filter((d): d is { time: UTCTimestamp; value: number } => d !== null)
+      series.setData(lineData)
+      indicatorSeriesRefs.current.push(series)
+    }
+
+    for (const ind of indicators) {
+      if (!ind.enabled) continue
+
+      switch (ind.type) {
+        case 'SMA': {
+          const smaValues = calculateSMA(closes, ind.period)
+          addLineSeries(smaValues, ind.color)
+          break
+        }
+        case 'EMA': {
+          const emaValues = calculateEMA(closes, ind.period)
+          addLineSeries(emaValues, ind.color)
+          break
+        }
+        case 'BB': {
+          const bb = calculateBollingerBands(closes, ind.period)
+          addLineSeries(bb.upper, `${ind.color}99`, 1)
+          addLineSeries(bb.middle, ind.color, 1)
+          addLineSeries(bb.lower, `${ind.color}99`, 1)
+          break
+        }
+      }
+    }
+  }, [data, indicators])
+
+  return <div ref={containerRef} className="h-[500px] w-full rounded-lg" />
 }

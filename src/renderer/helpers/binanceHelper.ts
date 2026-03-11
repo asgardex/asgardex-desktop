@@ -63,10 +63,7 @@ export const timeframeToBinanceInterval = (tf: CandleTimeframe): string => {
 export const dateRangeToStartTime = (range: ChartDateRange): number => {
   const days: Record<ChartDateRange, number> = {
     '7d': 7,
-    '30d': 30,
-    '90d': 90,
-    '180d': 180,
-    '365d': 365
+    '30d': 30
   }
   return Date.now() - days[range] * 24 * 60 * 60 * 1000
 }

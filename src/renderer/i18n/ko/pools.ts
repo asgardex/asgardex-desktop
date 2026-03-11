@@ -23,7 +23,10 @@ const pools: PoolsMessages = {
   'pools.chart.noData': '차트 데이터가 없습니다',
   'pools.chart.source.binance': 'Binance',
   'pools.chart.source.midgard': 'THORChain',
-  'pools.chart.spread': '스프레드'
+  'pools.chart.spread': '스프레드',
+  'pools.chart.indicator.sma': 'SMA',
+  'pools.chart.indicator.ema': 'EMA',
+  'pools.chart.indicator.bb': '볼린저'
 }
 
 export default pools
