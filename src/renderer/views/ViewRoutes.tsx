@@ -13,6 +13,7 @@ import { DepositView } from './deposit/DepositView'
 import { HistoryView } from './history/HistoryView'
 import { NoContentView } from './NoContentView'
 import { PlaygroundView } from './playground/PlaygroundView'
+import { PoolDetailView } from './pools/detail'
 import { PoolsOverview } from './pools/PoolsOverview'
 import { PortfolioView } from './portfolio/PortfolioView'
 import { SwapView } from './swap/SwapView'
@@ -43,6 +44,7 @@ export const ViewRoutes = (): JSX.Element => {
       <Route path={poolsRoutes.base.template} element={<PoolsOverview />} />
       <Route path={poolsRoutes.active.template} element={<PoolsOverview />} />
       <Route path={poolsRoutes.pending.template} element={<PoolsOverview />} />
+      <Route path={poolsRoutes.detail.template} element={<PoolDetailView />} />
 
       <Route path={poolsRoutes.swap.template} element={<SwapView />} />
       <Route

@@ -26,7 +26,6 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { to1e8BaseAmount } from '../../helpers/assetHelper'
 import { getPoolPriceValue, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueMaya, MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import { useObserveMayaScanPrice } from '../../hooks/useMayascanPrice'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useTradeDepositAddresses } from '../../hooks/useTradeDepositAddresses'
@@ -43,7 +42,6 @@ export const TradeAssetsView = (): JSX.Element => {
   const { chainBalances$ } = useWalletContext()
   const { network } = useNetwork()
   const { isPrivate, protocol } = useApp()
-  const { mayaScanPriceRD } = useObserveMayaScanPrice()
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showDepositModal, setShowDepositModal] = useState(false)
 
@@ -244,8 +242,7 @@ export const TradeAssetsView = (): JSX.Element => {
         ? getPoolPriceValueMaya({
             balance: { asset: account.asset, amount: account.units },
             poolDetails: poolDetailsMaya,
-            pricePool: selectedPricePoolMaya,
-            mayaPriceRD: mayaScanPriceRD
+            pricePool: selectedPricePoolMaya
           })
         : getPoolPriceValue({
             balance: { asset: account.asset, amount: account.units },

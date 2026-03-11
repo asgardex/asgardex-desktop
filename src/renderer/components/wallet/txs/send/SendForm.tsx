@@ -32,7 +32,7 @@ import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/gu
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
 import { useXrpContext } from '../../../../contexts/XrpContext'
-import { isMayaAsset, isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
+import { isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
 import { getChainAsset, getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { isEvmChain, isEvmChainAsset } from '../../../../helpers/evmHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
@@ -40,7 +40,6 @@ import * as PoolHelpers from '../../../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { GAS_MULTIPLIER_OPTIONS, useEvmGasMultiplier } from '../../../../hooks/useEvmGasMultiplier'
-import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -117,7 +116,6 @@ export type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya?: O.Option<PoolAddress>
-  mayaScanPrice: MayaScanPriceRD
 }
 
 export const SendForm = (props: Props): JSX.Element => {
@@ -139,8 +137,7 @@ export const SendForm = (props: Props): JSX.Element => {
     validatePassword$,
     network,
     oPoolAddress,
-    oPoolAddressMaya,
-    mayaScanPrice
+    oPoolAddressMaya
   } = props
 
   const intl = useIntl()
@@ -212,13 +209,6 @@ export const SendForm = (props: Props): JSX.Element => {
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feeRate, setFeeRate] = useState<number>(0)
-
-  const amountToSendMayaPrice = useMemo(() => {
-    const amount = isEVMChain
-      ? O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend as O.Option<BaseAmount>)
-      : (amountToSend as BaseAmount)
-    return calculateMayaValueInUSD(amount, mayaScanPrice)
-  }, [amountToSend, mayaScanPrice, isEVMChain])
 
   const {
     state: sendTxState,
@@ -959,7 +949,6 @@ export const SendForm = (props: Props): JSX.Element => {
       trimZeros: !isUSDAsset(asset)
     })
 
-    // Use pool data price first, fall back to MayaScan for MAYA.MAYA
     const poolPrice = FP.pipe(
       O.some(amountPriceValue),
       O.map((cryptoAmount: CryptoAmount) =>
@@ -979,24 +968,10 @@ export const SendForm = (props: Props): JSX.Element => {
       O.getOrElse(() => '')
     )
 
-    const price =
-      poolPrice ||
-      (isMayaAsset(asset) && RD.isSuccess(amountToSendMayaPrice)
-        ? (() => {
-            const isVerySmallUSDAmount =
-              isUSDAsset(amountToSendMayaPrice.value.asset) && amountToSendMayaPrice.value.assetAmount.amount().lt(0.01)
-            const decimalPlaces = isUSDAsset(amountToSendMayaPrice.value.asset) ? (isVerySmallUSDAmount ? 6 : 2) : 6
-            return formatAssetAmountCurrency({
-              amount: amountToSendMayaPrice.value.assetAmount,
-              asset: amountToSendMayaPrice.value.asset,
-              decimal: decimalPlaces,
-              trimZeros: !isUSDAsset(amountToSendMayaPrice.value.asset)
-            })
-          })()
-        : '')
+    const price = poolPrice || ''
 
     return price ? `${price} (${amount}) ` : amount
-  }, [amountPriceValue, amountToSend, amountToSendMayaPrice, asset, isEVMChain])
+  }, [amountPriceValue, amountToSend, asset, isEVMChain])
 
   const submitDepositTx = useCallback(() => {
     if (!isEVMChain || !deposit$) return

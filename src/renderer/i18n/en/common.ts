@@ -224,7 +224,7 @@ const common: CommonMessages = {
   'common.txUrl': 'URL',
   'common.txHash': 'HASH',
   'common.runeScan': 'RuneScan',
-  'common.mayaScan': 'MayaScan',
+  'common.mayaExplorer': 'Maya Explorer',
   'common.whitelist': 'Whitelist',
   'common.fetchFromLedger': 'Fetch from Ledger',
   'common.nativeSegwit': 'Native Segwit',

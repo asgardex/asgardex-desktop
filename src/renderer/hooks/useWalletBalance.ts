@@ -13,9 +13,8 @@ import { to1e8BaseAmount } from '../helpers/assetHelper'
 import { getPoolPriceValue } from '../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../helpers/poolHelperMaya'
 import { userChains$ } from '../services/storage/userChains'
-import { MayaScanPriceRD } from './useMayascanPrice'
 
-export const useTotalWalletBalance = (mayaScanPriceRD: MayaScanPriceRD) => {
+export const useTotalWalletBalance = () => {
   const { chainBalances$ } = useWalletContext()
 
   const {
@@ -67,8 +66,7 @@ export const useTotalWalletBalance = (mayaScanPriceRD: MayaScanPriceRD) => {
                         value = getPoolPriceValueM({
                           balance: { asset, amount },
                           poolDetails: RD.isSuccess(poolsStateMayaRD) ? poolsStateMayaRD.value.poolDetails : [],
-                          pricePool: selectedPricePoolMaya,
-                          mayaPriceRD: mayaScanPriceRD
+                          pricePool: selectedPricePoolMaya
                         })
                       }
                       acc = acc.plus(to1e8BaseAmount(O.getOrElse(() => ZERO_BASE_AMOUNT)(value)))

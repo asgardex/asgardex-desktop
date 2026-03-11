@@ -22,7 +22,6 @@ import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import { useObserveMayaScanPrice } from '../../hooks/useMayascanPrice'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
@@ -59,8 +58,7 @@ export const AssetsView = (): JSX.Element => {
       }
     }
   } = useMidgardMayaContext()
-  const { mayaScanPriceRD } = useObserveMayaScanPrice()
-  const combinedBalances$ = useTotalWalletBalance(mayaScanPriceRD)
+  const combinedBalances$ = useTotalWalletBalance()
 
   const [enabledChains, setEnabledChains] = useState<Set<EnabledChain>>(new Set())
   const [disabledChains, setDisabledChains] = useState<EnabledChain[]>([])
@@ -247,7 +245,6 @@ export const AssetsView = (): JSX.Element => {
         mimirHalt={mimirHaltRD}
         network={network}
         hidePrivateData={isPrivate}
-        mayaScanPrice={mayaScanPriceRD}
         disabledChains={disabledChains}
       />
     </>

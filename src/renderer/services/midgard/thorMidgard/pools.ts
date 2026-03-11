@@ -784,8 +784,8 @@ const createPoolsService = ({
               pool,
               otherParams.interval,
               otherParams.count,
-              O.toUndefined(roundToFiveMinutes(from)),
-              O.toUndefined(roundToFiveMinutes(to))
+              O.toUndefined(roundToFiveMinutes(to)),
+              O.toUndefined(roundToFiveMinutes(from))
             )
           ),
           RxOp.map((response) => {
@@ -834,8 +834,8 @@ const createPoolsService = ({
               assetToString(poolAsset),
               otherParams.interval,
               otherParams.count,
-              O.toUndefined(roundToFiveMinutes(from)),
-              O.toUndefined(roundToFiveMinutes(to))
+              O.toUndefined(roundToFiveMinutes(to)),
+              O.toUndefined(roundToFiveMinutes(from))
             )
           ),
           RxOp.map((response) =>
@@ -897,6 +897,7 @@ const createPoolsService = ({
     apiGetLiquidityHistory$,
     reloadSwapHistory,
     getDepthHistory$,
+    apiGetDepthHistory$,
     reloadDepthHistory,
     priceRatio$,
     availableAssets$,
