@@ -62,7 +62,7 @@ const bnGuard: IOG.Guard<unknown, BigNumber> = {
 
 const baseAmountGuard: IOG.Guard<unknown, BaseAmount> = {
   is: (u: unknown): u is BaseAmount => {
-    if (u === null && typeof u !== 'object') return false
+    if (u === null || typeof u !== 'object') return false
 
     return IOG.number.is((u as BaseAmount)?.decimal) && bnGuard.is((u as BaseAmount)?.amount())
   }

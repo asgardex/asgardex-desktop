@@ -45,9 +45,16 @@ export const VaultCreateView = () => {
     }
   }, [])
 
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+
   const handleCreateVault = useCallback(async () => {
     if (!name || !email || !password) {
       setError(intl.formatMessage({ id: 'wallet.vultisig.create.fillAllFields' }))
+      return
+    }
+
+    if (!isValidEmail(email)) {
+      setError('Please enter a valid email address')
       return
     }
 
@@ -108,6 +115,7 @@ export const VaultCreateView = () => {
   }, [pendingVaultId, verificationCode, appWalletService, intl])
 
   const handleGoToAssets = useCallback(async () => {
+    if (!mountedRef.current) return
     // vaultManager.verifyVault already set the active vault via selectVault(id, false)
     // Just switch to Vultisig mode and navigate
     await appWalletService.switchToVultisigMode(true)
@@ -288,7 +296,10 @@ export const VaultCreateView = () => {
           <p className="text-center text-gray2 dark:text-gray2d">{error}</p>
 
           <button
-            onClick={() => setFormState('input')}
+            onClick={() => {
+              setError(null)
+              setFormState('input')
+            }}
             className="mt-4 rounded-lg bg-turquoise px-6 py-3 font-medium text-black transition-colors hover:bg-turquoise/80">
             {intl.formatMessage({ id: 'wallet.vultisig.create.tryAgain' })}
           </button>

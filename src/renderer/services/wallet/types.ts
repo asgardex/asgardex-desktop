@@ -255,7 +255,7 @@ export type VaultManager = {
 
   // Lock/unlock
   lockVault: () => Promise<void>
-  unlockVault: (password: string) => Promise<void>
+  unlockVault: (password?: string) => Promise<void>
   validatePassword: (password: string) => Promise<boolean>
   isVaultLocked: () => boolean
 }
@@ -269,9 +269,9 @@ export type AppWalletService = {
   standaloneLedgerService: StandaloneLedgerService
   // VaultManager for Vultisig-specific operations (vault creation, import, etc.)
   vaultManager: VaultManager
-  switchToKeystoreMode: () => void
-  switchToStandaloneLedgerMode: (autoLock?: boolean) => void
-  switchToVultisigMode: (autoLock?: boolean) => void
+  switchToKeystoreMode: () => Promise<void>
+  switchToStandaloneLedgerMode: (autoLock?: boolean) => Promise<void>
+  switchToVultisigMode: (autoLock?: boolean) => Promise<void>
   restoreLastOpenedWallet: () => Promise<void>
   saveLastOpenedWallet: (wallet: LastOpenedWallet | undefined) => void
   // Unified wallet methods

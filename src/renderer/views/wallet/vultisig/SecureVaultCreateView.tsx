@@ -47,29 +47,17 @@ export const SecureVaultCreateView = () => {
     eventCleanupFns.current = []
   }, [])
 
-  // Cleanup function to cancel keygen and dispose SDK
-  // NOTE: Does NOT clean up event listeners — they are registered once on mount
-  // and must survive cancel/retry cycles. Only unmount and terminal success clean them up.
   const cleanupSession = useCallback(async () => {
     if (!hasActiveSession.current) return
 
     setIsCleaningUp(true)
-    logger.info('Cancelling and cleaning up session...')
+    logger.info('Cancelling keygen session...')
 
     try {
-      // First cancel any ongoing keygen operation
       await window.apiMpc.cancelKeygen()
       logger.info('Keygen cancelled')
     } catch (err) {
       logger.warn('Error cancelling keygen:', err)
-    }
-
-    try {
-      // Then dispose the SDK
-      await window.apiMpc.dispose()
-      logger.info('SDK disposed')
-    } catch (err) {
-      logger.warn('Error disposing SDK:', err)
     }
 
     hasActiveSession.current = false
@@ -135,16 +123,8 @@ export const SecureVaultCreateView = () => {
   useEffect(() => {
     return () => {
       if (hasActiveSession.current) {
-        logger.info('Component unmounting, cleaning up...')
-        // Cancel any ongoing keygen first, then dispose
-        window.apiMpc
-          .cancelKeygen()
-          .catch((err) => logger.warn('Error cancelling on unmount:', err))
-          .finally(() => {
-            window.apiMpc.dispose().catch((err) => {
-              logger.warn('Error disposing on unmount:', err)
-            })
-          })
+        logger.info('Component unmounting, cancelling keygen...')
+        window.apiMpc.cancelKeygen().catch((err) => logger.warn('Error cancelling on unmount:', err))
       }
     }
   }, [])
@@ -199,7 +179,7 @@ export const SecureVaultCreateView = () => {
     }
   }, [name, password, intl])
 
-  const handleGoToAssets = useCallback(() => {
+  const handleGoToAssets = useCallback(async () => {
     if (!vaultInfo) {
       logger.error('No vault info available')
       return
@@ -209,7 +189,7 @@ export const SecureVaultCreateView = () => {
     appWalletService.vaultManager.setActiveVault(vaultInfo, addresses)
 
     // Switch to standalone vultisig mode (this will use the state we just set)
-    appWalletService.switchToVultisigMode(true)
+    await appWalletService.switchToVultisigMode(true)
 
     navigate(walletRoutes.assets.path())
   }, [appWalletService, navigate, vaultInfo, addresses])

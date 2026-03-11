@@ -45,10 +45,23 @@ export const UnlockView = (): JSX.Element => {
     }
   }, [appWalletState, vultisigState.phase, vultisigState.activeVault, navigate])
 
+  // Auto-unlock unencrypted vaults that end up in VaultLocked phase
+  // This prevents showing a password prompt for vaults that don't need one
+  useEffect(() => {
+    if (
+      vultisigState.phase === VultisigPhase.VaultLocked &&
+      vultisigState.activeVault &&
+      !vultisigState.activeVault.isEncrypted
+    ) {
+      logger.info('Auto-unlocking unencrypted vault:', vultisigState.activeVault.name)
+      appWalletService.vaultManager.unlockVault()
+    }
+  }, [vultisigState.phase, vultisigState.activeVault, appWalletService.vaultManager])
+
   // Handler to select a Vultisig vault
   // This will check if vault is locked and either:
-  // - Set phase to 'vault-locked' if password needed
-  // - Set phase to 'active' if already unlocked (then useEffect navigates)
+  // - Set phase to 'vault-locked' if password needed (encrypted vaults)
+  // - Set phase to 'active' directly (unencrypted vaults or newly created)
   const selectVultisigVault = async (vaultId: string) => {
     await appWalletService.switchToVultisigMode(true)
     await appWalletService.vaultManager.selectVault(vaultId)
@@ -60,8 +73,11 @@ export const UnlockView = (): JSX.Element => {
     // Navigation happens via useEffect when phase becomes 'active'
   }
 
-  // Determine if we're showing Vultisig unlock screen
-  const isVultisigLocked = vultisigState.phase === VultisigPhase.VaultLocked && vultisigState.activeVault !== null
+  // Determine if we're showing Vultisig unlock screen (only for encrypted vaults)
+  const isVultisigLocked =
+    vultisigState.phase === VultisigPhase.VaultLocked &&
+    vultisigState.activeVault !== null &&
+    vultisigState.activeVault.isEncrypted
 
   // Vultisig vault import state
   const [showPasswordModal, setShowPasswordModal] = useState(false)

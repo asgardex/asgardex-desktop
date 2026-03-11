@@ -431,6 +431,17 @@ export const createBalancesService = ({
     }
   })
 
+  // Whenever the active Vultisig vault changes, reset stored balances
+  // so stale balances from the previous vault are not shown
+  const vaultSwitchSub = appWalletService.appWalletState$
+    .pipe(
+      RxOp.map((state) => (isVultisigMode(state) ? (state.activeVault?.id ?? null) : null)),
+      RxOp.distinctUntilChanged()
+    )
+    .subscribe(() => {
+      walletBalancesState.clear()
+    })
+
   const getChainBalance$ = ({
     chain,
     walletType,
@@ -1180,56 +1191,6 @@ export const createBalancesService = ({
   })
 
   /**
-   * ZEC Vultisig balances
-   */
-  const zecVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: ZECChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: ZEC.getBalanceByAddress$('all')
-  })
-
-  /**
-   * KUJI Vultisig balances
-   */
-  const kujiVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: KUJIChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: KUJI.getBalanceByAddress$
-  })
-
-  /**
-   * ADA Vultisig balances
-   */
-  const adaVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: ADAChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: ADA.getBalanceByAddress$
-  })
-
-  /**
-   * XRD Vultisig balances
-   */
-  const xrdVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
-    chain: RadixChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: XRD.getBalanceByAddress$
-  })
-
-  /**
-   * TRON Vultisig balances
-   */
-  const tronVultisigChainBalance$: ChainBalance$ = FP.pipe(
-    network$,
-    RxOp.switchMap((network) =>
-      vultisigChainBalance$({
-        chain: TRONChain,
-        walletBalanceType: 'all',
-        getBalanceByAddress$: TRON.getBalanceByAddress$(network)
-      })
-    )
-  )
-
-  /**
    * ETH Vultisig balances
    */
   const ethVultisigChainBalance$: ChainBalance$ = FP.pipe(
@@ -1354,7 +1315,7 @@ export const createBalancesService = ({
   }
 
   // Vultisig balance observables for standalone Vultisig mode
-  // Supported chains: BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL, ZEC, KUJI, ADA, XRD, TRON
+  // Supported chains: BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL
   const vultisigBalanceObservables: Partial<Record<Chain, ChainBalance$[]>> = {
     THOR: [thorVultisigChainBalance$],
     MAYA: [mayaVultisigChainBalance$],
@@ -1369,13 +1330,8 @@ export const createBalancesService = ({
     DOGE: [dogeVultisigChainBalance$],
     GAIA: [cosmosVultisigChainBalance$],
     BASE: [baseVultisigChainBalance$],
-    ZEC: [zecVultisigChainBalance$],
     XRP: [xrpVultisigChainBalance$],
-    SOL: [solVultisigChainBalance$],
-    KUJI: [kujiVultisigChainBalance$],
-    ADA: [adaVultisigChainBalance$],
-    XRD: [xrdVultisigChainBalance$],
-    TRON: [tronVultisigChainBalance$]
+    SOL: [solVultisigChainBalance$]
   }
 
   // Combine enabled chains with their corresponding balance observables
@@ -1485,6 +1441,7 @@ export const createBalancesService = ({
     pendingTimers = []
     networkSub.unsubscribe()
     keystoreSub.unsubscribe()
+    vaultSwitchSub.unsubscribe()
     walletBalancesState.clear()
   }
 

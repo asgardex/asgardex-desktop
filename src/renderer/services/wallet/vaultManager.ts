@@ -136,7 +136,7 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
    * Select a vault
    * If requireUnlock is true (default), sets phase to 'vault-locked' for password entry
    * If requireUnlock is false (newly created vaults), sets phase to 'active' directly
-   * Saves the vault ID to persistent storage for restoration
+   * Vault ID is saved to persistent storage only after successful activation
    */
   const selectVault = async (vaultId: string, requireUnlock = true) => {
     logger.info('selectVault called:', vaultId, 'requireUnlock:', requireUnlock)
@@ -154,9 +154,6 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     }
 
     try {
-      // Save active vault ID to storage for restoration on app restart
-      onSaveWallet({ type: WalletType.Vultisig, vaultId })
-
       // Require password unlock (unless this is a newly created/verified vault or unencrypted vault)
       if (requireUnlock && vault.isEncrypted) {
         // Vault is encrypted and needs password - set to locked state
@@ -182,9 +179,13 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
         addresses,
         error: undefined
       }))
+
+      // Save active vault ID to storage only after successful activation
+      onSaveWallet({ type: WalletType.Vultisig, vaultId })
       logger.info('Vault activated directly:', vault.name)
     } catch (error) {
       logger.error('Failed to select vault:', error)
+      onSaveWallet(undefined)
       setVultisigState((prev) => ({
         ...prev,
         error: String(error)
@@ -398,6 +399,20 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
 
     const vaultId = currentState.activeVault.id
     const vaultName = currentState.activeVault.name
+    const isEncrypted = currentState.activeVault.isEncrypted
+
+    // Unencrypted vaults don't need password protection — go to vault selection instead
+    if (!isEncrypted) {
+      logger.info('Vault is not encrypted, returning to vault selection:', vaultName)
+      onSaveWallet(undefined)
+      setVultisigState((prev) => ({
+        ...prev,
+        phase: VultisigPhase.VaultSelection,
+        activeVault: null,
+        addresses: {}
+      }))
+      return
+    }
 
     // Update UI state immediately (same pattern as keystore.lock())
     // This shows the unlock screen right away
@@ -415,8 +430,9 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
   /**
    * Unlock the active vault with password
    * Sets phase to 'active' and fetches addresses
+   * For unencrypted vaults, password is ignored and vault is activated directly
    */
-  const unlockVault = async (password: string) => {
+  const unlockVault = async (password?: string) => {
     const currentState = vultisigState()
     logger.info('unlockVault called, currentPhase:', currentState.phase)
     if (!currentState.activeVault) {
@@ -426,13 +442,18 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
 
     const vaultId = currentState.activeVault.id
     const vaultName = currentState.activeVault.name
-    logger.info('unlockVault: Attempting to unlock vault:', vaultName, 'id:', vaultId)
+    const isEncrypted = currentState.activeVault.isEncrypted
+    logger.info('unlockVault: Attempting to unlock vault:', vaultName, 'id:', vaultId, 'isEncrypted:', isEncrypted)
 
     try {
-      // Unlock the vault with password
-      logger.info('unlockVault: Calling apiMpc.unlockVault...')
-      await window.apiMpc.unlockVault(vaultId, password)
-      logger.info('unlockVault: apiMpc.unlockVault succeeded')
+      // Only call SDK unlock for encrypted vaults
+      if (isEncrypted) {
+        logger.info('unlockVault: Calling apiMpc.unlockVault...')
+        await window.apiMpc.unlockVault(vaultId, password!)
+        logger.info('unlockVault: apiMpc.unlockVault succeeded')
+      } else {
+        logger.info('unlockVault: Vault is not encrypted, skipping password check')
+      }
 
       // Get addresses now that vault is unlocked
       logger.info('unlockVault: Fetching addresses via apiMpc.getAddresses...')
@@ -445,6 +466,9 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
 
       logger.info('unlockVault: Updating state to phase: active')
       setVultisigState((prev) => ({ ...prev, phase: VultisigPhase.Active, addresses, error: undefined }))
+
+      // Save active vault ID to storage only after successful unlock and activation
+      onSaveWallet({ type: WalletType.Vultisig, vaultId })
       logger.info('unlockVault: State updated, vault unlocked:', vaultName)
     } catch (error) {
       logger.error('unlockVault: Failed to unlock vault:', error)

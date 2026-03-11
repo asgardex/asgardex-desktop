@@ -234,10 +234,10 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       assertString(vaultId, 'vaultId')
       const sdk = getSDK()
       const vault = await sdk.getVaultById(vaultId)
-      if (vault) {
-        log.info(`[MPC IPC] Deleting vault: ${vaultId}`)
-        await sdk.deleteVault(vault)
-      }
+      if (!vault) throw new Error(`Vault not found: ${vaultId}`)
+
+      log.info(`[MPC IPC] Deleting vault: ${vaultId}`)
+      await sdk.deleteVault(vault)
     } catch (error) {
       throw wrapSDKError(error)
     }
@@ -491,14 +491,10 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       dataLength: data?.length
     })
 
-    // Abort any existing signing session for this vault before starting a new one
-    const existingController = signingControllers.get(vaultId)
-    if (existingController) {
-      log.warn(`[MPC IPC] Aborting existing signing session for vault: ${vaultId}`)
-      existingController.abort()
+    if (signingControllers.has(vaultId)) {
+      throw new Error(`Signing already in progress for vault ${vaultId}`)
     }
 
-    // Create abort controller for cancellation support
     const controller = new AbortController()
     signingControllers.set(vaultId, controller)
 
@@ -621,14 +617,10 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       isDeposit: !!isDeposit
     })
 
-    // Abort any existing signing session for this vault before starting a new one
-    const existingSendController = signingControllers.get(vaultId)
-    if (existingSendController) {
-      log.warn(`[MPC IPC] Aborting existing signing session for vault: ${vaultId}`)
-      existingSendController.abort()
+    if (signingControllers.has(vaultId)) {
+      throw new Error(`Signing already in progress for vault ${vaultId}`)
     }
 
-    // Create abort controller for cancellation
     const controller = new AbortController()
     signingControllers.set(vaultId, controller)
 

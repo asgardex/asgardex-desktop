@@ -1,4 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
+import { none as O_none } from 'fp-ts/lib/Option'
 
 import { HeaderLockMobile as Component, Props } from './HeaderLockMobile'
 
@@ -16,7 +17,8 @@ const meta: Meta<typeof Component> = {
   },
   args: {
     hasWallet: true,
-    isLocked: false
+    isLocked: false,
+    activeWallet: O_none
   }
 }
 

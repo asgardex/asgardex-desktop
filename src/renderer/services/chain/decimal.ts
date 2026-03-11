@@ -6,6 +6,7 @@ import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ADA_DECIMALS } from '@xchainjs/xchain-cardano'
+import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
@@ -14,6 +15,7 @@ import { CACAO_DECIMAL, MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { PoolDetail as MayaPoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
+import { XRP_DECIMAL } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import { TRX_DECIMAL } from '@xchainjs/xchain-tron'
@@ -46,12 +48,14 @@ const CHAIN_DECIMAL_MAP = new Map([
   ['DASH', DASH_DECIMAL],
   ['DOGE', DOGE_DECIMAL],
   ['LTC', LTC_DECIMAL],
+  ['GAIA', COSMOS_DECIMAL],
   ['KUJI', KUJI_DECIMAL],
   ['XRD', XRD_DECIMAL],
   ['BTC', BTC_DECIMAL],
   ['BCH', BCH_DECIMAL],
   ['SOL', SOL_DECIMALS],
   ['TRON', TRX_DECIMAL],
+  ['XRP', XRP_DECIMAL],
   ['ZEC', ZEC_DECIMAL],
   ['ADA', ADA_DECIMALS]
 ])

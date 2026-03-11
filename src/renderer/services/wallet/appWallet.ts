@@ -160,7 +160,13 @@ export const createAppWalletService = (): AppWalletService => {
     vaultManager.exitStandaloneMode()
 
     // Set app state to current keystore state
-    const keystoreState = await keystoreService.keystoreState$.pipe(RxOp.take(1)).toPromise()
+    const keystoreState = await keystoreService.keystoreState$
+      .pipe(RxOp.take(1), RxOp.timeout(10_000))
+      .toPromise()
+      .catch((err) => {
+        logger.error('switchToKeystoreMode: timed out waiting for keystore state', err)
+        return undefined
+      })
     if (keystoreState !== undefined) {
       setAppWalletState(keystoreState)
     }
@@ -192,13 +198,29 @@ export const createAppWalletService = (): AppWalletService => {
     // Vault state is preserved so it can be restored when exiting Ledger mode.
     // The vultisigSub won't propagate changes since appWalletState is now Ledger mode.
 
-    // Enter standalone ledger mode
-    standaloneLedgerService.enterStandaloneMode()
+    try {
+      // Enter standalone ledger mode
+      standaloneLedgerService.enterStandaloneMode()
 
-    // Set app state to standalone ledger state
-    const standaloneState = await standaloneLedgerService.standaloneLedgerState$.pipe(RxOp.take(1)).toPromise()
-    if (standaloneState !== undefined) {
-      setAppWalletState(standaloneState)
+      // Set app state to standalone ledger state
+      const standaloneState = await standaloneLedgerService.standaloneLedgerState$
+        .pipe(RxOp.take(1), RxOp.timeout(10_000))
+        .toPromise()
+        .catch((err) => {
+          logger.error('switchToStandaloneLedgerMode: timed out waiting for ledger state', err)
+          return undefined
+        })
+      if (standaloneState !== undefined) {
+        setAppWalletState(standaloneState)
+      }
+    } catch (error) {
+      // If entering ledger mode fails after keystore was locked, recover by setting
+      // app state back to the current keystore state so the user lands on the lock screen.
+      logger.error('switchToStandaloneLedgerMode failed, recovering to keystore state', error)
+      standaloneLedgerService.exitStandaloneMode()
+      const keystoreState = keystoreService.keystoreState()
+      setAppWalletState(keystoreState)
+      throw error
     }
   }
 
@@ -252,6 +274,14 @@ export const createAppWalletService = (): AppWalletService => {
       const standaloneState = vaultManager.vultisigState()
       logger.info('Setting app state to vultisig state:', standaloneState.phase)
       setAppWalletState(standaloneState)
+    } catch (error) {
+      // If enterStandaloneMode fails after keystore was locked, the app state is stale —
+      // keystore is locked but setAppWalletState was never reached. Recover by setting
+      // app state back to the current keystore state so the user lands on the lock screen.
+      logger.error('switchToVultisigMode failed, recovering to keystore state', error)
+      const keystoreState = keystoreService.keystoreState()
+      setAppWalletState(keystoreState)
+      throw error
     } finally {
       _modeTransitioning = false
     }
@@ -511,13 +541,9 @@ export const createAppWalletService = (): AppWalletService => {
         .pipe(
           RxOp.filter((rd) => RD.isSuccess(rd) || RD.isFailure(rd)),
           RxOp.take(1),
-          RxOp.timeout(30_000)
+          RxOp.timeout(10_000)
         )
         .toPromise()
-        .then((result) => {
-          if (result === undefined) throw new Error('Wallet selection completed without result')
-          return result
-        })
         .catch((err) => {
           const error = err instanceof Error ? err : new Error('Wallet selection timed out or completed without result')
           logger.error('selectWallet failed:', error.message)

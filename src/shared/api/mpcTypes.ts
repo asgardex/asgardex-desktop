@@ -152,12 +152,7 @@ export const ASGARDEX_TO_SDK_CHAIN: Record<string, string> = {
   BASE: 'Base',
   DASH: 'Dash',
   XRP: 'Ripple',
-  SOL: 'Solana',
-  ZEC: 'Zcash',
-  KUJI: 'Kujira',
-  ADA: 'Cardano',
-  TRON: 'Tron',
-  XRD: 'Radix'
+  SOL: 'Solana'
 }
 
 export const SDK_TO_ASGARDEX_CHAIN: Record<string, string> = Object.entries(ASGARDEX_TO_SDK_CHAIN).reduce(

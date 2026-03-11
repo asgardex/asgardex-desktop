@@ -30,6 +30,7 @@ import {
 } from './api/ledger'
 import { approveLedgerERC20Token } from './api/ledger/evm/approve'
 import { registerMpcIpcHandlers } from './api/mpc'
+import { disposeSDK } from './api/mpc/sdk'
 import { openExternal } from './api/url'
 import IPCMessages from './ipc/messages'
 import { setMenu } from './menu'
@@ -245,6 +246,9 @@ const init = async () => {
   await initMainWindow()
   app.on('window-all-closed', allClosedHandler)
   app.on('activate', activateHandler)
+  app.on('will-quit', () => {
+    disposeSDK()
+  })
   initIPC()
 }
 

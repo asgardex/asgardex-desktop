@@ -72,6 +72,7 @@ export const NoWalletView = () => {
       } else {
         // Import unencrypted vault directly
         const vault = await window.apiMpc.importVault(result.content)
+        await appWalletService.switchToVultisigMode(true)
         await vaultManager.loadVaults()
         await vaultManager.selectVault(vault.id, false)
         navigate(walletRoutes.assets.path())
@@ -79,7 +80,7 @@ export const NoWalletView = () => {
     } catch (error) {
       logger.error('Failed to import vault:', error)
     }
-  }, [navigate, vaultManager])
+  }, [navigate, vaultManager, appWalletService])
 
   // Handle password submission for encrypted vault
   const handlePasswordSubmit = useCallback(
@@ -88,6 +89,7 @@ export const NoWalletView = () => {
 
       try {
         const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
+        await appWalletService.switchToVultisigMode(true)
         await vaultManager.loadVaults()
         await vaultManager.selectVault(vault.id, false)
         setShowPasswordModal(false)
@@ -98,7 +100,7 @@ export const NoWalletView = () => {
         throw error
       }
     },
-    [pendingVaultFile, navigate, vaultManager]
+    [pendingVaultFile, navigate, vaultManager, appWalletService]
   )
 
   const handlePasswordModalClose = useCallback(() => {
@@ -193,7 +195,7 @@ export const NoWalletView = () => {
         <div
           className={clsx(
             'flex items-center gap-4',
-            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 hover:dark:bg-bg2d/40',
+            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 dark:hover:bg-bg2d/40',
             'cursor-pointer rounded-lg p-6 text-center transition duration-300 ease-in-out'
           )}
           onClick={useVultisigHandler}>
@@ -207,7 +209,7 @@ export const NoWalletView = () => {
         <div
           className={clsx(
             'flex items-center gap-4',
-            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 hover:dark:bg-bg2d/40',
+            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 dark:hover:bg-bg2d/40',
             'cursor-pointer rounded-lg p-6 text-center transition duration-300 ease-in-out'
           )}
           onClick={useVultisigSecureHandler}>
@@ -221,7 +223,7 @@ export const NoWalletView = () => {
         <div
           className={clsx(
             'flex items-center gap-4',
-            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 hover:dark:bg-bg2d/40',
+            'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 dark:hover:bg-bg2d/40',
             'cursor-pointer rounded-lg p-6 text-center transition duration-300 ease-in-out'
           )}
           onClick={importVaultHandler}>

@@ -333,7 +333,12 @@ export const HeaderComponent = (props: Props): JSX.Element => {
             <HeaderTheme isDesktopView={isDesktopView} />
           </div>
           <div className="flex h-[60px] items-center border-b border-solid border-bg2 dark:border-bg2d">
-            <HeaderLockMobile hasWallet={allWallets.length > 0} isLocked={isLocked} onPress={clickLockHandler} />
+            <HeaderLockMobile
+              hasWallet={allWallets.length > 0}
+              isLocked={isLocked}
+              onPress={clickLockHandler}
+              activeWallet={activeWallet}
+            />
           </div>
           <div className="flex h-[60px] items-center border-b border-solid border-bg2 dark:border-bg2d">
             {renderHeaderSettings}
