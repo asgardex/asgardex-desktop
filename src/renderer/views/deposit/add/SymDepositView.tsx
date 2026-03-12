@@ -15,6 +15,7 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { SymDeposit } from '../../../components/deposit/add'
+import { WarningView } from '../../../components/shared/warning'
 import { Alert } from '../../../components/uielements/alert'
 import { ASYM_DEPOSIT_TOOL_URL, ZERO_POOL_DATA } from '../../../const'
 import { useChainContext } from '../../../contexts/ChainContext'
@@ -102,7 +103,8 @@ export const SymDepositView = (props: Props) => {
   const {
     balancesState$,
     keystoreService: { validatePassword$ },
-    reloadBalancesByChain
+    reloadBalancesByChain,
+    appWalletService
   } = useWalletContext()
 
   const { ledgerAddresses } = useLedgerAddresses()
@@ -292,6 +294,11 @@ export const SymDepositView = (props: Props) => {
       isPrivate
     ]
   )
+
+  // Guard: LP not yet implemented for Vultisig wallet
+  if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
+    return <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
+  }
 
   return FP.pipe(
     sequenceTRD(poolAssetsRD, poolDetailRD, poolsState),

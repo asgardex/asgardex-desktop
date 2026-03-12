@@ -244,6 +244,8 @@ export const getWalletTypeLabel = (oWalletType: O.Option<WalletType>, intl: Intl
           return 'common.keystore'
         case WalletType.Ledger:
           return 'common.ledger'
+        case WalletType.Vultisig:
+          return 'wallet.vultisig'
         default:
           return 'common.custom'
       }

@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { DepositParam, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { CACAO_DENOM, DepositParam, getDenom, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -12,11 +13,12 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { isLedgerWallet } from '../../../shared/utils/guard'
+import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { retryRequest } from '../../helpers/rx/retryRequest'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
+import { createVultisigCosmosTx } from '../cosmos/vultisigTx'
 import { ClientUrl } from '../thorchain/types'
 import { TxHashLD, ErrorId } from '../wallet/types'
 import { TransactionService, Client$, ClientUrl$, SendTxParams } from './types'
@@ -131,7 +133,10 @@ export const createTransactionService = (
             clientUrl,
             params: { walletAccount, walletIndex, hdMode, asset, amount, memo }
           })
-
+        if (isVultisigWallet(walletType)) {
+          if (!asset) return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'No asset provided for MAYA deposit' }))
+          return vultisigTx({ network, params: { amount, asset: asset as AnyAsset, memo } })
+        }
         return depositTx({ walletIndex, asset, amount, memo })
       })
     )
@@ -189,11 +194,23 @@ export const createTransactionService = (
     )
   }
 
+  // Vultisig transaction handler — SDK native pipeline
+  const vultisigTx = createVultisigCosmosTx('MAYA', getDenom, CACAO_DENOM)
+  const sendVultisigTx = ({
+    network,
+    params
+  }: {
+    network: Network
+    clientUrl: ClientUrl
+    params: SendTxParams
+  }): TxHashLD => vultisigTx({ network, params })
+
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
       Rx.combineLatest([network$, clientUrl$]),
       RxOp.switchMap(([network, clientUrl]) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, clientUrl, params })
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, clientUrl, params })
 
         return common.sendTx(params)
       })

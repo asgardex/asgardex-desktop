@@ -29,6 +29,8 @@ import {
   saveAddresses as saveLedgerAddresses
 } from './api/ledger'
 import { approveLedgerERC20Token } from './api/ledger/evm/approve'
+import { registerMpcIpcHandlers } from './api/mpc'
+import { disposeSDK } from './api/mpc/sdk'
 import { openExternal } from './api/url'
 import IPCMessages from './ipc/messages'
 import { setMenu } from './menu'
@@ -232,6 +234,8 @@ const initIPC = () => {
   Object.entries(DEFAULT_STORAGES).forEach(([name, defaultValue]) => {
     getFileStoreService(name as StoreFileName, defaultValue).registerIpcHandlersMain()
   })
+  // MPC (Vultisig)
+  registerMpcIpcHandlers(ipcMain)
 }
 
 const init = async () => {
@@ -242,6 +246,9 @@ const init = async () => {
   await initMainWindow()
   app.on('window-all-closed', allClosedHandler)
   app.on('activate', activateHandler)
+  app.on('will-quit', () => {
+    disposeSDK()
+  })
   initIPC()
 }
 

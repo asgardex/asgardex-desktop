@@ -22,6 +22,7 @@ export type SendTxParams = {
   walletIndex: number
   hdMode: HDMode
   feeAmount: BaseAmount
+  vaultId?: string // Required for Vultisig wallet
 }
 
 export type TransactionService = C.TransactionService<SendTxParams>

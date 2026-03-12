@@ -20,7 +20,7 @@ import { ApiUrls, LedgerError } from '../../../../shared/api/types'
 import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../../shared/const'
 import { applyGasMultiplier } from '../../../../shared/evm/gas'
 import { getBlocktime } from '../../../../shared/evm/provider'
-import { isError, isEvmHDMode, isLedgerWallet } from '../../../../shared/utils/guard'
+import { isError, isEvmHDMode, isLedgerWallet, isVultisigWallet } from '../../../../shared/utils/guard'
 import { getEVMAssetAddress, isEVMTokenAsset } from '../../../helpers/assetHelper'
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { LiveData } from '../../../helpers/rx/liveData'
@@ -40,6 +40,7 @@ import {
   Client$,
   Client as EvmClient
 } from '../types'
+import { createVultisigEvmApprove, createVultisigEvmPoolTx, createVultisigEvmTx } from '../vultisigTx'
 
 export type EvmTransactionConfig = {
   chain: Chain
@@ -210,6 +211,8 @@ export const createEvmTransactionService = (
         )
       )
 
+    if (isVultisigWallet(params.walletType)) return sendVultisigPoolTx({ params })
+
     return FP.pipe(
       Rx.combineLatest([client$, gasMultiplier$]),
       RxOp.switchMap(([oClient, gasMultiplier]) =>
@@ -328,6 +331,8 @@ export const createEvmTransactionService = (
         evmRpc$,
         RxOp.switchMap((rpcUrls) => runApproveLedgerERC20Token$({ ...params, evmRpcUrl: rpcUrls[network] }))
       )
+
+    if (isVultisigWallet(walletType)) return sendVultisigApprove(params)
 
     return client$.pipe(
       RxOp.switchMap((oClient) =>
@@ -466,12 +471,20 @@ export const createEvmTransactionService = (
     )
   }
 
+  // Vultisig transaction handlers - MPC signing
+  // Use readOnlyClient$ (enhancedClient$) so pool/approve handlers work without keystore
+  const sendVultisigTx = createVultisigEvmTx(readOnlyClient$, chain)
+  const sendVultisigPoolTx = createVultisigEvmPoolTx(readOnlyClient$, chain)
+  const sendVultisigApprove = createVultisigEvmApprove(readOnlyClient$, chain)
+
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
       Rx.combineLatest([client$, network$, evmRpc$, gasMultiplier$]),
       RxOp.switchMap(([oClient, network, rpcUrls, gasMultiplier]) => {
         if (isLedgerWallet(params.walletType))
           return sendLedgerTx({ network, params, evmRpcUrl: rpcUrls[network], gasMultiplier })
+
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
 
         return FP.pipe(
           oClient,

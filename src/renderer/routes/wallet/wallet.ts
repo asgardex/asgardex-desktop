@@ -37,6 +37,28 @@ export const ledgerChainSelect: Route<void> = {
   }
 }
 
+// Vultisig routes
+export const vultisigCreate: Route<void> = {
+  template: `${base.template}/vultisig/create`,
+  path() {
+    return this.template
+  }
+}
+
+export const vultisigVerify: Route<void> = {
+  template: `${base.template}/vultisig/verify`,
+  path() {
+    return this.template
+  }
+}
+
+export const vultisigSecureCreate: Route<void> = {
+  template: `${base.template}/vultisig/secure-create`,
+  path() {
+    return this.template
+  }
+}
+
 export const assets: Route<void> = {
   template: `${base.template}/assets`,
   path() {

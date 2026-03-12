@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { CpuChipIcon } from '@heroicons/react/24/outline'
+import { CpuChipIcon, ShieldCheckIcon, ArrowDownTrayIcon, BoltIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
@@ -20,7 +20,8 @@ import {
   ChangeKeystoreWalletRD,
   KeystoreState,
   KeystoreWalletsUI,
-  RemoveKeystoreWalletHandler
+  RemoveKeystoreWalletHandler,
+  VultisigVaultInfo
 } from '../../../services/wallet/types'
 import { isLocked, getWalletName } from '../../../services/wallet/util'
 import { RemoveWalletConfirmationModal } from '../../modal/confirmation/RemoveWalletConfirmationModal'
@@ -38,9 +39,31 @@ export type Props = {
   removeKeystore: RemoveKeystoreWalletHandler
   changeKeystore$: ChangeKeystoreWalletHandler
   wallets: KeystoreWalletsUI
+  vultisigVaults?: VultisigVaultInfo[]
+  activeVultisigVaultId?: string | null
+  onVultisigSelect?: (vaultId: string) => void
+  // Vultisig unlock props
+  isVultisigLocked?: boolean
+  onVultisigUnlock?: (password: string) => Promise<void>
+  vultisigError?: string
+  // Vultisig import handler
+  onVultisigImport?: () => void
 }
 
-export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, wallets }: Props) => {
+export const UnlockForm = ({
+  keystore,
+  unlock,
+  removeKeystore,
+  changeKeystore$,
+  wallets,
+  vultisigVaults = [],
+  activeVultisigVaultId,
+  onVultisigSelect,
+  isVultisigLocked = false,
+  onVultisigUnlock,
+  vultisigError,
+  onVultisigImport
+}: Props) => {
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -81,9 +104,17 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
     async ({ password }: FormData) => {
       setUnlockError(O.none)
       setUnlocking(true)
+
       try {
-        await unlock(password)
-        setValidPassword(true)
+        // Handle Vultisig vault unlock
+        if (isVultisigLocked && onVultisigUnlock) {
+          await onVultisigUnlock(password)
+          setValidPassword(true)
+        } else {
+          // Handle keystore unlock
+          await unlock(password)
+          setValidPassword(true)
+        }
       } catch (error) {
         setUnlockError(O.some(error as Error))
         setValidPassword(false)
@@ -91,7 +122,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
         setUnlocking(false)
       }
     },
-    [unlock]
+    [unlock, isVultisigLocked, onVultisigUnlock]
   )
 
   const showRemoveConfirm = useCallback(() => {
@@ -105,14 +136,16 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
   const renderUnlockError = useMemo(
     () =>
       O.fold(
-        () => <></>,
+        () =>
+          // Also show Vultisig error if present
+          vultisigError ? <p className="mt-2 font-main text-sm text-error0 uppercase">{vultisigError}</p> : <></>,
         (_: Error) => (
           <p className="mt-2 font-main text-sm text-error0 uppercase">
             {intl.formatMessage({ id: 'wallet.unlock.error' })}
           </p>
         )
       )(unlockError),
-    [unlockError, intl]
+    [unlockError, intl, vultisigError]
   )
 
   const removeConfirmed = useCallback(async () => {
@@ -162,6 +195,14 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
     navigate(walletRoutes.ledgerChainSelect.path())
   }, [navigate])
 
+  const useVultisigFastHandler = useCallback(() => {
+    navigate(walletRoutes.vultisigCreate.path())
+  }, [navigate])
+
+  const useVultisigSecureHandler = useCallback(() => {
+    navigate(walletRoutes.vultisigSecureCreate.path())
+  }, [navigate])
+
   const renderChangeWalletError = useMemo(
     () =>
       FP.pipe(
@@ -206,7 +247,10 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
             <div className="flex flex-col gap-2">
               <WalletSelector
                 wallets={wallets}
+                vultisigVaults={vultisigVaults}
+                activeVultisigVaultId={activeVultisigVaultId}
                 onChange={changeWalletHandler}
+                onVultisigSelect={onVultisigSelect}
                 disabled={RD.isPending(changeWalletState)}
                 className="min-w-[200px] rounded-lg"
                 buttonClassName="!shadow-none dark:!shadow-none hover:!shadow-none dark:hover:!shadow-none"
@@ -235,14 +279,17 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
                 loading={unlocking}>
                 {intl.formatMessage({ id: 'wallet.action.unlock' })}
               </FlatButton>
-              <BorderButton
-                className="w-full min-w-[200px]"
-                size="normal"
-                color="error"
-                onClick={showRemoveConfirm}
-                disabled={unlocking}>
-                {intl.formatMessage({ id: 'wallet.remove.label' })}
-              </BorderButton>
+              {/* Only show remove button for keystore, not Vultisig */}
+              {!isVultisigLocked && (
+                <BorderButton
+                  className="w-full min-w-[200px]"
+                  size="normal"
+                  color="error"
+                  onClick={showRemoveConfirm}
+                  disabled={unlocking}>
+                  {intl.formatMessage({ id: 'wallet.remove.label' })}
+                </BorderButton>
+              )}
             </div>
 
             <div className="my-6 border-t border-solid border-gray0 dark:border-gray0d" />
@@ -257,6 +304,15 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
                 <CpuChipIcon width={16} height={16} />
                 {intl.formatMessage({ id: 'wallet.unlock.useLedger' })}
               </BorderButton>
+              <BorderButton
+                className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                size="normal"
+                color="primary"
+                onClick={onVultisigImport}
+                disabled={unlocking || !onVultisigImport}>
+                <ArrowDownTrayIcon width={16} height={16} />
+                {intl.formatMessage({ id: 'wallet.vultisig.import' })}
+              </BorderButton>
             </div>
 
             <h2 className="mt-6 mb-3 w-full text-11 text-text2 dark:text-text2d">
@@ -270,7 +326,7 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
                 color="primary"
                 onClick={createWalletHandler}
                 disabled={unlocking}>
-                {intl.formatMessage({ id: 'wallet.action.create' })}
+                {intl.formatMessage({ id: 'wallet.action.create' })} {intl.formatMessage({ id: 'common.keystore' })}
               </BorderButton>
               <BorderButton
                 className="w-full min-w-[200px]"
@@ -287,6 +343,24 @@ export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, 
                 onClick={importPhraseHandler}
                 disabled={unlocking}>
                 {intl.formatMessage({ id: 'wallet.action.import' })} {intl.formatMessage({ id: 'common.phrase' })}
+              </BorderButton>
+              <BorderButton
+                className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                size="normal"
+                color="primary"
+                onClick={useVultisigFastHandler}
+                disabled={unlocking}>
+                <BoltIcon className="text-turquoise" width={16} height={16} />
+                {intl.formatMessage({ id: 'wallet.vultisig.create.submit' })}
+              </BorderButton>
+              <BorderButton
+                className="flex w-full min-w-[200px] items-center justify-center gap-2"
+                size="normal"
+                color="primary"
+                onClick={useVultisigSecureHandler}
+                disabled={unlocking}>
+                <ShieldCheckIcon className="text-turquoise" width={16} height={16} />
+                {intl.formatMessage({ id: 'wallet.vultisig.secureCreate.title' })}
               </BorderButton>
             </div>
 

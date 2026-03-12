@@ -28,6 +28,7 @@ import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../
 import { TxModal } from '../../../components/modal/tx'
 import { ClaimAsset } from '../../../components/modal/tx/extra'
 import { SendAsset } from '../../../components/modal/tx/extra/SendAsset'
+import { WarningView } from '../../../components/shared/warning'
 import { AssetData } from '../../../components/uielements/assets/assetData'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { FlatButton, RefreshButton, ViewTxButton } from '../../../components/uielements/button'
@@ -130,7 +131,8 @@ export const TcyView = () => {
   )
   const intl = useIntl()
   const {
-    keystoreService: { validatePassword$ }
+    keystoreService: { validatePassword$ },
+    appWalletService
   } = useWalletContext()
 
   const [balancesState] = useObservableState(
@@ -783,6 +785,16 @@ export const TcyView = () => {
       />
     )
   }, [showLedgerModal, sourceAsset, intl, network, oPoolAddress, claimAddress, onSuccess])
+
+  // Guard: TCY not yet implemented for Vultisig wallet
+  if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
+    return (
+      <>
+        <AssetsNav />
+        <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
+      </>
+    )
+  }
 
   return (
     <>

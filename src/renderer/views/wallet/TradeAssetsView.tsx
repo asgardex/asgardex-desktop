@@ -11,6 +11,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { TradeDepositModal } from '../../components/modal/tradeDeposit'
+import { WarningView } from '../../components/shared/warning'
 import { RefreshButton, Button } from '../../components/uielements/button'
 import { Label } from '../../components/uielements/label'
 import { Spin } from '../../components/uielements/spin'
@@ -36,7 +37,7 @@ import { useApp } from '../../store/app/hooks'
 
 export const TradeAssetsView = (): JSX.Element => {
   const intl = useIntl()
-  const { balancesState$, setSelectedAsset, keystoreService } = useWalletContext()
+  const { balancesState$, setSelectedAsset, keystoreService, appWalletService } = useWalletContext()
   const { getTradeAccount$: getTradeAccountThor, reloadTradeAccount: reloadTradeAccountThor } = useThorchainContext()
   const { getTradeAccount$: getTradeAccountMaya, reloadTradeAccount: reloadTradeAccountMaya } = useMayachainContext()
   const { chainBalances$ } = useWalletContext()
@@ -308,6 +309,16 @@ export const TradeAssetsView = (): JSX.Element => {
     ...(O.isSome(ledgerErrorThor) ? { 'thorchain-ledger': ledgerErrorThor.value } : {}),
     ...(O.isSome(keystoreErrorMaya) ? { 'mayachain-keystore': keystoreErrorMaya.value } : {}),
     ...(O.isSome(ledgerErrorMaya) ? { 'mayachain-ledger': ledgerErrorMaya.value } : {})
+  }
+
+  // Guard: Trade Assets not yet implemented for Vultisig wallet
+  if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
+    return (
+      <>
+        <AssetsNav />
+        <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
+      </>
+    )
   }
 
   return (

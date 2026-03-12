@@ -8,8 +8,13 @@ import * as RxOp from 'rxjs/operators'
 import { ipcKeystoreWalletsIO, KeystoreWallets } from '../../../shared/api/io'
 import { KeystoreId } from '../../../shared/api/types'
 import { isError } from '../../../shared/utils/guard'
+import { WalletType } from '../../../shared/wallet/types'
+import { createScopedLogger } from '../../helpers/logger'
 import { liveData } from '../../helpers/rx/liveData'
+
+const logger = createScopedLogger('Keystore')
 import { observableState, triggerStream } from '../../helpers/stateHelper'
+import { modifyStorage } from '../storage/common'
 import { INITIAL_KEYSTORE_STATE } from './const'
 import {
   KeystoreService,
@@ -85,6 +90,8 @@ const addKeystoreWallet = async ({ phrase, name, id, password }: AddKeystorePara
     setKeystoreWallets(updatedWallets)
     setKeystoreState(O.some({ id, phrase, name }))
     setImportingKeystoreState(RD.success(true))
+    // Save to unified storage for app restart
+    modifyStorage(O.some({ lastOpenedWallet: { type: WalletType.Keystore, id } }))
     return Promise.resolve()
   } catch (error) {
     setImportingKeystoreState(RD.failure(isError(error) ? error : Error('Could not add keystore')))
@@ -118,6 +125,7 @@ export const removeKeystoreWallet = async () => {
 }
 
 const changeKeystoreWallet: ChangeKeystoreWalletHandler = (keystoreId: KeystoreId) => {
+  logger.info('changeKeystoreWallet called with id:', keystoreId)
   const wallets = keystoreWallets()
   // Get selected wallet
   const selectedWallet = FP.pipe(
@@ -126,7 +134,10 @@ const changeKeystoreWallet: ChangeKeystoreWalletHandler = (keystoreId: KeystoreI
     O.toNullable
   )
 
-  if (!selectedWallet) return Rx.of(RD.failure(Error(`Could not find a wallet in wallet list with id ${keystoreId}`)))
+  if (!selectedWallet) {
+    logger.warn('Wallet not found in list')
+    return Rx.of(RD.failure(Error(`Could not find a wallet in wallet list with id ${keystoreId}`)))
+  }
 
   const { id, name } = selectedWallet
 
@@ -146,10 +157,14 @@ const changeKeystoreWallet: ChangeKeystoreWalletHandler = (keystoreId: KeystoreI
         E.fold(
           (error) => RD.failure(Error(`Could not save wallets on disk ${error?.message ?? error.toString()}`)),
           (_) => {
+            logger.info('Saved wallets to disk, updating state for wallet:', name)
             // Update states
             setKeystoreWallets(updatedWallets)
             // set selected wallet as locked wallet
+            logger.info('Setting keystoreState to locked wallet:', { id, name })
             setKeystoreState(O.some({ id, name }))
+            // Save to unified storage for app restart
+            modifyStorage(O.some({ lastOpenedWallet: { type: WalletType.Keystore, id } }))
 
             return RD.success(true)
           }

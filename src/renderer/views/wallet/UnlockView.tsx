@@ -1,18 +1,159 @@
+import { useCallback, useEffect, useState } from 'react'
+
+import { useObservableState } from 'observable-hooks'
+import { useNavigate } from 'react-router-dom'
+
+import { VaultPasswordModal } from '../../components/modal/VaultPasswordModal'
 import { UnlockForm } from '../../components/wallet/unlock'
+import { useWalletContext } from '../../contexts/WalletContext'
+import { createScopedLogger } from '../../helpers/logger'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
+import * as walletRoutes from '../../routes/wallet'
+import { isVultisigMode, VultisigPhase } from '../../services/wallet/types'
+
+const logger = createScopedLogger('UnlockView')
 
 export const UnlockView = (): JSX.Element => {
   const { state: keystore, unlock, remove, change$ } = useKeystoreState()
   const { walletsUI } = useKeystoreWallets()
+  const { appWalletService } = useWalletContext()
+  const navigate = useNavigate()
+
+  // Get app wallet state to check if we're in Vultisig mode
+  const appWalletState = useObservableState(appWalletService.appWalletState$, undefined)
+
+  // Get Vultisig vaults
+  const vultisigState = useObservableState(appWalletService.vaultManager.vultisigState$, {
+    mode: 'standalone-vultisig' as const,
+    phase: VultisigPhase.VaultSelection,
+    availableVaults: [],
+    activeVault: null,
+    addresses: {}
+  })
+
+  // Navigate to assets when Vultisig vault becomes active (unlocked)
+  // IMPORTANT: Only navigate if app is actually in Vultisig mode to prevent loops when switching wallet types
+  useEffect(() => {
+    if (
+      appWalletState &&
+      isVultisigMode(appWalletState) &&
+      vultisigState.phase === VultisigPhase.Active &&
+      vultisigState.activeVault
+    ) {
+      navigate(walletRoutes.assets.path())
+    }
+  }, [appWalletState, vultisigState.phase, vultisigState.activeVault, navigate])
+
+  // Auto-unlock unencrypted vaults that end up in VaultLocked phase
+  // This prevents showing a password prompt for vaults that don't need one
+  useEffect(() => {
+    if (
+      vultisigState.phase === VultisigPhase.VaultLocked &&
+      vultisigState.activeVault &&
+      !vultisigState.activeVault.isEncrypted
+    ) {
+      logger.info('Auto-unlocking unencrypted vault:', vultisigState.activeVault.name)
+      appWalletService.vaultManager.unlockVault()
+    }
+  }, [vultisigState.phase, vultisigState.activeVault, appWalletService.vaultManager])
+
+  // Handler to select a Vultisig vault
+  // This will check if vault is locked and either:
+  // - Set phase to 'vault-locked' if password needed (encrypted vaults)
+  // - Set phase to 'active' directly (unencrypted vaults or newly created)
+  const selectVultisigVault = async (vaultId: string) => {
+    await appWalletService.switchToVultisigMode(true)
+    await appWalletService.vaultManager.selectVault(vaultId)
+  }
+
+  // Handler to unlock Vultisig vault with password
+  const unlockVultisigVault = async (password: string) => {
+    await appWalletService.vaultManager.unlockVault(password)
+    // Navigation happens via useEffect when phase becomes 'active'
+  }
+
+  // Determine if we're showing Vultisig unlock screen (only for encrypted vaults)
+  const isVultisigLocked =
+    vultisigState.phase === VultisigPhase.VaultLocked &&
+    vultisigState.activeVault !== null &&
+    vultisigState.activeVault.isEncrypted
+
+  // Vultisig vault import state
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [pendingVaultFile, setPendingVaultFile] = useState<{ content: string; filename: string } | null>(null)
+
+  // Import Vultisig vault from .vult file
+  const importVaultHandler = useCallback(async () => {
+    try {
+      const result = await window.apiMpc.openVaultFile()
+      if (!result) return // User canceled
+
+      if (result.isEncrypted) {
+        // Show password modal for encrypted vaults
+        setPendingVaultFile({ content: result.content, filename: result.filename })
+        setShowPasswordModal(true)
+      } else {
+        // Import unencrypted vault directly
+        const vault = await window.apiMpc.importVault(result.content)
+        await appWalletService.switchToVultisigMode(true)
+        await appWalletService.vaultManager.loadVaults()
+        await appWalletService.vaultManager.selectVault(vault.id, false)
+        navigate(walletRoutes.assets.path())
+      }
+    } catch (error) {
+      logger.error('Failed to import vault:', error)
+    }
+  }, [navigate, appWalletService])
+
+  // Handle password submission for encrypted vault
+  const handlePasswordSubmit = useCallback(
+    async (password: string) => {
+      if (!pendingVaultFile) return
+
+      try {
+        const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
+        await appWalletService.switchToVultisigMode(true)
+        await appWalletService.vaultManager.loadVaults()
+        await appWalletService.vaultManager.selectVault(vault.id, false)
+        setShowPasswordModal(false)
+        setPendingVaultFile(null)
+        navigate(walletRoutes.assets.path())
+      } catch (error) {
+        logger.error('Failed to import vault with password:', error)
+        throw error
+      }
+    },
+    [pendingVaultFile, navigate, appWalletService]
+  )
+
+  const handlePasswordModalClose = useCallback(() => {
+    setShowPasswordModal(false)
+    setPendingVaultFile(null)
+  }, [])
 
   return (
-    <UnlockForm
-      keystore={keystore}
-      unlock={unlock}
-      removeKeystore={remove}
-      changeKeystore$={change$}
-      wallets={walletsUI}
-    />
+    <>
+      <UnlockForm
+        keystore={keystore}
+        unlock={unlock}
+        removeKeystore={remove}
+        changeKeystore$={change$}
+        wallets={walletsUI}
+        vultisigVaults={vultisigState.availableVaults}
+        activeVultisigVaultId={vultisigState.activeVault?.id ?? null}
+        onVultisigSelect={selectVultisigVault}
+        isVultisigLocked={isVultisigLocked}
+        onVultisigUnlock={unlockVultisigVault}
+        vultisigError={vultisigState.error}
+        onVultisigImport={importVaultHandler}
+      />
+      <VaultPasswordModal
+        visible={showPasswordModal}
+        filename={pendingVaultFile?.filename || ''}
+        onSubmit={handlePasswordSubmit}
+        onClose={handlePasswordModalClose}
+      />
+    </>
   )
 }

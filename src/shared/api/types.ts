@@ -10,7 +10,7 @@ import { THORCHAIN_DECIMAL } from '../../renderer/helpers/assetHelper'
 import { EvmHDMode } from '../evm/types'
 import { Locale } from '../i18n/types'
 import { EnabledChain } from '../utils/chain'
-import { HDMode, WalletAddress } from '../wallet/types'
+import { HDMode, WalletAddress, WalletType } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 
 export type Dex = {
@@ -49,6 +49,13 @@ export type UserTrustedAddressStorage = TrustedAddresses & StorageVersion
 export type UserAssetStorage = AddedAssets & StorageVersion
 export type UserNodesStorage = Readonly<Record<Network, Address[]> & StorageVersion>
 export type UserBondProvidersStorage = Readonly<Record<Network, Address[]> & StorageVersion>
+
+// Unified type for tracking which wallet was last opened
+// Uses WalletType enum for consistency (values match string literals for backwards compat)
+export type LastOpenedWallet =
+  | { type: WalletType.Keystore; id: number }
+  | { type: WalletType.Vultisig; vaultId: string }
+
 // Gas price multiplier options (1x, 1.5x, 2x, 3x, 5x, 10x)
 export type GasMultiplier = 1 | 1.5 | 2 | 3 | 5 | 10
 
@@ -67,6 +74,8 @@ export type CommonStorage = Readonly<
     arbRpc: ApiUrls
     avaxRpc: ApiUrls
     baseRpc: ApiUrls
+    // Last opened wallet (keystore or vultisig)
+    lastOpenedWallet?: LastOpenedWallet
     evmGasMultiplier: GasMultiplier
   } & StorageVersion
 >

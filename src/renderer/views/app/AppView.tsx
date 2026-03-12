@@ -27,7 +27,7 @@ import { useLedgerAddresses } from '../../hooks/useLedgerAddresses'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useTheme } from '../../hooks/useTheme'
-import { noWallet } from '../../routes/wallet'
+import { noWallet, vultisigCreate, vultisigSecureCreate } from '../../routes/wallet'
 import { base as createWalletBase } from '../../routes/wallet/create'
 import { base as importWalletBase } from '../../routes/wallet/imports'
 import { ViewRoutes } from '../ViewRoutes'
@@ -48,8 +48,10 @@ export const AppView = (): JSX.Element => {
     const isNoWalletView = location.pathname === noWallet.path()
     const isCreateWalletView = location.pathname.includes(createWalletBase.path())
     const isImportWalletView = location.pathname.includes(importWalletBase.path())
+    const isVultisigCreateView =
+      location.pathname === vultisigCreate.path() || location.pathname === vultisigSecureCreate.path()
 
-    return isNoWalletView || isCreateWalletView || isImportWalletView
+    return isNoWalletView || isCreateWalletView || isImportWalletView || isVultisigCreateView
   }, [location.pathname])
 
   const isDesktopView = useBreakpoint()?.lg ?? false

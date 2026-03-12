@@ -1,7 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
-import { option as O } from 'fp-ts'
+import { none as O_none } from 'fp-ts/lib/Option'
 
-import * as AT from '../../../storybook/argTypes'
 import { HeaderLockMobile as Component, Props } from './HeaderLockMobile'
 
 const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
@@ -12,11 +11,14 @@ const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/HeaderLockMobile',
   argTypes: {
-    keystoreState: AT.keystore,
+    hasWallet: { control: 'boolean' },
+    isLocked: { control: 'boolean' },
     onPress: { action: 'onPress' }
   },
   args: {
-    keystoreState: O.none
+    hasWallet: true,
+    isLocked: false,
+    activeWallet: O_none
   }
 }
 

@@ -18,7 +18,9 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
+import { WalletType } from '../../../shared/wallet/types'
 import { Bonds } from '../../components/Bonds'
+import { WarningView } from '../../components/shared/warning'
 import { BaseButton, RefreshButton } from '../../components/uielements/button'
 import { Label } from '../../components/uielements/label'
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
@@ -79,7 +81,7 @@ export const BondsView = (): JSX.Element => {
   const intl = useIntl()
   const { isPrivate } = useApp()
   const navigate = useNavigate()
-  const { setSelectedAsset } = useWalletContext()
+  const { setSelectedAsset, appWalletService } = useWalletContext()
 
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
   const oClientMaya = useObservableState<O.Option<MayachainClient>>(clientMaya$, O.none)
@@ -359,6 +361,11 @@ export const BondsView = (): JSX.Element => {
     pricePoolDataMaya,
     selectedPricePoolMaya.asset
   ])
+
+  // Guard: Bonds not yet implemented for Vultisig wallet
+  if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
+    return <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
+  }
 
   return (
     <>

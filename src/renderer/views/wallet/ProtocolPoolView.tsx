@@ -20,6 +20,7 @@ import { useIntl } from 'react-intl'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { ProtocolPoolTable } from '../../components/runePool/runePoolTable'
+import { WarningView } from '../../components/shared/warning'
 import { RefreshButton } from '../../components/uielements/button'
 import { Label } from '../../components/uielements/label'
 import { AssetsNav } from '../../components/wallet/assets'
@@ -85,7 +86,7 @@ export const ProtocolPoolView = (): JSX.Element => {
   } = useMidgardMayaContext()
 
   const { addressByChain$ } = useChainContext()
-  const { getLedgerAddress$ } = useWalletContext()
+  const { getLedgerAddress$, appWalletService } = useWalletContext()
 
   const [{ balances: oBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
@@ -280,6 +281,16 @@ export const ProtocolPoolView = (): JSX.Element => {
     reloadRunePoolProvider()
     reloadCacaoPoolProvider()
   }, [reloadThorPools, reloadMayaPools, reloadRunePoolProvider, reloadCacaoPoolProvider])
+
+  // Guard: Protocol Pool not yet implemented for Vultisig wallet
+  if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
+    return (
+      <div>
+        <AssetsNav />
+        <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
+      </div>
+    )
+  }
 
   return (
     <div>

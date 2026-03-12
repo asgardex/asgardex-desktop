@@ -77,6 +77,7 @@ export type SendTxParams = {
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
+  vaultId?: string // Required for Vultisig wallet
 }
 
 export type TransactionService = {

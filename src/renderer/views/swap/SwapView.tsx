@@ -249,6 +249,16 @@ const SuccessRouteView = ({
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
+  // Log the resolved source asset decimal
+  useEffect(() => {
+    if (RD.isSuccess(sourceAssetRD)) {
+      logger.debug('[SwapView] sourceAssetRD resolved:', {
+        asset: `${sourceAssetRD.value.asset.chain}.${sourceAssetRD.value.asset.symbol}`,
+        decimal: sourceAssetRD.value.decimal
+      })
+    }
+  }, [sourceAssetRD])
+
   const targetAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
     // Extract pool details from RemoteData
     const thorPoolDetails = RD.isSuccess(poolsStateThorRD) ? poolsStateThorRD.value.poolDetails : undefined

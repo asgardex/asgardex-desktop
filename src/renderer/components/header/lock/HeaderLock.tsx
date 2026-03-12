@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 
-import * as RD from '@devexperts/remote-data-ts'
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon, PlusCircleIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
@@ -8,70 +7,53 @@ import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { KeystoreId } from '../../../../shared/api/types'
+import { WalletType } from '../../../../shared/wallet/types'
+import { createScopedLogger } from '../../../helpers/logger'
 import { truncateMiddle } from '../../../helpers/stringHelper'
-import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
+
+const logger = createScopedLogger('HeaderLock')
 import * as walletRoutes from '../../../routes/wallet'
-import {
-  ChangeKeystoreWalletHandler,
-  ChangeKeystoreWalletRD,
-  KeystoreState,
-  KeystoreWalletsUI
-} from '../../../services/wallet/types'
-import * as WU from '../../../services/wallet/util'
+import { KeystoreState, Wallet } from '../../../services/wallet/types'
 import { LockIcon, UnlockIcon } from '../../icons'
 import { BaseButton } from '../../uielements/button'
 import { Tooltip } from '../../uielements/tooltip'
 
-type WalletData = { id: KeystoreId; name: string }
-
+// Phase D → 4F: Props simplified to use unified wallet API from appWalletService
 export type Props = {
-  wallets: KeystoreWalletsUI
-  changeWalletHandler$: ChangeKeystoreWalletHandler
   keystoreState: KeystoreState
   lockHandler: FP.Lazy<void>
+  isLocked: boolean
+  // Phase D → 4F: Unified wallet props
+  allWallets: Wallet[]
+  activeWallet: O.Option<Wallet>
+  selectWallet: (wallet: Wallet) => Promise<void>
 }
 
 export const HeaderLock = (props: Props): JSX.Element => {
-  const { keystoreState, wallets, changeWalletHandler$, lockHandler: onPress } = props
+  const {
+    keystoreState: _keystoreState, // kept for potential future use
+    lockHandler: onPress,
+    isLocked,
+    // Phase D: Unified wallet props from appWalletService
+    allWallets,
+    activeWallet: oSelectedWallet,
+    selectWallet
+  } = props
 
   const intl = useIntl()
   const navigate = useNavigate()
 
-  const isLocked = useMemo(() => WU.isLocked(keystoreState), [keystoreState])
+  const hasWallets = allWallets.length > 0
 
-  const hasWallets = wallets.length
-
-  // Data for Listbox
-  const walletData = FP.pipe(
-    wallets,
-    A.map(({ id, name }) => ({ id, name }))
-  )
-
-  // Selected wallet for Listbox
-  const oSelectedWallet: O.Option<WalletData> = useMemo(
-    () =>
-      FP.pipe(
-        keystoreState,
-        WU.getKeystoreId,
-        O.chain((selectedId) =>
-          FP.pipe(
-            walletData,
-            A.findFirst(({ id }) => id === selectedId)
-          )
-        )
-      ),
-    [keystoreState, walletData]
-  )
-
-  const { subscribe: subscribeChangeWalletState } = useSubscriptionState<ChangeKeystoreWalletRD>(RD.initial)
-
-  const changeWalletHandler = useCallback(
-    ({ id }: WalletData) => {
-      // subscription is needed to run `changeWalletHandler$`
-      subscribeChangeWalletState(changeWalletHandler$(id))
+  // Phase D → 4F: Selection handler simplified - just calls unified selectWallet
+  const handleWalletChange = useCallback(
+    (wallet: Wallet) => {
+      selectWallet(wallet).catch((error) => {
+        // UI handles error display
+        logger.error('Failed to select wallet:', error)
+      })
     },
-    [changeWalletHandler$, subscribeChangeWalletState]
+    [selectWallet]
   )
 
   const renderWallets = useMemo(
@@ -79,7 +61,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
       FP.pipe(
         oSelectedWallet,
         O.fold(
-          () => <>no selected wallet</>,
+          () => <></>,
           (selectedWallet) => (
             <div className="ease z-10 flex h-[25px] items-center rounded-full bg-bg0 drop-shadow dark:bg-gray0d">
               <div
@@ -91,7 +73,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
                   <UnlockIcon className="h-[28px] w-[28px] cursor-pointer" />
                 )}
               </div>
-              <Listbox value={selectedWallet} onChange={changeWalletHandler}>
+              <Listbox value={selectedWallet} onChange={handleWalletChange}>
                 <div className="relative">
                   <ListboxButton
                     as="div"
@@ -103,8 +85,13 @@ export const HeaderLock = (props: Props): JSX.Element => {
                     )}>
                     {({ open }) => (
                       <>
-                        <span className="w-full">
+                        <span className="flex w-full items-center">
                           {truncateMiddle(selectedWallet.name, { start: 3, end: 3, max: 6 })}
+                          {selectedWallet.type === WalletType.Vultisig && (
+                            <span className="ml-1 rounded-full bg-warning0 px-[5px] py-[1px] text-[9px] leading-tight font-bold text-white">
+                              BETA
+                            </span>
+                          )}
                         </span>
                         <ChevronDownIcon
                           className={clsx('ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })}
@@ -121,9 +108,9 @@ export const HeaderLock = (props: Props): JSX.Element => {
                       'rounded-md border border-solid border-gray0 dark:border-gray0d'
                     )}>
                     {FP.pipe(
-                      walletData,
+                      allWallets,
                       A.map((wallet) => {
-                        const selected = wallet.id === selectedWallet.id
+                        const selected = wallet.type === selectedWallet.type && wallet.id === selectedWallet.id
                         return (
                           <ListboxOption
                             disabled={selected}
@@ -137,9 +124,19 @@ export const HeaderLock = (props: Props): JSX.Element => {
                                   : 'cursor-pointer hover:bg-gray0 hover:text-gray2 dark:hover:bg-gray0d dark:hover:text-gray2d'
                               )
                             }
-                            key={wallet.id}
+                            key={`${wallet.type}-${wallet.id}`}
                             value={wallet}>
-                            {truncateMiddle(wallet.name, { start: 9, end: 9, max: 20 })}
+                            <span className="flex items-center">
+                              {truncateMiddle(wallet.name, { start: 9, end: 9, max: 20 })}
+                              {wallet.type === WalletType.Vultisig && (
+                                <>
+                                  <span className="text-10 ml-1 text-turquoise">(V)</span>
+                                  <span className="ml-1 rounded-full bg-warning0 px-[5px] py-[1px] text-[9px] leading-tight font-bold text-white">
+                                    BETA
+                                  </span>
+                                </>
+                              )}
+                            </span>
                             {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
                           </ListboxOption>
                         )
@@ -152,8 +149,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
           )
         )
       ),
-
-    [changeWalletHandler, isLocked, oSelectedWallet, onPress, walletData]
+    [handleWalletChange, isLocked, oSelectedWallet, onPress, allWallets]
   )
 
   const renderAddWallet = useMemo(

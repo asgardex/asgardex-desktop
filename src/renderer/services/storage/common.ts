@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RxOp from 'rxjs/operators'
 
-import { CommonStorage } from '../../../shared/api/types'
+import { CommonStorage, LastOpenedWallet } from '../../../shared/api/types'
 import { DEFAULT_ARB_RPC_URLS } from '../../../shared/arb/const'
 import { DEFAULT_AVAX_RPC_URLS } from '../../../shared/avax/const'
 import { DEFAULT_BASE_RPC_URLS } from '../../../shared/base/const'
@@ -117,6 +117,14 @@ const baseRpc$ = pipe(
   RxOp.distinctUntilChanged(equal)
 )
 
+// Last opened wallet (keystore or vultisig) for restoring on app startup
+const lastOpenedWallet$ = pipe(
+  getStorageState$,
+  RxOp.map(O.map(({ lastOpenedWallet }) => lastOpenedWallet)),
+  RxOp.map(O.getOrElse<LastOpenedWallet | undefined>(() => undefined)),
+  RxOp.distinctUntilChanged(equal)
+)
+
 const evmGasMultiplier$ = pipe(
   getStorageState$,
   RxOp.map(O.map(({ evmGasMultiplier }) => evmGasMultiplier)),
@@ -158,5 +166,6 @@ export {
   arbRpc$,
   avaxRpc$,
   baseRpc$,
+  lastOpenedWallet$,
   evmGasMultiplier$
 }

@@ -12,6 +12,7 @@ import {
   isKeystoreWallet,
   isLedgerWallet,
   isNetwork,
+  isVultisigWallet,
   isWalletType
 } from './guard'
 
@@ -75,9 +76,11 @@ describe('shared/utils/guard', () => {
     it('false -> number', () => {
       expect(isBaseAmount(2)).toBeFalsy()
     })
+    it('false -> null (baseAmountGuard rejects null as non-object)', () => {
+      expect(isBaseAmount(null)).toBeFalsy()
+    })
     it('false -> misc.', () => {
       expect(isBaseAmount(undefined)).toBeFalsy()
-      expect(isBaseAmount(null)).toBeFalsy()
       expect(isBaseAmount({ hello: 'world' })).toBeFalsy()
       expect(isBaseAmount({})).toBeFalsy()
     })
@@ -89,6 +92,9 @@ describe('shared/utils/guard', () => {
     })
     it('true for "keystore"', () => {
       expect(isWalletType(WalletType.Keystore)).toBeTruthy()
+    })
+    it('true for "vultisig"', () => {
+      expect(isWalletType(WalletType.Vultisig)).toBeTruthy()
     })
     it('false for invalid string', () => {
       expect(isWalletType('invalid')).toBeFalsy()
@@ -110,6 +116,21 @@ describe('shared/utils/guard', () => {
     })
     it('true for "keystore"', () => {
       expect(isKeystoreWallet(WalletType.Keystore)).toBeTruthy()
+    })
+    it('false for "vultisig"', () => {
+      expect(isKeystoreWallet(WalletType.Vultisig)).toBeFalsy()
+    })
+  })
+
+  describe('isVultisigWallet', () => {
+    it('true for "vultisig"', () => {
+      expect(isVultisigWallet(WalletType.Vultisig)).toBeTruthy()
+    })
+    it('false for "keystore"', () => {
+      expect(isVultisigWallet(WalletType.Keystore)).toBeFalsy()
+    })
+    it('false for "ledger"', () => {
+      expect(isVultisigWallet(WalletType.Ledger)).toBeFalsy()
     })
   })
 

@@ -161,66 +161,44 @@ const UnifiedSendView = (props: UnifiedSendViewProps): JSX.Element => {
     }
   }
 
-  return FP.pipe(
+  // Use the wallet balance if available, otherwise use the empty balance
+  // IMPORTANT: Render a single SendForm instance to prevent component recreation
+  // when oWalletBalance changes from None to Some (which would lose signing state)
+  const balance = FP.pipe(
     oWalletBalance,
-    O.fold(
-      () => (
-        <Spin>
-          <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
-            <SendForm
-              asset={asset}
-              trustedAddresses={trustedAddresses}
-              balances={FP.pipe(
-                oBalances,
-                O.getOrElse<WalletBalances>(() => [])
-              )}
-              balance={emptyBalance}
-              transfer$={transfer$}
-              deposit$={isEVMChain ? deposit$ : undefined}
-              openExplorerTxUrl={openExplorerTxUrl}
-              getExplorerTxUrl={getExplorerTxUrl}
-              addressValidation={validateAddress}
-              fees={isEVMChain ? feesRD : undefined}
-              fee={isCOSMOSChain ? feeRD : undefined}
-              feesWithRates={isUTXOChain ? feesWithRatesRD : undefined}
-              reloadFeesHandler={reloadFeesHandler}
-              validatePassword$={validatePassword$}
-              network={network}
-              poolDetails={poolDetails}
-              oPoolAddress={oPoolAddress}
-              oPoolAddressMaya={oPoolAddressMaya}
-            />
-          </div>
-        </Spin>
-      ),
-      (walletBalance) => (
-        <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
-          <SendForm
-            asset={asset}
-            trustedAddresses={trustedAddresses}
-            balances={FP.pipe(
-              oBalances,
-              O.getOrElse<WalletBalances>(() => [])
-            )}
-            balance={walletBalance}
-            transfer$={transfer$}
-            deposit$={isEVMChain ? deposit$ : undefined}
-            openExplorerTxUrl={openExplorerTxUrl}
-            getExplorerTxUrl={getExplorerTxUrl}
-            addressValidation={validateAddress}
-            fees={isEVMChain ? feesRD : undefined}
-            fee={isCOSMOSChain ? feeRD : undefined}
-            feesWithRates={isUTXOChain ? feesWithRatesRD : undefined}
-            reloadFeesHandler={reloadFeesHandler}
-            validatePassword$={validatePassword$}
-            network={network}
-            poolDetails={poolDetails}
-            oPoolAddress={oPoolAddress}
-            oPoolAddressMaya={oPoolAddressMaya}
-          />
-        </div>
-      )
-    )
+    O.getOrElse(() => emptyBalance)
+  )
+
+  const isLoading = O.isNone(oWalletBalance)
+
+  return (
+    <Spin spinning={isLoading}>
+      <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
+        <SendForm
+          asset={asset}
+          trustedAddresses={trustedAddresses}
+          balances={FP.pipe(
+            oBalances,
+            O.getOrElse<WalletBalances>(() => [])
+          )}
+          balance={balance}
+          transfer$={transfer$}
+          deposit$={isEVMChain ? deposit$ : undefined}
+          openExplorerTxUrl={openExplorerTxUrl}
+          getExplorerTxUrl={getExplorerTxUrl}
+          addressValidation={validateAddress}
+          fees={isEVMChain ? feesRD : undefined}
+          fee={isCOSMOSChain ? feeRD : undefined}
+          feesWithRates={isUTXOChain ? feesWithRatesRD : undefined}
+          reloadFeesHandler={reloadFeesHandler}
+          validatePassword$={validatePassword$}
+          network={network}
+          poolDetails={poolDetails}
+          oPoolAddress={oPoolAddress}
+          oPoolAddressMaya={oPoolAddressMaya}
+        />
+      </div>
+    </Spin>
   )
 }
 

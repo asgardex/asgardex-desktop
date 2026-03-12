@@ -33,9 +33,10 @@ export const isNetwork = (u: unknown): u is Network =>
 export const isFeeOption = (u: unknown): u is FeeOption =>
   u === FeeOption.Average || u === FeeOption.Fast || u === FeeOption.Fastest
 
-export const isWalletType = (u: unknown): u is WalletType => u === 'keystore' || u === 'ledger'
+export const isWalletType = (u: unknown): u is WalletType => u === 'keystore' || u === 'ledger' || u === 'vultisig'
 export const isLedgerWallet = (walletType: WalletType): boolean => walletType === WalletType.Ledger
 export const isKeystoreWallet = (walletType: WalletType): boolean => walletType === WalletType.Keystore
+export const isVultisigWallet = (walletType: WalletType): boolean => walletType === WalletType.Vultisig
 
 export const isEvmHDMode = (u: unknown): u is EvmHDMode => u === 'legacy' || u === 'ledgerlive' || u === 'metamask'
 
@@ -61,7 +62,7 @@ const bnGuard: IOG.Guard<unknown, BigNumber> = {
 
 const baseAmountGuard: IOG.Guard<unknown, BaseAmount> = {
   is: (u: unknown): u is BaseAmount => {
-    if (u === null && typeof u !== 'object') return false
+    if (u === null || typeof u !== 'object') return false
 
     return IOG.number.is((u as BaseAmount)?.decimal) && bnGuard.is((u as BaseAmount)?.amount())
   }

@@ -6,6 +6,7 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { WalletType } from '../../../../shared/wallet/types'
 import { getEVMTokenAddressForChain } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
@@ -68,7 +69,13 @@ export const transfer$: SendTxStateHandler = (params) => {
       return txHash
     }),
     // Step 3: Check transaction status
+    // Vultisig: skip on-chain status check — txStatus$ uses client$ which requires keystore.
+    // The SDK already confirmed broadcast, so the txHash is valid.
     liveData.chain((txHash) => {
+      if (params.walletType === WalletType.Vultisig) {
+        setState({ ...getState(), status: RD.success(txHash) })
+        return Rx.of(RD.success({ hash: txHash }))
+      }
       // Update progress for status checking
       setState({
         ...getState(),

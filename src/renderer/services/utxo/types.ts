@@ -24,6 +24,7 @@ export type SendTxParams = {
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
+  vaultId?: string // Required for Vultisig wallet
   sendMax?: boolean
   selectedUtxos?: UTXO[]
   utxoSelectionPreferences?: UtxoSelectionPreferences

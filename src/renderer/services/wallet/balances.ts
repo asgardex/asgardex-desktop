@@ -63,7 +63,10 @@ import {
   ChainBalance,
   GetLedgerAddressHandler,
   StandaloneLedgerState,
-  getWalletTypeFromState
+  VultisigPhase,
+  VultisigState,
+  getWalletTypeFromState,
+  isVultisigMode
 } from './types'
 import { hasImportedKeystore } from './util'
 
@@ -412,10 +415,9 @@ export const createBalancesService = ({
    * to give to the user last balances he loaded without re-requesting
    * balances data which might be very expensive.
    */
-  const walletBalancesState: Map<
-    { chain: Chain; walletType: WalletType; walletBalanceType: WalletBalanceType },
-    WalletBalancesRD
-  > = new Map()
+  const walletBalancesState: Map<string, WalletBalancesRD> = new Map()
+  const balanceCacheKey = (chain: Chain, walletType: WalletType, walletBalanceType: WalletBalanceType): string =>
+    `${chain}|${walletType}|${walletBalanceType}`
 
   // Whenever network is changed, reset stored balances
   const networkSub = network$.subscribe(() => {
@@ -428,6 +430,17 @@ export const createBalancesService = ({
       walletBalancesState.clear()
     }
   })
+
+  // Whenever the active Vultisig vault changes, reset stored balances
+  // so stale balances from the previous vault are not shown
+  const vaultSwitchSub = appWalletService.appWalletState$
+    .pipe(
+      RxOp.map((state) => (isVultisigMode(state) ? (state.activeVault?.id ?? null) : null)),
+      RxOp.distinctUntilChanged()
+    )
+    .subscribe(() => {
+      walletBalancesState.clear()
+    })
 
   const getChainBalance$ = ({
     chain,
@@ -464,7 +477,7 @@ export const createBalancesService = ({
     return FP.pipe(
       reload$,
       RxOp.switchMap((shouldReloadData) => {
-        const savedResult = walletBalancesState.get({ chain, walletType, walletBalanceType })
+        const savedResult = walletBalancesState.get(balanceCacheKey(chain, walletType, walletBalanceType))
         // For every new simple subscription return cached results if they exist
         if (!shouldReloadData && savedResult) {
           return Rx.of(savedResult)
@@ -478,7 +491,7 @@ export const createBalancesService = ({
           // For every successful load save results to the memory-based cache
           // to avoid unwanted data re-requesting.
           liveData.map((balances) => {
-            walletBalancesState.set({ chain, walletType, walletBalanceType }, RD.success(balances))
+            walletBalancesState.set(balanceCacheKey(chain, walletType, walletBalanceType), RD.success(balances))
             return balances
           }),
           RxOp.startWith(savedResult || RD.initial)
@@ -626,6 +639,73 @@ export const createBalancesService = ({
                   balances,
                   balancesType: walletBalanceType,
                   hdMode
+                }))
+              )
+          )
+        )
+      )
+    )
+
+  /**
+   * Factory to create a stream of Vultisig balances by given chain
+   * Similar to ledgerChainBalance$ but uses appWalletService.getAddressForChain$
+   */
+  const vultisigChainBalance$ = ({
+    chain,
+    walletBalanceType,
+    getBalanceByAddress$
+  }: {
+    chain: Chain
+    walletBalanceType: WalletBalanceType
+    getBalanceByAddress$: ({
+      address,
+      walletAccount,
+      walletType,
+      walletIndex,
+      hdMode,
+      walletBalanceType
+    }: {
+      address: Address
+      walletType: WalletType
+      walletAccount: number
+      walletIndex: number
+      hdMode: HDMode
+      walletBalanceType: WalletBalanceType
+    }) => WalletBalancesLD
+  }): ChainBalance$ =>
+    FP.pipe(
+      appWalletService.getAddressForChain$(chain),
+      RxOp.switchMap((oAddress) =>
+        FP.pipe(
+          oAddress,
+          O.fold(
+            () =>
+              // In case we don't get an address,
+              // just return `ChainBalance` w/ initial (empty) balances
+              Rx.of<ChainBalance>({
+                walletType: WalletType.Vultisig,
+                chain,
+                walletAddress: O.none,
+                balances: RD.initial,
+                balancesType: walletBalanceType
+              }),
+            (address) =>
+              // Load balances by given Vultisig address
+              FP.pipe(
+                getBalanceByAddress$({
+                  address,
+                  walletType: WalletType.Vultisig,
+                  walletAccount: 0, // Vultisig doesn't use HD derivation
+                  walletIndex: 0,
+                  walletBalanceType,
+                  hdMode: 'default'
+                }),
+                RxOp.map<WalletBalancesRD, ChainBalance>((balances) => ({
+                  walletType: WalletType.Vultisig,
+                  chain,
+                  walletAddress: O.some(address),
+                  balances,
+                  balancesType: walletBalanceType
                 }))
               )
           )
@@ -1006,6 +1086,180 @@ export const createBalancesService = ({
     getBalanceByAddress$: XRP.getBalanceByAddress$('all')
   })
 
+  // ============================================
+  // Vultisig Balance Observables
+  // Supported chains: BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL, ZEC, KUJI, ADA, XRD, TRON
+  // ============================================
+
+  /**
+   * THOR Vultisig balances
+   */
+  const thorVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: THORChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: THOR.getBalanceByAddress$
+  })
+
+  /**
+   * MAYA Vultisig balances
+   */
+  const mayaVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: MAYAChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: MAYA.getBalanceByAddress$
+  })
+
+  /**
+   * BTC Vultisig balances
+   */
+  const btcVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: BTCChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: BTC.getBalanceByAddress$('all')
+  })
+
+  /**
+   * BTC Vultisig confirmed balances
+   */
+  const btcVultisigChainBalanceConfirmed$: ChainBalance$ = vultisigChainBalance$({
+    chain: BTCChain,
+    walletBalanceType: 'confirmed',
+    getBalanceByAddress$: BTC.getBalanceByAddress$('confirmed')
+  })
+
+  /**
+   * BCH Vultisig balances
+   */
+  const bchVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: BCHChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: BCH.getBalanceByAddress$
+  })
+
+  /**
+   * DASH Vultisig balances
+   */
+  const dashVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: DASHChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: DASH.getBalanceByAddress$
+  })
+
+  /**
+   * LTC Vultisig balances
+   */
+  const ltcVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: LTCChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: LTC.getBalanceByAddress$
+  })
+
+  /**
+   * DOGE Vultisig balances
+   */
+  const dogeVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: DOGEChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: DOGE.getBalanceByAddress$
+  })
+
+  /**
+   * COSMOS Vultisig balances
+   */
+  const cosmosVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: GAIAChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: COSMOS.getBalanceByAddress$
+  })
+
+  /**
+   * XRP Vultisig balances
+   */
+  const xrpVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: XRPChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: XRP.getBalanceByAddress$('all')
+  })
+
+  /**
+   * SOL Vultisig balances
+   */
+  const solVultisigChainBalance$: ChainBalance$ = vultisigChainBalance$({
+    chain: SOLChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: SOL.getBalanceByAddress$
+  })
+
+  /**
+   * ETH Vultisig balances
+   */
+  const ethVultisigChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      vultisigChainBalance$({
+        chain: ETHChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: ETH.getBalanceByAddress$(network)
+      })
+    )
+  )
+
+  /**
+   * ARB Vultisig balances
+   */
+  const arbVultisigChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      vultisigChainBalance$({
+        chain: ARBChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: ARB.getBalanceByAddress$(network)
+      })
+    )
+  )
+
+  /**
+   * AVAX Vultisig balances
+   */
+  const avaxVultisigChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      vultisigChainBalance$({
+        chain: AVAXChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: AVAX.getBalanceByAddress$(network)
+      })
+    )
+  )
+
+  /**
+   * BASE Vultisig balances
+   */
+  const baseVultisigChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      vultisigChainBalance$({
+        chain: BASEChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: BASE.getBalanceByAddress$(network)
+      })
+    )
+  )
+
+  /**
+   * BSC Vultisig balances
+   */
+  const bscVultisigChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      vultisigChainBalance$({
+        chain: BSCChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: BSC.getBalanceByAddress$(network)
+      })
+    )
+  )
+
   /**
    * List of `ChainBalances` for all available chains (order is important)
    *
@@ -1060,18 +1314,39 @@ export const createBalancesService = ({
     XRP: [xrpLedgerChainBalance$]
   }
 
+  // Vultisig balance observables for standalone Vultisig mode
+  // Supported chains: BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL
+  const vultisigBalanceObservables: Partial<Record<Chain, ChainBalance$[]>> = {
+    THOR: [thorVultisigChainBalance$],
+    MAYA: [mayaVultisigChainBalance$],
+    BTC: [btcVultisigChainBalance$, btcVultisigChainBalanceConfirmed$],
+    BCH: [bchVultisigChainBalance$],
+    DASH: [dashVultisigChainBalance$],
+    ETH: [ethVultisigChainBalance$],
+    ARB: [arbVultisigChainBalance$],
+    AVAX: [avaxVultisigChainBalance$],
+    BSC: [bscVultisigChainBalance$],
+    LTC: [ltcVultisigChainBalance$],
+    DOGE: [dogeVultisigChainBalance$],
+    GAIA: [cosmosVultisigChainBalance$],
+    BASE: [baseVultisigChainBalance$],
+    XRP: [xrpVultisigChainBalance$],
+    SOL: [solVultisigChainBalance$]
+  }
+
   // Combine enabled chains with their corresponding balance observables
-  // Filter based on wallet mode - in standalone ledger mode, only show ledger balances
+  // Filter based on wallet mode - in standalone ledger/vultisig mode, only show relevant balances
   const chainBalances$: ChainBalances$ = FP.pipe(
     Rx.combineLatest([userChains$, appWalletService.appWalletState$]),
     RxOp.switchMap(([enabledChains, appWalletState]) => {
-      const isStandaloneMode = appWalletState && isStandaloneLedgerMode(appWalletState)
+      const isStandaloneLedger = appWalletState && isStandaloneLedgerMode(appWalletState)
+      const isVultisig = appWalletState && isVultisigMode(appWalletState)
       // Convert to Set for O(1) lookups
       const enabledChainsSet = new Set(enabledChains)
 
-      let observablesToUse: Record<Chain, ChainBalance$[]>
+      let observablesToUse: Partial<Record<Chain, ChainBalance$[]>>
 
-      if (isStandaloneMode) {
+      if (isStandaloneLedger) {
         // In standalone ledger mode, only show balances for the connected chain
         const standaloneLedgerState = appWalletState as StandaloneLedgerState
         const connectedChain = standaloneLedgerState.connectedChain
@@ -1081,6 +1356,15 @@ export const createBalancesService = ({
           connectedChain && ledgerBalanceObservables[connectedChain]
             ? { [connectedChain]: ledgerBalanceObservables[connectedChain] }
             : {}
+      } else if (isVultisig) {
+        // In Vultisig mode, show balances for all supported Vultisig chains
+        const vultisigState = appWalletState as VultisigState
+        // Only show balances if vault is active (unlocked)
+        if (vultisigState.phase === VultisigPhase.Active) {
+          observablesToUse = vultisigBalanceObservables
+        } else {
+          observablesToUse = {}
+        }
       } else {
         // In normal mode, show all balances (keystore + ledger)
         observablesToUse = chainBalanceObservables
@@ -1088,7 +1372,7 @@ export const createBalancesService = ({
 
       const enabledChainObservables: ChainBalance$[] = Object.entries(observablesToUse)
         .filter(([chain]) => enabledChainsSet.has(chain))
-        .flatMap(([, observables]) => observables)
+        .flatMap(([, observables]) => observables || [])
 
       return enabledChainObservables.length > 0 ? Rx.combineLatest(enabledChainObservables) : Rx.of([])
     }),
@@ -1157,6 +1441,7 @@ export const createBalancesService = ({
     pendingTimers = []
     networkSub.unsubscribe()
     keystoreSub.unsubscribe()
+    vaultSwitchSub.unsubscribe()
     walletBalancesState.clear()
   }
 

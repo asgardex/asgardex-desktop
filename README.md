@@ -42,6 +42,7 @@ This is the developer source repository, general information, and download page 
 | --------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
 | Keystore  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Ledger \* | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Vultisig \*\*\* | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Send \*\* | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Receive   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Deposit   | :heavy_check_mark: | -                  | -                  | -                  | -                  | -                  | -                  | -                  | -                  | :heavy_check_mark: | -                  | -                  | -                  | -                  | -                  | -                  | -                  |
@@ -52,6 +53,8 @@ This is the developer source repository, general information, and download page 
 (\*) Ledger `RUNE` is not supported at `stagenet`. Ledger `LTC`/`BCH`/`DOGE` are not supported at `testnet`.
 
 (\*\*) With or without memo
+
+(\*\*\*) Vultisig MPC wallet (BETA). Also supports ZEC, ADA, XRP, XRD, SOL, and TRON beyond the chains listed in the table. See [Vultisig section](#vultisig-beta) for details.
 
 #### THORChain Exchange
 
@@ -378,6 +381,37 @@ By adding a Ledger account to a wallet, ASGARDEX saves its `address` and some ex
 ```
 
 Whenever a Ledger has been removed in `Wallet` -> `Settings`, its data will be removed from `ledgers.json`. By removing all Ledger accounts from each wallet `ledgers.json` will be empty and won't include any Ledger related data. The same by removing all wallets.
+
+## Vultisig (BETA)
+
+ASGARDEX supports [Vultisig](https://vultisig.com/) MPC (multi-party computation) wallets as a third wallet mode alongside Keystore and Ledger. The integration is currently in **beta** -- a "BETA" indicator is shown in the UI when Vultisig mode is active.
+
+### What's implemented
+
+- **Vault creation** -- Two modes: *Fast vault* (email + password, server-assisted) and *Secure vault* (2-of-2 MPC with phone pairing via QR code)
+- **20-chain support** -- BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL, ZEC, KUJI, ADA, TRON, XRD
+- **Send transactions** across all supported chains
+- **Token swaps** via THORChain and MAYAChain (verified: BTC, ETH, CACAO, ERC20 tokens)
+- **ERC20 token approvals**
+- **Vault import/export** using `.vult` files
+- **Vault lock/unlock** with password encryption
+- **Unified wallet dropdown** -- switch between Keystore, Ledger, and Vultisig vaults from the header
+
+### Not yet implemented
+
+The following features are guarded with "not implemented" warnings when using a Vultisig wallet:
+
+- Trade deposits
+- Liquidity provision (add/withdraw)
+- Bonds management
+
+### Architecture
+
+Vultisig uses the Vultisig MPC SDK, which runs exclusively in Electron's main process. The renderer communicates with the SDK via IPC through `window.apiMpc` (exposed in the preload script). Key files:
+
+- SDK IPC handlers: `src/main/api/mpc/`
+- Vault lifecycle: `src/renderer/services/wallet/vaultManager.ts`
+- MPC type definitions: `src/shared/api/mpcTypes.ts`
 
 ## Git branching workflow
 

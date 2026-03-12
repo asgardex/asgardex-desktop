@@ -23,19 +23,24 @@ import {
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { Controller, useForm } from 'react-hook-form'
 import { FormattedMessage, useIntl } from 'react-intl'
 
 import { GasMultiplier, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
 import { isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
-import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
+import { isKeystoreWallet, isLedgerWallet, isVultisigWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
+import { useWalletContext } from '../../../../contexts/WalletContext'
 import { useXrpContext } from '../../../../contexts/XrpContext'
 import { isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
 import { getChainAsset, getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { isEvmChain, isEvmChainAsset } from '../../../../helpers/evmHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { createScopedLogger } from '../../../../helpers/logger'
+
+const sendFormLogger = createScopedLogger('SendForm')
 import * as PoolHelpers from '../../../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
@@ -69,8 +74,18 @@ import {
   strategyToPreferences
 } from '../../../../services/utxo/coinControl.types'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
-import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
-import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
+import {
+  isVultisigMode,
+  SelectedWalletAsset,
+  ValidatePasswordHandler,
+  VaultType,
+  WalletBalance
+} from '../../../../services/wallet/types'
+import {
+  LedgerConfirmationModal,
+  VultisigConfirmationModal,
+  WalletPasswordConfirmationModal
+} from '../../../modal/confirmation'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
@@ -142,6 +157,18 @@ export const SendForm = (props: Props): JSX.Element => {
 
   const intl = useIntl()
 
+  // Get wallet context for Vultisig vault type
+  const { appWalletService } = useWalletContext()
+  const appWalletState = useObservableState(appWalletService.appWalletState$, null)
+
+  // Get vault type for Vultisig wallets (defaults to 'fast' if not available)
+  const vaultType: VaultType = useMemo(() => {
+    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
+      return appWalletState.activeVault.type
+    }
+    return 'fast'
+  }, [appWalletState])
+
   const { asset } = balance
 
   // Determine the effective chain for operations (MAYAChain for synths, THORChain for secured, otherwise asset.chain)
@@ -199,6 +226,20 @@ export const SendForm = (props: Props): JSX.Element => {
   const [currentMemo, setCurrentMemo] = useState<string>('')
   const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
+
+  // Debug: Log component mount/unmount to detect recreation
+  useEffect(() => {
+    sendFormLogger.info('Component MOUNTED')
+    return () => {
+      sendFormLogger.info('Component UNMOUNTING')
+    }
+  }, [])
+
+  // Debug: Log when confirmation modal state changes
+  useEffect(() => {
+    sendFormLogger.info('showConfirmationModal changed', { value: showConfirmationModal })
+  }, [showConfirmationModal])
+
   const [destinationTagRequired, setDestinationTagRequired] = useState<boolean>(false)
   const [isRouterAddress, setIsRouterAddress] = useState<boolean>(false)
   const [isSendMax, setIsSendMax] = useState<boolean>(false)
@@ -1083,21 +1124,52 @@ export const SendForm = (props: Props): JSX.Element => {
     coinControlState
   ])
 
-  // Confirmation modal
+  // Password validation - uses appropriate method based on wallet type
+  const validatePasswordAsync = useCallback(
+    async (password: string): Promise<boolean> => {
+      // For Vultisig wallets, use validatePassword (checks password WITHOUT modifying global state)
+      if (isVultisigWallet(walletType)) {
+        return appWalletService.validatePassword(password)
+      }
+      // For Keystore wallets, use keystoreService.validatePassword$
+      return new Promise((resolve) => {
+        validatePassword$(password).subscribe({
+          next: (result) => {
+            if (RD.isSuccess(result)) {
+              resolve(true)
+            } else if (RD.isFailure(result)) {
+              resolve(false)
+            }
+          },
+          error: () => resolve(false)
+        })
+      })
+    },
+    [walletType, appWalletService, validatePassword$]
+  )
+
+  // Confirmation modal close handler (shared)
+  const onConfirmationModalClose = useCallback(() => {
+    setShowConfirmationModal(false)
+  }, [])
+
+  // Confirmation modal for Keystore/Ledger
   const renderConfirmationModal = useMemo(() => {
+    // Vultisig modal is rendered separately - return early to avoid any side effects
+    if (isVultisigWallet(walletType)) {
+      return null
+    }
+
     const onSuccessHandler = () => {
       setShowConfirmationModal(false)
       poolDeposit ? submitDepositTx() : submitTx()
-    }
-    const onCloseHandler = () => {
-      setShowConfirmationModal(false)
     }
 
     if (isKeystoreWallet(walletType)) {
       return (
         <WalletPasswordConfirmationModal
           onSuccess={onSuccessHandler}
-          onClose={onCloseHandler}
+          onClose={onConfirmationModalClose}
           validatePassword$={validatePassword$}
         />
       )
@@ -1107,7 +1179,7 @@ export const SendForm = (props: Props): JSX.Element => {
         <LedgerConfirmationModal
           network={network}
           onSuccess={onSuccessHandler}
-          onClose={onCloseHandler}
+          onClose={onConfirmationModalClose}
           visible={showConfirmationModal}
           chain={asset.chain}
           description2={intl.formatMessage({ id: 'ledger.sign' })}
@@ -1127,8 +1199,69 @@ export const SendForm = (props: Props): JSX.Element => {
     asset.chain,
     intl,
     walletAddress,
-    watch
+    watch,
+    onConfirmationModalClose
   ])
+
+  // Vultisig confirmation modal - rendered separately to prevent recreation when txState changes
+  // This ensures IPC event listeners aren't cleaned up during the signing flow
+  const onVultisigSuccess = useCallback(() => {
+    sendFormLogger.info('onVultisigSuccess', { vaultType })
+    if (vaultType === 'fast') {
+      sendFormLogger.debug('Closing modal for fast vault')
+      setShowConfirmationModal(false)
+    } else {
+      sendFormLogger.debug('Keeping modal open for secure vault')
+    }
+    // Start the transaction - for SecureVault, modal stays open for QR flow
+    poolDeposit ? submitDepositTx() : submitTx()
+  }, [vaultType, poolDeposit, submitDepositTx, submitTx])
+
+  // Track if we're in a Vultisig signing session using a ref for synchronous tracking
+  // This prevents race conditions where walletType changes before the useEffect can set state
+  const vultisigSessionRef = useRef(false)
+
+  // Synchronously start session when modal opens as Vultisig
+  // This runs during render, before any effects, to prevent race conditions
+  if (showConfirmationModal && isVultisigWallet(walletType) && !vultisigSessionRef.current) {
+    vultisigSessionRef.current = true
+    sendFormLogger.info('Vultisig signing session started (sync)')
+  }
+
+  // End session when modal closes (via effect since we need to react to showConfirmationModal becoming false)
+  useEffect(() => {
+    if (!showConfirmationModal && vultisigSessionRef.current) {
+      sendFormLogger.info('Vultisig signing session ended')
+      vultisigSessionRef.current = false
+    }
+  }, [showConfirmationModal])
+
+  // Log walletType changes for debugging
+  useEffect(() => {
+    sendFormLogger.info('walletType info', {
+      walletType,
+      isVultisig: isVultisigWallet(walletType),
+      signingSessionRef: vultisigSessionRef.current
+    })
+  }, [walletType])
+
+  // Render Vultisig modal - keep mounted during active signing session
+  // The ref is checked synchronously so it won't miss the session start
+  const shouldRenderVultisigModal = vultisigSessionRef.current || isVultisigWallet(walletType)
+  const renderVultisigConfirmationModal = shouldRenderVultisigModal ? (
+    <VultisigConfirmationModal
+      key="vultisig-confirmation-modal"
+      visible={showConfirmationModal}
+      network={network}
+      chain={asset.chain}
+      vaultType={vaultType}
+      onSuccess={onVultisigSuccess}
+      onClose={onConfirmationModalClose}
+      validatePassword$={validatePasswordAsync}
+      txState={sendTxState.status}
+      getActiveVaultId={appWalletService.getActiveVaultId}
+    />
+  ) : null
 
   // Transaction modal
   const renderTxModal = useMemo(() => {
@@ -1571,7 +1704,9 @@ export const SendForm = (props: Props): JSX.Element => {
       </div>
 
       {showConfirmationModal && renderConfirmationModal}
-      {renderTxModal}
+      {renderVultisigConfirmationModal}
+      {/* Don't show TxModal during Vultisig SecureVault signing flow - VultisigConfirmationModal handles the UX */}
+      {!(isVultisigWallet(walletType) && vaultType === 'secure' && showConfirmationModal) && renderTxModal}
     </>
   )
 }

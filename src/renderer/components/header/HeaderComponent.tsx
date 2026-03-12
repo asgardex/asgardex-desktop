@@ -27,8 +27,7 @@ import {
   MidgardUrlRD as MidgardMayaUrlRD
 } from '../../services/midgard/midgardTypes'
 import { MimirRD } from '../../services/thorchain/types'
-import { ChangeKeystoreWalletHandler, KeystoreState, KeystoreWalletsUI } from '../../services/wallet/types'
-import { isLocked } from '../../services/wallet/util'
+import { KeystoreState, Wallet } from '../../services/wallet/types'
 import { PricePoolAsset, PricePoolAssets } from '../../views/pools/Pools.types'
 import { Drawer } from '../uielements/drawer'
 import { Label } from '../uielements/label'
@@ -55,10 +54,13 @@ type Tab = {
 
 export type Props = {
   keystore: KeystoreState
-  wallets: KeystoreWalletsUI
   network: Network
-  lockHandler: FP.Lazy<void>
-  changeWalletHandler$: ChangeKeystoreWalletHandler
+  lockHandler: () => void | Promise<void>
+  isLocked: boolean
+  // Phase D → 4F: Unified wallet props
+  allWallets: Wallet[]
+  activeWallet: O.Option<Wallet>
+  selectWallet: (wallet: Wallet) => Promise<void>
   setSelectedPricePool: (asset: PricePoolAsset) => void
   pricePools: O.Option<PricePools>
   runePrice: PriceRD
@@ -86,7 +88,6 @@ export type Props = {
 export const HeaderComponent = (props: Props): JSX.Element => {
   const {
     keystore,
-    wallets,
     pricePools: oPricePools,
     runePrice: runePriceRD,
     tcyPrice: tcyPriceRD,
@@ -103,7 +104,11 @@ export const HeaderComponent = (props: Props): JSX.Element => {
     reloadVolume24PriceMaya,
     selectedPricePoolAsset: oSelectedPricePoolAsset,
     lockHandler,
-    changeWalletHandler$,
+    isLocked,
+    // Phase D: Unified wallet props
+    allWallets,
+    activeWallet,
+    selectWallet,
     setSelectedPricePool,
     midgardUrl: midgardUrlRD,
     midgardMayaUrl: midgardMayaUrlRD,
@@ -206,15 +211,15 @@ export const HeaderComponent = (props: Props): JSX.Element => {
   }, [closeMenu, navigate])
 
   const clickLockHandler = useCallback(() => {
-    // lock if needed ...
-    if (!isLocked(keystore)) {
+    // lock if needed (using unified isLocked from appWalletService)
+    if (!isLocked) {
       lockHandler()
     } else {
       // ... or go to wallet page to unlock
       navigate(walletRoutes.base.path(location.pathname))
     }
     closeMenu()
-  }, [keystore, closeMenu, lockHandler, navigate, location.pathname])
+  }, [isLocked, closeMenu, lockHandler, navigate, location.pathname])
 
   const currencyChangeHandler = useCallback(
     (asset: PricePoolAsset) => {
@@ -297,9 +302,11 @@ export const HeaderComponent = (props: Props): JSX.Element => {
             {renderHeaderCurrency}
             <HeaderLock
               keystoreState={keystore}
-              wallets={wallets}
               lockHandler={clickLockHandler}
-              changeWalletHandler$={changeWalletHandler$}
+              isLocked={isLocked}
+              allWallets={allWallets}
+              activeWallet={activeWallet}
+              selectWallet={selectWallet}
             />
             {renderHeaderSettings}
           </div>
@@ -326,7 +333,12 @@ export const HeaderComponent = (props: Props): JSX.Element => {
             <HeaderTheme isDesktopView={isDesktopView} />
           </div>
           <div className="flex h-[60px] items-center border-b border-solid border-bg2 dark:border-bg2d">
-            <HeaderLockMobile keystoreState={keystore} onPress={clickLockHandler} />
+            <HeaderLockMobile
+              hasWallet={allWallets.length > 0}
+              isLocked={isLocked}
+              onPress={clickLockHandler}
+              activeWallet={activeWallet}
+            />
           </div>
           <div className="flex h-[60px] items-center border-b border-solid border-bg2 dark:border-bg2d">
             {renderHeaderSettings}

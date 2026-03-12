@@ -1,5 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+import type { ApiMpc, CreationProgressData, DeviceJoinedData, SignProgressData } from '../shared/api/mpcTypes'
+import { MpcIPCMessages } from '../shared/api/mpcTypes'
 import type {
   ApiFileStoreService,
   ApiKeystore,
@@ -84,3 +86,72 @@ const apiAppUpdate = {
   checkForAppUpdates: (): Promise<AppUpdateRD> => ipcRenderer.invoke(IPCMessages.APP_CHECK_FOR_UPDATE)
 }
 contextBridge.exposeInMainWorld('apiAppUpdate', apiAppUpdate)
+
+//
+// `apiMpc` object - Vultisig MPC wallet API
+//
+const apiMpc: ApiMpc = {
+  // SDK Lifecycle
+  init: () => ipcRenderer.invoke(MpcIPCMessages.MPC_INIT),
+  dispose: () => ipcRenderer.invoke(MpcIPCMessages.MPC_DISPOSE),
+  cancelKeygen: () => ipcRenderer.invoke(MpcIPCMessages.MPC_CANCEL_KEYGEN),
+
+  // Vault Management
+  listVaults: () => ipcRenderer.invoke(MpcIPCMessages.MPC_LIST_VAULTS),
+  createFastVault: (params) => ipcRenderer.invoke(MpcIPCMessages.MPC_CREATE_FAST_VAULT, params),
+  createSecureVault: (params) => ipcRenderer.invoke(MpcIPCMessages.MPC_CREATE_SECURE_VAULT, params),
+  verifyVault: (vaultId, code) => ipcRenderer.invoke(MpcIPCMessages.MPC_VERIFY_VAULT, vaultId, code),
+  deleteVault: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_DELETE_VAULT, vaultId),
+  renameVault: (vaultId, newName) => ipcRenderer.invoke(MpcIPCMessages.MPC_RENAME_VAULT, vaultId, newName),
+  getAddresses: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_GET_ADDRESSES, vaultId),
+  getBalances: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_GET_BALANCES, vaultId),
+
+  // Vault Import/Export
+  importVault: (vultContent, password) => ipcRenderer.invoke(MpcIPCMessages.MPC_IMPORT_VAULT, vultContent, password),
+  exportVault: (vaultId, password) => ipcRenderer.invoke(MpcIPCMessages.MPC_EXPORT_VAULT, vaultId, password),
+  openVaultFile: () => ipcRenderer.invoke(MpcIPCMessages.MPC_OPEN_VAULT_FILE),
+
+  // Vault Lock/Unlock
+  lockVault: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_LOCK_VAULT, vaultId),
+  unlockVault: (vaultId, password) => ipcRenderer.invoke(MpcIPCMessages.MPC_UNLOCK_VAULT, vaultId, password),
+
+  // Transaction Signing
+  signBytes: (params) => ipcRenderer.invoke(MpcIPCMessages.MPC_SIGN_BYTES, params),
+  sendTransaction: (params) => ipcRenderer.invoke(MpcIPCMessages.MPC_SEND_TX, params),
+  cancelSigning: (vaultId: string) => ipcRenderer.invoke(MpcIPCMessages.MPC_CANCEL_SIGNING, vaultId),
+
+  // Event Listeners (return cleanup function)
+  onCreationProgress: (callback) => {
+    const handler = (_event: Electron.IpcRendererEvent, data: CreationProgressData) => callback(data)
+    ipcRenderer.on(MpcIPCMessages.MPC_CREATION_PROGRESS, handler)
+    return () => ipcRenderer.removeListener(MpcIPCMessages.MPC_CREATION_PROGRESS, handler)
+  },
+  onQRCodeReady: (callback) => {
+    const handler = (_event: Electron.IpcRendererEvent, qrPayload: string) => callback(qrPayload)
+    ipcRenderer.on(MpcIPCMessages.MPC_SECURE_VAULT_QR_READY, handler)
+    return () => ipcRenderer.removeListener(MpcIPCMessages.MPC_SECURE_VAULT_QR_READY, handler)
+  },
+  onDeviceJoined: (callback) => {
+    const handler = (_event: Electron.IpcRendererEvent, data: DeviceJoinedData) => callback(data)
+    ipcRenderer.on(MpcIPCMessages.MPC_DEVICE_JOINED, handler)
+    return () => ipcRenderer.removeListener(MpcIPCMessages.MPC_DEVICE_JOINED, handler)
+  },
+
+  // Signing Event Listeners (return cleanup function)
+  onSignQRReady: (callback) => {
+    const handler = (_event: Electron.IpcRendererEvent, qrPayload: string) => callback(qrPayload)
+    ipcRenderer.on(MpcIPCMessages.MPC_SIGN_QR_READY, handler)
+    return () => ipcRenderer.removeListener(MpcIPCMessages.MPC_SIGN_QR_READY, handler)
+  },
+  onSignDeviceJoined: (callback) => {
+    const handler = (_event: Electron.IpcRendererEvent, data: DeviceJoinedData) => callback(data)
+    ipcRenderer.on(MpcIPCMessages.MPC_SIGN_DEVICE_JOINED, handler)
+    return () => ipcRenderer.removeListener(MpcIPCMessages.MPC_SIGN_DEVICE_JOINED, handler)
+  },
+  onSignProgress: (callback) => {
+    const handler = (_event: Electron.IpcRendererEvent, data: SignProgressData) => callback(data)
+    ipcRenderer.on(MpcIPCMessages.MPC_SIGN_PROGRESS, handler)
+    return () => ipcRenderer.removeListener(MpcIPCMessages.MPC_SIGN_PROGRESS, handler)
+  }
+}
+contextBridge.exposeInMainWorld('apiMpc', apiMpc)
