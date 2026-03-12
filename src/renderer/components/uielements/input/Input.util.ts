@@ -29,7 +29,12 @@ export const formatValue = (value: string, maxDecimal = 2) => {
   // '0.'  -> '0.'
   if (maxDecimal > 0 && (value === '.' || value === '0.')) return VALUE_ZERO_DECIMAL
 
-  const valueBN = bn(value)
+  let valueBN
+  try {
+    valueBN = bn(value)
+  } catch {
+    return VALUE_ZERO
+  }
   // invalid BN  -> '0'
   if (!isValidBN(valueBN)) return VALUE_ZERO
 
@@ -45,7 +50,11 @@ export const unformatValue = (value: string) => value.replace(/((\.+$)|,)/g, '')
 export const validInputValue = (value: string) => {
   if (value === '' || value === '.' || value === VALUE_ZERO_DECIMAL) return true
 
-  return isValidBN(bn(value))
+  try {
+    return isValidBN(bn(value))
+  } catch {
+    return false
+  }
 }
 
 export const truncateByDecimals = (decimal: number) => (value: string) => {

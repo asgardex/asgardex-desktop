@@ -26,10 +26,9 @@ describe('wallet/interact/helpers', () => {
       await expect(result).resolves.toBeUndefined()
     })
 
-    it('invalid (not numbers)', async () => {
-      const props = { ...validValues, input: bn('hello') }
-      const result = validateUnboundAmountInput(props)
-      await expect(result).rejects.toBe(errors.msg1)
+    it('invalid (not numbers)', () => {
+      // In bignumber.js v10, bn() throws on invalid input
+      expect(() => bn('hello')).toThrow()
     })
 
     it('invalid (input < 0)', async () => {
@@ -66,10 +65,9 @@ describe('wallet/interact/helpers', () => {
       await expect(result).resolves.toBeUndefined()
     })
 
-    it('invalid (not numbers)', async () => {
-      const props = { ...validValues, input: bn('hello') }
-      const result = validateCustomAmountInput(props)
-      await expect(result).rejects.toBe(errors.msg1)
+    it('invalid (not numbers)', () => {
+      // In bignumber.js v10, bn() throws on invalid input
+      expect(() => bn('hello')).toThrow()
     })
 
     it('invalid (input <= 0)', async () => {

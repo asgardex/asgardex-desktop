@@ -15,6 +15,7 @@ import {
   AnyAsset,
   assetFromStringEx
 } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 import clsx from 'clsx'
 import { function as FP, option as O, nonEmptyArray as NEA } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'

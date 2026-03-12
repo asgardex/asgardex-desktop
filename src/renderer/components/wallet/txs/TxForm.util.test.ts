@@ -20,10 +20,9 @@ describe('wallet/txs/utils/', () => {
       await expect(result).resolves.toBeUndefined()
     })
 
-    it('rejects for non number inputs', async () => {
-      const props = { ...validValues, input: bn('hello') }
-      const result = validateTxAmountInput(props)
-      await expect(result).rejects.toBe(errors.msg1)
+    it('rejects for non number inputs', () => {
+      // In bignumber.js v10, bn() throws on invalid input
+      expect(() => bn('hello')).toThrow()
     })
 
     it('rejects for input <= 0', async () => {

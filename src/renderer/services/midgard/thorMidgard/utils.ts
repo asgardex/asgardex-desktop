@@ -269,7 +269,13 @@ export const getOutboundAssetFeeByChain = (
     O.map(({ outbound_fee }) => outbound_fee),
     // Ignore undefined values
     O.chain(O.fromNullable),
-    O.map(bn),
+    O.chain((v) => {
+      try {
+        return O.some(bn(v))
+      } catch {
+        return O.none
+      }
+    }),
     // Valid BigNumbers only
     O.chain(O.fromPredicate(isValidBN)),
     // Convert fee values to `BaseAmount` to put into `AssetWithAmount`
