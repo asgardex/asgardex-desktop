@@ -1,7 +1,14 @@
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
-import { client$ } from './common'
+import { createEnhancedClient$ } from '../clients'
+import { isKeystoreReloadTrigger } from '../wallet/types'
+import { client$, readOnlyClient$ } from './common'
+
+/**
+ * Enhanced client that switches between keystore and read-only client for standalone ledger mode
+ */
+const enhancedClient$ = createEnhancedClient$(client$, readOnlyClient$)
 
 /**
  * `ObservableState` to reload `Balances`
@@ -9,13 +16,22 @@ import { client$ } from './common'
  * e.g. @see src/renderer/services/wallet/balances.ts:getChainBalance$
  */
 const { get$: reloadBalances$, set: setReloadBalances } = observableState<boolean>(false)
+const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observableState<boolean>(false)
 
-const resetReloadBalances = () => {
-  setReloadBalances(false)
+const resetReloadBalances = (walletType: WalletType) => {
+  if (isKeystoreReloadTrigger(walletType)) {
+    setReloadBalances(false)
+  } else {
+    setReloadLedgerBalances(false)
+  }
 }
 
-const reloadBalances = () => {
-  setReloadBalances(true)
+const reloadBalances = (walletType: WalletType) => {
+  if (isKeystoreReloadTrigger(walletType)) {
+    setReloadBalances(true)
+  } else {
+    setReloadLedgerBalances(true)
+  }
 }
 
 // State of balances loaded by Client
@@ -29,18 +45,26 @@ const balances$ = ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}): C.WalletBalancesLD =>
-  C.balances$({
-    client$,
-    trigger$: reloadBalances$,
+}): C.WalletBalancesLD => {
+  // Select trigger based on wallet type
+  const trigger$ = isKeystoreReloadTrigger(walletType) ? reloadBalances$ : reloadLedgerBalances$
+
+  return C.balances$({
+    client$: enhancedClient$,
+    trigger$,
     walletType,
     walletAccount,
     walletIndex,
     hdMode,
     walletBalanceType: 'all'
   })
+}
 
 // State of balances loaded by Client and Address
-const getBalanceByAddress$ = C.balancesByAddress$({ client$, trigger$: reloadBalances$, walletBalanceType: 'all' })
+const getBalanceByAddress$ = C.balancesByAddress$({
+  client$: enhancedClient$,
+  trigger$: reloadLedgerBalances$,
+  walletBalanceType: 'all'
+})
 
 export { balances$, reloadBalances, getBalanceByAddress$, reloadBalances$, resetReloadBalances }

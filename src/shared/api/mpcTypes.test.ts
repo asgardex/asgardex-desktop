@@ -4,8 +4,8 @@ import { ASGARDEX_TO_SDK_CHAIN, SDK_TO_ASGARDEX_CHAIN, MpcIPCMessages } from './
 
 describe('shared/api/mpcTypes', () => {
   describe('ASGARDEX_TO_SDK_CHAIN', () => {
-    it('contains 15 chain mappings', () => {
-      expect(Object.keys(ASGARDEX_TO_SDK_CHAIN)).toHaveLength(15)
+    it('contains 20 chain mappings', () => {
+      expect(Object.keys(ASGARDEX_TO_SDK_CHAIN)).toHaveLength(20)
     })
 
     it('has no duplicate SDK chain values', () => {
@@ -74,7 +74,25 @@ describe('shared/api/mpcTypes', () => {
       expect(ASGARDEX_TO_SDK_CHAIN['SOL']).toBe('Solana')
     })
 
-    // ZEC, KUJI, ADA, TRON, XRD removed — re-add in follow-up PR
+    it('maps ZEC to Zcash', () => {
+      expect(ASGARDEX_TO_SDK_CHAIN['ZEC']).toBe('Zcash')
+    })
+
+    it('maps KUJI to Kujira', () => {
+      expect(ASGARDEX_TO_SDK_CHAIN['KUJI']).toBe('Kujira')
+    })
+
+    it('maps ADA to Cardano', () => {
+      expect(ASGARDEX_TO_SDK_CHAIN['ADA']).toBe('Cardano')
+    })
+
+    it('maps TRON to Tron', () => {
+      expect(ASGARDEX_TO_SDK_CHAIN['TRON']).toBe('Tron')
+    })
+
+    it('maps XRD to Radix', () => {
+      expect(ASGARDEX_TO_SDK_CHAIN['XRD']).toBe('Radix')
+    })
   })
 
   describe('SDK_TO_ASGARDEX_CHAIN', () => {

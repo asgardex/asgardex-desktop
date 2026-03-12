@@ -8,11 +8,12 @@ import * as RxOp from 'rxjs/operators'
 import { blockcypherApiKey } from '../../../shared/api/blockcypher'
 import { IPCLedgerSendTxParams, ipcLedgerSendTxParamsIO } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { isLedgerWallet } from '../../../shared/utils/guard'
+import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { getUtxoErrorMessage } from '../../helpers/utxoErrorHelper'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { SendTxParams, TransactionService } from '../utxo/types'
+import { createVultisigUtxoTx } from '../utxo/vultisigTx'
 import { TxHashLD, ErrorId } from '../wallet/types'
 import { Client$ } from './types'
 
@@ -85,11 +86,16 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       RxOp.startWith(RD.pending)
     )
   }
+
+  // Vultisig transaction handler - MPC signing for ZEC using PSBT
+  const sendVultisigTx = createVultisigUtxoTx(client$, 'ZEC')
+
   const sendTx = (params: SendTxParams): TxHashLD =>
     FP.pipe(
       network$,
       RxOp.switchMap((network) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
 
         if (params.sendMax) return sendKeystoreMaxTx(params)
 

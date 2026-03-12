@@ -142,10 +142,10 @@ export const createBalancesService = ({
         if (enabledChainsSet.has(LTCChain)) reloadFunctions.push(() => LTC.reloadBalances(walletType))
         if (enabledChainsSet.has(DOGEChain)) reloadFunctions.push(() => DOGE.reloadBalances(walletType))
         if (enabledChainsSet.has(GAIAChain)) reloadFunctions.push(() => COSMOS.reloadBalances(walletType))
-        if (enabledChainsSet.has(KUJIChain)) reloadFunctions.push(() => KUJI.reloadBalances())
-        if (enabledChainsSet.has(ADAChain)) reloadFunctions.push(() => ADA.reloadBalances())
+        if (enabledChainsSet.has(KUJIChain)) reloadFunctions.push(() => KUJI.reloadBalances(walletType))
+        if (enabledChainsSet.has(ADAChain)) reloadFunctions.push(() => ADA.reloadBalances(walletType))
         if (enabledChainsSet.has(XRPChain)) reloadFunctions.push(() => XRP.reloadBalances(walletType))
-        if (enabledChainsSet.has(RadixChain)) reloadFunctions.push(() => XRD.reloadBalances())
+        if (enabledChainsSet.has(RadixChain)) reloadFunctions.push(() => XRD.reloadBalances(walletType))
         if (enabledChainsSet.has(SOLChain)) reloadFunctions.push(() => SOL.reloadBalances())
         if (enabledChainsSet.has(TRONChain)) reloadFunctions.push(() => TRON.reloadBalances(walletType))
         if (enabledChainsSet.has(ZECChain)) reloadFunctions.push(() => ZEC.reloadBalances(walletType))
@@ -335,15 +335,15 @@ export const createBalancesService = ({
           }
         case KUJIChain:
           return {
-            reloadBalances: KUJI.reloadBalances,
-            resetReloadBalances: KUJI.resetReloadBalances,
+            reloadBalances: () => KUJI.reloadBalances(walletType),
+            resetReloadBalances: () => KUJI.resetReloadBalances(walletType),
             balances$: KUJI.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: KUJI.reloadBalances$
           }
         case ADAChain:
           return {
-            reloadBalances: ADA.reloadBalances,
-            resetReloadBalances: ADA.resetReloadBalances,
+            reloadBalances: () => ADA.reloadBalances(walletType),
+            resetReloadBalances: () => ADA.resetReloadBalances(walletType),
             balances$: ADA.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: ADA.reloadBalances$
           }
@@ -356,8 +356,8 @@ export const createBalancesService = ({
           }
         case RadixChain:
           return {
-            reloadBalances: XRD.reloadBalances,
-            resetReloadBalances: XRD.resetReloadBalances,
+            reloadBalances: () => XRD.reloadBalances(walletType),
+            resetReloadBalances: () => XRD.resetReloadBalances(walletType),
             balances$: XRD.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: XRD.reloadBalances$
           }
