@@ -5,8 +5,8 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { observableState } from '../../helpers/stateHelper'
-import type { ApiGetDepthHistoryParams, DepthHistoryLD } from '../midgard/midgardTypes'
 import type { PriceLevel } from '../../views/pools/detail/types'
+import type { ApiGetDepthHistoryParams, DepthHistoryLD } from '../midgard/midgardTypes'
 
 const POLL_INTERVAL_MS = 30_000
 const STORAGE_KEY = 'asgardex:priceLevels'
