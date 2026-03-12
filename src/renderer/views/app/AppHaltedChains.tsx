@@ -5,6 +5,7 @@ import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Chain } from '@xchainjs/xchain-util'
 import { function as FP, array as A } from 'fp-ts'
 import { useIntl } from 'react-intl'
+import { useLocation } from 'react-router-dom'
 
 import { chainToString, DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { Alert } from '../../components/uielements/alert'
@@ -29,8 +30,14 @@ type HaltedChainsState = {
 
 const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardStatusRD }: HaltedChainsWarningProps) => {
   const intl = useIntl()
+  const location = useLocation()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [hasRendered, setHasRendered] = useState(false)
+
+  // Determine current page context for filtering warnings
+  const isSwapPage = location.pathname.includes('/swap')
+  const isPoolPage = location.pathname.includes('/pools')
+  const isDepositPage = location.pathname.includes('/deposit') || location.pathname.includes('/liquidity')
 
   // Small delay to prevent flashing on data updates
   const RENDER_DELAY_MS = 200
@@ -81,11 +88,15 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardSta
     }
   }, [haltedChainsRD, mimirHaltRD, midgardStatusRD])
 
-  // Memoize warning message calculation to prevent flashing on lastblock updates
+  // Memoize warning message calculation — route-aware filtering
   const warningMessage = useMemo(() => {
     let msg = ''
-    msg = mimirHalt.haltGlobalTrading ? intl.formatMessage({ id: 'halt.trading' }) : msg
-    msg = mimirHalt.HALTTHORCHAIN ? intl.formatMessage({ id: 'halt.thorchain' }) : msg
+
+    // Global halts: show on swap and pool pages (critical warnings)
+    if (isSwapPage || isPoolPage) {
+      msg = mimirHalt.haltGlobalTrading ? intl.formatMessage({ id: 'halt.trading' }) : msg
+      msg = mimirHalt.HALTTHORCHAIN ? intl.formatMessage({ id: 'halt.thorchain' }) : msg
+    }
 
     if (!mimirHalt.HALTTHORCHAIN && !mimirHalt.haltGlobalTrading) {
       const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS).map((chain) => ({
@@ -96,56 +107,67 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardSta
         pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`] || false
       }))
 
-      const haltedChains = FP.pipe(
-        haltedChainsState,
-        A.filter(({ haltedChain }) => haltedChain),
-        A.map(({ chain }) => chain),
-        unionChains(inboundHaltedChains)
-      )
+      // Chain halts: show on swap and pool pages
+      if (isSwapPage || isPoolPage) {
+        const haltedChains = FP.pipe(
+          haltedChainsState,
+          A.filter(({ haltedChain }) => haltedChain),
+          A.map(({ chain }) => chain),
+          unionChains(inboundHaltedChains)
+        )
 
-      msg =
-        haltedChains.length === 1
-          ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: protocol })}`
-          : haltedChains.length > 1
-            ? `${msg} ${intl.formatMessage(
-                { id: 'halt.chains' },
-                { chains: haltedChains.join(', '), protocol: protocol }
-              )}`
-            : msg
-
-      const haltedTradingChains = haltedChainsState
-        .filter(({ haltedTrading }) => haltedTrading)
-        .map(({ chain }) => chain)
-      msg =
-        haltedTradingChains.length > 0
-          ? `${msg} ${intl.formatMessage({ id: 'halt.chain.trading' }, { chains: haltedTradingChains.join(', ') })}`
-          : msg
-
-      const pausedLPs = haltedChainsState.filter(({ pausedLP }) => pausedLP).map(({ chain }) => chain)
-      const pausedLPsDeposits = haltedChainsState
-        .filter(({ pausedLPDeposit }) => pausedLPDeposit)
-        .map(({ chain }) => chain)
-
-      msg =
-        pausedLPs.length > 0
-          ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') })}`
-          : mimirHalt.PAUSELP
-            ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pauseall' })}`
-            : pausedLPsDeposits.length > 0
+        msg =
+          haltedChains.length === 1
+            ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: protocol })}`
+            : haltedChains.length > 1
               ? `${msg} ${intl.formatMessage(
-                  { id: 'halt.chain.pauseDeposits' },
-                  { chains: pausedLPsDeposits.join(', '), protocol: chainToString(protocol) }
+                  { id: 'halt.chains' },
+                  { chains: haltedChains.join(', '), protocol: protocol }
                 )}`
               : msg
+      }
+
+      // Trading halts: show only on swap pages
+      if (isSwapPage) {
+        const haltedTradingChains = haltedChainsState
+          .filter(({ haltedTrading }) => haltedTrading)
+          .map(({ chain }) => chain)
+        msg =
+          haltedTradingChains.length > 0
+            ? `${msg} ${intl.formatMessage({ id: 'halt.chain.trading' }, { chains: haltedTradingChains.join(', ') })}`
+            : msg
+      }
+
+      // LP pause/deposit warnings: show only on pool/deposit/liquidity pages
+      if (isPoolPage || isDepositPage) {
+        const pausedLPs = haltedChainsState.filter(({ pausedLP }) => pausedLP).map(({ chain }) => chain)
+        const pausedLPsDeposits = haltedChainsState
+          .filter(({ pausedLPDeposit }) => pausedLPDeposit)
+          .map(({ chain }) => chain)
+
+        msg =
+          pausedLPs.length > 0
+            ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') })}`
+            : mimirHalt.PAUSELP
+              ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pauseall' })}`
+              : pausedLPsDeposits.length > 0
+                ? `${msg} ${intl.formatMessage(
+                    { id: 'halt.chain.pauseDeposits' },
+                    { chains: pausedLPsDeposits.join(', '), protocol: chainToString(protocol) }
+                  )}`
+                : msg
+      }
     }
 
-    // Append Midgard offline message if the endpoint is down
-    msg = !midgard
-      ? `${msg} ${intl.formatMessage({ id: 'midgard.status.offline' }, { protocol: protocol })}`.trim()
-      : msg
+    // Midgard offline: show on swap and pool pages
+    if (isSwapPage || isPoolPage) {
+      msg = !midgard
+        ? `${msg} ${intl.formatMessage({ id: 'midgard.status.offline' }, { protocol: protocol })}`.trim()
+        : msg
+    }
 
     return msg.trim()
-  }, [inboundHaltedChains, mimirHalt, midgard, intl, protocol])
+  }, [inboundHaltedChains, mimirHalt, midgard, intl, protocol, isSwapPage, isPoolPage, isDepositPage])
 
   // Don't show warnings until we have actual data from at least one source
   if (!hasRendered || !hasAnyData) {

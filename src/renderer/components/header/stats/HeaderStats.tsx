@@ -3,7 +3,7 @@ import { useCallback, useMemo, useRef } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
-import { baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
+import { assetFromStringEx, baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 
 import { abbreviateNumber } from '../../../helpers/numberHelper'
@@ -14,12 +14,16 @@ import { PriceRD } from '../../../services/midgard/midgardTypes'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { Label } from '../../uielements/label'
 
+const AssetFlip = assetFromStringEx('ETH.FLIP-0x826180541412D574cf1336d22c0C0a287822678A')
+
 export type Props = {
   runePrice: PriceRD
   tcyPrice: RD.RemoteData<Error, string>
+  flipPrice: RD.RemoteData<Error, string>
   mayaPrice: PriceRD
   reloadRunePrice: FP.Lazy<void>
   reloadTcyPrice: FP.Lazy<void>
+  reloadFlipPrice: FP.Lazy<void>
   reloadMayaPrice: FP.Lazy<void>
   volume24PriceRune: PriceRD
   volume24PriceMaya: PriceRD
@@ -31,9 +35,11 @@ export const HeaderStats = (props: Props): JSX.Element => {
   const {
     runePrice: runePriceRD,
     tcyPrice: tcyPriceRD,
+    flipPrice: flipPriceRD,
     mayaPrice: mayaPriceRD,
     reloadRunePrice,
     reloadTcyPrice,
+    reloadFlipPrice,
     reloadMayaPrice,
     volume24PriceRune: volume24PriceRuneRD,
     volume24PriceMaya: volume24PriceMayaRD,
@@ -49,6 +55,7 @@ export const HeaderStats = (props: Props): JSX.Element => {
 
   const prevRunePriceLabel = useRef<string>(loadingString)
   const prevTcyPriceLabel = useRef<string>(loadingString)
+  const prevFlipPriceLabel = useRef<string>(loadingString)
   const prevMayaPriceLabel = useRef<string>(loadingString)
   const runePriceLabel = useMemo(
     () =>
@@ -95,6 +102,24 @@ export const HeaderStats = (props: Props): JSX.Element => {
         )
       ),
     [tcyPriceRD]
+  )
+
+  const flipPriceLabel = useMemo(
+    () =>
+      FP.pipe(
+        flipPriceRD,
+        RD.fold(
+          () => prevFlipPriceLabel.current,
+          () => prevFlipPriceLabel.current,
+          () => '--',
+          (price) => {
+            const label = price ?? '--'
+            prevFlipPriceLabel.current = label
+            return label
+          }
+        )
+      ),
+    [flipPriceRD]
   )
 
   const mayaPriceLabel = useMemo(
@@ -187,13 +212,16 @@ export const HeaderStats = (props: Props): JSX.Element => {
   }, [reloadRunePrice, reloadVolume24PriceRune, runePriceRD, volume24PriceRuneRD])
 
   const reloadTcyStats = useCallback(() => {
-    if (!RD.isPending(volume24PriceRuneRD)) {
-      reloadVolume24PriceRune()
-    }
     if (!RD.isPending(tcyPriceRD)) {
       reloadTcyPrice()
     }
-  }, [reloadTcyPrice, reloadVolume24PriceRune, tcyPriceRD, volume24PriceRuneRD])
+  }, [reloadTcyPrice, tcyPriceRD])
+
+  const reloadFlipStats = useCallback(() => {
+    if (!RD.isPending(flipPriceRD)) {
+      reloadFlipPrice()
+    }
+  }, [reloadFlipPrice, flipPriceRD])
 
   const reloadMayaStats = useCallback(() => {
     if (!RD.isPending(volume24PriceMayaRD)) {
@@ -229,17 +257,30 @@ export const HeaderStats = (props: Props): JSX.Element => {
 
       {isSmallMobileView ||
         (!(isLargeMobileView && !isXLargeMobileView) && (
-          <div
-            className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pr-2 pl-1 drop-shadow dark:bg-gray0d"
-            onClick={reloadTcyStats}>
-            <AssetIcon size="xsmall" asset={AssetTCY} network={network} />
-            <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
-              TCY
-            </Label>
-            <Label className="!w-auto" color="gray" textTransform="uppercase">
-              {tcyPriceLabel}
-            </Label>
-          </div>
+          <>
+            <div
+              className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pr-2 pl-1 drop-shadow dark:bg-gray0d"
+              onClick={reloadTcyStats}>
+              <AssetIcon size="xsmall" asset={AssetTCY} network={network} />
+              <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
+                TCY
+              </Label>
+              <Label className="!w-auto" color="gray" textTransform="uppercase">
+                {tcyPriceLabel}
+              </Label>
+            </div>
+            <div
+              className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pr-2 pl-1 drop-shadow dark:bg-gray0d"
+              onClick={reloadFlipStats}>
+              <AssetIcon size="xsmall" asset={AssetFlip} network={network} />
+              <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
+                FLIP
+              </Label>
+              <Label className="!w-auto" color="gray" textTransform="uppercase">
+                {flipPriceLabel}
+              </Label>
+            </div>
+          </>
         ))}
 
       <div
