@@ -19,6 +19,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
+import { getChainAsset } from '../../../helpers/chainHelper'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import * as AssetHelper from '../../../helpers/assetHelper'
@@ -113,9 +114,10 @@ export const AssetDetails = (props: Props): JSX.Element => {
   }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, navigate, setProtocol])
 
   const walletActionChartClick = useCallback(() => {
-    const path = poolsRoutes.detail.path({ asset: assetToString(asset) })
+    const chartAsset = getChainAsset(chain)
+    const path = poolsRoutes.detail.path({ asset: assetToString(chartAsset) })
     navigate(path)
-  }, [asset, navigate])
+  }, [chain, navigate])
 
   const walletActionManageClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
@@ -211,7 +213,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
               onClick={walletActionSwapClick}
               disabled={disableSwap}
             />
-            {asset.type !== AssetType.SYNTH && asset.type !== AssetType.SECURED && (
+            {asset.type !== AssetType.SYNTH && asset.type !== AssetType.SECURED && asset.type !== AssetType.TRADE && (
               <ActionIconButton
                 icon={<ChartBarIcon className="h-6 w-6" />}
                 text={intl.formatMessage({ id: 'pools.chart' })}

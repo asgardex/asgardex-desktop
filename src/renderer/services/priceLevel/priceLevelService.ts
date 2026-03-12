@@ -5,8 +5,8 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { observableState } from '../../helpers/stateHelper'
-import type { PriceLevel } from '../../views/pools/detail/types'
 import type { ApiGetDepthHistoryParams, DepthHistoryLD } from '../midgard/midgardTypes'
+import type { PriceLevel } from './types'
 
 const POLL_INTERVAL_MS = 30_000
 const STORAGE_KEY = 'asgardex:priceLevels'
@@ -71,7 +71,7 @@ export type PriceLevelService = {
   /** Remove a price level */
   removeLevel: (assetKey: string, levelId: string) => void
   /** Update a level's properties */
-  updateLevel: (assetKey: string, levelId: string, updates: Partial<PriceLevel>) => void
+  updateLevel: (assetKey: string, levelId: string, updates: Partial<Omit<PriceLevel, 'id'>>) => void
   /** Dispose all subscriptions */
   dispose: () => void
 }
@@ -121,7 +121,7 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
     )
   }
 
-  const updateLevel = (assetKey: string, levelId: string, updates: Partial<PriceLevel>) => {
+  const updateLevel = (assetKey: string, levelId: string, updates: Partial<Omit<PriceLevel, 'id'>>) => {
     setLevelsForAsset(
       assetKey,
       getLevels(assetKey).map((l) => (l.id === levelId ? { ...l, ...updates } : l))
@@ -166,23 +166,40 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
     prevPrices[assetKey] = price
   }
 
+  // In-flight guard to prevent overlapping fetches per asset
+  const inFlight = new Map<string, boolean>()
+
   // Poll all assets that have pending levels
   const poll = () => {
     const map = getLevelsMap()
     for (const [assetKey, levels] of Object.entries(map)) {
       const hasPending = levels.some((l) => l.status === 'pending')
       if (!hasPending) continue
+      if (inFlight.get(assetKey)) continue
 
       const poolAsset = assetFromString(assetKey)
       if (!poolAsset) continue
 
-      const sub = fetchPrice(poolAsset).subscribe((price) => {
-        if (price !== null) {
-          checkCrossings(assetKey, price)
+      inFlight.set(assetKey, true)
+      const sub = fetchPrice(poolAsset).subscribe({
+        next: (price) => {
+          if (price !== null) {
+            checkCrossings(assetKey, price)
+          }
+        },
+        complete: () => {
+          inFlight.set(assetKey, false)
+        },
+        error: () => {
+          inFlight.set(assetKey, false)
         }
       })
-      // Each poll subscription completes when the API responds, so just let it finish
       subscriptions.push(sub)
+      // Self-remove when done to prevent unbounded growth
+      sub.add(() => {
+        const i = subscriptions.indexOf(sub)
+        if (i >= 0) subscriptions.splice(i, 1)
+      })
     }
   }
 
@@ -192,7 +209,9 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
 
   const dispose = () => {
     clearInterval(intervalId)
-    subscriptions.forEach((s) => s.unsubscribe())
+    subscriptions.forEach((s) => {
+      s.unsubscribe()
+    })
     crossings$$.complete()
   }
 

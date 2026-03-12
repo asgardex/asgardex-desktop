@@ -121,6 +121,7 @@ export const PoolDetailView = () => {
   } = useSubscriptionState<SwapTxState>(INITIAL_SWAP_STATE)
 
   const executingLevelIdRef = useRef<string | null>(null)
+  const executeSwapSubRef = useRef<Rx.Subscription | null>(null)
 
   const chainBalances = useObservableState(chainBalances$, [])
 
@@ -205,6 +206,13 @@ export const PoolDetailView = () => {
     return () => sub.unsubscribe()
   }, [assetKey, priceLevelService, handleTrigger])
 
+  // Cleanup executeSwap subscription on unmount
+  useEffect(() => {
+    return () => {
+      executeSwapSubRef.current?.unsubscribe()
+    }
+  }, [])
+
   // Execute swap after password confirmation
   const executeSwap = useCallback(() => {
     if (!confirmingLevel || !poolAsset || !swapMemo) return
@@ -219,7 +227,8 @@ export const PoolDetailView = () => {
     // Get pool address and wallet info
     const poolAddr$ = poolAddressesByChain$(sourceChain)
 
-    Rx.combineLatest([poolAddr$, chainBalances$])
+    executeSwapSubRef.current?.unsubscribe()
+    executeSwapSubRef.current = Rx.combineLatest([poolAddr$, chainBalances$])
       .pipe(RxOp.take(1))
       .subscribe(([poolAddrRD, chainBalancesVal]) => {
         if (!RD.isSuccess(poolAddrRD)) {
