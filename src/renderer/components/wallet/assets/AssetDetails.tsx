@@ -234,7 +234,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
           </TextButton>
         </div>
         <div>
-          {asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED ? (
+          {asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED || asset === AssetRuneNative ? (
             <WarningView
               subTitle={intl.formatMessage(
                 { id: 'wallet.txs.history.disabled' },
