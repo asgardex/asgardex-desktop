@@ -17,7 +17,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { createScopedLogger } from '../../helpers/logger'
 import { createChainflipTransactionTrackingService } from './transactionTracking'
-import { cChainToXChain, xAssetToCAsset } from './utils'
+import { cChainToXChain, xAssetToCAsset, xChainToCChain } from './utils'
 
 const logger = createScopedLogger('chainflip')
 
@@ -104,10 +104,58 @@ export const createChainflipService$ = () => {
     }
   }
 
+  /**
+   * Get a USD spot price for an asset by quoting 1 unit against USDC on Ethereum.
+   * Returns RD.initial for unsupported assets/chains.
+   */
+  const getQuotePrice$ = (asset: AnyAsset) => {
+    if (isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)) {
+      return Rx.of(RD.initial as RD.RemoteData<Error, number>)
+    }
+
+    // After filtering out synth/trade/secured, the asset is Asset | TokenAsset
+    const narrowedAsset = asset as Asset | TokenAsset
+
+    return Rx.defer(async () => {
+      const srcChain = xChainToCChain(narrowedAsset.chain) as Exclude<ReturnType<typeof xChainToCChain>, 'Polkadot'>
+      const srcAsset = xAssetToCAsset(narrowedAsset)
+
+      // Native asset decimals for Chainflip-supported chains
+      const DECIMALS: Record<string, number> = { BTC: 8, ETH: 18, SOL: 9 }
+      const decimals = DECIMALS[srcAsset] ?? 18
+      const amount = Math.pow(10, decimals).toString()
+
+      const response = await sdk.getQuoteV2({
+        srcChain,
+        srcAsset,
+        destChain: 'Ethereum',
+        destAsset: 'USDC',
+        amount
+      })
+
+      const quote = response.quotes[0]
+      if (!quote) throw new Error('No quote available')
+
+      // egressAmount is in USDC smallest units (6 decimals)
+      const usdPrice = Number(quote.egressAmount) / 1e6
+      if (isNaN(usdPrice) || usdPrice <= 0) throw new Error('Invalid price from quote')
+
+      return usdPrice
+    }).pipe(
+      RxOp.map((price) => RD.success<Error, number>(price)),
+      RxOp.catchError((error) => {
+        logger.warn('Chainflip quote price error:', error)
+        return Rx.of(RD.failure<Error, number>(error instanceof Error ? error : new Error(String(error))))
+      }),
+      RxOp.shareReplay(1)
+    )
+  }
+
   return {
     getAssetsData$,
     isAssetSupported$,
     chainflipSupportedChains$,
-    transactionTrackingService
+    transactionTrackingService,
+    getQuotePrice$
   }
 }

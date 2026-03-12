@@ -6,6 +6,7 @@ import {
   ArrowsRightLeftIcon,
   ArrowUpOnSquareIcon,
   ArrowTopRightOnSquareIcon,
+  ChartBarIcon,
   ChartPieIcon
 } from '@heroicons/react/24/outline'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
@@ -111,6 +112,11 @@ export const AssetDetails = (props: Props): JSX.Element => {
     navigate(path)
   }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, navigate, setProtocol])
 
+  const walletActionChartClick = useCallback(() => {
+    const path = poolsRoutes.detail.path({ asset: assetToString(asset) })
+    navigate(path)
+  }, [asset, navigate])
+
   const walletActionManageClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
     const currentChainSupported = protocol === MAYAChain ? isResumedOnMaya : isResumedOnThor
@@ -205,6 +211,13 @@ export const AssetDetails = (props: Props): JSX.Element => {
               onClick={walletActionSwapClick}
               disabled={disableSwap}
             />
+            {asset.type !== AssetType.SYNTH && asset.type !== AssetType.SECURED && (
+              <ActionIconButton
+                icon={<ChartBarIcon className="h-6 w-6" />}
+                text={intl.formatMessage({ id: 'pools.chart' })}
+                onClick={walletActionChartClick}
+              />
+            )}
             {asset.type !== AssetType.SYNTH && (
               <ActionIconButton
                 icon={<ChartPieIcon className="h-6 w-6" />}

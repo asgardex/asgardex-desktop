@@ -8,6 +8,7 @@ import type { OHLCVDataRD } from '../views/pools/detail/types'
 export type SpreadInfo = {
   midgardPrice: number
   binancePrice: number
+  chainflipPrice?: number
   spreadPct: number
   /** 'premium' = THORChain more expensive, 'discount' = THORChain cheaper */
   spreadDirection: 'premium' | 'discount' | 'equal'
@@ -19,7 +20,11 @@ export type SpreadInfoRD = RD.RemoteData<Error, SpreadInfo>
  * Compare last close prices from Midgard and Binance data to calculate spread.
  * Returns RD.initial if either source is not in success state.
  */
-export const usePriceSpread = (midgardDataRD: OHLCVDataRD, binanceDataRD: OHLCVDataRD): SpreadInfoRD => {
+export const usePriceSpread = (
+  midgardDataRD: OHLCVDataRD,
+  binanceDataRD: OHLCVDataRD,
+  chainflipPriceRD?: RD.RemoteData<Error, number>
+): SpreadInfoRD => {
   return useMemo(
     () =>
       FP.pipe(
@@ -40,14 +45,17 @@ export const usePriceSpread = (midgardDataRD: OHLCVDataRD, binanceDataRD: OHLCVD
           const spreadDirection: SpreadInfo['spreadDirection'] =
             Math.abs(spreadPct) < 0.01 ? 'equal' : spreadPct > 0 ? 'premium' : 'discount'
 
+          const chainflipPrice = chainflipPriceRD && RD.isSuccess(chainflipPriceRD) ? chainflipPriceRD.value : undefined
+
           return RD.success<Error, SpreadInfo>({
             midgardPrice,
             binancePrice,
+            chainflipPrice,
             spreadPct,
             spreadDirection
           })
         })
       ),
-    [midgardDataRD, binanceDataRD]
+    [midgardDataRD, binanceDataRD, chainflipPriceRD]
   )
 }

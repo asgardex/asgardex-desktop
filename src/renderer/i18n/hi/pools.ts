@@ -22,11 +22,23 @@ const pools: PoolsMessages = {
   'pools.chart': 'चार्ट',
   'pools.chart.noData': 'कोई चार्ट डेटा उपलब्ध नहीं',
   'pools.chart.source.binance': 'Binance',
+  'pools.chart.source.chainflip': 'Chainflip',
   'pools.chart.source.midgard': 'THORChain',
   'pools.chart.spread': 'स्प्रेड',
   'pools.chart.indicator.sma': 'SMA',
   'pools.chart.indicator.ema': 'EMA',
-  'pools.chart.indicator.bb': 'बोलिंजर'
+  'pools.chart.indicator.bb': 'बोलिंजर',
+  'pools.chart.priceLevel.placeholder': 'मूल्य दर्ज करें',
+  'pools.chart.priceLevel.buy': 'खरीदें',
+  'pools.chart.priceLevel.sell': 'बेचें',
+  'pools.chart.priceLevel.amount': 'राशि',
+  'pools.chart.priceLevel.targetAsset': 'लक्ष्य',
+  'pools.chart.priceLevel.confirm.title': 'स्वैप की पुष्टि करें',
+  'pools.chart.priceLevel.confirm.sell': '{target} के लिए {amount} {asset} बेचें',
+  'pools.chart.priceLevel.confirm.buy': '{amount} {target} से {asset} खरीदें',
+  'pools.chart.priceLevel.executing': 'निष्पादित हो रहा है...',
+  'pools.chart.priceLevel.completed': 'पूर्ण',
+  'pools.chart.priceLevel.failed': 'विफल'
 }
 
 export default pools

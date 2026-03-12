@@ -21,6 +21,7 @@ import { LitecoinProvider } from './contexts/LitecoinContext'
 import { MayachainProvider } from './contexts/MayachainContext'
 import { MayachainQueryProvider } from './contexts/MayachainQueryContext'
 import { MidgardProvider } from './contexts/MidgardContext'
+import { PriceLevelProvider } from './contexts/PriceLevelContext'
 import { MayaMidgardProvider } from './contexts/MidgardMayaContext'
 import { SolProvider } from './contexts/SolContext'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -62,27 +63,29 @@ export const App = (): JSX.Element => {
                                               <DashProvider>
                                                 <CosmosProvider>
                                                   <MidgardProvider>
-                                                    <ThorchainQueryProvider>
-                                                      <MayachainProvider>
-                                                        <MayachainQueryProvider>
-                                                          <MayaMidgardProvider>
-                                                            <UserNodesProvider>
-                                                              <UserBondProvidersProvider>
-                                                                <ChainflipProvider>
-                                                                  <I18nProvider>
-                                                                    <Router>
-                                                                      <ThemeProvider>
-                                                                        <AppView />
-                                                                      </ThemeProvider>
-                                                                    </Router>
-                                                                  </I18nProvider>
-                                                                </ChainflipProvider>
-                                                              </UserBondProvidersProvider>
-                                                            </UserNodesProvider>
-                                                          </MayaMidgardProvider>
-                                                        </MayachainQueryProvider>
-                                                      </MayachainProvider>
-                                                    </ThorchainQueryProvider>
+                                                    <PriceLevelProvider>
+                                                      <ThorchainQueryProvider>
+                                                        <MayachainProvider>
+                                                          <MayachainQueryProvider>
+                                                            <MayaMidgardProvider>
+                                                              <UserNodesProvider>
+                                                                <UserBondProvidersProvider>
+                                                                  <ChainflipProvider>
+                                                                    <I18nProvider>
+                                                                      <Router>
+                                                                        <ThemeProvider>
+                                                                          <AppView />
+                                                                        </ThemeProvider>
+                                                                      </Router>
+                                                                    </I18nProvider>
+                                                                  </ChainflipProvider>
+                                                                </UserBondProvidersProvider>
+                                                              </UserNodesProvider>
+                                                            </MayaMidgardProvider>
+                                                          </MayachainQueryProvider>
+                                                        </MayachainProvider>
+                                                      </ThorchainQueryProvider>
+                                                    </PriceLevelProvider>
                                                   </MidgardProvider>
                                                 </CosmosProvider>
                                               </DashProvider>

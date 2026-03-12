@@ -22,11 +22,23 @@ const pools: PoolsMessages = {
   'pools.chart': 'Graphique',
   'pools.chart.noData': 'Aucune donnée graphique disponible',
   'pools.chart.source.binance': 'Binance',
+  'pools.chart.source.chainflip': 'Chainflip',
   'pools.chart.source.midgard': 'THORChain',
   'pools.chart.spread': 'Écart',
   'pools.chart.indicator.sma': 'SMA',
   'pools.chart.indicator.ema': 'EMA',
-  'pools.chart.indicator.bb': 'Bollinger'
+  'pools.chart.indicator.bb': 'Bollinger',
+  'pools.chart.priceLevel.placeholder': 'Entrer le prix',
+  'pools.chart.priceLevel.buy': 'Acheter',
+  'pools.chart.priceLevel.sell': 'Vendre',
+  'pools.chart.priceLevel.amount': 'Montant',
+  'pools.chart.priceLevel.targetAsset': 'Cible',
+  'pools.chart.priceLevel.confirm.title': "Confirmer l'échange",
+  'pools.chart.priceLevel.confirm.sell': 'Vendre {amount} {asset} pour {target}',
+  'pools.chart.priceLevel.confirm.buy': 'Acheter {asset} avec {amount} {target}',
+  'pools.chart.priceLevel.executing': 'Exécution...',
+  'pools.chart.priceLevel.completed': 'Terminé',
+  'pools.chart.priceLevel.failed': 'Échoué'
 }
 
 export default pools
