@@ -6,6 +6,7 @@ import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { useFlipPrice } from '../../hooks/useFlipPrice'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useMayaPrice } from '../../hooks/useMayaPrice'
@@ -50,6 +51,7 @@ export const Header = (): JSX.Element => {
 
   const { runePriceRD, reloadRunePrice } = useRunePrice()
   const { tcyPriceRD, reloadTcyPrice } = useTcyPrice()
+  const { flipPriceRD, reloadFlipPrice } = useFlipPrice()
   const { mayaPriceRD, reloadMayaPrice } = useMayaPrice()
   const { volume24PriceRD, reloadVolume24Price } = useVolume24Price()
   const { volume24PriceRD: volume24PriceMayaRD, reloadVolume24Price: reloadVolume24PriceMaya } = useVolume24PriceMaya()
@@ -81,6 +83,8 @@ export const Header = (): JSX.Element => {
       reloadRunePrice={reloadRunePrice}
       tcyPrice={tcyPriceRD}
       reloadTcyPrice={reloadTcyPrice}
+      flipPrice={flipPriceRD}
+      reloadFlipPrice={reloadFlipPrice}
       mayaPrice={mayaPriceRD}
       reloadMayaPrice={reloadMayaPrice}
       volume24PriceRune={volume24PriceRD}

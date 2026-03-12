@@ -67,6 +67,8 @@ export type Props = {
   reloadRunePrice: FP.Lazy<void>
   tcyPrice: RD.RemoteData<Error, string>
   reloadTcyPrice: FP.Lazy<void>
+  flipPrice: RD.RemoteData<Error, string>
+  reloadFlipPrice: FP.Lazy<void>
   mayaPrice: PriceRD
   reloadMayaPrice: FP.Lazy<void>
   volume24PriceRune: PriceRD
@@ -91,12 +93,14 @@ export const HeaderComponent = (props: Props): JSX.Element => {
     pricePools: oPricePools,
     runePrice: runePriceRD,
     tcyPrice: tcyPriceRD,
+    flipPrice: flipPriceRD,
     mayaPrice: mayaPriceRD,
     midgardStatus: midgardStatusRD,
     midgardMayaStatus: midgardMayaStatusRD,
     mimir: mimirRD,
     reloadRunePrice,
     reloadTcyPrice,
+    reloadFlipPrice,
     reloadMayaPrice,
     volume24PriceRune: volume24PriceRD,
     volume24PriceMaya: volume24PriceMayaRD,
@@ -286,9 +290,11 @@ export const HeaderComponent = (props: Props): JSX.Element => {
         <HeaderStats
           runePrice={runePriceRD}
           tcyPrice={tcyPriceRD}
+          flipPrice={flipPriceRD}
           mayaPrice={mayaPriceRD}
           reloadRunePrice={reloadRunePrice}
           reloadTcyPrice={reloadTcyPrice}
+          reloadFlipPrice={reloadFlipPrice}
           reloadMayaPrice={reloadMayaPrice}
           volume24PriceRune={volume24PriceRD}
           volume24PriceMaya={volume24PriceMayaRD}

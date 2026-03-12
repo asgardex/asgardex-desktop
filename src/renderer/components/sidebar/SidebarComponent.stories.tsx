@@ -104,8 +104,7 @@ export const Default = Template.bind({})
 export const WithActiveTransactions = Template.bind({})
 WithActiveTransactions.args = {
   network: Network.Mainnet,
-  isDev: false,
-  publicIP: '127.0.0.1'
+  isDev: false
 }
 
 const meta: Meta<typeof Component> = {
@@ -116,8 +115,7 @@ const meta: Meta<typeof Component> = {
   },
   args: {
     network: Network.Mainnet,
-    isDev: false,
-    publicIP: '127.0.0.1'
+    isDev: false
   },
   decorators: [
     (Story) => (

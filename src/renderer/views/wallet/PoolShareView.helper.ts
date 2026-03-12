@@ -5,7 +5,7 @@ import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { PoolShareTableData } from '../../components/PoolShares/PoolShares.types'
 import { ZERO_BASE_AMOUNT } from '../../const'
-import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { convertBaseAmountDecimal, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
 import * as ShareHelpers from '../../helpers/poolShareHelper'
 import { PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMidgard/types'
@@ -45,7 +45,10 @@ export const getSharesTotal = (
           })
           const poolData = protocol === THORChain ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
           // 2. price asset + rune
-          const assetDepositPrice = getValueOfAsset1InAsset2(assetShare, poolData, pricePoolData)
+          // Convert assetShare back to dexDecimal for pricing — poolData balances are in dexDecimal,
+          // so the raw amounts must be in the same base for correct ratio calculations
+          const assetShareForPricing = convertBaseAmountDecimal(assetShare, dexDecimal)
+          const assetDepositPrice = getValueOfAsset1InAsset2(assetShareForPricing, poolData, pricePoolData)
           const runeDepositPrice = getValueOfRuneInAsset(runeShare, pricePoolData)
 
           // 3. sum rune + asset values
@@ -84,7 +87,9 @@ export const getPoolShareTableData = (
           })
           const sharePercent = ShareHelpers.getPoolShare(units, poolDetail)
           const poolData = protocol === THORChain ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
-          const assetDepositPrice = getValueOfAsset1InAsset2(assetShare, poolData, pricePoolData)
+          // Convert assetShare back to dexDecimal for pricing — must match poolData's decimal base
+          const assetShareForPricing = convertBaseAmountDecimal(assetShare, dexDecimal)
+          const assetDepositPrice = getValueOfAsset1InAsset2(assetShareForPricing, poolData, pricePoolData)
           const runeDepositPrice = getValueOfRuneInAsset(runeShare, pricePoolData)
 
           return {

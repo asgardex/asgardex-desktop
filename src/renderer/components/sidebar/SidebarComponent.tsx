@@ -25,7 +25,6 @@ import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import TwitterIcon from '../../assets/svg/icon-twitter.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
 import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
-import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
@@ -37,7 +36,6 @@ import * as playgroundRoutes from '../../routes/playground'
 import * as poolsRoutes from '../../routes/pools'
 import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
-import { mayaIconT } from '../icons'
 import { Label } from '../uielements/label'
 import { Tooltip } from '../uielements/tooltip'
 import { TransactionSlideshow } from '../uielements/transactionProgress/TransactionSlideshow'
@@ -90,11 +88,10 @@ export type Props = {
   network: Network
   commitHash?: string
   isDev: boolean
-  publicIP: string
 }
 
 export const SidebarComponent = memo(function SidebarComponent(props: Props): JSX.Element {
-  const { network, commitHash, isDev, publicIP } = props
+  const { network, commitHash, isDev } = props
 
   const intl = useIntl()
   const { transactionTrackingService } = useThorchainContext()
@@ -264,25 +261,7 @@ export const SidebarComponent = memo(function SidebarComponent(props: Props): JS
           <div className="flex-1" />
         </div>
         <div className="flex flex-col items-center justify-center">
-          <FooterIcon url={ExternalUrl.DOCSTHOR} onClick={clickIconHandler}>
-            <div className="flex h-12 flex-row items-center">
-              <ThorChainIcon className="[&>*:not(:first-child)]:fill-text1 [&>*:not(:first-child)]:dark:fill-text1d" />
-            </div>
-          </FooterIcon>
-          <FooterIcon className="!ml-0" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
-            <div className="flex h-12 flex-row items-center space-x-2">
-              <img className="h-8 w-8 rounded-full" src={mayaIconT} />
-              <Label size="big" textTransform="uppercase">
-                MAYACHAIN
-              </Label>
-            </div>
-          </FooterIcon>
-          {publicIP && (
-            <div className="h-8 items-center px-20px text-[14px] text-text2 dark:text-text2d">
-              Public IP: {publicIP}
-            </div>
-          )}
-          <div className="mt-6 flex items-center justify-center">
+          <div className="flex items-center justify-center">
             <FooterIcon url={ExternalUrl.ASGARDEX} onClick={clickIconHandler}>
               <Tooltip title={intl.formatMessage({ id: 'sidebar.tooltip.website' })}>
                 <GlobeIcon className="h-5 w-5" />

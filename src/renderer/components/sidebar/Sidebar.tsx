@@ -4,13 +4,12 @@ import { SidebarComponent } from './SidebarComponent'
 type Props = {
   commitHash?: string
   isDev: boolean
-  publicIP: string
 }
 
 export const Sidebar = (props: Props): JSX.Element => {
-  const { commitHash, isDev, publicIP } = props
+  const { commitHash, isDev } = props
 
   const { network } = useNetwork()
 
-  return <SidebarComponent network={network} commitHash={commitHash} isDev={isDev} publicIP={publicIP} />
+  return <SidebarComponent network={network} commitHash={commitHash} isDev={isDev} />
 }

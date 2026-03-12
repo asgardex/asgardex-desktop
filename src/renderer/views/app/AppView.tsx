@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MayaChain } from '@xchainjs/xchain-mayachain-query'
@@ -20,7 +20,6 @@ import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { logger } from '../../helpers/logger'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedgerAddresses } from '../../hooks/useLedgerAddresses'
@@ -158,20 +157,6 @@ export const AppView = (): JSX.Element => {
     )
   }, [ledgerAddressesPersistentRD, reloadPersistentLedgerAddresses, intl])
 
-  const getPublicIP = async () => {
-    const response = await fetch('https://api.ipify.org?format=json')
-    const data = await response.json()
-    return data.ip
-  }
-
-  const [publicIP, setPublicIP] = useState('')
-
-  useEffect(() => {
-    getPublicIP()
-      .then((ip) => setPublicIP(ip))
-      .catch((err) => logger.error(err))
-  }, [])
-
   return (
     <div className="h-screen bg-bg3 p-0 font-main dark:bg-bg3d">
       {shouldHideLayout ? (
@@ -179,9 +164,7 @@ export const AppView = (): JSX.Element => {
       ) : (
         <div className="flex h-full flex-col">
           <div className="flex h-full flex-row bg-bg3 dark:bg-bg3d">
-            {isDesktopView && (
-              <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />
-            )}
+            {isDesktopView && <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} />}
             <div className="flex w-full flex-col overflow-auto p-4 lg:w-[calc(100vw-240px)] lg:px-12 lg:py-8">
               <AppUpdateView />
               <Header />
