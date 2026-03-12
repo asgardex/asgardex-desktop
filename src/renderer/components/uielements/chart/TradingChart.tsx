@@ -3,32 +3,43 @@ import { useEffect, useRef } from 'react'
 import {
   createChart,
   CandlestickSeries,
+  CrosshairMode,
   HistogramSeries,
   LineSeries,
+  LineStyle,
   ColorType,
   type IChartApi,
+  type IPriceLine,
   type ISeriesApi,
   type UTCTimestamp
 } from 'lightweight-charts'
 
 import { calculateSMA, calculateEMA, calculateBollingerBands } from '../../../helpers/indicatorHelper'
-import type { IndicatorConfig, OHLCVData } from '../../../views/pools/detail/types'
+import type { IndicatorConfig, OHLCVData, PriceLevel } from '../../../views/pools/detail/types'
 
 type Props = {
   data: OHLCVData
   indicators?: IndicatorConfig[]
+  priceLevels?: PriceLevel[]
+  onPriceClick?: (price: number) => void
 }
 
 const CHART_BG = '#131722'
 const BULLISH_COLOR = '#50E3C2'
 const BEARISH_COLOR = '#FF4D4F'
 
-export const TradingChart = ({ data, indicators = [] }: Props) => {
+const BUY_COLOR = '#22c55e'
+const SELL_COLOR = '#ef4444'
+
+export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceClick }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null)
   const indicatorSeriesRefs = useRef<ISeriesApi<'Line'>[]>([])
+  const priceLevelRefs = useRef<Map<string, IPriceLine>>(new Map())
+  const onPriceClickRef = useRef(onPriceClick)
+  onPriceClickRef.current = onPriceClick
 
   // Create chart on mount
   useEffect(() => {
@@ -36,6 +47,7 @@ export const TradingChart = ({ data, indicators = [] }: Props) => {
     if (!container) return
 
     const chart = createChart(container, {
+      autoSize: true,
       layout: {
         background: { type: ColorType.Solid, color: CHART_BG },
         textColor: '#999',
@@ -46,6 +58,7 @@ export const TradingChart = ({ data, indicators = [] }: Props) => {
         horzLines: { color: 'rgba(255, 255, 255, 0.06)' }
       },
       crosshair: {
+        mode: CrosshairMode.Normal,
         vertLine: { color: 'rgba(255, 255, 255, 0.25)', labelBackgroundColor: '#333' },
         horzLine: { color: 'rgba(255, 255, 255, 0.25)', labelBackgroundColor: '#333' }
       },
@@ -80,16 +93,15 @@ export const TradingChart = ({ data, indicators = [] }: Props) => {
     candleSeriesRef.current = candleSeries
     volumeSeriesRef.current = volumeSeries
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0]
-      if (!entry) return
-      const { width, height } = entry.contentRect
-      chart.applyOptions({ width, height })
+    chart.subscribeClick((params) => {
+      if (!params.point || !candleSeriesRef.current) return
+      const price = candleSeriesRef.current.coordinateToPrice(params.point.y)
+      if (price !== null && onPriceClickRef.current) {
+        onPriceClickRef.current(Number(price))
+      }
     })
-    resizeObserver.observe(container)
 
     return () => {
-      resizeObserver.disconnect()
       chart.remove()
       chartRef.current = null
       candleSeriesRef.current = null
@@ -173,6 +185,53 @@ export const TradingChart = ({ data, indicators = [] }: Props) => {
       }
     }
   }, [data, indicators])
+
+  // Sync price level lines
+  useEffect(() => {
+    const series = candleSeriesRef.current
+    if (!series) return
+
+    const currentIds = new Set(priceLevels.map((l) => l.id))
+    const existingMap = priceLevelRefs.current
+
+    // Remove lines no longer present
+    for (const [id, line] of existingMap) {
+      if (!currentIds.has(id)) {
+        series.removePriceLine(line)
+        existingMap.delete(id)
+      }
+    }
+
+    // Add or update lines
+    for (const level of priceLevels) {
+      const baseColor = level.type === 'buy' ? BUY_COLOR : SELL_COLOR
+      const isTerminal = level.status === 'completed' || level.status === 'failed'
+      const isActive = level.status === 'triggered' || level.status === 'confirming' || level.status === 'executing'
+
+      const color = isTerminal ? `${baseColor}66` : baseColor
+      const lineStyle = isActive ? LineStyle.Solid : isTerminal ? LineStyle.Dotted : LineStyle.Dashed
+      const lineWidth = isActive ? 2 : 1
+
+      const typeLabel = level.type === 'buy' ? 'Buy' : 'Sell'
+      const title = level.amount ? `${typeLabel} ${level.amount}` : typeLabel
+
+      const existing = existingMap.get(level.id)
+      if (existing) {
+        // Update existing line options
+        existing.applyOptions({ price: level.price, color, lineStyle, lineWidth: lineWidth as 1 | 2, title })
+      } else {
+        const line = series.createPriceLine({
+          price: level.price,
+          color,
+          lineWidth: lineWidth as 1 | 2,
+          lineStyle,
+          axisLabelVisible: true,
+          title
+        })
+        existingMap.set(level.id, line)
+      }
+    }
+  }, [priceLevels])
 
   return <div ref={containerRef} className="h-[500px] w-full rounded-lg" />
 }

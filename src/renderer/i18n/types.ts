@@ -315,11 +315,23 @@ type PoolsMessageKey =
   | 'pools.chart'
   | 'pools.chart.noData'
   | 'pools.chart.source.binance'
+  | 'pools.chart.source.chainflip'
   | 'pools.chart.source.midgard'
   | 'pools.chart.spread'
   | 'pools.chart.indicator.sma'
   | 'pools.chart.indicator.ema'
   | 'pools.chart.indicator.bb'
+  | 'pools.chart.priceLevel.placeholder'
+  | 'pools.chart.priceLevel.buy'
+  | 'pools.chart.priceLevel.sell'
+  | 'pools.chart.priceLevel.amount'
+  | 'pools.chart.priceLevel.targetAsset'
+  | 'pools.chart.priceLevel.confirm.title'
+  | 'pools.chart.priceLevel.confirm.sell'
+  | 'pools.chart.priceLevel.confirm.buy'
+  | 'pools.chart.priceLevel.executing'
+  | 'pools.chart.priceLevel.completed'
+  | 'pools.chart.priceLevel.failed'
 
 export type PoolsMessages = { [key in PoolsMessageKey]: string }
 

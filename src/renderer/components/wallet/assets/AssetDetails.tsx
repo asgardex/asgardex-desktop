@@ -6,6 +6,7 @@ import {
   ArrowsRightLeftIcon,
   ArrowUpOnSquareIcon,
   ArrowTopRightOnSquareIcon,
+  ChartBarIcon,
   ChartPieIcon
 } from '@heroicons/react/24/outline'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
@@ -21,6 +22,7 @@ import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import * as AssetHelper from '../../../helpers/assetHelper'
+import { getChainAsset } from '../../../helpers/chainHelper'
 import * as poolsRoutes from '../../../routes/pools'
 import * as walletRoutes from '../../../routes/wallet'
 import { OpenExplorerTxUrl, TxsPageRD } from '../../../services/clients'
@@ -110,6 +112,12 @@ export const AssetDetails = (props: Props): JSX.Element => {
     })
     navigate(path)
   }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, navigate, setProtocol])
+
+  const walletActionChartClick = useCallback(() => {
+    const chartAsset = getChainAsset(chain)
+    const path = poolsRoutes.detail.path({ asset: assetToString(chartAsset) })
+    navigate(path)
+  }, [chain, navigate])
 
   const walletActionManageClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
@@ -205,6 +213,13 @@ export const AssetDetails = (props: Props): JSX.Element => {
               onClick={walletActionSwapClick}
               disabled={disableSwap}
             />
+            {asset.type !== AssetType.SYNTH && asset.type !== AssetType.SECURED && asset.type !== AssetType.TRADE && (
+              <ActionIconButton
+                icon={<ChartBarIcon className="h-6 w-6" />}
+                text={intl.formatMessage({ id: 'pools.chart' })}
+                onClick={walletActionChartClick}
+              />
+            )}
             {asset.type !== AssetType.SYNTH && (
               <ActionIconButton
                 icon={<ChartPieIcon className="h-6 w-6" />}

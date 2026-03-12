@@ -19,7 +19,7 @@ const formatUSD = (value: number): string => {
 
 export const SpreadLabel = ({ spread }: Props) => {
   const intl = useIntl()
-  const { midgardPrice, binancePrice, spreadPct, spreadDirection } = spread
+  const { midgardPrice, binancePrice, chainflipPrice, spreadPct, spreadDirection } = spread
 
   const sign = spreadPct >= 0 ? '+' : ''
   const spreadText = `${sign}${spreadPct.toFixed(2)}%`
@@ -30,6 +30,14 @@ export const SpreadLabel = ({ spread }: Props) => {
         {intl.formatMessage({ id: 'pools.chart.source.binance' })}: {formatUSD(binancePrice)}
       </span>
       <span className="text-gray-600">|</span>
+      {chainflipPrice !== undefined && (
+        <>
+          <span className="text-gray-400">
+            {intl.formatMessage({ id: 'pools.chart.source.chainflip' })}: {formatUSD(chainflipPrice)}
+          </span>
+          <span className="text-gray-600">|</span>
+        </>
+      )}
       <span className="text-gray-400">
         {intl.formatMessage({ id: 'pools.chart.source.midgard' })}: {formatUSD(midgardPrice)}
       </span>

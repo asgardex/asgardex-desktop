@@ -25,3 +25,6 @@ export type IndicatorConfig = {
   period: number
   color: string
 }
+
+// Re-export from canonical location for backwards compatibility
+export type { PriceLevel, PriceLevelStatus } from '../../../services/priceLevel/types'

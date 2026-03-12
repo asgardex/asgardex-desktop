@@ -22,11 +22,23 @@ const pools: PoolsMessages = {
   'pools.chart': '차트',
   'pools.chart.noData': '차트 데이터가 없습니다',
   'pools.chart.source.binance': 'Binance',
+  'pools.chart.source.chainflip': 'Chainflip',
   'pools.chart.source.midgard': 'THORChain',
   'pools.chart.spread': '스프레드',
   'pools.chart.indicator.sma': 'SMA',
   'pools.chart.indicator.ema': 'EMA',
-  'pools.chart.indicator.bb': '볼린저'
+  'pools.chart.indicator.bb': '볼린저',
+  'pools.chart.priceLevel.placeholder': '가격 입력',
+  'pools.chart.priceLevel.buy': '매수',
+  'pools.chart.priceLevel.sell': '매도',
+  'pools.chart.priceLevel.amount': '수량',
+  'pools.chart.priceLevel.targetAsset': '대상',
+  'pools.chart.priceLevel.confirm.title': '스왑 확인',
+  'pools.chart.priceLevel.confirm.sell': '{target}로 {amount} {asset} 매도',
+  'pools.chart.priceLevel.confirm.buy': '{amount} {target}로 {asset} 매수',
+  'pools.chart.priceLevel.executing': '실행 중...',
+  'pools.chart.priceLevel.completed': '완료',
+  'pools.chart.priceLevel.failed': '실패'
 }
 
 export default pools
