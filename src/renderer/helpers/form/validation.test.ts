@@ -10,7 +10,7 @@ describe('helpers/form/validation', () => {
       const result = FP.pipe(value, validateBN('errorMsg'))
       expect(result).toEqual(E.right(value))
     })
-    it('is left', () => {
+    it('throws for invalid input', () => {
       // In bignumber.js v10, bn() throws on invalid input
       expect(() => bn('hello')).toThrow()
     })
