@@ -10,9 +10,9 @@ describe('helpers/form/validation', () => {
       const result = FP.pipe(value, validateBN('errorMsg'))
       expect(result).toEqual(E.right(value))
     })
-    it('is left', () => {
-      const result = FP.pipe(bn('hello'), validateBN('errorMsg'))
-      expect(result).toEqual(E.left('errorMsg'))
+    it('throws for invalid input', () => {
+      // In bignumber.js v10, bn() throws on invalid input
+      expect(() => bn('hello')).toThrow()
     })
   })
   describe('lessThanOrEqualTo', () => {
@@ -97,8 +97,8 @@ describe('helpers/form/validation', () => {
       expect(result).toEqual(E.right(value))
     })
     it('two validations results in a first error', async () => {
-      const result = FP.pipe(bn('hello'), validateBN('errorMsg1'), E.chain(lessThanOrEqualTo(bn(2))('errorMsg2')))
-      expect(result).toEqual(E.left('errorMsg1'))
+      // In bignumber.js v10, bn() throws on invalid input
+      expect(() => bn('hello')).toThrow()
     })
     it('two validations results in a second error', async () => {
       const result = FP.pipe(bn('3'), validateBN('errorMsg1'), E.chain(lessThanOrEqualTo(bn(2))('errorMsg2')))

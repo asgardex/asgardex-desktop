@@ -25,7 +25,6 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
-import { isThorChain } from '../../helpers/chainHelper'
 import { observableState } from '../../helpers/stateHelper'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
@@ -81,12 +80,7 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
           () => Rx.of(RD.initial),
           ({ asset }) => {
             const { chain } = asset
-            if (
-              !isSupportedChain(chain) ||
-              asset.type === AssetType.SYNTH ||
-              isThorChain(chain) ||
-              asset.type === AssetType.SECURED
-            ) {
+            if (!isSupportedChain(chain) || asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED) {
               return Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` }))
             }
             switch (chain) {
