@@ -10,6 +10,7 @@ import {
   assetToBase,
   baseToAsset,
   CryptoAmount,
+  currencySymbolByAsset,
   eqAsset
 } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
@@ -148,6 +149,13 @@ export const PoolDetailView = () => {
     const data = binanceDataRD.value
     return data.length > 0 ? RD.success(data) : midgardDataRD
   }, [hasBinance, binanceDataRD, midgardDataRD])
+
+  // Track which data source the chart is actually using
+  const chartSource = useMemo(() => {
+    if (!hasBinance) return 'THORChain'
+    if (RD.isSuccess(binanceDataRD) && binanceDataRD.value.length > 0) return 'Binance'
+    return 'THORChain'
+  }, [hasBinance, binanceDataRD])
 
   // Handle swap trigger when price crosses a level
   const handleTrigger = useCallback(
@@ -351,12 +359,21 @@ export const PoolDetailView = () => {
     (type: 'buy' | 'sell') => {
       const price = parseFloat(priceInput)
       const amount = parseFloat(amountInput)
-      if (isNaN(price) || price <= 0 || isNaN(amount) || amount <= 0) return
-      priceLevelService.addLevel(assetKey, { id: crypto.randomUUID(), price, type, amount, status: 'pending' })
+      if (isNaN(price) || price <= 0 || isNaN(amount) || amount <= 0 || !poolAsset) return
+      const sourceAsset = type === 'buy' ? targetStable : poolAsset
+      const amountSymbol = currencySymbolByAsset(sourceAsset)
+      priceLevelService.addLevel(assetKey, {
+        id: crypto.randomUUID(),
+        price,
+        type,
+        amount,
+        amountSymbol,
+        status: 'pending'
+      })
       setPriceInput('')
       setAmountInput('')
     },
-    [priceInput, amountInput, assetKey, priceLevelService]
+    [priceInput, amountInput, assetKey, poolAsset, targetStable, priceLevelService]
   )
 
   const handleRemoveLevel = useCallback(
@@ -443,6 +460,7 @@ export const PoolDetailView = () => {
           <div className="flex items-center gap-2">
             <CandleTimeframeSelector selected={timeframe} onChange={setTimeframe} />
             <ChartDateRangeSelector selected={dateRange} onChange={setDateRange} />
+            <span className="rounded bg-white/10 px-2 py-0.5 font-main text-11 text-gray-400">{chartSource}</span>
           </div>
           <div className="flex items-center gap-2">
             <IndicatorToolbar indicators={indicators} onChange={setIndicators} />
@@ -525,7 +543,7 @@ export const PoolDetailView = () => {
             onSelect={handleStableSelect}
             network={network}
             dialogHeadline={intl.formatMessage({ id: 'pools.chart.priceLevel.targetAsset' })}
-            className="h-8"
+            className="h-8 rounded border border-gray-600 bg-transparent !shadow-none [&_.flex-col]:!flex-row [&_.flex-col]:!gap-1 [&_.relative.flex.items-center]:!hidden"
           />
           <button
             onClick={() => handleAddLevel('buy')}
@@ -537,25 +555,67 @@ export const PoolDetailView = () => {
             className="text-13 h-8 rounded bg-[#ef4444] px-3 font-main text-white transition-opacity hover:opacity-80">
             {intl.formatMessage({ id: 'pools.chart.priceLevel.sell' })}
           </button>
-          <button
-            onClick={handleSwap}
-            className="text-13 h-8 rounded bg-turquoise px-3 font-main text-white transition-opacity hover:opacity-80">
-            {intl.formatMessage({ id: 'common.swap' })}
-          </button>
-
-          {priceLevels.map((level) => (
-            <span
-              key={level.id}
-              className={`text-12 flex items-center gap-1 rounded-full px-2 py-1 font-main ${getLevelChipClass(level)}`}>
-              {level.type === 'buy' ? 'B' : 'S'} ${level.price} ({level.amount}){getLevelStatusIcon(level)}
-              {level.status === 'pending' && (
-                <button onClick={() => handleRemoveLevel(level.id)} className="ml-0.5 hover:opacity-70">
-                  &#10005;
-                </button>
-              )}
-            </span>
-          ))}
         </div>
+
+        {/* Orders table */}
+        {priceLevels.length > 0 && (
+          <table className="text-12 w-full font-main">
+            <thead>
+              <tr className="text-left text-gray-500">
+                <th className="pr-4 pb-1 font-normal">Side</th>
+                <th className="pr-4 pb-1 font-normal">Price</th>
+                <th className="pr-4 pb-1 font-normal">Amount</th>
+                <th className="pr-4 pb-1 font-normal">Status</th>
+                <th className="pb-1 font-normal" />
+              </tr>
+            </thead>
+            <tbody>
+              {priceLevels.map((level) => (
+                <tr key={level.id} className="border-t border-gray-700/50">
+                  <td className="py-1.5 pr-4">
+                    <span
+                      className={`rounded px-1.5 py-0.5 ${
+                        level.type === 'buy' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#ef4444]/20 text-[#ef4444]'
+                      }`}>
+                      {level.type === 'buy' ? 'Buy' : 'Sell'}
+                    </span>
+                  </td>
+                  <td className="py-1.5 pr-4 text-white">${level.price.toLocaleString()}</td>
+                  <td className="py-1.5 pr-4 text-white">
+                    {level.amountSymbol}
+                    {level.amount}
+                  </td>
+                  <td className="py-1.5 pr-4">
+                    <span className="flex items-center gap-1">
+                      {getLevelStatusIcon(level)}
+                      <span
+                        className={
+                          level.status === 'pending'
+                            ? 'text-gray-400'
+                            : level.status === 'completed'
+                              ? 'text-[#22c55e]'
+                              : level.status === 'failed'
+                                ? 'text-[#ef4444]'
+                                : 'text-yellow-400'
+                        }>
+                        {level.status}
+                      </span>
+                    </span>
+                  </td>
+                  <td className="py-1.5 text-right">
+                    {level.status === 'pending' && (
+                      <button
+                        onClick={() => handleRemoveLevel(level.id)}
+                        className="text-gray-500 transition-colors hover:text-[#ef4444]">
+                        &#10005;
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Confirmation dialog */}

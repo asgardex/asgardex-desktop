@@ -36,7 +36,8 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardSta
 
   // Determine current page context for filtering warnings
   const isSwapPage = location.pathname.includes('/swap')
-  const isPoolPage = location.pathname.includes('/pools')
+  const isPoolDetailPage = location.pathname.includes('/pools/detail')
+  const isPoolPage = location.pathname.includes('/pools') && !isPoolDetailPage
   const isDepositPage = location.pathname.includes('/deposit') || location.pathname.includes('/liquidity')
 
   // Small delay to prevent flashing on data updates

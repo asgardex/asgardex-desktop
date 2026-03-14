@@ -5,6 +5,8 @@ export type PriceLevel = {
   price: number
   type: 'buy' | 'sell'
   amount: number
+  /** Currency symbol for the amount (e.g. '$', 'BTC') */
+  amountSymbol: string
   status: PriceLevelStatus
   error?: string
   txHash?: string
