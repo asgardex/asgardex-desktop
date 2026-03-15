@@ -104,11 +104,51 @@ export type KeystoreId = number
 export type IPCExportKeystoreParams = { fileName: string; keystore: Keystore }
 export type IPCSaveKeystoreParams = { id: KeystoreId; keystore: Keystore }
 
+export type BalanceExportToken = {
+  asset: string
+  ticker: string
+  amount: string
+  valueUSD: number | null
+}
+
+export type BalanceExportEntry = {
+  chain: string
+  address: string
+  walletType: WalletType
+  tokens: BalanceExportToken[]
+}
+
+export type LPExportEntry = {
+  protocol: string
+  asset: string
+  type: string
+  chainBaseShare: string
+  assetShare: string
+  sharePercent: string
+  totalValueUSD: number | null
+}
+
+export type BalanceExportData = {
+  walletName: string
+  exportedAt: string
+  balances: BalanceExportEntry[]
+  lpPositions: LPExportEntry[]
+}
+
+export type IPCSaveBalancesJsonParams = {
+  fileName: string
+  data: BalanceExportData
+}
+
 export type ApiKeystore = {
   saveKeystoreWallets: (wallets: KeystoreWallets) => Promise<E.Either<Error, KeystoreWallets>>
   exportKeystore: (params: IPCExportKeystoreParams) => Promise<void>
   initKeystoreWallets: () => Promise<E.Either<Error, KeystoreWallets>>
   load: () => Promise<Keystore>
+}
+
+export type ApiExport = {
+  saveBalancesJson: (params: IPCSaveBalancesJsonParams) => Promise<void>
 }
 
 /**
@@ -201,6 +241,7 @@ declare global {
      * expose appropriate API at the src/main/preload.ts
      */
     apiKeystore: ApiKeystore
+    apiExport: ApiExport
     apiLang: ApiLang
     apiUrl: ApiUrl
     apiHDWallet: ApiHDWallet

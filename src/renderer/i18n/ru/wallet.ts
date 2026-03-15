@@ -25,6 +25,7 @@ const wallet: WalletMessages = {
   'wallet.action.create': 'Создать',
   'wallet.action.connect': 'Подключить',
   'wallet.action.deposit': 'Вложить',
+  'wallet.action.saveBalancesJson': 'Сохранить баланс в JSON',
   'wallet.balance.total.poolAssets': 'Общий баланс активов кошелька',
   'wallet.balance.total.portfolio': 'Общий Баланс Портфеля',
   'wallet.balance.total.poolAssets.info':

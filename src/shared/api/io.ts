@@ -6,6 +6,7 @@ import * as IOD from 'io-ts/Decoder'
 import * as IOG from 'io-ts/Guard'
 
 import { enabledChainGuard, isAsset, isBaseAmount, isEvmHDMode, isFeeOption, isHDMode, isNetwork } from '../utils/guard'
+import { WalletType } from '../wallet/types'
 
 const assetDecoder: IOD.Decoder<unknown, AnyAsset> = FP.pipe(
   IOD.string,
@@ -269,3 +270,41 @@ export const ipcLedgerAddressIO = t.type({
 export const ipcLedgerAddressesIO = t.array(ipcLedgerAddressIO)
 
 export type IPCLedgerAddressesIO = t.TypeOf<typeof ipcLedgerAddressesIO>
+
+const balanceExportTokenIO = t.type({
+  asset: t.string,
+  ticker: t.string,
+  amount: t.string,
+  valueUSD: t.union([t.number, t.null])
+})
+
+const walletTypeIO = t.union([t.literal(WalletType.Keystore), t.literal(WalletType.Ledger), t.literal(WalletType.Vultisig)])
+
+const balanceExportEntryIO = t.type({
+  chain: t.string,
+  address: t.string,
+  walletType: walletTypeIO,
+  tokens: t.array(balanceExportTokenIO)
+})
+
+const lpExportEntryIO = t.type({
+  protocol: t.string,
+  asset: t.string,
+  type: t.string,
+  chainBaseShare: t.string,
+  assetShare: t.string,
+  sharePercent: t.string,
+  totalValueUSD: t.union([t.number, t.null])
+})
+
+const balanceExportDataIO = t.type({
+  walletName: t.string,
+  exportedAt: t.string,
+  balances: t.array(balanceExportEntryIO),
+  lpPositions: t.array(lpExportEntryIO)
+})
+
+export const ipcSaveBalancesJsonParamsIO = t.type({
+  fileName: t.string,
+  data: balanceExportDataIO
+})
