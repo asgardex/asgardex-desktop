@@ -1102,7 +1102,7 @@ export const Swap = ({
         const swapParams = {
           fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
           destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
-          amount: new CryptoAmount(amount, {
+          amount: new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), {
             ...sourceAsset,
             symbol: sourceAsset.symbol.toUpperCase()
           }),
@@ -1176,6 +1176,7 @@ export const Swap = ({
     [
       oApplyBps,
       sourceAsset,
+      sourceAssetDecimal,
       targetAsset,
       protocols,
       estimateSwap,
@@ -1192,6 +1193,14 @@ export const Swap = ({
 
   // Note: Consolidated BPS handling - oApplyBps remains a dependency but triggers less frequently
   // since BPS calculation is now more stable based on balance percentage
+
+  // Reset amountToSwap decimal when sourceAssetDecimal changes (e.g., switching from RUNE/8 to DAI/18)
+  useEffect(() => {
+    if (amountToSwap.decimal !== sourceAssetDecimal) {
+      _setAmountToSwap(convertBaseAmountDecimal(amountToSwap, sourceAssetDecimal))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceAssetDecimal])
 
   // Fetch new quote when assets change (source or target)
   useEffect(() => {

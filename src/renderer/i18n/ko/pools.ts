@@ -38,7 +38,8 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.confirm.buy': '{amount} {target}로 {asset} 매수',
   'pools.chart.priceLevel.executing': '실행 중...',
   'pools.chart.priceLevel.completed': '완료',
-  'pools.chart.priceLevel.failed': '실패'
+  'pools.chart.priceLevel.failed': '실패',
+  'pools.chart.priceLevel.inDevelopment': '가격 알림 및 지정가 주문 — 개발 중'
 }
 
 export default pools

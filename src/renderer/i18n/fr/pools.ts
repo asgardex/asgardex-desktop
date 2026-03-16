@@ -38,7 +38,8 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.confirm.buy': 'Acheter {asset} avec {amount} {target}',
   'pools.chart.priceLevel.executing': 'Exécution...',
   'pools.chart.priceLevel.completed': 'Terminé',
-  'pools.chart.priceLevel.failed': 'Échoué'
+  'pools.chart.priceLevel.failed': 'Échoué',
+  'pools.chart.priceLevel.inDevelopment': 'Alertes de prix & ordres limités — en développement'
 }
 
 export default pools

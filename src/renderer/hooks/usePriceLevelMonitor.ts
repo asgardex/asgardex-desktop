@@ -7,6 +7,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { useMidgardContext } from '../contexts/MidgardContext'
+import { GetDepthHistoryIntervalEnum } from '../services/midgard/midgardTypes'
 import type { PriceLevel } from '../views/pools/detail/types'
 
 const POLL_INTERVAL_MS = 30_000
@@ -39,7 +40,7 @@ export const usePriceLevelMonitor = ({ poolAsset, priceLevels, enabled, onCrossi
     if (!poolAsset) return Rx.EMPTY
 
     return FP.pipe(
-      apiGetDepthHistory$({ poolAsset, count: 1 }),
+      apiGetDepthHistory$({ poolAsset, interval: GetDepthHistoryIntervalEnum.Hour, count: 1 }),
       RxOp.map((rd) =>
         FP.pipe(
           rd,

@@ -5,6 +5,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { observableState } from '../../helpers/stateHelper'
+import { GetDepthHistoryIntervalEnum } from '../midgard/midgardTypes'
 import type { ApiGetDepthHistoryParams, DepthHistoryLD } from '../midgard/midgardTypes'
 import type { PriceLevel } from './types'
 
@@ -64,6 +65,8 @@ export type PriceLevelService = {
   levels$: Rx.Observable<PriceLevelMap>
   /** Stream of crossing events (for UI to react to) */
   crossings$: Rx.Observable<PriceLevelEvent>
+  /** Latest polled prices per asset (THORChain pool price used for triggers) */
+  prices$: Rx.Observable<Record<string, number>>
   /** Get levels for a specific asset */
   getLevels: (assetKey: string) => PriceLevel[]
   /** Add a price level for an asset */
@@ -91,6 +94,9 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
   const { get$: levels$, get: getLevelsMap, set: setLevelsMap } = observableState<PriceLevelMap>(initialLevels)
 
   const crossings$$ = new Rx.Subject<PriceLevelEvent>()
+
+  // Observable prices per asset (THORChain pool price)
+  const { get$: prices$, get: getPricesMap, set: setPricesMap } = observableState<Record<string, number>>({})
 
   // Previous price per asset for crossing detection
   const prevPrices: Record<string, number> = {}
@@ -130,9 +136,9 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
 
   // ── Polling logic ───────────────────────────────────────────────────
 
-  const fetchPrice = (poolAsset: AnyAsset): Rx.Observable<number | null> =>
+  const fetchPrice = (poolAsset: AnyAsset): Rx.Observable<number> =>
     FP.pipe(
-      apiGetDepthHistory$({ poolAsset, count: 1 }),
+      apiGetDepthHistory$({ poolAsset, interval: GetDepthHistoryIntervalEnum.Hour, count: 1 }),
       RxOp.map((rd) =>
         FP.pipe(
           rd,
@@ -142,28 +148,46 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
           })
         )
       ),
-      RxOp.map((rd) => (RD.isSuccess(rd) ? rd.value : null))
+      RxOp.map((rd) => (RD.isSuccess(rd) ? rd.value : null)),
+      // apiGetDepthHistory$ is backed by a BehaviorSubject that never completes.
+      // Filter out pending/initial/failure (null) and take the first real price,
+      // so the observable completes and the inFlight guard resets for the next poll.
+      RxOp.filter((price): price is number => price !== null),
+      RxOp.take(1)
     )
+
+  // Track which levels have had their first price check (to detect immediate fills)
+  const seenLevels = new Set<string>()
 
   const checkCrossings = (assetKey: string, price: number) => {
     const prevPrice = prevPrices[assetKey]
-    if (prevPrice === undefined) {
-      prevPrices[assetKey] = price
-      return
-    }
 
     const levels = getLevels(assetKey).filter((l) => l.status === 'pending')
     for (const level of levels) {
-      const crossed =
-        level.type === 'buy'
-          ? prevPrice > level.price && price <= level.price
-          : prevPrice < level.price && price >= level.price
-      if (crossed) {
+      const firstSeen = !seenLevels.has(level.id)
+      if (firstSeen) seenLevels.add(level.id)
+
+      let triggered = false
+
+      if (firstSeen) {
+        // On first price check for this level, trigger immediately if price
+        // already satisfies the condition (e.g. buy placed above current price)
+        triggered = level.type === 'buy' ? price <= level.price : price >= level.price
+      } else if (prevPrice !== undefined) {
+        // On subsequent checks, detect crossing through the level
+        triggered =
+          level.type === 'buy'
+            ? prevPrice > level.price && price <= level.price
+            : prevPrice < level.price && price >= level.price
+      }
+
+      if (triggered) {
         crossings$$.next({ levelId: level.id, assetKey, level, currentPrice: price })
       }
     }
 
     prevPrices[assetKey] = price
+    setPricesMap({ ...getPricesMap(), [assetKey]: price })
   }
 
   // In-flight guard to prevent overlapping fetches per asset
@@ -183,9 +207,7 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
       inFlight.set(assetKey, true)
       const sub = fetchPrice(poolAsset).subscribe({
         next: (price) => {
-          if (price !== null) {
-            checkCrossings(assetKey, price)
-          }
+          checkCrossings(assetKey, price)
         },
         complete: () => {
           inFlight.set(assetKey, false)
@@ -218,6 +240,7 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
   return {
     levels$,
     crossings$: crossings$$.asObservable(),
+    prices$,
     getLevels,
     addLevel,
     removeLevel,
