@@ -87,7 +87,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
   }
 
-  // Vultisig transaction handler - MPC signing for ZEC using PSBT
+  // Vultisig transaction handler - MPC signing for ZEC via SDK native pipeline
   const sendVultisigTx = createVultisigUtxoTx(client$, 'ZEC')
 
   const sendTx = (params: SendTxParams): TxHashLD =>

@@ -30,10 +30,12 @@ type GenericSendParams = {
  *
  * @param chainName - Chain identifier (e.g., 'TRON', 'ADA', 'XRD')
  * @param errorId - Error ID to use on failure (default: ErrorId.SEND_TX)
+ * @param resolveId - Optional resolver for token identifier (contract address, denom, etc.)
  */
 export const createVultisigSdkNativeTx = (
   chainName: string,
-  errorId: ErrorId = ErrorId.SEND_TX
+  errorId: ErrorId = ErrorId.SEND_TX,
+  resolveId?: (asset: AnyAsset) => string | undefined
 ): ((args: { network: Network; params: GenericSendParams }) => TxHashLD) => {
   return ({ params }): TxHashLD => {
     const { asset, recipient, amount, memo } = params
@@ -44,6 +46,8 @@ export const createVultisigSdkNativeTx = (
       return Rx.of(RD.failure({ errorId, msg: 'No active Vultisig vault' }))
     }
 
+    const id = resolveId?.(asset)
+
     const txParams: SendTransactionParams = {
       vaultId,
       chain: chainName,
@@ -51,7 +55,8 @@ export const createVultisigSdkNativeTx = (
       amount: amount.amount().toFixed(),
       memo,
       decimals: amount.decimal,
-      ticker: asset.ticker
+      ticker: asset.ticker,
+      id
     }
 
     logger.info(`${chainName} sendTransaction via SDK pipeline`, {

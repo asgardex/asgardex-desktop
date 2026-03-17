@@ -160,7 +160,7 @@ export const createBalancesService = ({
     [BTCChain]: BTC.reloadBalances,
     [DASHChain]: DASH.reloadBalances,
     [BCHChain]: BCH.reloadBalances,
-    [ETHChain]: (walletType) => ETH.reloadBalances(walletType), // Accept walletType
+    [ETHChain]: ETH.reloadBalances,
     [ARBChain]: ARB.reloadBalances,
     [AVAXChain]: AVAX.reloadBalances,
     [BSCChain]: BSC.reloadBalances,
