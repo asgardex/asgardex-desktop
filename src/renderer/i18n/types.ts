@@ -332,6 +332,7 @@ type PoolsMessageKey =
   | 'pools.chart.priceLevel.executing'
   | 'pools.chart.priceLevel.completed'
   | 'pools.chart.priceLevel.failed'
+  | 'pools.chart.priceLevel.inDevelopment'
 
 export type PoolsMessages = { [key in PoolsMessageKey]: string }
 

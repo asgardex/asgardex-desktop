@@ -213,7 +213,7 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
       const lineWidth = isActive ? 2 : 1
 
       const typeLabel = level.type === 'buy' ? 'Buy' : 'Sell'
-      const title = level.amount ? `${typeLabel} ${level.amount}` : typeLabel
+      const title = level.amount ? `${typeLabel} ${level.amountSymbol}${level.amount}` : typeLabel
 
       const existing = existingMap.get(level.id)
       if (existing) {

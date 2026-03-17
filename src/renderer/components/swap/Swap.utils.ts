@@ -1,4 +1,6 @@
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { QuoteSwap } from '@xchainjs/xchain-mayachain-query'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { THORChain, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -174,7 +176,16 @@ export const maxAmountToSwap = ({
   const feeInBalanceDecimal =
     feeAmount.decimal !== balanceAmount.decimal ? convertBaseAmountDecimal(feeAmount, balanceAmount.decimal) : feeAmount
 
-  const maxAmountToSwap = balanceAmount.minus(feeInBalanceDecimal)
+  // Account reserves: some chains require a minimum balance to keep the account active
+  // XRP: 1 XRP (1,000,000 drops), ADA: ~1.17 ADA (1,170,000 lovelace)
+  const accountReserve =
+    asset.chain === XRPChain
+      ? baseAmount(1000000, balanceAmount.decimal)
+      : asset.chain === ADAChain
+        ? baseAmount(1170000, balanceAmount.decimal)
+        : ZERO_BASE_AMOUNT
+
+  const maxAmountToSwap = balanceAmount.minus(feeInBalanceDecimal).minus(accountReserve)
   return maxAmountToSwap.gt(ZERO_BASE_AMOUNT) ? maxAmountToSwap : ZERO_BASE_AMOUNT
 }
 

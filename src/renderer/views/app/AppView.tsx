@@ -172,7 +172,7 @@ export const AppView = (): JSX.Element => {
               <MidgardErrorAlert apiEndpoint={apiEndpointMaya} reloadHandler={reloadApiEndpointMaya} />
               {renderImportKeystoreWalletsError}
               {renderImportLedgerAddressesError}
-              <div className="mb-10 flex flex-col gap-2">
+              <div className="mb-4 flex flex-col gap-2">
                 <HaltedChainsWarning
                   haltedChainsRD={haltedChainsThorRD}
                   mimirHaltRD={mimirHaltThorRD}

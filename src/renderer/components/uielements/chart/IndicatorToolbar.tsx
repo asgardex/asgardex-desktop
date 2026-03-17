@@ -5,6 +5,16 @@ import { useIntl } from 'react-intl'
 
 import type { IndicatorConfig, IndicatorType } from '../../../views/pools/detail/types'
 
+/** Return dark or light text based on hex background luminance */
+const textColorForBg = (hex: string): string => {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  // Perceived brightness (ITU-R BT.709)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return luminance > 0.6 ? '#1e222d' : '#ffffff'
+}
+
 type Props = {
   indicators: IndicatorConfig[]
   onChange: (indicators: IndicatorConfig[]) => void
@@ -46,9 +56,9 @@ export const IndicatorToolbar = ({ indicators, onChange }: Props) => {
             onDoubleClick={() => setEditingIndex(editingIndex === i ? null : i)}
             className={clsx(
               'text-12 rounded px-2 py-1 font-main transition-colors',
-              ind.enabled ? 'text-white' : 'text-gray-400 hover:text-white'
+              ind.enabled ? '' : 'text-gray-400 hover:text-white'
             )}
-            style={ind.enabled ? { backgroundColor: ind.color } : undefined}>
+            style={ind.enabled ? { backgroundColor: ind.color, color: textColorForBg(ind.color) } : undefined}>
             {intl.formatMessage({ id: INDICATOR_LABELS[ind.type] })} {ind.period}
           </button>
           {editingIndex === i && (
