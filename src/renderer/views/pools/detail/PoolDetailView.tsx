@@ -9,6 +9,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { AssetBTC } from '../../../../shared/utils/asset'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { BackLinkButton } from '../../../components/uielements/button'
 import {
@@ -21,15 +22,14 @@ import {
 import { Label } from '../../../components/uielements/label'
 import { Spin } from '../../../components/uielements/spin'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { AssetBTC } from '../../../../shared/utils/asset'
 import { useAppContext } from '../../../contexts/AppContext'
+import { isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { useBinanceOHLCV } from '../../../hooks/useBinanceOHLCV'
 import { useChainflipPrice } from '../../../hooks/useChainflipPrice'
 import { useOHLCVData } from '../../../hooks/useOHLCVData'
 import { usePriceSpread } from '../../../hooks/usePriceSpread'
-import { DEFAULT_NETWORK } from '../../../services/const'
 import * as poolsRoutes from '../../../routes/pools'
-import { isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { DEFAULT_NETWORK } from '../../../services/const'
 import type { CandleTimeframe, ChartDateRange, IndicatorConfig, OHLCVDataRD } from './types'
 
 const DEFAULT_INDICATORS: IndicatorConfig[] = [
