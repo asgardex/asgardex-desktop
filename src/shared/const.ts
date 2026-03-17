@@ -26,7 +26,7 @@ import { envOrDefault } from './utils/env'
 
 export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
-export const ASGARDEX_AFFILIATE_FEE = 0
+export const ASGARDEX_AFFILIATE_FEE = 30
 export const ASGARDEX_THORNAME = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNAME, 'dx')
 
 // Chainflip broker configuration

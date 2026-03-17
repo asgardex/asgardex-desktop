@@ -19,7 +19,9 @@ type ApiGetDepthHistory$ = (params: ApiGetDepthHistoryParams) => DepthHistoryLD
 const loadLevels = (assetKey: string): PriceLevel[] => {
   try {
     const raw = localStorage.getItem(`${STORAGE_KEY}:${assetKey}`)
-    return raw ? (JSON.parse(raw) as PriceLevel[]) : []
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as PriceLevel[]
+    return parsed.map((p) => ({ ...p, amountSymbol: p.amountSymbol ?? '' }))
   } catch {
     return []
   }
