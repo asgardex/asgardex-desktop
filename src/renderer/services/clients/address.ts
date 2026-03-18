@@ -7,6 +7,7 @@ import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { removeAddressPrefix } from '../../helpers/addressHelper'
 import { WalletAddress$, XChainClient$ } from '../clients/types'
 import { appWalletService } from '../wallet/appWallet'
+import { isStandaloneLedgerMode } from '../wallet/types'
 
 /**
  * Unified address resolution (Phase 5C)
@@ -19,11 +20,18 @@ import { appWalletService } from '../wallet/appWallet'
  * 2. If O.none (Keystore mode), fall back to xchainjs client
  */
 export const addressUI$: (client$: XChainClient$, chain: Chain) => WalletAddress$ = (client$, chain) =>
-  Rx.combineLatest([client$, appWalletService.getAddressForChain$(chain)]).pipe(
-    RxOp.switchMap(([oClient, unifiedAddress]) => {
+  Rx.combineLatest([client$, appWalletService.getAddressForChain$(chain), appWalletService.appWalletState$]).pipe(
+    RxOp.switchMap(([oClient, unifiedAddress, appState]) => {
       // If unified method returned an address (Vultisig or Ledger mode)
       if (O.isSome(unifiedAddress)) {
         const walletType = appWalletService.getCurrentWalletType()
+
+        // In Ledger standalone mode, preserve the full WalletAddress metadata
+        // (walletAccount, walletIndex, hdMode) from the state
+        if (isStandaloneLedgerMode(appState) && appState.address) {
+          return Rx.of<O.Option<WalletAddress>>(O.some(appState.address))
+        }
+
         return Rx.of<O.Option<WalletAddress>>(
           O.some({
             address: unifiedAddress.value,
