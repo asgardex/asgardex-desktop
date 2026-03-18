@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
+import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { Network } from '@xchainjs/xchain-client'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import {
@@ -9,8 +10,7 @@ import {
   isTokenAsset,
   isTradeAsset,
   isSynthAsset,
-  isSecuredAsset,
-  Chain
+  isSecuredAsset
 } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -219,7 +219,7 @@ export const useSwapExecution = ({
           walletAccount: finalWalletAccount,
           walletIndex: finalWalletIndex,
           hdMode: finalHDMode,
-          protocol: quoteSwap.protocol as Chain,
+          protocol: quoteSwap.protocol as Protocol,
           sendMax: isSourceUTXO ? isSendMax : undefined
         }
       })
