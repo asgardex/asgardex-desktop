@@ -155,20 +155,26 @@ export const createAppWalletService = (): AppWalletService => {
    * Switch to keystore mode - clears standalone states
    */
   const switchToKeystoreMode = async () => {
-    // Exit standalone modes first
-    standaloneLedgerService.exitStandaloneMode()
-    vaultManager.exitStandaloneMode()
+    try {
+      // Exit standalone modes first
+      standaloneLedgerService.exitStandaloneMode()
+      vaultManager.exitStandaloneMode()
 
-    // Set app state to current keystore state
-    const keystoreState = await keystoreService.keystoreState$
-      .pipe(RxOp.take(1), RxOp.timeout(10_000))
-      .toPromise()
-      .catch((err) => {
-        logger.error('switchToKeystoreMode: timed out waiting for keystore state', err)
-        return undefined
-      })
-    if (keystoreState !== undefined) {
-      setAppWalletState(keystoreState)
+      // Set app state to current keystore state
+      const keystoreState = await keystoreService.keystoreState$
+        .pipe(RxOp.take(1), RxOp.timeout(10_000))
+        .toPromise()
+        .catch((err) => {
+          logger.error('switchToKeystoreMode: timed out waiting for keystore state', err)
+          return undefined
+        })
+      if (keystoreState !== undefined) {
+        setAppWalletState(keystoreState)
+      }
+    } catch (error) {
+      // Recover to a safe state — set app state to None (no keystore loaded)
+      logger.error('switchToKeystoreMode failed, resetting to initial state', error)
+      setAppWalletState(INITIAL_APP_WALLET_STATE)
     }
   }
 
