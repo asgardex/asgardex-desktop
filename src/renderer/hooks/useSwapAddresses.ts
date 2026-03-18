@@ -161,7 +161,7 @@ export const useSwapAddresses = ({
   const useSourceVultisig = useMemo(() => (appWalletState && isVultisigMode(appWalletState)) || false, [appWalletState])
 
   const useTargetLedger = FP.pipe(
-    oInitialTargetWalletType,
+    oTargetWalletType,
     O.map(isLedgerWallet),
     O.getOrElse(() => false)
   )

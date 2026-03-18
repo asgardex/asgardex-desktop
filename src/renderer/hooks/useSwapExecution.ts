@@ -191,16 +191,34 @@ export const useSwapExecution = ({
           }
         }
 
+        // In standalone ledger mode, use connected ledger's address info (same as THOR/Maya path)
+        const finalWalletAddress =
+          appWalletState && isStandaloneLedgerMode(appWalletState) && standaloneLedgerState?.address
+            ? standaloneLedgerState.address.address
+            : walletAddress
+        const finalWalletAccount =
+          appWalletState && isStandaloneLedgerMode(appWalletState) && standaloneLedgerState?.address
+            ? standaloneLedgerState.address.walletAccount
+            : walletAccount
+        const finalWalletIndex =
+          appWalletState && isStandaloneLedgerMode(appWalletState) && standaloneLedgerState?.address
+            ? standaloneLedgerState.address.walletIndex
+            : walletIndex
+        const finalHDMode =
+          appWalletState && isStandaloneLedgerMode(appWalletState) && standaloneLedgerState?.address
+            ? standaloneLedgerState.address.hdMode
+            : hdMode
+
         return {
           asset: sourceAsset,
           amount: amountToSwapAdjusted,
           recipient: quoteSwap.toAddress,
           memo: quoteSwap.memo,
           walletType,
-          sender: walletAddress,
-          walletAccount,
-          walletIndex,
-          hdMode,
+          sender: finalWalletAddress,
+          walletAccount: finalWalletAccount,
+          walletIndex: finalWalletIndex,
+          hdMode: finalHDMode,
           protocol: quoteSwap.protocol as Chain,
           sendMax: isSourceUTXO ? isSendMax : undefined
         }
@@ -213,6 +231,8 @@ export const useSwapExecution = ({
     sourceAsset,
     sourceChainBalance,
     swapFees.inFee.amount,
+    appWalletState,
+    standaloneLedgerState?.address,
     isSourceUTXO,
     isSendMax
   ])
