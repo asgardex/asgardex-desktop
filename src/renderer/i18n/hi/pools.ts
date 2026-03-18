@@ -39,7 +39,19 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.executing': 'निष्पादित हो रहा है...',
   'pools.chart.priceLevel.completed': 'पूर्ण',
   'pools.chart.priceLevel.failed': 'विफल',
-  'pools.chart.priceLevel.inDevelopment': 'मूल्य अलर्ट और सीमित आदेश — विकास में'
+  'pools.chart.priceLevel.inDevelopment': 'मूल्य अलर्ट और सीमित आदेश — विकास में',
+  'pools.chart.tradingPanel.noWallet': 'ट्रेड करने के लिए वॉलेट कनेक्ट करें',
+  'pools.chart.tradingPanel.selectTarget': 'संपत्ति चुनें',
+  'pools.chart.tradingPanel.yourBalance': 'आपकी शेष राशि',
+  'pools.chart.tradingPanel.quote': 'स्वैप उद्धरण',
+  'pools.chart.tradingPanel.quote.output': 'अपेक्षित आउटपुट',
+  'pools.chart.tradingPanel.quote.slippage': 'स्लिपेज',
+  'pools.chart.tradingPanel.quote.fees': 'शुल्क',
+  'pools.chart.tradingPanel.quote.protocol': 'प्रोटोकॉल',
+  'pools.chart.tradingPanel.quote.time': 'अनुमानित समय',
+  'pools.chart.tradingPanel.quote.error': 'उद्धरण प्राप्त करने में विफल',
+  'pools.chart.tradingPanel.quote.noAmount': 'राशि दर्ज करें',
+  'pools.chart.tradingPanel.quote.confirm': 'स्वैप पर जाएं'
 }
 
 export default pools

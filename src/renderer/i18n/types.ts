@@ -132,6 +132,8 @@ export type CommonMessageKey =
   | 'common.store'
   | 'common.completeLp'
   | 'common.swap'
+  | 'common.buy'
+  | 'common.sell'
   | 'common.chainDisabled'
   | 'common.savers'
   | 'common.earn'
@@ -333,6 +335,18 @@ type PoolsMessageKey =
   | 'pools.chart.priceLevel.completed'
   | 'pools.chart.priceLevel.failed'
   | 'pools.chart.priceLevel.inDevelopment'
+  | 'pools.chart.tradingPanel.noWallet'
+  | 'pools.chart.tradingPanel.selectTarget'
+  | 'pools.chart.tradingPanel.yourBalance'
+  | 'pools.chart.tradingPanel.quote'
+  | 'pools.chart.tradingPanel.quote.output'
+  | 'pools.chart.tradingPanel.quote.slippage'
+  | 'pools.chart.tradingPanel.quote.fees'
+  | 'pools.chart.tradingPanel.quote.protocol'
+  | 'pools.chart.tradingPanel.quote.time'
+  | 'pools.chart.tradingPanel.quote.error'
+  | 'pools.chart.tradingPanel.quote.noAmount'
+  | 'pools.chart.tradingPanel.quote.confirm'
 
 export type PoolsMessages = { [key in PoolsMessageKey]: string }
 

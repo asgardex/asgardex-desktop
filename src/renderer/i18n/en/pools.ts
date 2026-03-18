@@ -39,7 +39,19 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.executing': 'Executing...',
   'pools.chart.priceLevel.completed': 'Completed',
   'pools.chart.priceLevel.failed': 'Failed',
-  'pools.chart.priceLevel.inDevelopment': 'Price alerts & limit orders — in development'
+  'pools.chart.priceLevel.inDevelopment': 'Price alerts & limit orders — in development',
+  'pools.chart.tradingPanel.noWallet': 'Connect wallet to trade',
+  'pools.chart.tradingPanel.selectTarget': 'Select asset',
+  'pools.chart.tradingPanel.yourBalance': 'Your balance',
+  'pools.chart.tradingPanel.quote': 'Swap Quote',
+  'pools.chart.tradingPanel.quote.output': 'Expected output',
+  'pools.chart.tradingPanel.quote.slippage': 'Slippage',
+  'pools.chart.tradingPanel.quote.fees': 'Fees',
+  'pools.chart.tradingPanel.quote.protocol': 'Protocol',
+  'pools.chart.tradingPanel.quote.time': 'Est. time',
+  'pools.chart.tradingPanel.quote.error': 'Failed to fetch quote',
+  'pools.chart.tradingPanel.quote.noAmount': 'Enter an amount',
+  'pools.chart.tradingPanel.quote.confirm': 'Continue to swap'
 }
 
 export default pools

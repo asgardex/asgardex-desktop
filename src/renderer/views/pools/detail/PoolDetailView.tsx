@@ -2,14 +2,12 @@ import { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { assetFromString, assetToString } from '@xchainjs/xchain-util'
+import { assetFromString } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
-import { AssetBTC } from '../../../../shared/utils/asset'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { BackLinkButton } from '../../../components/uielements/button'
 import {
@@ -21,15 +19,13 @@ import {
 } from '../../../components/uielements/chart'
 import { Label } from '../../../components/uielements/label'
 import { Spin } from '../../../components/uielements/spin'
-import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useAppContext } from '../../../contexts/AppContext'
-import { isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { useBinanceOHLCV } from '../../../hooks/useBinanceOHLCV'
 import { useChainflipPrice } from '../../../hooks/useChainflipPrice'
 import { useOHLCVData } from '../../../hooks/useOHLCVData'
 import { usePriceSpread } from '../../../hooks/usePriceSpread'
-import * as poolsRoutes from '../../../routes/pools'
 import { DEFAULT_NETWORK } from '../../../services/const'
+import { TradingPanel } from './TradingPanel'
 import type { CandleTimeframe, ChartDateRange, IndicatorConfig, OHLCVDataRD } from './types'
 
 const DEFAULT_INDICATORS: IndicatorConfig[] = [
@@ -41,7 +37,6 @@ const DEFAULT_INDICATORS: IndicatorConfig[] = [
 export const PoolDetailView = () => {
   const { asset: routeAsset } = useParams<{ asset: string }>()
   const intl = useIntl()
-  const navigate = useNavigate()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
   const poolAsset = useMemo(() => (routeAsset ? assetFromString(routeAsset) : null), [routeAsset])
@@ -75,17 +70,6 @@ export const PoolDetailView = () => {
     void price // no-op for now — price levels disabled
   }, [])
 
-  const handleSwap = useCallback(() => {
-    if (!poolAsset) return
-    const path = poolsRoutes.swap.path({
-      source: assetToString(poolAsset),
-      target: assetToString(isRuneNativeAsset(poolAsset) ? AssetBTC : AssetRuneNative),
-      sourceWalletType: DEFAULT_WALLET_TYPE,
-      targetWalletType: DEFAULT_WALLET_TYPE
-    })
-    navigate(path)
-  }, [poolAsset, navigate])
-
   if (!poolAsset) {
     return (
       <div className="flex flex-col items-center p-4">
@@ -101,11 +85,6 @@ export const PoolDetailView = () => {
         <BackLinkButton className="!m-0" />
         <AssetIcon asset={poolAsset} size="normal" network={network} className="pointer-events-none" />
         <h2 className="font-main text-18 text-text0 dark:text-text0d">{poolAsset.ticker}</h2>
-        <button
-          onClick={handleSwap}
-          className="text-13 ml-auto h-8 rounded bg-turquoise px-4 font-main text-white transition-opacity hover:opacity-80">
-          {intl.formatMessage({ id: 'common.swap' })}
-        </button>
       </div>
 
       {/* Chart panel — always dark themed */}
@@ -164,10 +143,8 @@ export const PoolDetailView = () => {
           )
         )}
 
-        {/* Price levels — in development */}
-        <p className="font-main text-11 text-gray-500 italic">
-          {intl.formatMessage({ id: 'pools.chart.priceLevel.inDevelopment' })}
-        </p>
+        {/* Trading panel — balance & buy/sell */}
+        <TradingPanel poolAsset={poolAsset} network={network} />
       </div>
     </div>
   )

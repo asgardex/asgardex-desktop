@@ -137,6 +137,8 @@ const common: CommonMessages = {
   'common.add': '추가',
   'common.completeLp': 'LP 완료',
   'common.swap': '교환',
+  'common.buy': '구매',
+  'common.sell': '판매',
   'common.savers': '저축',
   'common.earn': '수익',
   'common.earnings': '수익',

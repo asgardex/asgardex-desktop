@@ -19,7 +19,7 @@ import { XRP_DECIMAL } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import { TRX_DECIMAL } from '@xchainjs/xchain-tron'
-import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType, assetToString } from '@xchainjs/xchain-util'
 import { ZEC_DECIMAL } from '@xchainjs/xchain-zcash'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -102,10 +102,13 @@ export const getDecimal = (
     return Promise.resolve(MAYA_DECIMAL)
   }
 
-  // Check hardcoded decimals for native chain assets
-  const chainDecimal = CHAIN_DECIMAL_MAP.get(chain)
-  if (chainDecimal !== undefined) {
-    return Promise.resolve(chainDecimal)
+  // Check hardcoded decimals for native chain assets only (not tokens)
+  // Tokens like USDC (6 decimals) differ from their chain's gas asset (ETH = 18)
+  if (asset.type !== AssetType.TOKEN) {
+    const chainDecimal = CHAIN_DECIMAL_MAP.get(chain)
+    if (chainDecimal !== undefined) {
+      return Promise.resolve(chainDecimal)
+    }
   }
 
   // Try to find the asset in MAYAChain pool details first
