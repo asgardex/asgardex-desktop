@@ -25,6 +25,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     '아웃바운드 수수료 {fee}는 수신 금액으로 충당되어야 합니다 (현재 {amount}).',
   'swap.errors.amount.thornodeQuoteError': '{error} : 슬리피지 또는 입력 금액을 조정하세요.',
+  'swap.previewOnly': 'Preview Only',
+  'swap.previewAndSwap': 'Preview & Swap',
   'swap.note.lockedWallet': '스왑을 하려면 지갑을 잠금 해제해야 합니다.',
   'swap.note.nowallet': '스왑을 하려면 지갑을 생성하거나 가져오세요.',
   'swap.errors.asset.missingSourceAsset': '소스 자산이 없습니다.',

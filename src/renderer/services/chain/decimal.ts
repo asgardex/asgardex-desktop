@@ -27,6 +27,7 @@ import * as RxOp from 'rxjs/operators'
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
 import { isMayaAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { KUJI_DECIMAL } from '../kuji/const'
+import { getTokenDecimal } from './tokenDecimalMap'
 import { AssetWithDecimalLD } from './types'
 
 /**
@@ -104,6 +105,17 @@ export const getDecimal = (
 
   // Check hardcoded decimals for native chain assets
   const chainDecimal = CHAIN_DECIMAL_MAP.get(chain)
+  if (chainDecimal !== undefined && asset.type === 0 /* AssetType.NATIVE */) {
+    return Promise.resolve(chainDecimal)
+  }
+
+  // Check hardcoded token decimal map (reliable, no network dependency)
+  const tokenDecimal = getTokenDecimal(chain, asset.symbol)
+  if (tokenDecimal !== null) {
+    return Promise.resolve(tokenDecimal)
+  }
+
+  // For native assets not in chain map, use chain default if available
   if (chainDecimal !== undefined) {
     return Promise.resolve(chainDecimal)
   }

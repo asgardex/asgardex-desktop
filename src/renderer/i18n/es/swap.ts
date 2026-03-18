@@ -26,6 +26,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     'La comisión de salida de {fee} debe cubrirse con el importe recibido (actualmente {amount}).',
   'swap.errors.amount.thornodeQuoteError': '{error} : Ajustar el deslizamiento o la cantidad de entrada',
+  'swap.previewOnly': 'Preview Only',
+  'swap.previewAndSwap': 'Preview & Swap',
   'swap.note.lockedWallet': 'Necesitas desbloquear tu monedero para intercambiar',
   'swap.note.nowallet': 'Crear o importar un monedero para intercambiar',
   'swap.errors.asset.missingSourceAsset': 'Falta el activo de origen',

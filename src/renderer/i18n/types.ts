@@ -713,6 +713,8 @@ type SwapMessageKey =
   | 'swap.errors.amount.outputShouldCoverChainFee'
   | 'swap.errors.amount.thornodeQuoteError'
   | 'swap.errors.pool.notAvailable'
+  | 'swap.previewOnly'
+  | 'swap.previewAndSwap'
   | 'swap.note.lockedWallet'
   | 'swap.note.nowallet'
   | 'swap.min.amount.info'

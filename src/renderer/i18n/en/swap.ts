@@ -25,6 +25,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     'Outbounding fee of {fee} needs to be covered by receiving amount (currently {amount}).',
   'swap.errors.amount.thornodeQuoteError': '{error} : Adjust slip or Input Amount',
+  'swap.previewOnly': 'Preview Only',
+  'swap.previewAndSwap': 'Preview & Swap',
   'swap.note.lockedWallet': 'You need to unlock your wallet to swap',
   'swap.note.nowallet': 'Create or import a wallet to swap',
   'swap.errors.asset.missingSourceAsset': 'Missing source asset',
