@@ -132,7 +132,7 @@ export const useSwapConfirmationModals = ({
   const renderLedgerConfirmationModal = useMemo(() => {
     const visible = showLedgerModal === ModalState.Swap || showLedgerModal === ModalState.Approve
     const onClose = () => setShowLedgerModal(ModalState.None)
-    const onSucceess = () => {
+    const onSuccess = () => {
       if (showLedgerModal === ModalState.Swap && O.isSome(oSwapParams)) {
         submitSwapTx()
       } else if (showLedgerModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
@@ -153,7 +153,7 @@ export const useSwapConfirmationModals = ({
       <LedgerConfirmationModal
         key="leder-conf-modal"
         network={network}
-        onSuccess={onSucceess}
+        onSuccess={onSuccess}
         onClose={onClose}
         visible={visible}
         chain={sourceChain}

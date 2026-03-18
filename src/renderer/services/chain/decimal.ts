@@ -115,7 +115,7 @@ export const getDecimal = (
     return Promise.resolve(tokenDecimal)
   }
 
-  // For native assets not in chain map, use chain default if available
+  // Fallback: use chain decimal for any remaining asset type on this chain
   if (chainDecimal !== undefined) {
     return Promise.resolve(chainDecimal)
   }

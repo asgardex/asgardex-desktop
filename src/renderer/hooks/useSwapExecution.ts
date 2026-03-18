@@ -5,6 +5,7 @@ import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import {
   AnyAsset,
   BaseAmount,
+  baseAmount,
   isTokenAsset,
   isTradeAsset,
   isSynthAsset,
@@ -113,7 +114,10 @@ export const useSwapExecution = ({
           !isRujiAsset(sourceAsset)
         ) {
           if (sourceChainBalance.lt(amountToSwapAdjusted.plus(swapFees.inFee.amount))) {
-            amountToSwapAdjusted = sourceChainBalance.minus(swapFees.inFee.amount)
+            const adjusted = sourceChainBalance.minus(swapFees.inFee.amount)
+            amountToSwapAdjusted = adjusted.gt(baseAmount(0, adjusted.decimal))
+              ? adjusted
+              : baseAmount(0, adjusted.decimal)
           }
         }
 
@@ -180,7 +184,10 @@ export const useSwapExecution = ({
           !isSecuredAsset(sourceAsset)
         ) {
           if (sourceChainBalance.lt(amountToSwapAdjusted.plus(swapFees.inFee.amount))) {
-            amountToSwapAdjusted = sourceChainBalance.minus(swapFees.inFee.amount)
+            const adjusted = sourceChainBalance.minus(swapFees.inFee.amount)
+            amountToSwapAdjusted = adjusted.gt(baseAmount(0, adjusted.decimal))
+              ? adjusted
+              : baseAmount(0, adjusted.decimal)
           }
         }
 

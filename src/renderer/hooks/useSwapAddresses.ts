@@ -11,6 +11,7 @@ import { ASGARDEX_TO_SDK_CHAIN } from '../../shared/api/mpcTypes'
 import { isLedgerWallet } from '../../shared/utils/guard'
 import { HDMode, WalletType } from '../../shared/wallet/types'
 import { useWalletContext } from '../contexts/WalletContext'
+import { logger } from '../helpers/logger'
 import { isStandaloneLedgerMode, isVultisigMode } from '../services/wallet/types'
 
 type UseSwapAddressesParams = {
@@ -141,7 +142,8 @@ export const useSwapAddresses = ({
           } else {
             setStandaloneLedgerTargetAddress(O.none)
           }
-        } catch {
+        } catch (error) {
+          logger.error('[useSwapAddresses] Failed to fetch standalone ledger address', error)
           setStandaloneLedgerTargetAddress(O.none)
         } finally {
           setIsFetchingStandaloneLedgerAddress(false)
