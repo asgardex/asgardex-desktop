@@ -25,8 +25,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     'Auszahlungsgebühr in Höhe von {fee} ist nicht über den zu erwartenden Auszahlungsbetrag (momentan {amount}) gedeckt',
   'swap.errors.amount.thornodeQuoteError': '{error} : Passe den Slip oder den Eingabebetrag an',
-  'swap.previewOnly': 'Preview Only',
-  'swap.previewAndSwap': 'Preview & Swap',
+  'swap.previewOnly': 'Nur Vorschau',
+  'swap.previewAndSwap': 'Vorschau & Tauschen',
   'swap.note.lockedWallet': 'Entsperre Deine Wallet, um zu tauschen',
   'swap.note.nowallet': 'Erstelle oder importiere eine Wallet, um zu Swappen',
   'swap.errors.asset.missingSourceAsset': 'Ursprungs-Asset nicht vorhanden',
