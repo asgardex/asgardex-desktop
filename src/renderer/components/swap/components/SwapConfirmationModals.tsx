@@ -197,16 +197,15 @@ export const useSwapConfirmationModals = ({
 
   // Track Vultisig signing session
   const vultisigSessionRef = useRef(false)
-  if (showVultisigModal !== ModalState.None && useSourceAssetVultisig && !vultisigSessionRef.current) {
-    vultisigSessionRef.current = true
-    logger.info('Vultisig signing session started (sync)')
-  }
   useEffect(() => {
-    if (showVultisigModal === ModalState.None && vultisigSessionRef.current) {
+    if (showVultisigModal !== ModalState.None && useSourceAssetVultisig && !vultisigSessionRef.current) {
+      vultisigSessionRef.current = true
+      logger.info('Vultisig signing session started (sync)')
+    } else if (showVultisigModal === ModalState.None && vultisigSessionRef.current) {
       logger.info('Vultisig signing session ended')
       vultisigSessionRef.current = false
     }
-  }, [showVultisigModal])
+  }, [showVultisigModal, useSourceAssetVultisig])
 
   const shouldRenderVultisigModal = vultisigSessionRef.current || useSourceAssetVultisig
   const renderVultisigConfirmationModal = shouldRenderVultisigModal ? (

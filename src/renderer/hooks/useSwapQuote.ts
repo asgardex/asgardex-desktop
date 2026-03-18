@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import {
   AnyAsset,
@@ -57,6 +57,7 @@ export const useSwapQuote = ({
 }: UseSwapQuoteParams): UseSwapQuoteResult => {
   const { estimateSwap, protocols, isBoostEnabled } = useAggregator()
 
+  const requestIdRef = useRef(0)
   const [quotes, setQuotes] = useState<O.Option<ExtendedQuoteSwap[]>>(O.none)
   const [selectedQuote, setSelectedQuote] = useState<O.Option<ExtendedQuoteSwap>>(O.none)
   const [quoteError, setQuoteError] = useState<O.Option<Error>>(O.none)
@@ -106,6 +107,8 @@ export const useSwapQuote = ({
       setSelectedQuote(O.none)
       setIsFetching(true)
 
+      const currentRequestId = ++requestIdRef.current
+
       try {
         logger.debug('[useSwapQuote] fetchQuote amount:', {
           amountBase: amount.amount().toString(),
@@ -129,6 +132,10 @@ export const useSwapQuote = ({
         }
 
         const result = await estimateSwap({ ...swapParams, enableBoost: isBoostEnabled }, applyBps)
+
+        // Discard stale response if a newer request was fired
+        if (currentRequestId !== requestIdRef.current) return
+
         const allQuotes: ExtendedQuoteSwap[] = result.map(
           (quote) =>
             ({
@@ -160,6 +167,9 @@ export const useSwapQuote = ({
           allQuotes.map((q) => q.protocol)
         )
       } catch (err) {
+        // Discard stale error if a newer request was fired
+        if (currentRequestId !== requestIdRef.current) return
+
         logger.error('Failed to fetch estimate:', err)
 
         let errorToSet: Error

@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { Network } from '@xchainjs/xchain-client'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import {
@@ -219,7 +218,6 @@ export const useSwapExecution = ({
           walletAccount: finalWalletAccount,
           walletIndex: finalWalletIndex,
           hdMode: finalHDMode,
-          protocol: quoteSwap.protocol as Protocol,
           sendMax: isSourceUTXO ? isSendMax : undefined
         }
       })
