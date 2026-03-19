@@ -26,6 +26,8 @@ const swap: SwapMessages = {
     'प्राप्त राशि द्वारा कवर किया जाने वाला आउटबाउंडिंग शुल्क {fee} (वर्तमान में {amount})।',
   'swap.errors.amount.thornodeQuoteError': '{error} : स्लिप या इनपुट राशि समायोजित करें',
   'swap.errors.pool.notAvailable': 'पूल उपलब्ध नहीं है {pool}',
+  'swap.previewOnly': 'केवल पूर्वावलोकन',
+  'swap.previewAndSwap': 'पूर्वावलोकन और स्वैप',
   'swap.note.lockedWallet': 'स्वैप करने के लिए आपको अपने वॉलेट को अनलॉक करने की आवश्यकता है',
   'swap.note.nowallet': 'स्वैप करने के लिए वॉलेट बनाएं या आयात करें',
   'swap.errors.asset.missingSourceAsset': 'स्रोत संपत्ति गायब है',
@@ -36,6 +38,12 @@ const swap: SwapMessages = {
   'swap.min.result.protected': 'सुरक्षित स्वैप परिणाम',
   'swap.address.evm.warning': 'स्मार्ट कॉन्ट्रैक्ट पतों पर स्वैप न करें',
   'swap.synth.warning':
-    'Synth मिंटिंग बंद कर दी गई है। Synth रिडेम्प्शन अगले 3 महीनों तक उपलब्ध रहेगा — कृपया समय रहते रिडीम कर लें।'
+    'Synth मिंटिंग बंद कर दी गई है। Synth रिडेम्प्शन अगले 3 महीनों तक उपलब्ध रहेगा — कृपया समय रहते रिडीम कर लें।',
+  'swap.mode.limit': 'लिमिट',
+  'swap.mode.fast': 'तेज़',
+  'swap.mode.balanced': 'संतुलित',
+  'swap.mode.bestPrice': 'सर्वश्रेष्ठ मूल्य',
+  'swap.settings.subSwaps.auto': 'ऑटो स्वैप संख्या',
+  'swap.settings.subSwaps.limit': 'लिमिट स्वैप'
 }
 export default swap

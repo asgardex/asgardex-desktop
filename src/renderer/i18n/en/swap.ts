@@ -25,6 +25,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     'Outbounding fee of {fee} needs to be covered by receiving amount (currently {amount}).',
   'swap.errors.amount.thornodeQuoteError': '{error} : Adjust slip or Input Amount',
+  'swap.previewOnly': 'Preview Only',
+  'swap.previewAndSwap': 'Preview & Swap',
   'swap.note.lockedWallet': 'You need to unlock your wallet to swap',
   'swap.note.nowallet': 'Create or import a wallet to swap',
   'swap.errors.asset.missingSourceAsset': 'Missing source asset',
@@ -36,7 +38,13 @@ const swap: SwapMessages = {
   'swap.min.result.protected': 'Protected swap result',
   'swap.address.evm.warning': 'Do NOT swap to Smart Contract addresses',
   'swap.synth.warning':
-    'Synth minting has been discontinued. Synth redemption will remain available for the next 3 months — please redeem while you can.'
+    'Synth minting has been discontinued. Synth redemption will remain available for the next 3 months — please redeem while you can.',
+  'swap.mode.limit': 'Limit',
+  'swap.mode.fast': 'Fast',
+  'swap.mode.balanced': 'Balanced',
+  'swap.mode.bestPrice': 'Best Price',
+  'swap.settings.subSwaps.auto': 'Auto swap count',
+  'swap.settings.subSwaps.limit': 'Limit swap'
 }
 
 export default swap

@@ -25,6 +25,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     'Исходящая комиссия {fee} должна покрываться получаемым количеством (сейчас {amount}).',
   'swap.errors.amount.thornodeQuoteError': '{error} : Настроить чек или ввести сумму',
+  'swap.previewOnly': 'Только просмотр',
+  'swap.previewAndSwap': 'Просмотр и обмен',
   'swap.note.lockedWallet': 'Для обмена необходимо разблокировать кошелек',
   'swap.note.nowallet': 'Для обмена создайте или импортируйте кошелек',
   'swap.errors.asset.missingSourceAsset': 'Исходный актив не поддерживается',
@@ -37,7 +39,13 @@ const swap: SwapMessages = {
   'swap.min.result.protected': 'Результат защищённого обмена',
   'swap.address.evm.warning': 'НЕ обменивайте на адреса Смарт-контрактов',
   'swap.synth.warning':
-    'Выпуск Synth больше не доступен. Обмен Synth будет возможен ещё в течение 3 месяцев — пожалуйста, воспользуйтесь этой возможностью заранее.'
+    'Выпуск Synth больше не доступен. Обмен Synth будет возможен ещё в течение 3 месяцев — пожалуйста, воспользуйтесь этой возможностью заранее.',
+  'swap.mode.limit': 'Лимит',
+  'swap.mode.fast': 'Быстро',
+  'swap.mode.balanced': 'Сбалансированно',
+  'swap.mode.bestPrice': 'Лучшая цена',
+  'swap.settings.subSwaps.auto': 'Авто количество свопов',
+  'swap.settings.subSwaps.limit': 'Лимит своп'
 }
 
 export default swap

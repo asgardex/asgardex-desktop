@@ -714,6 +714,8 @@ type SwapMessageKey =
   | 'swap.errors.amount.outputShouldCoverChainFee'
   | 'swap.errors.amount.thornodeQuoteError'
   | 'swap.errors.pool.notAvailable'
+  | 'swap.previewOnly'
+  | 'swap.previewAndSwap'
   | 'swap.note.lockedWallet'
   | 'swap.note.nowallet'
   | 'swap.min.amount.info'
@@ -721,6 +723,12 @@ type SwapMessageKey =
   | 'swap.min.result.protected'
   | 'swap.address.evm.warning'
   | 'swap.synth.warning'
+  | 'swap.mode.limit'
+  | 'swap.mode.fast'
+  | 'swap.mode.balanced'
+  | 'swap.mode.bestPrice'
+  | 'swap.settings.subSwaps.auto'
+  | 'swap.settings.subSwaps.limit'
 
 export type SwapMessages = { [key in SwapMessageKey]: string }
 
