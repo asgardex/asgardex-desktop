@@ -25,6 +25,7 @@ const wallet: WalletMessages = {
   'wallet.action.import': '가져오기',
   'wallet.action.create': '생성',
   'wallet.action.deposit': '예치',
+  'wallet.action.saveBalancesJson': 'JSON 잔액 저장',
   'wallet.balance.total.poolAssets': '지갑 자산의 총 잔액',
   'wallet.balance.total.portfolio': '포트폴리오 총 잔액',
   'wallet.balance.total.poolAssets.info':

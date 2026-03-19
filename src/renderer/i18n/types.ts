@@ -361,6 +361,7 @@ type WalletMessageKey =
   | 'wallet.action.import'
   | 'wallet.action.create'
   | 'wallet.action.deposit'
+  | 'wallet.action.saveBalancesJson'
   | 'wallet.balance.total.poolAssets'
   | 'wallet.balance.total.portfolio'
   | 'wallet.balance.total.poolAssets.info'

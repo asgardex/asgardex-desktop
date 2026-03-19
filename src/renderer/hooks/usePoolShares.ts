@@ -18,7 +18,7 @@ import { PoolShares } from '../services/midgard/midgardTypes'
 import { userChains$ } from '../services/storage/userChains'
 import { ledgerAddressToWalletAddress } from '../services/wallet/util'
 
-export const usePoolShares = (protocol: Chain) => {
+export const usePoolShares = (protocol: Chain, enabled = true) => {
   const {
     service: {
       pools: { reloadAllPools },
@@ -44,6 +44,10 @@ export const usePoolShares = (protocol: Chain) => {
   const [allSharesRD, setAllSharesRD] = useState<RD.RemoteData<Error, PoolShares>>(RD.initial)
 
   useEffect(() => {
+    if (!enabled) {
+      setAllSharesRD(RD.initial)
+      return
+    }
     const subscription = userChains$
       .pipe(
         RxOp.switchMap((enabledChains) => {
@@ -75,7 +79,15 @@ export const usePoolShares = (protocol: Chain) => {
       .subscribe(setAllSharesRD)
 
     return () => subscription.unsubscribe()
-  }, [protocol, allSharesByAddresses$, allSharesByAddressesMaya$, addressByChain$, INCLUDED_CHAINS, getLedgerAddress$])
+  }, [
+    protocol,
+    enabled,
+    allSharesByAddresses$,
+    allSharesByAddressesMaya$,
+    addressByChain$,
+    INCLUDED_CHAINS,
+    getLedgerAddress$
+  ])
 
   const reload = useCallback(() => {
     if (protocol === THORChain) {

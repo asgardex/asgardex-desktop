@@ -2,6 +2,7 @@ import { either as E } from 'fp-ts'
 
 import { PoolsStorageEncoded } from '../api/io'
 import {
+  ApiExport,
   ApiLang,
   ApiKeystore,
   ApiUrl,
@@ -25,6 +26,11 @@ export const apiKeystore: ApiKeystore = {
   exportKeystore: (_: IPCExportKeystoreParams) => Promise.resolve(),
   load: () => Promise.resolve(MOCK_KEYSTORE),
   initKeystoreWallets: () => Promise.resolve(E.right([]))
+}
+
+// Mock `apiExport`
+export const apiExport: ApiExport = {
+  saveBalancesJson: (_) => Promise.resolve()
 }
 
 // Mock `apiLang`

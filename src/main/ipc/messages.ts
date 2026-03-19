@@ -28,7 +28,9 @@ enum IPCMessages {
   SAVE_FILE_ = 'SAVE_FILE_',
   GET_FILE_ = 'GET_FILE_',
   FILE_EXIST_ = 'FILE_EXIST_',
-  REMOVE_FILE_ = 'REMOVE_FILE_'
+  REMOVE_FILE_ = 'REMOVE_FILE_',
+  // Balances JSON export
+  SAVE_BALANCES_JSON = 'SAVE_BALANCES_JSON'
   /**
    * IPC File interaction messages templates end
    */

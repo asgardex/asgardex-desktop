@@ -25,6 +25,7 @@ const wallet: WalletMessages = {
   'wallet.action.import': 'Import',
   'wallet.action.create': 'Create',
   'wallet.action.deposit': 'Deposit',
+  'wallet.action.saveBalancesJson': 'Save JSON Balances',
   'wallet.balance.total.poolAssets': 'Total balance of wallet assets',
   'wallet.balance.total.portfolio': 'Total Portfolio Balance',
   'wallet.balance.total.poolAssets.info':

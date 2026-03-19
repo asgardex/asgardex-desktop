@@ -12,13 +12,15 @@ import {
   ipcKeystoreWalletsIO,
   ipcLedgerApproveERC20TokenParamsIO,
   ipcLedgerDepositTxParamsIO,
-  ipcLedgerSendTxParamsIO
+  ipcLedgerSendTxParamsIO,
+  ipcSaveBalancesJsonParamsIO
 } from '../shared/api/io'
 import type { IPCExportKeystoreParams, IPCLedgerAddressParams, StoreFileName } from '../shared/api/types'
 import { DEFAULT_STORAGES } from '../shared/const'
 import type { Locale } from '../shared/i18n/types'
 import { registerAppCheckUpdatedHandler } from './api/appUpdate'
 import { getFileStoreService } from './api/fileStore'
+import { saveBalancesJson } from './api/export'
 import { exportKeystore, initKeystoreWallets, loadKeystore, saveKeystoreWallets } from './api/keystore'
 import {
   getAddress as getLedgerAddress,
@@ -194,6 +196,15 @@ const initIPC = () => {
     )
   })
   ipcMain.handle(IPCMessages.EXPORT_KEYSTORE, async (_, params: IPCExportKeystoreParams) => exportKeystore(params))
+  ipcMain.handle(IPCMessages.SAVE_BALANCES_JSON, async (_, params: unknown) =>
+    FP.pipe(
+      ipcSaveBalancesJsonParamsIO.decode(params),
+      E.fold(
+        (e) => Promise.reject(e),
+        (p) => saveBalancesJson(p)
+      )
+    )
+  )
   ipcMain.handle(IPCMessages.LOAD_KEYSTORE, async () => loadKeystore())
   ipcMain.handle(IPCMessages.INIT_KEYSTORE_WALLETS, async () => initKeystoreWallets())
   // Url
