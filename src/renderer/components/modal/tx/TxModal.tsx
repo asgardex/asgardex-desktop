@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { function as FP } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { ApiError } from '../../../services/wallet/types'
@@ -9,8 +9,12 @@ import { ErrorView } from '../../shared/error'
 import { Button, ButtonProps } from '../../uielements/button'
 import { Modal } from '../../uielements/modal'
 import { TxTimer } from '../../uielements/txTimer'
+import { getTxTitle } from './TxModal.helpers'
+import { TxModalProps } from './TxModal.types'
+import { TxActions, TxAssetDisplay, TxStatusIndicator, TxStepProgress } from './sections'
 
-type Props = {
+// ── Legacy props (backward-compatible) ──────────────────────────────
+type LegacyProps = {
   txRD: RD.RemoteData<ApiError, boolean>
   timerValue?: number
   title: string
@@ -22,7 +26,11 @@ type Props = {
   extraResult?: React.ReactNode
 }
 
-export const TxModal = (props: Props): JSX.Element => {
+/**
+ * Legacy TxModal — kept for backward compatibility during migration.
+ * Consumers that haven't been migrated yet still use this interface.
+ */
+export const TxModal = (props: LegacyProps): JSX.Element => {
   const { title, txRD, startTime, onClose, onFinish, extra = <></>, extraResult, timerValue = NaN } = props
 
   const intl = useIntl()
@@ -36,7 +44,6 @@ export const TxModal = (props: Props): JSX.Element => {
             () => <TxTimer status={true} />,
             () => <TxTimer status={true} maxValue={100} value={timerValue} startTime={startTime} />,
             (error) => (
-              // Show full error message without truncation
               <ErrorView
                 className="max-w-full overflow-auto p-2 text-sm leading-normal break-all whitespace-pre-wrap"
                 subTitle={error?.msg || intl.formatMessage({ id: 'common.error' })}
@@ -91,6 +98,102 @@ export const TxModal = (props: Props): JSX.Element => {
         {renderExtra}
       </div>
       {renderResult}
+    </Modal>
+  )
+}
+
+// ── New unified TxModal ─────────────────────────────────────────────
+
+/**
+ * Unified TxModal — owns the rendering of transaction content.
+ * Replaces per-consumer boilerplate for timer, asset display, and actions.
+ */
+export const UnifiedTxModal = (props: TxModalProps): JSX.Element => {
+  const {
+    txRD,
+    timerValue = NaN,
+    startTime,
+    txConfig,
+    title: titleProp,
+    txHash,
+    getExplorerTxUrl,
+    openExplorerTxUrl,
+    network,
+    trackable = false,
+    onClose,
+    onFinish,
+    extraContent
+  } = props
+
+  const intl = useIntl()
+
+  const title = titleProp ?? getTxTitle(txConfig, intl)
+
+  // Derive step description for asset display
+  const stepDescription = useMemo(() => {
+    switch (txConfig.type) {
+      case 'deposit':
+      case 'symDeposit':
+        return FP.pipe(
+          txRD,
+          RD.fold(
+            () => '',
+            () =>
+              `${intl.formatMessage(
+                { id: 'common.step' },
+                { current: txConfig.steps.current, total: txConfig.steps.total }
+              )}: ${txConfig.stepDescriptions[txConfig.steps.current - 1] || ''}`,
+            () => '',
+            () => `${intl.formatMessage({ id: 'common.done' })}!`
+          )
+        )
+      default:
+        return undefined
+    }
+  }, [txConfig, txRD, intl])
+
+  // Determine protocol and channelId for actions
+  const protocol = useMemo(() => (txConfig.type === 'swap' ? (txConfig.protocol ?? O.none) : O.none), [txConfig])
+  const channelId = useMemo(() => (txConfig.type === 'swap' ? (txConfig.channelId ?? O.none) : O.none), [txConfig])
+
+  // Show step progress for multi-step flows
+  const hasSteps = txConfig.type === 'deposit' || txConfig.type === 'symDeposit'
+
+  return (
+    <Modal panelClassName="!max-w-[460px]" visible title={title} onCancel={onClose}>
+      <div className="flex w-full flex-col items-center justify-center border-b border-gray0 pb-8 dark:border-gray0d">
+        {/* Status indicator (timer / error / success) */}
+        <TxStatusIndicator txRD={txRD} timerValue={timerValue} startTime={startTime} />
+
+        {/* Step progress bar for multi-step flows */}
+        {hasSteps && (
+          <TxStepProgress
+            current={txConfig.steps.current}
+            total={txConfig.steps.total}
+            descriptions={txConfig.stepDescriptions}
+          />
+        )}
+
+        {/* Asset display */}
+        <TxAssetDisplay txConfig={txConfig} network={network} stepDescription={stepDescription} />
+
+        {/* Escape hatch for custom content */}
+        {extraContent && <div className="flex w-full items-center justify-center pt-4">{extraContent}</div>}
+      </div>
+
+      {/* Actions: finish button + view/track transaction */}
+      <TxActions
+        txRD={txRD}
+        txHash={txHash}
+        getExplorerTxUrl={getExplorerTxUrl}
+        openExplorerTxUrl={openExplorerTxUrl}
+        network={network}
+        trackable={trackable}
+        protocol={protocol}
+        channelId={channelId}
+        onClose={onClose}
+        onFinish={onFinish}
+      />
     </Modal>
   )
 }

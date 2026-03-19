@@ -92,7 +92,6 @@ import { useCoingecko } from '../../store/gecko/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
 import { GECKO_MAP } from '../../types/generated/geckoMap'
 import { ProviderModal } from '../modal/provider'
-import { SwapAssets } from '../modal/tx/extra'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton } from '../uielements/button'
 import { UIFeesRD } from '../uielements/fees'
@@ -1293,34 +1292,11 @@ export const Swap = ({
     [activeMode, streamingInterval, streamingQuantity, setMode, setQuantity, resetToDefault]
   )
 
-  const extraTxModalContent = useMemo(() => {
-    const { swapTx } = swapState
-    if (RD.isInitial(swapTx)) return <></>
-
-    const stepLabel = FP.pipe(
-      swapTx,
-      RD.fold(
-        () => '',
-        () => intl.formatMessage({ id: 'common.tx.sending' }),
-        () => '',
-        () => intl.formatMessage({ id: 'swap.state.success' })
-      )
-    )
-
-    return (
-      <SwapAssets
-        key="swap-assets"
-        source={{ asset: sourceAsset, amount: amountToSwap }}
-        target={{
-          asset: targetAsset,
-          amount: swapResultAmountMax.baseAmount
-        }}
-        stepDescription={stepLabel}
-        network={network}
-      />
-    )
-  }, [swapState, sourceAsset, amountToSwap, targetAsset, swapResultAmountMax.baseAmount, network, intl])
-
+  const swapTxSource = useMemo(() => ({ asset: sourceAsset, amount: amountToSwap }), [sourceAsset, amountToSwap])
+  const swapTxTarget = useMemo(
+    () => ({ asset: targetAsset, amount: swapResultAmountMax.baseAmount }),
+    [targetAsset, swapResultAmountMax.baseAmount]
+  )
   const onCloseTxModal = useCallback(() => {
     resetSwapState()
   }, [resetSwapState])
@@ -2067,7 +2043,8 @@ export const Swap = ({
           swapState={swapState}
           swapStartTime={swapStartTime}
           sourceChain={sourceChain}
-          extraTxModalContent={extraTxModalContent}
+          source={swapTxSource}
+          target={swapTxTarget}
           oQuoteProtocol={oQuoteProtocol}
           goToTransaction={openExplorerResolved.openExplorerTxUrl}
           getExplorerTxUrl={openExplorerResolved.getExplorerTxUrl}

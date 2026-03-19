@@ -102,10 +102,10 @@ import {
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { AssetWithAmount, SlipTolerance } from '../../types/asgardex'
-import { TxModal } from '../modal/tx'
-import { SwapAssets } from '../modal/tx/extra'
+import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
+import { UnifiedTxModal, getTxTimerValue, txHashRDToBoolean, extractTxHash } from '../modal/tx'
 import { AssetInput } from '../uielements/assets/assetInput'
-import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
+import { BaseButton, FlatButton } from '../uielements/button'
 import { Collapse } from '../uielements/collapse'
 import { InfoIcon } from '../uielements/info'
 import { CopyLabel } from '../uielements/label'
@@ -1354,33 +1354,14 @@ export const TradeSwap = ({
     )
   }, [isStreaming, swapSlippage, swapStreamingSlippage])
 
-  const extraTxModalContent = useMemo(() => {
-    const { swapTx } = swapState
-    // don't render TxModal in initial state
-    if (RD.isInitial(swapTx)) return <></>
-    const stepLabel = FP.pipe(
-      swapState.swapTx,
-      RD.fold(
-        () => '',
-        () => `${intl.formatMessage({ id: 'common.tx.sending' })}`,
-        () => '',
-        () => 'Sent!'
-      )
-    )
-
-    return (
-      <SwapAssets
-        key="swap-assets"
-        source={{ asset: sourceAsset, amount: amountToSwapMax1e8 }}
-        target={{
-          asset: targetAsset,
-          amount: swapResultAmountMax.baseAmount
-        }}
-        stepDescription={stepLabel}
-        network={network}
-      />
-    )
-  }, [swapState, sourceAsset, amountToSwapMax1e8, targetAsset, swapResultAmountMax.baseAmount, network, intl])
+  const swapTxSource = useMemo(
+    () => ({ asset: sourceAsset, amount: amountToSwapMax1e8 }),
+    [sourceAsset, amountToSwapMax1e8]
+  )
+  const swapTxTarget = useMemo(
+    () => ({ asset: targetAsset, amount: swapResultAmountMax.baseAmount }),
+    [targetAsset, swapResultAmountMax.baseAmount]
+  )
   // assuming on a unsuccessful tx that the swap state should remain the same
   const onCloseTxModal = useCallback(() => {
     resetSwapState()
@@ -1401,20 +1382,6 @@ export const TradeSwap = ({
     // don't render TxModal in initial state
     if (RD.isInitial(swapTx)) return <></>
 
-    // Get timer value
-    const timerValue = FP.pipe(
-      swapTx,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
-
     // title
     const txModalTitle = FP.pipe(
       swapTx,
@@ -1427,37 +1394,25 @@ export const TradeSwap = ({
       (id) => intl.formatMessage({ id })
     )
 
-    const oTxHash = FP.pipe(
-      RD.toOption(swapTx),
-      // Note: As long as we link to `viewblock` to open tx details in a browser,
-      // `0x` needs to be removed from tx hash in case of ETH
-      // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-      O.map((txHash) => (isEvmChain(sourceAsset.chain) ? txHash.replace(/0x/i, '') : txHash))
-    )
-
-    const txRDasBoolean = FP.pipe(
-      swapTx,
-      RD.map((txHash) => !!txHash)
-    )
     return (
-      <TxModal
+      <UnifiedTxModal
         title={txModalTitle}
         onClose={onCloseTxModal}
         onFinish={onFinishTxModal}
         startTime={swapStartTime}
-        txRD={txRDasBoolean}
-        extraResult={
-          <ViewTxButton
-            txHash={oTxHash}
-            onClick={goToTransaction}
-            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            network={network}
-            trackable={false}
-            protocol={O.some(protocol === THORChain ? 'Thorchain' : 'Mayachain')}
-          />
-        }
-        timerValue={timerValue}
-        extra={extraTxModalContent}
+        txRD={txHashRDToBoolean(swapTx)}
+        timerValue={getTxTimerValue(swapTx)}
+        txConfig={{
+          type: 'swap',
+          source: swapTxSource,
+          target: swapTxTarget,
+          protocol: O.some(protocol === THORChain ? 'Thorchain' : 'Mayachain')
+        }}
+        txHash={extractTxHash(swapTx, sourceAsset.chain)}
+        getExplorerTxUrl={getExplorerTxUrl}
+        openExplorerTxUrl={goToTransaction}
+        network={network}
+        trackable={false}
       />
     )
   }, [
@@ -1465,10 +1420,11 @@ export const TradeSwap = ({
     onCloseTxModal,
     onFinishTxModal,
     swapStartTime,
+    swapTxSource,
+    swapTxTarget,
     goToTransaction,
     getExplorerTxUrl,
     network,
-    extraTxModalContent,
     intl,
     sourceAsset.chain,
     protocol
