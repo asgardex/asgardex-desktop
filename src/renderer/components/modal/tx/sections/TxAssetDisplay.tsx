@@ -1,0 +1,123 @@
+import { useMemo } from 'react'
+
+import { ArrowsRightLeftIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { Network } from '@xchainjs/xchain-client'
+import { baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
+import { function as FP, option as O } from 'fp-ts'
+
+import { AssetData } from '../../../uielements/assets/assetData'
+import { Label } from '../../../uielements/label'
+import * as C from '../extra/Common.types'
+import { TxConfig } from '../TxModal.types'
+
+type Props = {
+  txConfig: TxConfig
+  network: Network
+  stepDescription?: string
+}
+
+const AssetRow = ({ data, network, size = 'big' }: { data: C.AssetData; network: Network; size?: 'small' | 'big' }) => (
+  <div className="flex w-full items-center justify-between px-10">
+    <AssetData asset={data.asset} network={network} size={size} className="flex w-full items-center justify-start" />
+    <Label className="text-3xl" align="right">
+      {formatAssetAmount({ amount: baseToAsset(data.amount), trimZeros: true })}
+    </Label>
+  </div>
+)
+
+const OptionalAssetRow = ({ oData, network }: { oData: O.Option<C.AssetData>; network: Network }) =>
+  FP.pipe(
+    oData,
+    O.fold(
+      () => <></>,
+      (data) => <AssetRow data={data} network={network} />
+    )
+  )
+
+const SwapDisplay = ({ source, target, network }: { source: C.AssetData; target: C.AssetData; network: Network }) => (
+  <div className="relative flex w-full flex-col items-center justify-center gap-1">
+    <AssetRow data={source} network={network} size="small" />
+    <div className="flex items-center justify-center">
+      <ArrowsRightLeftIcon className="h-8 w-8 rotate-90 text-gray1 dark:text-gray1d" />
+    </div>
+    <AssetRow data={target} network={network} size="small" />
+  </div>
+)
+
+const SingleAssetDisplay = ({ data, network }: { data: C.AssetData; network: Network }) => (
+  <div className="relative flex items-center justify-center">
+    <div className="flex flex-col px-5">
+      <AssetData size="big" asset={data.asset} amount={data.amount} network={network} />
+    </div>
+  </div>
+)
+
+const WithdrawDisplay = ({
+  source,
+  target,
+  network
+}: {
+  source: O.Option<C.AssetData>
+  target: C.AssetData
+  network: Network
+}) => (
+  <div className="relative flex flex-col items-center justify-center gap-5">
+    <OptionalAssetRow oData={source} network={network} />
+    {O.isSome(source) && (
+      <div className="flex items-center justify-center p-2">
+        <ArrowLeftIcon className="h-8 w-8 text-gray1 dark:text-gray1d" />
+      </div>
+    )}
+    <AssetRow data={target} network={network} />
+  </div>
+)
+
+export const TxAssetDisplay = ({ txConfig, network, stepDescription }: Props): JSX.Element => {
+  const content = useMemo(() => {
+    switch (txConfig.type) {
+      case 'swap':
+        return <SwapDisplay source={txConfig.source} target={txConfig.target} network={network} />
+
+      case 'send':
+      case 'interact':
+        return <SingleAssetDisplay data={txConfig.asset} network={network} />
+
+      case 'deposit':
+        return <SingleAssetDisplay data={txConfig.asset} network={network} />
+
+      case 'symDeposit':
+        return (
+          <div className="relative flex flex-col items-center justify-center gap-5">
+            <OptionalAssetRow oData={txConfig.source} network={network} />
+            <AssetRow data={txConfig.target} network={network} />
+          </div>
+        )
+
+      case 'withdraw':
+        return <WithdrawDisplay source={txConfig.source} target={txConfig.target} network={network} />
+
+      case 'claim':
+        return (
+          <div className="relative flex items-center justify-center">
+            <div className="flex flex-col px-5">
+              <OptionalAssetRow oData={txConfig.source} network={network} />
+            </div>
+          </div>
+        )
+    }
+  }, [txConfig, network])
+
+  return (
+    <div className="flex w-full flex-col items-center justify-center">
+      {stepDescription && (
+        <Label
+          size="small"
+          color="gray"
+          className="w-full px-[10px] pt-[10px] pb-[15px] text-center font-main uppercase">
+          {stepDescription}
+        </Label>
+      )}
+      {content}
+    </div>
+  )
+}

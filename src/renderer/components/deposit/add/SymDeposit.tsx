@@ -90,9 +90,7 @@ import {
 import { useApp } from '../../../store/app/hooks'
 import { AssetWithAmount, AssetsWithAmount1e8, AssetWithDecimal, AssetWithAmount1e8 } from '../../../types/asgardex'
 import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
-import { TxModal } from '../../modal/tx'
-import { DepositAssets } from '../../modal/tx/extra'
-import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
+import { UnifiedTxModal, getDepositTimerValue } from '../../modal/tx'
 import { Alert } from '../../uielements/alert'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetInput } from '../../uielements/assets/assetInput'
@@ -1306,93 +1304,37 @@ export const SymDeposit = (props: Props) => {
     return renderFeeError(Helper.minBalanceToDeposit(depositFees.asset), chainAssetBalance, getChainAsset(chain))
   }, [isAssetChainFeeError, isBalanceError, renderFeeError, depositFees.asset, chainAssetBalance, chain])
 
-  const txModalExtraContent = useMemo(() => {
-    const stepDescriptions = [
+  const symStepDescriptions = useMemo(
+    () => [
       intl.formatMessage({ id: 'common.tx.healthCheck' }),
       intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: asset.ticker }),
       intl.formatMessage({ id: 'common.tx.loadingSecondTx' }),
       intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: protocolAsset.ticker }),
       intl.formatMessage({ id: 'common.tx.checkResult' })
-    ]
+    ],
+    [intl, asset.ticker, protocolAsset.ticker]
+  )
 
-    const stepDescription = FP.pipe(
-      depositState.deposit,
-      RD.fold(
-        () => '',
-        () =>
-          `${intl.formatMessage(
-            { id: 'common.step' },
-            { current: depositState.step, total: depositState.stepsTotal }
-          )}: ${stepDescriptions[depositState.step - 1]}`,
-        () => '',
-        () => `${intl.formatMessage({ id: 'common.done' })}!`
-      )
-    )
-    return (
-      <DepositAssets
-        target={{ asset: protocolAsset, amount: dexAmountToDeposit }}
-        source={O.some({ asset, amount: assetAmountToDepositMax1e8 })}
-        stepDescription={stepDescription}
-        network={network}
-      />
-    )
-  }, [
-    intl,
-    asset,
-    protocolAsset,
-    depositState.deposit,
-    depositState.step,
-    depositState.stepsTotal,
-    dexAmountToDeposit,
-    assetAmountToDepositMax1e8,
-    network
-  ])
+  const asymRecoverySource = useMemo(
+    () =>
+      FP.pipe(
+        oFailedAssetAmount,
+        O.fold(
+          () => ({ asset: protocolAsset, amount: ZERO_BASE_AMOUNT }),
+          (failedAssetAmount) => ({ asset: failedAssetAmount.asset, amount: failedAssetAmount.amount1e8 })
+        )
+      ),
+    [oFailedAssetAmount, protocolAsset]
+  )
 
-  const txModalExtraContentAsym = useMemo(() => {
-    const source = FP.pipe(
-      oFailedAssetAmount,
-      O.fold(
-        // None case
-        () => ({ asset: protocolAsset, amount: ZERO_BASE_AMOUNT }),
-        // Some case
-        (failedAssetAmount) => ({ asset: failedAssetAmount.asset, amount: failedAssetAmount.amount1e8 })
-      )
-    )
-    const stepDescriptions = [
+  const asymStepDescriptions = useMemo(
+    () => [
       intl.formatMessage({ id: 'common.tx.healthCheck' }),
-      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: source.asset.ticker }),
+      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: asymRecoverySource.asset.ticker }),
       intl.formatMessage({ id: 'common.tx.checkResult' })
-    ]
-    const stepDescription = FP.pipe(
-      asymDepositState.deposit,
-      RD.fold(
-        () => '',
-        () =>
-          `${intl.formatMessage(
-            { id: 'common.step' },
-            { current: asymDepositState.step, total: asymDepositState.stepsTotal }
-          )}: ${stepDescriptions[asymDepositState.step - 1]}`,
-        () => '',
-        () => `${intl.formatMessage({ id: 'common.done' })}!`
-      )
-    )
-
-    return (
-      <DepositAsset
-        source={O.some({ asset: source.asset, amount: source.amount })}
-        stepDescription={stepDescription}
-        network={network}
-      />
-    )
-  }, [
-    oFailedAssetAmount,
-    intl,
-    asymDepositState.deposit,
-    asymDepositState.step,
-    asymDepositState.stepsTotal,
-    network,
-    protocolAsset
-  ])
+    ],
+    [intl, asymRecoverySource.asset.ticker]
+  )
 
   const onCloseTxModal = useCallback(() => {
     resetDepositState()
@@ -1412,19 +1354,6 @@ export const SymDeposit = (props: Props) => {
 
     // don't render TxModal in initial state
     if (RD.isInitial(depositRD)) return <></>
-    // Get timer value
-    const timerValue = FP.pipe(
-      depositRD,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
 
     // title
     const txModalTitle = FP.pipe(
@@ -1438,7 +1367,8 @@ export const SymDeposit = (props: Props) => {
       (id) => intl.formatMessage({ id })
     )
 
-    const extraResult = (
+    // Dual ViewTxButtons for sym deposit (asset + rune)
+    const symDepositExtraContent = (
       <div className="flex flex-col items-center justify-between">
         {FP.pipe(symDepositTxs.asset, RD.toOption, (oTxHash) => (
           <ViewTxButton
@@ -1461,15 +1391,25 @@ export const SymDeposit = (props: Props) => {
     )
 
     return (
-      <TxModal
+      <UnifiedTxModal
         title={txModalTitle}
         onClose={onCloseTxModal}
         onFinish={onFinishTxModal}
         startTime={depositStartTime}
         txRD={depositRD}
-        timerValue={timerValue}
-        extraResult={extraResult}
-        extra={txModalExtraContent}
+        timerValue={getDepositTimerValue(depositRD)}
+        txConfig={{
+          type: 'symDeposit',
+          source: O.some({ asset, amount: assetAmountToDepositMax1e8 }),
+          target: { asset: protocolAsset, amount: dexAmountToDeposit },
+          steps: { current: depositState.step, total: depositState.stepsTotal },
+          stepDescriptions: symStepDescriptions
+        }}
+        txHash={O.none}
+        getExplorerTxUrl={getAssetExplorerTxUrl}
+        openExplorerTxUrl={openAssetExplorerTxUrl}
+        network={network}
+        extraContent={symDepositExtraContent}
       />
     )
   }, [
@@ -1477,44 +1417,24 @@ export const SymDeposit = (props: Props) => {
     onCloseTxModal,
     onFinishTxModal,
     depositStartTime,
-    txModalExtraContent,
+    symStepDescriptions,
     intl,
+    asset,
+    assetAmountToDepositMax1e8,
+    protocolAsset,
+    dexAmountToDeposit,
     openAssetExplorerTxUrl,
     getAssetExplorerTxUrl,
-    asset.ticker,
     openRuneExplorerTxUrl,
     getRuneExplorerTxUrl,
-    protocolAsset
+    network
   ])
+
   const renderRecoverTxModal = useMemo(() => {
     const { deposit: depositRD, depositTx } = asymDepositState
 
     // don't render TxModal in initial state
     if (RD.isInitial(depositRD)) return <></>
-
-    const source = FP.pipe(
-      oFailedAssetAmount,
-      O.fold(
-        // None case
-        () => ({ asset: protocolAsset, amount: ZERO_BASE_AMOUNT }),
-        // Some case
-        (failedAssetAmount) => ({ asset: failedAssetAmount.asset, amount: failedAssetAmount.amount1e8 })
-      )
-    )
-
-    // Get timer value
-    const timerValue = FP.pipe(
-      depositRD,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
 
     // title
     const txModalTitle = FP.pipe(
@@ -1530,49 +1450,46 @@ export const SymDeposit = (props: Props) => {
 
     const oTxHash = FP.pipe(
       RD.toOption(depositTx),
-      // Note: As long as we link to `viewblock` to open tx details in a browser,
-      // `0x` needs to be removed from tx hash in case of ETH
-      // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
       O.map((txHash) => (isEvmChain(chain) ? txHash.replace(/0x/i, '') : txHash))
     )
 
+    const isRuneSource = protocolAsset === asymRecoverySource.asset
+
     return (
-      <TxModal
+      <UnifiedTxModal
         title={txModalTitle}
         onClose={onCloseTxModal}
         onFinish={onFinishTxModal}
         startTime={depositStartTime}
         txRD={depositRD}
-        timerValue={timerValue}
-        extraResult={
-          <ViewTxButton
-            txHash={oTxHash}
-            onClick={protocolAsset === source.asset ? openRuneExplorerTxUrl : openAssetExplorerTxUrl}
-            txUrl={FP.pipe(
-              oTxHash,
-              O.chain(protocolAsset === source.asset ? getRuneExplorerTxUrl : getAssetExplorerTxUrl)
-            )}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.ticker })}
-          />
-        }
-        extra={txModalExtraContentAsym}
+        timerValue={getDepositTimerValue(depositRD)}
+        txConfig={{
+          type: 'deposit',
+          asset: asymRecoverySource,
+          steps: { current: asymDepositState.step, total: asymDepositState.stepsTotal },
+          stepDescriptions: asymStepDescriptions
+        }}
+        txHash={oTxHash}
+        getExplorerTxUrl={isRuneSource ? getRuneExplorerTxUrl : getAssetExplorerTxUrl}
+        openExplorerTxUrl={isRuneSource ? openRuneExplorerTxUrl : openAssetExplorerTxUrl}
+        network={network}
       />
     )
   }, [
     asymDepositState,
-    oFailedAssetAmount,
+    asymRecoverySource,
+    asymStepDescriptions,
     onCloseTxModal,
     onFinishTxModal,
     depositStartTime,
     protocolAsset,
-    asset,
     openRuneExplorerTxUrl,
     openAssetExplorerTxUrl,
     getRuneExplorerTxUrl,
     getAssetExplorerTxUrl,
     intl,
-    txModalExtraContentAsym,
-    chain
+    chain,
+    network
   ])
 
   const submitDepositTx = useCallback(() => {

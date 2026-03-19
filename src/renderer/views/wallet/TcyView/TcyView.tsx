@@ -26,20 +26,23 @@ import { map, shareReplay, switchMap } from 'rxjs/operators'
 import { chainToString, getChainsForDex } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
-import { TxModal } from '../../../components/modal/tx'
-import { ClaimAsset } from '../../../components/modal/tx/extra'
-import { SendAsset } from '../../../components/modal/tx/extra/SendAsset'
+import {
+  UnifiedTxModal,
+  getTxTimerValue,
+  txHashRDToBoolean,
+  extractTxHash,
+  getDepositTimerValue
+} from '../../../components/modal/tx'
 import { WarningView } from '../../../components/shared/warning'
 import { AssetData } from '../../../components/uielements/assets/assetData'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
-import { FlatButton, RefreshButton, ViewTxButton } from '../../../components/uielements/button'
+import { FlatButton, RefreshButton } from '../../../components/uielements/button'
 import { CheckButton } from '../../../components/uielements/button/CheckButton'
 import { WalletTypeLabel, WalletTypeTinyLabel } from '../../../components/uielements/common'
 import { InputBigNumber } from '../../../components/uielements/input'
 import { Label } from '../../../components/uielements/label'
 import { Tooltip } from '../../../components/uielements/tooltip'
 import { AssetsNav } from '../../../components/wallet/assets'
-import { getInteractiveDescription } from '../../../components/wallet/txs/interact/Interact.helpers'
 import { validateTxAmountInput } from '../../../components/wallet/txs/TxForm.util'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
 import { useChainContext } from '../../../contexts/ChainContext'
@@ -578,48 +581,19 @@ export const TcyView = () => {
     // don't render TxModal in initial state
     if (RD.isInitial(txRD)) return <></>
 
-    // Get timer value
-    const timerValue = FP.pipe(
-      txRD,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
-    const oTxHash = RD.toOption(txRD)
-    const txRDasBoolean = FP.pipe(
-      txRD,
-      RD.map((txHash) => !!txHash)
-    )
-
     return (
-      <TxModal
+      <UnifiedTxModal
         title={intl.formatMessage({ id: 'common.tx.sending' })}
         onClose={resetStake}
         onFinish={resetStake}
         startTime={sendTxStartTime}
-        txRD={txRDasBoolean}
-        extraResult={
-          <ViewTxButton
-            txHash={oTxHash}
-            onClick={openRuneExplorerTxUrl}
-            txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
-            network={network}
-          />
-        }
-        timerValue={timerValue}
-        extra={
-          <SendAsset
-            asset={{ asset: sourceAsset, amount: sourceAmount }}
-            network={network}
-            description={getInteractiveDescription({ state: interactState, intl })}
-          />
-        }
+        txRD={txHashRDToBoolean(txRD)}
+        timerValue={getTxTimerValue(txRD)}
+        txConfig={{ type: 'interact', asset: { asset: sourceAsset, amount: sourceAmount } }}
+        txHash={extractTxHash(txRD)}
+        getExplorerTxUrl={getRuneExplorerTxUrl}
+        openExplorerTxUrl={openRuneExplorerTxUrl}
+        network={network}
       />
     )
   }, [
@@ -634,55 +608,11 @@ export const TcyView = () => {
     sourceAmount
   ])
 
-  const txModalExtraContent = useMemo(() => {
-    const stepDescriptions = [
-      intl.formatMessage({ id: 'common.tx.healthCheck' }),
-      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: sourceAsset.ticker }),
-      intl.formatMessage({ id: 'common.tx.checkResult' })
-    ]
-
-    const stepDescription = FP.pipe(
-      withdrawState.withdraw,
-      RD.fold(
-        () => '',
-        () =>
-          `${intl.formatMessage(
-            { id: 'common.step' },
-            { current: withdrawState.step, total: withdrawState.stepsTotal }
-          )}: ${stepDescriptions[withdrawState.step - 1]}`,
-        () => '',
-        () => `${intl.formatMessage({ id: 'common.done' })}!`
-      )
-    )
-
-    return (
-      <ClaimAsset
-        source={O.some({ asset: sourceAsset, amount: sourceAmount })}
-        stepDescription={stepDescription}
-        network={network}
-      />
-    )
-  }, [intl, sourceAsset, withdrawState.withdraw, withdrawState.step, withdrawState.stepsTotal, sourceAmount, network])
-
   const renderDepositTxModal = useMemo(() => {
     const { withdraw: withdrawRD, withdrawTx } = withdrawState
 
     // don't render TxModal in initial state
     if (RD.isInitial(withdrawRD)) return <></>
-
-    // Get timer value
-    const timerValue = FP.pipe(
-      withdrawRD,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
 
     // title
     const txModalTitle = FP.pipe(
@@ -696,41 +626,36 @@ export const TcyView = () => {
       (id) => intl.formatMessage({ id })
     )
 
-    const extraResult = (
-      <div className="flex flex-col items-center justify-between">
-        {FP.pipe(withdrawTx, RD.toOption, (oTxHash) => (
-          <ViewTxButton
-            className="pb-5"
-            txHash={oTxHash}
-            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: sourceAsset.ticker })}
-            onClick={openExplorerTxUrl}
-          />
-        ))}
-      </div>
-    )
+    const oTxHash = RD.toOption(withdrawTx)
 
     return (
-      <TxModal
+      <UnifiedTxModal
         title={txModalTitle}
         onClose={resetClaim}
         onFinish={resetClaim}
         startTime={depositStartTime}
         txRD={withdrawRD}
-        timerValue={timerValue}
-        extra={txModalExtraContent}
-        extraResult={extraResult}
+        timerValue={getDepositTimerValue(withdrawRD)}
+        txConfig={{
+          type: 'claim',
+          source: O.some({ asset: sourceAsset, amount: sourceAmount })
+        }}
+        txHash={oTxHash}
+        getExplorerTxUrl={getExplorerTxUrl}
+        openExplorerTxUrl={openExplorerTxUrl}
+        network={network}
       />
     )
   }, [
     withdrawState,
     resetClaim,
     depositStartTime,
-    txModalExtraContent,
     intl,
     getExplorerTxUrl,
-    sourceAsset.ticker,
-    openExplorerTxUrl
+    openExplorerTxUrl,
+    sourceAsset,
+    sourceAmount,
+    network
   ])
 
   const renderLedgerConfirmationModal = useMemo(() => {

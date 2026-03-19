@@ -28,16 +28,14 @@ import { INITIAL_INTERACT_STATE } from '../../../../../services/thorchain/const'
 import { InteractState, InteractStateHandler, ThorchainLastblockRD } from '../../../../../services/thorchain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../../modal/confirmation'
-import { TxModal } from '../../../../modal/tx'
-import { SendAsset } from '../../../../modal/tx/extra/SendAsset'
-import { BaseButton, FlatButton, ViewTxButton } from '../../../../uielements/button'
+import { UnifiedTxModal, getTxTimerValue, txHashRDToBoolean, extractTxHash } from '../../../../modal/tx'
+import { BaseButton, FlatButton } from '../../../../uielements/button'
 import { CheckButton } from '../../../../uielements/button/CheckButton'
 import { Fees, UIFees, UIFeesRD } from '../../../../uielements/fees'
 import { InfoIcon } from '../../../../uielements/info'
 import { Input } from '../../../../uielements/input'
 import { Label } from '../../../../uielements/label'
 import { Tooltip } from '../../../../uielements/tooltip'
-import * as H from '../Interact.helpers'
 import { NameDetailsCard } from './NameDetailsCard'
 import { QuoteState, estimateExpiry } from './types'
 
@@ -369,47 +367,22 @@ export const THORNameForm = ({
     const { txRD } = interactState
     if (RD.isInitial(txRD)) return <></>
 
-    const timerValue = FP.pipe(
-      txRD,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
-    const oTxHash = RD.toOption(txRD)
-    const txRDasBoolean = FP.pipe(
-      txRD,
-      RD.map((txHash) => !!txHash)
-    )
-
     return (
-      <TxModal
+      <UnifiedTxModal
         title={intl.formatMessage({ id: 'common.tx.sending' })}
         onClose={resetForm}
         onFinish={resetForm}
         startTime={sendTxStartTime}
-        txRD={txRDasBoolean}
-        extraResult={
-          <ViewTxButton
-            txHash={oTxHash}
-            onClick={openExplorerTxUrl}
-            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            network={network}
-          />
-        }
-        timerValue={timerValue}
-        extra={
-          <SendAsset
-            asset={{ asset, amount: quoteState.status === 'success' ? quoteState.amount : ZERO_BASE_AMOUNT }}
-            network={network}
-            description={H.getInteractiveDescription({ state: interactState, intl })}
-          />
-        }
+        txRD={txHashRDToBoolean(txRD)}
+        timerValue={getTxTimerValue(txRD)}
+        txConfig={{
+          type: 'interact',
+          asset: { asset, amount: quoteState.status === 'success' ? quoteState.amount : ZERO_BASE_AMOUNT }
+        }}
+        txHash={extractTxHash(txRD)}
+        getExplorerTxUrl={getExplorerTxUrl}
+        openExplorerTxUrl={openExplorerTxUrl}
+        network={network}
       />
     )
   }, [interactState, intl, resetForm, sendTxStartTime, openExplorerTxUrl, getExplorerTxUrl, asset, quoteState, network])
