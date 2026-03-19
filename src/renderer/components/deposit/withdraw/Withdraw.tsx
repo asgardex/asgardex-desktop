@@ -43,10 +43,11 @@ import { MimirHalt } from '../../../services/thorchain/types'
 import { ValidatePasswordHandler } from '../../../services/wallet/types'
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
-import { UnifiedTxModal, getDepositTimerValue } from '../../modal/tx'
+import { TxModal } from '../../modal/tx'
+import { DepositAssets } from '../../modal/tx/extra'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
-import { FlatButton } from '../../uielements/button'
+import { FlatButton, ViewTxButton } from '../../uielements/button'
 import { WalletTypeLabel } from '../../uielements/common'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
@@ -262,14 +263,46 @@ export const Withdraw = ({
   // Withdraw start time
   const [withdrawStartTime, setWithdrawStartTime] = useState<number>(0)
 
-  const withdrawStepDescriptions = useMemo(
-    () => [
+  const txModalExtraContent = useMemo(() => {
+    const stepDescriptions = [
       intl.formatMessage({ id: 'common.tx.healthCheck' }),
       intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: protocolAsset.ticker }),
       intl.formatMessage({ id: 'common.tx.checkResult' })
-    ],
-    [intl, protocolAsset.ticker]
-  )
+    ]
+    const stepDescription = FP.pipe(
+      withdrawState.withdraw,
+      RD.fold(
+        () => '',
+        () =>
+          `${intl.formatMessage(
+            { id: 'common.step' },
+            { current: withdrawState.step, total: withdrawState.stepsTotal }
+          )}: ${stepDescriptions[withdrawState.step - 1]}`,
+        () => '',
+        () => `${intl.formatMessage({ id: 'common.done' })}!`
+      )
+    )
+
+    return (
+      <DepositAssets
+        target={{ asset, amount: assetAmountToWithdraw }}
+        source={O.some({ asset: protocolAsset, amount: runeAmountToWithdraw })}
+        stepDescription={stepDescription}
+        network={network}
+        isWithdraw={true}
+      />
+    )
+  }, [
+    intl,
+    protocolAsset,
+    withdrawState.withdraw,
+    withdrawState.step,
+    withdrawState.stepsTotal,
+    asset,
+    assetAmountToWithdraw,
+    runeAmountToWithdraw,
+    network
+  ])
 
   const onFinishTxModal = useCallback(() => {
     resetWithdrawState()
@@ -283,6 +316,20 @@ export const Withdraw = ({
     // don't render TxModal in initial state
     if (RD.isInitial(withdrawRD)) return <></>
 
+    // Get timer value
+    const timerValue = FP.pipe(
+      withdrawRD,
+      RD.fold(
+        () => 0,
+        FP.flow(
+          O.map(({ loaded }) => loaded),
+          O.getOrElse(() => 0)
+        ),
+        () => 0,
+        () => 100
+      )
+    )
+
     // title
     const txModalTitle = FP.pipe(
       withdrawRD,
@@ -295,25 +342,30 @@ export const Withdraw = ({
       (id) => intl.formatMessage({ id })
     )
 
-    const oTxHash = RD.toOption(withdrawTx)
+    const extraResult = (
+      <div className="flex flex-col items-center justify-between">
+        {FP.pipe(withdrawTx, RD.toOption, (oTxHash) => (
+          <ViewTxButton
+            className="pb-5"
+            txHash={oTxHash}
+            txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: protocolAsset.ticker })}
+            onClick={openRuneExplorerTxUrl}
+          />
+        ))}
+      </div>
+    )
 
     return (
-      <UnifiedTxModal
+      <TxModal
         title={txModalTitle}
         onClose={resetWithdrawState}
         onFinish={onFinishTxModal}
         startTime={withdrawStartTime}
         txRD={withdrawRD}
-        timerValue={getDepositTimerValue(withdrawRD)}
-        txConfig={{
-          type: 'withdraw',
-          source: O.some({ asset: protocolAsset, amount: runeAmountToWithdraw }),
-          target: { asset, amount: assetAmountToWithdraw }
-        }}
-        txHash={oTxHash}
-        getExplorerTxUrl={getRuneExplorerTxUrl}
-        openExplorerTxUrl={openRuneExplorerTxUrl}
-        network={network}
+        timerValue={timerValue}
+        extraResult={extraResult}
+        extra={txModalExtraContent}
       />
     )
   }, [
@@ -321,14 +373,11 @@ export const Withdraw = ({
     resetWithdrawState,
     onFinishTxModal,
     withdrawStartTime,
+    txModalExtraContent,
     intl,
     openRuneExplorerTxUrl,
     getRuneExplorerTxUrl,
-    protocolAsset,
-    runeAmountToWithdraw,
-    asset,
-    assetAmountToWithdraw,
-    network
+    protocolAsset.ticker
   ])
 
   const [showPasswordModal, setShowPasswordModal] = useState(false)

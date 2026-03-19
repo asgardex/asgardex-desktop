@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
+import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
@@ -9,42 +10,54 @@ import { isEvmChain } from '../../helpers/evmHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import { SwapTxState } from '../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../services/clients'
-import { UnifiedTxModal, getTxTimerValue, TxConfig } from '../modal/tx'
-import type { AssetData } from '../modal/tx/extra/Common.types'
+import { TxModal } from '../modal/tx'
+import { ViewTxButton } from '../uielements/button'
 
 export type SwapTxModalProps = {
   swapState: SwapTxState
   swapStartTime: number
   sourceChain: string
-  source: AssetData
-  target: AssetData
+  extraTxModalContent: React.ReactNode
   oQuoteProtocol: O.Option<QuoteSwapProtocol>
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   onCloseTxModal: () => void
   onFinishTxModal: () => void
-  /** @deprecated Use source/target instead. Kept for migration compatibility. */
-  extraTxModalContent?: React.ReactNode
 }
 
 export const SwapTxModal = ({
   swapState: { swapTx },
   swapStartTime,
   sourceChain,
-  source,
-  target,
+  extraTxModalContent,
   oQuoteProtocol,
   goToTransaction,
   getExplorerTxUrl,
   onCloseTxModal,
-  onFinishTxModal,
-  extraTxModalContent
+  onFinishTxModal
 }: SwapTxModalProps) => {
   const intl = useIntl()
   const { network } = useNetwork()
 
-  const timerValue = useMemo(() => getTxTimerValue(swapTx), [swapTx])
+  // Get timer value
+  const timerValue = useMemo(
+    () =>
+      FP.pipe(
+        swapTx,
+        RD.fold(
+          () => 0,
+          FP.flow(
+            O.map(({ loaded }) => loaded),
+            O.getOrElse(() => 0)
+          ),
+          () => 0,
+          () => 100
+        )
+      ),
+    [swapTx]
+  )
 
+  // title
   const txModalTitle = useMemo(
     () =>
       FP.pipe(
@@ -60,14 +73,9 @@ export const SwapTxModal = ({
     [intl, swapTx]
   )
 
-  const protocol: O.Option<string> = FP.pipe(
+  const protocol: O.Option<Protocol> = FP.pipe(
     oQuoteProtocol,
-    O.map((qp) => qp.protocol as string)
-  )
-
-  const channelId: O.Option<string> = FP.pipe(
-    oQuoteProtocol,
-    O.chain((qp) => (qp.depositChannelId ? O.some(qp.depositChannelId) : O.none))
+    O.map((quoteProtocol) => quoteProtocol.protocol)
   )
 
   const oTxHash = useMemo(
@@ -77,14 +85,13 @@ export const SwapTxModal = ({
         O.map((txHash) => {
           const protocolValue = FP.pipe(
             protocol,
-            O.getOrElse(() => 'default')
+            O.getOrElse(() => 'default' as Protocol)
           )
           return isEvmChain(sourceChain) && protocolValue !== 'Chainflip' ? txHash.replace(/0x/i, '') : txHash
         })
       ),
     [protocol, sourceChain, swapTx]
   )
-
   const txRDasBoolean = useMemo(
     () =>
       FP.pipe(
@@ -94,35 +101,37 @@ export const SwapTxModal = ({
     [swapTx]
   )
 
-  const txConfig: TxConfig = useMemo(
-    () => ({
-      type: 'swap',
-      source,
-      target,
-      protocol,
-      channelId
-    }),
-    [source, target, protocol, channelId]
-  )
-
   // don't render TxModal in initial state
   if (RD.isInitial(swapTx)) return <></>
 
   return (
-    <UnifiedTxModal
+    <TxModal
       title={txModalTitle}
       onClose={onCloseTxModal}
       onFinish={onFinishTxModal}
       startTime={swapStartTime}
       txRD={txRDasBoolean}
+      extraResult={
+        <ViewTxButton
+          txHash={oTxHash}
+          onClick={goToTransaction}
+          txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+          network={network}
+          trackable={true}
+          protocol={FP.pipe(
+            oQuoteProtocol,
+            O.map((quoteProtocol) => quoteProtocol.protocol)
+          )}
+          channelId={FP.pipe(
+            oQuoteProtocol,
+            O.chain((quoteProtocol) =>
+              quoteProtocol.depositChannelId ? O.some(quoteProtocol.depositChannelId) : O.none
+            )
+          )}
+        />
+      }
       timerValue={timerValue}
-      txConfig={txConfig}
-      txHash={oTxHash}
-      getExplorerTxUrl={getExplorerTxUrl}
-      openExplorerTxUrl={goToTransaction}
-      network={network}
-      trackable={true}
-      extraContent={extraTxModalContent}
+      extra={extraTxModalContent}
     />
   )
 }

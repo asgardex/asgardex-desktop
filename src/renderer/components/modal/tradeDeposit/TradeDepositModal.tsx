@@ -42,7 +42,7 @@ import { Label } from '../../uielements/label'
 import { HeadlessModal as Modal } from '../../uielements/modal'
 import { ProtocolSwitch } from '../../uielements/protocolSwitch'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../confirmation'
-import { UnifiedTxModal, getDepositTimerValue } from '../tx'
+import { TxModal } from '../tx'
 
 // Modal states for transaction flow
 enum ModalState {
@@ -641,27 +641,14 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
         }
       }
 
-      const approveAsset = FP.pipe(
-        selectedAsset,
-        O.getOrElse(() => AssetBTC as AnyAsset)
-      )
-
       return (
-        <UnifiedTxModal
+        <TxModal
           title={intl.formatMessage({ id: 'common.approve' })}
           onClose={onCloseOrFinish}
           onFinish={onCloseOrFinish}
           startTime={Date.now()}
-          txRD={FP.pipe(
-            approveState,
-            RD.map(() => true)
-          )}
-          txConfig={{ type: 'interact', asset: { asset: approveAsset, amount: assetToBase(assetAmount(0)) } }}
-          txHash={O.none}
-          getExplorerTxUrl={() => O.none}
-          openExplorerTxUrl={() => Promise.resolve(true)}
-          network={network}
-          extraContent={
+          txRD={RD.map(() => true)(approveState)}
+          extraResult={
             <div className="flex flex-col gap-2">
               <Label size="normal" color="primary">
                 ERC20 Approval
@@ -683,16 +670,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
       )
     }
     return null
-  }, [
-    approveState,
-    intl,
-    resetApproval,
-    selectedAsset,
-    isLedgerWalletSelected,
-    awaitingConfirmation,
-    isApprovedState,
-    network
-  ])
+  }, [approveState, intl, resetApproval, selectedAsset, isLedgerWalletSelected, awaitingConfirmation, isApprovedState])
 
   // Render transaction progress modal
   const renderTxModal = useMemo(() => {
@@ -710,13 +688,22 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
       (id) => intl.formatMessage({ id })
     )
 
-    const depositAsset = FP.pipe(
-      selectedAsset,
-      O.getOrElse(() => AssetBTC as AnyAsset)
+    // Get timer value like SwapTxModal
+    const timerValue = FP.pipe(
+      depositState.deposit,
+      RD.fold(
+        () => 0,
+        FP.flow(
+          O.map(({ loaded }) => loaded),
+          O.getOrElse(() => 0)
+        ),
+        () => 0,
+        () => 100
+      )
     )
 
     return (
-      <UnifiedTxModal
+      <TxModal
         title={txModalTitle}
         onClose={() => {
           resetDepositState()
@@ -728,24 +715,28 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
         }}
         startTime={depositStartTime}
         txRD={depositState.deposit}
-        timerValue={getDepositTimerValue(depositState.deposit)}
-        txConfig={{
-          type: 'deposit',
-          asset: { asset: depositAsset, amount: assetToBase(assetAmount(Number(amount) || 0, 8)) },
-          steps: { current: depositState.step, total: depositState.stepsTotal },
-          stepDescriptions: [
-            intl.formatMessage({ id: 'common.tx.healthCheck' }),
-            intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: depositAsset.ticker }),
-            intl.formatMessage({ id: 'common.tx.checkResult' })
-          ]
-        }}
-        txHash={O.none}
-        getExplorerTxUrl={() => O.none}
-        openExplorerTxUrl={() => Promise.resolve(true)}
-        network={network}
+        timerValue={timerValue}
+        extraResult={
+          <div className="flex flex-col gap-2">
+            <Label size="normal" color="primary">
+              Trade Deposit Transaction
+            </Label>
+            {FP.pipe(
+              selectedAsset,
+              O.fold(
+                () => null,
+                (asset) => (
+                  <Label size="small" color="gray">
+                    {amount} {asset.ticker} → {currentProtocol === THORChain ? 'THORChain' : 'MAYAChain'}
+                  </Label>
+                )
+              )
+            )}
+          </div>
+        }
       />
     )
-  }, [depositState, intl, onClose, selectedAsset, amount, depositStartTime, resetDepositState, network])
+  }, [depositState, intl, onClose, selectedAsset, amount, currentProtocol, depositStartTime, resetDepositState])
 
   return (
     <>
