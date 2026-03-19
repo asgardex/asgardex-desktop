@@ -25,6 +25,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     '아웃바운드 수수료 {fee}는 수신 금액으로 충당되어야 합니다 (현재 {amount}).',
   'swap.errors.amount.thornodeQuoteError': '{error} : 슬리피지 또는 입력 금액을 조정하세요.',
+  'swap.previewOnly': '미리보기 전용',
+  'swap.previewAndSwap': '미리보기 및 스왑',
   'swap.note.lockedWallet': '스왑을 하려면 지갑을 잠금 해제해야 합니다.',
   'swap.note.nowallet': '스왑을 하려면 지갑을 생성하거나 가져오세요.',
   'swap.errors.asset.missingSourceAsset': '소스 자산이 없습니다.',
@@ -36,7 +38,13 @@ const swap: SwapMessages = {
   'swap.min.result.protected': '보호된 스왑 결과',
   'swap.address.evm.warning': '스마트 컨트랙트 주소로 스왑하지 마세요',
   'swap.synth.warning':
-    'Synth 발행이 중단되었습니다. Synth 상환은 앞으로 3개월 동안만 가능합니다 — 가능한 한 빨리 상환해 주세요.'
+    'Synth 발행이 중단되었습니다. Synth 상환은 앞으로 3개월 동안만 가능합니다 — 가능한 한 빨리 상환해 주세요.',
+  'swap.mode.limit': '리밋',
+  'swap.mode.fast': '빠름',
+  'swap.mode.balanced': '균형',
+  'swap.mode.bestPrice': '최적 가격',
+  'swap.settings.subSwaps.auto': '자동 스왑 횟수',
+  'swap.settings.subSwaps.limit': '리밋 스왑'
 }
 
 export default swap

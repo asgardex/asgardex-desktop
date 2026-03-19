@@ -3,11 +3,13 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { ApiMpc, CreationProgressData, DeviceJoinedData, SignProgressData } from '../shared/api/mpcTypes'
 import { MpcIPCMessages } from '../shared/api/mpcTypes'
 import type {
+  ApiExport,
   ApiFileStoreService,
   ApiKeystore,
   ApiUrl,
   AppUpdateRD,
   IPCExportKeystoreParams,
+  IPCSaveBalancesJsonParams,
   StoreFileData,
   StoreFileName
 } from '../shared/api/types'
@@ -37,6 +39,14 @@ const apiKeystore: ApiKeystore = {
   initKeystoreWallets: () => ipcRenderer.invoke(IPCMessages.INIT_KEYSTORE_WALLETS)
 }
 contextBridge.exposeInMainWorld('apiKeystore', apiKeystore)
+
+//
+// `apiExport` object
+//
+const apiExport: ApiExport = {
+  saveBalancesJson: (params: IPCSaveBalancesJsonParams) => ipcRenderer.invoke(IPCMessages.SAVE_BALANCES_JSON, params)
+}
+contextBridge.exposeInMainWorld('apiExport', apiExport)
 
 //
 // `apiLang` object

@@ -25,6 +25,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     'Auszahlungsgebühr in Höhe von {fee} ist nicht über den zu erwartenden Auszahlungsbetrag (momentan {amount}) gedeckt',
   'swap.errors.amount.thornodeQuoteError': '{error} : Passe den Slip oder den Eingabebetrag an',
+  'swap.previewOnly': 'Nur Vorschau',
+  'swap.previewAndSwap': 'Vorschau & Tauschen',
   'swap.note.lockedWallet': 'Entsperre Deine Wallet, um zu tauschen',
   'swap.note.nowallet': 'Erstelle oder importiere eine Wallet, um zu Swappen',
   'swap.errors.asset.missingSourceAsset': 'Ursprungs-Asset nicht vorhanden',
@@ -37,7 +39,13 @@ const swap: SwapMessages = {
   'swap.min.result.protected': 'Gesichertes Swap-Ergebnis',
   'swap.address.evm.warning': 'NICHT zu Smart Contract Adressen tauschen',
   'swap.synth.warning':
-    'Das Minten von Synths wurde eingestellt. Die Einlösung von Synths ist noch 3 Monate lang möglich — bitte löse sie ein, solange du kannst.'
+    'Das Minten von Synths wurde eingestellt. Die Einlösung von Synths ist noch 3 Monate lang möglich — bitte löse sie ein, solange du kannst.',
+  'swap.mode.limit': 'Limit',
+  'swap.mode.fast': 'Schnell',
+  'swap.mode.balanced': 'Ausgewogen',
+  'swap.mode.bestPrice': 'Bester Preis',
+  'swap.settings.subSwaps.auto': 'Auto Swap-Anzahl',
+  'swap.settings.subSwaps.limit': 'Limit Swap'
 }
 
 export default swap

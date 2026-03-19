@@ -36,7 +36,7 @@ import { useIntl } from 'react-intl'
 
 import { ASGARDEX_ADDRESS, getAsgardexThorname } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
-import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
+import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import {
@@ -50,7 +50,7 @@ import {
   isUtxoAssetChain
 } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
-import { isEvmChain, isEvmChainToken } from '../../helpers/evmHelper'
+import { isEvmChain } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
@@ -65,12 +65,12 @@ import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/ti
 import {
   filterWalletBalancesByAssets,
   getWalletBalanceByAssetAndWalletType,
-  getWalletTypeLabel,
   hasLedgerInBalancesByAsset,
   transformTradeAccountToWalletBalance
 } from '../../helpers/walletHelper'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
+import { useStreamingParams } from '../../hooks/useStreamingParams'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
@@ -102,19 +102,19 @@ import {
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { AssetWithAmount, SlipTolerance } from '../../types/asgardex'
-import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { SwapAssets } from '../modal/tx/extra'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
 import { Collapse } from '../uielements/collapse'
-import { WalletTypeLabel } from '../uielements/common'
 import { InfoIcon } from '../uielements/info'
 import { CopyLabel } from '../uielements/label'
 import { ProgressBar } from '../uielements/progressBar'
-import { Slider } from '../uielements/slider'
 import { Tooltip } from '../uielements/tooltip'
-import { EditableAddress } from './EditableAddress'
+import { RecipientAddressSection } from './components/RecipientAddressSection'
+import { useSwapConfirmationModals } from './components/SwapConfirmationModals'
+import { SwapSettings } from './components/SwapSettings'
+import { SwapSubmitSection } from './components/SwapSubmitSection'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
 import { SwapAsset } from './Swap.types'
 import * as Utils from './Swap.utils'
@@ -245,16 +245,10 @@ export const TradeSwap = ({
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
 
-  // Default Streaming interval set to 1 blocks
-  const [streamingInterval, setStreamingInterval] = useState<number>(1)
-  // Default Streaming quantity set to 0, network computes the optimum
-  const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
-  // Slide use state
-  const [slider, setSlider] = useState<number>(26)
+  const { streamingInterval, streamingQuantity, isStreaming, activeMode, setMode, setQuantity, resetToDefault } =
+    useStreamingParams()
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
-
-  const [isStreaming, setIsStreaming] = useState<boolean>(true)
 
   // Update state needed - initial target walletAddress is loaded async and can be different at first run
   useEffect(() => {
@@ -1234,9 +1228,37 @@ export const TradeSwap = ({
     [poolAssets, sourceAsset, protocol]
   )
 
-  type ModalState = 'swap' | 'approve' | 'none'
-  const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
-  const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
+  const submitSwapTx = useCallback(() => {
+    FP.pipe(
+      oSwapParams,
+      O.map((swapParams) => {
+        setSwapStartTime(Date.now())
+        subscribeSwapState(swap$(swapParams))
+        return true
+      })
+    )
+  }, [oSwapParams, subscribeSwapState, swap$])
+
+  // ─── Confirmation modals (Password + Ledger) ───────────────────────────────
+  const { onSubmit, renderModals: renderConfirmationModals } = useSwapConfirmationModals({
+    useSourceAssetLedger,
+    useSourceAssetVultisig: false,
+    sourceAsset,
+    sourceChain,
+    sourceWalletType,
+    network,
+    oSwapParams,
+    oCFSwapParams: O.none,
+    submitSwapTx,
+    submitCFTx: FP.constVoid,
+    submitApproveTx: FP.constVoid,
+    validatePassword$,
+    validatePasswordForVultisig: async () => false,
+    vaultType: 'fast',
+    approveState: RD.initial,
+    swapState,
+    getActiveVaultId: () => undefined
+  })
 
   const onChangeSwapAmount = useCallback(
     (amount: BaseAmount) => {
@@ -1255,79 +1277,12 @@ export const TradeSwap = ({
     [maxAmountToSwapMax1e8, setAmountToSwapMax1e8, isSourceUTXO]
   )
 
-  // Function to reset the slider to default position
-  const resetToDefault = () => {
-    setStreamingInterval(1) // Default position
-    setStreamingQuantity(0) // thornode | mayanode decides the swap quantity
-    setSlider(26)
-    setIsStreaming(true)
-  }
-
   const quoteOnlyButton = () => {
     setQuoteOnly(!quoteOnly)
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
     setQuote(O.none)
     setQuoteMaya(O.none)
   }
-
-  const labelMin = useMemo(
-    () => (slider <= 0 ? `Limit Swap` : slider < 50 ? 'Time Optimised' : `Price Optimised`),
-    [slider]
-  )
-
-  // Streaming Interval slider
-  const renderStreamerInterval = useMemo(() => {
-    const calculateStreamingInterval = (slider: number) => {
-      if (slider >= 75) return 3
-      if (slider >= 50) return 2
-      if (slider >= 25) return 1
-      return 0
-    }
-
-    const setInterval = (value: number) => {
-      const streamingIntervalValue = calculateStreamingInterval(value)
-      setSlider(value)
-      setStreamingInterval(streamingIntervalValue)
-      setStreamingQuantity(0)
-      setIsStreaming(streamingIntervalValue !== 0)
-    }
-
-    return (
-      <div>
-        <Slider
-          key={'Streamer Interval slider'}
-          value={slider}
-          onChange={(value) => setInterval(value)} // Correctly handle value
-          max={100}
-        />
-      </div>
-    )
-  }, [slider])
-
-  // Streaming Quantity slider
-  const renderStreamerQuantity = useMemo(() => {
-    const quantity = streamingQuantity
-    const setQuantity = (quantity: number) => {
-      setStreamingQuantity(quantity)
-    }
-    let quantityLabel: string[]
-    if (streamingInterval === 0) {
-      quantityLabel = [`Limit swap`]
-    } else {
-      quantityLabel = quantity === 0 ? [`Auto swap count`] : [`Sub swaps`, `${quantity}`]
-    }
-    return (
-      <div>
-        <Slider
-          key={'Streamer Quantity slider'}
-          value={quantity}
-          onChange={setQuantity}
-          max={maxStreamingQuantity}
-          labels={quantityLabel}
-        />
-      </div>
-    )
-  }, [streamingQuantity, streamingInterval, maxStreamingQuantity])
 
   // swap expiry progress bar
   useEffect(() => {
@@ -1398,29 +1353,6 @@ export const TradeSwap = ({
       />
     )
   }, [isStreaming, swapSlippage, swapStreamingSlippage])
-
-  const submitSwapTx = useCallback(() => {
-    FP.pipe(
-      oSwapParams,
-      O.map((swapParams) => {
-        // set start time
-        setSwapStartTime(Date.now())
-        // subscribe to swap$
-
-        subscribeSwapState(swap$(swapParams))
-
-        return true
-      })
-    )
-  }, [oSwapParams, subscribeSwapState, swap$])
-
-  const onSubmit = useCallback(() => {
-    if (useSourceAssetLedger) {
-      setShowLedgerModal('swap')
-    } else {
-      setShowPasswordModal('swap')
-    }
-  }, [setShowLedgerModal, useSourceAssetLedger])
 
   const extraTxModalContent = useMemo(() => {
     const { swapTx } = swapState
@@ -1541,81 +1473,6 @@ export const TradeSwap = ({
     sourceAsset.chain,
     protocol
   ])
-
-  const renderPasswordConfirmationModal = useMemo(() => {
-    const onSuccess = () => {
-      if (showPasswordModal === 'swap') submitSwapTx()
-      setShowPasswordModal('none')
-    }
-    const onClose = () => {
-      setShowPasswordModal('none')
-    }
-    const render = showPasswordModal === 'swap'
-    return (
-      render && (
-        <WalletPasswordConfirmationModal
-          onSuccess={onSuccess}
-          onClose={onClose}
-          validatePassword$={validatePassword$}
-        />
-      )
-    )
-  }, [showPasswordModal, submitSwapTx, validatePassword$])
-
-  const renderLedgerConfirmationModal = useMemo(() => {
-    const visible = showLedgerModal === 'swap' || showLedgerModal === 'approve'
-
-    const onClose = () => {
-      setShowLedgerModal('none')
-    }
-
-    const onSucceess = () => {
-      if (showLedgerModal === 'swap') submitSwapTx()
-      setShowLedgerModal('none')
-    }
-
-    const chainAsString = chainToString(sourceChain)
-    const txtNeedsConnected = intl.formatMessage(
-      {
-        id: 'ledger.needsconnected'
-      },
-      { chain: chainAsString }
-    )
-
-    const description1 =
-      // extra info for ERC20 assets only
-      isEvmChainToken(sourceAsset)
-        ? `${txtNeedsConnected} ${intl.formatMessage(
-            {
-              id: 'ledger.blindsign'
-            },
-            { chain: chainAsString }
-          )}`
-        : txtNeedsConnected
-
-    const description2 = intl.formatMessage({ id: 'ledger.sign' })
-
-    return (
-      <LedgerConfirmationModal
-        key="leder-conf-modal"
-        network={network}
-        onSuccess={onSucceess}
-        onClose={onClose}
-        visible={visible}
-        chain={sourceChain}
-        description1={description1}
-        description2={description2}
-        addresses={FP.pipe(
-          oSwapParams,
-          O.chain(({ poolAddress, sender }) => {
-            const recipient = poolAddress.address
-            if (useSourceAssetLedger) return O.some({ recipient, sender })
-            return O.none
-          })
-        )}
-      />
-    )
-  }, [showLedgerModal, sourceChain, intl, sourceAsset, network, oSwapParams, submitSwapTx, useSourceAssetLedger])
 
   const sourceChainFeeError: boolean = useMemo(() => {
     // ignore error check by having zero amounts or min amount errors
@@ -2013,32 +1870,16 @@ export const TradeSwap = ({
           </div>
         </div>
         <div className="mt-1 space-y-1">
-          <Collapse
-            header={
-              <div className="flex flex-row items-center justify-between">
-                <span className="m-0 font-main text-[14px] text-text2 dark:text-text2d">
-                  {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} (
-                  {labelMin})
-                </span>
-              </div>
-            }>
-            <div className="flex flex-col p-4">
-              <div className="flex w-full flex-col space-y-4 px-2">
-                <div>{renderStreamerInterval}</div>
-                <div>{renderStreamerQuantity}</div>
-                <div>{renderStreamerReturns}</div>
-              </div>
-              <div className="flex justify-end">
-                <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>
-                  <BaseButton
-                    onClick={resetToDefault}
-                    className="rounded-full group-hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
-                    <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
-                  </BaseButton>
-                </Tooltip>
-              </div>
-            </div>
-          </Collapse>
+          <SwapSettings
+            activeMode={activeMode}
+            streamingInterval={streamingInterval}
+            streamingQuantity={streamingQuantity}
+            onModeChange={setMode}
+            onQuantityChange={setQuantity}
+            onReset={resetToDefault}
+            maxStreamingQuantity={maxStreamingQuantity}
+          />
+          {renderStreamerReturns}
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">
@@ -2380,69 +2221,58 @@ export const TradeSwap = ({
               </>
             )}
           </Collapse>
-          {!lockedWallet &&
-            FP.pipe(
-              oRecipientAddress,
-              O.map((address) => (
-                <div
-                  className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
-                  key="edit-address">
-                  <div className="flex items-center">
-                    <h3 className="mr-10px !mb-0 w-auto p-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
-                      {intl.formatMessage({ id: 'common.recipient' })}
-                    </h3>
-                    <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>
-                  </div>
-                  <EditableAddress
-                    key={address}
-                    asset={targetAsset}
-                    network={network}
-                    address={address}
-                    onChangeAddress={onChangeRecipientAddress}
-                    onChangeEditableAddress={onChangeEditableRecipientAddress}
-                    onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
-                    addressValidator={addressValidator}
-                    hidePrivateData={hidePrivateData}
-                  />
-                </div>
-              )),
-              O.toNullable
-            )}
+          {!lockedWallet && (
+            <RecipientAddressSection
+              isStandaloneLedger={false}
+              targetAsset={targetAsset}
+              targetChain={targetChain}
+              network={network}
+              effectiveRecipientAddress={oRecipientAddress}
+              standaloneLedgerTargetAddress={O.none}
+              setStandaloneLedgerTargetAddress={FP.constVoid}
+              customAddressEditActive={customAddressEditActive}
+              setCustomAddressEditActive={setCustomAddressEditActive}
+              targetHDMode="default"
+              setTargetHDMode={FP.constVoid}
+              targetWalletAccount={0}
+              setTargetWalletAccount={FP.constVoid}
+              targetWalletIndex={0}
+              setTargetWalletIndex={FP.constVoid}
+              fetchStandaloneLedgerTargetAddress={async () => {}}
+              isFetchingStandaloneLedgerAddress={false}
+              targetWalletType={oTargetWalletType}
+              onChangeRecipientAddress={onChangeRecipientAddress}
+              onChangeEditableRecipientAddress={onChangeEditableRecipientAddress}
+              addressValidator={addressValidator}
+              hidePrivateData={hidePrivateData}
+            />
+          )}
           {!isLocked(keystore) && <div className="w-full">{renderSwapExpiry}</div>}
         </div>
       </div>
       <div className="flex flex-col items-center justify-center">
-        {!isLocked(keystore) ? (
-          <>
-            <FlatButton
-              className="my-30px min-w-[200px]"
-              size="large"
-              color="primary"
-              onClick={onSubmit}
-              disabled={disableSubmit}>
-              {intl.formatMessage({ id: 'common.swap' })}
-            </FlatButton>
-            {sourceChainFeeErrorLabel}
-            {quoteError}
-            {aggregatorErrors}
-          </>
-        ) : (
-          <>
-            <p className="center mt-30px mb-0 font-main text-[12px] text-text2 uppercase dark:text-text2d">
-              {!hasImportedKeystore(keystore)
-                ? intl.formatMessage({ id: 'swap.note.nowallet' })
-                : isLocked(keystore) && intl.formatMessage({ id: 'swap.note.lockedWallet' })}
-            </p>
-            <FlatButton className="my-30px min-w-[200px]" size="large" onClick={importWalletHandler}>
-              {!hasImportedKeystore(keystore)
-                ? intl.formatMessage({ id: 'wallet.add.label' })
-                : isLocked(keystore) && intl.formatMessage({ id: 'wallet.unlock.label' })}
-            </FlatButton>
-          </>
-        )}
+        <SwapSubmitSection
+          lockedWallet={lockedWallet}
+          isKeystoreWallet={true}
+          keystore={keystore}
+          isApproved={true}
+          disableSubmit={disableSubmit}
+          onSubmit={onSubmit}
+          disableSubmitApprove={false}
+          awaitingConfirmation={false}
+          approveState={RD.initial}
+          onApprove={FP.constVoid}
+          uiApproveFeesRD={RD.initial}
+          reloadApproveFeesHandler={FP.constVoid}
+          sourceChainFeeErrorLabel={sourceChainFeeErrorLabel}
+          quoteError={quoteError}
+          aggregatorErrors={aggregatorErrors}
+          renderApproveFeeError={<></>}
+          renderApproveError={<></>}
+          importWalletHandler={importWalletHandler}
+        />
       </div>
-      {renderPasswordConfirmationModal}
-      {renderLedgerConfirmationModal}
+      {renderConfirmationModals}
       {renderTxModal}
     </div>
   )

@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetTCY } from '@xchainjs/xchain-thorchain'
-import { Chain } from '@xchainjs/xchain-util'
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
+import { Chain, assetToString, baseToAsset } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 import { debounce } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
+import { BalanceExportData, BalanceExportEntry, BalanceExportToken, LPExportEntry } from '../../../shared/api/types'
 import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
-import { RefreshButton } from '../../components/uielements/button'
+import { RefreshButton, TextButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
@@ -25,6 +28,7 @@ import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
+import { usePoolShares } from '../../hooks/usePoolShares'
 import * as walletRoutes from '../../routes/wallet'
 import { userChains$ } from '../../services/storage/userChains'
 import { reloadBalancesByChain } from '../../services/wallet'
@@ -33,15 +37,17 @@ import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 import { useCoingecko } from '../../store/gecko/hooks'
 import { GECKO_MAP } from '../../types/generated/geckoMap'
+import { getPoolShareTableData } from './PoolShareView.helper'
 
 export const AssetsView = (): JSX.Element => {
   const navigate = useNavigate()
   const intl = useIntl()
 
-  const { balancesState$, setSelectedAsset } = useWalletContext()
+  const { balancesState$, setSelectedAsset, appWalletService } = useWalletContext()
   const { network } = useNetwork()
   const { isPrivate } = useApp()
   const { geckoPriceMap, fetchPrice: fetchCoingeckoPrice } = useCoingecko()
+  const activeWallet = useObservableState(appWalletService.activeWallet$, O.none)
 
   const {
     service: {
@@ -161,6 +167,10 @@ export const AssetsView = (): JSX.Element => {
   const pendingPoolsMayaRD = useObservableState(pendingPoolsStateMaya$, RD.pending)
   const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
 
+  const [lpFetchEnabled] = useState(true)
+  const { allSharesRD: thorSharesRD } = usePoolShares(THORChain, lpFetchEnabled)
+  const { allSharesRD: mayaSharesRD } = usePoolShares(MAYAChain, lpFetchEnabled)
+
   const selectAssetHandler = useCallback(
     (selectedAsset: SelectedWalletAsset) => {
       setSelectedAsset(O.some(selectedAsset))
@@ -200,6 +210,113 @@ export const AssetsView = (): JSX.Element => {
   const { mimirHaltRD } = useThorchainMimirHalt()
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
+
+  const disableSave = useMemo(
+    () =>
+      !allChainsLoaded ||
+      RD.isPending(poolsRD) ||
+      RD.isPending(poolsMayaRD) ||
+      RD.isPending(thorSharesRD) ||
+      RD.isPending(mayaSharesRD),
+    [allChainsLoaded, poolsRD, poolsMayaRD, thorSharesRD, mayaSharesRD]
+  )
+
+  const saveBalancesHandler = useCallback(async () => {
+    const now = new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const datePart = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`
+    const timePart = `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`
+    const walletName = O.fold(
+      () => 'wallet',
+      (w: { name: string }) => w.name
+    )(activeWallet)
+    const safeName = walletName.replace(/[^a-zA-Z0-9]/g, '-')
+    const fileName = `asgardex-${safeName}-${datePart}-${timePart}.json`
+
+    const balances: BalanceExportEntry[] = sortedBalances
+      .filter(({ balances: b }) => RD.isSuccess(b))
+      .map(({ chain, walletAddress, walletType, balances: b }) => {
+        const address = O.getOrElse(() => '')(walletAddress)
+        const isThorOrMaya = chain === THORChain || chain === MAYAChain
+        const tokens: BalanceExportToken[] = RD.isSuccess(b)
+          ? b.value
+              .filter(({ amount }) => isThorOrMaya || amount.amount().gt(0))
+              .map(({ asset, amount }) => {
+                const geckoId = GECKO_MAP?.[asset.symbol.toUpperCase()] ?? null
+                const usdPrice = geckoId ? (geckoPriceMap[geckoId]?.usd ?? null) : null
+                const assetAmount = baseToAsset(amount).amount()
+                const valueUSD = usdPrice !== null ? assetAmount.multipliedBy(usdPrice).toNumber() : null
+                return {
+                  asset: assetToString(asset),
+                  ticker: asset.ticker || asset.symbol,
+                  amount: assetAmount.toFixed(),
+                  valueUSD
+                }
+              })
+          : []
+        return { chain, address, walletType, tokens }
+      })
+      .filter(({ tokens }) => tokens.length > 0)
+
+    const thorPoolDetails = RD.isSuccess(poolsRD) ? poolsRD.value.poolDetails : []
+    const mayaPoolDetails = RD.isSuccess(poolsMayaRD) ? poolsMayaRD.value.poolDetails : []
+
+    const makeLpEntries = (
+      sharesRD: typeof thorSharesRD,
+      poolDetails: Parameters<typeof getPoolShareTableData>[1],
+      pricePool: typeof selectedPricePool,
+      protocol: Chain
+    ): LPExportEntry[] => {
+      if (!RD.isSuccess(sharesRD) || poolDetails.length === 0) return []
+      return getPoolShareTableData(sharesRD.value, poolDetails, pricePool.poolData, protocol).map(
+        ({ asset, runeShare, assetShare, sharePercent, assetDepositPrice, runeDepositPrice, type }) => {
+          const geckoId = GECKO_MAP?.[pricePool.asset.symbol.toUpperCase()] ?? null
+          const usdPrice = geckoId ? (geckoPriceMap[geckoId]?.usd ?? null) : null
+          const totalValueUSD =
+            usdPrice !== null
+              ? baseToAsset(assetDepositPrice.plus(runeDepositPrice)).amount().multipliedBy(usdPrice).toNumber()
+              : null
+          return {
+            protocol,
+            asset: assetToString(asset),
+            type,
+            chainBaseShare: baseToAsset(runeShare).amount().toFixed(),
+            assetShare: baseToAsset(assetShare).amount().toFixed(),
+            sharePercent: sharePercent.toFixed(6),
+            totalValueUSD
+          }
+        }
+      )
+    }
+
+    const lpPositions: LPExportEntry[] = [
+      ...makeLpEntries(thorSharesRD, thorPoolDetails, selectedPricePool, THORChain),
+      ...makeLpEntries(mayaSharesRD, mayaPoolDetails, selectedPricePoolMaya, MAYAChain)
+    ]
+
+    const data: BalanceExportData = {
+      walletName,
+      exportedAt: now.toISOString(),
+      balances,
+      lpPositions
+    }
+
+    try {
+      await window.apiExport.saveBalancesJson({ fileName, data })
+    } catch (err) {
+      console.error('Failed to save balances JSON:', err)
+    }
+  }, [
+    activeWallet,
+    geckoPriceMap,
+    sortedBalances,
+    poolsRD,
+    poolsMayaRD,
+    thorSharesRD,
+    mayaSharesRD,
+    selectedPricePool,
+    selectedPricePoolMaya
+  ])
 
   const refreshHandler = useCallback(async () => {
     const delay = 1000
@@ -247,6 +364,18 @@ export const AssetsView = (): JSX.Element => {
         hidePrivateData={isPrivate}
         disabledChains={disabledChains}
       />
+      <div className="flex w-full justify-end pt-20px">
+        <TextButton
+          className="!p-0"
+          size="normal"
+          color="primary"
+          onClick={saveBalancesHandler}
+          disabled={disableSave}
+          aria-label={intl.formatMessage({ id: 'wallet.action.saveBalancesJson' })}>
+          <ArrowDownTrayIcon className="mr-5px h-[20px] w-[20px] text-inherit" />
+          <span className="hidden sm:inline-block">{intl.formatMessage({ id: 'wallet.action.saveBalancesJson' })}</span>
+        </TextButton>
+      </div>
     </>
   )
 }

@@ -104,7 +104,10 @@ export default defineConfig(async ({ mode }) => {
       },
       server: {
         port: 3000,
-        host: true
+        host: true,
+        watch: {
+          ignored: ['**/.trunk/**']
+        }
       }
     }
   }

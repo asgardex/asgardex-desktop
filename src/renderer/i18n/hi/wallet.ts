@@ -25,6 +25,7 @@ const wallet: WalletMessages = {
   'wallet.action.import': 'आयात करें',
   'wallet.action.create': 'बनाएं',
   'wallet.action.deposit': 'जमा करें',
+  'wallet.action.saveBalancesJson': 'JSON बैलेंस सहेजें',
   'wallet.balance.total.poolAssets': 'वॉलेट संपत्तियों का कुल बैलेंस',
   'wallet.balance.total.portfolio': 'कुल पोर्टफोलियो शेष',
   'wallet.balance.total.poolAssets.info':

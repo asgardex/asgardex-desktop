@@ -25,6 +25,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     '{fee} de frais de sortie doivent être couverts par la réception du montant (actuellement {amount}).',
   'swap.errors.amount.thornodeQuoteError': '{error} : Ajuster le reçu ou le montant saisi',
+  'swap.previewOnly': 'Aperçu uniquement',
+  'swap.previewAndSwap': 'Aperçu & Échange',
   'swap.note.lockedWallet': 'Vous devez déverrouiller votre portefeuille pour échanger',
   'swap.note.nowallet': 'Créez ou importez un portefeuille pour échanger',
   'swap.errors.asset.missingSourceAsset': 'Actif source manquant',
@@ -37,7 +39,13 @@ const swap: SwapMessages = {
   'swap.min.result.protected': 'Résultat du swap protégé',
   'swap.address.evm.warning': 'NE PAS échanger vers des adresses de Smart Contract',
   'swap.synth.warning':
-    'La création de Synths a été arrêtée. Le rachat des Synths restera disponible pendant encore 3 mois — veuillez les échanger tant que c’est possible.'
+    "La création de Synths a été arrêtée. Le rachat des Synths restera disponible pendant encore 3 mois — veuillez les échanger tant que c'est possible.",
+  'swap.mode.limit': 'Limite',
+  'swap.mode.fast': 'Rapide',
+  'swap.mode.balanced': 'Équilibré',
+  'swap.mode.bestPrice': 'Meilleur prix',
+  'swap.settings.subSwaps.auto': 'Nombre auto de swaps',
+  'swap.settings.subSwaps.limit': 'Swap limite'
 }
 
 export default swap

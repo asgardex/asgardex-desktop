@@ -25,6 +25,7 @@ const wallet: WalletMessages = {
   'wallet.action.import': 'Importer',
   'wallet.action.create': 'Créer',
   'wallet.action.deposit': 'Déposer',
+  'wallet.action.saveBalancesJson': 'Sauvegarder les soldes JSON',
   'wallet.balance.total.poolAssets': 'Solde total des actifs du portefeuille',
   'wallet.balance.total.portfolio': 'Solde Total du Portefeuille',
   'wallet.balance.total.poolAssets.info':

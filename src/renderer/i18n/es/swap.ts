@@ -26,6 +26,8 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     'La comisión de salida de {fee} debe cubrirse con el importe recibido (actualmente {amount}).',
   'swap.errors.amount.thornodeQuoteError': '{error} : Ajustar el deslizamiento o la cantidad de entrada',
+  'swap.previewOnly': 'Solo vista previa',
+  'swap.previewAndSwap': 'Vista previa e intercambio',
   'swap.note.lockedWallet': 'Necesitas desbloquear tu monedero para intercambiar',
   'swap.note.nowallet': 'Crear o importar un monedero para intercambiar',
   'swap.errors.asset.missingSourceAsset': 'Falta el activo de origen',
@@ -38,7 +40,13 @@ const swap: SwapMessages = {
   'swap.min.result.protected': 'Resultado del swap protegido',
   'swap.address.evm.warning': 'NO intercambiar a direcciones de Smart Contract',
   'swap.synth.warning':
-    'La acuñación de Synths se ha descontinuado. La redención de Synths estará disponible durante los próximos 3 meses — por favor, canjéalos mientras puedas.'
+    'La acuñación de Synths se ha descontinuado. La redención de Synths estará disponible durante los próximos 3 meses — por favor, canjéalos mientras puedas.',
+  'swap.mode.limit': 'Límite',
+  'swap.mode.fast': 'Rápido',
+  'swap.mode.balanced': 'Equilibrado',
+  'swap.mode.bestPrice': 'Mejor precio',
+  'swap.settings.subSwaps.auto': 'Cantidad auto de swaps',
+  'swap.settings.subSwaps.limit': 'Swap límite'
 }
 
 export default swap
