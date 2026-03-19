@@ -3,55 +3,83 @@ import { useMemo } from 'react'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { useIntl } from 'react-intl'
 
+import type { StreamingMode } from '../../../hooks/useStreamingParams'
 import { BaseButton } from '../../uielements/button'
 import { Collapse } from '../../uielements/collapse'
+import { RadioGroup } from '../../uielements/radioGroup/RadioGroup'
 import { Slider } from '../../uielements/slider'
 import { Tooltip } from '../../uielements/tooltip'
 
 type Props = {
-  slider: number
+  activeMode: StreamingMode
   streamingInterval: number
   streamingQuantity: number
-  onSliderChange: (value: number) => void
+  onModeChange: (mode: StreamingMode) => void
   onQuantityChange: (value: number) => void
   onReset: () => void
+  maxStreamingQuantity?: number
 }
 
-const getModeLabel = (slider: number) => {
-  if (slider <= 0) return 'Limit Swap'
-  if (slider < 50) return 'Time Optimised'
-  return 'Price Optimised'
+const MODE_LABEL_KEYS: Record<StreamingMode, string> = {
+  0: 'swap.mode.limit',
+  1: 'swap.mode.fast',
+  2: 'swap.mode.balanced',
+  3: 'swap.mode.bestPrice'
 }
 
 export const SwapSettings = ({
-  slider,
+  activeMode,
   streamingInterval,
   streamingQuantity,
-  onSliderChange,
+  onModeChange,
   onQuantityChange,
-  onReset
+  onReset,
+  maxStreamingQuantity
 }: Props) => {
-  const labelMin = useMemo(() => getModeLabel(slider), [slider])
   const intl = useIntl()
 
+  const modeLabel = intl.formatMessage({ id: MODE_LABEL_KEYS[activeMode] })
+
+  const modeOptions = useMemo(
+    () =>
+      ([0, 1, 2, 3] as StreamingMode[]).map((mode) => ({
+        label: <span className="text-[12px]">{intl.formatMessage({ id: MODE_LABEL_KEYS[mode] })}</span>,
+        value: mode
+      })),
+    [intl]
+  )
+
   const quantityLabel = useMemo(() => {
-    if (streamingInterval === 0) return ['Limit swap']
-    return streamingQuantity === 0 ? ['Auto swap count'] : ['Sub swaps', `${streamingQuantity}`]
-  }, [streamingInterval, streamingQuantity])
+    if (streamingInterval === 0) return [intl.formatMessage({ id: 'swap.settings.subSwaps.limit' })]
+    return streamingQuantity === 0
+      ? [intl.formatMessage({ id: 'swap.settings.subSwaps.auto' })]
+      : [intl.formatMessage({ id: 'swap.streaming.quantity' }), `${streamingQuantity}`]
+  }, [streamingInterval, streamingQuantity, intl])
 
   return (
     <Collapse
       header={
         <div className="flex flex-row items-center justify-between">
           <span className="m-0 font-main text-[14px] text-text2 dark:text-text2d">
-            {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} ({labelMin})
+            {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} ({modeLabel})
           </span>
         </div>
       }>
       <div className="flex flex-col p-4">
         <div className="flex w-full flex-col space-y-4 px-2">
-          <Slider value={slider} onChange={onSliderChange} max={100} labels={[labelMin, `${streamingInterval}`]} />
-          <Slider value={streamingQuantity} onChange={onQuantityChange} labels={quantityLabel} />
+          <RadioGroup
+            options={modeOptions}
+            activeIndex={activeMode}
+            onChange={(index) => onModeChange(index as StreamingMode)}
+          />
+          {activeMode !== 0 && (
+            <Slider
+              value={streamingQuantity}
+              onChange={onQuantityChange}
+              max={maxStreamingQuantity}
+              labels={quantityLabel}
+            />
+          )}
         </div>
         <div className="flex justify-end">
           <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>

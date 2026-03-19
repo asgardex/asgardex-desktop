@@ -39,7 +39,13 @@ const swap: SwapMessages = {
   'swap.min.result.protected': 'Gesichertes Swap-Ergebnis',
   'swap.address.evm.warning': 'NICHT zu Smart Contract Adressen tauschen',
   'swap.synth.warning':
-    'Das Minten von Synths wurde eingestellt. Die Einlösung von Synths ist noch 3 Monate lang möglich — bitte löse sie ein, solange du kannst.'
+    'Das Minten von Synths wurde eingestellt. Die Einlösung von Synths ist noch 3 Monate lang möglich — bitte löse sie ein, solange du kannst.',
+  'swap.mode.limit': 'Limit',
+  'swap.mode.fast': 'Schnell',
+  'swap.mode.balanced': 'Ausgewogen',
+  'swap.mode.bestPrice': 'Bester Preis',
+  'swap.settings.subSwaps.auto': 'Auto Swap-Anzahl',
+  'swap.settings.subSwaps.limit': 'Limit Swap'
 }
 
 export default swap

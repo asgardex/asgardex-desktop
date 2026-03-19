@@ -70,6 +70,7 @@ import {
 } from '../../helpers/walletHelper'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
+import { useStreamingParams } from '../../hooks/useStreamingParams'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
@@ -109,10 +110,10 @@ import { Collapse } from '../uielements/collapse'
 import { InfoIcon } from '../uielements/info'
 import { CopyLabel } from '../uielements/label'
 import { ProgressBar } from '../uielements/progressBar'
-import { Slider } from '../uielements/slider'
 import { Tooltip } from '../uielements/tooltip'
 import { RecipientAddressSection } from './components/RecipientAddressSection'
 import { useSwapConfirmationModals } from './components/SwapConfirmationModals'
+import { SwapSettings } from './components/SwapSettings'
 import { SwapSubmitSection } from './components/SwapSubmitSection'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
 import { SwapAsset } from './Swap.types'
@@ -244,16 +245,10 @@ export const TradeSwap = ({
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
 
-  // Default Streaming interval set to 1 blocks
-  const [streamingInterval, setStreamingInterval] = useState<number>(1)
-  // Default Streaming quantity set to 0, network computes the optimum
-  const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
-  // Slide use state
-  const [slider, setSlider] = useState<number>(26)
+  const { streamingInterval, streamingQuantity, isStreaming, activeMode, setMode, setQuantity, resetToDefault } =
+    useStreamingParams()
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
-
-  const [isStreaming, setIsStreaming] = useState<boolean>(true)
 
   // Update state needed - initial target walletAddress is loaded async and can be different at first run
   useEffect(() => {
@@ -1282,79 +1277,12 @@ export const TradeSwap = ({
     [maxAmountToSwapMax1e8, setAmountToSwapMax1e8, isSourceUTXO]
   )
 
-  // Function to reset the slider to default position
-  const resetToDefault = () => {
-    setStreamingInterval(1) // Default position
-    setStreamingQuantity(0) // thornode | mayanode decides the swap quantity
-    setSlider(26)
-    setIsStreaming(true)
-  }
-
   const quoteOnlyButton = () => {
     setQuoteOnly(!quoteOnly)
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
     setQuote(O.none)
     setQuoteMaya(O.none)
   }
-
-  const labelMin = useMemo(
-    () => (slider <= 0 ? `Limit Swap` : slider < 50 ? 'Time Optimised' : `Price Optimised`),
-    [slider]
-  )
-
-  // Streaming Interval slider
-  const renderStreamerInterval = useMemo(() => {
-    const calculateStreamingInterval = (slider: number) => {
-      if (slider >= 75) return 3
-      if (slider >= 50) return 2
-      if (slider >= 25) return 1
-      return 0
-    }
-
-    const setInterval = (value: number) => {
-      const streamingIntervalValue = calculateStreamingInterval(value)
-      setSlider(value)
-      setStreamingInterval(streamingIntervalValue)
-      setStreamingQuantity(0)
-      setIsStreaming(streamingIntervalValue !== 0)
-    }
-
-    return (
-      <div>
-        <Slider
-          key={'Streamer Interval slider'}
-          value={slider}
-          onChange={(value) => setInterval(value)} // Correctly handle value
-          max={100}
-        />
-      </div>
-    )
-  }, [slider])
-
-  // Streaming Quantity slider
-  const renderStreamerQuantity = useMemo(() => {
-    const quantity = streamingQuantity
-    const setQuantity = (quantity: number) => {
-      setStreamingQuantity(quantity)
-    }
-    let quantityLabel: string[]
-    if (streamingInterval === 0) {
-      quantityLabel = [`Limit swap`]
-    } else {
-      quantityLabel = quantity === 0 ? [`Auto swap count`] : [`Sub swaps`, `${quantity}`]
-    }
-    return (
-      <div>
-        <Slider
-          key={'Streamer Quantity slider'}
-          value={quantity}
-          onChange={setQuantity}
-          max={maxStreamingQuantity}
-          labels={quantityLabel}
-        />
-      </div>
-    )
-  }, [streamingQuantity, streamingInterval, maxStreamingQuantity])
 
   // swap expiry progress bar
   useEffect(() => {
@@ -1942,32 +1870,16 @@ export const TradeSwap = ({
           </div>
         </div>
         <div className="mt-1 space-y-1">
-          <Collapse
-            header={
-              <div className="flex flex-row items-center justify-between">
-                <span className="m-0 font-main text-[14px] text-text2 dark:text-text2d">
-                  {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} (
-                  {labelMin})
-                </span>
-              </div>
-            }>
-            <div className="flex flex-col p-4">
-              <div className="flex w-full flex-col space-y-4 px-2">
-                <div>{renderStreamerInterval}</div>
-                <div>{renderStreamerQuantity}</div>
-                <div>{renderStreamerReturns}</div>
-              </div>
-              <div className="flex justify-end">
-                <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>
-                  <BaseButton
-                    onClick={resetToDefault}
-                    className="rounded-full group-hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
-                    <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
-                  </BaseButton>
-                </Tooltip>
-              </div>
-            </div>
-          </Collapse>
+          <SwapSettings
+            activeMode={activeMode}
+            streamingInterval={streamingInterval}
+            streamingQuantity={streamingQuantity}
+            onModeChange={setMode}
+            onQuantityChange={setQuantity}
+            onReset={resetToDefault}
+            maxStreamingQuantity={maxStreamingQuantity}
+          />
+          {renderStreamerReturns}
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">

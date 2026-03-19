@@ -39,7 +39,13 @@ const swap: SwapMessages = {
   'swap.min.result.protected': 'Результат защищённого обмена',
   'swap.address.evm.warning': 'НЕ обменивайте на адреса Смарт-контрактов',
   'swap.synth.warning':
-    'Выпуск Synth больше не доступен. Обмен Synth будет возможен ещё в течение 3 месяцев — пожалуйста, воспользуйтесь этой возможностью заранее.'
+    'Выпуск Synth больше не доступен. Обмен Synth будет возможен ещё в течение 3 месяцев — пожалуйста, воспользуйтесь этой возможностью заранее.',
+  'swap.mode.limit': 'Лимит',
+  'swap.mode.fast': 'Быстро',
+  'swap.mode.balanced': 'Сбалансированно',
+  'swap.mode.bestPrice': 'Лучшая цена',
+  'swap.settings.subSwaps.auto': 'Авто количество свопов',
+  'swap.settings.subSwaps.limit': 'Лимит своп'
 }
 
 export default swap

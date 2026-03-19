@@ -38,6 +38,12 @@ const swap: SwapMessages = {
   'swap.min.result.protected': 'सुरक्षित स्वैप परिणाम',
   'swap.address.evm.warning': 'स्मार्ट कॉन्ट्रैक्ट पतों पर स्वैप न करें',
   'swap.synth.warning':
-    'Synth मिंटिंग बंद कर दी गई है। Synth रिडेम्प्शन अगले 3 महीनों तक उपलब्ध रहेगा — कृपया समय रहते रिडीम कर लें।'
+    'Synth मिंटिंग बंद कर दी गई है। Synth रिडेम्प्शन अगले 3 महीनों तक उपलब्ध रहेगा — कृपया समय रहते रिडीम कर लें।',
+  'swap.mode.limit': 'लिमिट',
+  'swap.mode.fast': 'तेज़',
+  'swap.mode.balanced': 'संतुलित',
+  'swap.mode.bestPrice': 'सर्वश्रेष्ठ मूल्य',
+  'swap.settings.subSwaps.auto': 'ऑटो स्वैप संख्या',
+  'swap.settings.subSwaps.limit': 'लिमिट स्वैप'
 }
 export default swap

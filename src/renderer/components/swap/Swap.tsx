@@ -69,6 +69,7 @@ import { useERC20Approval } from '../../hooks/useERC20Approval'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
+import { useStreamingParams } from '../../hooks/useStreamingParams'
 import { useSwapAddresses } from '../../hooks/useSwapAddresses'
 import { useSwapExecution } from '../../hooks/useSwapExecution'
 import { useSwapFees } from '../../hooks/useSwapFees'
@@ -216,13 +217,8 @@ export const Swap = ({
 
   const { isAssetSupported$, transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
 
-  // Default Streaming interval set to 1 blocks
-  const [streamingInterval, setStreamingInterval] = useState<number>(1)
-  // Default Streaming quantity set to 0, network computes the optimum
-  const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
-  // Slide use state
-  const [slider, setSlider] = useState(26)
-  const [isStreaming, setIsStreaming] = useState<boolean>(true)
+  const { streamingInterval, streamingQuantity, isStreaming, activeMode, setMode, setQuantity, resetToDefault } =
+    useStreamingParams()
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -1277,50 +1273,24 @@ export const Swap = ({
     [maxAmountToSwap, setAmountToSwap, isSourceUTXO]
   )
 
-  const resetToDefault = useCallback(() => {
-    setStreamingInterval(1)
-    setStreamingQuantity(0)
-    setSlider(26)
-    setIsStreaming(true)
-  }, [])
-
   const quoteOnlyButton = () => {
     setQuoteOnly(!quoteOnly)
     setAmountToSwap(initialAmountToSwap)
     resetQuote()
   }
 
-  const handleStreamingSliderChange = useCallback((value: number) => {
-    const interval = value >= 75 ? 3 : value >= 50 ? 2 : value >= 25 ? 1 : 0
-    setSlider(value)
-    setStreamingInterval(interval)
-    setStreamingQuantity(0)
-    setIsStreaming(interval !== 0)
-  }, [])
-
-  const handleStreamingQuantityChange = useCallback((quantity: number) => {
-    setStreamingQuantity(quantity)
-  }, [])
-
   const swapSettingsSection = useMemo(
     () => (
       <SwapSettings
-        slider={slider}
+        activeMode={activeMode}
         streamingInterval={streamingInterval}
         streamingQuantity={streamingQuantity}
-        onSliderChange={handleStreamingSliderChange}
-        onQuantityChange={handleStreamingQuantityChange}
+        onModeChange={setMode}
+        onQuantityChange={setQuantity}
         onReset={resetToDefault}
       />
     ),
-    [
-      handleStreamingQuantityChange,
-      handleStreamingSliderChange,
-      resetToDefault,
-      slider,
-      streamingInterval,
-      streamingQuantity
-    ]
+    [activeMode, streamingInterval, streamingQuantity, setMode, setQuantity, resetToDefault]
   )
 
   const extraTxModalContent = useMemo(() => {
