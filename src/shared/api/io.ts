@@ -278,7 +278,11 @@ const balanceExportTokenIO = t.type({
   valueUSD: t.union([t.number, t.null])
 })
 
-const walletTypeIO = t.union([t.literal(WalletType.Keystore), t.literal(WalletType.Ledger), t.literal(WalletType.Vultisig)])
+const walletTypeIO = t.union([
+  t.literal(WalletType.Keystore),
+  t.literal(WalletType.Ledger),
+  t.literal(WalletType.Vultisig)
+])
 
 const balanceExportEntryIO = t.type({
   chain: t.string,

@@ -167,9 +167,9 @@ export const AssetsView = (): JSX.Element => {
   const pendingPoolsMayaRD = useObservableState(pendingPoolsStateMaya$, RD.pending)
   const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
 
-  const [lpFetchEnabled, setLpFetchEnabled] = useState(false)
-  const { allSharesRD: thorSharesRD, reload: reloadThorShares } = usePoolShares(THORChain, lpFetchEnabled)
-  const { allSharesRD: mayaSharesRD, reload: reloadMayaShares } = usePoolShares(MAYAChain, lpFetchEnabled)
+  const [lpFetchEnabled] = useState(true)
+  const { allSharesRD: thorSharesRD } = usePoolShares(THORChain, lpFetchEnabled)
+  const { allSharesRD: mayaSharesRD } = usePoolShares(MAYAChain, lpFetchEnabled)
 
   const selectAssetHandler = useCallback(
     (selectedAsset: SelectedWalletAsset) => {
@@ -212,8 +212,13 @@ export const AssetsView = (): JSX.Element => {
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
   const disableSave = useMemo(
-    () => !allChainsLoaded || RD.isPending(poolsRD) || RD.isPending(poolsMayaRD),
-    [allChainsLoaded, poolsRD, poolsMayaRD]
+    () =>
+      !allChainsLoaded ||
+      RD.isPending(poolsRD) ||
+      RD.isPending(poolsMayaRD) ||
+      RD.isPending(thorSharesRD) ||
+      RD.isPending(mayaSharesRD),
+    [allChainsLoaded, poolsRD, poolsMayaRD, thorSharesRD, mayaSharesRD]
   )
 
   const saveBalancesHandler = useCallback(async () => {
@@ -243,8 +248,8 @@ export const AssetsView = (): JSX.Element => {
                 const valueUSD = usdPrice !== null ? assetAmount.multipliedBy(usdPrice).toNumber() : null
                 return {
                   asset: assetToString(asset),
-                  ticker: asset.ticker,
-                  amount: assetAmount.toString(),
+                  ticker: asset.ticker || asset.symbol,
+                  amount: assetAmount.toFixed(),
                   valueUSD
                 }
               })
@@ -252,13 +257,6 @@ export const AssetsView = (): JSX.Element => {
         return { chain, address, walletType, tokens }
       })
       .filter(({ tokens }) => tokens.length > 0)
-
-    // Enable LP share fetching on first save; trigger reload if not yet loaded
-    if (!lpFetchEnabled) {
-      setLpFetchEnabled(true)
-      reloadThorShares()
-      reloadMayaShares()
-    }
 
     const thorPoolDetails = RD.isSuccess(poolsRD) ? poolsRD.value.poolDetails : []
     const mayaPoolDetails = RD.isSuccess(poolsMayaRD) ? poolsMayaRD.value.poolDetails : []
@@ -282,8 +280,8 @@ export const AssetsView = (): JSX.Element => {
             protocol,
             asset: assetToString(asset),
             type,
-            chainBaseShare: baseToAsset(runeShare).amount().toString(),
-            assetShare: baseToAsset(assetShare).amount().toString(),
+            chainBaseShare: baseToAsset(runeShare).amount().toFixed(),
+            assetShare: baseToAsset(assetShare).amount().toFixed(),
             sharePercent: sharePercent.toFixed(6),
             totalValueUSD
           }
@@ -317,10 +315,7 @@ export const AssetsView = (): JSX.Element => {
     thorSharesRD,
     mayaSharesRD,
     selectedPricePool,
-    selectedPricePoolMaya,
-    lpFetchEnabled,
-    reloadThorShares,
-    reloadMayaShares
+    selectedPricePoolMaya
   ])
 
   const refreshHandler = useCallback(async () => {

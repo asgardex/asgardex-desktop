@@ -79,7 +79,15 @@ export const usePoolShares = (protocol: Chain, enabled = true) => {
       .subscribe(setAllSharesRD)
 
     return () => subscription.unsubscribe()
-  }, [protocol, enabled, allSharesByAddresses$, allSharesByAddressesMaya$, addressByChain$, INCLUDED_CHAINS, getLedgerAddress$])
+  }, [
+    protocol,
+    enabled,
+    allSharesByAddresses$,
+    allSharesByAddressesMaya$,
+    addressByChain$,
+    INCLUDED_CHAINS,
+    getLedgerAddress$
+  ])
 
   const reload = useCallback(() => {
     if (protocol === THORChain) {
