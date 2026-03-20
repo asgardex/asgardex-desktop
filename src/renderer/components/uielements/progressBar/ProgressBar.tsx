@@ -66,7 +66,10 @@ export const ProgressBar = ({
             strokeLinecap === 'round' && 'rounded-full'
           )}
           style={{ width: `${clamped}%` }}>
-          <div className="h-full w-full rounded-full bg-gradient-to-r from-[#0068F7] to-[#23DCC8]" />
+          <div className="relative h-full w-full overflow-hidden rounded-full bg-gradient-to-r from-[#0068F7] to-[#23DCC8]">
+            {/* Shimmer pulse when actively progressing */}
+            {clamped < 100 && <div className="absolute inset-0 animate-pulse rounded-full bg-white/20" />}
+          </div>
         </div>
 
         {/* Error overlay border */}
