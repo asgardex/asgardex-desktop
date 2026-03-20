@@ -50,7 +50,7 @@ import { getPoolDetail as getPoolDetailMaya } from '../../../services/midgard/ma
 import { PoolsState, PoolDetails } from '../../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../../services/midgard/thorMidgard/utils'
 import type { PriceLevel } from '../../../services/priceLevel/types'
-import { isVultisigMode } from '../../../services/wallet/types'
+import { isStandaloneLedgerMode, isVultisigMode } from '../../../services/wallet/types'
 import type { VaultType } from '../../../services/wallet/types'
 import { hasImportedKeystore } from '../../../services/wallet/util'
 import { TradingPanelBar, type TradeMode } from './TradingPanelBar'
@@ -81,7 +81,12 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     appWalletService
   } = useWalletContext()
   const keystore = useObservableState(keystoreState$, O.none)
-  const hasWallet = hasImportedKeystore(keystore)
+  const appWalletState = useObservableState(appWalletService.appWalletState$)
+  // Wallet is present for keystore, ledger, or vultisig sessions
+  const hasWallet =
+    hasImportedKeystore(keystore) ||
+    (!!appWalletState && isVultisigMode(appWalletState)) ||
+    (!!appWalletState && isStandaloneLedgerMode(appWalletState))
   const chainBalances = useObservableState(chainBalances$, [])
 
   const { swap$, swapCF$, swapFees$ } = useChainContext()
@@ -168,8 +173,15 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
 
   const [selectedTarget, setSelectedTarget] = useState<AnyAsset | null>(defaultTarget)
   useEffect(() => {
-    setSelectedTarget(defaultTarget)
-  }, [defaultTarget])
+    setSelectedTarget((current) => {
+      // Preserve user's selection if it's still in the pool list
+      if (current) {
+        const matched = availableAssets.find((asset) => eqAsset.equals(asset, current))
+        if (matched) return matched
+      }
+      return defaultTarget
+    })
+  }, [availableAssets, defaultTarget])
 
   // ── Local state ───────────────────────────────────────────────────────
   const [amountStr, setAmountStr] = useState('')
@@ -477,8 +489,6 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   })
 
   // ── Hook 7: Confirmation modals ───────────────────────────────────────
-  const appWalletState = useObservableState(appWalletService.appWalletState$)
-
   const vaultType: VaultType = useMemo(() => {
     if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
       return appWalletState.activeVault.type
@@ -779,6 +789,10 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     // Mark as executing
     priceLevelService.updateLevel(assetKey, event.levelId, { status: 'executing' })
 
+    // Clear any stale quote before restoring trade state — prevents auto-submit
+    // from firing with a previous manual trade's quote before the fresh one arrives
+    resetQuote()
+
     // Restore the trade state from the limit order
     setAmountStr(String(level.amount))
     setTradeMode(level.type)
@@ -797,6 +811,11 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     if (!autoSubmitPendingRef.current) return
     if (O.isNone(selectedQuote)) return
     if (isFetching) return
+
+    // For ERC20 tokens: wait until approval is confirmed before submitting
+    if (needsApproval && (!RD.isSuccess(isApprovedState) || isApprovedState.value === false)) {
+      return
+    }
 
     autoSubmitPendingRef.current = false
 
@@ -830,6 +849,8 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   }, [
     selectedQuote,
     isFetching,
+    needsApproval,
+    isApprovedState,
     onSubmit,
     priceLevelService,
     assetKey,
@@ -857,6 +878,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     <>
       <TradingPanelBar
         sourceAsset={safeSourceAsset}
+        sourceDecimal={sourceDecimal}
         network={network}
         hasWallet={hasWallet}
         tradeMode={tradeMode}

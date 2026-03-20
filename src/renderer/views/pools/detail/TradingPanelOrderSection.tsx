@@ -96,7 +96,7 @@ export const TradingPanelOrderSection = ({
         <p className="text-12 py-4 text-center font-main text-gray-500">
           {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.noAmount' })}
         </p>
-      ) : isFetching || O.isNone(selectedQuote) ? (
+      ) : isFetching ? (
         <div className="flex items-center justify-center py-6">
           <Spin />
         </div>
@@ -104,11 +104,15 @@ export const TradingPanelOrderSection = ({
         <div className="mb-3 rounded-lg bg-error0/10 px-3 py-2">
           <p className="text-12 font-main text-error0">{quoteError.value.message}</p>
         </div>
-      ) : targetAsset ? (
+      ) : O.isSome(selectedQuote) && targetAsset ? (
         <div className="mb-3">
           <QuoteDetails quote={selectedQuote.value} targetAsset={targetAsset} intl={intl} />
         </div>
-      ) : null}
+      ) : (
+        <div className="flex items-center justify-center py-6">
+          <Spin />
+        </div>
+      )}
 
       {/* Streaming settings — collapsible, below quote */}
       <div className="mb-3">

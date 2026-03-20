@@ -16,6 +16,7 @@ export type TradeMode = 'buy' | 'sell'
 
 type Props = {
   sourceAsset: AnyAsset
+  sourceDecimal: number
   network: Network
   hasWallet: boolean
   tradeMode: TradeMode
@@ -30,6 +31,7 @@ type Props = {
 
 export const TradingPanelBar = ({
   sourceAsset,
+  sourceDecimal,
   network,
   hasWallet,
   tradeMode,
@@ -50,12 +52,12 @@ export const TradingPanelBar = ({
         setAmountStr(
           baseToAsset(amount)
             .amount()
-            .toFixed(8)
+            .toFixed(sourceDecimal)
             .replace(/\.?0+$/, '')
         )
       })
     )
-  }, [assetBalance, setAmountStr])
+  }, [assetBalance, setAmountStr, sourceDecimal])
 
   if (!hasWallet) {
     return (
