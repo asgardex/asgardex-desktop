@@ -200,7 +200,7 @@ export const maxAmountToSwap = ({
       : asset.chain === ADAChain
         ? baseAmount(1170000, balanceAmount.decimal)
         : asset.chain === SOLChain
-          ? baseAmount(5000000, balanceAmount.decimal) // rent-exempt reserve (~0.00089 SOL) + buffer
+          ? convertBaseAmountDecimal(baseAmount(5000000, 9), balanceAmount.decimal) // rent-exempt reserve (~0.00089 SOL) + buffer
           : ZERO_BASE_AMOUNT
 
   const maxAmountToSwap = balanceAmount.minus(feeInBalanceDecimal).minus(accountReserve)

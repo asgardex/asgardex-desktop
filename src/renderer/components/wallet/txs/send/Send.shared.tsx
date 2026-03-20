@@ -66,7 +66,7 @@ export const renderTxModal = ({
   // don't render TxModal in initial state
   if (RD.isInitial(status)) return <></>
 
-  const oTxHash = extractTxHash(status)
+  const oTxHash = extractTxHash(status, asset.chain)
   const txRD = txHashRDToBoolean(status)
 
   const txConfig: TxConfig = {

@@ -731,7 +731,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
         timerValue={getDepositTimerValue(depositState.deposit)}
         txConfig={{
           type: 'deposit',
-          asset: { asset: depositAsset, amount: assetToBase(assetAmount(Number(amount) || 0, 8)) },
+          asset: { asset: depositAsset, amount: assetInputAmount.amount },
           steps: { current: depositState.step, total: depositState.stepsTotal },
           stepDescriptions: [
             intl.formatMessage({ id: 'common.tx.healthCheck' }),
@@ -745,7 +745,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
         network={network}
       />
     )
-  }, [depositState, intl, onClose, selectedAsset, amount, depositStartTime, resetDepositState, network])
+  }, [depositState, intl, onClose, selectedAsset, assetInputAmount, depositStartTime, resetDepositState, network])
 
   return (
     <>
