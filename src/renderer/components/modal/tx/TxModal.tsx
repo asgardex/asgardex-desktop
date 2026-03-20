@@ -145,7 +145,7 @@ export const UnifiedTxModal = (props: TxModalProps): JSX.Element => {
   const channelId = useMemo(() => (txConfig.type === 'swap' ? (txConfig.channelId ?? O.none) : O.none), [txConfig])
 
   return (
-    <Modal panelClassName="!max-w-[460px]" visible title={title} onCancel={onClose}>
+    <Modal panelClassName="!max-w-[460px]" containerClassName="lg:pl-[240px]" visible title={title} onCancel={onClose}>
       {/* Vertical stepper */}
       <TxStatusIndicator txRD={txRD} timerValue={timerValue} startTime={startTime} steps={stepLabels} />
 

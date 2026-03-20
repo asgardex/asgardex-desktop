@@ -20,6 +20,7 @@ export type HeadlessModalProps = {
   closable?: boolean // show "X" (default true)
   className?: string // wrapper
   panelClassName?: string // Dialog.Panel
+  containerClassName?: string // centering container (the flex wrapper)
   okButtonProps?: ButtonProps
   cancelButtonProps?: ButtonProps
   children?: React.ReactNode
@@ -37,6 +38,7 @@ export const Modal = ({
   closable = true,
   className = '',
   panelClassName = '',
+  containerClassName = '',
   okButtonProps,
   cancelButtonProps,
   children
@@ -49,7 +51,7 @@ export const Modal = ({
 
         {/* Modal container */}
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
+          <div className={clsx('flex min-h-full items-center justify-center p-4', containerClassName)}>
             <TransitionChild
               as={Fragment}
               enter="transition duration-200 ease-out"
