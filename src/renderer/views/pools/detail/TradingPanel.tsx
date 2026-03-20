@@ -1,108 +1,147 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
-import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
-import { QuoteSwap } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
   AnyAsset,
-  CryptoAmount,
-  assetAmount,
+  AssetType,
   assetToBase,
+  assetAmount,
   assetToString,
-  baseToAsset,
-  formatAssetAmountCurrency
+  baseAmount,
+  isTokenAsset
 } from '@xchainjs/xchain-util'
-import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
-import { useObservableState } from 'observable-hooks'
-import { useIntl } from 'react-intl'
-import { useNavigate } from 'react-router-dom'
+import { useObservableState, useSubscription } from 'observable-hooks'
 
-import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
-import { Spin } from '../../../components/uielements/spin'
+import { ASGARDEX_AFFILIATE_FEE_MIN } from '../../../../shared/const'
+import { isVultisigWallet } from '../../../../shared/utils/guard'
+import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
+import { useSwapConfirmationModals } from '../../../components/swap/components/SwapConfirmationModals'
+import { SwapTxModal } from '../../../components/swap/SwapTxModal'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
+import { useAppContext } from '../../../contexts/AppContext'
+import { useChainContext } from '../../../contexts/ChainContext'
+import { useChainflipContext } from '../../../contexts/ChainflipContext'
+import { useEvmContext } from '../../../contexts/EvmContext'
+import { useMayachainContext } from '../../../contexts/MayachainContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
+import { usePriceLevelContext } from '../../../contexts/PriceLevelContext'
+import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { isUSDAsset } from '../../../helpers/assetHelper'
+import { addChainflipSwapToTrackerFromQuote } from '../../../helpers/chainflipTransactionTracker'
+import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
-import * as poolsRoutes from '../../../routes/pools'
+import { addSwapToTracker } from '../../../helpers/transactionTracker'
+import { useERC20Approval } from '../../../hooks/useERC20Approval'
+import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
+import { useStreamingParams } from '../../../hooks/useStreamingParams'
+import { useSwapAddresses } from '../../../hooks/useSwapAddresses'
+import { useSwapExecution } from '../../../hooks/useSwapExecution'
+import { useSwapFees } from '../../../hooks/useSwapFees'
+import { useSwapQuote } from '../../../hooks/useSwapQuote'
 import { getDecimal } from '../../../services/chain/decimal'
-import { PoolsState } from '../../../services/midgard/midgardTypes'
+import type { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMidgard/types'
+import { getPoolDetail as getPoolDetailMaya } from '../../../services/midgard/mayaMidgard/utils'
+import { PoolsState, PoolDetails } from '../../../services/midgard/midgardTypes'
+import { getPoolDetail } from '../../../services/midgard/thorMidgard/utils'
+import type { PriceLevel } from '../../../services/priceLevel/types'
+import { isVultisigMode } from '../../../services/wallet/types'
+import type { VaultType } from '../../../services/wallet/types'
 import { hasImportedKeystore } from '../../../services/wallet/util'
-import { useAggregator } from '../../../store/aggregator/hooks'
+import { TradingPanelBar, type TradeMode } from './TradingPanelBar'
+import { TradingPanelOrderSection } from './TradingPanelOrderSection'
+import { TradingPanelPriceLevels } from './TradingPanelPriceLevels'
+
+export type TradingPanelHandle = {
+  /** Called when the user clicks a price on the chart — creates a limit order at that price */
+  addPriceLevelAtPrice: (price: number) => void
+}
 
 type Props = {
   poolAsset: AnyAsset
   network: Network
+  tradeMode: TradeMode
+  setTradeMode: (mode: TradeMode) => void
+  handleRef?: React.MutableRefObject<TradingPanelHandle | null>
 }
 
-type TradeMode = 'buy' | 'sell'
+export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, handleRef }: Props) => {
+  // ── Contexts ──────────────────────────────────────────────────────────
+  const { streamingSlipTolerance$ } = useAppContext()
+  const slipTolerance = useObservableState(streamingSlipTolerance$, 5)
 
-type QuoteState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'success'; quote: QuoteSwap }
-
-export const TradingPanel = ({ poolAsset, network }: Props) => {
-  const intl = useIntl()
-  const navigate = useNavigate()
-  const { estimateSwap } = useAggregator()
-
-  // Wallet state
   const {
     chainBalances$,
-    keystoreService: { keystoreState$ }
+    keystoreService: { keystoreState$, validatePassword$ },
+    appWalletService
   } = useWalletContext()
   const keystore = useObservableState(keystoreState$, O.none)
   const hasWallet = hasImportedKeystore(keystore)
   const chainBalances = useObservableState(chainBalances$, [])
 
-  // Pool state for available assets
+  const { swap$, swapCF$, swapFees$ } = useChainContext()
+  const { transactionTrackingService } = useThorchainContext()
+  const { transactionTrackingService: mayaTransactionTrackingService } = useMayachainContext()
+  const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
+
   const {
     service: {
-      pools: { poolsState$ }
+      pools: { poolsState$, selectedPoolAddress$ },
+      setSelectedPoolAsset
     }
   } = useMidgardContext()
-  const poolsRD = useObservableState(poolsState$, RD.pending)
 
-  // Extract pool details for decimal resolution
-  const poolDetails = useMemo(
+  const {
+    service: {
+      pools: { selectedPoolAddress$: selectedPoolAddressMaya$, poolsState$: mayaPoolsState$ },
+      setSelectedPoolAsset: setSelectedPoolAssetMaya
+    }
+  } = useMidgardMayaContext()
+
+  const poolsRD = useObservableState(poolsState$, RD.pending)
+  const mayaPoolsRD = useObservableState(mayaPoolsState$, RD.initial)
+
+  const poolAddressThor = useObservableState(selectedPoolAddress$, O.none)
+  const poolAddressMaya = useObservableState(selectedPoolAddressMaya$, O.none)
+
+  // Price levels
+  const priceLevelService = usePriceLevelContext()
+
+  // ── Pool state ────────────────────────────────────────────────────────
+  const poolDetailsThor: PoolDetails = useMemo(
     () =>
       FP.pipe(
         poolsRD,
         RD.fold(
-          () => undefined,
-          () => undefined,
-          () => undefined,
+          () => [],
+          () => [],
+          () => [],
           (state: PoolsState) => state.poolDetails
         )
       ),
     [poolsRD]
   )
 
-  // Local state
-  const [amountStr, setAmountStr] = useState('')
-  const [modalOpen, setModalOpen] = useState(false)
-  const [tradeMode, setTradeMode] = useState<TradeMode>('buy')
-  const [quoteState, setQuoteState] = useState<QuoteState>({ status: 'idle' })
-  const abortRef = useRef(0)
+  const poolDetailsMaya: PoolDetailsMaya = useMemo(
+    () =>
+      FP.pipe(
+        mayaPoolsRD,
+        RD.fold(
+          () => [],
+          () => [],
+          () => [],
+          (state) => (state as PoolsState).poolDetails ?? []
+        )
+      ),
+    [mayaPoolsRD]
+  )
 
-  // Extract user's balance for this pool asset
-  const assetBalance = useMemo(() => {
-    for (const cb of chainBalances) {
-      if (cb.chain !== poolAsset.chain) continue
-      if (!RD.isSuccess(cb.balances)) continue
-      const found = cb.balances.value.find((b) => eqAsset.equals(b.asset, poolAsset))
-      if (found) return O.some(found.amount)
-    }
-    return O.none
-  }, [chainBalances, poolAsset])
-
-  // Get available pool assets, stablecoins first
+  // ── Available assets & target ─────────────────────────────────────────
   const availableAssets = useMemo(
     () =>
       FP.pipe(
@@ -122,405 +161,762 @@ export const TradingPanel = ({ poolAsset, network }: Props) => {
     [poolsRD, poolAsset]
   )
 
-  // Default target: first stablecoin, or first available asset
   const defaultTarget = useMemo(() => {
     const stable = availableAssets.find(isUSDAsset)
     return stable ?? availableAssets[0] ?? null
   }, [availableAssets])
 
   const [selectedTarget, setSelectedTarget] = useState<AnyAsset | null>(defaultTarget)
-
-  // Sync selectedTarget when pool changes or defaultTarget becomes available
   useEffect(() => {
     setSelectedTarget(defaultTarget)
   }, [defaultTarget])
+
+  // ── Local state ───────────────────────────────────────────────────────
+  const [amountStr, setAmountStr] = useState('')
+  const [orderSectionOpen, setOrderSectionOpen] = useState(false)
+  const [sourceDecimal, setSourceDecimal] = useState(8)
 
   // Derive source/target based on trade mode
   const sourceAsset = tradeMode === 'sell' ? poolAsset : selectedTarget
   const targetAsset = tradeMode === 'sell' ? selectedTarget : poolAsset
 
-  const handleSetMax = useCallback(() => {
-    FP.pipe(
-      assetBalance,
-      O.map((amount) => {
-        setAmountStr(
-          baseToAsset(amount)
-            .amount()
-            .toFixed(8)
-            .replace(/\.?0+$/, '')
+  // Resolve source chain (for EVM context)
+  const sourceChain = useMemo(() => {
+    if (!sourceAsset) return 'ETH'
+    if (sourceAsset.type === AssetType.SYNTH) return AssetCacao.chain
+    if (sourceAsset.type === AssetType.SECURED) return AssetRuneNative.chain
+    return sourceAsset.chain
+  }, [sourceAsset])
+
+  // EVM context for approval
+  const { approveERC20Token$, isApprovedERC20Token$ } = useEvmContext(sourceChain)
+
+  // Source asset balance (what the user is spending — follows tradeMode)
+  const assetBalance = useMemo(() => {
+    if (!sourceAsset) return O.none
+    for (const cb of chainBalances) {
+      if (cb.chain !== sourceChain) continue
+      if (!RD.isSuccess(cb.balances)) continue
+      const found = cb.balances.value.find((b) => eqAsset.equals(b.asset, sourceAsset))
+      if (found) return O.some(found.amount)
+    }
+    return O.none
+  }, [chainBalances, sourceAsset, sourceChain])
+
+  // Source wallet balance (WalletBalance object)
+  const sourceWalletBalance = useMemo(() => {
+    if (!sourceAsset) return O.none
+    for (const cb of chainBalances) {
+      if (cb.chain !== sourceChain) continue
+      if (!RD.isSuccess(cb.balances)) continue
+      const found = cb.balances.value.find((b) => eqAsset.equals(b.asset, sourceAsset))
+      if (found) return O.some(found)
+    }
+    return O.none
+  }, [chainBalances, sourceAsset, sourceChain])
+
+  // Source chain native balance (for gas estimation)
+  const sourceChainBalance = useMemo(() => {
+    for (const cb of chainBalances) {
+      if (cb.chain !== sourceChain) continue
+      if (!RD.isSuccess(cb.balances)) continue
+      // Find the native asset (not a token)
+      const native = cb.balances.value.find((b) => !isTokenAsset(b.asset) && b.asset.chain === sourceChain)
+      if (native) return native.amount
+    }
+    return baseAmount(0)
+  }, [chainBalances, sourceChain])
+
+  const sourceBalance = useMemo(
+    () =>
+      FP.pipe(
+        sourceWalletBalance,
+        O.map((wb) => wb.amount),
+        O.getOrElse(() => baseAmount(0))
+      ),
+    [sourceWalletBalance]
+  )
+
+  // Resolve decimal for source asset (with stale guard for rapid changes)
+  useEffect(() => {
+    if (!sourceAsset) return
+    let stale = false
+    getDecimal(sourceAsset, poolDetailsThor).then((d) => {
+      if (!stale) setSourceDecimal(d)
+    })
+    return () => {
+      stale = true
+    }
+  }, [sourceAsset, poolDetailsThor])
+
+  // Compute amount to swap
+  const amountToSwap = useMemo(() => {
+    const numAmount = parseFloat(amountStr)
+    if (!numAmount || numAmount <= 0) return baseAmount(0, sourceDecimal)
+    return assetToBase(assetAmount(numAmount, sourceDecimal))
+  }, [amountStr, sourceDecimal])
+
+  // ── Set pool address triggers ─────────────────────────────────────────
+  useEffect(() => {
+    if (!sourceAsset) return
+    setSelectedPoolAsset(O.some(sourceAsset))
+    setSelectedPoolAssetMaya(O.some(sourceAsset))
+    return () => {
+      setSelectedPoolAsset(O.none)
+      setSelectedPoolAssetMaya(O.none)
+    }
+  }, [sourceAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya])
+
+  // ── Resolve source/dest addresses ─────────────────────────────────────
+  // Get keystore addresses from chain balances
+  const sourceKeystoreAddress = useMemo(() => {
+    if (!sourceAsset) return O.none
+    const cb = chainBalances.find((c) => c.chain === sourceChain)
+    if (!cb) return O.none
+    return cb.walletAddress
+  }, [chainBalances, sourceAsset, sourceChain])
+
+  const targetKeystoreAddress = useMemo(() => {
+    if (!targetAsset) return O.none
+    const targetChain =
+      targetAsset.type === AssetType.SYNTH
+        ? AssetCacao.chain
+        : targetAsset.type === AssetType.SECURED
+          ? AssetRuneNative.chain
+          : targetAsset.chain
+    const cb = chainBalances.find((c) => c.chain === targetChain)
+    if (!cb) return O.none
+    return cb.walletAddress
+  }, [chainBalances, targetAsset])
+
+  // ── Hook 1: Streaming params ──────────────────────────────────────────
+  const {
+    streamingInterval,
+    streamingQuantity,
+    isStreaming,
+    activeMode,
+    setMode: setStreamingMode,
+    setQuantity: setStreamingQuantity,
+    resetToDefault: resetStreaming
+  } = useStreamingParams()
+
+  // ── Hook 2: Swap addresses (simplified — no custom recipient, no standalone ledger target) ──
+  // Stable refs to avoid re-render loops inside useSwapAddresses
+  const oNone = useMemo(() => O.none, [])
+  const oDefaultWalletType = useMemo(() => O.some(DEFAULT_WALLET_TYPE), [])
+  const safeSourceAsset = sourceAsset ?? poolAsset
+  const safeTargetAsset = targetAsset ?? poolAsset
+
+  const {
+    sourceAddress: oSourceWalletAddress,
+    sourceWalletType,
+    destinationAddress,
+    destinationAddressString,
+    useSourceLedger,
+    useSourceVultisig,
+    quoteOnly
+  } = useSwapAddresses({
+    sourceAsset: safeSourceAsset,
+    targetAsset: safeTargetAsset,
+    sourceKeystoreAddress,
+    sourceLedgerAddress: oNone,
+    targetKeystoreAddress,
+    targetLedgerAddress: oNone,
+    recipientAddress: targetKeystoreAddress,
+    initialSourceWalletType: DEFAULT_WALLET_TYPE,
+    initialTargetWalletType: oDefaultWalletType
+  })
+
+  // ── Hook 3: Swap fees ─────────────────────────────────────────────────
+  const { swapFees, affiliateBps: rawAffiliateBps } = useSwapFees({
+    sourceAsset: safeSourceAsset,
+    targetAsset: safeTargetAsset,
+    fees$: swapFees$,
+    destinationAddress,
+    slipTolerance,
+    streaming: { interval: streamingInterval, quantity: streamingQuantity },
+    network,
+    sourceBalance,
+    poolDetailsThor,
+    poolDetailsMaya,
+    lockedWallet: false,
+    quoteOnly,
+    lockedAssetAmount: baseAmount(0),
+    amountToSwap
+  })
+
+  // Simple affiliate fee check: use pool's USD price directly.
+  // If useSwapFees resolved it, use that. Otherwise compute from pool detail price.
+  // This avoids the fragile PoolHelper chain that can return O.none forever.
+  //
+  // We derive a stable primitive ('none' | 'true' | 'false') to avoid re-render loops
+  // caused by O.some() creating new object references.
+  const affiliateBpsValue: 'none' | 'true' | 'false' = useMemo(() => {
+    if (O.isSome(rawAffiliateBps)) return rawAffiliateBps.value ? 'true' : 'false'
+
+    const numAmount = parseFloat(amountStr)
+    if (!numAmount || numAmount <= 0) return 'none'
+
+    // Try THORChain pool first, then MAYAChain pool
+    const usdPrice = FP.pipe(
+      getPoolDetail(poolDetailsThor, safeSourceAsset),
+      O.alt(() => getPoolDetailMaya(poolDetailsMaya, safeSourceAsset)),
+      O.chain((detail) => O.fromNullable(detail.assetPriceUSD)),
+      O.map(Number),
+      O.getOrElse(() => 0)
+    )
+
+    if (usdPrice === 0) return 'false'
+
+    const swapUsdValue = numAmount * usdPrice
+    return swapUsdValue >= ASGARDEX_AFFILIATE_FEE_MIN ? 'true' : 'false'
+  }, [rawAffiliateBps, amountStr, poolDetailsThor, poolDetailsMaya, safeSourceAsset])
+
+  // Stable Option reference — only changes when the primitive changes
+  const affiliateBps: O.Option<boolean> = useMemo(
+    () => (affiliateBpsValue === 'none' ? O.none : O.some(affiliateBpsValue === 'true')),
+    [affiliateBpsValue]
+  )
+
+  // ── Hook 4: Swap quote ────────────────────────────────────────────────
+  const { selectedQuote, quoteError, isFetching, fetchQuote, resetQuote } = useSwapQuote({
+    sourceAsset: safeSourceAsset,
+    targetAsset: safeTargetAsset,
+    sourceAssetDecimal: sourceDecimal,
+    sourceWalletAddress: FP.pipe(
+      oSourceWalletAddress,
+      O.getOrElse(() => '')
+    ),
+    destinationAddress: destinationAddressString,
+    quoteOnly,
+    streaming: { enabled: isStreaming, interval: streamingInterval, quantity: streamingQuantity },
+    slipTolerance,
+    affiliateBps
+  })
+
+  // ── Hook 5: Swap execution ────────────────────────────────────────────
+  const {
+    swapState,
+    swapParams: oSwapParams,
+    cfSwapParams: oCFSwapParams,
+    submitSwap: submitSwapTx,
+    submitCFSwap: submitCFTx,
+    resetSwapState,
+    swapStartTime,
+    lastTrackedTxHashRef
+  } = useSwapExecution({
+    swap$,
+    swapCF$,
+    selectedQuote,
+    sourceAsset: safeSourceAsset,
+    amountToSwap,
+    sourceWalletBalance,
+    sourceChainBalance,
+    swapFees,
+    poolAddressThor,
+    poolAddressMaya,
+    network,
+    isSendMax: false
+  })
+
+  // ── Hook 6: ERC20 Approval ────────────────────────────────────────────
+  const needsApproval = useMemo(() => (sourceAsset ? isEvmChainToken(sourceAsset) : false), [sourceAsset])
+
+  const oApproveParams = useMemo(() => {
+    if (!needsApproval || !sourceAsset) return O.none
+    return FP.pipe(
+      selectedQuote,
+      O.chain((quote) => {
+        const oPoolAddr = quote.protocol === 'Mayachain' ? poolAddressMaya : poolAddressThor
+        return FP.pipe(
+          oPoolAddr,
+          O.chain((poolAddr) => {
+            const spenderAddress = FP.pipe(
+              poolAddr.router,
+              O.getOrElse(() => poolAddr.address)
+            )
+            return O.some({
+              network,
+              contractAddress: sourceAsset.symbol.split('-')[1] ?? '',
+              spenderAddress,
+              fromAddress: FP.pipe(
+                oSourceWalletAddress,
+                O.getOrElse(() => '')
+              ),
+              walletType: sourceWalletType,
+              walletAccount: 0,
+              walletIndex: 0,
+              hdMode: 'default' as const
+            })
+          })
         )
       })
     )
-  }, [assetBalance])
+  }, [
+    needsApproval,
+    sourceAsset,
+    selectedQuote,
+    poolAddressThor,
+    poolAddressMaya,
+    network,
+    oSourceWalletAddress,
+    sourceWalletType
+  ])
 
-  const fetchQuote = useCallback(
-    async (mode: TradeMode) => {
-      if (!selectedTarget) return
-
-      const numAmount = parseFloat(amountStr)
-      if (!numAmount || numAmount <= 0) return
-
-      const from = mode === 'sell' ? poolAsset : selectedTarget
-      const to = mode === 'sell' ? selectedTarget : poolAsset
-      const fromDecimal = await getDecimal(from, poolDetails)
-      const cryptoAmount = new CryptoAmount(assetToBase(assetAmount(numAmount, fromDecimal)), from)
-
-      // Resolve destination address from wallet balances
-      const destAddress = FP.pipe(
-        chainBalances.find((cb) => cb.chain === to.chain),
-        O.fromNullable,
-        O.chain((cb) => cb.walletAddress),
-        O.toUndefined
-      )
-
-      const requestId = ++abortRef.current
-      setQuoteState({ status: 'loading' })
-
-      try {
-        const quotes = await estimateSwap(
-          {
-            fromAsset: from,
-            destinationAsset: to,
-            amount: cryptoAmount,
-            destinationAddress: destAddress
-          },
-          true
-        )
-
-        // Stale request guard
-        if (abortRef.current !== requestId) return
-
-        const bestQuote = quotes.find((q: QuoteSwap) => q.canSwap)
-        if (bestQuote) {
-          setQuoteState({ status: 'success', quote: bestQuote })
-        } else {
-          const errors = quotes.flatMap((q: QuoteSwap) => q.errors).filter(Boolean)
-          setQuoteState({
-            status: 'error',
-            message: errors[0] || intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.error' })
-          })
-        }
-      } catch (err) {
-        if (abortRef.current !== requestId) return
-        setQuoteState({
-          status: 'error',
-          message:
-            err instanceof Error ? err.message : intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.error' })
-        })
+  const { isApprovedState, awaitingConfirmation, submitApproveTx, resetApproval } = useERC20Approval({
+    isApprovedERC20Token$,
+    approveERC20Token$,
+    oApproveParams,
+    network,
+    onApprovalConfirmed: () => {
+      // After approval confirmed, re-fetch quote
+      if (amountToSwap.amount().gt(0)) {
+        void fetchQuote(amountToSwap)
       }
+    }
+  })
+
+  // ── Hook 7: Confirmation modals ───────────────────────────────────────
+  const appWalletState = useObservableState(appWalletService.appWalletState$)
+
+  const vaultType: VaultType = useMemo(() => {
+    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
+      return appWalletState.activeVault.type
+    }
+    return 'fast'
+  }, [appWalletState])
+
+  const validatePasswordForVultisig = useCallback(
+    async (password: string): Promise<boolean> => {
+      if (isVultisigWallet(sourceWalletType)) {
+        return appWalletService.validatePassword(password)
+      }
+      return new Promise((resolve) => {
+        validatePassword$(password).subscribe({
+          next: (result) => {
+            if (RD.isSuccess(result)) resolve(true)
+            else if (RD.isFailure(result)) resolve(false)
+          },
+          error: () => resolve(false)
+        })
+      })
     },
-    [selectedTarget, amountStr, poolAsset, estimateSwap, intl, poolDetails, chainBalances]
+    [sourceWalletType, appWalletService, validatePassword$]
   )
 
+  const getActiveVaultId = useCallback(() => appWalletService.getActiveVaultId(), [appWalletService])
+
+  const { onSubmit, onApprove, renderModals } = useSwapConfirmationModals({
+    useSourceAssetLedger: useSourceLedger,
+    useSourceAssetVultisig: useSourceVultisig,
+    sourceAsset: safeSourceAsset,
+    sourceChain,
+    sourceWalletType,
+    network,
+    oSwapParams,
+    oCFSwapParams,
+    submitSwapTx,
+    submitCFTx,
+    submitApproveTx,
+    validatePassword$,
+    validatePasswordForVultisig,
+    vaultType,
+    approveState: RD.initial,
+    swapState,
+    getActiveVaultId
+  })
+
+  // ── Explorer URL for tx modal ─────────────────────────────────────────
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(sourceChain))
+
+  // ── Auto-fetch quote when order section is open and inputs change ───
+  // Debounced: amount changes wait 600ms, other changes fire immediately.
+  const quoteFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const prevAmountRef = useRef(amountStr)
+
+  useEffect(() => {
+    if (!orderSectionOpen) return
+    if (affiliateBpsValue === 'none') return // fees not ready yet
+
+    const doFetch = () => {
+      const numAmount = parseFloat(amountStr)
+      if (!numAmount || numAmount <= 0) return
+      const amt = assetToBase(assetAmount(numAmount, sourceDecimal))
+      void fetchQuote(amt)
+    }
+
+    // If only amount changed, debounce to avoid fetching on every keystroke
+    const amountChanged = prevAmountRef.current !== amountStr
+    prevAmountRef.current = amountStr
+
+    if (quoteFetchTimerRef.current) clearTimeout(quoteFetchTimerRef.current)
+
+    if (amountChanged) {
+      quoteFetchTimerRef.current = setTimeout(doFetch, 600)
+    } else {
+      doFetch()
+    }
+
+    return () => {
+      if (quoteFetchTimerRef.current) clearTimeout(quoteFetchTimerRef.current)
+    }
+    // Use affiliateBpsValue (primitive) instead of affiliateBps (object) to avoid re-render loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderSectionOpen, amountStr, tradeMode, selectedTarget, sourceDecimal, affiliateBpsValue])
+
+  // ── Actions ───────────────────────────────────────────────────────────
   const handleTrade = useCallback(
     (mode: TradeMode) => {
       if (!hasWallet || !selectedTarget) return
-
-      const numAmount = parseFloat(amountStr)
-      if (!numAmount || numAmount <= 0) {
-        // Open modal with no-amount message
-        setTradeMode(mode)
-        setQuoteState({ status: 'idle' })
-        setModalOpen(true)
-        return
-      }
-
       setTradeMode(mode)
-      setQuoteState({ status: 'idle' })
-      setModalOpen(true)
-      // Fetch quote after modal opens
-      void fetchQuote(mode)
+      resetQuote()
+      setOrderSectionOpen(true)
+      // Quote fetch is handled by the useEffect above after re-render
     },
-    [hasWallet, selectedTarget, amountStr, fetchQuote]
+    [hasWallet, selectedTarget, setTradeMode, resetQuote]
   )
 
+  const handleCloseOrderSection = useCallback(() => {
+    setOrderSectionOpen(false)
+    resetQuote()
+  }, [resetQuote])
+
   const handleConfirm = useCallback(() => {
-    if (!selectedTarget) return
+    onSubmit()
+  }, [onSubmit])
 
-    const source = tradeMode === 'buy' ? assetToString(selectedTarget) : assetToString(poolAsset)
-    const target = tradeMode === 'buy' ? assetToString(poolAsset) : assetToString(selectedTarget)
+  // ── Price levels (limit orders) ─────────────────────────────────────
+  const assetKey = assetToString(poolAsset)
 
-    const path = poolsRoutes.swap.path({
-      source,
-      target,
-      sourceWalletType: DEFAULT_WALLET_TYPE,
-      targetWalletType: DEFAULT_WALLET_TYPE
-    })
-    setModalOpen(false)
-    navigate(path)
-  }, [selectedTarget, tradeMode, poolAsset, navigate])
+  // Track swap completion → update price level status if we were executing one
+  const swapTxRD = swapState.swapTx
+  useEffect(() => {
+    if (!executingLevelRef.current) return
+    const levelId = executingLevelRef.current
 
-  const handleCloseModal = useCallback(() => {
-    abortRef.current++
-    setModalOpen(false)
-    setQuoteState({ status: 'idle' })
+    if (RD.isSuccess(swapTxRD)) {
+      const txHash = FP.pipe(
+        RD.toOption(swapTxRD),
+        O.getOrElse(() => '')
+      )
+      priceLevelService.updateLevel(assetKey, levelId, {
+        status: 'completed',
+        txHash: txHash || undefined
+      })
+      executingLevelRef.current = null
+    } else if (RD.isFailure(swapTxRD)) {
+      priceLevelService.updateLevel(assetKey, levelId, {
+        status: 'failed',
+        error: swapTxRD.error.msg ?? 'Swap failed'
+      })
+      executingLevelRef.current = null
+    }
+  }, [swapTxRD, priceLevelService, assetKey])
+
+  // ── Track successful swap transactions ────────────────────────────────
+  useEffect(() => {
+    const { swapTx } = swapState
+    if (!RD.isSuccess(swapTx)) return
+
+    const txHash = swapTx.value
+    if (lastTrackedTxHashRef.current === txHash) return
+
+    FP.pipe(
+      selectedQuote,
+      O.map((quoteProtocol) => {
+        if (quoteProtocol.protocol === 'Thorchain') {
+          addSwapToTracker(transactionTrackingService, txHash, {
+            sourceAsset: assetToString(safeSourceAsset),
+            targetAsset: assetToString(safeTargetAsset),
+            amount: amountToSwap.amount().toString()
+          })
+          lastTrackedTxHashRef.current = txHash
+        } else if (quoteProtocol.protocol === 'Mayachain') {
+          addSwapToTracker(mayaTransactionTrackingService, txHash, {
+            sourceAsset: assetToString(safeSourceAsset),
+            targetAsset: assetToString(safeTargetAsset),
+            amount: amountToSwap.amount().toString()
+          })
+          lastTrackedTxHashRef.current = txHash
+        } else if (quoteProtocol.protocol === 'Chainflip' && quoteProtocol.depositChannelId) {
+          addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, quoteProtocol.depositChannelId, {
+            srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },
+            destAsset: { chain: safeTargetAsset.chain, symbol: safeTargetAsset.symbol },
+            depositAmount: amountToSwap.amount().toString()
+          })
+          lastTrackedTxHashRef.current = txHash
+        }
+      })
+    )
+  }, [
+    swapState,
+    selectedQuote,
+    transactionTrackingService,
+    mayaTransactionTrackingService,
+    chainflipTransactionTrackingService,
+    safeSourceAsset,
+    safeTargetAsset,
+    amountToSwap,
+    lastTrackedTxHashRef
+  ])
+
+  const onCloseTxModal = useCallback(() => {
+    resetSwapState()
+  }, [resetSwapState])
+
+  const onFinishTxModal = useCallback(() => {
+    resetSwapState()
+    resetQuote()
+    resetApproval()
+    setAmountStr('')
+    setOrderSectionOpen(false)
+  }, [resetSwapState, resetQuote, resetApproval])
+  const levelsMap = useObservableState(priceLevelService.levels$, {})
+  const priceLevels: PriceLevel[] = levelsMap[assetKey] ?? []
+
+  const handleRemoveLevel = useCallback(
+    (levelId: string) => {
+      priceLevelService.removeLevel(assetKey, levelId)
+      orderPasswordCache.current.delete(levelId)
+    },
+    [priceLevelService, assetKey]
+  )
+
+  // ── Limit order password cache ──────────────────────────────────────
+  // For keystore wallets: password is validated at order creation time and cached
+  // in memory (per order ID). On crossing, we bypass the modal and submit directly.
+  // For Ledger/Vultisig: the hardware prompt is unavoidable, so we fall back to onSubmit().
+  const orderPasswordCache = useRef<Map<string, boolean>>(new Map())
+
+  // Create a limit order with pre-authorization.
+  // Keystore wallets: password modal shown at creation time, cached for auto-execution.
+  // Hardware wallets: order created immediately, device prompt shown on trigger.
+  const addPriceLevelWithAuth = useCallback(
+    (price: number) => {
+      if (!hasWallet || !selectedTarget) return
+      const numAmount = parseFloat(amountStr)
+      if (!numAmount || numAmount <= 0) return
+
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+      const doCreateOrder = (preAuthorized: boolean) => {
+        priceLevelService.addLevel(assetKey, {
+          id,
+          price,
+          type: tradeMode,
+          amount: numAmount,
+          amountSymbol: poolAsset.ticker,
+          targetAssetKey: assetToString(selectedTarget),
+          status: 'pending'
+        })
+        if (preAuthorized) {
+          orderPasswordCache.current.set(id, true)
+        }
+      }
+
+      if (useSourceLedger || useSourceVultisig) {
+        // Hardware wallets can't pre-authorize — create order, prompt on trigger
+        doCreateOrder(false)
+      } else {
+        // Keystore: show password prompt, create order only on success
+        setPendingOrderAction(() => doCreateOrder)
+        setShowOrderPasswordModal(true)
+      }
+    },
+    [
+      hasWallet,
+      selectedTarget,
+      amountStr,
+      tradeMode,
+      poolAsset,
+      assetKey,
+      priceLevelService,
+      useSourceLedger,
+      useSourceVultisig
+    ]
+  )
+
+  // Password modal state for limit order pre-authorization
+  const [showOrderPasswordModal, setShowOrderPasswordModal] = useState(false)
+  const [pendingOrderAction, setPendingOrderAction] = useState<((preAuth: boolean) => void) | null>(null)
+
+  const handleOrderPasswordSuccess = useCallback(() => {
+    setShowOrderPasswordModal(false)
+    if (pendingOrderAction) {
+      pendingOrderAction(true) // pre-authorized
+      setPendingOrderAction(null)
+    }
+  }, [pendingOrderAction])
+
+  const handleOrderPasswordClose = useCallback(() => {
+    setShowOrderPasswordModal(false)
+    setPendingOrderAction(null)
   }, [])
 
-  const balanceText = hasWallet
-    ? FP.pipe(
-        assetBalance,
-        O.fold(
-          () => `${intl.formatMessage({ id: 'common.balance' })}: 0`,
-          (amount) =>
-            `${intl.formatMessage({ id: 'common.balance' })}: ${formatAssetAmountCurrency({
-              amount: baseToAsset(amount),
-              asset: poolAsset,
-              trimZeros: true
-            })}`
-        )
-      )
-    : null
+  // Expose handle to parent (PoolDetailView wires this to chart click)
+  useEffect(() => {
+    if (handleRef) {
+      handleRef.current = { addPriceLevelAtPrice: addPriceLevelWithAuth }
+    }
+  }, [handleRef, addPriceLevelWithAuth])
 
-  const numAmount = parseFloat(amountStr)
-  const hasAmount = !!numAmount && numAmount > 0
+  // Track which level is currently being executed (to prevent double-fire)
+  const executingLevelRef = useRef<string | null>(null)
+  // Flag: when true, auto-submit after the next successful quote fetch
+  const autoSubmitPendingRef = useRef(false)
+
+  // Subscribe to crossing events — restore trade state and flag for auto-execution.
+  // Skip if already executing a level (queue is single-slot; next poll will re-trigger).
+  useSubscription(priceLevelService.crossings$, (event) => {
+    if (event.assetKey !== assetKey) return
+    if (executingLevelRef.current) return
+
+    const level = event.level
+    if (level.amount <= 0 || !level.targetAssetKey) return
+
+    executingLevelRef.current = event.levelId
+
+    // Mark as executing
+    priceLevelService.updateLevel(assetKey, event.levelId, { status: 'executing' })
+
+    // Restore the trade state from the limit order
+    setAmountStr(String(level.amount))
+    setTradeMode(level.type)
+
+    const resolvedTarget = availableAssets.find((a) => assetToString(a) === level.targetAssetKey)
+    if (resolvedTarget) {
+      setSelectedTarget(resolvedTarget)
+    }
+
+    setOrderSectionOpen(true)
+    autoSubmitPendingRef.current = true
+  })
+
+  // Auto-submit when a quote arrives and autoSubmitPending is set
+  useEffect(() => {
+    if (!autoSubmitPendingRef.current) return
+    if (O.isNone(selectedQuote)) return
+    if (isFetching) return
+
+    autoSubmitPendingRef.current = false
+
+    if (!selectedQuote.value.canSwap) {
+      if (executingLevelRef.current) {
+        priceLevelService.updateLevel(assetKey, executingLevelRef.current, {
+          status: 'failed',
+          error: 'No valid swap route'
+        })
+        executingLevelRef.current = null
+      }
+      return
+    }
+
+    const levelId = executingLevelRef.current
+    const isPreAuthorized = levelId ? orderPasswordCache.current.has(levelId) : false
+
+    if (isPreAuthorized) {
+      // Pre-authorized keystore order: bypass password modal, submit directly
+      if (O.isSome(oSwapParams)) {
+        submitSwapTx()
+      } else if (O.isSome(oCFSwapParams)) {
+        submitCFTx()
+      }
+      // Clean up cached auth
+      if (levelId) orderPasswordCache.current.delete(levelId)
+    } else {
+      // Hardware wallet or non-pre-authorized: show confirmation modal
+      onSubmit()
+    }
+  }, [
+    selectedQuote,
+    isFetching,
+    onSubmit,
+    priceLevelService,
+    assetKey,
+    oSwapParams,
+    oCFSwapParams,
+    submitSwapTx,
+    submitCFTx
+  ])
+
+  // Extra content for tx modal
+  const extraTxModalContent = useMemo(() => {
+    if (!sourceAsset || !targetAsset) return null
+    return (
+      <div className="flex items-center justify-center gap-2 py-2 font-main text-14 text-white">
+        <span>
+          {amountStr} {sourceAsset.ticker}
+        </span>
+        <span className="text-gray-500">&rarr;</span>
+        <span>{targetAsset.ticker}</span>
+      </div>
+    )
+  }, [sourceAsset, targetAsset, amountStr])
 
   return (
     <>
-      <div className="flex items-center gap-2 border-t border-white/10 bg-white/5 px-4 py-2">
-        {/* Left: balance */}
-        <span className="text-12 shrink-0 font-main text-gray-400">
-          {balanceText ?? intl.formatMessage({ id: 'pools.chart.tradingPanel.noWallet' })}
-        </span>
+      <TradingPanelBar
+        sourceAsset={safeSourceAsset}
+        network={network}
+        hasWallet={hasWallet}
+        tradeMode={tradeMode}
+        assetBalance={assetBalance}
+        amountStr={amountStr}
+        setAmountStr={setAmountStr}
+        selectedTarget={selectedTarget}
+        setSelectedTarget={setSelectedTarget}
+        availableAssets={availableAssets}
+        onTrade={handleTrade}
+      />
 
-        {/* Right side */}
-        {hasWallet ? (
-          <div className="ml-auto flex items-center gap-2">
-            {/* Amount input */}
-            <div className="flex items-center gap-1">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={amountStr}
-                onChange={(e) => {
-                  const v = e.target.value
-                  if (v === '' || /^\d*\.?\d*$/.test(v)) setAmountStr(v)
-                }}
-                placeholder="0.00"
-                className="w-[80px] rounded bg-white/10 px-2 py-1 font-main text-11 text-white placeholder-gray-500 outline-none focus:bg-white/15"
-              />
-              {O.isSome(assetBalance) && (
-                <button
-                  onClick={handleSetMax}
-                  className="text-10 font-main font-semibold text-turquoise transition-opacity hover:opacity-80">
-                  {intl.formatMessage({ id: 'common.max' })}
-                </button>
-              )}
-            </div>
+      <TradingPanelOrderSection
+        visible={orderSectionOpen}
+        tradeMode={tradeMode}
+        targetAsset={targetAsset}
+        amountStr={amountStr}
+        selectedQuote={selectedQuote}
+        quoteError={quoteError}
+        isFetching={isFetching}
+        activeMode={activeMode}
+        streamingInterval={streamingInterval}
+        streamingQuantity={streamingQuantity}
+        onModeChange={setStreamingMode}
+        onQuantityChange={setStreamingQuantity}
+        onResetStreaming={resetStreaming}
+        isApprovedState={isApprovedState}
+        needsApproval={needsApproval}
+        awaitingConfirmation={awaitingConfirmation}
+        onApprove={onApprove}
+        onConfirm={handleConfirm}
+        onClose={handleCloseOrderSection}
+      />
 
-            {/* Asset pair dropdown */}
-            {selectedTarget && availableAssets.length > 0 && (
-              <Listbox value={selectedTarget} onChange={setSelectedTarget}>
-                <div className="relative">
-                  <ListboxButton className="flex cursor-pointer items-center gap-1.5 rounded bg-white/10 px-2.5 py-1 font-main text-11 text-white transition-colors hover:bg-white/15">
-                    {({ open }) => (
-                      <>
-                        <AssetIcon
-                          asset={selectedTarget}
-                          size="xsmall"
-                          network={network}
-                          className="pointer-events-none !h-4 !w-4"
-                        />
-                        <span>{selectedTarget.ticker}</span>
-                        <span className="text-gray-500">&middot;</span>
-                        <span className="text-gray-400">{selectedTarget.chain}</span>
-                        <ChevronDownIcon
-                          className={clsx('h-3 w-3 text-gray-400 transition-transform', { 'rotate-180': open })}
-                        />
-                      </>
-                    )}
-                  </ListboxButton>
-                  <ListboxOptions className="absolute right-0 bottom-full z-50 mb-1 max-h-[240px] w-[200px] overflow-y-auto rounded-lg border border-white/10 bg-[#1e222d] shadow-lg focus:outline-hidden">
-                    {availableAssets.map((asset) => {
-                      const isSelected = eqAsset.equals(asset, selectedTarget)
-                      return (
-                        <ListboxOption
-                          key={assetToString(asset)}
-                          value={asset}
-                          className={({ active }) =>
-                            clsx(
-                              'flex cursor-pointer items-center gap-2 px-3 py-1.5',
-                              active && 'bg-white/10',
-                              isSelected && 'bg-white/5'
-                            )
-                          }>
-                          <AssetIcon
-                            asset={asset}
-                            size="xsmall"
-                            network={network}
-                            className="pointer-events-none !h-4 !w-4"
-                          />
-                          <span className="font-main text-11 text-white">{asset.ticker}</span>
-                          <span className="text-10 font-main text-gray-500">{asset.chain}</span>
-                          {isUSDAsset(asset) && (
-                            <span className="ml-auto rounded bg-turquoise/20 px-1 py-0.5 font-main text-[9px] text-turquoise">
-                              USD
-                            </span>
-                          )}
-                        </ListboxOption>
-                      )
-                    })}
-                  </ListboxOptions>
-                </div>
-              </Listbox>
-            )}
+      <TradingPanelPriceLevels levels={priceLevels} onRemove={handleRemoveLevel} />
 
-            {/* Buy / Sell buttons */}
-            <button
-              onClick={() => handleTrade('buy')}
-              className="rounded bg-turquoise px-3 py-1 font-main text-11 font-semibold text-white transition-opacity hover:opacity-80">
-              {intl.formatMessage({ id: 'common.buy' })}
-            </button>
-            <button
-              onClick={() => handleTrade('sell')}
-              className="rounded bg-error0 px-3 py-1 font-main text-11 font-semibold text-white transition-opacity hover:opacity-80">
-              {intl.formatMessage({ id: 'common.sell' })}
-            </button>
-          </div>
-        ) : (
-          <span className="text-12 ml-auto font-main text-gray-500">
-            {intl.formatMessage({ id: 'pools.chart.tradingPanel.noWallet' })}
-          </span>
-        )}
-      </div>
+      {/* Wallet confirmation modals (password/ledger/vultisig) for manual swaps */}
+      {renderModals}
 
-      {/* Quote Modal */}
-      <Dialog as="div" className="relative z-50" open={modalOpen} onClose={handleCloseModal}>
-        <DialogBackdrop className="fixed inset-0 bg-black/60" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="w-full max-w-[380px] rounded-lg border border-white/10 bg-[#1e222d] p-5 shadow-xl">
-            {/* Header */}
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-main text-14 font-semibold text-white">
-                {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote' })}
-              </h3>
-              <button onClick={handleCloseModal} className="text-12 font-main text-gray-400 hover:text-white">
-                &times;
-              </button>
-            </div>
+      {/* Password modal for limit order pre-authorization */}
+      {showOrderPasswordModal && (
+        <WalletPasswordConfirmationModal
+          onSuccess={handleOrderPasswordSuccess}
+          onClose={handleOrderPasswordClose}
+          validatePassword$={validatePassword$}
+        />
+      )}
 
-            {/* Swap direction summary */}
-            {sourceAsset && targetAsset && (
-              <div className="mb-4 flex items-center gap-2 rounded bg-white/5 px-3 py-2">
-                <AssetIcon
-                  asset={sourceAsset}
-                  size="xsmall"
-                  network={network}
-                  className="pointer-events-none !h-5 !w-5"
-                />
-                <span className="text-12 font-main text-white">
-                  {hasAmount ? amountStr : '—'} {sourceAsset.ticker}
-                </span>
-                <span className="text-12 font-main text-gray-500">&rarr;</span>
-                <AssetIcon
-                  asset={targetAsset}
-                  size="xsmall"
-                  network={network}
-                  className="pointer-events-none !h-5 !w-5"
-                />
-                <span className="text-12 font-main text-white">{targetAsset.ticker}</span>
-              </div>
-            )}
-
-            {/* Quote content */}
-            {!hasAmount ? (
-              <p className="text-12 py-4 text-center font-main text-gray-400">
-                {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.noAmount' })}
-              </p>
-            ) : quoteState.status === 'loading' ? (
-              <div className="flex items-center justify-center py-8">
-                <Spin />
-              </div>
-            ) : quoteState.status === 'error' ? (
-              <p className="text-12 py-4 text-center font-main text-error0">{quoteState.message}</p>
-            ) : quoteState.status === 'success' ? (
-              <div className="flex flex-col gap-2">
-                {/* Expected output */}
-                <div className="flex items-center justify-between">
-                  <span className="font-main text-11 text-gray-400">
-                    {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.output' })}
-                  </span>
-                  <span className="text-12 font-main font-semibold text-turquoise">
-                    {formatAssetAmountCurrency({
-                      amount: baseToAsset(quoteState.quote.expectedAmount.baseAmount),
-                      asset: targetAsset!,
-                      trimZeros: true
-                    })}
-                  </span>
-                </div>
-
-                {/* Slippage */}
-                <div className="flex items-center justify-between">
-                  <span className="font-main text-11 text-gray-400">
-                    {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.slippage' })}
-                  </span>
-                  <span
-                    className={clsx(
-                      'text-12 font-main',
-                      quoteState.quote.slipBasisPoints > 500 ? 'text-error0' : 'text-white'
-                    )}>
-                    {(quoteState.quote.slipBasisPoints / 100).toFixed(2)}%
-                  </span>
-                </div>
-
-                {/* Fees */}
-                <div className="flex items-center justify-between">
-                  <span className="font-main text-11 text-gray-400">
-                    {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.fees' })}
-                  </span>
-                  <span className="text-12 font-main text-white">
-                    {formatAssetAmountCurrency({
-                      amount: baseToAsset(quoteState.quote.fees.affiliateFee.baseAmount),
-                      asset: quoteState.quote.fees.asset,
-                      trimZeros: true
-                    })}
-                  </span>
-                </div>
-
-                {/* Protocol */}
-                <div className="flex items-center justify-between">
-                  <span className="font-main text-11 text-gray-400">
-                    {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.protocol' })}
-                  </span>
-                  <span className="text-12 font-main text-white">{quoteState.quote.protocol}</span>
-                </div>
-
-                {/* Estimated time */}
-                {quoteState.quote.totalSwapSeconds > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="font-main text-11 text-gray-400">
-                      {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.time' })}
-                    </span>
-                    <span className="text-12 font-main text-white">
-                      {quoteState.quote.totalSwapSeconds < 60
-                        ? `${quoteState.quote.totalSwapSeconds}s`
-                        : `${Math.ceil(quoteState.quote.totalSwapSeconds / 60)}m`}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ) : null}
-
-            {/* Actions */}
-            <div className="mt-5 flex gap-2">
-              <button
-                onClick={handleCloseModal}
-                className="text-12 flex-1 rounded bg-white/10 px-3 py-2 font-main font-semibold text-white transition-opacity hover:opacity-80">
-                {intl.formatMessage({ id: 'common.cancel' })}
-              </button>
-              <button
-                onClick={handleConfirm}
-                disabled={!hasAmount || quoteState.status === 'loading'}
-                className={clsx(
-                  'text-12 flex-1 rounded px-3 py-2 font-main font-semibold text-white transition-opacity',
-                  tradeMode === 'buy' ? 'bg-turquoise' : 'bg-error0',
-                  (!hasAmount || quoteState.status === 'loading') && 'cursor-not-allowed opacity-50'
-                )}>
-                {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.confirm' })}
-              </button>
-            </div>
-          </DialogPanel>
-        </div>
-      </Dialog>
+      {/* Swap progress modal */}
+      <SwapTxModal
+        swapState={swapState}
+        swapStartTime={swapStartTime}
+        sourceChain={sourceChain}
+        extraTxModalContent={extraTxModalContent}
+        oQuoteProtocol={selectedQuote}
+        goToTransaction={openExplorerTxUrl}
+        getExplorerTxUrl={getExplorerTxUrl}
+        onCloseTxModal={onCloseTxModal}
+        onFinishTxModal={onFinishTxModal}
+      />
     </>
   )
 }

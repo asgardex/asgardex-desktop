@@ -51,7 +51,19 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.quote.time': 'Est. time',
   'pools.chart.tradingPanel.quote.error': 'Failed to fetch quote',
   'pools.chart.tradingPanel.quote.noAmount': 'Enter an amount',
-  'pools.chart.tradingPanel.quote.confirm': 'Continue to swap'
+  'pools.chart.tradingPanel.quote.confirm': 'Continue to swap',
+  'pools.chart.tradingPanel.orderSettings': 'Order Settings',
+  'pools.chart.tradingPanel.confirmBuy': 'Confirm Buy',
+  'pools.chart.tradingPanel.confirmSell': 'Confirm Sell',
+  'pools.chart.tradingPanel.swapSuccess': 'Swap successful',
+  'pools.chart.tradingPanel.swapFailed': 'Swap failed',
+  'pools.chart.tradingPanel.priceLevel.add': 'Set price level',
+  'pools.chart.tradingPanel.priceLevel.remove': 'Remove',
+  'pools.chart.tradingPanel.priceLevel.pending': 'Watching',
+  'pools.chart.tradingPanel.priceLevel.triggered': 'Triggered',
+  'pools.chart.tradingPanel.priceLevel.completed': 'Filled',
+  'pools.chart.tradingPanel.priceLevel.failed': 'Failed',
+  'pools.chart.tradingPanel.approve': 'Approve'
 }
 
 export default pools

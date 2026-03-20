@@ -51,7 +51,19 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.quote.time': 'अनुमानित समय',
   'pools.chart.tradingPanel.quote.error': 'उद्धरण प्राप्त करने में विफल',
   'pools.chart.tradingPanel.quote.noAmount': 'राशि दर्ज करें',
-  'pools.chart.tradingPanel.quote.confirm': 'स्वैप पर जाएं'
+  'pools.chart.tradingPanel.quote.confirm': 'स्वैप पर जाएं',
+  'pools.chart.tradingPanel.orderSettings': 'ऑर्डर सेटिंग्स',
+  'pools.chart.tradingPanel.confirmBuy': 'खरीद की पुष्टि करें',
+  'pools.chart.tradingPanel.confirmSell': 'बिक्री की पुष्टि करें',
+  'pools.chart.tradingPanel.swapSuccess': 'स्वैप सफल',
+  'pools.chart.tradingPanel.swapFailed': 'स्वैप विफल',
+  'pools.chart.tradingPanel.priceLevel.add': 'मूल्य स्तर सेट करें',
+  'pools.chart.tradingPanel.priceLevel.remove': 'हटाएं',
+  'pools.chart.tradingPanel.priceLevel.pending': 'निगरानी',
+  'pools.chart.tradingPanel.priceLevel.triggered': 'ट्रिगर हुआ',
+  'pools.chart.tradingPanel.priceLevel.completed': 'पूर्ण',
+  'pools.chart.tradingPanel.priceLevel.failed': 'विफल',
+  'pools.chart.tradingPanel.approve': 'अनुमोदन'
 }
 
 export default pools

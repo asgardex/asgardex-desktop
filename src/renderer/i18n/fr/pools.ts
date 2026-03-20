@@ -51,7 +51,19 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.quote.time': 'Temps estimé',
   'pools.chart.tradingPanel.quote.error': "Impossible d'obtenir le devis",
   'pools.chart.tradingPanel.quote.noAmount': 'Entrez un montant',
-  'pools.chart.tradingPanel.quote.confirm': "Continuer vers l'échange"
+  'pools.chart.tradingPanel.quote.confirm': "Continuer vers l'échange",
+  'pools.chart.tradingPanel.orderSettings': 'Paramètres de commande',
+  'pools.chart.tradingPanel.confirmBuy': "Confirmer l'achat",
+  'pools.chart.tradingPanel.confirmSell': 'Confirmer la vente',
+  'pools.chart.tradingPanel.swapSuccess': 'Échange réussi',
+  'pools.chart.tradingPanel.swapFailed': 'Échange échoué',
+  'pools.chart.tradingPanel.priceLevel.add': 'Définir un niveau de prix',
+  'pools.chart.tradingPanel.priceLevel.remove': 'Supprimer',
+  'pools.chart.tradingPanel.priceLevel.pending': 'Surveillance',
+  'pools.chart.tradingPanel.priceLevel.triggered': 'Déclenché',
+  'pools.chart.tradingPanel.priceLevel.completed': 'Exécuté',
+  'pools.chart.tradingPanel.priceLevel.failed': 'Échoué',
+  'pools.chart.tradingPanel.approve': 'Approuver'
 }
 
 export default pools

@@ -21,7 +21,7 @@ const loadLevels = (assetKey: string): PriceLevel[] => {
     const raw = localStorage.getItem(`${STORAGE_KEY}:${assetKey}`)
     if (!raw) return []
     const parsed = JSON.parse(raw) as PriceLevel[]
-    return parsed.map((p) => ({ ...p, amountSymbol: p.amountSymbol ?? '' }))
+    return parsed.map((p) => ({ ...p, amountSymbol: p.amountSymbol ?? '', targetAssetKey: p.targetAssetKey ?? '' }))
   } catch {
     return []
   }

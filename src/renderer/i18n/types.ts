@@ -347,6 +347,18 @@ type PoolsMessageKey =
   | 'pools.chart.tradingPanel.quote.error'
   | 'pools.chart.tradingPanel.quote.noAmount'
   | 'pools.chart.tradingPanel.quote.confirm'
+  | 'pools.chart.tradingPanel.orderSettings'
+  | 'pools.chart.tradingPanel.confirmBuy'
+  | 'pools.chart.tradingPanel.confirmSell'
+  | 'pools.chart.tradingPanel.swapSuccess'
+  | 'pools.chart.tradingPanel.swapFailed'
+  | 'pools.chart.tradingPanel.priceLevel.add'
+  | 'pools.chart.tradingPanel.priceLevel.remove'
+  | 'pools.chart.tradingPanel.priceLevel.pending'
+  | 'pools.chart.tradingPanel.priceLevel.triggered'
+  | 'pools.chart.tradingPanel.priceLevel.completed'
+  | 'pools.chart.tradingPanel.priceLevel.failed'
+  | 'pools.chart.tradingPanel.approve'
 
 export type PoolsMessages = { [key in PoolsMessageKey]: string }
 

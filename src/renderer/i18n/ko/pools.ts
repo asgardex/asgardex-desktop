@@ -51,7 +51,19 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.quote.time': '예상 시간',
   'pools.chart.tradingPanel.quote.error': '견적을 가져오지 못했습니다',
   'pools.chart.tradingPanel.quote.noAmount': '금액을 입력하세요',
-  'pools.chart.tradingPanel.quote.confirm': '스왑으로 이동'
+  'pools.chart.tradingPanel.quote.confirm': '스왑으로 이동',
+  'pools.chart.tradingPanel.orderSettings': '주문 설정',
+  'pools.chart.tradingPanel.confirmBuy': '매수 확인',
+  'pools.chart.tradingPanel.confirmSell': '매도 확인',
+  'pools.chart.tradingPanel.swapSuccess': '스왑 성공',
+  'pools.chart.tradingPanel.swapFailed': '스왑 실패',
+  'pools.chart.tradingPanel.priceLevel.add': '가격 수준 설정',
+  'pools.chart.tradingPanel.priceLevel.remove': '제거',
+  'pools.chart.tradingPanel.priceLevel.pending': '감시 중',
+  'pools.chart.tradingPanel.priceLevel.triggered': '트리거됨',
+  'pools.chart.tradingPanel.priceLevel.completed': '체결됨',
+  'pools.chart.tradingPanel.priceLevel.failed': '실패',
+  'pools.chart.tradingPanel.approve': '승인'
 }
 
 export default pools

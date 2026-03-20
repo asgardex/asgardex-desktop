@@ -22,6 +22,7 @@ const mockDepthApi = (priceUSD: number) => {
 const mkLevel = (overrides: Partial<PriceLevel> & { id: string; price: number; type: 'buy' | 'sell' }): PriceLevel => ({
   amount: 100,
   amountSymbol: '$',
+  targetAssetKey: 'ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   status: 'pending',
   ...overrides
 })
