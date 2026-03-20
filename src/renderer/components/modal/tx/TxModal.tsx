@@ -116,7 +116,6 @@ export const UnifiedTxModal = (props: TxModalProps): JSX.Element => {
     txConfig,
     title: titleProp,
     txHash,
-    getExplorerTxUrl,
     openExplorerTxUrl,
     network,
     trackable = false,
@@ -147,22 +146,19 @@ export const UnifiedTxModal = (props: TxModalProps): JSX.Element => {
 
   return (
     <Modal panelClassName="!max-w-[460px]" visible title={title} onCancel={onClose}>
-      <div className="flex w-full flex-col items-center justify-center border-b border-gray0 pb-6 dark:border-gray0d">
-        {/* Vertical stepper — replaces timer + step progress */}
-        <TxStatusIndicator txRD={txRD} timerValue={timerValue} startTime={startTime} steps={stepLabels} />
+      {/* Vertical stepper */}
+      <TxStatusIndicator txRD={txRD} timerValue={timerValue} startTime={startTime} steps={stepLabels} />
 
-        {/* Asset display */}
-        <TxAssetDisplay txConfig={txConfig} network={network} />
+      {/* Asset display */}
+      <TxAssetDisplay txConfig={txConfig} network={network} />
 
-        {/* Escape hatch for custom content */}
-        {extraContent && <div className="flex w-full items-center justify-center pt-4">{extraContent}</div>}
-      </div>
+      {/* Escape hatch for custom content */}
+      {extraContent && <div className="flex w-full items-center justify-center px-6 pt-3">{extraContent}</div>}
 
-      {/* Actions: finish button + view/track transaction */}
+      {/* Actions */}
       <TxActions
         txRD={txRD}
         txHash={txHash}
-        getExplorerTxUrl={getExplorerTxUrl}
         openExplorerTxUrl={openExplorerTxUrl}
         network={network}
         trackable={trackable}

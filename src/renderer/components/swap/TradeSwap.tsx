@@ -1387,7 +1387,7 @@ export const TradeSwap = ({
         () => 'swap.state.sending',
         () => 'swap.state.pending',
         () => 'swap.state.error',
-        () => 'swap.state.success'
+        () => 'common.tx.success'
       ),
       (id) => intl.formatMessage({ id })
     )

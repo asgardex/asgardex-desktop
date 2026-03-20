@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
-import { ArrowDownIcon } from '@heroicons/react/24/outline'
+import { ArrowRightIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
-import { AssetData } from '../../../uielements/assets/assetData'
+import { AssetIcon } from '../../../uielements/assets/assetIcon'
 import * as C from '../extra/Common.types'
 import { TxConfig } from '../TxModal.types'
 
@@ -14,43 +14,46 @@ type Props = {
   network: Network
 }
 
-const AssetRow = ({ data, network, size = 'big' }: { data: C.AssetData; network: Network; size?: 'small' | 'big' }) => (
-  <div className="flex w-full items-center justify-between px-10">
-    <AssetData asset={data.asset} network={network} size={size} className="flex w-full items-center justify-start" />
-    <span className="font-main-semi-bold text-lg text-text0 tabular-nums dark:text-text0d">
-      {formatAssetAmount({ amount: baseToAsset(data.amount), trimZeros: true })}
-    </span>
+/** Compact pill: [icon] TICKER  amount */
+const AssetPill = ({ data, network }: { data: C.AssetData; network: Network }) => (
+  <div className="flex items-center gap-2">
+    <AssetIcon asset={data.asset} size="small" network={network} />
+    <div className="flex flex-col">
+      <span className="font-main-semi-bold text-sm text-text0 dark:text-text0d">{data.asset.ticker}</span>
+      <span className="font-main text-xs text-text2 tabular-nums dark:text-text2d">
+        {formatAssetAmount({ amount: baseToAsset(data.amount), trimZeros: true })}
+      </span>
+    </div>
   </div>
 )
 
-const OptionalAssetRow = ({ oData, network }: { oData: O.Option<C.AssetData>; network: Network }) =>
+const OptionalAssetPill = ({ oData, network }: { oData: O.Option<C.AssetData>; network: Network }) =>
   FP.pipe(
     oData,
     O.fold(
       () => <></>,
-      (data) => <AssetRow data={data} network={network} />
+      (data) => <AssetPill data={data} network={network} />
     )
   )
 
+/** Swap: [source pill] → [target pill] in a single row */
 const SwapDisplay = ({ source, target, network }: { source: C.AssetData; target: C.AssetData; network: Network }) => (
-  <div className="relative flex w-full flex-col items-center justify-center gap-1">
-    <AssetRow data={source} network={network} size="small" />
-    <div className="flex items-center justify-center">
-      <ArrowDownIcon className="h-5 w-5 text-gray1 dark:text-gray1d" />
-    </div>
-    <AssetRow data={target} network={network} size="small" />
+  <div className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray0 px-4 py-3 dark:border-gray0d">
+    <AssetPill data={source} network={network} />
+    <ArrowRightIcon className="h-4 w-4 shrink-0 text-gray1 dark:text-gray1d" />
+    <AssetPill data={target} network={network} />
   </div>
 )
 
-const SingleAssetDisplay = ({ data, network }: { data: C.AssetData; network: Network }) => (
-  <div className="relative flex items-center justify-center">
-    <div className="flex flex-col px-5">
-      <AssetData size="big" asset={data.asset} amount={data.amount} network={network} />
-    </div>
+/** Single asset in a card */
+const SingleDisplay = ({ data, network }: { data: C.AssetData; network: Network }) => (
+  <div className="flex w-full items-center justify-center rounded-lg border border-gray0 px-4 py-3 dark:border-gray0d">
+    <AssetPill data={data} network={network} />
   </div>
 )
 
-const WithdrawDisplay = ({
+/** Two assets stacked with arrow */
+const DualDisplay = ({
   source,
   target,
   network
@@ -59,14 +62,10 @@ const WithdrawDisplay = ({
   target: C.AssetData
   network: Network
 }) => (
-  <div className="relative flex flex-col items-center justify-center gap-5">
-    <OptionalAssetRow oData={source} network={network} />
-    {O.isSome(source) && (
-      <div className="flex items-center justify-center">
-        <ArrowDownIcon className="h-5 w-5 text-gray1 dark:text-gray1d" />
-      </div>
-    )}
-    <AssetRow data={target} network={network} />
+  <div className="flex w-full flex-col items-center gap-1 rounded-lg border border-gray0 px-4 py-3 dark:border-gray0d">
+    <OptionalAssetPill oData={source} network={network} />
+    {O.isSome(source) && <ArrowDownIcon className="h-4 w-4 text-gray1 dark:text-gray1d" />}
+    <AssetPill data={target} network={network} />
   </div>
 )
 
@@ -78,32 +77,23 @@ export const TxAssetDisplay = ({ txConfig, network }: Props): JSX.Element => {
 
       case 'send':
       case 'interact':
-        return <SingleAssetDisplay data={txConfig.asset} network={network} />
-
       case 'deposit':
-        return <SingleAssetDisplay data={txConfig.asset} network={network} />
+        return <SingleDisplay data={txConfig.asset} network={network} />
 
       case 'symDeposit':
-        return (
-          <div className="relative flex flex-col items-center justify-center gap-5">
-            <OptionalAssetRow oData={txConfig.source} network={network} />
-            <AssetRow data={txConfig.target} network={network} />
-          </div>
-        )
+        return <DualDisplay source={txConfig.source} target={txConfig.target} network={network} />
 
       case 'withdraw':
-        return <WithdrawDisplay source={txConfig.source} target={txConfig.target} network={network} />
+        return <DualDisplay source={txConfig.source} target={txConfig.target} network={network} />
 
       case 'claim':
         return (
-          <div className="relative flex items-center justify-center">
-            <div className="flex flex-col px-5">
-              <OptionalAssetRow oData={txConfig.source} network={network} />
-            </div>
+          <div className="flex w-full items-center justify-center rounded-lg border border-gray0 px-4 py-3 dark:border-gray0d">
+            <OptionalAssetPill oData={txConfig.source} network={network} />
           </div>
         )
     }
   }, [txConfig, network])
 
-  return <div className="flex w-full flex-col items-center justify-center">{content}</div>
+  return <div className="flex w-full px-6">{content}</div>
 }
