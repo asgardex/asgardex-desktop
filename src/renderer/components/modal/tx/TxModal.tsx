@@ -9,7 +9,7 @@ import { ErrorView } from '../../shared/error'
 import { Button, ButtonProps } from '../../uielements/button'
 import { Modal } from '../../uielements/modal'
 import { TxTimer } from '../../uielements/txTimer'
-import { TxActions, TxAssetDisplay, TxStatusIndicator, TxStepProgress } from './sections'
+import { TxActions, TxAssetDisplay, TxStatusIndicator } from './sections'
 import { getTxTitle } from './TxModal.helpers'
 import { TxModalProps } from './TxModal.types'
 
@@ -129,57 +129,30 @@ export const UnifiedTxModal = (props: TxModalProps): JSX.Element => {
 
   const title = titleProp ?? getTxTitle(txConfig, intl)
 
-  // Derive step description for asset display
-  const stepDescription = useMemo(() => {
-    switch (txConfig.type) {
-      case 'deposit':
-      case 'symDeposit':
-        return FP.pipe(
-          txRD,
-          RD.fold(
-            () => '',
-            () =>
-              `${intl.formatMessage(
-                { id: 'common.step' },
-                { current: txConfig.steps.current, total: txConfig.steps.total }
-              )}: ${txConfig.stepDescriptions[txConfig.steps.current - 1] || ''}`,
-            () => '',
-            () => `${intl.formatMessage({ id: 'common.done' })}!`
-          )
-        )
-      default:
-        return undefined
-    }
-  }, [txConfig, txRD, intl])
+  // Derive step labels for the stepper
+  const stepLabels = useMemo(() => {
+    const hasSteps = txConfig.type === 'deposit' || txConfig.type === 'symDeposit'
+    if (hasSteps) return txConfig.stepDescriptions
+    // Default 3-step labels for all other flows
+    return [
+      intl.formatMessage({ id: 'common.tx.sending' }),
+      intl.formatMessage({ id: 'common.tx.checkResult' }),
+      intl.formatMessage({ id: 'common.done' })
+    ]
+  }, [txConfig, intl])
 
   // Determine protocol and channelId for actions
   const protocol = useMemo(() => (txConfig.type === 'swap' ? (txConfig.protocol ?? O.none) : O.none), [txConfig])
   const channelId = useMemo(() => (txConfig.type === 'swap' ? (txConfig.channelId ?? O.none) : O.none), [txConfig])
 
-  // Show step progress for multi-step flows
-  const hasSteps = txConfig.type === 'deposit' || txConfig.type === 'symDeposit'
-
   return (
     <Modal panelClassName="!max-w-[460px]" visible title={title} onCancel={onClose}>
-      <div className="flex w-full flex-col items-center justify-center border-b border-gray0 pb-8 dark:border-gray0d">
-        {/* Status indicator (timer / error / success) */}
-        <TxStatusIndicator txRD={txRD} timerValue={timerValue} startTime={startTime} />
+      <div className="flex w-full flex-col items-center justify-center border-b border-gray0 pb-6 dark:border-gray0d">
+        {/* Vertical stepper — replaces timer + step progress */}
+        <TxStatusIndicator txRD={txRD} timerValue={timerValue} startTime={startTime} steps={stepLabels} />
 
-        {/* Step progress bar for multi-step flows */}
-        {hasSteps && (
-          <TxStepProgress
-            current={txConfig.steps.current}
-            total={txConfig.steps.total}
-            descriptions={txConfig.stepDescriptions}
-          />
-        )}
-
-        {/* Asset display — step description handled by TxStepProgress for multi-step flows */}
-        <TxAssetDisplay
-          txConfig={txConfig}
-          network={network}
-          stepDescription={hasSteps ? undefined : stepDescription}
-        />
+        {/* Asset display */}
+        <TxAssetDisplay txConfig={txConfig} network={network} />
 
         {/* Escape hatch for custom content */}
         {extraContent && <div className="flex w-full items-center justify-center pt-4">{extraContent}</div>}

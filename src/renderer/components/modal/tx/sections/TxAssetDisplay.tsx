@@ -6,14 +6,12 @@ import { baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
 import { AssetData } from '../../../uielements/assets/assetData'
-import { Label } from '../../../uielements/label'
 import * as C from '../extra/Common.types'
 import { TxConfig } from '../TxModal.types'
 
 type Props = {
   txConfig: TxConfig
   network: Network
-  stepDescription?: string
 }
 
 const AssetRow = ({ data, network, size = 'big' }: { data: C.AssetData; network: Network; size?: 'small' | 'big' }) => (
@@ -72,7 +70,7 @@ const WithdrawDisplay = ({
   </div>
 )
 
-export const TxAssetDisplay = ({ txConfig, network, stepDescription }: Props): JSX.Element => {
+export const TxAssetDisplay = ({ txConfig, network }: Props): JSX.Element => {
   const content = useMemo(() => {
     switch (txConfig.type) {
       case 'swap':
@@ -107,17 +105,5 @@ export const TxAssetDisplay = ({ txConfig, network, stepDescription }: Props): J
     }
   }, [txConfig, network])
 
-  return (
-    <div className="flex w-full flex-col items-center justify-center">
-      {stepDescription && (
-        <Label
-          size="small"
-          color="gray"
-          className="w-full px-[10px] pt-[10px] pb-[15px] text-center font-main uppercase">
-          {stepDescription}
-        </Label>
-      )}
-      {content}
-    </div>
-  )
+  return <div className="flex w-full flex-col items-center justify-center">{content}</div>
 }

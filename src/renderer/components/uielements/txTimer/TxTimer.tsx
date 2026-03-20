@@ -19,52 +19,6 @@ export type Props = {
   onEnd?: () => void
 }
 
-const SIZE = 88
-const STROKE = 4
-
-const ProgressRing = ({ percent, active }: { percent: number; active: boolean }) => {
-  const r = (SIZE - STROKE) / 2
-  const c = 2 * Math.PI * r
-  const clamped = Math.max(0, Math.min(100, percent))
-  const offset = c * (1 - clamped / 100)
-
-  return (
-    <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="-rotate-90">
-      {/* Trail */}
-      <circle
-        cx={SIZE / 2}
-        cy={SIZE / 2}
-        r={r}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={STROKE}
-        className="text-gray0 dark:text-gray0d"
-      />
-      {/* Progress arc */}
-      {active && (
-        <circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={r}
-          fill="none"
-          stroke="url(#progress-gradient)"
-          strokeWidth={STROKE}
-          strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={offset}
-          className="transition-[stroke-dashoffset] duration-500 ease-out"
-        />
-      )}
-      <defs>
-        <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="var(--color-turquoise)" />
-          <stop offset="100%" stopColor="var(--color-cyanblue)" />
-        </linearGradient>
-      </defs>
-    </svg>
-  )
-}
-
 export const TxTimer = ({
   status = false,
   value = NaN,
@@ -132,56 +86,59 @@ export const TxTimer = ({
     }
   }, [active, isEnd])
 
-  const progressBarValue = value || internalValue
-  const percent = (progressBarValue / maxValue) * 100
-  const totalDurationString = totalDuration < 10 ? totalDuration.toFixed(1) : Math.round(totalDuration).toString()
-
-  // ── Active / pending state ────────────────────────────────────────
+  // ── Active / pending ──────────────────────────────────────────────
   if (active) {
     return (
-      <div className={clsx('relative inline-flex items-center justify-center', className)}>
-        {/* Subtle outer glow while active */}
-        <div
-          className="absolute inset-0 animate-pulse rounded-full bg-turquoise/10"
-          style={{ width: SIZE, height: SIZE }}
-        />
-
-        <ProgressRing percent={percent} active />
-
-        {/* Center content */}
-        <div
-          className="absolute inset-0 flex flex-col items-center justify-center"
-          style={{ width: SIZE, height: SIZE }}>
-          <span className="font-main-semi-bold text-xl text-text0 tabular-nums dark:text-text0d">
-            {totalDurationString}
-          </span>
-          <span className="font-main text-[10px] tracking-wider text-text2 uppercase dark:text-text2d">sec</span>
+      <div className={clsx('flex items-center justify-center', className)}>
+        <div className="relative flex h-10 w-10 items-center justify-center">
+          {/* Spinning ring */}
+          <svg className="h-10 w-10 animate-spin" viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="17"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              className="text-gray0 dark:text-gray0d"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="17"
+              fill="none"
+              stroke="url(#spinner-gradient)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={2 * Math.PI * 17}
+              strokeDashoffset={2 * Math.PI * 17 * 0.7}
+              className="origin-center -rotate-90"
+            />
+            <defs>
+              <linearGradient id="spinner-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="var(--color-turquoise)" />
+                <stop offset="100%" stopColor="var(--color-cyanblue)" />
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
       </div>
     )
   }
 
-  // ── Completed state (success / refunded) ──────────────────────────
+  // ── Completed (success / refunded) ────────────────────────────────
   return (
-    <div className={clsx('relative inline-flex items-center justify-center', className)}>
+    <div className={clsx('flex items-center justify-center', className)}>
       <div
         className={clsx(
-          'flex items-center justify-center rounded-full transition-all duration-500',
-          refunded ? 'bg-red/10' : 'bg-success/15'
+          'animate-bounce-in flex h-10 w-10 items-center justify-center rounded-full',
+          refunded ? 'bg-red/15' : 'bg-success/15'
+        )}>
+        {refunded ? (
+          <ArrowPathIcon className="h-5 w-5 text-red" />
+        ) : (
+          <CheckIcon className="h-5 w-5 text-success" strokeWidth={2.5} />
         )}
-        style={{ width: SIZE, height: SIZE }}>
-        <div
-          className={clsx(
-            'animate-bounce-in flex items-center justify-center rounded-full',
-            refunded ? 'bg-red/20' : 'bg-success/25'
-          )}
-          style={{ width: SIZE * 0.7, height: SIZE * 0.7 }}>
-          {refunded ? (
-            <ArrowPathIcon className="h-7 w-7 text-red" />
-          ) : (
-            <CheckIcon className="h-7 w-7 text-success" strokeWidth={2.5} />
-          )}
-        </div>
       </div>
     </div>
   )
