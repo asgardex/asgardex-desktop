@@ -174,19 +174,19 @@ body {
   animation: fade-in 0.3s ease-in;
 }
 
-/* Progress bar pulse — green glow */
-@keyframes progress-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 4px 1px rgba(35, 220, 200, 0.3);
+/* Progress bar wave — sweeping highlight */
+@keyframes progress-wave {
+  0% {
+    transform: translateX(-100%);
   }
-  50% {
-    box-shadow: 0 0 12px 3px rgba(35, 220, 200, 0.6);
+  100% {
+    transform: translateX(100%);
   }
 }
 
-.progress-bar-pulse {
-  animation: progress-pulse 1.5s ease-in-out infinite;
+.progress-bar-wave {
+  background: linear-gradient(90deg, transparent 0%, rgba(35, 220, 200, 0.35) 50%, transparent 100%);
+  animation: progress-wave 1.8s ease-in-out infinite;
 }
 
 /* Custom Scrollbar for WebKit Browsers */
