@@ -39,7 +39,31 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.executing': 'Exécution...',
   'pools.chart.priceLevel.completed': 'Terminé',
   'pools.chart.priceLevel.failed': 'Échoué',
-  'pools.chart.priceLevel.inDevelopment': 'Alertes de prix & ordres limités — en développement'
+  'pools.chart.priceLevel.inDevelopment': 'Alertes de prix & ordres limités — en développement',
+  'pools.chart.tradingPanel.noWallet': 'Connecter le portefeuille pour trader',
+  'pools.chart.tradingPanel.selectTarget': "Sélectionner l'actif",
+  'pools.chart.tradingPanel.yourBalance': 'Votre solde',
+  'pools.chart.tradingPanel.quote': "Devis d'échange",
+  'pools.chart.tradingPanel.quote.output': 'Sortie attendue',
+  'pools.chart.tradingPanel.quote.slippage': 'Glissement',
+  'pools.chart.tradingPanel.quote.fees': 'Frais',
+  'pools.chart.tradingPanel.quote.protocol': 'Protocole',
+  'pools.chart.tradingPanel.quote.time': 'Temps estimé',
+  'pools.chart.tradingPanel.quote.error': "Impossible d'obtenir le devis",
+  'pools.chart.tradingPanel.quote.noAmount': 'Entrez un montant',
+  'pools.chart.tradingPanel.quote.confirm': "Continuer vers l'échange",
+  'pools.chart.tradingPanel.orderSettings': 'Paramètres de commande',
+  'pools.chart.tradingPanel.confirmBuy': "Confirmer l'achat",
+  'pools.chart.tradingPanel.confirmSell': 'Confirmer la vente',
+  'pools.chart.tradingPanel.swapSuccess': 'Échange réussi',
+  'pools.chart.tradingPanel.swapFailed': 'Échange échoué',
+  'pools.chart.tradingPanel.priceLevel.add': 'Définir un niveau de prix',
+  'pools.chart.tradingPanel.priceLevel.remove': 'Supprimer',
+  'pools.chart.tradingPanel.priceLevel.pending': 'Surveillance',
+  'pools.chart.tradingPanel.priceLevel.triggered': 'Déclenché',
+  'pools.chart.tradingPanel.priceLevel.completed': 'Exécuté',
+  'pools.chart.tradingPanel.priceLevel.failed': 'Échoué',
+  'pools.chart.tradingPanel.approve': 'Approuver'
 }
 
 export default pools

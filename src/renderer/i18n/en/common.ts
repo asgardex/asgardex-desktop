@@ -137,6 +137,8 @@ const common: CommonMessages = {
   'common.add': 'Add',
   'common.completeLp': 'Complete Lp',
   'common.swap': 'Swap',
+  'common.buy': 'Buy',
+  'common.sell': 'Sell',
   'common.savers': 'Savers',
   'common.earn': 'Earn',
   'common.earnings': 'Earnings',

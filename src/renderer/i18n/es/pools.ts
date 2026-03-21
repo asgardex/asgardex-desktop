@@ -39,7 +39,31 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.executing': 'Ejecutando...',
   'pools.chart.priceLevel.completed': 'Completado',
   'pools.chart.priceLevel.failed': 'Fallido',
-  'pools.chart.priceLevel.inDevelopment': 'Alertas de precio y órdenes límite — en desarrollo'
+  'pools.chart.priceLevel.inDevelopment': 'Alertas de precio y órdenes límite — en desarrollo',
+  'pools.chart.tradingPanel.noWallet': 'Conectar billetera para operar',
+  'pools.chart.tradingPanel.selectTarget': 'Seleccionar activo',
+  'pools.chart.tradingPanel.yourBalance': 'Su saldo',
+  'pools.chart.tradingPanel.quote': 'Cotización de intercambio',
+  'pools.chart.tradingPanel.quote.output': 'Salida esperada',
+  'pools.chart.tradingPanel.quote.slippage': 'Deslizamiento',
+  'pools.chart.tradingPanel.quote.fees': 'Tarifas',
+  'pools.chart.tradingPanel.quote.protocol': 'Protocolo',
+  'pools.chart.tradingPanel.quote.time': 'Tiempo estimado',
+  'pools.chart.tradingPanel.quote.error': 'Error al obtener cotización',
+  'pools.chart.tradingPanel.quote.noAmount': 'Ingrese un monto',
+  'pools.chart.tradingPanel.quote.confirm': 'Continuar al intercambio',
+  'pools.chart.tradingPanel.orderSettings': 'Configuración de orden',
+  'pools.chart.tradingPanel.confirmBuy': 'Confirmar compra',
+  'pools.chart.tradingPanel.confirmSell': 'Confirmar venta',
+  'pools.chart.tradingPanel.swapSuccess': 'Intercambio exitoso',
+  'pools.chart.tradingPanel.swapFailed': 'Intercambio fallido',
+  'pools.chart.tradingPanel.priceLevel.add': 'Establecer nivel de precio',
+  'pools.chart.tradingPanel.priceLevel.remove': 'Eliminar',
+  'pools.chart.tradingPanel.priceLevel.pending': 'Observando',
+  'pools.chart.tradingPanel.priceLevel.triggered': 'Activado',
+  'pools.chart.tradingPanel.priceLevel.completed': 'Ejecutado',
+  'pools.chart.tradingPanel.priceLevel.failed': 'Fallido',
+  'pools.chart.tradingPanel.approve': 'Aprobar'
 }
 
 export default pools

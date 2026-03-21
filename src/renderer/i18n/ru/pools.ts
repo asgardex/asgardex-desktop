@@ -39,7 +39,31 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.executing': 'Выполняется...',
   'pools.chart.priceLevel.completed': 'Завершено',
   'pools.chart.priceLevel.failed': 'Ошибка',
-  'pools.chart.priceLevel.inDevelopment': 'Ценовые оповещения и лимитные ордера — в разработке'
+  'pools.chart.priceLevel.inDevelopment': 'Ценовые оповещения и лимитные ордера — в разработке',
+  'pools.chart.tradingPanel.noWallet': 'Подключите кошелёк для торговли',
+  'pools.chart.tradingPanel.selectTarget': 'Выберите актив',
+  'pools.chart.tradingPanel.yourBalance': 'Ваш баланс',
+  'pools.chart.tradingPanel.quote': 'Котировка обмена',
+  'pools.chart.tradingPanel.quote.output': 'Ожидаемый результат',
+  'pools.chart.tradingPanel.quote.slippage': 'Проскальзывание',
+  'pools.chart.tradingPanel.quote.fees': 'Комиссии',
+  'pools.chart.tradingPanel.quote.protocol': 'Протокол',
+  'pools.chart.tradingPanel.quote.time': 'Прим. время',
+  'pools.chart.tradingPanel.quote.error': 'Не удалось получить котировку',
+  'pools.chart.tradingPanel.quote.noAmount': 'Введите сумму',
+  'pools.chart.tradingPanel.quote.confirm': 'Перейти к обмену',
+  'pools.chart.tradingPanel.orderSettings': 'Настройки ордера',
+  'pools.chart.tradingPanel.confirmBuy': 'Подтвердить покупку',
+  'pools.chart.tradingPanel.confirmSell': 'Подтвердить продажу',
+  'pools.chart.tradingPanel.swapSuccess': 'Обмен выполнен',
+  'pools.chart.tradingPanel.swapFailed': 'Обмен не удался',
+  'pools.chart.tradingPanel.priceLevel.add': 'Установить ценовой уровень',
+  'pools.chart.tradingPanel.priceLevel.remove': 'Удалить',
+  'pools.chart.tradingPanel.priceLevel.pending': 'Отслеживание',
+  'pools.chart.tradingPanel.priceLevel.triggered': 'Сработал',
+  'pools.chart.tradingPanel.priceLevel.completed': 'Исполнен',
+  'pools.chart.tradingPanel.priceLevel.failed': 'Не удался',
+  'pools.chart.tradingPanel.approve': 'Одобрить'
 }
 
 export default pools

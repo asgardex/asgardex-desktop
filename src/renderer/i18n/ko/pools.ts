@@ -39,7 +39,31 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.executing': '실행 중...',
   'pools.chart.priceLevel.completed': '완료',
   'pools.chart.priceLevel.failed': '실패',
-  'pools.chart.priceLevel.inDevelopment': '가격 알림 및 지정가 주문 — 개발 중'
+  'pools.chart.priceLevel.inDevelopment': '가격 알림 및 지정가 주문 — 개발 중',
+  'pools.chart.tradingPanel.noWallet': '거래하려면 지갑을 연결하세요',
+  'pools.chart.tradingPanel.selectTarget': '자산 선택',
+  'pools.chart.tradingPanel.yourBalance': '내 잔액',
+  'pools.chart.tradingPanel.quote': '스왑 견적',
+  'pools.chart.tradingPanel.quote.output': '예상 출력',
+  'pools.chart.tradingPanel.quote.slippage': '슬리피지',
+  'pools.chart.tradingPanel.quote.fees': '수수료',
+  'pools.chart.tradingPanel.quote.protocol': '프로토콜',
+  'pools.chart.tradingPanel.quote.time': '예상 시간',
+  'pools.chart.tradingPanel.quote.error': '견적을 가져오지 못했습니다',
+  'pools.chart.tradingPanel.quote.noAmount': '금액을 입력하세요',
+  'pools.chart.tradingPanel.quote.confirm': '스왑으로 이동',
+  'pools.chart.tradingPanel.orderSettings': '주문 설정',
+  'pools.chart.tradingPanel.confirmBuy': '매수 확인',
+  'pools.chart.tradingPanel.confirmSell': '매도 확인',
+  'pools.chart.tradingPanel.swapSuccess': '스왑 성공',
+  'pools.chart.tradingPanel.swapFailed': '스왑 실패',
+  'pools.chart.tradingPanel.priceLevel.add': '가격 수준 설정',
+  'pools.chart.tradingPanel.priceLevel.remove': '제거',
+  'pools.chart.tradingPanel.priceLevel.pending': '감시 중',
+  'pools.chart.tradingPanel.priceLevel.triggered': '트리거됨',
+  'pools.chart.tradingPanel.priceLevel.completed': '체결됨',
+  'pools.chart.tradingPanel.priceLevel.failed': '실패',
+  'pools.chart.tradingPanel.approve': '승인'
 }
 
 export default pools

@@ -39,7 +39,31 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.executing': 'Wird ausgeführt...',
   'pools.chart.priceLevel.completed': 'Abgeschlossen',
   'pools.chart.priceLevel.failed': 'Fehlgeschlagen',
-  'pools.chart.priceLevel.inDevelopment': 'Preisalarme & Limit-Orders — in Entwicklung'
+  'pools.chart.priceLevel.inDevelopment': 'Preisalarme & Limit-Orders — in Entwicklung',
+  'pools.chart.tradingPanel.noWallet': 'Wallet verbinden zum Handeln',
+  'pools.chart.tradingPanel.selectTarget': 'Asset auswählen',
+  'pools.chart.tradingPanel.yourBalance': 'Ihr Guthaben',
+  'pools.chart.tradingPanel.quote': 'Tausch-Angebot',
+  'pools.chart.tradingPanel.quote.output': 'Erwartete Ausgabe',
+  'pools.chart.tradingPanel.quote.slippage': 'Slippage',
+  'pools.chart.tradingPanel.quote.fees': 'Gebühren',
+  'pools.chart.tradingPanel.quote.protocol': 'Protokoll',
+  'pools.chart.tradingPanel.quote.time': 'Geschätzte Zeit',
+  'pools.chart.tradingPanel.quote.error': 'Angebot konnte nicht abgerufen werden',
+  'pools.chart.tradingPanel.quote.noAmount': 'Betrag eingeben',
+  'pools.chart.tradingPanel.quote.confirm': 'Weiter zum Tausch',
+  'pools.chart.tradingPanel.orderSettings': 'Ordereinstellungen',
+  'pools.chart.tradingPanel.confirmBuy': 'Kauf bestätigen',
+  'pools.chart.tradingPanel.confirmSell': 'Verkauf bestätigen',
+  'pools.chart.tradingPanel.swapSuccess': 'Tausch erfolgreich',
+  'pools.chart.tradingPanel.swapFailed': 'Tausch fehlgeschlagen',
+  'pools.chart.tradingPanel.priceLevel.add': 'Preisniveau setzen',
+  'pools.chart.tradingPanel.priceLevel.remove': 'Entfernen',
+  'pools.chart.tradingPanel.priceLevel.pending': 'Beobachten',
+  'pools.chart.tradingPanel.priceLevel.triggered': 'Ausgelöst',
+  'pools.chart.tradingPanel.priceLevel.completed': 'Ausgeführt',
+  'pools.chart.tradingPanel.priceLevel.failed': 'Fehlgeschlagen',
+  'pools.chart.tradingPanel.approve': 'Genehmigen'
 }
 
 export default pools

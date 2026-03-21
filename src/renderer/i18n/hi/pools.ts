@@ -39,7 +39,31 @@ const pools: PoolsMessages = {
   'pools.chart.priceLevel.executing': 'निष्पादित हो रहा है...',
   'pools.chart.priceLevel.completed': 'पूर्ण',
   'pools.chart.priceLevel.failed': 'विफल',
-  'pools.chart.priceLevel.inDevelopment': 'मूल्य अलर्ट और सीमित आदेश — विकास में'
+  'pools.chart.priceLevel.inDevelopment': 'मूल्य अलर्ट और सीमित आदेश — विकास में',
+  'pools.chart.tradingPanel.noWallet': 'ट्रेड करने के लिए वॉलेट कनेक्ट करें',
+  'pools.chart.tradingPanel.selectTarget': 'संपत्ति चुनें',
+  'pools.chart.tradingPanel.yourBalance': 'आपकी शेष राशि',
+  'pools.chart.tradingPanel.quote': 'स्वैप उद्धरण',
+  'pools.chart.tradingPanel.quote.output': 'अपेक्षित आउटपुट',
+  'pools.chart.tradingPanel.quote.slippage': 'स्लिपेज',
+  'pools.chart.tradingPanel.quote.fees': 'शुल्क',
+  'pools.chart.tradingPanel.quote.protocol': 'प्रोटोकॉल',
+  'pools.chart.tradingPanel.quote.time': 'अनुमानित समय',
+  'pools.chart.tradingPanel.quote.error': 'उद्धरण प्राप्त करने में विफल',
+  'pools.chart.tradingPanel.quote.noAmount': 'राशि दर्ज करें',
+  'pools.chart.tradingPanel.quote.confirm': 'स्वैप पर जाएं',
+  'pools.chart.tradingPanel.orderSettings': 'ऑर्डर सेटिंग्स',
+  'pools.chart.tradingPanel.confirmBuy': 'खरीद की पुष्टि करें',
+  'pools.chart.tradingPanel.confirmSell': 'बिक्री की पुष्टि करें',
+  'pools.chart.tradingPanel.swapSuccess': 'स्वैप सफल',
+  'pools.chart.tradingPanel.swapFailed': 'स्वैप विफल',
+  'pools.chart.tradingPanel.priceLevel.add': 'मूल्य स्तर सेट करें',
+  'pools.chart.tradingPanel.priceLevel.remove': 'हटाएं',
+  'pools.chart.tradingPanel.priceLevel.pending': 'निगरानी',
+  'pools.chart.tradingPanel.priceLevel.triggered': 'ट्रिगर हुआ',
+  'pools.chart.tradingPanel.priceLevel.completed': 'पूर्ण',
+  'pools.chart.tradingPanel.priceLevel.failed': 'विफल',
+  'pools.chart.tradingPanel.approve': 'अनुमोदन'
 }
 
 export default pools

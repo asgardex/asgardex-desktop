@@ -137,6 +137,8 @@ const common: CommonMessages = {
   'common.add': 'जोड़ें',
   'common.completeLp': 'सामान्य Lp पूरा करें',
   'common.swap': 'स्वैप',
+  'common.buy': 'खरीदें',
+  'common.sell': 'बेचें',
   'common.savers': 'बचत',
   'common.earn': 'कमाई',
   'common.earnings': 'आय',

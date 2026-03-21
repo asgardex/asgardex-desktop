@@ -138,6 +138,8 @@ const common: CommonMessages = {
   'common.add': 'Einzahlen',
   'common.completeLp': 'abgeschlossene LP',
   'common.swap': 'Swap',
+  'common.buy': 'Kaufen',
+  'common.sell': 'Verkaufen',
   'common.savers': 'Savers',
   'common.earn': 'Verdienen',
   'common.earnings': 'Einnahmen',
