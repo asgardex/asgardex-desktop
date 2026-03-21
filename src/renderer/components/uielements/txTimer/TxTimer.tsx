@@ -1,10 +1,9 @@
 import { useCallback, useState, useEffect } from 'react'
 
-import { CheckCircleIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 
 import useInterval, { INACTIVE_INTERVAL } from '../../../hooks/useInterval'
-import { RefundIcon } from '../../icons/timerIcons'
 
 export type Props = {
   className?: string
@@ -18,65 +17,6 @@ export type Props = {
   value?: number
   onChange?: (_: number) => void
   onEnd?: () => void
-}
-
-const CircleProgress = ({
-  className = '',
-  percent, // 0..100
-  size = 120, // px
-  strokeWidth = 7, // px
-  strokeColor = '#0068F7',
-  trailColor = 'rgba(242, 243, 243, 0.5)',
-  strokeLinecap = 'round' as 'round' | 'butt' | 'square',
-  children, // centered content (timer label)
-  ariaLabel
-}: {
-  className?: string
-  percent: number
-  size?: number
-  strokeWidth?: number
-  strokeColor?: string
-  trailColor?: string
-  strokeLinecap?: 'round' | 'butt' | 'square'
-  children?: React.ReactNode
-  ariaLabel?: string
-}) => {
-  const clamped = Math.max(0, Math.min(100, percent))
-  const r = (size - strokeWidth) / 2
-  const c = 2 * Math.PI * r
-  const dash = c
-  const offset = c * (1 - clamped / 100)
-
-  return (
-    <div
-      className={clsx('relative inline-block', className)}
-      style={{ width: size, height: size }}
-      aria-label={ariaLabel}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={Math.round(clamped)}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        {/* trail */}
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={trailColor} strokeWidth={strokeWidth} />
-        {/* progress */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke={strokeColor}
-          strokeWidth={strokeWidth}
-          strokeLinecap={strokeLinecap}
-          strokeDasharray={dash}
-          strokeDashoffset={offset}
-          className="transition-[stroke-dashoffset] duration-300 ease-out"
-        />
-      </svg>
-
-      {/* center content */}
-      <div className="absolute inset-0 grid place-items-center">{children}</div>
-    </div>
-  )
 }
 
 export const TxTimer = ({
@@ -97,9 +37,7 @@ export const TxTimer = ({
   const [internalValue, setInternalValue] = useState<number>(0)
 
   const isEnd = useCallback(() => {
-    if (maxSec > 0 && totalDuration >= maxSec) {
-      return true
-    }
+    if (maxSec > 0 && totalDuration >= maxSec) return true
     return (value || internalValue) >= maxValue
   }, [internalValue, maxSec, maxValue, totalDuration, value])
 
@@ -148,37 +86,60 @@ export const TxTimer = ({
     }
   }, [active, isEnd])
 
-  const hide = isEnd() && !active
-  const totalDurationString = totalDuration < 10 ? totalDuration.toFixed(1) : Math.round(totalDuration).toString()
-  const progressBarValue = value || internalValue
+  // ── Active / pending ──────────────────────────────────────────────
+  if (active) {
+    return (
+      <div className={clsx('flex items-center justify-center', className)}>
+        <div className="relative flex h-10 w-10 items-center justify-center">
+          {/* Spinning ring */}
+          <svg className="h-10 w-10 animate-spin" viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="17"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              className="text-gray0 dark:text-gray0d"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="17"
+              fill="none"
+              stroke="url(#spinner-gradient)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={2 * Math.PI * 17}
+              strokeDashoffset={2 * Math.PI * 17 * 0.7}
+              className="origin-center -rotate-90"
+            />
+            <defs>
+              <linearGradient id="spinner-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="var(--color-turquoise)" />
+                <stop offset="100%" stopColor="var(--color-cyanblue)" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+    )
+  }
 
+  // ── Completed (success / refunded) ────────────────────────────────
   return (
-    <div
-      className={clsx(
-        'txTimer-wrapper relative mx-auto flex h-[120px] w-[120px] flex-col items-center justify-center',
-        className
-      )}>
-      <div className="timerchart-icon absolute top-0 left-0 flex h-full w-full items-center justify-center">
-        {!active && (
-          <div className="flex h-3/4 w-3/4 items-center justify-center rounded-full bg-turquoise/40">
-            {!refunded ? <CheckCircleIcon className="h-[35px] w-[35px] text-turquoise" /> : <RefundIcon />}
-          </div>
+    <div className={clsx('flex items-center justify-center', className)}>
+      <div
+        className={clsx(
+          'animate-bounce-in flex h-10 w-10 items-center justify-center rounded-full',
+          refunded ? 'bg-red/15' : 'bg-success/15'
+        )}>
+        {refunded ? (
+          <ArrowPathIcon className="h-5 w-5 text-red" />
+        ) : (
+          <CheckIcon className="h-5 w-5 text-success" strokeWidth={2.5} />
         )}
       </div>
-      {active && (
-        <CircleProgress
-          percent={(progressBarValue / maxValue) * 100}
-          strokeColor="#0068F7"
-          strokeWidth={7}
-          strokeLinecap="round"
-          trailColor="rgba(242, 243, 243, 0.5)"
-          className={hide ? 'invisible' : 'h-full w-full'}
-          size={120}>
-          <div className="flex items-center justify-center font-main text-lg text-text0 dark:text-text0d">
-            {totalDurationString}s
-          </div>
-        </CircleProgress>
-      )}
     </div>
   )
 }

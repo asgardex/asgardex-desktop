@@ -23,12 +23,13 @@ import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { logger } from '../../helpers/logger'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
-import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import { usePoolShares } from '../../hooks/usePoolShares'
+import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
 import { userChains$ } from '../../services/storage/userChains'
 import { reloadBalancesByChain } from '../../services/wallet'
@@ -304,7 +305,7 @@ export const AssetsView = (): JSX.Element => {
     try {
       await window.apiExport.saveBalancesJson({ fileName, data })
     } catch (err) {
-      console.error('Failed to save balances JSON:', err)
+      logger.error('Failed to save balances JSON:', err)
     }
   }, [
     activeWallet,

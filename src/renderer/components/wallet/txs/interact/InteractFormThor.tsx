@@ -63,9 +63,8 @@ import {
 } from '../../../../services/thorchain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import { TxModal } from '../../../modal/tx'
-import { SendAsset } from '../../../modal/tx/extra/SendAsset'
-import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
+import { UnifiedTxModal, getTxTimerValue, txHashRDToBoolean, extractTxHash } from '../../../modal/tx'
+import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
 import { Fees, UIFeesRD } from '../../../uielements/fees'
@@ -610,48 +609,19 @@ export const InteractFormThor = ({
     // don't render TxModal in initial state
     if (RD.isInitial(txRD)) return <></>
 
-    // Get timer value
-    const timerValue = FP.pipe(
-      txRD,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
-    const oTxHash = RD.toOption(txRD)
-    const txRDasBoolean = FP.pipe(
-      txRD,
-      RD.map((txHash) => !!txHash)
-    )
-
     return (
-      <TxModal
+      <UnifiedTxModal
         title={intl.formatMessage({ id: 'common.tx.sending' })}
         onClose={resetForm}
         onFinish={resetForm}
         startTime={sendTxStartTime}
-        txRD={txRDasBoolean}
-        extraResult={
-          <ViewTxButton
-            txHash={oTxHash}
-            onClick={openExplorerTxUrl}
-            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            network={network}
-          />
-        }
-        timerValue={timerValue}
-        extra={
-          <SendAsset
-            asset={{ asset, amount: amountToSend }}
-            network={network}
-            description={H.getInteractiveDescription({ state: interactState, intl })}
-          />
-        }
+        txRD={txHashRDToBoolean(txRD)}
+        timerValue={getTxTimerValue(txRD)}
+        txConfig={{ type: 'interact', asset: { asset, amount: amountToSend } }}
+        txHash={extractTxHash(txRD)}
+        getExplorerTxUrl={getExplorerTxUrl}
+        openExplorerTxUrl={openExplorerTxUrl}
+        network={network}
       />
     )
   }, [

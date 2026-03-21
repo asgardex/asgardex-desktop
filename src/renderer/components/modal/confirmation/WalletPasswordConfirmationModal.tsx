@@ -71,8 +71,8 @@ const PasswordModal = (props: PasswordModalProps) => {
 
     <Dialog as="div" className="relative z-10" transition open={visible} onClose={onCancel}>
       <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
-      {/* container to center the panel */}
-      <div className="fixed inset-0 flex items-center justify-center p-4">
+      {/* container to center the panel — offset for sidebar on desktop */}
+      <div className="fixed inset-0 flex items-center justify-center p-4 lg:pl-[240px]">
         {/* dialog panel animated  */}
         <DialogPanel
           className={clsx(

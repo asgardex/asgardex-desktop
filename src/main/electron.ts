@@ -19,8 +19,8 @@ import type { IPCExportKeystoreParams, IPCLedgerAddressParams, StoreFileName } f
 import { DEFAULT_STORAGES } from '../shared/const'
 import type { Locale } from '../shared/i18n/types'
 import { registerAppCheckUpdatedHandler } from './api/appUpdate'
-import { getFileStoreService } from './api/fileStore'
 import { saveBalancesJson } from './api/export'
+import { getFileStoreService } from './api/fileStore'
 import { exportKeystore, initKeystoreWallets, loadKeystore, saveKeystoreWallets } from './api/keystore'
 import {
   getAddress as getLedgerAddress,

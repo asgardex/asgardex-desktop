@@ -53,12 +53,10 @@ import { walletTypeToI18n } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
 import { FixmeType } from '../../../types/asgardex'
 import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
-import { TxModal } from '../../modal/tx'
-import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
+import { UnifiedTxModal, getDepositTimerValue } from '../../modal/tx'
 import { Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
-import { ViewTxButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { IconButton } from '../../uielements/button/IconButton'
 import { Collapse } from '../../uielements/collapse'
@@ -233,48 +231,26 @@ export const TradeAssetsTableCollapsable = ({
     )
   }, [intl, network, oTradeWithdrawParams, showWithdrawConfirm])
 
-  const txModalExtraContentAsym = useMemo(() => {
-    const assetWithAmount = FP.pipe(
-      oTradeWithdrawParams,
-      O.fold(
-        () => ({ asset: AssetRuneNative, amount: ZERO_BASE_AMOUNT }),
-        (params) => ({ asset: params.asset, amount: params.amount })
-      )
-    )
-    const stepDescriptions = [
-      intl.formatMessage({ id: 'common.tx.healthCheck' }),
-      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: assetWithAmount.asset.ticker }),
-      intl.formatMessage({ id: 'common.tx.checkResult' })
-    ]
-    const stepDescription = FP.pipe(
-      tradeWithdrawState.withdraw,
-      RD.fold(
-        () => '',
-        () =>
-          `${intl.formatMessage(
-            { id: 'common.step' },
-            { current: tradeWithdrawState.step, total: tradeWithdrawState.stepsTotal }
-          )}: ${stepDescriptions[tradeWithdrawState.step - 1]}`,
-        () => '',
-        () => `${intl.formatMessage({ id: 'common.done' })}!`
-      )
-    )
+  const withdrawAssetWithAmount = useMemo(
+    () =>
+      FP.pipe(
+        oTradeWithdrawParams,
+        O.fold(
+          () => ({ asset: AssetRuneNative, amount: ZERO_BASE_AMOUNT }),
+          (params) => ({ asset: params.asset, amount: params.amount })
+        )
+      ),
+    [oTradeWithdrawParams]
+  )
 
-    return (
-      <DepositAsset
-        source={O.some({ asset: assetWithAmount.asset, amount: assetWithAmount.amount })}
-        stepDescription={stepDescription}
-        network={network}
-      />
-    )
-  }, [
-    intl,
-    network,
-    oTradeWithdrawParams,
-    tradeWithdrawState.step,
-    tradeWithdrawState.stepsTotal,
-    tradeWithdrawState.withdraw
-  ])
+  const withdrawStepDescriptions = useMemo(
+    () => [
+      intl.formatMessage({ id: 'common.tx.healthCheck' }),
+      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: withdrawAssetWithAmount.asset.ticker }),
+      intl.formatMessage({ id: 'common.tx.checkResult' })
+    ],
+    [intl, withdrawAssetWithAmount.asset.ticker]
+  )
 
   const submitTradeWithdrawTx = useCallback(() => {
     FP.pipe(
@@ -291,19 +267,6 @@ export const TradeAssetsTableCollapsable = ({
     const { withdraw: withdrawRD, withdrawTx } = tradeWithdrawState
     if (RD.isInitial(withdrawRD)) return <></>
 
-    const timerValue = FP.pipe(
-      withdrawRD,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
-
     const txModalTitle = FP.pipe(
       withdrawRD,
       RD.fold(
@@ -315,50 +278,43 @@ export const TradeAssetsTableCollapsable = ({
       (id) => intl.formatMessage({ id })
     )
 
-    const oTxHash = FP.pipe(
-      RD.toOption(withdrawTx),
-      O.map((txHash) => txHash)
-    )
+    const oTxHash = RD.toOption(withdrawTx)
 
     const oProtocol = FP.pipe(
       oTradeWithdrawParams,
       O.map((params) => params.protocol)
     )
-    const protocolAsset = FP.pipe(
+
+    const explorerTxUrl = FP.pipe(
       oProtocol,
-      O.map((protocol) => (protocol === THORChain ? AssetRuneNative : AssetCacao)),
-      O.getOrElse(() => AssetRuneNative)
+      O.map((protocol) => (protocol === THORChain ? getRuneExplorerTxUrl : getMayaExplorerTxUrl)),
+      O.getOrElse(() => getRuneExplorerTxUrl)
     )
+
+    const openExplorerTxUrl = FP.pipe(
+      oProtocol,
+      O.map((protocol) => (protocol === THORChain ? openRuneExplorerTxUrl : openMayaExplorerTxUrl)),
+      O.getOrElse(() => openRuneExplorerTxUrl)
+    )
+
     return (
-      <TxModal
+      <UnifiedTxModal
         title={txModalTitle}
         onClose={onCloseTxModal}
         onFinish={onFinishTxModal}
         startTime={withdrawStartTime}
         txRD={withdrawRD}
-        timerValue={timerValue}
-        extraResult={
-          <ViewTxButton
-            txHash={oTxHash}
-            onClick={FP.pipe(
-              oProtocol,
-              O.map((protocol) => (protocol === THORChain ? openRuneExplorerTxUrl : openMayaExplorerTxUrl)),
-              O.getOrElse(() => openRuneExplorerTxUrl)
-            )}
-            txUrl={FP.pipe(
-              oTxHash,
-              O.chain((txHash) =>
-                FP.pipe(
-                  oProtocol,
-                  O.map((protocol) => (protocol === THORChain ? getRuneExplorerTxUrl : getMayaExplorerTxUrl)(txHash)),
-                  O.getOrElse(() => getRuneExplorerTxUrl(txHash))
-                )
-              )
-            )}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: protocolAsset.ticker })}
-          />
-        }
-        extra={txModalExtraContentAsym}
+        timerValue={getDepositTimerValue(withdrawRD)}
+        txConfig={{
+          type: 'deposit',
+          asset: withdrawAssetWithAmount,
+          steps: { current: tradeWithdrawState.step, total: tradeWithdrawState.stepsTotal },
+          stepDescriptions: withdrawStepDescriptions
+        }}
+        txHash={oTxHash}
+        getExplorerTxUrl={explorerTxUrl}
+        openExplorerTxUrl={openExplorerTxUrl}
+        network={network}
       />
     )
   }, [
@@ -368,11 +324,13 @@ export const TradeAssetsTableCollapsable = ({
     onFinishTxModal,
     withdrawStartTime,
     intl,
-    txModalExtraContentAsym,
+    withdrawAssetWithAmount,
+    withdrawStepDescriptions,
     openRuneExplorerTxUrl,
     openMayaExplorerTxUrl,
     getRuneExplorerTxUrl,
-    getMayaExplorerTxUrl
+    getMayaExplorerTxUrl,
+    network
   ])
 
   const renderLedgerConfirmationModal = useMemo(() => {

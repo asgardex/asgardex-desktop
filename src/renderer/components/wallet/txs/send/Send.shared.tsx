@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+
 import * as RD from '@devexperts/remote-data-ts'
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { ChevronDownIcon, FolderIcon } from '@heroicons/react/24/outline'
@@ -12,18 +13,12 @@ import { TrustedAddress } from '../../../../../shared/api/types'
 import { isEvmChain } from '../../../../helpers/evmHelper'
 import { DepositState, SendTxState } from '../../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
-import { TxModal } from '../../../modal/tx'
-import { SendAsset } from '../../../modal/tx/extra/SendAsset'
-import { ViewTxButton } from '../../../uielements/button'
+import { UnifiedTxModal, txHashRDToBoolean, extractTxHash, getDepositTimerValue, TxConfig } from '../../../modal/tx'
 import { Label } from '../../../uielements/label'
 import * as H from '../TxForm.helpers'
 
 /**
  * Utility function to filter matched addresses from saved addresses
- * @param oSavedAddresses - Option of saved addresses array
- * @param searchValue - The value to search for in addresses
- * @param caseSensitive - Whether to perform case-sensitive search (default: true)
- * @returns Option of matched addresses or O.none if no matches
  */
 export const filterMatchedAddresses = (
   oSavedAddresses: O.Option<TrustedAddress[]>,
@@ -71,34 +66,27 @@ export const renderTxModal = ({
   // don't render TxModal in initial state
   if (RD.isInitial(status)) return <></>
 
-  const oTxHash = RD.toOption(status)
-  const txRD = FP.pipe(
-    status,
-    RD.map((txHash) => !!txHash)
-  )
+  const oTxHash = extractTxHash(status, asset.chain)
+  const txRD = txHashRDToBoolean(status)
+
+  const txConfig: TxConfig = {
+    type: 'send',
+    asset: { asset, amount: amountToSend }
+  }
 
   return (
-    <TxModal
+    <UnifiedTxModal
       title={intl.formatMessage({ id: 'common.tx.sending' })}
       onClose={resetSendTxState}
       onFinish={resetSendTxState}
       startTime={sendTxStartTime}
       txRD={txRD}
-      extraResult={
-        <ViewTxButton
-          txHash={oTxHash}
-          onClick={openExplorerTxUrl}
-          txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-        />
-      }
       timerValue={H.getSendTxTimerValue(status)}
-      extra={
-        <SendAsset
-          asset={{ asset, amount: amountToSend }}
-          description={H.getSendTxDescription({ sendTxState, asset, intl })}
-          network={network}
-        />
-      }
+      txConfig={txConfig}
+      txHash={oTxHash}
+      getExplorerTxUrl={getExplorerTxUrl}
+      openExplorerTxUrl={openExplorerTxUrl}
+      network={network}
     />
   )
 }
@@ -143,60 +131,37 @@ export const renderDepositModal = ({
 
   const oTxHash = FP.pipe(
     RD.toOption(depositTx),
-    // Note: As long as we link to `viewblock` to open tx details in a browser,
-    // `0x` needs to be removed from tx hash in case of ETH
-    // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
     O.map((txHash) => (isEvmChain(asset.chain) ? txHash.replace(/0x/i, '') : txHash))
   )
 
-  // Get timer value
-  const timerValue = FP.pipe(
-    depositRD,
-    RD.fold(
-      () => 0,
-      FP.flow(
-        O.map(({ loaded }) => loaded),
-        O.getOrElse(() => 0)
-      ),
-      () => 0,
-      () => 100
-    )
-  )
+  const timerValue = getDepositTimerValue(depositRD)
+
   const stepDescriptions = [
     intl.formatMessage({ id: 'common.tx.healthCheck' }),
     intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: asset.ticker }),
     intl.formatMessage({ id: 'common.tx.checkResult' })
   ]
-  const stepDescription = FP.pipe(
-    depositState.deposit,
-    RD.fold(
-      () => '',
-      () =>
-        `${intl.formatMessage(
-          { id: 'common.step' },
-          { current: depositState.step, total: depositState.stepsTotal }
-        )}: ${stepDescriptions[depositState.step - 1]}`,
-      () => '',
-      () => `${intl.formatMessage({ id: 'common.done' })}!`
-    )
-  )
+
+  const txConfig: TxConfig = {
+    type: 'deposit',
+    asset: { asset, amount: amountToSend },
+    steps: { current: depositState.step, total: depositState.stepsTotal },
+    stepDescriptions
+  }
 
   return (
-    <TxModal
+    <UnifiedTxModal
       title={txModalTitle}
       onClose={resetDepositState}
       onFinish={resetDepositState}
       startTime={sendTxStartTime}
       txRD={depositRD}
-      extraResult={
-        <ViewTxButton
-          txHash={oTxHash}
-          onClick={openExplorerTxUrl}
-          txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-        />
-      }
       timerValue={timerValue}
-      extra={<SendAsset asset={{ asset, amount: amountToSend }} description={stepDescription} network={network} />}
+      txConfig={txConfig}
+      txHash={oTxHash}
+      getExplorerTxUrl={getExplorerTxUrl}
+      openExplorerTxUrl={openExplorerTxUrl}
+      network={network}
     />
   )
 }

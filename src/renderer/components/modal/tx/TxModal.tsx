@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { function as FP } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { ApiError } from '../../../services/wallet/types'
@@ -9,8 +9,12 @@ import { ErrorView } from '../../shared/error'
 import { Button, ButtonProps } from '../../uielements/button'
 import { Modal } from '../../uielements/modal'
 import { TxTimer } from '../../uielements/txTimer'
+import { TxActions, TxAssetDisplay, TxStatusIndicator } from './sections'
+import { getTxTitle } from './TxModal.helpers'
+import { TxModalProps } from './TxModal.types'
 
-type Props = {
+// ── Legacy props (backward-compatible) ──────────────────────────────
+type LegacyProps = {
   txRD: RD.RemoteData<ApiError, boolean>
   timerValue?: number
   title: string
@@ -22,7 +26,11 @@ type Props = {
   extraResult?: React.ReactNode
 }
 
-export const TxModal = (props: Props): JSX.Element => {
+/**
+ * Legacy TxModal — kept for backward compatibility during migration.
+ * Consumers that haven't been migrated yet still use this interface.
+ */
+export const TxModal = (props: LegacyProps): JSX.Element => {
   const { title, txRD, startTime, onClose, onFinish, extra = <></>, extraResult, timerValue = NaN } = props
 
   const intl = useIntl()
@@ -36,7 +44,6 @@ export const TxModal = (props: Props): JSX.Element => {
             () => <TxTimer status={true} />,
             () => <TxTimer status={true} maxValue={100} value={timerValue} startTime={startTime} />,
             (error) => (
-              // Show full error message without truncation
               <ErrorView
                 className="max-w-full overflow-auto p-2 text-sm leading-normal break-all whitespace-pre-wrap"
                 subTitle={error?.msg || intl.formatMessage({ id: 'common.error' })}
@@ -91,6 +98,75 @@ export const TxModal = (props: Props): JSX.Element => {
         {renderExtra}
       </div>
       {renderResult}
+    </Modal>
+  )
+}
+
+// ── New unified TxModal ─────────────────────────────────────────────
+
+/**
+ * Unified TxModal — owns the rendering of transaction content.
+ * Replaces per-consumer boilerplate for timer, asset display, and actions.
+ */
+export const UnifiedTxModal = (props: TxModalProps): JSX.Element => {
+  const {
+    txRD,
+    timerValue = NaN,
+    startTime,
+    txConfig,
+    title: titleProp,
+    txHash,
+    openExplorerTxUrl,
+    network,
+    trackable = false,
+    onClose,
+    onFinish,
+    extraContent
+  } = props
+
+  const intl = useIntl()
+
+  const title = titleProp ?? getTxTitle(txConfig, intl)
+
+  // Derive step labels for the stepper
+  const stepLabels = useMemo(() => {
+    const hasSteps = txConfig.type === 'deposit' || txConfig.type === 'symDeposit'
+    if (hasSteps) return txConfig.stepDescriptions
+    // Default 3-step labels for all other flows
+    return [
+      intl.formatMessage({ id: 'common.tx.sending' }),
+      intl.formatMessage({ id: 'common.tx.checkResult' }),
+      intl.formatMessage({ id: 'common.done' })
+    ]
+  }, [txConfig, intl])
+
+  // Determine protocol and channelId for actions
+  const protocol = useMemo(() => (txConfig.type === 'swap' ? (txConfig.protocol ?? O.none) : O.none), [txConfig])
+  const channelId = useMemo(() => (txConfig.type === 'swap' ? (txConfig.channelId ?? O.none) : O.none), [txConfig])
+
+  return (
+    <Modal panelClassName="!max-w-[460px]" containerClassName="lg:pl-[240px]" visible title={title} onCancel={onClose}>
+      {/* Vertical stepper */}
+      <TxStatusIndicator txRD={txRD} timerValue={timerValue} startTime={startTime} steps={stepLabels} />
+
+      {/* Asset display */}
+      <TxAssetDisplay txConfig={txConfig} network={network} />
+
+      {/* Escape hatch for custom content */}
+      {extraContent && <div className="flex w-full items-center justify-center px-6 pt-3">{extraContent}</div>}
+
+      {/* Actions */}
+      <TxActions
+        txRD={txRD}
+        txHash={txHash}
+        openExplorerTxUrl={openExplorerTxUrl}
+        network={network}
+        trackable={trackable}
+        protocol={protocol}
+        channelId={channelId}
+        onClose={onClose}
+        onFinish={onFinish}
+      />
     </Modal>
   )
 }

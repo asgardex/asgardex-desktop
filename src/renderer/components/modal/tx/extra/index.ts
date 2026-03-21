@@ -1,2 +1,1 @@
-export { SwapAssets } from './SwapAssets'
-export { DepositAssets, ClaimAsset } from './DepositAssets'
+export type { AssetData } from './Common.types'

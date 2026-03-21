@@ -1,6 +1,7 @@
 import { ADAChain } from '@xchainjs/xchain-cardano'
 import { QuoteSwap } from '@xchainjs/xchain-mayachain-query'
 import { XRPChain } from '@xchainjs/xchain-ripple'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -150,7 +151,22 @@ export const maxAmountToSwapMax1e8 = ({
       ? convertBaseAmountDecimal(estimatedFeeMax1e8, balanceAmountMax1e8.decimal)
       : estimatedFeeMax1e8
 
-  const maxAmountToSwap = balanceAmountMax1e8.minus(feeInBalanceDecimal)
+  // Account reserves: some chains require a minimum balance to keep the account active
+  const accountReserveMax1e8 =
+    asset.chain === XRPChain
+      ? max1e8BaseAmount(baseAmount(1000000, 6))
+      : asset.chain === ADAChain
+        ? max1e8BaseAmount(baseAmount(1170000, 6))
+        : asset.chain === SOLChain
+          ? max1e8BaseAmount(baseAmount(5000000, 9)) // rent-exempt reserve + buffer
+          : ZERO_BASE_AMOUNT
+
+  const reserveInBalanceDecimal =
+    accountReserveMax1e8.decimal !== balanceAmountMax1e8.decimal
+      ? convertBaseAmountDecimal(accountReserveMax1e8, balanceAmountMax1e8.decimal)
+      : accountReserveMax1e8
+
+  const maxAmountToSwap = balanceAmountMax1e8.minus(feeInBalanceDecimal).minus(reserveInBalanceDecimal)
   return maxAmountToSwap.gt(ZERO_BASE_AMOUNT) ? maxAmountToSwap : ZERO_BASE_AMOUNT
 }
 
@@ -177,13 +193,15 @@ export const maxAmountToSwap = ({
     feeAmount.decimal !== balanceAmount.decimal ? convertBaseAmountDecimal(feeAmount, balanceAmount.decimal) : feeAmount
 
   // Account reserves: some chains require a minimum balance to keep the account active
-  // XRP: 1 XRP (1,000,000 drops), ADA: ~1.17 ADA (1,170,000 lovelace)
+  // XRP: 1 XRP (1,000,000 drops), ADA: ~1.17 ADA (1,170,000 lovelace), SOL: ~0.005 SOL (5,000,000 lamports)
   const accountReserve =
     asset.chain === XRPChain
       ? baseAmount(1000000, balanceAmount.decimal)
       : asset.chain === ADAChain
         ? baseAmount(1170000, balanceAmount.decimal)
-        : ZERO_BASE_AMOUNT
+        : asset.chain === SOLChain
+          ? convertBaseAmountDecimal(baseAmount(5000000, 9), balanceAmount.decimal) // rent-exempt reserve (~0.00089 SOL) + buffer
+          : ZERO_BASE_AMOUNT
 
   const maxAmountToSwap = balanceAmount.minus(feeInBalanceDecimal).minus(accountReserve)
   return maxAmountToSwap.gt(ZERO_BASE_AMOUNT) ? maxAmountToSwap : ZERO_BASE_AMOUNT
