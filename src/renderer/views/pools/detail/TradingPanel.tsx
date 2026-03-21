@@ -861,18 +861,14 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   ])
 
   // Extra content for tx modal
-  const extraTxModalContent = useMemo(() => {
-    if (!sourceAsset || !targetAsset) return null
-    return (
-      <div className="flex items-center justify-center gap-2 py-2 font-main text-14 text-white">
-        <span>
-          {amountStr} {sourceAsset.ticker}
-        </span>
-        <span className="text-gray-500">&rarr;</span>
-        <span>{targetAsset.ticker}</span>
-      </div>
-    )
-  }, [sourceAsset, targetAsset, amountStr])
+  const swapTxSource = useMemo(
+    () => ({ asset: safeSourceAsset, amount: amountToSwap }),
+    [safeSourceAsset, amountToSwap]
+  )
+  const swapTxTarget = useMemo(
+    () => ({ asset: targetAsset || safeSourceAsset, amount: baseAmount(0) }),
+    [targetAsset, safeSourceAsset]
+  )
 
   return (
     <>
@@ -932,7 +928,8 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
         swapState={swapState}
         swapStartTime={swapStartTime}
         sourceChain={sourceChain}
-        extraTxModalContent={extraTxModalContent}
+        source={swapTxSource}
+        target={swapTxTarget}
         oQuoteProtocol={selectedQuote}
         goToTransaction={openExplorerTxUrl}
         getExplorerTxUrl={getExplorerTxUrl}
