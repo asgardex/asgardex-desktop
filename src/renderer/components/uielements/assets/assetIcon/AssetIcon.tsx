@@ -47,6 +47,7 @@ import {
   isAdaAsset,
   isXrpAsset,
   isTrxAsset,
+  isSuiAsset,
   iconUrlInTRONTRC20Whitelist
 } from '../../../../helpers/assetHelper'
 import {
@@ -87,6 +88,7 @@ import {
   xrpIcon,
   rujiIcon,
   tronIcon,
+  suiIcon,
   zecIcon
 } from '../../../icons'
 import { sizes, borders, fontSizes } from './AssetIcon.styles'
@@ -221,6 +223,10 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     // TRX
     if (isTrxAsset(asset)) {
       return tronIcon
+    }
+    // SUI
+    if (isSuiAsset(asset)) {
+      return suiIcon
     }
     // Hack for USDP // 1inch doesn't supply
     if (asset.symbol === 'USDP-0X8E870D67F660D95D5BE530380D0EC0BD388289E1') {

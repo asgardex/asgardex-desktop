@@ -16,6 +16,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { SUIChain } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, Chain } from '@xchainjs/xchain-util'
@@ -48,6 +49,7 @@ import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
+import * as SUI from '../sui'
 import * as THOR from '../thorchain'
 import * as TRON from '../tron'
 import * as ZEC from '../zcash'
@@ -149,6 +151,7 @@ export const createBalancesService = ({
         if (enabledChainsSet.has(SOLChain)) reloadFunctions.push(() => SOL.reloadBalances())
         if (enabledChainsSet.has(TRONChain)) reloadFunctions.push(() => TRON.reloadBalances(walletType))
         if (enabledChainsSet.has(ZECChain)) reloadFunctions.push(() => ZEC.reloadBalances(walletType))
+        if (enabledChainsSet.has(SUIChain)) reloadFunctions.push(() => SUI.reloadBalances())
 
         // Process in batches to limit concurrency
         processBatchedReloads(reloadFunctions)
@@ -176,7 +179,8 @@ export const createBalancesService = ({
     [ADAChain]: ADA.reloadBalances,
     [TRONChain]: TRON.reloadBalances,
     [ZECChain]: ZEC.reloadBalances,
-    [XRPChain]: XRP.reloadBalances
+    [XRPChain]: XRP.reloadBalances,
+    [SUIChain]: SUI.reloadBalances
   }
 
   const reloadBalancesByChain =
@@ -392,6 +396,13 @@ export const createBalancesService = ({
             balances$: XRP.balances$({ walletType, walletAccount, walletIndex, walletBalanceType, hdMode }),
             reloadBalances$: XRP.reloadBalances$
           }
+        case SUIChain:
+          return {
+            reloadBalances: SUI.reloadBalances,
+            resetReloadBalances: SUI.resetReloadBalances,
+            balances$: SUI.balances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances$: SUI.reloadBalances$
+          }
         default:
           return {
             reloadBalances: FP.constVoid,
@@ -566,6 +577,15 @@ export const createBalancesService = ({
   const solChainBalance$: ChainBalance$ = createChainBalance$({
     chain: SOLChain,
     addressUI$: SOL.addressUI$,
+    walletBalanceType: 'all'
+  })
+
+  /**
+   * Transforms SUI balances into `ChainBalances`
+   */
+  const suiChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: SUIChain,
+    addressUI$: SUI.addressUI$,
     walletBalanceType: 'all'
   })
 
@@ -1286,7 +1306,8 @@ export const createBalancesService = ({
     TRON: [tronChainBalance$, tronLedgerChainBalance$],
     BASE: [baseChainBalance$, baseLedgerChainBalance$],
     ZEC: [zecChainBalance$, zecLedgerChainBalance$],
-    XRP: [xrpChainBalance$, xrpLedgerChainBalance$]
+    XRP: [xrpChainBalance$, xrpLedgerChainBalance$],
+    SUI: [suiChainBalance$]
   }
 
   // Create ledger balance observables for filtering in standalone mode
@@ -1311,7 +1332,8 @@ export const createBalancesService = ({
     TRON: [tronLedgerChainBalance$],
     BASE: [baseLedgerChainBalance$],
     ZEC: [zecLedgerChainBalance$],
-    XRP: [xrpLedgerChainBalance$]
+    XRP: [xrpLedgerChainBalance$],
+    SUI: []
   }
 
   // Vultisig balance observables for standalone Vultisig mode

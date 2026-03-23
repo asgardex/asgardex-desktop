@@ -3504,7 +3504,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mysten/sui@npm:1.45.2, @mysten/sui@npm:^1.45.2":
+"@mysten/sui@npm:1.45.2, @mysten/sui@npm:^1.21.0, @mysten/sui@npm:^1.45.2":
   version: 1.45.2
   resolution: "@mysten/sui@npm:1.45.2"
   dependencies:
@@ -3661,7 +3661,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:^1.3.0, @noble/curves@npm:^1.9.2, @noble/curves@npm:^1.9.7, @noble/curves@npm:~1.9.2":
+"@noble/curves@npm:^1.3.0, @noble/curves@npm:^1.8.1, @noble/curves@npm:^1.9.2, @noble/curves@npm:^1.9.7, @noble/curves@npm:~1.9.2":
   version: 1.9.7
   resolution: "@noble/curves@npm:1.9.7"
   dependencies:
@@ -7505,6 +7505,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-monero@npm:0.2.0":
+  version: 0.2.0
+  resolution: "@xchainjs/xchain-monero@npm:0.2.0"
+  dependencies:
+    "@noble/curves": "npm:^1.8.1"
+    "@noble/hashes": "npm:^1.7.1"
+    "@xchainjs/xchain-client": "npm:2.0.11"
+    "@xchainjs/xchain-crypto": "npm:1.0.6"
+    "@xchainjs/xchain-util": "npm:2.0.6"
+    micro-key-producer: "npm:^0.7.6"
+  checksum: 10/64d82a64e807c2ea0fc41b693fb32312e436a3703f5c50b6735277ff568d0705b07997519cd9f181e81ee35e0f020e973dfdb11d2fc1bef1e801043ebc187341
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-radix@npm:2.0.11":
   version: 2.0.11
   resolution: "@xchainjs/xchain-radix@npm:2.0.11"
@@ -7552,6 +7566,19 @@ __metadata:
     bs58: "npm:^6.0.0"
     micro-key-producer: "npm:^0.7.6"
   checksum: 10/48e4a86d67a36f148158590037df2929ed8d8cfffd2bbaa2a9ca828e4560b1d1bac77ef92610c3ff7fe0a7912982e37a6c766faf62d48bd5be9aa2a796c4a4c6
+  languageName: node
+  linkType: hard
+
+"@xchainjs/xchain-sui@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@xchainjs/xchain-sui@npm:0.1.0"
+  dependencies:
+    "@mysten/sui": "npm:^1.21.0"
+    "@xchainjs/xchain-client": "npm:2.0.11"
+    "@xchainjs/xchain-crypto": "npm:1.0.6"
+    "@xchainjs/xchain-util": "npm:2.0.6"
+    micro-key-producer: "npm:^0.7.6"
+  checksum: 10/756a599e2d4e640bb9e013d64cb55e855bb123457637eb25bfc5b4abf8a718ce9ff47c93d4189ab7040d04de0dbd67be65feb29eea7b3f5425b552310c2f1bac
   languageName: node
   linkType: hard
 
@@ -8238,9 +8265,11 @@ __metadata:
     "@xchainjs/xchain-mayamidgard": "npm:1.1.0"
     "@xchainjs/xchain-mayanode": "npm:1.2.0"
     "@xchainjs/xchain-midgard": "npm:1.1.0"
+    "@xchainjs/xchain-monero": "npm:0.2.0"
     "@xchainjs/xchain-radix": "npm:2.0.11"
     "@xchainjs/xchain-ripple": "npm:1.0.13"
     "@xchainjs/xchain-solana": "npm:1.1.2"
+    "@xchainjs/xchain-sui": "npm:0.1.0"
     "@xchainjs/xchain-thorchain": "npm:3.0.15"
     "@xchainjs/xchain-thorchain-query": "npm:3.0.2"
     "@xchainjs/xchain-thornode": "npm:1.1.0"

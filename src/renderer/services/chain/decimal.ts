@@ -17,6 +17,7 @@ import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRP_DECIMAL } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
+import { SUI_DECIMALS } from '@xchainjs/xchain-sui'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import { TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
@@ -58,7 +59,8 @@ const CHAIN_DECIMAL_MAP = new Map([
   ['TRON', TRX_DECIMAL],
   ['XRP', XRP_DECIMAL],
   ['ZEC', ZEC_DECIMAL],
-  ['ADA', ADA_DECIMALS]
+  ['ADA', ADA_DECIMALS],
+  ['SUI', SUI_DECIMALS]
 ])
 
 /**
