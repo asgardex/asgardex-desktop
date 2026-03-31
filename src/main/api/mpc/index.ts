@@ -779,11 +779,25 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
 
       // Step 6: Broadcast via SDK
       log.info(`[MPC IPC] Step 5: broadcastTx`)
-      const txHash: string = await vault.broadcastTx({
-        chain: sdkChain,
-        keysignPayload,
-        signature
-      })
+      let txHash: string
+      try {
+        txHash = await vault.broadcastTx({
+          chain: sdkChain,
+          keysignPayload,
+          signature
+        })
+      } catch (broadcastError: unknown) {
+        // Some chains (e.g. Solana) may report "already been processed" if the SDK
+        // submitted the tx internally before the explicit broadcast call.
+        // The tx succeeded — treat this as success with a placeholder hash.
+        const broadcastMsg = errorMsg(broadcastError)
+        if (broadcastMsg.includes('already been processed') || broadcastMsg.includes('AlreadyProcessed')) {
+          log.warn(`[MPC IPC] Broadcast reported duplicate — tx already submitted`, { chain })
+          txHash = 'broadcast-duplicate-tx-already-processed'
+        } else {
+          throw broadcastError
+        }
+      }
       log.info(`[MPC IPC] Step 5: broadcastTx complete`, { txHash })
 
       return { txHash }

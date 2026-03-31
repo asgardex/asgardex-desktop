@@ -1,8 +1,14 @@
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
+import { createEnhancedClient$ } from '../clients'
 import { isKeystoreReloadTrigger } from '../wallet/types'
-import { client$ } from './common'
+import { client$, readOnlyClient$ } from './common'
+
+/**
+ * Enhanced client that switches between keystore and read-only client for standalone ledger mode
+ */
+const enhancedClient$ = createEnhancedClient$(client$, readOnlyClient$)
 
 /**
  * `ObservableState` to reload `Balances`
@@ -45,7 +51,7 @@ const balances$ = ({
 
   // For ZEC, we'll always use 'all' balance type since it might not support confirmed/unconfirmed distinction
   return C.balances$({
-    client$,
+    client$: enhancedClient$,
     trigger$,
     walletType,
     walletAccount,
@@ -57,6 +63,6 @@ const balances$ = ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (walletBalanceType: WalletBalanceType) =>
-  C.balancesByAddress$({ client$, trigger$: reloadLedgerBalances$, walletBalanceType })
+  C.balancesByAddress$({ client$: enhancedClient$, trigger$: reloadLedgerBalances$, walletBalanceType })
 
 export { balances$, reloadBalances, getBalanceByAddress$, reloadBalances$, resetReloadBalances }

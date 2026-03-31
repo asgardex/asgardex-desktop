@@ -7,9 +7,10 @@ import * as RxOp from 'rxjs/operators'
 
 import { IPCLedgerSendTxParams, ipcLedgerSendTxParamsIO } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { isLedgerWallet } from '../../../shared/utils/guard'
+import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
+import { createVultisigCosmosTx } from '../cosmos/vultisigTx'
 import { TxHashLD, ErrorId } from '../wallet/types'
 import { TransactionService, Client$, SendTxParams } from './types'
 
@@ -61,11 +62,19 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
   }
 
+  // Vultisig transaction handler — SDK native pipeline
+  // KUJI uses 'ukuji' as native denom
+  const getDenom = (asset: { symbol?: string } | null) => (asset?.symbol?.toLowerCase() === 'kuji' ? 'ukuji' : null)
+  const vultisigTx = createVultisigCosmosTx('KUJI', getDenom, 'ukuji')
+  const sendVultisigTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD =>
+    vultisigTx({ network, params })
+
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
       Rx.combineLatest([network$]),
       RxOp.switchMap(([network]) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
 
         return common.sendTx(params)
       })

@@ -66,4 +66,31 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, KUJIChain)
  */
 const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+/**
+ * Read-only KUJI client for balance queries without requiring keystore
+ * This client can be used for standalone ledger/Vultisig mode to query balances
+ */
+const readOnlyClientState$: Rx.Observable<RD.RemoteData<Error, KujiClient>> = FP.pipe(
+  clientNetwork$,
+  RxOp.map((network) => {
+    try {
+      const client = new KujiClient({
+        ...defaultKujiParams,
+        network: network
+      })
+      return RD.success(client)
+    } catch (error) {
+      logger.error('Failed to create read-only KUJI client', error)
+      return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+    }
+  }),
+  RxOp.startWith<RD.RemoteData<Error, KujiClient>>(RD.pending),
+  RxOp.shareReplay(1)
+)
+
+const readOnlyClient$: Rx.Observable<O.Option<KujiClient>> = readOnlyClientState$.pipe(
+  RxOp.map(RD.toOption),
+  RxOp.shareReplay(1)
+)
+
+export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }

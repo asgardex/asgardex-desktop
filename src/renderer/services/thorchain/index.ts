@@ -59,7 +59,7 @@ const {
 } = createThornodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
-  client$,
+  enhancedClient$,
   network$,
   clientUrl$
 )

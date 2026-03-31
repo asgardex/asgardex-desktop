@@ -7,7 +7,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { IPCLedgerSendTxParams, ipcLedgerSendTxParamsIO } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { isLedgerWallet } from '../../../shared/utils/guard'
+import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { addressInTRONTRC20Whitelist } from '../../helpers/assetHelper'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
@@ -22,6 +22,7 @@ import {
   SendTxParams,
   TransactionService
 } from './types'
+import { createVultisigTronTx } from './vultisigTx'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
@@ -173,12 +174,16 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       )
     )
 
+  // Vultisig transaction handler — SDK native pipeline
+  const sendVultisigTx = createVultisigTronTx()
+
   const sendTx = (params: SendTxParams): TxHashLD =>
     FP.pipe(
       network$,
       RxOp.take(1),
       RxOp.switchMap((network) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
 
         return common.sendTx(params)
       })

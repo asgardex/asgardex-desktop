@@ -20,12 +20,13 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { isLedgerWallet } from '../../../shared/utils/guard'
+import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { TxHashLD, ErrorId, ApiError } from '../wallet/types'
 import { SendPoolTxParams, TransactionService, Client$, SendTxParams } from './types'
+import { createVultisigRadixTx, createVultisigRadixPoolTx } from './vultisigTx'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
@@ -114,11 +115,21 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     )
   }
 
+  // Vultisig transaction handlers — SDK native pipeline
+  const sendVultisigTx = createVultisigRadixTx()
+  const sendVultisigPoolTx = createVultisigRadixPoolTx()
+
   const sendPoolTx$ = (params: SendPoolTxParams): TxHashLD => {
     if (isLedgerWallet(params.walletType))
       return FP.pipe(
         network$,
         RxOp.switchMap((network) => sendLedgerPoolTx({ network, params }))
+      )
+
+    if (isVultisigWallet(params.walletType))
+      return FP.pipe(
+        network$,
+        RxOp.switchMap((network) => sendVultisigPoolTx({ network, params }))
       )
 
     return FP.pipe(
@@ -185,6 +196,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       Rx.combineLatest([network$]),
       RxOp.switchMap(([network]) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
 
         return common.sendTx(params)
       })
