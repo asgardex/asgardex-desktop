@@ -22,7 +22,7 @@ export const useTradeDepositAddresses = ({ protocol, walletType }: { protocol: C
 
   const [oProtocolAddress, setOProtocolAddress] = useState<O.Option<WalletAddress>>(O.none)
 
-  // Get keystore address
+  // Get address for Keystore or Vultisig (unified addressByChain$ handles both)
   useEffect(() => {
     if (!isLedgerWallet(walletType)) {
       const subscription = addressByChain$(protocol).subscribe(setOProtocolAddress)

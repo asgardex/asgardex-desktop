@@ -65,6 +65,8 @@ export const useSymDepositAddresses = ({
     O.none
   )
 
+  // Ledger uses dedicated ledger address resolution; Keystore and Vultisig both resolve
+  // through the unified addressByChain$ (which handles Vultisig via getAddressForChain$)
   const symDepositAddresses = {
     asset: isLedgerWallet(assetWalletType) ? oAssetLedgerWalletAddress : oAssetWalletAddress,
     dex: isLedgerWallet(dexWalletType) ? runeLedgerAddress : oDexWalletAddress
