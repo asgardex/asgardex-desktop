@@ -59,8 +59,8 @@ const getSupportedProtocolsForAsset = (
     }
   } else {
     // Fallback to hardcoded values if no dynamic check provided
-    const chainflipSupportedChains = ['BTC', 'ETH', 'DOT']
-    const chainflipSupportedAssets = ['USDC', 'USDT', 'FLIP']
+    const chainflipSupportedChains = ['BTC', 'ETH', 'ARB', 'SOL']
+    const chainflipSupportedAssets = ['USDC', 'USDT', 'FLIP', 'WBTC']
 
     if (
       chainflipSupportedChains.includes(asset.chain) ||
