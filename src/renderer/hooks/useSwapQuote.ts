@@ -125,8 +125,8 @@ export const useSwapQuote = ({
           }),
           fromAddress: isSecuredAsset(sourceAsset) ? undefined : sourceWalletAddress,
           destinationAddress: quoteOnly ? undefined : destinationAddress,
-          streamingInterval: streaming.interval === 0 ? undefined : streaming.interval,
-          streamingQuantity: streaming.interval === 0 ? undefined : streaming.quantity,
+          streamingInterval: streaming.interval,
+          streamingQuantity: streaming.quantity,
           liquidityToleranceBps: slipTolerance * 100,
           toleranceBps: undefined
         }

@@ -655,9 +655,8 @@ export const TradeSwap = ({
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
           const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : getAsgardexThorname(network)
-          // Rapid (interval=0): omit streaming params — THORChain auto-handles rapid
-          const streamingInt = streamingInterval === 0 ? undefined : streamingInterval
-          const streaminQuant = streamingInterval === 0 ? undefined : streamingQuantity
+          const streamingInt = streamingInterval
+          const streaminQuant = streamingQuantity
           const toleranceBps = slipTolerance * 100 // convert to basis points
           return {
             fromAsset: fromAsset,
@@ -728,8 +727,8 @@ export const TradeSwap = ({
             fromAsset: sourceAsset,
             destinationAsset: targetAsset,
             amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
-            streamingInterval: streamingInterval === 0 ? undefined : streamingInterval,
-            streamingQuantity: streamingInterval === 0 ? undefined : streamingQuantity,
+            streamingInterval: streamingInterval,
+            streamingQuantity: streamingQuantity,
             toleranceBps: slipTolerance * 100, // convert to basis points
             affiliateAddress: affiliateName,
             affiliateBps: 0

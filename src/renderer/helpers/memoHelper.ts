@@ -165,24 +165,19 @@ export const getSwapMemo = ({
   affiliateBps: number | undefined
 }) => {
   const target = assetToMemoString(targetAsset)
-  const hasAffiliate = affiliateName !== undefined && affiliateName !== null
-  // Rapid (interval=0): omit streaming params to let THORChain auto-handle.
-  // But if affiliate params follow, we must keep the positional slot with 0/0/0
-  // since mkMemo filters undefined and would shift affiliate into the streaming position.
-  const streaming =
-    streamingInterval === 0 ? (hasAffiliate ? '0/0/0' : undefined) : `0/${streamingInterval}/${streamingQuantity}`
+  // Streaming params format: LIMIT/INTERVAL/QUANTITY (embedded in the limit position)
+  // Rapid (interval=0, quantity=0): THORChain auto-calculates optimal sub-swap count
+  // Streaming (interval>0): explicit interval between sub-swaps
+  const streaming = `0/${streamingInterval}/${streamingQuantity}`
   const memo = '='
   return mkMemo([memo, target, targetAddress, toleranceBps, streaming, affiliateName, affiliateBps])
 }
 /**
- * Adjusts streaming params in a swap memo based on the selected mode.
+ * Ensures the swap memo includes the correct streaming params (LIMIT/INTERVAL/QUANTITY).
+ * THORNode quote memos may omit or differ from the user's selected streaming mode.
  *
- * Rapid mode (interval=0): Strips streaming params from the memo limit field.
- *   THORChain treats omitted interval/quantity as rapid by default —
- *   it auto-calculates quantity and runs multiple sub-swaps per block.
- *
- * Streaming modes (interval>0): Ensures the memo includes explicit streaming params
- *   (e.g. `LIM/1/0` for fast streaming with auto quantity).
+ * Rapid (interval=0, quantity=0): LIM/0/0 — THORChain auto-calculates optimal sub-swaps
+ * Streaming (interval>0): LIM/N/Q — explicit interval and quantity
  */
 export const applyStreamingToMemo = (memo: string, streamingInterval: number, streamingQuantity: number): string => {
   if (!memo?.trim()) return memo
@@ -190,16 +185,8 @@ export const applyStreamingToMemo = (memo: string, streamingInterval: number, st
   const parts = memo.split(':')
   if (parts.length < 4) return memo
 
-  const limitPart = parts[3]
-
-  if (streamingInterval === 0) {
-    // Rapid: strip any streaming suffix, let THORChain auto-handle
-    parts[3] = limitPart.includes('/') ? limitPart.split('/')[0] : limitPart
-  } else {
-    // Streaming: ensure params are present
-    const baseLim = limitPart.includes('/') ? limitPart.split('/')[0] : limitPart
-    parts[3] = `${baseLim}/${streamingInterval}/${streamingQuantity}`
-  }
+  const baseLim = parts[3].includes('/') ? parts[3].split('/')[0] : parts[3]
+  parts[3] = `${baseLim}/${streamingInterval}/${streamingQuantity}`
 
   return parts.join(':')
 }
