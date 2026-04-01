@@ -428,7 +428,9 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     poolAddressThor,
     poolAddressMaya,
     network,
-    isSendMax: false
+    isSendMax: false,
+    streamingInterval,
+    streamingQuantity
   })
 
   // ── Hook 6: ERC20 Approval ────────────────────────────────────────────

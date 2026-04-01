@@ -168,7 +168,7 @@ export const AssetsView = (): JSX.Element => {
   const pendingPoolsMayaRD = useObservableState(pendingPoolsStateMaya$, RD.pending)
   const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
 
-  const [lpFetchEnabled] = useState(true)
+  const [lpFetchEnabled, setLpFetchEnabled] = useState(false)
   const { allSharesRD: thorSharesRD } = usePoolShares(THORChain, lpFetchEnabled)
   const { allSharesRD: mayaSharesRD } = usePoolShares(MAYAChain, lpFetchEnabled)
 
@@ -212,17 +212,14 @@ export const AssetsView = (): JSX.Element => {
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
+  const [savePending, setSavePending] = useState(false)
+
   const disableSave = useMemo(
-    () =>
-      !allChainsLoaded ||
-      RD.isPending(poolsRD) ||
-      RD.isPending(poolsMayaRD) ||
-      RD.isPending(thorSharesRD) ||
-      RD.isPending(mayaSharesRD),
-    [allChainsLoaded, poolsRD, poolsMayaRD, thorSharesRD, mayaSharesRD]
+    () => !allChainsLoaded || RD.isPending(poolsRD) || RD.isPending(poolsMayaRD),
+    [allChainsLoaded, poolsRD, poolsMayaRD]
   )
 
-  const saveBalancesHandler = useCallback(async () => {
+  const performSave = useCallback(async () => {
     const now = new Date()
     const pad = (n: number) => String(n).padStart(2, '0')
     const datePart = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`
@@ -307,6 +304,7 @@ export const AssetsView = (): JSX.Element => {
     } catch (err) {
       logger.error('Failed to save balances JSON:', err)
     }
+    setSavePending(false)
   }, [
     activeWallet,
     geckoPriceMap,
@@ -318,6 +316,23 @@ export const AssetsView = (): JSX.Element => {
     selectedPricePool,
     selectedPricePoolMaya
   ])
+
+  // Once LP shares are loaded after user clicked save, perform the actual save
+  useEffect(() => {
+    if (savePending && RD.isSuccess(thorSharesRD) && RD.isSuccess(mayaSharesRD)) {
+      performSave()
+    }
+  }, [savePending, thorSharesRD, mayaSharesRD, performSave])
+
+  const saveBalancesHandler = useCallback(() => {
+    setLpFetchEnabled(true)
+    // If shares are already loaded (e.g. user clicked save before), save immediately
+    if (RD.isSuccess(thorSharesRD) && RD.isSuccess(mayaSharesRD)) {
+      performSave()
+    } else {
+      setSavePending(true)
+    }
+  }, [thorSharesRD, mayaSharesRD, performSave])
 
   const refreshHandler = useCallback(async () => {
     const delay = 1000

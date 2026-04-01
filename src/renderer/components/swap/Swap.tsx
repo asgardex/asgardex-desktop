@@ -651,7 +651,9 @@ export const Swap = ({
     poolAddressThor: oPoolAddressThor,
     poolAddressMaya: oPoolAddressMaya,
     network,
-    isSendMax
+    isSendMax,
+    streamingInterval,
+    streamingQuantity
   })
 
   // ─── Remaining component logic ─────────────────────────────────────────────

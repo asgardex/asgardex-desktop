@@ -18,7 +18,7 @@ import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 import { useWalletContext } from '../contexts/WalletContext'
 import { isRujiAsset, isUtxoAssetChain } from '../helpers/assetHelper'
 import { sequenceTOption } from '../helpers/fpHelpers'
-import { updateMemo } from '../helpers/memoHelper'
+import { applyStreamingToMemo, updateMemo } from '../helpers/memoHelper'
 import { INITIAL_SWAP_STATE } from '../services/chain/const'
 import { SwapTxParams, SwapTxState, SendTxParams, SwapHandler, SwapCFHandler, SwapFees } from '../services/chain/types'
 import { PoolAddress } from '../services/midgard/midgardTypes'
@@ -38,6 +38,8 @@ type UseSwapExecutionParams = {
   poolAddressMaya: O.Option<PoolAddress>
   network: Network
   isSendMax: boolean
+  streamingInterval: number
+  streamingQuantity: number
 }
 
 type UseSwapExecutionResult = {
@@ -64,7 +66,9 @@ export const useSwapExecution = ({
   poolAddressThor,
   poolAddressMaya,
   network,
-  isSendMax
+  isSendMax,
+  streamingInterval,
+  streamingQuantity
 }: UseSwapExecutionParams): UseSwapExecutionResult => {
   const { appWalletService } = useWalletContext()
   const appWalletState = useObservableState(appWalletService.appWalletState$)
@@ -142,7 +146,7 @@ export const useSwapExecution = ({
           poolAddress,
           asset: sourceAsset,
           amount: amountToSwapAdjusted,
-          memo: updateMemo(quoteSwap.memo, network),
+          memo: applyStreamingToMemo(updateMemo(quoteSwap.memo, network), streamingInterval, streamingQuantity),
           walletType,
           sender: finalWalletAddress,
           walletAccount: finalWalletAccount,
@@ -166,7 +170,9 @@ export const useSwapExecution = ({
     appWalletState,
     standaloneLedgerState?.address,
     isSourceUTXO,
-    isSendMax
+    isSendMax,
+    streamingInterval,
+    streamingQuantity
   ])
 
   // Build Chainflip swap params

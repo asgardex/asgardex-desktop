@@ -39,12 +39,11 @@ const swap: SwapMessages = {
   'swap.address.evm.warning': 'Do NOT swap to Smart Contract addresses',
   'swap.synth.warning':
     'Synth minting has been discontinued. Synth redemption will remain available for the next 3 months — please redeem while you can.',
-  'swap.mode.limit': 'Limit',
+  'swap.mode.rapid': 'Rapid',
   'swap.mode.fast': 'Fast',
   'swap.mode.balanced': 'Balanced',
   'swap.mode.bestPrice': 'Best Price',
-  'swap.settings.subSwaps.auto': 'Auto swap count',
-  'swap.settings.subSwaps.limit': 'Limit swap'
+  'swap.settings.subSwaps.auto': 'Auto swap count'
 }
 
 export default swap

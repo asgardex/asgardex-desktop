@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { useIntl } from 'react-intl'
@@ -12,16 +12,17 @@ import { Tooltip } from '../../uielements/tooltip'
 
 type Props = {
   activeMode: StreamingMode
-  streamingInterval: number
+  streamingInterval?: number
   streamingQuantity: number
   onModeChange: (mode: StreamingMode) => void
   onQuantityChange: (value: number) => void
   onReset: () => void
   maxStreamingQuantity?: number
+  supportRapid?: boolean
 }
 
 const MODE_LABEL_KEYS: Record<StreamingMode, string> = {
-  0: 'swap.mode.limit',
+  0: 'swap.mode.rapid',
   1: 'swap.mode.fast',
   2: 'swap.mode.balanced',
   3: 'swap.mode.bestPrice'
@@ -29,32 +30,42 @@ const MODE_LABEL_KEYS: Record<StreamingMode, string> = {
 
 export const SwapSettings = ({
   activeMode,
-  streamingInterval,
   streamingQuantity,
   onModeChange,
   onQuantityChange,
   onReset,
-  maxStreamingQuantity
+  maxStreamingQuantity,
+  supportRapid = true
 }: Props) => {
   const intl = useIntl()
 
   const modeLabel = intl.formatMessage({ id: MODE_LABEL_KEYS[activeMode] })
 
+  const availableModes: StreamingMode[] = useMemo(() => (supportRapid ? [0, 1, 2, 3] : [1, 2, 3]), [supportRapid])
+
   const modeOptions = useMemo(
     () =>
-      ([0, 1, 2, 3] as StreamingMode[]).map((mode) => ({
+      availableModes.map((mode) => ({
         label: <span className="text-[12px]">{intl.formatMessage({ id: MODE_LABEL_KEYS[mode] })}</span>,
         value: mode
       })),
-    [intl]
+    [intl, availableModes]
   )
 
+  const handleModeChange = useCallback(
+    (index: number) => {
+      onModeChange(availableModes[index])
+    },
+    [availableModes, onModeChange]
+  )
+
+  const activeIndex = useMemo(() => availableModes.indexOf(activeMode), [availableModes, activeMode])
+
   const quantityLabel = useMemo(() => {
-    if (streamingInterval === 0) return [intl.formatMessage({ id: 'swap.settings.subSwaps.limit' })]
     return streamingQuantity === 0
       ? [intl.formatMessage({ id: 'swap.settings.subSwaps.auto' })]
       : [intl.formatMessage({ id: 'swap.streaming.quantity' }), `${streamingQuantity}`]
-  }, [streamingInterval, streamingQuantity, intl])
+  }, [streamingQuantity, intl])
 
   return (
     <Collapse
@@ -67,19 +78,13 @@ export const SwapSettings = ({
       }>
       <div className="flex flex-col p-4">
         <div className="flex w-full flex-col space-y-4 px-2">
-          <RadioGroup
-            options={modeOptions}
-            activeIndex={activeMode}
-            onChange={(index) => onModeChange(index as StreamingMode)}
+          <RadioGroup options={modeOptions} activeIndex={activeIndex} onChange={handleModeChange} />
+          <Slider
+            value={streamingQuantity}
+            onChange={onQuantityChange}
+            max={maxStreamingQuantity}
+            labels={quantityLabel}
           />
-          {activeMode !== 0 && (
-            <Slider
-              value={streamingQuantity}
-              onChange={onQuantityChange}
-              max={maxStreamingQuantity}
-              labels={quantityLabel}
-            />
-          )}
         </div>
         <div className="flex justify-end">
           <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>

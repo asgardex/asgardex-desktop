@@ -165,10 +165,45 @@ export const getSwapMemo = ({
   affiliateBps: number | undefined
 }) => {
   const target = assetToMemoString(targetAsset)
-  const streaming = `0/${streamingInterval}/${streamingQuantity}`
+  const hasAffiliate = affiliateName !== undefined && affiliateName !== null
+  // Rapid (interval=0): omit streaming params to let THORChain auto-handle.
+  // But if affiliate params follow, we must keep the positional slot with 0/0/0
+  // since mkMemo filters undefined and would shift affiliate into the streaming position.
+  const streaming =
+    streamingInterval === 0 ? (hasAffiliate ? '0/0/0' : undefined) : `0/${streamingInterval}/${streamingQuantity}`
   const memo = '='
   return mkMemo([memo, target, targetAddress, toleranceBps, streaming, affiliateName, affiliateBps])
 }
+/**
+ * Adjusts streaming params in a swap memo based on the selected mode.
+ *
+ * Rapid mode (interval=0): Strips streaming params from the memo limit field.
+ *   THORChain treats omitted interval/quantity as rapid by default —
+ *   it auto-calculates quantity and runs multiple sub-swaps per block.
+ *
+ * Streaming modes (interval>0): Ensures the memo includes explicit streaming params
+ *   (e.g. `LIM/1/0` for fast streaming with auto quantity).
+ */
+export const applyStreamingToMemo = (memo: string, streamingInterval: number, streamingQuantity: number): string => {
+  if (!memo?.trim()) return memo
+
+  const parts = memo.split(':')
+  if (parts.length < 4) return memo
+
+  const limitPart = parts[3]
+
+  if (streamingInterval === 0) {
+    // Rapid: strip any streaming suffix, let THORChain auto-handle
+    parts[3] = limitPart.includes('/') ? limitPart.split('/')[0] : limitPart
+  } else {
+    // Streaming: ensure params are present
+    const baseLim = limitPart.includes('/') ? limitPart.split('/')[0] : limitPart
+    parts[3] = `${baseLim}/${streamingInterval}/${streamingQuantity}`
+  }
+
+  return parts.join(':')
+}
+
 // With stagenet, remove all affiliate config from memo
 export const updateMemo = (memo: string, network: Network): string => {
   const pattern = /:dx:\d+$/

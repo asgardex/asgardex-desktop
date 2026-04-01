@@ -54,7 +54,7 @@ import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { logger } from '../../helpers/logger'
-import { getSwapMemo, updateMemoWithFullAsset } from '../../helpers/memoHelper'
+import { applyStreamingToMemo, getSwapMemo, updateMemoWithFullAsset } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
@@ -243,8 +243,9 @@ export const TradeSwap = ({
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
 
+  const supportRapid = protocol === THORChain
   const { streamingInterval, streamingQuantity, isStreaming, activeMode, setMode, setQuantity, resetToDefault } =
-    useStreamingParams()
+    useStreamingParams(supportRapid)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
@@ -654,8 +655,9 @@ export const TradeSwap = ({
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
           const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : getAsgardexThorname(network)
-          const streamingInt = isStreaming ? streamingInterval : 0
-          const streaminQuant = isStreaming ? streamingQuantity : 0
+          // Rapid (interval=0): omit streaming params — THORChain auto-handles rapid
+          const streamingInt = streamingInterval === 0 ? undefined : streamingInterval
+          const streaminQuant = streamingInterval === 0 ? undefined : streamingQuantity
           const toleranceBps = slipTolerance * 100 // convert to basis points
           return {
             fromAsset: fromAsset,
@@ -727,8 +729,8 @@ export const TradeSwap = ({
             fromAsset: sourceAsset,
             destinationAsset: targetAsset,
             amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
-            streamingInterval: isStreaming ? streamingInterval : 0,
-            streamingQuantity: isStreaming ? streamingQuantity : 0,
+            streamingInterval: streamingInterval === 0 ? undefined : streamingInterval,
+            streamingQuantity: streamingInterval === 0 ? undefined : streamingQuantity,
             toleranceBps: slipTolerance * 100, // convert to basis points
             affiliateAddress: affiliateName,
             affiliateBps: 0
@@ -1025,7 +1027,11 @@ export const TradeSwap = ({
         poolAddress,
         asset: sourceAsset,
         amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
-        memo: updateMemoWithFullAsset(quoteData.memo, targetAsset),
+        memo: applyStreamingToMemo(
+          updateMemoWithFullAsset(quoteData.memo, targetAsset),
+          streamingInterval,
+          streamingQuantity
+        ),
         walletType,
         sender: walletAddress,
         walletAccount,
@@ -1049,7 +1055,9 @@ export const TradeSwap = ({
     amountToSwapMax1e8,
     isSourceUTXO,
     isSendMax,
-    sourceAssetAmount.decimal
+    sourceAssetAmount.decimal,
+    streamingInterval,
+    streamingQuantity
   ])
 
   // Check to see slippage greater than tolerance
@@ -1328,16 +1336,11 @@ export const TradeSwap = ({
       percentageDifference = ((swapSlippage - swapStreamingSlippage) / swapSlippage) * 100
     }
 
-    if (!isStreaming) {
-      percentageDifference = 0
-    }
-
     // Check if percentageDifference is a number
     const isPercentageValid = !isNaN(percentageDifference) && isFinite(percentageDifference)
-    const streamingVal = isStreaming ? 'Streaming' : 'Limit'
     const streamerComparison = isPercentageValid
       ? percentageDifference <= 1
-        ? `Instant ${streamingVal} swap `
+        ? `Instant Streaming swap `
         : `${percentageDifference.toFixed(2)}% Better swap execution via streaming`
       : 'Invalid or zero slippage' // Default message for invalid or zero slippage
 
@@ -1347,10 +1350,9 @@ export const TradeSwap = ({
         percent={percentageDifference}
         withLabel
         labels={[`${streamerComparison}`, ``]}
-        hasError={!isStreaming}
       />
     )
-  }, [isStreaming, swapSlippage, swapStreamingSlippage])
+  }, [swapSlippage, swapStreamingSlippage])
 
   const swapTxSource = useMemo(
     () => ({ asset: sourceAsset, amount: amountToSwapMax1e8 }),
@@ -1832,6 +1834,7 @@ export const TradeSwap = ({
             onQuantityChange={setQuantity}
             onReset={resetToDefault}
             maxStreamingQuantity={maxStreamingQuantity}
+            supportRapid={supportRapid}
           />
           {renderStreamerReturns}
           <Collapse
