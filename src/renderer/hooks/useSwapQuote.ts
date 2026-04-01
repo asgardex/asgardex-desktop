@@ -197,7 +197,6 @@ export const useSwapQuote = ({
       sourceWalletAddress,
       quoteOnly,
       destinationAddress,
-      streaming.enabled,
       streaming.interval,
       streaming.quantity,
       slipTolerance,

@@ -79,12 +79,14 @@ export const SwapSettings = ({
       <div className="flex flex-col p-4">
         <div className="flex w-full flex-col space-y-4 px-2">
           <RadioGroup options={modeOptions} activeIndex={activeIndex} onChange={handleModeChange} />
-          <Slider
-            value={streamingQuantity}
-            onChange={onQuantityChange}
-            max={maxStreamingQuantity}
-            labels={quantityLabel}
-          />
+          {activeMode !== 0 && (
+            <Slider
+              value={streamingQuantity}
+              onChange={onQuantityChange}
+              max={maxStreamingQuantity}
+              labels={quantityLabel}
+            />
+          )}
         </div>
         <div className="flex justify-end">
           <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>

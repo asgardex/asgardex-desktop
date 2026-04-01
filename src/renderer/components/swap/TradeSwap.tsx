@@ -679,7 +679,6 @@ export const TradeSwap = ({
       targetAsset,
       amountToSwapMax1e8,
       sourceAssetDecimal,
-      isStreaming,
       streamingInterval,
       streamingQuantity,
       network,
