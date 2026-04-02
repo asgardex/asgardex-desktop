@@ -38,11 +38,14 @@ export const useStreamingParams = (supportRapid = true): UseStreamingParamsRetur
 
   // Reset to appropriate default when supportRapid changes (e.g. switching protocols)
   useEffect(() => {
-    const newDefault = supportRapid ? RAPID_DEFAULT : STREAMING_DEFAULT
-    if (!supportRapid && activeMode === 0) {
-      setActiveMode(newDefault)
-      setStreamingInterval(MODE_DEFAULTS[newDefault].interval)
-      setStreamingQuantity(MODE_DEFAULTS[newDefault].quantity)
+    if (!supportRapid && activeMode === RAPID_DEFAULT) {
+      setActiveMode(STREAMING_DEFAULT)
+      setStreamingInterval(MODE_DEFAULTS[STREAMING_DEFAULT].interval)
+      setStreamingQuantity(MODE_DEFAULTS[STREAMING_DEFAULT].quantity)
+    } else if (supportRapid && activeMode === STREAMING_DEFAULT) {
+      setActiveMode(RAPID_DEFAULT)
+      setStreamingInterval(MODE_DEFAULTS[RAPID_DEFAULT].interval)
+      setStreamingQuantity(MODE_DEFAULTS[RAPID_DEFAULT].quantity)
     }
   }, [supportRapid, activeMode])
 

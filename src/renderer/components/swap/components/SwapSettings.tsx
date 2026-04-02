@@ -62,7 +62,10 @@ export const SwapSettings = ({
     [availableModes, onModeChange]
   )
 
-  const activeIndex = useMemo(() => availableModes.indexOf(activeMode), [availableModes, activeMode])
+  const activeIndex = useMemo(() => {
+    const idx = availableModes.indexOf(activeMode)
+    return idx >= 0 ? idx : 0
+  }, [availableModes, activeMode])
 
   const intervalOptions = useMemo(
     () =>
@@ -74,7 +77,11 @@ export const SwapSettings = ({
   )
 
   const activeIntervalIndex = useMemo(
-    () => INTERVAL_OPTIONS.findIndex((opt) => opt.value === streamingInterval),
+    () =>
+      Math.max(
+        0,
+        INTERVAL_OPTIONS.findIndex((opt) => opt.value === streamingInterval)
+      ),
     [streamingInterval]
   )
 

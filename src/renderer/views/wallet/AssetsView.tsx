@@ -317,9 +317,15 @@ export const AssetsView = (): JSX.Element => {
     selectedPricePoolMaya
   ])
 
-  // Once LP shares are loaded after user clicked save, perform the actual save
+  // Once LP shares are loaded (or failed) after user clicked save, perform the actual save
   useEffect(() => {
-    if (savePending && RD.isSuccess(thorSharesRD) && RD.isSuccess(mayaSharesRD)) {
+    if (!savePending) return
+    const thorDone = RD.isSuccess(thorSharesRD) || RD.isFailure(thorSharesRD)
+    const mayaDone = RD.isSuccess(mayaSharesRD) || RD.isFailure(mayaSharesRD)
+    if (thorDone && mayaDone) {
+      if (RD.isFailure(thorSharesRD) || RD.isFailure(mayaSharesRD)) {
+        logger.warn('LP share fetch failed, saving with available data')
+      }
       performSave()
     }
   }, [savePending, thorSharesRD, mayaSharesRD, performSave])
