@@ -750,9 +750,8 @@ type SwapMessageKey =
   | 'swap.address.evm.warning'
   | 'swap.synth.warning'
   | 'swap.mode.rapid'
-  | 'swap.mode.fast'
-  | 'swap.mode.balanced'
-  | 'swap.mode.bestPrice'
+  | 'swap.mode.streaming'
+  | 'swap.mode.instant'
   | 'swap.settings.subSwaps.auto'
 
 export type SwapMessages = { [key in SwapMessageKey]: string }

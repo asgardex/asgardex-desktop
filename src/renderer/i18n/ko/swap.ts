@@ -40,9 +40,8 @@ const swap: SwapMessages = {
   'swap.synth.warning':
     'Synth 발행이 중단되었습니다. Synth 상환은 앞으로 3개월 동안만 가능합니다 — 가능한 한 빨리 상환해 주세요.',
   'swap.mode.rapid': '래피드',
-  'swap.mode.fast': '빠름',
-  'swap.mode.balanced': '균형',
-  'swap.mode.bestPrice': '최적 가격',
+  'swap.mode.streaming': '스트리밍',
+  'swap.mode.instant': '즉시',
   'swap.settings.subSwaps.auto': '자동 스왑 횟수'
 }
 

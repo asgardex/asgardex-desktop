@@ -41,9 +41,8 @@ const swap: SwapMessages = {
   'swap.synth.warning':
     'Выпуск Synth больше не доступен. Обмен Synth будет возможен ещё в течение 3 месяцев — пожалуйста, воспользуйтесь этой возможностью заранее.',
   'swap.mode.rapid': 'Rapid',
-  'swap.mode.fast': 'Быстро',
-  'swap.mode.balanced': 'Сбалансированно',
-  'swap.mode.bestPrice': 'Лучшая цена',
+  'swap.mode.streaming': 'Streaming',
+  'swap.mode.instant': 'Мгновенно',
   'swap.settings.subSwaps.auto': 'Авто количество свопов'
 }
 

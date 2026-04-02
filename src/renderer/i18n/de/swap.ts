@@ -41,9 +41,8 @@ const swap: SwapMessages = {
   'swap.synth.warning':
     'Das Minten von Synths wurde eingestellt. Die Einlösung von Synths ist noch 3 Monate lang möglich — bitte löse sie ein, solange du kannst.',
   'swap.mode.rapid': 'Rapid',
-  'swap.mode.fast': 'Schnell',
-  'swap.mode.balanced': 'Ausgewogen',
-  'swap.mode.bestPrice': 'Bester Preis',
+  'swap.mode.streaming': 'Streaming',
+  'swap.mode.instant': 'Sofort',
   'swap.settings.subSwaps.auto': 'Auto Swap-Anzahl'
 }
 

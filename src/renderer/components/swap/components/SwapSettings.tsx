@@ -1,39 +1,42 @@
 import { useCallback, useMemo } from 'react'
 
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { useIntl } from 'react-intl'
 
 import type { StreamingMode } from '../../../hooks/useStreamingParams'
-import { BaseButton } from '../../uielements/button'
 import { Collapse } from '../../uielements/collapse'
 import { RadioGroup } from '../../uielements/radioGroup/RadioGroup'
 import { Slider } from '../../uielements/slider'
-import { Tooltip } from '../../uielements/tooltip'
 
 type Props = {
   activeMode: StreamingMode
-  streamingInterval?: number
+  streamingInterval: number
   streamingQuantity: number
   onModeChange: (mode: StreamingMode) => void
+  onIntervalChange: (interval: number) => void
   onQuantityChange: (value: number) => void
-  onReset: () => void
   maxStreamingQuantity?: number
   supportRapid?: boolean
 }
 
 const MODE_LABEL_KEYS: Record<StreamingMode, string> = {
   0: 'swap.mode.rapid',
-  1: 'swap.mode.fast',
-  2: 'swap.mode.balanced',
-  3: 'swap.mode.bestPrice'
+  1: 'swap.mode.streaming',
+  2: 'swap.mode.instant'
 }
+
+const INTERVAL_OPTIONS = [
+  { value: 1, label: '1 blk (~6s)' },
+  { value: 2, label: '2 blks (~12s)' },
+  { value: 3, label: '3 blks (~18s)' }
+]
 
 export const SwapSettings = ({
   activeMode,
+  streamingInterval,
   streamingQuantity,
   onModeChange,
+  onIntervalChange,
   onQuantityChange,
-  onReset,
   maxStreamingQuantity,
   supportRapid = true
 }: Props) => {
@@ -41,7 +44,7 @@ export const SwapSettings = ({
 
   const modeLabel = intl.formatMessage({ id: MODE_LABEL_KEYS[activeMode] })
 
-  const availableModes: StreamingMode[] = useMemo(() => (supportRapid ? [0, 1, 2, 3] : [1, 2, 3]), [supportRapid])
+  const availableModes: StreamingMode[] = useMemo(() => (supportRapid ? [0, 1, 2] : [1, 2]), [supportRapid])
 
   const modeOptions = useMemo(
     () =>
@@ -61,6 +64,27 @@ export const SwapSettings = ({
 
   const activeIndex = useMemo(() => availableModes.indexOf(activeMode), [availableModes, activeMode])
 
+  const intervalOptions = useMemo(
+    () =>
+      INTERVAL_OPTIONS.map((opt) => ({
+        label: <span className="text-[11px]">{opt.label}</span>,
+        value: opt.value
+      })),
+    []
+  )
+
+  const activeIntervalIndex = useMemo(
+    () => INTERVAL_OPTIONS.findIndex((opt) => opt.value === streamingInterval),
+    [streamingInterval]
+  )
+
+  const handleIntervalChange = useCallback(
+    (index: number) => {
+      onIntervalChange(INTERVAL_OPTIONS[index].value)
+    },
+    [onIntervalChange]
+  )
+
   const quantityLabel = useMemo(() => {
     return streamingQuantity === 0
       ? [intl.formatMessage({ id: 'swap.settings.subSwaps.auto' })]
@@ -79,23 +103,26 @@ export const SwapSettings = ({
       <div className="flex flex-col p-4">
         <div className="flex w-full flex-col space-y-4 px-2">
           <RadioGroup options={modeOptions} activeIndex={activeIndex} onChange={handleModeChange} />
-          {activeMode !== 0 && (
-            <Slider
-              value={streamingQuantity}
-              onChange={onQuantityChange}
-              max={maxStreamingQuantity}
-              labels={quantityLabel}
-            />
+          {activeMode === 1 && (
+            <>
+              <div className="flex flex-col space-y-1">
+                <span className="text-[12px] text-text2 dark:text-text2d">
+                  {intl.formatMessage({ id: 'swap.streaming.interval' })}
+                </span>
+                <RadioGroup
+                  options={intervalOptions}
+                  activeIndex={activeIntervalIndex}
+                  onChange={handleIntervalChange}
+                />
+              </div>
+              <Slider
+                value={streamingQuantity}
+                onChange={onQuantityChange}
+                max={maxStreamingQuantity}
+                labels={quantityLabel}
+              />
+            </>
           )}
-        </div>
-        <div className="flex justify-end">
-          <Tooltip title={intl.formatMessage({ id: 'common.resetToDefault' })}>
-            <BaseButton
-              onClick={onReset}
-              className="rounded-full group-hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
-              <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
-            </BaseButton>
-          </Tooltip>
         </div>
       </div>
     </Collapse>

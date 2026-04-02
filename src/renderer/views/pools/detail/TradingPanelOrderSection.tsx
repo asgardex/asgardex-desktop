@@ -26,8 +26,8 @@ type Props = {
   streamingInterval: number
   streamingQuantity: number
   onModeChange: (mode: StreamingMode) => void
+  onIntervalChange: (interval: number) => void
   onQuantityChange: (value: number) => void
-  onResetStreaming: () => void
   // ERC20 approval
   isApprovedState: IsApprovedRD
   needsApproval: boolean
@@ -50,8 +50,8 @@ export const TradingPanelOrderSection = ({
   streamingInterval,
   streamingQuantity,
   onModeChange,
+  onIntervalChange,
   onQuantityChange,
-  onResetStreaming,
   isApprovedState,
   needsApproval,
   awaitingConfirmation,
@@ -121,8 +121,8 @@ export const TradingPanelOrderSection = ({
           streamingInterval={streamingInterval}
           streamingQuantity={streamingQuantity}
           onModeChange={onModeChange}
+          onIntervalChange={onIntervalChange}
           onQuantityChange={onQuantityChange}
-          onReset={onResetStreaming}
         />
       </div>
 

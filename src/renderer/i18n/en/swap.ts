@@ -40,9 +40,8 @@ const swap: SwapMessages = {
   'swap.synth.warning':
     'Synth minting has been discontinued. Synth redemption will remain available for the next 3 months — please redeem while you can.',
   'swap.mode.rapid': 'Rapid',
-  'swap.mode.fast': 'Fast',
-  'swap.mode.balanced': 'Balanced',
-  'swap.mode.bestPrice': 'Best Price',
+  'swap.mode.streaming': 'Streaming',
+  'swap.mode.instant': 'Instant',
   'swap.settings.subSwaps.auto': 'Auto swap count'
 }
 

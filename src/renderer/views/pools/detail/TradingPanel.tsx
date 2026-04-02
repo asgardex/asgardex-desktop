@@ -308,6 +308,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     isStreaming,
     activeMode,
     setMode: setStreamingMode,
+    setInterval: setStreamingIntervalValue,
     setQuantity: setStreamingQuantity,
     resetToDefault: resetStreaming
   } = useStreamingParams()
@@ -901,8 +902,8 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
         streamingInterval={streamingInterval}
         streamingQuantity={streamingQuantity}
         onModeChange={setStreamingMode}
+        onIntervalChange={setStreamingIntervalValue}
         onQuantityChange={setStreamingQuantity}
-        onResetStreaming={resetStreaming}
         isApprovedState={isApprovedState}
         needsApproval={needsApproval}
         awaitingConfirmation={awaitingConfirmation}

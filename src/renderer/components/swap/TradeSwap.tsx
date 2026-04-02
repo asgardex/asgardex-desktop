@@ -244,8 +244,16 @@ export const TradeSwap = ({
   const pricePoolMaya = usePricePoolMaya()
 
   const supportRapid = protocol === THORChain
-  const { streamingInterval, streamingQuantity, isStreaming, activeMode, setMode, setQuantity, resetToDefault } =
-    useStreamingParams(supportRapid)
+  const {
+    streamingInterval,
+    streamingQuantity,
+    isStreaming,
+    activeMode,
+    setMode,
+    setInterval: setStreamingInterval,
+    setQuantity,
+    resetToDefault
+  } = useStreamingParams(supportRapid)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
@@ -1829,8 +1837,8 @@ export const TradeSwap = ({
             streamingInterval={streamingInterval}
             streamingQuantity={streamingQuantity}
             onModeChange={setMode}
+            onIntervalChange={setStreamingInterval}
             onQuantityChange={setQuantity}
-            onReset={resetToDefault}
             maxStreamingQuantity={maxStreamingQuantity}
             supportRapid={supportRapid}
           />

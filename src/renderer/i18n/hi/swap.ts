@@ -40,9 +40,8 @@ const swap: SwapMessages = {
   'swap.synth.warning':
     'Synth मिंटिंग बंद कर दी गई है। Synth रिडेम्प्शन अगले 3 महीनों तक उपलब्ध रहेगा — कृपया समय रहते रिडीम कर लें।',
   'swap.mode.rapid': 'रैपिड',
-  'swap.mode.fast': 'तेज़',
-  'swap.mode.balanced': 'संतुलित',
-  'swap.mode.bestPrice': 'सर्वश्रेष्ठ मूल्य',
+  'swap.mode.streaming': 'स्ट्रीमिंग',
+  'swap.mode.instant': 'तुरंत',
   'swap.settings.subSwaps.auto': 'ऑटो स्वैप संख्या'
 }
 export default swap

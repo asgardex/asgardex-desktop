@@ -41,9 +41,8 @@ const swap: SwapMessages = {
   'swap.synth.warning':
     "La création de Synths a été arrêtée. Le rachat des Synths restera disponible pendant encore 3 mois — veuillez les échanger tant que c'est possible.",
   'swap.mode.rapid': 'Rapid',
-  'swap.mode.fast': 'Rapide',
-  'swap.mode.balanced': 'Équilibré',
-  'swap.mode.bestPrice': 'Meilleur prix',
+  'swap.mode.streaming': 'Streaming',
+  'swap.mode.instant': 'Instantané',
   'swap.settings.subSwaps.auto': 'Nombre auto de swaps'
 }
 
