@@ -308,8 +308,8 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     isStreaming,
     activeMode,
     setMode: setStreamingMode,
-    setQuantity: setStreamingQuantity,
-    resetToDefault: resetStreaming
+    setInterval: setStreamingIntervalValue,
+    setQuantity: setStreamingQuantity
   } = useStreamingParams()
 
   // ── Hook 2: Swap addresses (simplified — no custom recipient, no standalone ledger target) ──
@@ -428,7 +428,9 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     poolAddressThor,
     poolAddressMaya,
     network,
-    isSendMax: false
+    isSendMax: false,
+    streamingInterval,
+    streamingQuantity
   })
 
   // ── Hook 6: ERC20 Approval ────────────────────────────────────────────
@@ -899,8 +901,8 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
         streamingInterval={streamingInterval}
         streamingQuantity={streamingQuantity}
         onModeChange={setStreamingMode}
+        onIntervalChange={setStreamingIntervalValue}
         onQuantityChange={setStreamingQuantity}
-        onResetStreaming={resetStreaming}
         isApprovedState={isApprovedState}
         needsApproval={needsApproval}
         awaitingConfirmation={awaitingConfirmation}

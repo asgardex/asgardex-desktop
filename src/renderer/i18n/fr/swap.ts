@@ -40,12 +40,10 @@ const swap: SwapMessages = {
   'swap.address.evm.warning': 'NE PAS échanger vers des adresses de Smart Contract',
   'swap.synth.warning':
     "La création de Synths a été arrêtée. Le rachat des Synths restera disponible pendant encore 3 mois — veuillez les échanger tant que c'est possible.",
-  'swap.mode.limit': 'Limite',
-  'swap.mode.fast': 'Rapide',
-  'swap.mode.balanced': 'Équilibré',
-  'swap.mode.bestPrice': 'Meilleur prix',
-  'swap.settings.subSwaps.auto': 'Nombre auto de swaps',
-  'swap.settings.subSwaps.limit': 'Swap limite'
+  'swap.mode.rapid': 'Rapid',
+  'swap.mode.streaming': 'Streaming',
+  'swap.mode.instant': 'Instantané',
+  'swap.settings.subSwaps.auto': 'Nombre auto de swaps'
 }
 
 export default swap

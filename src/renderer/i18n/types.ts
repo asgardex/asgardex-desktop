@@ -749,12 +749,10 @@ type SwapMessageKey =
   | 'swap.min.result.protected'
   | 'swap.address.evm.warning'
   | 'swap.synth.warning'
-  | 'swap.mode.limit'
-  | 'swap.mode.fast'
-  | 'swap.mode.balanced'
-  | 'swap.mode.bestPrice'
+  | 'swap.mode.rapid'
+  | 'swap.mode.streaming'
+  | 'swap.mode.instant'
   | 'swap.settings.subSwaps.auto'
-  | 'swap.settings.subSwaps.limit'
 
 export type SwapMessages = { [key in SwapMessageKey]: string }
 

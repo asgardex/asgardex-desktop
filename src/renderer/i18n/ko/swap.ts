@@ -39,12 +39,10 @@ const swap: SwapMessages = {
   'swap.address.evm.warning': '스마트 컨트랙트 주소로 스왑하지 마세요',
   'swap.synth.warning':
     'Synth 발행이 중단되었습니다. Synth 상환은 앞으로 3개월 동안만 가능합니다 — 가능한 한 빨리 상환해 주세요.',
-  'swap.mode.limit': '리밋',
-  'swap.mode.fast': '빠름',
-  'swap.mode.balanced': '균형',
-  'swap.mode.bestPrice': '최적 가격',
-  'swap.settings.subSwaps.auto': '자동 스왑 횟수',
-  'swap.settings.subSwaps.limit': '리밋 스왑'
+  'swap.mode.rapid': '래피드',
+  'swap.mode.streaming': '스트리밍',
+  'swap.mode.instant': '즉시',
+  'swap.settings.subSwaps.auto': '자동 스왑 횟수'
 }
 
 export default swap

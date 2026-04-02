@@ -68,7 +68,6 @@ import {
   getWalletTypeFromState,
   isVultisigMode
 } from './types'
-import { hasImportedKeystore } from './util'
 
 export const createBalancesService = ({
   keystore$,
@@ -424,12 +423,22 @@ export const createBalancesService = ({
     walletBalancesState.clear()
   })
 
-  // Whenever keystore has been removed, reset stored balances
-  const keystoreSub = keystore$.subscribe((keystoreState: KeystoreState) => {
-    if (!hasImportedKeystore(keystoreState)) {
+  // Whenever the active keystore wallet changes (switch or removal), reset stored balances
+  // so stale balances from the previous wallet are not shown
+  const keystoreSub = keystore$
+    .pipe(
+      RxOp.map((keystoreState: KeystoreState) =>
+        FP.pipe(
+          keystoreState,
+          O.map(({ id }) => id),
+          O.toNullable
+        )
+      ),
+      RxOp.distinctUntilChanged()
+    )
+    .subscribe(() => {
       walletBalancesState.clear()
-    }
-  })
+    })
 
   // Whenever the active Vultisig vault changes, reset stored balances
   // so stale balances from the previous vault are not shown

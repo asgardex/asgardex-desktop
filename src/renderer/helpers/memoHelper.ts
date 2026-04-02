@@ -165,10 +165,33 @@ export const getSwapMemo = ({
   affiliateBps: number | undefined
 }) => {
   const target = assetToMemoString(targetAsset)
+  // Streaming params format: LIMIT/INTERVAL/QUANTITY (embedded in the limit position)
+  // Rapid (interval=0, quantity=0): THORChain auto-calculates optimal sub-swap count
+  // Streaming (interval>0): explicit interval between sub-swaps
   const streaming = `0/${streamingInterval}/${streamingQuantity}`
   const memo = '='
   return mkMemo([memo, target, targetAddress, toleranceBps, streaming, affiliateName, affiliateBps])
 }
+/**
+ * Applies streaming params to a swap memo returned by THORNode quote API.
+ * Always injects LIMIT/INTERVAL/QUANTITY into position 3.
+ *
+ * Rapid (interval=0): LIM/0/0 — THORChain auto-calculates optimal sub-swaps.
+ * Streaming (interval>0): LIM/N/Q — explicit interval and quantity.
+ * Instant (interval=1, qty=1): LIM/1/1 — single non-streaming swap.
+ */
+export const applyStreamingToMemo = (memo: string, streamingInterval: number, streamingQuantity: number): string => {
+  if (!memo?.trim()) return memo
+
+  const parts = memo.split(':')
+  if (parts.length < 4) return memo
+
+  const baseLim = parts[3].includes('/') ? parts[3].split('/')[0] : parts[3]
+  parts[3] = `${baseLim}/${streamingInterval}/${streamingQuantity}`
+
+  return parts.join(':')
+}
+
 // With stagenet, remove all affiliate config from memo
 export const updateMemo = (memo: string, network: Network): string => {
   const pattern = /:dx:\d+$/

@@ -216,8 +216,15 @@ export const Swap = ({
 
   const { isAssetSupported$, transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
 
-  const { streamingInterval, streamingQuantity, isStreaming, activeMode, setMode, setQuantity, resetToDefault } =
-    useStreamingParams()
+  const {
+    streamingInterval,
+    streamingQuantity,
+    isStreaming,
+    activeMode,
+    setMode,
+    setInterval: setStreamingInterval,
+    setQuantity
+  } = useStreamingParams()
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -651,7 +658,9 @@ export const Swap = ({
     poolAddressThor: oPoolAddressThor,
     poolAddressMaya: oPoolAddressMaya,
     network,
-    isSendMax
+    isSendMax,
+    streamingInterval,
+    streamingQuantity
   })
 
   // ─── Remaining component logic ─────────────────────────────────────────────
@@ -1285,11 +1294,11 @@ export const Swap = ({
         streamingInterval={streamingInterval}
         streamingQuantity={streamingQuantity}
         onModeChange={setMode}
+        onIntervalChange={setStreamingInterval}
         onQuantityChange={setQuantity}
-        onReset={resetToDefault}
       />
     ),
-    [activeMode, streamingInterval, streamingQuantity, setMode, setQuantity, resetToDefault]
+    [activeMode, streamingInterval, streamingQuantity, setMode, setStreamingInterval, setQuantity]
   )
 
   const swapTxSource = useMemo(() => ({ asset: sourceAsset, amount: amountToSwap }), [sourceAsset, amountToSwap])
