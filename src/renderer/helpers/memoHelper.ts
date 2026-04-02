@@ -174,10 +174,11 @@ export const getSwapMemo = ({
 }
 /**
  * Applies streaming params to a swap memo returned by THORNode quote API.
+ * Always injects LIMIT/INTERVAL/QUANTITY into position 3.
  *
- * Rapid (interval=0): Clear the limit field — THORChain requires no limit for
- *   rapid execution (auto sub-swaps, multiple per block, no price protection).
- * Streaming/Instant (interval>0): Inject LIM/INTERVAL/QUANTITY into position 3.
+ * Rapid (interval=0): LIM/0/0 — THORChain auto-calculates optimal sub-swaps.
+ * Streaming (interval>0): LIM/N/Q — explicit interval and quantity.
+ * Instant (interval=1, qty=1): LIM/1/1 — single non-streaming swap.
  */
 export const applyStreamingToMemo = (memo: string, streamingInterval: number, streamingQuantity: number): string => {
   if (!memo?.trim()) return memo
@@ -185,14 +186,8 @@ export const applyStreamingToMemo = (memo: string, streamingInterval: number, st
   const parts = memo.split(':')
   if (parts.length < 4) return memo
 
-  if (streamingInterval === 0) {
-    // Rapid: clear limit field entirely
-    parts[3] = ''
-  } else {
-    // Streaming/Instant: preserve quote limit, add interval/quantity
-    const baseLim = parts[3].includes('/') ? parts[3].split('/')[0] : parts[3]
-    parts[3] = `${baseLim}/${streamingInterval}/${streamingQuantity}`
-  }
+  const baseLim = parts[3].includes('/') ? parts[3].split('/')[0] : parts[3]
+  parts[3] = `${baseLim}/${streamingInterval}/${streamingQuantity}`
 
   return parts.join(':')
 }
