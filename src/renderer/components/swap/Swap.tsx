@@ -223,8 +223,7 @@ export const Swap = ({
     activeMode,
     setMode,
     setInterval: setStreamingInterval,
-    setQuantity,
-    resetToDefault
+    setQuantity
   } = useStreamingParams()
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances

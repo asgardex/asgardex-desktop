@@ -251,8 +251,7 @@ export const TradeSwap = ({
     activeMode,
     setMode,
     setInterval: setStreamingInterval,
-    setQuantity,
-    resetToDefault
+    setQuantity
   } = useStreamingParams(supportRapid)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)

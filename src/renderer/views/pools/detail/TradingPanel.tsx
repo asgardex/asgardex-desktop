@@ -309,8 +309,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     activeMode,
     setMode: setStreamingMode,
     setInterval: setStreamingIntervalValue,
-    setQuantity: setStreamingQuantity,
-    resetToDefault: resetStreaming
+    setQuantity: setStreamingQuantity
   } = useStreamingParams()
 
   // ── Hook 2: Swap addresses (simplified — no custom recipient, no standalone ledger target) ──
