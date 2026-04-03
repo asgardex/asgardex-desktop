@@ -14,8 +14,7 @@ const MODE_DEFAULTS: Record<StreamingMode, { interval: number; quantity: number 
   2: { interval: 1, quantity: 1 } // Instant
 }
 
-const RAPID_DEFAULT: StreamingMode = 0
-const STREAMING_DEFAULT: StreamingMode = 1
+const DEFAULT_MODE: StreamingMode = 1 // Streaming
 
 export type UseStreamingParamsReturn = {
   streamingInterval: number
@@ -30,24 +29,19 @@ export type UseStreamingParamsReturn = {
 }
 
 export const useStreamingParams = (supportRapid = true): UseStreamingParamsReturn => {
-  const defaultMode = supportRapid ? RAPID_DEFAULT : STREAMING_DEFAULT
+  const [activeMode, setActiveMode] = useState<StreamingMode>(DEFAULT_MODE)
+  const [streamingInterval, setStreamingInterval] = useState<number>(MODE_DEFAULTS[DEFAULT_MODE].interval)
+  const [streamingQuantity, setStreamingQuantity] = useState<number>(MODE_DEFAULTS[DEFAULT_MODE].quantity)
 
-  const [activeMode, setActiveMode] = useState<StreamingMode>(defaultMode)
-  const [streamingInterval, setStreamingInterval] = useState<number>(MODE_DEFAULTS[defaultMode].interval)
-  const [streamingQuantity, setStreamingQuantity] = useState<number>(MODE_DEFAULTS[defaultMode].quantity)
-
-  // Reset to appropriate default when supportRapid changes (e.g. switching protocols)
+  // If rapid is not supported and user has it selected, fall back to streaming
   useEffect(() => {
-    if (!supportRapid && activeMode === RAPID_DEFAULT) {
-      setActiveMode(STREAMING_DEFAULT)
-      setStreamingInterval(MODE_DEFAULTS[STREAMING_DEFAULT].interval)
-      setStreamingQuantity(MODE_DEFAULTS[STREAMING_DEFAULT].quantity)
-    } else if (supportRapid && activeMode === STREAMING_DEFAULT) {
-      setActiveMode(RAPID_DEFAULT)
-      setStreamingInterval(MODE_DEFAULTS[RAPID_DEFAULT].interval)
-      setStreamingQuantity(MODE_DEFAULTS[RAPID_DEFAULT].quantity)
+    if (!supportRapid && activeMode === 0) {
+      setActiveMode(DEFAULT_MODE)
+      setStreamingInterval(MODE_DEFAULTS[DEFAULT_MODE].interval)
+      setStreamingQuantity(MODE_DEFAULTS[DEFAULT_MODE].quantity)
     }
-  }, [supportRapid, activeMode])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supportRapid])
 
   const setMode = useCallback((mode: StreamingMode) => {
     setActiveMode(mode)
@@ -65,16 +59,15 @@ export const useStreamingParams = (supportRapid = true): UseStreamingParamsRetur
   }, [])
 
   const resetToDefault = useCallback(() => {
-    const mode = supportRapid ? RAPID_DEFAULT : STREAMING_DEFAULT
-    setActiveMode(mode)
-    setStreamingInterval(MODE_DEFAULTS[mode].interval)
-    setStreamingQuantity(MODE_DEFAULTS[mode].quantity)
-  }, [supportRapid])
+    setActiveMode(DEFAULT_MODE)
+    setStreamingInterval(MODE_DEFAULTS[DEFAULT_MODE].interval)
+    setStreamingQuantity(MODE_DEFAULTS[DEFAULT_MODE].quantity)
+  }, [])
 
   return {
     streamingInterval,
     streamingQuantity,
-    isStreaming: activeMode !== 2, // Instant is not streaming
+    isStreaming: activeMode !== 2,
     activeMode,
     setMode,
     setInterval,

@@ -72,7 +72,10 @@ const AVAX_TOKENS: Record<string, number> = {
   '0x50b7545627a5162f82a992c33b87adc75187b218': 8, // WBTC.e
 
   // fUSDT (Frax bridged) - check if 6
-  '0x5b8470fbc6b31038aa07abd3010acffca6e36611': 6 // fUSDT
+  '0x5b8470fbc6b31038aa07abd3010acffca6e36611': 6, // fUSDT
+
+  // Bridged SOL (9 decimals)
+  '0xfe6b19286885a4f7f55adad09c3cd1f906d2478f': 9 // SOL
 }
 
 // ────────────────────────────────────────────────
