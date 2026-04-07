@@ -1,5 +1,34 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.43.0
+
+## Add
+
+- add THORChain rapid swap mode with 3 swap modes: Rapid, Streaming, Instant [#1027](https://github.com/asgardex/asgardex-desktop/pull/1027)
+- add compact trading panel with inline swap execution and limit orders [#1021](https://github.com/asgardex/asgardex-desktop/pull/1021)
+- add Vultisig MPC wallet integration with 5 additional chains [#1012](https://github.com/asgardex/asgardex-desktop/pull/1012) [#1016](https://github.com/asgardex/asgardex-desktop/pull/1016)
+- add charting and wallet chart integration [#1013](https://github.com/asgardex/asgardex-desktop/pull/1013) [#1015](https://github.com/asgardex/asgardex-desktop/pull/1015)
+- add save JSON balances export with LP positions [#1019](https://github.com/asgardex/asgardex-desktop/pull/1019)
+
+## Update/Fixes
+
+- redesign TxModal with vertical step-based progress and pulse animation [#1024](https://github.com/asgardex/asgardex-desktop/pull/1024)
+- fix SDK disposal error recovery [#1022](https://github.com/asgardex/asgardex-desktop/pull/1022)
+- fix price level amount symbol display [#1020](https://github.com/asgardex/asgardex-desktop/pull/1020)
+- fix XRD LP share value and clean up sidebar footer [#1014](https://github.com/asgardex/asgardex-desktop/pull/1014)
+- fix deprecated MayaScan URLs, replace with explorer.mayachain.info [#1011](https://github.com/asgardex/asgardex-desktop/pull/1011)
+- fix memory leaks, error handling, and remove dead code [#1006](https://github.com/asgardex/asgardex-desktop/pull/1006) [#1008](https://github.com/asgardex/asgardex-desktop/pull/1008)
+- lazy-load LP pool shares only on Save JSON Balances click [#1027](https://github.com/asgardex/asgardex-desktop/pull/1027)
+
+## Refactors
+
+- extract reusable hooks and components from Swap.tsx [#1023](https://github.com/asgardex/asgardex-desktop/pull/1023)
+- refactor EVM chain service and Ledger transaction factories [#1007](https://github.com/asgardex/asgardex-desktop/pull/1007) [#1009](https://github.com/asgardex/asgardex-desktop/pull/1009)
+
+## Chores
+
+- upgrade xchain packages [#1017](https://github.com/asgardex/asgardex-desktop/pull/1017) [#1026](https://github.com/asgardex/asgardex-desktop/pull/1026)
+
 # 1.42.1
 
 ## Add
