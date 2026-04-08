@@ -221,12 +221,8 @@ export const useSwapConfirmationModals = ({
       vaultType={vaultType}
       isEncrypted={isVaultEncrypted}
       onSuccess={onVultisigSuccess}
-      onClose={() => {
-        setShowVultisigModal(ModalState.None)
-        // Reset swap state immediately so TxModal doesn't flash while
-        // the cancel propagates through the Observable chain
-        resetSwapState?.()
-      }}
+      onClose={() => setShowVultisigModal(ModalState.None)}
+      onCancel={() => resetSwapState?.()}
       validatePassword$={validatePasswordForVultisig}
       txState={showVultisigModal === ModalState.Approve ? approveState : swapState.swapTx}
       getActiveVaultId={getActiveVaultId}

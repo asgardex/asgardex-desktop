@@ -30,6 +30,7 @@ type Props = {
   isEncrypted: boolean
   onSuccess: FP.Lazy<void>
   onClose: FP.Lazy<void>
+  onCancel?: FP.Lazy<void>
   validatePassword$: (password: string) => Promise<boolean>
   txState: RD.RemoteData<ApiError, TxHash>
   getActiveVaultId: () => string | undefined
@@ -38,6 +39,7 @@ type Props = {
 export const VultisigConfirmationModal = ({
   visible,
   onClose,
+  onCancel,
   onSuccess,
   chain,
   network,
@@ -215,6 +217,7 @@ export const VultisigConfirmationModal = ({
   const handleCancel = useCallback(async () => {
     if (phase === 'password') {
       // Password phase - just close
+      onCancel?.()
       onClose()
       return
     }
@@ -233,8 +236,9 @@ export const VultisigConfirmationModal = ({
         setIsCancelling(false)
       }
     }
+    onCancel?.()
     onClose()
-  }, [onClose, phase, getActiveVaultId])
+  }, [onClose, onCancel, phase, getActiveVaultId])
 
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
