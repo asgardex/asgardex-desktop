@@ -39,9 +39,11 @@ type SwapConfirmationModalsProps = {
   validatePasswordForVultisig: (password: string) => Promise<boolean>
   // Vultisig-specific
   vaultType: VaultType
+  isVaultEncrypted: boolean
   approveState: TxHashRD
   swapState: SwapTxState
   getActiveVaultId: () => string | undefined
+  resetSwapState?: () => void
 }
 
 type SwapConfirmationModalsResult = {
@@ -72,9 +74,11 @@ export const useSwapConfirmationModals = ({
   validatePassword$,
   validatePasswordForVultisig,
   vaultType,
+  isVaultEncrypted,
   approveState,
   swapState,
-  getActiveVaultId
+  getActiveVaultId,
+  resetSwapState
 }: SwapConfirmationModalsProps): SwapConfirmationModalsResult => {
   const intl = useIntl()
 
@@ -215,8 +219,14 @@ export const useSwapConfirmationModals = ({
       network={network}
       chain={sourceChain}
       vaultType={vaultType}
+      isEncrypted={isVaultEncrypted}
       onSuccess={onVultisigSuccess}
-      onClose={() => setShowVultisigModal(ModalState.None)}
+      onClose={() => {
+        setShowVultisigModal(ModalState.None)
+        // Reset swap state immediately so TxModal doesn't flash while
+        // the cancel propagates through the Observable chain
+        resetSwapState?.()
+      }}
       validatePassword$={validatePasswordForVultisig}
       txState={showVultisigModal === ModalState.Approve ? approveState : swapState.swapTx}
       getActiveVaultId={getActiveVaultId}

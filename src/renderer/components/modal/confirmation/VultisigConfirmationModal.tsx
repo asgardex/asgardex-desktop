@@ -27,6 +27,7 @@ type Props = {
   network: Network
   chain: Chain
   vaultType: VaultType
+  isEncrypted: boolean
   onSuccess: FP.Lazy<void>
   onClose: FP.Lazy<void>
   validatePassword$: (password: string) => Promise<boolean>
@@ -41,6 +42,7 @@ export const VultisigConfirmationModal = ({
   chain,
   network,
   vaultType,
+  isEncrypted,
   validatePassword$,
   txState,
   getActiveVaultId
@@ -84,7 +86,6 @@ export const VultisigConfirmationModal = ({
   // Reset state when modal opens
   useEffect(() => {
     if (visible) {
-      setPhase('password')
       setPassword('')
       setPasswordError(null)
       setQrPayload(null)
@@ -93,8 +94,18 @@ export const VultisigConfirmationModal = ({
       setIsCancelling(false)
       signingStartedRef.current = false
       closedRef.current = false
+
+      if (!isEncrypted) {
+        // No password needed — skip straight to signing
+        // Secure: modal stays open for QR/device flow
+        // Fast: parent closes modal immediately via onSuccess callback
+        setPhase(vaultType === 'secure' ? 'waiting-qr' : 'signing')
+        onSuccess()
+      } else {
+        setPhase('password')
+      }
     }
-  }, [visible])
+  }, [visible]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Set up signing event listeners for SecureVault
   // These listeners receive IPC events from main process during MPC signing ceremony

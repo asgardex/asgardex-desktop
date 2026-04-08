@@ -161,12 +161,19 @@ export const SendForm = (props: Props): JSX.Element => {
   const { appWalletService } = useWalletContext()
   const appWalletState = useObservableState(appWalletService.appWalletState$, null)
 
-  // Get vault type for Vultisig wallets (defaults to 'fast' if not available)
+  // Get vault type and encryption status for Vultisig wallets
   const vaultType: VaultType = useMemo(() => {
     if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
       return appWalletState.activeVault.type
     }
     return 'fast'
+  }, [appWalletState])
+
+  const isVaultEncrypted: boolean = useMemo(() => {
+    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
+      return appWalletState.activeVault.isEncrypted
+    }
+    return true
   }, [appWalletState])
 
   const { asset } = balance
@@ -1255,6 +1262,7 @@ export const SendForm = (props: Props): JSX.Element => {
       network={network}
       chain={asset.chain}
       vaultType={vaultType}
+      isEncrypted={isVaultEncrypted}
       onSuccess={onVultisigSuccess}
       onClose={onConfirmationModalClose}
       validatePassword$={validatePasswordAsync}
