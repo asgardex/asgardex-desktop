@@ -498,6 +498,13 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     return 'fast'
   }, [appWalletState])
 
+  const isVaultEncrypted: boolean = useMemo(() => {
+    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
+      return appWalletState.activeVault.isEncrypted
+    }
+    return true
+  }, [appWalletState])
+
   const validatePasswordForVultisig = useCallback(
     async (password: string): Promise<boolean> => {
       if (isVultisigWallet(sourceWalletType)) {
@@ -533,9 +540,11 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     validatePassword$,
     validatePasswordForVultisig,
     vaultType,
+    isVaultEncrypted,
     approveState: RD.initial,
     swapState,
-    getActiveVaultId
+    getActiveVaultId,
+    resetSwapState
   })
 
   // ── Explorer URL for tx modal ─────────────────────────────────────────

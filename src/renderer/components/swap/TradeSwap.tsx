@@ -1266,6 +1266,7 @@ export const TradeSwap = ({
     validatePassword$,
     validatePasswordForVultisig: async () => false,
     vaultType: 'fast',
+    isVaultEncrypted: true,
     approveState: RD.initial,
     swapState,
     getActiveVaultId: () => undefined

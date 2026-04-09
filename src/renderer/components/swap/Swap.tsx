@@ -1217,12 +1217,19 @@ export const Swap = ({
     [isAssetSupported$, poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
   )
 
-  // Get vault type for Vultisig wallets
+  // Get vault type and encryption status for Vultisig wallets
   const vaultType: VaultType = useMemo(() => {
     if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
       return appWalletState.activeVault.type
     }
     return 'fast'
+  }, [appWalletState])
+
+  const isVaultEncrypted: boolean = useMemo(() => {
+    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
+      return appWalletState.activeVault.isEncrypted
+    }
+    return true // Default to encrypted (safe fallback — will show password prompt)
   }, [appWalletState])
 
   // Password validation for Vultisig
@@ -1265,9 +1272,11 @@ export const Swap = ({
     validatePassword$,
     validatePasswordForVultisig,
     vaultType,
+    isVaultEncrypted,
     approveState,
     swapState,
-    getActiveVaultId: appWalletService.getActiveVaultId
+    getActiveVaultId: appWalletService.getActiveVaultId,
+    resetSwapState
   })
 
   const setAmountToSwapFromPercentValue = useCallback(

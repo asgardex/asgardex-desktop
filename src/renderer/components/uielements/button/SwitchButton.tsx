@@ -29,11 +29,12 @@ export const SwitchButton = (props: Props): JSX.Element => {
 
   return (
     <Switch
+      as="div"
       disabled={disabled}
       checked={active}
       onChange={onChangeHandler}
       className={clsx(
-        'relative inline-flex h-6 w-11 items-center rounded-full',
+        'relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full',
         active ? 'bg-turquoise' : 'bg-gray1 dark:bg-gray1d',
         className
       )}>

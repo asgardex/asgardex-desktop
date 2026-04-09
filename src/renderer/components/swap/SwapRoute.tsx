@@ -104,7 +104,11 @@ const Route = memo(function Route({
           {isFastest && <span className="rounded bg-turquoise px-1 text-11 text-white">FASTEST</span>}
         </div>
         {isBoostable && isChainflip && onToggleBoost && isBoostEnabled !== undefined && (
-          <div className="flex items-center space-x-2">
+          <div
+            className="flex items-center space-x-2"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="group">
             <div className="flex items-center">
               <img src={BoostIcon} alt="Boost" className="h-5 w-5" />
               <span className="text-11 text-boost">Boost</span>
