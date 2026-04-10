@@ -1,5 +1,14 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.43.1
+
+## Update/Fixes
+
+- fix Vultisig password confirmation modal and swap confirmation flows [#1030](https://github.com/asgardex/asgardex-desktop/pull/1030)
+- fix Vultisig Cosmos transaction signing [#1030](https://github.com/asgardex/asgardex-desktop/pull/1030)
+- fix swap route display and switch button styling [#1030](https://github.com/asgardex/asgardex-desktop/pull/1030)
+- fix SendForm and TradingPanel Vultisig wallet handling [#1030](https://github.com/asgardex/asgardex-desktop/pull/1030)
+
 # 1.43.0
 
 ## Add
