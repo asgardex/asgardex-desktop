@@ -22,8 +22,8 @@ export const getDerivationPaths = (walletAccount: number, network: Network): Roo
 
 export const getDefaultClientUrls = (): Record<Network, string[]> => {
   return {
-    [Network.Testnet]: ['deprecated'],
-    [Network.Stagenet]: ['https://stagenet-rpc.ninerealms.com'],
-    [Network.Mainnet]: ['https://rpc.ninerealms.com']
+    [Network.Testnet]: [''],
+    [Network.Stagenet]: [''],
+    [Network.Mainnet]: ['https://gateway.liquify.com/chain/thorchain_rpc']
   }
 }

@@ -56,7 +56,7 @@ export const TxActions = ({
           let url: string | undefined
           switch (protocolValue) {
             case 'Thorchain':
-              url = `https://track.ninerealms.com/${hash}?logo=asgardex.png&network=${network || 'default'}`
+              url = `https://track.thorchain.org/${hash}?logo=asgardex.png&network=${network || 'default'}`
               break
             case 'Mayachain':
               url = `https://www.xscanner.org/tx/${hash}`

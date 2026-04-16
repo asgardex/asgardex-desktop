@@ -6,6 +6,31 @@ import { getStoreFilesIPCMessages } from '../../shared/ipc/fileStore'
 import { buildJsonFilePath } from '../utils/file'
 import { STORAGE_DIR } from './const'
 
+/**
+ * Migration: replace retired NineRealms URLs with their replacements.
+ * URLs don't map 1:1 by domain pattern, so we use an explicit lookup.
+ */
+const NINEREALMS_URL_MAP: Record<string, string> = {
+  'https://midgard.ninerealms.com': 'https://gateway.liquify.com/chain/thorchain_midgard',
+  'https://thornode.ninerealms.com': 'https://gateway.liquify.com/chain/thorchain_api',
+  'https://rpc.ninerealms.com': 'https://gateway.liquify.com/chain/thorchain_rpc',
+  'https://stagenet-midgard.ninerealms.com': '',
+  'https://stagenet-thornode.ninerealms.com': '',
+  'https://stagenet-rpc.ninerealms.com': '',
+  'https://haskoin.ninerealms.com/btc': 'https://api.haskoin.com/btc',
+  'https://haskoin.ninerealms.com/btctest': 'https://api.haskoin.com/btctest',
+  'https://litecoin.ninerealms.com': ''
+}
+
+const migrateNineRealmsUrls = <T>(data: T): { data: T; changed: boolean } => {
+  let json = JSON.stringify(data)
+  if (!json.includes('ninerealms.com')) return { data, changed: false }
+  for (const [oldUrl, newUrl] of Object.entries(NINEREALMS_URL_MAP)) {
+    json = json.split(oldUrl).join(newUrl)
+  }
+  return { data: JSON.parse(json) as T, changed: true }
+}
+
 // If `fullFilePathname' does not exist, `fs.remove` silently does nothing.
 // @see https://github.com/jprichardson/node-fs-extra/blob/master/docs/remove.md
 const removeFile = async (fullFilePathname: string) => fs.remove(fullFilePathname)
@@ -33,7 +58,13 @@ export const getFileContent = async <T extends StorageVersion>(name: StoreFileNa
     // Try to read and parse appropriate JSON store-file
     const fileContent = await fs.readJSON(path)
     // Combine file content with provided default value
-    return { ...defaultValue, ...fileContent }
+    const merged = { ...defaultValue, ...fileContent }
+    // Migrate retired NineRealms URLs to new endpoints
+    const { data: migrated, changed } = migrateNineRealmsUrls(merged)
+    if (changed) {
+      await fs.writeJSON(path, migrated)
+    }
+    return migrated
   } catch {
     // Resolve with default value in case of any error
     return defaultValue

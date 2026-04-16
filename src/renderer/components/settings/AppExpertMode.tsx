@@ -71,8 +71,8 @@ type SubSectionProps = {
 }
 
 const expertModeDefault: Record<string, boolean> = {
-  thorchain: true,
-  mayachain: true,
+  thorchain: false,
+  mayachain: false,
   evm: false
 }
 

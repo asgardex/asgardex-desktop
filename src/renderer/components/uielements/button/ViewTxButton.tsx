@@ -49,7 +49,7 @@ export const ViewTxButton = ({
           let url: string
           switch (protocolValue) {
             case 'Thorchain':
-              url = `https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network || 'default'}`
+              url = `https://track.thorchain.org/${txHash}?logo=asgardex.png&network=${network || 'default'}`
               break
             case 'Mayachain':
               url = `https://www.xscanner.org/tx/${txHash}`
