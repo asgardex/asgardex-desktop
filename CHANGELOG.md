@@ -1,5 +1,14 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.43.2
+
+## Update/Fixes
+
+- migrate all NineRealms endpoints to Liquify (`gateway.liquify.com`) [#1038](https://github.com/asgardex/asgardex-desktop/pull/1038)
+- auto-migrate existing users' stored NineRealms URLs on app launch [#1038](https://github.com/asgardex/asgardex-desktop/pull/1038)
+- wire ledger client URLs to read from stored settings [#1038](https://github.com/asgardex/asgardex-desktop/pull/1038)
+- update tx tracker to `track.thorchain.org` [#1038](https://github.com/asgardex/asgardex-desktop/pull/1038)
+
 # 1.43.1
 
 ## Update/Fixes
