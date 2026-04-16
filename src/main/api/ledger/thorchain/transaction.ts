@@ -36,7 +36,7 @@ export const send = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
-      clientUrls: getDefaultClientUrls(),
+      clientUrls: await getDefaultClientUrls(),
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
@@ -84,7 +84,7 @@ export const deposit = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
-      clientUrls: getDefaultClientUrls(),
+      clientUrls: await getDefaultClientUrls(),
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })

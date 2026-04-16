@@ -1,5 +1,9 @@
 import { Network, RootDerivationPaths } from '@xchainjs/xchain-client'
 
+import { DEFAULT_STORAGES } from '../../../../shared/const'
+import { DEFAULT_THORNODE_RPC_URLS } from '../../../../shared/thorchain/const'
+import { getFileContent } from '../../fileStore'
+
 // BIP44 compliant
 export const getDerivationPath = (walletAccount: number, network: Network): string => {
   const DERIVATION_PATHS = {
@@ -20,10 +24,12 @@ export const getDerivationPaths = (walletAccount: number, network: Network): Roo
   return paths
 }
 
-export const getDefaultClientUrls = (): Record<Network, string[]> => {
+export const getDefaultClientUrls = async (): Promise<Record<Network, string[]>> => {
+  const storage = await getFileContent('common', DEFAULT_STORAGES.common)
+  const rpcUrls = storage.thornodeRpc ?? DEFAULT_THORNODE_RPC_URLS
   return {
-    [Network.Testnet]: ['deprecated'],
-    [Network.Stagenet]: ['https://stagenet-rpc.ninerealms.com'],
-    [Network.Mainnet]: ['https://rpc.ninerealms.com']
+    [Network.Testnet]: [rpcUrls.testnet || ''],
+    [Network.Stagenet]: [rpcUrls.stagenet || ''],
+    [Network.Mainnet]: [rpcUrls.mainnet || DEFAULT_THORNODE_RPC_URLS.mainnet]
   }
 }

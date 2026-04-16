@@ -19,7 +19,7 @@ export const getAddress = async (
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
-      clientUrls: getDefaultClientUrls(),
+      clientUrls: await getDefaultClientUrls(),
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
