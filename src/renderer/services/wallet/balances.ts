@@ -599,15 +599,6 @@ export const createBalancesService = ({
   })
 
   /**
-   * SUI Ledger balances
-   */
-  const suiLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
-    chain: SUIChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: SUI.getBalanceByAddress$
-  })
-
-  /**
    * Transforms MAYA balances into `ChainBalances`
    */
   const mayaChainBalance$: ChainBalance$ = createChainBalance$({
@@ -758,6 +749,15 @@ export const createBalancesService = ({
     chain: THORChain,
     walletBalanceType: 'all',
     getBalanceByAddress$: THOR.getBalanceByAddress$
+  })
+
+  /**
+   * SUI Ledger balances
+   */
+  const suiLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
+    chain: SUIChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: SUI.getBalanceByAddress$
   })
 
   /**
