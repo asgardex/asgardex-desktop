@@ -24,6 +24,7 @@ import xrdIcon from '../../assets/svg/asset-radix.svg?url'
 import xrpIcon from '../../assets/svg/asset-ripple.svg?url'
 import runeIcon from '../../assets/svg/asset-rune.svg'
 import solIcon from '../../assets/svg/asset-sol.svg?url'
+import suiIcon from '../../assets/svg/asset-sui.svg?url'
 import tronIcon from '../../assets/svg/asset-tron.svg?url'
 import CurrencyIcon from '../../assets/svg/currency-icon.svg?react'
 import AttentionIcon from '../../assets/svg/icon-attention.svg?react'
@@ -71,5 +72,6 @@ export {
   baseIcon,
   xrpIcon,
   tronIcon,
+  suiIcon,
   zecIcon
 }

@@ -17,6 +17,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
+import { SUIChain } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, AssetType, Chain } from '@xchainjs/xchain-util'
@@ -45,6 +46,7 @@ import * as MAYA from '../../mayachain'
 import * as XRD from '../../radix'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
+import * as SUI from '../../sui'
 import * as THOR from '../../thorchain'
 import * as TRON from '../../tron'
 import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
@@ -331,6 +333,9 @@ export const sendTx$ = ({
     case TRONChain:
       return TRON.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletAccount, walletIndex, hdMode })
 
+    case SUIChain:
+      return SUI.sendTx({ walletType, sender, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
+
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   }
@@ -454,6 +459,7 @@ export const sendPoolTx$ = ({
     case ADAChain:
     case XRPChain:
     case SOLChain:
+    case SUIChain:
     case TRONChain:
       return sendTx$({
         sender,
@@ -523,6 +529,8 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
       return ZEC.txStatus$(txHash, O.none)
     case TRONChain:
       return TRON.txStatus$(txHash, O.none)
+    case SUIChain:
+      return SUI.txStatus$(txHash, O.none)
     default:
       return Rx.of(
         RD.failure({

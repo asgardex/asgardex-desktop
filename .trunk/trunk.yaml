@@ -70,6 +70,7 @@ lint:
         - .github/ISSUE_TEMPLATE.md
         - .github/ISSUE_TEMPLATE/**
         - BRANCHING_WORKFLOW.md
+        - ADDING_NEW_CHAIN_PLAN.md
 
     - linters: [yamllint]
       paths:

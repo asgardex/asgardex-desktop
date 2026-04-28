@@ -16,6 +16,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { SUIChain } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { AssetType } from '@xchainjs/xchain-util'
@@ -45,6 +46,7 @@ import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
+import * as SUI from '../sui'
 import * as THOR from '../thorchain'
 import * as TRON from '../tron'
 import * as ZEC from '../zcash'
@@ -124,6 +126,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return ZEC.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case XRPChain:
                 return XRP.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
+              case SUIChain:
+                return SUI.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               default:
                 return Rx.of(
                   RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` })

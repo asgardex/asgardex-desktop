@@ -2,6 +2,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { AssetXRP } from '@xchainjs/xchain-ripple'
+import { SUIAsset } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { validateAddress as validateTRONAddress } from '@xchainjs/xchain-tron'
 import {
@@ -225,6 +226,9 @@ export const isSolAsset = (asset: AnyAsset): boolean =>
  */
 export const isTrxAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetTRX.chain && asset.symbol.toUpperCase() === AssetTRX.symbol.toUpperCase()
+
+export const isSuiAsset = (asset: AnyAsset): boolean =>
+  asset.chain === SUIAsset.chain && asset.symbol.toUpperCase() === SUIAsset.symbol.toUpperCase()
 
 export const isUskAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetUSK.chain && asset.symbol.toUpperCase() === AssetUSK.symbol.toUpperCase()

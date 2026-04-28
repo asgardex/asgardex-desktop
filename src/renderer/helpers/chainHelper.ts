@@ -15,6 +15,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
 import { AssetXRP, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
+import { SUIAsset, SUIChain } from '@xchainjs/xchain-sui'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetTRX, TRONChain } from '@xchainjs/xchain-tron'
 import { AnyAsset, Asset, AssetType, Chain } from '@xchainjs/xchain-util'
@@ -44,7 +45,8 @@ const chainAssets: Record<Chain, Asset> = {
   ADA: ADAAsset,
   TRON: AssetTRX,
   ZEC: AssetZEC,
-  XRP: AssetXRP
+  XRP: AssetXRP,
+  SUI: SUIAsset
 }
 
 export const getChainAsset = (chain: Chain): Asset => {
@@ -176,6 +178,8 @@ export const isCosmosChain = (chain: Chain): boolean => eqChain.equals(chain, GA
  */
 export const isTronChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), TRONChain)
 
+export const isSuiChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), SUIChain)
+
 type ChainValues<T> = {
   [k in Chain]?: T[]
 }
@@ -231,6 +235,8 @@ export const getChain = (chain: string): Chain => {
       return XRPChain
     case 'TRON':
       return TRONChain
+    case 'SUI':
+      return SUIChain
     default:
       throw Error('Unknown chain')
   }
