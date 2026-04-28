@@ -17,14 +17,16 @@ export const createFeesService = (client$: Client$): FeesService => {
     recipient: ZERO_ADDRESS
   })
 
-  const fees$ = (params: TxParams): FeesLD =>
+  // SUI SDK's `client.getFees()` takes no params; `reloadFees$` is kept so
+  // consumers can still trigger a refetch via `reloadFees(...)`.
+  const fees$ = (_params: TxParams): FeesLD =>
     Rx.combineLatest([reloadFees$, client$]).pipe(
-      RxOp.switchMap(([reloadFeesParams, oClient]) =>
+      RxOp.switchMap(([_reloadFeesParams, oClient]) =>
         FP.pipe(
           oClient,
           O.fold(
             () => Rx.EMPTY, // If no client, return an empty observable
-            (client) => Rx.from(client.getFees(params || reloadFeesParams))
+            (client) => Rx.from(client.getFees())
           )
         )
       ),
