@@ -19,6 +19,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { SUIChain } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, Chain } from '@xchainjs/xchain-util'
@@ -49,6 +50,7 @@ import { useKujiContext } from '../../contexts/KujiContext'
 import { useLitecoinContext } from '../../contexts/LitecoinContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useSolContext } from '../../contexts/SolContext'
+import { useSuiContext } from '../../contexts/SuiContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useTronContext } from '../../contexts/TronContext'
 import { useWalletContext } from '../../contexts/WalletContext'
@@ -124,6 +126,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const { addressUI$: tronAddressUI$ } = useTronContext()
   const { addressUI$: zecAddressUI$ } = useZcashContext()
   const { addressUI$: xrpAddressUI$ } = useXrpContext()
+  const { addressUI$: suiAddressUI$ } = useSuiContext()
 
   const evmHDMode: EvmHDMode = useObservableState(evmHDMode$, DEFAULT_EVM_HD_MODE)
 
@@ -381,6 +384,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const oTronClient = useObservableState(clientByChain$(TRONChain), O.none)
   const oZecClient = useObservableState(clientByChain$(ZECChain), O.none)
   const oXrpClient = useObservableState(clientByChain$(XRPChain), O.none)
+  const oSuiClient = useObservableState(clientByChain$(SUIChain), O.none)
 
   const clickAddressLinkHandler = (chain: Chain, address: Address) => {
     const openExplorerAddressUrl = (client: XChainClient) => {
@@ -452,6 +456,9 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
         break
       case XRPChain:
         FP.pipe(oXrpClient, O.map(openExplorerAddressUrl))
+        break
+      case SUIChain:
+        FP.pipe(oSuiClient, O.map(openExplorerAddressUrl))
         break
     }
   }
@@ -557,7 +564,11 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
       ledgerAddress: oXrpLedgerWalletAddress,
       chain: XRPChain
     })
-
+    const suiWalletAccount$ = walletAccount$({
+      addressUI$: suiAddressUI$,
+      ledgerAddress: O.none,
+      chain: SUIChain
+    })
     return FP.pipe(
       // combineLatest is for the future additional walletAccounts
       Rx.combineLatest(
@@ -581,7 +592,8 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
           TRON: [tronWalletAccount$],
           BASE: [baseWalletAccount$],
           ZEC: [zecWalletAccount$],
-          XRP: [xrpWalletAccount$]
+          XRP: [xrpWalletAccount$],
+          SUI: [suiWalletAccount$]
         })
       ),
       RxOp.map(A.filter(O.isSome)),
@@ -627,7 +639,8 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     zecAddressUI$,
     oZecLedgerWalletAddress,
     xrpAddressUI$,
-    oXrpLedgerWalletAddress
+    oXrpLedgerWalletAddress,
+    suiAddressUI$
   ])
 
   const walletAccounts = useObservableState(walletAccounts$, O.none)

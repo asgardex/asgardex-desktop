@@ -17,6 +17,7 @@ import { MAYAChain, getPrefix as getMayachainPrefix } from '@xchainjs/xchain-may
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { SUIChain } from '@xchainjs/xchain-sui'
 import { getPrefix as getThorchainPrefix, THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, Chain } from '@xchainjs/xchain-util'
@@ -54,7 +55,8 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [ADAChain]: () => 'addr'.length,
   [ZECChain]: (network: Network) => getZcashPrefix(network).length,
   [XRPChain]: () => 'r'.length,
-  [TRONChain]: () => 'T'.length
+  [TRONChain]: () => 'T'.length,
+  [SUIChain]: () => '0x'.length
 }
 
 export const getAddressPrefixLength = (chain: Chain, network: Network): number => {
