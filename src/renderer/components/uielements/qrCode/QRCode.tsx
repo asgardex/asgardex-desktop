@@ -48,10 +48,10 @@ export const QRCode = ({ text, qrError }: Props) => {
   }, [canvasRd])
 
   return (
-    <div className="flex h-72 items-center justify-center overflow-hidden">
+    <div className="mx-auto flex aspect-square w-full max-w-xs items-center justify-center">
       {(RD.isInitial(canvasRd) || RD.isPending(canvasRd)) && <Spin />}
       {RD.isFailure(canvasRd) && <>{canvasRd.error}</>}
-      {RD.isSuccess(canvasRd) && <div ref={canvasContainer} className="[&>canvas]:rounded-2xl" />}
+      {RD.isSuccess(canvasRd) && <div ref={canvasContainer} className="[&>canvas]:block [&>canvas]:rounded-2xl" />}
     </div>
   )
 }
