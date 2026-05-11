@@ -39,10 +39,19 @@ export async function initializeSDK(): Promise<Vultisig> {
     const { Vultisig } = await import('@vultisig/sdk')
 
     // SDK uses FileStorage by default in Electron (stores at ~/.vultisig)
-    // Password handling is done via direct unlockVault() calls from UI
+    // Password handling is done via direct unlockVault() calls from UI.
+    // onPasswordRequired must be provided or the SDK silently drops encrypted
+    // vaults from listVaults(). The callback only needs to EXIST for listVaults
+    // to enumerate them; it only FIRES on cache miss, which our flow
+    // (unlockVault → passwordCache → operations) avoids.
     const instance = new Vultisig({
       passwordCache: {
         defaultTTL: PASSWORD_CACHE_TTL
+      },
+      onPasswordRequired: async (vaultId: string, vaultName: string) => {
+        const msg = `Password required for vault "${vaultName}" (${vaultId}) — unlock the vault first via apiMpc.unlockVault`
+        log.warn(`[MPC SDK] onPasswordRequired fired (cache miss): ${msg}`)
+        throw new Error(msg)
       }
     })
 

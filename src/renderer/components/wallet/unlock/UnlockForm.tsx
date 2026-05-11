@@ -44,6 +44,10 @@ export type Props = {
   onVultisigSelect?: (vaultId: string) => void
   // Vultisig unlock props
   isVultisigLocked?: boolean
+  // True if the active Vultisig vault has a storage password. When false (and
+  // isVultisigLocked), the password field is optional — submitting blank calls
+  // onVultisigUnlock('') and vaultManager handles unencrypted vaults internally.
+  isVultisigVaultEncrypted?: boolean
   onVultisigUnlock?: (password: string) => Promise<void>
   vultisigError?: string
   // Vultisig import handler
@@ -60,10 +64,15 @@ export const UnlockForm = ({
   activeVultisigVaultId,
   onVultisigSelect,
   isVultisigLocked = false,
+  isVultisigVaultEncrypted = true,
   onVultisigUnlock,
   vultisigError,
   onVultisigImport
 }: Props) => {
+  // Password is required for keystore unlock and for encrypted Vultisig vaults.
+  // When the active Vultisig vault is unencrypted (and locked), allow blank
+  // password — vaultManager.unlockVault handles unencrypted vaults internally.
+  const passwordRequired = !(isVultisigLocked && !isVultisigVaultEncrypted)
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -259,8 +268,12 @@ export const UnlockForm = ({
                 id="password"
                 className="mx-auto flex h-[38px] w-full items-center justify-between"
                 inputClassName="!ring-0 w-full"
-                {...register('password', { required: true })}
-                placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
+                {...register('password', { required: passwordRequired })}
+                placeholder={
+                  passwordRequired
+                    ? intl.formatMessage({ id: 'common.password' }).toUpperCase()
+                    : `${intl.formatMessage({ id: 'common.password' }).toUpperCase()} (NOT REQUIRED)`
+                }
                 ghost
                 size="normal"
                 autoFocus={true}

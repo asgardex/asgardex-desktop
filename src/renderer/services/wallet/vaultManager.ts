@@ -317,10 +317,19 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
    * Export a vault as a .vult file
    * Triggers a "Save As" dialog in the main process
    */
-  const exportVault = async (vaultId: string) => {
+  /**
+   * Export a vault to .vult file via Save As dialog.
+   * @param vaultId - vault to export
+   * @param password - optional. If provided, the .vult is encrypted with this password
+   *                   (independent of the vault's storage password). If empty/undefined,
+   *                   the .vult is exported unencrypted.
+   */
+  const exportVault = async (vaultId: string, password?: string) => {
     try {
-      await window.apiMpc.exportVault(vaultId)
-      logger.info('Vault exported:', vaultId)
+      // Empty string treated as unencrypted (user opted out of password)
+      const pwd = password && password.length > 0 ? password : undefined
+      await window.apiMpc.exportVault(vaultId, pwd)
+      logger.info('Vault exported:', vaultId, 'encrypted:', !!pwd)
     } catch (error) {
       logger.error('Failed to export vault:', error)
       throw error
@@ -396,25 +405,17 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     const vaultName = currentState.activeVault.name
     const isEncrypted = currentState.activeVault.isEncrypted
 
-    // Unencrypted vaults don't need password protection — go to vault selection instead
-    if (!isEncrypted) {
-      logger.info('Vault is not encrypted, returning to vault selection:', vaultName)
-      onSaveWallet(undefined)
-      setVultisigState((prev) => ({
-        ...prev,
-        phase: VultisigPhase.VaultSelection,
-        activeVault: null,
-        addresses: {}
-      }))
-      return
-    }
-
-    // Update UI state immediately (same pattern as keystore.lock())
-    // This shows the unlock screen right away
+    // Always transition to VaultLocked phase, keeping activeVault set so the
+    // HeaderLock dropdown stays visible and the user lands on UnlockView
+    // (which has create / import / select options — matches keystore lock UX).
+    // For unencrypted vaults, re-selecting the same vault from UnlockView
+    // immediately re-activates it (no password needed); for encrypted vaults
+    // a password prompt appears.
     setVultisigState((prev) => ({ ...prev, phase: VultisigPhase.VaultLocked, addresses: {} }))
-    logger.info('Vault locked:', vaultName)
+    logger.info('Vault locked:', vaultName, 'encrypted:', isEncrypted)
 
-    // Inform SDK to clear cached password
+    // Inform SDK to clear cached password (no-op for unencrypted vaults — SDK's
+    // VaultBase.lock() early-returns when isVaultEncrypted() is false)
     try {
       await window.apiMpc.lockVault(vaultId)
     } catch (error) {

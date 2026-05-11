@@ -239,7 +239,7 @@ export const NoWalletView = () => {
 
       <VaultPasswordModal
         visible={showPasswordModal}
-        filename={pendingVaultFile?.filename || ''}
+        subject={pendingVaultFile?.filename || ''}
         onSubmit={handlePasswordSubmit}
         onClose={handlePasswordModalClose}
       />
