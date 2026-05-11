@@ -75,7 +75,14 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'Конечная точка RPC не отвечает. Проверьте подключение или попробуйте другой URL.',
   'settings.ledgerMode.lockWalletWarning': 'Сначала заблокируйте кошелек, чтобы войти в режим Ledger',
   'settings.wallet.whitelist': 'Белый список',
-  'settings.wallet.customToken': 'Пользовательский токен'
+  'settings.wallet.customToken': 'Пользовательский токен',
+  'settings.provider.label': 'Provider',
+  'settings.provider.custom': 'Custom',
+  'settings.provider.custom.description': 'Enter your own endpoint URLs',
+  'settings.provider.badge.recommended': 'Recommended',
+  'settings.provider.badge.backup': 'Backup',
+  'settings.provider.badge.manual': 'Manual',
+  'settings.provider.hint': 'URLs are managed by the selected provider. Switch to Custom to edit individually.'
 }
 
 export default settings

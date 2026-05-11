@@ -75,7 +75,14 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'RPC एंडपॉइंट प्रतिक्रिया नहीं दे रहा है। अपना कनेक्शन जांचें या कोई अलग URL आज़माएं।',
   'settings.ledgerMode.lockWalletWarning': 'Ledger मोड में प्रवेश करने के लिए पहले वॉलेट लॉक करें',
   'settings.wallet.whitelist': 'व्हाइटलिस्ट',
-  'settings.wallet.customToken': 'कस्टम टोकन'
+  'settings.wallet.customToken': 'कस्टम टोकन',
+  'settings.provider.label': 'Provider',
+  'settings.provider.custom': 'Custom',
+  'settings.provider.custom.description': 'Enter your own endpoint URLs',
+  'settings.provider.badge.recommended': 'Recommended',
+  'settings.provider.badge.backup': 'Backup',
+  'settings.provider.badge.manual': 'Manual',
+  'settings.provider.hint': 'URLs are managed by the selected provider. Switch to Custom to edit individually.'
 }
 
 export default settings

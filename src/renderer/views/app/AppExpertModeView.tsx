@@ -1,8 +1,11 @@
 import { useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
+import { PROVIDER_REGISTRY } from '../../../shared/providers'
+import { ProviderId, ProviderSectionKey } from '../../../shared/providers/types'
 import { AppExpertMode } from '../../components/settings/AppExpertMode'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
@@ -11,6 +14,7 @@ import { useEvmRpcUrl } from '../../hooks/useEvmRpcUrl'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
+import { applyProvider } from '../../services/storage/common'
 
 export const AppExpertModeView = (): JSX.Element => {
   const { network } = useNetwork()
@@ -80,6 +84,33 @@ export const AppExpertModeView = (): JSX.Element => {
   // EVM Gas multiplier
   const { multiplier: gasMultiplier, setMultiplier: setGasMultiplier } = useEvmGasMultiplier()
 
+  // Derive active provider by matching current URLs against the registry
+  const detectProvider = useCallback((section: ProviderSectionKey, currentUrls: Record<string, string>): ProviderId => {
+    const config = PROVIDER_REGISTRY[section]
+    for (const provider of config.providers) {
+      const urls = provider.urls as Record<string, Record<string, string>>
+      const allMatch = config.slots.every((slot) => urls[slot as string]?.mainnet === currentUrls[slot as string])
+      if (allMatch) return provider.id
+    }
+    return 'custom'
+  }, [])
+
+  const thorchainProvider = detectProvider('thorchain', {
+    midgard: FP.pipe(midgardUrl, RD.toNullable) ?? '',
+    thornodeApi: thornodeNodeUrl,
+    thornodeRpc: thornodeRpcUrl
+  })
+
+  const mayachainProvider = detectProvider('mayachain', {
+    midgardMaya: FP.pipe(midgardMayaUrl, RD.toNullable) ?? '',
+    mayanodeApi: mayanodeNodeUrl,
+    mayanodeRpc: mayanodeRpcUrl
+  })
+
+  const handleChangeProvider = useCallback((section: ProviderSectionKey, providerId: ProviderId) => {
+    applyProvider(section, providerId)
+  }, [])
+
   const updateMidgardUrlHandler = useCallback(
     (url: string) => {
       setMidgardUrl(url, network)
@@ -132,6 +163,10 @@ export const AppExpertModeView = (): JSX.Element => {
       // EVM Gas multiplier
       gasMultiplier={gasMultiplier}
       onChangeGasMultiplier={setGasMultiplier}
+      // Provider selections (derived from current URLs)
+      thorchainProvider={thorchainProvider}
+      mayachainProvider={mayachainProvider}
+      onChangeProvider={handleChangeProvider}
     />
   )
 }

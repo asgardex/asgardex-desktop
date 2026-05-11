@@ -7,6 +7,8 @@ import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { GasMultiplier } from '../../../shared/api/types'
+import { PROVIDER_REGISTRY } from '../../../shared/providers'
+import { ProviderId, ProviderSectionKey } from '../../../shared/providers/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { GAS_MULTIPLIER_OPTIONS } from '../../hooks/useEvmGasMultiplier'
 import { RpcHealthStatus } from '../../hooks/useEvmRpcUrl'
@@ -22,6 +24,7 @@ import { TextButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import { RadioGroup } from '../uielements/radioGroup'
 import EditableUrl from './EditableUrl'
+import { ProviderSelector } from './ProviderSelector'
 
 export type CheckEvmRpcUrlHandler = (url: string) => LiveData<Error, string>
 
@@ -60,6 +63,10 @@ type Props = {
   // EVM Gas multiplier
   gasMultiplier: GasMultiplier
   onChangeGasMultiplier: (multiplier: GasMultiplier) => void
+  // Provider (derived from current URLs)
+  thorchainProvider: ProviderId
+  mayachainProvider: ProviderId
+  onChangeProvider: (section: ProviderSectionKey, providerId: ProviderId) => void
 }
 
 type SubSectionProps = {
@@ -70,9 +77,14 @@ type SubSectionProps = {
   warningTooltip?: string
 }
 
+/** Read-only URL display — no edit/test, just the URL text */
+const ReadOnlyUrl = ({ url }: { url: string }) => (
+  <div className="flex items-center">
+    <span className="font-main text-[14px] text-gray2 dark:text-gray2d">{url}</span>
+  </div>
+)
+
 const expertModeDefault: Record<string, boolean> = {
-  thorchain: false,
-  mayachain: false,
   evm: false
 }
 
@@ -135,7 +147,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
     avaxRpc,
     baseRpc,
     gasMultiplier,
-    onChangeGasMultiplier
+    onChangeGasMultiplier,
+    thorchainProvider,
+    mayachainProvider,
+    onChangeProvider
   } = props
 
   const intl = useIntl()
@@ -167,110 +182,110 @@ export const AppExpertMode = (props: Props): JSX.Element => {
 
   return (
     <div className="flex flex-col">
-      <Section
-        title={intl.formatMessage({ id: 'settings.expert.thorchain.title' })}
-        toggleHandler={
-          <div className="flex items-center justify-end px-4 py-6">
-            <TextButton
-              className={clsx(
-                'mb-0 !py-0 !pr-10px !pl-0 font-main !text-14 text-text0 uppercase dark:text-text0d',
-                advancedActive ? 'opacity-100' : 'opacity-60'
-              )}
-              onClick={() => setAdvancedActive((prev) => ({ ...prev, thorchain: !prev.thorchain }))}>
-              {intl.formatMessage({ id: 'common.advanced' })}
-            </TextButton>
-            <SwitchButton
-              active={advancedActive.thorchain}
-              onChange={(active) => setAdvancedActive({ ...advancedActive, thorchain: active })}
-            />
-          </div>
-        }>
-        <div
-          className={clsx(
-            'flex-col transition-all duration-300 ease-in-out',
-            advancedActive.thorchain ? 'flex' : 'hidden'
-          )}>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.midgard.title' })}>
-            <EditableUrl
-              className="w-full xl:w-3/4"
-              url={midgardUrl}
-              onChange={onChangeMidgardUrl}
-              loading={RD.isPending(midgardUrlRD)}
-              checkUrl$={checkMidgardUrl$}
-              successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
-            />
-          </SubSection>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeApi.title' })}>
-            <EditableUrl
-              className="w-full xl:w-3/4"
-              url={thornodeNodeUrl}
-              onChange={onChangeThornodeNodeUrl}
-              checkUrl$={checkThornodeNodeUrl$}
-              successMsg={intl.formatMessage({ id: 'settings.thornode.node.valid' })}
-            />
-          </SubSection>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeRpc.title' })}>
-            <EditableUrl
-              className="w-full xl:w-3/4"
-              url={thornodeRpcUrl}
-              onChange={onChangeThornodeRpcUrl}
-              checkUrl$={checkThornodeRpcUrl$}
-              successMsg={intl.formatMessage({ id: 'settings.thornode.rpc.valid' })}
-            />
-          </SubSection>
+      <Section title={intl.formatMessage({ id: 'settings.expert.thorchain.title' })}>
+        <div className="flex flex-col">
+          <ProviderSelector
+            config={PROVIDER_REGISTRY.thorchain}
+            selectedProviderId={thorchainProvider}
+            onSelectProvider={(id) => onChangeProvider('thorchain', id)}
+          />
+          {thorchainProvider === 'custom' ? (
+            <>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.midgard.title' })}>
+                <EditableUrl
+                  className="w-full xl:w-3/4"
+                  url={midgardUrl}
+                  onChange={onChangeMidgardUrl}
+                  loading={RD.isPending(midgardUrlRD)}
+                  checkUrl$={checkMidgardUrl$}
+                  successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
+                />
+              </SubSection>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeApi.title' })}>
+                <EditableUrl
+                  className="w-full xl:w-3/4"
+                  url={thornodeNodeUrl}
+                  onChange={onChangeThornodeNodeUrl}
+                  checkUrl$={checkThornodeNodeUrl$}
+                  successMsg={intl.formatMessage({ id: 'settings.thornode.node.valid' })}
+                />
+              </SubSection>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeRpc.title' })}>
+                <EditableUrl
+                  className="w-full xl:w-3/4"
+                  url={thornodeRpcUrl}
+                  onChange={onChangeThornodeRpcUrl}
+                  checkUrl$={checkThornodeRpcUrl$}
+                  successMsg={intl.formatMessage({ id: 'settings.thornode.rpc.valid' })}
+                />
+              </SubSection>
+            </>
+          ) : (
+            <>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.midgard.title' })}>
+                <ReadOnlyUrl url={midgardUrl} />
+              </SubSection>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeApi.title' })}>
+                <ReadOnlyUrl url={thornodeNodeUrl} />
+              </SubSection>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeRpc.title' })}>
+                <ReadOnlyUrl url={thornodeRpcUrl} />
+              </SubSection>
+            </>
+          )}
         </div>
       </Section>
-      <Section
-        title={intl.formatMessage({ id: 'settings.expert.mayachain.title' })}
-        toggleHandler={
-          <div className="flex items-center justify-end px-4 py-6">
-            <TextButton
-              className={clsx(
-                'mb-0 !py-0 !pr-10px !pl-0 font-main !text-14 text-text0 uppercase dark:text-text0d',
-                advancedActive ? 'opacity-100' : 'opacity-60'
-              )}
-              onClick={() => setAdvancedActive((prev) => ({ ...prev, mayachain: !prev.mayachain }))}>
-              {intl.formatMessage({ id: 'common.advanced' })}
-            </TextButton>
-            <SwitchButton
-              active={advancedActive.mayachain}
-              onChange={(active) => setAdvancedActive({ ...advancedActive, mayachain: active })}
-            />
-          </div>
-        }>
-        <div
-          className={clsx(
-            'flex-col transition-all duration-300 ease-in-out',
-            advancedActive.mayachain ? 'flex' : 'hidden'
-          )}>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.midgardMaya.title' })}>
-            <EditableUrl
-              className="w-full"
-              url={midgardMayaUrl}
-              onChange={onChangeMidgardMayaUrl}
-              loading={RD.isPending(midgardMayaUrlRD)}
-              checkUrl$={checkMidgardMayaUrl$}
-              successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
-            />
-          </SubSection>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.mayanodeApi.title' })}>
-            <EditableUrl
-              className="w-full xl:w-3/4"
-              url={mayanodeNodeUrl}
-              onChange={onChangeMayanodeNodeUrl}
-              checkUrl$={checkMayanodeNodeUrl$}
-              successMsg={intl.formatMessage({ id: 'settings.mayanode.node.valid' })}
-            />
-          </SubSection>
-          <SubSection title="MAYANode RPC">
-            <EditableUrl
-              className="w-full xl:w-3/4"
-              url={mayanodeRpcUrl}
-              onChange={onChangeMayanodeRpcUrl}
-              checkUrl$={checkMayanodeRpcUrl$}
-              successMsg={intl.formatMessage({ id: 'settings.mayanode.rpc.valid' })}
-            />
-          </SubSection>
+      <Section title={intl.formatMessage({ id: 'settings.expert.mayachain.title' })}>
+        <div className="flex flex-col">
+          <ProviderSelector
+            config={PROVIDER_REGISTRY.mayachain}
+            selectedProviderId={mayachainProvider}
+            onSelectProvider={(id) => onChangeProvider('mayachain', id)}
+          />
+          {mayachainProvider === 'custom' ? (
+            <>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.midgardMaya.title' })}>
+                <EditableUrl
+                  className="w-full"
+                  url={midgardMayaUrl}
+                  onChange={onChangeMidgardMayaUrl}
+                  loading={RD.isPending(midgardMayaUrlRD)}
+                  checkUrl$={checkMidgardMayaUrl$}
+                  successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
+                />
+              </SubSection>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.mayanodeApi.title' })}>
+                <EditableUrl
+                  className="w-full xl:w-3/4"
+                  url={mayanodeNodeUrl}
+                  onChange={onChangeMayanodeNodeUrl}
+                  checkUrl$={checkMayanodeNodeUrl$}
+                  successMsg={intl.formatMessage({ id: 'settings.mayanode.node.valid' })}
+                />
+              </SubSection>
+              <SubSection title="MAYANode RPC">
+                <EditableUrl
+                  className="w-full xl:w-3/4"
+                  url={mayanodeRpcUrl}
+                  onChange={onChangeMayanodeRpcUrl}
+                  checkUrl$={checkMayanodeRpcUrl$}
+                  successMsg={intl.formatMessage({ id: 'settings.mayanode.rpc.valid' })}
+                />
+              </SubSection>
+            </>
+          ) : (
+            <>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.midgardMaya.title' })}>
+                <ReadOnlyUrl url={midgardMayaUrl} />
+              </SubSection>
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.mayanodeApi.title' })}>
+                <ReadOnlyUrl url={mayanodeNodeUrl} />
+              </SubSection>
+              <SubSection title="MAYANode RPC">
+                <ReadOnlyUrl url={mayanodeRpcUrl} />
+              </SubSection>
+            </>
+          )}
         </div>
       </Section>
       <Section

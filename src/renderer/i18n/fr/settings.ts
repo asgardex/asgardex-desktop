@@ -76,7 +76,14 @@ const settings: SettingMessages = {
     "Le point d'accès RPC ne répond pas. Vérifiez votre connexion ou essayez une autre URL.",
   'settings.ledgerMode.lockWalletWarning': "Verrouillez d'abord le portefeuille pour entrer en mode Ledger",
   'settings.wallet.whitelist': 'Liste blanche',
-  'settings.wallet.customToken': 'Token personnalisé'
+  'settings.wallet.customToken': 'Token personnalisé',
+  'settings.provider.label': 'Provider',
+  'settings.provider.custom': 'Custom',
+  'settings.provider.custom.description': 'Enter your own endpoint URLs',
+  'settings.provider.badge.recommended': 'Recommended',
+  'settings.provider.badge.backup': 'Backup',
+  'settings.provider.badge.manual': 'Manual',
+  'settings.provider.hint': 'URLs are managed by the selected provider. Switch to Custom to edit individually.'
 }
 
 export default settings

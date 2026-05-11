@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RxOp from 'rxjs/operators'
 
-import { CommonStorage, LastOpenedWallet } from '../../../shared/api/types'
+import { ApiUrls, CommonStorage, LastOpenedWallet } from '../../../shared/api/types'
 import { DEFAULT_ARB_RPC_URLS } from '../../../shared/arb/const'
 import { DEFAULT_AVAX_RPC_URLS } from '../../../shared/avax/const'
 import { DEFAULT_BASE_RPC_URLS } from '../../../shared/base/const'
@@ -15,6 +15,8 @@ import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
 import { DEFAULT_MIDGARD_MAYA_URLS } from '../../../shared/mayaMidgard/const'
 import { DEFAULT_MIDGARD_URLS } from '../../../shared/midgard/const'
+import { PROVIDER_REGISTRY } from '../../../shared/providers'
+import { ProviderId, ProviderSectionKey } from '../../../shared/providers/types'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { observableState } from '../../helpers/stateHelper'
 import { StorageState, StoragePartialState } from './types'
@@ -143,6 +145,26 @@ const modifyStorage = (oPartialData: StoragePartialState<CommonStorage>) => {
   )
 }
 
+/**
+ * Applies a provider's URLs to storage. Looks up the provider in the registry
+ * and writes its URLs to the existing storage fields (midgard, thornodeApi, etc.).
+ * If 'custom' is selected, does nothing — URLs are edited individually.
+ */
+const applyProvider = (section: ProviderSectionKey, providerId: ProviderId) => {
+  if (providerId === 'custom') return
+
+  const config = PROVIDER_REGISTRY[section]
+  const provider = config.providers.find((p) => p.id === providerId)
+  if (!provider) return
+
+  const urlUpdates: Record<string, ApiUrls> = {}
+  for (const slot of config.slots) {
+    urlUpdates[slot as string] = (provider.urls as Record<string, ApiUrls>)[slot as string]
+  }
+
+  modifyStorage(O.some(urlUpdates))
+}
+
 // Initial state load
 window.apiCommonStorage.get().then(
   (result) => setStorageState(O.some(result)),
@@ -167,5 +189,6 @@ export {
   avaxRpc$,
   baseRpc$,
   lastOpenedWallet$,
-  evmGasMultiplier$
+  evmGasMultiplier$,
+  applyProvider
 }

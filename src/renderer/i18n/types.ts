@@ -703,6 +703,13 @@ type SettingMessageKey =
   | 'settings.ledgerMode.lockWalletWarning'
   | 'settings.wallet.whitelist'
   | 'settings.wallet.customToken'
+  | 'settings.provider.label'
+  | 'settings.provider.custom'
+  | 'settings.provider.custom.description'
+  | 'settings.provider.badge.recommended'
+  | 'settings.provider.badge.backup'
+  | 'settings.provider.badge.manual'
+  | 'settings.provider.hint'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 
