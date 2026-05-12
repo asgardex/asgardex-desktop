@@ -23,6 +23,7 @@ import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
 
 import { IPCLedgerAddressParams, LedgerError, LedgerErrorId } from '../../../shared/api/types'
+import { LEDGER_TRANSPORT_TIMEOUT_MS } from '../../../shared/const'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress } from '../../../shared/wallet/types'
@@ -40,6 +41,12 @@ import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from
 import { getAddress as getTRONAddress, verifyAddress as verifyTRONAddress } from './tron/address'
 
 const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
+
+const withTimeout = <T>(promise: Promise<T>, ms: number, label: string): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms))
+  ])
 
 const handleEVMChain = (
   chain: Chain,
@@ -106,32 +113,44 @@ export const getAddress = async ({
   walletIndex,
   hdMode
 }: IPCLedgerAddressParams): Promise<E.Either<LedgerError, WalletAddress>> => {
+  // Validate chain before opening the device — no point connecting for an unsupported chain
+  if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
+    return E.left({
+      errorId: LedgerErrorId.NOT_IMPLEMENTED,
+      msg: `${chain} is not supported for 'getAddress'`
+    })
+  }
+
+  const addressFunction = chainAddressFunctions[chain]
+  if (!addressFunction) {
+    return E.left({
+      errorId: LedgerErrorId.NOT_IMPLEMENTED,
+      msg: `${chain} is not supported for 'getAddress'`
+    })
+  }
+
+  let transport: Transport | null = null
   try {
-    const transport = await TransportNodeHidSingleton.default.create()
-
-    if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
-      return E.left({
-        errorId: LedgerErrorId.NOT_IMPLEMENTED,
-        msg: `${chain} is not supported for 'getAddress'`
-      })
-    }
-
-    const addressFunction = chainAddressFunctions[chain]
-    if (!addressFunction) {
-      return E.left({
-        errorId: LedgerErrorId.NOT_IMPLEMENTED,
-        msg: `${chain} is not supported for 'getAddress'`
-      })
-    }
-
-    const res = await addressFunction(transport, network, walletAccount, walletIndex, hdMode)
-    await transport.close()
-    return res
+    const t: Transport = await withTimeout(
+      TransportNodeHidSingleton.default.create(),
+      LEDGER_TRANSPORT_TIMEOUT_MS,
+      'Ledger transport'
+    )
+    transport = t
+    return await addressFunction(t, network, walletAccount, walletIndex, hdMode)
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,
       msg: isError(error) ? (error?.message ?? error.toString()) : `${error}`
     })
+  } finally {
+    if (transport) {
+      try {
+        await transport.close()
+      } catch {
+        // Swallow close errors — don't mask the real result with a cleanup failure
+      }
+    }
   }
 }
 
@@ -142,63 +161,77 @@ export const verifyLedgerAddress = async ({
   walletIndex,
   hdMode
 }: IPCLedgerAddressParams) => {
-  const transport = await TransportNodeHidSingleton.default.create()
-  let result = false
-
   if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'verifyAddress'`)
 
-  switch (chain) {
-    case THORChain:
-      result = await verifyTHORAddress({ transport, network, walletAccount, walletIndex })
-      break
-    case MAYAChain:
-      result = await verifyMAYAAddress({ transport, network, walletAccount, walletIndex })
-      break
-    case BTCChain:
-      result = await verifyBTCAddress({ transport, network, walletAccount, walletIndex, hdMode })
-      break
-    case LTCChain:
-      result = await verifyLTCAddress({ transport, network, walletAccount, walletIndex })
-      break
-    case BCHChain:
-      result = await verifyBCHAddress({ transport, network, walletAccount, walletIndex })
-      break
-    case DOGEChain:
-      result = await verifyDOGEAddress({ transport, network, walletAccount, walletIndex })
-      break
-    case DASHChain:
-      result = await verifyDASHAddress({ transport, network, walletAccount, walletIndex })
-      break
-    case ETHChain:
-    case AVAXChain:
-    case BASEChain:
-    case BSCChain:
-    case ARBChain: {
-      if (!isEvmHDMode(hdMode)) throw Error(`Invalid 'EvmHDMode' - needed for ${chain} to verify Ledger address`)
-      result = await verifyEVMAddress({
-        chain,
-        transport,
-        walletAccount,
-        walletIndex,
-        evmHDMode: hdMode,
-        network
-      })
-      break
+  let transport: Transport | null = null
+  let result = false
+  try {
+    const t: Transport = await withTimeout(
+      TransportNodeHidSingleton.default.create(),
+      LEDGER_TRANSPORT_TIMEOUT_MS,
+      'Ledger transport'
+    )
+    transport = t
+    switch (chain) {
+      case THORChain:
+        result = await verifyTHORAddress({ transport: t, network, walletAccount, walletIndex })
+        break
+      case MAYAChain:
+        result = await verifyMAYAAddress({ transport: t, network, walletAccount, walletIndex })
+        break
+      case BTCChain:
+        result = await verifyBTCAddress({ transport: t, network, walletAccount, walletIndex, hdMode })
+        break
+      case LTCChain:
+        result = await verifyLTCAddress({ transport: t, network, walletAccount, walletIndex })
+        break
+      case BCHChain:
+        result = await verifyBCHAddress({ transport: t, network, walletAccount, walletIndex })
+        break
+      case DOGEChain:
+        result = await verifyDOGEAddress({ transport: t, network, walletAccount, walletIndex })
+        break
+      case DASHChain:
+        result = await verifyDASHAddress({ transport: t, network, walletAccount, walletIndex })
+        break
+      case ETHChain:
+      case AVAXChain:
+      case BASEChain:
+      case BSCChain:
+      case ARBChain: {
+        if (!isEvmHDMode(hdMode)) throw Error(`Invalid 'EvmHDMode' - needed for ${chain} to verify Ledger address`)
+        result = await verifyEVMAddress({
+          chain,
+          transport: t,
+          walletAccount,
+          walletIndex,
+          evmHDMode: hdMode,
+          network
+        })
+        break
+      }
+      case GAIAChain:
+        result = await verifyCOSMOSAddress(t, walletAccount, walletIndex, network)
+        break
+      case XRPChain:
+        result = await verifyXRPAddress(t, walletAccount, walletIndex, network)
+        break
+      case SOLChain:
+        result = await verifySOLAddress({ transport: t, network, walletAccount, walletIndex })
+        break
+      case TRONChain:
+        result = await verifyTRONAddress({ transport: t, network, walletAccount, walletIndex })
+        break
     }
-    case GAIAChain:
-      result = await verifyCOSMOSAddress(transport, walletAccount, walletIndex, network)
-      break
-    case XRPChain:
-      result = await verifyXRPAddress(transport, walletAccount, walletIndex, network)
-      break
-    case SOLChain:
-      result = await verifySOLAddress({ transport, network, walletAccount, walletIndex })
-      break
-    case TRONChain:
-      result = await verifyTRONAddress({ transport, network, walletAccount, walletIndex })
-      break
+  } finally {
+    if (transport) {
+      try {
+        await transport.close()
+      } catch {
+        // Swallow close errors
+      }
+    }
   }
-  await transport.close()
 
   return result
 }
