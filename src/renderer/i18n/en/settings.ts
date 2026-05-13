@@ -62,6 +62,7 @@ const settings: SettingMessages = {
   'settings.expert.mayachain.title': 'Mayachain URLs',
   'settings.expert.midgardMaya.title': 'Midgard Mayachain',
   'settings.expert.mayanodeApi.title': 'MayaNode API',
+  'settings.expert.mayanodeRpc.title': 'MayaNode RPC',
   'settings.expert.evm.title': 'EVM Chain RPC URLs',
   'settings.expert.evm.eth.title': 'Ethereum RPC',
   'settings.expert.evm.bsc.title': 'BSC RPC',

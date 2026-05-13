@@ -263,7 +263,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
                   successMsg={intl.formatMessage({ id: 'settings.mayanode.node.valid' })}
                 />
               </SubSection>
-              <SubSection title="MAYANode RPC">
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.mayanodeRpc.title' })}>
                 <EditableUrl
                   className="w-full xl:w-3/4"
                   url={mayanodeRpcUrl}
@@ -281,7 +281,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               <SubSection title={intl.formatMessage({ id: 'settings.expert.mayanodeApi.title' })}>
                 <ReadOnlyUrl url={mayanodeNodeUrl} />
               </SubSection>
-              <SubSection title="MAYANode RPC">
+              <SubSection title={intl.formatMessage({ id: 'settings.expert.mayanodeRpc.title' })}>
                 <ReadOnlyUrl url={mayanodeRpcUrl} />
               </SubSection>
             </>

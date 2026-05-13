@@ -689,6 +689,7 @@ type SettingMessageKey =
   | 'settings.expert.mayachain.title'
   | 'settings.expert.midgardMaya.title'
   | 'settings.expert.mayanodeApi.title'
+  | 'settings.expert.mayanodeRpc.title'
   | 'settings.expert.evm.title'
   | 'settings.expert.evm.eth.title'
   | 'settings.expert.evm.bsc.title'

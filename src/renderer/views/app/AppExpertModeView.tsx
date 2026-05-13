@@ -84,16 +84,20 @@ export const AppExpertModeView = (): JSX.Element => {
   // EVM Gas multiplier
   const { multiplier: gasMultiplier, setMultiplier: setGasMultiplier } = useEvmGasMultiplier()
 
-  // Derive active provider by matching current URLs against the registry
-  const detectProvider = useCallback((section: ProviderSectionKey, currentUrls: Record<string, string>): ProviderId => {
-    const config = PROVIDER_REGISTRY[section]
-    for (const provider of config.providers) {
-      const urls = provider.urls as Record<string, Record<string, string>>
-      const allMatch = config.slots.every((slot) => urls[slot as string]?.mainnet === currentUrls[slot as string])
-      if (allMatch) return provider.id
-    }
-    return 'custom'
-  }, [])
+  // Derive active provider by matching current URLs against the registry for the active network.
+  // Compare per-network (not hardcoded to mainnet) so detection works on stagenet/testnet too.
+  const detectProvider = useCallback(
+    (section: ProviderSectionKey, currentUrls: Record<string, string>): ProviderId => {
+      const config = PROVIDER_REGISTRY[section]
+      for (const provider of config.providers) {
+        const urls = provider.urls as Record<string, Record<string, string>>
+        const allMatch = config.slots.every((slot) => urls[slot as string]?.[network] === currentUrls[slot as string])
+        if (allMatch) return provider.id
+      }
+      return 'custom'
+    },
+    [network]
+  )
 
   const thorchainProvider = detectProvider('thorchain', {
     midgard: FP.pipe(midgardUrl, RD.toNullable) ?? '',

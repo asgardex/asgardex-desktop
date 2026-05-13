@@ -62,6 +62,7 @@ const settings: SettingMessages = {
   'settings.expert.mayachain.title': 'URL-адреса Mayachain',
   'settings.expert.midgardMaya.title': 'Midgard Mayachain',
   'settings.expert.mayanodeApi.title': 'API MayaNode',
+  'settings.expert.mayanodeRpc.title': 'RPC MayaNode',
   'settings.expert.evm.title': 'URL RPC цепей EVM',
   'settings.expert.evm.eth.title': 'RPC Ethereum',
   'settings.expert.evm.bsc.title': 'RPC BSC',
@@ -76,13 +77,14 @@ const settings: SettingMessages = {
   'settings.ledgerMode.lockWalletWarning': 'Сначала заблокируйте кошелек, чтобы войти в режим Ledger',
   'settings.wallet.whitelist': 'Белый список',
   'settings.wallet.customToken': 'Пользовательский токен',
-  'settings.provider.label': 'Provider',
-  'settings.provider.custom': 'Custom',
-  'settings.provider.custom.description': 'Enter your own endpoint URLs',
-  'settings.provider.badge.recommended': 'Recommended',
-  'settings.provider.badge.backup': 'Backup',
-  'settings.provider.badge.manual': 'Manual',
-  'settings.provider.hint': 'URLs are managed by the selected provider. Switch to Custom to edit individually.'
+  'settings.provider.label': 'Провайдер',
+  'settings.provider.custom': 'Пользовательский',
+  'settings.provider.custom.description': 'Введите собственные URL конечных точек',
+  'settings.provider.badge.recommended': 'Рекомендуется',
+  'settings.provider.badge.backup': 'Резервный',
+  'settings.provider.badge.manual': 'Вручную',
+  'settings.provider.hint':
+    'URL-адреса управляются выбранным провайдером. Переключитесь на «Пользовательский», чтобы редактировать их индивидуально.'
 }
 
 export default settings
