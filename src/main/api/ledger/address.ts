@@ -161,7 +161,9 @@ export const verifyLedgerAddress = async ({
   walletIndex,
   hdMode
 }: IPCLedgerAddressParams) => {
-  if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'verifyAddress'`)
+  if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
+    throw Error(`${chain} is not supported for 'verifyAddress'`)
+  }
 
   let transport: Transport | null = null
   let result = false
