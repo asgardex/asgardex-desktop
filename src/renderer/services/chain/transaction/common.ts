@@ -155,7 +155,7 @@ export const sendTx$ = ({
     case KUJIChain:
       return KUJI.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case ADAChain:
-      return ADA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
+      return ADA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode, sendMax })
     case RadixChain:
       return XRD.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case XRPChain:
