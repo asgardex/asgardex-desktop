@@ -88,12 +88,14 @@ export const createChainflipTransactionTrackingService = (
       depositAmount: 'deposit' in status ? status.deposit?.amount : undefined,
       egressAmount: 'swapEgress' in status ? status.swapEgress?.amount : undefined,
       fees:
-        status.fees?.map((fee) => ({
-          type: fee.type,
-          chain: fee.chain,
-          asset: fee.asset,
-          amount: fee.amount
-        })) || [],
+        status.fees?.map((fee) => {
+          // Cast: `@chainflip/sdk` v2 types depend on `@chainflip/utils/chainflip` via the package
+          // `exports` map, which TS `moduleResolution: "node"` can't resolve. `Fee<T> extends
+          // UncheckedAssetAndChain` ends up without `chain`/`asset` at the type level even though
+          // both exist at runtime. Remove this cast when tsconfig moves to `bundler`/`node16`.
+          const f = fee as unknown as { type: string; chain: string; asset: string; amount: string }
+          return { type: f.type, chain: f.chain, asset: f.asset, amount: f.amount }
+        }) || [],
       depositTxHash: 'deposit' in status ? status.deposit?.txRef : undefined,
       egressTxHash: 'swapEgress' in status ? status.swapEgress?.txRef : undefined,
       lastUpdate: status.lastStatechainUpdateAt || Date.now()

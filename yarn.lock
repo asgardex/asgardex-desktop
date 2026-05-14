@@ -1407,19 +1407,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@chainflip/bitcoin@npm:^1.2.7":
-  version: 1.2.7
-  resolution: "@chainflip/bitcoin@npm:1.2.7"
-  dependencies:
-    "@chainflip/utils": "npm:0.8.18"
-    bignumber.js: "npm:^9.3.1"
-    bitcoinjs-lib: "npm:7.0.0-rc.0"
-    scale-ts: "npm:^1.6.1"
-    zod: "npm:^3.25.75"
-  checksum: 10/c2ea152d50c95e1af380f2ddb94cdd5c5cb5003853ab4e9e20ba6e2d1a811d27d8ef7844afcafee8095988550b1f3fc466fbc36ae56d6763d40b9598a227bafd
-  languageName: node
-  linkType: hard
-
 "@chainflip/rpc@npm:2.1.3":
   version: 2.1.3
   resolution: "@chainflip/rpc@npm:2.1.3"
@@ -1430,16 +1417,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@chainflip/rpc@npm:~1.11.0":
-  version: 1.11.5
-  resolution: "@chainflip/rpc@npm:1.11.5"
-  dependencies:
-    "@chainflip/utils": "npm:0.11.0"
-    zod: "npm:^3.25.75"
-  checksum: 10/ca1a0992d7fb5dc91c122e4f3708c32b799dffa41dbccbcec62e3c54af0d3db06d2380946a4c89512154c5d92d2af8c7b558621d8b4761a62b06fa4168d69f73
-  languageName: node
-  linkType: hard
-
 "@chainflip/scale@npm:^1.11.0":
   version: 1.11.0
   resolution: "@chainflip/scale@npm:1.11.0"
@@ -1447,23 +1424,6 @@ __metadata:
     "@chainflip/utils": "npm:^0.8.22"
     scale-ts: "npm:^1.6.1"
   checksum: 10/5eddc76f4b7fdcc63fda374718861875dce9493c33663affcbe4f78012a8998854ae4fb9469e10cd85ef6a10ec1ba3247d4fbc735b4fc9a2475769673ab664e1
-  languageName: node
-  linkType: hard
-
-"@chainflip/sdk@npm:1.11.0":
-  version: 1.11.0
-  resolution: "@chainflip/sdk@npm:1.11.0"
-  dependencies:
-    "@chainflip/bitcoin": "npm:^1.2.7"
-    "@chainflip/rpc": "npm:~1.11.0"
-    "@chainflip/solana": "npm:^2.2.0"
-    "@chainflip/utils": "npm:^0.11.1"
-    "@ts-rest/core": "npm:^3.52.1"
-    axios: "npm:^1.10.0"
-    bignumber.js: "npm:^9.3.0"
-    ethers: "npm:^6.14.4"
-    zod: "npm:^3.25.76"
-  checksum: 10/4350285f55e0e84dab8273d8b2eb85dfd98db9d9384900d9fabf9e389526d6f0d791e0f1d1be577783647c80d4d3485f472f87f42ad29fbbd2a7d3745945cae3
   languageName: node
   linkType: hard
 
@@ -1499,43 +1459,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@chainflip/solana@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "@chainflip/solana@npm:2.2.0"
-  dependencies:
-    "@chainflip/scale": "npm:^1.11.0"
-    "@chainflip/utils": "npm:^0.8.22"
-    "@coral-xyz/anchor": "npm:^0.31.1"
-    "@solana/web3.js": "npm:^1.98.4"
-    bn.js: "npm:^5.2.2"
-    scale-ts: "npm:^1.6.1"
-    zod: "npm:^3.25.75"
-  checksum: 10/74a32fa558d818656100ca7886990d901ad071f48e4bc4c3bc356712f465c4e78b1e6a9bf6ec7d8417586e391419aa01da8a57609a267096a0b1cc02f60ed23b
-  languageName: node
-  linkType: hard
-
-"@chainflip/utils@npm:0.11.0":
-  version: 0.11.0
-  resolution: "@chainflip/utils@npm:0.11.0"
-  dependencies:
-    "@date-fns/utc": "npm:^2.1.1"
-    bignumber.js: "npm:^9.3.1"
-    date-fns: "npm:4.1.0"
-  checksum: 10/bca8cb19b28da6dab61b3051aff40ebf8fe4ddcbf425c56cb08570c72e7fe42ef648c2fd725070bdb584b85ffe154025c86d5d84e3c3d25ed8fa36a53224aabe
-  languageName: node
-  linkType: hard
-
-"@chainflip/utils@npm:0.8.18":
-  version: 0.8.18
-  resolution: "@chainflip/utils@npm:0.8.18"
-  dependencies:
-    "@date-fns/utc": "npm:^2.1.1"
-    bignumber.js: "npm:^9.3.1"
-    date-fns: "npm:4.1.0"
-  checksum: 10/aba805f0d35212e313481a434374bafe8b88132be21083752849e4e86f0a451a0766d90da0e5ed82d922da830b5603eb8d6bbcb9f8bab257d70b86aad7967f9a
-  languageName: node
-  linkType: hard
-
 "@chainflip/utils@npm:2.1.2":
   version: 2.1.2
   resolution: "@chainflip/utils@npm:2.1.2"
@@ -1557,17 +1480,6 @@ __metadata:
     bignumber.js: "npm:^9.3.1"
     date-fns: "npm:4.1.0"
   checksum: 10/c66f5f8f2011edc66a6fa8420ba69d0c1eee7435ea6513bd9322a515ccd62d335ad2f4aa79f66bbf3203d5ebc64fd6fc5bfc3ee05427d5644da5f4280696d914
-  languageName: node
-  linkType: hard
-
-"@chainflip/utils@npm:^0.11.1":
-  version: 0.11.1
-  resolution: "@chainflip/utils@npm:0.11.1"
-  dependencies:
-    "@date-fns/utc": "npm:^2.1.1"
-    bignumber.js: "npm:^9.3.1"
-    date-fns: "npm:4.1.0"
-  checksum: 10/e11bad690792d0d4332164bf02a68ce1b9a5652e225c093f9c16a70d2a8651149d294b5441b326c369ce4206e3c41c70144299102a29830785eee31847bc3924
   languageName: node
   linkType: hard
 
@@ -8435,7 +8347,7 @@ __metadata:
   resolution: "asgardex@workspace:."
   dependencies:
     "@asgardex/asgardex-theme": "npm:^0.2.0"
-    "@chainflip/sdk": "npm:1.11.0"
+    "@chainflip/sdk": "npm:2.1.1"
     "@devexperts/remote-data-ts": "npm:^2.1.1"
     "@electron/notarize": "npm:^2.5.0"
     "@eslint/compat": "npm:1.1.1"
@@ -8947,16 +8859,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bip174@npm:^3.0.0-rc.0":
-  version: 3.0.0-rc.1
-  resolution: "bip174@npm:3.0.0-rc.1"
-  dependencies:
-    uint8array-tools: "npm:^0.0.9"
-    varuint-bitcoin: "npm:^2.0.0"
-  checksum: 10/1ad3cec0b0b5ccfe9bb4861e9222823116705eafd32cb832da5a6c37d7746094ed4ab6be6429c6bbb69ef2370fb896f9f50dc43ddde0838db513522abc3033da
-  languageName: node
-  linkType: hard
-
 "bip32-path@npm:0.4.2, bip32-path@npm:^0.4.2":
   version: 0.4.2
   resolution: "bip32-path@npm:0.4.2"
@@ -9014,21 +8916,6 @@ __metadata:
   version: 1.4.1
   resolution: "bitcoin-ops@npm:1.4.1"
   checksum: 10/3daa3303d6af49c0727041b5d7801a20c5806d00f1cc1afa2d53099974e30a7b1e7e9e578723dd25f5e120903f2725c595c0205d5d99a6578ad65213d74d806d
-  languageName: node
-  linkType: hard
-
-"bitcoinjs-lib@npm:7.0.0-rc.0":
-  version: 7.0.0-rc.0
-  resolution: "bitcoinjs-lib@npm:7.0.0-rc.0"
-  dependencies:
-    "@noble/hashes": "npm:^1.2.0"
-    bech32: "npm:^2.0.0"
-    bip174: "npm:^3.0.0-rc.0"
-    bs58check: "npm:^4.0.0"
-    uint8array-tools: "npm:^0.0.9"
-    valibot: "npm:^0.38.0"
-    varuint-bitcoin: "npm:^2.0.0"
-  checksum: 10/b8b65ab1a24dd4f2cb0fec8726b9ee256ebd1c449f2eb6b2f9739a0f240dfefda3c7a994cbf14ebc1cce95f76ce79fb8bfeabed2378ab17c7e17ea6546151e61
   languageName: node
   linkType: hard
 
@@ -18752,18 +18639,6 @@ __metadata:
   version: 3.0.1
   resolution: "v8-compile-cache-lib@npm:3.0.1"
   checksum: 10/88d3423a52b6aaf1836be779cab12f7016d47ad8430dffba6edf766695e6d90ad4adaa3d8eeb512cc05924f3e246c4a4ca51e089dccf4402caa536b5e5be8961
-  languageName: node
-  linkType: hard
-
-"valibot@npm:^0.38.0":
-  version: 0.38.0
-  resolution: "valibot@npm:0.38.0"
-  peerDependencies:
-    typescript: ">=5"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 10/bde3764ab3314bb39a5935c26d367534c9ead745b3c415650a6e7295633073b51e4e86e34e3b7a7036b0210323bca7720d74d081bcc421b7d8aaf97215dad361
   languageName: node
   linkType: hard
 
