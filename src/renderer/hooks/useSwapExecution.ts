@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import {
@@ -74,7 +75,8 @@ export const useSwapExecution = ({
   const appWalletState = useObservableState(appWalletService.appWalletState$)
   const standaloneLedgerState = useObservableState(appWalletService.standaloneLedgerService.standaloneLedgerState$)
 
-  const isSourceUTXO = useMemo(() => isUtxoAssetChain(sourceAsset), [sourceAsset])
+  // Source chains that support MAX-sweep (transferMax): UTXO clients + Cardano (xchain-cardano>=1.2.0)
+  const isSourceMaxSweep = useMemo(() => isUtxoAssetChain(sourceAsset) || sourceAsset.chain === ADAChain, [sourceAsset])
 
   const {
     state: swapState,
@@ -153,7 +155,7 @@ export const useSwapExecution = ({
           walletIndex: finalWalletIndex,
           hdMode: finalHDMode,
           protocol: poolAddress.protocol,
-          sendMax: isSourceUTXO ? isSendMax : undefined
+          sendMax: isSourceMaxSweep ? isSendMax : undefined
         }
       })
     )
@@ -169,7 +171,7 @@ export const useSwapExecution = ({
     swapFees.inFee.amount,
     appWalletState,
     standaloneLedgerState?.address,
-    isSourceUTXO,
+    isSourceMaxSweep,
     isSendMax,
     streamingInterval,
     streamingQuantity
@@ -224,7 +226,7 @@ export const useSwapExecution = ({
           walletAccount: finalWalletAccount,
           walletIndex: finalWalletIndex,
           hdMode: finalHDMode,
-          sendMax: isSourceUTXO ? isSendMax : undefined
+          sendMax: isSourceMaxSweep ? isSendMax : undefined
         }
       })
     )
@@ -237,7 +239,7 @@ export const useSwapExecution = ({
     swapFees.inFee.amount,
     appWalletState,
     standaloneLedgerState?.address,
-    isSourceUTXO,
+    isSourceMaxSweep,
     isSendMax
   ])
 
