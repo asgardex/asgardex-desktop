@@ -63,7 +63,16 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.triggered': 'Déclenché',
   'pools.chart.tradingPanel.priceLevel.completed': 'Exécuté',
   'pools.chart.tradingPanel.priceLevel.failed': 'Échoué',
-  'pools.chart.tradingPanel.approve': 'Approuver'
+  'pools.chart.tradingPanel.approve': 'Approuver',
+  'pools.chainflip.title': 'Paires de swap Chainflip',
+  'pools.chainflip.disclaimer':
+    'Chainflip est un routeur de swap cross-chain. La liquidité est gérée par le protocole — il n’y a pas de positions LP à prendre.',
+  'pools.chainflip.minSwap': 'Swap min.',
+  'pools.chainflip.maxSwap': 'Swap max.',
+  'pools.chainflip.boost': 'Boost',
+  'pools.chainflip.boostYes': 'Disponible',
+  'pools.chainflip.boostNo': '—',
+  'pools.chainflip.empty': 'Aucun actif Chainflip disponible pour le moment.'
 }
 
 export default pools

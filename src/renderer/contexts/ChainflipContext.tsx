@@ -5,7 +5,9 @@ import {
   isAssetSupported$,
   chainflipSupportedChains$,
   transactionTrackingService,
-  getQuotePrice$
+  getQuotePrice$,
+  chainflipAssetRows$,
+  reloadChainflipAssetRows
 } from '../services/chainflip'
 
 type ChainFlipContextValue = {
@@ -14,13 +16,17 @@ type ChainFlipContextValue = {
   chainflipSupportedChains$: typeof chainflipSupportedChains$
   transactionTrackingService: typeof transactionTrackingService
   getQuotePrice$: typeof getQuotePrice$
+  chainflipAssetRows$: typeof chainflipAssetRows$
+  reloadChainflipAssetRows: typeof reloadChainflipAssetRows
 }
 const initialContext: ChainFlipContextValue = {
   getAssetsData$,
   isAssetSupported$,
   chainflipSupportedChains$,
   transactionTrackingService,
-  getQuotePrice$
+  getQuotePrice$,
+  chainflipAssetRows$,
+  reloadChainflipAssetRows
 }
 
 const ChainflipContext = createContext<ChainFlipContextValue | null>(null)

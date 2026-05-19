@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from 'react'
+import { Fragment, useEffect, useMemo } from 'react'
 
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import clsx from 'clsx'
@@ -7,10 +7,12 @@ import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router'
 
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
+import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import * as poolsRoutes from '../../routes/pools'
 import { PoolType } from '../../services/midgard/midgardTypes'
 import { useApp } from '../../store/app/hooks'
 import { ActivePools } from './ActivePools'
+import { ChainflipAssets } from './ChainflipAssets'
 import { PendingPools } from './PendingPools'
 
 type TabType = PoolType
@@ -33,21 +35,29 @@ export const PoolsOverview = (): JSX.Element => {
   const navigate = useNavigate()
 
   const matchPoolsPendingRoute = useMatch({ path: poolsRoutes.pending.path(), end: false })
+  const isChainflip = protocol === Protocol.Chainflip
+
+  // If user lands on /pools/pending while Chainflip is active, redirect to /pools/active
+  useEffect(() => {
+    if (isChainflip && matchPoolsPendingRoute) {
+      navigate(poolsRoutes.active.path(), { replace: true })
+    }
+  }, [isChainflip, matchPoolsPendingRoute, navigate])
 
   const selectedIndex: number = useMemo(() => {
-    if (matchPoolsPendingRoute) {
+    if (matchPoolsPendingRoute && !isChainflip) {
       return TAB_INDEX['pending']
     } else {
       return TAB_INDEX['active']
     }
-  }, [matchPoolsPendingRoute])
+  }, [matchPoolsPendingRoute, isChainflip])
 
   const tabs = useMemo(
     (): TabContent[] => [
       {
         index: TAB_INDEX['active'],
         label: intl.formatMessage({ id: 'pools.available' }),
-        content: <ActivePools />
+        content: isChainflip ? <ChainflipAssets /> : <ActivePools />
       },
       {
         index: TAB_INDEX['pending'],
@@ -55,7 +65,12 @@ export const PoolsOverview = (): JSX.Element => {
         content: <PendingPools />
       }
     ],
-    [intl]
+    [intl, isChainflip]
+  )
+
+  const visibleTabs = useMemo(
+    () => (isChainflip ? tabs.filter((t) => t.index === TAB_INDEX['active']) : tabs),
+    [tabs, isChainflip]
   )
 
   return (
@@ -76,7 +91,7 @@ export const PoolsOverview = (): JSX.Element => {
       <div className="flex flex-col items-center justify-between sm:flex-row">
         <TabList className="mb-10px flex w-full flex-col md:flex-row">
           {FP.pipe(
-            tabs,
+            visibleTabs,
             A.map(({ index, label }) => (
               <Tab key={index} as={Fragment}>
                 {({ selected }) => (
