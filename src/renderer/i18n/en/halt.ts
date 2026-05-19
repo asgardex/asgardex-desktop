@@ -1,8 +1,8 @@
 import { HaltMessages } from '../types'
 
 const halt: HaltMessages = {
-  'halt.thorchain': 'THORChain is halted temporarily.',
-  'halt.trading': 'Trade has been halted for all pools temporarily.',
+  'halt.thorchain': 'THORChain is halted temporarily. Use {alternatives} for swaps.',
+  'halt.trading': 'Trading on {protocols} is halted temporarily. Swap via {alternatives} is still available.',
   'halt.chain': '{chain} chain on {dex} has been halted temporarily.',
   'halt.chain.synth': 'Synthetic trading for {chain} is not available while {chain} is halted',
   'halt.chains': '{chains} chains on {protocol} have been halted temporarily.',

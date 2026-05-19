@@ -1,8 +1,9 @@
 import { HaltMessages } from '../types'
 
 const halt: HaltMessages = {
-  'halt.thorchain': 'THORChain se detiene temporalmente.',
-  'halt.trading': 'Se ha interrumpido temporalmente el comercio en todos los pools.',
+  'halt.thorchain': 'THORChain se detiene temporalmente. Usa {alternatives} para intercambios.',
+  'halt.trading':
+    'El comercio en {protocols} se ha interrumpido temporalmente. El intercambio vía {alternatives} sigue disponible.',
   'halt.chain': 'La cadena {chain} en {dex} se ha detenido temporalmente.',
   'halt.chain.synth': 'La negociación sintética para {chain} no está disponible mientras {chain} está parada',
   'halt.chains': '{chains} cadenas en {protocol} se han detenido temporalmente.',
