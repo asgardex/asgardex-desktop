@@ -174,16 +174,20 @@ export const AppView = (): JSX.Element => {
               {renderImportLedgerAddressesError}
               <div className="mb-4 flex flex-col gap-2">
                 <HaltedChainsWarning
-                  haltedChainsRD={haltedChainsThorRD}
-                  mimirHaltRD={mimirHaltThorRD}
-                  protocol={THORChain}
-                  midgardStatusRD={midgardStatusRD}
-                />
-                <HaltedChainsWarning
-                  haltedChainsRD={haltedChainsMayaRD}
-                  mimirHaltRD={mimirHaltMayaRD}
-                  protocol={MayaChain}
-                  midgardStatusRD={midgardMayaStatusRD}
+                  protocols={[
+                    {
+                      protocol: THORChain,
+                      haltedChainsRD: haltedChainsThorRD,
+                      mimirHaltRD: mimirHaltThorRD,
+                      midgardStatusRD: midgardStatusRD
+                    },
+                    {
+                      protocol: MayaChain,
+                      haltedChainsRD: haltedChainsMayaRD,
+                      mimirHaltRD: mimirHaltMayaRD,
+                      midgardStatusRD: midgardMayaStatusRD
+                    }
+                  ]}
                 />
               </div>
               <ViewRoutes />

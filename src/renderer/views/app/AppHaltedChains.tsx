@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import { function as FP, array as A } from 'fp-ts'
-import { useIntl } from 'react-intl'
+import { useIntl, IntlShape } from 'react-intl'
 import { useLocation } from 'react-router-dom'
 
 import { chainToString, DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
@@ -13,11 +14,17 @@ import { BorderButton } from '../../components/uielements/button'
 import { unionChains } from '../../helpers/fp/array'
 import { MimirHalt } from '../../services/thorchain/types'
 
-type HaltedChainsWarningProps = {
+const CHAINFLIP_LABEL = 'Chainflip'
+
+export type HaltedProtocol = {
   haltedChainsRD: RD.RemoteData<Error, Chain[]>
   mimirHaltRD: RD.RemoteData<Error, MimirHalt>
   protocol: Chain
   midgardStatusRD: RD.RemoteData<Error, boolean>
+}
+
+type HaltedChainsWarningProps = {
+  protocols: HaltedProtocol[]
 }
 
 type HaltedChainsState = {
@@ -28,180 +35,235 @@ type HaltedChainsState = {
   pausedLPDeposit: boolean
 }
 
-const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol, midgardStatusRD }: HaltedChainsWarningProps) => {
+type PageContext = {
+  isSwapPage: boolean
+  isPoolPage: boolean
+  isDepositPage: boolean
+}
+
+type ResolvedProtocolData = {
+  protocol: Chain
+  inboundHaltedChains: Chain[]
+  mimirHalt: MimirHalt
+  midgard: boolean
+}
+
+const EMPTY_MIMIR: MimirHalt = {
+  HALTTHORCHAIN: false,
+  haltGlobalTrading: false,
+  pauseGlobalLp: false
+} as MimirHalt
+
+const isProtocolGloballyHalted = ({ protocol, mimirHalt }: ResolvedProtocolData): boolean =>
+  mimirHalt.haltGlobalTrading || (protocol === THORChain && mimirHalt.HALTTHORCHAIN)
+
+const buildGlobalHaltMessage = (resolvedProtocols: ResolvedProtocolData[], intl: IntlShape): string | undefined => {
+  const halted = resolvedProtocols.filter(isProtocolGloballyHalted)
+  if (halted.length === 0) return undefined
+
+  const haltedNames = halted.map((p) => p.protocol)
+  const availableProtocolNames = resolvedProtocols.filter((p) => !isProtocolGloballyHalted(p)).map((p) => p.protocol)
+  const alternativesList = intl.formatList([CHAINFLIP_LABEL, ...availableProtocolNames], { type: 'disjunction' })
+
+  // Use the THORChain-specific message only if THORChain is the only halted protocol and the full-chain halt is set
+  const onlyThorchainFullyHalted =
+    halted.length === 1 && halted[0].protocol === THORChain && halted[0].mimirHalt.HALTTHORCHAIN
+  if (onlyThorchainFullyHalted) {
+    return intl.formatMessage({ id: 'halt.thorchain' }, { alternatives: alternativesList })
+  }
+
+  return intl.formatMessage(
+    { id: 'halt.trading' },
+    { protocols: intl.formatList(haltedNames, { type: 'conjunction' }), alternatives: alternativesList }
+  )
+}
+
+const buildPerProtocolMessages = (
+  { protocol, inboundHaltedChains, mimirHalt }: ResolvedProtocolData,
+  { isSwapPage, isPoolPage, isDepositPage }: PageContext,
+  intl: IntlShape
+): string[] => {
+  // Skip per-chain messages when the protocol is fully halted globally — covered by the global halt message
+  if (isProtocolGloballyHalted({ protocol, inboundHaltedChains, mimirHalt, midgard: true })) return []
+
+  const messages: string[] = []
+  const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS).map((chain) => ({
+    chain,
+    haltedChain: mimirHalt[`HALT${chain}CHAIN`] || false,
+    haltedTrading: mimirHalt[`HALT${chain}TRADING`] || false,
+    pausedLP: mimirHalt[`PAUSELP${chain}`] || false,
+    pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`] || false
+  }))
+
+  if (isSwapPage || isPoolPage) {
+    const haltedChains = FP.pipe(
+      haltedChainsState,
+      A.filter(({ haltedChain }) => haltedChain),
+      A.map(({ chain }) => chain),
+      unionChains(inboundHaltedChains)
+    )
+
+    if (haltedChains.length === 1) {
+      messages.push(intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: protocol }))
+    } else if (haltedChains.length > 1) {
+      messages.push(intl.formatMessage({ id: 'halt.chains' }, { chains: haltedChains.join(', '), protocol }))
+    }
+  }
+
+  if (isSwapPage) {
+    const haltedTradingChains = haltedChainsState.filter(({ haltedTrading }) => haltedTrading).map(({ chain }) => chain)
+    if (haltedTradingChains.length > 0) {
+      messages.push(intl.formatMessage({ id: 'halt.chain.trading' }, { chains: haltedTradingChains.join(', ') }))
+    }
+  }
+
+  if (isPoolPage || isDepositPage) {
+    const pausedLPs = haltedChainsState.filter(({ pausedLP }) => pausedLP).map(({ chain }) => chain)
+    const pausedLPsDeposits = haltedChainsState
+      .filter(({ pausedLPDeposit }) => pausedLPDeposit)
+      .map(({ chain }) => chain)
+
+    if (pausedLPs.length > 0) {
+      messages.push(intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') }))
+    } else if (mimirHalt.PAUSELP) {
+      messages.push(intl.formatMessage({ id: 'halt.chain.pauseall' }))
+    } else if (pausedLPsDeposits.length > 0) {
+      messages.push(
+        intl.formatMessage(
+          { id: 'halt.chain.pauseDeposits' },
+          { chains: pausedLPsDeposits.join(', '), protocol: chainToString(protocol) }
+        )
+      )
+    }
+  }
+
+  return messages
+}
+
+const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
   const intl = useIntl()
   const location = useLocation()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [hasRendered, setHasRendered] = useState(false)
 
-  // Determine current page context for filtering warnings
-  const isSwapPage = location.pathname.includes('/swap')
-  const isPoolDetailPage = location.pathname.includes('/pools/detail')
-  const isPoolPage = location.pathname.includes('/pools') && !isPoolDetailPage
-  const isDepositPage = location.pathname.includes('/deposit') || location.pathname.includes('/liquidity')
+  const pageContext: PageContext = useMemo(() => {
+    const isPoolDetailPage = location.pathname.includes('/pools/detail')
+    return {
+      isSwapPage: location.pathname.includes('/swap'),
+      isPoolPage: location.pathname.includes('/pools') && !isPoolDetailPage,
+      isDepositPage: location.pathname.includes('/deposit') || location.pathname.includes('/liquidity')
+    }
+  }, [location.pathname])
 
-  // Small delay to prevent flashing on data updates
   const RENDER_DELAY_MS = 200
   useEffect(() => {
     const timer = setTimeout(() => setHasRendered(true), RENDER_DELAY_MS)
     return () => clearTimeout(timer)
   }, [])
 
-  // Keep track of the last successful values to avoid flashing during refetch
-  const lastSuccessfulMimirRef = useRef<MimirHalt>({
-    HALTTHORCHAIN: false,
-    haltGlobalTrading: false,
-    pauseGlobalLp: false
-  } as MimirHalt)
+  // Keep last successful values per protocol so refetch pending states don't clear warnings
+  const lastSuccessRefs = useRef(
+    new Map<Chain, { inboundHaltedChains: Chain[]; mimirHalt: MimirHalt; midgard: boolean }>()
+  )
 
-  const lastSuccessfulHaltedChainsRef = useRef<Chain[]>([])
-  const lastSuccessfulMidgardRef = useRef<boolean>(false)
+  const { resolvedProtocols, hasAnyData } = useMemo(() => {
+    let hasData = false
+    const resolved: ResolvedProtocolData[] = protocols.map(
+      ({ protocol, haltedChainsRD, mimirHaltRD, midgardStatusRD }) => {
+        if (!RD.isInitial(haltedChainsRD) || !RD.isInitial(mimirHaltRD) || !RD.isInitial(midgardStatusRD)) {
+          hasData = true
+        }
 
-  // Memoize data extraction to prevent unnecessary re-calculations
-  const { inboundHaltedChains, mimirHalt, midgard, hasAnyData } = useMemo(() => {
-    const hasData = !RD.isInitial(haltedChainsRD) || !RD.isInitial(mimirHaltRD) || !RD.isInitial(midgardStatusRD)
+        const prev = lastSuccessRefs.current.get(protocol) ?? {
+          inboundHaltedChains: [] as Chain[],
+          mimirHalt: EMPTY_MIMIR,
+          midgard: false
+        }
 
-    // Update refs with successful values and use them during pending states
-    if (RD.isSuccess(haltedChainsRD)) {
-      lastSuccessfulHaltedChainsRef.current = haltedChainsRD.value
-    }
-    if (RD.isSuccess(mimirHaltRD)) {
-      lastSuccessfulMimirRef.current = mimirHaltRD.value
-    }
-    if (RD.isSuccess(midgardStatusRD)) {
-      lastSuccessfulMidgardRef.current = midgardStatusRD.value
-    }
+        if (RD.isSuccess(haltedChainsRD)) prev.inboundHaltedChains = haltedChainsRD.value
+        if (RD.isSuccess(mimirHaltRD)) prev.mimirHalt = mimirHaltRD.value
+        if (RD.isSuccess(midgardStatusRD)) prev.midgard = midgardStatusRD.value
+        lastSuccessRefs.current.set(protocol, prev)
 
-    return {
-      inboundHaltedChains:
-        RD.isSuccess(haltedChainsRD) || RD.isPending(haltedChainsRD) ? lastSuccessfulHaltedChainsRef.current : [],
-      mimirHalt:
-        RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD)
-          ? lastSuccessfulMimirRef.current
-          : ({
-              HALTTHORCHAIN: false,
-              haltGlobalTrading: false,
-              pauseGlobalLp: false
-            } as MimirHalt),
-      midgard:
-        RD.isSuccess(midgardStatusRD) || RD.isPending(midgardStatusRD) ? lastSuccessfulMidgardRef.current : false,
-      hasAnyData: hasData
-    }
-  }, [haltedChainsRD, mimirHaltRD, midgardStatusRD])
-
-  // Memoize warning message calculation — route-aware filtering
-  const warningMessage = useMemo(() => {
-    let msg = ''
-
-    // Global halts: show on swap and pool pages (critical warnings)
-    if (isSwapPage || isPoolPage) {
-      msg = mimirHalt.haltGlobalTrading ? intl.formatMessage({ id: 'halt.trading' }) : msg
-      msg = mimirHalt.HALTTHORCHAIN ? intl.formatMessage({ id: 'halt.thorchain' }) : msg
-    }
-
-    if (!mimirHalt.HALTTHORCHAIN && !mimirHalt.haltGlobalTrading) {
-      const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS).map((chain) => ({
-        chain,
-        haltedChain: mimirHalt[`HALT${chain}CHAIN`] || false,
-        haltedTrading: mimirHalt[`HALT${chain}TRADING`] || false,
-        pausedLP: mimirHalt[`PAUSELP${chain}`] || false,
-        pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`] || false
-      }))
-
-      // Chain halts: show on swap and pool pages
-      if (isSwapPage || isPoolPage) {
-        const haltedChains = FP.pipe(
-          haltedChainsState,
-          A.filter(({ haltedChain }) => haltedChain),
-          A.map(({ chain }) => chain),
-          unionChains(inboundHaltedChains)
-        )
-
-        msg =
-          haltedChains.length === 1
-            ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: protocol })}`
-            : haltedChains.length > 1
-              ? `${msg} ${intl.formatMessage(
-                  { id: 'halt.chains' },
-                  { chains: haltedChains.join(', '), protocol: protocol }
-                )}`
-              : msg
+        return {
+          protocol,
+          inboundHaltedChains:
+            RD.isSuccess(haltedChainsRD) || RD.isPending(haltedChainsRD) ? prev.inboundHaltedChains : [],
+          mimirHalt: RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD) ? prev.mimirHalt : EMPTY_MIMIR,
+          midgard: RD.isSuccess(midgardStatusRD) || RD.isPending(midgardStatusRD) ? prev.midgard : false
+        }
       }
+    )
 
-      // Trading halts: show only on swap pages
-      if (isSwapPage) {
-        const haltedTradingChains = haltedChainsState
-          .filter(({ haltedTrading }) => haltedTrading)
-          .map(({ chain }) => chain)
-        msg =
-          haltedTradingChains.length > 0
-            ? `${msg} ${intl.formatMessage({ id: 'halt.chain.trading' }, { chains: haltedTradingChains.join(', ') })}`
-            : msg
-      }
+    return { resolvedProtocols: resolved, hasAnyData: hasData }
+  }, [protocols])
 
-      // LP pause/deposit warnings: show only on pool/deposit/liquidity pages
-      if (isPoolPage || isDepositPage) {
-        const pausedLPs = haltedChainsState.filter(({ pausedLP }) => pausedLP).map(({ chain }) => chain)
-        const pausedLPsDeposits = haltedChainsState
-          .filter(({ pausedLPDeposit }) => pausedLPDeposit)
-          .map(({ chain }) => chain)
-
-        msg =
-          pausedLPs.length > 0
-            ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') })}`
-            : mimirHalt.PAUSELP
-              ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pauseall' })}`
-              : pausedLPsDeposits.length > 0
-                ? `${msg} ${intl.formatMessage(
-                    { id: 'halt.chain.pauseDeposits' },
-                    { chains: pausedLPsDeposits.join(', '), protocol: chainToString(protocol) }
-                  )}`
-                : msg
+  const uniqueMessages = useMemo(() => {
+    const seen = new Set<string>()
+    const ordered: string[] = []
+    const push = (msg: string) => {
+      if (!seen.has(msg)) {
+        seen.add(msg)
+        ordered.push(msg)
       }
     }
 
-    // Midgard offline: show on swap and pool pages
-    if (isSwapPage || isPoolPage) {
-      msg = !midgard
-        ? `${msg} ${intl.formatMessage({ id: 'midgard.status.offline' }, { protocol: protocol })}`.trim()
-        : msg
+    // One combined global-halt message (cross-protocol, with alternatives)
+    if (pageContext.isSwapPage || pageContext.isPoolPage) {
+      const globalMsg = buildGlobalHaltMessage(resolvedProtocols, intl)
+      if (globalMsg) push(globalMsg)
     }
 
-    return msg.trim()
-  }, [inboundHaltedChains, mimirHalt, midgard, intl, protocol, isSwapPage, isPoolPage, isDepositPage])
+    // Per-protocol chain/trading/LP messages (skipped for protocols already covered globally)
+    for (const data of resolvedProtocols) {
+      for (const msg of buildPerProtocolMessages(data, pageContext, intl)) push(msg)
+    }
 
-  // Don't show warnings until we have actual data from at least one source
-  if (!hasRendered || !hasAnyData) {
-    return <div className="h-0" />
-  }
+    // Midgard offline (per-protocol — protocol name is embedded so no dedup collision)
+    if (pageContext.isSwapPage || pageContext.isPoolPage) {
+      for (const { protocol, midgard } of resolvedProtocols) {
+        if (!midgard) push(intl.formatMessage({ id: 'midgard.status.offline' }, { protocol }))
+      }
+    }
 
-  if (!warningMessage) {
+    return ordered
+  }, [resolvedProtocols, pageContext, intl])
+
+  if (!hasRendered || !hasAnyData || uniqueMessages.length === 0) {
     return <div className="h-0" />
   }
 
   if (isCollapsed) {
-    // Just show the warning icon when collapsed
     return (
       <div
         className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-warning0 bg-warning0/10 hover:bg-warning0/20"
         onClick={() => setIsCollapsed(false)}
-        title={`${protocol} Warning - Click to expand`}>
+        title="Warning - Click to expand">
         <ExclamationTriangleIcon className="h-6 w-6 text-warning0" />
       </div>
     )
   }
 
   return (
-    <Alert
-      key={`halted-warning-${protocol}`}
-      type="warning"
-      description={warningMessage}
-      action={
-        <BorderButton size="small" onClick={() => setIsCollapsed(true)} className="p-1 hover:bg-bg1 dark:hover:bg-bg1d">
-          <XMarkIcon className="h-4 w-4" />
-        </BorderButton>
-      }
-    />
+    <>
+      {uniqueMessages.map((msg, idx) => (
+        <Alert
+          key={msg}
+          type="warning"
+          description={msg}
+          action={
+            idx === 0 ? (
+              <BorderButton
+                size="small"
+                onClick={() => setIsCollapsed(true)}
+                className="p-1 hover:bg-bg1 dark:hover:bg-bg1d">
+                <XMarkIcon className="h-4 w-4" />
+              </BorderButton>
+            ) : undefined
+          }
+        />
+      ))}
+    </>
   )
 }
 

@@ -1,8 +1,9 @@
 import { HaltMessages } from '../types'
 
 const halt: HaltMessages = {
-  'halt.thorchain': 'THORChain अस्थायी रूप से स्थगित किया गया है।',
-  'halt.trading': 'सभी पूलों में ट्रेडिंग अस्थायी रूप से स्थगित की गई है।',
+  'halt.thorchain': 'THORChain अस्थायी रूप से स्थगित है। स्वैप के लिए {alternatives} का उपयोग करें।',
+  'halt.trading':
+    '{protocols} पर ट्रेडिंग अस्थायी रूप से स्थगित है। {alternatives} के माध्यम से स्वैप अभी भी उपलब्ध है।',
   'halt.chain': '{chain} चेन {dex} पर अस्थायी रूप से रोक दी गई है।',
   'halt.chains': '{chains} चेनों को {protocol} पर अस्थायी रूप से रोका गया है।',
   'halt.chain.trading': '{chains} में ट्रेडिंग अस्थायी रूप से स्थगित की गई है।',
