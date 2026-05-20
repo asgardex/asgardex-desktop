@@ -64,14 +64,8 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.completed': '체결됨',
   'pools.chart.tradingPanel.priceLevel.failed': '실패',
   'pools.chart.tradingPanel.approve': '승인',
-  'pools.chainflip.title': 'Chainflip 스왑 페어',
-  'pools.chainflip.disclaimer':
-    'Chainflip은 크로스체인 스왑 라우터입니다. 유동성은 프로토콜에서 관리되며, 진입할 LP 포지션이 없습니다.',
   'pools.chainflip.minSwap': '최소 스왑',
-  'pools.chainflip.maxSwap': '최대 스왑',
-  'pools.chainflip.boost': '부스트',
-  'pools.chainflip.boostYes': '사용 가능',
-  'pools.chainflip.boostNo': '—',
+  'pools.chainflip.boostAvailable': '부스트 사용 가능',
   'pools.chainflip.empty': '현재 사용 가능한 Chainflip 자산이 없습니다.'
 }
 

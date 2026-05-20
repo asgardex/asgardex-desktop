@@ -360,13 +360,8 @@ type PoolsMessageKey =
   | 'pools.chart.tradingPanel.priceLevel.completed'
   | 'pools.chart.tradingPanel.priceLevel.failed'
   | 'pools.chart.tradingPanel.approve'
-  | 'pools.chainflip.title'
-  | 'pools.chainflip.disclaimer'
   | 'pools.chainflip.minSwap'
-  | 'pools.chainflip.maxSwap'
-  | 'pools.chainflip.boost'
-  | 'pools.chainflip.boostYes'
-  | 'pools.chainflip.boostNo'
+  | 'pools.chainflip.boostAvailable'
   | 'pools.chainflip.empty'
 
 export type PoolsMessages = { [key in PoolsMessageKey]: string }

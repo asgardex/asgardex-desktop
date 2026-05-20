@@ -64,14 +64,8 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.completed': 'Исполнен',
   'pools.chart.tradingPanel.priceLevel.failed': 'Не удался',
   'pools.chart.tradingPanel.approve': 'Одобрить',
-  'pools.chainflip.title': 'Пары обмена Chainflip',
-  'pools.chainflip.disclaimer':
-    'Chainflip — это кросс-чейн маршрутизатор обменов. Ликвидностью управляет протокол — позиций LP здесь нет.',
   'pools.chainflip.minSwap': 'Мин. обмен',
-  'pools.chainflip.maxSwap': 'Макс. обмен',
-  'pools.chainflip.boost': 'Boost',
-  'pools.chainflip.boostYes': 'Доступен',
-  'pools.chainflip.boostNo': '—',
+  'pools.chainflip.boostAvailable': 'Boost доступен',
   'pools.chainflip.empty': 'Активов Chainflip сейчас нет.'
 }
 

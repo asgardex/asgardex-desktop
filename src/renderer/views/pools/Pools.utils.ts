@@ -244,11 +244,13 @@ export const getBlocksLeftForPendingPoolAsStringMaya = (
 export type FilterTableData = Pick<PoolTableRowData, 'asset' | 'watched'>
 /**
  * Filters tableData array by passed active filter.
- * If oFilter is O.none will return tableData array without any changes
+ * If oFilter is O.none will return tableData array without any changes.
+ * Generic over any row exposing `asset` + `watched` so it can filter
+ * THORChain/MAYAChain pool rows as well as Chainflip asset rows.
  */
 export const filterTableData =
   (oFilter: O.Option<PoolFilter> = O.none) =>
-  (tableData: PoolTableRowData[]): PoolTableRowData[] => {
+  <T extends FilterTableData>(tableData: T[]): T[] => {
     return FP.pipe(
       oFilter,
       O.map((filter) =>

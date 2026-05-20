@@ -64,14 +64,8 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.completed': 'Filled',
   'pools.chart.tradingPanel.priceLevel.failed': 'Failed',
   'pools.chart.tradingPanel.approve': 'Approve',
-  'pools.chainflip.title': 'Chainflip swap pairs',
-  'pools.chainflip.disclaimer':
-    'Chainflip is a cross-chain swap router. Liquidity is managed by the protocol — there are no LP positions to enter.',
   'pools.chainflip.minSwap': 'Min swap',
-  'pools.chainflip.maxSwap': 'Max swap',
-  'pools.chainflip.boost': 'Boost',
-  'pools.chainflip.boostYes': 'Available',
-  'pools.chainflip.boostNo': '—',
+  'pools.chainflip.boostAvailable': 'Boost available',
   'pools.chainflip.empty': 'No Chainflip assets available right now.'
 }
 

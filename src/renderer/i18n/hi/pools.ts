@@ -64,14 +64,8 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.completed': 'पूर्ण',
   'pools.chart.tradingPanel.priceLevel.failed': 'विफल',
   'pools.chart.tradingPanel.approve': 'अनुमोदन',
-  'pools.chainflip.title': 'Chainflip स्वैप जोड़े',
-  'pools.chainflip.disclaimer':
-    'Chainflip एक क्रॉस-चेन स्वैप राउटर है। तरलता प्रोटोकॉल द्वारा प्रबंधित होती है — कोई LP पोज़िशन नहीं हैं।',
   'pools.chainflip.minSwap': 'न्यूनतम स्वैप',
-  'pools.chainflip.maxSwap': 'अधिकतम स्वैप',
-  'pools.chainflip.boost': 'बूस्ट',
-  'pools.chainflip.boostYes': 'उपलब्ध',
-  'pools.chainflip.boostNo': '—',
+  'pools.chainflip.boostAvailable': 'बूस्ट उपलब्ध',
   'pools.chainflip.empty': 'अभी कोई Chainflip संपत्ति उपलब्ध नहीं है।'
 }
 

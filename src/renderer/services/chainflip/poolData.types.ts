@@ -7,7 +7,6 @@ export type ChainflipAssetRowData = {
   symbol: string
   decimals: number
   minSwapAmount: string
-  maxSwapAmount: string | null
   priceUSD: number | undefined
   boostAvailable: boolean
 }

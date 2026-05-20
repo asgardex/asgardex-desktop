@@ -206,7 +206,6 @@ export const createChainflipService$ = () => {
                 symbol: a.symbol,
                 decimals: a.decimals,
                 minSwapAmount: a.minimumSwapAmount,
-                maxSwapAmount: a.maximumSwapAmount,
                 boostAvailable: boostByKey.get(`${a.chain}:${a.asset}`) ?? false
               }
               return { row, source: a }
