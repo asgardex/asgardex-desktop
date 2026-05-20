@@ -63,7 +63,10 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.triggered': 'Déclenché',
   'pools.chart.tradingPanel.priceLevel.completed': 'Exécuté',
   'pools.chart.tradingPanel.priceLevel.failed': 'Échoué',
-  'pools.chart.tradingPanel.approve': 'Approuver'
+  'pools.chart.tradingPanel.approve': 'Approuver',
+  'pools.chainflip.minSwap': 'Swap min.',
+  'pools.chainflip.boostAvailable': 'Boost disponible',
+  'pools.chainflip.empty': 'Aucun actif Chainflip disponible pour le moment.'
 }
 
 export default pools

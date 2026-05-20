@@ -230,6 +230,7 @@ export type CommonMessageKey =
   | 'common.nativeSegwit'
   | 'common.taproot'
   | 'common.protocols'
+  | 'common.protocolSwitch.switchTo'
   | 'common.resetToDefault'
   | 'common.importTokens'
   | 'common.searchToken'
@@ -359,6 +360,9 @@ type PoolsMessageKey =
   | 'pools.chart.tradingPanel.priceLevel.completed'
   | 'pools.chart.tradingPanel.priceLevel.failed'
   | 'pools.chart.tradingPanel.approve'
+  | 'pools.chainflip.minSwap'
+  | 'pools.chainflip.boostAvailable'
+  | 'pools.chainflip.empty'
 
 export type PoolsMessages = { [key in PoolsMessageKey]: string }
 

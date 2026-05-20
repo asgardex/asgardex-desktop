@@ -63,7 +63,10 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.triggered': '트리거됨',
   'pools.chart.tradingPanel.priceLevel.completed': '체결됨',
   'pools.chart.tradingPanel.priceLevel.failed': '실패',
-  'pools.chart.tradingPanel.approve': '승인'
+  'pools.chart.tradingPanel.approve': '승인',
+  'pools.chainflip.minSwap': '최소 스왑',
+  'pools.chainflip.boostAvailable': '부스트 사용 가능',
+  'pools.chainflip.empty': '현재 사용 가능한 Chainflip 자산이 없습니다.'
 }
 
 export default pools
