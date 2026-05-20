@@ -38,11 +38,14 @@ const polar = (cx: number, cy: number, r: number, angle: number) => ({
 const usdFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
 const buildSlices = (data: { name: string; value: number }[], outerR: number, innerR: number): SliceData[] => {
-  // Normalize: treat non-finite / non-positive values as 0
-  const normalized = data.map((d) => ({
-    ...d,
-    value: Number.isFinite(d.value) && d.value > 0 ? d.value : 0
-  }))
+  // Normalize (non-finite / non-positive -> 0) and order by value descending,
+  // so the donut reads largest-to-smallest instead of arbitrary insertion order.
+  const normalized = data
+    .map((d) => ({
+      ...d,
+      value: Number.isFinite(d.value) && d.value > 0 ? d.value : 0
+    }))
+    .sort((a, b) => b.value - a.value)
   const n = normalized.length
   if (n === 0) return []
 
@@ -143,6 +146,73 @@ const buildSlices = (data: { name: string; value: number }[], outerR: number, in
     .filter((s): s is SliceData => s !== null)
 }
 
+// Vertical range (in viewBox units) the spread-out labels are allowed to occupy
+const LABEL_MIN_BOUND = 4
+const LABEL_MAX_BOUND = 196
+// Desired vertical spacing between two labels on the same side
+const LABEL_GAP = 12
+
+/**
+ * Resolves overlapping labels on one side of the donut.
+ *
+ * Each label "wants" to sit at the y of its slice's mid-angle, but tightly
+ * packed slices push those targets on top of each other. This spreads the
+ * labels apart (min `maxGap` between neighbours), keeps the block centred on
+ * the mean of the desired positions, and clamps it within [minBound, maxBound].
+ *
+ * Returns a map of slice index -> resolved label y.
+ */
+const layoutLabels = (
+  side: { index: number; midAngle: number }[],
+  outerR: number,
+  maxGap: number,
+  minBound: number,
+  maxBound: number
+): Map<number, number> => {
+  const result = new Map<number, number>()
+  if (side.length === 0) return result
+
+  const items = side
+    .map(({ index, midAngle }) => {
+      const desiredY = CY + (outerR + 2) * Math.sin(midAngle)
+      return { index, desiredY, y: desiredY }
+    })
+    .sort((a, b) => a.desiredY - b.desiredY)
+
+  // Shrink the gap if there are too many labels to fit, so the block always fits
+  const gap = Math.min(maxGap, (maxBound - minBound) / Math.max(items.length - 1, 1))
+
+  // Forward pass: remove overlaps by pushing crowded labels downwards
+  for (let i = 1; i < items.length; i++) {
+    if (items[i].y < items[i - 1].y + gap) items[i].y = items[i - 1].y + gap
+  }
+
+  // Re-centre the block on the mean of the original (desired) positions
+  const desiredMean = items.reduce((sum, it) => sum + it.desiredY, 0) / items.length
+  const resolvedMean = items.reduce((sum, it) => sum + it.y, 0) / items.length
+  const shift = desiredMean - resolvedMean
+  for (const it of items) it.y += shift
+
+  // Pull the block back inside the bottom bound, cascading the fix upwards
+  if (items[items.length - 1].y > maxBound) {
+    items[items.length - 1].y = maxBound
+    for (let i = items.length - 2; i >= 0; i--) {
+      if (items[i].y > items[i + 1].y - gap) items[i].y = items[i + 1].y - gap
+    }
+  }
+
+  // Pull the block back inside the top bound, cascading the fix downwards
+  if (items[0].y < minBound) {
+    items[0].y = minBound
+    for (let i = 1; i < items.length; i++) {
+      if (items[i].y < items[i - 1].y + gap) items[i].y = items[i - 1].y + gap
+    }
+  }
+
+  for (const it of items) result.set(it.index, it.y)
+  return result
+}
+
 export const PieChart = ({
   isLegendHidden = false,
   showLabelLine = false,
@@ -163,6 +233,21 @@ export const PieChart = ({
 
   const slices = useMemo(() => buildSlices(chartData, outerR, innerR), [chartData, outerR, innerR])
 
+  // Resolved (non-overlapping) y position for each slice's label, keyed by slice index
+  const labelYByIndex = useMemo(() => {
+    if (!showLabelLine) return new Map<number, number>()
+    const left: { index: number; midAngle: number }[] = []
+    const right: { index: number; midAngle: number }[] = []
+    slices.forEach((s, index) => {
+      if (Math.cos(s.midAngle) >= 0) right.push({ index, midAngle: s.midAngle })
+      else left.push({ index, midAngle: s.midAngle })
+    })
+    const merged = new Map<number, number>()
+    layoutLabels(right, outerR, LABEL_GAP, LABEL_MIN_BOUND, LABEL_MAX_BOUND).forEach((v, k) => merged.set(k, v))
+    layoutLabels(left, outerR, LABEL_GAP, LABEL_MIN_BOUND, LABEL_MAX_BOUND).forEach((v, k) => merged.set(k, v))
+    return merged
+  }, [slices, showLabelLine, outerR])
+
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const rect = containerRef.current?.getBoundingClientRect()
     if (rect) {
@@ -170,7 +255,7 @@ export const PieChart = ({
     }
   }, [])
 
-  const viewBox = showLabelLine ? '-80 -20 360 240' : '0 0 200 200'
+  const viewBox = showLabelLine ? '-125 -10 460 220' : '0 0 200 200'
 
   return (
     <div ref={containerRef} className="w-full" style={{ position: 'relative' }}>
@@ -198,21 +283,28 @@ export const PieChart = ({
 
         {showLabelLine &&
           slices.map((s, i) => {
-            const outerPt = polar(CX, CY, outerR + 2, s.midAngle)
-            const elbow = polar(CX, CY, outerR + 12, s.midAngle)
             const isRight = Math.cos(s.midAngle) >= 0
-            const endX = elbow.x + (isRight ? 40 : -40)
+            // Anchor on the arc edge of the slice
+            const arcPt = polar(CX, CY, outerR + 2, s.midAngle)
+            // Resolved (de-cluttered) y for this label; falls back to the arc y
+            const labelY = labelYByIndex.get(i) ?? arcPt.y
+            // Leader line: out horizontally past the donut, then to the label row.
+            // Keeping the bend just outside the donut guarantees the line never
+            // crosses the ring, even when the label is pushed far from its slice.
+            const knuckleX = isRight ? CX + outerR + 8 : CX - outerR - 8
+            const lineEndX = isRight ? CX + outerR + 16 : CX - outerR - 16
+            const dimmed = hovered !== null && hovered !== i
             return (
-              <g key={`label-${i}`}>
+              <g key={`label-${i}`} style={{ opacity: dimmed ? 0.3 : 1, transition: 'opacity 0.2s' }}>
                 <polyline
-                  points={`${outerPt.x},${outerPt.y} ${elbow.x},${elbow.y} ${endX},${elbow.y}`}
+                  points={`${arcPt.x},${arcPt.y} ${knuckleX},${arcPt.y} ${lineEndX},${labelY}`}
                   fill="none"
                   stroke={textColor}
                   strokeWidth={0.8}
                 />
                 <text
-                  x={endX + (isRight ? 3 : -3)}
-                  y={elbow.y}
+                  x={isRight ? lineEndX + 3 : lineEndX - 3}
+                  y={labelY}
                   fill={textColor}
                   fontSize={9}
                   textAnchor={isRight ? 'start' : 'end'}
