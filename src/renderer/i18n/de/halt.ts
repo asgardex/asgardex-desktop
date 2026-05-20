@@ -1,8 +1,9 @@
 import { HaltMessages } from '../types'
 
 const halt: HaltMessages = {
-  'halt.thorchain': 'THORChain wurde vorübergehend angehalten.',
-  'halt.trading': 'Der Handel ist vorübergehend für alle Pools gestoppt.',
+  'halt.thorchain': 'THORChain wurde vorübergehend angehalten. Nutze {alternatives} zum Tauschen.',
+  'halt.trading':
+    'Der Handel auf {protocols} ist vorübergehend gestoppt. Tausch über {alternatives} ist weiterhin verfügbar.',
   'halt.chain': '{chain} Chain auf {dex} wurde vorübergehend gestoppt.',
   'halt.chains': '{chains} Ketten auf {protocol} wurden vorübergehend gestoppt.',
   'halt.chain.synth': 'Synthetischer Handel für {chain} ist nicht verfügbar, während {chain} gestoppt ist.',
