@@ -1,6 +1,13 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { DefaultApi } from '@xchainjs/xchain-mayamidgard'
-import { AnyAsset, assetFromString, assetToString, bn, Chain, currencySymbolByAsset } from '@xchainjs/xchain-util'
+import {
+  AnyAsset,
+  assetFromString,
+  assetToString as xchainAssetToString,
+  bn,
+  Chain,
+  currencySymbolByAsset
+} from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, nonEmptyArray as NEA, predicate as P, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -76,6 +83,11 @@ import {
   toPoolsData,
   poolsPeriodToPoolPeriod
 } from './utils'
+
+// Midgard stores asset identifiers fully uppercase and rejects EIP-55 checksum
+// casing with HTTP 400. ETH token assets are EIP-55 internally (via ethers.getAddress),
+// so we uppercase at the Midgard boundary by shadowing assetToString in this file.
+const assetToString = (asset: AnyAsset): string => xchainAssetToString(asset).toUpperCase()
 
 const PRICE_POOL_KEY = 'asgdx-price-pool'
 
