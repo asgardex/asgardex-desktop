@@ -1,8 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ADAChain, ADAAsset } from '@xchainjs/xchain-cardano'
+import { ADAChain, ADAAsset, Client } from '@xchainjs/xchain-cardano'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import * as E from 'fp-ts/lib/Either'
 import * as FP from 'fp-ts/lib/function'
+import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -66,12 +67,35 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   // Vultisig transaction handler — SDK native pipeline
   const sendVultisigTx = createVultisigCardanoTx()
 
+  const sendKeystoreMaxTx = (params: SendTxParams): TxHashLD =>
+    FP.pipe(
+      client$,
+      RxOp.switchMap(FP.flow(O.fold<Client, Rx.Observable<Client>>(() => Rx.EMPTY, Rx.of))),
+      RxOp.switchMap((client) =>
+        Rx.from(
+          client.transferMax({
+            recipient: params.recipient,
+            memo: params.memo,
+            walletIndex: params.walletIndex
+          })
+        )
+      ),
+      RxOp.map((result: { hash: TxHash }) => RD.success(result.hash)),
+      RxOp.catchError((e): TxHashLD => {
+        const msg = e?.message ?? e.toString()
+        return Rx.of(RD.failure({ msg, errorId: ErrorId.SEND_TX }))
+      }),
+      RxOp.startWith(RD.pending)
+    )
+
   const sendTx = (params: SendTxParams) =>
     FP.pipe(
       Rx.combineLatest([network$]),
       RxOp.switchMap(([network]) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
         if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
+
+        if (params.sendMax) return sendKeystoreMaxTx(params)
 
         return common.sendTx(params)
       })

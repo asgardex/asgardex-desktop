@@ -1,4 +1,4 @@
-import { SwapSDK, AssetData } from '@chainflip/sdk/swap'
+import { SwapSDK, AssetData, BoostPoolDepth } from '@chainflip/sdk/swap'
 import * as RD from '@devexperts/remote-data-ts'
 import {
   AnyAsset,
@@ -12,12 +12,15 @@ import {
   isSynthAsset,
   isTradeAsset
 } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { createScopedLogger } from '../../helpers/logger'
+import { triggerStream } from '../../helpers/stateHelper'
+import { ChainflipAssetRowData } from './poolData.types'
 import { createChainflipTransactionTrackingService } from './transactionTracking'
-import { cChainToXChain, xAssetToCAsset, xChainToCChain } from './utils'
+import { cAssetToXAsset, cChainToXChain, xAssetToCAsset, xChainToCChain } from './utils'
 
 const logger = createScopedLogger('chainflip')
 
@@ -29,6 +32,8 @@ const sdk = new SwapSDK({
   }
 })
 const assetsData = new CachedValue(() => sdk.getAssets(), 24 * 60 * 60 * 1000)
+// Boost depths refresh on a shorter cycle since liquidity moves
+const boostDepths = new CachedValue<BoostPoolDepth[]>(() => sdk.getBoostLiquidity(), 5 * 60 * 1000)
 
 // Create transaction tracking service
 const transactionTrackingService = createChainflipTransactionTrackingService(sdk)
@@ -107,6 +112,10 @@ export const createChainflipService$ = () => {
   /**
    * Get a USD spot price for an asset by quoting 1 unit against USDC on Ethereum.
    * Returns RD.initial for unsupported assets/chains.
+   *
+   * Resolves the asset's AssetData from the cache (real decimals + stablecoin
+   * detection live in getRowPriceUSD) so token pools (USDC/USDT/WBTC/…) work
+   * correctly instead of falling back to a wrong 18-decimal guess.
    */
   const getQuotePrice$ = (asset: AnyAsset) => {
     if (isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)) {
@@ -117,30 +126,10 @@ export const createChainflipService$ = () => {
     const narrowedAsset = asset as Asset | TokenAsset
 
     return Rx.defer(async () => {
-      const srcChain = xChainToCChain(narrowedAsset.chain) as Exclude<ReturnType<typeof xChainToCChain>, 'Polkadot'>
-      const srcAsset = xAssetToCAsset(narrowedAsset)
-
-      // Native asset decimals for Chainflip-supported chains
-      const DECIMALS: Record<string, number> = { BTC: 8, ETH: 18, SOL: 9 }
-      const decimals = DECIMALS[srcAsset] ?? 18
-      const amount = Math.pow(10, decimals).toString()
-
-      const response = await sdk.getQuoteV2({
-        srcChain,
-        srcAsset,
-        destChain: 'Ethereum',
-        destAsset: 'USDC',
-        amount
-      })
-
-      const quote = response.quotes[0]
-      if (!quote) throw new Error('No quote available')
-
-      // egressAmount is in USDC smallest units (6 decimals)
-      const usdPrice = Number(quote.egressAmount) / 1e6
-      if (isNaN(usdPrice) || usdPrice <= 0) throw new Error('Invalid price from quote')
-
-      return usdPrice
+      const assetData = await getAssetData(narrowedAsset)
+      const price = await getRowPriceUSD(assetData)
+      if (price === undefined) throw new Error('No price available')
+      return price
     }).pipe(
       RxOp.map((price) => RD.success<Error, number>(price)),
       RxOp.catchError((error) => {
@@ -151,11 +140,113 @@ export const createChainflipService$ = () => {
     )
   }
 
+  // Known stablecoins on Chainflip — treat as ~$1 instead of round-tripping a quote to USDC
+  // (USDC→USDC would fail; USDT→USDC depends on routing and adds noise to the table)
+  const STABLECOIN_SYMBOLS = new Set(['USDC', 'USDT', 'DAI'])
+
+  /**
+   * USD price fetch shared by chainflipAssetRows$ and getQuotePrice$.
+   * Reads the asset's real decimals from AssetData and short-circuits
+   * stablecoins to $1 (USDC→USDC would fail; USDT→USDC adds routing noise).
+   */
+  const getRowPriceUSD = async (a: AssetData): Promise<number | undefined> => {
+    if (STABLECOIN_SYMBOLS.has(a.symbol)) return 1.0
+    try {
+      const amount = Math.pow(10, a.decimals).toString()
+      const response = await sdk.getQuoteV2({
+        srcChain: a.chain as Exclude<ReturnType<typeof xChainToCChain>, 'Polkadot'>,
+        srcAsset: a.asset,
+        destChain: 'Ethereum',
+        destAsset: 'USDC',
+        amount
+      })
+      const quote = response.quotes[0]
+      if (!quote) return undefined
+      // egressAmount is in USDC smallest units (6 decimals) — use BigNumber
+      // to avoid IEEE-754 precision loss for large base-unit integers.
+      const usd = new BigNumber(quote.egressAmount).shiftedBy(-6).toNumber()
+      return isFinite(usd) && usd > 0 ? usd : undefined
+    } catch (error) {
+      logger.warn(`Chainflip row price error for ${a.symbol} on ${a.chain}:`, error)
+      return undefined
+    }
+  }
+
+  // Manual refresh trigger for the asset-rows view. Re-fires the full pipeline
+  // (re-quotes prices; boostDepths/assetsData honor their own TTL caches).
+  const { stream$: reloadAssetRows$, trigger: reloadChainflipAssetRows } = triggerStream()
+
+  /**
+   * Combined observable of all Chainflip-supported assets with price (USDC quote) and boost availability.
+   * Used by the pools view to render Chainflip swap pairs.
+   * Skips assets whose chain doesn't map to an xchainjs Chain (e.g. Assethub — no client/support).
+   */
+  const chainflipAssetRows$: Rx.Observable<RD.RemoteData<Error, ChainflipAssetRowData[]>> = reloadAssetRows$.pipe(
+    RxOp.switchMap(() =>
+      Rx.defer(() =>
+        Promise.all([assetsData.getValue(), boostDepths.getValue().catch(() => [] as BoostPoolDepth[])])
+      ).pipe(
+        RxOp.switchMap(([assets, boost]) => {
+          // Bucket boost depths by asset+chain
+          const boostByKey = new Map<string, boolean>()
+          for (const bd of boost) {
+            if (bd.availableAmount > BigInt(0)) boostByKey.set(`${bd.chain}:${bd.asset}`, true)
+          }
+
+          type RowPair = { row: Omit<ChainflipAssetRowData, 'priceUSD'>; source: AssetData }
+          const rowPairs: RowPair[] = assets
+            .map((a): RowPair | null => {
+              const xAsset = cAssetToXAsset(a)
+              const xChain = cChainToXChain(a.chain)
+              if (!xAsset || !xChain) return null
+              const row: Omit<ChainflipAssetRowData, 'priceUSD'> = {
+                asset: xAsset,
+                chain: xChain,
+                name: a.name,
+                symbol: a.symbol,
+                decimals: a.decimals,
+                minSwapAmount: a.minimumSwapAmount,
+                boostAvailable: boostByKey.get(`${a.chain}:${a.asset}`) ?? false
+              }
+              return { row, source: a }
+            })
+            .filter((r): r is RowPair => r !== null)
+
+          if (rowPairs.length === 0) {
+            return Rx.of(RD.success<Error, ChainflipAssetRowData[]>([]))
+          }
+
+          // Fire per-asset price quotes with limited concurrency (3 at a time)
+          // so we don't burst-fire 20+ requests at the Chainflip API on first load.
+          return Rx.from(rowPairs).pipe(
+            RxOp.mergeMap(
+              ({ row, source }) =>
+                Rx.defer(() => getRowPriceUSD(source)).pipe(RxOp.map((priceUSD) => ({ ...row, priceUSD }))),
+              3
+            ),
+            RxOp.toArray(),
+            RxOp.map((withPrices) => RD.success<Error, ChainflipAssetRowData[]>(withPrices))
+          )
+        }),
+        RxOp.catchError((error) => {
+          logger.warn('Chainflip API error (asset rows):', error)
+          return Rx.of(
+            RD.failure<Error, ChainflipAssetRowData[]>(error instanceof Error ? error : new Error(String(error)))
+          )
+        }),
+        RxOp.startWith(RD.pending as RD.RemoteData<Error, ChainflipAssetRowData[]>)
+      )
+    ),
+    RxOp.shareReplay(1)
+  )
+
   return {
     getAssetsData$,
     isAssetSupported$,
     chainflipSupportedChains$,
     transactionTrackingService,
-    getQuotePrice$
+    getQuotePrice$,
+    chainflipAssetRows$,
+    reloadChainflipAssetRows
   }
 }

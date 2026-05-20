@@ -7,7 +7,7 @@
 
 import * as path from 'path'
 
-import type { SignBytesOptions, Signature, SigningPayload, VaultBase } from '@vultisig/sdk'
+import type { Chain, SignBytesOptions, Signature, SigningPayload, VaultBase } from '@vultisig/sdk'
 import { dialog, type IpcMain, type IpcMainInvokeEvent } from 'electron'
 import log from 'electron-log'
 import * as fs from 'fs-extra'
@@ -294,7 +294,7 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
 
       // Ensure all Asgardex-supported chains are enabled on the vault
       // vault.chains only contains what was added at creation — SDK supports 36 chains
-      const desiredChains = Object.values(ASGARDEX_TO_SDK_CHAIN)
+      const desiredChains = Object.values(ASGARDEX_TO_SDK_CHAIN) as Chain[]
       const vaultChainsBefore = vault.chains || []
       const missingChains = desiredChains.filter((c) => !vaultChainsBefore.includes(c))
 
@@ -503,7 +503,7 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       if (!vault) throw new Error(`Vault not found: ${vaultId}`)
 
       // Convert Asgardex chain ID to SDK chain
-      const sdkChain = ASGARDEX_TO_SDK_CHAIN[chain]
+      const sdkChain = ASGARDEX_TO_SDK_CHAIN[chain] as Chain | undefined
       if (!sdkChain) throw new Error(`Unsupported chain: ${chain}`)
 
       // Check if this is a secure vault that needs QR coordination
@@ -543,7 +543,7 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       }
 
       // Second argument: signal and callbacks
-      // SDK 0.4.x expects callbacks in the SECOND parameter, not the first.
+      // SDK expects callbacks in the SECOND parameter, not the first.
       // For SecureVault: { signal, onQRCodeReady, onDeviceJoined, onProgress }
       // For FastVault:   { signal, onProgress }
       const signingOptions: SecureSigningOptions = {
@@ -629,7 +629,7 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       const vault = await sdk.getVaultById(vaultId)
       if (!vault) throw new Error(`Vault not found: ${vaultId}`)
 
-      const sdkChain = ASGARDEX_TO_SDK_CHAIN[chain]
+      const sdkChain = ASGARDEX_TO_SDK_CHAIN[chain] as Chain | undefined
       if (!sdkChain) throw new Error(`Unsupported chain: ${chain}`)
 
       const isSecureVault = vault.type === 'secure'
@@ -675,6 +675,8 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       }
 
       // ERC20 approve: ABI-encode calldata and put in memo as native coin contract call.
+      // Workaround #5: hand-built calldata in memo. The SDK now exposes a typed
+      // `prepareContractCallTx` alternative — candidate for follow-up cleanup.
       const isApprove = !!approve
       let txMemo = memo
       if (isApprove) {
@@ -683,20 +685,26 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
         const amountHex = BigInt(approve.amount).toString(16).padStart(64, '0')
         txMemo = `0x${selector}${paddedSpender}${amountHex}`
         delete coin.id // Must be native for EVM resolver to use memo as tx data
-        log.info(`[MPC IPC] Approve mode: ABI calldata in memo`, {
+        log.info(`[MPC IPC] Workaround #5 fired: hand-built ERC20 approve calldata in memo`, {
+          chain,
           spender: approve.spender,
           calldataLength: txMemo.length
         })
       }
 
       // Zero-amount native contract calls (ERC20 approve, ERC20 pool tx via depositWithExpiry)
-      // fail refineKeysignAmount because it rejects amount <= 0 for native/fee coins.
-      // Workaround: pass amount=1 to survive validation, then override toAmount="0" after.
+      // are rejected by the SDK's amount validation (amount <= 0 for native/fee coins).
+      // Workaround #2: pass amount=1 to survive validation, then override toAmount="0" after.
+      // The SDK now exposes a typed `prepareContractCallTx` alternative — candidate for
+      // follow-up cleanup.
       let txAmount = BigInt(amount)
       const isZeroAmountContractCall = txAmount === 0n && !coin.id && txMemo?.startsWith('0x')
       if (isZeroAmountContractCall) {
         txAmount = 1n
-        log.info(`[MPC IPC] Zero-amount contract call: using amount=1 to pass validation (will override to 0)`)
+        log.info(`[MPC IPC] Workaround #2 fired: zero-amount contract call — amount=1 to pass validation`, {
+          chain,
+          isApprove
+        })
       }
 
       // Step 3: Prepare transaction (SDK handles gas, nonce, fees)
@@ -718,10 +726,19 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       })
       log.info(`[MPC IPC] Step 2: prepareSendTx complete`)
 
-      // Native DEX deposits (MsgDeposit) — only THOR and MAYA support this
+      // Native DEX deposits (MsgDeposit) — only THOR and MAYA support this.
+      // Workaround #1: narrow via the protobuf discriminator so TS sees the
+      // THOR/MAYA-specific shape with isDeposit, not the union.
       if (isDeposit && (chain === 'THOR' || chain === 'MAYA')) {
-        keysignPayload.blockchainSpecific.value.isDeposit = true
-        log.info(`[MPC IPC] Patched ${chain} blockchainSpecific with isDeposit=true`)
+        const bs = keysignPayload.blockchainSpecific
+        if (bs.case === 'thorchainSpecific' || bs.case === 'mayaSpecific') {
+          bs.value.isDeposit = true
+          log.info(`[MPC IPC] Workaround #1 fired: patched ${chain} blockchainSpecific with isDeposit=true`)
+        } else {
+          log.warn(
+            `[MPC IPC] Workaround #1 SKIPPED: ${chain} blockchainSpecific.case=${bs.case} (expected thorchainSpecific|mayaSpecific) — MsgDeposit will fail`
+          )
+        }
       }
 
       // Restore toAmount to 0 — the 1 wei was only to pass refineKeysignAmount.
@@ -790,9 +807,13 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
         // Some chains (e.g. Solana) may report "already been processed" if the SDK
         // submitted the tx internally before the explicit broadcast call.
         // The tx succeeded — treat this as success with a placeholder hash.
+        // Workaround #7: defensive catch. The warn log lets us audit how often it
+        // still fires so it can be removed once SDK broadcast handling stabilises.
         const broadcastMsg = errorMsg(broadcastError)
         if (broadcastMsg.includes('already been processed') || broadcastMsg.includes('AlreadyProcessed')) {
-          log.warn(`[MPC IPC] Broadcast reported duplicate — tx already submitted`, { chain })
+          log.warn(`[MPC IPC] Workaround #7 fired: legacy already-processed broadcast catch`, {
+            chain
+          })
           txHash = 'broadcast-duplicate-tx-already-processed'
         } else {
           throw broadcastError

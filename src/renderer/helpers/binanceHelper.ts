@@ -22,7 +22,13 @@ export type BinanceKline = [
   string // ignore
 ]
 
-/** Tickers that have a USDT pair on Binance */
+/**
+ * Tickers that have a USDT spot pair on Binance. Used as the chart's
+ * fallback data source when THORChain/MAYAChain Midgard data is unavailable
+ * (e.g. halted pools). Assets with no Binance USDT pair — CACAO, KUJI, TCY,
+ * FLIP, and USDT itself (it is the quote currency) — are intentionally absent
+ * and keep falling back to Midgard.
+ */
 const BINANCE_TICKER_MAP: Record<string, string> = {
   BTC: 'BTCUSDT',
   ETH: 'ETHUSDT',
@@ -33,7 +39,19 @@ const BINANCE_TICKER_MAP: Record<string, string> = {
   RUNE: 'RUNEUSDT',
   AVAX: 'AVAXUSDT',
   LTC: 'LTCUSDT',
-  BCH: 'BCHUSDT'
+  BCH: 'BCHUSDT',
+  XRP: 'XRPUSDT',
+  DASH: 'DASHUSDT',
+  LINK: 'LINKUSDT',
+  AAVE: 'AAVEUSDT',
+  UNI: 'UNIUSDT',
+  SOL: 'SOLUSDT',
+  DOT: 'DOTUSDT',
+  ARB: 'ARBUSDT',
+  PEPE: 'PEPEUSDT',
+  ZEC: 'ZECUSDT',
+  TRX: 'TRXUSDT',
+  ADA: 'ADAUSDT'
 }
 
 /**

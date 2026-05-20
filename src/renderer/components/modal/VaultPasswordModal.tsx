@@ -12,24 +12,34 @@ type FormData = {
   password: string
 }
 
+export type VaultPasswordMode = 'import' | 'export'
+
 type Props = {
   visible: boolean
-  filename: string
+  // Free-form caption shown beneath the description (e.g. file name on import,
+  // vault name on export).
+  subject: string
+  // Import: password is required to decrypt the .vult.
+  // Export: password is optional — empty string means "export unencrypted".
+  mode?: VaultPasswordMode
   onSubmit: (password: string) => Promise<void>
   onClose: () => void
 }
 
-export const VaultPasswordModal = ({ visible, filename, onSubmit, onClose }: Props) => {
+export const VaultPasswordModal = ({ visible, subject, mode = 'import', onSubmit, onClose }: Props) => {
   const intl = useIntl()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const isExport = mode === 'export'
+  const passwordRequired = !isExport
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors }
-  } = useForm<FormData>()
+  } = useForm<FormData>({ defaultValues: { password: '' } })
 
   const handleClose = useCallback(() => {
     reset()
@@ -46,13 +56,28 @@ export const VaultPasswordModal = ({ visible, filename, onSubmit, onClose }: Pro
         await onSubmit(password)
         reset()
       } catch (err) {
-        setError(intl.formatMessage({ id: 'wallet.vultisig.import.error.invalidPassword' }))
+        setError(
+          isExport
+            ? err instanceof Error
+              ? err.message
+              : String(err)
+            : intl.formatMessage({ id: 'wallet.vultisig.import.error.invalidPassword' })
+        )
       } finally {
         setLoading(false)
       }
     },
-    [onSubmit, reset, intl]
+    [onSubmit, reset, intl, isExport]
   )
+
+  const titleId = isExport ? 'wallet.vultisig.export.password.title' : 'wallet.vultisig.import.password.title'
+  const descriptionId = isExport
+    ? 'wallet.vultisig.export.password.description'
+    : 'wallet.vultisig.import.password.description'
+  const submitLabelId = isExport ? 'wallet.action.export' : 'wallet.action.import'
+  const passwordPlaceholder = passwordRequired
+    ? intl.formatMessage({ id: 'common.password' }).toUpperCase()
+    : `${intl.formatMessage({ id: 'common.password' }).toUpperCase()} (OPTIONAL)`
 
   return (
     <Dialog as="div" className="relative z-10" transition open={visible} onClose={handleClose}>
@@ -61,25 +86,25 @@ export const VaultPasswordModal = ({ visible, filename, onSubmit, onClose }: Pro
         <DialogPanel
           className={clsx(
             'mx-auto flex flex-col items-center p-6',
-            'w-full max-w-[400px]',
+            'w-full max-w-[420px]',
             'bg-bg0 dark:bg-bg0d',
             'rounded-lg border border-solid border-gray0 dark:border-gray0d'
           )}>
           <h1 className="mb-2 w-full text-center text-lg font-semibold text-text1 uppercase dark:text-text1d">
-            {intl.formatMessage({ id: 'wallet.vultisig.import.password.title' })}
+            {intl.formatMessage({ id: titleId })}
           </h1>
           <p className="mb-4 w-full text-center text-sm text-text2 dark:text-text2d">
-            {intl.formatMessage({ id: 'wallet.vultisig.import.password.description' })}
+            {intl.formatMessage({ id: descriptionId })}
           </p>
-          <p className="mb-4 w-full text-center text-xs text-gray2 dark:text-gray2d">{filename}</p>
+          <p className="mb-4 w-full text-center text-xs text-gray2 dark:text-gray2d">{subject}</p>
 
           <form className="w-full" onSubmit={handleSubmit(submitForm)}>
             <InputPassword
               id="vault-password"
               className="mx-auto mb-4 flex h-[38px] w-full items-center justify-between rounded-lg border border-solid !border-gray0 dark:!border-gray0d"
               inputClassName="!ring-0 w-full"
-              {...register('password', { required: true })}
-              placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
+              {...register('password', { required: passwordRequired })}
+              placeholder={passwordPlaceholder}
               ghost
               size="normal"
               autoFocus={true}
@@ -102,7 +127,7 @@ export const VaultPasswordModal = ({ visible, filename, onSubmit, onClose }: Pro
                 {intl.formatMessage({ id: 'common.cancel' })}
               </BaseButton>
               <FlatButton type="submit" size="normal" color="primary" disabled={loading} loading={loading}>
-                {intl.formatMessage({ id: 'wallet.action.import' })}
+                {intl.formatMessage({ id: submitLabelId })}
               </FlatButton>
             </div>
           </form>

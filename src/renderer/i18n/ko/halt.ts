@@ -1,8 +1,9 @@
 import { HaltMessages } from '../types'
 
 const halt: HaltMessages = {
-  'halt.thorchain': 'THORChain이 일시적으로 중단되었습니다.',
-  'halt.trading': '모든 풀에서 거래가 일시적으로 중단되었습니다.',
+  'halt.thorchain': 'THORChain이 일시적으로 중단되었습니다. 스왑은 {alternatives}을(를) 사용하세요.',
+  'halt.trading':
+    '{protocols}에서 거래가 일시적으로 중단되었습니다. {alternatives}을(를) 통한 스왑은 여전히 가능합니다.',
   'halt.chain': '{dex}의 {chain} 체인이 일시적으로 중단되었습니다.',
   'halt.chain.synth': '{chain} 체인이 중단된 동안 {chain}의 합성 거래는 사용할 수 없습니다.',
   'halt.chains': '{protocol}의 {chains} 체인들이 일시적으로 중단되었습니다.',

@@ -97,7 +97,8 @@ export const swapCF$ = ({
   recipient,
   walletAccount,
   walletIndex,
-  hdMode
+  hdMode,
+  sendMax
 }: SendTxParams): SwapCFTxState$ => {
   return Rx.of(RD.pending).pipe(
     RxOp.switchMap(() => {
@@ -112,7 +113,8 @@ export const swapCF$ = ({
         walletAccount,
         walletIndex,
         hdMode,
-        allowOwnerOffCurve: true
+        allowOwnerOffCurve: true,
+        sendMax
       })
     }),
     RxOp.map((txHashRD) => {

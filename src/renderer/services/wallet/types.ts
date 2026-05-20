@@ -247,7 +247,7 @@ export type VaultManager = {
   verifyVault: (vaultId: string, code: string) => Promise<void>
   deleteVault: (vaultId: string) => Promise<void>
   renameVault: (vaultId: string, newName: string) => Promise<void>
-  exportVault: (vaultId: string) => Promise<void>
+  exportVault: (vaultId: string, password?: string) => Promise<void>
 
   // State management
   resetToVaultSelection: () => void

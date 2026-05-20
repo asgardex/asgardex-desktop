@@ -230,6 +230,7 @@ export type CommonMessageKey =
   | 'common.nativeSegwit'
   | 'common.taproot'
   | 'common.protocols'
+  | 'common.protocolSwitch.switchTo'
   | 'common.resetToDefault'
   | 'common.importTokens'
   | 'common.searchToken'
@@ -359,6 +360,9 @@ type PoolsMessageKey =
   | 'pools.chart.tradingPanel.priceLevel.completed'
   | 'pools.chart.tradingPanel.priceLevel.failed'
   | 'pools.chart.tradingPanel.approve'
+  | 'pools.chainflip.minSwap'
+  | 'pools.chainflip.boostAvailable'
+  | 'pools.chainflip.empty'
 
 export type PoolsMessages = { [key in PoolsMessageKey]: string }
 
@@ -385,6 +389,7 @@ type WalletMessageKey =
   | 'wallet.action.unlock'
   | 'wallet.action.connect'
   | 'wallet.action.import'
+  | 'wallet.action.export'
   | 'wallet.action.create'
   | 'wallet.action.deposit'
   | 'wallet.action.saveBalancesJson'
@@ -496,6 +501,8 @@ type WalletMessageKey =
   | 'wallet.vultisig.import.password'
   | 'wallet.vultisig.import.password.title'
   | 'wallet.vultisig.import.password.description'
+  | 'wallet.vultisig.export.password.title'
+  | 'wallet.vultisig.export.password.description'
   | 'wallet.vultisig.import.success'
   | 'wallet.vultisig.import.error'
   | 'wallet.vultisig.import.error.invalidPassword'

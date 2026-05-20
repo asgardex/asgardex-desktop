@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { FeeOption, Fees, FeesWithRates, Network } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -192,6 +193,9 @@ export const SendForm = (props: Props): JSX.Element => {
   // Chain type detection using effective chain
   const isEVMChain = isEvmChain(effectiveChain)
   const isUTXOChain = isUtxoAssetChain({ ...asset, chain: effectiveChain })
+  const isAdaChain = effectiveChain === ADAChain
+  // Chains that support MAX-sweep (transferMax) — UTXO clients plus Cardano (eUTXO via xchain-cardano>=1.2.0)
+  const isMaxSweepChain = isUTXOChain || isAdaChain
   const isCOSMOSChain = !isEVMChain && !isUTXOChain
 
   const pricePoolThor = usePricePool()
@@ -752,7 +756,7 @@ export const SendForm = (props: Props): JSX.Element => {
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
-      if (isUTXOChain) setIsSendMax(false)
+      if (isMaxSweepChain) setIsSendMax(false)
 
       const validationResult = await amountValidator(value)
       const newValue = validationResult === true ? assetToBase(assetAmount(value, balance.amount.decimal)) : null
@@ -778,7 +782,7 @@ export const SendForm = (props: Props): JSX.Element => {
         }
       })
     },
-    [amountValidator, balance.amount.decimal, isEVMChain, isUTXOChain]
+    [amountValidator, balance.amount.decimal, isEVMChain, isMaxSweepChain]
   )
 
   const onChangeAddress = useCallback(
@@ -813,9 +817,9 @@ export const SendForm = (props: Props): JSX.Element => {
         return prev
       })
     }
-    if (isUTXOChain) setIsSendMax(true)
+    if (isMaxSweepChain) setIsSendMax(true)
     setValue('amount', baseToAsset(maxAmount).amount())
-  }, [isEVMChain, isUTXOChain, maxAmount, setValue])
+  }, [isEVMChain, isMaxSweepChain, maxAmount, setValue])
 
   const feeOptionsLabel: Record<FeeOption, string> = useMemo(
     () => ({
@@ -910,7 +914,7 @@ export const SendForm = (props: Props): JSX.Element => {
       const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmount.decimal)
 
-      if (isUTXOChain) setIsSendMax(percents === 100)
+      if (isMaxSweepChain) setIsSendMax(percents === 100)
 
       if (isEVMChain) {
         setAmountToSend((prev) => {
@@ -940,7 +944,7 @@ export const SendForm = (props: Props): JSX.Element => {
         disabled={isLoading}
       />
     )
-  }, [isEVMChain, amountToSend, maxAmount, isLoading, isUTXOChain, setValue])
+  }, [isEVMChain, amountToSend, maxAmount, isLoading, isMaxSweepChain, setValue])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -1105,7 +1109,7 @@ export const SendForm = (props: Props): JSX.Element => {
         feeOption: isEVMChain ? selectedFeeOption : selectedFeeOptionKey,
         memo: currentMemo,
         destinationTag: watch('destinationTag'),
-        sendMax: isUTXOChain ? isSendMax : undefined,
+        sendMax: isMaxSweepChain ? isSendMax : undefined,
         selectedUtxos: ccSelectedUtxos,
         utxoSelectionPreferences: ccPreferences
       })
@@ -1113,6 +1117,7 @@ export const SendForm = (props: Props): JSX.Element => {
   }, [
     isEVMChain,
     isUTXOChain,
+    isMaxSweepChain,
     isSendMax,
     amountToSend,
     recipientAddress,

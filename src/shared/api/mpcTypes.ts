@@ -156,8 +156,9 @@ export const ASGARDEX_TO_SDK_CHAIN: Record<string, string> = {
   ZEC: 'Zcash',
   KUJI: 'Kujira',
   ADA: 'Cardano',
-  TRON: 'Tron',
-  XRD: 'Radix'
+  TRON: 'Tron'
+  // XRD intentionally omitted: SDK does not support 'Radix' in its Chain enum.
+  // Re-add when/if Radix lands upstream.
 }
 
 export const SDK_TO_ASGARDEX_CHAIN: Record<string, string> = Object.entries(ASGARDEX_TO_SDK_CHAIN).reduce(

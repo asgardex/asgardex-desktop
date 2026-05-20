@@ -63,7 +63,10 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.triggered': 'ट्रिगर हुआ',
   'pools.chart.tradingPanel.priceLevel.completed': 'पूर्ण',
   'pools.chart.tradingPanel.priceLevel.failed': 'विफल',
-  'pools.chart.tradingPanel.approve': 'अनुमोदन'
+  'pools.chart.tradingPanel.approve': 'अनुमोदन',
+  'pools.chainflip.minSwap': 'न्यूनतम स्वैप',
+  'pools.chainflip.boostAvailable': 'बूस्ट उपलब्ध',
+  'pools.chainflip.empty': 'अभी कोई Chainflip संपत्ति उपलब्ध नहीं है।'
 }
 
 export default pools
