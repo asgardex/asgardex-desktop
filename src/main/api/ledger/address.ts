@@ -42,11 +42,17 @@ import { getAddress as getTRONAddress, verifyAddress as verifyTRONAddress } from
 
 const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
-const withTimeout = <T>(promise: Promise<T>, ms: number, label: string): Promise<T> =>
-  Promise.race([
-    promise,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms))
-  ])
+const withTimeout = <T>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+  })
+  // Clear the timer whichever promise wins, so a successful call doesn't leave
+  // a dangling 10s timer in the main process.
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer !== undefined) clearTimeout(timer)
+  })
+}
 
 const handleEVMChain = (
   chain: Chain,
