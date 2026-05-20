@@ -12,6 +12,7 @@ import {
   isSynthAsset,
   isTradeAsset
 } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -161,8 +162,9 @@ export const createChainflipService$ = () => {
       })
       const quote = response.quotes[0]
       if (!quote) return undefined
-      // egressAmount is in USDC smallest units (6 decimals)
-      const usd = Number(quote.egressAmount) / 1e6
+      // egressAmount is in USDC smallest units (6 decimals) — use BigNumber
+      // to avoid IEEE-754 precision loss for large base-unit integers.
+      const usd = new BigNumber(quote.egressAmount).shiftedBy(-6).toNumber()
       return isFinite(usd) && usd > 0 ? usd : undefined
     } catch (error) {
       logger.warn(`Chainflip row price error for ${a.symbol} on ${a.chain}:`, error)

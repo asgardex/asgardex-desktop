@@ -120,7 +120,7 @@ export const PoolsOverview = (): JSX.Element => {
       </div>
       <TabPanels className="mt-2 w-full">
         {FP.pipe(
-          tabs,
+          visibleTabs,
           A.map(({ content, index }) => <TabPanel key={`content-${index}`}>{content}</TabPanel>)
         )}
       </TabPanels>

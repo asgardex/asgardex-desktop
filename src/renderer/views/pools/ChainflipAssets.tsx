@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 import { assetToString } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -29,11 +30,13 @@ const formatUsd = (amount: number | undefined): string => {
   return `$${amount.toLocaleString(undefined, { maximumFractionDigits: 6 })}`
 }
 
+// Chainflip max-swap amounts can exceed Number.MAX_SAFE_INTEGER for 18-decimal
+// tokens, so use BigNumber rather than `Number(amount) / 10**decimals`.
 const formatBaseUnits = (amount: string | null, decimals: number, symbol: string): string => {
   if (!amount) return '—'
-  const n = Number(amount) / Math.pow(10, decimals)
-  if (!isFinite(n)) return '—'
-  return `${n.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${symbol}`
+  const value = new BigNumber(amount).shiftedBy(-decimals)
+  if (!value.isFinite()) return '—'
+  return `${value.decimalPlaces(6, BigNumber.ROUND_DOWN).toFormat()} ${symbol}`
 }
 
 export const ChainflipAssets = (): JSX.Element => {

@@ -231,6 +231,7 @@ const common: CommonMessages = {
   'common.nativeSegwit': 'Native Segwit',
   'common.taproot': 'Taproot',
   'common.protocols': '프로토콜',
+  'common.protocolSwitch.switchTo': '{protocol}(으)로 전환',
   'common.resetToDefault': '기본값으로 재설정',
   'common.noData': '데이터 없음',
   'common.importTokens': '토큰 가져오기',

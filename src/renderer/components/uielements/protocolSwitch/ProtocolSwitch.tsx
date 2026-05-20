@@ -48,7 +48,9 @@ export const ProtocolSwitch = ({ protocol, setProtocol, withAll = false }: Props
       return {
         value: p,
         label: (
-          <Tooltip title={`Switch pools to ${label}`} placement="bottom">
+          <Tooltip
+            title={intl.formatMessage({ id: 'common.protocolSwitch.switchTo' }, { protocol: label })}
+            placement="bottom">
             <span>{label}</span>
           </Tooltip>
         )

@@ -233,6 +233,7 @@ const common: CommonMessages = {
   'common.nativeSegwit': 'Native Segwit',
   'common.taproot': 'Taproot',
   'common.protocols': 'Protocolos',
+  'common.protocolSwitch.switchTo': 'Cambiar a {protocol}',
   'common.resetToDefault': 'Restablecer al valor por defecto',
   'common.noData': 'Sin datos',
   'common.importTokens': 'Importar tokens',

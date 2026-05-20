@@ -230,6 +230,7 @@ export type CommonMessageKey =
   | 'common.nativeSegwit'
   | 'common.taproot'
   | 'common.protocols'
+  | 'common.protocolSwitch.switchTo'
   | 'common.resetToDefault'
   | 'common.importTokens'
   | 'common.searchToken'
