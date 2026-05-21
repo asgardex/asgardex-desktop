@@ -21,7 +21,8 @@ const ledger: LedgerMessages = {
   'ledger.error.invaliddata': 'Donnée invalide',
   'ledger.error.invalidresponse': "Réponse non valide après l'envoi de la transaction en utilisant Ledger",
   'ledger.error.rejected': "L'action sur Ledger a été rejetée",
-  'ledger.error.timeout': "Dépassement du délai pour gérer l'action sur Ledger",
+  'ledger.error.timeout':
+    "Appareil Ledger non détecté après {seconds}s. Assurez-vous qu'il est branché, déverrouillé et non ouvert dans une autre application, puis réessayez.",
   'ledger.error.notimplemented': "L'action n'a pas été implémentée pour Ledger",
   'ledger.error.denied': 'Vous avez refusé la demande',
   'ledger.error.unknown': 'Erreur inconnue',

@@ -19,7 +19,8 @@ const ledger: LedgerMessages = {
   'ledger.error.invaliddata': '유효하지 않은 데이터입니다.',
   'ledger.error.invalidresponse': '원장을 사용하여 거래를 전송한 후 유효하지 않은 응답이 반환되었습니다.',
   'ledger.error.rejected': '원장에서 작업이 거부되었습니다.',
-  'ledger.error.timeout': '원장에서 작업을 처리하는 데 시간이 초과되었습니다.',
+  'ledger.error.timeout':
+    '{seconds}초가 지나도 Ledger 기기를 감지하지 못했습니다. 기기가 연결되어 있고 잠금 해제되었으며 다른 앱에서 열려 있지 않은지 확인한 후 다시 시도하세요.',
   'ledger.error.notimplemented': '원장을 위한 작업이 구현되지 않았습니다.',
   'ledger.error.denied': '원장 사용이 거부되었습니다',
   'ledger.error.unknown': '알 수 없는 오류',

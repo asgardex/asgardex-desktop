@@ -42,13 +42,21 @@ import { getAddress as getTRONAddress, verifyAddress as verifyTRONAddress } from
 
 const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
+/** Identifiable timeout error so callers can distinguish a transport timeout from other failures. */
+class TransportTimeoutError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'TransportTimeoutError'
+  }
+}
+
 const withTimeout = <T>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
   let timer: ReturnType<typeof setTimeout> | undefined
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    timer = setTimeout(() => reject(new TransportTimeoutError(`${label} timed out after ${ms}ms`)), ms)
   })
   // Clear the timer whichever promise wins, so a successful call doesn't leave
-  // a dangling 10s timer in the main process.
+  // a dangling timer in the main process.
   return Promise.race([promise, timeout]).finally(() => {
     if (timer !== undefined) clearTimeout(timer)
   })
@@ -146,7 +154,7 @@ export const getAddress = async ({
     return await addressFunction(t, network, walletAccount, walletIndex, hdMode)
   } catch (error) {
     return E.left({
-      errorId: LedgerErrorId.GET_ADDRESS_FAILED,
+      errorId: error instanceof TransportTimeoutError ? LedgerErrorId.TIMEOUT : LedgerErrorId.GET_ADDRESS_FAILED,
       msg: isError(error) ? (error?.message ?? error.toString()) : `${error}`
     })
   } finally {

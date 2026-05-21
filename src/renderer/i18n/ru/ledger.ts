@@ -20,7 +20,8 @@ const ledger: LedgerMessages = {
   'ledger.error.invaliddata': 'Неверные данные.',
   'ledger.error.invalidresponse': 'Неверный ответ после отправки транзакции с помощью Ledger.',
   'ledger.error.rejected': 'Действие было отменено на Ledger.',
-  'ledger.error.timeout': 'Тайм-аут для обработки действия на Ledger.',
+  'ledger.error.timeout':
+    'Устройство Ledger не обнаружено через {seconds} с. Убедитесь, что оно подключено, разблокировано и не открыто в другом приложении, затем повторите попытку.',
   'ledger.error.notimplemented': 'Действие не было выполнено с Ledger.',
   'ledger.error.denied': 'Вы отклонили запрос Ledger',
   'ledger.error.unknown': 'Неизвестная ошибка',

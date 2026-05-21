@@ -19,7 +19,8 @@ const ledger: LedgerMessages = {
   'ledger.error.invaliddata': 'अवैध डेटा।',
   'ledger.error.invalidresponse': 'Ledger का उपयोग करके लेन-देन भेजने के बाद अवैध प्रतिक्रिया।',
   'ledger.error.rejected': 'Ledger पर क्रिया अस्वीकृत की गई।',
-  'ledger.error.timeout': 'Ledger पर क्रिया के प्रोसेसिंग के लिए टाइम-आउट।',
+  'ledger.error.timeout':
+    '{seconds}s के बाद आपका Ledger डिवाइस नहीं मिला। सुनिश्चित करें कि यह प्लग इन है, अनलॉक है और किसी अन्य ऐप में खुला नहीं है, फिर पुनः प्रयास करें।',
   'ledger.error.notimplemented': 'Ledger के साथ क्रिया नहीं की गई।',
   'ledger.error.denied': 'आपने Ledger अनुरोध अस्वीकृत किया है',
   'ledger.error.unknown': 'अज्ञात त्रुटि',
