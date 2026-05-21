@@ -19,7 +19,8 @@ const ledger: LedgerMessages = {
   'ledger.error.invaliddata': 'Ungültige Daten',
   'ledger.error.invalidresponse': 'Ungültige Antwort nach dem Versenden der Transaktion mit dem Ledger',
   'ledger.error.rejected': 'Die Aktion auf dem Ledger wurde abgelehnt',
-  'ledger.error.timeout': 'Zeitüberschreitung zum Ausführen einer Aktion mit dem Ledger',
+  'ledger.error.timeout':
+    'Ledger-Gerät nach {seconds}s nicht erkannt. Stelle sicher, dass es angeschlossen und entsperrt ist und nicht in einer anderen App geöffnet ist, und versuche es erneut.',
   'ledger.error.notimplemented': 'Aktion für den Ledger nicht implementiert',
   'ledger.error.denied': 'Die Benutzung des Ledgers wurde verweigert',
   'ledger.error.unknown': 'Unbekannter Fehler',

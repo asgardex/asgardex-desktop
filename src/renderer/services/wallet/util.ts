@@ -5,6 +5,7 @@ import { IntlShape } from 'react-intl'
 
 import { KeystoreWallets, KeystoreWallet, IPCLedgerAddressesIO } from '../../../shared/api/io'
 import { KeystoreId, LedgerErrorId } from '../../../shared/api/types'
+import { LEDGER_TRANSPORT_TIMEOUT_MS } from '../../../shared/const'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqAsset } from '../../helpers/fp/eq'
@@ -189,7 +190,7 @@ export const ledgerErrorIdToI18n = (errorId: LedgerErrorId, intl: IntlShape) => 
     case LedgerErrorId.REJECTED:
       return intl.formatMessage({ id: 'ledger.error.rejected' })
     case LedgerErrorId.TIMEOUT:
-      return intl.formatMessage({ id: 'ledger.error.timeout' })
+      return intl.formatMessage({ id: 'ledger.error.timeout' }, { seconds: LEDGER_TRANSPORT_TIMEOUT_MS / 1000 })
     case LedgerErrorId.INVALID_RESPONSE:
       return intl.formatMessage({ id: 'ledger.error.invalidresponse' })
     case LedgerErrorId.NOT_IMPLEMENTED:

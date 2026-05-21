@@ -114,6 +114,20 @@ const POOLS_STORAGE_DEFAULT: PoolsStorageEncoded = {
 // Default gas multiplier (1x = normal gas price)
 export const DEFAULT_EVM_GAS_MULTIPLIER = 1 as const
 
+/**
+ * Bounded transport creation for Ledger devices. Without this,
+ * `TransportNodeHidSingleton.default.create()` hangs forever when the device is on a
+ * power-only USB cable, locked, busy with another app, or otherwise unresponsive.
+ */
+export const LEDGER_TRANSPORT_TIMEOUT_MS = 10_000
+
+/**
+ * Renderer-side ceiling for the full IPC round-trip. Derived from the main-process
+ * transport timeout so the inner timeout always wins the race and surfaces the more
+ * specific error to the user.
+ */
+export const LEDGER_IPC_TIMEOUT_MS = LEDGER_TRANSPORT_TIMEOUT_MS + 10_000
+
 // increase it by `1` if you want to ignore previous version of `common` storage
 const COMMON_STORAGE_VERSION = '1'
 /**

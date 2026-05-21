@@ -84,7 +84,7 @@ import {
   VultisigState,
   VultisigVaultInfo
 } from '../../services/wallet/types'
-import { walletTypeToI18n } from '../../services/wallet/util'
+import { ledgerErrorIdToI18n, walletTypeToI18n } from '../../services/wallet/util'
 import { useApp } from '../../store/app/hooks'
 import { AddressEllipsis } from '../uielements/addressEllipsis'
 import { ChainIcon } from '../uielements/assets/chainIcon/ChainIcon'
@@ -419,7 +419,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
           RD.fold(
             empty,
             empty,
-            (error) => <p className="pt-10px font-main text-[12px] text-error0 uppercase">{error.msg}</p>,
+            (error) => (
+              <p className="pt-10px font-main text-[12px] text-error0 uppercase">
+                {ledgerErrorIdToI18n(error.errorId, intl)}
+              </p>
+            ),
             empty
           )
         )

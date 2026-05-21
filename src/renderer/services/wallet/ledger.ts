@@ -5,6 +5,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { KeystoreId, LedgerErrorId } from '../../../shared/api/types'
+import { LEDGER_IPC_TIMEOUT_MS } from '../../../shared/const'
 import { isError } from '../../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqChain, eqKeystoreId, eqNetwork, eqOLedgerAddress } from '../../helpers/fp/eq'
@@ -185,6 +186,9 @@ export const createLedgerService = ({
           hdMode
         })
       ),
+      // Client-side guard. Main-process timeout + headroom for IPC round-trip and
+      // post-transport work so the UI spinner always resolves into success or error.
+      RxOp.timeout(LEDGER_IPC_TIMEOUT_MS),
       RxOp.map(RD.fromEither),
       RxOp.catchError((error) =>
         Rx.of(
