@@ -1,5 +1,28 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.43.3
+
+## Add
+
+- add SUI chain integration [#1037](https://github.com/asgardex/asgardex-desktop/pull/1037)
+- add Chainflip pools UI [#1048](https://github.com/asgardex/asgardex-desktop/pull/1048)
+
+## Update/Fixes
+
+- upgrade Vultisig MPC SDK from 0.4.3 to 0.22.5 — structured PSBT signing, token discovery, tx simulation [#1042](https://github.com/asgardex/asgardex-desktop/pull/1042)
+- fix Vultisig vault creation QR code clipping [#1039](https://github.com/asgardex/asgardex-desktop/pull/1039)
+- fix MAYA Midgard pool endpoint asset casing [#1044](https://github.com/asgardex/asgardex-desktop/pull/1044)
+- fix duplicate chain halt warning messages [#1047](https://github.com/asgardex/asgardex-desktop/pull/1047)
+- fix pie chart label overlap on wallet chart [#1049](https://github.com/asgardex/asgardex-desktop/pull/1049)
+- fix Ledger add-address spinner hanging — bound transport creation with a timeout and clearer error message [#1043](https://github.com/asgardex/asgardex-desktop/pull/1043)
+- add transfer max for ADA [#1045](https://github.com/asgardex/asgardex-desktop/pull/1045)
+
+## Chores
+
+- bump `@chainflip/sdk` to 2.1.1 to fix transaction-tracking log spam [#1041](https://github.com/asgardex/asgardex-desktop/pull/1041)
+- update xchainjs packages [#1045](https://github.com/asgardex/asgardex-desktop/pull/1045)
+- bump and lock axios, bump vulnerable dependencies [#1046](https://github.com/asgardex/asgardex-desktop/pull/1046)
+
 # 1.43.2
 
 ## Update/Fixes
