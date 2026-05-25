@@ -32,7 +32,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('doge keystore'),
-
+      hdMode: 'default',
       chain: MAYAChain,
       balances: RD.success([
         {
@@ -61,6 +61,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('btc keystore'),
+      hdMode: 'default',
       chain: BTCChain,
       balances: RD.success([
         {
@@ -80,6 +81,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('eth keystore'),
+      hdMode: 'default',
       chain: ETHChain,
       balances: RD.success([
         {
@@ -99,6 +101,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('thor keystore'),
+      hdMode: 'default',
       chain: THORChain,
       balances: RD.success([
         {
@@ -118,6 +121,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('ltc keystore'),
+      hdMode: 'default',
       chain: LTCChain,
       balances: RD.success([
         {

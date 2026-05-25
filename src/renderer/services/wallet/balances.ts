@@ -426,8 +426,15 @@ export const createBalancesService = ({
    * balances data which might be very expensive.
    */
   const walletBalancesState: Map<string, WalletBalancesRD> = new Map()
-  const balanceCacheKey = (chain: Chain, walletType: WalletType, walletBalanceType: WalletBalanceType): string =>
-    `${chain}|${walletType}|${walletBalanceType}`
+  // `hdMode` is part of the cache key so the BTC keystore's Native SegWit (default)
+  // and Taproot (p2tr) balances don't overwrite each other in the cache. For all
+  // other chains/wallet modes `hdMode` is effectively constant per (chain, walletType).
+  const balanceCacheKey = (
+    chain: Chain,
+    walletType: WalletType,
+    walletBalanceType: WalletBalanceType,
+    hdMode: HDMode
+  ): string => `${chain}|${walletType}|${walletBalanceType}|${hdMode}`
 
   // Whenever network is changed, reset stored balances
   const networkSub = network$.subscribe(() => {
@@ -497,7 +504,7 @@ export const createBalancesService = ({
     return FP.pipe(
       reload$,
       RxOp.switchMap((shouldReloadData) => {
-        const savedResult = walletBalancesState.get(balanceCacheKey(chain, walletType, walletBalanceType))
+        const savedResult = walletBalancesState.get(balanceCacheKey(chain, walletType, walletBalanceType, hdMode))
         // For every new simple subscription return cached results if they exist
         if (!shouldReloadData && savedResult) {
           return Rx.of(savedResult)
@@ -511,7 +518,7 @@ export const createBalancesService = ({
           // For every successful load save results to the memory-based cache
           // to avoid unwanted data re-requesting.
           liveData.map((balances) => {
-            walletBalancesState.set(balanceCacheKey(chain, walletType, walletBalanceType), RD.success(balances))
+            walletBalancesState.set(balanceCacheKey(chain, walletType, walletBalanceType, hdMode), RD.success(balances))
             return balances
           }),
           RxOp.startWith(savedResult || RD.initial)
@@ -544,6 +551,7 @@ export const createBalancesService = ({
                 walletAddress: O.none,
                 walletAccount: 0,
                 walletIndex: 0,
+                hdMode: 'default' as HDMode,
                 balances: RD.initial,
                 balancesType: walletBalanceType
               }),
@@ -562,6 +570,7 @@ export const createBalancesService = ({
                   walletAddress: O.some(walletAddress.address),
                   walletAccount: walletAddress.walletAccount,
                   walletIndex: walletAddress.walletIndex,
+                  hdMode: walletAddress.hdMode,
                   balances,
                   balancesType: walletBalanceType
                 }))
@@ -646,6 +655,7 @@ export const createBalancesService = ({
                 walletType: WalletType.Ledger,
                 chain,
                 walletAddress: O.none,
+                hdMode: 'default',
                 balances: RD.initial,
                 balancesType: walletBalanceType
               }),
@@ -715,6 +725,7 @@ export const createBalancesService = ({
                 walletType: WalletType.Vultisig,
                 chain,
                 walletAddress: O.none,
+                hdMode: 'default',
                 balances: RD.initial,
                 balancesType: walletBalanceType
               }),
@@ -733,6 +744,7 @@ export const createBalancesService = ({
                   walletType: WalletType.Vultisig,
                   chain,
                   walletAddress: O.some(address),
+                  hdMode: 'default',
                   balances,
                   balancesType: walletBalanceType
                 }))
@@ -854,6 +866,22 @@ export const createBalancesService = ({
   const btcChainBalanceConfirmed$: ChainBalance$ = createChainBalance$({
     chain: BTCChain,
     addressUI$: BTC.addressUI$,
+    walletBalanceType: 'confirmed'
+  })
+
+  /**
+   * BTC Taproot (P2TR) keystore balances. `addressUITR$` is keystore-only and emits
+   * `O.none` for Ledger/Vultisig modes, so no Taproot row appears for those modes.
+   */
+  const btcChainBalanceTR$: ChainBalance$ = createChainBalance$({
+    chain: BTCChain,
+    addressUI$: BTC.addressUITR$,
+    walletBalanceType: 'all'
+  })
+
+  const btcChainBalanceConfirmedTR$: ChainBalance$ = createChainBalance$({
+    chain: BTCChain,
+    addressUI$: BTC.addressUITR$,
     walletBalanceType: 'confirmed'
   })
 
@@ -1307,7 +1335,14 @@ export const createBalancesService = ({
   const chainBalanceObservables: Record<Chain, ChainBalance$[]> = {
     THOR: [thorChainBalance$, thorLedgerChainBalance$],
     MAYA: [mayaChainBalance$, mayaLedgerChainBalance$],
-    BTC: [btcChainBalance$, btcChainBalanceConfirmed$, btcLedgerChainBalance$, btcLedgerChainBalanceConfirmed$],
+    BTC: [
+      btcChainBalance$,
+      btcChainBalanceConfirmed$,
+      btcChainBalanceTR$,
+      btcChainBalanceConfirmedTR$,
+      btcLedgerChainBalance$,
+      btcLedgerChainBalanceConfirmed$
+    ],
     BCH: [bchChainBalance$, bchLedgerChainBalance$],
     DASH: [dashBalance$, dashLedgerChainBalance$],
     ETH: [ethChainBalance$, ethLedgerChainBalance$],

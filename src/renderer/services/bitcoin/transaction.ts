@@ -18,12 +18,21 @@ import { createVultisigUtxoTx } from '../utxo/vultisigTx'
 import { TxHashLD, ErrorId } from '../wallet/types'
 import { Client$ } from './types'
 
-export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
+export const createTransactionService = (
+  client$: Client$,
+  clientTR$: Client$,
+  network$: Network$
+): TransactionService => {
   const common = C.createTransactionService(client$)
+  const commonTR = C.createTransactionService(clientTR$)
+
+  // Pick the keystore client matching the sender's derivation: Taproot (P2TR) or
+  // the default Native SegWit (P2WPKH) client.
+  const keystoreClientByHDMode$ = (params: SendTxParams): Client$ => (params.hdMode === 'p2tr' ? clientTR$ : client$)
 
   const sendKeystoreMaxTx = (params: SendTxParams): TxHashLD =>
     FP.pipe(
-      client$,
+      keystoreClientByHDMode$(params),
       RxOp.switchMap(FP.flow(O.fold<Client, Rx.Observable<Client>>(() => Rx.EMPTY, Rx.of))),
       RxOp.switchMap((client) =>
         Rx.from(
@@ -117,7 +126,10 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
 
         if (params.sendMax) return sendKeystoreMaxTx(params)
 
-        return common.sendTx(params)
+        // Keystore: route Taproot sends to the P2TR client; everything else
+        // continues through the Native SegWit (P2WPKH) client.
+        const keystoreCommon = params.hdMode === 'p2tr' ? commonTR : common
+        return keystoreCommon.sendTx(params)
       })
     )
 
