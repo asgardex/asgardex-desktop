@@ -217,14 +217,14 @@ export const toPoolsData = (poolDetails: Array<Pick<PoolDetail, 'asset' | 'asset
   poolDetails.reduce<PoolsDataMap>((acc, cur) => ({ ...acc, [cur.asset]: toPoolData(cur) }), {})
 
 /**
- * Converts a `BaseAmount` string into `PoolData` balance (always `1e8` decimal based)
+ * Converts a `BaseAmount` string into `PoolData` balance (always `1e10` / CACAO_DECIMAL based)
  */
 export const toPoolBalance = (baseAmountString: string): BaseAmount => baseAmount(baseAmountString, CACAO_DECIMAL)
 
 /**
  * Transforms `PoolDetail` into `PoolData` (provided by `asgardex-util`)
  *
- * Note: Balances of `PoolData` are always `1e8` based
+ * Note: Balances of `PoolData` are normalized to `CACAO_DECIMAL` (`1e10`) for MAYA Midgard data
  */
 export const toPoolData = ({ assetDepth, runeDepth }: Pick<PoolDetail, 'assetDepth' | 'runeDepth'>): PoolData => ({
   assetBalance: toPoolBalance(assetDepth),

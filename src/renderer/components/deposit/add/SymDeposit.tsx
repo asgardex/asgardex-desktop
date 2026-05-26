@@ -218,10 +218,10 @@ export const SymDeposit = (props: Props) => {
     [protocol] // Dependency
   )
 
-  // Pool asset depth scale: THORChain always uses 1e8, MAYAChain uses native scale (e.g. 1e4 for MAYA.MAYA, 1e8 for BTC)
+  // Pool asset depth scale: THORChain stores depths in 1e8, MAYAChain stores depths in 1e10 (CACAO_DECIMAL)
   const poolAssetDecimals = useMemo(
-    () => (protocol === THORChain ? THORCHAIN_DECIMAL : Math.min(assetDecimal, THORCHAIN_DECIMAL)),
-    [protocol, assetDecimal]
+    () => (protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL),
+    [protocol]
   )
 
   const prevAsset = useRef<O.Option<AnyAsset>>(O.none)

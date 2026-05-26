@@ -2,6 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 
@@ -215,6 +216,23 @@ describe('deposit/Deposit.helper', () => {
         poolAssetDecimals: THORCHAIN_DECIMAL
       })
       expect(eqBaseAmount.equals(result, baseAmount(2500, 8))).toBeTruthy()
+    })
+    it('MAYAChain: correct result with poolAssetDecimals=CACAO_DECIMAL', () => {
+      // Pool depth: 20 CACAO, 10 ADA (both stored in 1e10 scale)
+      const mayaPoolData = {
+        dexBalance: baseAmount(200000000000, CACAO_DECIMAL), // 20 CACAO in 1e10
+        assetBalance: baseAmount(100000000000, CACAO_DECIMAL) // 10 ADA in 1e10
+      }
+      const runeAmount = baseAmount(400000000000, CACAO_DECIMAL) // 40 CACAO in 1e10
+      const assetDecimal = 6 // ADA
+      const result = getAssetAmountToDeposit({
+        runeAmount,
+        poolData: mayaPoolData,
+        assetDecimal,
+        poolAssetDecimals: CACAO_DECIMAL
+      })
+      // 40 CACAO * (assetDepth 10 / runeDepth 20) = 20 ADA → baseAmount(20_000_000, 6)
+      expect(eqBaseAmount.equals(result, baseAmount(20000000, 6))).toBeTruthy()
     })
   })
 
