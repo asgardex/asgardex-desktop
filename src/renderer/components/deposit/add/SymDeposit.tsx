@@ -46,7 +46,7 @@ import { eqBaseAmount, eqOAsset, eqOApproveParams, eqAsset } from '../../../help
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
 import { getDepositMemo } from '../../../helpers/memoHelper'
 import * as PoolHelpers from '../../../helpers/poolHelper'
-import { getUSDValue } from '../../../helpers/poolHelperMaya'
+import { getMayaPoolDepthDecimal, getUSDValue } from '../../../helpers/poolHelperMaya'
 import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
@@ -218,10 +218,11 @@ export const SymDeposit = (props: Props) => {
     [protocol] // Dependency
   )
 
-  // Pool asset depth scale: THORChain always uses 1e8, MAYAChain uses native scale (e.g. 1e4 for MAYA.MAYA, 1e8 for BTC)
+  // Pool asset depth scale (Midgard convention, NOT the asset's native decimal):
+  // THORChain → 1e8 for all pools. MAYAChain → 1e4 for MAYA.MAYA, 1e8 otherwise.
   const poolAssetDecimals = useMemo(
-    () => (protocol === THORChain ? THORCHAIN_DECIMAL : Math.min(assetDecimal, THORCHAIN_DECIMAL)),
-    [protocol, assetDecimal]
+    () => (protocol === THORChain ? THORCHAIN_DECIMAL : getMayaPoolDepthDecimal(asset)),
+    [protocol, asset]
   )
 
   const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
