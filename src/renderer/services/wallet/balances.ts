@@ -429,12 +429,21 @@ export const createBalancesService = ({
   // `hdMode` is part of the cache key so the BTC keystore's Native SegWit (default)
   // and Taproot (p2tr) balances don't overwrite each other in the cache. For all
   // other chains/wallet modes `hdMode` is effectively constant per (chain, walletType).
+  //
+  // `walletAccount` + `walletIndex` are also included so the cache stays correct
+  // if/when the keystore ever gains multi-account/multi-index support. Today the
+  // keystore pipeline pins both to 0 and Ledger entries are unique by
+  // (keystoreId, chain, network, hdMode), so this is purely defensive — it just
+  // future-proofs the cache against silently returning a sibling derivation's
+  // balance.
   const balanceCacheKey = (
     chain: Chain,
     walletType: WalletType,
     walletBalanceType: WalletBalanceType,
-    hdMode: HDMode
-  ): string => `${chain}|${walletType}|${walletBalanceType}|${hdMode}`
+    hdMode: HDMode,
+    walletAccount: number,
+    walletIndex: number
+  ): string => `${chain}|${walletType}|${walletBalanceType}|${hdMode}|${walletAccount}|${walletIndex}`
 
   // Whenever network is changed, reset stored balances
   const networkSub = network$.subscribe(() => {
@@ -504,7 +513,9 @@ export const createBalancesService = ({
     return FP.pipe(
       reload$,
       RxOp.switchMap((shouldReloadData) => {
-        const savedResult = walletBalancesState.get(balanceCacheKey(chain, walletType, walletBalanceType, hdMode))
+        const savedResult = walletBalancesState.get(
+          balanceCacheKey(chain, walletType, walletBalanceType, hdMode, walletAccount, walletIndex)
+        )
         // For every new simple subscription return cached results if they exist
         if (!shouldReloadData && savedResult) {
           return Rx.of(savedResult)
@@ -518,7 +529,10 @@ export const createBalancesService = ({
           // For every successful load save results to the memory-based cache
           // to avoid unwanted data re-requesting.
           liveData.map((balances) => {
-            walletBalancesState.set(balanceCacheKey(chain, walletType, walletBalanceType, hdMode), RD.success(balances))
+            walletBalancesState.set(
+              balanceCacheKey(chain, walletType, walletBalanceType, hdMode, walletAccount, walletIndex),
+              RD.success(balances)
+            )
             return balances
           }),
           RxOp.startWith(savedResult || RD.initial)
