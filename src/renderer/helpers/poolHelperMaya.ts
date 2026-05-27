@@ -13,7 +13,7 @@ import { getPoolDetail, toPoolData } from '../services/midgard/mayaMidgard/utils
 import { PoolAddress, PoolData, PricePool } from '../services/midgard/midgardTypes'
 import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
 import { getPoolTableRowDataMaya, getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../views/pools/Pools.utils'
-import { convertBaseAmountDecimal, isCacaoAsset, isMayaAsset, to1e8BaseAmount, to1e10BaseAmount } from './assetHelper'
+import { convertBaseAmountDecimal, isCacaoAsset, to1e8BaseAmount } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
@@ -151,14 +151,9 @@ export const getPoolPriceValue = ({
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
 
-  // Maya Midgard reports assetDepth in 1e8 for most assets, but in native decimal for MAYA.MAYA (1e4).
-  // runeDepth is always in 1e10. getValueOfAsset1InAsset2 uses 1e8 internally,
-  // so input must match the assetDepth scale for correct pool ratios.
-  const amountNormalized = isCacaoAsset(asset)
-    ? amount // CACAO: native 1e10, used in getValueOfRuneInAsset where it matches runeDepth scale
-    : isMayaAsset(asset)
-      ? baseAmount(amount.amount(), 8) // MAYA: re-tag to decimal 8 without scaling (assetDepth is in native 1e4)
-      : to1e8BaseAmount(amount) // All other assets: assetDepth is in 1e8
+  // Pool data is normalized to CACAO_DECIMAL (1e10); getValueOfAsset1InAsset2 and
+  // getValueOfRuneInAsset expect inputs in 1e8.
+  const amountNormalized = to1e8BaseAmount(amount)
 
   return FP.pipe(
     getPoolDetail(poolDetails, asset),
@@ -194,8 +189,7 @@ export const getUSDValue = ({
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
   if (isCacaoAsset(asset)) {
-    const amount1e10 = to1e10BaseAmount(amount)
-    return O.some(getValueOfRuneInAsset(amount1e10, pricePoolData))
+    return O.some(getValueOfRuneInAsset(to1e8BaseAmount(amount), pricePoolData))
   }
 
   return FP.pipe(

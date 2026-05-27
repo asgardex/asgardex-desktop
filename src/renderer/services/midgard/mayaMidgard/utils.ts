@@ -213,32 +213,18 @@ export const getPoolDetail = (details: PoolDetails, asset: AnyAsset): O.Option<P
  * Converts `PoolDetails` to `PoolsDataMap`
  * Keys of the end HasMap is PoolDetails[i].asset
  */
-export const toPoolsData = (poolDetails: Array<Pick<PoolDetail, 'asset' | 'assetDepth' | 'runeDepth'>>): PoolsDataMap =>
-  poolDetails.reduce<PoolsDataMap>((acc, cur) => ({ ...acc, [cur.asset]: toPoolData(cur) }), {})
+export const toPoolsData = (
+  poolDetails: Array<Pick<PoolDetail, 'asset' | 'assetDepth' | 'runeDepth' | 'nativeDecimal'>>
+): PoolsDataMap => poolDetails.reduce<PoolsDataMap>((acc, cur) => ({ ...acc, [cur.asset]: toPoolData(cur) }), {})
 
 /**
- * Converts a `BaseAmount` string into `PoolData` balance (always `1e10` / CACAO_DECIMAL based)
- */
-export const toPoolBalance = (baseAmountString: string): BaseAmount => baseAmount(baseAmountString, CACAO_DECIMAL)
-
-/**
- * Transforms `PoolDetail` into `PoolData` (provided by `asgardex-util`)
- *
- * Note: Balances of `PoolData` are normalized to `CACAO_DECIMAL` (`1e10`) for MAYA Midgard data
- */
-export const toPoolData = ({ assetDepth, runeDepth }: Pick<PoolDetail, 'assetDepth' | 'runeDepth'>): PoolData => ({
-  assetBalance: toPoolBalance(assetDepth),
-  dexBalance: toPoolBalance(runeDepth)
-})
-
-/**
- * Transforms `PoolDetail` into `PoolData` with depths correctly normalized to `CACAO_DECIMAL` (`1e10`).
+ * Transforms `PoolDetail` into `PoolData` with depths normalized to `CACAO_DECIMAL` (`1e10`).
  *
  * MAYAMidgard encodes `runeDepth` (CACAO) in 1e8 units and `assetDepth` in the asset's
- * native decimal units (provided by `nativeDecimal`).  Both are scaled up to `CACAO_DECIMAL`
- * so that symmetric-deposit ratio calculations stay consistent with `poolAssetDecimals = CACAO_DECIMAL`.
+ * native decimal (provided by `nativeDecimal`).  Both are scaled to `CACAO_DECIMAL` so
+ * that deposit-ratio and price calculations are consistent with `poolAssetDecimals = CACAO_DECIMAL`.
  */
-export const toNormalizedPoolData = ({
+export const toPoolData = ({
   assetDepth,
   runeDepth,
   nativeDecimal
