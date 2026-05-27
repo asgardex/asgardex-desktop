@@ -59,6 +59,8 @@ const deposit: DepositMessages = {
   'deposit.unbond.state.error': 'निकासी में त्रुटि',
   'deposit.leave.state.error': 'बाहर निकलने में त्रुटि',
   'deposit.advancedMode': 'उन्नत मोड',
+  'deposit.poolTransactionInfo':
+    'When enabled, sends via the {protocol} router contract (depositWithExpiry) used for pool interactions like adding liquidity or bonding. Leave OFF for a normal token transfer.',
   'deposit.poolDetails.depth': 'गहराई',
   'deposit.poolDetails.24hvol': '24 घंटों में मात्रा',
   'deposit.poolDetails.allTimeVal': 'समय के साथ कुल मात्रा',
