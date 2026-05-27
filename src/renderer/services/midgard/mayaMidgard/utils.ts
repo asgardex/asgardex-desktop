@@ -232,6 +232,22 @@ export const toPoolData = ({ assetDepth, runeDepth }: Pick<PoolDetail, 'assetDep
 })
 
 /**
+ * Transforms `PoolDetail` into `PoolData` with depths correctly normalized to `CACAO_DECIMAL` (`1e10`).
+ *
+ * MAYAMidgard encodes `runeDepth` (CACAO) in 1e8 units and `assetDepth` in the asset's
+ * native decimal units (provided by `nativeDecimal`).  Both are scaled up to `CACAO_DECIMAL`
+ * so that symmetric-deposit ratio calculations stay consistent with `poolAssetDecimals = CACAO_DECIMAL`.
+ */
+export const toNormalizedPoolData = ({
+  assetDepth,
+  runeDepth,
+  nativeDecimal
+}: Pick<PoolDetail, 'assetDepth' | 'runeDepth' | 'nativeDecimal'>): PoolData => ({
+  dexBalance: convertBaseAmountDecimal(baseAmount(runeDepth, THORCHAIN_DECIMAL), CACAO_DECIMAL),
+  assetBalance: convertBaseAmountDecimal(baseAmount(assetDepth, parseInt(nativeDecimal, 10)), CACAO_DECIMAL)
+})
+
+/**
  * Filter out mini tokens from pool assets
  */
 export const filterPoolAssets = (poolAssets: string[]) => {

@@ -38,6 +38,7 @@ import { usePricePoolMaya } from '../../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../../routes/pools'
 import { PoolAddress, PoolAssetsRD } from '../../../services/midgard/midgardTypes'
+import { toNormalizedPoolData } from '../../../services/midgard/mayaMidgard/utils'
 import { toPoolData } from '../../../services/midgard/thorMidgard/utils'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { useApp } from '../../../store/app/hooks'
@@ -323,7 +324,7 @@ export const SymDepositView = (props: Props) => {
             openAssetExplorerTxUrl={openAssetExplorerTxUrl}
             getRuneExplorerTxUrl={getRuneExplorerTxUrl}
             getAssetExplorerTxUrl={getAssetExplorerTxUrl}
-            poolData={toPoolData(poolDetail)}
+            poolData={protocol === THORChain ? toPoolData(poolDetail) : toNormalizedPoolData(poolDetail)}
             onChangeAsset={onChangeAsset}
             asset={assetWD}
             walletBalances={balancesState}
