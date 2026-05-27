@@ -245,14 +245,14 @@ export const HeaderStats = (props: Props): JSX.Element => {
           {runePriceLabel}
         </Label>
 
-        {!isSmallMobileView && (
-          <>
-            <div className="h-5 w-[1px] bg-gray2 dark:bg-gray2d" />
-            <Label className="!w-auto" color="gray" textTransform="uppercase">
-              {volume24PriceRuneLabel}
-            </Label>
-          </>
-        )}
+        {/* Volume hides below 1400px so the 4 pills + right-side controls don't
+            overflow / wrap in the 1200–1400px range (where xl kicks TCY+FLIP in). */}
+        <div className="hidden items-center space-x-2 min-[1400px]:flex">
+          <div className="h-5 w-[1px] bg-gray2 dark:bg-gray2d" />
+          <Label className="!w-auto" color="gray" textTransform="uppercase">
+            {volume24PriceRuneLabel}
+          </Label>
+        </div>
       </div>
 
       {isSmallMobileView ||
@@ -294,14 +294,13 @@ export const HeaderStats = (props: Props): JSX.Element => {
           {mayaPriceLabel}
         </Label>
 
-        {!isSmallMobileView && (
-          <>
-            <div className="h-5 w-[1px] bg-gray2 dark:bg-gray2d" />
-            <Label className="!w-auto" color="gray" textTransform="uppercase">
-              {volume24PriceMayaLabel}
-            </Label>
-          </>
-        )}
+        {/* Same 1400px gate as THOR — keeps both volume slots in sync. */}
+        <div className="hidden items-center space-x-2 min-[1400px]:flex">
+          <div className="h-5 w-[1px] bg-gray2 dark:bg-gray2d" />
+          <Label className="!w-auto" color="gray" textTransform="uppercase">
+            {volume24PriceMayaLabel}
+          </Label>
+        </div>
       </div>
     </div>
   )
