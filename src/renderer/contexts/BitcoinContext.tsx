@@ -5,6 +5,8 @@ import {
   clientState$,
   address$,
   addressUI$,
+  addressTR$,
+  addressUITR$,
   reloadBalances,
   balances$,
   getBalanceByAddress$,
@@ -23,6 +25,9 @@ type BitcoinContextValue = {
   clientState$: typeof clientState$
   address$: typeof address$
   addressUI$: typeof addressUI$
+  /** Taproot (P2TR) keystore address — `O.none` outside keystore mode. */
+  addressTR$: typeof addressTR$
+  addressUITR$: typeof addressUITR$
   reloadBalances: typeof reloadBalances
   balances$: typeof balances$
   getBalanceByAddress$: typeof getBalanceByAddress$
@@ -41,6 +46,8 @@ const initialContext: BitcoinContextValue = {
   clientState$,
   address$,
   addressUI$,
+  addressTR$,
+  addressUITR$,
   reloadBalances,
   balances$,
   getBalanceByAddress$,

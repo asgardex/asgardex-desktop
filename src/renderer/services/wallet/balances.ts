@@ -617,14 +617,22 @@ export const createBalancesService = ({
   })
 
   /**
-   * Factory to create a stream of ledger balances by given chain
+   * Factory to create a stream of ledger balances by given chain.
+   *
+   * When `hdMode` is supplied the stream is scoped to the Ledger entry for that
+   * derivation (used by BTC to render Native SegWit and Taproot as separate
+   * rows). When omitted, the first Ledger entry for the chain is used — the
+   * historical behaviour, which is correct for chains that only ever hold one
+   * Ledger address.
    */
   const ledgerChainBalance$ = ({
     chain,
+    hdMode: hdModeFilter,
     walletBalanceType,
     getBalanceByAddress$
   }: {
     chain: Chain
+    hdMode?: HDMode
     walletBalanceType: WalletBalanceType
     getBalanceByAddress$: ({
       address,
@@ -643,7 +651,7 @@ export const createBalancesService = ({
     }) => WalletBalancesLD
   }): ChainBalance$ =>
     FP.pipe(
-      getLedgerAddress$(chain),
+      getLedgerAddress$(chain, hdModeFilter),
       RxOp.switchMap((oAddress) =>
         FP.pipe(
           oAddress,
@@ -655,7 +663,7 @@ export const createBalancesService = ({
                 walletType: WalletType.Ledger,
                 chain,
                 walletAddress: O.none,
-                hdMode: 'default',
+                hdMode: hdModeFilter ?? 'default',
                 balances: RD.initial,
                 balancesType: walletBalanceType
               }),
@@ -835,18 +843,38 @@ export const createBalancesService = ({
   })
 
   /**
-   * BTC Ledger balances
+   * BTC Ledger balances — Native SegWit (P2WPKH). The `hdMode: 'p2wpkh'` filter
+   * also matches legacy `'default'` entries via the normalization in
+   * `wallet/ledger.ts`, so wallets created before the multi-derivation UI
+   * continue to surface here.
    */
   const btcLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
     chain: BTCChain,
+    hdMode: 'p2wpkh',
     walletBalanceType: 'all',
     getBalanceByAddress$: BTC.getBalanceByAddress$('all')
   })
-  /**
-   * BTC Ledger confirmed balances
-   */
   const btcLedgerChainBalanceConfirmed$: ChainBalance$ = ledgerChainBalance$({
     chain: BTCChain,
+    hdMode: 'p2wpkh',
+    walletBalanceType: 'confirmed',
+    getBalanceByAddress$: BTC.getBalanceByAddress$('confirmed')
+  })
+
+  /**
+   * BTC Ledger balances — Taproot (P2TR). Scoped to entries persisted with
+   * `hdMode: 'p2tr'` so a user can hold a Native SegWit and a Taproot Ledger
+   * address side by side instead of one silently replacing the other.
+   */
+  const btcLedgerChainBalanceTR$: ChainBalance$ = ledgerChainBalance$({
+    chain: BTCChain,
+    hdMode: 'p2tr',
+    walletBalanceType: 'all',
+    getBalanceByAddress$: BTC.getBalanceByAddress$('all')
+  })
+  const btcLedgerChainBalanceConfirmedTR$: ChainBalance$ = ledgerChainBalance$({
+    chain: BTCChain,
+    hdMode: 'p2tr',
     walletBalanceType: 'confirmed',
     getBalanceByAddress$: BTC.getBalanceByAddress$('confirmed')
   })
@@ -1341,7 +1369,9 @@ export const createBalancesService = ({
       btcChainBalanceTR$,
       btcChainBalanceConfirmedTR$,
       btcLedgerChainBalance$,
-      btcLedgerChainBalanceConfirmed$
+      btcLedgerChainBalanceConfirmed$,
+      btcLedgerChainBalanceTR$,
+      btcLedgerChainBalanceConfirmedTR$
     ],
     BCH: [bchChainBalance$, bchLedgerChainBalance$],
     DASH: [dashBalance$, dashLedgerChainBalance$],
@@ -1368,7 +1398,12 @@ export const createBalancesService = ({
   const ledgerBalanceObservables: Record<Chain, ChainBalance$[]> = {
     THOR: [thorLedgerChainBalance$],
     MAYA: [mayaLedgerChainBalance$],
-    BTC: [btcLedgerChainBalance$, btcLedgerChainBalanceConfirmed$],
+    BTC: [
+      btcLedgerChainBalance$,
+      btcLedgerChainBalanceConfirmed$,
+      btcLedgerChainBalanceTR$,
+      btcLedgerChainBalanceConfirmedTR$
+    ],
     BCH: [bchLedgerChainBalance$],
     DASH: [dashLedgerChainBalance$],
     ETH: [ethLedgerChainBalance$],

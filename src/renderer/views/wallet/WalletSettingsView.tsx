@@ -112,7 +112,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const { addressUI$: avaxAddressUI$ } = useAvaxContext()
   const { addressUI$: baseAddressUI$ } = useBaseContext()
   const { addressUI$: bscAddressUI$ } = useBscContext()
-  const { addressUI$: btcAddressUI$ } = useBitcoinContext()
+  const { addressUI$: btcAddressUI$, addressUITR$: btcAddressUITR$ } = useBitcoinContext()
   const { addressUI$: ltcAddressUI$ } = useLitecoinContext()
   const { addressUI$: bchAddressUI$ } = useBitcoinCashContext()
   const { addressUI$: dogeAddressUI$ } = useDogeContext()
@@ -137,12 +137,24 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     removeAddress: removeLedgerThorAddress
   } = useLedger(THORChain, keystoreId)
 
+  // BTC Ledger — Native SegWit (P2WPKH) slot. The `'p2wpkh'` scope also matches
+  // legacy entries persisted with `hdMode: 'default'` via the normalization in
+  // `wallet/ledger.ts`, so pre-existing wallets keep working.
   const {
     addAddress: addLedgerBtcAddress,
     verifyAddress: verifyLedgerBtcAddress,
     address: oBtcLedgerWalletAddress,
     removeAddress: removeLedgerBtcAddress
-  } = useLedger(BTCChain, keystoreId)
+  } = useLedger(BTCChain, keystoreId, 'p2wpkh')
+
+  // BTC Ledger — Taproot (P2TR) slot. Held independently so adding a Taproot
+  // address no longer overwrites a previously-added Native SegWit one.
+  const {
+    addAddress: addLedgerBtcTaprootAddress,
+    verifyAddress: verifyLedgerBtcTaprootAddress,
+    address: oBtcLedgerTaprootWalletAddress,
+    removeAddress: removeLedgerBtcTaprootAddress
+  } = useLedger(BTCChain, keystoreId, 'p2tr')
 
   const {
     addAddress: addLedgerSolAddress,
@@ -276,7 +288,10 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     hdMode: HDMode
   }): LedgerAddressLD => {
     if (isThorChain(chain)) return addLedgerThorAddress(walletAccount, walletIndex, hdMode)
-    if (isBtcChain(chain)) return addLedgerBtcAddress(walletAccount, walletIndex, hdMode)
+    if (isBtcChain(chain))
+      return hdMode === 'p2tr'
+        ? addLedgerBtcTaprootAddress(walletAccount, walletIndex, hdMode)
+        : addLedgerBtcAddress(walletAccount, walletIndex, hdMode)
     if (isLtcChain(chain)) return addLedgerLtcAddress(walletAccount, walletIndex, hdMode)
     if (isBchChain(chain)) return addLedgerBchAddress(walletAccount, walletIndex, hdMode)
     if (isDogeChain(chain)) return addLedgerDOGEAddress(walletAccount, walletIndex, hdMode)
@@ -315,7 +330,10 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     hdMode: HDMode
   }): VerifiedLedgerAddressLD => {
     if (isThorChain(chain)) return verifyLedgerThorAddress(walletAccount, walletIndex, hdMode)
-    if (isBtcChain(chain)) return verifyLedgerBtcAddress(walletAccount, walletIndex, hdMode)
+    if (isBtcChain(chain))
+      return hdMode === 'p2tr'
+        ? verifyLedgerBtcTaprootAddress(walletAccount, walletIndex, hdMode)
+        : verifyLedgerBtcAddress(walletAccount, walletIndex, hdMode)
     if (isLtcChain(chain)) return verifyLedgerLtcAddress(walletAccount, walletIndex, hdMode)
     if (isBchChain(chain)) return verifyLedgerBchAddress(walletAccount, walletIndex, hdMode)
     if (isDogeChain(chain)) return verifyLedgerDOGEAddress(walletAccount, walletIndex, hdMode)
@@ -337,9 +355,9 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     return Rx.of(RD.failure(Error(`Ledger address verification for ${chain} has not been implemented`)))
   }
 
-  const removeLedgerAddressHandler = (chain: Chain) => {
+  const removeLedgerAddressHandler = (chain: Chain, hdMode?: HDMode) => {
     if (isThorChain(chain)) return removeLedgerThorAddress()
-    if (isBtcChain(chain)) return removeLedgerBtcAddress()
+    if (isBtcChain(chain)) return hdMode === 'p2tr' ? removeLedgerBtcTaprootAddress() : removeLedgerBtcAddress()
     if (isLtcChain(chain)) return removeLedgerLtcAddress()
     if (isBchChain(chain)) return removeLedgerBchAddress()
     if (isDogeChain(chain)) return removeLedgerDOGEAddress()
@@ -474,6 +492,14 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
       ledgerAddress: oBtcLedgerWalletAddress,
       chain: BTCChain
     })
+    // Second BTC slot for the Taproot (P2TR) keystore + Ledger pair so the
+    // settings UI shows an independent add/verify/remove row for it instead of
+    // sharing one row that gets silently overwritten by the latest derivation.
+    const btcTaprootWalletAccount$ = walletAccount$({
+      addressUI$: btcAddressUITR$,
+      ledgerAddress: oBtcLedgerTaprootWalletAddress,
+      chain: BTCChain
+    })
     const solWalletAccount$ = walletAccount$({
       addressUI$: solAddressUI$,
       ledgerAddress: oSolLedgerWalletAddress,
@@ -574,7 +600,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
       Rx.combineLatest(
         filterEnabledChains({
           THOR: [thorWalletAccount$],
-          BTC: [btcWalletAccount$],
+          BTC: [btcWalletAccount$, btcTaprootWalletAccount$],
           ETH: [ethWalletAccount$],
           ARB: [arbWalletAccount$],
           AVAX: [avaxWalletAccount$],
@@ -603,7 +629,9 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     thorAddressUI$,
     oThorLedgerWalletAddress,
     btcAddressUI$,
+    btcAddressUITR$,
     oBtcLedgerWalletAddress,
+    oBtcLedgerTaprootWalletAddress,
     solAddressUI$,
     oSolLedgerWalletAddress,
     tronAddressUI$,

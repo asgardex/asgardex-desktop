@@ -12,7 +12,15 @@ import { LedgerAddress } from '../services/wallet/types'
 import { ledgerAddressToWalletAddress } from '../services/wallet/util'
 import { useNetwork } from './useNetwork'
 
-export const useLedger = (chain: Chain, id: KeystoreId) => {
+/**
+ * `useLedger(chain, id)` — operates on the single Ledger entry for the chain.
+ * `useLedger(chain, id, hdMode)` — scopes to the entry matching that derivation,
+ * required for chains that can hold multiple Ledger addresses (BTC: P2WPKH / P2TR).
+ *
+ * `addAddress` / `verifyAddress` always take `hdMode` explicitly; `scopedHdMode`
+ * only affects which existing entry is fetched (`address`) and which is removed.
+ */
+export const useLedger = (chain: Chain, id: KeystoreId, scopedHdMode?: HDMode) => {
   const { network } = useNetwork()
 
   const { addLedgerAddress$, getLedgerAddress$, verifyLedgerAddress$, removeLedgerAddress } = useWalletContext()
@@ -23,13 +31,13 @@ export const useLedger = (chain: Chain, id: KeystoreId) => {
     [chain, verifyLedgerAddress$, network]
   )
   const removeAddress = useCallback(
-    () => removeLedgerAddress({ id, chain, network }),
-    [removeLedgerAddress, chain, network, id]
+    () => removeLedgerAddress({ id, chain, network, hdMode: scopedHdMode }),
+    [removeLedgerAddress, chain, network, id, scopedHdMode]
   )
   const [address] = useObservableState(
     () =>
       FP.pipe(
-        getLedgerAddress$(chain),
+        getLedgerAddress$(chain, scopedHdMode),
         // LedgerAddress -> WalletAddress
         RxOp.map<O.Option<LedgerAddress>, O.Option<WalletAddress>>(FP.flow(O.map(ledgerAddressToWalletAddress))),
         RxOp.shareReplay(1)

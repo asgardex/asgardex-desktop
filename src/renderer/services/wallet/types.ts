@@ -399,7 +399,18 @@ export type BalancesService = {
   dispose: FP.Lazy<void>
 }
 
-export type GetLedgerAddressHandler = (chain: Chain) => Rx.Observable<O.Option<LedgerAddress>>
+/**
+ * Returns the Ledger address for a given chain. For chains that can hold multiple
+ * addresses (currently Bitcoin: P2WPKH and P2TR), an optional `hdMode` narrows the
+ * lookup to that derivation; otherwise the first entry for the chain is returned.
+ */
+export type GetLedgerAddressHandler = (chain: Chain, hdMode?: HDMode) => Rx.Observable<O.Option<LedgerAddress>>
+
+/**
+ * Returns every Ledger address for a given chain (filtered to the current keystore
+ * + network) so callers can fan out balances over multiple derivations.
+ */
+export type GetLedgerAddressesHandler = (chain: Chain) => Rx.Observable<LedgerAddress[]>
 
 export type VerifiedLedgerAddressRD = RD.RemoteData<Error, boolean>
 export type VerifiedLedgerAddressLD = LiveData<Error, boolean>
@@ -436,17 +447,25 @@ export type AddLedgerAddressHandler = ({
 export type RemoveLedgerAddressHandler = ({
   id,
   chain,
-  network
+  network,
+  hdMode
 }: {
   id: KeystoreId
   chain: Chain
   network: Network
+  /**
+   * Narrows the removal to a specific derivation. Required for chains that can
+   * hold multiple Ledger addresses (Bitcoin: P2WPKH vs P2TR). For other chains it
+   * is ignored and the chain's single entry is removed.
+   */
+  hdMode?: HDMode
 }) => LedgerAddressesLD
 
 export type LedgerService = {
   currentLedgerAddresses$: LedgerAddresses$
   addLedgerAddress$: AddLedgerAddressHandler
   getLedgerAddress$: GetLedgerAddressHandler
+  getLedgerAddresses$: GetLedgerAddressesHandler
   verifyLedgerAddress$: VerifyLedgerAddressHandler
   removeLedgerAddress: RemoveLedgerAddressHandler
   persistentLedgerAddresses$: LedgerAddressesLD

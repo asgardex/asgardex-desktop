@@ -181,7 +181,7 @@ type KeystoreProps = CommonProps & {
     walletIndex: number
     hdMode: HDMode
   }) => VerifiedLedgerAddressLD
-  removeLedgerAddress: (chain: Chain) => void
+  removeLedgerAddress: (chain: Chain, hdMode?: HDMode) => void
   evmHDMode: EvmHDMode
   updateEvmHDMode: (mode: EvmHDMode) => void
 }
@@ -203,7 +203,7 @@ type Props = KeystoreProps | VultisigProps
 // Type guard matching existing project pattern (isVultisigMode, isKeystoreMode, etc.)
 const isVultisigWalletProps = (p: Props): p is VultisigProps => p.walletMode === WalletType.Vultisig
 
-type AddressToVerify = O.Option<{ address: Address; chain: Chain }>
+type AddressToVerify = O.Option<{ address: Address; chain: Chain; hdMode: HDMode }>
 
 const initialMap = {
   [BTCChain]: 0,
@@ -384,7 +384,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
     (walletAddress: WalletAddress) => {
       if (!verifyLedgerAddress$) return // Guard: Ledger not available in Vultisig mode
       const { chain, walletAccount, walletIndex, address, hdMode } = walletAddress
-      setLedgerAddressToVerify(O.some({ chain, address }))
+      setLedgerAddressToVerify(O.some({ chain, address, hdMode }))
       subscribeVerifyLedgerAddressRD(
         verifyLedgerAddress$({
           chain,
@@ -607,7 +607,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   },
                   { chain }
                 )}>
-                <RemoveIcon className="h-4 w-4" onClick={() => removeLedgerAddress?.(chain)} />
+                <RemoveIcon className="h-4 w-4" onClick={() => removeLedgerAddress?.(chain, walletAddress.hdMode)} />
               </Tooltip>
             </div>
           </>
@@ -720,7 +720,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         oAddress,
         O.fold(
           () => <></>,
-          ({ address, chain }) => {
+          ({ address, chain, hdMode }) => {
             const onOk = () => {
               resetVerifyLedgerAddressRD()
               setLedgerAddressToVerify(O.none)
@@ -728,7 +728,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
             const onCancel = () => {
               resetVerifyLedgerAddressRD()
               setLedgerAddressToVerify(O.none)
-              removeLedgerAddress?.(chain)
+              // Pass hdMode so cancelling a Taproot verification removes only the
+              // Taproot entry, not the (possibly co-existing) Native SegWit one.
+              removeLedgerAddress?.(chain, hdMode)
             }
 
             return (
