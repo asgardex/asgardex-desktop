@@ -61,7 +61,7 @@ const deposit: DepositMessages = {
   'deposit.leave.state.error': 'Dejar error',
   'deposit.advancedMode': 'Modo avanzado',
   'deposit.poolTransactionInfo':
-    'When enabled, sends via the {protocol} router contract (depositWithExpiry) used for pool interactions like adding liquidity or bonding. Leave OFF for a normal token transfer.',
+    'Cuando está habilitado, se envía a través del contrato del enrutador de {protocol} (depositWithExpiry), utilizado para interacciones con el pool como añadir liquidez o realizar bonding. Déjelo DESACTIVADO para una transferencia normal de tokens.',
   'deposit.poolDetails.depth': 'Profundidad',
   'deposit.poolDetails.24hvol': '24h volumen',
   'deposit.poolDetails.allTimeVal': 'Volumen de todos los tiempos',
