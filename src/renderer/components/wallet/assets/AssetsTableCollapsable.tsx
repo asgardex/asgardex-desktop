@@ -593,7 +593,10 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
   )
 
   const renderHeader = useCallback(
-    ({ chain, walletType, walletAddress: oWalletAddress, balances: balancesRD }: ChainBalance, isOpen: boolean) => {
+    (
+      { chain, walletType, walletAddress: oWalletAddress, balances: balancesRD, hdMode }: ChainBalance,
+      isOpen: boolean
+    ) => {
       const walletAddress = FP.pipe(
         oWalletAddress,
         O.getOrElse(() => intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
@@ -623,6 +626,11 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
             {!isKeystoreWallet(walletType) && (
               <WalletTypeLabel className="border border-solid border-gray0 bg-bg2 dark:border-gray0d dark:bg-bg2d">
                 {walletTypeToI18n(walletType, intl)}
+              </WalletTypeLabel>
+            )}
+            {hdMode === 'p2tr' && (
+              <WalletTypeLabel className="border border-solid border-gray0 bg-bg2 dark:border-gray0d dark:bg-bg2d">
+                {intl.formatMessage({ id: 'common.taproot' })}
               </WalletTypeLabel>
             )}
             <Label

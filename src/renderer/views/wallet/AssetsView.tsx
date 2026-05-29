@@ -97,7 +97,9 @@ export const AssetsView = (): JSX.Element => {
         if (!enabledChains.has(balance.chain)) {
           return false
         }
-        const key = `${balance.chain}-${balance.walletType}`
+        // Include hdMode so e.g. keystore BTC Native SegWit (default) and Taproot (p2tr)
+        // both surface as distinct rows instead of collapsing into a single BTC entry.
+        const key = `${balance.chain}-${balance.walletType}-${balance.hdMode}`
         if (seen.has(key)) {
           return false
         }
