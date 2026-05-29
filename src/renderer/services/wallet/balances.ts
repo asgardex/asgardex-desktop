@@ -71,6 +71,15 @@ import {
   isVultisigMode
 } from './types'
 
+/**
+ * Default derivation marker for chain/wallet combinations that have no further
+ * mode to distinguish (i.e. every chain except BTC keystore, which carries
+ * `'p2tr'` for the Taproot row). Kept as a typed constant so call sites don't
+ * have to repeat `'default' as HDMode` casts that TypeScript would otherwise
+ * narrow to the literal type.
+ */
+const DEFAULT_HD_MODE: HDMode = 'default'
+
 export const createBalancesService = ({
   keystore$,
   network$,
@@ -542,16 +551,26 @@ export const createBalancesService = ({
   }
 
   /**
-   * Factory to create a chain balance observable that uses dynamic wallet type from addressUI$
+   * Factory to create a chain balance observable that uses dynamic wallet type from addressUI$.
+   *
+   * `hdMode` parameter stamps the placeholder `ChainBalance` emitted while the
+   * address is still resolving (e.g. keystore unlocking). Without it the BTC
+   * Taproot row would briefly impersonate Native SegWit (`'default'`) before
+   * its address is derived — harmless today (the row renders nothing while
+   * `walletAddress: O.none && balances: RD.initial`) but semantically wrong and
+   * a latent bug for any future code that reads `ChainBalance.hdMode` in the
+   * loading state.
    */
   const createChainBalance$ = ({
     chain,
     addressUI$,
-    walletBalanceType
+    walletBalanceType,
+    hdMode = DEFAULT_HD_MODE
   }: {
     chain: Chain
     addressUI$: Rx.Observable<O.Option<WalletAddress>>
     walletBalanceType: WalletBalanceType
+    hdMode?: HDMode
   }): ChainBalance$ =>
     addressUI$.pipe(
       RxOp.switchMap((oWalletAddress) =>
@@ -565,7 +584,7 @@ export const createBalancesService = ({
                 walletAddress: O.none,
                 walletAccount: 0,
                 walletIndex: 0,
-                hdMode: 'default' as HDMode,
+                hdMode,
                 balances: RD.initial,
                 balancesType: walletBalanceType
               }),
@@ -669,7 +688,7 @@ export const createBalancesService = ({
                 walletType: WalletType.Ledger,
                 chain,
                 walletAddress: O.none,
-                hdMode: 'default',
+                hdMode: DEFAULT_HD_MODE,
                 balances: RD.initial,
                 balancesType: walletBalanceType
               }),
@@ -739,7 +758,7 @@ export const createBalancesService = ({
                 walletType: WalletType.Vultisig,
                 chain,
                 walletAddress: O.none,
-                hdMode: 'default',
+                hdMode: DEFAULT_HD_MODE,
                 balances: RD.initial,
                 balancesType: walletBalanceType
               }),
@@ -752,13 +771,13 @@ export const createBalancesService = ({
                   walletAccount: 0, // Vultisig doesn't use HD derivation
                   walletIndex: 0,
                   walletBalanceType,
-                  hdMode: 'default'
+                  hdMode: DEFAULT_HD_MODE
                 }),
                 RxOp.map<WalletBalancesRD, ChainBalance>((balances) => ({
                   walletType: WalletType.Vultisig,
                   chain,
                   walletAddress: O.some(address),
-                  hdMode: 'default',
+                  hdMode: DEFAULT_HD_MODE,
                   balances,
                   balancesType: walletBalanceType
                 }))
@@ -890,13 +909,15 @@ export const createBalancesService = ({
   const btcChainBalanceTR$: ChainBalance$ = createChainBalance$({
     chain: BTCChain,
     addressUI$: BTC.addressUITR$,
-    walletBalanceType: 'all'
+    walletBalanceType: 'all',
+    hdMode: 'p2tr'
   })
 
   const btcChainBalanceConfirmedTR$: ChainBalance$ = createChainBalance$({
     chain: BTCChain,
     addressUI$: BTC.addressUITR$,
-    walletBalanceType: 'confirmed'
+    walletBalanceType: 'confirmed',
+    hdMode: 'p2tr'
   })
 
   /**
