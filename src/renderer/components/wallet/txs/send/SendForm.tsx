@@ -91,6 +91,7 @@ import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { SwitchButton } from '../../../uielements/button/SwitchButton'
 import { Fees as UIFees, UIFeesRD } from '../../../uielements/fees'
+import { InfoIcon } from '../../../uielements/info'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
 import { RadioGroup, Radio } from '../../../uielements/radio'
@@ -1642,6 +1643,18 @@ export const SendForm = (props: Props): JSX.Element => {
             <div className="mt-2 rounded-lg bg-bg1 p-4 dark:bg-bg1d">
               <div className="flex flex-wrap items-center gap-4 py-2.5">
                 <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)} active={poolDeposit} />
+                <InfoIcon
+                  tooltip={intl.formatMessage(
+                    { id: 'deposit.poolTransactionInfo' },
+                    {
+                      protocol: FP.pipe(
+                        oProtocol,
+                        O.getOrElse(() => 'protocol')
+                      )
+                    }
+                  )}
+                  color="primary"
+                />
                 {poolDeposit ? (
                   <div className="flex max-w-full flex-1 items-center rounded-lg border border-error0/[0.25] bg-error0/[0.13] px-3 py-2 sm:max-w-[500px]">
                     <span className="text-sm leading-[1.4] text-error0 dark:text-error0d">
