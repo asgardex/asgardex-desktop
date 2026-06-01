@@ -2,6 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { CACAO_DECIMAL, MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 
@@ -215,6 +216,65 @@ describe('deposit/Deposit.helper', () => {
         poolAssetDecimals: THORCHAIN_DECIMAL
       })
       expect(eqBaseAmount.equals(result, baseAmount(2500, 8))).toBeTruthy()
+    })
+
+    // --- MAYAChain cases (see docs/MAYA_POOL_DEPTH_DECIMAL_FIX.md) ---
+    // The only consumer-visible inputs here are the raw `.amount()` integers (used for the
+    // depth ratio) and `poolAssetDecimals` (the scale `getMayaPoolDepthDecimal` returns).
+
+    it('MAYAChain: correct result with poolAssetDecimals=CACAO_DECIMAL', () => {
+      // Pool depth: 20 CACAO, 10 ADA (both stored in 1e10 scale)
+      const mayaPoolData = {
+        dexBalance: baseAmount(200000000000, CACAO_DECIMAL), // 20 CACAO in 1e10
+        assetBalance: baseAmount(100000000000, CACAO_DECIMAL) // 10 ADA in 1e10
+      }
+      const runeAmount = baseAmount(400000000000, CACAO_DECIMAL) // 40 CACAO in 1e10
+      const assetDecimal = 6 // ADA
+      const result = getAssetAmountToDeposit({
+        runeAmount,
+        poolData: mayaPoolData,
+        assetDecimal,
+        poolAssetDecimals: CACAO_DECIMAL
+      })
+      // 40 CACAO * (assetDepth 10 / runeDepth 20) = 20 ADA → baseAmount(20_000_000, 6)
+      expect(eqBaseAmount.equals(result, baseAmount(20000000, 6))).toBeTruthy()
+    })
+
+    it('MAYAChain ADA: real Midgard depth scale (asset 1e8 / cacao 1e10) → poolAssetDecimals=8', () => {
+      // Real MAYA Midgard reports the ADA depth in 1e8 but the CACAO depth in 1e10.
+      // Only the raw integers feed the ratio, so tag them with their true scales here.
+      const mayaPoolData = {
+        dexBalance: baseAmount(200000000000), //  20 CACAO in 1e10 scale
+        assetBalance: baseAmount(1000000000) //   10 ADA  in 1e8  scale
+      }
+      const runeAmount = baseAmount(200000000000) // 20 CACAO in 1e10 scale
+      const assetDecimal = 6 // ADA native decimal
+
+      // FIX: `getMayaPoolDepthDecimal(ADA)` → 8 → paired amount ≈ 10 ADA
+      const fixed = getAssetAmountToDeposit({ runeAmount, poolData: mayaPoolData, assetDecimal, poolAssetDecimals: 8 })
+      expect(eqBaseAmount.equals(fixed, baseAmount(10000000, 6))).toBeTruthy() // 10 ADA
+
+      // BUG (old `Math.min(assetDecimal, 8)` = 6) produced ~1000 ADA — 100× too high.
+      const buggy = getAssetAmountToDeposit({ runeAmount, poolData: mayaPoolData, assetDecimal, poolAssetDecimals: 6 })
+      expect(eqBaseAmount.equals(buggy, baseAmount(1000000000, 6))).toBeTruthy() // 1000 ADA
+    })
+
+    it('MAYAChain MAYA.MAYA: poolAssetDecimals=MAYA_DECIMAL (1e4)', () => {
+      // MAYA.MAYA depth is reported in 1e4, CACAO depth in 1e10.
+      const mayaPoolData = {
+        dexBalance: baseAmount(200000000000), // 20 CACAO in 1e10 scale
+        assetBalance: baseAmount(100000) //      10 MAYA  in 1e4  scale
+      }
+      const runeAmount = baseAmount(200000000000) // 20 CACAO in 1e10 scale
+      const assetDecimal = MAYA_DECIMAL // 4
+      const result = getAssetAmountToDeposit({
+        runeAmount,
+        poolData: mayaPoolData,
+        assetDecimal,
+        poolAssetDecimals: MAYA_DECIMAL
+      })
+      // 20 CACAO * (10 MAYA / 20 CACAO) = 10 MAYA → baseAmount(100_000, 4)
+      expect(eqBaseAmount.equals(result, baseAmount(100000, MAYA_DECIMAL))).toBeTruthy()
     })
   })
 
