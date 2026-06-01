@@ -100,6 +100,7 @@ import { Collapse } from '../../uielements/collapse'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
 import { ProtocolSwitch } from '../../uielements/protocolSwitch'
+import { ProtocolsLp } from '../../uielements/protocolSwitch/types'
 import { Tooltip } from '../../uielements/tooltip'
 import { AssetMissmatchWarning } from './AssetMissmatchWarning'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
@@ -2066,7 +2067,7 @@ export const SymDeposit = (props: Props) => {
   return (
     <div className="flex min-h-full w-full flex-col items-center justify-between">
       <div className="mb-4 flex w-full max-w-[500px] items-center justify-start">
-        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} protocols={ProtocolsLp} />
       </div>
 
       <div className="flex max-w-[500px] flex-col">

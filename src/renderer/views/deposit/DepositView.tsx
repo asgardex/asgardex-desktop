@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Asset, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
@@ -25,6 +26,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { getAssetFromNullableString, isCacaoAsset, isRuneNativeAsset } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
+import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
 import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
@@ -98,7 +100,11 @@ export const DepositView = () => {
       ),
     []
   )
-  const { mimirHalt } = useThorchainMimirHalt()
+  // MimirHalt is per-DEX: THORChain mimir has HALTTHORCHAIN-style flags, MAYA has HALTMAYACHAIN.
+  // We must feed the helpers the active protocol's mimir, else a THOR-only halt blocks MAYA actions.
+  const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
+  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
+  const mimirHalt = protocol === THORChain ? mimirHaltThor : mimirHaltMaya
   const { keystoreService, reloadBalancesByChain } = useWalletContext()
 
   const { assetWithDecimal$ } = useChainContext()
@@ -114,14 +120,17 @@ export const DepositView = () => {
 
   // Set selected pool asset whenever an asset in route has been changed
   useEffect(() => {
-    // Block the protocol's base asset from being used as the LP asset side
-    // (RUNE on THORChain, CACAO on MAYAChain) but allow other same-chain assets (e.g. MAYA.MAYA)
-    const isProtocolBaseAsset = (asset: AnyAsset) => isRuneNativeAsset(asset) || isCacaoAsset(asset)
+    // Block the *current* protocol's base asset from being used as the LP asset side
+    // (RUNE on THORChain, CACAO on MAYAChain). Cross-protocol base assets are valid
+    // pool assets: THOR.RUNE is a MAYA pool, and MAYA.MAYA / MAYA.CACAO equivalents
+    // sit in their own pools too.
+    const isCurrentProtocolBaseAsset = (asset: AnyAsset) =>
+      (protocol === THORChain && isRuneNativeAsset(asset)) || (protocol === MAYAChain && isCacaoAsset(asset))
 
     O.fold(
       () => {},
       (asset: AnyAsset) => {
-        if (isProtocolBaseAsset(asset)) {
+        if (isCurrentProtocolBaseAsset(asset)) {
           // If dex and asset's chain are equal, set an alternative asset
           const alternativeAsset = getAlternativeAsset()
           O.fold(
