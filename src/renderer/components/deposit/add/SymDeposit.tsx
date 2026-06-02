@@ -948,9 +948,29 @@ export const SymDeposit = (props: Props) => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
   }, [oApproveParams, reloadApproveFee])
 
+  // Inbound dust threshold (native chain decimal) from the active DEX. MAYA refunds any
+  // inbound below this floor, so it has to be respected as a hard minimum on the asset side.
+  const oDustThreshold: O.Option<BaseAmount> = useMemo(
+    () =>
+      FP.pipe(
+        oPoolAddress,
+        O.chain(({ dustThreshold }) =>
+          dustThreshold !== undefined ? O.some(baseAmount(dustThreshold, assetDecimal)) : O.none
+        )
+      ),
+    [oPoolAddress, assetDecimal]
+  )
+
   const minAssetAmountToDepositMax1e8: BaseAmount = useMemo(
-    () => Helper.minAssetAmountToDepositMax1e8({ fees: depositFees.asset, asset, assetDecimal, poolsData }),
-    [asset, assetDecimal, depositFees.asset, poolsData]
+    () =>
+      Helper.minAssetAmountToDepositMax1e8({
+        fees: depositFees.asset,
+        asset,
+        assetDecimal,
+        poolsData,
+        dustThreshold: O.toUndefined(oDustThreshold)
+      }),
+    [asset, assetDecimal, depositFees.asset, poolsData, oDustThreshold]
   )
 
   const minAssetAmountError = useMemo(() => {

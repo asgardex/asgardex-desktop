@@ -377,18 +377,22 @@ export const getOutboundAssetFeeByChain = (
   )
 
 export const inboundToPoolAddresses = (
-  addresses: Pick<InboundAddress, 'chain' | 'address' | 'router' | 'halted' | 'gas_rate' | 'outbound_fee'>[]
+  addresses: Pick<
+    InboundAddress,
+    'chain' | 'address' | 'router' | 'halted' | 'gas_rate' | 'outbound_fee' | 'dust_threshold'
+  >[]
 ): PoolAddresses =>
   FP.pipe(
     addresses,
-    A.map(({ address, router, chain, halted, gas_rate, outbound_fee }) => ({
+    A.map(({ address, router, chain, halted, gas_rate, outbound_fee, dust_threshold }) => ({
       protocol: THORChain,
       chain,
       address,
       router: optionFromNullableString(router),
       halted,
       gasRate: gas_rate,
-      outBoundFee: outbound_fee
+      outBoundFee: outbound_fee,
+      dustThreshold: dust_threshold
     })),
     // Add "empty" rune "pool address" - we never had such pool, but do need it to calculate tx
     A.prepend(RUNE_POOL_ADDRESS)

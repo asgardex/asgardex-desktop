@@ -71,14 +71,19 @@ export const poolDeposit$ = ({
   // All requests will be done in a sequence
   // and `DepositState` will be updated step by step
   const requests$ = Rx.of(poolAddress).pipe(
-    // 1. validate pool address or node
+    // 1. validate pool address or node — route to the matching DEX's Midgard.
+    //    Hard-coding THOR's `midgardPoolsService` here breaks MAYA recover/asym
+    //    deposits because THORChain has no entry for MAYA-only pool chains (ADA, etc.),
+    //    so the pool-address equality check always fails.
     RxOp.switchMap((poolAddresses) =>
       Rx.iif(
         () => isRuneNativeAsset(asset),
         // We don't have a RUNE pool, so we just validate current connected node
         validateNode$(),
-        // in other case we have to validate pool address
-        midgardPoolsService.validatePool$(poolAddresses, chain)
+        // in other case we have to validate pool address against the right Midgard
+        protocol === THORChain
+          ? midgardPoolsService.validatePool$(poolAddresses, chain)
+          : mayaMidgardPoolsService.validatePool$(poolAddresses, chain)
       )
     ),
     liveData.chain((_) => {

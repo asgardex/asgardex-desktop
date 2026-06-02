@@ -238,6 +238,9 @@ export type PoolAddress = {
   halted: boolean
   gasRate?: string
   outboundFee?: string // Used THOR's spelling, but MAYA's 'outBoundFee' could be aliased
+  // Minimum inbound amount enforced by the DEX, expressed in the chain's native decimal.
+  // Anything below is refunded by the protocol. Comes from `inbound_addresses.dust_threshold`.
+  dustThreshold?: string
 }
 export type PoolAddress$ = Rx.Observable<O.Option<PoolAddress>>
 export type PoolAddressRD = RD.RemoteData<Error, PoolAddress>

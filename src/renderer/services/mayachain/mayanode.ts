@@ -123,6 +123,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
               chain_trading_paused: item.chain_trading_paused,
               chain_lp_actions_paused: item.chain_lp_actions_paused,
               outbound_fee: item.outbound_fee,
+              dust_threshold: item.dust_threshold,
               halted: item.halted || false, // provide a default value if halted is undefined
               gas_rate: item.gas_rate,
               gas_rate_units: item.gas_rate_units,
