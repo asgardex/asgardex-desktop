@@ -60,6 +60,8 @@ const deposit: DepositMessages = {
   'deposit.unbond.state.error': 'Unbond error',
   'deposit.leave.state.error': 'Leave error',
   'deposit.advancedMode': 'Advanced mode',
+  'deposit.poolTransactionInfo':
+    'When enabled, sends via the {protocol} router contract (depositWithExpiry) used for pool interactions like adding liquidity or bonding. Leave OFF for a normal token transfer.',
   'deposit.poolDetails.depth': 'Depth',
   'deposit.poolDetails.24hvol': '24hr volume',
   'deposit.poolDetails.allTimeVal': 'All time volume',

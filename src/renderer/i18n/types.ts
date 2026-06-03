@@ -816,6 +816,7 @@ type DepositMessageKey =
   | 'deposit.unbond.state.error'
   | 'deposit.leave.state.error'
   | 'deposit.advancedMode'
+  | 'deposit.poolTransactionInfo'
   | 'deposit.poolDetails.depth'
   | 'deposit.poolDetails.24hvol'
   | 'deposit.poolDetails.allTimeVal'

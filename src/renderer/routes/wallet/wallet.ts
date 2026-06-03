@@ -45,13 +45,6 @@ export const vultisigCreate: Route<void> = {
   }
 }
 
-export const vultisigVerify: Route<void> = {
-  template: `${base.template}/vultisig/verify`,
-  path() {
-    return this.template
-  }
-}
-
 export const vultisigSecureCreate: Route<void> = {
   template: `${base.template}/vultisig/secure-create`,
   path() {

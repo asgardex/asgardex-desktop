@@ -32,7 +32,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('doge keystore'),
-
+      hdMode: 'default',
       chain: MAYAChain,
       balances: RD.success([
         {
@@ -61,16 +61,37 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('btc keystore'),
+      hdMode: 'default',
       chain: BTCChain,
       balances: RD.success([
         {
           walletType: WalletType.Keystore,
           amount: baseAmount('1000000'),
           asset: AssetBTC,
-          walletAddress: 'DOGE wallet address',
+          walletAddress: 'BTC wallet address',
           walletAccount: 0,
           walletIndex: 0,
           hdMode: 'default'
+        }
+      ]),
+      balancesType: 'all'
+    },
+    // Taproot (P2TR) sibling — exercises the TAPROOT chip in the chain-row
+    // header (rendered when `hdMode === 'p2tr'`).
+    {
+      walletType: WalletType.Keystore,
+      walletAddress: O.some('btc taproot keystore'),
+      hdMode: 'p2tr',
+      chain: BTCChain,
+      balances: RD.success([
+        {
+          walletType: WalletType.Keystore,
+          amount: baseAmount('500000'),
+          asset: AssetBTC,
+          walletAddress: 'BTC taproot wallet address',
+          walletAccount: 0,
+          walletIndex: 0,
+          hdMode: 'p2tr'
         }
       ]),
       balancesType: 'all'
@@ -80,6 +101,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('eth keystore'),
+      hdMode: 'default',
       chain: ETHChain,
       balances: RD.success([
         {
@@ -99,6 +121,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('thor keystore'),
+      hdMode: 'default',
       chain: THORChain,
       balances: RD.success([
         {
@@ -118,6 +141,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
     {
       walletType: WalletType.Keystore,
       walletAddress: O.some('ltc keystore'),
+      hdMode: 'default',
       chain: LTCChain,
       balances: RD.success([
         {

@@ -59,6 +59,8 @@ const deposit: DepositMessages = {
   'deposit.unbond.state.error': 'निकासी में त्रुटि',
   'deposit.leave.state.error': 'बाहर निकलने में त्रुटि',
   'deposit.advancedMode': 'उन्नत मोड',
+  'deposit.poolTransactionInfo':
+    'सक्षम होने पर, {protocol} राउटर कॉन्ट्रैक्ट (depositWithExpiry) के माध्यम से भेजा जाता है, जिसका उपयोग लिक्विडिटी जोड़ने या बॉन्डिंग जैसे पूल इंटरैक्शन के लिए किया जाता है। सामान्य टोकन ट्रांसफर के लिए इसे बंद रखें।',
   'deposit.poolDetails.depth': 'गहराई',
   'deposit.poolDetails.24hvol': '24 घंटों में मात्रा',
   'deposit.poolDetails.allTimeVal': 'समय के साथ कुल मात्रा',

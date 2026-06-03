@@ -330,6 +330,12 @@ export type ChainBalance = {
   walletType: WalletType
   walletAddress: O.Option<Address>
   chain: Chain
+  /**
+   * Derivation mode of this `ChainBalance`. For most chains/wallet types this is
+   * `'default'`. For Bitcoin keystore wallets it distinguishes Native SegWit
+   * (`'default'`) from Taproot (`'p2tr'`) so the two coexist as separate rows.
+   */
+  hdMode: HDMode
   balances: WalletBalancesRD
   balancesType: WalletBalanceType
 }

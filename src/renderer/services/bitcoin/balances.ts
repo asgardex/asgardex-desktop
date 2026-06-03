@@ -3,7 +3,7 @@ import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { createEnhancedClient$ } from '../clients'
 import { isKeystoreReloadTrigger } from '../wallet/types'
-import { client$, readOnlyClient$ } from './common'
+import { client$, clientTR$, readOnlyClient$ } from './common'
 
 /**
  * `ObservableState` to reload `Balances`
@@ -17,6 +17,14 @@ const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observable
  * Enhanced client that falls back to read-only client for standalone ledger mode
  */
 const enhancedClient$ = createEnhancedClient$(client$, readOnlyClient$)
+
+/**
+ * Enhanced Taproot client. Falls back to the same read-only (P2WPKH) client when
+ * no keystore phrase is available so generic providers/explorer URLs still resolve,
+ * but the `client$` returned from `addressUITR$` ensures Taproot rows only appear
+ * in keystore mode.
+ */
+const enhancedClientTR$ = createEnhancedClient$(clientTR$, readOnlyClient$)
 
 const resetReloadBalances = (walletType: WalletType) => {
   if (isKeystoreReloadTrigger(walletType)) {
@@ -50,8 +58,13 @@ const balances$ = ({
   // Select trigger based on wallet type
   const trigger$ = isKeystoreReloadTrigger(walletType) ? reloadBalances$ : reloadLedgerBalances$
 
+  // Route keystore Taproot balances through the P2TR client so `getAddressAsync`
+  // yields the `bc1p…` address. SegWit and all Ledger/Vultisig balances continue
+  // through the original client.
+  const targetClient$ = hdMode === 'p2tr' ? enhancedClientTR$ : enhancedClient$
+
   return C.balances$({
-    client$: enhancedClient$,
+    client$: targetClient$,
     trigger$,
     walletType,
     walletAccount,

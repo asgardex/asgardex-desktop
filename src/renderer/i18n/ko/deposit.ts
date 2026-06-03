@@ -60,6 +60,8 @@ const deposit: DepositMessages = {
   'deposit.unbond.state.error': '채권 해제 오류',
   'deposit.leave.state.error': '나가기 오류',
   'deposit.advancedMode': '고급 모드',
+  'deposit.poolTransactionInfo':
+    '활성화하면 유동성 추가 또는 본딩과 같은 풀 상호작용에 사용되는 {protocol} 라우터 컨트랙트(depositWithExpiry)를 통해 전송됩니다. 일반 토큰 전송의 경우 OFF로 두십시오.',
   'deposit.poolDetails.depth': '깊이',
   'deposit.poolDetails.24hvol': '24시간 거래량',
   'deposit.poolDetails.allTimeVal': '전체 기간 거래량',
