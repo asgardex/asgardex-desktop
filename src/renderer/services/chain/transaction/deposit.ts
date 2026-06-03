@@ -7,7 +7,7 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { getEVMTokenAddressForChain, isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { getEVMTokenAddressForChain, isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
@@ -71,21 +71,21 @@ export const poolDeposit$ = ({
   // All requests will be done in a sequence
   // and `DepositState` will be updated step by step
   const requests$ = Rx.of(poolAddress).pipe(
-    // 1. validate pool address or node — route to the matching DEX's Midgard.
+    // 1. Validate pool address or node — route to the matching DEX's Midgard.
     //    Hard-coding THOR's `midgardPoolsService` here breaks MAYA recover/asym
     //    deposits because THORChain has no entry for MAYA-only pool chains (ADA, etc.),
     //    so the pool-address equality check always fails.
-    RxOp.switchMap((poolAddresses) =>
-      Rx.iif(
-        () => isRuneNativeAsset(asset),
-        // We don't have a RUNE pool, so we just validate current connected node
-        validateNode$(),
-        // in other case we have to validate pool address against the right Midgard
-        protocol === THORChain
-          ? midgardPoolsService.validatePool$(poolAddresses, chain)
-          : mayaMidgardPoolsService.validatePool$(poolAddresses, chain)
-      )
-    ),
+    //    Protocol-asset recovers (RUNE on THOR, CACAO on MAYA) don't have their own pool
+    //    so we validate the chain node instead — `validatePool$` would compare the
+    //    asset-chain `poolAddress` stored on the params against the empty protocol-pool
+    //    entry and always mismatch.
+    RxOp.switchMap((poolAddresses) => {
+      if (isRuneNativeAsset(asset)) return validateNode$()
+      if (isCacaoAsset(asset)) return mayaValidateNode$()
+      return protocol === THORChain
+        ? midgardPoolsService.validatePool$(poolAddresses, chain)
+        : mayaMidgardPoolsService.validatePool$(poolAddresses, chain)
+    }),
     liveData.chain((_) => {
       // Update progress
       setState({ ...getState(), step: 2, deposit: RD.progress({ loaded: 50, total }) })

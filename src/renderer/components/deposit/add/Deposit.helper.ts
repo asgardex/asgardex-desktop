@@ -265,8 +265,10 @@ export const minAssetAmountToDepositMax1e8 = ({
 
   // Floor at the DEX-enforced dust threshold (if known). Below this, the inbound is
   // refunded by the protocol regardless of fees, so the user-facing min must reflect it.
+  // Caller is responsible for tagging `dustThreshold` with the correct native decimal —
+  // re-tagging here would mis-scale token deposits where chain decimal ≠ asset decimal.
   if (dustThreshold === undefined) return feeBasedMinMax1e8
-  const dustMax1e8 = max1e8BaseAmount(baseAmount(dustThreshold.amount(), assetDecimal))
+  const dustMax1e8 = max1e8BaseAmount(dustThreshold)
   return dustMax1e8.gt(feeBasedMinMax1e8) ? dustMax1e8 : feeBasedMinMax1e8
 }
 

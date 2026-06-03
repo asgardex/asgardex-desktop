@@ -237,7 +237,7 @@ export type PoolAddress = {
   router: O.Option<Address>
   halted: boolean
   gasRate?: string
-  outboundFee?: string // Used THOR's spelling, but MAYA's 'outBoundFee' could be aliased
+  outboundFee?: string
   // Minimum inbound amount enforced by the DEX, expressed in the chain's native decimal.
   // Anything below is refunded by the protocol. Comes from `inbound_addresses.dust_threshold`.
   dustThreshold?: string

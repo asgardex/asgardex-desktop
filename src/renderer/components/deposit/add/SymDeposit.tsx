@@ -31,6 +31,7 @@ import { ZERO_ASSET_AMOUNT, ZERO_BASE_AMOUNT } from '../../../const'
 import {
   convertBaseAmountDecimal,
   getEVMTokenAddressForChain,
+  isChainAsset,
   isEVMTokenAsset,
   isCacaoAsset,
   isRuneNativeAsset,
@@ -948,17 +949,21 @@ export const SymDeposit = (props: Props) => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
   }, [oApproveParams, reloadApproveFee])
 
-  // Inbound dust threshold (native chain decimal) from the active DEX. MAYA refunds any
-  // inbound below this floor, so it has to be respected as a hard minimum on the asset side.
+  // Inbound dust threshold from the active DEX. `dust_threshold` is denominated in the
+  // chain's native (gas) unit — lovelace for ADA, wei for ETH, satoshi for BTC. For
+  // native-chain assets (BTC.BTC, ADA.ADA, etc.) the deposit *is* that unit, so the
+  // value floors the form. For tokens on EVM chains the user deposits a different unit
+  // and the chain-dust floor isn't a meaningful gate on the token amount — skip it.
   const oDustThreshold: O.Option<BaseAmount> = useMemo(
     () =>
       FP.pipe(
         oPoolAddress,
-        O.chain(({ dustThreshold }) =>
-          dustThreshold !== undefined ? O.some(baseAmount(dustThreshold, assetDecimal)) : O.none
-        )
+        O.chain(({ dustThreshold }) => {
+          if (dustThreshold === undefined || !isChainAsset(asset)) return O.none
+          return O.some(baseAmount(dustThreshold, assetDecimal))
+        })
       ),
-    [oPoolAddress, assetDecimal]
+    [oPoolAddress, asset, assetDecimal]
   )
 
   const minAssetAmountToDepositMax1e8: BaseAmount = useMemo(

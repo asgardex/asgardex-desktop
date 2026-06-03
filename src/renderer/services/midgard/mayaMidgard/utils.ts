@@ -354,7 +354,7 @@ export const inboundToPoolAddresses = (
       router: optionFromNullableString(router),
       halted,
       gasRate: gas_rate,
-      outBoundFee: outbound_fee,
+      outboundFee: outbound_fee,
       dustThreshold: dust_threshold
     })),
     // Add "empty" maya "pool address" - we never had such pool, but do need it to calculate tx
