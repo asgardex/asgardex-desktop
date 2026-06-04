@@ -13,6 +13,7 @@ const meta: Meta<typeof Component> = {
   args: {
     midgardStatus: RD.initial,
     mimirStatus: RD.initial,
+    mimirStatusMaya: RD.initial,
     midgardUrl: RD.success('midgard-url'),
     thorchainNodeUrl: 'thorchain-node-url',
     thorchainRpcUrl: 'thorchain-rpc-url',

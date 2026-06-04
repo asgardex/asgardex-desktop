@@ -33,6 +33,15 @@ export const xChainToCChain = (chain: XChain): CChain => {
   }
 }
 
+export const isChainflipSupportedChain = (chain: XChain): boolean => {
+  try {
+    xChainToCChain(chain)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export const cAssetToXAsset = (asset: AssetData): XAsset | XTokenAsset | null => {
   const chain = cChainToXChain(asset.chain)
   if (!chain) return null

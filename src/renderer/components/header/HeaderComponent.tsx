@@ -79,6 +79,7 @@ export type Props = {
   midgardStatus: MidgardStatusRD
   midgardMayaStatus: MidgardStatusMayaRD
   mimir: MimirRD
+  mimirMaya: MimirRD
   midgardUrl: MidgardUrlRD
   midgardMayaUrl: MidgardMayaUrlRD
   thorchainNodeUrl: string
@@ -98,6 +99,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
     midgardStatus: midgardStatusRD,
     midgardMayaStatus: midgardMayaStatusRD,
     mimir: mimirRD,
+    mimirMaya: mimirMayaRD,
     reloadRunePrice,
     reloadTcyPrice,
     reloadFlipPrice,
@@ -257,6 +259,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
         midgardStatus={midgardStatusRD}
         midgardMayaStatus={midgardMayaStatusRD}
         mimirStatus={mimirRD}
+        mimirStatusMaya={mimirMayaRD}
         midgardUrl={midgardUrlRD}
         midgardMayaUrl={midgardMayaUrlRD}
         thorchainNodeUrl={thorchainNodeUrl}
@@ -270,6 +273,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
       midgardStatusRD,
       midgardMayaStatusRD,
       mimirRD,
+      mimirMayaRD,
       midgardUrlRD,
       midgardMayaUrlRD,
       thorchainNodeUrl,

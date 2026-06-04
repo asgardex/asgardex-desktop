@@ -3,7 +3,9 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, ChartBarIcon, QrCodeIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
+import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Balance, Network } from '@xchainjs/xchain-client'
+import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -46,6 +48,7 @@ import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHe
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
 import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import * as poolsRoutes from '../../../routes/pools'
+import { isChainflipSupportedChain } from '../../../services/chainflip/utils'
 import { WalletBalancesRD } from '../../../services/clients'
 import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMidgard/types'
 import { PoolDetails, PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
@@ -410,10 +413,20 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         )
       }
 
+      // Pick a swap target: prefer THOR pool data, fall back to a Chainflip-native
+      // target (BTC/ETH) so the action stays available when THOR Midgard is down
+      // for assets that Chainflip can route on its own.
+      const poolBasedTarget = isBtcAsset(asset) ? secondDeepestPoolAsset : deepestPoolAsset
+      const chainflipFallbackTarget = isChainflipSupportedChain(asset.chain)
+        ? isBtcAsset(asset)
+          ? AssetETH
+          : AssetBTC
+        : null
+      const swapTarget = poolBasedTarget ?? chainflipFallbackTarget
+
       if (
         !isSynthAsset(asset) &&
-        deepestPoolAsset &&
-        secondDeepestPoolAsset &&
+        swapTarget &&
         !isCacaoAsset(asset) &&
         !isRuneNativeAsset(asset) &&
         !isSecuredAsset(asset)
@@ -423,7 +436,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: assetToString(isBtcAsset(asset) ? secondDeepestPoolAsset : deepestPoolAsset),
+                target: assetToString(swapTarget),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })

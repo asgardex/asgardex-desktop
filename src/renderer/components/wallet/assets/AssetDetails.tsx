@@ -25,6 +25,7 @@ import * as AssetHelper from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import * as poolsRoutes from '../../../routes/pools'
 import * as walletRoutes from '../../../routes/wallet'
+import { isChainflipSupportedChain } from '../../../services/chainflip/utils'
 import { OpenExplorerTxUrl, TxsPageRD } from '../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../services/const'
 import { EMPTY_LOAD_TXS_HANDLER } from '../../../services/wallet/const'
@@ -85,7 +86,10 @@ export const AssetDetails = (props: Props): JSX.Element => {
 
   const isResumedOnThor = isChainOfThor(chain) && !haltedChainsThor.includes(chain)
   const isResumedOnMaya = isChainOfMaya(chain) && !haltedChainsMaya.includes(chain)
-  const disableSwap = !isResumedOnThor && !isResumedOnMaya
+  // Chainflip is an independent route: keep swap enabled for its supported chains
+  // even when THOR + MAYA are halted/down, so the user can still reach the swap view.
+  const isSupportedByChainflip = isChainflipSupportedChain(chain)
+  const disableSwap = !isResumedOnThor && !isResumedOnMaya && !isSupportedByChainflip
   const disableAdd = !isResumedOnThor && !isResumedOnMaya
 
   // If the chain is not halted, perform the action

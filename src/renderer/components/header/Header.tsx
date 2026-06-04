@@ -2,6 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
+import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
@@ -36,6 +37,8 @@ export const Header = (): JSX.Element => {
 
   const { mimir$ } = useThorchainContext()
   const mimir = useObservableState(mimir$, RD.initial)
+  const { mimir$: mimirMaya$ } = useMayachainContext()
+  const mimirMaya = useObservableState(mimirMaya$, RD.initial)
   const { service: midgardService } = useMidgardContext()
   const { service: midgardServiceMaya } = useMidgardMayaContext()
   const {
@@ -95,6 +98,7 @@ export const Header = (): JSX.Element => {
       midgardStatus={midgardStatusRD}
       midgardMayaStatus={midgardMayaStatusRD}
       mimir={mimir}
+      mimirMaya={mimirMaya}
       midgardUrl={midgardUrlRD}
       midgardMayaUrl={midgardMayaUrlRD}
       thorchainNodeUrl={thorchainNodeUrl}
