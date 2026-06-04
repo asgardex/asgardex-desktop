@@ -30,7 +30,7 @@ const AssetIconAmount = (props: AssetIconAmountProps): JSX.Element => {
   return (
     <div className="my-10px flex h-[32px] items-center first:mr-10px last:m-0">
       <AssetIcon className="mr-5px" size="small" asset={asset} network={network} />
-      <AssetLabel className="p-0" asset={asset} />
+      <AssetLabel className="mr-10px p-0" asset={asset} />
       <Label
         className="!md:text-[24px] !md:leading-[24px] !w-auto p-0 font-main-bold !text-[17px] !leading-[17px]"
         loading={loading}>

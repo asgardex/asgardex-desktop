@@ -1,7 +1,7 @@
 import { Balance, Network } from '@xchainjs/xchain-client'
-import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, CACAO_DECIMAL, MAYA_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
-import { bnOrZero, assetFromString, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, bnOrZero, assetFromString, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O, ord as Ord } from 'fp-ts'
 
@@ -18,6 +18,24 @@ import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
 import { emptyString } from './stringHelper'
+
+/**
+ * Decimal scale that MAYA Midgard uses for `assetDepth` values (a Midgard convention,
+ * NOT the asset's native decimal — use `getDecimal()` for that).
+ *
+ *   - MAYA.MAYA pool depth → 1e4 (MAYA_DECIMAL)
+ *   - every other MAYA pool depth → 1e8
+ *
+ * Use this for pool-math that consumes `poolData.assetBalance` (e.g. computing
+ * the paired asset amount for a sym deposit, or LP share output).
+ *
+ * Pass the asset-side asset only. For the rune side of a MAYA pool (CACAO),
+ * use `CACAO_DECIMAL` directly — it's not the pool asset-depth scale.
+ */
+const MAYA_POOL_ASSET_DEPTH_DECIMAL = 8
+
+export const getMayaPoolDepthDecimal = (asset: AnyAsset): number =>
+  isMayaAsset(asset) ? MAYA_DECIMAL : MAYA_POOL_ASSET_DEPTH_DECIMAL
 
 export const sortByDepth = (a: { depthPrice: BaseAmount }, b: { depthPrice: BaseAmount }) =>
   ordBaseAmount.compare(a.depthPrice, b.depthPrice)

@@ -24,6 +24,7 @@ import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getAssetPoolPrice } from '../../../helpers/poolHelper'
+import { getMayaPoolDepthDecimal } from '../../../helpers/poolHelperMaya'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
@@ -215,7 +216,9 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
               liquidityUnits,
               detail: poolDetail,
               assetDecimal,
-              ...(protocol !== THORChain && { dexDecimal: CACAO_DECIMAL })
+              // `dexDecimal` is the pool asset-depth scale (NOT CACAO's decimal).
+              // MAYA Midgard: 1e4 for MAYA.MAYA, 1e8 otherwise.
+              ...(protocol !== THORChain && { dexDecimal: getMayaPoolDepthDecimal(assetWD.asset) })
             })
           }}
           asset={assetWD}

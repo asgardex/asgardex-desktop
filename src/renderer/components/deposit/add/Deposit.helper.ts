@@ -197,7 +197,8 @@ export const minAssetAmountToDepositMax1e8 = ({
   fees,
   asset,
   assetDecimal,
-  poolsData
+  poolsData,
+  dustThreshold
 }: {
   /* fee for deposit */
   fees: DepositAssetFees
@@ -205,6 +206,12 @@ export const minAssetAmountToDepositMax1e8 = ({
   asset: AnyAsset
   assetDecimal: number
   poolsData: PoolsDataMap
+  /**
+   * Inbound dust threshold from the DEX, expressed in the chain's native decimal.
+   * The protocol refunds anything below this amount, so the form min is the larger
+   * of (fee-based min, dustThreshold).
+   */
+  dustThreshold?: BaseAmount
 }): BaseAmount => {
   const { asset: feeAsset, inFee, outFee, refundFee } = fees
 
@@ -243,7 +250,7 @@ export const minAssetAmountToDepositMax1e8 = ({
 
   const feeToCover: BaseAmount = successDepositFee.gte(failureDepositFee) ? successDepositFee : failureDepositFee
 
-  return FP.pipe(
+  const feeBasedMinMax1e8 = FP.pipe(
     // Over-estimate fee by 50%
     1.5,
     feeToCover.times,
@@ -255,6 +262,14 @@ export const minAssetAmountToDepositMax1e8 = ({
     // increase min value by 10k satoshi (for meaningful UTXO assets' only)
     E.getOrElse((amount) => amount.plus(10000))
   )
+
+  // Floor at the DEX-enforced dust threshold (if known). Below this, the inbound is
+  // refunded by the protocol regardless of fees, so the user-facing min must reflect it.
+  // Caller is responsible for tagging `dustThreshold` with the correct native decimal —
+  // re-tagging here would mis-scale token deposits where chain decimal ≠ asset decimal.
+  if (dustThreshold === undefined) return feeBasedMinMax1e8
+  const dustMax1e8 = max1e8BaseAmount(dustThreshold)
+  return dustMax1e8.gt(feeBasedMinMax1e8) ? dustMax1e8 : feeBasedMinMax1e8
 }
 
 export const minRuneAmountToDeposit = ({ inFee, outFee, refundFee }: DepositFees): BaseAmount => {
