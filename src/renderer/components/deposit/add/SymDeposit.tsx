@@ -31,6 +31,7 @@ import { ZERO_ASSET_AMOUNT, ZERO_BASE_AMOUNT } from '../../../const'
 import {
   convertBaseAmountDecimal,
   getEVMTokenAddressForChain,
+  isChainAsset,
   isEVMTokenAsset,
   isCacaoAsset,
   isRuneNativeAsset,
@@ -46,7 +47,7 @@ import { eqBaseAmount, eqOAsset, eqOApproveParams, eqAsset } from '../../../help
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
 import { getDepositMemo } from '../../../helpers/memoHelper'
 import * as PoolHelpers from '../../../helpers/poolHelper'
-import { getUSDValue } from '../../../helpers/poolHelperMaya'
+import { getMayaPoolDepthDecimal, getUSDValue } from '../../../helpers/poolHelperMaya'
 import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
@@ -100,6 +101,7 @@ import { Collapse } from '../../uielements/collapse'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
 import { ProtocolSwitch } from '../../uielements/protocolSwitch'
+import { ProtocolsLp } from '../../uielements/protocolSwitch/types'
 import { Tooltip } from '../../uielements/tooltip'
 import { AssetMissmatchWarning } from './AssetMissmatchWarning'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
@@ -218,10 +220,11 @@ export const SymDeposit = (props: Props) => {
     [protocol] // Dependency
   )
 
-  // Pool asset depth scale: THORChain always uses 1e8, MAYAChain uses native scale (e.g. 1e4 for MAYA.MAYA, 1e8 for BTC)
+  // Pool asset depth scale (Midgard convention, NOT the asset's native decimal):
+  // THORChain → 1e8 for all pools. MAYAChain → 1e4 for MAYA.MAYA, 1e8 otherwise.
   const poolAssetDecimals = useMemo(
-    () => (protocol === THORChain ? THORCHAIN_DECIMAL : Math.min(assetDecimal, THORCHAIN_DECIMAL)),
-    [protocol, assetDecimal]
+    () => (protocol === THORChain ? THORCHAIN_DECIMAL : getMayaPoolDepthDecimal(asset)),
+    [protocol, asset]
   )
 
   const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
@@ -946,9 +949,33 @@ export const SymDeposit = (props: Props) => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
   }, [oApproveParams, reloadApproveFee])
 
+  // Inbound dust threshold from the active DEX. `dust_threshold` is denominated in the
+  // chain's native (gas) unit — lovelace for ADA, wei for ETH, satoshi for BTC. For
+  // native-chain assets (BTC.BTC, ADA.ADA, etc.) the deposit *is* that unit, so the
+  // value floors the form. For tokens on EVM chains the user deposits a different unit
+  // and the chain-dust floor isn't a meaningful gate on the token amount — skip it.
+  const oDustThreshold: O.Option<BaseAmount> = useMemo(
+    () =>
+      FP.pipe(
+        oPoolAddress,
+        O.chain(({ dustThreshold }) => {
+          if (dustThreshold === undefined || !isChainAsset(asset)) return O.none
+          return O.some(baseAmount(dustThreshold, assetDecimal))
+        })
+      ),
+    [oPoolAddress, asset, assetDecimal]
+  )
+
   const minAssetAmountToDepositMax1e8: BaseAmount = useMemo(
-    () => Helper.minAssetAmountToDepositMax1e8({ fees: depositFees.asset, asset, assetDecimal, poolsData }),
-    [asset, assetDecimal, depositFees.asset, poolsData]
+    () =>
+      Helper.minAssetAmountToDepositMax1e8({
+        fees: depositFees.asset,
+        asset,
+        assetDecimal,
+        poolsData,
+        dustThreshold: O.toUndefined(oDustThreshold)
+      }),
+    [asset, assetDecimal, depositFees.asset, poolsData, oDustThreshold]
   )
 
   const minAssetAmountError = useMemo(() => {
@@ -2065,7 +2092,7 @@ export const SymDeposit = (props: Props) => {
   return (
     <div className="flex min-h-full w-full flex-col items-center justify-between">
       <div className="mb-4 flex w-full max-w-[500px] items-center justify-start">
-        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} protocols={ProtocolsLp} />
       </div>
 
       <div className="flex max-w-[500px] flex-col">

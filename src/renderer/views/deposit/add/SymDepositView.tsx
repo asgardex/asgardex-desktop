@@ -29,6 +29,7 @@ import { hasLedgerAddress } from '../../../helpers/addressHelper'
 import { isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { sequenceTRD } from '../../../helpers/fpHelpers'
 import * as PoolHelpers from '../../../helpers/poolHelper'
+import * as PoolHelpersMaya from '../../../helpers/poolHelperMaya'
 import { useLedgerAddresses } from '../../../hooks/useLedgerAddresses'
 import { useLiquidityProviders } from '../../../hooks/useLiquidityProviders'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -195,14 +196,18 @@ export const SymDepositView = (props: Props) => {
     O.some(protocol)
   )
 
+  // `useProtocolLimit` reads THORChain's network info (totalPooledRune vs totalActiveBond).
+  // MAYAChain has its own bond/pool dynamics, so don't gate MAYA LP on a THOR-only metric.
   const protocolLimitReached = useMemo(
     () =>
-      FP.pipe(
-        protocolLimitRD,
-        RD.map(({ reached }) => reached && network !== Network.Testnet /* ignore it on testnet */),
-        RD.getOrElse(() => false)
-      ),
-    [network, protocolLimitRD]
+      protocol === THORChain
+        ? FP.pipe(
+            protocolLimitRD,
+            RD.map(({ reached }) => reached && network !== Network.Testnet /* ignore it on testnet */),
+            RD.getOrElse(() => false)
+          )
+        : false,
+    [network, protocol, protocolLimitRD]
   )
 
   const { symPendingAssets, hasAsymAssets, symAssetMismatch } = useLiquidityProviders({
@@ -310,10 +315,13 @@ export const SymDepositView = (props: Props) => {
         // Since RUNE is not part of pool assets, add it to the list of available assets
         const availableAssets = [AssetRuneNative, AssetCacao, ...poolAssets]
         const { chain } = asset
+        // Use the active protocol's halt helpers. THOR helpers check HALTTHORCHAIN as the
+        // global halt; MAYA helpers check HALTMAYACHAIN. Mixing them disables the wrong dex.
+        const halt = protocol === THORChain ? PoolHelpers : PoolHelpersMaya
         const disableDepositAction =
-          PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt }) ||
-          PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt }) ||
-          PoolHelpers.disablePoolActions({ chain, haltedChains, mimirHalt })
+          halt.disableAllActions({ chain, haltedChains, mimirHalt }) ||
+          halt.disableTradingActions({ chain, haltedChains, mimirHalt }) ||
+          halt.disablePoolActions({ chain, haltedChains, mimirHalt })
 
         return (
           <SymDeposit

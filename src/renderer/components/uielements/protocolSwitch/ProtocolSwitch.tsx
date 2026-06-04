@@ -19,10 +19,13 @@ const PROTOCOL_LABEL: Record<string, string> = {
   [Protocol.Chainflip]: 'Chainflip'
 }
 
-export const ProtocolSwitch = ({ protocol, setProtocol, withAll = false }: Props) => {
+export const ProtocolSwitch = ({ protocol, setProtocol, withAll = false, protocols: customProtocols }: Props) => {
   const intl = useIntl()
   const { md } = useBreakpoint()
-  const protocols = useMemo(() => (withAll ? ProtocolsWithAll : Protocols), [withAll])
+  const protocols = useMemo(
+    () => customProtocols ?? (withAll ? ProtocolsWithAll : Protocols),
+    [customProtocols, withAll]
+  )
 
   const activeIndex = useMemo(() => {
     const currentIndex = protocols.findIndex((availableProtocol) => availableProtocol === protocol)

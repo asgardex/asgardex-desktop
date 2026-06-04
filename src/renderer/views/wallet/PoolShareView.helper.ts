@@ -7,7 +7,9 @@ import { PoolShareTableData } from '../../components/PoolShares/PoolShares.types
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { convertBaseAmountDecimal, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
+import { getMayaPoolDepthDecimal } from '../../helpers/poolHelperMaya'
 import * as ShareHelpers from '../../helpers/poolShareHelper'
+import { getDecimalSync } from '../../services/chain/decimal'
 import { PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMidgard/types'
 import {
   getPoolDetail as getPoolDetailMaya,
@@ -35,8 +37,14 @@ export const getSharesTotal = (
             poolDetail,
             protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
           )
-          const dexDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
-          const assetDecimal = parseInt(poolDetail.nativeDecimal || '8', 10) || 8
+          // `dexDecimal` here is the scale of the pool's asset-depth integer
+          // (not CACAO's decimal). MAYA Midgard: 1e4 for MAYA.MAYA, 1e8 otherwise.
+          const dexDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : getMayaPoolDepthDecimal(asset)
+          const assetDecimal = getDecimalSync(
+            asset,
+            isPoolDetails(poolDetails) ? poolDetails : undefined,
+            isPoolDetails(poolDetails) ? undefined : poolDetails
+          )
           const assetShare = ShareHelpers.getAssetShare({
             liquidityUnits: units,
             detail: poolDetail,
@@ -77,8 +85,14 @@ export const getPoolShareTableData = (
             poolDetail,
             protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
           )
-          const dexDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
-          const assetDecimal = parseInt(poolDetail.nativeDecimal || '8', 10) || 8
+          // `dexDecimal` here is the scale of the pool's asset-depth integer
+          // (not CACAO's decimal). MAYA Midgard: 1e4 for MAYA.MAYA, 1e8 otherwise.
+          const dexDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : getMayaPoolDepthDecimal(asset)
+          const assetDecimal = getDecimalSync(
+            asset,
+            isPoolDetails(poolDetails) ? poolDetails : undefined,
+            isPoolDetails(poolDetails) ? undefined : poolDetails
+          )
           const assetShare = ShareHelpers.getAssetShare({
             liquidityUnits: units,
             detail: poolDetail,
