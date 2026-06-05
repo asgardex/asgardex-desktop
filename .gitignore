@@ -22,9 +22,6 @@ yarn-error.log*
 
 .eslintcache
 
-# storybook static
-/storybook-static
-
 # don't share .env, but .env.sample
 .env
 
