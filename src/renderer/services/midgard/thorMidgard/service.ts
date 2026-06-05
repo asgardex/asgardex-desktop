@@ -6,7 +6,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ApiUrls } from '../../../../shared/api/types'
-import { DEFAULT_MIDGARD_URLS } from '../../../../shared/midgard/const'
+import { DEFAULT_MIDGARD_URLS, FALLBACK_MIDGARD_URLS } from '../../../../shared/midgard/const'
 import { eqApiUrls } from '../../../helpers/fp/eq'
 import { liveData } from '../../../helpers/rx/liveData'
 import { triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
@@ -70,10 +70,41 @@ const getMidgardDefaultApi = (basePath: string) =>
     })
   )
 /**
- * Midgard url
+ * Probes a Midgard URL via /v2/health. Resolves true when the endpoint reports
+ * a healthy database and is in sync with thornode, false on any error/timeout.
  */
-const midgardUrl$: MidgardUrlLD = Rx.combineLatest([network$, getMidgardUrl$]).pipe(
-  RxOp.map(([network, midgardUrl]) => RD.success(midgardUrl[network])),
+const probeMidgardHealth$ = (url: string): Rx.Observable<boolean> =>
+  Rx.from(getMidgardDefaultApi(url).getHealth()).pipe(
+    RxOp.timeout(8000),
+    RxOp.map(({ data }) => !!data.database && !!data.inSync),
+    RxOp.catchError(() => Rx.of(false))
+  )
+
+const fallbackUrlForNetwork = (network: Network): string => FALLBACK_MIDGARD_URLS[network] ?? ''
+
+// 5-minute interval used for health-driven fallback re-probing + the existing
+// healthStatus$ stream. Declared here so midgardUrl$ can reference it.
+const healthInterval$ = Rx.timer(0 /* no delay for first value */, 5 * 60 * 1000 /* others are delayed by 5 min  */)
+
+/**
+ * Midgard url with transparent fallback.
+ *
+ * Probes the primary's /v2/health on each `healthInterval$` tick and emits
+ * either the primary (when healthy) or the configured fallback (when not).
+ * `distinctUntilChanged` + `shareReplay(1)` ensures downstream subscribers
+ * only see a value change when the resolved URL actually changes — so during
+ * a persistent outage the stream settles on the fallback instead of flapping
+ * back to the dead primary every 5 minutes. The first probe completes within
+ * the 8s probe timeout, which is the cold-start cost.
+ */
+const midgardUrl$: MidgardUrlLD = Rx.combineLatest([network$, getMidgardUrl$, healthInterval$]).pipe(
+  RxOp.switchMap(([network, midgardUrl]) => {
+    const primary = midgardUrl[network]
+    const fallback = fallbackUrlForNetwork(network)
+    if (!fallback || fallback === primary) return Rx.of(RD.success(primary))
+    return probeMidgardHealth$(primary).pipe(RxOp.map((ok) => RD.success(ok ? primary : fallback)))
+  }),
+  RxOp.distinctUntilChanged((a, b) => RD.isSuccess(a) && RD.isSuccess(b) && a.value === b.value),
   RxOp.shareReplay(1)
 )
 
@@ -172,8 +203,6 @@ export const checkMidgardUrl$: CheckMidgardUrlHandler = (url, intl) =>
       )
     )
   )
-
-const healthInterval$ = Rx.timer(0 /* no delay for first value */, 5 * 60 * 1000 /* others are delayed by 5 min  */)
 
 const healthStatus$: MidgardStatusLD = FP.pipe(
   Rx.combineLatest([midgardUrl$, healthInterval$]),

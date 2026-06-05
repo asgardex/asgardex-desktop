@@ -3,7 +3,9 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, ChartBarIcon, QrCodeIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
+import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Balance, Network } from '@xchainjs/xchain-client'
+import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -11,14 +13,15 @@ import {
   AnyAsset,
   Asset,
   AssetAmount,
-  assetFromString,
   assetToString,
   BaseAmount,
   baseToAsset,
   Chain,
   formatAssetAmountCurrency,
   isSecuredAsset,
-  isSynthAsset
+  isSynthAsset,
+  TokenAsset as XTokenAsset,
+  Asset as XAsset
 } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -29,6 +32,7 @@ import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../..
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
+import { useChainflipContext } from '../../../contexts/ChainflipContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import {
@@ -41,15 +45,20 @@ import {
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { isEvmChain } from '../../../helpers/evmHelper'
 import { logger } from '../../../helpers/logger'
-import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../../helpers/poolHelper'
-import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
+import { disableTradingActions, getPoolPriceValue } from '../../../helpers/poolHelper'
+import {
+  disableTradingActions as disableTradingActionsMaya,
+  getPoolPriceValue as getPoolPriceValueM
+} from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
 import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import * as poolsRoutes from '../../../routes/pools'
+import { cAssetToXAsset, isChainflipSupportedAsset } from '../../../services/chainflip/utils'
 import { WalletBalancesRD } from '../../../services/clients'
+import { MimirHalt as MimirHaltMaya } from '../../../services/mayachain/types'
 import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMidgard/types'
 import { PoolDetails, PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
-import { MimirHaltRD } from '../../../services/thorchain/types'
+import { MimirHalt, MimirHaltRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import {
   ApiError,
@@ -106,6 +115,10 @@ type Props = {
   assetHandler: (asset: SelectedWalletAsset, action: AssetAction) => void
   network: Network
   mimirHalt: MimirHaltRD
+  mimirHaltThor: MimirHalt
+  mimirHaltMaya: MimirHaltMaya
+  haltedChainsThor: Chain[]
+  haltedChainsMaya: Chain[]
   hidePrivateData: boolean
   disabledChains: EnabledChain[]
 }
@@ -125,6 +138,10 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
     selectAssetHandler,
     assetHandler,
     network,
+    mimirHaltThor,
+    mimirHaltMaya,
+    haltedChainsThor,
+    haltedChainsMaya,
     hidePrivateData,
     disabledChains
   } = props
@@ -138,6 +155,20 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
   const { appWalletService } = useWalletContext()
   const appWalletState = useObservableState(appWalletService.appWalletState$)
   const isStandaloneLedger = appWalletState && isStandaloneLedgerMode(appWalletState)
+
+  // Chainflip asset list (RD) — used to gate swap fallback to actually supported assets,
+  // not just chains. Failure is treated as no Chainflip support so swap UI still works.
+  const { getAssetsData$ } = useChainflipContext()
+  const [chainflipAssetsRD] = useObservableState(() => getAssetsData$(), RD.success([]))
+  const chainflipAssets: ReadonlyArray<AnyAsset> = useMemo(
+    () =>
+      FP.pipe(
+        RD.toOption(chainflipAssetsRD),
+        O.map((data) => data.map(cAssetToXAsset).filter((a): a is XAsset | XTokenAsset => a !== null)),
+        O.getOrElse<ReadonlyArray<AnyAsset>>(() => [])
+      ),
+    [chainflipAssetsRD]
+  )
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
 
@@ -314,18 +345,6 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         O.isSome
       )
 
-      const deepestPoolAsset = FP.pipe(
-        getDeepestPool(poolDetails),
-        O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
-        O.toNullable
-      )
-
-      const secondDeepestPoolAsset = FP.pipe(
-        getSecondDeepestPool(poolDetails),
-        O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
-        O.toNullable
-      )
-
       const createAction = (labelId: string, callback: () => void) => ({
         label: intl.formatMessage({ id: labelId }),
         callback
@@ -335,28 +354,64 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         createAction('wallet.action.send', () => assetHandler(walletAsset, 'send'))
       ]
 
-      if (isRuneNativeAsset(asset) && deepestPoolAsset) {
-        actions.push(
-          createAction('common.swap', () =>
+      // Swap-button visibility intentionally does NOT depend on Midgard pool data.
+      // Midgard is analytics; the source of truth for routability is the THOR/MAYA
+      // node quote at swap time. Targets are constant so the button is always
+      // reachable — SwapView surfaces the actual node-side error when a route fails.
+      // The orange ("warning") color below still signals halt state because that
+      // comes from mimir + inbound_addresses (node-side, not Midgard).
+
+      // Sensible defaults: pair against BTC (or ETH when the asset is BTC) so the
+      // swap form opens on a meaningful pair regardless of pool data availability.
+      const defaultSwapTargetAsset = isBtcAsset(asset) ? AssetETH : AssetBTC
+
+      // Route-availability for orange color. Chain-level check + mimir + inbound
+      // halt state. Special cases: RUNE is routable on both THOR (native) and
+      // MAYA (via the THOR.RUNE pool); CACAO is routable on MAYA as its reference asset.
+      const isThorRoutable = isChainOfThor(asset.chain) || isRuneNativeAsset(asset)
+      const isMayaRoutable = isChainOfMaya(asset.chain) || isCacaoAsset(asset) || isRuneNativeAsset(asset)
+      const thorRouteOpen =
+        isThorRoutable &&
+        !disableTradingActions({ chain: asset.chain, haltedChains: haltedChainsThor, mimirHalt: mimirHaltThor })
+      const mayaRouteOpen =
+        isMayaRoutable &&
+        !disableTradingActionsMaya({ chain: asset.chain, haltedChains: haltedChainsMaya, mimirHalt: mimirHaltMaya })
+      const chainflipRouteOpen = isChainflipSupportedAsset(asset, chainflipAssets)
+      const hasViableRoute = thorRouteOpen || mayaRouteOpen || chainflipRouteOpen
+      // 'impaired' renders the swap button with an amber outline + hover pulse
+      // and a tooltip explaining the route may not work — the button stays
+      // clickable so the user can still reach SwapView and see the real error.
+      const swapActionColor: 'impaired' | undefined = hasViableRoute ? undefined : 'impaired'
+      const swapActionTitle = hasViableRoute ? undefined : intl.formatMessage({ id: 'halt.swap.routeImpaired' })
+
+      const pushSwapAction = (source: string, target: string) => {
+        actions.push({
+          ...createAction('common.swap', () =>
             navigate(
               poolsRoutes.swap.path({
-                source: assetToString(asset),
-                target: assetToString(deepestPoolAsset),
+                source,
+                target,
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
             )
-          )
-        )
+          ),
+          color: swapActionColor,
+          title: swapActionTitle
+        })
       }
-      if (isRuneNativeAsset(asset) && deepestPoolAsset && !isStandaloneLedger) {
+
+      if (isRuneNativeAsset(asset)) {
+        pushSwapAction(assetToString(asset), assetToString(AssetBTC))
+      }
+      if (isRuneNativeAsset(asset) && !isStandaloneLedger) {
         actions.push(
           createAction('common.trade', () => {
             setProtocol(THORChain)
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: `${deepestPoolAsset.chain}~${deepestPoolAsset.symbol}`,
+                target: `${AssetBTC.chain}~${AssetBTC.symbol}`,
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -365,28 +420,17 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         )
       }
 
-      if (isCacaoAsset(asset) && deepestPoolAsset) {
-        actions.push(
-          createAction('common.swap', () =>
-            navigate(
-              poolsRoutes.swap.path({
-                source: assetToString(asset),
-                target: assetToString(deepestPoolAsset),
-                sourceWalletType: walletType,
-                targetWalletType: DEFAULT_WALLET_TYPE
-              })
-            )
-          )
-        )
+      if (isCacaoAsset(asset)) {
+        pushSwapAction(assetToString(asset), assetToString(AssetBTC))
       }
-      if (isCacaoAsset(asset) && deepestPoolAsset && !isStandaloneLedger) {
+      if (isCacaoAsset(asset) && !isStandaloneLedger) {
         actions.push(
           createAction('common.trade', () => {
             setProtocol(MAYAChain)
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: `${deepestPoolAsset.chain}~${deepestPoolAsset.symbol}`,
+                target: `${AssetBTC.chain}~${AssetBTC.symbol}`,
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -395,57 +439,20 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         )
       }
 
-      if (isSynthAsset(asset) && deepestPoolAsset) {
-        actions.push(
-          createAction('common.swap', () =>
-            navigate(
-              poolsRoutes.swap.path({
-                source: `${asset.chain}/${asset.symbol}`,
-                target: assetToString(AssetCacao),
-                sourceWalletType: walletType,
-                targetWalletType: DEFAULT_WALLET_TYPE
-              })
-            )
-          )
-        )
+      if (isSynthAsset(asset)) {
+        pushSwapAction(`${asset.chain}/${asset.symbol}`, assetToString(AssetCacao))
       }
 
-      if (
-        !isSynthAsset(asset) &&
-        deepestPoolAsset &&
-        secondDeepestPoolAsset &&
-        !isCacaoAsset(asset) &&
-        !isRuneNativeAsset(asset) &&
-        !isSecuredAsset(asset)
-      ) {
-        actions.push(
-          createAction('common.swap', () =>
-            navigate(
-              poolsRoutes.swap.path({
-                source: assetToString(asset),
-                target: assetToString(isBtcAsset(asset) ? secondDeepestPoolAsset : deepestPoolAsset),
-                sourceWalletType: walletType,
-                targetWalletType: DEFAULT_WALLET_TYPE
-              })
-            )
-          )
-        )
+      if (!isSynthAsset(asset) && !isCacaoAsset(asset) && !isRuneNativeAsset(asset) && !isSecuredAsset(asset)) {
+        pushSwapAction(assetToString(asset), assetToString(defaultSwapTargetAsset))
       }
       if (isSecuredAsset(asset)) {
-        actions.push(
-          createAction('common.swap', () =>
-            navigate(
-              poolsRoutes.swap.path({
-                source: assetToString(asset),
-                target: isBtcSecuredAsset(asset)
-                  ? `${secondDeepestPoolAsset?.chain}-${secondDeepestPoolAsset?.symbol}`
-                  : `${deepestPoolAsset?.chain}-${deepestPoolAsset?.symbol}`,
-                sourceWalletType: walletType,
-                targetWalletType: DEFAULT_WALLET_TYPE
-              })
-            )
-          )
-        )
+        // Secured-asset target keeps its `CHAIN-SYMBOL` URL form pointing at a
+        // safe default (ETH-ETH when source is BTC-secured, otherwise BTC-BTC).
+        const securedTarget = isBtcSecuredAsset(asset)
+          ? `${AssetETH.chain}-${AssetETH.symbol}`
+          : `${AssetBTC.chain}-${AssetBTC.symbol}`
+        pushSwapAction(assetToString(asset), securedTarget)
       }
 
       if (hasActivePool && !isStandaloneLedger) {
@@ -473,7 +480,20 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         </div>
       )
     },
-    [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol, isStandaloneLedger]
+    [
+      poolsData,
+      poolsDataMaya,
+      intl,
+      assetHandler,
+      navigate,
+      setProtocol,
+      isStandaloneLedger,
+      chainflipAssets,
+      mimirHaltThor,
+      mimirHaltMaya,
+      haltedChainsThor,
+      haltedChainsMaya
+    ]
   )
 
   const columns: ColumnDef<WalletBalance, FixmeType>[] = useMemo(

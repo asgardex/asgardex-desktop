@@ -76,6 +76,12 @@
   --color-warning0: #f3ba2f;
   --color-warning0d: #f3ba2f;
 
+  /* Impaired colors (light / dark) — distinct true-warning orange used to
+     signal degraded but reachable states (e.g. swap route may fail), so it
+     reads as caution and not as the gold warning swatch. */
+  --color-impaired: #f59e0b;
+  --color-impairedd: #fbbf24;
+
   /* Gray colors (light / dark) */
   --color-gray0: #daddee;
   --color-gray0d: #303942;

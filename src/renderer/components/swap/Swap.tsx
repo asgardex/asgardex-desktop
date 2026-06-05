@@ -891,6 +891,13 @@ export const Swap = ({
   const [rateDirection, setRateDirection] = useState(RateDirection.Source)
 
   const rateLabel = useMemo(() => {
+    // When either side is missing a real RUNE-denominated price (e.g. a
+    // Chainflip-only fallback with assetPrice = bn(0)), the ratio collapses to
+    // NaN/Infinity. Render a placeholder instead of nonsense; the actual swap
+    // path uses the aggregator quote, not this label.
+    const hasValidPrices =
+      sourceAssetPrice.isFinite() && targetAssetPrice.isFinite() && sourceAssetPrice.gt(0) && targetAssetPrice.gt(0)
+    const placeholderRate = '—'
     switch (rateDirection) {
       case RateDirection.Source:
         return `${formatAssetAmountCurrency({
@@ -898,24 +905,32 @@ export const Swap = ({
           amount: assetAmount(1),
           decimal: isUSDAsset(sourceAsset) ? 2 : 6,
           trimZeros: true
-        })} = ${formatAssetAmountCurrency({
-          asset: targetAsset,
-          amount: assetAmount(sourceAssetPrice.dividedBy(targetAssetPrice)),
-          decimal: isUSDAsset(targetAsset) ? 2 : 6,
-          trimZeros: true
-        })}`
+        })} = ${
+          hasValidPrices
+            ? formatAssetAmountCurrency({
+                asset: targetAsset,
+                amount: assetAmount(sourceAssetPrice.dividedBy(targetAssetPrice)),
+                decimal: isUSDAsset(targetAsset) ? 2 : 6,
+                trimZeros: true
+              })
+            : placeholderRate
+        }`
       case RateDirection.Target:
         return `${formatAssetAmountCurrency({
           asset: targetAsset,
           decimal: isUSDAsset(targetAsset) ? 2 : 6,
           amount: assetAmount(1),
           trimZeros: true
-        })} = ${formatAssetAmountCurrency({
-          asset: sourceAsset,
-          decimal: isUSDAsset(sourceAsset) ? 2 : 6,
-          amount: assetAmount(targetAssetPrice.dividedBy(sourceAssetPrice)),
-          trimZeros: true
-        })}`
+        })} = ${
+          hasValidPrices
+            ? formatAssetAmountCurrency({
+                asset: sourceAsset,
+                decimal: isUSDAsset(sourceAsset) ? 2 : 6,
+                amount: assetAmount(targetAssetPrice.dividedBy(sourceAssetPrice)),
+                trimZeros: true
+              })
+            : placeholderRate
+        }`
     }
   }, [rateDirection, sourceAsset, sourceAssetPrice, targetAsset, targetAssetPrice])
 
