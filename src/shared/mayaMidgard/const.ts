@@ -15,3 +15,11 @@ export const DEFAULT_MIDGARD_MAYA_URLS: ApiUrls = {
   stagenet: STAGENET_URL,
   testnet: TESTNET_URL
 }
+
+// Transparent fallback when the configured primary fails its /v2/health check.
+// midgard-maya.liquify.com is the secondary endpoint listed by xchain-mayamidgard-query.
+export const FALLBACK_MIDGARD_MAYA_URLS: ApiUrls = {
+  mainnet: envOrDefault(import.meta.env.VITE_MIDGARD_MAYA_MAINNET_FALLBACK_URL, 'https://midgard-maya.liquify.com'),
+  stagenet: '',
+  testnet: ''
+}

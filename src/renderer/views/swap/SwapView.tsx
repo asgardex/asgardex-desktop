@@ -551,7 +551,8 @@ const SuccessRouteView = ({
     chainflipAssets: ReadonlyArray<AnyAsset>
   ): Either<Error, { sourceAssetDetail: PoolAssetDetail; targetAssetDetail: PoolAssetDetail }> => {
     const findChainflipFallback = (asset: AnyAsset): PoolAssetDetail | null => {
-      const match = chainflipAssets.find((a) => a.chain === asset.chain && a.ticker === asset.ticker)
+      const target = assetToString(asset)
+      const match = chainflipAssets.find((a) => assetToString(a) === target)
       return match ? { asset: match, assetPrice: bn(0) } : null
     }
     const sourceAssetDetail =

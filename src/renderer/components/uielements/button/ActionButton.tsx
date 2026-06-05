@@ -4,6 +4,7 @@ import clsx from 'clsx'
 
 import { Dropdown } from '../dropdown'
 import { Label } from '../label'
+import type { Color } from './Button.types'
 import type { Props as ButtonProps } from './FlatButton'
 import { FlatButton } from './index'
 
@@ -11,6 +12,7 @@ export type Action = {
   label: string
   callback: () => void
   disabled?: boolean
+  color?: Color
 }
 
 export type Props = Omit<ButtonProps, 'onClick'> & {
@@ -29,10 +31,11 @@ export const ActionButton = ({
   if (actions.length <= 3) {
     return (
       <div className={clsx('flex w-full justify-start space-x-2', className)}>
-        {actions.map(({ label, callback, disabled = false }, index) => (
+        {actions.map(({ label, callback, disabled = false, color }, index) => (
           <FlatButton
             className={clsx('group', btnClassName)} // Use FlatButton or TextButton as needed
             size={size}
+            color={color}
             disabled={disabled}
             key={index}
             onClick={(event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -49,10 +52,11 @@ export const ActionButton = ({
 
   return (
     <div className={clsx('flex w-full justify-start space-x-2', className)}>
-      {actions.slice(0, 2).map(({ label, callback, disabled = false }, index) => (
+      {actions.slice(0, 2).map(({ label, callback, disabled = false, color }, index) => (
         <FlatButton
           className={clsx('group', btnClassName)} // Use FlatButton or TextButton as needed
           size={size}
+          color={color}
           disabled={disabled}
           key={index}
           onClick={(event: React.MouseEvent<HTMLElement, MouseEvent>) => {
