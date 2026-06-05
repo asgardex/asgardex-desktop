@@ -75,7 +75,7 @@ const chainFromRouteAssetString = (raw?: string): O.Option<Chain> => {
 }
 
 // A globally halted protocol is only relevant to the user if at least one of their
-// selected chains actually routes through that protocol. e.g. a ZEC→XRD swap on
+// selected chains actually routes through that protocol. e.g. a ZEC→DASH swap on
 // MAYA shouldn't surface a THOR-halt banner since THOR has no role in that pair.
 const isProtocolRelevant = (protocol: Chain, selectedChains?: Chain[]): boolean => {
   if (!selectedChains || selectedChains.length === 0) return true

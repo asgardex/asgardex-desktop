@@ -88,20 +88,20 @@ const healthInterval$ = Rx.timer(0 /* no delay for first value */, 5 * 60 * 1000
 /**
  * Midgard url with transparent fallback.
  *
- * Emits the configured primary URL immediately so cold start isn't delayed.
- * Probes the primary's /v2/health in the background; if unhealthy and a
- * different fallback URL is configured, swaps to the fallback. Re-probes
- * whenever `healthInterval$` triggers, so recovery flips back automatically.
+ * Probes the primary's /v2/health on each `healthInterval$` tick and emits
+ * either the primary (when healthy) or the configured fallback (when not).
+ * `distinctUntilChanged` + `shareReplay(1)` ensures downstream subscribers
+ * only see a value change when the resolved URL actually changes — so during
+ * a persistent outage the stream settles on the fallback instead of flapping
+ * back to the dead primary every 5 minutes. The first probe completes within
+ * the 8s probe timeout, which is the cold-start cost.
  */
 const midgardUrl$: MidgardUrlLD = Rx.combineLatest([network$, getMidgardUrl$, healthInterval$]).pipe(
-  RxOp.switchMap(([network, midgardUrl, _]) => {
+  RxOp.switchMap(([network, midgardUrl]) => {
     const primary = midgardUrl[network]
     const fallback = fallbackUrlForNetwork(network)
     if (!fallback || fallback === primary) return Rx.of(RD.success(primary))
-    return Rx.concat(
-      Rx.of(RD.success(primary)),
-      probeMidgardHealth$(primary).pipe(RxOp.switchMap((ok) => (ok ? Rx.EMPTY : Rx.of(RD.success(fallback)))))
-    )
+    return probeMidgardHealth$(primary).pipe(RxOp.map((ok) => RD.success(ok ? primary : fallback)))
   }),
   RxOp.distinctUntilChanged((a, b) => RD.isSuccess(a) && RD.isSuccess(b) && a.value === b.value),
   RxOp.shareReplay(1)
