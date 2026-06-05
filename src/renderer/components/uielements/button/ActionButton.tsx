@@ -13,6 +13,9 @@ export type Action = {
   callback: () => void
   disabled?: boolean
   color?: Color
+  // Native HTML title — surfaces as a browser tooltip on hover. Used to explain
+  // non-obvious states (e.g. why a swap button is in the 'impaired' style).
+  title?: string
 }
 
 export type Props = Omit<ButtonProps, 'onClick'> & {
@@ -31,12 +34,13 @@ export const ActionButton = ({
   if (actions.length <= 3) {
     return (
       <div className={clsx('flex w-full justify-start space-x-2', className)}>
-        {actions.map(({ label, callback, disabled = false, color }, index) => (
+        {actions.map(({ label, callback, disabled = false, color, title }, index) => (
           <FlatButton
             className={clsx('group', btnClassName)} // Use FlatButton or TextButton as needed
             size={size}
             color={color}
             disabled={disabled}
+            title={title}
             key={index}
             onClick={(event: React.MouseEvent<HTMLElement, MouseEvent>) => {
               event.preventDefault()
@@ -52,12 +56,13 @@ export const ActionButton = ({
 
   return (
     <div className={clsx('flex w-full justify-start space-x-2', className)}>
-      {actions.slice(0, 2).map(({ label, callback, disabled = false, color }, index) => (
+      {actions.slice(0, 2).map(({ label, callback, disabled = false, color, title }, index) => (
         <FlatButton
           className={clsx('group', btnClassName)} // Use FlatButton or TextButton as needed
           size={size}
           color={color}
           disabled={disabled}
+          title={title}
           key={index}
           onClick={(event: React.MouseEvent<HTMLElement, MouseEvent>) => {
             event.preventDefault()

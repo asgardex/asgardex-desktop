@@ -14,14 +14,18 @@ export const FlatButton = (props: Props): JSX.Element => {
     primary: 'bg-turquoise',
     warning: 'bg-warning0 dark:bg-warning0d',
     error: 'bg-error0 dark:bg-error0d',
-    neutral: 'bg-gray0 dark:bg-gray0d'
+    neutral: 'bg-gray0 dark:bg-gray0d',
+    // Outline style — transparent fill so the affordance reads as "available
+    // but cautioned" rather than as a primary action.
+    impaired: 'bg-transparent'
   }
 
   const textColor: Record<Color, string> = {
     primary: 'text-white',
     warning: 'text-white',
     error: 'text-white',
-    neutral: 'text-text0 dark:text-text0d'
+    neutral: 'text-text0 dark:text-text0d',
+    impaired: 'text-impaired dark:text-impairedd'
   }
 
   const borderColor = { ...S.borderColor, neutral: 'border-gray0 dark:border-gray0d' }

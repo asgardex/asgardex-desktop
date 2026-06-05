@@ -378,7 +378,11 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         !disableTradingActionsMaya({ chain: asset.chain, haltedChains: haltedChainsMaya, mimirHalt: mimirHaltMaya })
       const chainflipRouteOpen = isChainflipSupportedAsset(asset, chainflipAssets)
       const hasViableRoute = thorRouteOpen || mayaRouteOpen || chainflipRouteOpen
-      const swapActionColor: 'warning' | undefined = hasViableRoute ? undefined : 'warning'
+      // 'impaired' renders the swap button with an amber outline + hover pulse
+      // and a tooltip explaining the route may not work — the button stays
+      // clickable so the user can still reach SwapView and see the real error.
+      const swapActionColor: 'impaired' | undefined = hasViableRoute ? undefined : 'impaired'
+      const swapActionTitle = hasViableRoute ? undefined : intl.formatMessage({ id: 'halt.swap.routeImpaired' })
 
       const pushSwapAction = (source: string, target: string) => {
         actions.push({
@@ -392,7 +396,8 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
               })
             )
           ),
-          color: swapActionColor
+          color: swapActionColor,
+          title: swapActionTitle
         })
       }
 
