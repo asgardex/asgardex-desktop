@@ -23,4 +23,4 @@ export type ButtonProps = ComponentProps & HeadlessButtonProps
 // Tailwind based button types
 export type Size = 'small' | 'medium' | 'normal' | 'large'
 export type Font = 'normal' | 'semi' | 'bold'
-export type Color = 'primary' | 'warning' | 'error' | 'neutral'
+export type Color = 'primary' | 'warning' | 'error' | 'neutral' | 'impaired'

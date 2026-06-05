@@ -10,7 +10,8 @@ const halt: HaltMessages = {
   'halt.chain.trading': '{chains} 체인(들)에서 거래가 일시적으로 중단되었습니다.',
   'halt.chain.pause': '{chains} 체인(들)의 유동성 활동(추가/제거)이 일시적으로 비활성화되었습니다.',
   'halt.chain.pauseall': '모든 체인의 유동성 활동(추가/제거)이 일시적으로 비활성화되었습니다.',
-  'halt.chain.pauseDeposits': '{chains} 체인(들)에 대한 유동성 예치(추가)가 일시적으로 비활성화되었습니다.'
+  'halt.chain.pauseDeposits': '{chains} 체인(들)에 대한 유동성 예치(추가)가 일시적으로 비활성화되었습니다.',
+  'halt.swap.routeImpaired': '스왑 경로에 문제가 있을 수 있습니다'
 }
 
 export default halt

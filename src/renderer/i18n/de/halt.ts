@@ -12,7 +12,8 @@ const halt: HaltMessages = {
     'Liquidity-Aktivitäten (Hinzufügen/Entfernen) wurden für {chains} Chain(s) vorübergehend gestoppt.',
   'halt.chain.pauseall': 'Liquidity-Aktivitäten (Hinzufügen/Entfernen) wurden für alle Chains vorübergehend gestoppt.',
   'halt.chain.pauseDeposits':
-    'Einlagen für Liquidität (Hinzufügen) für {chains} Kette(n) wurden vorübergehend deaktiviert.'
+    'Einlagen für Liquidität (Hinzufügen) für {chains} Kette(n) wurden vorübergehend deaktiviert.',
+  'halt.swap.routeImpaired': 'Tausch-Route ist möglicherweise eingeschränkt'
 }
 
 export default halt

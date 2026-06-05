@@ -16,6 +16,8 @@ import { WalletType } from '../../../../shared/wallet/types'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { WalletBalances } from '../../../services/clients'
+import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../../../services/mayachain/const'
+import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_THOR } from '../../../services/thorchain/const'
 import { ApiError, ChainBalances, ErrorId, SelectedWalletAsset } from '../../../services/wallet/types'
 import { AssetsTableCollapsable } from './index'
 
@@ -213,6 +215,10 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       mayaPricePool={MAYA_PRICE_POOL}
       network={Network.Testnet}
       mimirHalt={RD.initial}
+      mimirHaltThor={DEFAULT_MIMIR_HALT_THOR}
+      mimirHaltMaya={DEFAULT_MIMIR_HALT_MAYA}
+      haltedChainsThor={[]}
+      haltedChainsMaya={[]}
       hidePrivateData={false}
       disabledChains={[]}
     />

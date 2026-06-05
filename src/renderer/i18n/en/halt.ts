@@ -10,7 +10,8 @@ const halt: HaltMessages = {
   'halt.chain.pause': 'Liquidity activities (add/remove) for {chains} chain(s) have been disabled temporarily.',
   'halt.chain.pauseall': 'Liquidity activities (add/remove) for all chains have been disabled temporarily.',
   'halt.chain.pauseDeposits':
-    'Liquidity deposits (add) for {chains} chain(s) on {protocol} have been disabled temporarily.'
+    'Liquidity deposits (add) for {chains} chain(s) on {protocol} have been disabled temporarily.',
+  'halt.swap.routeImpaired': 'Swap route may be impaired'
 }
 
 export default halt

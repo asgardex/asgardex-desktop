@@ -62,6 +62,7 @@ import {
 import {
   ApiGetSwapHistoryParams,
   GetSwapHistoryParams,
+  PendingPoolsState,
   PendingPoolsStateLD,
   PoolAssetsLD,
   PoolDetailLD,
@@ -445,14 +446,19 @@ const createPoolsService = ({
     const assetDetails$ = getAssetDetails$(poolAssets$, GetPoolsStatusEnum.Staged)
     const poolDetails$ = getPoolDetails$(poolAssets$, GetPoolsStatusEnum.Staged)
 
+    const emptyPendingPoolsState: PendingPoolsState = { poolAssets: [], assetDetails: [], poolDetails: [] }
+    // Staged/pending pools are a developer-facing enhancement (surface upcoming pools
+    // as additional swap options). Treat fetch failures as "no staged pools" so a
+    // flaky Midgard staged-pools endpoint doesn't gate the entire swap UI.
     return FP.pipe(
       liveData.sequenceS({
         poolAssets: poolAssets$,
         assetDetails: assetDetails$,
         poolDetails: poolDetails$
       }),
+      RxOp.map((rd) => (RD.isFailure(rd) ? RD.success(emptyPendingPoolsState) : rd)),
       RxOp.startWith(RD.pending),
-      RxOp.catchError((error: Error) => Rx.of(RD.failure(error)))
+      RxOp.catchError(() => Rx.of(RD.success(emptyPendingPoolsState)))
     )
   }
 

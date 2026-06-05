@@ -4,14 +4,16 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
-import { function as FP, array as A } from 'fp-ts'
+import { function as FP, array as A, option as O } from 'fp-ts'
 import { useIntl, IntlShape } from 'react-intl'
-import { useLocation } from 'react-router-dom'
+import { matchPath, useLocation } from 'react-router-dom'
 
-import { chainToString, DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { chainToString, DEFAULT_ENABLED_CHAINS, isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
 import { Alert } from '../../components/uielements/alert'
 import { BorderButton } from '../../components/uielements/button'
+import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { unionChains } from '../../helpers/fp/array'
+import * as poolsRoutes from '../../routes/pools'
 import { MimirHalt } from '../../services/thorchain/types'
 
 const CHAINFLIP_LABEL = 'Chainflip'
@@ -39,6 +41,10 @@ type PageContext = {
   isSwapPage: boolean
   isPoolPage: boolean
   isDepositPage: boolean
+  // Chains the user is actively engaging with on the current page.
+  // When undefined the page is not asset-scoped (e.g. pools list) and all halts surface.
+  // When defined the alerts are filtered down to messages about these chains only.
+  selectedChains?: Chain[]
 }
 
 type ResolvedProtocolData = {
@@ -57,8 +63,34 @@ const EMPTY_MIMIR: MimirHalt = {
 const isProtocolGloballyHalted = ({ protocol, mimirHalt }: ResolvedProtocolData): boolean =>
   mimirHalt.haltGlobalTrading || (protocol === THORChain && mimirHalt.HALTTHORCHAIN)
 
-const buildGlobalHaltMessage = (resolvedProtocols: ResolvedProtocolData[], intl: IntlShape): string | undefined => {
-  const halted = resolvedProtocols.filter(isProtocolGloballyHalted)
+// Reverse the asset-string transform the swap route applies (handles synth + raw form)
+// so we can recover a Chain to filter halt messages against.
+const chainFromRouteAssetString = (raw?: string): O.Option<Chain> => {
+  if (!raw) return O.none
+  const decoded = decodeURIComponent(raw).replace('_synth_', '/')
+  return FP.pipe(
+    getAssetFromNullableString(decoded),
+    O.map((asset) => asset.chain)
+  )
+}
+
+// A globally halted protocol is only relevant to the user if at least one of their
+// selected chains actually routes through that protocol. e.g. a ZEC→DASH swap on
+// MAYA shouldn't surface a THOR-halt banner since THOR has no role in that pair.
+const isProtocolRelevant = (protocol: Chain, selectedChains?: Chain[]): boolean => {
+  if (!selectedChains || selectedChains.length === 0) return true
+  if (protocol === THORChain) return selectedChains.some(isChainOfThor)
+  return selectedChains.some(isChainOfMaya)
+}
+
+const buildGlobalHaltMessage = (
+  resolvedProtocols: ResolvedProtocolData[],
+  selectedChains: Chain[] | undefined,
+  intl: IntlShape
+): string | undefined => {
+  const halted = resolvedProtocols
+    .filter(isProtocolGloballyHalted)
+    .filter((p) => isProtocolRelevant(p.protocol, selectedChains))
   if (halted.length === 0) return undefined
 
   const haltedNames = halted.map((p) => p.protocol)
@@ -80,38 +112,49 @@ const buildGlobalHaltMessage = (resolvedProtocols: ResolvedProtocolData[], intl:
 
 const buildPerProtocolMessages = (
   { protocol, inboundHaltedChains, mimirHalt }: ResolvedProtocolData,
-  { isSwapPage, isPoolPage, isDepositPage }: PageContext,
+  { isSwapPage, isPoolPage, isDepositPage, selectedChains }: PageContext,
   intl: IntlShape
 ): string[] => {
   // Skip per-chain messages when the protocol is fully halted globally — covered by the global halt message
   if (isProtocolGloballyHalted({ protocol, inboundHaltedChains, mimirHalt, midgard: true })) return []
 
   const messages: string[] = []
-  const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS).map((chain) => ({
-    chain,
-    haltedChain: mimirHalt[`HALT${chain}CHAIN`] || false,
-    haltedTrading: mimirHalt[`HALT${chain}TRADING`] || false,
-    pausedLP: mimirHalt[`PAUSELP${chain}`] || false,
-    pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`] || false
-  }))
+  // When the page tells us which chains the user has selected, restrict messages
+  // to those chains so the user only sees halts that affect their current swap/deposit.
+  const isRelevant = (chain: Chain): boolean => !selectedChains || selectedChains.includes(chain)
+  const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS)
+    .filter(isRelevant)
+    .map((chain) => ({
+      chain,
+      haltedChain: mimirHalt[`HALT${chain}CHAIN`] || false,
+      haltedTrading: mimirHalt[`HALT${chain}TRADING`] || false,
+      pausedLP: mimirHalt[`PAUSELP${chain}`] || false,
+      pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`] || false
+    }))
+
+  // A full chain halt strictly implies a trading halt — keep these in one variable
+  // so the trading-only message can exclude chains already mentioned in the broader
+  // chain-halt message and avoid the redundant duplicate warning.
+  const fullyHaltedChains = FP.pipe(
+    haltedChainsState,
+    A.filter(({ haltedChain }) => haltedChain),
+    A.map(({ chain }) => chain),
+    unionChains(inboundHaltedChains.filter(isRelevant))
+  )
 
   if (isSwapPage || isPoolPage) {
-    const haltedChains = FP.pipe(
-      haltedChainsState,
-      A.filter(({ haltedChain }) => haltedChain),
-      A.map(({ chain }) => chain),
-      unionChains(inboundHaltedChains)
-    )
-
-    if (haltedChains.length === 1) {
-      messages.push(intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: protocol }))
-    } else if (haltedChains.length > 1) {
-      messages.push(intl.formatMessage({ id: 'halt.chains' }, { chains: haltedChains.join(', '), protocol }))
+    if (fullyHaltedChains.length === 1) {
+      messages.push(intl.formatMessage({ id: 'halt.chain' }, { chain: fullyHaltedChains[0], dex: protocol }))
+    } else if (fullyHaltedChains.length > 1) {
+      messages.push(intl.formatMessage({ id: 'halt.chains' }, { chains: fullyHaltedChains.join(', '), protocol }))
     }
   }
 
   if (isSwapPage) {
-    const haltedTradingChains = haltedChainsState.filter(({ haltedTrading }) => haltedTrading).map(({ chain }) => chain)
+    const haltedTradingChains = haltedChainsState
+      .filter(({ haltedTrading }) => haltedTrading)
+      .map(({ chain }) => chain)
+      .filter((chain) => !fullyHaltedChains.includes(chain))
     if (haltedTradingChains.length > 0) {
       messages.push(intl.formatMessage({ id: 'halt.chain.trading' }, { chains: haltedTradingChains.join(', ') }))
     }
@@ -148,11 +191,30 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
 
   const pageContext: PageContext = useMemo(() => {
     const isPoolDetailPage = location.pathname.includes('/pools/detail')
-    return {
-      isSwapPage: location.pathname.includes('/swap'),
-      isPoolPage: location.pathname.includes('/pools') && !isPoolDetailPage,
-      isDepositPage: location.pathname.includes('/deposit') || location.pathname.includes('/liquidity')
+    const isSwapPage = location.pathname.includes('/swap')
+    const isPoolPage = location.pathname.includes('/pools') && !isPoolDetailPage
+    const isDepositPage = location.pathname.includes('/deposit') || location.pathname.includes('/liquidity')
+
+    // Pull chains out of the URL where the page has a concrete asset selection
+    // so alerts can be filtered to the swap pair / pool asset instead of dumping
+    // every halt every time.
+    let selectedChains: Chain[] | undefined
+    if (isSwapPage) {
+      const swapMatch = matchPath(poolsRoutes.swap.template, location.pathname)
+      const params = swapMatch?.params as { source?: string; target?: string } | undefined
+      const chains = FP.pipe(
+        [chainFromRouteAssetString(params?.source), chainFromRouteAssetString(params?.target)],
+        A.compact
+      )
+      selectedChains = chains.length > 0 ? Array.from(new Set(chains)) : undefined
+    } else if (isDepositPage) {
+      const depositMatch = matchPath(poolsRoutes.deposit.template, location.pathname)
+      const params = depositMatch?.params as { asset?: string } | undefined
+      const chain = FP.pipe(chainFromRouteAssetString(params?.asset), O.toNullable)
+      selectedChains = chain ? [chain] : undefined
     }
+
+    return { isSwapPage, isPoolPage, isDepositPage, selectedChains }
   }, [location.pathname])
 
   const RENDER_DELAY_MS = 200
@@ -210,7 +272,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
 
     // One combined global-halt message (cross-protocol, with alternatives)
     if (pageContext.isSwapPage || pageContext.isPoolPage) {
-      const globalMsg = buildGlobalHaltMessage(resolvedProtocols, intl)
+      const globalMsg = buildGlobalHaltMessage(resolvedProtocols, pageContext.selectedChains, intl)
       if (globalMsg) push(globalMsg)
     }
 
@@ -219,10 +281,14 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
       for (const msg of buildPerProtocolMessages(data, pageContext, intl)) push(msg)
     }
 
-    // Midgard offline (per-protocol — protocol name is embedded so no dedup collision)
+    // Midgard offline (per-protocol — protocol name is embedded so no dedup collision).
+    // Filter to the protocol that actually serves one of the selected chains so a Maya
+    // outage doesn't pop up while the user is swapping a THOR-only pair (and vice versa).
     if (pageContext.isSwapPage || pageContext.isPoolPage) {
       for (const { protocol, midgard } of resolvedProtocols) {
-        if (!midgard) push(intl.formatMessage({ id: 'midgard.status.offline' }, { protocol }))
+        if (!midgard && isProtocolRelevant(protocol, pageContext.selectedChains)) {
+          push(intl.formatMessage({ id: 'midgard.status.offline' }, { protocol }))
+        }
       }
     }
 

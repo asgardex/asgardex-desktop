@@ -65,7 +65,11 @@ import { getDecimal } from '../../services/chain/decimal'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { cAssetToXAsset, cChainToXChain } from '../../services/chainflip/utils'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
-import { PoolAssetDetail } from '../../services/midgard/midgardTypes'
+import {
+  PendingPoolsState as MayaPendingPoolsState,
+  PoolsState as MayaPoolsState
+} from '../../services/midgard/mayaMidgard/types'
+import { PendingPoolsState, PoolAssetDetail, PoolsState } from '../../services/midgard/midgardTypes'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
@@ -193,6 +197,40 @@ const SuccessRouteView = ({
   const poolsStateMayaRD = useObservableState(mayaPoolsState$, RD.initial)
   const pendingPoolsStateRD = useObservableState(pendingPoolsState$, RD.initial)
   const pendingPoolsStateMayaRD = useObservableState(pendingPoolsStateMaya$, RD.initial)
+
+  // Tolerate THOR/MAYA pool fetch failures so Chainflip swaps stay reachable when
+  // a Midgard endpoint is down. Failure is treated as "no pools from that source"
+  // rather than gating the whole swap view.
+  const emptyThorPoolsState: PoolsState = {
+    poolAssets: [],
+    assetDetails: [],
+    poolDetails: [],
+    poolsData: {},
+    pricePools: O.none
+  }
+  const emptyMayaPoolsState: MayaPoolsState = {
+    poolAssets: [],
+    assetDetails: [],
+    poolDetails: [],
+    poolsData: {},
+    pricePools: O.none
+  }
+  const emptyThorPendingPoolsState: PendingPoolsState = { poolAssets: [], assetDetails: [], poolDetails: [] }
+  const emptyMayaPendingPoolsState: MayaPendingPoolsState = { poolAssets: [], assetDetails: [], poolDetails: [] }
+  const tolerantPoolsStateThorRD: RD.RemoteData<Error, PoolsState> = RD.isFailure(poolsStateThorRD)
+    ? RD.success(emptyThorPoolsState)
+    : poolsStateThorRD
+  const tolerantPoolsStateMayaRD: RD.RemoteData<Error, MayaPoolsState> = RD.isFailure(poolsStateMayaRD)
+    ? RD.success(emptyMayaPoolsState)
+    : poolsStateMayaRD
+  const tolerantPendingPoolsStateRD: RD.RemoteData<Error, PendingPoolsState> = RD.isFailure(pendingPoolsStateRD)
+    ? RD.success(emptyThorPendingPoolsState)
+    : pendingPoolsStateRD
+  const tolerantPendingPoolsStateMayaRD: RD.RemoteData<Error, MayaPendingPoolsState> = RD.isFailure(
+    pendingPoolsStateMayaRD
+  )
+    ? RD.success(emptyMayaPendingPoolsState)
+    : pendingPoolsStateMayaRD
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
     // Extract pool details from RemoteData
@@ -502,14 +540,27 @@ const SuccessRouteView = ({
     return left(new Error(`Unsupported chain combination: source (${sourceChain}), target (${targetChain})`))
   }
 
-  // Helper function to pick and validate pool assets
+  // Helper function to pick and validate pool assets.
+  // Falls back to Chainflip-supported assets (with zero RUNE-denominated price)
+  // so the swap UI loads when THOR/MAYA pool data is unavailable but Chainflip
+  // can still route the pair.
   const validatePoolAssets = (
     poolAssetDetails: PoolAssetDetail[],
     sourceAsset: AssetWithDecimal,
-    targetAsset: AssetWithDecimal
+    targetAsset: AssetWithDecimal,
+    chainflipAssets: ReadonlyArray<AnyAsset>
   ): Either<Error, { sourceAssetDetail: PoolAssetDetail; targetAssetDetail: PoolAssetDetail }> => {
-    const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable)
-    const targetAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, targetAsset.asset), O.toNullable)
+    const findChainflipFallback = (asset: AnyAsset): PoolAssetDetail | null => {
+      const target = assetToString(asset)
+      const match = chainflipAssets.find((a) => assetToString(a) === target)
+      return match ? { asset: match, assetPrice: bn(0) } : null
+    }
+    const sourceAssetDetail =
+      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable) ??
+      findChainflipFallback(sourceAsset.asset)
+    const targetAssetDetail =
+      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, targetAsset.asset), O.toNullable) ??
+      findChainflipFallback(targetAsset.asset)
 
     if (!sourceAssetDetail) {
       return left(new Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
@@ -530,16 +581,16 @@ const SuccessRouteView = ({
         </h2>
         <RefreshButton className="absolute right-0" onClick={reloadHandler} />
       </div>
-      {RD.isSuccess(poolsStateMayaRD) ? (
+      {RD.isSuccess(tolerantPoolsStateMayaRD) ? (
         <div className="flex justify-center bg-bg0 dark:bg-bg0d">
           {FP.pipe(
             sequenceTRD(
-              poolsStateThorRD,
-              poolsStateMayaRD,
+              tolerantPoolsStateThorRD,
+              tolerantPoolsStateMayaRD,
               sourceAssetRD,
               targetAssetRD,
-              pendingPoolsStateRD,
-              pendingPoolsStateMayaRD,
+              tolerantPendingPoolsStateRD,
+              tolerantPendingPoolsStateMayaRD,
               chainFlipAssets
             ),
             RD.fold(
@@ -588,7 +639,12 @@ const SuccessRouteView = ({
 
                 const poolAssetDetails = poolAssetDetailsResult.right
 
-                const assetValidationResult = validatePoolAssets(poolAssetDetails, sourceAsset, targetAsset)
+                const assetValidationResult = validatePoolAssets(
+                  poolAssetDetails,
+                  sourceAsset,
+                  targetAsset,
+                  convertedAssets
+                )
                 if (isLeft(assetValidationResult)) {
                   return renderError(assetValidationResult.left)
                 }
@@ -649,7 +705,13 @@ const SuccessRouteView = ({
       ) : (
         <div className="flex justify-center bg-bg0 dark:bg-bg0d">
           {FP.pipe(
-            sequenceTRD(poolsStateThorRD, sourceAssetRD, targetAssetRD, pendingPoolsStateRD, chainFlipAssets),
+            sequenceTRD(
+              tolerantPoolsStateThorRD,
+              sourceAssetRD,
+              targetAssetRD,
+              tolerantPendingPoolsStateRD,
+              chainFlipAssets
+            ),
             RD.fold(
               () => <></>,
               () => <Spin className="min-h-24" tip={intl.formatMessage({ id: 'common.loading' })} />,
@@ -672,7 +734,12 @@ const SuccessRouteView = ({
                   .map(cAssetToXAsset)
                   .filter((asset): asset is XAsset | XTokenAsset => asset !== null)
 
-                const assetValidationResult = validatePoolAssets(thorchainPoolAssetDetails, sourceAsset, targetAsset)
+                const assetValidationResult = validatePoolAssets(
+                  thorchainPoolAssetDetails,
+                  sourceAsset,
+                  targetAsset,
+                  convertedAssets
+                )
                 if (isLeft(assetValidationResult)) {
                   return renderError(assetValidationResult.left)
                 }

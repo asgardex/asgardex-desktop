@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import * as RD from '@devexperts/remote-data-ts'
 import {
   ArrowDownOnSquareIcon,
   ArrowRightOnRectangleIcon,
@@ -13,18 +14,29 @@ import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, assetToString, AssetType, Chain, AnyAsset } from '@xchainjs/xchain-util'
+import {
+  Address,
+  assetToString,
+  AssetType,
+  Chain,
+  AnyAsset,
+  Asset as XAsset,
+  TokenAsset as XTokenAsset
+} from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
+import { useChainflipContext } from '../../../contexts/ChainflipContext'
 import * as AssetHelper from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import * as poolsRoutes from '../../../routes/pools'
 import * as walletRoutes from '../../../routes/wallet'
+import { cAssetToXAsset, isChainflipSupportedAsset } from '../../../services/chainflip/utils'
 import { OpenExplorerTxUrl, TxsPageRD } from '../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../services/const'
 import { EMPTY_LOAD_TXS_HANDLER } from '../../../services/wallet/const'
@@ -85,7 +97,23 @@ export const AssetDetails = (props: Props): JSX.Element => {
 
   const isResumedOnThor = isChainOfThor(chain) && !haltedChainsThor.includes(chain)
   const isResumedOnMaya = isChainOfMaya(chain) && !haltedChainsMaya.includes(chain)
-  const disableSwap = !isResumedOnThor && !isResumedOnMaya
+  // Chainflip is an independent route: keep swap enabled for its supported assets
+  // even when THOR + MAYA are halted/down, so the user can still reach the swap view.
+  // Asset-level check so unsupported ERC20/SPL tokens on supported chains don't
+  // pass the gate and fail later in SwapView.
+  const { getAssetsData$ } = useChainflipContext()
+  const [chainflipAssetsRD] = useObservableState(() => getAssetsData$(), RD.success([]))
+  const chainflipAssets: ReadonlyArray<AnyAsset> = useMemo(
+    () =>
+      FP.pipe(
+        RD.toOption(chainflipAssetsRD),
+        O.map((data) => data.map(cAssetToXAsset).filter((a): a is XAsset | XTokenAsset => a !== null)),
+        O.getOrElse<ReadonlyArray<AnyAsset>>(() => [])
+      ),
+    [chainflipAssetsRD]
+  )
+  const isSupportedByChainflip = isChainflipSupportedAsset(asset, chainflipAssets)
+  const disableSwap = !isResumedOnThor && !isResumedOnMaya && !isSupportedByChainflip
   const disableAdd = !isResumedOnThor && !isResumedOnMaya
 
   // If the chain is not halted, perform the action
