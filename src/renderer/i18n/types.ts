@@ -288,6 +288,33 @@ type ChainflipMessageKey =
 
 export type ChainflipMessages = { [key in ChainflipMessageKey]: string }
 
+type OneClickMessageKey =
+  | 'oneclick.status.refunded'
+  | 'oneclick.status.refunded.detail'
+  | 'oneclick.status.failed'
+  | 'oneclick.status.failed.detail'
+  | 'oneclick.status.pending.detail'
+  | 'oneclick.status.knownDeposit'
+  | 'oneclick.status.knownDeposit.detail'
+  | 'oneclick.status.pendingDeposit'
+  | 'oneclick.status.pendingDeposit.detail'
+  | 'oneclick.status.incomplete'
+  | 'oneclick.status.incomplete.detail'
+  | 'oneclick.status.processing'
+  | 'oneclick.status.processing.detail'
+  | 'oneclick.status.unknown'
+  | 'oneclick.refunded'
+  | 'oneclick.failed'
+  | 'oneclick.completed'
+  | 'oneclick.field.amount'
+  | 'oneclick.field.time'
+  | 'oneclick.field.depositAddress'
+  | 'oneclick.field.originTx'
+  | 'oneclick.field.destinationTx'
+  | 'oneclick.field.received'
+
+export type OneClickMessages = { [key in OneClickMessageKey]: string }
+
 type UpdateMessagesKeys = 'update.description' | 'update.link' | 'update.checkFailed' | 'update.noUpdate'
 
 export type UpdateMessages = { [key in UpdateMessagesKeys]: string }
@@ -937,6 +964,7 @@ export type ModalMessages = { [key in ModalMessageKey]: string }
 export type Messages = CommonMessages &
   TransactionMessages &
   ChainflipMessages &
+  OneClickMessages &
   RoutesMessages &
   PoolsMessages &
   WalletMessages &

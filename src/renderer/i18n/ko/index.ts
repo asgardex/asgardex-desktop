@@ -9,6 +9,7 @@ import ledger from './ledger'
 import midgard from './midgard'
 import modal from './modal'
 import netstatus from './netstatus'
+import oneclick from './oneclick'
 import pools from './pools'
 import poolShares from './poolshares'
 import routes from './routes'
@@ -24,6 +25,7 @@ import wallet from './wallet'
 export default {
   ...common,
   ...chainflip,
+  ...oneclick,
   ...transaction,
   ...pools,
   ...routes,
