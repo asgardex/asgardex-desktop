@@ -14,7 +14,8 @@ export const LinkButton = (props: Props): JSX.Element => {
     primary: 'decoration-turquoise',
     warning: 'decoration-warning0',
     error: 'decoration-error0',
-    neutral: 'decoration-text0 dark:decoration-text0d'
+    neutral: 'decoration-text0 dark:decoration-text0d',
+    impaired: 'decoration-impaired dark:decoration-impairedd'
   }
   const decorationOffset: Record<Size, string> = {
     small: 'underline-offset-1',

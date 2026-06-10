@@ -18,5 +18,6 @@ export const borderColor: Record<Color, string> = {
   primary: 'border-turquoise',
   warning: 'border-warning0',
   error: 'border-error0',
-  neutral: 'border-text0 dark:border-text0d'
+  neutral: 'border-text0 dark:border-text0d',
+  impaired: 'border-impaired dark:border-impairedd'
 }

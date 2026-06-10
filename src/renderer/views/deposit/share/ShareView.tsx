@@ -19,7 +19,7 @@ import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { convertBaseAmountDecimal } from '../../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
-import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
+import { getMayaPoolDepthDecimal, MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
 import { PoolDetailRD as PoolDetailMayaRD } from '../../../services/midgard/mayaMidgard/types'
 import { PoolDetailRD, PoolShareRD, PoolShare } from '../../../services/midgard/midgardTypes'
@@ -71,16 +71,17 @@ export const ShareView = ({
         poolDetail,
         protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
       )
+      // `dexDecimal` here is the pool asset-depth scale (NOT CACAO's decimal).
+      // MAYA Midgard: 1e4 for MAYA.MAYA, 1e8 otherwise.
+      const dexDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : getMayaPoolDepthDecimal(assetWD.asset)
       const assetShare: BaseAmount = ShareHelpers.getAssetShare({
         liquidityUnits: units,
         detail: poolDetail,
         assetDecimal: assetWD.decimal,
-        ...(protocol !== THORChain && { dexDecimal: CACAO_DECIMAL })
+        ...(protocol !== THORChain && { dexDecimal })
       })
       const poolShare: BigNumber = ShareHelpers.getPoolShare(units, poolDetail)
       const poolData = toPoolData(poolDetail)
-
-      const dexDecimal = protocol === THORChain ? 8 : CACAO_DECIMAL
       const assetPrice: BaseAmount = getValueOfAsset1InAsset2(
         // Note: `assetShare` needs to be converted to dex decimal,
         // since it based on asset decimal, which might be different

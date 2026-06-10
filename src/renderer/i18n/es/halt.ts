@@ -13,7 +13,8 @@ const halt: HaltMessages = {
   'halt.chain.pauseall':
     'Se han desactivado temporalmente las actividades de liquidez (añadir/eliminar) para todas las cadenas.',
   'halt.chain.pauseDeposits':
-    'Los depósitos de liquidez (agregar) para la(s) cadena(s) {chains} han sido desactivados temporalmente.'
+    'Los depósitos de liquidez (agregar) para la(s) cadena(s) {chains} han sido desactivados temporalmente.',
+  'halt.swap.routeImpaired': 'La ruta de intercambio puede estar afectada'
 }
 
 export default halt

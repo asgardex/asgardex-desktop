@@ -24,6 +24,19 @@ export const createTransactionService = (
   network$: Network$
 ): TransactionService => {
   const common = C.createTransactionService(client$)
+  // `commonTR` mirrors `common` but with the Taproot keystore client. Of the
+  // services it exposes, only `sendTx`/`subscribeTx` are derivation-sensitive
+  // (they sign + broadcast a tx, so they need the right private key). The rest
+  // — `txs$`, `tx$`, `txStatus$`, `txRD$`, `resetTx` — are returned from `common`
+  // via the `{ ...common, ... }` spread at the end of this function. That's
+  // correct because:
+  //   • `txs$` / `tx$` ask the data provider for transactions of a given
+  //     `walletAddress` / `txHash`; the result depends on the address/hash the
+  //     caller passes in, not on the client's `addressFormat`.
+  //   • `txStatus$` polls a tx by hash.
+  //   • `txRD$` / `resetTx` track the last-sent-tx-hash state in memory.
+  // So a single client suffices for those — both `bc1q…` and `bc1p…` queries
+  // resolve correctly when their address is passed through.
   const commonTR = C.createTransactionService(clientTR$)
 
   // Pick the keystore client matching the sender's derivation: Taproot (P2TR) or
@@ -133,8 +146,26 @@ export const createTransactionService = (
       })
     )
 
+  /**
+   * `subscribeTx` is the fire-and-forget counterpart to `sendTx`: it triggers
+   * `client.transfer(params)` and writes the resulting hash into an internal
+   * `txRD$` state observable. Today no BTC view actually calls it (`sendTx`
+   * drives the send pipeline), but it's part of the exported `TransactionService`
+   * surface, so we route it by `hdMode` for parity with `sendTx`. Without this,
+   * `subscribeTx({ hdMode: 'p2tr', … })` would silently sign with the SegWit
+   * private key.
+   *
+   * Note: the side-effect of writing to `commonTR.txRD$` lands on the TR-side
+   * state observable, which isn't exported. If a future caller wants to observe
+   * the result via `txRD$`, the two state streams will need to be merged. For
+   * now this just gets the signing right.
+   */
+  const subscribeTx = (params: SendTxParams): Rx.Subscription =>
+    params.hdMode === 'p2tr' ? commonTR.subscribeTx(params) : common.subscribeTx(params)
+
   return {
     ...common,
-    sendTx
+    sendTx,
+    subscribeTx
   }
 }

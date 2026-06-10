@@ -46,7 +46,6 @@ export const initialContext: ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 type Props = {
-  theme?: Theme // needed for storybook only
   children: React.ReactNode
 }
 

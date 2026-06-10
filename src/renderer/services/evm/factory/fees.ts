@@ -97,7 +97,7 @@ export const createEvmFeesService = (
                 })
               ).pipe(
                 RxOp.catchError((error) => {
-                  logger.error('Gas limit estimation failed, using fallback:', error)
+                  logger.debug('Gas limit estimation failed, using fallback:', error)
                   const fallbackGasLimit =
                     params.asset && isChainAsset(params.asset as Asset)
                       ? new BigNumber(ETH_OUT_TX_GAS_LIMIT)

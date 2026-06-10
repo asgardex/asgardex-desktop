@@ -33,6 +33,7 @@ export type Props = {
   midgardStatus: MidgardStatusRD
   midgardMayaStatus: MidgardMayaStatusRD
   mimirStatus: MimirRD
+  mimirStatusMaya: MimirRD
   midgardUrl: MidgardUrlRD
   midgardMayaUrl: MidgardMayaUrlRD
   thorchainNodeUrl: string
@@ -47,6 +48,7 @@ export const HeaderNetStatus = (props: Props) => {
     midgardStatus: midgardStatusRD,
     midgardMayaStatus: midgardMayaStatusRD,
     mimirStatus: mimirStatusRD,
+    mimirStatusMaya: mimirStatusMayaRD,
     midgardUrl: midgardUrlRD,
     midgardMayaUrl: midgardUrlMayaRD,
     thorchainNodeUrl,
@@ -120,7 +122,7 @@ export const HeaderNetStatus = (props: Props) => {
   const mayachainStatus: OnlineStatus = useMemo(
     () =>
       FP.pipe(
-        mimirStatusRD,
+        mimirStatusMayaRD,
         RD.fold(
           () => prevMayachainStatus.current,
           () => prevMayachainStatus.current,
@@ -134,7 +136,7 @@ export const HeaderNetStatus = (props: Props) => {
           }
         )
       ),
-    [mimirStatusRD]
+    [mimirStatusMayaRD]
   )
 
   const { onlineStatus$ } = useAppContext()

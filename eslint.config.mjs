@@ -170,7 +170,7 @@ export default [
     }
   },
   {
-    files: ['**/*.stories.{ts,tsx}', '**/mock/**', '**/helpers/logger.ts', 'src/main/**', 'scripts/**'],
+    files: ['**/mock/**', '**/helpers/logger.ts', 'src/main/**', 'scripts/**'],
     rules: { 'no-console': 'off' }
   }
 ]

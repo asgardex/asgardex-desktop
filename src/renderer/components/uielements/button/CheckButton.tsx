@@ -39,7 +39,8 @@ export const CheckButton = (props: Props): JSX.Element => {
     primary: 'border-turquoise',
     warning: 'border-warning0',
     error: 'border-error0',
-    neutral: 'border-text0 dark:border-text0d'
+    neutral: 'border-text0 dark:border-text0d',
+    impaired: 'border-impaired dark:border-impairedd'
   }
   const [checked, setChecked] = useState(checkedProp)
 

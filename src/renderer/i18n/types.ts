@@ -816,6 +816,7 @@ type DepositMessageKey =
   | 'deposit.unbond.state.error'
   | 'deposit.leave.state.error'
   | 'deposit.advancedMode'
+  | 'deposit.poolTransactionInfo'
   | 'deposit.poolDetails.depth'
   | 'deposit.poolDetails.24hvol'
   | 'deposit.poolDetails.allTimeVal'
@@ -906,6 +907,7 @@ type HaltMessageKey =
   | 'halt.chain.pause'
   | 'halt.chain.pauseall'
   | 'halt.chain.pauseDeposits'
+  | 'halt.swap.routeImpaired'
 
 export type HaltMessages = { [key in HaltMessageKey]: string }
 

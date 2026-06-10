@@ -27,6 +27,7 @@ import { logger } from '../../helpers/logger'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
+import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolShares } from '../../hooks/usePoolShares'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
@@ -52,7 +53,7 @@ export const AssetsView = (): JSX.Element => {
 
   const {
     service: {
-      pools: { poolsState$, selectedPricePool$, pendingPoolsState$ }
+      pools: { poolsState$, selectedPricePool$, pendingPoolsState$, haltedChains$: haltedChainsThor$ }
     }
   } = useMidgardContext()
 
@@ -61,7 +62,8 @@ export const AssetsView = (): JSX.Element => {
       pools: {
         poolsState$: mayaPoolsState$,
         selectedPricePool$: mayaSelectedPricePool$,
-        pendingPoolsState$: pendingPoolsStateMaya$
+        pendingPoolsState$: pendingPoolsStateMaya$,
+        haltedChains$: haltedChainsMaya$
       }
     }
   } = useMidgardMayaContext()
@@ -210,7 +212,18 @@ export const AssetsView = (): JSX.Element => {
     () => RD.toNullable(pendingPoolsMayaRD)?.poolDetails ?? [],
     [pendingPoolsMayaRD]
   )
-  const { mimirHaltRD } = useThorchainMimirHalt()
+  const { mimirHaltRD, mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
+  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
+  const haltedChainsThorRD = useObservableState(haltedChainsThor$, RD.initial)
+  const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
+  const haltedChainsThor = useMemo(
+    () => (RD.isSuccess(haltedChainsThorRD) ? haltedChainsThorRD.value : []),
+    [haltedChainsThorRD]
+  )
+  const haltedChainsMaya = useMemo(
+    () => (RD.isSuccess(haltedChainsMayaRD) ? haltedChainsMayaRD.value : []),
+    [haltedChainsMayaRD]
+  )
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
@@ -384,6 +397,10 @@ export const AssetsView = (): JSX.Element => {
         selectAssetHandler={selectAssetHandler}
         assetHandler={assetHandler}
         mimirHalt={mimirHaltRD}
+        mimirHaltThor={mimirHaltThor}
+        mimirHaltMaya={mimirHaltMaya}
+        haltedChainsThor={haltedChainsThor}
+        haltedChainsMaya={haltedChainsMaya}
         network={network}
         hidePrivateData={isPrivate}
         disabledChains={disabledChains}

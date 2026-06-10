@@ -23,7 +23,8 @@ export const BorderButton = (props: Props): JSX.Element => {
     primary: 'text-turquoise',
     warning: 'text-warning0 dark:text-warning0d',
     error: 'text-error0 dark:text-error0d',
-    neutral: 'text-text0 dark:text-text0d'
+    neutral: 'text-text0 dark:text-text0d',
+    impaired: 'text-impaired dark:text-impairedd'
   }
 
   return (

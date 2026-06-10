@@ -89,37 +89,37 @@ const validateAndParseDecimal = (nativeDecimal: string | undefined | null): numb
   return parsed
 }
 
-export const getDecimal = (
+export const getDecimalSync = (
   asset: AnyAsset,
   thorPoolDetails?: PoolDetail[],
   mayaPoolDetails?: MayaPoolDetail[]
-): Promise<number> => {
+): number => {
   const { chain } = asset
 
   // Check specific token decimals before chain-level defaults
   if (isTCYAsset(asset)) {
-    return Promise.resolve(THORCHAIN_DECIMAL)
+    return THORCHAIN_DECIMAL
   }
 
   if (isMayaAsset(asset)) {
-    return Promise.resolve(MAYA_DECIMAL)
+    return MAYA_DECIMAL
   }
 
   // Check hardcoded decimals for native chain assets
   const chainDecimal = CHAIN_DECIMAL_MAP.get(chain)
   if (chainDecimal !== undefined && asset.type === 0 /* AssetType.NATIVE */) {
-    return Promise.resolve(chainDecimal)
+    return chainDecimal
   }
 
   // Check hardcoded token decimal map (reliable, no network dependency)
   const tokenDecimal = getTokenDecimal(chain, asset.symbol)
   if (tokenDecimal !== null) {
-    return Promise.resolve(tokenDecimal)
+    return tokenDecimal
   }
 
   // Fallback: use chain decimal for any remaining asset type on this chain
   if (chainDecimal !== undefined) {
-    return Promise.resolve(chainDecimal)
+    return chainDecimal
   }
 
   // Try to find the asset in MAYAChain pool details first
@@ -137,7 +137,7 @@ export const getDecimal = (
     if (mayaPoolDetail) {
       const validatedDecimal = validateAndParseDecimal(mayaPoolDetail.nativeDecimal)
       if (validatedDecimal !== null) {
-        return Promise.resolve(validatedDecimal)
+        return validatedDecimal
       }
     }
   }
@@ -157,14 +157,20 @@ export const getDecimal = (
     if (thorPoolDetail) {
       const validatedDecimal = validateAndParseDecimal(thorPoolDetail.nativeDecimal)
       if (validatedDecimal !== null) {
-        return Promise.resolve(validatedDecimal)
+        return validatedDecimal
       }
     }
   }
 
   // Return a sensible default - most tokens use 18 decimals
-  return Promise.resolve(18)
+  return 18
 }
+
+export const getDecimal = (
+  asset: AnyAsset,
+  thorPoolDetails?: PoolDetail[],
+  mayaPoolDetails?: MayaPoolDetail[]
+): Promise<number> => Promise.resolve(getDecimalSync(asset, thorPoolDetails, mayaPoolDetails))
 
 export const assetWithDecimal$ = (
   asset: AnyAsset,

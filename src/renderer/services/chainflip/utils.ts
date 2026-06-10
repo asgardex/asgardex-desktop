@@ -1,5 +1,12 @@
 import { Asset as CAsset, AssetData, Chain as CChain, Chains } from '@chainflip/sdk/swap'
-import { Asset as XAsset, AssetType, Chain as XChain, TokenAsset as XTokenAsset } from '@xchainjs/xchain-util'
+import {
+  AnyAsset,
+  Asset as XAsset,
+  AssetType,
+  assetToString,
+  Chain as XChain,
+  TokenAsset as XTokenAsset
+} from '@xchainjs/xchain-util'
 
 export const cChainToXChain = (chain: CChain): XChain | null => {
   switch (chain) {
@@ -31,6 +38,23 @@ export const xChainToCChain = (chain: XChain): CChain => {
     default:
       throw Error('Unsupported chain in Chainflip')
   }
+}
+
+export const isChainflipSupportedChain = (chain: XChain): boolean => {
+  try {
+    xChainToCChain(chain)
+    return true
+  } catch {
+    return false
+  }
+}
+
+// Asset-level Chainflip support check. Compares full asset identity (chain +
+// symbol incl. contract address) against the supplied Chainflip asset list so
+// unsupported ERC20/SPL tokens on Chainflip-supported chains are rejected.
+export const isChainflipSupportedAsset = (asset: AnyAsset, chainflipAssets: ReadonlyArray<AnyAsset>): boolean => {
+  const target = assetToString(asset)
+  return chainflipAssets.some((a) => assetToString(a) === target)
 }
 
 export const cAssetToXAsset = (asset: AssetData): XAsset | XTokenAsset | null => {

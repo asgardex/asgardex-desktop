@@ -17,6 +17,7 @@ import { ErrorView } from '../../components/shared/error'
 import { WarningView } from '../../components/shared/warning'
 import { Button, RefreshButton } from '../../components/uielements/button'
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
+import { ProtocolsLp } from '../../components/uielements/protocolSwitch/types'
 import { AssetsNav, TotalAssetValue } from '../../components/wallet/assets'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -246,7 +247,7 @@ export const PoolShareView = (): JSX.Element => {
   return (
     <>
       <div className="flex items-center justify-between pb-20px">
-        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} protocols={ProtocolsLp} />
         <RefreshButton onClick={refreshHandler} disabled={disableRefresh} />
       </div>
 

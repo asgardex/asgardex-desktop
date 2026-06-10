@@ -14,7 +14,8 @@ export const TextButton = (props: Props): JSX.Element => {
     primary: 'text-turquoise',
     warning: 'text-warning0',
     error: 'text-error0',
-    neutral: 'text-text0 dark:text-text0d'
+    neutral: 'text-text0 dark:text-text0d',
+    impaired: 'text-impaired dark:text-impairedd'
   }
 
   return (
