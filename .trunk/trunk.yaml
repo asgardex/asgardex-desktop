@@ -56,7 +56,6 @@ lint:
         - .vscode/**
         - src/renderer/i18n/**
         - src/renderer/types/generated/**
-        - .storybook/**
     - linters: [codespell]
       paths:
         - scripts/**
