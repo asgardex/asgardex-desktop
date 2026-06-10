@@ -70,6 +70,17 @@ const getSupportedProtocolsForAsset = (
     }
   }
 
+  // OneClick (NEAR Intents): native + ERC-20-style tokens on the chains 1Click bridges.
+  // Synth/trade/secured assets are protocol-specific and never route through 1Click.
+  // The full token list lives in 1Click's /v0/tokens API; we keep a chain-level whitelist
+  // here for fast UI gating and let the quote endpoint reject any unsupported token at quote time.
+  if (asset.type !== AssetType.TRADE && !isSynthAsset(asset) && !isSecuredAsset(asset)) {
+    const oneClickSupportedChains = ['BTC', 'ETH', 'ARB', 'AVAX', 'BSC', 'DOGE', 'DASH', 'LTC', 'BCH', 'SOL', 'XRP']
+    if (oneClickSupportedChains.includes(asset.chain)) {
+      supportedProtocols.add('OneClick')
+    }
+  }
+
   // If no protocols detected, return empty array so upstream code can handle the error
   if (supportedProtocols.size === 0) {
     return []

@@ -69,6 +69,19 @@ const defaultProps: SwapProps = {
         })
       )
     ),
+  swapOneClick$: (params) =>
+    Rx.of(params).pipe(
+      RxOp.tap((params) => console.log('swapOneClick$ ', params)),
+      RxOp.switchMap((_) =>
+        Rx.of<SwapState>({
+          ...INITIAL_SWAP_STATE,
+          step: 3,
+          swapTx: RD.success('tx-hash'),
+          swap: RD.success(true),
+          stepsTotal: 3
+        })
+      )
+    ),
   poolsData: {
     [assetToString(AssetBTC)]: {
       assetBalance: baseAmount(1),

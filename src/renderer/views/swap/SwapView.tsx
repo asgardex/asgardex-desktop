@@ -152,7 +152,8 @@ const SuccessRouteView = ({
     RD.success([])
   )
 
-  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$, swapCF$ } = useChainContext()
+  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$, swapCF$, swapOneClick$ } =
+    useChainContext()
 
   const {
     balancesState$,
@@ -683,6 +684,7 @@ const SuccessRouteView = ({
                     recipientAddress={oRecipient}
                     swap$={swap$}
                     swapCF$={swapCF$}
+                    swapOneClick$={swapOneClick$}
                     reloadBalances={reloadBalances}
                     onChangeAsset={onChangeAssetHandler}
                     network={network}
@@ -779,6 +781,7 @@ const SuccessRouteView = ({
                     recipientAddress={oRecipient}
                     swap$={swap$}
                     swapCF$={swapCF$}
+                    swapOneClick$={swapOneClick$}
                     reloadBalances={reloadBalances}
                     onChangeAsset={onChangeAssetHandler}
                     network={network}

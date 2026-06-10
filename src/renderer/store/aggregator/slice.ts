@@ -16,7 +16,8 @@ import {
   ASGARDEX_AFFILIATE_FEE,
   ASGARDEX_THORNAME,
   ASGARDEX_BROKER_URL,
-  ASGARDEX_AFFILIATE_BROKERS_ADDRESS
+  ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
+  ASGARDEX_ONECLICK_API_KEY
 } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
 import { logger } from '../../helpers/logger'
@@ -24,7 +25,7 @@ import { getProtocolFromStorage, setValueToStorage, StorageKey } from '../../hel
 import { getCurrentNetworkState } from '../../services/app/service'
 import { State } from './types'
 
-const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
+const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip', 'OneClick']
 
 // Validate Chainflip address pattern
 const isValidChainflipAddress = (address: string): address is `cF${string}` => {
@@ -85,7 +86,8 @@ const initialState: State = {
     }),
     network: getCurrentNetworkState(),
     brokerUrl: getBrokerUrl(),
-    affiliateBrokers: getAffiliateBrokers()
+    affiliateBrokers: getAffiliateBrokers(),
+    ...(ASGARDEX_ONECLICK_API_KEY && { oneClickApiKey: ASGARDEX_ONECLICK_API_KEY })
   }),
   quoteSwap: null
 }

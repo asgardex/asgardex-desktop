@@ -50,6 +50,7 @@ export type SwapProps = {
   poolAddressThor: O.Option<PoolAddress>
   swap$: SwapHandler
   swapCF$: SwapCFHandler
+  swapOneClick$: SwapCFHandler
   reloadTxStatus: FP.Lazy<void>
   poolsData: PoolsDataMap
   poolDetailsThor: PoolDetails

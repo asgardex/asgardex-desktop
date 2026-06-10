@@ -16,7 +16,7 @@ export type Props = {
   onClose: FP.Lazy<void>
 }
 
-const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
+const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip', 'OneClick']
 
 export const ProviderModalContent = ({ open, onClose }: Props) => {
   const { protocols, setAggProtocol, isBoostEnabled, setBoostEnabled } = useAggregator()

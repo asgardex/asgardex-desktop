@@ -36,6 +36,28 @@ export const ASGARDEX_AFFILIATE_BROKERS_ADDRESS = envOrDefault(
   ''
 )
 
+// OneClick (NEAR Intents) configuration
+// API key is optional — 1Click works anonymously but rate-limits more aggressively.
+export const ASGARDEX_ONECLICK_API_KEY = envOrDefault(import.meta.env.VITE_ASGARDEX_ONECLICK_API_KEY, '')
+
+// 1Click pays the affiliate fee on the destination chain, so the recipient must be
+// a native address on that chain. Configure as a JSON map of chain → address, e.g.
+// VITE_ASGARDEX_ONECLICK_AFFILIATES='{"BTC":"bc1...","ETH":"0x..."}'
+// When the destination chain has no entry, no affiliate fee is applied to that quote.
+const parseOneClickAffiliates = (raw: string): Record<string, string> => {
+  if (!raw) return {}
+  try {
+    const parsed = JSON.parse(raw)
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed
+    return {}
+  } catch {
+    return {}
+  }
+}
+export const ASGARDEX_ONECLICK_AFFILIATES: Record<string, string> = parseOneClickAffiliates(
+  envOrDefault(import.meta.env.VITE_ASGARDEX_ONECLICK_AFFILIATES, '')
+)
+
 export const getAsgardexThorname = (network: Network): string | undefined =>
   network === Network.Mainnet ? ASGARDEX_THORNAME : undefined
 

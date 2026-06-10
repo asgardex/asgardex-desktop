@@ -17,7 +17,9 @@ import {
   ASGARDEX_AFFILIATE_FEE,
   ASGARDEX_THORNAME,
   ASGARDEX_BROKER_URL,
-  ASGARDEX_AFFILIATE_BROKERS_ADDRESS
+  ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
+  ASGARDEX_ONECLICK_AFFILIATES,
+  ASGARDEX_ONECLICK_API_KEY
 } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
 import { logger } from '../../helpers/logger'
@@ -83,17 +85,27 @@ export const getEstimate = createAsyncThunk(
         logger.warn('Invalid or missing affiliate broker address, skipping affiliate broker configuration')
       }
 
+      // 1Click pays the affiliate fee in the destination asset on the destination chain,
+      // so we pick the recipient address based on the quote's destinationAsset.chain.
+      // Missing entry = no affiliate fee on that quote, not an error.
+      const oneClickAffiliate = useAffiliate ? ASGARDEX_ONECLICK_AFFILIATES[params.destinationAsset.chain] : undefined
+
       // Fetch estimates for all selected protocols
       const config = {
         affiliate: {
           basisPoints: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0,
-          affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
+          affiliates: {
+            Thorchain: ASGARDEX_THORNAME,
+            Mayachain: ASGARDEX_THORNAME,
+            ...(oneClickAffiliate && { OneClick: oneClickAffiliate })
+          }
         },
         protocols,
         wallet,
         network,
         affiliateBrokers,
-        ...(brokerUrl && { brokerUrl }) // Only include brokerUrl if it's non-empty
+        ...(brokerUrl && { brokerUrl }), // Only include brokerUrl if it's non-empty
+        ...(ASGARDEX_ONECLICK_API_KEY && { oneClickApiKey: ASGARDEX_ONECLICK_API_KEY })
       }
 
       aggregator.setConfiguration(config)

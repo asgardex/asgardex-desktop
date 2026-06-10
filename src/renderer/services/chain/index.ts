@@ -18,6 +18,7 @@ import {
 import {
   swap$,
   swapCF$,
+  swapOneClick$,
   poolDeposit$,
   symDeposit$,
   symWithdraw$,
@@ -42,6 +43,7 @@ export {
   assetAddress$,
   swap$,
   swapCF$,
+  swapOneClick$,
   poolDeposit$,
   symDeposit$,
   symWithdraw$,

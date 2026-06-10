@@ -89,7 +89,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     (!!appWalletState && isStandaloneLedgerMode(appWalletState))
   const chainBalances = useObservableState(chainBalances$, [])
 
-  const { swap$, swapCF$, swapFees$ } = useChainContext()
+  const { swap$, swapCF$, swapOneClick$, swapFees$ } = useChainContext()
   const { transactionTrackingService } = useThorchainContext()
   const { transactionTrackingService: mayaTransactionTrackingService } = useMayachainContext()
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
@@ -411,14 +411,17 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     swapState,
     swapParams: oSwapParams,
     cfSwapParams: oCFSwapParams,
+    oneClickSwapParams: oOneClickSwapParams,
     submitSwap: submitSwapTx,
     submitCFSwap: submitCFTx,
+    submitOneClickSwap: submitOneClickTx,
     resetSwapState,
     swapStartTime,
     lastTrackedTxHashRef
   } = useSwapExecution({
     swap$,
     swapCF$,
+    swapOneClick$,
     selectedQuote,
     sourceAsset: safeSourceAsset,
     amountToSwap,
@@ -534,8 +537,10 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     network,
     oSwapParams,
     oCFSwapParams,
+    oOneClickSwapParams,
     submitSwapTx,
     submitCFTx,
+    submitOneClickTx,
     submitApproveTx,
     validatePassword$,
     validatePasswordForVultisig,

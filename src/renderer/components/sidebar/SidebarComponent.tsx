@@ -26,6 +26,7 @@ import TwitterIcon from '../../assets/svg/icon-twitter.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
 import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
+import { useOneClickContext } from '../../contexts/OneClickContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
@@ -97,6 +98,7 @@ export const SidebarComponent = memo(function SidebarComponent(props: Props): JS
   const { transactionTrackingService } = useThorchainContext()
   const { transactionTrackingService: mayaTransactionTrackingService } = useMayachainContext()
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
+  const { transactionTrackingService: oneClickTransactionTrackingService } = useOneClickContext()
   const { appWalletService } = useWalletContext()
 
   const navigate = useNavigate()
@@ -256,6 +258,7 @@ export const SidebarComponent = memo(function SidebarComponent(props: Props): JS
             thorchainTransactionTrackingService={transactionTrackingService}
             mayachainTransactionTrackingService={mayaTransactionTrackingService}
             chainflipTransactionTrackingService={chainflipTransactionTrackingService}
+            oneClickTransactionTrackingService={oneClickTransactionTrackingService}
             className="mx-4 mt-6"
           />
           <div className="flex-1" />
