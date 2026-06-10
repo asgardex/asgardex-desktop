@@ -10,7 +10,7 @@ import { appWalletService } from './appWallet'
 import { createBalancesService } from './balances'
 import { setSelectedAsset, selectedAsset$, client$ } from './common'
 import { keystoreService, removeKeystoreWallet } from './keystore'
-import { createLedgerService } from './ledger'
+import { createLedgerService, normalizeHDMode } from './ledger'
 import { getTxs$, loadTxs, explorerUrl$, resetTxsPage } from './transaction'
 import { isStandaloneLedgerMode } from './types'
 
@@ -47,7 +47,13 @@ const enhancedGetLedgerAddress$ = (chain: Chain, hdMode?: HDMode) => {
         const standaloneLedgerState = appWalletState
         const address = standaloneLedgerState.address
 
-        if (address && address.chain === chain && (hdMode === undefined || address.hdMode === hdMode)) {
+        // Normalize both sides so a standalone BTC address persisted with
+        // `hdMode: 'default'` still matches a `'p2wpkh'`-scoped query (and vice versa).
+        if (
+          address &&
+          address.chain === chain &&
+          (hdMode === undefined || normalizeHDMode(chain, address.hdMode) === normalizeHDMode(chain, hdMode))
+        ) {
           // Convert WalletAddress to LedgerAddress format
           return O.some({
             address: address.address,

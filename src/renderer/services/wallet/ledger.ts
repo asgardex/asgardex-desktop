@@ -38,7 +38,7 @@ import { fromIPCLedgerAddressesIO, toIPCLedgerAddressesIO } from './util'
  * `hdMode: 'default'`; the modern UI writes `'p2wpkh'`. Treat them as equivalent
  * so the dedup / remove / filter logic doesn't double-count or strand old data.
  */
-const normalizeHDMode = (chain: Chain, hdMode: HDMode): HDMode =>
+export const normalizeHDMode = (chain: Chain, hdMode: HDMode): HDMode =>
   eqChain.equals(chain, BTCChain) && hdMode === 'default' ? 'p2wpkh' : hdMode
 
 type EntryKey = { chain: Chain; network: Network; keystoreId: KeystoreId; hdMode: HDMode }

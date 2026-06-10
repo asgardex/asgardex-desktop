@@ -73,7 +73,10 @@ export const useTotalWalletBalance = () => {
                     }
                     return acc
                   }, ZERO_BASE_AMOUNT)
-                  balancesByChain[`${chainBalance.chain}:${chainBalance.walletType}`] = totalForChain
+                  // Accumulate instead of assigning — BTC Ledger can emit two ChainBalances
+                  // (Native SegWit + Taproot) that share the same chain:walletType key.
+                  const key = `${chainBalance.chain}:${chainBalance.walletType}`
+                  balancesByChain[key] = (balancesByChain[key] ?? ZERO_BASE_AMOUNT).plus(totalForChain)
                 }
               )
             )

@@ -315,9 +315,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
     )
   }, [showQRModal, network, closeQrModal])
 
-  const [walletIndexMap, setWalletIndexMap] = useState<Record<EnabledChain, number>>(initialMap)
-  const [derivationPathIndex, setDerivationPathIndex] = useState<Record<EnabledChain, number>>(initialMap)
-  const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>(initialMap)
+  // Keyed by row (`${chain}-${type}-${address}`), not by chain — BTC can render
+  // two rows (Native SegWit + Taproot) which must not share their add-form state.
+  const [walletIndexMap, setWalletIndexMap] = useState<Record<string, number>>(initialMap)
+  const [derivationPathIndex, setDerivationPathIndex] = useState<Record<string, number>>(initialMap)
+  const [walletAccountMap, setWalletAccountMap] = useState<Record<string, number>>(initialMap)
 
   const {
     state: verifyLedgerAddressRD,
@@ -356,7 +358,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
   const [ledgerChainToAdd, setLedgerChainToAdd] = useState<O.Option<Chain>>(O.none)
 
   const addLedgerAddress = useCallback(
-    (chain: Chain, walletAccount: number, walletIndex: number) => {
+    (chain: Chain, walletAccount: number, walletIndex: number, derivationIndex: number) => {
       if (!addLedgerAddress$) return // Guard: Ledger not available in Vultisig mode
       resetAddLedgerAddressRD()
       setLedgerChainToAdd(O.some(chain))
@@ -365,7 +367,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
       if (isEvmChain(chain)) {
         hdMode = evmHDMode
       } else if (chainSupportsMultipleDerivationPaths(chain)) {
-        hdMode = derivationIndexToHDMode(chain, derivationPathIndex[chain])
+        hdMode = derivationIndexToHDMode(chain, derivationIndex)
       }
 
       subscribeAddLedgerAddressRD(
@@ -377,7 +379,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         })
       )
     },
-    [addLedgerAddress$, resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, evmHDMode, derivationPathIndex]
+    [addLedgerAddress$, resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, evmHDMode]
   )
 
   const verifyLedgerAddressHandler = useCallback(
@@ -398,13 +400,14 @@ export const WalletSettings = (props: Props): JSX.Element => {
   )
 
   const renderLedgerAddress = useCallback(
-    (chain: EnabledChain, oAddress: O.Option<WalletAddress>) => {
+    (chain: EnabledChain, oAddress: O.Option<WalletAddress>, rowKey: string) => {
       const renderAddAddress = () => {
         const onChangeEvmDerivationMode = (evmMode: EvmHDMode) => {
           updateEvmHDMode?.(evmMode)
         }
-        const selectedAccountIndex = walletAccountMap[chain]
-        const selectedWalletIndex = walletIndexMap[chain]
+        const selectedAccountIndex = walletAccountMap[rowKey] ?? 0
+        const selectedWalletIndex = walletIndexMap[rowKey] ?? 0
+        const selectedDerivationIndex = derivationPathIndex[rowKey] ?? 0
 
         // check
         const currentLedgerToAdd: boolean = FP.pipe(
@@ -429,7 +432,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         )
 
         const addLedgerAddressHandler = () => {
-          addLedgerAddress(chain, selectedAccountIndex, selectedWalletIndex)
+          addLedgerAddress(chain, selectedAccountIndex, selectedWalletIndex, selectedDerivationIndex)
         }
 
         return (
@@ -455,7 +458,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                     value={selectedAccountIndex.toString()}
                     disabled={loading || (isEvmChain(chain) && evmHDMode !== 'ledgerlive')}
                     onChange={(value) => {
-                      if (value !== null && +value >= 0) setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
+                      if (value !== null && +value >= 0) setWalletAccountMap({ ...walletAccountMap, [rowKey]: +value })
                     }}
                     onPressEnter={addLedgerAddressHandler}
                   />
@@ -468,7 +471,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                     className="mr-1 ml-2 w-16"
                     value={selectedWalletIndex.toString()}
                     onChange={(value) =>
-                      value !== null && +value >= 0 && setWalletIndexMap({ ...walletIndexMap, [chain]: +value })
+                      value !== null && +value >= 0 && setWalletIndexMap({ ...walletIndexMap, [rowKey]: +value })
                     }
                     disabled={loading}
                     onPressEnter={addLedgerAddressHandler}
@@ -483,7 +486,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       trigger={
                         <Label className="rounded-lg border border-solid border-bg2 p-2 dark:border-bg2d">
                           {getChainDerivationOptions(chain, selectedAccountIndex, selectedWalletIndex, network)[
-                            derivationPathIndex[chain]
+                            selectedDerivationIndex
                           ]?.description || 'Default'}
                         </Label>
                       }
@@ -493,7 +496,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                             key={option.path}
                             className="px-1"
                             size="normal"
-                            onClick={() => setDerivationPathIndex({ ...derivationPathIndex, [chain]: index })}>
+                            onClick={() => setDerivationPathIndex({ ...derivationPathIndex, [rowKey]: index })}>
                             {option.description}
                           </Label>
                         )
@@ -521,7 +524,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                         tooltip={intl.formatMessage(
                           { id: 'settings.wallet.hdpath.ledgerlive.info' },
                           {
-                            path: `${getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')}{index}`
+                            path: `${getEvmDerivationPath(selectedAccountIndex, 'ledgerlive')}{index}`
                           }
                         )}
                       />
@@ -533,7 +536,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'settings.wallet.hdpath.legacy.info' },
-                          { path: `${getEvmDerivationPath(walletAccountMap[chain], 'legacy')}{index}` }
+                          { path: `${getEvmDerivationPath(selectedAccountIndex, 'legacy')}{index}` }
                         )}
                       />
                     </Label>
@@ -544,7 +547,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'settings.wallet.hdpath.metamask.info' },
-                          { path: `${getEvmDerivationPath(walletAccountMap[chain], 'metamask')}{index}` }
+                          { path: `${getEvmDerivationPath(selectedAccountIndex, 'metamask')}{index}` }
                         )}
                       />
                     </Label>
@@ -914,7 +917,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
   // Each row: ChainIcon + name → address with label → optional ledger → toggle → trusted addresses
   const renderChainRow = useCallback(
     (chain: Chain, address: string, type: WalletType, oLedger?: O.Option<WalletAddress>) => (
-      <div key={chain} className="flex flex-col border-b border-solid border-b-gray0 p-4 dark:border-b-gray0d">
+      // BTC renders two rows (Native SegWit + Taproot keystore addresses), so the
+      // key and the per-row ledger form state must be unique per address, not per chain.
+      <div
+        key={`${chain}-${type}-${address}`}
+        className="flex flex-col border-b border-solid border-b-gray0 p-4 dark:border-b-gray0d">
         <div className="flex w-full items-center justify-start">
           <ChainIcon chain={chain} size="small" />
           <Label className="p-0 pl-[10px] text-xl leading-[25px] tracking-[2px]" textTransform="uppercase">
@@ -924,7 +931,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
         <div className="mt-10px w-full">
           {renderWalletAddress(chain, address, type)}
           {!isVultisig && oLedger && isEnabledLedger(chain, network) && isSupportedChain(chain)
-            ? renderLedgerAddress(chain, oLedger)
+            ? renderLedgerAddress(chain, oLedger, `${chain}-${type}-${address}`)
             : !isVultisig && renderLedgerNotSupported}
         </div>
         {isSupportedChain(chain) && (
