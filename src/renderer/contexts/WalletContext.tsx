@@ -19,6 +19,7 @@ import {
   resetTxsPage,
   addLedgerAddress$,
   getLedgerAddress$,
+  getLedgerAddresses$,
   removeLedgerAddress,
   verifyLedgerAddress$,
   ledgerAddresses$,
@@ -42,6 +43,7 @@ type WalletContextValue = {
   ledgerAddresses$: typeof ledgerAddresses$
   addLedgerAddress$: typeof addLedgerAddress$
   getLedgerAddress$: typeof getLedgerAddress$
+  getLedgerAddresses$: typeof getLedgerAddresses$
   verifyLedgerAddress$: typeof verifyLedgerAddress$
   removeLedgerAddress: typeof removeLedgerAddress
   reloadPersistentLedgerAddresses: typeof reloadPersistentLedgerAddresses
@@ -64,6 +66,7 @@ const initialContext: WalletContextValue = {
   ledgerAddresses$,
   addLedgerAddress$,
   getLedgerAddress$,
+  getLedgerAddresses$,
   verifyLedgerAddress$,
   removeLedgerAddress,
   reloadPersistentLedgerAddresses,
