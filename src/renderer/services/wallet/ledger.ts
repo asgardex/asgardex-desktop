@@ -149,22 +149,36 @@ export const createLedgerService = ({
    *
    * When `hdMode` is supplied, returns the entry matching that exact derivation
    * (with legacy `'default'` BTC entries normalized to `'p2wpkh'`); otherwise
-   * returns the first entry for the chain (back-compat with single-derivation
-   * chains and the existing `useLedger` call sites).
+   * prefers the chain's default derivation and falls back to any entry for the
+   * chain. Entries are stored newest-first (`_addLedgerAddress` prepends), so
+   * without the preference, chain-only callers (swap target address, deposits,
+   * history) would get whichever BTC derivation was added last — the preference
+   * makes them deterministic when both P2WPKH and P2TR exist.
    */
   const getLedgerAddress$: GetLedgerAddressHandler = (chain: Chain, hdMode?: HDMode) =>
     FP.pipe(
       currentLedgerAddresses$,
-      RxOp.map((addresses) =>
-        FP.pipe(
+      RxOp.map((addresses) => {
+        const byChain = FP.pipe(
           addresses,
-          A.findFirst(
-            ({ chain: c, hdMode: entryHdMode }) =>
-              eqChain.equals(c, chain) &&
-              (hdMode === undefined || normalizeHDMode(chain, entryHdMode) === normalizeHDMode(chain, hdMode))
-          )
+          A.filter(({ chain: c }) => eqChain.equals(c, chain))
         )
-      ),
+        if (hdMode !== undefined) {
+          return FP.pipe(
+            byChain,
+            A.findFirst(
+              ({ hdMode: entryHdMode }) => normalizeHDMode(chain, entryHdMode) === normalizeHDMode(chain, hdMode)
+            )
+          )
+        }
+        return FP.pipe(
+          byChain,
+          A.findFirst(
+            ({ hdMode: entryHdMode }) => normalizeHDMode(chain, entryHdMode) === normalizeHDMode(chain, 'default')
+          ),
+          O.alt(() => A.head(byChain))
+        )
+      }),
       RxOp.distinctUntilChanged(eqOLedgerAddress.equals)
     )
 
