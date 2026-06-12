@@ -10,12 +10,13 @@ import { isCacaoAsset, isRuneNativeAsset } from './assetHelper'
 export const getRequiredProtocolsForAssets = (
   sourceAsset: AnyAsset,
   targetAsset: AnyAsset,
-  chainflipAssetCheck?: (asset: AnyAsset) => boolean
+  chainflipAssetCheck?: (asset: AnyAsset) => boolean,
+  oneClickAssetCheck?: (asset: AnyAsset) => boolean
 ): Protocol[] => {
   // Get protocols that can handle the source asset
-  const sourceProtocols = getSupportedProtocolsForAsset(sourceAsset, chainflipAssetCheck)
+  const sourceProtocols = getSupportedProtocolsForAsset(sourceAsset, chainflipAssetCheck, oneClickAssetCheck)
   // Get protocols that can handle the target asset
-  const targetProtocols = getSupportedProtocolsForAsset(targetAsset, chainflipAssetCheck)
+  const targetProtocols = getSupportedProtocolsForAsset(targetAsset, chainflipAssetCheck, oneClickAssetCheck)
 
   // Find intersection - protocols that can handle BOTH assets
   const intersection = sourceProtocols.filter((protocol) => targetProtocols.includes(protocol))
@@ -29,7 +30,8 @@ export const getRequiredProtocolsForAssets = (
  */
 const getSupportedProtocolsForAsset = (
   asset: AnyAsset,
-  chainflipAssetCheck?: (asset: AnyAsset) => boolean
+  chainflipAssetCheck?: (asset: AnyAsset) => boolean,
+  oneClickAssetCheck?: (asset: AnyAsset) => boolean
 ): Protocol[] => {
   const supportedProtocols: Set<Protocol> = new Set()
 
@@ -72,12 +74,33 @@ const getSupportedProtocolsForAsset = (
 
   // OneClick (NEAR Intents): native + ERC-20-style tokens on the chains 1Click bridges.
   // Synth/trade/secured assets are protocol-specific and never route through 1Click.
-  // The full token list lives in 1Click's /v0/tokens API; we keep a chain-level whitelist
-  // here for fast UI gating and let the quote endpoint reject any unsupported token at quote time.
+  // Prefer the dynamic check (backed by 1Click's /v0/tokens list via the OneClick
+  // service); the chain-level whitelist below is a fallback only and mirrors the
+  // aggregator's X_TO_ONECLICK map — incl. SUI and ADA, which only OneClick routes.
   if (asset.type !== AssetType.TRADE && !isSynthAsset(asset) && !isSecuredAsset(asset)) {
-    const oneClickSupportedChains = ['BTC', 'ETH', 'ARB', 'AVAX', 'BSC', 'DOGE', 'DASH', 'LTC', 'BCH', 'SOL', 'XRP']
-    if (oneClickSupportedChains.includes(asset.chain)) {
-      supportedProtocols.add('OneClick')
+    if (oneClickAssetCheck) {
+      if (oneClickAssetCheck(asset)) {
+        supportedProtocols.add('OneClick')
+      }
+    } else {
+      const oneClickSupportedChains = [
+        'BTC',
+        'ETH',
+        'ARB',
+        'AVAX',
+        'BSC',
+        'DOGE',
+        'DASH',
+        'LTC',
+        'BCH',
+        'SOL',
+        'XRP',
+        'ADA',
+        'SUI'
+      ]
+      if (oneClickSupportedChains.includes(asset.chain)) {
+        supportedProtocols.add('OneClick')
+      }
     }
   }
 
@@ -96,13 +119,19 @@ export const validateProtocolsForAssets = (
   sourceAsset: AnyAsset,
   targetAsset: AnyAsset,
   enabledProtocols: Protocol[],
-  chainflipAssetCheck?: (asset: AnyAsset) => boolean
+  chainflipAssetCheck?: (asset: AnyAsset) => boolean,
+  oneClickAssetCheck?: (asset: AnyAsset) => boolean
 ): {
   isValid: boolean
   missingProtocols: Protocol[]
   requiredProtocols: Protocol[]
 } => {
-  const requiredProtocols = getRequiredProtocolsForAssets(sourceAsset, targetAsset, chainflipAssetCheck)
+  const requiredProtocols = getRequiredProtocolsForAssets(
+    sourceAsset,
+    targetAsset,
+    chainflipAssetCheck,
+    oneClickAssetCheck
+  )
 
   // If no protocols can handle both assets, the pair is invalid
   if (requiredProtocols.length === 0) {
@@ -133,7 +162,8 @@ export const createProtocolErrorMessage = (
   sourceAsset: AnyAsset,
   targetAsset: AnyAsset,
   missingProtocols: Protocol[],
-  chainflipAssetCheck?: (asset: AnyAsset) => boolean
+  chainflipAssetCheck?: (asset: AnyAsset) => boolean,
+  oneClickAssetCheck?: (asset: AnyAsset) => boolean
 ): string => {
   const assetPairText = `${sourceAsset.symbol} to ${targetAsset.symbol}`
 
@@ -147,7 +177,12 @@ export const createProtocolErrorMessage = (
   }
 
   // For multiple protocols, user needs to enable at least one that can handle both assets
-  const requiredProtocols = getRequiredProtocolsForAssets(sourceAsset, targetAsset, chainflipAssetCheck)
+  const requiredProtocols = getRequiredProtocolsForAssets(
+    sourceAsset,
+    targetAsset,
+    chainflipAssetCheck,
+    oneClickAssetCheck
+  )
   const availableProtocols = missingProtocols.filter((protocol) => requiredProtocols.includes(protocol))
 
   if (availableProtocols.length === 1) {

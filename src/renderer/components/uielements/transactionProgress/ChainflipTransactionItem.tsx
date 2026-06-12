@@ -188,7 +188,10 @@ export const ChainflipTransactionItem = ({
 
   const statusInfo = getRichStatusText()
   const progress = getProgressPercentage()
-  const elapsedTime = Date.now() - transaction.startTime
+  // Freeze the displayed duration once the swap is complete — otherwise it
+  // keeps growing on every re-render triggered by other transactions.
+  const endTime = transaction.isComplete && transaction.completedAt ? transaction.completedAt : Date.now()
+  const elapsedTime = Math.max(0, endTime - transaction.startTime)
 
   return (
     <div

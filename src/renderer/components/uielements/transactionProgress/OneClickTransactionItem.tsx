@@ -1,7 +1,7 @@
 import { useState, useEffect, ReactNode, useMemo } from 'react'
 
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/solid'
+import { CheckCircleIcon, ExclamationCircleIcon, PaperAirplaneIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import { assetFromString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
@@ -165,7 +165,10 @@ export const OneClickTransactionItem = ({
 
   const statusInfo = getRichStatusText()
   const progress = getProgressPercentage()
-  const elapsedTime = Date.now() - transaction.startTime
+  // Freeze the displayed duration once the swap is complete — otherwise it
+  // keeps growing on every re-render triggered by other transactions.
+  const endTime = transaction.isComplete && transaction.completedAt ? transaction.completedAt : Date.now()
+  const elapsedTime = Math.max(0, endTime - transaction.startTime)
 
   return (
     <div
@@ -203,8 +206,22 @@ export const OneClickTransactionItem = ({
 
         <div className="flex items-center justify-between">
           {transaction.isComplete ? (
-            <div className="flex items-center space-x-1 rounded-lg bg-turquoise/80 px-2 py-1 dark:bg-turquoise/80">
-              <CheckCircleIcon className="h-4 w-4 shrink-0 text-white" />
+            <div
+              className={clsx(
+                'flex items-center space-x-1 rounded-lg px-2 py-1',
+                transaction.stages?.state === 'FAILED'
+                  ? 'bg-error0/80 dark:bg-error0d/80'
+                  : transaction.stages?.state === 'REFUNDED'
+                    ? 'bg-warning0/80 dark:bg-warning0d/80'
+                    : 'bg-turquoise/80 dark:bg-turquoise/80'
+              )}>
+              {transaction.stages?.state === 'FAILED' ? (
+                <XCircleIcon className="h-4 w-4 shrink-0 text-white" />
+              ) : transaction.stages?.state === 'REFUNDED' ? (
+                <ExclamationCircleIcon className="h-4 w-4 shrink-0 text-white" />
+              ) : (
+                <CheckCircleIcon className="h-4 w-4 shrink-0 text-white" />
+              )}
               <Label size="small" color="white" textTransform="uppercase">
                 {transaction.stages?.state === 'REFUNDED'
                   ? intl.formatMessage({ id: 'oneclick.refunded', defaultMessage: 'Refunded' })

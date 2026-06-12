@@ -1,13 +1,24 @@
 import React, { createContext, useContext } from 'react'
 
-import { transactionTrackingService } from '../services/oneclick'
+import {
+  getAssetsData$,
+  getOneClickUsdPrice,
+  isOneClickSupportedAsset,
+  transactionTrackingService
+} from '../services/oneclick'
 
 type OneClickContextValue = {
   transactionTrackingService: typeof transactionTrackingService
+  getAssetsData$: typeof getAssetsData$
+  isOneClickSupportedAsset: typeof isOneClickSupportedAsset
+  getOneClickUsdPrice: typeof getOneClickUsdPrice
 }
 
 const initialContext: OneClickContextValue = {
-  transactionTrackingService
+  transactionTrackingService,
+  getAssetsData$,
+  isOneClickSupportedAsset,
+  getOneClickUsdPrice
 }
 
 const OneClickContext = createContext<OneClickContextValue | null>(null)

@@ -45,6 +45,7 @@ import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMayachainQueryContext } from '../../contexts/MayachainQueryContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useOneClickContext } from '../../contexts/OneClickContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useThorchainQueryContext } from '../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../contexts/WalletContext'
@@ -150,6 +151,16 @@ const SuccessRouteView = ({
         RxOp.startWith(RD.success([])) // Ensure we always start with a success state
       ),
     RD.success([])
+  )
+
+  // OneClick (NEAR Intents) routable assets — extends the swap asset universe
+  // beyond THOR/MAYA pools and Chainflip (e.g. SUI, ADA which only 1Click routes).
+  // The service degrades to an empty success on API failure, so no extra guard.
+  const { getAssetsData$: getOneClickAssetsData$ } = useOneClickContext()
+  const [oneClickAssetsRD] = useObservableState(() => getOneClickAssetsData$(), RD.success([]))
+  const oneClickAssets = useMemo(
+    () => (RD.isSuccess(oneClickAssetsRD) ? oneClickAssetsRD.value : []),
+    [oneClickAssetsRD]
   )
 
   const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$, swapCF$, swapOneClick$ } =
@@ -542,26 +553,26 @@ const SuccessRouteView = ({
   }
 
   // Helper function to pick and validate pool assets.
-  // Falls back to Chainflip-supported assets (with zero RUNE-denominated price)
-  // so the swap UI loads when THOR/MAYA pool data is unavailable but Chainflip
-  // can still route the pair.
+  // Falls back to assets routable without THOR/MAYA pools (Chainflip + OneClick,
+  // with zero RUNE-denominated price) so the swap UI loads when pool data is
+  // unavailable or the pair only exists on a poolless protocol (e.g. SUI, ADA).
   const validatePoolAssets = (
     poolAssetDetails: PoolAssetDetail[],
     sourceAsset: AssetWithDecimal,
     targetAsset: AssetWithDecimal,
-    chainflipAssets: ReadonlyArray<AnyAsset>
+    poollessAssets: ReadonlyArray<AnyAsset>
   ): Either<Error, { sourceAssetDetail: PoolAssetDetail; targetAssetDetail: PoolAssetDetail }> => {
-    const findChainflipFallback = (asset: AnyAsset): PoolAssetDetail | null => {
+    const findPoollessFallback = (asset: AnyAsset): PoolAssetDetail | null => {
       const target = assetToString(asset)
-      const match = chainflipAssets.find((a) => assetToString(a) === target)
+      const match = poollessAssets.find((a) => assetToString(a) === target)
       return match ? { asset: match, assetPrice: bn(0) } : null
     }
     const sourceAssetDetail =
       FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable) ??
-      findChainflipFallback(sourceAsset.asset)
+      findPoollessFallback(sourceAsset.asset)
     const targetAssetDetail =
       FP.pipe(Utils.pickPoolAsset(poolAssetDetails, targetAsset.asset), O.toNullable) ??
-      findChainflipFallback(targetAsset.asset)
+      findPoollessFallback(targetAsset.asset)
 
     if (!sourceAssetDetail) {
       return left(new Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
@@ -640,12 +651,10 @@ const SuccessRouteView = ({
 
                 const poolAssetDetails = poolAssetDetailsResult.right
 
-                const assetValidationResult = validatePoolAssets(
-                  poolAssetDetails,
-                  sourceAsset,
-                  targetAsset,
-                  convertedAssets
-                )
+                const assetValidationResult = validatePoolAssets(poolAssetDetails, sourceAsset, targetAsset, [
+                  ...convertedAssets,
+                  ...oneClickAssets
+                ])
                 if (isLeft(assetValidationResult)) {
                   return renderError(assetValidationResult.left)
                 }
@@ -670,7 +679,7 @@ const SuccessRouteView = ({
                     targetWalletType={oTargetWalletType}
                     poolAddressMaya={selectedPoolAddressMaya}
                     poolAddressThor={selectedPoolAddressThor}
-                    poolAssets={[...poolAssets, ...convertedAssets]}
+                    poolAssets={[...poolAssets, ...convertedAssets, ...oneClickAssets]}
                     poolsData={combinedPoolsData}
                     poolDetailsThor={thorPoolDetails}
                     poolDetailsMaya={mayaPoolDetails}
@@ -736,12 +745,10 @@ const SuccessRouteView = ({
                   .map(cAssetToXAsset)
                   .filter((asset): asset is XAsset | XTokenAsset => asset !== null)
 
-                const assetValidationResult = validatePoolAssets(
-                  thorchainPoolAssetDetails,
-                  sourceAsset,
-                  targetAsset,
-                  convertedAssets
-                )
+                const assetValidationResult = validatePoolAssets(thorchainPoolAssetDetails, sourceAsset, targetAsset, [
+                  ...convertedAssets,
+                  ...oneClickAssets
+                ])
                 if (isLeft(assetValidationResult)) {
                   return renderError(assetValidationResult.left)
                 }
@@ -767,7 +774,7 @@ const SuccessRouteView = ({
                     targetWalletType={oTargetWalletType}
                     poolAddressMaya={selectedPoolAddressMaya}
                     poolAddressThor={selectedPoolAddressThor}
-                    poolAssets={[...poolAssets, ...convertedAssets]}
+                    poolAssets={[...poolAssets, ...convertedAssets, ...oneClickAssets]}
                     poolsData={thorPoolsData}
                     poolDetailsThor={thorPoolDetails}
                     poolDetailsMaya={[]}

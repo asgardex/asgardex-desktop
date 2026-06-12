@@ -48,9 +48,30 @@ const parseOneClickAffiliates = (raw: string): Record<string, string> => {
   if (!raw) return {}
   try {
     const parsed = JSON.parse(raw)
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed
-    return {}
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      // eslint-disable-next-line no-console -- shared module, no logger available at env-parse time
+      console.warn(
+        'VITE_ASGARDEX_ONECLICK_AFFILIATES must be a JSON object mapping chain → address, e.g. {"ETH":"0x..."} — affiliate fees disabled'
+      )
+      return {}
+    }
+    return Object.fromEntries(
+      Object.entries(parsed).flatMap(([chain, address]) => {
+        if (typeof address !== 'string' || chain.trim() === '' || address.trim() === '') {
+          // eslint-disable-next-line no-console -- shared module, no logger available at env-parse time
+          console.warn(`VITE_ASGARDEX_ONECLICK_AFFILIATES: skipping invalid entry for "${chain}"`)
+          return []
+        }
+        // Lookup happens by xchainjs chain id (e.g. 'ETH'), so normalize keys —
+        // a lowercase "eth" in .env should still match.
+        return [[chain.trim().toUpperCase(), address.trim()]]
+      })
+    )
   } catch {
+    // eslint-disable-next-line no-console -- shared module, no logger available at env-parse time
+    console.warn(
+      'VITE_ASGARDEX_ONECLICK_AFFILIATES is not valid JSON — affiliate fees disabled. Expected e.g. {"ETH":"0x..."}'
+    )
     return {}
   }
 }

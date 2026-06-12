@@ -2,7 +2,7 @@ import { createChainflipService$ } from './chainflip'
 
 const {
   getAssetsData$,
-  isAssetSupported$,
+  isChainflipSupportedAssetSync,
   chainflipSupportedChains$,
   transactionTrackingService,
   getQuotePrice$,
@@ -12,7 +12,7 @@ const {
 
 export {
   getAssetsData$,
-  isAssetSupported$,
+  isChainflipSupportedAssetSync,
   chainflipSupportedChains$,
   transactionTrackingService,
   getQuotePrice$,

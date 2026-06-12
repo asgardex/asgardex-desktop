@@ -82,11 +82,16 @@ export type OneClickTransactionTrackingService = {
 
 export type OneClickStatusLD = LiveData<Error, OneClickStatusResponse>
 
+// Abort hung status requests — a fetch that never settles would stall this
+// transaction's poll chain forever (no next poll gets scheduled). A timeout
+// rejects instead, which the poll treats as transient and retries.
+const ONECLICK_STATUS_TIMEOUT_MS = 15_000
+
 const fetchStatus = async (depositAddress: string): Promise<OneClickStatusResponse> => {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (ASGARDEX_ONECLICK_API_KEY) headers['Authorization'] = `Bearer ${ASGARDEX_ONECLICK_API_KEY}`
   const url = `${ONECLICK_STATUS_URL}?depositAddress=${encodeURIComponent(depositAddress)}`
-  const resp = await fetch(url, { headers })
+  const resp = await fetch(url, { headers, signal: AbortSignal.timeout(ONECLICK_STATUS_TIMEOUT_MS) })
   // 404 = deposit not yet seen by 1Click's backend (common right after broadcast).
   // Treat it as "still waiting" rather than a hard error so the tracker keeps polling.
   if (resp.status === 404) {

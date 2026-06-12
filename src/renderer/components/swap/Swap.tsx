@@ -217,8 +217,10 @@ export const Swap = ({
     [useSourceVultisigFromHook, initialSourceWalletType]
   )
 
-  const { isAssetSupported$, transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
-  const { transactionTrackingService: oneClickTransactionTrackingService } = useOneClickContext()
+  const { isChainflipSupportedAssetSync, transactionTrackingService: chainflipTransactionTrackingService } =
+    useChainflipContext()
+  const { transactionTrackingService: oneClickTransactionTrackingService, isOneClickSupportedAsset } =
+    useOneClickContext()
 
   const {
     streamingInterval,
@@ -1200,12 +1202,20 @@ export const Swap = ({
             return true
           if (isMayaSupportedAsset(targetAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-          if (isAssetSupported$(asset)) return true
+          if (isOneClickSupportedAsset(asset) && isOneClickSupportedAsset(targetAsset)) return true
+          if (isChainflipSupportedAssetSync(asset) && isChainflipSupportedAssetSync(targetAsset)) return true
           return false
         }),
         (assets) => unionAssets(assets)(assets)
       ),
-    [allBalances, isAssetSupported$, poolDetailsMaya, poolDetailsThor, targetAsset]
+    [
+      allBalances,
+      isChainflipSupportedAssetSync,
+      isOneClickSupportedAsset,
+      poolDetailsMaya,
+      poolDetailsThor,
+      targetAsset
+    ]
   )
 
   /**
@@ -1220,7 +1230,8 @@ export const Swap = ({
             return true
           if (isMayaSupportedAsset(sourceAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-          if (isAssetSupported$(asset)) return true
+          if (isOneClickSupportedAsset(asset) && isOneClickSupportedAsset(sourceAsset)) return true
+          if (isChainflipSupportedAssetSync(asset) && isChainflipSupportedAssetSync(sourceAsset)) return true
           return false
         }),
         A.chain((asset) => {
@@ -1237,7 +1248,7 @@ export const Swap = ({
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
-    [isAssetSupported$, poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
+    [isChainflipSupportedAssetSync, isOneClickSupportedAsset, poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
   )
 
   // Get vault type and encryption status for Vultisig wallets

@@ -1,17 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import {
-  AnyAsset,
-  BaseAmount,
-  baseAmount,
-  CryptoAmount,
-  AssetType,
-  isSynthAsset,
-  isSecuredAsset
-} from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, baseAmount, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
+import { useChainflipContext } from '../contexts/ChainflipContext'
+import { useOneClickContext } from '../contexts/OneClickContext'
 import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
 import { logger } from '../helpers/logger'
@@ -56,6 +50,8 @@ export const useSwapQuote = ({
   affiliateBps
 }: UseSwapQuoteParams): UseSwapQuoteResult => {
   const { estimateSwap, protocols, isBoostEnabled } = useAggregator()
+  const { isOneClickSupportedAsset } = useOneClickContext()
+  const { isChainflipSupportedAssetSync } = useChainflipContext()
 
   const requestIdRef = useRef(0)
   const [quotes, setQuotes] = useState<O.Option<ExtendedQuoteSwap[]>>(O.none)
@@ -78,25 +74,22 @@ export const useSwapQuote = ({
         O.getOrElse(() => false)
       )
 
-      // Synchronous Chainflip asset check
-      const syncChainflipCheck = (asset: AnyAsset): boolean => {
-        if (isSynthAsset(asset) || asset.type === AssetType.TRADE || isSecuredAsset(asset)) return false
-        const chainflipSupportedChains = ['BTC', 'ETH', 'DOT']
-        const chainflipSupportedAssets = ['USDC', 'USDT', 'FLIP']
-        return (
-          chainflipSupportedChains.includes(asset.chain) ||
-          chainflipSupportedAssets.includes(asset.symbol.toUpperCase())
-        )
-      }
-
-      // Validate protocols
-      const protocolValidation = validateProtocolsForAssets(sourceAsset, targetAsset, protocols, syncChainflipCheck)
+      // Validate protocols — both checks are backed by the protocols' fetched
+      // asset lists (with chain-level fallbacks), so picker and quote agree.
+      const protocolValidation = validateProtocolsForAssets(
+        sourceAsset,
+        targetAsset,
+        protocols,
+        isChainflipSupportedAssetSync,
+        isOneClickSupportedAsset
+      )
       if (!protocolValidation.isValid) {
         const errorMessage = createProtocolErrorMessage(
           sourceAsset,
           targetAsset,
           protocolValidation.missingProtocols,
-          syncChainflipCheck
+          isChainflipSupportedAssetSync,
+          isOneClickSupportedAsset
         )
         setQuoteError(O.some(new Error(errorMessage)))
         setSelectedQuote(O.none)
@@ -144,7 +137,12 @@ export const useSwapQuote = ({
             }) as ExtendedQuoteSwap
         )
 
-        const sortedQuotes = [...allQuotes].sort((a, b) => {
+        // Protocols report failures as placeholder quotes (canSwap: false with
+        // the reason in `errors`) — never select those as the "best" quote, and
+        // surface their errors instead of silently rendering a 0 output.
+        const viableQuotes = allQuotes.filter((quote) => quote.canSwap)
+
+        const sortedQuotes = [...viableQuotes].sort((a, b) => {
           const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
           const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
           const timeA = a.totalSwapSeconds
@@ -159,7 +157,12 @@ export const useSwapQuote = ({
           setQuoteError(O.none)
         } else {
           setSelectedQuote(O.none)
-          setQuoteError(O.some(new Error('No valid swap routes available')))
+          const protocolErrors = allQuotes.flatMap((quote) =>
+            quote.errors.filter((err) => err.length > 0).map((err) => `${quote.protocol}: ${err}`)
+          )
+          setQuoteError(
+            O.some(new Error(protocolErrors.length > 0 ? protocolErrors.join(' | ') : 'No valid swap routes available'))
+          )
         }
 
         logger.info(
@@ -200,7 +203,9 @@ export const useSwapQuote = ({
       streaming.interval,
       streaming.quantity,
       slipTolerance,
-      isBoostEnabled
+      isBoostEnabled,
+      isOneClickSupportedAsset,
+      isChainflipSupportedAssetSync
     ]
   )
 

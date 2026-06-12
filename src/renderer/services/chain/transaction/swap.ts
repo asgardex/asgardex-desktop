@@ -136,6 +136,10 @@ export const swapCF$ = ({
  * the user knows the deposit may need to be re-registered manually.
  */
 const ONECLICK_SUBMIT_DEPOSIT_URL = 'https://1click.chaindefuser.com/v0/deposit/submit'
+// Abort a hung submitDeposit — this call runs inside the swap flow after the
+// on-chain send, so a fetch that never settles would leave the swap progress
+// pending forever. A timeout rejects into the catchError below instead.
+const ONECLICK_SUBMIT_DEPOSIT_TIMEOUT_MS = 15_000
 
 const submitOneClickDeposit = async (txHash: string, depositAddress: string): Promise<void> => {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -143,7 +147,8 @@ const submitOneClickDeposit = async (txHash: string, depositAddress: string): Pr
   const resp = await fetch(ONECLICK_SUBMIT_DEPOSIT_URL, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ txHash, depositAddress })
+    body: JSON.stringify({ txHash, depositAddress }),
+    signal: AbortSignal.timeout(ONECLICK_SUBMIT_DEPOSIT_TIMEOUT_MS)
   })
   if (!resp.ok) throw new Error(`1Click submitDeposit failed: ${resp.status} ${resp.statusText}`)
 }

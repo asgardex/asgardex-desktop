@@ -24,6 +24,7 @@ import * as RxOp from 'rxjs/operators'
 import { ASGARDEX_AFFILIATE_FEE_MIN, getAsgardexAffiliateFee, getAsgardexThorname } from '../../shared/const'
 import { isChainOfThor } from '../../shared/utils/chain'
 import * as Utils from '../components/swap/Swap.utils'
+import { useOneClickContext } from '../contexts/OneClickContext'
 import { THORCHAIN_DECIMAL, isUSDAsset, convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { eqAsset } from '../helpers/fp/eq'
 import { getSwapMemo } from '../helpers/memoHelper'
@@ -94,6 +95,7 @@ export const useSwapFees = ({
 }: UseSwapFeesParams): UseSwapFeesResult => {
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
+  const { getOneClickUsdPrice } = useOneClickContext()
 
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
 
@@ -275,7 +277,24 @@ export const useSwapFees = ({
       )
     }
 
-    if (balanceUsdValue.amount().isZero()) return O.none
+    if (balanceUsdValue.amount().isZero()) {
+      // Pools couldn't price the source. Distinguish "pool data not loaded yet"
+      // (defer via O.none — fetchQuote waits) from "no THOR/MAYA pool will ever
+      // price this" (e.g. SUI — 1Click-only). Note isChainOfThor can't tell the
+      // difference: DEX_CHAINS buckets every enabled non-MAYA chain as a THOR
+      // chain, pools or not (the SOL special case above exists because of that).
+      const poolsLoaded = poolDetailsThor.length > 0 || poolDetailsMaya.length > 0
+      if (!poolsLoaded) return O.none
+      // Pools are loaded and still no price — fall back to 1Click's token list
+      // so the affiliate threshold still applies; if it has no price either,
+      // skip the fee rather than blocking the quote (no price, no fee).
+      const oneClickUsdPrice = getOneClickUsdPrice(sourceAsset)
+      if (oneClickUsdPrice === undefined) return O.some(false)
+      balanceUsdValue = assetToBase(
+        assetAmount(baseToAsset(maxAmountToSwap).amount().multipliedBy(oneClickUsdPrice), THORCHAIN_DECIMAL)
+      )
+      if (balanceUsdValue.amount().isZero()) return O.some(false)
+    }
 
     const affiliateFeeMinInUsdDecimals = assetToBase(assetAmount(ASGARDEX_AFFILIATE_FEE_MIN, balanceUsdValue.decimal))
     if (balanceUsdValue.amount().lt(affiliateFeeMinInUsdDecimals.amount())) return O.some(false)
@@ -293,7 +312,8 @@ export const useSwapFees = ({
     poolDetailsThor,
     pricePoolThor,
     poolDetailsMaya,
-    pricePoolMaya
+    pricePoolMaya,
+    getOneClickUsdPrice
   ])
 
   return {
