@@ -23,7 +23,7 @@ const sizeClasses = {
 
 const colorClasses = {
   primary: 'bg-turquoise text-white hover:bg-turquoise/90 border-turquoise',
-  success: 'bg-turquoise text-white hover:bg-green-600 border-turquoise',
+  success: 'bg-turquoise text-white hover:bg-turquoise/90 border-turquoise',
   warning: 'bg-warning0 dark:bg-warning0d text-white hover:opacity-90 border-warning0 dark:border-warning0d',
   error: 'bg-error0 dark:bg-error0d text-white hover:opacity-90 border-error0 dark:border-error0d'
 }

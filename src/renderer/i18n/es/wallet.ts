@@ -70,6 +70,7 @@ const wallet: WalletMessages = {
   'wallet.change.title': 'Cambiar la cartera',
   'wallet.change.error': 'Error al cambiar un monedero',
   'wallet.selected.title': 'Cartera seleccionada',
+  'wallet.select.error': 'No se pudo cambiar de monedero. Por favor, inténtelo de nuevo.',
   'wallet.create.title': 'Crear un nuevo monedero',
   'wallet.create.enter.phrase': 'Introduzca su frase en el orden correcto',
   'wallet.create.error.phrase': 'Frase incorrecta. Por favor, compruebe su frase y vuelva a introducirla.',

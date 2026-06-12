@@ -70,6 +70,7 @@ const wallet: WalletMessages = {
   'wallet.change.title': 'Changer de portefeuille',
   'wallet.change.error': 'Erreur lors du changement de portefeuille',
   'wallet.selected.title': 'Portefeuille sélectionné',
+  'wallet.select.error': 'Impossible de changer de portefeuille. Veuillez réessayer.',
   'wallet.create.title': 'Créer un nouveau portefeuille',
   'wallet.create.enter.phrase': 'Entrez la phrase correctement',
   'wallet.create.error.phrase': 'Sauvegardez votre phrase en toute sécurité et saisissez-la correctement',

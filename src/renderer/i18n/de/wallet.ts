@@ -71,6 +71,7 @@ const wallet: WalletMessages = {
   'wallet.change.title': 'Wallet wechseln',
   'wallet.change.error': 'Fehler beim Wechseln der Wallet',
   'wallet.selected.title': 'Ausgewählte Wallet',
+  'wallet.select.error': 'Wallet konnte nicht gewechselt werden. Bitte versuche es erneut.',
   'wallet.create.title': 'Erstelle eine Wallet',
   'wallet.create.enter.phrase': 'Gib Deine Phrase in richtiger Reihenfolge ein',
   'wallet.create.words.click': 'Klicke die Wörter in der richtigen Reihenfolge',

@@ -13,7 +13,7 @@ export const Drawer = ({ title, isOpen, onClose, children }: PropsWithChildren<D
     <Dialog transition open={isOpen} onClose={onClose} className="relative z-10">
       <DialogBackdrop
         transition
-        className="fixed inset-0 bg-black/75 transition duration-500 ease-in-out data-closed:opacity-0"
+        className="fixed inset-0 bg-bg0/40 transition duration-500 ease-in-out data-closed:opacity-0 dark:bg-bg0d/40"
       />
 
       <div className="fixed inset-0 overflow-hidden">

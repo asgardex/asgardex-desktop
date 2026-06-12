@@ -923,7 +923,7 @@ export const InteractFormThor = ({
                 {...register('operatorFee', {
                   onChange: () => getMemo()
                 })}
-                placeholder="Enter a % value, memo will populate with Basis Points automatically"
+                placeholder={intl.formatMessage({ id: 'deposit.interact.nodeFee.placeholder' })}
                 disabled={isLoading}
                 size="large"
               />
@@ -1030,7 +1030,7 @@ export const InteractFormThor = ({
                     {...register('operatorFee', {
                       onChange: () => getMemo()
                     })}
-                    placeholder="Enter a % value, memo will populate with Basis Points automatically"
+                    placeholder={intl.formatMessage({ id: 'deposit.interact.nodeFee.placeholder' })}
                     disabled={isLoading}
                     size="large"
                   />

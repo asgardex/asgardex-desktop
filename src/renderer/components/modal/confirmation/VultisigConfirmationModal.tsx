@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
+import { XCircleIcon } from '@heroicons/react/24/outline'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
@@ -20,7 +21,7 @@ import { Label } from '../../uielements/label'
 import { QRCode } from '../../uielements/qrCode/QRCode'
 
 type VaultType = 'fast' | 'secure'
-type Phase = 'password' | 'waiting-qr' | 'qr-ready' | 'device-joined' | 'signing'
+type Phase = 'password' | 'waiting-qr' | 'qr-ready' | 'device-joined' | 'signing' | 'error'
 
 type Props = {
   visible: boolean
@@ -59,6 +60,7 @@ export const VultisigConfirmationModal = ({
   const [devicesJoined, setDevicesJoined] = useState(0)
   const [devicesRequired, setDevicesRequired] = useState(2)
   const [isValidating, setIsValidating] = useState(false)
+  const [txErrorMsg, setTxErrorMsg] = useState<string | null>(null)
 
   // Track whether we've started the signing flow in THIS modal session.
   // Prevents reacting to stale txState carried over from a previous transaction.
@@ -94,6 +96,7 @@ export const VultisigConfirmationModal = ({
       setDevicesJoined(0)
       setIsValidating(false)
       setIsCancelling(false)
+      setTxErrorMsg(null)
       signingStartedRef.current = false
       closedRef.current = false
 
@@ -173,12 +176,15 @@ export const VultisigConfirmationModal = ({
         onCloseRef.current()
       } else if (RD.isFailure(txState)) {
         const error = txState.error
-        logger.error('Transaction failed, closing modal', {
+        logger.error('Transaction failed, showing error state', {
           errorId: error?.errorId,
           msg: error?.msg
         })
-        closedRef.current = true
-        onCloseRef.current()
+        // Keep the modal open so the user sees why the transaction failed.
+        // Reset signingStartedRef so this effect doesn't reprocess the same failure.
+        signingStartedRef.current = false
+        setTxErrorMsg(error?.msg ?? null)
+        setPhase('error')
       }
     }
   }, [vaultType, phase, txState])
@@ -215,8 +221,8 @@ export const VultisigConfirmationModal = ({
   const [isCancelling, setIsCancelling] = useState(false)
 
   const handleCancel = useCallback(async () => {
-    if (phase === 'password') {
-      // Password phase - just close
+    if (phase === 'password' || phase === 'error') {
+      // Password phase or failed tx - nothing to abort, just close
       onCancel?.()
       onClose()
       return
@@ -320,6 +326,22 @@ export const VultisigConfirmationModal = ({
       )
     }
 
+    if (phase === 'error') {
+      return (
+        <div className="flex flex-col items-center gap-4">
+          <XCircleIcon className="h-12 w-12 text-error0 dark:text-error0d" />
+          <Label align="center" size="big" className="uppercase">
+            {intl.formatMessage({ id: 'wallet.vultisig.confirm.failed' })}
+          </Label>
+          {txErrorMsg && (
+            <Label align="center" color="gray">
+              {txErrorMsg}
+            </Label>
+          )}
+        </div>
+      )
+    }
+
     // phase === 'signing'
     return (
       <div className="flex flex-col items-center gap-4">
@@ -362,7 +384,7 @@ export const VultisigConfirmationModal = ({
                   {intl.formatMessage({ id: 'common.cancel' })}
                 </div>
               ) : (
-                intl.formatMessage({ id: 'common.cancel' })
+                intl.formatMessage({ id: phase === 'error' ? 'common.finish' : 'common.cancel' })
               )}
             </BaseButton>
             {phase === 'password' && (

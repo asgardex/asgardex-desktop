@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon, PlusCircleIcon } from '@heroicons/react/24/outline'
@@ -45,12 +45,24 @@ export const HeaderLock = (props: Props): JSX.Element => {
 
   const hasWallets = allWallets.length > 0
 
+  const [selectError, setSelectError] = useState(false)
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current)
+    }
+  }, [])
+
   // Phase D → 4F: Selection handler simplified - just calls unified selectWallet
   const handleWalletChange = useCallback(
     (wallet: Wallet) => {
+      setSelectError(false)
       selectWallet(wallet).catch((error) => {
-        // UI handles error display
         logger.error('Failed to select wallet:', error)
+        setSelectError(true)
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current)
+        errorTimerRef.current = setTimeout(() => setSelectError(false), 5000)
       })
     },
     [selectWallet]
@@ -163,5 +175,20 @@ export const HeaderLock = (props: Props): JSX.Element => {
     [intl, navigate]
   )
 
-  return <div className="flex justify-center">{hasWallets ? renderWallets : renderAddWallet}</div>
+  return (
+    <div className="relative flex justify-center">
+      {hasWallets ? renderWallets : renderAddWallet}
+      {selectError && (
+        <span
+          className={clsx(
+            'absolute top-[30px] right-0 z-[2000] whitespace-nowrap',
+            'rounded-md bg-bg0 px-10px py-5px drop-shadow-lg dark:bg-bg0d',
+            'border border-solid border-error0 dark:border-error0d',
+            'text-12 font-main text-error0 dark:text-error0d'
+          )}>
+          {intl.formatMessage({ id: 'wallet.select.error' })}
+        </span>
+      )}
+    </div>
+  )
 }
