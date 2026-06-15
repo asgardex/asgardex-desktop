@@ -72,7 +72,9 @@ export const ProgressBar = ({
         </div>
 
         {/* Error overlay border */}
-        {hasError && <div className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-red-500/70" />}
+        {hasError && (
+          <div className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-error0/70 dark:ring-error0d/70" />
+        )}
 
         {/* Center info */}
         <Transition

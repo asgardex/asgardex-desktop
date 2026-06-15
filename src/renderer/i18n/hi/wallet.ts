@@ -69,6 +69,7 @@ const wallet: WalletMessages = {
   'wallet.change.title': 'वॉलेट बदलें',
   'wallet.change.error': 'वॉलेट बदलते समय त्रुटि',
   'wallet.selected.title': 'चयनित वॉलेट',
+  'wallet.select.error': 'वॉलेट बदला नहीं जा सका। कृपया पुनः प्रयास करें।',
   'wallet.create.title': 'नया वॉलेट बनाएं',
   'wallet.create.enter.phrase': 'अपना वाक्यांश सही क्रम में दर्ज करें',
   'wallet.create.error.phrase': 'गलत वाक्यांश। कृपया अपने वाक्यांश की दोबारा जांच करें और फिर से दर्ज करें।',

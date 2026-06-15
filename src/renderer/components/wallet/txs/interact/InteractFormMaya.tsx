@@ -964,7 +964,7 @@ export const InteractFormMaya = (props: Props) => {
                   {...register('operatorFee', {
                     onChange: () => getMemo()
                   })}
-                  placeholder="Enter a % value, memo will populate with Basis Points automatically"
+                  placeholder={intl.formatMessage({ id: 'deposit.interact.nodeFee.placeholder' })}
                   disabled={isLoading}
                   size="large"
                 />
@@ -1325,10 +1325,12 @@ const PoolShareItem = ({
             disabled={isLoading || bondableAssets.length === 0 || !isBondable}
             value={customPercentage}
             onChange={handleCustomPercentageChange}
-            placeholder="Enter percentage (0-100)"
+            placeholder={intl.formatMessage({ id: 'deposit.interact.percentage.placeholder' })}
           />
           {customPercentage && (parseFloat(customPercentage) <= 0 || parseFloat(customPercentage) > 100) && (
-            <div className="mt-1 text-sm text-error0 dark:text-error0d">Percentage must be between 0 and 100</div>
+            <div className="mt-1 text-sm text-error0 dark:text-error0d">
+              {intl.formatMessage({ id: 'deposit.interact.percentage.error' })}
+            </div>
           )}
         </div>
       )}

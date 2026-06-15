@@ -101,7 +101,7 @@ export const Modal = ({
                           'bg-bg0 text-gray2 dark:bg-bg0d dark:text-gray2d',
                           // first-child right border like your styled rule
                           'border-r border-gray0 dark:border-gray0d',
-                          'hover:text-indigo-600 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 dark:hover:text-indigo-400',
+                          'hover:text-turquoise focus:outline-hidden focus-visible:ring-2 focus-visible:ring-turquoise dark:hover:text-turquoise',
                           cancelButtonProps?.className
                         )}
                         {...cancelButtonProps}>
@@ -116,10 +116,9 @@ export const Modal = ({
                           'ok-ant-btn h-full flex-1 rounded-none border-0 font-[MainFontRegular] text-sm uppercase',
                           // primary text like palette('primary',2)
                           'bg-bg0 text-turquoise dark:bg-bg0d dark:text-turquoise',
-                          // hover gradient echoing palette('gradient',1)
-                          'hover:bg-gradient-to-r hover:from-indigo-600/10 hover:to-teal-400/10',
+                          'hover:bg-turquoise/10',
                           'disabled:cursor-not-allowed disabled:opacity-50',
-                          'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500',
+                          'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-turquoise',
                           okButtonProps?.className
                         )}
                         {...okButtonProps}>

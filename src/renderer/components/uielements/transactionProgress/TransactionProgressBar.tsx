@@ -142,7 +142,8 @@ export const TransactionProgressBar: React.FC<TransactionProgressBarProps> = ({ 
                 'mb-2 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-200',
                 {
                   'border-turquoise bg-turquoise text-white': stage.completed,
-                  'animate-pulse border-yellow-500 bg-yellow-500 text-white': stage.current,
+                  'animate-pulse border-warning0 bg-warning0 text-white dark:border-warning0d dark:bg-warning0d':
+                    stage.current,
                   'border-gray1 bg-gray1 text-text2 dark:border-gray1d dark:bg-gray1d dark:text-text2d':
                     !stage.completed && !stage.current,
                   'opacity-60': stage.optional && !stage.completed && !stage.current

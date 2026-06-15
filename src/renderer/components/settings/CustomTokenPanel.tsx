@@ -59,28 +59,31 @@ export const CustomTokenPanel = (): JSX.Element => {
     setTokenName(value.trim())
   }, [])
 
-  const handleTokenDecimalsChange = useCallback((value: string) => {
-    setDecimalsError(emptyString)
+  const handleTokenDecimalsChange = useCallback(
+    (value: string) => {
+      setDecimalsError(emptyString)
 
-    if (value === emptyString) {
-      setTokenDecimals(value)
-      return
-    }
+      if (value === emptyString) {
+        setTokenDecimals(value)
+        return
+      }
 
-    const numericValue = parseInt(value, 10)
+      const numericValue = parseInt(value, 10)
 
-    if (isNaN(numericValue) || numericValue < 0) {
-      setDecimalsError('Decimals must be a non-negative integer')
-      return
-    }
+      if (isNaN(numericValue) || numericValue < 0) {
+        setDecimalsError(intl.formatMessage({ id: 'settings.custom.token.modal.decimals.error.invalid' }))
+        return
+      }
 
-    if (numericValue > 255) {
-      setDecimalsError('Decimals must be 255 or less')
-      return
-    }
+      if (numericValue > 255) {
+        setDecimalsError(intl.formatMessage({ id: 'settings.custom.token.modal.decimals.error.max' }))
+        return
+      }
 
-    setTokenDecimals(numericValue.toString())
-  }, [])
+      setTokenDecimals(numericValue.toString())
+    },
+    [intl]
+  )
 
   const handleChainChange = useCallback((chain: Chain) => {
     setSelectedChain(chain)
@@ -116,11 +119,11 @@ export const CustomTokenPanel = (): JSX.Element => {
 
       clearForm()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add custom token')
+      setError(err instanceof Error ? err.message : intl.formatMessage({ id: 'settings.custom.token.modal.error.add' }))
     } finally {
       setIsLoading(false)
     }
-  }, [canAddToken, selectedChain, tokenSymbol, contractAddress, clearForm])
+  }, [canAddToken, selectedChain, tokenSymbol, contractAddress, clearForm, intl])
 
   const chainFilter = useMemo(
     () => (
@@ -160,7 +163,11 @@ export const CustomTokenPanel = (): JSX.Element => {
             value={contractAddress}
             onChange={(e) => handleContractAddressChange(e.target.value)}
             placeholder={
-              isEVMChain(selectedChain) ? '0x...' : selectedChain === TRONChain ? 'T...' : 'Contract address'
+              isEVMChain(selectedChain)
+                ? '0x...'
+                : selectedChain === TRONChain
+                  ? 'T...'
+                  : intl.formatMessage({ id: 'settings.custom.token.modal.address.placeholder' })
             }
             error={!!contractAddress && !isValidAddress}
           />
@@ -178,7 +185,7 @@ export const CustomTokenPanel = (): JSX.Element => {
             size="normal"
             value={tokenSymbol}
             onChange={(e) => handleTokenSymbolChange(e.target.value)}
-            placeholder="e.g. USDC"
+            placeholder={intl.formatMessage({ id: 'settings.custom.token.modal.symbol.placeholder' })}
           />
         </div>
 
@@ -189,7 +196,7 @@ export const CustomTokenPanel = (): JSX.Element => {
             size="normal"
             value={tokenName}
             onChange={(e) => handleTokenNameChange(e.target.value)}
-            placeholder="e.g. USD Coin"
+            placeholder={intl.formatMessage({ id: 'settings.custom.token.modal.name.placeholder' })}
           />
         </div>
 

@@ -69,6 +69,7 @@ const wallet: WalletMessages = {
   'wallet.change.title': 'Сменить кошелёк',
   'wallet.change.error': 'Ошибка во время смены кошелька',
   'wallet.selected.title': 'Выбрать кошелёк',
+  'wallet.select.error': 'Не удалось переключить кошелёк. Пожалуйста, попробуйте еще раз.',
   'wallet.create.title': 'Создать новый кошелёк',
   'wallet.create.enter.phrase': 'Введите фразу правильно',
   'wallet.create.error.phrase': 'Сохраните вашу фразу в надежном месте и введите ее в правильном порядке',

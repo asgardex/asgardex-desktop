@@ -69,6 +69,7 @@ const wallet: WalletMessages = {
   'wallet.change.title': '지갑 변경',
   'wallet.change.error': '지갑 변경 중 오류 발생',
   'wallet.selected.title': '선택된 지갑',
+  'wallet.select.error': '지갑을 전환할 수 없습니다. 다시 시도해 주세요.',
   'wallet.create.title': '새 지갑 생성',
   'wallet.create.enter.phrase': '시드 구문을 올바른 순서로 입력하세요.',
   'wallet.create.error.phrase': '잘못된 시드 구문입니다. 시드 구문을 다시 확인하고 입력해 주세요.',
