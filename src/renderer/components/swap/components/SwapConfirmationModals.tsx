@@ -27,12 +27,15 @@ type SwapConfirmationModalsProps = {
   sourceChain: Chain
   sourceWalletType: WalletType
   network: Network
-  // Swap/CF params (for determining which submit to call)
+  // Swap/CF/OneClick params (for determining which submit to call). At most one is Some
+  // for any given selected quote because each builder gates on protocol upstream.
   oSwapParams: O.Option<SwapTxParams>
   oCFSwapParams: O.Option<SendTxParams>
+  oOneClickSwapParams: O.Option<SendTxParams>
   // Submit actions
   submitSwapTx: () => void
   submitCFTx: () => void
+  submitOneClickTx: () => void
   submitApproveTx: () => void
   // Password validation
   validatePassword$: ValidatePasswordHandler
@@ -68,8 +71,10 @@ export const useSwapConfirmationModals = ({
   network,
   oSwapParams,
   oCFSwapParams,
+  oOneClickSwapParams,
   submitSwapTx,
   submitCFTx,
+  submitOneClickTx,
   submitApproveTx,
   validatePassword$,
   validatePasswordForVultisig,
@@ -114,6 +119,8 @@ export const useSwapConfirmationModals = ({
         submitSwapTx()
       } else if (showPasswordModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
         submitCFTx()
+      } else if (showPasswordModal === ModalState.Swap && O.isSome(oOneClickSwapParams)) {
+        submitOneClickTx()
       } else if (showPasswordModal === ModalState.Approve) {
         submitApproveTx()
       }
@@ -130,7 +137,17 @@ export const useSwapConfirmationModals = ({
         />
       )
     )
-  }, [oCFSwapParams, oSwapParams, showPasswordModal, submitApproveTx, submitCFTx, submitSwapTx, validatePassword$])
+  }, [
+    oCFSwapParams,
+    oOneClickSwapParams,
+    oSwapParams,
+    showPasswordModal,
+    submitApproveTx,
+    submitCFTx,
+    submitOneClickTx,
+    submitSwapTx,
+    validatePassword$
+  ])
 
   // ─── Ledger Modal ─────────────────────────────────────────────────────────
   const renderLedgerConfirmationModal = useMemo(() => {
@@ -141,6 +158,8 @@ export const useSwapConfirmationModals = ({
         submitSwapTx()
       } else if (showLedgerModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
         submitCFTx()
+      } else if (showLedgerModal === ModalState.Swap && O.isSome(oOneClickSwapParams)) {
+        submitOneClickTx()
       } else if (showLedgerModal === ModalState.Approve) {
         submitApproveTx()
       }
@@ -181,8 +200,10 @@ export const useSwapConfirmationModals = ({
     network,
     oSwapParams,
     oCFSwapParams,
+    oOneClickSwapParams,
     submitSwapTx,
     submitCFTx,
+    submitOneClickTx,
     submitApproveTx,
     useSourceAssetLedger
   ])
@@ -194,10 +215,21 @@ export const useSwapConfirmationModals = ({
     if (showVultisigModal === ModalState.Swap) {
       if (O.isSome(oSwapParams)) submitSwapTx()
       else if (O.isSome(oCFSwapParams)) submitCFTx()
+      else if (O.isSome(oOneClickSwapParams)) submitOneClickTx()
     } else if (showVultisigModal === ModalState.Approve) {
       submitApproveTx()
     }
-  }, [vaultType, showVultisigModal, oSwapParams, oCFSwapParams, submitSwapTx, submitCFTx, submitApproveTx])
+  }, [
+    vaultType,
+    showVultisigModal,
+    oSwapParams,
+    oCFSwapParams,
+    oOneClickSwapParams,
+    submitSwapTx,
+    submitCFTx,
+    submitOneClickTx,
+    submitApproveTx
+  ])
 
   // Track Vultisig signing session
   const vultisigSessionRef = useRef(false)

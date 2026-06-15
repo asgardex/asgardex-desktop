@@ -38,6 +38,7 @@ import { isVultisigWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
+import { useOneClickContext } from '../../contexts/OneClickContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import {
   THORCHAIN_DECIMAL,
@@ -56,6 +57,7 @@ import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
 import { logger } from '../../helpers/logger'
+import { addOneClickSwapToTrackerFromQuote } from '../../helpers/oneClickTransactionTracker'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { emptyString, hiddenString, noDataString } from '../../helpers/stringHelper'
@@ -121,6 +123,7 @@ export const Swap = ({
   poolAddressMaya: oPoolAddressMaya,
   swap$,
   swapCF$,
+  swapOneClick$,
   poolDetailsThor,
   poolDetailsMaya,
   walletBalances,
@@ -214,7 +217,10 @@ export const Swap = ({
     [useSourceVultisigFromHook, initialSourceWalletType]
   )
 
-  const { isAssetSupported$, transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
+  const { isChainflipSupportedAssetSync, transactionTrackingService: chainflipTransactionTrackingService } =
+    useChainflipContext()
+  const { transactionTrackingService: oneClickTransactionTrackingService, isOneClickSupportedAsset } =
+    useOneClickContext()
 
   const {
     streamingInterval,
@@ -641,14 +647,17 @@ export const Swap = ({
     swapState,
     swapParams: oSwapParams,
     cfSwapParams: oCFSwapParams,
+    oneClickSwapParams: oOneClickSwapParams,
     submitSwap: submitSwapTx,
     submitCFSwap: submitCFTx,
+    submitOneClickSwap: submitOneClickTx,
     resetSwapState,
     swapStartTime,
     lastTrackedTxHashRef
   } = useSwapExecution({
     swap$,
     swapCF$,
+    swapOneClick$,
     selectedQuote: oQuoteProtocol,
     sourceAsset,
     amountToSwap,
@@ -799,7 +808,8 @@ export const Swap = ({
                 pricePool: pricePoolMaya
               })
             )
-          } else if (quoteProtocol.protocol === 'Chainflip') {
+          } else if (quoteProtocol.protocol === 'Chainflip' || quoteProtocol.protocol === 'OneClick') {
+            // Neither protocol exposes pool data, so fall back to a Gecko-priced USD value.
             if (
               !swapResultAmountMax?.asset?.symbol ||
               !swapResultAmountMax?.baseAmount ||
@@ -814,7 +824,7 @@ export const Swap = ({
               try {
                 return swapResultAmountMax.baseAmount.times(geckoPrice)
               } catch (error) {
-                logger.warn('Error calculating Chainflip USD value:', error)
+                logger.warn(`Error calculating ${quoteProtocol.protocol} USD value:`, error)
                 return baseAmount(0, THORCHAIN_DECIMAL)
               }
             }
@@ -1192,12 +1202,20 @@ export const Swap = ({
             return true
           if (isMayaSupportedAsset(targetAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-          if (isAssetSupported$(asset)) return true
+          if (isOneClickSupportedAsset(asset) && isOneClickSupportedAsset(targetAsset)) return true
+          if (isChainflipSupportedAssetSync(asset) && isChainflipSupportedAssetSync(targetAsset)) return true
           return false
         }),
         (assets) => unionAssets(assets)(assets)
       ),
-    [allBalances, isAssetSupported$, poolDetailsMaya, poolDetailsThor, targetAsset]
+    [
+      allBalances,
+      isChainflipSupportedAssetSync,
+      isOneClickSupportedAsset,
+      poolDetailsMaya,
+      poolDetailsThor,
+      targetAsset
+    ]
   )
 
   /**
@@ -1212,7 +1230,8 @@ export const Swap = ({
             return true
           if (isMayaSupportedAsset(sourceAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-          if (isAssetSupported$(asset)) return true
+          if (isOneClickSupportedAsset(asset) && isOneClickSupportedAsset(sourceAsset)) return true
+          if (isChainflipSupportedAssetSync(asset) && isChainflipSupportedAssetSync(sourceAsset)) return true
           return false
         }),
         A.chain((asset) => {
@@ -1229,7 +1248,7 @@ export const Swap = ({
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
-    [isAssetSupported$, poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
+    [isChainflipSupportedAssetSync, isOneClickSupportedAsset, poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
   )
 
   // Get vault type and encryption status for Vultisig wallets
@@ -1281,8 +1300,10 @@ export const Swap = ({
     network,
     oSwapParams,
     oCFSwapParams,
+    oOneClickSwapParams,
     submitSwapTx,
     submitCFTx,
+    submitOneClickTx,
     submitApproveTx,
     validatePassword$,
     validatePasswordForVultisig,
@@ -1639,6 +1660,15 @@ export const Swap = ({
                 depositAmount: amountToSwap.amount().toString()
               })
               lastTrackedTxHashRef.current = txHash
+            } else if (quoteProtocol.protocol === 'OneClick') {
+              // 1Click keys swap status by deposit address (returned in the quote as `toAddress`),
+              // not by the on-chain tx hash. The tracker polls GET /v0/status?depositAddress=... .
+              addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, quoteProtocol.toAddress, {
+                srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
+                destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
+                depositAmount: amountToSwap.amount().toString()
+              })
+              lastTrackedTxHashRef.current = txHash
             }
           }
         })
@@ -1653,6 +1683,7 @@ export const Swap = ({
     targetAsset,
     amountToSwap,
     chainflipTransactionTrackingService,
+    oneClickTransactionTrackingService,
     lastTrackedTxHashRef
   ])
 
@@ -1844,7 +1875,7 @@ export const Swap = ({
           ? O.some(THORChain)
           : quoteSwap.protocol === 'Mayachain'
             ? O.some(MAYAChain)
-            : quoteSwap.protocol === 'Chainflip'
+            : quoteSwap.protocol === 'Chainflip' || quoteSwap.protocol === 'OneClick'
               ? O.some(sourceChain)
               : O.none
       )
@@ -1963,7 +1994,8 @@ export const Swap = ({
             oQuoteProtocol,
             O.fold(
               () => swapSettingsSection,
-              (quoteSwap) => (quoteSwap.protocol === 'Chainflip' ? <></> : swapSettingsSection)
+              (quoteSwap) =>
+                quoteSwap.protocol === 'Chainflip' || quoteSwap.protocol === 'OneClick' ? <></> : swapSettingsSection
             )
           )}
           <SwapDetailsPanel

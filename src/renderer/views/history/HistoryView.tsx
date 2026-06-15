@@ -6,47 +6,63 @@ import { useObservableState } from 'observable-hooks'
 
 import { ProviderIcon } from '../../components/swap/ProviderIcon'
 import { Label } from '../../components/uielements/label'
-import { TransactionItem, ChainflipTransactionItem } from '../../components/uielements/transactionProgress'
+import {
+  TransactionItem,
+  ChainflipTransactionItem,
+  OneClickTransactionItem
+} from '../../components/uielements/transactionProgress'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
+import { useOneClickContext } from '../../contexts/OneClickContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 
 export const HistoryView = (): JSX.Element => {
   const { transactionTrackingService: thorchainTransactionTrackingService } = useThorchainContext()
   const { transactionTrackingService: mayachainTransactionTrackingService } = useMayachainContext()
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
+  const { transactionTrackingService: oneClickTransactionTrackingService } = useOneClickContext()
   // Get transactions from all services
   const thorTransactionsRD = useObservableState(thorchainTransactionTrackingService.getTransactions$, RD.initial)
   const mayaTransactionsRD = useObservableState(mayachainTransactionTrackingService.getTransactions$, RD.initial)
   const chainflipTransactionsRD = useObservableState(chainflipTransactionTrackingService.getTransactions$, RD.initial)
+  const oneClickTransactionsRD = useObservableState(oneClickTransactionTrackingService.getTransactions$, RD.initial)
 
   // Combine and filter active transactions
   const [activeTxs, completedTxs] = useMemo(() => {
     const thorTransactions = RD.isSuccess(thorTransactionsRD) ? thorTransactionsRD.value : []
     const mayaTransactions = RD.isSuccess(mayaTransactionsRD) ? mayaTransactionsRD.value : []
     const chainflipTransactions = RD.isSuccess(chainflipTransactionsRD) ? chainflipTransactionsRD.value : []
+    const oneClickTransactions = RD.isSuccess(oneClickTransactionsRD) ? oneClickTransactionsRD.value : []
 
     // Combine all transactions and filter for active ones
     const allTransactions = [
       ...thorTransactions.map((tx) => ({ ...tx, protocol: 'Thorchain' as const })),
       ...mayaTransactions.map((tx) => ({ ...tx, protocol: 'Mayachain' as const })),
-      ...chainflipTransactions.map((tx) => ({ ...tx, txHash: tx.depositChannelId, protocol: 'Chainflip' as const }))
+      ...chainflipTransactions.map((tx) => ({ ...tx, txHash: tx.depositChannelId, protocol: 'Chainflip' as const })),
+      ...oneClickTransactions.map((tx) => ({ ...tx, txHash: tx.depositAddress, protocol: 'OneClick' as const }))
     ]
 
     return [allTransactions.filter((tx) => !tx.isComplete), allTransactions.filter((tx) => tx.isComplete)]
-  }, [thorTransactionsRD, mayaTransactionsRD, chainflipTransactionsRD])
+  }, [thorTransactionsRD, mayaTransactionsRD, chainflipTransactionsRD, oneClickTransactionsRD])
 
   const handleRemoveTransaction = useCallback(
-    (id: string, protocol: 'Thorchain' | 'Mayachain' | 'Chainflip') => {
+    (id: string, protocol: 'Thorchain' | 'Mayachain' | 'Chainflip' | 'OneClick') => {
       if (protocol === 'Thorchain') {
         thorchainTransactionTrackingService.removeTransaction(id)
       } else if (protocol === 'Mayachain') {
         mayachainTransactionTrackingService.removeTransaction(id)
       } else if (protocol === 'Chainflip') {
         chainflipTransactionTrackingService.removeTransaction(id)
+      } else if (protocol === 'OneClick') {
+        oneClickTransactionTrackingService.removeTransaction(id)
       }
     },
-    [mayachainTransactionTrackingService, thorchainTransactionTrackingService, chainflipTransactionTrackingService]
+    [
+      mayachainTransactionTrackingService,
+      thorchainTransactionTrackingService,
+      chainflipTransactionTrackingService,
+      oneClickTransactionTrackingService
+    ]
   )
 
   if (activeTxs.length === 0 && completedTxs.length === 0) {
@@ -78,6 +94,13 @@ export const HistoryView = (): JSX.Element => {
               transaction={transaction}
               onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
             />
+          ) : transaction.protocol === 'OneClick' ? (
+            <OneClickTransactionItem
+              key={transaction.id}
+              protocol={protocolIcon}
+              transaction={transaction}
+              onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
+            />
           ) : (
             <TransactionItem
               key={transaction.id}
@@ -100,6 +123,13 @@ export const HistoryView = (): JSX.Element => {
           // Use appropriate component based on protocol
           return transaction.protocol === 'Chainflip' ? (
             <ChainflipTransactionItem
+              key={transaction.id}
+              protocol={protocolIcon}
+              transaction={transaction}
+              onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
+            />
+          ) : transaction.protocol === 'OneClick' ? (
+            <OneClickTransactionItem
               key={transaction.id}
               protocol={protocolIcon}
               transaction={transaction}

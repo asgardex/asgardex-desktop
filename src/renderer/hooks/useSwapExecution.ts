@@ -29,6 +29,7 @@ import { useSubscriptionState } from './useSubscriptionState'
 type UseSwapExecutionParams = {
   swap$: SwapHandler
   swapCF$: SwapCFHandler
+  swapOneClick$: SwapCFHandler
   selectedQuote: O.Option<ExtendedQuoteSwap>
   sourceAsset: AnyAsset
   amountToSwap: BaseAmount
@@ -47,8 +48,10 @@ type UseSwapExecutionResult = {
   swapState: SwapTxState
   swapParams: O.Option<SwapTxParams>
   cfSwapParams: O.Option<SendTxParams>
+  oneClickSwapParams: O.Option<SendTxParams>
   submitSwap: () => void
   submitCFSwap: () => void
+  submitOneClickSwap: () => void
   resetSwapState: () => void
   subscribeSwapState: (s: import('rxjs').Observable<SwapTxState>) => void
   swapStartTime: number
@@ -58,6 +61,7 @@ type UseSwapExecutionResult = {
 export const useSwapExecution = ({
   swap$,
   swapCF$,
+  swapOneClick$,
   selectedQuote,
   sourceAsset,
   amountToSwap,
@@ -177,11 +181,15 @@ export const useSwapExecution = ({
     streamingQuantity
   ])
 
-  // Build Chainflip swap params
-  const cfSwapParams: O.Option<SendTxParams> = useMemo(() => {
-    return FP.pipe(
+  // Build SendTxParams for the "vanilla transfer to a recipient" protocols (Chainflip, OneClick).
+  // Filtered by protocol so the three param builders are mutually exclusive — callers can rely
+  // on at most one being Some for a given selected quote.
+  const buildSendSwapParams = (allowedProtocols: ReadonlyArray<string>): O.Option<SendTxParams> =>
+    FP.pipe(
       sequenceTOption(sourceWalletBalance, selectedQuote),
-      O.map(([{ walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+      O.chain(([{ walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+        if (!allowedProtocols.includes(quoteSwap.protocol)) return O.none
+
         let amountToSwapAdjusted = amountToSwap
 
         if (
@@ -216,7 +224,7 @@ export const useSwapExecution = ({
             ? standaloneLedgerState.address.hdMode
             : hdMode
 
-        return {
+        return O.some({
           asset: sourceAsset,
           amount: amountToSwapAdjusted,
           recipient: quoteSwap.toAddress,
@@ -227,21 +235,48 @@ export const useSwapExecution = ({
           walletIndex: finalWalletIndex,
           hdMode: finalHDMode,
           sendMax: isSourceMaxSweep ? isSendMax : undefined
-        }
+        })
       })
     )
-  }, [
-    sourceWalletBalance,
-    selectedQuote,
-    amountToSwap,
-    sourceAsset,
-    sourceChainBalance,
-    swapFees.inFee.amount,
-    appWalletState,
-    standaloneLedgerState?.address,
-    isSourceMaxSweep,
-    isSendMax
-  ])
+
+  // Build Chainflip swap params
+  const cfSwapParams: O.Option<SendTxParams> = useMemo(
+    () => buildSendSwapParams(['Chainflip']),
+    // buildSendSwapParams is a closure over the values below; listing them keeps the memo correct.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      sourceWalletBalance,
+      selectedQuote,
+      amountToSwap,
+      sourceAsset,
+      sourceChainBalance,
+      swapFees.inFee.amount,
+      appWalletState,
+      standaloneLedgerState?.address,
+      isSourceMaxSweep,
+      isSendMax
+    ]
+  )
+
+  // Build OneClick swap params — identical shape to Chainflip; recipient is 1Click's deposit address
+  // and memo is empty (1Click doesn't use one — the deposit is identified by the address + post-tx
+  // submitDeposit call made inside swapOneClick$).
+  const oneClickSwapParams: O.Option<SendTxParams> = useMemo(
+    () => buildSendSwapParams(['OneClick']),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      sourceWalletBalance,
+      selectedQuote,
+      amountToSwap,
+      sourceAsset,
+      sourceChainBalance,
+      swapFees.inFee.amount,
+      appWalletState,
+      standaloneLedgerState?.address,
+      isSourceMaxSweep,
+      isSendMax
+    ]
+  )
 
   const submitSwap = useCallback(() => {
     FP.pipe(
@@ -265,12 +300,25 @@ export const useSwapExecution = ({
     )
   }, [cfSwapParams, subscribeSwapState, swapCF$])
 
+  const submitOneClickSwap = useCallback(() => {
+    FP.pipe(
+      oneClickSwapParams,
+      O.map((params) => {
+        setSwapStartTime(Date.now())
+        subscribeSwapState(swapOneClick$(params))
+        return true
+      })
+    )
+  }, [oneClickSwapParams, subscribeSwapState, swapOneClick$])
+
   return {
     swapState,
     swapParams,
     cfSwapParams,
+    oneClickSwapParams,
     submitSwap,
     submitCFSwap,
+    submitOneClickSwap,
     resetSwapState,
     subscribeSwapState,
     swapStartTime,

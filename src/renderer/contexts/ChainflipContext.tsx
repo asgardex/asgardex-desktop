@@ -2,7 +2,7 @@ import React, { createContext, useContext } from 'react'
 
 import {
   getAssetsData$,
-  isAssetSupported$,
+  isChainflipSupportedAssetSync,
   chainflipSupportedChains$,
   transactionTrackingService,
   getQuotePrice$,
@@ -12,7 +12,7 @@ import {
 
 type ChainFlipContextValue = {
   getAssetsData$: typeof getAssetsData$
-  isAssetSupported$: typeof isAssetSupported$
+  isChainflipSupportedAssetSync: typeof isChainflipSupportedAssetSync
   chainflipSupportedChains$: typeof chainflipSupportedChains$
   transactionTrackingService: typeof transactionTrackingService
   getQuotePrice$: typeof getQuotePrice$
@@ -21,7 +21,7 @@ type ChainFlipContextValue = {
 }
 const initialContext: ChainFlipContextValue = {
   getAssetsData$,
-  isAssetSupported$,
+  isChainflipSupportedAssetSync,
   chainflipSupportedChains$,
   transactionTrackingService,
   getQuotePrice$,

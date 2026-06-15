@@ -20,7 +20,14 @@ import { createScopedLogger } from '../../helpers/logger'
 import { triggerStream } from '../../helpers/stateHelper'
 import { ChainflipAssetRowData } from './poolData.types'
 import { createChainflipTransactionTrackingService } from './transactionTracking'
-import { cAssetToXAsset, cChainToXChain, xAssetToCAsset, xChainToCChain } from './utils'
+import {
+  cAssetToXAsset,
+  cChainToXChain,
+  isChainflipSupportedAsset,
+  isChainflipSupportedChain,
+  xAssetToCAsset,
+  xChainToCChain
+} from './utils'
 
 const logger = createScopedLogger('chainflip')
 
@@ -39,10 +46,29 @@ const boostDepths = new CachedValue<BoostPoolDepth[]>(() => sdk.getBoostLiquidit
 const transactionTrackingService = createChainflipTransactionTrackingService(sdk)
 
 export const createChainflipService$ = () => {
+  // Latest successfully fetched asset list, converted to XAssets. Kept as a
+  // snapshot so `isChainflipSupportedAssetSync` can serve the synchronous swap
+  // asset filters and protocol validation.
+  let xAssetsSnapshot: ReadonlyArray<AnyAsset> | null = null
+
+  const toXAssets = (assets: AssetData[]): AnyAsset[] =>
+    assets.flatMap((asset) => {
+      try {
+        const xAsset = cAssetToXAsset(asset)
+        return xAsset ? [xAsset] : []
+      } catch {
+        // Chains unknown to XChainJS (e.g. Polkadot) — skip
+        return []
+      }
+    })
+
   // Observable for cached assets data
   const getAssetsData$ = () =>
     Rx.defer(() => assetsData.getValue()).pipe(
-      RxOp.map((assets) => RD.success(assets)),
+      RxOp.map((assets) => {
+        xAssetsSnapshot = toXAssets(assets)
+        return RD.success(assets)
+      }),
       RxOp.catchError((error) => {
         // Log 429 and other API errors but don't block the swap page
         // Return empty array so THORChain/MAYAChain swaps still work
@@ -52,20 +78,19 @@ export const createChainflipService$ = () => {
       RxOp.shareReplay(1) // Cache the observable result
     )
 
-  // Check if an asset is supported in Chainflip
-  const isAssetSupported$ = (asset: AnyAsset) => {
-    if (isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)) return Rx.of(false)
-    return Rx.defer(() => getAssetData(asset)).pipe(
-      RxOp.map(() => true),
-      RxOp.catchError((error) => {
-        // Handle specific error messages from Chainflip SDK
-        if (error.message && error.message.includes('disabled')) {
-          logger.warn('Asset %s is disabled in Chainflip:', asset.ticker, error.message)
-        }
-        return Rx.of(false)
-      }),
-      RxOp.shareReplay(1) // Prevent duplicate requests for the same asset
-    )
+  /**
+   * Synchronous Chainflip support check: exact (full asset identity against
+   * the fetched asset list) once it has loaded; chain-level fallback before
+   * that or when the API is unavailable. Synth/trade/secured assets are
+   * protocol-specific and never route via Chainflip.
+   *
+   * Replaces the old `isAssetSupported$` Observable, which was misused in
+   * sync filter predicates (an Observable is always truthy).
+   */
+  const isChainflipSupportedAssetSync = (asset: AnyAsset): boolean => {
+    if (isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)) return false
+    if (xAssetsSnapshot && xAssetsSnapshot.length > 0) return isChainflipSupportedAsset(asset, xAssetsSnapshot)
+    return isChainflipSupportedChain(asset.chain)
   }
 
   // Get supported chains from Chainflip
@@ -242,7 +267,7 @@ export const createChainflipService$ = () => {
 
   return {
     getAssetsData$,
-    isAssetSupported$,
+    isChainflipSupportedAssetSync,
     chainflipSupportedChains$,
     transactionTrackingService,
     getQuotePrice$,

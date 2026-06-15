@@ -8,16 +8,19 @@ import { useIntl } from 'react-intl'
 
 import SwapIcon from '../../../assets/svg/icon-swap.svg?react'
 import { ChainflipTransactionTrackingService } from '../../../services/chainflip/transactionTracking'
+import { OneClickTransactionTrackingService } from '../../../services/oneclick/transactionTracking'
 import { TransactionTrackingService } from '../../../services/thorchain/transactionTracking'
 import { ProviderIcon } from '../../swap/ProviderIcon'
 import { Label } from '../label'
 import { ChainflipTransactionItem } from '../transactionProgress/ChainflipTransactionItem'
+import { OneClickTransactionItem } from '../transactionProgress/OneClickTransactionItem'
 import { TransactionItem } from '../transactionProgress/TransactionItem'
 
 export type TransactionQuickDialProps = {
   thorchainTransactionTrackingService: TransactionTrackingService
   mayachainTransactionTrackingService: TransactionTrackingService
   chainflipTransactionTrackingService: ChainflipTransactionTrackingService
+  oneClickTransactionTrackingService: OneClickTransactionTrackingService
   className?: string
 }
 
@@ -25,6 +28,7 @@ export const TransactionQuickDial = ({
   thorchainTransactionTrackingService,
   mayachainTransactionTrackingService,
   chainflipTransactionTrackingService,
+  oneClickTransactionTrackingService,
   className
 }: TransactionQuickDialProps) => {
   const intl = useIntl()
@@ -34,34 +38,44 @@ export const TransactionQuickDial = ({
   const thorTransactionsRD = useObservableState(thorchainTransactionTrackingService.getTransactions$, RD.initial)
   const mayaTransactionsRD = useObservableState(mayachainTransactionTrackingService.getTransactions$, RD.initial)
   const chainflipTransactionsRD = useObservableState(chainflipTransactionTrackingService.getTransactions$, RD.initial)
+  const oneClickTransactionsRD = useObservableState(oneClickTransactionTrackingService.getTransactions$, RD.initial)
 
   // Combine and filter active transactions
   const activeTransactions = useMemo(() => {
     const thorTransactions = RD.isSuccess(thorTransactionsRD) ? thorTransactionsRD.value : []
     const mayaTransactions = RD.isSuccess(mayaTransactionsRD) ? mayaTransactionsRD.value : []
     const chainflipTransactions = RD.isSuccess(chainflipTransactionsRD) ? chainflipTransactionsRD.value : []
+    const oneClickTransactions = RD.isSuccess(oneClickTransactionsRD) ? oneClickTransactionsRD.value : []
 
     // Combine all transactions and filter for active ones
     const allTransactions = [
       ...thorTransactions.map((tx) => ({ ...tx, protocol: 'Thorchain' as const })),
       ...mayaTransactions.map((tx) => ({ ...tx, protocol: 'Mayachain' as const })),
-      ...chainflipTransactions.map((tx) => ({ ...tx, txHash: tx.depositChannelId, protocol: 'Chainflip' as const }))
+      ...chainflipTransactions.map((tx) => ({ ...tx, txHash: tx.depositChannelId, protocol: 'Chainflip' as const })),
+      ...oneClickTransactions.map((tx) => ({ ...tx, txHash: tx.depositAddress, protocol: 'OneClick' as const }))
     ]
 
     return allTransactions.filter((tx) => !tx.isComplete)
-  }, [thorTransactionsRD, mayaTransactionsRD, chainflipTransactionsRD])
+  }, [thorTransactionsRD, mayaTransactionsRD, chainflipTransactionsRD, oneClickTransactionsRD])
 
   const handleRemoveTransaction = useCallback(
-    (id: string, protocol: 'Thorchain' | 'Mayachain' | 'Chainflip') => {
+    (id: string, protocol: 'Thorchain' | 'Mayachain' | 'Chainflip' | 'OneClick') => {
       if (protocol === 'Thorchain') {
         thorchainTransactionTrackingService.removeTransaction(id)
       } else if (protocol === 'Mayachain') {
         mayachainTransactionTrackingService.removeTransaction(id)
       } else if (protocol === 'Chainflip') {
         chainflipTransactionTrackingService.removeTransaction(id)
+      } else if (protocol === 'OneClick') {
+        oneClickTransactionTrackingService.removeTransaction(id)
       }
     },
-    [mayachainTransactionTrackingService, thorchainTransactionTrackingService, chainflipTransactionTrackingService]
+    [
+      mayachainTransactionTrackingService,
+      thorchainTransactionTrackingService,
+      chainflipTransactionTrackingService,
+      oneClickTransactionTrackingService
+    ]
   )
 
   const toggleExpanded = useCallback(() => {
@@ -126,15 +140,29 @@ export const TransactionQuickDial = ({
                 const protocolIcon = <ProviderIcon protocol={transaction.protocol} className="!h-4 !w-4" />
 
                 // Use appropriate component based on protocol
-                return transaction.protocol === 'Chainflip' ? (
-                  <ChainflipTransactionItem
-                    key={transaction.id}
-                    isMini
-                    protocol={protocolIcon}
-                    transaction={transaction}
-                    onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
-                  />
-                ) : (
+                if (transaction.protocol === 'Chainflip') {
+                  return (
+                    <ChainflipTransactionItem
+                      key={transaction.id}
+                      isMini
+                      protocol={protocolIcon}
+                      transaction={transaction}
+                      onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
+                    />
+                  )
+                }
+                if (transaction.protocol === 'OneClick') {
+                  return (
+                    <OneClickTransactionItem
+                      key={transaction.id}
+                      isMini
+                      protocol={protocolIcon}
+                      transaction={transaction}
+                      onRemove={(id) => handleRemoveTransaction(id, transaction.protocol)}
+                    />
+                  )
+                }
+                return (
                   <TransactionItem
                     key={transaction.id}
                     protocol={protocolIcon}

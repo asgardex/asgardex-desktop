@@ -19,6 +19,7 @@ import { useI18nContext } from '../../contexts/I18nContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useOneClickContext } from '../../contexts/OneClickContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
@@ -106,6 +107,7 @@ export const AppView = (): JSX.Element => {
   const { transactionTrackingService: thorchainTransactionTrackingService } = useThorchainContext()
   const { transactionTrackingService: mayachainTransactionTrackingService } = useMayachainContext()
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
+  const { transactionTrackingService: oneClickTransactionTrackingService } = useOneClickContext()
 
   const renderImportKeystoreWalletsError = useMemo(() => {
     const empty = () => <></>
@@ -200,6 +202,7 @@ export const AppView = (): JSX.Element => {
               thorchainTransactionTrackingService={thorchainTransactionTrackingService}
               mayachainTransactionTrackingService={mayachainTransactionTrackingService}
               chainflipTransactionTrackingService={chainflipTransactionTrackingService}
+              oneClickTransactionTrackingService={oneClickTransactionTrackingService}
             />
           )}
         </div>

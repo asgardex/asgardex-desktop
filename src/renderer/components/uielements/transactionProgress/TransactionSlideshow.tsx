@@ -6,15 +6,18 @@ import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
 
 import { ChainflipTransactionTrackingService } from '../../../services/chainflip/transactionTracking'
+import { OneClickTransactionTrackingService } from '../../../services/oneclick/transactionTracking'
 import { TransactionTrackingService } from '../../../services/thorchain/transactionTracking'
 import { ProviderIcon } from '../../swap/ProviderIcon'
 import { ChainflipTransactionItem } from './ChainflipTransactionItem'
+import { OneClickTransactionItem } from './OneClickTransactionItem'
 import { TransactionItem } from './TransactionItem'
 
 export type TransactionSlideshowProps = {
   thorchainTransactionTrackingService: TransactionTrackingService
   mayachainTransactionTrackingService: TransactionTrackingService
   chainflipTransactionTrackingService: ChainflipTransactionTrackingService
+  oneClickTransactionTrackingService: OneClickTransactionTrackingService
   className?: string
 }
 
@@ -22,6 +25,7 @@ export const TransactionSlideshow = ({
   thorchainTransactionTrackingService,
   mayachainTransactionTrackingService,
   chainflipTransactionTrackingService,
+  oneClickTransactionTrackingService,
   className
 }: TransactionSlideshowProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -32,6 +36,7 @@ export const TransactionSlideshow = ({
   const thorTransactionsRD = useObservableState(thorchainTransactionTrackingService.getTransactions$, RD.initial)
   const mayaTransactionsRD = useObservableState(mayachainTransactionTrackingService.getTransactions$, RD.initial)
   const chainflipTransactionsRD = useObservableState(chainflipTransactionTrackingService.getTransactions$, RD.initial)
+  const oneClickTransactionsRD = useObservableState(oneClickTransactionTrackingService.getTransactions$, RD.initial)
 
   // Minimum time (ms) to keep completed transactions visible in the slideshow
   const COMPLETED_VISIBILITY_MS = 30000
@@ -41,11 +46,13 @@ export const TransactionSlideshow = ({
     const thorTransactions = RD.isSuccess(thorTransactionsRD) ? thorTransactionsRD.value : []
     const mayaTransactions = RD.isSuccess(mayaTransactionsRD) ? mayaTransactionsRD.value : []
     const chainflipTransactions = RD.isSuccess(chainflipTransactionsRD) ? chainflipTransactionsRD.value : []
+    const oneClickTransactions = RD.isSuccess(oneClickTransactionsRD) ? oneClickTransactionsRD.value : []
 
     const allTransactions = [
       ...thorTransactions.map((tx) => ({ ...tx, protocol: 'Thorchain' as const })),
       ...mayaTransactions.map((tx) => ({ ...tx, protocol: 'Mayachain' as const })),
-      ...chainflipTransactions.map((tx) => ({ ...tx, txHash: tx.depositChannelId, protocol: 'Chainflip' as const }))
+      ...chainflipTransactions.map((tx) => ({ ...tx, txHash: tx.depositChannelId, protocol: 'Chainflip' as const })),
+      ...oneClickTransactions.map((tx) => ({ ...tx, txHash: tx.depositAddress, protocol: 'OneClick' as const }))
     ]
 
     const now = Date.now()
@@ -54,7 +61,7 @@ export const TransactionSlideshow = ({
       (tx) => !tx.isComplete || (tx.completedAt && now - tx.completedAt < COMPLETED_VISIBILITY_MS)
     )
     // tick dependency forces re-evaluation when visibility timer expires
-  }, [thorTransactionsRD, mayaTransactionsRD, chainflipTransactionsRD, tick]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [thorTransactionsRD, mayaTransactionsRD, chainflipTransactionsRD, oneClickTransactionsRD, tick]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Schedule a re-render to remove completed transactions once the visibility window expires
   useEffect(() => {
@@ -84,16 +91,23 @@ export const TransactionSlideshow = ({
   }, [activeTransactions.length, currentIndex])
 
   const handleRemoveTransaction = useCallback(
-    (id: string, protocol: 'Thorchain' | 'Mayachain' | 'Chainflip') => {
+    (id: string, protocol: 'Thorchain' | 'Mayachain' | 'Chainflip' | 'OneClick') => {
       if (protocol === 'Thorchain') {
         thorchainTransactionTrackingService.removeTransaction(id)
       } else if (protocol === 'Mayachain') {
         mayachainTransactionTrackingService.removeTransaction(id)
       } else if (protocol === 'Chainflip') {
         chainflipTransactionTrackingService.removeTransaction(id)
+      } else if (protocol === 'OneClick') {
+        oneClickTransactionTrackingService.removeTransaction(id)
       }
     },
-    [mayachainTransactionTrackingService, thorchainTransactionTrackingService, chainflipTransactionTrackingService]
+    [
+      mayachainTransactionTrackingService,
+      thorchainTransactionTrackingService,
+      chainflipTransactionTrackingService,
+      oneClickTransactionTrackingService
+    ]
   )
 
   const handlePrevious = useCallback(() => {
@@ -141,6 +155,14 @@ export const TransactionSlideshow = ({
       <div>
         {currentTransaction.protocol === 'Chainflip' ? (
           <ChainflipTransactionItem
+            key={currentTransaction.id}
+            isMini
+            protocol={protocolIcon}
+            transaction={currentTransaction}
+            onRemove={(id) => handleRemoveTransaction(id, currentTransaction.protocol)}
+          />
+        ) : currentTransaction.protocol === 'OneClick' ? (
+          <OneClickTransactionItem
             key={currentTransaction.id}
             isMini
             protocol={protocolIcon}

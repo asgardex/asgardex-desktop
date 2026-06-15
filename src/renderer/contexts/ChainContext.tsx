@@ -13,6 +13,7 @@ import {
   assetAddress$,
   swap$,
   swapCF$,
+  swapOneClick$,
   poolDeposit$,
   symDeposit$,
   symWithdraw$,
@@ -40,6 +41,7 @@ type ChainContextValue = {
   assetAddress$: typeof assetAddress$
   swap$: typeof swap$
   swapCF$: typeof swapCF$
+  swapOneClick$: typeof swapOneClick$
   poolDeposit$: typeof poolDeposit$
   symDeposit$: typeof symDeposit$
   symWithdraw$: typeof symWithdraw$
@@ -67,6 +69,7 @@ const initialContext: ChainContextValue = {
   assetAddress$,
   swap$,
   swapCF$,
+  swapOneClick$,
   poolDeposit$,
   symDeposit$,
   symWithdraw$,

@@ -23,7 +23,7 @@ type SectionProps = {
   className?: string
 }
 
-const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
+const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip', 'OneClick']
 
 const Section = ({ title, subtitle, className, children }: SectionProps) => (
   <div

@@ -22,6 +22,7 @@ import { MayachainProvider } from './contexts/MayachainContext'
 import { MayachainQueryProvider } from './contexts/MayachainQueryContext'
 import { MidgardProvider } from './contexts/MidgardContext'
 import { MayaMidgardProvider } from './contexts/MidgardMayaContext'
+import { OneClickProvider } from './contexts/OneClickContext'
 import { PriceLevelProvider } from './contexts/PriceLevelContext'
 import { SolProvider } from './contexts/SolContext'
 import { SuiProvider } from './contexts/SuiContext'
@@ -73,13 +74,15 @@ export const App = (): JSX.Element => {
                                                                 <UserNodesProvider>
                                                                   <UserBondProvidersProvider>
                                                                     <ChainflipProvider>
-                                                                      <I18nProvider>
-                                                                        <Router>
-                                                                          <ThemeProvider>
-                                                                            <AppView />
-                                                                          </ThemeProvider>
-                                                                        </Router>
-                                                                      </I18nProvider>
+                                                                      <OneClickProvider>
+                                                                        <I18nProvider>
+                                                                          <Router>
+                                                                            <ThemeProvider>
+                                                                              <AppView />
+                                                                            </ThemeProvider>
+                                                                          </Router>
+                                                                        </I18nProvider>
+                                                                      </OneClickProvider>
                                                                     </ChainflipProvider>
                                                                   </UserBondProvidersProvider>
                                                                 </UserNodesProvider>
