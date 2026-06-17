@@ -25,7 +25,7 @@ export default defineConfig(async ({ mode }) => {
         extensions: ['.ts', '.js']
       },
       plugins: [
-        typescript({ tsconfig: './tsconfig.main.json' }),
+        typescript({ tsconfig: './tsconfig.main.json', outDir: 'build/main' }),
         externalizeDepsPlugin({
           include: ['@ledgerhq/hw-transport-node-hid-singleton', '@ledgerhq/hw-transport', 'node-hid', 'usb']
         })
@@ -93,7 +93,7 @@ export default defineConfig(async ({ mode }) => {
           inject: ['./src/shims/buffer-shim.js']
         }
       },
-      plugins: [wasm(), react(), svgr(), typescript()],
+      plugins: [wasm(), react(), svgr(), typescript({ outDir: 'build/renderer' })],
       define: {
         'process.env': {}, // TODO: Fix from xchain
         global: 'globalThis',
