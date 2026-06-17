@@ -1,0 +1,47 @@
+name: Create release draft
+
+# When a release/** or hotfix/** branch is pushed, automatically create a
+# DRAFT GitHub release tagged vX.Y.Z (version read from package.json), with
+# auto-generated notes. The build-{macos,win,linux} workflows trigger on the
+# same push and electron-builder (`--publish always`) attaches their artifacts
+# to this draft. A human still signs (where needed) and clicks "Publish".
+#
+# This removes the manual "create the release draft + tag" step from RELEASE.md.
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - 'release/**'
+      - 'hotfix/**'
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v4
+
+      - name: Read version from package.json
+        id: pkg
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Create draft release (idempotent)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ steps.pkg.outputs.version }}"
+          # Never clobber an existing release — electron-builder may have already
+          # created/populated it, or an admin may have signed the draft.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — leaving it untouched."
+          else
+            gh release create "$TAG" \
+              --draft \
+              --target "$GITHUB_REF_NAME" \
+              --title "$TAG" \
+              --generate-notes
+            echo "Created draft release $TAG targeting $GITHUB_REF_NAME"
+          fi
