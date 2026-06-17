@@ -7162,7 +7162,7 @@ __metadata:
     eslint-plugin-security: "npm:^3.0.1"
     eslint-plugin-unused-imports: "npm:^4.4.1"
     ethers: "npm:6.14.4"
-    fp-ts: "npm:^2.12.1"
+    fp-ts: "npm:^2.16.11"
     fs-extra: "npm:^10.1.0"
     happy-dom: "npm:20.10.5"
     io-ts: "npm:^2.2.16"
@@ -10574,10 +10574,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fp-ts@npm:^2.12.1":
-  version: 2.12.2
-  resolution: "fp-ts@npm:2.12.2"
-  checksum: 10/f04c5b60a66af8f80879c304e7fd30301c952fa320a1c422ef1fa47abc4dbedf609c06e4925c822ca2e7e897a5383d8ffb0916643d803b116dfa2eeeb0a9f965
+"fp-ts@npm:^2.16.11":
+  version: 2.16.11
+  resolution: "fp-ts@npm:2.16.11"
+  checksum: 10/4c034326728c43a28b3a0f3a88c1218bca13c69ee3c420ab7a52636aa0d68cb68990308e72d93b3e5cc952e998019f7e3ba16389bb1ecc0174574536c29d3ab3
   languageName: node
   linkType: hard
 
