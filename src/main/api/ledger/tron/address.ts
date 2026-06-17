@@ -58,7 +58,7 @@ export const verifyAddress: VerifyAddressHandler = async ({ transport, network, 
 
     const _ = await clientLedger.getAddressAsync(walletIndex, true)
     return true
-  } catch (error) {
+  } catch (_error) {
     return false
   }
 }

@@ -172,5 +172,12 @@ export default [
   {
     files: ['**/mock/**', '**/helpers/logger.ts', 'src/main/**', 'scripts/**'],
     rules: { 'no-console': 'off' }
+  },
+  {
+    // Node build scripts and the Electron main-process Ledger transport load
+    // CommonJS-only modules via require() by design. typescript-eslint v8
+    // enables no-require-imports in its recommended set; allow it here.
+    files: ['scripts/**', 'src/main/api/ledger/**'],
+    rules: { '@typescript-eslint/no-require-imports': 'off' }
   }
 ]

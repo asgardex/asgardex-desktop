@@ -156,7 +156,6 @@ export const VultisigConfirmationModal = ({
       cleanupFns.current.forEach((fn) => fn())
       cleanupFns.current = []
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, vaultType])
 
   // Single effect to track txState transitions for SecureVault
@@ -211,7 +210,7 @@ export const VultisigConfirmationModal = ({
       } else {
         setPasswordError(intl.formatMessage({ id: 'wallet.password.confirmation.error' }))
       }
-    } catch (err) {
+    } catch (_err) {
       setPasswordError(intl.formatMessage({ id: 'wallet.password.confirmation.error' }))
     } finally {
       setIsValidating(false)

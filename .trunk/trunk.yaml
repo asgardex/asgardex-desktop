@@ -19,7 +19,7 @@ repo:
 lint:
   enabled:
     # 🧹 General Code Quality & Formatting
-    - eslint@8.57.0! # JS/TS linting
+    - eslint@9.39.4! # JS/TS linting
     - prettier@3.6.2! # Code formatting
     - markdownlint@0.44.0 # Markdown formatting
     - codespell@2.4.1 # Spell-checking
