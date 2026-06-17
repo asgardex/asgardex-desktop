@@ -15,6 +15,13 @@ updates:
     commit-message:
       prefix: chore(deps)
       prefix-development: chore(dev-deps)
+    # Major bumps are deliberate migrations handled manually (e.g. rxjs #774,
+    # eslint #719) — exclude them so they don't reopen daily. Security updates
+    # bypass `ignore` and still flow through regardless.
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
     groups:
       # @xchainjs/* is bumped whenever new versions ship upstream (not on a
       # fixed release cadence) — group them into one reviewable PR.
