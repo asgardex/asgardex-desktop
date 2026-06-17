@@ -96,7 +96,7 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
       }
     })
 
-    const currentNetwork = await network$.pipe(RxOp.take(1)).toPromise()
+    const currentNetwork = await Rx.lastValueFrom(network$.pipe(RxOp.take(1)))
     const maxRetries = 30 // 30 attempts = ~30 seconds with 1 second intervals
     let retryCount = 0
 

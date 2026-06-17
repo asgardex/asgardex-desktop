@@ -161,13 +161,12 @@ export const createAppWalletService = (): AppWalletService => {
       vaultManager.exitStandaloneMode()
 
       // Set app state to current keystore state
-      const keystoreState = await keystoreService.keystoreState$
-        .pipe(RxOp.take(1), RxOp.timeout(10_000))
-        .toPromise()
-        .catch((err) => {
-          logger.error('switchToKeystoreMode: timed out waiting for keystore state', err)
-          return undefined
-        })
+      const keystoreState = await Rx.lastValueFrom(
+        keystoreService.keystoreState$.pipe(RxOp.take(1), RxOp.timeout(10_000))
+      ).catch((err) => {
+        logger.error('switchToKeystoreMode: timed out waiting for keystore state', err)
+        return undefined
+      })
       if (keystoreState !== undefined) {
         setAppWalletState(keystoreState)
       }
@@ -209,13 +208,12 @@ export const createAppWalletService = (): AppWalletService => {
       standaloneLedgerService.enterStandaloneMode()
 
       // Set app state to standalone ledger state
-      const standaloneState = await standaloneLedgerService.standaloneLedgerState$
-        .pipe(RxOp.take(1), RxOp.timeout(10_000))
-        .toPromise()
-        .catch((err) => {
-          logger.error('switchToStandaloneLedgerMode: timed out waiting for ledger state', err)
-          return undefined
-        })
+      const standaloneState = await Rx.lastValueFrom(
+        standaloneLedgerService.standaloneLedgerState$.pipe(RxOp.take(1), RxOp.timeout(10_000))
+      ).catch((err) => {
+        logger.error('switchToStandaloneLedgerMode: timed out waiting for ledger state', err)
+        return undefined
+      })
       if (standaloneState !== undefined) {
         setAppWalletState(standaloneState)
       }
@@ -542,19 +540,17 @@ export const createAppWalletService = (): AppWalletService => {
       // Selecting keystore wallet - let keystoreService handle it
       // This will trigger keystoreState$ change which updates appWalletState$
       // Filter for terminal state + timeout to prevent hanging
-      const rd = await keystoreService
-        .changeKeystoreWallet(wallet.id)
-        .pipe(
+      const rd = await Rx.lastValueFrom(
+        keystoreService.changeKeystoreWallet(wallet.id).pipe(
           RxOp.filter((rd) => RD.isSuccess(rd) || RD.isFailure(rd)),
           RxOp.take(1),
           RxOp.timeout(10_000)
         )
-        .toPromise()
-        .catch((err) => {
-          const error = err instanceof Error ? err : new Error('Wallet selection timed out or completed without result')
-          logger.error('selectWallet failed:', error.message)
-          throw error
-        })
+      ).catch((err) => {
+        const error = err instanceof Error ? err : new Error('Wallet selection timed out or completed without result')
+        logger.error('selectWallet failed:', error.message)
+        throw error
+      })
       if (RD.isFailure(rd)) {
         logger.error('selectWallet: keystore wallet change failed:', rd.error)
         throw rd.error
