@@ -1,0 +1,38 @@
+# Dependabot configuration
+# Docs: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+updates:
+  # JavaScript / TypeScript dependencies (Yarn 4)
+  - package-ecosystem: npm
+    directory: /
+    # Daily so new @xchainjs/* releases (published out-of-band, on their own
+    # cadence) are picked up within ~24h rather than waiting for a weekly poll.
+    # Dependabot polls on a schedule — this is the most responsive option short
+    # of true event-driven updates.
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore(deps)
+      prefix-development: chore(dev-deps)
+    groups:
+      # @xchainjs/* is bumped whenever new versions ship upstream (not on a
+      # fixed release cadence) — group them into one reviewable PR.
+      xchainjs:
+        patterns:
+          - '@xchainjs/*'
+      # Collapse routine dev-dependency minor/patch bumps to reduce PR noise.
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+
+  # Keep GitHub Actions in CI/release workflows up to date
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci(actions)
