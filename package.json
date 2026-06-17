@@ -195,7 +195,6 @@
     "tailwindcss": "^4.3.1",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
-    "util": "^0.12.5",
     "vite": "^6.3.5",
     "vite-plugin-svgr": "^4.3.0",
     "vite-plugin-wasm": "^3.6.0",
@@ -209,7 +208,8 @@
     "bigint-buffer": "1.0.1",
     "form-data": "4.0.4",
     "bignumber.js": "^10.0.1",
-    "pbkdf2": "3.1.2"
+    "pbkdf2": "3.1.2",
+    "browserify-sign": "4.2.1"
   },
   "packageManager": "yarn@4.9.2"
 }

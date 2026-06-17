@@ -79,7 +79,6 @@ export default defineConfig(async ({ mode }) => {
           stream: 'stream-browserify',
           crypto: 'crypto-browserify',
           assert: 'assert',
-          util: 'util',
           path: path.resolve(__dirname, 'empty.js'),
           url: path.resolve(__dirname, 'empty.js'),
           https: path.resolve(__dirname, 'empty.js'),
@@ -89,7 +88,7 @@ export default defineConfig(async ({ mode }) => {
         }
       },
       optimizeDeps: {
-        include: ['process', 'buffer', 'assert', 'util', '@xchainjs/zcash-js'],
+        include: ['process', 'buffer', 'assert', '@xchainjs/zcash-js'],
         esbuildOptions: {
           inject: ['./src/shims/buffer-shim.js']
         }
