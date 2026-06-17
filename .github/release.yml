@@ -1,0 +1,23 @@
+# Configuration for GitHub's automatically-generated release notes
+# (used by `gh release create --generate-notes` in release.yml).
+# Categorizes merged PRs by label, mirroring the CHANGELOG.md sections.
+# Docs: https://docs.github.com/repositories/releasing-projects-on-github/automatically-generated-release-notes
+changelog:
+  categories:
+    - title: Add
+      labels:
+        - enhancement
+        - feature
+    - title: Update / Fixes
+      labels:
+        - bug
+        - fix
+        - fixes
+    - title: Chores
+      labels:
+        - chore
+        - dependencies
+        - github-actions
+    - title: Other Changes
+      labels:
+        - '*'
