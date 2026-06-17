@@ -6,6 +6,7 @@ import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Address, AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
+import { lastValueFrom } from 'rxjs'
 
 import { ASGARDEX_TO_SDK_CHAIN } from '../../shared/api/mpcTypes'
 import { isLedgerWallet } from '../../shared/utils/guard'
@@ -132,10 +133,11 @@ export const useSwapAddresses = ({
       if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
         setIsFetchingStandaloneLedgerAddress(true)
         try {
-          const addressResult = await appWalletService.standaloneLedgerService
-            .getAddressWithoutStateChange(chain, targetHDMode, targetWalletAccount, targetWalletIndex)
-            .pipe()
-            .toPromise()
+          const addressResult = await lastValueFrom(
+            appWalletService.standaloneLedgerService
+              .getAddressWithoutStateChange(chain, targetHDMode, targetWalletAccount, targetWalletIndex)
+              .pipe()
+          )
 
           if (RD.isSuccess(addressResult)) {
             setStandaloneLedgerTargetAddress(O.some(addressResult.value.address))

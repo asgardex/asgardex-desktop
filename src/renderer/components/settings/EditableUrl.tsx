@@ -6,6 +6,7 @@ import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
 import { IntlShape, useIntl } from 'react-intl'
+import { lastValueFrom } from 'rxjs'
 
 import { LiveData } from '../../helpers/rx/liveData'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
@@ -59,7 +60,7 @@ const EditableUrl = (props: Props): JSX.Element => {
   const testUrl = useCallback((urlToTest: string): TestUrlLD => checkUrl$(urlToTest, intl), [checkUrl$, intl])
 
   const testUrlAsPromise = useCallback(
-    (urlToTest: string): Promise<TestUrlRD> => testUrl(urlToTest).toPromise(),
+    (urlToTest: string): Promise<TestUrlRD> => lastValueFrom(testUrl(urlToTest)),
     [testUrl]
   )
 
