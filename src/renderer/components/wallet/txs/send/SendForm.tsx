@@ -624,7 +624,7 @@ export const SendForm = (props: Props): JSX.Element => {
           if (active) {
             setDestinationTagRequired(requiresDestTag)
           }
-        } catch (error) {
+        } catch (_error) {
           if (active) {
             setDestinationTagRequired(false)
           }
@@ -656,7 +656,7 @@ export const SendForm = (props: Props): JSX.Element => {
           if (!addressValidation(value)) {
             return intl.formatMessage({ id: 'wallet.errors.address.invalid' })
           }
-        } catch (error) {
+        } catch (_error) {
           return intl.formatMessage({ id: 'wallet.errors.address.invalid' })
         }
       }

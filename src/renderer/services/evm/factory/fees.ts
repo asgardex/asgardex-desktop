@@ -63,7 +63,7 @@ export const createEvmFeesService = (
         recipient: params.recipient,
         memo: params.memo
       })
-    } catch (error) {
+    } catch (_error) {
       if (params.asset && isChainAsset(params.asset as Asset)) {
         gasLimit = new BigNumber(ETH_OUT_TX_GAS_LIMIT)
       } else {

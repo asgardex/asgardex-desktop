@@ -120,7 +120,6 @@ module.exports = async function notarizing(context) {
     // Clean up temporary directory and all contents if created
     if (tempDir) {
       try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         rmSync(tempDir, { recursive: true, force: true })
         console.log('Cleaned up temporary notarization directory')
       } catch (cleanupError) {

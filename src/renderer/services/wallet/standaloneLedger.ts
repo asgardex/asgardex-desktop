@@ -139,7 +139,7 @@ export const createStandaloneLedgerService = ({ network$ }: { network$: Network$
 
           return chainToDetect
         }
-      } catch (error) {
+      } catch (_error) {
         // Continue retrying unless we've exceeded max retries
       }
 
