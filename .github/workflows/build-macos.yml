@@ -70,7 +70,7 @@ jobs:
           OS_VERSION_SUFFIX: '${{ matrix.os-version }}-${{ matrix.os-name }}'
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.os }}-${{ matrix.os-version }}-${{ matrix.os-name }}
           path: release
