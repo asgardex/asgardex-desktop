@@ -7190,6 +7190,7 @@ __metadata:
     tailwindcss: "npm:^4.3.1"
     ts-node: "npm:10.9.2"
     typescript: "npm:5.8.3"
+    util: "npm:^0.12.5"
     uuid: "npm:^8.3.2"
     vite: "npm:^6.3.5"
     vite-plugin-svgr: "npm:^4.3.0"
