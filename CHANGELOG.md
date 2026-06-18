@@ -22,6 +22,7 @@
 - bump `@chainflip/sdk` to 2.1.1 to fix transaction-tracking log spam [#1041](https://github.com/asgardex/asgardex-desktop/pull/1041)
 - update xchainjs packages [#1045](https://github.com/asgardex/asgardex-desktop/pull/1045)
 - bump and lock axios, bump vulnerable dependencies [#1046](https://github.com/asgardex/asgardex-desktop/pull/1046)
+- pin `pbkdf2` (3.1.2) and `browserify-sign` (4.2.1) — newer releases ship a browser-incompatible `readable-stream` that crashed the renderer on load (build passes, only fails at runtime) [#1082](https://github.com/asgardex/asgardex-desktop/pull/1082)
 
 # 1.43.2
 

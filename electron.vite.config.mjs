@@ -74,6 +74,12 @@ export default defineConfig(async ({ mode }) => {
         }
       },
       resolve: {
+        // NOTE: `crypto-browserify` and its deps `pbkdf2` / `browserify-sign` are
+        // version-pinned in package.json → resolutions. Newer releases pull a
+        // readable-stream 2.x build that crashes this renderer bundle at runtime
+        // ("Cannot read properties of undefined (reading 'slice')"). `yarn build`
+        // passes regardless, so launch `yarn dev` and confirm the app loads before
+        // bumping these. See PR #1082.
         alias: {
           process: 'process/browser',
           stream: 'stream-browserify',
