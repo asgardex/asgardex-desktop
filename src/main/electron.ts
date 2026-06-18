@@ -3,7 +3,7 @@ import path, { join } from 'path'
 
 import { BrowserWindow, app, ipcMain, nativeImage } from 'electron'
 import electronDebug from 'electron-debug'
-import log, { warn } from 'electron-log'
+import log from 'electron-log'
 import windowStateKeeper from 'electron-window-state'
 import { either as E, function as FP } from 'fp-ts'
 
@@ -51,7 +51,7 @@ export const BASE_URL = IS_DEV ? BASE_URL_DEV : BASE_URL_PROD
 const APP_ICON = join(APP_ROOT, 'resources', process.platform.match('win32') ? 'icon.ico' : 'icon.png')
 
 const initLogger = () => {
-  log.transports.file.resolvePath = (variables: log.PathVariables) => {
+  log.transports.file.resolvePathFn = (variables: log.PathVariables) => {
     const safeFileName = sanitizePathSegment(variables.fileName as string, 'log file name')
     if (IS_DEV) {
       // Dev logs go to ./logs/ in the project root for easy access
@@ -106,7 +106,7 @@ const setupDevEnv = async () => {
   try {
     await installExtension(REACT_DEVELOPER_TOOLS)
   } catch (e) {
-    warn('unable to install devtools', e)
+    log.warn('unable to install devtools', e)
   }
 }
 
