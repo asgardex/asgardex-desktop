@@ -1,5 +1,5 @@
 # Configuration for GitHub's automatically-generated release notes
-# (used by `gh release create --generate-notes` in release.yml).
+# (used by the generate-notes API call in release.yml).
 # Categorizes merged PRs by label, mirroring the CHANGELOG.md sections.
 # Docs: https://docs.github.com/repositories/releasing-projects-on-github/automatically-generated-release-notes
 changelog:
@@ -16,6 +16,11 @@ changelog:
     - title: Chores
       labels:
         - chore
+    # Dependabot bumps land here. release.yml folds this section into a
+    # collapsible <details> block so batched updates don't flood the notes.
+    # The folding matches the section heading on the word "Dependencies".
+    - title: 📦 Dependencies
+      labels:
         - dependencies
         - github-actions
     - title: Other Changes

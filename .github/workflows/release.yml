@@ -37,11 +37,46 @@ jobs:
           # created/populated it, or an admin may have signed the draft.
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists — leaving it untouched."
-          else
-            gh release create "$TAG" \
-              --draft \
-              --target "$GITHUB_REF_NAME" \
-              --title "$TAG" \
-              --generate-notes
-            echo "Created draft release $TAG targeting $GITHUB_REF_NAME"
+            exit 0
           fi
+
+          # Categorized notes (honors .github/release.yml label categories).
+          notes="$(gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+            -f tag_name="$TAG" \
+            -f target_commitish="$GITHUB_REF_NAME" \
+            --jq '.body')"
+
+          # Fold the "📦 Dependencies" section into a collapsed <details> block
+          # so batched Dependabot bumps don't flood the changelog. generate-notes
+          # renders categories as H3 (### …) under "## What's Changed"; the
+          # <summary> replaces the heading, and the bullets are counted for it.
+          folded="$(printf '%s\n' "$notes" | awk '
+            function flush() {
+              if (n > 0) {
+                print "<details>"
+                printf "<summary>📦 Dependency updates (%d)</summary>\n\n", deps
+                for (i = 1; i <= n; i++) print buf[i]
+                print "</details>"
+                print ""
+              }
+              n = 0; deps = 0
+            }
+            /^#+[[:space:]].*Dependencies/ { collecting = 1; next }
+            collecting && /^#+[[:space:]]/ { flush(); collecting = 0; print; next }
+            collecting { buf[++n] = $0; if ($0 ~ /^[*-][[:space:]]/) deps++; next }
+            { print }
+            END { if (collecting) flush() }
+          ')"
+
+          # Prepend the ASGARDEX header + one-line summary slot. The website
+          # installer page extracts the first line under the title as the
+          # release summary (asgardex-website/src/app/lib/api.tsx), so an admin
+          # MUST replace the TODO line with the real summary before publishing.
+          body="$(printf '# ASGARDEX %s 🚀\n\n_TODO: replace with a concise one-line summary of this release (20–300 chars) — shown on the asgardex.com download page._\n\n%s\n' "$TAG" "$folded")"
+
+          gh release create "$TAG" \
+            --draft \
+            --target "$GITHUB_REF_NAME" \
+            --title "ASGARDEX $TAG 🚀" \
+            --notes "$body"
+          echo "Created draft release $TAG targeting $GITHUB_REF_NAME"
