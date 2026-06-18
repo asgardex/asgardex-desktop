@@ -20,7 +20,7 @@ lint:
   enabled:
     # 🧹 General Code Quality & Formatting
     - eslint@9.39.4! # JS/TS linting
-    - prettier@3.6.2! # Code formatting
+    - prettier@3.8.4! # Code formatting
     - markdownlint@0.44.0 # Markdown formatting
     - codespell@2.4.1 # Spell-checking
     # - stylelint@16.18.0         # CSS / SCSS linting
