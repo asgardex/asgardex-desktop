@@ -7183,7 +7183,7 @@ __metadata:
     happy-dom: "npm:20.10.5"
     io-ts: "npm:^2.2.16"
     io-ts-types: "npm:^0.5.19"
-    lightweight-charts: "npm:^5.1.0"
+    lightweight-charts: "npm:^5.2.0"
     lodash: "npm:^4.18.1"
     observable-hooks: "npm:^4.2.1"
     postcss: "npm:8.5.15"
@@ -12297,12 +12297,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightweight-charts@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "lightweight-charts@npm:5.1.0"
+"lightweight-charts@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "lightweight-charts@npm:5.2.0"
   dependencies:
     fancy-canvas: "npm:2.1.0"
-  checksum: 10/8fbe3809838727a2513435cbf4470128eafd1753a23fe29e00eee16c81ae016faf824ac21a95c69778f486f40dcb75cd685992964aa1df499703cda7e0fa7804
+  checksum: 10/108d0142e408cc1cf4d249dfbe913e0eb4dfe3ebf38fe550e514c6b9970fbf93431fb1799b570b2da6a4f51b6b223ffba5fc29b1855fece93d819b79b763b2d6
   languageName: node
   linkType: hard
 
