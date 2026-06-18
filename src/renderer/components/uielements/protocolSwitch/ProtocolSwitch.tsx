@@ -68,16 +68,18 @@ export const ProtocolSwitch = ({ protocol, setProtocol, withAll = false, protoco
     return (
       <Dropdown
         trigger={
-          <button
-            type="button"
+          // `Dropdown` wraps the trigger in a headlessui `MenuButton` (itself a
+          // <button>), so the trigger must not be a <button> — use a <div> like
+          // every other Dropdown caller to avoid nested-button DOM nesting.
+          <div
             className={clsx(
-              'flex items-center gap-2 rounded-lg border border-solid border-gray0 px-3 py-2',
+              'flex cursor-pointer items-center gap-2 rounded-lg border border-solid border-gray0 px-3 py-2',
               'font-main-semi-bold text-sm text-text0 dark:border-gray0d dark:text-text0d',
               'hover:bg-bg1 dark:hover:bg-bg1d'
             )}>
             {activeLabel}
             <ChevronDownIcon className="h-4 w-4" />
-          </button>
+          </div>
         }
         options={protocols.map((p) => {
           const label = p === Protocol.All ? intl.formatMessage({ id: 'common.all' }) : (PROTOCOL_LABEL[p] ?? p)
