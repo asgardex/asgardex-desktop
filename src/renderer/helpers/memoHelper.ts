@@ -220,12 +220,19 @@ export const parseSwapMemoDestination = (memo: string): O.Option<Address> => {
 
 /**
  * Loose, display-layer address equality used to flag a swap whose output
- * destination differs from the recipient the user entered. Case-insensitive and
- * trimmed so EVM checksum casing never triggers a false mismatch. This is a
- * non-authoritative warning heuristic, not a security boundary.
+ * destination differs from the recipient the user entered. Trimmed, and
+ * case-insensitive ONLY for EVM-style addresses (so checksum casing never
+ * triggers a false mismatch); compared exactly otherwise, since Base58 formats
+ * (BTC/LTC/DOGE legacy) are case-sensitive and lowercasing them could mask a
+ * genuine mismatch. This is a non-authoritative warning heuristic, not a
+ * security boundary.
  */
-export const swapDestinationMatches = (a: Address, b: Address): boolean =>
-  a.trim().toLowerCase() === b.trim().toLowerCase()
+export const swapDestinationMatches = (a: Address, b: Address): boolean => {
+  const left = a.trim()
+  const right = b.trim()
+  const isEvmLike = (v: string) => /^0x[0-9a-fA-F]{40}$/.test(v)
+  return isEvmLike(left) && isEvmLike(right) ? left.toLowerCase() === right.toLowerCase() : left === right
+}
 
 // With stagenet, remove all affiliate config from memo
 export const updateMemo = (memo: string, network: Network): string => {

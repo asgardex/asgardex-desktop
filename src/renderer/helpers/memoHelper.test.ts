@@ -31,12 +31,26 @@ describe('helpers/memoHelper', () => {
       expect(swapDestinationMatches('thor1abc', 'thor1abc')).toBe(true)
     })
 
-    it('matches ignoring case (EVM checksum) and surrounding whitespace', () => {
-      expect(swapDestinationMatches('0xAbCdEf', ' 0xabcdef ')).toBe(true)
+    it('matches EVM addresses ignoring checksum case and surrounding whitespace', () => {
+      const checksummed = '0xF155e9cDd77a5d77073ab43d17F661507c08e23D'
+      const lower = ` ${checksummed.toLowerCase()} `
+      expect(swapDestinationMatches(checksummed, lower)).toBe(true)
+    })
+
+    it('compares non-EVM (Base58) addresses case-sensitively', () => {
+      // Differ only in case — must NOT be treated as equal for case-sensitive formats
+      expect(swapDestinationMatches('1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2', '1bvbmseystwetqtfn5au4m4gfg7xjanvn2')).toBe(
+        false
+      )
     })
 
     it('does not match different addresses', () => {
-      expect(swapDestinationMatches('0xrecipient', '0xattacker')).toBe(false)
+      expect(
+        swapDestinationMatches(
+          '0xF155e9cDd77a5d77073ab43d17F661507c08e23D',
+          '0x0000000000000000000000000000000000000000'
+        )
+      ).toBe(false)
     })
   })
 })
