@@ -42,7 +42,10 @@ const swap: SwapMessages = {
   'swap.mode.rapid': '래피드',
   'swap.mode.streaming': '스트리밍',
   'swap.mode.instant': '즉시',
-  'swap.settings.subSwaps.auto': '자동 스왑 횟수'
+  'swap.settings.subSwaps.auto': '자동 스왑 횟수',
+  'swap.destination.title': '출력 대상',
+  'swap.destination.info': '스왑 출력이 이 주소로 전송됩니다. 서명하기 전에 확인하세요.',
+  'swap.destination.mismatch': '이는 입력한 수신자({recipient})와 다릅니다. 이 대상을 인식하는 경우에만 계속하세요.'
 }
 
 export default swap

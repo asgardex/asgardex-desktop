@@ -794,6 +794,9 @@ type SwapMessageKey =
   | 'swap.mode.streaming'
   | 'swap.mode.instant'
   | 'swap.settings.subSwaps.auto'
+  | 'swap.destination.title'
+  | 'swap.destination.info'
+  | 'swap.destination.mismatch'
 
 export type SwapMessages = { [key in SwapMessageKey]: string }
 
