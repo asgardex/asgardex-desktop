@@ -57,6 +57,7 @@ import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
 import { logger } from '../../helpers/logger'
+import { parseSwapMemoDestination } from '../../helpers/memoHelper'
 import { addOneClickSwapToTrackerFromQuote } from '../../helpers/oneClickTransactionTracker'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
@@ -103,6 +104,7 @@ import { Tooltip } from '../uielements/tooltip'
 import { ErrorLabel } from './components/ErrorLabel'
 import { RecipientAddressSection } from './components/RecipientAddressSection'
 import { useSwapConfirmationModals } from './components/SwapConfirmationModals'
+import { SwapDestinationConfirmation } from './components/SwapDestinationConfirmation'
 import { SwapDetailsPanel } from './components/SwapDetailsPanel'
 import { SwapSettings } from './components/SwapSettings'
 import { SwapSubmitSection } from './components/SwapSubmitSection'
@@ -673,6 +675,22 @@ export const Swap = ({
   })
 
   // ─── Remaining component logic ─────────────────────────────────────────────
+
+  // THOR/Maya ONLY: the output destination encoded in the SIGNED memo
+  // (`=:ASSET:DESTADDR:…`), which should equal the recipient the user entered.
+  // Surfaced at signing so a redirected destination (e.g. a tampered quote
+  // response) is human-visible. Chainflip/OneClick are intentionally excluded:
+  // their `recipient` is the deposit/inbound address the source funds are sent
+  // TO (not where the output lands), so it is neither the output destination
+  // nor comparable to the user's recipient. See `SwapDestinationConfirmation`.
+  const oOutputDestination: O.Option<Address> = useMemo(
+    () =>
+      FP.pipe(
+        oSwapParams,
+        O.chain(({ memo }) => parseSwapMemoDestination(memo))
+      ),
+    [oSwapParams]
+  )
 
   const setAmountToSwap = useCallback(
     (newAmountToSwap: BaseAmount) => {
@@ -2078,6 +2096,13 @@ export const Swap = ({
                 ? intl.formatMessage({ id: 'common.balance.loading' })
                 : undefined
           }
+        />
+      )}
+      {!lockedWallet && (
+        <SwapDestinationConfirmation
+          outputDestination={oOutputDestination}
+          intendedRecipient={effectiveRecipientAddress}
+          hidePrivateData={hidePrivateData}
         />
       )}
       <div className="flex flex-col items-center justify-center">

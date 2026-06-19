@@ -1,6 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AnyAsset, AssetType, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { option as O } from 'fp-ts'
 
 import { getAsgardexThorname } from '../../shared/const'
 
@@ -190,6 +191,47 @@ export const applyStreamingToMemo = (memo: string, streamingInterval: number, st
   parts[3] = `${baseLim}/${streamingInterval}/${streamingQuantity}`
 
   return parts.join(':')
+}
+
+/**
+ * Extracts the destination (output) address from a THORChain/MAYAChain swap memo.
+ *
+ * Swap memos are `SWAP:ASSET:DESTADDR:…` (or the `=` alias), so the destination
+ * lives in position 2. Returns `None` if the memo isn't a swap memo or carries
+ * no destination.
+ *
+ * NOTE: dex-aggregator / streaming-output memos may place an aggregator contract
+ * in this position rather than the final recipient — so a value here is the
+ * address the swap output is paid to, which for plain swaps is the recipient.
+ */
+export const parseSwapMemoDestination = (memo: string): O.Option<Address> => {
+  if (!memo?.trim()) return O.none
+
+  const parts = memo.split(DELIMITER)
+  // Need at least function:asset:destination
+  if (parts.length < 3) return O.none
+
+  const fn = parts[0].trim().toLowerCase()
+  if (fn !== 'swap' && fn !== '=') return O.none
+
+  const dest = parts[2]?.trim()
+  return dest ? O.some(dest) : O.none
+}
+
+/**
+ * Loose, display-layer address equality used to flag a swap whose output
+ * destination differs from the recipient the user entered. Trimmed, and
+ * case-insensitive ONLY for EVM-style addresses (so checksum casing never
+ * triggers a false mismatch); compared exactly otherwise, since Base58 formats
+ * (BTC/LTC/DOGE legacy) are case-sensitive and lowercasing them could mask a
+ * genuine mismatch. This is a non-authoritative warning heuristic, not a
+ * security boundary.
+ */
+export const swapDestinationMatches = (a: Address, b: Address): boolean => {
+  const left = a.trim()
+  const right = b.trim()
+  const isEvmLike = (v: string) => /^0x[0-9a-fA-F]{40}$/.test(v)
+  return isEvmLike(left) && isEvmLike(right) ? left.toLowerCase() === right.toLowerCase() : left === right
 }
 
 // With stagenet, remove all affiliate config from memo

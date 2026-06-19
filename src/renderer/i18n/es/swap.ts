@@ -44,7 +44,10 @@ const swap: SwapMessages = {
   'swap.mode.rapid': 'Rapid',
   'swap.mode.streaming': 'Streaming',
   'swap.mode.instant': 'Instantáneo',
-  'swap.settings.subSwaps.auto': 'Cantidad auto de swaps'
+  'swap.settings.subSwaps.auto': 'Cantidad auto de swaps',
+  'swap.destination.title': 'Destino de salida',
+  'swap.destination.info': 'La salida del swap se enviará a esta dirección. Verifica antes de firmar.',
+  'swap.destination.mismatch': 'Esto difiere del destinatario que ingresaste ({recipient}). Solo continúa si reconoces este destino.'
 }
 
 export default swap

@@ -43,7 +43,10 @@ const swap: SwapMessages = {
   'swap.mode.rapid': 'Rapid',
   'swap.mode.streaming': 'Streaming',
   'swap.mode.instant': 'Мгновенно',
-  'swap.settings.subSwaps.auto': 'Авто количество свопов'
+  'swap.settings.subSwaps.auto': 'Авто количество свопов',
+  'swap.destination.title': 'Адрес вывода',
+  'swap.destination.info': 'Результат обмена будет отправлен на этот адрес. Проверьте его перед подписанием.',
+  'swap.destination.mismatch': 'Это отличается от получателя, которого вы указали ({recipient}). Продолжайте только если вы узнаете этот адрес.'
 }
 
 export default swap
