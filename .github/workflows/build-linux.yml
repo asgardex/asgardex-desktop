@@ -30,6 +30,15 @@ jobs:
       - name: Install missing dependencies
         run: sudo apt-get update && sudo apt-get install -y libudev-dev libusb-1.0-0-dev
 
+      - name: Install Flatpak tooling
+        run: |
+          sudo apt-get install -y flatpak flatpak-builder elfutils
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y flathub \
+            org.freedesktop.Platform//24.08 \
+            org.freedesktop.Sdk//24.08 \
+            org.electronjs.Electron2.BaseApp//24.08
+
       - name: Install dependencies
         run: yarn install --immutable
 

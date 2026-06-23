@@ -62,6 +62,10 @@ module.exports = {
       {
         target: 'AppImage',
         arch: ['x64']
+      },
+      {
+        target: 'flatpak',
+        arch: ['x64']
       }
     ],
     desktop: {
@@ -73,6 +77,32 @@ module.exports = {
       Type: 'Application',
       Categories: 'Finance'
     }
+  },
+  flatpak: {
+    // Reverse-DNS app id (matches appId). Used as the Flatpak ref.
+    license: 'MIT',
+    // Pin runtime/base to a current, supported freedesktop release.
+    // org.electronjs.Electron2.BaseApp ships matching branches.
+    runtimeVersion: '24.08',
+    baseVersion: '24.08',
+    finishArgs: [
+      // Rendering (Wayland + X11 fallback)
+      '--socket=wayland',
+      '--socket=x11',
+      '--share=ipc',
+      // GPU / OpenGL
+      '--device=dri',
+      // Audio
+      '--socket=pulseaudio',
+      // Network access (RPC, Midgard, etc.)
+      '--share=network',
+      // System notifications
+      '--talk-name=org.freedesktop.Notifications',
+      // Hardware wallet (Ledger) USB access via host udev/USB devices
+      '--device=all',
+      // Persist user config/wallet files under the app home
+      '--filesystem=home'
+    ]
   },
   publish: {
     provider: 'github',
