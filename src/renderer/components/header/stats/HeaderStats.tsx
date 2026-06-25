@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, AssetTCY } from '@xchainjs/xchain-thorchain'
 import { assetFromStringEx, baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 
@@ -239,7 +239,7 @@ export const HeaderStats = (props: Props): JSX.Element => {
         onClick={reloadThorStats}>
         <AssetIcon size="xsmall" asset={AssetRuneNative} network={network} />
         <Label className="!w-auto" color="primary" textTransform="uppercase" weight="bold">
-          {THORChain}
+          {AssetRuneNative.ticker}
         </Label>
         <Label className="!w-auto" color="gray" textTransform="uppercase">
           {runePriceLabel}
