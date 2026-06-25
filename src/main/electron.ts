@@ -33,6 +33,7 @@ import {
 import { approveLedgerERC20Token } from './api/ledger/evm/approve'
 import { registerMpcIpcHandlers } from './api/mpc'
 import { disposeSDK } from './api/mpc/sdk'
+import { migrateHostStorageIntoFlatpak } from './api/storageMigration'
 import { openExternal } from './api/url'
 import IPCMessages from './ipc/messages'
 import { setMenu } from './menu'
@@ -254,6 +255,9 @@ const init = async () => {
   if (IS_DEV) {
     await setupDevEnv()
   }
+  // Import keystores/storage from a native (.deb/AppImage) install on first
+  // Flatpak run, before the renderer reads them. No-op outside Flatpak.
+  await migrateHostStorageIntoFlatpak()
   await initMainWindow()
   app.on('window-all-closed', allClosedHandler)
   app.on('activate', activateHandler)
