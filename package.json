@@ -71,7 +71,7 @@
   "homepage": "https://thorchain.org",
   "dependencies": {
     "@asgardex/asgardex-theme": "^0.2.0",
-    "@chainflip/sdk": "2.1.1",
+    "@chainflip/sdk": "2.2.1",
     "@devexperts/remote-data-ts": "^2.1.1",
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",

@@ -35,7 +35,7 @@ const logger = createScopedLogger('chainflip')
 const sdk = new SwapSDK({
   network: 'mainnet',
   enabledFeatures: {
-    dca: true
+    dcaV2: true
   }
 })
 const assetsData = new CachedValue(() => sdk.getAssets(), 24 * 60 * 60 * 1000)
