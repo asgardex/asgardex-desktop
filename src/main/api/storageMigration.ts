@@ -62,6 +62,8 @@ export const migrateHostStorageIntoFlatpak = async (): Promise<void> => {
     // Sandbox holds only empty defaults at this point, so a full overwrite is safe
     // and ensures the empty `wallets.json` is replaced by the host's.
     await fs.copy(hostStorage, STORAGE_DIR, { overwrite: true })
+    // MIGRATION_MARKER is a constant path under the app-controlled STORAGE_DIR (no user input).
+    /* trunk-ignore(eslint/security/detect-non-literal-fs-filename) */
     await fs.writeFile(MIGRATION_MARKER, new Date().toISOString())
     log.info('[storage-migration] Host storage imported successfully')
   } catch (error) {
