@@ -80,7 +80,8 @@ module.exports = {
   },
   flatpak: {
     // Reverse-DNS app id (matches appId). Used as the Flatpak ref.
-    license: 'MIT',
+    // `license` is a path to the license file, not an SPDX identifier.
+    license: 'LICENSE',
     // Pin runtime/base to a current, supported freedesktop release.
     // org.electronjs.Electron2.BaseApp ships matching branches.
     runtimeVersion: '24.08',
