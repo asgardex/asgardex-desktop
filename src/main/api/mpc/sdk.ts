@@ -15,6 +15,9 @@ let _disposing = false
 // Password cache TTL (5 minutes)
 const PASSWORD_CACHE_TTL = 5 * 60 * 1000
 
+// Fallback password store — survives SDK internal cache eviction
+const _passwordFallback = new Map<string, string>()
+
 /**
  * Initialize the Vultisig SDK
  * Must be called before any other SDK operations.
@@ -49,6 +52,11 @@ export async function initializeSDK(): Promise<Vultisig> {
         defaultTTL: PASSWORD_CACHE_TTL
       },
       onPasswordRequired: async (vaultId: string, vaultName: string) => {
+        const cached = _passwordFallback.get(vaultId)
+        if (cached) {
+          log.info(`[MPC SDK] onPasswordRequired fired — returning fallback password for "${vaultName}"`)
+          return cached
+        }
         const msg = `Password required for vault "${vaultName}" (${vaultId}) — unlock the vault first via apiMpc.unlockVault`
         log.warn(`[MPC SDK] onPasswordRequired fired (cache miss): ${msg}`)
         throw new Error(msg)
@@ -93,6 +101,13 @@ export function getSDK(): Vultisig {
 /**
  * Dispose the SDK instance
  */
+/**
+ * Store password in fallback cache after successful unlock
+ */
+export function cachePassword(vaultId: string, password: string): void {
+  _passwordFallback.set(vaultId, password)
+}
+
 export function disposeSDK(): void {
   _disposing = true
   if (sdkInstance) {

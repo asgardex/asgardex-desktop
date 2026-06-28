@@ -22,7 +22,7 @@ import {
   SerializedVault,
   SignBytesParams
 } from '../../../shared/api/mpcTypes'
-import { disposeSDK, getSDK, initializeSDK, isSDKInitialized } from './sdk'
+import { cachePassword, disposeSDK, getSDK, initializeSDK, isSDKInitialized } from './sdk'
 
 /**
  * Safely send IPC message — guards against destroyed renderer windows
@@ -473,6 +473,7 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
 
       log.info(`[MPC IPC] Unlocking vault: ${vaultId}`)
       await vault.unlock(password)
+      cachePassword(vaultId, password)
       log.info(`[MPC IPC] Vault unlocked successfully: ${vaultId}`)
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error)
