@@ -101,8 +101,16 @@ module.exports = {
       '--talk-name=org.freedesktop.Notifications',
       // Hardware wallet (Ledger) USB access via host udev/USB devices
       '--device=all',
-      // Persist user config/wallet files under the app home
-      '--filesystem=home'
+      // Read-only access to the native (.deb/AppImage) config dir so the
+      // first-run migration can import existing keystores into the sandbox.
+      // Use the LITERAL host path, not the `xdg-config` token: the token
+      // bind-mounts onto the app's own per-app config dir (so `:ro` would make
+      // the whole data dir read-only), whereas the literal path mounts the host
+      // dir separately, keeping the app's sandbox data writable.
+      // The app's own data lives in the per-app sandbox dir (no grant needed);
+      // export/import of keystore files goes through the FileChooser portal.
+      // Note: case-sensitive — must match app.name (`ASGARDEX`).
+      '--filesystem=~/.config/ASGARDEX:ro'
     ]
   },
   publish: {
