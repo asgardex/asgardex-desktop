@@ -381,6 +381,16 @@ By adding a Ledger account to a wallet, ASGARDEX saves its `address` and some ex
 
 Whenever a Ledger has been removed in `Wallet` -> `Settings`, its data will be removed from `ledgers.json`. By removing all Ledger accounts from each wallet `ledgers.json` will be empty and won't include any Ledger related data. The same by removing all wallets.
 
+### Linux: Ledger device access (udev rules)
+
+On Linux the Ledger USB device is only accessible after the Ledger `udev` rules are installed — without them the app (any of `*.deb`, AppImage, or Flatpak) fails to connect with errors like "Getting address from Ledger failed". Install the rules once, then unplug and replug the device:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/LedgerHQ/udev-rules/master/add_udev_rules.sh | sudo bash
+```
+
+This is a host-level requirement and is independent of the Flatpak sandbox (the Flatpak grants USB device access via `--device=all`).
+
 ## Vultisig (BETA)
 
 ASGARDEX supports [Vultisig](https://vultisig.com/) MPC (multi-party computation) wallets as a third wallet mode alongside Keystore and Ledger. The integration is currently in **beta** -- a "BETA" indicator is shown in the UI when Vultisig mode is active.
