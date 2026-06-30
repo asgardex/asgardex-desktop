@@ -287,6 +287,28 @@ ASGARDEX follows [security recommendation made by Electron team](https://www.ele
 yarn package:electron
 ```
 
+### Flatpak (Linux)
+
+On Linux, `yarn package:electron` builds a Flatpak bundle alongside the `deb` and `AppImage` targets. The Flatpak target needs `flatpak` and `flatpak-builder` installed, plus the runtimes it bundles against (the config pins freedesktop `24.08`):
+
+```bash
+# Build tooling (use your distro's package manager)
+sudo apt install flatpak flatpak-builder
+
+# Runtimes / base app
+flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install --user flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 org.electronjs.Electron2.BaseApp//24.08
+```
+
+The bundle is written to `release/ASGARDEX-<version>-linux.flatpak`. Install and run it with:
+
+```bash
+flatpak install --user --bundle release/ASGARDEX-<version>-linux.flatpak
+flatpak run org.thorchain.asgardex
+```
+
+> Switching from a `*.deb`/AppImage install? Existing keystores are imported into the sandbox automatically on first launch — see [Keystores → Linux](#linux).
+
 ## Keystores
 
 By creating or importing a keystore wallet, ASGARDEX is adding its encrypted keystore into `wallets.json` in [Electron's `appData` folder](https://www.electronjs.org/docs/api/app#appgetpathname) at following location:
@@ -314,9 +336,13 @@ By creating or importing a keystore wallet, ASGARDEX is adding its encrypted key
 ```bash
 # ASGARDEX installed from *.deb
 ~/.config/ASGARDEX/storage/wallets.json
+# ASGARDEX installed from *.flatpak (sandboxed path)
+~/.var/app/org.thorchain.asgardex/config/ASGARDEX/storage/wallets.json
 # ASGARDEX built and run locally
 ~/.config/Electron/storage/wallets.json
 ```
+
+The Flatpak runs in a sandbox, so `~/.config` is redirected to `~/.var/app/org.thorchain.asgardex/config`. When switching from the `*.deb`/AppImage install, ASGARDEX imports the existing `~/.config/ASGARDEX/storage` into the sandbox automatically on first launch (the native files are left untouched).
 
 By removing a wallet in `Wallet` -> `Settings` its data will be removed from `wallets.json`. ASGARDEX will prompt a message to users to inform about saving its phrase on a save place before removing the wallet.
 
