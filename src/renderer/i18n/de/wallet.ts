@@ -65,6 +65,8 @@ const wallet: WalletMessages = {
   'wallet.txs.history': 'Transaktionsverlauf',
   'wallet.txs.history.disabled': 'Transaktionsverlauf für {chain} ist vorübergehend nicht verfügbar',
   'wallet.create.copy.phrase': 'Phrase kopieren',
+  'wallet.create.phrase.length': 'Länge der Wiederherstellungsphrase',
+  'wallet.create.phrase.words': '{count} Wörter',
   'wallet.create.error.phrase.empty': 'Erstelle eine neue Wallet und füge ein Guthaben hinzu',
   'wallet.add.another': 'Weitere Wallet hinzufügen',
   'wallet.add.label': 'Wallet hinzufügen',
@@ -137,7 +139,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.import.password.title': 'Vault-Passwort erforderlich',
   'wallet.vultisig.import.password.description': 'Dieser Vault ist verschlüsselt. Bitte geben Sie das Passwort ein.',
   'wallet.vultisig.export.password.title': 'Export Vault',
-  'wallet.vultisig.export.password.description': 'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
+  'wallet.vultisig.export.password.description':
+    'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
   'wallet.vultisig.import.success': 'Vault erfolgreich importiert',
   'wallet.vultisig.import.error': 'Fehler beim Importieren des Vaults',
   'wallet.vultisig.import.error.invalidPassword': 'Ungültiges Passwort',
@@ -180,7 +183,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.secureCreate.vaultName.placeholder': 'Mein sicherer Vault',
   'wallet.vultisig.secureCreate.password.optional': 'Passwort (optional)',
   'wallet.vultisig.secureCreate.password.placeholder': 'Optionales Verschlüsselungspasswort',
-  'wallet.vultisig.secureCreate.password.hint': 'Wenn gesetzt, wird dieses Passwort zum Signieren von Transaktionen benötigt.',
+  'wallet.vultisig.secureCreate.password.hint':
+    'Wenn gesetzt, wird dieses Passwort zum Signieren von Transaktionen benötigt.',
   'wallet.vultisig.secureCreate.enterName': 'Bitte einen Vault-Namen eingeben',
   'wallet.vultisig.secureCreate.submit': 'Sicheren Vault erstellen',
   'wallet.vultisig.secureCreate.waitingQr': 'Sichere Vault-Sitzung wird initialisiert...',

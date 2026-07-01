@@ -63,6 +63,8 @@ const wallet: WalletMessages = {
   'wallet.txs.history': 'लेन-देन इतिहास',
   'wallet.txs.history.disabled': '{chain} के लिए लेन-देन इतिहास अस्थायी रूप से निष्क्रिय किया गया है',
   'wallet.create.copy.phrase': 'वाक्यांश कॉपी करें',
+  'wallet.create.phrase.length': 'रिकवरी वाक्यांश की लंबाई',
+  'wallet.create.phrase.words': '{count} शब्द',
   'wallet.create.error.phrase.empty': 'नया वॉलेट बनाएं, उसमें फंड जोड़ें',
   'wallet.add.another': 'एक और वॉलेट जोड़ें',
   'wallet.add.label': 'वॉलेट जोड़ें',
@@ -134,7 +136,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.import.password.title': 'Vault पासवर्ड आवश्यक',
   'wallet.vultisig.import.password.description': 'यह vault एन्क्रिप्टेड है। कृपया पासवर्ड दर्ज करें।',
   'wallet.vultisig.export.password.title': 'Export Vault',
-  'wallet.vultisig.export.password.description': 'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
+  'wallet.vultisig.export.password.description':
+    'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
   'wallet.vultisig.import.success': 'Vault सफलतापूर्वक आयात किया गया',
   'wallet.vultisig.import.error': 'Vault आयात करने में विफल',
   'wallet.vultisig.import.error.invalidPassword': 'अमान्य पासवर्ड',
@@ -177,7 +180,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.secureCreate.vaultName.placeholder': 'मेरा सुरक्षित Vault',
   'wallet.vultisig.secureCreate.password.optional': 'पासवर्ड (वैकल्पिक)',
   'wallet.vultisig.secureCreate.password.placeholder': 'वैकल्पिक एन्क्रिप्शन पासवर्ड',
-  'wallet.vultisig.secureCreate.password.hint': 'यदि सेट किया गया, तो लेन-देन पर हस्ताक्षर के लिए यह पासवर्ड आवश्यक होगा।',
+  'wallet.vultisig.secureCreate.password.hint':
+    'यदि सेट किया गया, तो लेन-देन पर हस्ताक्षर के लिए यह पासवर्ड आवश्यक होगा।',
   'wallet.vultisig.secureCreate.enterName': 'कृपया vault का नाम दर्ज करें',
   'wallet.vultisig.secureCreate.submit': 'सुरक्षित Vault बनाएं',
   'wallet.vultisig.secureCreate.waitingQr': 'सुरक्षित vault सत्र शुरू हो रहा है...',

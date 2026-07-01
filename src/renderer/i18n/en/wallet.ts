@@ -63,6 +63,8 @@ const wallet: WalletMessages = {
   'wallet.txs.history': 'Transaction history',
   'wallet.txs.history.disabled': 'Transaction history for {chain} has been disabled temporarily',
   'wallet.create.copy.phrase': 'Copy phrase',
+  'wallet.create.phrase.length': 'Recovery phrase length',
+  'wallet.create.phrase.words': '{count} words',
   'wallet.create.error.phrase.empty': 'Create a new wallet, add funds to it',
   'wallet.add.another': 'Add another wallet',
   'wallet.add.label': 'Add wallet',
@@ -132,7 +134,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.import.password.title': 'Vault Password Required',
   'wallet.vultisig.import.password.description': 'This vault is encrypted. Please enter the password to import.',
   'wallet.vultisig.export.password.title': 'Export Vault',
-  'wallet.vultisig.export.password.description': 'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
+  'wallet.vultisig.export.password.description':
+    'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
   'wallet.vultisig.import.success': 'Vault imported successfully',
   'wallet.vultisig.import.error': 'Failed to import vault',
   'wallet.vultisig.import.error.invalidPassword': 'Invalid password',

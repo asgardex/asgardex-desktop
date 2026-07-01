@@ -64,6 +64,8 @@ const wallet: WalletMessages = {
   'wallet.txs.history': 'Historique des transactions',
   'wallet.txs.history.disabled': "L'historique des transactions pour {chain} a été désactivé temporairement.",
   'wallet.create.copy.phrase': 'Copiez la phrase ci-dessous',
+  'wallet.create.phrase.length': 'Longueur de la phrase de récupération',
+  'wallet.create.phrase.words': '{count} mots',
   'wallet.create.error.phrase.empty': "Créez un nouveau portefeuille, et l'alimenter en fonds",
   'wallet.add.another': 'Ajouter un autre portefeuille',
   'wallet.add.label': 'Ajouter un portefeuille',

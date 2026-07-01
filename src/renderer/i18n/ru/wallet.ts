@@ -63,6 +63,8 @@ const wallet: WalletMessages = {
   'wallet.txs.history': 'История переводов',
   'wallet.txs.history.disabled': 'История транзакций для {chain} была временно отключена',
   'wallet.create.copy.phrase': 'Скопируйте фразу ниже',
+  'wallet.create.phrase.length': 'Длина мнемонической фразы',
+  'wallet.create.phrase.words': '{count} слов',
   'wallet.create.error.phrase.empty': 'Создать новый кошелёк с балансом',
   'wallet.add.another': 'Добавить еще один кошелёк',
   'wallet.add.label': 'Добавить кошелёк',
@@ -134,7 +136,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.import.password.title': 'Требуется пароль Vault',
   'wallet.vultisig.import.password.description': 'Этот vault зашифрован. Пожалуйста, введите пароль.',
   'wallet.vultisig.export.password.title': 'Export Vault',
-  'wallet.vultisig.export.password.description': 'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
+  'wallet.vultisig.export.password.description':
+    'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
   'wallet.vultisig.import.success': 'Vault успешно импортирован',
   'wallet.vultisig.import.error': 'Не удалось импортировать vault',
   'wallet.vultisig.import.error.invalidPassword': 'Неверный пароль',
@@ -189,7 +192,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.secureCreate.waitingMore': 'Ожидание подключения других устройств...',
   'wallet.vultisig.secureCreate.allJoined': 'Все устройства подключены! ({joined}/{required})',
   'wallet.vultisig.secureCreate.runningKeygen': 'Генерация MPC-ключей...',
-  'wallet.vultisig.secureCreate.keepActive': 'Это может занять некоторое время. Пожалуйста, держите оба устройства активными.',
+  'wallet.vultisig.secureCreate.keepActive':
+    'Это может занять некоторое время. Пожалуйста, держите оба устройства активными.',
   'wallet.vultisig.secureCreate.success': 'Безопасный Vault создан!',
   'wallet.vultisig.secureCreate.cancelling': 'Отмена...',
   'wallet.vultisig.notImplemented': 'Эта функция пока недоступна для кошельков Vultisig',

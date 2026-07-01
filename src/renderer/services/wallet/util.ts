@@ -90,11 +90,18 @@ export const getKeystoreWalletName: (id: KeystoreId) => (wallets: KeystoreWallet
       A.head
     )
 
-export const generateKeystoreId = (): KeystoreId =>
-  // id for keystore is current time (ms) at the time of importing
-  // Note: An user can import one keystore at time only
-  // and a keystore with same id can't be overridden. That's no duplications.
-  new Date().getTime()
+export const generateKeystoreId = (): KeystoreId => {
+  // Random 48-bit id derived from the OS CSPRNG (Web Crypto).
+  // Previously a millisecond timestamp (`Date.getTime()`) was used, which is
+  // predictable. A random id avoids that while staying a `number` so existing
+  // timestamp-based ids in `wallets.json` keep loading and matching unchanged.
+  // 48 bits stays well within `Number.MAX_SAFE_INTEGER` (2^53) and makes
+  // collisions negligible, preserving the "no duplicate ids" guarantee that
+  // keeps one keystore from overriding another.
+  const bytes = new Uint8Array(6)
+  globalThis.crypto.getRandomValues(bytes)
+  return bytes.reduce((acc, b) => acc * 256 + b, 0)
+}
 
 export const hasImportedKeystore = (state: KeystoreState): boolean => O.isSome(state)
 

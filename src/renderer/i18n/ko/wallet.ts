@@ -63,6 +63,8 @@ const wallet: WalletMessages = {
   'wallet.txs.history': '거래 내역',
   'wallet.txs.history.disabled': '{chain}의 거래 내역이 일시적으로 비활성화되었습니다.',
   'wallet.create.copy.phrase': '시드 구문 복사',
+  'wallet.create.phrase.length': '복구 구문 길이',
+  'wallet.create.phrase.words': '{count}개 단어',
   'wallet.create.error.phrase.empty': '새 지갑을 생성하고 자금을 추가하세요.',
   'wallet.add.another': '다른 지갑 추가',
   'wallet.add.label': '지갑 추가',
@@ -133,7 +135,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.import.password.title': 'Vault 비밀번호 필요',
   'wallet.vultisig.import.password.description': '이 vault는 암호화되어 있습니다. 비밀번호를 입력해 주세요.',
   'wallet.vultisig.export.password.title': 'Export Vault',
-  'wallet.vultisig.export.password.description': 'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
+  'wallet.vultisig.export.password.description':
+    'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
   'wallet.vultisig.import.success': 'Vault를 성공적으로 가져왔습니다',
   'wallet.vultisig.import.error': 'Vault 가져오기 실패',
   'wallet.vultisig.import.error.invalidPassword': '잘못된 비밀번호',
