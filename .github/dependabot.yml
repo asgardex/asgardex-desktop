@@ -5,6 +5,13 @@ updates:
   # JavaScript / TypeScript dependencies (Yarn 4)
   - package-ecosystem: npm
     directory: /
+    cooldown:
+      # Hold new releases for 7 days before proposing them, so freshly published
+      # (possibly compromised or unstable) versions aren't pulled in immediately.
+      # @xchainjs/* is excluded so their out-of-band releases still land within ~24h.
+      default-days: 7
+      exclude:
+        - '@xchainjs/*'
     # Daily so new @xchainjs/* releases (published out-of-band, on their own
     # cadence) are picked up within ~24h rather than waiting for a weekly poll.
     # Dependabot polls on a schedule — this is the most responsive option short
@@ -31,6 +38,8 @@ updates:
   # Keep GitHub Actions in CI/release workflows up to date
   - package-ecosystem: github-actions
     directory: /
+    cooldown:
+      default-days: 7
     schedule:
       interval: weekly
       day: monday
