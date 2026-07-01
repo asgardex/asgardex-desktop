@@ -197,7 +197,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
         <Link key={key} to={path} onClick={closeMenu}>
           <div
             className={clsx(
-              'flex h-[60px] items-center border-b border-solid border-bg2 dark:border-bg2d',
+              'flex h-[60px] cursor-pointer items-center border-b border-solid border-bg2 transition-colors hover:bg-turquoise/10 dark:border-bg2d',
               activeKey === key ? 'text-turquoise' : 'text-text1 dark:text-text1d',
               { 'border-t': index === 0 }
             )}>
@@ -336,13 +336,13 @@ export const HeaderComponent = (props: Props): JSX.Element => {
           isOpen={menuVisible}
           onClose={() => setMenuVisible(false)}>
           {links}
-          <div className="flex h-[60px] items-center border-b border-solid border-bg2 dark:border-bg2d">
+          <div className="flex h-[60px] cursor-pointer items-center border-b border-solid border-bg2 transition-colors hover:bg-turquoise/10 dark:border-bg2d">
             {renderHeaderCurrency}
           </div>
-          <div className="flex h-[60px] items-center border-b border-solid border-bg2 dark:border-bg2d">
+          <div className="flex h-[60px] cursor-pointer items-center border-b border-solid border-bg2 transition-colors hover:bg-turquoise/10 dark:border-bg2d">
             <HeaderTheme isDesktopView={isDesktopView} />
           </div>
-          <div className="flex h-[60px] items-center border-b border-solid border-bg2 dark:border-bg2d">
+          <div className="flex h-[60px] cursor-pointer items-center border-b border-solid border-bg2 transition-colors hover:bg-turquoise/10 dark:border-bg2d">
             <HeaderLockMobile
               hasWallet={allWallets.length > 0}
               isLocked={isLocked}
@@ -350,7 +350,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
               activeWallet={activeWallet}
             />
           </div>
-          <div className="flex h-[60px] items-center border-b border-solid border-bg2 dark:border-bg2d">
+          <div className="flex h-[60px] cursor-pointer items-center border-b border-solid border-bg2 transition-colors hover:bg-turquoise/10 dark:border-bg2d">
             {renderHeaderSettings}
           </div>
           {renderHeaderNetStatus}
