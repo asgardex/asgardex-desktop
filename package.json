@@ -211,5 +211,5 @@
     "pbkdf2": "3.1.2",
     "browserify-sign": "4.2.1"
   },
-  "packageManager": "yarn@4.9.2"
+  "packageManager": "yarn@4.17.0"
 }
