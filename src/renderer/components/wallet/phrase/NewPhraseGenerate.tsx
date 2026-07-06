@@ -30,7 +30,10 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
   const [loading, setLoading] = useState(false)
   const intl = useIntl()
 
-  const [phrase, setPhrase] = useState(generatePhrase())
+  // Recovery phrase length in words. 12 (128-bit) stays the default; 24 (256-bit)
+  // is offered for users who want a higher-entropy phrase.
+  const [size, setSize] = useState<12 | 24>(12)
+  const [phrase, setPhrase] = useState(() => generatePhrase(size))
 
   const initialWalletName = useMemo(() => defaultWalletName(walletId), [walletId])
 
@@ -40,7 +43,12 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
     event$.pipe(RxOp.debounceTime(100))
   )
 
-  useSubscription(refreshButtonClicked$, () => setPhrase(generatePhrase()))
+  useSubscription(refreshButtonClicked$, () => setPhrase(generatePhrase(size)))
+
+  const changeSize = useCallback((newSize: 12 | 24) => {
+    setSize(newSize)
+    setPhrase(generatePhrase(newSize))
+  }, [])
 
   const {
     register,
@@ -96,7 +104,28 @@ export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) =>
             textToCopy={phrase}
             label={intl.formatMessage({ id: 'wallet.create.copy.phrase' })}
           />
-          <RefreshButton onClick={clickRefreshButtonHandler} />
+          <div className="flex items-center gap-3">
+            <div
+              className="flex overflow-hidden rounded-full border border-solid border-gray0 dark:border-gray0d"
+              role="group"
+              aria-label={intl.formatMessage({ id: 'wallet.create.phrase.length' })}>
+              {([12, 24] as const).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => changeSize(option)}
+                  aria-pressed={size === option}
+                  className={`px-3 py-1 text-sm font-bold transition-colors ${
+                    size === option
+                      ? 'bg-turquoise text-white'
+                      : 'bg-transparent text-text2 hover:text-text0 dark:text-text2d dark:hover:text-text0d'
+                  }`}>
+                  {intl.formatMessage({ id: 'wallet.create.phrase.words' }, { count: option })}
+                </button>
+              ))}
+            </div>
+            <RefreshButton onClick={clickRefreshButtonHandler} />
+          </div>
         </div>
         <div className="grid grid-cols-3 gap-1 rounded-xl border border-solid border-gray0 p-2 dark:border-gray0d">
           {phraseWords.map((word, index) => (

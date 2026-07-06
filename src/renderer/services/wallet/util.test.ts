@@ -16,7 +16,8 @@ import {
   getBalanceByAsset,
   getWalletName,
   getLockedData,
-  getInitialKeystoreData
+  getInitialKeystoreData,
+  generateKeystoreId
 } from './util'
 
 describe('services/wallet/util/', () => {
@@ -308,6 +309,34 @@ describe('services/wallet/util/', () => {
           })
         )
       ).toBeTruthy()
+    })
+  })
+
+  describe('generateKeystoreId', () => {
+    // 48-bit CSPRNG value (6 bytes) — upper bound is exclusive of 2^48
+    const MAX = 2 ** 48
+
+    it('returns a non-negative integer within the safe range', () => {
+      const id = generateKeystoreId()
+      expect(typeof id).toBe('number')
+      expect(Number.isInteger(id)).toBe(true)
+      expect(id).toBeGreaterThanOrEqual(0)
+      expect(id).toBeLessThan(MAX)
+      // must stay representable as an exact JS integer
+      expect(id).toBeLessThanOrEqual(Number.MAX_SAFE_INTEGER)
+    })
+
+    it('produces varying values across calls (not a fixed or timestamp-based id)', () => {
+      const ids = Array.from({ length: 1000 }, () => generateKeystoreId())
+      // every value must satisfy the range invariant
+      ids.forEach((id) => {
+        expect(Number.isInteger(id)).toBe(true)
+        expect(id).toBeGreaterThanOrEqual(0)
+        expect(id).toBeLessThan(MAX)
+      })
+      // randomness: the vast majority of 1000 draws are unique (collisions in a
+      // 48-bit space are astronomically unlikely, so this is not flaky)
+      expect(new Set(ids).size).toBeGreaterThan(990)
     })
   })
 })

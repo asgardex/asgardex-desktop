@@ -465,6 +465,8 @@ type WalletMessageKey =
   | 'wallet.create.error.phrase'
   | 'wallet.create.error.phrase.empty'
   | 'wallet.create.copy.phrase'
+  | 'wallet.create.phrase.length'
+  | 'wallet.create.phrase.words'
   | 'wallet.create.words.click'
   | 'wallet.create.enter.phrase'
   | 'wallet.receive.address.error'

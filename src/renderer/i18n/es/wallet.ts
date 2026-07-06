@@ -64,6 +64,8 @@ const wallet: WalletMessages = {
   'wallet.txs.history': 'Historial de transacciones',
   'wallet.txs.history.disabled': 'El historial de transacciones de {chain} se ha desactivado temporalmente',
   'wallet.create.copy.phrase': 'Copiar la frase',
+  'wallet.create.phrase.length': 'Longitud de la frase de recuperación',
+  'wallet.create.phrase.words': '{count} palabras',
   'wallet.create.error.phrase.empty': 'Crear un nuevo monedero, añadirle fondos',
   'wallet.add.another': 'Añadir otra cartera',
   'wallet.add.label': 'Añadir cartera',
@@ -133,7 +135,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.import.password.title': 'Contraseña del Vault Requerida',
   'wallet.vultisig.import.password.description': 'Este vault está encriptado. Por favor ingrese la contraseña.',
   'wallet.vultisig.export.password.title': 'Export Vault',
-  'wallet.vultisig.export.password.description': 'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
+  'wallet.vultisig.export.password.description':
+    'Set a password to encrypt the backup file, or leave blank to export unencrypted.',
   'wallet.vultisig.import.success': 'Vault importado exitosamente',
   'wallet.vultisig.import.error': 'Error al importar el vault',
   'wallet.vultisig.import.error.invalidPassword': 'Contraseña inválida',
@@ -176,7 +179,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.secureCreate.vaultName.placeholder': 'Mi Vault Seguro',
   'wallet.vultisig.secureCreate.password.optional': 'Contraseña (opcional)',
   'wallet.vultisig.secureCreate.password.placeholder': 'Contraseña de cifrado opcional',
-  'wallet.vultisig.secureCreate.password.hint': 'Si se establece, esta contraseña será necesaria para firmar transacciones.',
+  'wallet.vultisig.secureCreate.password.hint':
+    'Si se establece, esta contraseña será necesaria para firmar transacciones.',
   'wallet.vultisig.secureCreate.enterName': 'Por favor ingresa un nombre para el vault',
   'wallet.vultisig.secureCreate.submit': 'Crear Vault Seguro',
   'wallet.vultisig.secureCreate.waitingQr': 'Inicializando sesión de vault seguro...',
