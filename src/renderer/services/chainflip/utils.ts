@@ -1,4 +1,5 @@
 import { Asset as CAsset, AssetData, Chain as CChain, Chains } from '@chainflip/sdk/swap'
+import { TRONChain } from '@xchainjs/xchain-tron'
 import {
   AnyAsset,
   Asset as XAsset,
@@ -18,6 +19,8 @@ export const cChainToXChain = (chain: CChain): XChain | null => {
       return 'ARB'
     case 'Solana':
       return 'SOL'
+    case 'Tron':
+      return TRONChain
     case 'Assethub':
       return null // Assethub is not supported in XChainJS, return null instead of throwing
     default:
@@ -35,6 +38,8 @@ export const xChainToCChain = (chain: XChain): CChain => {
       return Chains.Arbitrum
     case 'SOL':
       return Chains.Solana
+    case TRONChain:
+      return Chains.Tron
     default:
       throw Error('Unsupported chain in Chainflip')
   }
