@@ -12,7 +12,7 @@ import { createFeesService } from './fees'
 import { createTransactionService } from './transaction'
 
 const { subscribeTx, txRD$, resetTx, sendTx, txs$, tx$, txStatus$, approveTRC20Token$, isApprovedTRC20Token$ } =
-  createTransactionService(client$, network$)
+  createTransactionService(enhancedClient$, network$)
 const { fees$, reloadFees } = createFeesService(enhancedClient$)
 
 export {

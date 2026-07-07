@@ -1320,6 +1320,20 @@ export const createBalancesService = ({
   })
 
   /**
+   * TRON Vultisig balances
+   */
+  const tronVultisigChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      vultisigChainBalance$({
+        chain: TRONChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: TRON.getBalanceByAddress$(network)
+      })
+    )
+  )
+
+  /**
    * ETH Vultisig balances
    */
   const ethVultisigChainBalance$: ChainBalance$ = FP.pipe(
@@ -1476,7 +1490,8 @@ export const createBalancesService = ({
     GAIA: [cosmosVultisigChainBalance$],
     BASE: [baseVultisigChainBalance$],
     XRP: [xrpVultisigChainBalance$],
-    SOL: [solVultisigChainBalance$]
+    SOL: [solVultisigChainBalance$],
+    TRON: [tronVultisigChainBalance$]
   }
 
   // Combine enabled chains with their corresponding balance observables
