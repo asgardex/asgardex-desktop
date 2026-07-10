@@ -50,7 +50,7 @@ import { getPoolDetail as getPoolDetailMaya } from '../../../services/midgard/ma
 import { PoolsState, PoolDetails } from '../../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../../services/midgard/thorMidgard/utils'
 import type { PriceLevel } from '../../../services/priceLevel/types'
-import { isStandaloneLedgerMode, isVultisigMode } from '../../../services/wallet/types'
+import { isStandaloneLedgerMode, isVultisigMode, isVultisigVaultPasswordRequired } from '../../../services/wallet/types'
 import type { VaultType } from '../../../services/wallet/types'
 import { hasImportedKeystore } from '../../../services/wallet/util'
 import { TradingPanelBar, type TradeMode } from './TradingPanelBar'
@@ -501,12 +501,13 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     return 'fast'
   }, [appWalletState])
 
-  const isVaultEncrypted: boolean = useMemo(() => {
-    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
-      return appWalletState.activeVault.isEncrypted
-    }
-    return true
-  }, [appWalletState])
+  // Whether the Vultisig modal must prompt for the vault password. Skips the
+  // redundant prompt once a fast vault is already unlocked for the session
+  // (see `isVultisigVaultPasswordRequired`).
+  const isVaultEncrypted: boolean = useMemo(
+    () => (appWalletState ? isVultisigVaultPasswordRequired(appWalletState) : true),
+    [appWalletState]
+  )
 
   const validatePasswordForVultisig = useCallback(
     async (password: string): Promise<boolean> => {

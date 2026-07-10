@@ -77,6 +77,7 @@ import {
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import {
   isVultisigMode,
+  isVultisigVaultPasswordRequired,
   SelectedWalletAsset,
   ValidatePasswordHandler,
   VaultType,
@@ -171,12 +172,13 @@ export const SendForm = (props: Props): JSX.Element => {
     return 'fast'
   }, [appWalletState])
 
-  const isVaultEncrypted: boolean = useMemo(() => {
-    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
-      return appWalletState.activeVault.isEncrypted
-    }
-    return true
-  }, [appWalletState])
+  // Whether the Vultisig modal must prompt for the vault password. Skips the
+  // redundant prompt once a fast vault is already unlocked for the session
+  // (see `isVultisigVaultPasswordRequired`).
+  const isVaultEncrypted: boolean = useMemo(
+    () => (appWalletState ? isVultisigVaultPasswordRequired(appWalletState) : true),
+    [appWalletState]
+  )
 
   const { asset } = balance
 
