@@ -89,7 +89,8 @@ import {
   WalletBalances,
   isKeystoreMode,
   isStandaloneLedgerMode,
-  isVultisigMode
+  isVultisigMode,
+  isVultisigVaultPasswordRequired
 } from '../../services/wallet/types'
 import { useCoingecko } from '../../store/gecko/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
@@ -1277,12 +1278,13 @@ export const Swap = ({
     return 'fast'
   }, [appWalletState])
 
-  const isVaultEncrypted: boolean = useMemo(() => {
-    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
-      return appWalletState.activeVault.isEncrypted
-    }
-    return true // Default to encrypted (safe fallback — will show password prompt)
-  }, [appWalletState])
+  // Whether the Vultisig modal must prompt for the vault password. Skips the
+  // redundant prompt once the vault is already unlocked for the session
+  // (see `isVultisigVaultPasswordRequired`).
+  const isVaultEncrypted: boolean = useMemo(
+    () => (appWalletState ? isVultisigVaultPasswordRequired(appWalletState) : true),
+    [appWalletState]
+  )
 
   // Password validation for Vultisig
   const validatePasswordForVultisig = useCallback(
