@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { FeeType, singleFee, XChainClient } from '@xchainjs/xchain-client'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { FeeType, singleFee, XChainClient } from '@xchainjs/xchain-client'
 import { baseAmount } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
