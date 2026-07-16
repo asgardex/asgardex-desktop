@@ -112,43 +112,28 @@ describe('services/wallet/types', () => {
   })
 
   describe('isVultisigVaultPasswordRequired', () => {
-    const fastActiveEncrypted: VultisigState = {
-      ...vultisigActive,
-      activeVault: { id: 'v', name: 'V', type: 'fast', isEncrypted: true, chains: [] }
-    }
-    const fastLockedEncrypted: VultisigState = {
-      mode: 'standalone-vultisig',
-      phase: VultisigPhase.VaultLocked,
-      availableVaults: [],
-      activeVault: { id: 'v', name: 'V', type: 'fast', isEncrypted: true, chains: [] },
-      addresses: {}
-    }
-    const secureActiveEncrypted: VultisigState = {
+    // Reports whether the vault is password-protected (encrypted), independent of
+    // phase. The live "is the cache still warm?" decision lives in the modal.
+    const encryptedActive: VultisigState = {
       ...vultisigActive,
       activeVault: { id: 'v', name: 'V', type: 'secure', isEncrypted: true, chains: [] }
     }
 
-    it('skips the prompt for an already-active encrypted fast vault', () => {
-      expect(isVultisigVaultPasswordRequired(fastActiveEncrypted)).toBe(false)
+    it('is true for an encrypted vault (Active)', () => {
+      expect(isVultisigVaultPasswordRequired(encryptedActive)).toBe(true)
     })
-    it('skips the prompt for an already-active encrypted secure vault (co-signer authorizes)', () => {
-      expect(isVultisigVaultPasswordRequired(secureActiveEncrypted)).toBe(false)
-    })
-    it('prompts for a still-locked encrypted fast vault', () => {
-      expect(isVultisigVaultPasswordRequired(fastLockedEncrypted)).toBe(true)
-    })
-    it('prompts for a still-locked encrypted secure vault', () => {
+    it('is true for an encrypted vault (VaultLocked)', () => {
       // vultisigLocked is a secure, encrypted vault in the VaultLocked phase
       expect(isVultisigVaultPasswordRequired(vultisigLocked)).toBe(true)
     })
-    it('never prompts for an un-encrypted vault', () => {
+    it('is false for an un-encrypted vault', () => {
       // vultisigActive is a fast, un-encrypted vault
       expect(isVultisigVaultPasswordRequired(vultisigActive)).toBe(false)
     })
-    it('falls back to prompting when there is no active vault', () => {
+    it('falls back to true when there is no active vault', () => {
       expect(isVultisigVaultPasswordRequired(vultisigSelection)).toBe(true)
     })
-    it('falls back to prompting for non-Vultisig states', () => {
+    it('falls back to true for non-Vultisig states', () => {
       expect(isVultisigVaultPasswordRequired(keystoreUnlocked)).toBe(true)
       expect(isVultisigVaultPasswordRequired(ledgerState)).toBe(true)
     })

@@ -124,6 +124,7 @@ const apiMpc: ApiMpc = {
   // Vault Lock/Unlock
   lockVault: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_LOCK_VAULT, vaultId),
   unlockVault: (vaultId, password) => ipcRenderer.invoke(MpcIPCMessages.MPC_UNLOCK_VAULT, vaultId, password),
+  isVaultUnlocked: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_IS_VAULT_UNLOCKED, vaultId),
 
   // Transaction Signing
   signBytes: (params) => ipcRenderer.invoke(MpcIPCMessages.MPC_SIGN_BYTES, params),
