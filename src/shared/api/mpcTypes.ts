@@ -196,6 +196,7 @@ export enum MpcIPCMessages {
   // Vault Lock/Unlock
   MPC_LOCK_VAULT = 'mpc:lockVault',
   MPC_UNLOCK_VAULT = 'mpc:unlockVault',
+  MPC_IS_VAULT_UNLOCKED = 'mpc:isVaultUnlocked',
 
   // Events (main -> renderer)
   MPC_CREATION_PROGRESS = 'mpc:creationProgress',
@@ -250,6 +251,9 @@ export type ApiMpc = {
   // Vault Lock/Unlock
   lockVault: (vaultId: string) => Promise<void>
   unlockVault: (vaultId: string, password: string) => Promise<void>
+  // Whether the vault's password is currently cached & not expired (i.e. it can
+  // sign without a fresh password prompt). Reflects the SDK's password-cache TTL.
+  isVaultUnlocked: (vaultId: string) => Promise<boolean>
 
   // Transaction Signing
   signBytes: (params: SignBytesParams) => Promise<SignBytesResult>

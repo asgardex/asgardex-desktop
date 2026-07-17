@@ -80,33 +80,26 @@ export const isVultisigMode = (state: AppWalletState): state is VultisigState =>
 export const isVultisigVaultLocked = (state: VultisigState): boolean => state.phase === VultisigPhase.VaultLocked
 
 /**
- * Whether the Vultisig confirmation modal should ask for the vault password
- * before signing.
+ * Whether the active Vultisig vault is password-protected (encrypted) — i.e.
+ * a password is required *in principle* before it can sign.
  *
- * The vault's static `isEncrypted` flag over-prompts on its own: it stays `true`
- * for the whole life of a password-protected vault, so every swap/send re-shows
- * the password field even when the vault is already unlocked for the session.
- *
- * Once a vault is unlocked (`phase === Active`) we should never ask for the
- * password again on a transaction — regardless of vault type:
- * - Fast vaults (1-of-1) already have the key share loaded, so re-entry is pure
- *   theatre (`validatePassword` short-circuits to a non-empty check without even
- *   calling the SDK).
- * - Secure vaults (multi-device) cannot submit anything without the co-signer
- *   device (e.g. phone) completing the MPC ceremony, which is the real
- *   authorization — so the desktop password re-entry is redundant there too.
+ * This is intentionally NOT the "should we show the prompt right now?" decision.
+ * A password-protected vault stays encrypted for its whole life, but the SDK
+ * caches the password with a TTL after an unlock, so re-prompting on every tx is
+ * redundant while the cache is warm. The *live* decision — skip while the SDK's
+ * password cache is valid, prompt once it has expired — is made in
+ * `VultisigConfirmationModal` via `window.apiMpc.isVaultUnlocked`, because only
+ * the SDK knows the true cache state (the renderer's `phase` does not track the
+ * TTL).
  *
  * - Not Vultisig / no active vault → `true` (safe default; callers only render
  *   the Vultisig modal in Vultisig mode anyway).
- * - Un-encrypted vault → `false` (nothing to unlock).
- * - Vault already `Active` (unlocked this session) → `false`.
- * - Encrypted vault not yet unlocked → `true` (password needed to unlock).
+ * - Un-encrypted vault → `false` (no password ever needed).
+ * - Encrypted vault → `true`.
  */
 export const isVultisigVaultPasswordRequired = (state: AppWalletState): boolean => {
   if (!isVultisigMode(state) || !state.activeVault) return true
-  if (!state.activeVault.isEncrypted) return false
-  if (state.phase === VultisigPhase.Active) return false
-  return true
+  return state.activeVault.isEncrypted
 }
 
 export const isKeystoreMode = (state: AppWalletState): state is KeystoreState =>

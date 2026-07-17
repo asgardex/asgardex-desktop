@@ -481,6 +481,25 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
     }
   })
 
+  // Whether the vault can currently sign without a fresh password prompt, i.e.
+  // its password is still cached and not expired. `getUnlockTimeRemaining()`
+  // tracks exactly the password-cache TTL, so `> 0` means a signing request
+  // won't hit an `onPasswordRequired` cache miss. Fails safe to `false` (prompt).
+  ipcMain.handle(MpcIPCMessages.MPC_IS_VAULT_UNLOCKED, async (_event, vaultId: string) => {
+    try {
+      assertString(vaultId, 'vaultId')
+      if (!isSDKInitialized()) return false
+      const sdk = getSDK()
+      const vault = await sdk.getVaultById(vaultId)
+      if (!vault) return false
+      const remaining = vault.getUnlockTimeRemaining()
+      return typeof remaining === 'number' && remaining > 0
+    } catch (error) {
+      log.warn(`[MPC IPC] isVaultUnlocked check failed for ${vaultId}:`, errorMsg(error))
+      return false
+    }
+  })
+
   // ============================================
   // Transaction Signing
   // ============================================

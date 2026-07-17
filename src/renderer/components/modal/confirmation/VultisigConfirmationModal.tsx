@@ -21,7 +21,7 @@ import { Label } from '../../uielements/label'
 import { QRCode } from '../../uielements/qrCode/QRCode'
 
 type VaultType = 'fast' | 'secure'
-type Phase = 'password' | 'waiting-qr' | 'qr-ready' | 'device-joined' | 'signing' | 'error'
+type Phase = 'checking' | 'password' | 'waiting-qr' | 'qr-ready' | 'device-joined' | 'signing' | 'error'
 
 type Props = {
   visible: boolean
@@ -89,26 +89,51 @@ export const VultisigConfirmationModal = ({
 
   // Reset state when modal opens
   useEffect(() => {
-    if (visible) {
-      setPassword('')
-      setPasswordError(null)
-      setQrPayload(null)
-      setDevicesJoined(0)
-      setIsValidating(false)
-      setIsCancelling(false)
-      setTxErrorMsg(null)
-      signingStartedRef.current = false
-      closedRef.current = false
+    if (!visible) return
 
-      if (!isEncrypted) {
-        // No password needed — skip straight to signing
-        // Secure: modal stays open for QR/device flow
-        // Fast: parent closes modal immediately via onSuccess callback
-        setPhase(vaultType === 'secure' ? 'waiting-qr' : 'signing')
-        onSuccess()
+    setPassword('')
+    setPasswordError(null)
+    setQrPayload(null)
+    setDevicesJoined(0)
+    setIsValidating(false)
+    setIsCancelling(false)
+    setTxErrorMsg(null)
+    signingStartedRef.current = false
+    closedRef.current = false
+
+    // Skip straight to signing without asking for the password.
+    // Secure: modal stays open for the QR/device flow. Fast: parent closes the
+    // modal immediately via onSuccess.
+    const skipToSigning = () => {
+      setPhase(vaultType === 'secure' ? 'waiting-qr' : 'signing')
+      onSuccess()
+    }
+
+    if (!isEncrypted) {
+      // Un-encrypted vault — no password ever needed.
+      skipToSigning()
+      return
+    }
+
+    // Encrypted vault: only prompt when the SDK's password cache has actually
+    // expired (idle > TTL). While it's still cached, re-entering the password is
+    // redundant; skipping it also avoids the "Password required" cache-miss that
+    // occurs when signing after the app has sat idle. `phase` alone can't tell us
+    // this — only the SDK knows the live cache state.
+    setPhase('checking')
+    let cancelled = false
+    const vaultId = getActiveVaultId()
+    ;(async () => {
+      const stillUnlocked = vaultId ? await window.apiMpc.isVaultUnlocked(vaultId).catch(() => false) : false
+      if (cancelled) return
+      if (stillUnlocked) {
+        skipToSigning()
       } else {
         setPhase('password')
       }
+    })()
+    return () => {
+      cancelled = true
     }
   }, [visible]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -220,8 +245,8 @@ export const VultisigConfirmationModal = ({
   const [isCancelling, setIsCancelling] = useState(false)
 
   const handleCancel = useCallback(async () => {
-    if (phase === 'password' || phase === 'error') {
-      // Password phase or failed tx - nothing to abort, just close
+    if (phase === 'checking' || phase === 'password' || phase === 'error') {
+      // Cache check, password phase, or failed tx - nothing to abort, just close
       onCancel?.()
       onClose()
       return
@@ -264,6 +289,15 @@ export const VultisigConfirmationModal = ({
 
   // Render content based on phase
   const renderContent = () => {
+    if (phase === 'checking') {
+      // Brief state while we ask the SDK whether the password is still cached.
+      return (
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-turquoise border-t-transparent" />
+        </div>
+      )
+    }
+
     if (phase === 'password') {
       return (
         <div className="flex flex-col items-center gap-4">
@@ -357,7 +391,9 @@ export const VultisigConfirmationModal = ({
     // The handleCancel callback controls when closing is allowed
     <Dialog static as="div" className="relative z-10" open={visible} onClose={handleCancel}>
       <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
+      {/* `lg:pl-[240px]` offsets the sidebar so the panel centers within the
+          content area, matching `UnifiedTxModal` (the tx-tracking modal). */}
+      <div className="fixed inset-0 flex items-center justify-center p-4 lg:pl-[240px]">
         <DialogPanel
           className={clsx(
             'mx-auto flex flex-col items-center p-6',
