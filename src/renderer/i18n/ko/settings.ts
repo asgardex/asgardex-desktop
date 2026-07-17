@@ -38,6 +38,14 @@ const settings: SettingMessages = {
   'settings.wallet.hdpath.legacy.info': '레거시 파생 경로 {path}',
   'settings.wallet.hdpath.ledgerlive.info': 'Ledger Live 파생 경로 {path}',
   'settings.wallet.hdpath.metamask.info': 'Metamask 파생 경로 {path}',
+  'settings.wallet.hd.addAccount': 'Add account',
+  'settings.wallet.hd.standard': 'Address standard',
+  'settings.wallet.hd.standardHint': 'Only change this to match an address shown by another wallet',
+  'settings.wallet.hd.mode.standard': 'Standard',
+  'settings.wallet.hd.mode.legacy': 'Legacy',
+  'settings.wallet.hd.mode.metamask': 'MetaMask style',
+  'settings.wallet.hd.customPath': 'Custom path',
+  'settings.wallet.hd.customPath.invalid': 'Invalid derivation path',
   'settings.wallet.storeAddress.info':
     '신뢰할 수 있는 주소를 로컬 저장소에 저장하면 체인 하단이나 전송 화면에 나열됩니다',
 

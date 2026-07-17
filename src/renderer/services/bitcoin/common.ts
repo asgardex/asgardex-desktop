@@ -162,8 +162,8 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, BTCChain)
  * Ledger / Vultisig standalone modes (where `clientTR$` is unavailable), so no spurious
  * Taproot row appears for those wallet modes.
  */
-const addressTR$: C.WalletAddress$ = keystoreAddress$(clientTR$, BTCChain, 'p2tr')
-const addressUITR$: C.WalletAddress$ = keystoreAddressUI$(clientTR$, BTCChain, 'p2tr')
+const addressTR$: C.WalletAddress$ = keystoreAddress$(clientTR$, BTCChain, Rx.of({ hdMode: 'p2tr' }))
+const addressUITR$: C.WalletAddress$ = keystoreAddressUI$(clientTR$, BTCChain, Rx.of({ hdMode: 'p2tr' }))
 
 /**
  * Explorer url depending on selected network

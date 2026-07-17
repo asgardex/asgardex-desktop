@@ -16,6 +16,7 @@ import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from '../../../s
 import { DEFAULT_MIDGARD_MAYA_URLS } from '../../../shared/mayaMidgard/const'
 import { DEFAULT_MIDGARD_URLS } from '../../../shared/midgard/const'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
+import { KeystoreHDSettingsRecord } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import { StorageState, StoragePartialState } from './types'
 
@@ -133,6 +134,25 @@ const evmGasMultiplier$ = pipe(
   RxOp.distinctUntilChanged()
 )
 
+// Per-keystore, per-chain HD derivation selections. Absent → {} (each chain
+// falls back to the default 0/0/'default' at read time).
+const keystoreHDSettings$ = pipe(
+  getStorageState$,
+  RxOp.map(O.map(({ keystoreHDSettings }) => keystoreHDSettings ?? {})),
+  RxOp.map(O.getOrElse<KeystoreHDSettingsRecord>(() => ({}))),
+  RxOp.distinctUntilChanged(equal)
+)
+
+const getKeystoreHDSettings = (): KeystoreHDSettingsRecord =>
+  pipe(
+    getStorageState(),
+    O.chain((s) => O.fromNullable(s.keystoreHDSettings)),
+    O.getOrElse<KeystoreHDSettingsRecord>(() => ({}))
+  )
+
+const setKeystoreHDSettingsRecord = (keystoreHDSettings: KeystoreHDSettingsRecord) =>
+  modifyStorage(O.some({ keystoreHDSettings }))
+
 // Update function
 const modifyStorage = (oPartialData: StoragePartialState<CommonStorage>) => {
   pipe(
@@ -167,5 +187,8 @@ export {
   avaxRpc$,
   baseRpc$,
   lastOpenedWallet$,
-  evmGasMultiplier$
+  evmGasMultiplier$,
+  keystoreHDSettings$,
+  getKeystoreHDSettings,
+  setKeystoreHDSettingsRecord
 }

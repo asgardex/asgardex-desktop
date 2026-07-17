@@ -39,6 +39,14 @@ const settings: SettingMessages = {
   'settings.wallet.hdpath.legacy.info': 'Veralteter Derivation Pfad {path}',
   'settings.wallet.hdpath.ledgerlive.info': 'Ledger Live Derivation Pfad {path}',
   'settings.wallet.hdpath.metamask.info': 'Metamask Derivation Pfad {path}',
+  'settings.wallet.hd.addAccount': 'Add account',
+  'settings.wallet.hd.standard': 'Address standard',
+  'settings.wallet.hd.standardHint': 'Only change this to match an address shown by another wallet',
+  'settings.wallet.hd.mode.standard': 'Standard',
+  'settings.wallet.hd.mode.legacy': 'Legacy',
+  'settings.wallet.hd.mode.metamask': 'MetaMask style',
+  'settings.wallet.hd.customPath': 'Custom path',
+  'settings.wallet.hd.customPath.invalid': 'Invalid derivation path',
   'settings.wallet.storeAddress.info':
     'Speichern Sie Ihre vertrauenswürdigen Adressen im lokalen Speicher, sie werden unter der Kette oder in der Sendeansicht aufgelistet',
   'settings.thornode.node.error.unhealthy':

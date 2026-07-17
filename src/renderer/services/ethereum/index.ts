@@ -7,6 +7,7 @@ import { isEthAsset, addressInERC20Whitelist } from '../../helpers/assetHelper'
 import { network$ } from '../app/service'
 import { createEvmChainService } from '../evm/factory'
 import { ethRpc$, evmGasMultiplier$ } from '../storage/common'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 
 const {
   client$,
@@ -30,6 +31,7 @@ const {
   createClientParams: createEthParams,
   ClientClass: Client,
   rpc$: ethRpc$,
+  hdSettings$: keystoreChainHDSettings$(ETHChain),
   apiKey: etherscanApiKey,
   addressInWhitelist: addressInERC20Whitelist,
   assetsFallback: ETHAssetsFallBack,

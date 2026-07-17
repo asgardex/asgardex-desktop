@@ -10,7 +10,7 @@ import { THORCHAIN_DECIMAL } from '../../renderer/helpers/assetHelper'
 import { EvmHDMode } from '../evm/types'
 import { Locale } from '../i18n/types'
 import { EnabledChain } from '../utils/chain'
-import { HDMode, WalletAddress, WalletType } from '../wallet/types'
+import { HDMode, KeystoreHDSettingsRecord, WalletAddress, WalletType } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 
 export type Dex = {
@@ -77,6 +77,9 @@ export type CommonStorage = Readonly<
     // Last opened wallet (keystore or vultisig)
     lastOpenedWallet?: LastOpenedWallet
     evmGasMultiplier: GasMultiplier
+    // Per-keystore, per-chain HD derivation selections (account/index/hdMode/customPath).
+    // Optional: absent → {} → each chain falls back to the default 0/0/'default'.
+    keystoreHDSettings?: KeystoreHDSettingsRecord
   } & StorageVersion
 >
 

@@ -3,6 +3,7 @@ import { Address, AnyAsset, Chain } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 
 import { ApiUrls } from '../../../../shared/api/types'
+import { KeystoreChainHDSettings } from '../../../../shared/wallet/types'
 import { Network$ } from '../../app/types'
 import { WalletBalance } from '../../wallet/types'
 import { Client$, TxParams } from '../types'
@@ -21,6 +22,7 @@ export type EvmChainConfig = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ClientClass: new (params: any) => any
   rpc$: Rx.Observable<ApiUrls>
+  hdSettings$?: Rx.Observable<KeystoreChainHDSettings>
   apiKey?: string
   addressInWhitelist: (addr: Address) => boolean
   assetsFallback: AnyAsset[]
