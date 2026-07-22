@@ -7601,7 +7601,7 @@ __metadata:
     tailwindcss: "npm:^4.3.1"
     ts-node: "npm:10.9.2"
     typescript: "npm:5.8.3"
-    uuid: "npm:^8.3.2"
+    uuid: "npm:^14.0.1"
     vite: "npm:^6.3.5"
     vite-plugin-svgr: "npm:^5.2.0"
     vite-plugin-wasm: "npm:^3.6.0"
@@ -16911,6 +16911,15 @@ __metadata:
   bin:
     uuid: dist-node/bin/uuid
   checksum: 10/2742b24d1e00257e60612572e4d28679423469998cafbaf1fe9f1482e3edf9c40754b31bfdb3d08d71b29239f227a304588f75210b3b48f2609f0673f1feccef
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^14.0.1":
+  version: 14.0.1
+  resolution: "uuid@npm:14.0.1"
+  bin:
+    uuid: dist-node/bin/uuid
+  checksum: 10/0f978fd5b0269d7acb615342aeb131f0b8d85eeb8ec34f2915d906baa3befcc14a079a430d0f8116aec6fd20c850cbfab65d1b3d1643fa81ed373c0cf9574f18
   languageName: node
   linkType: hard
 

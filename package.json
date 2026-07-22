@@ -140,7 +140,7 @@
     "react-router-dom": "^6.6.1",
     "redux-logger": "^3.0.6",
     "rxjs": "^7.8.2",
-    "uuid": "^8.3.2"
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "@electron/notarize": "^2.5.0",
