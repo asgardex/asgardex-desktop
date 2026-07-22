@@ -20,8 +20,8 @@ import {
   ASGARDEX_ONECLICK_API_KEY
 } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
-import { logger } from '../../helpers/logger'
 import { liquifyAggregatorConfig } from '../../helpers/liquifyEndpoints'
+import { logger } from '../../helpers/logger'
 import { getProtocolFromStorage, setValueToStorage, StorageKey } from '../../helpers/storage'
 import { getCurrentNetworkState } from '../../services/app/service'
 import { State } from './types'
