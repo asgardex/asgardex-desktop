@@ -22,6 +22,7 @@ import {
   ASGARDEX_ONECLICK_API_KEY
 } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
+import { liquifyAggregatorConfig } from '../../helpers/liquifyEndpoints'
 import { logger } from '../../helpers/logger'
 
 export const getEstimate = createAsyncThunk(
@@ -104,6 +105,7 @@ export const getEstimate = createAsyncThunk(
         wallet,
         network,
         affiliateBrokers,
+        ...liquifyAggregatorConfig(network),
         ...(brokerUrl && { brokerUrl }), // Only include brokerUrl if it's non-empty
         ...(ASGARDEX_ONECLICK_API_KEY && { oneClickApiKey: ASGARDEX_ONECLICK_API_KEY })
       }
