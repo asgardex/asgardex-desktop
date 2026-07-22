@@ -20,6 +20,7 @@ import {
   ASGARDEX_ONECLICK_API_KEY
 } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
+import { liquifyAggregatorConfig } from '../../helpers/liquifyEndpoints'
 import { logger } from '../../helpers/logger'
 import { getProtocolFromStorage, setValueToStorage, StorageKey } from '../../helpers/storage'
 import { getCurrentNetworkState } from '../../services/app/service'
@@ -87,6 +88,7 @@ const initialState: State = {
     network: getCurrentNetworkState(),
     brokerUrl: getBrokerUrl(),
     affiliateBrokers: getAffiliateBrokers(),
+    ...liquifyAggregatorConfig(getCurrentNetworkState()),
     ...(ASGARDEX_ONECLICK_API_KEY && { oneClickApiKey: ASGARDEX_ONECLICK_API_KEY })
   }),
   quoteSwap: null
