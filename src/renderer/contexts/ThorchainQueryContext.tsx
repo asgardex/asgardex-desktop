@@ -4,7 +4,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { ThorchainCache, ThorchainQuery, Thornode } from '@xchainjs/xchain-thorchain-query'
 
 import { LIQUIFY_THORNODE_URLS } from '../helpers/liquifyEndpoints'
-import { clientNetwork$ } from '../services/app/service'
+import { clientNetwork$, getCurrentNetworkState } from '../services/app/service'
 
 // Prefer the Liquify gateway over the public THORNode for mainnet quotes — the
 // xchainjs default lists `thornode.thorchain.network` first and only falls back
@@ -27,7 +27,7 @@ const ThorchainQueryContext = createContext<ThorchainQueryContextValue | null>(n
 // Provider component
 export const ThorchainQueryProvider = ({ children }: { children: React.ReactNode }) => {
   const [thorchainQuery, setThorchainQuery] = useState<ThorchainQuery>(
-    () => new ThorchainQuery(new ThorchainCache(createThornode(Network.Mainnet)))
+    () => new ThorchainQuery(new ThorchainCache(createThornode(getCurrentNetworkState())))
   )
 
   useEffect(() => {
