@@ -9,5 +9,6 @@ export const chainToProtocol = {
 export const protocolMapping = {
   Thorchain: 'THORChain',
   Mayachain: 'MAYAChain',
-  Chainflip: 'Chainflip'
+  Chainflip: 'Chainflip',
+  OneClick: 'NEAR Intents'
 }
