@@ -29,6 +29,7 @@ import { useEvmContext } from '../../../contexts/EvmContext'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
+import { useOneClickContext } from '../../../contexts/OneClickContext'
 import { usePriceLevelContext } from '../../../contexts/PriceLevelContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -36,6 +37,7 @@ import { isUSDAsset } from '../../../helpers/assetHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../../helpers/chainflipTransactionTracker'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
+import { addOneClickSwapToTrackerFromQuote } from '../../../helpers/oneClickTransactionTracker'
 import { addSwapToTracker } from '../../../helpers/transactionTracker'
 import { useERC20Approval } from '../../../hooks/useERC20Approval'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
@@ -93,6 +95,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   const { transactionTrackingService } = useThorchainContext()
   const { transactionTrackingService: mayaTransactionTrackingService } = useMayachainContext()
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
+  const { transactionTrackingService: oneClickTransactionTrackingService } = useOneClickContext()
 
   const {
     service: {
@@ -672,6 +675,16 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
             depositAmount: amountToSwap.amount().toString()
           })
           lastTrackedTxHashRef.current = txHash
+        } else if (quoteProtocol.protocol === 'OneClick') {
+          // 1Click (NEAR Intents) keys swap status by deposit address (`toAddress` in the quote),
+          // not the on-chain tx hash. Mirrors the main Swap screen; the global TransactionQuickDial
+          // (AppView) polls GET /v0/status?depositAddress=… and renders it.
+          addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, quoteProtocol.toAddress, {
+            srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },
+            destAsset: { chain: safeTargetAsset.chain, symbol: safeTargetAsset.symbol },
+            depositAmount: amountToSwap.amount().toString()
+          })
+          lastTrackedTxHashRef.current = txHash
         }
       })
     )
@@ -681,6 +694,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     transactionTrackingService,
     mayaTransactionTrackingService,
     chainflipTransactionTrackingService,
+    oneClickTransactionTrackingService,
     safeSourceAsset,
     safeTargetAsset,
     amountToSwap,
