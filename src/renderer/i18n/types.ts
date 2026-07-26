@@ -732,6 +732,7 @@ type SettingMessageKey =
   | 'settings.expert.mayachain.title'
   | 'settings.expert.midgardMaya.title'
   | 'settings.expert.mayanodeApi.title'
+  | 'settings.expert.mayanodeRpc.title'
   | 'settings.expert.evm.title'
   | 'settings.expert.evm.eth.title'
   | 'settings.expert.evm.bsc.title'
@@ -746,6 +747,13 @@ type SettingMessageKey =
   | 'settings.ledgerMode.lockWalletWarning'
   | 'settings.wallet.whitelist'
   | 'settings.wallet.customToken'
+  | 'settings.provider.label'
+  | 'settings.provider.custom'
+  | 'settings.provider.custom.description'
+  | 'settings.provider.badge.recommended'
+  | 'settings.provider.badge.backup'
+  | 'settings.provider.badge.manual'
+  | 'settings.provider.hint'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 

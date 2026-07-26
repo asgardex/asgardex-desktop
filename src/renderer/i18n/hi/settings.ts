@@ -68,6 +68,7 @@ const settings: SettingMessages = {
   'settings.expert.mayachain.title': 'Mayachain URL',
   'settings.expert.midgardMaya.title': 'Midgard Mayachain',
   'settings.expert.mayanodeApi.title': 'MayaNode API',
+  'settings.expert.mayanodeRpc.title': 'MayaNode RPC',
   'settings.expert.evm.title': 'EVM चेन RPC URLs',
   'settings.expert.evm.eth.title': 'Ethereum RPC',
   'settings.expert.evm.bsc.title': 'BSC RPC',
@@ -81,7 +82,15 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'RPC एंडपॉइंट प्रतिक्रिया नहीं दे रहा है। अपना कनेक्शन जांचें या कोई अलग URL आज़माएं।',
   'settings.ledgerMode.lockWalletWarning': 'Ledger मोड में प्रवेश करने के लिए पहले वॉलेट लॉक करें',
   'settings.wallet.whitelist': 'व्हाइटलिस्ट',
-  'settings.wallet.customToken': 'कस्टम टोकन'
+  'settings.wallet.customToken': 'कस्टम टोकन',
+  'settings.provider.label': 'प्रदाता',
+  'settings.provider.custom': 'कस्टम',
+  'settings.provider.custom.description': 'अपनी स्वयं की एंडपॉइंट URL दर्ज करें',
+  'settings.provider.badge.recommended': 'अनुशंसित',
+  'settings.provider.badge.backup': 'बैकअप',
+  'settings.provider.badge.manual': 'मैनुअल',
+  'settings.provider.hint':
+    'URL का प्रबंधन चयनित प्रदाता द्वारा किया जाता है। व्यक्तिगत रूप से संपादित करने के लिए कस्टम पर स्विच करें।'
 }
 
 export default settings

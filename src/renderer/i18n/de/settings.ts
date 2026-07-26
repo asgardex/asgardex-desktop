@@ -71,6 +71,7 @@ const settings: SettingMessages = {
   'settings.expert.mayachain.title': 'Mayachain-URLs',
   'settings.expert.midgardMaya.title': 'Midgard Mayachain',
   'settings.expert.mayanodeApi.title': 'MayaNode-API',
+  'settings.expert.mayanodeRpc.title': 'MayaNode-RPC',
   'settings.expert.evm.title': 'EVM-Ketten RPC-URLs',
   'settings.expert.evm.eth.title': 'Ethereum RPC',
   'settings.expert.evm.bsc.title': 'BSC RPC',
@@ -85,7 +86,15 @@ const settings: SettingMessages = {
     'RPC-Endpunkt antwortet nicht. Überprüfe deine Verbindung oder versuche eine andere URL.',
   'settings.ledgerMode.lockWalletWarning': 'Wallet zuerst sperren, um in den Ledger-Modus zu wechseln',
   'settings.wallet.whitelist': 'Whitelist',
-  'settings.wallet.customToken': 'Benutzerdefinierter Token'
+  'settings.wallet.customToken': 'Benutzerdefinierter Token',
+  'settings.provider.label': 'Anbieter',
+  'settings.provider.custom': 'Benutzerdefiniert',
+  'settings.provider.custom.description': 'Eigene Endpunkt-URLs eingeben',
+  'settings.provider.badge.recommended': 'Empfohlen',
+  'settings.provider.badge.backup': 'Backup',
+  'settings.provider.badge.manual': 'Manuell',
+  'settings.provider.hint':
+    'URLs werden vom ausgewählten Anbieter verwaltet. Wechsle zu "Benutzerdefiniert", um sie einzeln zu bearbeiten.'
 }
 
 export default settings

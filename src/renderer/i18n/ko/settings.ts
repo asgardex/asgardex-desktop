@@ -69,6 +69,7 @@ const settings: SettingMessages = {
   'settings.expert.mayachain.title': 'Mayachain URL',
   'settings.expert.midgardMaya.title': 'Midgard Mayachain',
   'settings.expert.mayanodeApi.title': 'MayaNode API',
+  'settings.expert.mayanodeRpc.title': 'MayaNode RPC',
   'settings.expert.evm.title': 'EVM 체인 RPC URL',
   'settings.expert.evm.eth.title': 'Ethereum RPC',
   'settings.expert.evm.bsc.title': 'BSC RPC',
@@ -82,7 +83,14 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'RPC 엔드포인트가 응답하지 않습니다. 연결을 확인하거나 다른 URL을 시도하세요.',
   'settings.ledgerMode.lockWalletWarning': 'Ledger 모드로 진입하려면 먼저 지갑을 잠금하세요',
   'settings.wallet.whitelist': '화이트리스트',
-  'settings.wallet.customToken': '사용자 정의 토큰'
+  'settings.wallet.customToken': '사용자 정의 토큰',
+  'settings.provider.label': '제공자',
+  'settings.provider.custom': '사용자 정의',
+  'settings.provider.custom.description': '직접 엔드포인트 URL을 입력하세요',
+  'settings.provider.badge.recommended': '권장',
+  'settings.provider.badge.backup': '백업',
+  'settings.provider.badge.manual': '수동',
+  'settings.provider.hint': 'URL은 선택한 제공자가 관리합니다. 개별적으로 편집하려면 사용자 정의로 전환하세요.'
 }
 
 export default settings
