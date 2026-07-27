@@ -54,9 +54,12 @@ export const createVultisigEvmTx = (
       return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'No active Vultisig vault' }))
     }
 
-    // Native gas tokens get no id; ERC20 tokens get their contract address (with 0x prefix for SDK/viem)
+    // Native gas tokens get no id; ERC20 tokens get their contract address (with 0x prefix for SDK/viem).
+    // getContractAddressFromAsset returns the address in THORChain asset notation (UPPERCASE); SDK 2.x
+    // runs a viem balanceOf preflight in prepareSendTx that rejects a non-EIP-55 address ("must match
+    // its checksum counterpart"). Normalize via getAddress so viem accepts it. (0.22.5 had no preflight.)
     const id = isEVMTokenAsset(asset as TokenAsset)
-      ? `0x${getContractAddressFromAsset(asset as TokenAsset)}`
+      ? getAddress(`0x${getContractAddressFromAsset(asset as TokenAsset)}`)
       : undefined
 
     const txParams: SendTransactionParams = {
