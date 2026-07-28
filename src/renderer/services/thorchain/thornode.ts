@@ -306,7 +306,9 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
 
-  const loadThorchainLastblockInterval$ = Rx.timer(0 /* no delay for first value */, 15 * 1000 /* every 15 sec  */)
+  // 60s is enough for mimir halt height checks / pool maturity UI; cuts Liquify lastblock
+  // traffic 4× vs 15s. Scheduled halt detection can lag by ~1 min at most (rare).
+  const loadThorchainLastblockInterval$ = Rx.timer(0 /* no delay for first value */, 60 * 1000 /* every 60 sec  */)
 
   /**
    * State of `ThorchainLastblock`, it will be loaded data by first subscription only
