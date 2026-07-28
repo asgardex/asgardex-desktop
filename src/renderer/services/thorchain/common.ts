@@ -6,7 +6,13 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ApiUrls } from '../../../shared/api/types'
-import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
+import {
+  DEFAULT_THORNODE_API_URLS,
+  DEFAULT_THORNODE_RPC_URLS,
+  isLiquifyAuthenticatedRpcUrl,
+  maskThornodeRpcUrl,
+  resolveThornodeRpcUrl
+} from '../../../shared/thorchain/const'
 import { isError } from '../../../shared/utils/guard'
 import { triggerStream } from '../../helpers/stateHelper'
 import { clientNetwork$ } from '../app/service'
@@ -20,22 +26,42 @@ import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
 
 /**
- * Stream of ClientUrl (from storage)
+ * Stream of ClientUrl (from storage) for UI / config display.
+ * RPC values are masked so Liquify portal keys (`/api=<KEY>`) never appear in Expert Mode.
+ * The authenticated URL is applied only when constructing xchain Clients.
  */
 const clientUrl$: ClientUrl$ = FP.pipe(
   Rx.combineLatest([thornodeApi$, thornodeRpc$, reloadClientUrl$]),
+  // Scrub any portal `/api=<KEY>` URLs previously saved into storage
+  RxOp.tap(([, thornodeRpc]) => {
+    if (
+      isLiquifyAuthenticatedRpcUrl(thornodeRpc.mainnet) ||
+      isLiquifyAuthenticatedRpcUrl(thornodeRpc.stagenet) ||
+      isLiquifyAuthenticatedRpcUrl(thornodeRpc.testnet)
+    ) {
+      modifyStorage(
+        O.some({
+          thornodeRpc: {
+            mainnet: maskThornodeRpcUrl(thornodeRpc.mainnet),
+            stagenet: maskThornodeRpcUrl(thornodeRpc.stagenet),
+            testnet: maskThornodeRpcUrl(thornodeRpc.testnet)
+          }
+        })
+      )
+    }
+  }),
   RxOp.map(([thornodeApi, thornodeRpc, _]) => ({
     [ClientNetwork.Testnet]: {
       node: thornodeApi.testnet,
-      rpc: thornodeRpc.testnet
+      rpc: maskThornodeRpcUrl(thornodeRpc.testnet)
     },
     [ClientNetwork.Stagenet]: {
       node: thornodeApi.stagenet,
-      rpc: thornodeRpc.stagenet
+      rpc: maskThornodeRpcUrl(thornodeRpc.stagenet)
     },
     [ClientNetwork.Mainnet]: {
       node: thornodeApi.mainnet,
-      rpc: thornodeRpc.mainnet
+      rpc: maskThornodeRpcUrl(thornodeRpc.mainnet)
     }
   })),
   RxOp.distinctUntilChanged()
@@ -47,7 +73,8 @@ const setThornodeRpcUrl = (url: string, network: Network) => {
     O.map(({ thornodeRpc }) => thornodeRpc),
     O.getOrElse(() => DEFAULT_THORNODE_RPC_URLS)
   )
-  const updated: ApiUrls = { ...current, [network]: url }
+  // Never persist Liquify `/api=<KEY>` URLs
+  const updated: ApiUrls = { ...current, [network]: maskThornodeRpcUrl(url) }
   modifyStorage(O.some({ thornodeRpc: updated }))
 }
 
@@ -80,11 +107,12 @@ const clientState$: ClientState$ = FP.pipe(
             FP.pipe(
               getPhrase(keystore),
               O.map<string, ClientState>((phrase) => {
+                // Inject authenticated Liquify RPC here only — not in clientUrl$ / Expert UI
                 const getDefaultClientUrls = (): Record<Network, string[]> => {
                   return {
-                    [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
-                    [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
-                    [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+                    [Network.Testnet]: [resolveThornodeRpcUrl(clientUrl[Network.Testnet].rpc)],
+                    [Network.Stagenet]: [resolveThornodeRpcUrl(clientUrl[Network.Stagenet].rpc)],
+                    [Network.Mainnet]: [resolveThornodeRpcUrl(clientUrl[Network.Mainnet].rpc)]
                   }
                 }
                 try {
@@ -125,9 +153,9 @@ const readOnlyClientState$: ClientState$ = FP.pipe(
             (() => {
               const getDefaultClientUrls = (): Record<Network, string[]> => {
                 return {
-                  [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
-                  [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
-                  [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+                  [Network.Testnet]: [resolveThornodeRpcUrl(clientUrl[Network.Testnet].rpc)],
+                  [Network.Stagenet]: [resolveThornodeRpcUrl(clientUrl[Network.Stagenet].rpc)],
+                  [Network.Mainnet]: [resolveThornodeRpcUrl(clientUrl[Network.Mainnet].rpc)]
                 }
               }
               try {
