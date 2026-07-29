@@ -1,5 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 
+import { THORNODE_API_BASE_URLS } from '../../shared/thorchain/const'
+
 // Prefer the Liquify gateway over the public THORChain / MAYAChain endpoints.
 //
 // The xchainjs defaults list the public nodes (thornode.thorchain.network,
@@ -7,14 +9,12 @@ import { Network } from '@xchainjs/xchain-client'
 // FIRST and only fall back to Liquify. When the public nodes are slow or down —
 // as they regularly are — every request storms the dead host first (a wall of
 // console errors), and the methods that don't fail over (e.g. getQueue) break
-// outright. Making Liquify primary avoids that while keeping the public nodes as
-// a fallback.
+// outright. Making Liquify primary avoids that while keeping a healthy fallback.
 //
 // Mainnet only: stagenet/testnet keep the xchainjs network defaults.
-export const LIQUIFY_THORNODE_URLS = [
-  'https://gateway.liquify.com/chain/thorchain_api',
-  'https://thornode.thorchain.network'
-]
+// THORNode: Liquify → Asgardex-hosted node (replaces dead thornode.thorchain.network).
+export const LIQUIFY_THORNODE_URLS = THORNODE_API_BASE_URLS
+
 const LIQUIFY_MIDGARD_URLS = [
   'https://gateway.liquify.com/chain/thorchain_midgard',
   'https://midgard.thorchain.network'

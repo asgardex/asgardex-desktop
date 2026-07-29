@@ -9,9 +9,9 @@ import { ApiUrls } from '../../../shared/api/types'
 import {
   DEFAULT_THORNODE_API_URLS,
   DEFAULT_THORNODE_RPC_URLS,
+  getThornodeRpcClientUrls,
   isLiquifyAuthenticatedRpcUrl,
-  maskThornodeRpcUrl,
-  resolveThornodeRpcUrl
+  maskThornodeRpcUrl
 } from '../../../shared/thorchain/const'
 import { isError } from '../../../shared/utils/guard'
 import { triggerStream } from '../../helpers/stateHelper'
@@ -107,12 +107,12 @@ const clientState$: ClientState$ = FP.pipe(
             FP.pipe(
               getPhrase(keystore),
               O.map<string, ClientState>((phrase) => {
-                // Inject authenticated Liquify RPC here only — not in clientUrl$ / Expert UI
+                // Primary RPC (+ Liquify key if set) then Asgardex mainnet fallback — not shown in Expert UI
                 const getDefaultClientUrls = (): Record<Network, string[]> => {
                   return {
-                    [Network.Testnet]: [resolveThornodeRpcUrl(clientUrl[Network.Testnet].rpc)],
-                    [Network.Stagenet]: [resolveThornodeRpcUrl(clientUrl[Network.Stagenet].rpc)],
-                    [Network.Mainnet]: [resolveThornodeRpcUrl(clientUrl[Network.Mainnet].rpc)]
+                    [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
+                    [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
+                    [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
                   }
                 }
                 try {
@@ -153,9 +153,9 @@ const readOnlyClientState$: ClientState$ = FP.pipe(
             (() => {
               const getDefaultClientUrls = (): Record<Network, string[]> => {
                 return {
-                  [Network.Testnet]: [resolveThornodeRpcUrl(clientUrl[Network.Testnet].rpc)],
-                  [Network.Stagenet]: [resolveThornodeRpcUrl(clientUrl[Network.Stagenet].rpc)],
-                  [Network.Mainnet]: [resolveThornodeRpcUrl(clientUrl[Network.Mainnet].rpc)]
+                  [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
+                  [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
+                  [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
                 }
               }
               try {
