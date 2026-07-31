@@ -65,6 +65,7 @@ jobs:
           VITE_NOWNODES_API_KEY: ${{ secrets.REACT_APP_NOWNODES_API_KEY }}
           VITE_ASGARDEX_BROKER_URL: ${{secrets.VITE_ASGARDEX_BROKER_URL}}
           VITE_ASGARDEX_AFFILIATE_BROKERS_ADDRESS: ${{secrets.VITE_ASGARDEX_AFFILIATE_BROKERS_ADDRESS}}
+          VITE_ASGARDEX_ONECLICK_AFFILIATES: ${{ secrets.VITE_ASGARDEX_ONECLICK_AFFILIATES }}
           OS_NAME: ${{ matrix.os-name }}
           OS_VERSION: ${{ matrix.os-version }}
           OS_VERSION_SUFFIX: '${{ matrix.os-version }}-${{ matrix.os-name }}'
