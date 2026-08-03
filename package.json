@@ -62,7 +62,6 @@
     "avax",
     "mayachain",
     "dash",
-    "kujira",
     "arb"
   ],
   "workspaces": [
@@ -96,7 +95,6 @@
     "@xchainjs/xchain-ethereum": "2.0.21",
     "@xchainjs/xchain-evm": "2.0.20",
     "@xchainjs/xchain-evm-providers": "2.0.19",
-    "@xchainjs/xchain-kujira": "2.0.16",
     "@xchainjs/xchain-litecoin": "2.4.0",
     "@xchainjs/xchain-mayachain": "4.1.7",
     "@xchainjs/xchain-mayachain-query": "2.2.2",

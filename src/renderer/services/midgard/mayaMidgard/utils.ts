@@ -10,7 +10,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASH_DECIMAL, DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
@@ -35,7 +34,7 @@ import {
 import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
-import { AssetBTC, AssetETH, AssetKUJI, AssetDASH, AssetAETH, AssetZEC } from '../../../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetDASH, AssetAETH, AssetZEC } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
@@ -44,7 +43,6 @@ import { ordPricePool } from '../../../helpers/fp/ord'
 import { getDeepestPool, MAYA_POOL_ADDRESS, MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { AssetWithAmount } from '../../../types/asgardex'
 import { PricePoolAssets, PricePoolAsset } from '../../../views/pools/Pools.types'
-import { KUJI_DECIMAL } from '../../kuji/const'
 import { InboundAddress } from '../../mayachain/types'
 import {
   PoolAssetDetails as PoolAssetsDetail,
@@ -298,11 +296,6 @@ export const getOutboundAssetFeeByChain = (
           return O.some({
             amount: baseAmount(value, THORCHAIN_DECIMAL),
             asset: AssetRuneNative
-          })
-        case KUJIChain:
-          return O.some({
-            amount: baseAmount(value, KUJI_DECIMAL),
-            asset: AssetKUJI
           })
         case ADAChain:
           return O.some({

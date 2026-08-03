@@ -9,7 +9,7 @@ import { AssetATOM } from '@xchainjs/xchain-cosmos'
 import { AssetDASH } from '@xchainjs/xchain-dash'
 import { AssetDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
-import { AssetKUJI, AssetUSK } from '@xchainjs/xchain-kujira'
+
 import { AssetLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
 import { AssetXRD } from '@xchainjs/xchain-radix'
@@ -38,13 +38,11 @@ export {
   AssetAVAX,
   AssetETH,
   AssetRuneNative,
-  AssetKUJI,
   AssetBETH,
   ADAAsset,
   AssetAETH,
   AssetXRD,
   SOLAsset,
-  AssetUSK,
   AssetTRX,
   AssetZEC
 }

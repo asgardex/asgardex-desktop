@@ -11,7 +11,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -40,7 +39,6 @@ import * as COSMOS from '../../cosmos'
 import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
-import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import * as XRD from '../../radix'
@@ -152,8 +150,6 @@ export const sendTx$ = ({
       return THOR.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case MAYAChain:
       return MAYA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
-    case KUJIChain:
-      return KUJI.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case ADAChain:
       return ADA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode, sendMax })
     case RadixChain:
@@ -455,7 +451,6 @@ export const sendPoolTx$ = ({
     case DASHChain:
     case ZECChain:
     case GAIAChain:
-    case KUJIChain:
     case ADAChain:
     case XRPChain:
     case SOLChain:
@@ -515,8 +510,6 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
       return LTC.txStatus$(txHash, O.none)
     case DASHChain:
       return DASH.txStatus$(txHash, O.none)
-    case KUJIChain:
-      return KUJI.txStatus$(txHash, O.none)
     case ADAChain:
       return ADA.txStatus$(txHash, O.none)
     case RadixChain:

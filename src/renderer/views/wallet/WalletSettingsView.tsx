@@ -13,7 +13,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -46,7 +45,6 @@ import { useCosmosContext } from '../../contexts/CosmosContext'
 import { useDashContext } from '../../contexts/DashContext'
 import { useDogeContext } from '../../contexts/DogeContext'
 import { useEthereumContext } from '../../contexts/EthereumContext'
-import { useKujiContext } from '../../contexts/KujiContext'
 import { useLitecoinContext } from '../../contexts/LitecoinContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useSolContext } from '../../contexts/SolContext'
@@ -72,7 +70,6 @@ import {
   isBscChain,
   isMayaChain,
   isDashChain,
-  isKujiChain,
   isXrdChain,
   isSolChain,
   isTronChain,
@@ -119,7 +116,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const { addressUI$: cosmosAddressUI$ } = useCosmosContext()
   const { addressUI$: mayaAddressUI$ } = useMayachainContext()
   const { addressUI$: dashAddressUI$ } = useDashContext()
-  const { addressUI$: kujiAddressUI$ } = useKujiContext()
   const { addressUI$: adaAddressUI$ } = useAdaContext()
   const { addressUI$: xrdAddressUI$ } = useXrdContext()
   const { addressUI$: solAddressUI$ } = useSolContext()
@@ -170,12 +166,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     removeAddress: removeLedgerDashAddress
   } = useLedger(DASHChain, keystoreId)
 
-  const {
-    addAddress: addLedgerKujiAddress,
-    verifyAddress: verifyLedgerKujiAddress,
-    address: oKujiLedgerWalletAddress,
-    removeAddress: removeLedgerKujiAddress
-  } = useLedger(KUJIChain, keystoreId)
   const {
     addAddress: addLedgerAdaAddress,
     verifyAddress: verifyLedgerAdaAddress,
@@ -303,7 +293,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     if (isCosmosChain(chain)) return addLedgerCosmosAddress(walletAccount, walletIndex, hdMode)
     if (isMayaChain(chain)) return addLedgerMayaAddress(walletAccount, walletIndex, hdMode)
     if (isDashChain(chain)) return addLedgerDashAddress(walletAccount, walletIndex, hdMode)
-    if (isKujiChain(chain)) return addLedgerKujiAddress(walletAccount, walletIndex, hdMode)
     if (isAdaChain(chain)) return addLedgerAdaAddress(walletAccount, walletIndex, hdMode)
     if (isXrdChain(chain)) return addLedgerXrdAddress(walletAccount, walletIndex, hdMode)
     if (isZecChain(chain)) return addLedgerZecAddress(walletAccount, walletIndex, hdMode)
@@ -345,7 +334,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     if (isCosmosChain(chain)) return verifyLedgerCosmosAddress(walletAccount, walletIndex, hdMode)
     if (isMayaChain(chain)) return verifyLedgerMayaAddress(walletAccount, walletIndex, hdMode)
     if (isDashChain(chain)) return verifyLedgerDashAddress(walletAccount, walletIndex, hdMode)
-    if (isKujiChain(chain)) return verifyLedgerKujiAddress(walletAccount, walletIndex, hdMode)
     if (isAdaChain(chain)) return verifyLedgerAdaAddress(walletAccount, walletIndex, hdMode)
     if (isXrdChain(chain)) return verifyLedgerXrdAddress(walletAccount, walletIndex, hdMode)
     if (isZecChain(chain)) return verifyLedgerZecAddress(walletAccount, walletIndex, hdMode)
@@ -369,7 +357,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     if (isCosmosChain(chain)) return removeLedgerCosmosAddress()
     if (isMayaChain(chain)) return removeLedgerMayaAddress()
     if (isDashChain(chain)) return removeLedgerDashAddress()
-    if (isKujiChain(chain)) return removeLedgerKujiAddress()
     if (isAdaChain(chain)) return removeLedgerAdaAddress()
     if (isXrdChain(chain)) return removeLedgerXrdAddress()
     if (isZecChain(chain)) return removeLedgerZecAddress()
@@ -395,7 +382,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const oCosmosClient = useObservableState(clientByChain$(GAIAChain), O.none)
   const oMayaClient = useObservableState(clientByChain$(MAYAChain), O.none)
   const oDashClient = useObservableState(clientByChain$(DASHChain), O.none)
-  const oKujiClient = useObservableState(clientByChain$(KUJIChain), O.none)
   const oAdaClient = useObservableState(clientByChain$(ADAChain), O.none)
   const oXrdClient = useObservableState(clientByChain$(RadixChain), O.none)
   const oSolClient = useObservableState(clientByChain$(SOLChain), O.none)
@@ -453,9 +439,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
         break
       case DASHChain:
         FP.pipe(oDashClient, O.map(openExplorerAddressUrl))
-        break
-      case KUJIChain:
-        FP.pipe(oKujiClient, O.map(openExplorerAddressUrl))
         break
       case ADAChain:
         FP.pipe(oAdaClient, O.map(openExplorerAddressUrl))
@@ -565,11 +548,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
       ledgerAddress: oDashLedgerWalletAddress,
       chain: DASHChain
     })
-    const kujiWalletAccount$ = walletAccount$({
-      addressUI$: kujiAddressUI$,
-      ledgerAddress: oKujiLedgerWalletAddress,
-      chain: KUJIChain
-    })
     const adaWalletAccount$ = walletAccount$({
       addressUI$: adaAddressUI$,
       ledgerAddress: oAdaLedgerWalletAddress,
@@ -611,7 +589,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
           GAIA: [cosmosWalletAccount$],
           MAYA: [mayaWalletAccount$],
           DASH: [dashWalletAccount$],
-          KUJI: [kujiWalletAccount$],
           ADA: [adaWalletAccount$],
           XRD: [xrdWalletAccount$],
           SOL: [solWalletAccount$],
@@ -658,8 +635,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     oMayaLedgerWalletAddress,
     dashAddressUI$,
     oDashLedgerWalletAddress,
-    kujiAddressUI$,
-    oKujiLedgerWalletAddress,
     adaAddressUI$,
     oAdaLedgerWalletAddress,
     xrdAddressUI$,

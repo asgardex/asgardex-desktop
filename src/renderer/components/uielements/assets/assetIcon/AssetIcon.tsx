@@ -35,10 +35,8 @@ import {
   isRujiAsset,
   isMayaAsset,
   isDashAsset,
-  isKujiAsset,
   isXrdAsset,
   isZecAsset,
-  isUskAsset,
   iconUrlInARBERC20Whitelist,
   isAethAsset,
   isSolAsset,
@@ -78,9 +76,7 @@ import {
   cacaoIcon,
   usdpIcon,
   dashIcon,
-  kujiIcon,
   adaIcon,
-  uskIcon,
   xrdIcon,
   solIcon,
   baseIcon,
@@ -195,10 +191,6 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
       return dogeIcon
     }
 
-    // KUJI
-    if (isKujiAsset(asset)) {
-      return kujiIcon
-    }
     // ADA
     if (isAdaAsset(asset)) {
       return adaIcon
@@ -210,10 +202,6 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     // Sol
     if (isSolAsset(asset)) {
       return solIcon
-    }
-    // USK
-    if (isUskAsset(asset)) {
-      return uskIcon
     }
 
     // Atom

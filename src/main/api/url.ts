@@ -47,7 +47,7 @@ const EXTERNALS_WHITELIST = [
   'explorer.mayachain.info',
   'www.explorer.mayachain.info',
   'insight.dash.org',
-  'finder.kujira.network',
+
   'midgard.mayachain.com',
   'asgardex.com',
   'arbiscan.io',

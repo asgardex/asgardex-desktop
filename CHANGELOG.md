@@ -11,10 +11,12 @@
 ## Update/Fixes
 
 - fix(swap): surface routing protocol in chart panel + track OneClick (NEAR Intents) swaps [#1143](https://github.com/asgardex/asgardex-desktop/pull/1143)
+- remove native Kujira (KUJI) chain client — no longer listed on THOR/MAYA pools; dead chain
 
 ## Chores
 
 - ci: bump actions/checkout, setup-node, setup-python major versions [#1145](https://github.com/asgardex/asgardex-desktop/pull/1145) [#1139](https://github.com/asgardex/asgardex-desktop/pull/1139) [#1146](https://github.com/asgardex/asgardex-desktop/pull/1146)
+- drop `@xchainjs/xchain-kujira` dependency
 
 # 1.45.0 (2026-07-22)
 

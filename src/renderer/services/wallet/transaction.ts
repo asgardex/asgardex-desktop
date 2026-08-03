@@ -10,7 +10,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -40,7 +39,6 @@ import * as COSMOS from '../cosmos'
 import * as DASH from '../dash'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
-import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
@@ -110,8 +108,6 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return BCH.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case DOGEChain:
                 return DOGE.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
-              case KUJIChain:
-                return KUJI.txs$({ asset: O.none, walletAddress, walletIndex })
               case ADAChain:
                 return ADA.txs$({ asset: O.none, walletAddress, walletIndex })
               case GAIAChain:

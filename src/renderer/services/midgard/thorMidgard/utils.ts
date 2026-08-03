@@ -10,7 +10,6 @@ import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGE_DECIMAL, DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
@@ -365,11 +364,6 @@ export const getOutboundAssetFeeByChain = (
         case THORChain:
         case DASHChain:
         case MAYAChain:
-        case KUJIChain:
-        case ADAChain:
-        case ARBChain:
-        case RadixChain:
-          return O.none
         default:
           return O.none
       }
