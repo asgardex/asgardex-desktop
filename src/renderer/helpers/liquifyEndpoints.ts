@@ -12,7 +12,7 @@ import { THORNODE_API_BASE_URLS } from '../../shared/thorchain/const'
 // outright. Making Liquify primary avoids that while keeping a healthy fallback.
 //
 // Mainnet only: stagenet/testnet keep the xchainjs network defaults.
-// THORNode: Liquify → Asgardex-hosted node (replaces dead thornode.thorchain.network).
+// THORNode: Liquify → optional Asgardex-hosted node from VITE_ASGARDEX_THORNODE_API.
 export const LIQUIFY_THORNODE_URLS = THORNODE_API_BASE_URLS
 
 const LIQUIFY_MIDGARD_URLS = [
