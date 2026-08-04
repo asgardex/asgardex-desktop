@@ -10,14 +10,14 @@ export const PUBLIC_LIQUIFY_THORNODE_RPC = 'https://gateway.liquify.com/chain/th
 export const PUBLIC_LIQUIFY_THORNODE_API = 'https://gateway.liquify.com/chain/thorchain_api'
 
 /**
- * Asgardex-hosted mainnet fallbacks (full tokenized URLs from env — not Liquify).
- * e.g. https://thornode.asgardex.xyz/<ASGARDEX_TOKEN>/api and …/rpc
+ * Optional private mainnet THORNode fallbacks (full base URLs from env / GH secrets).
+ * Not Liquify; empty when unset.
  */
 export const ASGARDEX_THORNODE_API = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNODE_API, '')
 export const ASGARDEX_THORNODE_RPC = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNODE_RPC, '')
 
 /**
- * Liquify portal keys — Liquify gateway only, never asgardex.xyz.
+ * Liquify portal keys — Liquify gateway only (not private Asgardex fallbacks).
  * Same path form for both products; the key value selects API vs RPC:
  *   `https://gateway.liquify.com/api=<KEY>`
  * Never surface in Expert Mode / storage — only inject at request/client construction.
