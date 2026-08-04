@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetETH } from '@xchainjs/xchain-ethereum'
-import { baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { AnyAsset, baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -11,12 +12,18 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
+import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { validateDerivationPath, warnDerivationPath } from '../../../shared/utils/derivationPathValidation'
 import { candidateKey, HdScanProfile } from '../../../shared/utils/keystoreHdScan'
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, WalletType } from '../../../shared/wallet/types'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { ethRpc$ } from '../../services/storage/common'
-import { checkEthCustomPath, KeystoreHdScanHit, scanKeystoreFunds$ } from '../../services/wallet/keystoreHdScan'
+import { ethRpc$, thornodeRpc$ } from '../../services/storage/common'
+import {
+  checkCustomPath,
+  defaultRpcUrlForChain,
+  KeystoreHdScanHit,
+  scanKeystoreFunds$
+} from '../../services/wallet/keystoreHdScan'
 import { keystoreChainHDSettings$, setKeystoreChainHDSettings } from '../../services/wallet/keystoreHDSettings'
 import { getPhrase } from '../../services/wallet/util'
 import { FlatButton, TextButton } from '../uielements/button'
@@ -35,7 +42,9 @@ type Step = 'pick' | 'results' | 'custom'
 
 type ProfileOption = Exclude<HdScanProfile, 'custom'>
 
-const PROFILES: { id: ProfileOption; titleId: string; hintId: string }[] = [
+type ProfileCard = { id: ProfileOption; titleId: string; hintId: string }
+
+const EVM_PROFILES: ProfileCard[] = [
   {
     id: 'metamask',
     titleId: 'settings.wallet.hd.profile.metamask',
@@ -53,8 +62,33 @@ const PROFILES: { id: ProfileOption; titleId: string; hintId: string }[] = [
   }
 ]
 
+const THOR_PROFILES: ProfileCard[] = [
+  {
+    id: 'thor',
+    titleId: 'settings.wallet.hd.profile.thor',
+    hintId: 'settings.wallet.hd.profile.thor.hint'
+  }
+]
+
+const profilesForChain = (chain: Chain): ProfileCard[] => {
+  if (chain === ETHChain) return EVM_PROFILES
+  if (chain === THORChain) return THOR_PROFILES
+  return []
+}
+
+const defaultProfileForChain = (chain: Chain): ProfileOption => (chain === THORChain ? 'thor' : 'metamask')
+
+const nativeAssetForChain = (chain: Chain): AnyAsset | undefined => {
+  if (chain === ETHChain) return AssetETH
+  if (chain === THORChain) return AssetRuneNative
+  return undefined
+}
+
+const customPathPlaceholder = (chain: Chain): string => (chain === THORChain ? "m/44'/931'/0'/0/0" : "m/44'/60'/0'/0/0")
+
 /**
  * Narrow HD recovery: pick wallet profile (≤5 paths) or custom path → lock selection.
+ * ETH: MetaMask / Ledger Live / Legacy. THOR: standard BIP44 accounts.
  */
 export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props): JSX.Element => {
   const intl = useIntl()
@@ -62,9 +96,11 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   const keystoreState = useObservableState(keystoreService.keystoreState$, O.none)
   const currentSettings = useObservableState(keystoreChainHDSettings$(chain), DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
   const ethRpcUrls = useObservableState(ethRpc$, DEFAULT_ETH_RPC_URLS)
+  const thorRpcUrls = useObservableState(thornodeRpc$, DEFAULT_THORNODE_RPC_URLS)
 
+  const profiles = useMemo(() => profilesForChain(chain), [chain])
   const [step, setStep] = useState<Step>('pick')
-  const [profile, setProfile] = useState<ProfileOption>('metamask')
+  const [profile, setProfile] = useState<ProfileOption>(() => defaultProfileForChain(chain))
   const [scanRD, setScanRD] = useState<RD.RemoteData<Error, KeystoreHdScanHit[]>>(RD.initial)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
 
@@ -72,16 +108,21 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   const [customRD, setCustomRD] = useState<RD.RemoteData<Error, KeystoreHdScanHit>>(RD.initial)
 
   const phrase = useMemo(() => FP.pipe(getPhrase(keystoreState), O.toNullable), [keystoreState])
-  const rpcUrl = ethRpcUrls[network] || DEFAULT_ETH_RPC_URLS[network]
+  const rpcUrl = defaultRpcUrlForChain(
+    chain,
+    network,
+    ethRpcUrls[network] || DEFAULT_ETH_RPC_URLS[network],
+    thorRpcUrls[network] || DEFAULT_THORNODE_RPC_URLS[network] || DEFAULT_THORNODE_RPC_URLS.mainnet
+  )
 
   const reset = useCallback(() => {
     setStep('pick')
-    setProfile('metamask')
+    setProfile(defaultProfileForChain(chain))
     setScanRD(RD.initial)
     setSelectedKey(null)
     setCustomPath('')
     setCustomRD(RD.initial)
-  }, [])
+  }, [chain])
 
   useEffect(() => {
     if (!open) reset()
@@ -125,10 +166,10 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
       return
     }
     setCustomRD(RD.pending)
-    checkEthCustomPath(phrase, network, rpcUrl, path)
+    checkCustomPath(chain, phrase, network, rpcUrl, path)
       .then((hit) => setCustomRD(RD.success(hit)))
       .catch((e: Error) => setCustomRD(RD.failure(e)))
-  }, [customPath, phrase, network, rpcUrl, intl])
+  }, [customPath, phrase, chain, network, rpcUrl, intl])
 
   const applyHit = (hit: KeystoreHdScanHit) => {
     if (!hit.address) return
@@ -143,6 +184,20 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   const customValid = customTrimmed.length === 0 || validateDerivationPath(customTrimmed).valid
   const customWarn =
     customTrimmed.length > 0 && customValid ? warnDerivationPath(customTrimmed, chain, network) : undefined
+  const displayAsset = nativeAssetForChain(chain)
+
+  const formatHitBalance = (hit: KeystoreHdScanHit) => {
+    if (!hit.hasFunds) return intl.formatMessage({ id: 'settings.wallet.hd.find.empty' })
+    if (displayAsset) {
+      return formatAssetAmountCurrency({
+        amount: baseToAsset(hit.amount),
+        asset: displayAsset,
+        trimZeros: true,
+        decimal: 6
+      })
+    }
+    return `${hit.amount.amount().toString()} ${hit.assetTicker}`
+  }
 
   return (
     <Modal
@@ -153,14 +208,13 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
       panelClassName="max-w-xl"
       closable>
       <div className="flex flex-col gap-3 px-4 pb-4">
-        {/* —— Step: pick profile —— */}
         {step === 'pick' && (
           <>
             <Label size="small" color="gray" className="!w-auto !p-0">
               {intl.formatMessage({ id: 'settings.wallet.hd.find.pickSubtitle' })}
             </Label>
             <div className="flex flex-col gap-2">
-              {PROFILES.map(({ id, titleId, hintId }) => {
+              {profiles.map(({ id, titleId, hintId }) => {
                 const active = profile === id
                 return (
                   <button
@@ -196,14 +250,13 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
             </div>
             <div className="mt-1 flex justify-end gap-2">
               <TextButton onClick={onClose}>{intl.formatMessage({ id: 'common.cancel' })}</TextButton>
-              <FlatButton color="primary" onClick={() => runProfileScan(profile)}>
+              <FlatButton color="primary" onClick={() => runProfileScan(profile)} disabled={profiles.length === 0}>
                 {intl.formatMessage({ id: 'settings.wallet.hd.find.scan' })}
               </FlatButton>
             </div>
           </>
         )}
 
-        {/* —— Step: scan results —— */}
         {step === 'results' && (
           <>
             <Label size="small" color="gray" className="!w-auto !p-0">
@@ -257,14 +310,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
                                 'shrink-0 text-sm font-medium',
                                 hit.hasFunds ? 'text-turquoise' : 'text-text2 dark:text-text2d'
                               )}>
-                              {hit.hasFunds
-                                ? formatAssetAmountCurrency({
-                                    amount: baseToAsset(hit.amount),
-                                    asset: AssetETH,
-                                    trimZeros: true,
-                                    decimal: 6
-                                  })
-                                : intl.formatMessage({ id: 'settings.wallet.hd.find.empty' })}
+                              {formatHitBalance(hit)}
                             </span>
                           </div>
                           <span className="text-xs text-text2 dark:text-text2d">
@@ -297,7 +343,6 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
           </>
         )}
 
-        {/* —— Step: custom path —— */}
         {step === 'custom' && (
           <>
             <Label size="small" color="gray" className="!w-auto !p-0">
@@ -309,7 +354,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
                 setCustomPath(e.currentTarget.value)
                 setCustomRD(RD.initial)
               }}
-              placeholder="m/44'/60'/0'/0/0"
+              placeholder={customPathPlaceholder(chain)}
               className={clsx(
                 'w-full rounded-lg border bg-bg1 px-3 py-2 font-mono text-sm text-text0 focus:outline-hidden dark:bg-bg1d dark:text-text0d',
                 customValid ? 'border-gray0 dark:border-gray0d' : 'border-error0 dark:border-error0d'
@@ -339,16 +384,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
             {RD.isSuccess(customRD) && customRD.value.address && (
               <div className="rounded-lg border border-turquoise/40 bg-turquoise/5 px-3 py-2">
                 <div className="truncate font-main text-sm text-text0 dark:text-text0d">{customRD.value.address}</div>
-                <div className="text-xs text-text2 dark:text-text2d">
-                  {customRD.value.hasFunds
-                    ? formatAssetAmountCurrency({
-                        amount: baseToAsset(customRD.value.amount),
-                        asset: AssetETH,
-                        trimZeros: true,
-                        decimal: 6
-                      })
-                    : intl.formatMessage({ id: 'settings.wallet.hd.find.empty' })}
-                </div>
+                <div className="text-xs text-text2 dark:text-text2d">{formatHitBalance(customRD.value)}</div>
               </div>
             )}
 

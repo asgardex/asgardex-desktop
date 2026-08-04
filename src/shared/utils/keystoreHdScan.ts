@@ -1,17 +1,18 @@
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 
 import { EvmHDMode } from '../evm/types'
 import { KeystoreChainHDSettings } from '../wallet/types'
 
 /** Max accounts/indices scanned for one profile (Accounts 1–5 in the UI). */
-export const EVM_HD_SCAN_SLOT_COUNT = 5
+export const HD_SCAN_SLOT_COUNT = 5
 
 /**
- * Wallet profile the user picks before scanning.
- * Determines which path formula to use — not a cartesian product of all modes.
+ * Wallet / path profile chosen before scanning.
+ * EVM wallets use different formulas; THOR uses standard BIP44 account.
  */
-export type HdScanProfile = 'metamask' | 'ledgerlive' | 'legacy' | 'custom'
+export type HdScanProfile = 'metamask' | 'ledgerlive' | 'legacy' | 'thor' | 'custom'
 
 export type HdScanCandidate = {
   settings: KeystoreChainHDSettings
@@ -21,15 +22,15 @@ export type HdScanCandidate = {
 }
 
 /**
- * Candidates for a single profile (≤5).
+ * EVM candidates for a single profile (≤5).
  *
  * - MetaMask:  m/44'/60'/0'/0/{index}     → vary index, account=0
  * - Ledger Live: m/44'/60'/{account}'/0/0 → vary account, index=0
  * - Legacy:    m/44'/60'/0'/{index}       → vary index, account=0
  */
 export const getEvmHdScanCandidates = (
-  profile: Exclude<HdScanProfile, 'custom'>,
-  slotCount: number = EVM_HD_SCAN_SLOT_COUNT
+  profile: 'metamask' | 'ledgerlive' | 'legacy',
+  slotCount: number = HD_SCAN_SLOT_COUNT
 ): HdScanCandidate[] => {
   const n = Math.max(1, Math.min(slotCount, 20))
   const out: HdScanCandidate[] = []
@@ -48,7 +49,6 @@ export const getEvmHdScanCandidates = (
         settings: { hdMode: 'metamask' as EvmHDMode, account: 0, index: i }
       })
     } else {
-      // legacy
       out.push({
         profile,
         accountLabel: i + 1,
@@ -59,15 +59,38 @@ export const getEvmHdScanCandidates = (
   return out
 }
 
-export const chainSupportsEvmHdScan = (chain: Chain): boolean => chain === ETHChain
+/**
+ * THORChain BIP44: m/44'/931'/{account}'/0/0 — vary account only (≤5).
+ */
+export const getThorHdScanCandidates = (slotCount: number = HD_SCAN_SLOT_COUNT): HdScanCandidate[] => {
+  const n = Math.max(1, Math.min(slotCount, 20))
+  const out: HdScanCandidate[] = []
+  for (let account = 0; account < n; account++) {
+    out.push({
+      profile: 'thor',
+      accountLabel: account + 1,
+      settings: { hdMode: 'default', account, index: 0 }
+    })
+  }
+  return out
+}
+
+export const chainSupportsHdScan = (chain: Chain): boolean => chain === ETHChain || chain === THORChain
 
 export const getHdScanCandidates = (
   chain: Chain,
   profile: Exclude<HdScanProfile, 'custom'>,
   slotCount?: number
 ): HdScanCandidate[] => {
-  if (!chainSupportsEvmHdScan(chain)) return []
-  return getEvmHdScanCandidates(profile, slotCount)
+  if (chain === ETHChain) {
+    if (profile === 'thor') return []
+    return getEvmHdScanCandidates(profile, slotCount)
+  }
+  if (chain === THORChain) {
+    if (profile !== 'thor') return []
+    return getThorHdScanCandidates(slotCount)
+  }
+  return []
 }
 
 export const candidateKey = (c: { settings: KeystoreChainHDSettings }): string => {
@@ -82,3 +105,8 @@ export const settingsFromCustomPath = (fullPath: string): KeystoreChainHDSetting
   index: 0,
   customPath: fullPath.trim()
 })
+
+/** @deprecated use HD_SCAN_SLOT_COUNT */
+export const EVM_HD_SCAN_SLOT_COUNT = HD_SCAN_SLOT_COUNT
+/** @deprecated use chainSupportsHdScan */
+export const chainSupportsEvmHdScan = chainSupportsHdScan

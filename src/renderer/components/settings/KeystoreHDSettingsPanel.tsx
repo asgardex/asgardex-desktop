@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -17,8 +18,12 @@ type Props = {
   network: Network
 }
 
-const profileLabelId = (settings: { hdMode: string; customPath?: string; account: number; index: number }) => {
+const profileLabelId = (
+  chain: Chain,
+  settings: { hdMode: string; customPath?: string; account: number; index: number }
+) => {
   if (settings.customPath?.trim()) return 'settings.wallet.hd.profile.custom' as const
+  if (chain === THORChain) return 'settings.wallet.hd.profile.thor' as const
   switch (settings.hdMode) {
     case 'metamask':
       return 'settings.wallet.hd.profile.metamask' as const
@@ -31,15 +36,20 @@ const profileLabelId = (settings: { hdMode: string; customPath?: string; account
   }
 }
 
-/** Account number shown to users (1-based). MetaMask uses index; Ledger Live uses account. */
-const displayAccountNumber = (settings: {
-  hdMode: string
-  customPath?: string
-  account: number
-  index: number
-}): number | null => {
+/** Account number shown to users (1-based). MetaMask/legacy use index; Ledger Live & THOR use account. */
+const displayAccountNumber = (
+  chain: Chain,
+  settings: {
+    hdMode: string
+    customPath?: string
+    account: number
+    index: number
+  }
+): number | null => {
   if (settings.customPath?.trim()) return null
-  if (settings.hdMode === 'metamask' || settings.hdMode === 'legacy') return settings.index + 1
+  if (chain !== THORChain && (settings.hdMode === 'metamask' || settings.hdMode === 'legacy')) {
+    return settings.index + 1
+  }
   return settings.account + 1
 }
 
@@ -55,9 +65,9 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
     const path =
       settings.customPath?.trim() ||
       getChainDerivationPath(chain, settings.account, settings.index, network, settings.hdMode).path
-    const accountNum = displayAccountNumber(settings)
+    const accountNum = displayAccountNumber(chain, settings)
     return {
-      profileId: profileLabelId(settings),
+      profileId: profileLabelId(chain, settings),
       accountNum,
       path
     }

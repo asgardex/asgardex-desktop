@@ -67,6 +67,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.legacy.hint': 'Older Ledger Ethereum path',
   'settings.wallet.hd.profile.custom': 'Custom path',
   'settings.wallet.hd.profile.custom.hint': 'Enter a full BIP32 path if you know it',
+  'settings.wallet.hd.profile.thor': 'THORChain (standard)',
+  'settings.wallet.hd.profile.thor.hint': "BIP44 accounts (m/44'/931'/n'/0/0) — scans Accounts 1–5",
   'settings.wallet.storeAddress.info':
     'अपने विश्वसनीय पते को स्थानीय भंडारण में सहेजें, वे चेन के तहत या भेजने के दृश्य में सूचीबद्ध होंगे',
   'settings.thornode.node.error.unhealthy': 'THORNode API "{endpoint}" की जांच करके अस्वस्थ लगता है',

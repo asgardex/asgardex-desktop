@@ -731,6 +731,8 @@ type SettingMessageKey =
   | 'settings.wallet.hd.profile.legacy.hint'
   | 'settings.wallet.hd.profile.custom'
   | 'settings.wallet.hd.profile.custom.hint'
+  | 'settings.wallet.hd.profile.thor'
+  | 'settings.wallet.hd.profile.thor.hint'
   | 'settings.wallet.storeAddress.info'
   | 'settings.thornode.node.error.url'
   | 'settings.thornode.node.error.unhealthy'

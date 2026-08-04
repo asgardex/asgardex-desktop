@@ -67,6 +67,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.legacy.hint': 'Older Ledger Ethereum path',
   'settings.wallet.hd.profile.custom': 'Custom path',
   'settings.wallet.hd.profile.custom.hint': 'Enter a full BIP32 path if you know it',
+  'settings.wallet.hd.profile.thor': 'THORChain (standard)',
+  'settings.wallet.hd.profile.thor.hint': "BIP44 accounts (m/44'/931'/n'/0/0) — scans Accounts 1–5",
   'settings.wallet.storeAddress.info':
     '신뢰할 수 있는 주소를 로컬 저장소에 저장하면 체인 하단이나 전송 화면에 나열됩니다',
 

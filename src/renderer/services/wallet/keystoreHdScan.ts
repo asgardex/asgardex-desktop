@@ -1,9 +1,16 @@
 import { Network } from '@xchainjs/xchain-client'
 import { Client as EthClient, ETHChain, AssetETH } from '@xchainjs/xchain-ethereum'
-import { BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
+import {
+  Client as ThorClient,
+  THORChain,
+  AssetRuneNative,
+  defaultClientConfig as thorDefaultConfig
+} from '@xchainjs/xchain-thorchain'
+import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 
 import { createEthParams } from '../../../shared/ethereum/const'
+import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { getChainDerivationPath, getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import {
   candidateKey,
@@ -25,6 +32,8 @@ export type KeystoreHdScanHit = {
   profile: Exclude<HdScanProfile, 'custom'> | 'custom'
   accountLabel: number
   hasFunds: boolean
+  /** Display asset ticker for balance column */
+  assetTicker: string
   error?: string
 }
 
@@ -52,58 +61,6 @@ const mapPool = async <T, R>(items: T[], concurrency: number, fn: (item: T) => P
   return results
 }
 
-const deriveEthHit = async (
-  settings: KeystoreChainHDSettings,
-  phrase: string,
-  network: Network,
-  rpcUrl: string,
-  meta: { profile: KeystoreHdScanHit['profile']; accountLabel: number }
-): Promise<KeystoreHdScanHit> => {
-  const path =
-    settings.customPath?.trim() ||
-    getChainDerivationPath(ETHChain, settings.account, settings.index, network, settings.hdMode).path
-  const key = candidateKey({ settings })
-
-  try {
-    const { rootDerivationPaths, walletIndex } = getKeystoreDerivation(ETHChain, settings)
-    const params = createEthParams(rpcUrl, network)
-    const client = new EthClient({
-      ...params,
-      rootDerivationPaths,
-      network,
-      phrase
-    })
-    const address = await withTimeout(client.getAddressAsync(walletIndex), SCAN_TIMEOUT_MS)
-    const balances = await withTimeout(client.getBalance(address), SCAN_TIMEOUT_MS)
-    const ethBal = balances.find((b) => eqAsset.equals(b.asset, AssetETH))
-    const amount = ethBal?.amount ?? baseAmount(0)
-    return {
-      key,
-      settings,
-      address,
-      amount,
-      path,
-      profile: meta.profile,
-      accountLabel: meta.accountLabel,
-      hasFunds: amount.gt(baseAmount(0))
-    }
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-    logger.warn('keystore HD scan candidate failed', { path, error: msg })
-    return {
-      key,
-      settings,
-      address: '',
-      amount: baseAmount(0),
-      path,
-      profile: meta.profile,
-      accountLabel: meta.accountLabel,
-      hasFunds: false,
-      error: msg
-    }
-  }
-}
-
 const sortHits = (hits: KeystoreHdScanHit[]): KeystoreHdScanHit[] =>
   hits.sort((a, b) => {
     if (a.hasFunds !== b.hasFunds) return a.hasFunds ? -1 : 1
@@ -115,36 +72,115 @@ const sortHits = (hits: KeystoreHdScanHit[]): KeystoreHdScanHit[] =>
     return a.accountLabel - b.accountLabel
   })
 
-/**
- * Scan ≤5 paths for one wallet profile (MetaMask / Ledger Live / Legacy).
- */
-export const scanEthKeystoreFunds = async (
-  phrase: string,
-  network: Network,
-  rpcUrl: string,
-  profile: Exclude<HdScanProfile, 'custom'>
-): Promise<KeystoreHdScanHit[]> => {
-  const candidates: HdScanCandidate[] = getHdScanCandidates(ETHChain, profile)
-  const hits = await mapPool(candidates, SCAN_CONCURRENCY, (c) =>
-    deriveEthHit(c.settings, phrase, network, rpcUrl, {
-      profile: c.profile,
-      accountLabel: c.accountLabel
-    })
-  )
-  return sortHits(hits)
+type DeriveCtx = {
+  chain: Chain
+  phrase: string
+  network: Network
+  rpcUrl: string
+  nativeAsset: AnyAsset
+  assetTicker: string
+  createClient: (
+    phrase: string,
+    network: Network,
+    rpcUrl: string,
+    rootDerivationPaths: ReturnType<typeof getKeystoreDerivation>['rootDerivationPaths']
+  ) => {
+    getAddressAsync: (i: number) => Promise<string>
+    getBalance: (a: string) => Promise<{ asset: AnyAsset; amount: BaseAmount }[]>
+  }
 }
 
-/** Derive + balance for a single custom BIP path. */
-export const checkEthCustomPath = async (
-  phrase: string,
-  network: Network,
-  rpcUrl: string,
-  fullPath: string
+const deriveHit = async (
+  settings: KeystoreChainHDSettings,
+  ctx: DeriveCtx,
+  meta: { profile: KeystoreHdScanHit['profile']; accountLabel: number }
 ): Promise<KeystoreHdScanHit> => {
-  const settings = settingsFromCustomPath(fullPath)
-  return deriveEthHit(settings, phrase, network, rpcUrl, { profile: 'custom', accountLabel: 0 })
+  const path =
+    settings.customPath?.trim() ||
+    getChainDerivationPath(ctx.chain, settings.account, settings.index, ctx.network, settings.hdMode).path
+  const key = candidateKey({ settings })
+
+  try {
+    const { rootDerivationPaths, walletIndex } = getKeystoreDerivation(ctx.chain, settings)
+    const client = ctx.createClient(ctx.phrase, ctx.network, ctx.rpcUrl, rootDerivationPaths)
+    const address = await withTimeout(client.getAddressAsync(walletIndex), SCAN_TIMEOUT_MS)
+    const balances = await withTimeout(client.getBalance(address), SCAN_TIMEOUT_MS)
+    const native = balances.find((b) => eqAsset.equals(b.asset, ctx.nativeAsset))
+    const amount = native?.amount ?? baseAmount(0)
+    return {
+      key,
+      settings,
+      address,
+      amount,
+      path,
+      profile: meta.profile,
+      accountLabel: meta.accountLabel,
+      hasFunds: amount.gt(baseAmount(0)),
+      assetTicker: ctx.assetTicker
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    logger.warn('keystore HD scan candidate failed', { chain: ctx.chain, path, error: msg })
+    return {
+      key,
+      settings,
+      address: '',
+      amount: baseAmount(0),
+      path,
+      profile: meta.profile,
+      accountLabel: meta.accountLabel,
+      hasFunds: false,
+      assetTicker: ctx.assetTicker,
+      error: msg
+    }
+  }
 }
 
+const ethCtx = (phrase: string, network: Network, rpcUrl: string): DeriveCtx => ({
+  chain: ETHChain,
+  phrase,
+  network,
+  rpcUrl,
+  nativeAsset: AssetETH,
+  assetTicker: 'ETH',
+  createClient: (p, net, rpc, rootDerivationPaths) => {
+    const params = createEthParams(rpc, net)
+    return new EthClient({ ...params, rootDerivationPaths, network: net, phrase: p })
+  }
+})
+
+const thorCtx = (phrase: string, network: Network, rpcUrl: string): DeriveCtx => ({
+  chain: THORChain,
+  phrase,
+  network,
+  rpcUrl,
+  nativeAsset: AssetRuneNative,
+  assetTicker: 'RUNE',
+  createClient: (p, net, rpc, rootDerivationPaths) => {
+    const clientUrls: Record<Network, string[]> = {
+      [Network.Mainnet]: [rpc],
+      [Network.Stagenet]: [rpc],
+      [Network.Testnet]: [rpc]
+    }
+    return new ThorClient({
+      ...thorDefaultConfig,
+      clientUrls,
+      rootDerivationPaths,
+      network: net,
+      phrase: p
+    })
+  }
+})
+
+const ctxForChain = (chain: Chain, phrase: string, network: Network, rpcUrl: string): DeriveCtx | null => {
+  if (chain === ETHChain) return ethCtx(phrase, network, rpcUrl)
+  if (chain === THORChain) return thorCtx(phrase, network, rpcUrl)
+  return null
+}
+
+/**
+ * Scan ≤5 paths for one profile on a supported chain.
+ */
 export const scanKeystoreFundsForChain = async (
   chain: Chain,
   phrase: string,
@@ -152,9 +188,49 @@ export const scanKeystoreFundsForChain = async (
   rpcUrl: string,
   profile: Exclude<HdScanProfile, 'custom'>
 ): Promise<KeystoreHdScanHit[]> => {
-  if (chain === ETHChain) return scanEthKeystoreFunds(phrase, network, rpcUrl, profile)
-  return []
+  const ctx = ctxForChain(chain, phrase, network, rpcUrl)
+  if (!ctx) return []
+
+  const candidates: HdScanCandidate[] = getHdScanCandidates(chain, profile)
+  const hits = await mapPool(candidates, SCAN_CONCURRENCY, (c) =>
+    deriveHit(c.settings, ctx, { profile: c.profile, accountLabel: c.accountLabel })
+  )
+  return sortHits(hits)
 }
+
+/** Derive + balance for a single custom BIP path. */
+export const checkCustomPath = async (
+  chain: Chain,
+  phrase: string,
+  network: Network,
+  rpcUrl: string,
+  fullPath: string
+): Promise<KeystoreHdScanHit> => {
+  const ctx = ctxForChain(chain, phrase, network, rpcUrl)
+  if (!ctx) {
+    return {
+      key: `custom:${fullPath}`,
+      settings: settingsFromCustomPath(fullPath),
+      address: '',
+      amount: baseAmount(0),
+      path: fullPath,
+      profile: 'custom',
+      accountLabel: 0,
+      hasFunds: false,
+      assetTicker: '',
+      error: `Scan not supported for ${chain}`
+    }
+  }
+  return deriveHit(settingsFromCustomPath(fullPath), ctx, { profile: 'custom', accountLabel: 0 })
+}
+
+/** @deprecated use checkCustomPath */
+export const checkEthCustomPath = (
+  phrase: string,
+  network: Network,
+  rpcUrl: string,
+  fullPath: string
+): Promise<KeystoreHdScanHit> => checkCustomPath(ETHChain, phrase, network, rpcUrl, fullPath)
 
 export const scanKeystoreFunds$ = (
   chain: Chain,
@@ -163,3 +239,9 @@ export const scanKeystoreFunds$ = (
   rpcUrl: string,
   profile: Exclude<HdScanProfile, 'custom'>
 ): Rx.Observable<KeystoreHdScanHit[]> => Rx.from(scanKeystoreFundsForChain(chain, phrase, network, rpcUrl, profile))
+
+export const defaultRpcUrlForChain = (chain: Chain, network: Network, ethRpc: string, thorRpc: string): string => {
+  if (chain === ETHChain) return ethRpc
+  if (chain === THORChain) return thorRpc || DEFAULT_THORNODE_RPC_URLS.mainnet
+  return ''
+}
