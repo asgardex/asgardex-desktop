@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -70,25 +71,48 @@ const THOR_PROFILES: ProfileCard[] = [
   }
 ]
 
+const BTC_PROFILES: ProfileCard[] = [
+  {
+    id: 'p2wpkh',
+    titleId: 'settings.wallet.hd.profile.p2wpkh',
+    hintId: 'settings.wallet.hd.profile.p2wpkh.hint'
+  },
+  {
+    id: 'p2tr',
+    titleId: 'settings.wallet.hd.profile.p2tr',
+    hintId: 'settings.wallet.hd.profile.p2tr.hint'
+  }
+]
+
 const profilesForChain = (chain: Chain): ProfileCard[] => {
   if (chain === ETHChain) return EVM_PROFILES
   if (chain === THORChain) return THOR_PROFILES
+  if (chain === BTCChain) return BTC_PROFILES
   return []
 }
 
-const defaultProfileForChain = (chain: Chain): ProfileOption => (chain === THORChain ? 'thor' : 'metamask')
+const defaultProfileForChain = (chain: Chain): ProfileOption => {
+  if (chain === THORChain) return 'thor'
+  if (chain === BTCChain) return 'p2wpkh'
+  return 'metamask'
+}
 
 const nativeAssetForChain = (chain: Chain): AnyAsset | undefined => {
   if (chain === ETHChain) return AssetETH
   if (chain === THORChain) return AssetRuneNative
+  if (chain === BTCChain) return AssetBTC
   return undefined
 }
 
-const customPathPlaceholder = (chain: Chain): string => (chain === THORChain ? "m/44'/931'/0'/0/0" : "m/44'/60'/0'/0/0")
+const customPathPlaceholder = (chain: Chain): string => {
+  if (chain === THORChain) return "m/44'/931'/0'/0/0"
+  if (chain === BTCChain) return "m/84'/0'/0'/0/0"
+  return "m/44'/60'/0'/0/0"
+}
 
 /**
  * Narrow HD recovery: pick wallet profile (≤5 paths) or custom path → lock selection.
- * ETH: MetaMask / Ledger Live / Legacy. THOR: standard BIP44 accounts.
+ * ETH / THOR / BTC keystore recovery.
  */
 export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props): JSX.Element => {
   const intl = useIntl()

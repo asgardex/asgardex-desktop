@@ -1,3 +1,11 @@
+import {
+  AddressFormat,
+  AssetBTC,
+  BTCChain,
+  Client as BitcoinClient,
+  defaultBTCParams,
+  tapRootDerivationPaths
+} from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { Client as EthClient, ETHChain, AssetETH } from '@xchainjs/xchain-ethereum'
 import {
@@ -172,9 +180,55 @@ const thorCtx = (phrase: string, network: Network, rpcUrl: string): DeriveCtx =>
   }
 })
 
-const ctxForChain = (chain: Chain, phrase: string, network: Network, rpcUrl: string): DeriveCtx | null => {
+const btcCtx = (
+  phrase: string,
+  network: Network,
+  addressFormat: AddressFormat,
+  fallbackPaths: typeof defaultBTCParams.rootDerivationPaths
+): DeriveCtx => ({
+  chain: BTCChain,
+  phrase,
+  network,
+  rpcUrl: '', // unused — BTC uses dataProviders
+  nativeAsset: AssetBTC,
+  assetTicker: 'BTC',
+  createClient: (p, net, _rpc, rootDerivationPaths) =>
+    new BitcoinClient({
+      ...defaultBTCParams,
+      phrase: p,
+      network: net,
+      addressFormat,
+      rootDerivationPaths: rootDerivationPaths ?? fallbackPaths,
+      feeBounds: defaultBTCParams.feeBounds
+    })
+})
+
+/** Infer BTC address format from profile or custom path (86' → Taproot). */
+const btcFormatFor = (profile: Exclude<HdScanProfile, 'custom'> | 'custom', fullPath?: string): AddressFormat => {
+  if (profile === 'p2tr') return AddressFormat.P2TR
+  if (profile === 'custom' && fullPath?.includes("86'")) return AddressFormat.P2TR
+  return AddressFormat.P2WPKH
+}
+
+const ctxForChain = (
+  chain: Chain,
+  phrase: string,
+  network: Network,
+  rpcUrl: string,
+  profile: Exclude<HdScanProfile, 'custom'> | 'custom' = 'metamask',
+  fullPath?: string
+): DeriveCtx | null => {
   if (chain === ETHChain) return ethCtx(phrase, network, rpcUrl)
   if (chain === THORChain) return thorCtx(phrase, network, rpcUrl)
+  if (chain === BTCChain) {
+    const format = btcFormatFor(profile, fullPath)
+    return btcCtx(
+      phrase,
+      network,
+      format,
+      format === AddressFormat.P2TR ? tapRootDerivationPaths : defaultBTCParams.rootDerivationPaths
+    )
+  }
   return null
 }
 
@@ -188,7 +242,7 @@ export const scanKeystoreFundsForChain = async (
   rpcUrl: string,
   profile: Exclude<HdScanProfile, 'custom'>
 ): Promise<KeystoreHdScanHit[]> => {
-  const ctx = ctxForChain(chain, phrase, network, rpcUrl)
+  const ctx = ctxForChain(chain, phrase, network, rpcUrl, profile)
   if (!ctx) return []
 
   const candidates: HdScanCandidate[] = getHdScanCandidates(chain, profile)
@@ -206,11 +260,16 @@ export const checkCustomPath = async (
   rpcUrl: string,
   fullPath: string
 ): Promise<KeystoreHdScanHit> => {
-  const ctx = ctxForChain(chain, phrase, network, rpcUrl)
+  const settings = settingsFromCustomPath(fullPath)
+  // Tag BTC custom path with matching hdMode for dual-client wiring
+  if (chain === BTCChain) {
+    settings.hdMode = fullPath.includes("86'") ? 'p2tr' : 'p2wpkh'
+  }
+  const ctx = ctxForChain(chain, phrase, network, rpcUrl, 'custom', fullPath)
   if (!ctx) {
     return {
       key: `custom:${fullPath}`,
-      settings: settingsFromCustomPath(fullPath),
+      settings,
       address: '',
       amount: baseAmount(0),
       path: fullPath,
@@ -221,7 +280,7 @@ export const checkCustomPath = async (
       error: `Scan not supported for ${chain}`
     }
   }
-  return deriveHit(settingsFromCustomPath(fullPath), ctx, { profile: 'custom', accountLabel: 0 })
+  return deriveHit(settings, ctx, { profile: 'custom', accountLabel: 0 })
 }
 
 /** @deprecated use checkCustomPath */
@@ -243,5 +302,6 @@ export const scanKeystoreFunds$ = (
 export const defaultRpcUrlForChain = (chain: Chain, network: Network, ethRpc: string, thorRpc: string): string => {
   if (chain === ETHChain) return ethRpc
   if (chain === THORChain) return thorRpc || DEFAULT_THORNODE_RPC_URLS.mainnet
+  if (chain === BTCChain) return '' // BTC uses public data providers
   return ''
 }

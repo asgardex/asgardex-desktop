@@ -17,12 +17,15 @@ import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { blockcypherApiKey } from '../../../shared/api/blockcypher'
+import { getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
+import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, KeystoreChainHDSettings } from '../../../shared/wallet/types'
 import { logger } from '../../helpers/logger'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreAddress$, keystoreAddressUI$ } from '../clients/address'
 import { keystoreService } from '../wallet/keystore'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { getPhrase } from '../wallet/util'
 import { ClientState, ClientState$ } from './types'
 
@@ -59,21 +62,38 @@ const dataProviders = [BlockcypherDataProviders, HaskoinDataProviders, BitgoProv
 
 const feeBounds = { lower: LOWER_FEE_BOUND, upper: UPPER_FEE_BOUND }
 
+const hdSettings$ = keystoreChainHDSettings$(BTCChain)
+
+/**
+ * Paths for a BTC address format: use stored account/index (and custom path if set).
+ * Each format uses its own BIP84 / BIP86 template unless a custom path is locked.
+ */
+const pathsForFormat = (addressFormat: AddressFormat, hd: KeystoreChainHDSettings) => {
+  const mode = addressFormat === AddressFormat.P2TR ? 'p2tr' : 'p2wpkh'
+  // Custom path: apply to both clients (user-supplied full path)
+  if (hd.customPath?.trim()) {
+    return getKeystoreDerivation(BTCChain, hd)
+  }
+  return getKeystoreDerivation(BTCChain, { ...hd, hdMode: mode })
+}
+
 /**
  * Build a keystore-derived `BitcoinClient` factory bound to a given `AddressFormat`.
- * Used to produce a Native SegWit (P2WPKH) client and, in parallel, a Taproot (P2TR)
- * client off the same mnemonic so the keystore wallet can expose both addresses.
+ * Uses keystore HD settings (account / index / custom path) so Find my funds can relocate both
+ * Native SegWit and Taproot addresses.
  */
 const createKeystoreClientState$ = (addressFormat: AddressFormat): ClientState$ =>
   FP.pipe(
-    Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
+    Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
     RxOp.switchMap(
-      ([keystore, network]): ClientState$ =>
+      ([keystore, network, hdSettings]): ClientState$ =>
         Rx.of(
           FP.pipe(
             getPhrase(keystore),
             O.map<string, ClientState>((phrase) => {
               try {
+                const hd = hdSettings ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS
+                const { rootDerivationPaths } = pathsForFormat(addressFormat, hd)
                 const btcInitParams = {
                   ...defaultBTCParams,
                   phrase,
@@ -81,9 +101,10 @@ const createKeystoreClientState$ = (addressFormat: AddressFormat): ClientState$ 
                   dataProviders,
                   addressFormat,
                   rootDerivationPaths:
-                    addressFormat === AddressFormat.P2TR
+                    rootDerivationPaths ??
+                    (addressFormat === AddressFormat.P2TR
                       ? tapRootDerivationPaths
-                      : defaultBTCParams.rootDerivationPaths,
+                      : defaultBTCParams.rootDerivationPaths),
                   feeBounds
                 }
                 const client = new BitcoinClient(btcInitParams)
@@ -93,7 +114,6 @@ const createKeystoreClientState$ = (addressFormat: AddressFormat): ClientState$ 
                 return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
               }
             }),
-            // Set back to `initial` if no phrase is available (locked wallet)
             O.getOrElse<ClientState>(() => RD.initial)
           )
         ).pipe(RxOp.startWith(RD.pending))
@@ -150,20 +170,34 @@ const readOnlyClient$: Observable<O.Option<BitcoinClient>> = readOnlyClientState
   RxOp.shareReplay(1)
 )
 
+const addressHdSegwit$ = hdSettings$.pipe(
+  RxOp.map((s) => {
+    const { walletIndex } = pathsForFormat(AddressFormat.P2WPKH, s)
+    return { hdMode: 'p2wpkh' as const, account: s.account, index: walletIndex }
+  })
+)
+
+const addressHdTaproot$ = hdSettings$.pipe(
+  RxOp.map((s) => {
+    const { walletIndex } = pathsForFormat(AddressFormat.P2TR, s)
+    return { hdMode: 'p2tr' as const, account: s.account, index: walletIndex }
+  })
+)
+
 /**
  * BTC `Address` — Native SegWit (P2WPKH) keystore address (also serves Ledger/Vultisig modes
  * via the unified `addressUI$` resolver).
  */
-const address$: C.WalletAddress$ = C.address$(client$, BTCChain)
-const addressUI$: C.WalletAddress$ = C.addressUI$(client$, BTCChain)
+const address$: C.WalletAddress$ = C.address$(client$, BTCChain, addressHdSegwit$)
+const addressUI$: C.WalletAddress$ = C.addressUI$(client$, BTCChain, addressHdSegwit$)
 
 /**
  * BTC `Address` — Taproot (P2TR) keystore address. Keystore-only: this emits `O.none` in
  * Ledger / Vultisig standalone modes (where `clientTR$` is unavailable), so no spurious
  * Taproot row appears for those wallet modes.
  */
-const addressTR$: C.WalletAddress$ = keystoreAddress$(clientTR$, BTCChain, Rx.of({ hdMode: 'p2tr' }))
-const addressUITR$: C.WalletAddress$ = keystoreAddressUI$(clientTR$, BTCChain, Rx.of({ hdMode: 'p2tr' }))
+const addressTR$: C.WalletAddress$ = keystoreAddress$(clientTR$, BTCChain, addressHdTaproot$)
+const addressUITR$: C.WalletAddress$ = keystoreAddressUI$(clientTR$, BTCChain, addressHdTaproot$)
 
 /**
  * Explorer url depending on selected network

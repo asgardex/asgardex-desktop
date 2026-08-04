@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
@@ -24,6 +25,11 @@ const profileLabelId = (
 ) => {
   if (settings.customPath?.trim()) return 'settings.wallet.hd.profile.custom' as const
   if (chain === THORChain) return 'settings.wallet.hd.profile.thor' as const
+  if (chain === BTCChain) {
+    return settings.hdMode === 'p2tr'
+      ? ('settings.wallet.hd.profile.p2tr' as const)
+      : ('settings.wallet.hd.profile.p2wpkh' as const)
+  }
   switch (settings.hdMode) {
     case 'metamask':
       return 'settings.wallet.hd.profile.metamask' as const

@@ -1,3 +1,4 @@
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { describe, expect, it } from 'vitest'
@@ -6,6 +7,7 @@ import { getChainDerivationPath } from './derivationPath'
 import {
   candidateKey,
   chainSupportsHdScan,
+  getBtcHdScanCandidates,
   getEvmHdScanCandidates,
   getHdScanCandidates,
   getThorHdScanCandidates,
@@ -53,13 +55,28 @@ describe('keystoreHdScan', () => {
     expect(path).toBe("m/44'/931'/1'/0/0")
   })
 
+  it('BTC Native SegWit and Taproot vary account', () => {
+    const seg = getBtcHdScanCandidates('p2wpkh')
+    const tr = getBtcHdScanCandidates('p2tr')
+    expect(seg).toHaveLength(HD_SCAN_SLOT_COUNT)
+    expect(tr.every((x) => x.settings.hdMode === 'p2tr' && x.settings.index === 0)).toBe(true)
+    const segPath = getChainDerivationPath(BTCChain, 1, 0, undefined, 'p2wpkh').path
+    const trPath = getChainDerivationPath(BTCChain, 1, 0, undefined, 'p2tr').path
+    expect(segPath).toContain("84'")
+    expect(segPath).toContain("/1'/")
+    expect(trPath).toContain("86'")
+  })
+
   it('getHdScanCandidates dispatches by chain', () => {
     expect(getHdScanCandidates(ETHChain, 'metamask').length).toBe(5)
     expect(getHdScanCandidates(ETHChain, 'thor')).toHaveLength(0)
     expect(getHdScanCandidates(THORChain, 'thor').length).toBe(5)
     expect(getHdScanCandidates(THORChain, 'metamask')).toHaveLength(0)
+    expect(getHdScanCandidates(BTCChain, 'p2wpkh').length).toBe(5)
+    expect(getHdScanCandidates(BTCChain, 'p2tr').length).toBe(5)
     expect(chainSupportsHdScan(ETHChain)).toBe(true)
     expect(chainSupportsHdScan(THORChain)).toBe(true)
+    expect(chainSupportsHdScan(BTCChain)).toBe(true)
   })
 
   it('custom path settings', () => {

@@ -69,6 +69,10 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.custom.hint': 'Enter a full BIP32 path if you know it',
   'settings.wallet.hd.profile.thor': 'THORChain (standard)',
   'settings.wallet.hd.profile.thor.hint': "BIP44 accounts (m/44'/931'/n'/0/0) — scans Accounts 1–5",
+  'settings.wallet.hd.profile.p2wpkh': 'Native SegWit (bc1q…)',
+  'settings.wallet.hd.profile.p2wpkh.hint': "BIP84 accounts (m/84'/0'/n'/0/0) — most modern wallets",
+  'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',
+  'settings.wallet.hd.profile.p2tr.hint': "BIP86 accounts (m/86'/0'/n'/0/0)",
   'settings.wallet.storeAddress.info':
     '신뢰할 수 있는 주소를 로컬 저장소에 저장하면 체인 하단이나 전송 화면에 나열됩니다',
 
