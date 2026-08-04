@@ -17,22 +17,34 @@ type Props = {
   network: Network
 }
 
-const modeLabelId = (hdMode: string) => {
-  switch (hdMode) {
+const profileLabelId = (settings: { hdMode: string; customPath?: string; account: number; index: number }) => {
+  if (settings.customPath?.trim()) return 'settings.wallet.hd.profile.custom' as const
+  switch (settings.hdMode) {
     case 'metamask':
-      return 'settings.wallet.hd.mode.metamask' as const
+      return 'settings.wallet.hd.profile.metamask' as const
     case 'legacy':
-      return 'settings.wallet.hd.mode.legacy' as const
+      return 'settings.wallet.hd.profile.legacy' as const
     case 'ledgerlive':
     case 'default':
     default:
-      return 'settings.wallet.hd.mode.standard' as const
+      return 'settings.wallet.hd.profile.ledgerlive' as const
   }
 }
 
+/** Account number shown to users (1-based). MetaMask uses index; Ledger Live uses account. */
+const displayAccountNumber = (settings: {
+  hdMode: string
+  customPath?: string
+  account: number
+  index: number
+}): number | null => {
+  if (settings.customPath?.trim()) return null
+  if (settings.hdMode === 'metamask' || settings.hdMode === 'legacy') return settings.index + 1
+  return settings.account + 1
+}
+
 /**
- * Quiet keystore HD summary + "Find my funds" entry point.
- * Path selection happens in the scan modal — no BIP jargon on the chain row.
+ * Quiet keystore HD summary + "Find my funds" (profile scan or custom path).
  */
 export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element => {
   const intl = useIntl()
@@ -40,12 +52,13 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
   const [findOpen, setFindOpen] = useState(false)
 
   const summary = useMemo(() => {
-    const accountLabel = settings.account + 1
-    const modeId = modeLabelId(settings.hdMode)
-    const path = getChainDerivationPath(chain, settings.account, settings.index, network, settings.hdMode).path
+    const path =
+      settings.customPath?.trim() ||
+      getChainDerivationPath(chain, settings.account, settings.index, network, settings.hdMode).path
+    const accountNum = displayAccountNumber(settings)
     return {
-      accountLabel,
-      modeId,
+      profileId: profileLabelId(settings),
+      accountNum,
       path
     }
   }, [settings, chain, network])
@@ -54,9 +67,13 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
     <div className="mt-10px flex flex-col gap-1 px-40px">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Label size="small" color="gray" className="!w-auto !p-0">
-          {intl.formatMessage({ id: 'settings.wallet.account' })} {summary.accountLabel}
-          {' · '}
-          {intl.formatMessage({ id: summary.modeId })}
+          {summary.accountNum != null && (
+            <>
+              {intl.formatMessage({ id: 'settings.wallet.account' })} {summary.accountNum}
+              {' · '}
+            </>
+          )}
+          {intl.formatMessage({ id: summary.profileId })}
         </Label>
         <TextButton className="!p-0 text-sm text-turquoise" onClick={() => setFindOpen(true)}>
           {intl.formatMessage({ id: 'settings.wallet.hd.find.action' })}

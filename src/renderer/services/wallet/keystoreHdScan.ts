@@ -9,24 +9,22 @@ import {
   candidateKey,
   getHdScanCandidates,
   HdScanCandidate,
-  EvmHdScanModeLabel
+  HdScanProfile,
+  settingsFromCustomPath
 } from '../../../shared/utils/keystoreHdScan'
 import { KeystoreChainHDSettings } from '../../../shared/wallet/types'
-import { logger } from '../../helpers/logger'
 import { eqAsset } from '../../helpers/fp/eq'
+import { logger } from '../../helpers/logger'
 
 export type KeystoreHdScanHit = {
   key: string
   settings: KeystoreChainHDSettings
   address: string
-  /** Native chain balance (e.g. ETH). Zero if empty or fetch failed. */
   amount: BaseAmount
   path: string
-  modeLabel: EvmHdScanModeLabel
+  profile: Exclude<HdScanProfile, 'custom'> | 'custom'
   accountLabel: number
-  /** True when native balance > 0 */
   hasFunds: boolean
-  /** Balance fetch / derive error (row still shown) */
   error?: string
 }
 
@@ -41,13 +39,10 @@ const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> =>
     })
   ])
 
-/**
- * Run async work over items with a fixed concurrency limit.
- */
 const mapPool = async <T, R>(items: T[], concurrency: number, fn: (item: T) => Promise<R>): Promise<R[]> => {
   const results: R[] = new Array(items.length)
   let next = 0
-  const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+  const workers = Array.from({ length: Math.min(concurrency, Math.max(items.length, 1)) }, async () => {
     while (next < items.length) {
       const i = next++
       results[i] = await fn(items[i])
@@ -57,15 +52,17 @@ const mapPool = async <T, R>(items: T[], concurrency: number, fn: (item: T) => P
   return results
 }
 
-const scanOneEth = async (
-  candidate: HdScanCandidate,
+const deriveEthHit = async (
+  settings: KeystoreChainHDSettings,
   phrase: string,
   network: Network,
-  rpcUrl: string
+  rpcUrl: string,
+  meta: { profile: KeystoreHdScanHit['profile']; accountLabel: number }
 ): Promise<KeystoreHdScanHit> => {
-  const { settings, accountLabel, modeLabel } = candidate
-  const path = getChainDerivationPath(ETHChain, settings.account, settings.index, network, settings.hdMode).path
-  const key = candidateKey(candidate)
+  const path =
+    settings.customPath?.trim() ||
+    getChainDerivationPath(ETHChain, settings.account, settings.index, network, settings.hdMode).path
+  const key = candidateKey({ settings })
 
   try {
     const { rootDerivationPaths, walletIndex } = getKeystoreDerivation(ETHChain, settings)
@@ -86,8 +83,8 @@ const scanOneEth = async (
       address,
       amount,
       path,
-      modeLabel,
-      accountLabel,
+      profile: meta.profile,
+      accountLabel: meta.accountLabel,
       hasFunds: amount.gt(baseAmount(0))
     }
   } catch (e) {
@@ -99,52 +96,70 @@ const scanOneEth = async (
       address: '',
       amount: baseAmount(0),
       path,
-      modeLabel,
-      accountLabel,
+      profile: meta.profile,
+      accountLabel: meta.accountLabel,
       hasFunds: false,
       error: msg
     }
   }
 }
 
-/**
- * Scan common ETH derivation paths for native balance.
- * Does not mutate live client$ — uses ephemeral clients per candidate.
- */
-export const scanEthKeystoreFunds = async (
-  phrase: string,
-  network: Network,
-  rpcUrl: string
-): Promise<KeystoreHdScanHit[]> => {
-  const candidates = getHdScanCandidates(ETHChain)
-  const hits = await mapPool(candidates, SCAN_CONCURRENCY, (c) => scanOneEth(c, phrase, network, rpcUrl))
-
-  // Funded first (desc), then successes without funds, then errors; stable by path
-  return hits.sort((a, b) => {
+const sortHits = (hits: KeystoreHdScanHit[]): KeystoreHdScanHit[] =>
+  hits.sort((a, b) => {
     if (a.hasFunds !== b.hasFunds) return a.hasFunds ? -1 : 1
     if (!!a.error !== !!b.error) return a.error ? 1 : -1
     if (a.hasFunds && b.hasFunds) {
       const cmp = b.amount.amount().comparedTo(a.amount.amount()) ?? 0
       if (cmp !== 0) return cmp
     }
-    return a.path.localeCompare(b.path)
+    return a.accountLabel - b.accountLabel
   })
+
+/**
+ * Scan ≤5 paths for one wallet profile (MetaMask / Ledger Live / Legacy).
+ */
+export const scanEthKeystoreFunds = async (
+  phrase: string,
+  network: Network,
+  rpcUrl: string,
+  profile: Exclude<HdScanProfile, 'custom'>
+): Promise<KeystoreHdScanHit[]> => {
+  const candidates: HdScanCandidate[] = getHdScanCandidates(ETHChain, profile)
+  const hits = await mapPool(candidates, SCAN_CONCURRENCY, (c) =>
+    deriveEthHit(c.settings, phrase, network, rpcUrl, {
+      profile: c.profile,
+      accountLabel: c.accountLabel
+    })
+  )
+  return sortHits(hits)
+}
+
+/** Derive + balance for a single custom BIP path. */
+export const checkEthCustomPath = async (
+  phrase: string,
+  network: Network,
+  rpcUrl: string,
+  fullPath: string
+): Promise<KeystoreHdScanHit> => {
+  const settings = settingsFromCustomPath(fullPath)
+  return deriveEthHit(settings, phrase, network, rpcUrl, { profile: 'custom', accountLabel: 0 })
 }
 
 export const scanKeystoreFundsForChain = async (
   chain: Chain,
   phrase: string,
   network: Network,
-  rpcUrl: string
+  rpcUrl: string,
+  profile: Exclude<HdScanProfile, 'custom'>
 ): Promise<KeystoreHdScanHit[]> => {
-  if (chain === ETHChain) return scanEthKeystoreFunds(phrase, network, rpcUrl)
+  if (chain === ETHChain) return scanEthKeystoreFunds(phrase, network, rpcUrl, profile)
   return []
 }
 
-/** Observable wrapper for UI. */
 export const scanKeystoreFunds$ = (
   chain: Chain,
   phrase: string,
   network: Network,
-  rpcUrl: string
-): Rx.Observable<KeystoreHdScanHit[]> => Rx.from(scanKeystoreFundsForChain(chain, phrase, network, rpcUrl))
+  rpcUrl: string,
+  profile: Exclude<HdScanProfile, 'custom'>
+): Rx.Observable<KeystoreHdScanHit[]> => Rx.from(scanKeystoreFundsForChain(chain, phrase, network, rpcUrl, profile))
