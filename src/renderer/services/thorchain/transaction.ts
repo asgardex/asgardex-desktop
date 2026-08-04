@@ -13,6 +13,7 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
+import { resolveThornodeApiUrl } from '../../../shared/thorchain/const'
 import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { retryRequest } from '../../helpers/rx/retryRequest'
@@ -53,7 +54,7 @@ export const createTransactionService = (
       walletAccount: params.walletAccount,
       walletIndex: params.walletIndex,
       feeOption: undefined,
-      nodeUrl: clientUrl[network].node,
+      nodeUrl: resolveThornodeApiUrl(clientUrl[network].node, network),
       hdMode: params.hdMode,
       apiKey: undefined,
       evmRpcUrl: undefined,
@@ -163,7 +164,7 @@ export const createTransactionService = (
       feeRate: NaN,
       feeOption: undefined,
       feeAmount: undefined,
-      nodeUrl: clientUrl[network].node,
+      nodeUrl: resolveThornodeApiUrl(clientUrl[network].node, network),
       hdMode: 'default',
       apiKey: undefined,
       destinationTag: undefined,

@@ -1,6 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TxHash, XChainClient } from '@xchainjs/xchain-client'
-import { Address } from '@xchainjs/xchain-util'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
+import { Address, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -12,10 +14,37 @@ import { XChainClient$ } from '../types'
 import { loadTx$ } from './common'
 
 /**
- * Check if transaction has been included finally
+ * THOR / MAYA block time ~6s — wait one block before the first getTx so we
+ * don't hammer Liquify while the tx can't possibly be indexed yet.
+ */
+const TX_STATUS_INITIAL_DELAY_THOR_MS = 6_000
+
+/** Default first-poll delay for other chains. */
+const TX_STATUS_INITIAL_DELAY_DEFAULT_MS = 10_000
+
+/**
+ * Gap between status polls. Was 5s / 50 attempts — too aggressive for shared
+ * Liquify RPC when getTx 404s until indexed (xchain then reports
+ * "No clients available. Can not retrieve transaction …").
+ */
+const TX_STATUS_POLL_INTERVAL_MS = 15_000
+
+/** Max poll attempts (~6s + 40×15s ≈ 10 min worst case on THOR). */
+const TX_STATUS_MAX_REQUESTS = 40
+
+const initialDelayMsForClient = (client: XChainClient): number => {
+  // XChainClient has no getChain(); native asset chain is the client chain
+  const chain: Chain = client.getAssetInfo().asset.chain
+  if (chain === THORChain || chain === MAYAChain) return TX_STATUS_INITIAL_DELAY_THOR_MS
+  return TX_STATUS_INITIAL_DELAY_DEFAULT_MS
+}
+
+/**
+ * Check if transaction has been included finally.
  *
- * It tries to poll data every 5000 seconds and will never fail.
- * But it stops polling by getting a valid result or by reaching maximum number (50) of requests
+ * Polls with an initial delay and a gentle interval. Uses `exhaustMap` so a
+ * slow `getTransactionData` call is never overlapped by the next tick.
+ * Errors are ignored until MAX attempts (tx often not indexed yet).
  *
  * @param txHash Transaction hash
  * @param chain Chain
@@ -29,41 +58,42 @@ export const txStatusByClient$ = ({
   txHash: string
   assetAddress: O.Option<Address>
 }): TxLD => {
-  // max. number of requests
-  const MAX = 50
+  const MAX = TX_STATUS_MAX_REQUESTS
+  const initialDelayMs = initialDelayMsForClient(client)
   // Status to do another poll or not
   const { get$: hasResult$, set: setHasResult } = observableState(false)
   // state of counting request
-  const { get$: count$, get: getCount, set: setCount } = observableState(0)
-  // Stream to check to stop polling or not
-  const stopInterval$ = Rx.combineLatest([hasResult$, count$]).pipe(
-    RxOp.filter(([hasResult, count]) => hasResult || count > MAX)
-  )
+  const { get: getCount, set: setCount } = observableState(0)
 
   return FP.pipe(
-    Rx.interval(5000),
-    // Run interval as long as we don't have a valid result or MAX number of requests
-    RxOp.takeUntil(stopInterval$),
-    // count requests
-    RxOp.tap(() => setCount(getCount() + 1)),
-    RxOp.switchMap((_) => loadTx$({ client, txHash, assetAddress })),
+    // First emission after one block (THOR/MAYA) / default delay, then every POLL_INTERVAL
+    Rx.timer(initialDelayMs, TX_STATUS_POLL_INTERVAL_MS),
+    // Guard *before* starting request N+1 (avoid request 41 when MAX=40)
+    RxOp.takeWhile(() => getCount() < MAX),
+    // Stop as soon as we have a successful inclusion result
+    RxOp.takeUntil(hasResult$.pipe(RxOp.filter((hasResult) => hasResult))),
+    // exhaustMap: skip ticks while a previous getTx is still in flight (rate-limit friendly)
+    RxOp.exhaustMap(() => {
+      setCount(getCount() + 1)
+      return loadTx$({ client, txHash, assetAddress })
+    }),
     liveData.map((result) => {
       // update state to stop polling
       setHasResult(true)
       return result
     }),
-    // As long as we don't reach MAX, we accept succeeded result only (but no errors)
-    // After reaching MAX we don't filter anything and will show error if its happen
+    // As long as we don't reach MAX, accept succeeded result only (ignore not-found / rate errors)
+    // After reaching MAX surface the last result including failures
     RxOp.filter((result) => (getCount() < MAX ? RD.isSuccess(result) : true)),
     RxOp.startWith(RD.pending)
   )
 }
 
 /**
- * Checks status of a transaction
+ * Checks status of a transaction.
  *
- * It polls data for tx every 5000 seconds and will never fail.
- * But it stops polling by getting a valid result or by reaching maximum number (50) of requests
+ * Polls with initial delay + gentle interval (see TX_STATUS_* constants).
+ * Stops on a valid result or after MAX requests.
  *
  * @param txHash Transaction hash
  * @param chain Chain
