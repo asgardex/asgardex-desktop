@@ -65,7 +65,6 @@ import {
   SaverProviderLD,
   SaverProvider,
   InboundAddresses,
-  InboundAddress,
   TxStagesLD,
   TxStages,
   ThorchainPoolLD,
