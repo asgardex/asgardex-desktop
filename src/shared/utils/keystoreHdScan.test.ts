@@ -46,25 +46,26 @@ describe('keystoreHdScan', () => {
     expect(path).toBe("m/44'/60'/1'/0/0")
   })
 
-  it('THOR varies BIP44 account on 931 coin type', () => {
+  it('THOR varies address index on account 0', () => {
     const c = getThorHdScanCandidates()
     expect(c).toHaveLength(HD_SCAN_SLOT_COUNT)
-    expect(c.every((x) => x.profile === 'thor' && x.settings.index === 0)).toBe(true)
-    expect(c.map((x) => x.settings.account)).toEqual([0, 1, 2, 3, 4])
+    expect(c.every((x) => x.profile === 'thor' && x.settings.account === 0)).toBe(true)
+    expect(c.map((x) => x.settings.index)).toEqual([0, 1, 2, 3, 4])
     const path = getChainDerivationPath(THORChain, c[1].settings.account, c[1].settings.index).path
-    expect(path).toBe("m/44'/931'/1'/0/0")
+    expect(path).toBe("m/44'/931'/0'/0/1")
   })
 
-  it('BTC Native SegWit and Taproot vary account', () => {
+  it('BTC Native SegWit and Taproot vary address index on account 0', () => {
     const seg = getBtcHdScanCandidates('p2wpkh')
     const tr = getBtcHdScanCandidates('p2tr')
     expect(seg).toHaveLength(HD_SCAN_SLOT_COUNT)
-    expect(tr.every((x) => x.settings.hdMode === 'p2tr' && x.settings.index === 0)).toBe(true)
-    const segPath = getChainDerivationPath(BTCChain, 1, 0, undefined, 'p2wpkh').path
-    const trPath = getChainDerivationPath(BTCChain, 1, 0, undefined, 'p2tr').path
-    expect(segPath).toContain("84'")
-    expect(segPath).toContain("/1'/")
-    expect(trPath).toContain("86'")
+    expect(seg.every((x) => x.settings.account === 0)).toBe(true)
+    expect(seg.map((x) => x.settings.index)).toEqual([0, 1, 2, 3, 4])
+    expect(tr.every((x) => x.settings.hdMode === 'p2tr' && x.settings.account === 0)).toBe(true)
+    const segPath = getChainDerivationPath(BTCChain, 0, 1, undefined, 'p2wpkh').path
+    const trPath = getChainDerivationPath(BTCChain, 0, 1, undefined, 'p2tr').path
+    expect(segPath).toBe("m/84'/0'/0'/0/1")
+    expect(trPath).toBe("m/86'/0'/0'/0/1")
   })
 
   it('getHdScanCandidates dispatches by chain', () => {

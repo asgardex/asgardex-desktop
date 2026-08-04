@@ -362,7 +362,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
                             </span>
                           </div>
                           <span className="text-xs text-text2 dark:text-text2d">
-                            {intl.formatMessage({ id: 'settings.wallet.account' })} {hit.accountLabel}
+                            {intl.formatMessage({ id: 'settings.wallet.index' })} {hit.settings.index}
                             {' · '}
                             <span className="font-mono opacity-80">{hit.path}</span>
                           </span>

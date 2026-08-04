@@ -42,8 +42,12 @@ const profileLabelId = (
   }
 }
 
-/** Account number shown to users (1-based). MetaMask/legacy use index; Ledger Live & THOR use account. */
-const displayAccountNumber = (
+/**
+ * What we show as the human slot number.
+ * Index-based profiles (MetaMask, legacy, THOR, BTC): index+1.
+ * Ledger Live (EVM): BIP44 account+1.
+ */
+const displaySlotNumber = (
   chain: Chain,
   settings: {
     hdMode: string
@@ -51,12 +55,14 @@ const displayAccountNumber = (
     account: number
     index: number
   }
-): number | null => {
+): { kind: 'account' | 'index'; n: number } | null => {
   if (settings.customPath?.trim()) return null
-  if (chain !== THORChain && (settings.hdMode === 'metamask' || settings.hdMode === 'legacy')) {
-    return settings.index + 1
+  if (chain === THORChain || chain === BTCChain) return { kind: 'index', n: settings.index }
+  if (settings.hdMode === 'metamask' || settings.hdMode === 'legacy') {
+    return { kind: 'index', n: settings.index }
   }
-  return settings.account + 1
+  // ledgerlive / default on EVM
+  return { kind: 'account', n: settings.account + 1 }
 }
 
 /**
@@ -71,10 +77,10 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
     const path =
       settings.customPath?.trim() ||
       getChainDerivationPath(chain, settings.account, settings.index, network, settings.hdMode).path
-    const accountNum = displayAccountNumber(chain, settings)
+    const slot = displaySlotNumber(chain, settings)
     return {
       profileId: profileLabelId(chain, settings),
-      accountNum,
+      slot,
       path
     }
   }, [settings, chain, network])
@@ -83,9 +89,12 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
     <div className="mt-10px flex flex-col gap-1 px-40px">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Label size="small" color="gray" className="!w-auto !p-0">
-          {summary.accountNum != null && (
+          {summary.slot != null && (
             <>
-              {intl.formatMessage({ id: 'settings.wallet.account' })} {summary.accountNum}
+              {summary.slot.kind === 'index'
+                ? intl.formatMessage({ id: 'settings.wallet.index' })
+                : intl.formatMessage({ id: 'settings.wallet.account' })}{' '}
+              {summary.slot.n}
               {' · '}
             </>
           )}

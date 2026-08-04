@@ -62,23 +62,25 @@ export const getEvmHdScanCandidates = (
 }
 
 /**
- * THORChain BIP44: m/44'/931'/{account}'/0/0 — vary account only (≤5).
+ * THORChain BIP44: m/44'/931'/0'/0/{index} — vary address index only (≤5).
+ * Account stays 0 (most wallets); index is what users mean by “next address”.
  */
 export const getThorHdScanCandidates = (slotCount: number = HD_SCAN_SLOT_COUNT): HdScanCandidate[] => {
   const n = Math.max(1, Math.min(slotCount, 20))
   const out: HdScanCandidate[] = []
-  for (let account = 0; account < n; account++) {
+  for (let index = 0; index < n; index++) {
     out.push({
       profile: 'thor',
-      accountLabel: account + 1,
-      settings: { hdMode: 'default', account, index: 0 }
+      accountLabel: index + 1,
+      settings: { hdMode: 'default', account: 0, index }
     })
   }
   return out
 }
 
 /**
- * Bitcoin: Native SegWit BIP84 or Taproot BIP86 — vary account, index 0 (≤5).
+ * Bitcoin: Native SegWit BIP84 or Taproot BIP86 — vary address index, account 0 (≤5).
+ * Paths: m/84'/0'/0'/0/{index} or m/86'/0'/0'/0/{index}
  */
 export const getBtcHdScanCandidates = (
   profile: 'p2wpkh' | 'p2tr',
@@ -87,11 +89,11 @@ export const getBtcHdScanCandidates = (
   const n = Math.max(1, Math.min(slotCount, 20))
   const hdMode: UtxoHDMode = profile
   const out: HdScanCandidate[] = []
-  for (let account = 0; account < n; account++) {
+  for (let index = 0; index < n; index++) {
     out.push({
       profile,
-      accountLabel: account + 1,
-      settings: { hdMode, account, index: 0 }
+      accountLabel: index + 1,
+      settings: { hdMode, account: 0, index }
     })
   }
   return out
