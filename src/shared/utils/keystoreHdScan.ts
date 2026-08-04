@@ -7,28 +7,28 @@ import { EvmHDMode } from '../evm/types'
 import { UtxoHDMode } from '../utxo/types'
 import { KeystoreChainHDSettings } from '../wallet/types'
 
-/** Max accounts/indices scanned for one profile (Accounts 1–5 in the UI). */
+/** Max address indexes scanned for one profile (indexes 0–4). */
 export const HD_SCAN_SLOT_COUNT = 5
 
 /**
  * Wallet / path profile chosen before scanning.
- * EVM wallets use different formulas; THOR BIP44 account; BTC Native SegWit vs Taproot.
+ * All profiles vary address index only (account stays 0). Multi-account BIP paths → custom path.
  */
 export type HdScanProfile = 'metamask' | 'ledgerlive' | 'legacy' | 'thor' | 'p2wpkh' | 'p2tr' | 'custom'
 
 export type HdScanCandidate = {
   settings: KeystoreChainHDSettings
-  /** 1-based “Account N” label in the UI */
+  /** 1-based sort key (index + 1); UI shows zero-based `settings.index` */
   accountLabel: number
   profile: Exclude<HdScanProfile, 'custom'>
 }
 
 /**
- * EVM candidates for a single profile (≤5).
+ * EVM candidates for a single profile (≤5) — **address index only**, account always 0.
  *
- * - MetaMask:  m/44'/60'/0'/0/{index}     → vary index, account=0
- * - Ledger Live: m/44'/60'/{account}'/0/0 → vary account, index=0
- * - Legacy:    m/44'/60'/0'/{index}       → vary index, account=0
+ * - MetaMask:     m/44'/60'/0'/0/{index}
+ * - Ledger Live:  m/44'/60'/0'/0/{index}  (account 0; multi-account → custom path)
+ * - Legacy:       m/44'/60'/0'/{index}
  */
 export const getEvmHdScanCandidates = (
   profile: 'metamask' | 'ledgerlive' | 'legacy',
@@ -36,27 +36,14 @@ export const getEvmHdScanCandidates = (
 ): HdScanCandidate[] => {
   const n = Math.max(1, Math.min(slotCount, 20))
   const out: HdScanCandidate[] = []
+  const hdMode: EvmHDMode = profile === 'ledgerlive' ? 'ledgerlive' : profile === 'metamask' ? 'metamask' : 'legacy'
 
-  for (let i = 0; i < n; i++) {
-    if (profile === 'ledgerlive') {
-      out.push({
-        profile,
-        accountLabel: i + 1,
-        settings: { hdMode: 'ledgerlive' as EvmHDMode, account: i, index: 0 }
-      })
-    } else if (profile === 'metamask') {
-      out.push({
-        profile,
-        accountLabel: i + 1,
-        settings: { hdMode: 'metamask' as EvmHDMode, account: 0, index: i }
-      })
-    } else {
-      out.push({
-        profile,
-        accountLabel: i + 1,
-        settings: { hdMode: 'legacy' as EvmHDMode, account: 0, index: i }
-      })
-    }
+  for (let index = 0; index < n; index++) {
+    out.push({
+      profile,
+      accountLabel: index + 1,
+      settings: { hdMode, account: 0, index }
+    })
   }
   return out
 }

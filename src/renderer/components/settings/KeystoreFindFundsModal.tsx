@@ -105,7 +105,7 @@ const nativeAssetForChain = (chain: Chain): AnyAsset | undefined => {
   return undefined
 }
 
-/** Default full path for a chain (Account 1 / index 0, standard formula). */
+/** Default full path for a chain (account 0 / index 0, standard formula). */
 const defaultCustomPath = (chain: Chain, network: Network): string => {
   if (chain === THORChain) return getChainDerivationPath(chain, 0, 0, network).path
   if (chain === BTCChain) return getChainDerivationPath(chain, 0, 0, network, 'p2wpkh').path

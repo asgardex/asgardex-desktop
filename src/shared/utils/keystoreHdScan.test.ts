@@ -32,10 +32,10 @@ describe('keystoreHdScan', () => {
     expect(path).toContain("m/44'/60'/0'/0/")
   })
 
-  it('Ledger Live varies account, keeps index 0', () => {
+  it('Ledger Live also varies index on account 0 (not BIP account)', () => {
     const c = getEvmHdScanCandidates('ledgerlive')
-    expect(c.every((x) => x.settings.index === 0)).toBe(true)
-    expect(c.map((x) => x.settings.account)).toEqual([0, 1, 2, 3, 4])
+    expect(c.every((x) => x.settings.account === 0)).toBe(true)
+    expect(c.map((x) => x.settings.index)).toEqual([0, 1, 2, 3, 4])
     const path = getChainDerivationPath(
       ETHChain,
       c[1].settings.account,
@@ -43,7 +43,7 @@ describe('keystoreHdScan', () => {
       undefined,
       c[1].settings.hdMode
     ).path
-    expect(path).toBe("m/44'/60'/1'/0/0")
+    expect(path).toBe("m/44'/60'/0'/0/1")
   })
 
   it('THOR varies address index on account 0', () => {

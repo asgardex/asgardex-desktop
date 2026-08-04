@@ -42,27 +42,10 @@ const profileLabelId = (
   }
 }
 
-/**
- * What we show as the human slot number.
- * Index-based profiles (MetaMask, legacy, THOR, BTC): index+1.
- * Ledger Live (EVM): BIP44 account+1.
- */
-const displaySlotNumber = (
-  chain: Chain,
-  settings: {
-    hdMode: string
-    customPath?: string
-    account: number
-    index: number
-  }
-): { kind: 'account' | 'index'; n: number } | null => {
+/** Always show address index (never BIP44 “account”) for the quiet summary. */
+const displayIndex = (settings: { customPath?: string; index: number }): number | null => {
   if (settings.customPath?.trim()) return null
-  if (chain === THORChain || chain === BTCChain) return { kind: 'index', n: settings.index }
-  if (settings.hdMode === 'metamask' || settings.hdMode === 'legacy') {
-    return { kind: 'index', n: settings.index }
-  }
-  // ledgerlive / default on EVM
-  return { kind: 'account', n: settings.account + 1 }
+  return settings.index
 }
 
 /**
@@ -77,10 +60,9 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
     const path =
       settings.customPath?.trim() ||
       getChainDerivationPath(chain, settings.account, settings.index, network, settings.hdMode).path
-    const slot = displaySlotNumber(chain, settings)
     return {
       profileId: profileLabelId(chain, settings),
-      slot,
+      index: displayIndex(settings),
       path
     }
   }, [settings, chain, network])
@@ -89,12 +71,9 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
     <div className="mt-10px flex flex-col gap-1 px-40px">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Label size="small" color="gray" className="!w-auto !p-0">
-          {summary.slot != null && (
+          {summary.index != null && (
             <>
-              {summary.slot.kind === 'index'
-                ? intl.formatMessage({ id: 'settings.wallet.index' })
-                : intl.formatMessage({ id: 'settings.wallet.account' })}{' '}
-              {summary.slot.n}
+              {intl.formatMessage({ id: 'settings.wallet.index' })} {summary.index}
               {' · '}
             </>
           )}
