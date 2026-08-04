@@ -40,6 +40,7 @@ import { array as A, function as FP, number as N, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { resolveThornodeApiUrl } from '../../../shared/thorchain/const'
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
@@ -96,7 +97,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
    * Thornode url
    */
   const thornodeUrl$: ThornodeApiUrlLD = Rx.combineLatest([network$, clientUrl$, reloadThornodeUrl$]).pipe(
-    RxOp.map(([network, url, _]) => RD.success(`${url[network].node}`)),
+    // Expert UI stores the public Liquify path; inject portal API key when set
+    RxOp.map(([network, url, _]) => RD.success(resolveThornodeApiUrl(url[network].node))),
     RxOp.shareReplay(1)
   )
 

@@ -11,7 +11,7 @@ import * as RxAjax from 'rxjs/ajax'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeUrl } from '../../shared/api/types'
-import { resolveThornodeRpcUrl } from '../../shared/thorchain/const'
+import { resolveThornodeApiUrl, resolveThornodeRpcUrl } from '../../shared/thorchain/const'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { LiveData } from '../helpers/rx/liveData'
 import { DEFAULT_CLIENT_URL } from '../services/thorchain/const'
@@ -47,10 +47,12 @@ export const useThorchainClientUrl = (): {
   const setRpc = (url: string) => setThornodeRpcUrl(url, network)
   const setNode = (url: string) => setThornodeApiUrl(url, network)
 
-  const checkNode$ = (url: string) =>
-    FP.pipe(
+  const checkNode$ = (url: string) => {
+    // Test the URL the app will actually use (authenticated Liquify API when key is set)
+    const urlToCheck = resolveThornodeApiUrl(url)
+    return FP.pipe(
       // Convert Promise to Observable
-      Rx.from(new HealthApi(getThornodeAPIConfiguration(url)).ping()),
+      Rx.from(new HealthApi(getThornodeAPIConfiguration(urlToCheck)).ping()),
       RxOp.map((result) => {
         const { ping } = result.data
         if (ping) return RD.success(url)
@@ -63,6 +65,7 @@ export const useThorchainClientUrl = (): {
         Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'setting.thornode.node.error.url' })}`)))
       )
     )
+  }
 
   const checkRpc$ = (url: string) => {
     // Test the URL the client will actually use (authenticated Liquify when key is set)

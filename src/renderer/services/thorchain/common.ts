@@ -10,8 +10,10 @@ import {
   DEFAULT_THORNODE_API_URLS,
   DEFAULT_THORNODE_RPC_URLS,
   getThornodeRpcClientUrls,
-  isLiquifyAuthenticatedRpcUrl,
-  maskThornodeRpcUrl
+  isLiquifyAuthenticatedUrl,
+  maskThornodeApiUrl,
+  maskThornodeRpcUrl,
+  resolveThornodeApiUrl
 } from '../../../shared/thorchain/const'
 import { isError } from '../../../shared/utils/guard'
 import { triggerStream } from '../../helpers/stateHelper'
@@ -27,40 +29,57 @@ const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
 
 /**
  * Stream of ClientUrl (from storage) for UI / config display.
- * RPC values are masked so Liquify portal keys (`/api=<KEY>`) never appear in Expert Mode.
- * The authenticated URL is applied only when constructing xchain Clients.
+ * API/RPC values are masked so Liquify portal keys (`/api=<KEY>`) never appear in Expert Mode.
+ * Authenticated URLs are applied only at request/client construction via resolve helpers.
  */
 const clientUrl$: ClientUrl$ = FP.pipe(
   Rx.combineLatest([thornodeApi$, thornodeRpc$, reloadClientUrl$]),
   // Scrub any portal `/api=<KEY>` URLs previously saved into storage
-  RxOp.tap(([, thornodeRpc]) => {
-    if (
-      isLiquifyAuthenticatedRpcUrl(thornodeRpc.mainnet) ||
-      isLiquifyAuthenticatedRpcUrl(thornodeRpc.stagenet) ||
-      isLiquifyAuthenticatedRpcUrl(thornodeRpc.testnet)
-    ) {
+  RxOp.tap(([thornodeApi, thornodeRpc]) => {
+    const apiNeedsScrub =
+      isLiquifyAuthenticatedUrl(thornodeApi.mainnet) ||
+      isLiquifyAuthenticatedUrl(thornodeApi.stagenet) ||
+      isLiquifyAuthenticatedUrl(thornodeApi.testnet)
+    const rpcNeedsScrub =
+      isLiquifyAuthenticatedUrl(thornodeRpc.mainnet) ||
+      isLiquifyAuthenticatedUrl(thornodeRpc.stagenet) ||
+      isLiquifyAuthenticatedUrl(thornodeRpc.testnet)
+    if (apiNeedsScrub || rpcNeedsScrub) {
       modifyStorage(
         O.some({
-          thornodeRpc: {
-            mainnet: maskThornodeRpcUrl(thornodeRpc.mainnet),
-            stagenet: maskThornodeRpcUrl(thornodeRpc.stagenet),
-            testnet: maskThornodeRpcUrl(thornodeRpc.testnet)
-          }
+          ...(apiNeedsScrub
+            ? {
+                thornodeApi: {
+                  mainnet: maskThornodeApiUrl(thornodeApi.mainnet),
+                  stagenet: maskThornodeApiUrl(thornodeApi.stagenet),
+                  testnet: maskThornodeApiUrl(thornodeApi.testnet)
+                }
+              }
+            : {}),
+          ...(rpcNeedsScrub
+            ? {
+                thornodeRpc: {
+                  mainnet: maskThornodeRpcUrl(thornodeRpc.mainnet),
+                  stagenet: maskThornodeRpcUrl(thornodeRpc.stagenet),
+                  testnet: maskThornodeRpcUrl(thornodeRpc.testnet)
+                }
+              }
+            : {})
         })
       )
     }
   }),
   RxOp.map(([thornodeApi, thornodeRpc, _]) => ({
     [ClientNetwork.Testnet]: {
-      node: thornodeApi.testnet,
+      node: maskThornodeApiUrl(thornodeApi.testnet),
       rpc: maskThornodeRpcUrl(thornodeRpc.testnet)
     },
     [ClientNetwork.Stagenet]: {
-      node: thornodeApi.stagenet,
+      node: maskThornodeApiUrl(thornodeApi.stagenet),
       rpc: maskThornodeRpcUrl(thornodeRpc.stagenet)
     },
     [ClientNetwork.Mainnet]: {
-      node: thornodeApi.mainnet,
+      node: maskThornodeApiUrl(thornodeApi.mainnet),
       rpc: maskThornodeRpcUrl(thornodeRpc.mainnet)
     }
   })),
@@ -84,7 +103,8 @@ const setThornodeApiUrl = (url: string, network: Network) => {
     O.map(({ thornodeApi }) => thornodeApi),
     O.getOrElse(() => DEFAULT_THORNODE_API_URLS)
   )
-  const updated: ApiUrls = { ...current, [network]: url }
+  // Never persist Liquify `/api=<KEY>` URLs
+  const updated: ApiUrls = { ...current, [network]: maskThornodeApiUrl(url) }
   modifyStorage(O.some({ thornodeApi: updated }))
 }
 
@@ -101,7 +121,7 @@ const clientState$: ClientState$ = FP.pipe(
     ([keystore, network, clientUrl]): ClientState$ =>
       FP.pipe(
         // request chain id from node whenever network or keystore state have been changed
-        Rx.from(getChainId(clientUrl[network].node)),
+        Rx.from(getChainId(resolveThornodeApiUrl(clientUrl[network].node))),
         RxOp.switchMap(() =>
           Rx.of(
             FP.pipe(
@@ -147,7 +167,7 @@ const readOnlyClientState$: ClientState$ = FP.pipe(
     ([network, clientUrl]): ClientState$ =>
       FP.pipe(
         // request chain id from node whenever network changes
-        Rx.from(getChainId(clientUrl[network].node)),
+        Rx.from(getChainId(resolveThornodeApiUrl(clientUrl[network].node))),
         RxOp.switchMap(() =>
           Rx.of(
             (() => {
