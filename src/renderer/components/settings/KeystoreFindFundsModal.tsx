@@ -14,6 +14,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
+import { getChainDerivationPath } from '../../../shared/utils/derivationPath'
 import { validateDerivationPath, warnDerivationPath } from '../../../shared/utils/derivationPathValidation'
 import { candidateKey, HdScanProfile } from '../../../shared/utils/keystoreHdScan'
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, WalletType } from '../../../shared/wallet/types'
@@ -104,10 +105,27 @@ const nativeAssetForChain = (chain: Chain): AnyAsset | undefined => {
   return undefined
 }
 
-const customPathPlaceholder = (chain: Chain): string => {
-  if (chain === THORChain) return "m/44'/931'/0'/0/0"
-  if (chain === BTCChain) return "m/84'/0'/0'/0/0"
-  return "m/44'/60'/0'/0/0"
+/** Default full path for a chain (Account 1 / index 0, standard formula). */
+const defaultCustomPath = (chain: Chain, network: Network): string => {
+  if (chain === THORChain) return getChainDerivationPath(chain, 0, 0, network).path
+  if (chain === BTCChain) return getChainDerivationPath(chain, 0, 0, network, 'p2wpkh').path
+  return getChainDerivationPath(chain, 0, 0, network, 'ledgerlive').path
+}
+
+/** Prefill editor with current locked path if any, else chain default. */
+const initialCustomPath = (
+  chain: Chain,
+  network: Network,
+  settings: { customPath?: string; account: number; index: number; hdMode: string }
+): string => {
+  if (settings.customPath?.trim()) return settings.customPath.trim()
+  return getChainDerivationPath(
+    chain,
+    settings.account,
+    settings.index,
+    network,
+    settings.hdMode as 'default' | 'p2wpkh' | 'p2tr' | 'ledgerlive' | 'metamask' | 'legacy'
+  ).path
 }
 
 /**
@@ -139,14 +157,20 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
     thorRpcUrls[network] || DEFAULT_THORNODE_RPC_URLS[network] || DEFAULT_THORNODE_RPC_URLS.mainnet
   )
 
+  const openCustomStep = useCallback(() => {
+    setCustomPath(initialCustomPath(chain, network, currentSettings))
+    setCustomRD(RD.initial)
+    setStep('custom')
+  }, [chain, network, currentSettings])
+
   const reset = useCallback(() => {
     setStep('pick')
     setProfile(defaultProfileForChain(chain))
     setScanRD(RD.initial)
     setSelectedKey(null)
-    setCustomPath('')
+    setCustomPath(defaultCustomPath(chain, network))
     setCustomRD(RD.initial)
-  }, [chain])
+  }, [chain, network])
 
   useEffect(() => {
     if (!open) reset()
@@ -262,7 +286,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
               })}
               <button
                 type="button"
-                onClick={() => setStep('custom')}
+                onClick={openCustomStep}
                 className="rounded-lg border border-gray0 px-3 py-2.5 text-left hover:bg-bg1 dark:border-gray0d dark:hover:bg-bg1d">
                 <div className="font-medium text-text0 dark:text-text0d">
                   {intl.formatMessage({ id: 'settings.wallet.hd.profile.custom' })}
@@ -378,7 +402,12 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
                 setCustomPath(e.currentTarget.value)
                 setCustomRD(RD.initial)
               }}
-              placeholder={customPathPlaceholder(chain)}
+              onFocus={(e) => {
+                // Select all so a quick edit is easy; path stays editable (not placeholder-only)
+                e.currentTarget.select()
+              }}
+              spellCheck={false}
+              autoComplete="off"
               className={clsx(
                 'w-full rounded-lg border bg-bg1 px-3 py-2 font-mono text-sm text-text0 focus:outline-hidden dark:bg-bg1d dark:text-text0d',
                 customValid ? 'border-gray0 dark:border-gray0d' : 'border-error0 dark:border-error0d'
