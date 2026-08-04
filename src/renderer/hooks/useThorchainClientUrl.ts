@@ -68,8 +68,8 @@ export const useThorchainClientUrl = (): {
   }
 
   const checkRpc$ = (url: string) => {
-    // Test the URL the client will actually use (authenticated Liquify when key is set)
-    const urlToCheck = resolveThornodeRpcUrl(url)
+    // Test the URL the client will actually use (mainnet Liquify key only when set)
+    const urlToCheck = resolveThornodeRpcUrl(url, network)
     return FP.pipe(
       // Check `health` endpoint of THORNode RPC API
       // https://docs.tendermint.com/v0.34/rpc/#/Info/health

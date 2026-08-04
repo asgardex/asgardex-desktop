@@ -63,17 +63,15 @@ export const txStatusByClient$ = ({
   // Status to do another poll or not
   const { get$: hasResult$, set: setHasResult } = observableState(false)
   // state of counting request
-  const { get$: count$, get: getCount, set: setCount } = observableState(0)
-  // Stop after success, or after we've fully used MAX attempts (count goes past MAX)
-  const stopInterval$ = Rx.combineLatest([hasResult$, count$]).pipe(
-    RxOp.filter(([hasResult, count]) => hasResult || count > MAX)
-  )
+  const { get: getCount, set: setCount } = observableState(0)
 
   return FP.pipe(
     // First emission after one block (THOR/MAYA) / default delay, then every POLL_INTERVAL
     Rx.timer(initialDelayMs, TX_STATUS_POLL_INTERVAL_MS),
-    // Run as long as we don't have a valid result or MAX number of requests
-    RxOp.takeUntil(stopInterval$),
+    // Guard *before* starting request N+1 (avoid request 41 when MAX=40)
+    RxOp.takeWhile(() => getCount() < MAX),
+    // Stop as soon as we have a successful inclusion result
+    RxOp.takeUntil(hasResult$.pipe(RxOp.filter((hasResult) => hasResult))),
     // exhaustMap: skip ticks while a previous getTx is still in flight (rate-limit friendly)
     RxOp.exhaustMap(() => {
       setCount(getCount() + 1)

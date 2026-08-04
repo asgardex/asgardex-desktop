@@ -50,10 +50,14 @@ export const maskThornodeApiUrl = (url: string): string =>
 
 /**
  * Resolve the THORNode REST/LCD base used for queries (inbound_addresses, etc.).
- * When `VITE_LIQUIFY_THORCHAIN_API_KEY` is set and the configured URL is empty or the
- * public Liquify API, use the authenticated portal URL. Custom Expert URLs are left alone.
+ * Liquify portal API key injection is **mainnet only** — testnet/stagenet keep the
+ * configured URL (including empty) so an empty stagenet does not hit mainnet Liquify.
+ * On mainnet, when the key is set and the configured URL is empty or the public Liquify
+ * API, use the authenticated portal URL. Custom Expert URLs are left alone.
  */
-export const resolveThornodeApiUrl = (configured: string): string => {
+export const resolveThornodeApiUrl = (configured: string, network: Network = Network.Mainnet): string => {
+  if (network !== Network.Mainnet) return configured
+
   const authenticated = liquifyAuthenticatedUrl(LIQUIFY_THORCHAIN_API_KEY)
   if (!authenticated) return configured
 
@@ -67,10 +71,13 @@ export const resolveThornodeApiUrl = (configured: string): string => {
 
 /**
  * Resolve the Tendermint RPC URL used for signing/broadcast (and ledger).
- * When `VITE_LIQUIFY_THORCHAIN_RPC_KEY` is set and the configured URL is empty or the
- * public Liquify RPC, use the authenticated portal URL. Custom Expert URLs are left alone.
+ * Liquify portal RPC key injection is **mainnet only** (same reason as API).
+ * On mainnet, when the key is set and the configured URL is empty or the public Liquify
+ * RPC, use the authenticated portal URL. Custom Expert URLs are left alone.
  */
-export const resolveThornodeRpcUrl = (configured: string): string => {
+export const resolveThornodeRpcUrl = (configured: string, network: Network = Network.Mainnet): string => {
+  if (network !== Network.Mainnet) return configured
+
   const authenticated = liquifyAuthenticatedUrl(LIQUIFY_THORCHAIN_RPC_KEY)
   if (!authenticated) return configured
 
@@ -85,10 +92,10 @@ export const resolveThornodeRpcUrl = (configured: string): string => {
 /**
  * REST/LCD base URL list for app THORNode traffic and query/aggregator.
  * Mainnet: primary (Expert / Liquify API key) then optional Asgardex API fallback.
- * Other networks: primary only.
+ * Other networks: primary only (no mainnet Liquify key injection).
  */
 export const getThornodeApiBaseUrls = (configured: string, network: Network): string[] => {
-  const primary = resolveThornodeApiUrl(configured)
+  const primary = resolveThornodeApiUrl(configured, network)
   if (!primary) {
     return network === Network.Mainnet && ASGARDEX_THORNODE_API ? [ASGARDEX_THORNODE_API] : []
   }
@@ -110,7 +117,7 @@ export const THORNODE_API_BASE_URLS = getThornodeApiBaseUrls(PUBLIC_LIQUIFY_THOR
  * Other networks: primary only.
  */
 export const getThornodeRpcClientUrls = (configured: string, network: Network): string[] => {
-  const primary = resolveThornodeRpcUrl(configured)
+  const primary = resolveThornodeRpcUrl(configured, network)
   if (!primary) {
     return network === Network.Mainnet && ASGARDEX_THORNODE_RPC ? [ASGARDEX_THORNODE_RPC] : []
   }
