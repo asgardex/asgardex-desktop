@@ -7526,7 +7526,6 @@ __metadata:
     "@xchainjs/xchain-ethereum": "npm:2.0.21"
     "@xchainjs/xchain-evm": "npm:2.0.20"
     "@xchainjs/xchain-evm-providers": "npm:2.0.19"
-    "@xchainjs/xchain-kujira": "npm:2.0.16"
     "@xchainjs/xchain-litecoin": "npm:2.4.0"
     "@xchainjs/xchain-mayachain": "npm:4.1.7"
     "@xchainjs/xchain-mayachain-query": "npm:2.2.2"

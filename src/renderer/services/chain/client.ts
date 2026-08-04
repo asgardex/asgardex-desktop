@@ -9,7 +9,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -37,7 +36,6 @@ import * as COSMOS from '../cosmos'
 import * as DASH from '../dash'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
-import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import { selectedPoolChain$ } from '../midgard/thorMidgard/common'
@@ -80,8 +78,6 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return DOGE.client$
     case GAIAChain:
       return COSMOS.client$
-    case KUJIChain:
-      return KUJI.client$
     case RadixChain:
       return XRD.client$
     case SOLChain:
@@ -138,8 +134,6 @@ export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ 
       return DOGE.client$
     case GAIAChain:
       return COSMOS.client$
-    case KUJIChain:
-      return KUJI.client$
     case RadixChain:
       return XRD.client$
     case SOLChain:

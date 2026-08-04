@@ -10,7 +10,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -51,7 +50,6 @@ import * as COSMOS from '../../cosmos'
 import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
-import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import { inboundAddressesShared$ as mayaInboundAddresses$ } from '../../mayachain'
@@ -670,11 +668,6 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
           RxOp.startWith(RD.pending)
         )
       )
-    case KUJIChain:
-      return FP.pipe(
-        KUJI.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
-      )
     case ADAChain:
       return FP.pipe(
         ADA.fees$(),
@@ -814,7 +807,7 @@ export const evmFees$ = (params: {
 
 /**
  * Centralized fee estimation for standalone ledger mode support
- * Supports multiple chain types: Cosmos (THOR, GAIA, KUJI), and others (ADA, XRP, Radix, SOL)
+ * Supports multiple chain types: Cosmos (THOR, GAIA), and others (ADA, XRP, Radix, SOL)
  */
 export const standaloneLedgerFees$ = (params: { chain: Chain; amount: BaseAmount; recipient: Address }): FeesLD => {
   const { chain, amount, recipient } = params
@@ -826,8 +819,6 @@ export const standaloneLedgerFees$ = (params: { chain: Chain; amount: BaseAmount
       return MAYA.fees$()
     case GAIAChain:
       return COSMOS.fees$()
-    case KUJIChain:
-      return KUJI.fees$()
     case ADAChain:
       return ADA.fees$()
     case XRPChain:
@@ -857,9 +848,6 @@ export const reloadStandaloneLedgerFees = (chain: Chain): void => {
       break
     case GAIAChain:
       COSMOS.reloadFees()
-      break
-    case KUJIChain:
-      KUJI.reloadFees()
       break
     case ADAChain:
       ADA.reloadFees()

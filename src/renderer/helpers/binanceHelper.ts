@@ -25,7 +25,7 @@ export type BinanceKline = [
 /**
  * Tickers that have a USDT spot pair on Binance. Used as the chart's
  * fallback data source when THORChain/MAYAChain Midgard data is unavailable
- * (e.g. halted pools). Assets with no Binance USDT pair — CACAO, KUJI, TCY,
+ * (e.g. halted pools). Assets with no Binance USDT pair — CACAO, TCY,
  * FLIP, and USDT itself (it is the quote currency) — are intentionally absent
  * and keep falling back to Midgard.
  */

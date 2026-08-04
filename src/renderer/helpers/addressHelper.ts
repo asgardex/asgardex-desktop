@@ -11,7 +11,6 @@ import { DASHChain, getPrefix as getDashPrefix } from '@xchainjs/xchain-dash'
 import { getPrefix as getDogePrefix, DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { getPrefix as getEvmPrefix } from '@xchainjs/xchain-evm'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { getPrefix as getLitecoinPrefix, LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain, getPrefix as getMayachainPrefix } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -49,7 +48,6 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [LTCChain]: (network: Network) => getLitecoinPrefix(network).length,
   [DASHChain]: (network: Network) => getDashPrefix(network).length,
   [BCHChain]: () => getBCHPrefix().length,
-  [KUJIChain]: () => 'kujira'.length,
   [RadixChain]: () => 'account_'.length,
   [SOLChain]: () => 0,
   [ADAChain]: () => 'addr'.length,

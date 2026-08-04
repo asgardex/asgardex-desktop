@@ -38,7 +38,7 @@ This is the developer source repository, general information, and download page 
 
 #### Wallet
 
-|           | RUNE               | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | BSC                | AVAX               | MAYA               | DASH               | KUJI               | SOL                | XRP                | ARB                | BASE               | TRON               |
+|           | RUNE               | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | BSC                | AVAX               | MAYA               | DASH               | SOL                | XRP                | ARB                | BASE               | TRON               |
 | --------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
 | Keystore  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Ledger \* | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
@@ -71,7 +71,7 @@ This is the developer source repository, general information, and download page 
 
 #### MAYA Exchange
 
-|                | MAYA                     | RUNE                     | BTC                      | ETH / ERC20              | KUJI                     | DASH                     | ARB                      |
+|                | MAYA                     | RUNE                     | BTC                      | ETH / ERC20              | DASH                     | ARB                      |
 | -------------- | ------------------------ | ------------------------ | ------------------------ | ------------------------ | ------------------------ | ------------------------ | ------------------------ |
 | Pools overview | -                        | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       |
 | Pool detail    | -                        | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       |
@@ -398,7 +398,7 @@ ASGARDEX supports [Vultisig](https://vultisig.com/) MPC (multi-party computation
 ### What's implemented
 
 - **Vault creation** -- Two modes: *Fast vault* (email + password, server-assisted) and *Secure vault* (2-of-2 MPC with phone pairing via QR code)
-- **20-chain support** -- BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL, ZEC, KUJI, ADA, TRON, XRD
+- **20-chain support** -- BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL, ZEC, ADA, TRON, XRD
 - **Send transactions** across all supported chains
 - **Token swaps** via THORChain and MAYAChain (verified: BTC, ETH, CACAO, ERC20 tokens)
 - **ERC20 token approvals**

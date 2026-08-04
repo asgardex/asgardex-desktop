@@ -107,7 +107,6 @@ export const convertNodeGasRate = (chain: Chain, gasRate: number, gasRateUnits?:
 
     case 'THOR':
     case 'MAYA':
-    case 'KUJI':
       // Cosmos-based chains return in smallest unit
       return gasRate
 
