@@ -47,6 +47,16 @@ const settings: SettingMessages = {
   'settings.wallet.hd.mode.metamask': 'MetaMask style',
   'settings.wallet.hd.customPath': 'Custom path',
   'settings.wallet.hd.customPath.invalid': 'Invalid derivation path',
+  'settings.wallet.hd.find.action': 'Find my funds',
+  'settings.wallet.hd.find.title': 'Find my funds',
+  'settings.wallet.hd.find.subtitle':
+    'We scan common account paths used by other wallets. Pick the address that matches yours.',
+  'settings.wallet.hd.find.nativeOnly': 'Only native balance is checked (not tokens). Empty paths can still be selected.',
+  'settings.wallet.hd.find.scanning': 'Scanning common paths…',
+  'settings.wallet.hd.find.noneFound': 'No native balance found on common paths. You can still select an address below.',
+  'settings.wallet.hd.find.empty': 'Empty',
+  'settings.wallet.hd.find.use': 'Use this address',
+  'settings.wallet.hd.find.locked': 'Unlock your wallet to scan for funds',
   'settings.wallet.storeAddress.info':
     'Speichern Sie Ihre vertrauenswürdigen Adressen im lokalen Speicher, sie werden unter der Kette oder in der Sendeansicht aufgelistet',
   'settings.thornode.node.error.unhealthy':
