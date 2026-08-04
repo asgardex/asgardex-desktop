@@ -112,6 +112,12 @@ export type SendTxParams = {
   sendMax?: boolean
   selectedUtxos?: UTXO[]
   utxoSelectionPreferences?: UtxoSelectionPreferences
+  /**
+   * UTXO chains only. Floors the fee rate at the inbound vault's `gas_rate`.
+   * Set for THORChain/MAYAChain inbounds; leave unset for ordinary sends, where `gas_rate`
+   * is padded well above what a plain transfer needs.
+   */
+  useNodeFeeRate?: boolean
 }
 
 export type SendPoolTxParams = SendTxParams & {

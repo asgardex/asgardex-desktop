@@ -245,3 +245,137 @@ export const getChainGasPrices$ = (chain: Chain, decimals: number = 18) => {
   const protocol = getChainNodeProtocol(chain)
   return getNodeGasPrices$(chain, protocol, decimals)
 }
+
+/**
+ * Absolute per-chain fee-rate floors, in each chain's native rate unit (sats/duffs/koinu per byte).
+ *
+ * These are conservative multiples of each chain's minimum relay fee. A tx paying at or below the
+ * relay minimum under-propagates and is never mined; for a THORChain inbound that is silent, because
+ * only *confirmed* inbounds are observed - the swap never starts and the funds sit until mempool
+ * expiry (~14d on BCH). Applied to every UTXO tx, pool or plain send.
+ */
+export const UTXO_MIN_FEE_RATES: Record<string, number> = {
+  BTC: 2, // relay min ~1 sat/vB
+  BCH: 2, // relay min ~1 sat/vB - the 2026-07-17 stuck swap paid 0.986
+  LTC: 2, // relay min ~1 lit/byte
+  DASH: 2, // relay min ~1 duff/byte
+  DOGE: 1000 // relay min 0.01 DOGE/kB = 1000 koinu/byte
+}
+
+const DEFAULT_UTXO_MIN_FEE_RATE = 2
+
+export const getUtxoMinFeeRate = (chain: Chain): number => UTXO_MIN_FEE_RATES[chain] ?? DEFAULT_UTXO_MIN_FEE_RATE
+
+/**
+ * Absolute per-chain fee-rate ceilings, in the same native units as `UTXO_MIN_FEE_RATES`.
+ *
+ * A plausibility gate on *upstream* numbers, not a target: no legitimate rate reaches these, so a
+ * value above one means the source is wrong (bad units, a decimal shift, a broken endpoint) rather
+ * than the network being busy. Live rates on 2026-07-31 were BTC 3, BCH 3, LTC 27, DASH 12,
+ * DOGE 750000, so ordinary congestion never trips them.
+ *
+ * Sized by the worst case each permits *in fiat*, not in native units - unit price differs ~300x
+ * across these chains, so one shared number would mean wildly different exposure. At a 300 byte tx
+ * (a typical inbound with its OP_RETURN) a ceiling-rate fee costs roughly $57 on BTC (@ $63k) and
+ * under $1 on BCH/LTC/DASH.
+ *
+ * Tripping a ceiling is not catastrophic: the fallback is the provider estimate, which during real
+ * congestion is itself elevated, so what is forfeited is the node's padding rather than the fee.
+ * That makes a tighter BTC bound close to free - it sits above nearly all sustained historical
+ * rates (the 2023 ordinals congestion ran mostly under 300 sat/vB, spiking past 500 only briefly).
+ */
+export const UTXO_MAX_FEE_RATES: Record<string, number> = {
+  BTC: 300, // ~$57 on a 300 vB tx @ $63k - the only chain where the ceiling is a meaningful loss
+  BCH: 1000,
+  LTC: 1000,
+  DASH: 1000,
+  DOGE: 20_000_000 // ~26x the current 750000
+}
+
+const DEFAULT_UTXO_MAX_FEE_RATE = 1000
+
+export const getUtxoMaxFeeRate = (chain: Chain): number => UTXO_MAX_FEE_RATES[chain] ?? DEFAULT_UTXO_MAX_FEE_RATE
+
+/**
+ * Resolves the fee rate to use for a UTXO tx.
+ *
+ * Chain data providers estimate from generic network conditions and can return rates below a chain's
+ * own relay minimum. For BCH the first provider is BitGo, whose `feeByBlockTarget` is empty, so it
+ * derives `fast` as 75% of `fastest` - which produced 0.986 sat/vB on 2026-07-17, below BCH's ~1
+ * sat/vB floor. LTC currently reports 0.825 the same way.
+ *
+ * Pass `oFeeData` as `O.some` for THORChain/MAYAChain **inbounds**, where the vault's `gas_rate` is
+ * the authoritative figure and must not be undercut. Pass `O.none` for ordinary sends - `gas_rate`
+ * is padded for inbounds (27 vs a 0.825 estimate on LTC) and would badly overpay a plain transfer.
+ *
+ * Bounded on both sides by `UTXO_MIN_FEE_RATES` / `UTXO_MAX_FEE_RATES`. An implausibly high
+ * `gas_rate` is treated as bad data and ignored in favour of the local estimate - clamping to the
+ * ceiling instead would still overpay by orders of magnitude on a decimal-shifted value.
+ *
+ * Never fails, and always returns a whole number: rates are integral in each chain's native unit,
+ * and rounding up can only ever help a tx propagate.
+ *
+ * Pure: takes already-resolved fee data so the arithmetic is testable without observables.
+ */
+export const resolveUtxoFeeRate = (chain: Chain, estimatedRate: number, oFeeData: O.Option<ChainFeeData>): number => {
+  const minRate = getUtxoMinFeeRate(chain)
+  const maxRate = getUtxoMaxFeeRate(chain)
+  // guards against the provider returning a sub-relay-fee estimate, or an implausible one
+  const safeEstimate = Math.min(Math.max(Number.isFinite(estimatedRate) ? estimatedRate : 0, minRate), maxRate)
+  if (estimatedRate > maxRate) {
+    logger.warn(`Implausible ${chain} provider estimate ${estimatedRate} (max ${maxRate}) - using ${safeEstimate}`)
+  }
+
+  const rate = FP.pipe(
+    oFeeData,
+    O.fold(
+      () => safeEstimate,
+      ({ gas_rate, gas_rate_units }) => {
+        const nodeRate = convertNodeGasRate(chain, Number(gas_rate), gas_rate_units)
+        if (!Number.isFinite(nodeRate) || nodeRate <= 0) {
+          logger.warn(`Invalid node gas_rate "${gas_rate}" for ${chain} - using ${safeEstimate}`)
+          return safeEstimate
+        }
+        if (nodeRate > maxRate) {
+          // bad data, not a busy network - trust the local estimate rather than pay this
+          logger.warn(`Implausible ${chain} node gas_rate ${nodeRate} (max ${maxRate}) - using ${safeEstimate}`)
+          return safeEstimate
+        }
+        return Math.max(safeEstimate, nodeRate)
+      }
+    )
+  )
+
+  const feeRate = Math.ceil(rate)
+  if (feeRate > estimatedRate) {
+    logger.info(`${chain} fee rate raised ${estimatedRate} -> ${feeRate} (min ${minRate}, max ${maxRate})`)
+  }
+  return feeRate
+}
+
+/**
+ * Resolves the fee rate for a UTXO tx, sourcing `gas_rate` from inbound addresses when
+ * `useNodeFeeRate` is set (i.e. the tx is a THORChain/MAYAChain inbound).
+ *
+ * Never fails: if node fee data is unavailable the local estimate is used, clamped to the chain's
+ * minimum, so an outage can neither block a send nor let a sub-relay-fee rate through.
+ */
+export const utxoFeeRate$ = (chain: Chain, estimatedRate: number, useNodeFeeRate: boolean): LiveData<Error, number> => {
+  if (!useNodeFeeRate) return liveData.right(resolveUtxoFeeRate(chain, estimatedRate, O.none))
+
+  const protocol = getChainNodeProtocol(chain)
+  const inboundAddresses$ = (
+    protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$
+  ) as LiveData<Error, InboundAddress[]>
+
+  return FP.pipe(
+    inboundAddresses$,
+    liveData.map((inboundAddresses) =>
+      resolveUtxoFeeRate(chain, estimatedRate, getChainFeeData(inboundAddresses, chain))
+    ),
+    liveData.altOnError((error) => {
+      logger.warn(`Failed to load ${protocol} inbound addresses for ${chain}`, error)
+      return resolveUtxoFeeRate(chain, estimatedRate, O.none)
+    })
+  )
+}
