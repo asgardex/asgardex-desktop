@@ -10,25 +10,27 @@ export const PUBLIC_LIQUIFY_THORNODE_RPC = 'https://gateway.liquify.com/chain/th
 export const PUBLIC_LIQUIFY_THORNODE_API = 'https://gateway.liquify.com/chain/thorchain_api'
 
 /**
- * Asgardex-hosted THORNode fallbacks (REST + LCD under `/api`, CometBFT under `/rpc`).
- * Injected at build time via env / GH secrets — empty when unset (local dev without .env).
+ * Asgardex-hosted mainnet fallbacks (full tokenized URLs from env — not Liquify).
+ * e.g. https://thornode.asgardex.xyz/<ASGARDEX_TOKEN>/api and …/rpc
  */
 export const ASGARDEX_THORNODE_API = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNODE_API, '')
 export const ASGARDEX_THORNODE_RPC = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNODE_RPC, '')
 
 /**
  * Mainnet THORNode REST bases for xchain-query / aggregator round-robin.
- * Liquify primary; Asgardex secondary when configured. Dead `thornode.thorchain.network` omitted.
+ * Liquify public primary; Asgardex (tokenized URL) secondary when configured.
+ * Dead `thornode.thorchain.network` omitted.
  */
 export const THORNODE_API_BASE_URLS = [PUBLIC_LIQUIFY_THORNODE_API, ASGARDEX_THORNODE_API].filter(Boolean)
 
 /**
- * Authenticated Liquify RPC key from portal (path form: `/api=<KEY>`).
- * Never surface this in Expert Mode / storage — only inject at client construction.
+ * Liquify portal RPC key only — never used for asgardex.xyz.
+ * Path form on Liquify: `https://gateway.liquify.com/api=<KEY>`.
+ * Never surface in Expert Mode / storage — only inject at client construction.
  */
 export const LIQUIFY_THORCHAIN_RPC_KEY = envOrDefault(import.meta.env.VITE_LIQUIFY_THORCHAIN_RPC_KEY, '')
 
-/** Build authenticated Liquify RPC URL from a portal key, or empty if unset. */
+/** Build authenticated Liquify RPC URL from the Liquify portal key, or empty if unset. */
 export const liquifyAuthenticatedRpcUrl = (key: string): string => (key ? `https://gateway.liquify.com/api=${key}` : '')
 
 /** True when URL is a Liquify portal authenticated path (`/api=…`). */
