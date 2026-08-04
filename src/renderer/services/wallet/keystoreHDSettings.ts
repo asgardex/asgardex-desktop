@@ -41,18 +41,20 @@ export const keystoreChainHDSettings$ = (chain: Chain): Rx.Observable<KeystoreCh
 
 /**
  * Persist HD settings for a keystore chain under the active keystore id.
- * No-op when no keystore wallet is active.
+ * Resolves when storage has been written (or immediately if no keystore is active).
  */
-export const setKeystoreChainHDSettings = (chain: Chain, settings: KeystoreChainHDSettings): void => {
+export const setKeystoreChainHDSettings = (chain: Chain, settings: KeystoreChainHDSettings): Promise<void> =>
   FP.pipe(
     getKeystoreId(keystoreService.keystoreState()),
     O.map(String),
-    O.map((idKey) => {
-      const record = getKeystoreHDSettings()
-      setKeystoreHDSettingsRecord({
-        ...record,
-        [idKey]: { ...(record[idKey] ?? {}), [chain]: settings }
-      })
-    })
+    O.fold(
+      () => Promise.resolve(),
+      (idKey) => {
+        const record = getKeystoreHDSettings()
+        return setKeystoreHDSettingsRecord({
+          ...record,
+          [idKey]: { ...(record[idKey] ?? {}), [chain]: settings }
+        })
+      }
+    )
   )
-}

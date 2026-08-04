@@ -53,4 +53,15 @@ describe('shared/utils/derivationPath — getKeystoreDerivation', () => {
     expect(rootDerivationPaths[Network.Mainnet]).toBe("m/44'/60'/7'/0/")
     expect(walletIndex).toBe(9)
   })
+
+  it('rejects custom paths with a hardened final segment', () => {
+    expect(() =>
+      getKeystoreDerivation(ETHChain, {
+        hdMode: 'default',
+        account: 0,
+        index: 0,
+        customPath: "m/44'/60'/0'/0/9'"
+      })
+    ).toThrow(/Hardened final path segment/)
+  })
 })

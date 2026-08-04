@@ -150,18 +150,20 @@ const getKeystoreHDSettings = (): KeystoreHDSettingsRecord =>
     O.getOrElse<KeystoreHDSettingsRecord>(() => ({}))
   )
 
-const setKeystoreHDSettingsRecord = (keystoreHDSettings: KeystoreHDSettingsRecord) =>
+const setKeystoreHDSettingsRecord = (keystoreHDSettings: KeystoreHDSettingsRecord): Promise<void> =>
   modifyStorage(O.some({ keystoreHDSettings }))
 
-// Update function
-const modifyStorage = (oPartialData: StoragePartialState<CommonStorage>) => {
+// Update function — returns the save promise so callers can await persistence
+const modifyStorage = (oPartialData: StoragePartialState<CommonStorage>): Promise<void> =>
   pipe(
     oPartialData,
     O.map((partialData) =>
-      window.apiCommonStorage.save(partialData).then((newData) => setStorageState(O.some(newData)))
-    )
+      window.apiCommonStorage.save(partialData).then((newData) => {
+        setStorageState(O.some(newData))
+      })
+    ),
+    O.getOrElse(() => Promise.resolve())
   )
-}
 
 // Initial state load
 window.apiCommonStorage.get().then(

@@ -165,12 +165,17 @@ export const getChainDerivationPath = (
 /**
  * Split a full BIP32 path into its rootDerivationPath prefix (ending in `/`) and
  * the trailing address index. e.g. `m/44'/931'/0'/0/5` → `{ prefix: "m/44'/931'/0'/0/", index: 5 }`.
+ * Hardened final segments (`…/9'`) are rejected — xchain clients take a non-hardened walletIndex.
  */
 const splitPathPrefixIndex = (fullPath: string): { prefix: string; index: number } => {
   const trimmed = fullPath.trim()
   const lastSlash = trimmed.lastIndexOf('/')
   const prefix = trimmed.slice(0, lastSlash + 1)
-  const index = Number(trimmed.slice(lastSlash + 1).replace("'", '')) || 0
+  const lastSeg = trimmed.slice(lastSlash + 1)
+  if (lastSeg.endsWith("'")) {
+    throw new Error(`Hardened final path segment is not supported: ${lastSeg}`)
+  }
+  const index = Number(lastSeg) || 0
   return { prefix, index }
 }
 

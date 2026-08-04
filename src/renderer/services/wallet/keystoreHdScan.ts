@@ -48,13 +48,15 @@ export type KeystoreHdScanHit = {
 const SCAN_CONCURRENCY = 3
 const SCAN_TIMEOUT_MS = 12_000
 
-const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> =>
-  Promise.race([
-    p,
-    new Promise<T>((_, reject) => {
-      setTimeout(() => reject(new Error('Scan timed out')), ms)
-    })
-  ])
+const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> => {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Scan timed out')), ms)
+  })
+  return Promise.race([p, timeout]).finally(() => {
+    if (timer !== undefined) clearTimeout(timer)
+  })
+}
 
 const mapPool = async <T, R>(items: T[], concurrency: number, fn: (item: T) => Promise<R>): Promise<R[]> => {
   const results: R[] = new Array(items.length)
@@ -297,7 +299,8 @@ export const scanKeystoreFunds$ = (
   network: Network,
   rpcUrl: string,
   profile: Exclude<HdScanProfile, 'custom'>
-): Rx.Observable<KeystoreHdScanHit[]> => Rx.from(scanKeystoreFundsForChain(chain, phrase, network, rpcUrl, profile))
+): Rx.Observable<KeystoreHdScanHit[]> =>
+  Rx.defer(() => scanKeystoreFundsForChain(chain, phrase, network, rpcUrl, profile))
 
 export const defaultRpcUrlForChain = (chain: Chain, network: Network, ethRpc: string, thorRpc: string): string => {
   if (chain === ETHChain) return ethRpc

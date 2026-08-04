@@ -28,6 +28,11 @@ describe('shared/utils/derivationPathValidation', () => {
     it('rejects out-of-range segments', () => {
       expect(validateDerivationPath(`m/44'/60'/${2 ** 31}'/0/0`).error).toBe('range')
     })
+    it('rejects hardened final address index (clients need a plain walletIndex)', () => {
+      expect(validateDerivationPath("m/44'/60'/0'/0/9'").valid).toBe(false)
+      expect(validateDerivationPath("m/44'/60'/0'/0/9'").error).toBe('format')
+      expect(validateDerivationPath("m/44'/60'/0'/0/9").valid).toBe(true)
+    })
   })
 
   describe('warnDerivationPath', () => {

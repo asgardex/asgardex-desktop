@@ -20,10 +20,16 @@ export const validateDerivationPath = (path: string): DerivationPathValidation =
   if (p.length === 0) return { valid: false, error: 'empty' }
   const parts = p.split('/')
   if (parts[0] !== 'm' || parts.length < 2) return { valid: false, error: 'format' }
-  for (const seg of parts.slice(1)) {
+  const segs = parts.slice(1)
+  for (let i = 0; i < segs.length; i++) {
+    const seg = segs[i]
     if (!SEGMENT_RE.test(seg)) return { valid: false, error: 'format' }
-    const n = Number(seg.replace("'", ''))
+    // Explicit suffix strip (avoid String#replace — Semgrep incomplete-sanitization)
+    const numericSegment = seg.endsWith("'") ? seg.slice(0, -1) : seg
+    const n = Number(numericSegment)
     if (!Number.isInteger(n) || n < 0 || n > MAX_PATH_SEGMENT) return { valid: false, error: 'range' }
+    // Final segment must be non-hardened — clients derive walletIndex as a plain index
+    if (i === segs.length - 1 && seg.endsWith("'")) return { valid: false, error: 'format' }
   }
   return { valid: true }
 }

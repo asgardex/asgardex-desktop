@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -10,6 +10,7 @@ import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
@@ -149,6 +150,9 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   const [customPath, setCustomPath] = useState('')
   const [customRD, setCustomRD] = useState<RD.RemoteData<Error, KeystoreHdScanHit>>(RD.initial)
 
+  const scanSubRef = useRef<Rx.Subscription | null>(null)
+  const customRunIdRef = useRef(0)
+
   const phrase = useMemo(() => FP.pipe(getPhrase(keystoreState), O.toNullable), [keystoreState])
   const rpcUrl = defaultRpcUrlForChain(
     chain,
@@ -164,6 +168,9 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   }, [chain, network, currentSettings])
 
   const reset = useCallback(() => {
+    scanSubRef.current?.unsubscribe()
+    scanSubRef.current = null
+    customRunIdRef.current += 1
     setStep('pick')
     setProfile(defaultProfileForChain(chain))
     setScanRD(RD.initial)
@@ -176,6 +183,14 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
     if (!open) reset()
   }, [open, reset])
 
+  useEffect(
+    () => () => {
+      scanSubRef.current?.unsubscribe()
+      customRunIdRef.current += 1
+    },
+    []
+  )
+
   const runProfileScan = useCallback(
     (p: ProfileOption) => {
       if (!phrase) {
@@ -185,7 +200,8 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
       setStep('results')
       setScanRD(RD.pending)
       setSelectedKey(null)
-      const sub = scanKeystoreFunds$(chain, phrase, network, rpcUrl, p)
+      scanSubRef.current?.unsubscribe()
+      scanSubRef.current = scanKeystoreFunds$(chain, phrase, network, rpcUrl, p)
         .pipe(RxOp.take(1))
         .subscribe({
           next: (hits) => {
@@ -198,7 +214,6 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
           },
           error: (e: Error) => setScanRD(RD.failure(e))
         })
-      return () => sub.unsubscribe()
     },
     [phrase, chain, network, rpcUrl, intl, currentSettings]
   )
@@ -214,14 +229,19 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
       return
     }
     setCustomRD(RD.pending)
+    const runId = ++customRunIdRef.current
     checkCustomPath(chain, phrase, network, rpcUrl, path)
-      .then((hit) => setCustomRD(RD.success(hit)))
-      .catch((e: Error) => setCustomRD(RD.failure(e)))
+      .then((hit) => {
+        if (runId === customRunIdRef.current) setCustomRD(RD.success(hit))
+      })
+      .catch((e: Error) => {
+        if (runId === customRunIdRef.current) setCustomRD(RD.failure(e))
+      })
   }, [customPath, phrase, chain, network, rpcUrl, intl])
 
-  const applyHit = (hit: KeystoreHdScanHit) => {
+  const applyHit = async (hit: KeystoreHdScanHit) => {
     if (!hit.address) return
-    setKeystoreChainHDSettings(chain, hit.settings)
+    await setKeystoreChainHDSettings(chain, hit.settings)
     reloadBalancesByChain(chain, WalletType.Keystore)()
     onClose()
   }
@@ -397,6 +417,9 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
               {intl.formatMessage({ id: 'settings.wallet.hd.profile.custom.hint' })}
             </Label>
             <input
+              aria-label={intl.formatMessage({ id: 'settings.wallet.hd.customPath' })}
+              aria-invalid={!customValid}
+              aria-describedby={!customValid ? 'hd-custom-path-error' : undefined}
               value={customPath}
               onChange={(e) => {
                 setCustomPath(e.currentTarget.value)
@@ -414,9 +437,9 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
               )}
             />
             {!customValid && (
-              <Label size="small" color="error" className="!w-auto !p-0">
+              <p id="hd-custom-path-error" className="text-[11px] tracking-[0.42px] text-error0 dark:text-error0d">
                 {intl.formatMessage({ id: 'settings.wallet.hd.customPath.invalid' })}
-              </Label>
+              </p>
             )}
             {customWarn && (
               <Label size="small" color="warning" className="!w-auto !p-0">
