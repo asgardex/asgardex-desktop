@@ -11,7 +11,7 @@ import * as RxAjax from 'rxjs/ajax'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeUrl } from '../../shared/api/types'
-import { resolveThornodeApiUrl, resolveThornodeRpcUrl } from '../../shared/thorchain/const'
+import { getThornodeApiBaseUrls, requestThornodeApiBases, resolveThornodeRpcUrl } from '../../shared/thorchain/const'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { LiveData } from '../helpers/rx/liveData'
 import { DEFAULT_CLIENT_URL } from '../services/thorchain/const'
@@ -48,19 +48,19 @@ export const useThorchainClientUrl = (): {
   const setNode = (url: string) => setThornodeApiUrl(url, network)
 
   const checkNode$ = (url: string) => {
-    // Test the URL the app will actually use (authenticated Liquify API when key is set)
-    const urlToCheck = resolveThornodeApiUrl(url)
+    // Test primary + Asgardex API fallback the app will actually try
+    const bases = getThornodeApiBaseUrls(url, network)
     return FP.pipe(
-      // Convert Promise to Observable
-      Rx.from(new HealthApi(getThornodeAPIConfiguration(urlToCheck)).ping()),
-      RxOp.map((result) => {
-        const { ping } = result.data
-        if (ping) return RD.success(url)
-
-        return RD.failure(
-          Error(intl.formatMessage({ id: 'setting.thornode.node.error.unhealthy' }, { endpoint: '/ping' }))
-        )
-      }),
+      Rx.from(
+        requestThornodeApiBases(bases, async (basePath) => {
+          const result = await new HealthApi(getThornodeAPIConfiguration(basePath)).ping()
+          if (!result.data.ping) {
+            throw new Error(intl.formatMessage({ id: 'setting.thornode.node.error.unhealthy' }, { endpoint: '/ping' }))
+          }
+          return basePath
+        })
+      ),
+      RxOp.map(() => RD.success(url)),
       RxOp.catchError((_: Error) =>
         Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'setting.thornode.node.error.url' })}`)))
       )

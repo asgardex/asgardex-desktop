@@ -40,21 +40,30 @@ const loadMidgardTxsPage = async ({
   offset: number
   chainAsset: AnyAsset
 }): Promise<TxsPage> => {
-  const api =
+  // THOR Midgard: address, txid, asset, type, txType, affiliate, limit, offset
+  // Maya Midgard: address, txid, asset, type, affiliate, limit, offset  (no txType)
+  // Passing the THOR shape into Maya shifts limit/offset and skips the newest page.
+  const response =
     protocol === 'thor'
-      ? new ThorMidgardApi(new ThorMidgardConfiguration({ basePath }))
-      : new MayaMidgardApi(new MayaMidgardConfiguration({ basePath }))
-
-  const response = await api.getActions(
-    address,
-    undefined, // txid
-    undefined, // asset filter
-    undefined, // type
-    undefined, // type (legacy)
-    undefined, // affiliate
-    limit,
-    offset
-  )
+      ? await new ThorMidgardApi(new ThorMidgardConfiguration({ basePath })).getActions(
+          address,
+          undefined, // txid
+          undefined, // asset
+          undefined, // type
+          undefined, // txType
+          undefined, // affiliate
+          limit,
+          offset
+        )
+      : await new MayaMidgardApi(new MayaMidgardConfiguration({ basePath })).getActions(
+          address,
+          undefined, // txid
+          undefined, // asset
+          undefined, // type
+          undefined, // affiliate
+          limit,
+          offset
+        )
 
   const data = 'data' in response ? response.data : response
   const actions = data.actions ?? []

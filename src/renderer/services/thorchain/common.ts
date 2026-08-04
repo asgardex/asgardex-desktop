@@ -9,11 +9,12 @@ import { ApiUrls } from '../../../shared/api/types'
 import {
   DEFAULT_THORNODE_API_URLS,
   DEFAULT_THORNODE_RPC_URLS,
+  getThornodeApiBaseUrls,
   getThornodeRpcClientUrls,
   isLiquifyAuthenticatedUrl,
   maskThornodeApiUrl,
   maskThornodeRpcUrl,
-  resolveThornodeApiUrl
+  requestThornodeApiBases
 } from '../../../shared/thorchain/const'
 import { isError } from '../../../shared/utils/guard'
 import { triggerStream } from '../../helpers/stateHelper'
@@ -115,13 +116,16 @@ const setThornodeApiUrl = (url: string, network: Network) => {
  * By the other hand: Whenever a phrase has been removed, `ClientState` is set to `initial`
  * A `ThorchainClient` will never be created as long as no phrase is available
  */
+// Multi-base getChainId so Asgardex REST can save client init when Liquify is down
+const resolveChainId$ = (configuredNode: string, network: Network) =>
+  Rx.from(requestThornodeApiBases(getThornodeApiBaseUrls(configuredNode, network), (base) => getChainId(base)))
+
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$]),
   RxOp.switchMap(
     ([keystore, network, clientUrl]): ClientState$ =>
       FP.pipe(
-        // request chain id from node whenever network or keystore state have been changed
-        Rx.from(getChainId(resolveThornodeApiUrl(clientUrl[network].node))),
+        resolveChainId$(clientUrl[network].node, network),
         RxOp.switchMap(() =>
           Rx.of(
             FP.pipe(
@@ -150,6 +154,9 @@ const clientState$: ClientState$ = FP.pipe(
               O.getOrElse<ClientState>(() => RD.initial)
             )
           )
+        ),
+        RxOp.catchError((error) =>
+          Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Failed to get THOR chain id')))
         )
       )
   ),
@@ -166,8 +173,7 @@ const readOnlyClientState$: ClientState$ = FP.pipe(
   RxOp.switchMap(
     ([network, clientUrl]): ClientState$ =>
       FP.pipe(
-        // request chain id from node whenever network changes
-        Rx.from(getChainId(resolveThornodeApiUrl(clientUrl[network].node))),
+        resolveChainId$(clientUrl[network].node, network),
         RxOp.switchMap(() =>
           Rx.of(
             (() => {

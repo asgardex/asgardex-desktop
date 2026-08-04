@@ -83,14 +83,26 @@ export const resolveThornodeRpcUrl = (configured: string): string => {
 }
 
 /**
+ * REST/LCD base URL list for app THORNode traffic and query/aggregator.
+ * Mainnet: primary (Expert / Liquify API key) then optional Asgardex API fallback.
+ * Other networks: primary only.
+ */
+export const getThornodeApiBaseUrls = (configured: string, network: Network): string[] => {
+  const primary = resolveThornodeApiUrl(configured)
+  if (!primary) {
+    return network === Network.Mainnet && ASGARDEX_THORNODE_API ? [ASGARDEX_THORNODE_API] : []
+  }
+  if (network !== Network.Mainnet) return [primary]
+  if (!ASGARDEX_THORNODE_API || primary === ASGARDEX_THORNODE_API) return [primary]
+  return [primary, ASGARDEX_THORNODE_API]
+}
+
+/**
  * Mainnet THORNode REST bases for xchain-query / aggregator round-robin.
  * Liquify (authenticated when API key set, else public) primary; Asgardex secondary when configured.
  * Dead `thornode.thorchain.network` omitted.
  */
-export const THORNODE_API_BASE_URLS = [
-  resolveThornodeApiUrl(PUBLIC_LIQUIFY_THORNODE_API),
-  ASGARDEX_THORNODE_API
-].filter(Boolean)
+export const THORNODE_API_BASE_URLS = getThornodeApiBaseUrls(PUBLIC_LIQUIFY_THORNODE_API, Network.Mainnet)
 
 /**
  * RPC URL list for xchain Client `clientUrls` (round-robin).
@@ -105,6 +117,25 @@ export const getThornodeRpcClientUrls = (configured: string, network: Network): 
   if (network !== Network.Mainnet) return [primary]
   if (!ASGARDEX_THORNODE_RPC || primary === ASGARDEX_THORNODE_RPC) return [primary]
   return [primary, ASGARDEX_THORNODE_RPC]
+}
+
+/**
+ * Try each REST base with `request` until one succeeds (Liquify → Asgardex, etc.).
+ */
+export const requestThornodeApiBases = async <T>(
+  bases: string[],
+  request: (basePath: string) => Promise<T>
+): Promise<T> => {
+  if (bases.length === 0) throw new Error('No THORNode API bases configured')
+  let lastError: Error | undefined
+  for (const basePath of bases) {
+    try {
+      return await request(basePath)
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e))
+    }
+  }
+  throw lastError ?? new Error('All THORNode API bases failed')
 }
 
 export const DEFAULT_THORNODE_RPC_URLS: ApiUrls = {
