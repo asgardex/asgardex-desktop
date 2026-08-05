@@ -47,6 +47,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.customPath': '사용자 지정 경로',
   'settings.wallet.hd.customPath.invalid': '잘못된 파생 경로',
   'settings.wallet.hd.path.save': '저장',
+  'settings.wallet.hd.path.customLocked': '사용자 지정 경로가 잠겨 있습니다. 계정/인덱스를 바꾼 뒤 저장하면 표준 공식이 적용됩니다. 또는 내 자금 찾기를 사용하세요.',
   'settings.wallet.hd.find.action': '내 자금 찾기',
   'settings.wallet.hd.find.title': '내 자금 찾기',
   'settings.wallet.hd.find.subtitle':

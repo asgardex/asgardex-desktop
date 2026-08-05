@@ -48,6 +48,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.customPath': 'Ruta personalizada',
   'settings.wallet.hd.customPath.invalid': 'Ruta de derivación no válida',
   'settings.wallet.hd.path.save': 'Guardar',
+  'settings.wallet.hd.path.customLocked': 'La ruta personalizada está bloqueada. Cambia cuenta/índice y guarda para la fórmula estándar, o usa Encontrar mis fondos.',
   'settings.wallet.hd.find.action': 'Encontrar mis fondos',
   'settings.wallet.hd.find.title': 'Encontrar mis fondos',
   'settings.wallet.hd.find.subtitle':

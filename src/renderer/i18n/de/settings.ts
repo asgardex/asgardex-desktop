@@ -48,6 +48,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.customPath': 'Benutzerdefinierter Pfad',
   'settings.wallet.hd.customPath.invalid': 'Ungültiger Ableitungspfad',
   'settings.wallet.hd.path.save': 'Speichern',
+  'settings.wallet.hd.path.customLocked': 'Benutzerdefinierter Pfad ist gesperrt. Ändere Konto/Index und speichere für die Standardformel, oder nutze „Meine Mittel finden“.',
   'settings.wallet.hd.find.action': 'Meine Mittel finden',
   'settings.wallet.hd.find.title': 'Meine Mittel finden',
   'settings.wallet.hd.find.subtitle':

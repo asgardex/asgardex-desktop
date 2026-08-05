@@ -47,6 +47,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.customPath': 'Chemin personnalisé',
   'settings.wallet.hd.customPath.invalid': 'Chemin de dérivation invalide',
   'settings.wallet.hd.path.save': 'Enregistrer',
+  'settings.wallet.hd.path.customLocked': 'Chemin personnalisé verrouillé. Modifiez compte/index et enregistrez pour la formule standard, ou utilisez Trouver mes fonds.',
   'settings.wallet.hd.find.action': 'Trouver mes fonds',
   'settings.wallet.hd.find.title': 'Trouver mes fonds',
   'settings.wallet.hd.find.subtitle':

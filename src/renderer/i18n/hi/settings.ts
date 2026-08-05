@@ -47,6 +47,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.customPath': 'कस्टम पथ',
   'settings.wallet.hd.customPath.invalid': 'अमान्य डेरिवेशन पथ',
   'settings.wallet.hd.path.save': 'सहेजें',
+  'settings.wallet.hd.path.customLocked': 'कस्टम पथ लॉक है। मानक सूत्र के लिए खाता/इंडेक्स बदलकर सहेजें, या मेरे फंड खोजें उपयोग करें।',
   'settings.wallet.hd.find.action': 'मेरे फंड खोजें',
   'settings.wallet.hd.find.title': 'मेरे फंड खोजें',
   'settings.wallet.hd.find.subtitle':

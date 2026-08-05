@@ -47,6 +47,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.customPath': 'Свой путь',
   'settings.wallet.hd.customPath.invalid': 'Неверный путь деривации',
   'settings.wallet.hd.path.save': 'Сохранить',
+  'settings.wallet.hd.path.customLocked': 'Свой путь заблокирован. Измените аккаунт/индекс и сохраните для стандартной формулы, или «Найти мои средства».',
   'settings.wallet.hd.find.action': 'Найти мои средства',
   'settings.wallet.hd.find.title': 'Найти мои средства',
   'settings.wallet.hd.find.subtitle':

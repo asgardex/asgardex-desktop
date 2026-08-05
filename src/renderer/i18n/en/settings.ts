@@ -47,6 +47,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.customPath': 'Custom path',
   'settings.wallet.hd.customPath.invalid': 'Invalid derivation path',
   'settings.wallet.hd.path.save': 'Save',
+  'settings.wallet.hd.path.customLocked':
+    'Custom path is locked. Change account/index and Save to use the standard formula, or Find my funds.',
   'settings.wallet.hd.find.action': 'Find my funds',
   'settings.wallet.hd.find.title': 'Find my funds',
   'settings.wallet.hd.find.subtitle':
