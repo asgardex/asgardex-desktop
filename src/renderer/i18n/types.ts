@@ -711,6 +711,7 @@ type SettingMessageKey =
   | 'settings.wallet.hd.mode.metamask'
   | 'settings.wallet.hd.customPath'
   | 'settings.wallet.hd.customPath.invalid'
+  | 'settings.wallet.hd.path.save'
   | 'settings.wallet.hd.find.action'
   | 'settings.wallet.hd.find.title'
   | 'settings.wallet.hd.find.subtitle'

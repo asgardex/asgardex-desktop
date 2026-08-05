@@ -47,6 +47,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.mode.metamask': 'Estilo MetaMask',
   'settings.wallet.hd.customPath': 'Ruta personalizada',
   'settings.wallet.hd.customPath.invalid': 'Ruta de derivación no válida',
+  'settings.wallet.hd.path.save': 'Guardar',
   'settings.wallet.hd.find.action': 'Encontrar mis fondos',
   'settings.wallet.hd.find.title': 'Encontrar mis fondos',
   'settings.wallet.hd.find.subtitle':

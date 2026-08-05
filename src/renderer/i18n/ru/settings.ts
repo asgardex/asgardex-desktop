@@ -46,6 +46,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.mode.metamask': 'Стиль MetaMask',
   'settings.wallet.hd.customPath': 'Свой путь',
   'settings.wallet.hd.customPath.invalid': 'Неверный путь деривации',
+  'settings.wallet.hd.path.save': 'Сохранить',
   'settings.wallet.hd.find.action': 'Найти мои средства',
   'settings.wallet.hd.find.title': 'Найти мои средства',
   'settings.wallet.hd.find.subtitle':

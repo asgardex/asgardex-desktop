@@ -46,6 +46,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.mode.metamask': 'MetaMask 스타일',
   'settings.wallet.hd.customPath': '사용자 지정 경로',
   'settings.wallet.hd.customPath.invalid': '잘못된 파생 경로',
+  'settings.wallet.hd.path.save': '저장',
   'settings.wallet.hd.find.action': '내 자금 찾기',
   'settings.wallet.hd.find.title': '내 자금 찾기',
   'settings.wallet.hd.find.subtitle':

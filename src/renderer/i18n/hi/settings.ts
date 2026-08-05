@@ -46,6 +46,7 @@ const settings: SettingMessages = {
   'settings.wallet.hd.mode.metamask': 'MetaMask शैली',
   'settings.wallet.hd.customPath': 'कस्टम पथ',
   'settings.wallet.hd.customPath.invalid': 'अमान्य डेरिवेशन पथ',
+  'settings.wallet.hd.path.save': 'सहेजें',
   'settings.wallet.hd.find.action': 'मेरे फंड खोजें',
   'settings.wallet.hd.find.title': 'मेरे फंड खोजें',
   'settings.wallet.hd.find.subtitle':
