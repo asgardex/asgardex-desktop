@@ -1,6 +1,6 @@
 # Keep the architecture map updated
 
-**Source of truth for the map**
+## Source of truth for the map
 
 | Artifact                                                     | Role                                                                   |
 | ------------------------------------------------------------ | ---------------------------------------------------------------------- |
