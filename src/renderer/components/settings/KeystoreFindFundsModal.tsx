@@ -27,10 +27,11 @@ import {
   KeystoreHdScanHit,
   scanKeystoreFunds$
 } from '../../services/wallet/keystoreHdScan'
+import { truncateAddress } from '../../helpers/addressHelper'
 import { keystoreChainHDSettings$, setKeystoreChainHDSettings } from '../../services/wallet/keystoreHDSettings'
 import { getPhrase } from '../../services/wallet/util'
 import { FlatButton, TextButton } from '../uielements/button'
-import { Label } from '../uielements/label'
+import { CopyLabel, Label } from '../uielements/label'
 import { Modal } from '../uielements/modal'
 import { Spin } from '../uielements/spin'
 
@@ -361,17 +362,32 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
                     .map((hit) => {
                       const selectedRow = hit.key === selectedKey
                       return (
-                        <button
+                        <div
                           key={hit.key}
-                          type="button"
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setSelectedKey(hit.key)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              setSelectedKey(hit.key)
+                            }
+                          }}
                           className={clsx(
-                            'flex w-full flex-col gap-0.5 border-b border-gray0 px-3 py-2.5 text-left last:border-b-0 dark:border-gray0d',
+                            'flex w-full cursor-pointer flex-col gap-0.5 border-b border-gray0 px-3 py-2.5 text-left last:border-b-0 dark:border-gray0d',
                             selectedRow ? 'bg-turquoise/10 dark:bg-turquoise/15' : 'hover:bg-bg1 dark:hover:bg-bg1d'
                           )}>
                           <div className="flex w-full items-center justify-between gap-2">
-                            <span className="truncate font-main text-sm text-text0 dark:text-text0d">
-                              {hit.address}
+                            <span className="flex min-w-0 items-center gap-1.5">
+                              <span className="font-main text-sm text-text0 dark:text-text0d" title={hit.address}>
+                                {truncateAddress(hit.address, chain, network)}
+                              </span>
+                              <span
+                                className="shrink-0"
+                                onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => e.stopPropagation()}>
+                                <CopyLabel iconClassName="!h-4 !w-4 text-turquoise" textToCopy={hit.address} />
+                              </span>
                             </span>
                             <span
                               className={clsx(
@@ -386,7 +402,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
                             {' · '}
                             <span className="font-mono opacity-80">{hit.path}</span>
                           </span>
-                        </button>
+                        </div>
                       )
                     })}
                 </div>
@@ -459,7 +475,12 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
             )}
             {RD.isSuccess(customRD) && customRD.value.address && (
               <div className="rounded-lg border border-turquoise/40 bg-turquoise/5 px-3 py-2">
-                <div className="truncate font-main text-sm text-text0 dark:text-text0d">{customRD.value.address}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-main text-sm text-text0 dark:text-text0d" title={customRD.value.address}>
+                    {truncateAddress(customRD.value.address, chain, network)}
+                  </span>
+                  <CopyLabel iconClassName="!h-4 !w-4 text-turquoise" textToCopy={customRD.value.address} />
+                </div>
                 <div className="text-xs text-text2 dark:text-text2d">{formatHitBalance(customRD.value)}</div>
               </div>
             )}
