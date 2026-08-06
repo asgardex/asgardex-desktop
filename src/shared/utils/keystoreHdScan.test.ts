@@ -108,6 +108,13 @@ describe('keystoreHdScan', () => {
     expect(getHdScanCandidates(LTCChain, 'metamask')).toHaveLength(0)
   })
 
+  it('supports MAYAChain like THOR (coin-type 931)', async () => {
+    const { MAYAChain } = await import('@xchainjs/xchain-mayachain')
+    expect(chainSupportsHdScan(MAYAChain)).toBe(true)
+    expect(getHdScanCandidates(MAYAChain, 'maya').map((c) => c.settings.index)).toEqual([0, 1, 2, 3, 4])
+    expect(getHdScanCandidates(MAYAChain, 'thor')).toHaveLength(0)
+  })
+
   it('custom path settings', () => {
     const s = settingsFromCustomPath("  m/44'/931'/2'/0/0  ")
     expect(s.customPath).toBe("m/44'/931'/2'/0/0")

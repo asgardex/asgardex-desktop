@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
@@ -25,6 +26,7 @@ type Props = {
 const profileLabelId = (chain: Chain, settings: KeystoreChainHDSettings) => {
   if (settings.customPath?.trim()) return 'settings.wallet.hd.profile.custom' as const
   if (chain === THORChain) return 'settings.wallet.hd.profile.thor' as const
+  if (chain === MAYAChain) return 'settings.wallet.hd.profile.maya' as const
   if (chain === BTCChain) {
     return settings.hdMode === 'p2tr'
       ? ('settings.wallet.hd.profile.p2tr' as const)

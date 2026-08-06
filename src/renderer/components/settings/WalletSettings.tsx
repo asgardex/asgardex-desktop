@@ -938,6 +938,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
               chain === ARBChain ||
               chain === BASEChain ||
               chain === THORChain ||
+              chain === MAYAChain ||
               chain === BTCChain ||
               chain === LTCChain ||
               chain === BCHChain ||

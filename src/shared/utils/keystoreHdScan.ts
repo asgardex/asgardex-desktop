@@ -8,6 +8,7 @@ import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
@@ -64,11 +65,20 @@ export const normalizeHdScanRange = (start: number, end: number): HdScanIndexRan
 /**
  * Wallet / path profile chosen before scanning.
  * - EVM: metamask/legacy (ledgerlive kept for API compat; UI merges with metamask)
- * - THOR: thor
+ * - THOR / MAYA: thor | maya (both BIP44 coin-type 931)
  * - BTC: p2wpkh / p2tr
  * - Other UTXO: utxo (single BIP formula per chain)
  */
-export type HdScanProfile = 'metamask' | 'ledgerlive' | 'legacy' | 'thor' | 'p2wpkh' | 'p2tr' | 'utxo' | 'custom'
+export type HdScanProfile =
+  | 'metamask'
+  | 'ledgerlive'
+  | 'legacy'
+  | 'thor'
+  | 'maya'
+  | 'p2wpkh'
+  | 'p2tr'
+  | 'utxo'
+  | 'custom'
 
 export type HdScanCandidate = {
   settings: KeystoreChainHDSettings
@@ -113,9 +123,12 @@ export const getEvmHdScanCandidates = (
   return candidatesForRange(profile, range, (index) => ({ hdMode, account: 0, index }))
 }
 
-/** THORChain BIP44: m/44'/931'/0'/0/{index} */
+/** THOR / MAYA BIP44: m/44'/931'/0'/0/{index} */
 export const getThorHdScanCandidates = (range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE): HdScanCandidate[] =>
   candidatesForRange('thor', range, (index) => ({ hdMode: 'default', account: 0, index }))
+
+export const getMayaHdScanCandidates = (range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE): HdScanCandidate[] =>
+  candidatesForRange('maya', range, (index) => ({ hdMode: 'default', account: 0, index }))
 
 /** Bitcoin: BIP84 P2WPKH or BIP86 P2TR */
 export const getBtcHdScanCandidates = (
@@ -134,7 +147,11 @@ export const getUtxoStandardHdScanCandidates = (range: HdScanIndexRange = DEFAUL
   candidatesForRange('utxo', range, (index) => ({ hdMode: 'default', account: 0, index }))
 
 export const chainSupportsHdScan = (chain: Chain): boolean =>
-  isEvmHdScanChain(chain) || chain === THORChain || chain === BTCChain || isUtxoStandardHdScanChain(chain)
+  isEvmHdScanChain(chain) ||
+  chain === THORChain ||
+  chain === MAYAChain ||
+  chain === BTCChain ||
+  isUtxoStandardHdScanChain(chain)
 
 export const getHdScanCandidates = (
   chain: Chain,
@@ -150,6 +167,10 @@ export const getHdScanCandidates = (
   if (chain === THORChain) {
     if (profile !== 'thor') return []
     return getThorHdScanCandidates(range)
+  }
+  if (chain === MAYAChain) {
+    if (profile !== 'maya') return []
+    return getMayaHdScanCandidates(range)
   }
   if (chain === BTCChain) {
     if (profile === 'p2wpkh' || profile === 'p2tr') return getBtcHdScanCandidates(profile, range)

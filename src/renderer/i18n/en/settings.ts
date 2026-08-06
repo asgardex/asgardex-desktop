@@ -84,6 +84,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.custom.hint': 'Enter a full BIP32 path if you know it',
   'settings.wallet.hd.profile.thor': 'THORChain (standard)',
   'settings.wallet.hd.profile.thor.hint': "Scans address indexes 0–4 on m/44'/931'/0'/0/n",
+  'settings.wallet.hd.profile.maya': 'MAYAChain (standard)',
+  'settings.wallet.hd.profile.maya.hint': "Scans address indexes on m/44'/931'/0'/0/n (same coin-type as THOR)",
   'settings.wallet.hd.profile.p2wpkh': 'Native SegWit (bc1q…)',
   'settings.wallet.hd.profile.p2wpkh.hint': "Scans address indexes 0–4 on m/84'/0'/0'/0/n",
   'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',

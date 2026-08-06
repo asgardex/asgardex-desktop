@@ -78,6 +78,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.custom.hint': '알고 있다면 전체 BIP32 경로를 입력하세요',
   'settings.wallet.hd.profile.thor': 'THORChain (표준)',
   'settings.wallet.hd.profile.thor.hint': "m/44'/931'/0'/0/n에서 인덱스 0–4 스캔",
+  'settings.wallet.hd.profile.maya': 'MAYAChain (표준)',
+  'settings.wallet.hd.profile.maya.hint': 'm/44\'/931\'/0\'/0/n 인덱스 스캔 (THOR와 동일한 coin-type)',
   'settings.wallet.hd.profile.p2wpkh': 'Native SegWit (bc1q…)',
   'settings.wallet.hd.profile.p2wpkh.hint': "m/84'/0'/0'/0/n에서 인덱스 0–4 스캔",
   'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',

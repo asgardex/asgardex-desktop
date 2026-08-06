@@ -78,6 +78,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.custom.hint': 'यदि पता हो तो पूरा BIP32 पथ दर्ज करें',
   'settings.wallet.hd.profile.thor': 'THORChain (मानक)',
   'settings.wallet.hd.profile.thor.hint': "m/44'/931'/0'/0/n पर इंडेक्स 0–4 स्कैन",
+  'settings.wallet.hd.profile.maya': 'MAYAChain (मानक)',
+  'settings.wallet.hd.profile.maya.hint': 'm/44\'/931\'/0\'/0/n पर इंडेक्स स्कैन (THOR जैसा coin-type)',
   'settings.wallet.hd.profile.p2wpkh': 'Native SegWit (bc1q…)',
   'settings.wallet.hd.profile.p2wpkh.hint': "m/84'/0'/0'/0/n पर इंडेक्स 0–4 स्कैन",
   'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',

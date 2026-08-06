@@ -742,6 +742,8 @@ type SettingMessageKey =
   | 'settings.wallet.hd.profile.custom.hint'
   | 'settings.wallet.hd.profile.thor'
   | 'settings.wallet.hd.profile.thor.hint'
+  | 'settings.wallet.hd.profile.maya'
+  | 'settings.wallet.hd.profile.maya.hint'
   | 'settings.wallet.hd.profile.p2wpkh'
   | 'settings.wallet.hd.profile.p2wpkh.hint'
   | 'settings.wallet.hd.profile.p2tr'

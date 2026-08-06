@@ -17,6 +17,12 @@ import { Client as DogeClient, DOGEChain, AssetDOGE, defaultDogeParams } from '@
 import { Client as EthClient, ETHChain, AssetETH } from '@xchainjs/xchain-ethereum'
 import { Client as LtcClient, LTCChain, AssetLTC, defaultLtcParams } from '@xchainjs/xchain-litecoin'
 import {
+  Client as MayaClient,
+  MAYAChain,
+  AssetCacao,
+  defaultClientConfig as mayaDefaultConfig
+} from '@xchainjs/xchain-mayachain'
+import {
   Client as ThorClient,
   THORChain,
   AssetRuneNative,
@@ -31,6 +37,7 @@ import { createAvaxParams } from '../../../shared/avax/const'
 import { createBaseParams } from '../../../shared/base/const'
 import { createBscParams } from '../../../shared/bsc/const'
 import { createEthParams } from '../../../shared/ethereum/const'
+import { DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { getChainDerivationPath, getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import {
@@ -187,21 +194,31 @@ const makeEvmCtx = (
   }
 })
 
-const thorCtx = (phrase: string, network: Network, rpcUrl: string): DeriveCtx => ({
-  chain: THORChain,
+const cosmosFamilyCtx = (
+  chain: Chain,
+  phrase: string,
+  network: Network,
+  rpcUrl: string,
+  nativeAsset: AnyAsset,
+  assetTicker: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ClientClass: new (params: any) => any,
+  defaultConfig: Record<string, unknown>
+): DeriveCtx => ({
+  chain,
   phrase,
   network,
   rpcUrl,
-  nativeAsset: AssetRuneNative,
-  assetTicker: 'RUNE',
+  nativeAsset,
+  assetTicker,
   createClient: (p, net, rpc, rootDerivationPaths) => {
     const clientUrls: Record<Network, string[]> = {
       [Network.Mainnet]: [rpc],
       [Network.Stagenet]: [rpc],
       [Network.Testnet]: [rpc]
     }
-    return new ThorClient({
-      ...thorDefaultConfig,
+    return new ClientClass({
+      ...defaultConfig,
       clientUrls,
       rootDerivationPaths,
       network: net,
@@ -282,7 +299,10 @@ const ctxForChain = (
     return makeEvmCtx(ARBChain, phrase, network, rpcUrl, AssetAETH, 'ETH', ArbClient, createArbParams)
   if (chain === BASEChain)
     return makeEvmCtx(BASEChain, phrase, network, rpcUrl, AssetBETH, 'ETH', BaseClient, createBaseParams)
-  if (chain === THORChain) return thorCtx(phrase, network, rpcUrl)
+  if (chain === THORChain)
+    return cosmosFamilyCtx(THORChain, phrase, network, rpcUrl, AssetRuneNative, 'RUNE', ThorClient, thorDefaultConfig)
+  if (chain === MAYAChain)
+    return cosmosFamilyCtx(MAYAChain, phrase, network, rpcUrl, AssetCacao, 'CACAO', MayaClient, mayaDefaultConfig)
   if (chain === BTCChain) {
     const format = btcFormatFor(profile, fullPath)
     return btcCtx(
@@ -384,6 +404,7 @@ export type HdScanRpcUrls = {
   avax: string
   base: string
   thor: string
+  maya: string
 }
 
 export const defaultRpcUrlForChain = (
@@ -404,6 +425,7 @@ export const defaultRpcUrlForChain = (
   if (chain === AVAXChain) return urls.avax
   if (chain === BASEChain) return urls.base
   if (chain === THORChain) return urls.thor || DEFAULT_THORNODE_RPC_URLS.mainnet
+  if (chain === MAYAChain) return urls.maya || DEFAULT_MAYANODE_RPC_URLS.mainnet
   // UTXO chains use public data providers
   if (chain === BTCChain || isUtxoStandardHdScanChain(chain)) return ''
   if (isEvmHdScanChain(chain)) return urls.eth

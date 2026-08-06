@@ -12,6 +12,7 @@ import { AssetDASH, DASHChain } from '@xchainjs/xchain-dash'
 import { AssetDOGE, DOGEChain } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetLTC, LTCChain } from '@xchainjs/xchain-litecoin'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { AssetZEC, ZECChain } from '@xchainjs/xchain-zcash'
@@ -27,6 +28,7 @@ import { DEFAULT_AVAX_RPC_URLS } from '../../../shared/avax/const'
 import { DEFAULT_BASE_RPC_URLS } from '../../../shared/base/const'
 import { DEFAULT_BSC_RPC_URLS } from '../../../shared/bsc/const'
 import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
+import { DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { getChainDerivationPath } from '../../../shared/utils/derivationPath'
 import { validateDerivationPath, warnDerivationPath } from '../../../shared/utils/derivationPathValidation'
@@ -43,7 +45,15 @@ import {
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, WalletType } from '../../../shared/wallet/types'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { truncateAddress } from '../../helpers/addressHelper'
-import { arbRpc$, avaxRpc$, baseRpc$, bscRpc$, ethRpc$, thornodeRpc$ } from '../../services/storage/common'
+import {
+  arbRpc$,
+  avaxRpc$,
+  baseRpc$,
+  bscRpc$,
+  ethRpc$,
+  mayanodeRpc$,
+  thornodeRpc$
+} from '../../services/storage/common'
 import {
   checkCustomPath,
   defaultRpcUrlForChain,
@@ -93,6 +103,14 @@ const THOR_PROFILES: ProfileCard[] = [
   }
 ]
 
+const MAYA_PROFILES: ProfileCard[] = [
+  {
+    id: 'maya',
+    titleId: 'settings.wallet.hd.profile.maya',
+    hintId: 'settings.wallet.hd.profile.maya.hint'
+  }
+]
+
 const BTC_PROFILES: ProfileCard[] = [
   {
     id: 'p2wpkh',
@@ -117,6 +135,7 @@ const UTXO_PROFILES: ProfileCard[] = [
 const profilesForChain = (chain: Chain): ProfileCard[] => {
   if (isEvmHdScanChain(chain)) return EVM_PROFILES
   if (chain === THORChain) return THOR_PROFILES
+  if (chain === MAYAChain) return MAYA_PROFILES
   if (chain === BTCChain) return BTC_PROFILES
   if (isUtxoStandardHdScanChain(chain)) return UTXO_PROFILES
   return []
@@ -124,6 +143,7 @@ const profilesForChain = (chain: Chain): ProfileCard[] => {
 
 const defaultProfileForChain = (chain: Chain): ProfileOption => {
   if (chain === THORChain) return 'thor'
+  if (chain === MAYAChain) return 'maya'
   if (chain === BTCChain) return 'p2wpkh'
   if (isUtxoStandardHdScanChain(chain)) return 'utxo'
   return 'metamask'
@@ -136,6 +156,7 @@ const nativeAssetForChain = (chain: Chain): AnyAsset | undefined => {
   if (chain === ARBChain) return AssetAETH
   if (chain === BASEChain) return AssetBETH
   if (chain === THORChain) return AssetRuneNative
+  if (chain === MAYAChain) return AssetCacao
   if (chain === BTCChain) return AssetBTC
   if (chain === LTCChain) return AssetLTC
   if (chain === BCHChain) return AssetBCH
@@ -186,6 +207,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   const avaxRpcUrls = useObservableState(avaxRpc$, DEFAULT_AVAX_RPC_URLS)
   const baseRpcUrls = useObservableState(baseRpc$, DEFAULT_BASE_RPC_URLS)
   const thorRpcUrls = useObservableState(thornodeRpc$, DEFAULT_THORNODE_RPC_URLS)
+  const mayaRpcUrls = useObservableState(mayanodeRpc$, DEFAULT_MAYANODE_RPC_URLS)
 
   const profiles = useMemo(() => profilesForChain(chain), [chain])
   const [step, setStep] = useState<Step>('pick')
@@ -208,7 +230,8 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
     arb: arbRpcUrls[network] || DEFAULT_ARB_RPC_URLS[network],
     avax: avaxRpcUrls[network] || DEFAULT_AVAX_RPC_URLS[network],
     base: baseRpcUrls[network] || DEFAULT_BASE_RPC_URLS[network],
-    thor: thorRpcUrls[network] || DEFAULT_THORNODE_RPC_URLS[network] || DEFAULT_THORNODE_RPC_URLS.mainnet
+    thor: thorRpcUrls[network] || DEFAULT_THORNODE_RPC_URLS[network] || DEFAULT_THORNODE_RPC_URLS.mainnet,
+    maya: mayaRpcUrls[network] || DEFAULT_MAYANODE_RPC_URLS[network] || DEFAULT_MAYANODE_RPC_URLS.mainnet
   })
 
   const parseDraftIndex = (raw: string, fallback: number) => {
