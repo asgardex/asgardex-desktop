@@ -42,6 +42,7 @@ import {
 } from '../../../shared/utils/keystoreHdScan'
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, WalletType } from '../../../shared/wallet/types'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { truncateAddress } from '../../helpers/addressHelper'
 import { arbRpc$, avaxRpc$, baseRpc$, bscRpc$, ethRpc$, thornodeRpc$ } from '../../services/storage/common'
 import {
   checkCustomPath,
@@ -49,7 +50,6 @@ import {
   KeystoreHdScanHit,
   scanKeystoreFunds$
 } from '../../services/wallet/keystoreHdScan'
-import { truncateAddress } from '../../helpers/addressHelper'
 import { keystoreChainHDSettings$, setKeystoreChainHDSettings } from '../../services/wallet/keystoreHDSettings'
 import { getPhrase } from '../../services/wallet/util'
 import { FlatButton, TextButton } from '../uielements/button'
