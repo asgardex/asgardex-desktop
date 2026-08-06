@@ -41,14 +41,18 @@ describe('shared/utils/derivationPathValidation', () => {
       expect(warnDerivationPath("m/44'/931'/0'/0/0", THORChain, Network.Mainnet)).toBeUndefined()
     })
     it('warns on testnet coin-type used on mainnet', () => {
-      expect(warnDerivationPath("m/44'/1'/0'/0/0", ETHChain, Network.Mainnet)).toMatch(/testnet coin-type/i)
+      const w = warnDerivationPath("m/44'/1'/0'/0/0", ETHChain, Network.Mainnet)
+      expect(w?.id).toBe('settings.wallet.hd.path.warn.testnetCoinOnNetwork')
     })
     it('warns on mainnet coin-type used on testnet', () => {
-      expect(warnDerivationPath("m/44'/60'/0'/0/0", ETHChain, Network.Testnet)).toMatch(/testnet normally uses/i)
+      const w = warnDerivationPath("m/44'/60'/0'/0/0", ETHChain, Network.Testnet)
+      expect(w?.id).toBe('settings.wallet.hd.path.warn.testnetNormally')
+      expect(w?.values.coinType).toBe("60'")
     })
     it("warns when coin-type doesn't match the chain's standard", () => {
       // BTC standard is coin-type 0'; feeding 60' should flag a mismatch
-      expect(warnDerivationPath("m/44'/60'/0'/0/0", BTCChain, Network.Mainnet)).toMatch(/does not match/i)
+      const w = warnDerivationPath("m/44'/60'/0'/0/0", BTCChain, Network.Mainnet)
+      expect(w?.id).toBe('settings.wallet.hd.path.warn.coinTypeMismatch')
     })
     it('returns undefined for an invalid path (validation handles blocking)', () => {
       expect(warnDerivationPath('not-a-path', ETHChain, Network.Mainnet)).toBeUndefined()

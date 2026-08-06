@@ -65,14 +65,21 @@ const feeBounds = { lower: LOWER_FEE_BOUND, upper: UPPER_FEE_BOUND }
 const hdSettings$ = keystoreChainHDSettings$(BTCChain)
 
 /**
- * Paths for a BTC address format: use stored account/index (and custom path if set).
- * Each format uses its own BIP84 / BIP86 template unless a custom path is locked.
+ * Paths for a BTC address format: use stored account/index.
+ * A custom path applies only to the matching script type (86' → Taproot client,
+ * otherwise SegWit) so the other format keeps its standard BIP84/BIP86 formula.
  */
 const pathsForFormat = (addressFormat: AddressFormat, hd: KeystoreChainHDSettings) => {
   const mode = addressFormat === AddressFormat.P2TR ? 'p2tr' : 'p2wpkh'
-  // Custom path: apply to both clients (user-supplied full path)
-  if (hd.customPath?.trim()) {
-    return getKeystoreDerivation(BTCChain, hd)
+  const custom = hd.customPath?.trim()
+  if (custom) {
+    const customIsTaproot = custom.includes("86'")
+    const formatIsTaproot = addressFormat === AddressFormat.P2TR
+    if (customIsTaproot === formatIsTaproot) {
+      return getKeystoreDerivation(BTCChain, hd)
+    }
+    // Non-matching client: ignore custom path, use formula for this format
+    return getKeystoreDerivation(BTCChain, { hdMode: mode, account: hd.account, index: hd.index })
   }
   return getKeystoreDerivation(BTCChain, { ...hd, hdMode: mode })
 }

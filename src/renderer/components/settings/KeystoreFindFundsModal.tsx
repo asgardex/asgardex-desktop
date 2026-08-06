@@ -55,16 +55,13 @@ type ProfileOption = Exclude<HdScanProfile, 'custom'>
 
 type ProfileCard = { id: ProfileOption; titleId: string; hintId: string }
 
+// MetaMask + Ledger Live (account 0) share m/44'/60'/0'/0/n — one profile to avoid duplicates.
+// Multi-account Ledger Live (m/44'/60'/n'/0/0) → custom path or Account chip on the quiet row.
 const EVM_PROFILES: ProfileCard[] = [
   {
     id: 'metamask',
     titleId: 'settings.wallet.hd.profile.metamask',
     hintId: 'settings.wallet.hd.profile.metamask.hint'
-  },
-  {
-    id: 'ledgerlive',
-    titleId: 'settings.wallet.hd.profile.ledgerlive',
-    hintId: 'settings.wallet.hd.profile.ledgerlive.hint'
   },
   {
     id: 'legacy',
@@ -285,7 +282,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   const selected = hits.find((h) => h.key === selectedKey)
   const customTrimmed = customPath.trim()
   const customValid = customTrimmed.length === 0 || validateDerivationPath(customTrimmed).valid
-  const customWarn =
+  const customWarnDesc =
     customTrimmed.length > 0 && customValid ? warnDerivationPath(customTrimmed, chain, network) : undefined
   const displayAsset = nativeAssetForChain(chain)
 
@@ -527,9 +524,9 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
                 {intl.formatMessage({ id: 'settings.wallet.hd.customPath.invalid' })}
               </p>
             )}
-            {customWarn && (
+            {customWarnDesc && (
               <Label size="small" color="warning" className="!w-auto !p-0">
-                {customWarn}
+                {intl.formatMessage({ id: customWarnDesc.id }, customWarnDesc.values)}
               </Label>
             )}
 

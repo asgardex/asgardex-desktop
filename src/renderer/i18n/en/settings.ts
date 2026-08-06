@@ -49,6 +49,12 @@ const settings: SettingMessages = {
   'settings.wallet.hd.path.save': 'Save',
   'settings.wallet.hd.path.customLocked':
     'Custom path is locked. Change account/index and Save to use the standard formula, or Find my funds.',
+  'settings.wallet.hd.path.warn.testnetNormally':
+    "Path uses coin-type {coinType} but testnet normally uses 1'",
+  'settings.wallet.hd.path.warn.testnetCoinOnNetwork':
+    "Path uses the testnet coin-type (1') on {network}",
+  'settings.wallet.hd.path.warn.coinTypeMismatch':
+    "Coin-type {coinType} does not match {chain}'s standard ({expected}); funds may be unreachable in other wallets",
   'settings.wallet.hd.find.action': 'Find my funds',
   'settings.wallet.hd.find.title': 'Find my funds',
   'settings.wallet.hd.find.subtitle':
@@ -67,12 +73,13 @@ const settings: SettingMessages = {
   'settings.wallet.hd.find.locked': 'Unlock your wallet to scan for funds',
   'settings.wallet.hd.find.scan': 'Scan',
   'settings.wallet.hd.find.check': 'Check path',
-  'settings.wallet.hd.profile.metamask': 'MetaMask / browser wallet',
-  'settings.wallet.hd.profile.metamask.hint': "Scans address indexes 0–4 on m/44'/60'/0'/0/n",
+  'settings.wallet.hd.profile.metamask': 'MetaMask / Ledger Live (account 0)',
+  'settings.wallet.hd.profile.metamask.hint':
+    "m/44'/60'/0'/0/n — multi-account Ledger Live (account n) via custom path or Account chip",
   'settings.wallet.hd.profile.ledgerlive': 'Ledger Live',
-  'settings.wallet.hd.profile.ledgerlive.hint': "Scans address indexes 0–4 on m/44'/60'/0'/0/n",
+  'settings.wallet.hd.profile.ledgerlive.hint': "Same path family as MetaMask at account 0 (m/44'/60'/0'/0/n)",
   'settings.wallet.hd.profile.legacy': 'Legacy Ledger',
-  'settings.wallet.hd.profile.legacy.hint': "Scans address indexes 0–4 on m/44'/60'/0'/n",
+  'settings.wallet.hd.profile.legacy.hint': "m/44'/60'/0'/n over your chosen index range",
   'settings.wallet.hd.profile.custom': 'Custom path',
   'settings.wallet.hd.profile.custom.hint': 'Enter a full BIP32 path if you know it',
   'settings.wallet.hd.profile.thor': 'THORChain (standard)',

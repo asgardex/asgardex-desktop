@@ -11,6 +11,15 @@ const MAX_PATH_SEGMENT = 2 ** 31 - 1
 
 export type DerivationPathValidation = { valid: boolean; error?: 'empty' | 'format' | 'range' }
 
+/** i18n-ready advisory returned by `warnDerivationPath` (format with `intl.formatMessage`). */
+export type DerivationPathWarning = {
+  id:
+    | 'settings.wallet.hd.path.warn.testnetNormally'
+    | 'settings.wallet.hd.path.warn.testnetCoinOnNetwork'
+    | 'settings.wallet.hd.path.warn.coinTypeMismatch'
+  values: Record<string, string>
+}
+
 /**
  * Structural BIP32 validation. Blocking: an invalid path must never reach the
  * client layer. Accepts e.g. `m/44'/60'/0'/0/0`.
@@ -40,22 +49,31 @@ const coinTypeOf = (path: string): string | undefined => path.trim().split('/').
 /**
  * Non-blocking advisory. Flags a custom path whose coin-type looks unusual for
  * the chain or is mismatched with the current network (testnet uses coin-type
- * `1'`). Returns a human-readable warning, or `undefined` when nothing looks off.
+ * `1'`). Returns an i18n message descriptor, or `undefined` when nothing looks off.
  */
-export const warnDerivationPath = (path: string, chain: Chain, network: Network): string | undefined => {
+export const warnDerivationPath = (path: string, chain: Chain, network: Network): DerivationPathWarning | undefined => {
   if (!validateDerivationPath(path).valid) return undefined
   const coinType = coinTypeOf(path)
   if (!coinType) return undefined
 
   if (network === Network.Testnet && coinType !== "1'") {
-    return `Path uses coin-type ${coinType} but testnet normally uses 1'`
+    return {
+      id: 'settings.wallet.hd.path.warn.testnetNormally',
+      values: { coinType }
+    }
   }
   if (network !== Network.Testnet && coinType === "1'") {
-    return `Path uses the testnet coin-type (1') on ${network}`
+    return {
+      id: 'settings.wallet.hd.path.warn.testnetCoinOnNetwork',
+      values: { network: String(network) }
+    }
   }
   const expected = coinTypeOf(getChainDerivationPath(chain, 0, 0, network).path)
   if (expected && coinType !== expected) {
-    return `Coin-type ${coinType} does not match ${chain}'s standard (${expected}); funds may be unreachable in other wallets`
+    return {
+      id: 'settings.wallet.hd.path.warn.coinTypeMismatch',
+      values: { coinType, chain: String(chain), expected }
+    }
   }
   return undefined
 }
