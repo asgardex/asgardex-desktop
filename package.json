@@ -207,7 +207,8 @@
     "form-data": "4.0.4",
     "bignumber.js": "^10.0.1",
     "pbkdf2": "3.1.2",
-    "browserify-sign": "4.2.1"
+    "browserify-sign": "4.2.1",
+    "keyv": "5.6.0"
   },
   "packageManager": "yarn@4.17.0"
 }
