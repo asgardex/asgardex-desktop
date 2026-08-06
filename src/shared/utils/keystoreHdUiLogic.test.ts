@@ -8,6 +8,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { describe, expect, it } from 'vitest'
 
+import { HD_SCAN_MAX_COUNT, HD_SCAN_MAX_INDEX } from './keystoreHdScan'
 import {
   accountIndexSaveEnabled,
   defaultCustomPathForChain,
@@ -21,7 +22,6 @@ import {
   scanRangeFromDrafts,
   slotsAreDirty
 } from './keystoreHdUiLogic'
-import { HD_SCAN_MAX_COUNT, HD_SCAN_MAX_INDEX } from './keystoreHdScan'
 
 describe('keystoreHdUiLogic — profiles', () => {
   it('EVM chains share MetaMask + Legacy only (no separate Ledger Live card)', () => {

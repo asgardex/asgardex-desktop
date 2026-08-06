@@ -1,9 +1,10 @@
-import { Network } from '@xchainjs/xchain-client'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 
+import { KeystoreChainHDSettings } from '../wallet/types'
 import { getChainDerivationPath } from './derivationPath'
 import {
   DEFAULT_HD_SCAN_RANGE,
@@ -14,7 +15,6 @@ import {
   isUtxoStandardHdScanChain,
   normalizeHdScanRange
 } from './keystoreHdScan'
-import { KeystoreChainHDSettings } from '../wallet/types'
 
 export type HdProfileOption = Exclude<HdScanProfile, 'custom'>
 
