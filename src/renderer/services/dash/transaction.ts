@@ -21,11 +21,24 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const common = C.createTransactionService(client$)
 
   const sendKeystoreTx = (params: SendTxParams): TxHashLD => {
-    const { recipient, amount, memo } = params
+    const { recipient, amount, memo, feeRate, walletIndex } = params
     return FP.pipe(
       client$,
       RxOp.switchMap(FP.flow(O.fold<Client, Rx.Observable<Client>>(() => Rx.EMPTY, Rx.of))),
-      RxOp.switchMap((client) => Rx.from(client.transfer({ asset: AssetDASH, recipient, amount, memo, feeRate: 1 }))),
+      RxOp.switchMap((client) =>
+        Rx.from(
+          client.transfer({
+            asset: AssetDASH,
+            recipient,
+            amount,
+            memo,
+            feeRate: feeRate || 1,
+            walletIndex,
+            selectedUtxos: params.selectedUtxos,
+            utxoSelectionPreferences: params.utxoSelectionPreferences
+          })
+        )
+      ),
       RxOp.map(RD.success),
       RxOp.catchError((e): TxHashLD => {
         const msg = getUtxoErrorMessage(e) ?? e?.message ?? e.toString()

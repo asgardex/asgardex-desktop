@@ -146,6 +146,27 @@ Vult addresses come from the vault SDK; there is no keystore phrase for local HD
 
 ---
 
+## Additional critical fixed (post M1/M2)
+
+### M5 — DASH keystore send ignored `walletIndex`
+
+|              |                                                                                               |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| **Severity** | Bug — same class as M1 for **non-max** DASH sends                                             |
+| **Status**   | **Fixed** — `sendKeystoreTx` passes `walletIndex` (and real `feeRate`) into `client.transfer` |
+| **Where**    | `src/renderer/services/dash/transaction.ts`                                                   |
+
+### M6 — Radix pool deposit transfer omitted `walletIndex`
+
+|              |                                                                               |
+| ------------ | ----------------------------------------------------------------------------- |
+| **Severity** | Bug — pool path could sign index 0 while `getAddressAsync` used locked index  |
+| **Status**   | **Fixed** — `walletIndex` on `client.transfer` in Radix pool deposit          |
+| **Where**    | `src/renderer/services/radix/transaction.ts`                                  |
+| **Note**     | Radix is outside Find my funds scope; fix is defensive for any HD/index usage |
+
+---
+
 ## Fixed since earlier review (do not re-open as blockers)
 
 ### F1 — BTC custom path applied to both SegWit and Taproot clients
