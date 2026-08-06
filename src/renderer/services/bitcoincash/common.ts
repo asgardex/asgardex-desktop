@@ -6,12 +6,17 @@ import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 import { map, shareReplay } from 'rxjs/operators'
 
+import { getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
+import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS } from '../../../shared/wallet/types'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { getPhrase } from '../wallet/util'
 import { ClientState, ClientState$ } from './types'
+
+const hdSettings$ = keystoreChainHDSettings$(BCHChain)
 
 /**
  * Stream to create an observable `BitcoinCashClient` depending on existing phrase in keystore
@@ -21,18 +26,20 @@ import { ClientState, ClientState$ } from './types'
  * A `BitcoinCashClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
   RxOp.switchMap(
-    ([keystore, network]): ClientState$ =>
+    ([keystore, network, hdSettings]): ClientState$ =>
       Rx.of(
         FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
+              const { rootDerivationPaths } = getKeystoreDerivation(BCHChain, hdSettings)
               const bchInitParams = {
                 ...defaultBchParams,
                 phrase: phrase,
-                network: network
+                network: network,
+                rootDerivationPaths
               }
               const client = new BitcoinCashClient(bchInitParams)
               return RD.success(client)
@@ -80,15 +87,22 @@ const readOnlyClient$: Observable<O.Option<BitcoinCashClient>> = readOnlyClientS
   RxOp.shareReplay(1)
 )
 
-/**
- * BCH `Address`
- */
-const address$: C.WalletAddress$ = C.address$(client$, BCHChain)
+const addressHDSettings$ = hdSettings$.pipe(
+  RxOp.map((s) => {
+    const { walletIndex } = getKeystoreDerivation(BCHChain, s ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
+    return { hdMode: s.hdMode, account: s.account, index: walletIndex }
+  })
+)
 
 /**
  * BCH `Address`
  */
-const addressUI$: C.WalletAddress$ = C.addressUI$(client$, BCHChain)
+const address$: C.WalletAddress$ = C.address$(client$, BCHChain, addressHDSettings$)
+
+/**
+ * BCH `Address`
+ */
+const addressUI$: C.WalletAddress$ = C.addressUI$(client$, BCHChain, addressHDSettings$)
 
 /**
  * Explorer url

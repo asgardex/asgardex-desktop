@@ -1,11 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
+import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
+import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
 import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
+import { AssetBCH, BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
+import { AssetDASH, DASHChain } from '@xchainjs/xchain-dash'
+import { AssetDOGE, DOGEChain } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
+import { AssetLTC, LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { AssetZEC, ZECChain } from '@xchainjs/xchain-zcash'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -13,6 +22,10 @@ import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { DEFAULT_ARB_RPC_URLS } from '../../../shared/arb/const'
+import { DEFAULT_AVAX_RPC_URLS } from '../../../shared/avax/const'
+import { DEFAULT_BASE_RPC_URLS } from '../../../shared/base/const'
+import { DEFAULT_BSC_RPC_URLS } from '../../../shared/bsc/const'
 import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { getChainDerivationPath } from '../../../shared/utils/derivationPath'
@@ -23,11 +36,13 @@ import {
   HD_SCAN_MAX_COUNT,
   HD_SCAN_MAX_INDEX,
   HdScanProfile,
+  isEvmHdScanChain,
+  isUtxoStandardHdScanChain,
   normalizeHdScanRange
 } from '../../../shared/utils/keystoreHdScan'
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, WalletType } from '../../../shared/wallet/types'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { ethRpc$, thornodeRpc$ } from '../../services/storage/common'
+import { arbRpc$, avaxRpc$, baseRpc$, bscRpc$, ethRpc$, thornodeRpc$ } from '../../services/storage/common'
 import {
   checkCustomPath,
   defaultRpcUrlForChain,
@@ -91,31 +106,50 @@ const BTC_PROFILES: ProfileCard[] = [
   }
 ]
 
+const UTXO_PROFILES: ProfileCard[] = [
+  {
+    id: 'utxo',
+    titleId: 'settings.wallet.hd.profile.utxo',
+    hintId: 'settings.wallet.hd.profile.utxo.hint'
+  }
+]
+
 const profilesForChain = (chain: Chain): ProfileCard[] => {
-  if (chain === ETHChain) return EVM_PROFILES
+  if (isEvmHdScanChain(chain)) return EVM_PROFILES
   if (chain === THORChain) return THOR_PROFILES
   if (chain === BTCChain) return BTC_PROFILES
+  if (isUtxoStandardHdScanChain(chain)) return UTXO_PROFILES
   return []
 }
 
 const defaultProfileForChain = (chain: Chain): ProfileOption => {
   if (chain === THORChain) return 'thor'
   if (chain === BTCChain) return 'p2wpkh'
+  if (isUtxoStandardHdScanChain(chain)) return 'utxo'
   return 'metamask'
 }
 
 const nativeAssetForChain = (chain: Chain): AnyAsset | undefined => {
   if (chain === ETHChain) return AssetETH
+  if (chain === BSCChain) return AssetBSC
+  if (chain === AVAXChain) return AssetAVAX
+  if (chain === ARBChain) return AssetAETH
+  if (chain === BASEChain) return AssetBETH
   if (chain === THORChain) return AssetRuneNative
   if (chain === BTCChain) return AssetBTC
+  if (chain === LTCChain) return AssetLTC
+  if (chain === BCHChain) return AssetBCH
+  if (chain === DOGEChain) return AssetDOGE
+  if (chain === DASHChain) return AssetDASH
+  if (chain === ZECChain) return AssetZEC
   return undefined
 }
 
 /** Default full path for a chain (account 0 / index 0, standard formula). */
 const defaultCustomPath = (chain: Chain, network: Network): string => {
-  if (chain === THORChain) return getChainDerivationPath(chain, 0, 0, network).path
   if (chain === BTCChain) return getChainDerivationPath(chain, 0, 0, network, 'p2wpkh').path
-  return getChainDerivationPath(chain, 0, 0, network, 'ledgerlive').path
+  if (isEvmHdScanChain(chain)) return getChainDerivationPath(chain, 0, 0, network, 'ledgerlive').path
+  return getChainDerivationPath(chain, 0, 0, network).path
 }
 
 /** Prefill editor with current locked path if any, else chain default. */
@@ -147,6 +181,10 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   const keystoreState = useObservableState(keystoreService.keystoreState$, O.none)
   const currentSettings = useObservableState(keystoreChainHDSettings$(chain), DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
   const ethRpcUrls = useObservableState(ethRpc$, DEFAULT_ETH_RPC_URLS)
+  const bscRpcUrls = useObservableState(bscRpc$, DEFAULT_BSC_RPC_URLS)
+  const arbRpcUrls = useObservableState(arbRpc$, DEFAULT_ARB_RPC_URLS)
+  const avaxRpcUrls = useObservableState(avaxRpc$, DEFAULT_AVAX_RPC_URLS)
+  const baseRpcUrls = useObservableState(baseRpc$, DEFAULT_BASE_RPC_URLS)
   const thorRpcUrls = useObservableState(thornodeRpc$, DEFAULT_THORNODE_RPC_URLS)
 
   const profiles = useMemo(() => profilesForChain(chain), [chain])
@@ -164,12 +202,14 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   const customRunIdRef = useRef(0)
 
   const phrase = useMemo(() => FP.pipe(getPhrase(keystoreState), O.toNullable), [keystoreState])
-  const rpcUrl = defaultRpcUrlForChain(
-    chain,
-    network,
-    ethRpcUrls[network] || DEFAULT_ETH_RPC_URLS[network],
-    thorRpcUrls[network] || DEFAULT_THORNODE_RPC_URLS[network] || DEFAULT_THORNODE_RPC_URLS.mainnet
-  )
+  const rpcUrl = defaultRpcUrlForChain(chain, network, {
+    eth: ethRpcUrls[network] || DEFAULT_ETH_RPC_URLS[network],
+    bsc: bscRpcUrls[network] || DEFAULT_BSC_RPC_URLS[network],
+    arb: arbRpcUrls[network] || DEFAULT_ARB_RPC_URLS[network],
+    avax: avaxRpcUrls[network] || DEFAULT_AVAX_RPC_URLS[network],
+    base: baseRpcUrls[network] || DEFAULT_BASE_RPC_URLS[network],
+    thor: thorRpcUrls[network] || DEFAULT_THORNODE_RPC_URLS[network] || DEFAULT_THORNODE_RPC_URLS.mainnet
+  })
 
   const parseDraftIndex = (raw: string, fallback: number) => {
     if (raw.trim() === '') return fallback

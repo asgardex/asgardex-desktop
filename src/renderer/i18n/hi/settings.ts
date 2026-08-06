@@ -82,6 +82,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.p2wpkh.hint': "m/84'/0'/0'/0/n पर इंडेक्स 0–4 स्कैन",
   'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',
   'settings.wallet.hd.profile.p2tr.hint': "m/86'/0'/0'/0/n पर इंडेक्स 0–4 स्कैन",
+  'settings.wallet.hd.profile.utxo': 'मानक पथ',
+  'settings.wallet.hd.profile.utxo.hint': 'चेन के मानक BIP पता इंडेक्स स्कैन (खाता 0)',
   'settings.wallet.storeAddress.info':
     'अपने विश्वसनीय पते को स्थानीय भंडारण में सहेजें, वे चेन के तहत या भेजने के दृश्य में सूचीबद्ध होंगे',
   'settings.thornode.node.error.unhealthy': 'THORNode API "{endpoint}" की जांच करके अस्वस्थ लगता है',

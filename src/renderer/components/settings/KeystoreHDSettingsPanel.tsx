@@ -9,6 +9,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { getChainDerivationPath } from '../../../shared/utils/derivationPath'
+import { isEvmHdScanChain, isUtxoStandardHdScanChain } from '../../../shared/utils/keystoreHdScan'
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, KeystoreChainHDSettings, WalletType } from '../../../shared/wallet/types'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { keystoreChainHDSettings$, setKeystoreChainHDSettings } from '../../services/wallet/keystoreHDSettings'
@@ -29,16 +30,20 @@ const profileLabelId = (chain: Chain, settings: KeystoreChainHDSettings) => {
       ? ('settings.wallet.hd.profile.p2tr' as const)
       : ('settings.wallet.hd.profile.p2wpkh' as const)
   }
-  switch (settings.hdMode) {
-    case 'metamask':
-      return 'settings.wallet.hd.profile.metamask' as const
-    case 'legacy':
-      return 'settings.wallet.hd.profile.legacy' as const
-    case 'ledgerlive':
-    case 'default':
-    default:
-      return 'settings.wallet.hd.profile.ledgerlive' as const
+  if (isUtxoStandardHdScanChain(chain)) return 'settings.wallet.hd.profile.utxo' as const
+  if (isEvmHdScanChain(chain)) {
+    switch (settings.hdMode) {
+      case 'metamask':
+        return 'settings.wallet.hd.profile.metamask' as const
+      case 'legacy':
+        return 'settings.wallet.hd.profile.legacy' as const
+      case 'ledgerlive':
+      case 'default':
+      default:
+        return 'settings.wallet.hd.profile.metamask' as const
+    }
   }
+  return 'settings.wallet.hd.profile.custom' as const
 }
 
 const parseSlot = (raw: string, fallback: number): number => {

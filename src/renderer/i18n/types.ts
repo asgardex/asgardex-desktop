@@ -746,6 +746,8 @@ type SettingMessageKey =
   | 'settings.wallet.hd.profile.p2wpkh.hint'
   | 'settings.wallet.hd.profile.p2tr'
   | 'settings.wallet.hd.profile.p2tr.hint'
+  | 'settings.wallet.hd.profile.utxo'
+  | 'settings.wallet.hd.profile.utxo.hint'
   | 'settings.wallet.storeAddress.info'
   | 'settings.thornode.node.error.url'
   | 'settings.thornode.node.error.unhealthy'

@@ -13,13 +13,18 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
+import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS } from '../../../shared/wallet/types'
 import { logger } from '../../helpers/logger'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$ } from './types'
+
+const hdSettings$ = keystoreChainHDSettings$(ZECChain)
 
 const LOWER_FEE_BOUND = 10000
 const UPPER_FEE_BOUND = 100000
@@ -32,9 +37,9 @@ const UPPER_FEE_BOUND = 100000
  * A `ZcashClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
   RxOp.switchMap(
-    ([keystore, network]): ClientState$ =>
+    ([keystore, network, hdSettings]): ClientState$ =>
       Rx.of(
         FP.pipe(
           getPhrase(keystore),
@@ -63,12 +68,14 @@ const clientState$: ClientState$ = FP.pipe(
                       }
                     ]
 
+              const { rootDerivationPaths } = getKeystoreDerivation(ZECChain, hdSettings)
               const zecInitParams = {
                 ...defaultZECParams,
                 phrase: phrase,
                 network: network,
                 explorerProviders: zcashExplorerProviders,
                 dataProviders: providers,
+                rootDerivationPaths,
                 feeBounds: {
                   lower: LOWER_FEE_BOUND,
                   upper: UPPER_FEE_BOUND
@@ -125,12 +132,19 @@ const readOnlyClient$: Rx.Observable<O.Option<Client>> = readOnlyClientState$.pi
 /**
  * ZEC `Address`
  */
-const address$: C.WalletAddress$ = C.address$(client$, ZECChain)
+const addressHDSettings$ = hdSettings$.pipe(
+  RxOp.map((s) => {
+    const { walletIndex } = getKeystoreDerivation(ZECChain, s ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
+    return { hdMode: s.hdMode, account: s.account, index: walletIndex }
+  })
+)
+
+const address$: C.WalletAddress$ = C.address$(client$, ZECChain, addressHDSettings$)
 
 /**
  * ZEC `Address`
  */
-const addressUI$: C.WalletAddress$ = C.addressUI$(client$, ZECChain)
+const addressUI$: C.WalletAddress$ = C.addressUI$(client$, ZECChain, addressHDSettings$)
 
 /**
  * Explorer url depending on selected network

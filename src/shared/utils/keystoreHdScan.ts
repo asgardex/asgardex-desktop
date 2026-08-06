@@ -1,7 +1,16 @@
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { DASHChain } from '@xchainjs/xchain-dash'
+import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 
 import { EvmHDMode } from '../evm/types'
 import { UtxoHDMode } from '../utxo/types'
@@ -54,9 +63,12 @@ export const normalizeHdScanRange = (start: number, end: number): HdScanIndexRan
 
 /**
  * Wallet / path profile chosen before scanning.
- * All profiles vary address index only (account stays 0). Multi-account BIP paths → custom path.
+ * - EVM: metamask/legacy (ledgerlive kept for API compat; UI merges with metamask)
+ * - THOR: thor
+ * - BTC: p2wpkh / p2tr
+ * - Other UTXO: utxo (single BIP formula per chain)
  */
-export type HdScanProfile = 'metamask' | 'ledgerlive' | 'legacy' | 'thor' | 'p2wpkh' | 'p2tr' | 'custom'
+export type HdScanProfile = 'metamask' | 'ledgerlive' | 'legacy' | 'thor' | 'p2wpkh' | 'p2tr' | 'utxo' | 'custom'
 
 export type HdScanCandidate = {
   settings: KeystoreChainHDSettings
@@ -64,6 +76,12 @@ export type HdScanCandidate = {
   accountLabel: number
   profile: Exclude<HdScanProfile, 'custom'>
 }
+
+const EVM_SCAN_CHAINS: Chain[] = [ETHChain, BSCChain, AVAXChain, ARBChain, BASEChain]
+const UTXO_STANDARD_SCAN_CHAINS: Chain[] = [LTCChain, BCHChain, DOGEChain, DASHChain, ZECChain]
+
+export const isEvmHdScanChain = (chain: Chain): boolean => EVM_SCAN_CHAINS.includes(chain)
+export const isUtxoStandardHdScanChain = (chain: Chain): boolean => UTXO_STANDARD_SCAN_CHAINS.includes(chain)
 
 const candidatesForRange = (
   profile: Exclude<HdScanProfile, 'custom'>,
@@ -84,10 +102,8 @@ const candidatesForRange = (
 
 /**
  * EVM candidates — **address index only**, account always 0.
- *
- * - MetaMask:     m/44'/60'/0'/0/{index}
- * - Ledger Live:  m/44'/60'/0'/0/{index}  (account 0; multi-account → custom path)
- * - Legacy:       m/44'/60'/0'/{index}
+ * - MetaMask / Ledger Live account 0: m/44'/60'/0'/0/{index}
+ * - Legacy: m/44'/60'/0'/{index}
  */
 export const getEvmHdScanCandidates = (
   profile: 'metamask' | 'ledgerlive' | 'legacy',
@@ -97,17 +113,11 @@ export const getEvmHdScanCandidates = (
   return candidatesForRange(profile, range, (index) => ({ hdMode, account: 0, index }))
 }
 
-/**
- * THORChain BIP44: m/44'/931'/0'/0/{index} — vary address index only.
- * Account stays 0 (most wallets); index is what users mean by “next address”.
- */
+/** THORChain BIP44: m/44'/931'/0'/0/{index} */
 export const getThorHdScanCandidates = (range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE): HdScanCandidate[] =>
   candidatesForRange('thor', range, (index) => ({ hdMode: 'default', account: 0, index }))
 
-/**
- * Bitcoin: Native SegWit BIP84 or Taproot BIP86 — vary address index, account 0.
- * Paths: m/84'/0'/0'/0/{index} or m/86'/0'/0'/0/{index}
- */
+/** Bitcoin: BIP84 P2WPKH or BIP86 P2TR */
 export const getBtcHdScanCandidates = (
   profile: 'p2wpkh' | 'p2tr',
   range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE
@@ -116,15 +126,22 @@ export const getBtcHdScanCandidates = (
   return candidatesForRange(profile, range, (index) => ({ hdMode, account: 0, index }))
 }
 
+/**
+ * Other UTXO (LTC/BCH/DOGE/DASH/ZEC): single standard formula from derivationPath,
+ * vary address index, account 0.
+ */
+export const getUtxoStandardHdScanCandidates = (range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE): HdScanCandidate[] =>
+  candidatesForRange('utxo', range, (index) => ({ hdMode: 'default', account: 0, index }))
+
 export const chainSupportsHdScan = (chain: Chain): boolean =>
-  chain === ETHChain || chain === THORChain || chain === BTCChain
+  isEvmHdScanChain(chain) || chain === THORChain || chain === BTCChain || isUtxoStandardHdScanChain(chain)
 
 export const getHdScanCandidates = (
   chain: Chain,
   profile: Exclude<HdScanProfile, 'custom'>,
   range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE
 ): HdScanCandidate[] => {
-  if (chain === ETHChain) {
+  if (isEvmHdScanChain(chain)) {
     if (profile === 'metamask' || profile === 'ledgerlive' || profile === 'legacy') {
       return getEvmHdScanCandidates(profile, range)
     }
@@ -137,6 +154,10 @@ export const getHdScanCandidates = (
   if (chain === BTCChain) {
     if (profile === 'p2wpkh' || profile === 'p2tr') return getBtcHdScanCandidates(profile, range)
     return []
+  }
+  if (isUtxoStandardHdScanChain(chain)) {
+    if (profile !== 'utxo') return []
+    return getUtxoStandardHdScanCandidates(range)
   }
   return []
 }

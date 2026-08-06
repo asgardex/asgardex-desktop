@@ -9,6 +9,7 @@ import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
 import { replaceSymbol } from '../evm/utils'
 import { bscRpc$, evmGasMultiplier$ } from '../storage/common'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { WalletBalance } from '../wallet/types'
 
 const {
@@ -33,6 +34,7 @@ const {
   createClientParams: createBscParams,
   ClientClass: Client,
   rpc$: bscRpc$,
+  hdSettings$: keystoreChainHDSettings$(BSCChain),
   addressInWhitelist: addressInBscWhitelist,
   assetsFallback: BSCAssetsFallBack,
   assetsTestnet: BscAssetsTestnet,

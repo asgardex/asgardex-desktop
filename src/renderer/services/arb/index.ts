@@ -8,6 +8,7 @@ import { network$ } from '../app/service'
 import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
 import { arbRpc$, evmGasMultiplier$ } from '../storage/common'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 
 const {
   client$,
@@ -31,6 +32,7 @@ const {
   createClientParams: createArbParams,
   ClientClass: Client,
   rpc$: arbRpc$,
+  hdSettings$: keystoreChainHDSettings$(ARBChain),
   addressInWhitelist: addressInArbWhitelist,
   assetsFallback: ARBAssetsFallback,
   assetsTestnet: ArbAssetsTestnet,

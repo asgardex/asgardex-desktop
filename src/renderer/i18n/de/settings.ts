@@ -83,6 +83,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.p2wpkh.hint': "Scannt Adressindizes 0–4 auf m/84'/0'/0'/0/n",
   'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',
   'settings.wallet.hd.profile.p2tr.hint': "Scannt Adressindizes 0–4 auf m/86'/0'/0'/0/n",
+  'settings.wallet.hd.profile.utxo': 'Standardpfad',
+  'settings.wallet.hd.profile.utxo.hint': 'Scannt die Standard-BIP-Adressindizes der Chain (Konto 0)',
   'settings.wallet.storeAddress.info':
     'Speichern Sie Ihre vertrauenswürdigen Adressen im lokalen Speicher, sie werden unter der Kette oder in der Sendeansicht aufgelistet',
   'settings.thornode.node.error.unhealthy':

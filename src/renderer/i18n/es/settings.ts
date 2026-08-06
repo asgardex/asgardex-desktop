@@ -83,6 +83,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.p2wpkh.hint': "Escanea índices 0–4 en m/84'/0'/0'/0/n",
   'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',
   'settings.wallet.hd.profile.p2tr.hint': "Escanea índices 0–4 en m/86'/0'/0'/0/n",
+  'settings.wallet.hd.profile.utxo': 'Ruta estándar',
+  'settings.wallet.hd.profile.utxo.hint': 'Escanea los índices de dirección BIP estándar de la cadena (cuenta 0)',
   'settings.wallet.storeAddress.info':
     'Guarde sus direcciones de confianza en el almacenamiento local, se enumerarán bajo la cadena o en la vista de envío',
   'settings.thornode.node.error.unhealthy': 'THORNodo API parece no ser saludable comprobando "{endpoint}"',

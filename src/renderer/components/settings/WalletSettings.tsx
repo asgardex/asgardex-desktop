@@ -929,12 +929,21 @@ export const WalletSettings = (props: Props): JSX.Element => {
         </div>
         <div className="mt-10px w-full">
           {renderWalletAddress(chain, address, type)}
-          {/* Keystore HD derivation selector — ETH pilot (expands to more chains as they're wired). */}
+          {/* Keystore HD derivation — EVM + THOR + UTXO (BTC / LTC / BCH / DOGE / DASH / ZEC). */}
           {!isVultisig &&
             type === WalletType.Keystore &&
-            (chain === ETHChain || chain === THORChain || chain === BTCChain) && (
-              <KeystoreHDSettingsPanel chain={chain} network={network} />
-            )}
+            (chain === ETHChain ||
+              chain === BSCChain ||
+              chain === AVAXChain ||
+              chain === ARBChain ||
+              chain === BASEChain ||
+              chain === THORChain ||
+              chain === BTCChain ||
+              chain === LTCChain ||
+              chain === BCHChain ||
+              chain === DOGEChain ||
+              chain === DASHChain ||
+              chain === ZECChain) && <KeystoreHDSettingsPanel chain={chain} network={network} />}
           {!isVultisig && oLedger && isEnabledLedger(chain, network) && isSupportedChain(chain)
             ? renderLedgerAddress(chain, oLedger, `${chain}-${type}-${address}`)
             : !isVultisig && renderLedgerNotSupported}

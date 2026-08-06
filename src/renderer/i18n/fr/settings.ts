@@ -82,6 +82,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.p2wpkh.hint': "Scanne les index 0–4 sur m/84'/0'/0'/0/n",
   'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',
   'settings.wallet.hd.profile.p2tr.hint': "Scanne les index 0–4 sur m/86'/0'/0'/0/n",
+  'settings.wallet.hd.profile.utxo': 'Chemin standard',
+  'settings.wallet.hd.profile.utxo.hint': 'Scanne les index d\'adresse BIP standard de la chaîne (compte 0)',
   'settings.wallet.storeAddress.info':
     "Enregistrez vos adresses de confiance dans le stockage local, elles seront répertoriées sous la chaîne ou dans la vue d'envoi",
   'settings.thornode.node.error.unhealthy': "L'API THORNode semble défaillante en vérifiant {endpoint}",

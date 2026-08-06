@@ -1,3 +1,6 @@
+import { Client as ArbClient, ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
+import { Client as AvaxClient, AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
+import { Client as BaseClient, BASEChain, AssetBETH } from '@xchainjs/xchain-base'
 import {
   AddressFormat,
   AssetBTC,
@@ -6,8 +9,13 @@ import {
   defaultBTCParams,
   tapRootDerivationPaths
 } from '@xchainjs/xchain-bitcoin'
+import { BCHChain, Client as BitcoinCashClient, defaultBchParams, AssetBCH } from '@xchainjs/xchain-bitcoincash'
+import { Client as BscClient, BSCChain, AssetBSC } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
+import { ClientKeystore as DashClient, DASHChain, AssetDASH, defaultDashParams } from '@xchainjs/xchain-dash'
+import { Client as DogeClient, DOGEChain, AssetDOGE, defaultDogeParams } from '@xchainjs/xchain-doge'
 import { Client as EthClient, ETHChain, AssetETH } from '@xchainjs/xchain-ethereum'
+import { Client as LtcClient, LTCChain, AssetLTC, defaultLtcParams } from '@xchainjs/xchain-litecoin'
 import {
   Client as ThorClient,
   THORChain,
@@ -15,8 +23,13 @@ import {
   defaultClientConfig as thorDefaultConfig
 } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
+import { Client as ZecClient, ZECChain, AssetZEC, defaultZECParams } from '@xchainjs/xchain-zcash'
 import * as Rx from 'rxjs'
 
+import { createArbParams } from '../../../shared/arb/const'
+import { createAvaxParams } from '../../../shared/avax/const'
+import { createBaseParams } from '../../../shared/base/const'
+import { createBscParams } from '../../../shared/bsc/const'
 import { createEthParams } from '../../../shared/ethereum/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { getChainDerivationPath, getKeystoreDerivation } from '../../../shared/utils/derivationPath'
@@ -27,6 +40,8 @@ import {
   HdScanCandidate,
   HdScanIndexRange,
   HdScanProfile,
+  isEvmHdScanChain,
+  isUtxoStandardHdScanChain,
   normalizeHdScanRange,
   settingsFromCustomPath
 } from '../../../shared/utils/keystoreHdScan'
@@ -149,16 +164,26 @@ const deriveHit = async (
   }
 }
 
-const ethCtx = (phrase: string, network: Network, rpcUrl: string): DeriveCtx => ({
-  chain: ETHChain,
+const makeEvmCtx = (
+  chain: Chain,
+  phrase: string,
+  network: Network,
+  rpcUrl: string,
+  nativeAsset: AnyAsset,
+  assetTicker: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ClientClass: new (params: any) => any,
+  createParams: (rpc: string, net: Network) => Record<string, unknown>
+): DeriveCtx => ({
+  chain,
   phrase,
   network,
   rpcUrl,
-  nativeAsset: AssetETH,
-  assetTicker: 'ETH',
+  nativeAsset,
+  assetTicker,
   createClient: (p, net, rpc, rootDerivationPaths) => {
-    const params = createEthParams(rpc, net)
-    return new EthClient({ ...params, rootDerivationPaths, network: net, phrase: p })
+    const params = createParams(rpc, net)
+    return new ClientClass({ ...params, rootDerivationPaths, network: net, phrase: p })
   }
 })
 
@@ -194,7 +219,7 @@ const btcCtx = (
   chain: BTCChain,
   phrase,
   network,
-  rpcUrl: '', // unused — BTC uses dataProviders
+  rpcUrl: '',
   nativeAsset: AssetBTC,
   assetTicker: 'BTC',
   createClient: (p, net, _rpc, rootDerivationPaths) =>
@@ -208,7 +233,31 @@ const btcCtx = (
     })
 })
 
-/** Infer BTC address format from profile or custom path (86' → Taproot). */
+const makeUtxoCtx = (
+  chain: Chain,
+  phrase: string,
+  network: Network,
+  nativeAsset: AnyAsset,
+  assetTicker: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ClientClass: new (params: any) => any,
+  baseParams: Record<string, unknown>
+): DeriveCtx => ({
+  chain,
+  phrase,
+  network,
+  rpcUrl: '',
+  nativeAsset,
+  assetTicker,
+  createClient: (p, net, _rpc, rootDerivationPaths) =>
+    new ClientClass({
+      ...baseParams,
+      phrase: p,
+      network: net,
+      rootDerivationPaths
+    })
+})
+
 const btcFormatFor = (profile: Exclude<HdScanProfile, 'custom'> | 'custom', fullPath?: string): AddressFormat => {
   if (profile === 'p2tr') return AddressFormat.P2TR
   if (profile === 'custom' && fullPath?.includes("86'")) return AddressFormat.P2TR
@@ -223,7 +272,16 @@ const ctxForChain = (
   profile: Exclude<HdScanProfile, 'custom'> | 'custom' = 'metamask',
   fullPath?: string
 ): DeriveCtx | null => {
-  if (chain === ETHChain) return ethCtx(phrase, network, rpcUrl)
+  if (chain === ETHChain)
+    return makeEvmCtx(ETHChain, phrase, network, rpcUrl, AssetETH, 'ETH', EthClient, createEthParams)
+  if (chain === BSCChain)
+    return makeEvmCtx(BSCChain, phrase, network, rpcUrl, AssetBSC, 'BNB', BscClient, createBscParams)
+  if (chain === AVAXChain)
+    return makeEvmCtx(AVAXChain, phrase, network, rpcUrl, AssetAVAX, 'AVAX', AvaxClient, createAvaxParams)
+  if (chain === ARBChain)
+    return makeEvmCtx(ARBChain, phrase, network, rpcUrl, AssetAETH, 'ETH', ArbClient, createArbParams)
+  if (chain === BASEChain)
+    return makeEvmCtx(BASEChain, phrase, network, rpcUrl, AssetBETH, 'ETH', BaseClient, createBaseParams)
   if (chain === THORChain) return thorCtx(phrase, network, rpcUrl)
   if (chain === BTCChain) {
     const format = btcFormatFor(profile, fullPath)
@@ -234,6 +292,14 @@ const ctxForChain = (
       format === AddressFormat.P2TR ? tapRootDerivationPaths : defaultBTCParams.rootDerivationPaths
     )
   }
+  if (chain === LTCChain) return makeUtxoCtx(LTCChain, phrase, network, AssetLTC, 'LTC', LtcClient, defaultLtcParams)
+  if (chain === BCHChain)
+    return makeUtxoCtx(BCHChain, phrase, network, AssetBCH, 'BCH', BitcoinCashClient, defaultBchParams)
+  if (chain === DOGEChain)
+    return makeUtxoCtx(DOGEChain, phrase, network, AssetDOGE, 'DOGE', DogeClient, defaultDogeParams)
+  if (chain === DASHChain)
+    return makeUtxoCtx(DASHChain, phrase, network, AssetDASH, 'DASH', DashClient, defaultDashParams)
+  if (chain === ZECChain) return makeUtxoCtx(ZECChain, phrase, network, AssetZEC, 'ZEC', ZecClient, defaultZECParams)
   return null
 }
 
@@ -272,7 +338,6 @@ export const checkCustomPath = async (
   fullPath: string
 ): Promise<KeystoreHdScanHit> => {
   const settings = settingsFromCustomPath(fullPath)
-  // Tag BTC custom path with matching hdMode for dual-client wiring
   if (chain === BTCChain) {
     settings.hdMode = fullPath.includes("86'") ? 'p2tr' : 'p2wpkh'
   }
@@ -312,9 +377,35 @@ export const scanKeystoreFunds$ = (
 ): Rx.Observable<KeystoreHdScanHit[]> =>
   Rx.defer(() => scanKeystoreFundsForChain(chain, phrase, network, rpcUrl, profile, range))
 
-export const defaultRpcUrlForChain = (chain: Chain, network: Network, ethRpc: string, thorRpc: string): string => {
-  if (chain === ETHChain) return ethRpc
-  if (chain === THORChain) return thorRpc || DEFAULT_THORNODE_RPC_URLS.mainnet
-  if (chain === BTCChain) return '' // BTC uses public data providers
+export type HdScanRpcUrls = {
+  eth: string
+  bsc: string
+  arb: string
+  avax: string
+  base: string
+  thor: string
+}
+
+export const defaultRpcUrlForChain = (
+  chain: Chain,
+  network: Network,
+  urls: HdScanRpcUrls | string,
+  thorRpc?: string
+): string => {
+  // Backward-compat: old signature (chain, network, ethRpc, thorRpc)
+  if (typeof urls === 'string') {
+    if (chain === ETHChain) return urls
+    if (chain === THORChain) return thorRpc || DEFAULT_THORNODE_RPC_URLS.mainnet
+    return ''
+  }
+  if (chain === ETHChain) return urls.eth
+  if (chain === BSCChain) return urls.bsc
+  if (chain === ARBChain) return urls.arb
+  if (chain === AVAXChain) return urls.avax
+  if (chain === BASEChain) return urls.base
+  if (chain === THORChain) return urls.thor || DEFAULT_THORNODE_RPC_URLS.mainnet
+  // UTXO chains use public data providers
+  if (chain === BTCChain || isUtxoStandardHdScanChain(chain)) return ''
+  if (isEvmHdScanChain(chain)) return urls.eth
   return ''
 }

@@ -88,6 +88,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.p2wpkh.hint': "Scans address indexes 0–4 on m/84'/0'/0'/0/n",
   'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',
   'settings.wallet.hd.profile.p2tr.hint': "Scans address indexes 0–4 on m/86'/0'/0'/0/n",
+  'settings.wallet.hd.profile.utxo': 'Standard path',
+  'settings.wallet.hd.profile.utxo.hint': 'Scans the chain’s standard BIP address indexes (account 0)',
   'settings.wallet.storeAddress.info':
     'Save your Trusted addresses to local storage, they will be listed under the chain or in send view',
   'settings.thornode.node.error.unhealthy': 'THORNode API seems to be unhealthy by checking "{endpoint}"',

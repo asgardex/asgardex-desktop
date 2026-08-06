@@ -82,6 +82,8 @@ const settings: SettingMessages = {
   'settings.wallet.hd.profile.p2wpkh.hint': "m/84'/0'/0'/0/n에서 인덱스 0–4 스캔",
   'settings.wallet.hd.profile.p2tr': 'Taproot (bc1p…)',
   'settings.wallet.hd.profile.p2tr.hint': "m/86'/0'/0'/0/n에서 인덱스 0–4 스캔",
+  'settings.wallet.hd.profile.utxo': '표준 경로',
+  'settings.wallet.hd.profile.utxo.hint': '체인의 표준 BIP 주소 인덱스를 스캔합니다(계정 0)',
   'settings.wallet.storeAddress.info':
     '신뢰할 수 있는 주소를 로컬 저장소에 저장하면 체인 하단이나 전송 화면에 나열됩니다',
 

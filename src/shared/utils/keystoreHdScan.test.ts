@@ -96,6 +96,18 @@ describe('keystoreHdScan', () => {
     expect(chainSupportsHdScan(BTCChain)).toBe(true)
   })
 
+  it('supports other EVM and UTXO standard chains', async () => {
+    const { BSCChain } = await import('@xchainjs/xchain-bsc')
+    const { LTCChain } = await import('@xchainjs/xchain-litecoin')
+    const { AVAXChain } = await import('@xchainjs/xchain-avax')
+    expect(chainSupportsHdScan(BSCChain)).toBe(true)
+    expect(chainSupportsHdScan(AVAXChain)).toBe(true)
+    expect(chainSupportsHdScan(LTCChain)).toBe(true)
+    expect(getHdScanCandidates(BSCChain, 'metamask').length).toBe(5)
+    expect(getHdScanCandidates(LTCChain, 'utxo').map((c) => c.settings.index)).toEqual([0, 1, 2, 3, 4])
+    expect(getHdScanCandidates(LTCChain, 'metamask')).toHaveLength(0)
+  })
+
   it('custom path settings', () => {
     const s = settingsFromCustomPath("  m/44'/931'/2'/0/0  ")
     expect(s.customPath).toBe("m/44'/931'/2'/0/0")
