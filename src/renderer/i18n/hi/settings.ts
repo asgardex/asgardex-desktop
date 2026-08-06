@@ -52,7 +52,11 @@ const settings: SettingMessages = {
   'settings.wallet.hd.find.title': 'मेरे फंड खोजें',
   'settings.wallet.hd.find.subtitle':
     'हम अन्य वॉलेट के सामान्य पता इंडेक्स स्कैन करते हैं। अपना मिलान वाला पता चुनें।',
-  'settings.wallet.hd.find.pickSubtitle': 'आपने यह सीड कहाँ इस्तेमाल की? हम उस शैली के पता इंडेक्स 0–4 स्कैन करते हैं (BIP44 खाते नहीं)।',
+  'settings.wallet.hd.find.pickSubtitle': 'आपने यह सीड कहाँ इस्तेमाल की? प्रोफ़ाइल चुनें और कौन से पता इंडेक्स स्कैन करें (BIP44 खाते नहीं)।',
+  'settings.wallet.hd.find.rangeLabel': 'इंडेक्स स्कैन',
+  'settings.wallet.hd.find.rangeFrom': 'से',
+  'settings.wallet.hd.find.rangeTo': 'तक',
+  'settings.wallet.hd.find.rangeHint': '{count} पते (प्रति स्कैन अधिकतम {maxCount}, इंडेक्स ≤ {maxIndex})',
   'settings.wallet.hd.find.nativeOnly': 'केवल नेटिव बैलेंस जाँचा जाता है (टोकन नहीं)। खाली पथ भी चुने जा सकते हैं।',
   'settings.wallet.hd.find.scanning': 'स्कैन हो रहा है…',
   'settings.wallet.hd.find.noneFound': 'इन पथों पर नेटिव बैलेंस नहीं। फिर भी नीचे एक पता चुन सकते हैं।',

@@ -54,7 +54,11 @@ const settings: SettingMessages = {
   'settings.wallet.hd.find.subtitle':
     'We scan common address indexes used by other wallets. Pick the address that matches yours.',
   'settings.wallet.hd.find.pickSubtitle':
-    'Where did you use this seed? We scan address indexes 0–4 for that style (not BIP44 accounts).',
+    'Where did you use this seed? Choose a profile and which address indexes to scan (not BIP44 accounts).',
+  'settings.wallet.hd.find.rangeLabel': 'Scan indexes',
+  'settings.wallet.hd.find.rangeFrom': 'From',
+  'settings.wallet.hd.find.rangeTo': 'to',
+  'settings.wallet.hd.find.rangeHint': '{count} addresses (max {maxCount} per scan, index ≤ {maxIndex})',
   'settings.wallet.hd.find.nativeOnly': 'Only native balance is checked (not tokens). Empty paths can still be selected.',
   'settings.wallet.hd.find.scanning': 'Scanning…',
   'settings.wallet.hd.find.noneFound': 'No native balance on these paths. You can still select an address below.',

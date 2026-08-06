@@ -53,7 +53,11 @@ const settings: SettingMessages = {
   'settings.wallet.hd.find.title': 'Meine Mittel finden',
   'settings.wallet.hd.find.subtitle':
     'Wir prüfen gängige Adressindizes anderer Wallets. Wähle die Adresse, die zu dir passt.',
-  'settings.wallet.hd.find.pickSubtitle': 'Wo hast du diese Seed-Phrase verwendet? Wir scannen Adressindizes 0–4 für diesen Stil (keine BIP44-Konten).',
+  'settings.wallet.hd.find.pickSubtitle': 'Wo hast du diese Seed-Phrase verwendet? Wähle ein Profil und die Adressindizes zum Scannen (keine BIP44-Konten).',
+  'settings.wallet.hd.find.rangeLabel': 'Indizes scannen',
+  'settings.wallet.hd.find.rangeFrom': 'Von',
+  'settings.wallet.hd.find.rangeTo': 'bis',
+  'settings.wallet.hd.find.rangeHint': '{count} Adressen (max. {maxCount} pro Scan, Index ≤ {maxIndex})',
   'settings.wallet.hd.find.nativeOnly': 'Es wird nur der native Saldo geprüft (keine Tokens). Leere Pfade können trotzdem gewählt werden.',
   'settings.wallet.hd.find.scanning': 'Scanne…',
   'settings.wallet.hd.find.noneFound': 'Kein nativer Saldo auf diesen Pfaden. Du kannst trotzdem eine Adresse wählen.',

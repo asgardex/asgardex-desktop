@@ -52,7 +52,11 @@ const settings: SettingMessages = {
   'settings.wallet.hd.find.title': '내 자금 찾기',
   'settings.wallet.hd.find.subtitle':
     '다른 지갑에서 쓰는 일반 주소 인덱스를 스캔합니다. 일치하는 주소를 선택하세요.',
-  'settings.wallet.hd.find.pickSubtitle': '이 시드를 어디서 사용했나요? 해당 스타일의 주소 인덱스 0–4를 스캔합니다(BIP44 계정 아님).',
+  'settings.wallet.hd.find.pickSubtitle': '이 시드를 어디서 사용했나요? 프로필과 스캔할 주소 인덱스를 선택하세요(BIP44 계정 아님).',
+  'settings.wallet.hd.find.rangeLabel': '인덱스 스캔',
+  'settings.wallet.hd.find.rangeFrom': '부터',
+  'settings.wallet.hd.find.rangeTo': '까지',
+  'settings.wallet.hd.find.rangeHint': '주소 {count}개(스캔당 최대 {maxCount}, 인덱스 ≤ {maxIndex})',
   'settings.wallet.hd.find.nativeOnly': '네이티브 잔액만 확인합니다(토큰 제외). 잔액이 없어도 경로를 선택할 수 있습니다.',
   'settings.wallet.hd.find.scanning': '스캔 중…',
   'settings.wallet.hd.find.noneFound': '이 경로에 네이티브 잔액이 없습니다. 아래에서 주소를 계속 선택할 수 있습니다.',

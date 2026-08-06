@@ -17,7 +17,14 @@ import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { getChainDerivationPath } from '../../../shared/utils/derivationPath'
 import { validateDerivationPath, warnDerivationPath } from '../../../shared/utils/derivationPathValidation'
-import { candidateKey, HdScanProfile } from '../../../shared/utils/keystoreHdScan'
+import {
+  candidateKey,
+  DEFAULT_HD_SCAN_RANGE,
+  HD_SCAN_MAX_COUNT,
+  HD_SCAN_MAX_INDEX,
+  HdScanProfile,
+  normalizeHdScanRange
+} from '../../../shared/utils/keystoreHdScan'
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, WalletType } from '../../../shared/wallet/types'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { ethRpc$, thornodeRpc$ } from '../../services/storage/common'
@@ -130,8 +137,11 @@ const initialCustomPath = (
   ).path
 }
 
+const rangeInputClass =
+  'w-14 rounded-md border-0 bg-bg1 px-1.5 py-1 text-center font-mono text-[12px] tabular-nums text-text0 transition-colors hover:bg-bg2 focus:bg-turquoise/10 focus:outline-hidden focus:ring-1 focus:ring-turquoise/50 dark:bg-bg1d dark:text-text0d dark:hover:bg-bg2d dark:focus:bg-turquoise/15'
+
 /**
- * Narrow HD recovery: pick wallet profile (≤5 paths) or custom path → lock selection.
+ * Narrow HD recovery: pick wallet profile + index range, or custom path → lock selection.
  * ETH / THOR / BTC keystore recovery.
  */
 export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props): JSX.Element => {
@@ -145,6 +155,8 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
   const profiles = useMemo(() => profilesForChain(chain), [chain])
   const [step, setStep] = useState<Step>('pick')
   const [profile, setProfile] = useState<ProfileOption>(() => defaultProfileForChain(chain))
+  const [draftStart, setDraftStart] = useState(String(DEFAULT_HD_SCAN_RANGE.start))
+  const [draftEnd, setDraftEnd] = useState(String(DEFAULT_HD_SCAN_RANGE.end))
   const [scanRD, setScanRD] = useState<RD.RemoteData<Error, KeystoreHdScanHit[]>>(RD.initial)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
 
@@ -162,6 +174,23 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
     thorRpcUrls[network] || DEFAULT_THORNODE_RPC_URLS[network] || DEFAULT_THORNODE_RPC_URLS.mainnet
   )
 
+  const parseDraftIndex = (raw: string, fallback: number) => {
+    if (raw.trim() === '') return fallback
+    const n = Number(raw)
+    if (!Number.isInteger(n) || n < 0) return fallback
+    return Math.min(n, HD_SCAN_MAX_INDEX)
+  }
+
+  const scanRange = useMemo(
+    () =>
+      normalizeHdScanRange(
+        parseDraftIndex(draftStart, DEFAULT_HD_SCAN_RANGE.start),
+        parseDraftIndex(draftEnd, DEFAULT_HD_SCAN_RANGE.end)
+      ),
+    [draftStart, draftEnd]
+  )
+  const scanCount = scanRange.end - scanRange.start + 1
+
   const openCustomStep = useCallback(() => {
     setCustomPath(initialCustomPath(chain, network, currentSettings))
     setCustomRD(RD.initial)
@@ -174,6 +203,8 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
     customRunIdRef.current += 1
     setStep('pick')
     setProfile(defaultProfileForChain(chain))
+    setDraftStart(String(DEFAULT_HD_SCAN_RANGE.start))
+    setDraftEnd(String(DEFAULT_HD_SCAN_RANGE.end))
     setScanRD(RD.initial)
     setSelectedKey(null)
     setCustomPath(defaultCustomPath(chain, network))
@@ -198,11 +229,14 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
         setScanRD(RD.failure(new Error(intl.formatMessage({ id: 'settings.wallet.hd.find.locked' }))))
         return
       }
+      // Snap drafts to the normalized range so UI matches what we scan
+      setDraftStart(String(scanRange.start))
+      setDraftEnd(String(scanRange.end))
       setStep('results')
       setScanRD(RD.pending)
       setSelectedKey(null)
       scanSubRef.current?.unsubscribe()
-      scanSubRef.current = scanKeystoreFunds$(chain, phrase, network, rpcUrl, p)
+      scanSubRef.current = scanKeystoreFunds$(chain, phrase, network, rpcUrl, p, scanRange)
         .pipe(RxOp.take(1))
         .subscribe({
           next: (hits) => {
@@ -216,7 +250,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
           error: (e: Error) => setScanRD(RD.failure(e))
         })
     },
-    [phrase, chain, network, rpcUrl, intl, currentSettings]
+    [phrase, chain, network, rpcUrl, intl, currentSettings, scanRange]
   )
 
   const runCustomCheck = useCallback(() => {
@@ -317,6 +351,42 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
                 </div>
               </button>
             </div>
+
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-gray0 px-3 py-2 dark:border-gray0d">
+              <span className="text-[11px] tracking-[0.42px] text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'settings.wallet.hd.find.rangeLabel' })}
+              </span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={draftStart}
+                onChange={(e) => setDraftStart(e.currentTarget.value.replace(/\D/g, ''))}
+                onBlur={() => setDraftStart(String(scanRange.start))}
+                aria-label={intl.formatMessage({ id: 'settings.wallet.hd.find.rangeFrom' })}
+                className={rangeInputClass}
+              />
+              <span className="text-[11px] text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'settings.wallet.hd.find.rangeTo' })}
+              </span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={draftEnd}
+                onChange={(e) => setDraftEnd(e.currentTarget.value.replace(/\D/g, ''))}
+                onBlur={() => setDraftEnd(String(scanRange.end))}
+                aria-label={intl.formatMessage({ id: 'settings.wallet.hd.find.rangeTo' })}
+                className={rangeInputClass}
+              />
+              <span className="text-[11px] text-text2 dark:text-text2d">
+                {intl.formatMessage(
+                  { id: 'settings.wallet.hd.find.rangeHint' },
+                  { count: scanCount, maxCount: HD_SCAN_MAX_COUNT, maxIndex: HD_SCAN_MAX_INDEX }
+                )}
+              </span>
+            </div>
+
             <div className="mt-1 flex justify-end gap-2">
               <TextButton onClick={onClose}>{intl.formatMessage({ id: 'common.cancel' })}</TextButton>
               <FlatButton color="primary" onClick={() => runProfileScan(profile)} disabled={profiles.length === 0}>

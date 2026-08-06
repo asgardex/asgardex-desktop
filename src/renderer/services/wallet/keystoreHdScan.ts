@@ -22,9 +22,12 @@ import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { getChainDerivationPath, getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import {
   candidateKey,
+  DEFAULT_HD_SCAN_RANGE,
   getHdScanCandidates,
   HdScanCandidate,
+  HdScanIndexRange,
   HdScanProfile,
+  normalizeHdScanRange,
   settingsFromCustomPath
 } from '../../../shared/utils/keystoreHdScan'
 import { KeystoreChainHDSettings } from '../../../shared/wallet/types'
@@ -235,19 +238,25 @@ const ctxForChain = (
 }
 
 /**
- * Scan ≤5 paths for one profile on a supported chain.
+ * Scan a user-chosen index range for one profile on a supported chain.
+ * Default range is 0–4; max span is capped in `normalizeHdScanRange`.
  */
 export const scanKeystoreFundsForChain = async (
   chain: Chain,
   phrase: string,
   network: Network,
   rpcUrl: string,
-  profile: Exclude<HdScanProfile, 'custom'>
+  profile: Exclude<HdScanProfile, 'custom'>,
+  range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE
 ): Promise<KeystoreHdScanHit[]> => {
   const ctx = ctxForChain(chain, phrase, network, rpcUrl, profile)
   if (!ctx) return []
 
-  const candidates: HdScanCandidate[] = getHdScanCandidates(chain, profile)
+  const candidates: HdScanCandidate[] = getHdScanCandidates(
+    chain,
+    profile,
+    normalizeHdScanRange(range.start, range.end)
+  )
   const hits = await mapPool(candidates, SCAN_CONCURRENCY, (c) =>
     deriveHit(c.settings, ctx, { profile: c.profile, accountLabel: c.accountLabel })
   )
@@ -298,9 +307,10 @@ export const scanKeystoreFunds$ = (
   phrase: string,
   network: Network,
   rpcUrl: string,
-  profile: Exclude<HdScanProfile, 'custom'>
+  profile: Exclude<HdScanProfile, 'custom'>,
+  range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE
 ): Rx.Observable<KeystoreHdScanHit[]> =>
-  Rx.defer(() => scanKeystoreFundsForChain(chain, phrase, network, rpcUrl, profile))
+  Rx.defer(() => scanKeystoreFundsForChain(chain, phrase, network, rpcUrl, profile, range))
 
 export const defaultRpcUrlForChain = (chain: Chain, network: Network, ethRpc: string, thorRpc: string): string => {
   if (chain === ETHChain) return ethRpc

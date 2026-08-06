@@ -53,7 +53,11 @@ const settings: SettingMessages = {
   'settings.wallet.hd.find.title': 'Encontrar mis fondos',
   'settings.wallet.hd.find.subtitle':
     'Escaneamos índices de dirección habituales de otras carteras. Elige la dirección que coincida con la tuya.',
-  'settings.wallet.hd.find.pickSubtitle': '¿Dónde usaste esta seed? Escaneamos índices de dirección 0–4 de ese estilo (no cuentas BIP44).',
+  'settings.wallet.hd.find.pickSubtitle': '¿Dónde usaste esta seed? Elige un perfil y qué índices de dirección escanear (no cuentas BIP44).',
+  'settings.wallet.hd.find.rangeLabel': 'Escanear índices',
+  'settings.wallet.hd.find.rangeFrom': 'Desde',
+  'settings.wallet.hd.find.rangeTo': 'hasta',
+  'settings.wallet.hd.find.rangeHint': '{count} direcciones (máx. {maxCount} por escaneo, índice ≤ {maxIndex})',
   'settings.wallet.hd.find.nativeOnly': 'Solo se comprueba el saldo nativo (no tokens). Aun así puedes seleccionar rutas vacías.',
   'settings.wallet.hd.find.scanning': 'Escaneando…',
   'settings.wallet.hd.find.noneFound': 'Sin saldo nativo en estas rutas. Aun así puedes seleccionar una dirección abajo.',

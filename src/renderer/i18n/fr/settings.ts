@@ -52,7 +52,11 @@ const settings: SettingMessages = {
   'settings.wallet.hd.find.title': 'Trouver mes fonds',
   'settings.wallet.hd.find.subtitle':
     "Nous scannons les index d'adresse courants d'autres portefeuilles. Choisissez l'adresse qui correspond.",
-  'settings.wallet.hd.find.pickSubtitle': "Où avez-vous utilisé cette seed ? Nous scannons les index d'adresse 0–4 de ce style (pas les comptes BIP44).",
+  'settings.wallet.hd.find.pickSubtitle': 'Où avez-vous utilisé cette seed ? Choisissez un profil et les index d\'adresse à scanner (pas les comptes BIP44).',
+  'settings.wallet.hd.find.rangeLabel': 'Scanner les index',
+  'settings.wallet.hd.find.rangeFrom': 'De',
+  'settings.wallet.hd.find.rangeTo': 'à',
+  'settings.wallet.hd.find.rangeHint': '{count} adresses (max {maxCount} par scan, index ≤ {maxIndex})',
   'settings.wallet.hd.find.nativeOnly': 'Seul le solde natif est vérifié (pas les jetons). Les chemins vides peuvent quand même être sélectionnés.',
   'settings.wallet.hd.find.scanning': 'Scan en cours…',
   'settings.wallet.hd.find.noneFound': 'Pas de solde natif sur ces chemins. Vous pouvez quand même sélectionner une adresse ci-dessous.',

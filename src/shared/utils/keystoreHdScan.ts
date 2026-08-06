@@ -7,8 +7,50 @@ import { EvmHDMode } from '../evm/types'
 import { UtxoHDMode } from '../utxo/types'
 import { KeystoreChainHDSettings } from '../wallet/types'
 
-/** Max address indexes scanned for one profile (indexes 0–4). */
-export const HD_SCAN_SLOT_COUNT = 5
+/** Default scan window when the user does not pick a range (indexes 0–4). */
+export const HD_SCAN_DEFAULT_START = 0
+export const HD_SCAN_DEFAULT_END = 4
+/** Highest address index the UI will accept. */
+export const HD_SCAN_MAX_INDEX = 100
+/** Cap how many indexes one scan may touch (RPC / UX). */
+export const HD_SCAN_MAX_COUNT = 25
+
+/** @deprecated use HD_SCAN_DEFAULT_END + 1 */
+export const HD_SCAN_SLOT_COUNT = HD_SCAN_DEFAULT_END - HD_SCAN_DEFAULT_START + 1
+
+export type HdScanIndexRange = {
+  /** Inclusive start address index */
+  start: number
+  /** Inclusive end address index */
+  end: number
+}
+
+export const DEFAULT_HD_SCAN_RANGE: HdScanIndexRange = {
+  start: HD_SCAN_DEFAULT_START,
+  end: HD_SCAN_DEFAULT_END
+}
+
+/**
+ * Clamp and order a user-chosen index range. Swaps if start > end; caps span
+ * at HD_SCAN_MAX_COUNT and indexes at HD_SCAN_MAX_INDEX.
+ */
+export const normalizeHdScanRange = (start: number, end: number): HdScanIndexRange => {
+  const clamp = (n: number) => {
+    if (!Number.isFinite(n)) return 0
+    return Math.max(0, Math.min(Math.floor(n), HD_SCAN_MAX_INDEX))
+  }
+  let s = clamp(start)
+  let e = clamp(end)
+  if (e < s) {
+    const t = s
+    s = e
+    e = t
+  }
+  if (e - s + 1 > HD_SCAN_MAX_COUNT) {
+    e = s + HD_SCAN_MAX_COUNT - 1
+  }
+  return { start: s, end: e }
+}
 
 /**
  * Wallet / path profile chosen before scanning.
@@ -23,8 +65,25 @@ export type HdScanCandidate = {
   profile: Exclude<HdScanProfile, 'custom'>
 }
 
+const candidatesForRange = (
+  profile: Exclude<HdScanProfile, 'custom'>,
+  range: HdScanIndexRange,
+  settingsForIndex: (index: number) => KeystoreChainHDSettings
+): HdScanCandidate[] => {
+  const { start, end } = normalizeHdScanRange(range.start, range.end)
+  const out: HdScanCandidate[] = []
+  for (let index = start; index <= end; index++) {
+    out.push({
+      profile,
+      accountLabel: index + 1,
+      settings: settingsForIndex(index)
+    })
+  }
+  return out
+}
+
 /**
- * EVM candidates for a single profile (≤5) — **address index only**, account always 0.
+ * EVM candidates — **address index only**, account always 0.
  *
  * - MetaMask:     m/44'/60'/0'/0/{index}
  * - Ledger Live:  m/44'/60'/0'/0/{index}  (account 0; multi-account → custom path)
@@ -32,58 +91,29 @@ export type HdScanCandidate = {
  */
 export const getEvmHdScanCandidates = (
   profile: 'metamask' | 'ledgerlive' | 'legacy',
-  slotCount: number = HD_SCAN_SLOT_COUNT
+  range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE
 ): HdScanCandidate[] => {
-  const n = Math.max(1, Math.min(slotCount, 20))
-  const out: HdScanCandidate[] = []
   const hdMode: EvmHDMode = profile === 'ledgerlive' ? 'ledgerlive' : profile === 'metamask' ? 'metamask' : 'legacy'
-
-  for (let index = 0; index < n; index++) {
-    out.push({
-      profile,
-      accountLabel: index + 1,
-      settings: { hdMode, account: 0, index }
-    })
-  }
-  return out
+  return candidatesForRange(profile, range, (index) => ({ hdMode, account: 0, index }))
 }
 
 /**
- * THORChain BIP44: m/44'/931'/0'/0/{index} — vary address index only (≤5).
+ * THORChain BIP44: m/44'/931'/0'/0/{index} — vary address index only.
  * Account stays 0 (most wallets); index is what users mean by “next address”.
  */
-export const getThorHdScanCandidates = (slotCount: number = HD_SCAN_SLOT_COUNT): HdScanCandidate[] => {
-  const n = Math.max(1, Math.min(slotCount, 20))
-  const out: HdScanCandidate[] = []
-  for (let index = 0; index < n; index++) {
-    out.push({
-      profile: 'thor',
-      accountLabel: index + 1,
-      settings: { hdMode: 'default', account: 0, index }
-    })
-  }
-  return out
-}
+export const getThorHdScanCandidates = (range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE): HdScanCandidate[] =>
+  candidatesForRange('thor', range, (index) => ({ hdMode: 'default', account: 0, index }))
 
 /**
- * Bitcoin: Native SegWit BIP84 or Taproot BIP86 — vary address index, account 0 (≤5).
+ * Bitcoin: Native SegWit BIP84 or Taproot BIP86 — vary address index, account 0.
  * Paths: m/84'/0'/0'/0/{index} or m/86'/0'/0'/0/{index}
  */
 export const getBtcHdScanCandidates = (
   profile: 'p2wpkh' | 'p2tr',
-  slotCount: number = HD_SCAN_SLOT_COUNT
+  range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE
 ): HdScanCandidate[] => {
-  const n = Math.max(1, Math.min(slotCount, 20))
   const hdMode: UtxoHDMode = profile
-  const out: HdScanCandidate[] = []
-  for (let index = 0; index < n; index++) {
-    out.push({
-      profile,
-      accountLabel: index + 1,
-      settings: { hdMode, account: 0, index }
-    })
-  }
-  return out
+  return candidatesForRange(profile, range, (index) => ({ hdMode, account: 0, index }))
 }
 
 export const chainSupportsHdScan = (chain: Chain): boolean =>
@@ -92,20 +122,20 @@ export const chainSupportsHdScan = (chain: Chain): boolean =>
 export const getHdScanCandidates = (
   chain: Chain,
   profile: Exclude<HdScanProfile, 'custom'>,
-  slotCount?: number
+  range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE
 ): HdScanCandidate[] => {
   if (chain === ETHChain) {
     if (profile === 'metamask' || profile === 'ledgerlive' || profile === 'legacy') {
-      return getEvmHdScanCandidates(profile, slotCount)
+      return getEvmHdScanCandidates(profile, range)
     }
     return []
   }
   if (chain === THORChain) {
     if (profile !== 'thor') return []
-    return getThorHdScanCandidates(slotCount)
+    return getThorHdScanCandidates(range)
   }
   if (chain === BTCChain) {
-    if (profile === 'p2wpkh' || profile === 'p2tr') return getBtcHdScanCandidates(profile, slotCount)
+    if (profile === 'p2wpkh' || profile === 'p2tr') return getBtcHdScanCandidates(profile, range)
     return []
   }
   return []

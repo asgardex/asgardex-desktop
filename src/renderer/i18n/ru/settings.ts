@@ -52,7 +52,11 @@ const settings: SettingMessages = {
   'settings.wallet.hd.find.title': 'Найти мои средства',
   'settings.wallet.hd.find.subtitle':
     'Мы сканируем обычные индексы адресов других кошельков. Выберите совпадающий адрес.',
-  'settings.wallet.hd.find.pickSubtitle': 'Где вы использовали эту seed? Сканируем индексы адресов 0–4 этого стиля (не BIP44-аккаунты).',
+  'settings.wallet.hd.find.pickSubtitle': 'Где вы использовали эту seed? Выберите профиль и диапазон индексов адресов (не BIP44-аккаунты).',
+  'settings.wallet.hd.find.rangeLabel': 'Сканировать индексы',
+  'settings.wallet.hd.find.rangeFrom': 'С',
+  'settings.wallet.hd.find.rangeTo': 'по',
+  'settings.wallet.hd.find.rangeHint': '{count} адресов (макс. {maxCount} за скан, индекс ≤ {maxIndex})',
   'settings.wallet.hd.find.nativeOnly': 'Проверяется только нативный баланс (не токены). Пустые пути всё равно можно выбрать.',
   'settings.wallet.hd.find.scanning': 'Сканирование…',
   'settings.wallet.hd.find.noneFound': 'Нет нативного баланса на этих путях. Вы всё равно можете выбрать адрес ниже.',

@@ -11,12 +11,14 @@ import {
   getEvmHdScanCandidates,
   getHdScanCandidates,
   getThorHdScanCandidates,
+  HD_SCAN_MAX_COUNT,
   HD_SCAN_SLOT_COUNT,
+  normalizeHdScanRange,
   settingsFromCustomPath
 } from './keystoreHdScan'
 
 describe('keystoreHdScan', () => {
-  it('MetaMask varies index, keeps account 0', () => {
+  it('MetaMask varies index, keeps account 0 (default 0–4)', () => {
     const c = getEvmHdScanCandidates('metamask')
     expect(c).toHaveLength(HD_SCAN_SLOT_COUNT)
     expect(c.every((x) => x.settings.account === 0)).toBe(true)
@@ -68,6 +70,19 @@ describe('keystoreHdScan', () => {
     expect(trPath).toBe("m/86'/0'/0'/0/1")
   })
 
+  it('respects a custom index range', () => {
+    const c = getThorHdScanCandidates({ start: 5, end: 8 })
+    expect(c.map((x) => x.settings.index)).toEqual([5, 6, 7, 8])
+  })
+
+  it('normalizeHdScanRange swaps, clamps, and caps span', () => {
+    expect(normalizeHdScanRange(8, 5)).toEqual({ start: 5, end: 8 })
+    expect(normalizeHdScanRange(-2, 3)).toEqual({ start: 0, end: 3 })
+    const wide = normalizeHdScanRange(0, 1000)
+    expect(wide.start).toBe(0)
+    expect(wide.end - wide.start + 1).toBe(HD_SCAN_MAX_COUNT)
+  })
+
   it('getHdScanCandidates dispatches by chain', () => {
     expect(getHdScanCandidates(ETHChain, 'metamask').length).toBe(5)
     expect(getHdScanCandidates(ETHChain, 'thor')).toHaveLength(0)
@@ -75,6 +90,7 @@ describe('keystoreHdScan', () => {
     expect(getHdScanCandidates(THORChain, 'metamask')).toHaveLength(0)
     expect(getHdScanCandidates(BTCChain, 'p2wpkh').length).toBe(5)
     expect(getHdScanCandidates(BTCChain, 'p2tr').length).toBe(5)
+    expect(getHdScanCandidates(BTCChain, 'p2wpkh', { start: 10, end: 12 }).length).toBe(3)
     expect(chainSupportsHdScan(ETHChain)).toBe(true)
     expect(chainSupportsHdScan(THORChain)).toBe(true)
     expect(chainSupportsHdScan(BTCChain)).toBe(true)
