@@ -30,18 +30,22 @@ import { DEFAULT_BSC_RPC_URLS } from '../../../shared/bsc/const'
 import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
 import { DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
-import { getChainDerivationPath } from '../../../shared/utils/derivationPath'
 import { validateDerivationPath, warnDerivationPath } from '../../../shared/utils/derivationPathValidation'
 import {
   candidateKey,
   DEFAULT_HD_SCAN_RANGE,
   HD_SCAN_MAX_COUNT,
-  HD_SCAN_MAX_INDEX,
-  HdScanProfile,
-  isEvmHdScanChain,
-  isUtxoStandardHdScanChain,
-  normalizeHdScanRange
+  HD_SCAN_MAX_INDEX
 } from '../../../shared/utils/keystoreHdScan'
+import {
+  defaultCustomPathForChain,
+  defaultProfileForChain,
+  HdProfileOption,
+  initialCustomPathFromSettings,
+  pickDefaultScanSelection,
+  profilesForChain,
+  scanRangeFromDrafts
+} from '../../../shared/utils/keystoreHdUiLogic'
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, WalletType } from '../../../shared/wallet/types'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { truncateAddress } from '../../helpers/addressHelper'
@@ -76,78 +80,7 @@ type Props = {
 
 type Step = 'pick' | 'results' | 'custom'
 
-type ProfileOption = Exclude<HdScanProfile, 'custom'>
-
-type ProfileCard = { id: ProfileOption; titleId: string; hintId: string }
-
-// MetaMask + Ledger Live (account 0) share m/44'/60'/0'/0/n — one profile to avoid duplicates.
-// Multi-account Ledger Live (m/44'/60'/n'/0/0) → custom path or Account chip on the quiet row.
-const EVM_PROFILES: ProfileCard[] = [
-  {
-    id: 'metamask',
-    titleId: 'settings.wallet.hd.profile.metamask',
-    hintId: 'settings.wallet.hd.profile.metamask.hint'
-  },
-  {
-    id: 'legacy',
-    titleId: 'settings.wallet.hd.profile.legacy',
-    hintId: 'settings.wallet.hd.profile.legacy.hint'
-  }
-]
-
-const THOR_PROFILES: ProfileCard[] = [
-  {
-    id: 'thor',
-    titleId: 'settings.wallet.hd.profile.thor',
-    hintId: 'settings.wallet.hd.profile.thor.hint'
-  }
-]
-
-const MAYA_PROFILES: ProfileCard[] = [
-  {
-    id: 'maya',
-    titleId: 'settings.wallet.hd.profile.maya',
-    hintId: 'settings.wallet.hd.profile.maya.hint'
-  }
-]
-
-const BTC_PROFILES: ProfileCard[] = [
-  {
-    id: 'p2wpkh',
-    titleId: 'settings.wallet.hd.profile.p2wpkh',
-    hintId: 'settings.wallet.hd.profile.p2wpkh.hint'
-  },
-  {
-    id: 'p2tr',
-    titleId: 'settings.wallet.hd.profile.p2tr',
-    hintId: 'settings.wallet.hd.profile.p2tr.hint'
-  }
-]
-
-const UTXO_PROFILES: ProfileCard[] = [
-  {
-    id: 'utxo',
-    titleId: 'settings.wallet.hd.profile.utxo',
-    hintId: 'settings.wallet.hd.profile.utxo.hint'
-  }
-]
-
-const profilesForChain = (chain: Chain): ProfileCard[] => {
-  if (isEvmHdScanChain(chain)) return EVM_PROFILES
-  if (chain === THORChain) return THOR_PROFILES
-  if (chain === MAYAChain) return MAYA_PROFILES
-  if (chain === BTCChain) return BTC_PROFILES
-  if (isUtxoStandardHdScanChain(chain)) return UTXO_PROFILES
-  return []
-}
-
-const defaultProfileForChain = (chain: Chain): ProfileOption => {
-  if (chain === THORChain) return 'thor'
-  if (chain === MAYAChain) return 'maya'
-  if (chain === BTCChain) return 'p2wpkh'
-  if (isUtxoStandardHdScanChain(chain)) return 'utxo'
-  return 'metamask'
-}
+type ProfileOption = HdProfileOption
 
 const nativeAssetForChain = (chain: Chain): AnyAsset | undefined => {
   if (chain === ETHChain) return AssetETH
@@ -164,29 +97,6 @@ const nativeAssetForChain = (chain: Chain): AnyAsset | undefined => {
   if (chain === DASHChain) return AssetDASH
   if (chain === ZECChain) return AssetZEC
   return undefined
-}
-
-/** Default full path for a chain (account 0 / index 0, standard formula). */
-const defaultCustomPath = (chain: Chain, network: Network): string => {
-  if (chain === BTCChain) return getChainDerivationPath(chain, 0, 0, network, 'p2wpkh').path
-  if (isEvmHdScanChain(chain)) return getChainDerivationPath(chain, 0, 0, network, 'ledgerlive').path
-  return getChainDerivationPath(chain, 0, 0, network).path
-}
-
-/** Prefill editor with current locked path if any, else chain default. */
-const initialCustomPath = (
-  chain: Chain,
-  network: Network,
-  settings: { customPath?: string; account: number; index: number; hdMode: string }
-): string => {
-  if (settings.customPath?.trim()) return settings.customPath.trim()
-  return getChainDerivationPath(
-    chain,
-    settings.account,
-    settings.index,
-    network,
-    settings.hdMode as 'default' | 'p2wpkh' | 'p2tr' | 'ledgerlive' | 'metamask' | 'legacy'
-  ).path
 }
 
 const rangeInputClass =
@@ -234,25 +144,11 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
     maya: mayaRpcUrls[network] || DEFAULT_MAYANODE_RPC_URLS[network] || DEFAULT_MAYANODE_RPC_URLS.mainnet
   })
 
-  const parseDraftIndex = (raw: string, fallback: number) => {
-    if (raw.trim() === '') return fallback
-    const n = Number(raw)
-    if (!Number.isInteger(n) || n < 0) return fallback
-    return Math.min(n, HD_SCAN_MAX_INDEX)
-  }
-
-  const scanRange = useMemo(
-    () =>
-      normalizeHdScanRange(
-        parseDraftIndex(draftStart, DEFAULT_HD_SCAN_RANGE.start),
-        parseDraftIndex(draftEnd, DEFAULT_HD_SCAN_RANGE.end)
-      ),
-    [draftStart, draftEnd]
-  )
+  const scanRange = useMemo(() => scanRangeFromDrafts(draftStart, draftEnd), [draftStart, draftEnd])
   const scanCount = scanRange.end - scanRange.start + 1
 
   const openCustomStep = useCallback(() => {
-    setCustomPath(initialCustomPath(chain, network, currentSettings))
+    setCustomPath(initialCustomPathFromSettings(chain, network, currentSettings))
     setCustomRD(RD.initial)
     setStep('custom')
   }, [chain, network, currentSettings])
@@ -267,7 +163,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
     setDraftEnd(String(DEFAULT_HD_SCAN_RANGE.end))
     setScanRD(RD.initial)
     setSelectedKey(null)
-    setCustomPath(defaultCustomPath(chain, network))
+    setCustomPath(defaultCustomPathForChain(chain, network))
     setCustomRD(RD.initial)
   }, [chain, network])
 
@@ -302,10 +198,7 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
           next: (hits) => {
             setScanRD(RD.success(hits))
             const currentKey = candidateKey({ settings: currentSettings })
-            const currentHit = hits.find((h) => h.key === currentKey && h.address)
-            const funded = hits.find((h) => h.hasFunds && h.address)
-            const firstOk = hits.find((h) => h.address)
-            setSelectedKey(currentHit?.key ?? funded?.key ?? firstOk?.key ?? null)
+            setSelectedKey(pickDefaultScanSelection(hits, currentKey))
           },
           error: (e: Error) => setScanRD(RD.failure(e))
         })

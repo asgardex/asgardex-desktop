@@ -9,8 +9,13 @@ import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { getChainDerivationPath } from '../../../shared/utils/derivationPath'
 import { isEvmHdScanChain, isUtxoStandardHdScanChain } from '../../../shared/utils/keystoreHdScan'
+import {
+  accountIndexSaveEnabled,
+  parseSlotDraft,
+  quietRowPreviewPath,
+  slotsAreDirty
+} from '../../../shared/utils/keystoreHdUiLogic'
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, KeystoreChainHDSettings, WalletType } from '../../../shared/wallet/types'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { keystoreChainHDSettings$, setKeystoreChainHDSettings } from '../../services/wallet/keystoreHDSettings'
@@ -48,13 +53,6 @@ const profileLabelId = (chain: Chain, settings: KeystoreChainHDSettings) => {
   return 'settings.wallet.hd.profile.custom' as const
 }
 
-const parseSlot = (raw: string, fallback: number): number => {
-  if (raw.trim() === '') return fallback
-  const n = Number(raw)
-  if (!Number.isInteger(n) || n < 0) return fallback
-  return Math.min(n, 2_147_483_647)
-}
-
 /** Borderless numeric chip — hover / focus only. */
 const slotInputClass =
   'w-11 rounded-md border-0 bg-transparent px-1 py-0.5 text-center font-mono text-[12px] tabular-nums text-text0 transition-colors hover:bg-bg2 focus:bg-turquoise/10 focus:outline-hidden focus:ring-1 focus:ring-turquoise/50 dark:text-text0d dark:hover:bg-bg2d dark:focus:bg-turquoise/15'
@@ -77,18 +75,17 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
     setDraftIndex(String(settings.index))
   }, [settings.account, settings.index, settings.customPath, settings.hdMode])
 
-  const account = parseSlot(draftAccount, settings.account)
-  const index = parseSlot(draftIndex, settings.index)
+  const account = parseSlotDraft(draftAccount, settings.account)
+  const index = parseSlotDraft(draftIndex, settings.index)
   const hasCustom = !!settings.customPath?.trim()
-  const slotsDirty = account !== settings.account || index !== settings.index
+  const dirty = slotsAreDirty(account, index, settings)
   // Save only when account/index changed — drops any custom path and uses the formula
-  const saveEnabled = !saving && slotsDirty
+  const saveEnabled = accountIndexSaveEnabled(dirty, saving)
 
-  const previewPath = useMemo(() => {
-    // Live formula from draft slots; if custom is locked and slots unchanged, show custom path
-    if (hasCustom && !slotsDirty) return settings.customPath!.trim()
-    return getChainDerivationPath(chain, account, index, network, settings.hdMode).path
-  }, [hasCustom, slotsDirty, settings.customPath, settings.hdMode, chain, account, index, network])
+  const previewPath = useMemo(
+    () => quietRowPreviewPath(chain, network, settings, account, index),
+    [chain, network, settings, account, index]
+  )
 
   const saveSlots = async () => {
     if (!saveEnabled) return
@@ -167,7 +164,7 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
       <Label size="small" color="gray" className="!w-auto !p-0 font-mono opacity-70">
         {previewPath}
       </Label>
-      {hasCustom && !slotsDirty && (
+      {hasCustom && !dirty && (
         <Label size="small" color="gray" className="!w-auto !p-0 opacity-60">
           {intl.formatMessage({ id: 'settings.wallet.hd.path.customLocked' })}
         </Label>
