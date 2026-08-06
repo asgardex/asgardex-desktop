@@ -114,7 +114,8 @@ export const createEvmTransactionService = (
                       memo: unsignedTx.data,
                       recipient: router,
                       gasPrice: gasPrices[params.feeOption],
-                      isMemoEncoded: true
+                      isMemoEncoded: true,
+                      walletIndex: params.walletIndex
                     }
                     return Rx.from(client.estimateGasLimit(tx)).pipe(
                       RxOp.catchError(() => Rx.of(new BigNumber(defaultGasLimit))),
@@ -137,7 +138,8 @@ export const createEvmTransactionService = (
                       recipient: router,
                       gasPrice: gasPrices[params.feeOption],
                       isMemoEncoded: true,
-                      gasLimit: new BigNumber(defaultGasLimit)
+                      gasLimit: new BigNumber(defaultGasLimit),
+                      walletIndex: params.walletIndex
                     })
                   )
                 })

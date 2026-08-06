@@ -29,6 +29,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
           client.transferMax({
             recipient: params.recipient,
             memo: params.memo,
+            walletIndex: params.walletIndex,
             selectedUtxos: params.selectedUtxos
           })
         )
