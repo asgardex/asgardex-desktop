@@ -6,17 +6,33 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
-# Unreleased (develop after 1.45.0)
+# 1.45.1 (2026-08-07)
+
+PRs merged to `develop` since tag `v1.45.0` ([#1138](https://github.com/asgardex/asgardex-desktop/pull/1138)), plus [#1158](https://github.com/asgardex/asgardex-desktop/pull/1158) (EVM Max send fix; merge with or before this release).
+
+## Add
+
+- feat(keystore): HD Find my funds for EVM, THOR/MAYA, and UTXO chains [#1152](https://github.com/asgardex/asgardex-desktop/pull/1152)
 
 ## Update/Fixes
 
+- fix(evm): reclamp native Max send at broadcast so fee re-quotes cannot overshoot balance (Max no longer fails with dust insufficient-funds) [#1158](https://github.com/asgardex/asgardex-desktop/pull/1158)
+- fix(security): update `keyv` to 5.6.0 via resolutions (supply-chain mitigation) [#1154](https://github.com/asgardex/asgardex-desktop/pull/1154)
+- fix: source UTXO inbound fee rates from the node `gas_rate` [#1150](https://github.com/asgardex/asgardex-desktop/pull/1150)
 - fix(swap): surface routing protocol in chart panel + track OneClick (NEAR Intents) swaps [#1143](https://github.com/asgardex/asgardex-desktop/pull/1143)
-- remove native Kujira (KUJI) chain client — no longer listed on THOR/MAYA pools; dead chain
+- remove native Kujira (KUJI) chain client — no longer listed on THOR/MAYA pools; drop `@xchainjs/xchain-kujira` [#1151](https://github.com/asgardex/asgardex-desktop/pull/1151)
 
 ## Chores
 
-- ci: bump actions/checkout, setup-node, setup-python major versions [#1145](https://github.com/asgardex/asgardex-desktop/pull/1145) [#1139](https://github.com/asgardex/asgardex-desktop/pull/1139) [#1146](https://github.com/asgardex/asgardex-desktop/pull/1146)
-- drop `@xchainjs/xchain-kujira` dependency
+- chore: THOR lastblock 60s poll, Liquify RPC key, Asgardex node fallbacks [#1147](https://github.com/asgardex/asgardex-desktop/pull/1147)
+- chore(deps): bump `@xchainjs/*` packages to latest [#1140](https://github.com/asgardex/asgardex-desktop/pull/1140)
+- chore(deps): bump `@vultisig/sdk` from 0.22.5 to 2.19.19 [#1131](https://github.com/asgardex/asgardex-desktop/pull/1131)
+- ci: pass `VITE_ASGARDEX_ONECLICK_AFFILIATES` into production builds [#1149](https://github.com/asgardex/asgardex-desktop/pull/1149)
+- ci(actions): bump actions/checkout from 6.0.3 to 7.0.1 [#1145](https://github.com/asgardex/asgardex-desktop/pull/1145)
+- ci(actions): bump actions/setup-node from 6.4.0 to 7.0.0 [#1139](https://github.com/asgardex/asgardex-desktop/pull/1139)
+- ci(actions): bump actions/setup-python from 6.3.0 to 7.0.0 [#1146](https://github.com/asgardex/asgardex-desktop/pull/1146)
+- docs: interactive architecture map and maintenance guide [#1155](https://github.com/asgardex/asgardex-desktop/pull/1155)
+- docs: backfill CHANGELOG for 1.44.0, 1.45.0, and post-1.45 develop [#1148](https://github.com/asgardex/asgardex-desktop/pull/1148)
 
 # 1.45.0 (2026-07-22)
 
