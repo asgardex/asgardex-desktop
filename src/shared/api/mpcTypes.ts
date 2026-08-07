@@ -154,7 +154,6 @@ export const ASGARDEX_TO_SDK_CHAIN: Record<string, string> = {
   XRP: 'Ripple',
   SOL: 'Solana',
   ZEC: 'Zcash',
-  KUJI: 'Kujira',
   ADA: 'Cardano',
   TRON: 'Tron'
   // XRD (Radix) is not supported by ASGARDEX and will not be added.

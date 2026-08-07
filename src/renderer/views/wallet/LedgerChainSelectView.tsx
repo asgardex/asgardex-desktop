@@ -35,7 +35,6 @@ import {
   isCosmosChain,
   isThorChain,
   isMayaChain,
-  isKujiChain,
   isTronChain,
   isSolChain
 } from '../../helpers/chainHelper'
@@ -55,7 +54,7 @@ const chainSupportsHDModes = (chain: Chain): boolean => {
     return true
 
   // Cosmos-based chains support HD modes
-  if (isCosmosChain(chain) || isThorChain(chain) || isMayaChain(chain) || isKujiChain(chain)) return true
+  if (isCosmosChain(chain) || isThorChain(chain) || isMayaChain(chain)) return true
 
   // TRON supports HD modes
   if (isTronChain(chain)) return true

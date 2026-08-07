@@ -10,7 +10,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -118,11 +117,6 @@ export const getChainDerivationPath = (
       return {
         path: `m/44'/931'/${account}'/0/${index}`,
         description: `MAYAChain (m/44'/931'/${account}'/0/${index})`
-      }
-    case KUJIChain:
-      return {
-        path: `m/44'/118'/${account}'/0/${index}`,
-        description: `Kujira (m/44'/118'/${account}'/0/${index})`
       }
 
     // Other chains with standard BIP44 derivation

@@ -9,7 +9,6 @@ import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { AssetDASH, DASHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDASH } from '@xchainjs/xchain-dash'
 import { AssetDOGE, DOGEChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
-import { AssetKUJI, KUJIChain } from '@xchainjs/xchain-kujira'
 import { AssetLTC, LTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
@@ -37,7 +36,6 @@ const chainAssets: Record<Chain, Asset> = {
   LTC: AssetLTC,
   DOGE: AssetDOGE,
   DASH: AssetDASH,
-  KUJI: AssetKUJI,
   ARB: AssetAETH,
   XRD: AssetXRD,
   SOL: SOLAsset,
@@ -156,15 +154,11 @@ export const isBchChain = (chain: Chain): boolean => eqChain.equals(chain, BCHCh
 export const isDogeChain = (chain: Chain): boolean => eqChain.equals(chain, DOGEChain)
 
 /**
- * Check whether chain is KUJI chain
- */
-export const isKujiChain = (chain: Chain): boolean => eqChain.equals(chain, KUJIChain)
-/**
  * Check whether chain is ADA chain
  */
 export const isAdaChain = (chain: Chain): boolean => eqChain.equals(chain, ADAChain)
 /**
- * Check whether chain is KUJI chain
+ * Check whether chain is Radix chain
  */
 export const isXrdChain = (chain: Chain): boolean => eqChain.equals(chain, RadixChain)
 
@@ -219,8 +213,6 @@ export const getChain = (chain: string): Chain => {
       return MAYAChain
     case 'DASH':
       return DASHChain
-    case 'KUJI':
-      return KUJIChain
     case 'XRD':
       return RadixChain
     case 'SOL':

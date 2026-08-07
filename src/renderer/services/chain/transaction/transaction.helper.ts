@@ -10,7 +10,6 @@ import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain, DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { DOGE_DECIMAL, DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
@@ -22,7 +21,6 @@ import { BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
-import { KUJI_DECIMAL } from '../../kuji/const'
 
 /**
  * Returns minimal amount (dust threshold) needed to send a tx for Thorchain to acknowledge
@@ -58,8 +56,6 @@ export const smallestAmountToSend = (chain: Chain, _network: Network): BaseAmoun
     case DOGEChain:
       // 100000000 satoshi
       return baseAmount(100000000, DOGE_DECIMAL)
-    case KUJIChain:
-      return baseAmount(5000, KUJI_DECIMAL)
     case ADAChain:
       // 1170000 love lace
       return baseAmount(1170000, ADA_DECIMALS)

@@ -6,7 +6,16 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ApiUrls } from '../../../shared/api/types'
-import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
+import {
+  DEFAULT_THORNODE_API_URLS,
+  DEFAULT_THORNODE_RPC_URLS,
+  getThornodeApiBaseUrls,
+  getThornodeRpcClientUrls,
+  isLiquifyAuthenticatedUrl,
+  maskThornodeApiUrl,
+  maskThornodeRpcUrl,
+  requestThornodeApiBases
+} from '../../../shared/thorchain/const'
 import { isError } from '../../../shared/utils/guard'
 import { triggerStream } from '../../helpers/stateHelper'
 import { clientNetwork$ } from '../app/service'
@@ -20,22 +29,59 @@ import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
 
 /**
- * Stream of ClientUrl (from storage)
+ * Stream of ClientUrl (from storage) for UI / config display.
+ * API/RPC values are masked so Liquify portal keys (`/api=<KEY>`) never appear in Expert Mode.
+ * Authenticated URLs are applied only at request/client construction via resolve helpers.
  */
 const clientUrl$: ClientUrl$ = FP.pipe(
   Rx.combineLatest([thornodeApi$, thornodeRpc$, reloadClientUrl$]),
+  // Scrub any portal `/api=<KEY>` URLs previously saved into storage
+  RxOp.tap(([thornodeApi, thornodeRpc]) => {
+    const apiNeedsScrub =
+      isLiquifyAuthenticatedUrl(thornodeApi.mainnet) ||
+      isLiquifyAuthenticatedUrl(thornodeApi.stagenet) ||
+      isLiquifyAuthenticatedUrl(thornodeApi.testnet)
+    const rpcNeedsScrub =
+      isLiquifyAuthenticatedUrl(thornodeRpc.mainnet) ||
+      isLiquifyAuthenticatedUrl(thornodeRpc.stagenet) ||
+      isLiquifyAuthenticatedUrl(thornodeRpc.testnet)
+    if (apiNeedsScrub || rpcNeedsScrub) {
+      modifyStorage(
+        O.some({
+          ...(apiNeedsScrub
+            ? {
+                thornodeApi: {
+                  mainnet: maskThornodeApiUrl(thornodeApi.mainnet),
+                  stagenet: maskThornodeApiUrl(thornodeApi.stagenet),
+                  testnet: maskThornodeApiUrl(thornodeApi.testnet)
+                }
+              }
+            : {}),
+          ...(rpcNeedsScrub
+            ? {
+                thornodeRpc: {
+                  mainnet: maskThornodeRpcUrl(thornodeRpc.mainnet),
+                  stagenet: maskThornodeRpcUrl(thornodeRpc.stagenet),
+                  testnet: maskThornodeRpcUrl(thornodeRpc.testnet)
+                }
+              }
+            : {})
+        })
+      )
+    }
+  }),
   RxOp.map(([thornodeApi, thornodeRpc, _]) => ({
     [ClientNetwork.Testnet]: {
-      node: thornodeApi.testnet,
-      rpc: thornodeRpc.testnet
+      node: maskThornodeApiUrl(thornodeApi.testnet),
+      rpc: maskThornodeRpcUrl(thornodeRpc.testnet)
     },
     [ClientNetwork.Stagenet]: {
-      node: thornodeApi.stagenet,
-      rpc: thornodeRpc.stagenet
+      node: maskThornodeApiUrl(thornodeApi.stagenet),
+      rpc: maskThornodeRpcUrl(thornodeRpc.stagenet)
     },
     [ClientNetwork.Mainnet]: {
-      node: thornodeApi.mainnet,
-      rpc: thornodeRpc.mainnet
+      node: maskThornodeApiUrl(thornodeApi.mainnet),
+      rpc: maskThornodeRpcUrl(thornodeRpc.mainnet)
     }
   })),
   RxOp.distinctUntilChanged()
@@ -47,7 +93,8 @@ const setThornodeRpcUrl = (url: string, network: Network) => {
     O.map(({ thornodeRpc }) => thornodeRpc),
     O.getOrElse(() => DEFAULT_THORNODE_RPC_URLS)
   )
-  const updated: ApiUrls = { ...current, [network]: url }
+  // Never persist Liquify `/api=<KEY>` URLs
+  const updated: ApiUrls = { ...current, [network]: maskThornodeRpcUrl(url) }
   modifyStorage(O.some({ thornodeRpc: updated }))
 }
 
@@ -57,7 +104,8 @@ const setThornodeApiUrl = (url: string, network: Network) => {
     O.map(({ thornodeApi }) => thornodeApi),
     O.getOrElse(() => DEFAULT_THORNODE_API_URLS)
   )
-  const updated: ApiUrls = { ...current, [network]: url }
+  // Never persist Liquify `/api=<KEY>` URLs
+  const updated: ApiUrls = { ...current, [network]: maskThornodeApiUrl(url) }
   modifyStorage(O.some({ thornodeApi: updated }))
 }
 
@@ -68,23 +116,27 @@ const setThornodeApiUrl = (url: string, network: Network) => {
  * By the other hand: Whenever a phrase has been removed, `ClientState` is set to `initial`
  * A `ThorchainClient` will never be created as long as no phrase is available
  */
+// Multi-base getChainId so Asgardex REST can save client init when Liquify is down
+const resolveChainId$ = (configuredNode: string, network: Network) =>
+  Rx.from(requestThornodeApiBases(getThornodeApiBaseUrls(configuredNode, network), (base) => getChainId(base)))
+
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$]),
   RxOp.switchMap(
     ([keystore, network, clientUrl]): ClientState$ =>
       FP.pipe(
-        // request chain id from node whenever network or keystore state have been changed
-        Rx.from(getChainId(clientUrl[network].node)),
+        resolveChainId$(clientUrl[network].node, network),
         RxOp.switchMap(() =>
           Rx.of(
             FP.pipe(
               getPhrase(keystore),
               O.map<string, ClientState>((phrase) => {
+                // Primary RPC (+ Liquify key if set) then Asgardex mainnet fallback — not shown in Expert UI
                 const getDefaultClientUrls = (): Record<Network, string[]> => {
                   return {
-                    [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
-                    [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
-                    [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+                    [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
+                    [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
+                    [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
                   }
                 }
                 try {
@@ -102,6 +154,9 @@ const clientState$: ClientState$ = FP.pipe(
               O.getOrElse<ClientState>(() => RD.initial)
             )
           )
+        ),
+        RxOp.catchError((error) =>
+          Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Failed to get THOR chain id')))
         )
       )
   ),
@@ -118,16 +173,15 @@ const readOnlyClientState$: ClientState$ = FP.pipe(
   RxOp.switchMap(
     ([network, clientUrl]): ClientState$ =>
       FP.pipe(
-        // request chain id from node whenever network changes
-        Rx.from(getChainId(clientUrl[network].node)),
+        resolveChainId$(clientUrl[network].node, network),
         RxOp.switchMap(() =>
           Rx.of(
             (() => {
               const getDefaultClientUrls = (): Record<Network, string[]> => {
                 return {
-                  [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
-                  [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
-                  [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+                  [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
+                  [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
+                  [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
                 }
               }
               try {

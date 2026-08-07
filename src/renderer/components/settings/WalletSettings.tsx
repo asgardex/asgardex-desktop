@@ -23,7 +23,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -218,7 +217,6 @@ const initialMap = {
   [BSCChain]: 0,
   [MAYAChain]: 0,
   [DASHChain]: 0,
-  [KUJIChain]: 0,
   [ARBChain]: 0,
   [RadixChain]: 0,
   [SOLChain]: 0,

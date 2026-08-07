@@ -11,6 +11,7 @@ import * as RxAjax from 'rxjs/ajax'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeUrl } from '../../shared/api/types'
+import { getThornodeApiBaseUrls, requestThornodeApiBases, resolveThornodeRpcUrl } from '../../shared/thorchain/const'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { LiveData } from '../helpers/rx/liveData'
 import { DEFAULT_CLIENT_URL } from '../services/thorchain/const'
@@ -46,28 +47,33 @@ export const useThorchainClientUrl = (): {
   const setRpc = (url: string) => setThornodeRpcUrl(url, network)
   const setNode = (url: string) => setThornodeApiUrl(url, network)
 
-  const checkNode$ = (url: string) =>
-    FP.pipe(
-      // Convert Promise to Observable
-      Rx.from(new HealthApi(getThornodeAPIConfiguration(url)).ping()),
-      RxOp.map((result) => {
-        const { ping } = result.data
-        if (ping) return RD.success(url)
-
-        return RD.failure(
-          Error(intl.formatMessage({ id: 'setting.thornode.node.error.unhealthy' }, { endpoint: '/ping' }))
-        )
-      }),
+  const checkNode$ = (url: string) => {
+    // Test primary + Asgardex API fallback the app will actually try
+    const bases = getThornodeApiBaseUrls(url, network)
+    return FP.pipe(
+      Rx.from(
+        requestThornodeApiBases(bases, async (basePath) => {
+          const result = await new HealthApi(getThornodeAPIConfiguration(basePath)).ping()
+          if (!result.data.ping) {
+            throw new Error(intl.formatMessage({ id: 'setting.thornode.node.error.unhealthy' }, { endpoint: '/ping' }))
+          }
+          return basePath
+        })
+      ),
+      RxOp.map(() => RD.success(url)),
       RxOp.catchError((_: Error) =>
         Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'setting.thornode.node.error.url' })}`)))
       )
     )
+  }
 
-  const checkRpc$ = (url: string) =>
-    FP.pipe(
+  const checkRpc$ = (url: string) => {
+    // Test the URL the client will actually use (mainnet Liquify key only when set)
+    const urlToCheck = resolveThornodeRpcUrl(url, network)
+    return FP.pipe(
       // Check `health` endpoint of THORNode RPC API
       // https://docs.tendermint.com/v0.34/rpc/#/Info/health
-      RxAjax.ajax(`${url}/health`),
+      RxAjax.ajax(`${urlToCheck}/health`),
       RxOp.map(({ response }) => {
         // Empty result object means no error
         if (
@@ -89,6 +95,7 @@ export const useThorchainClientUrl = (): {
         Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'setting.thornode.rpc.error.url' })}`)))
       )
     )
+  }
 
   return { rpc: nodeUrl.rpc, node: nodeUrl.node, setRpc, setNode, checkNode$, checkRpc$ }
 }

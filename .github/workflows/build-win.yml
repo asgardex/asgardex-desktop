@@ -20,16 +20,16 @@ jobs:
 
     steps:
       - name: Checkout git repo
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v6
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
 
       # Python 3.12+ removed distutils, but node-gyp needs it for native modules
       - name: Setup Python for node-gyp
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.11'
 
@@ -51,6 +51,11 @@ jobs:
           VITE_NOWNODES_API_KEY: ${{ secrets.REACT_APP_NOWNODES_API_KEY }}
           VITE_ASGARDEX_BROKER_URL: ${{secrets.VITE_ASGARDEX_BROKER_URL}}
           VITE_ASGARDEX_AFFILIATE_BROKERS_ADDRESS: ${{secrets.VITE_ASGARDEX_AFFILIATE_BROKERS_ADDRESS}}
+          VITE_ASGARDEX_ONECLICK_AFFILIATES: ${{ secrets.VITE_ASGARDEX_ONECLICK_AFFILIATES }}
+          VITE_ASGARDEX_THORNODE_API: ${{ secrets.VITE_ASGARDEX_THORNODE_API }}
+          VITE_ASGARDEX_THORNODE_RPC: ${{ secrets.VITE_ASGARDEX_THORNODE_RPC }}
+          VITE_LIQUIFY_THORCHAIN_API_KEY: ${{ secrets.VITE_LIQUIFY_THORCHAIN_API_KEY }}
+          VITE_LIQUIFY_THORCHAIN_RPC_KEY: ${{ secrets.VITE_LIQUIFY_THORCHAIN_RPC_KEY }}
       - name: Upload artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

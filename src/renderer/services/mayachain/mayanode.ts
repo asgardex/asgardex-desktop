@@ -223,7 +223,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
 
-  const loadMayachainLastblockInterval$ = Rx.timer(0 /* no delay for first value */, 15 * 1000 /* every 15 sec  */)
+  // Match THOR: 60s is enough for mimir halt / pool maturity; cuts node lastblock traffic 4×.
+  const loadMayachainLastblockInterval$ = Rx.timer(0 /* no delay for first value */, 60 * 1000 /* every 60 sec  */)
 
   /**
    * State of `MayachainLastblock`, it will be loaded data by first subscription only

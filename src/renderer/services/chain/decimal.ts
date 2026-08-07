@@ -27,7 +27,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
 import { isMayaAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { KUJI_DECIMAL } from '../kuji/const'
 import { getTokenDecimal } from './tokenDecimalMap'
 import { AssetWithDecimalLD } from './types'
 
@@ -51,7 +50,6 @@ const CHAIN_DECIMAL_MAP = new Map([
   ['DOGE', DOGE_DECIMAL],
   ['LTC', LTC_DECIMAL],
   ['GAIA', COSMOS_DECIMAL],
-  ['KUJI', KUJI_DECIMAL],
   ['XRD', XRD_DECIMAL],
   ['BTC', BTC_DECIMAL],
   ['BCH', BCH_DECIMAL],

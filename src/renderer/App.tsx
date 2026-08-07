@@ -16,7 +16,6 @@ import { DashProvider } from './contexts/DashContext'
 import { DogeProvider } from './contexts/DogeContext'
 import { EthereumProvider } from './contexts/EthereumContext'
 import { I18nProvider } from './contexts/I18nContext'
-import { KujiProvider } from './contexts/KujiContext'
 import { LitecoinProvider } from './contexts/LitecoinContext'
 import { MayachainProvider } from './contexts/MayachainContext'
 import { MayachainQueryProvider } from './contexts/MayachainQueryContext'
@@ -55,53 +54,51 @@ export const App = (): JSX.Element => {
                           <BscProvider>
                             <ArbProvider>
                               <DogeProvider>
-                                <KujiProvider>
-                                  <AdaProvider>
-                                    <SolProvider>
-                                      <TronProvider>
-                                        <XrdProvider>
-                                          <ZcashProvider>
-                                            <XrpProvider>
-                                              <DashProvider>
-                                                <SuiProvider>
-                                                  <CosmosProvider>
-                                                    <MidgardProvider>
-                                                      <PriceLevelProvider>
-                                                        <ThorchainQueryProvider>
-                                                          <MayachainProvider>
-                                                            <MayachainQueryProvider>
-                                                              <MayaMidgardProvider>
-                                                                <UserNodesProvider>
-                                                                  <UserBondProvidersProvider>
-                                                                    <ChainflipProvider>
-                                                                      <OneClickProvider>
-                                                                        <I18nProvider>
-                                                                          <Router>
-                                                                            <ThemeProvider>
-                                                                              <AppView />
-                                                                            </ThemeProvider>
-                                                                          </Router>
-                                                                        </I18nProvider>
-                                                                      </OneClickProvider>
-                                                                    </ChainflipProvider>
-                                                                  </UserBondProvidersProvider>
-                                                                </UserNodesProvider>
-                                                              </MayaMidgardProvider>
-                                                            </MayachainQueryProvider>
-                                                          </MayachainProvider>
-                                                        </ThorchainQueryProvider>
-                                                      </PriceLevelProvider>
-                                                    </MidgardProvider>
-                                                  </CosmosProvider>
-                                                </SuiProvider>
-                                              </DashProvider>
-                                            </XrpProvider>
-                                          </ZcashProvider>
-                                        </XrdProvider>
-                                      </TronProvider>
-                                    </SolProvider>
-                                  </AdaProvider>
-                                </KujiProvider>
+                                <AdaProvider>
+                                  <SolProvider>
+                                    <TronProvider>
+                                      <XrdProvider>
+                                        <ZcashProvider>
+                                          <XrpProvider>
+                                            <DashProvider>
+                                              <SuiProvider>
+                                                <CosmosProvider>
+                                                  <MidgardProvider>
+                                                    <PriceLevelProvider>
+                                                      <ThorchainQueryProvider>
+                                                        <MayachainProvider>
+                                                          <MayachainQueryProvider>
+                                                            <MayaMidgardProvider>
+                                                              <UserNodesProvider>
+                                                                <UserBondProvidersProvider>
+                                                                  <ChainflipProvider>
+                                                                    <OneClickProvider>
+                                                                      <I18nProvider>
+                                                                        <Router>
+                                                                          <ThemeProvider>
+                                                                            <AppView />
+                                                                          </ThemeProvider>
+                                                                        </Router>
+                                                                      </I18nProvider>
+                                                                    </OneClickProvider>
+                                                                  </ChainflipProvider>
+                                                                </UserBondProvidersProvider>
+                                                              </UserNodesProvider>
+                                                            </MayaMidgardProvider>
+                                                          </MayachainQueryProvider>
+                                                        </MayachainProvider>
+                                                      </ThorchainQueryProvider>
+                                                    </PriceLevelProvider>
+                                                  </MidgardProvider>
+                                                </CosmosProvider>
+                                              </SuiProvider>
+                                            </DashProvider>
+                                          </XrpProvider>
+                                        </ZcashProvider>
+                                      </XrdProvider>
+                                    </TronProvider>
+                                  </SolProvider>
+                                </AdaProvider>
                               </DogeProvider>
                             </ArbProvider>
                           </BscProvider>

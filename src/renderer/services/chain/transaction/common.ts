@@ -11,7 +11,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -40,7 +39,6 @@ import * as COSMOS from '../../cosmos'
 import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
-import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import * as XRD from '../../radix'
@@ -51,7 +49,14 @@ import * as THOR from '../../thorchain'
 import * as TRON from '../../tron'
 import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
 import * as ZEC from '../../zcash'
+import { utxoFeeRate$ } from '../fees/nodeapi'
 import { SendPoolTxParams, SendTxParams } from '../types'
+
+// shared error mapper for UTXO fee-rate resolution
+const feeRateError = (error: Error): ApiError => ({
+  errorId: ErrorId.GET_FEES,
+  msg: error?.message ?? error.toString()
+})
 
 // helper to create `RemoteData<ApiError, never>` observable
 const txFailure$ = (msg: string): LiveData<ApiError, never> =>
@@ -77,7 +82,8 @@ export const sendTx$ = ({
   destinationTag,
   sendMax,
   selectedUtxos,
-  utxoSelectionPreferences
+  utxoSelectionPreferences,
+  useNodeFeeRate = false
 }: SendTxParams): TxHashLD => {
   const { chain } =
     asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.SECURED ? { chain: THORChain } : asset
@@ -90,24 +96,30 @@ export const sendTx$ = ({
           errorId: ErrorId.GET_FEES,
           msg: error?.message ?? error.toString()
         })),
-        liveData.chain(({ rates }) => {
-          return BTC.sendTx({
-            walletType,
-            recipient,
-            asset,
-            amount,
-            feeOption,
-            feeRate: rates[feeOption],
-            memo,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            sender,
-            sendMax,
-            selectedUtxos,
-            utxoSelectionPreferences
-          })
-        })
+        liveData.chain(({ rates }) =>
+          FP.pipe(
+            utxoFeeRate$(BTCChain, rates[feeOption], useNodeFeeRate),
+            liveData.mapLeft(feeRateError),
+            liveData.chain((feeRate) =>
+              BTC.sendTx({
+                walletType,
+                recipient,
+                asset,
+                amount,
+                feeOption,
+                feeRate,
+                memo,
+                walletAccount,
+                walletIndex,
+                hdMode,
+                sender,
+                sendMax,
+                selectedUtxos,
+                utxoSelectionPreferences
+              })
+            )
+          )
+        )
       )
 
     case ETHChain:
@@ -152,8 +164,6 @@ export const sendTx$ = ({
       return THOR.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case MAYAChain:
       return MAYA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
-    case KUJIChain:
-      return KUJI.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case ADAChain:
       return ADA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode, sendMax })
     case RadixChain:
@@ -206,22 +216,28 @@ export const sendTx$ = ({
           msg: error?.message ?? error.toString()
         })),
         liveData.chain(({ rates }) =>
-          DOGE.sendTx({
-            walletType,
-            recipient,
-            asset,
-            amount,
-            feeOption,
-            feeRate: rates[feeOption],
-            memo,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            sender,
-            sendMax,
-            selectedUtxos,
-            utxoSelectionPreferences
-          })
+          FP.pipe(
+            utxoFeeRate$(DOGEChain, rates[feeOption], useNodeFeeRate),
+            liveData.mapLeft(feeRateError),
+            liveData.chain((feeRate) =>
+              DOGE.sendTx({
+                walletType,
+                recipient,
+                asset,
+                amount,
+                feeOption,
+                feeRate,
+                memo,
+                walletAccount,
+                walletIndex,
+                hdMode,
+                sender,
+                sendMax,
+                selectedUtxos,
+                utxoSelectionPreferences
+              })
+            )
+          )
         )
       )
 
@@ -233,22 +249,28 @@ export const sendTx$ = ({
           msg: error?.message ?? error.toString()
         })),
         liveData.chain(({ rates }) =>
-          BCH.sendTx({
-            walletType,
-            recipient,
-            asset,
-            amount,
-            feeOption,
-            feeRate: rates[feeOption],
-            memo,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            sender,
-            sendMax,
-            selectedUtxos,
-            utxoSelectionPreferences
-          })
+          FP.pipe(
+            utxoFeeRate$(BCHChain, rates[feeOption], useNodeFeeRate),
+            liveData.mapLeft(feeRateError),
+            liveData.chain((feeRate) =>
+              BCH.sendTx({
+                walletType,
+                recipient,
+                asset,
+                amount,
+                feeOption,
+                feeRate,
+                memo,
+                walletAccount,
+                walletIndex,
+                hdMode,
+                sender,
+                sendMax,
+                selectedUtxos,
+                utxoSelectionPreferences
+              })
+            )
+          )
         )
       )
     case LTCChain:
@@ -258,25 +280,31 @@ export const sendTx$ = ({
           errorId: ErrorId.GET_FEES,
           msg: error?.message ?? error.toString()
         })),
-        liveData.chain(({ rates }) => {
-          const feeRate = Math.floor(rates[feeOption])
-          return LTC.sendTx({
-            walletType,
-            recipient,
-            asset,
-            amount,
-            feeOption,
-            feeRate,
-            memo,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            sender,
-            sendMax,
-            selectedUtxos,
-            utxoSelectionPreferences
-          })
-        })
+        liveData.chain(({ rates }) =>
+          FP.pipe(
+            // replaces `Math.floor`, which turned LTC's sub-1 estimates into a 0 fee rate
+            utxoFeeRate$(LTCChain, rates[feeOption], useNodeFeeRate),
+            liveData.mapLeft(feeRateError),
+            liveData.chain((feeRate) =>
+              LTC.sendTx({
+                walletType,
+                recipient,
+                asset,
+                amount,
+                feeOption,
+                feeRate,
+                memo,
+                walletAccount,
+                walletIndex,
+                hdMode,
+                sender,
+                sendMax,
+                selectedUtxos,
+                utxoSelectionPreferences
+              })
+            )
+          )
+        )
       )
     case DASHChain:
       return FP.pipe(
@@ -285,24 +313,30 @@ export const sendTx$ = ({
           errorId: ErrorId.GET_FEES,
           msg: error?.message ?? error.toString()
         })),
-        liveData.chain(({ rates }) => {
-          return DASH.sendTx({
-            walletType,
-            recipient,
-            asset,
-            amount,
-            feeOption,
-            feeRate: rates[feeOption],
-            memo,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            sender,
-            sendMax,
-            selectedUtxos,
-            utxoSelectionPreferences
-          })
-        })
+        liveData.chain(({ rates }) =>
+          FP.pipe(
+            utxoFeeRate$(DASHChain, rates[feeOption], useNodeFeeRate),
+            liveData.mapLeft(feeRateError),
+            liveData.chain((feeRate) =>
+              DASH.sendTx({
+                walletType,
+                recipient,
+                asset,
+                amount,
+                feeOption,
+                feeRate,
+                memo,
+                walletAccount,
+                walletIndex,
+                hdMode,
+                sender,
+                sendMax,
+                selectedUtxos,
+                utxoSelectionPreferences
+              })
+            )
+          )
+        )
       )
     case ZECChain:
       return FP.pipe(
@@ -455,7 +489,6 @@ export const sendPoolTx$ = ({
     case DASHChain:
     case ZECChain:
     case GAIAChain:
-    case KUJIChain:
     case ADAChain:
     case XRPChain:
     case SOLChain:
@@ -472,7 +505,9 @@ export const sendPoolTx$ = ({
         walletAccount,
         walletIndex,
         hdMode,
-        sendMax
+        sendMax,
+        // inbounds must not be sent below the vault's recommended `gas_rate`
+        useNodeFeeRate: true
       })
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
@@ -515,8 +550,6 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
       return LTC.txStatus$(txHash, O.none)
     case DASHChain:
       return DASH.txStatus$(txHash, O.none)
-    case KUJIChain:
-      return KUJI.txStatus$(txHash, O.none)
     case ADAChain:
       return ADA.txStatus$(txHash, O.none)
     case RadixChain:
