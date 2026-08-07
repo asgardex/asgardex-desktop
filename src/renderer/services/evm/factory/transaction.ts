@@ -451,9 +451,15 @@ export const createEvmTransactionService = (
    * let xchain re-estimate gasLimit — so the fee attached to the tx could exceed what Max
    * reserved → node "insufficient funds for gas * price + value" by dust.
    *
-   * Fix: estimate gas price + gas limit once for the real transfer, reclamp native amount to
-   * `balance − feeCap` when needed, and pass both `gasPrice` and `gasLimit` into `transfer`
-   * so xchain does not re-quote differently.
+   * Fix for native sends:
+   * 1. Fresh gasPrice (tier + multiplier)
+   * 2. Estimate gasLimit for the current amount
+   * 3. feeCap = gasPrice × gasLimit; reclamp amount to balance − feeCap
+   * 4. Re-estimate gasLimit for the **final** amount and reclamp again if feeCap grew
+   *    (amount can affect eth_estimateGas; one re-pass is enough for simple transfers)
+   * 5. Pass pinned gasPrice + gasLimit into transfer so xchain does not re-quote
+   *
+   * Token sends leave amount alone (gas paid in native separately).
    */
   const runSendTx$ = (client: EvmClient, params: SendTxParams, gasMultiplier: number): TxHashLD => {
     const failure$ = (msg: string) =>
@@ -472,24 +478,24 @@ export const createEvmTransactionService = (
           const gasPrice = gasPrices[params.feeOption]
           const assetInfo = client.getAssetInfo()
           const isNative = isChainAsset(params.asset)
+          const fallbackGasLimit = isNative ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
 
           let amount: BaseAmount = params.amount
-          let gasLimit: BigNumber
-          try {
-            gasLimit = await client.estimateGasLimit({
-              asset: params.asset as CompatibleAsset,
-              amount,
-              recipient: params.recipient,
-              memo: params.memo,
-              from: params.sender
-            })
-          } catch {
-            gasLimit = isNative ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
+
+          const estimateGasLimitFor = async (amt: BaseAmount, from?: string): Promise<BigNumber> => {
+            try {
+              return await client.estimateGasLimit({
+                asset: params.asset as CompatibleAsset,
+                amount: amt,
+                recipient: params.recipient,
+                memo: params.memo,
+                from: from ?? params.sender
+              })
+            } catch {
+              return fallbackGasLimit
+            }
           }
 
-          // Native sends pay gas from the same balance as `amount`. Reclamp so Max cannot
-          // overshoot feeCap after a fresh price quote. Token sends pay gas in native ETH
-          // separately — leave token amount alone.
           if (isNative) {
             const sender = await client.getAddressAsync(params.walletIndex)
             // Native-only: empty assets array skips EVM provider ERC-20 tokentx fan-out.
@@ -502,27 +508,54 @@ export const createEvmTransactionService = (
             if (!nativeBal) {
               throw new Error('Unable to read native balance for send')
             }
-            const feeCap = getFee({
+
+            // Estimate gas for current amount → reclamp amount → re-estimate for final amount.
+            // Cap at 3 passes. Keep the higher gasLimit so feeCap never under-covers.
+            let gasLimit = await estimateGasLimitFor(amount, sender)
+            for (let pass = 0; pass < 3; pass++) {
+              const feeCap = getFee({
+                gasPrice,
+                gasLimit,
+                decimals: assetInfo.decimal
+              })
+              const maxSendableBn = nativeBal.amount().minus(feeCap.amount())
+              if (maxSendableBn.lte(0)) {
+                throw new Error('Insufficient funds for gas')
+              }
+              const nextAmount = amount.amount().gt(maxSendableBn)
+                ? baseAmount(maxSendableBn.integerValue(BigNumber.ROUND_FLOOR), amount.decimal)
+                : amount
+
+              const nextGasLimit = await estimateGasLimitFor(nextAmount, sender)
+              const gasForCap = BigNumber.max(gasLimit, nextGasLimit)
+              const amountUnchanged = nextAmount.amount().eq(amount.amount())
+              const gasUnchanged = gasForCap.eq(gasLimit)
+
+              amount = nextAmount
+              gasLimit = gasForCap
+
+              if (amountUnchanged && gasUnchanged) break
+            }
+
+            return client.transfer({
+              asset: params.asset as CompatibleAsset,
+              amount,
+              recipient: params.recipient,
+              memo: params.memo,
               gasPrice,
               gasLimit,
-              decimals: assetInfo.decimal
+              walletIndex: params.walletIndex
             })
-            const maxSendableBn = nativeBal.amount().minus(feeCap.amount())
-            if (maxSendableBn.lte(0)) {
-              throw new Error('Insufficient funds for gas')
-            }
-            if (amount.amount().gt(maxSendableBn)) {
-              amount = baseAmount(maxSendableBn.integerValue(BigNumber.ROUND_FLOOR), amount.decimal)
-            }
           }
 
+          // Token (and other non-native) path: estimate once, pin gas, leave amount alone
+          const gasLimit = await estimateGasLimitFor(amount)
           return client.transfer({
             asset: params.asset as CompatibleAsset,
             amount,
             recipient: params.recipient,
             memo: params.memo,
             gasPrice,
-            // Pin limit so transfer() does not re-estimate a different gasLimit than feeCap.
             gasLimit,
             walletIndex: params.walletIndex
           })
