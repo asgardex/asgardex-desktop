@@ -7,12 +7,15 @@ import * as RxOp from 'rxjs/operators'
 
 import { ApiUrls } from '../../../shared/api/types'
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
+import { getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
+import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS } from '../../../shared/wallet/types'
 import { triggerStream } from '../../helpers/stateHelper'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { getStorageState, modifyStorage, mayanodeApi$, mayanodeRpc$ } from '../storage/common'
 import { keystoreService } from '../wallet/keystore'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 
@@ -61,6 +64,8 @@ const setMayanodeApiUrl = (url: string, network: Network) => {
   modifyStorage(O.some({ mayanodeApi: updated }))
 }
 
+const hdSettings$ = keystoreChainHDSettings$(MAYAChain)
+
 /**
  * Stream to create an observable `MayachainClient` depending on existing phrase in keystore
  *
@@ -69,9 +74,9 @@ const setMayanodeApiUrl = (url: string, network: Network) => {
  * A `MayachainClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$]),
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$, hdSettings$]),
   RxOp.switchMap(
-    ([keystore, network, clientUrl]): ClientState$ =>
+    ([keystore, network, clientUrl, hdSettings]): ClientState$ =>
       FP.pipe(
         // request chain id from node whenever network or keystore state have been changed
         Rx.from(getChainId(clientUrl[network].node)),
@@ -81,7 +86,15 @@ const clientState$: ClientState$ = FP.pipe(
               getPhrase(keystore),
               O.map<string, ClientState>((phrase) => {
                 try {
+                  const { rootDerivationPaths } = getKeystoreDerivation(MAYAChain, hdSettings)
+                  const getDefaultClientUrls = (): Record<Network, string[]> => ({
+                    [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
+                    [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
+                    [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+                  })
                   const client = new Client({
+                    clientUrls: getDefaultClientUrls(),
+                    rootDerivationPaths,
                     network,
                     phrase
                   })
@@ -94,6 +107,9 @@ const clientState$: ClientState$ = FP.pipe(
               O.getOrElse<ClientState>(() => RD.initial)
             )
           )
+        ),
+        RxOp.catchError((error) =>
+          Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Failed to get MAYA chain id')))
         )
       )
   ),
@@ -144,15 +160,22 @@ const readOnlyClient$: ClientState$ = FP.pipe(
   RxOp.shareReplay(1)
 )
 
-/**
- * `Address`
- */
-const address$: C.WalletAddress$ = C.address$(client$, MAYAChain)
+const addressHDSettings$ = hdSettings$.pipe(
+  RxOp.map((s) => {
+    const { walletIndex } = getKeystoreDerivation(MAYAChain, s ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
+    return { hdMode: s.hdMode, account: s.account, index: walletIndex }
+  })
+)
 
 /**
  * `Address`
  */
-const addressUI$: C.WalletAddress$ = C.addressUI$(client$, MAYAChain)
+const address$: C.WalletAddress$ = C.address$(client$, MAYAChain, addressHDSettings$)
+
+/**
+ * `Address`
+ */
+const addressUI$: C.WalletAddress$ = C.addressUI$(client$, MAYAChain, addressHDSettings$)
 
 /**
  * Explorer url depending on selected network

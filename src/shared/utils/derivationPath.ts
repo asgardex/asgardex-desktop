@@ -5,7 +5,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
-import { Network } from '@xchainjs/xchain-client'
+import { Network, RootDerivationPaths } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -23,7 +23,7 @@ import { ZECChain } from '@xchainjs/xchain-zcash'
 import { getDerivationPath as getEvmDerivationPath } from '../evm/ledger'
 import { EvmHDMode } from '../evm/types'
 import { UtxoHDMode } from '../utxo/types'
-import { HDMode } from '../wallet/types'
+import { HDMode, KeystoreChainHDSettings } from '../wallet/types'
 
 export type ChainDerivationInfo = {
   path: string
@@ -93,7 +93,10 @@ export const getChainDerivationPath = (
     case AVAXChain:
     case ARBChain:
     case BASEChain: {
-      const evmMode = (hdMode as EvmHDMode) || 'ledgerlive'
+      // Map any non-EVM hdMode (incl. the generic 'default') to 'ledgerlive',
+      // whose account-0 path (m/44'/60'/0'/0/) matches the historical EVM default.
+      const evmModes: EvmHDMode[] = ['legacy', 'ledgerlive', 'metamask']
+      const evmMode: EvmHDMode = evmModes.includes(hdMode as EvmHDMode) ? (hdMode as EvmHDMode) : 'ledgerlive'
       const basePath = getEvmDerivationPath(account, evmMode)
       const description = `${evmMode.toUpperCase()} (${basePath}${index})`
       return {
@@ -156,6 +159,57 @@ export const getChainDerivationPath = (
         path: `m/44'/0'/${account}'/0/${index}`,
         description: `Default BIP44 (m/44'/0'/${account}'/0/${index})`
       }
+  }
+}
+
+/**
+ * Split a full BIP32 path into its rootDerivationPath prefix (ending in `/`) and
+ * the trailing address index. e.g. `m/44'/931'/0'/0/5` → `{ prefix: "m/44'/931'/0'/0/", index: 5 }`.
+ * Hardened final segments (`…/9'`) are rejected — xchain clients take a non-hardened walletIndex.
+ */
+const splitPathPrefixIndex = (fullPath: string): { prefix: string; index: number } => {
+  const trimmed = fullPath.trim()
+  const lastSlash = trimmed.lastIndexOf('/')
+  const prefix = trimmed.slice(0, lastSlash + 1)
+  const lastSeg = trimmed.slice(lastSlash + 1)
+  if (lastSeg.endsWith("'")) {
+    throw new Error(`Hardened final path segment is not supported: ${lastSeg}`)
+  }
+  const index = Number(lastSeg) || 0
+  return { prefix, index }
+}
+
+/**
+ * Convert a keystore HD selection into what an xchainjs client needs:
+ * `rootDerivationPaths` (the per-network path prefix the client derives from) and
+ * the `walletIndex` to pass to `getAddressAsync` / signing.
+ *
+ * When `customPath` is set it wins — the client derives from its prefix at its
+ * trailing index. Otherwise the standard per-network path from
+ * `getChainDerivationPath` is used (so testnet coin-type `1'` is honored).
+ */
+export const getKeystoreDerivation = (
+  chain: Chain,
+  settings: KeystoreChainHDSettings
+): { rootDerivationPaths: RootDerivationPaths; walletIndex: number } => {
+  const custom = settings.customPath?.trim()
+  if (custom && custom.length > 0) {
+    const { prefix, index } = splitPathPrefixIndex(custom)
+    return {
+      rootDerivationPaths: { [Network.Mainnet]: prefix, [Network.Testnet]: prefix, [Network.Stagenet]: prefix },
+      walletIndex: index
+    }
+  }
+  const prefixFor = (network: Network): string =>
+    splitPathPrefixIndex(getChainDerivationPath(chain, settings.account, settings.index, network, settings.hdMode).path)
+      .prefix
+  return {
+    rootDerivationPaths: {
+      [Network.Mainnet]: prefixFor(Network.Mainnet),
+      [Network.Testnet]: prefixFor(Network.Testnet),
+      [Network.Stagenet]: prefixFor(Network.Stagenet)
+    },
+    walletIndex: settings.index
   }
 }
 

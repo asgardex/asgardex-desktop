@@ -8,6 +8,7 @@ import { network$ } from '../app/service'
 import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
 import { baseRpc$, evmGasMultiplier$ } from '../storage/common'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 
 const {
   client$,
@@ -31,6 +32,7 @@ const {
   createClientParams: createBaseParams,
   ClientClass: Client,
   rpc$: baseRpc$,
+  hdSettings$: keystoreChainHDSettings$(BASEChain),
   addressInWhitelist: addressInBaseWhitelist,
   assetsFallback: BASEAssetsFallback,
   assetsTestnet: BASEAssetsFallback,

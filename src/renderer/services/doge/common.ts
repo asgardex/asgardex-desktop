@@ -8,13 +8,18 @@ import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { blockcypherApiKey, blockcypherUrl } from '../../../shared/api/blockcypher'
+import { getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
+import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS } from '../../../shared/wallet/types'
 import { logger } from '../../helpers/logger'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { getPhrase } from '../wallet/util'
 import { ClientState, ClientState$ } from './types'
+
+const hdSettings$ = keystoreChainHDSettings$(DOGEChain)
 
 /**
  * Stream to create an observable DogeClient depending on existing phrase in keystore
@@ -24,9 +29,9 @@ import { ClientState, ClientState$ } from './types'
  * A `DogeClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
   RxOp.switchMap(
-    ([keystore, network]): ClientState$ =>
+    ([keystore, network, hdSettings]): ClientState$ =>
       Rx.of(
         FP.pipe(
           getPhrase(keystore),
@@ -53,11 +58,13 @@ const clientState$: ClientState$ = FP.pipe(
                 [Network.Stagenet]: mainnetBlockcypherProvider,
                 [Network.Mainnet]: mainnetBlockcypherProvider
               }
+              const { rootDerivationPaths } = getKeystoreDerivation(DOGEChain, hdSettings)
               const dogeInitParams = {
                 ...defaultDogeParams,
                 network: network,
                 dataProviders: [BlockcypherDataProviders, BitgoProviders],
-                phrase: phrase
+                phrase: phrase,
+                rootDerivationPaths
               }
               const client = new DogeClient(dogeInitParams)
               return RD.success(client)
@@ -131,12 +138,19 @@ const readOnlyClient$: Observable<O.Option<DogeClient>> = readOnlyClientState$.p
 /**
  * DOGE `Address`
  */
-const address$: C.WalletAddress$ = C.address$(client$, DOGEChain)
+const addressHDSettings$ = hdSettings$.pipe(
+  RxOp.map((s) => {
+    const { walletIndex } = getKeystoreDerivation(DOGEChain, s ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
+    return { hdMode: s.hdMode, account: s.account, index: walletIndex }
+  })
+)
+
+const address$: C.WalletAddress$ = C.address$(client$, DOGEChain, addressHDSettings$)
 
 /**
  * DOGE `Address`
  */
-const addressUI$: C.WalletAddress$ = C.addressUI$(client$, DOGEChain)
+const addressUI$: C.WalletAddress$ = C.addressUI$(client$, DOGEChain, addressHDSettings$)
 
 /**
  * Explorer url depending on selected network

@@ -1,0 +1,539 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
+import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
+import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
+import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
+import { AssetBCH, BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
+import { AssetDASH, DASHChain } from '@xchainjs/xchain-dash'
+import { AssetDOGE, DOGEChain } from '@xchainjs/xchain-doge'
+import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
+import { AssetLTC, LTCChain } from '@xchainjs/xchain-litecoin'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { AnyAsset, baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { AssetZEC, ZECChain } from '@xchainjs/xchain-zcash'
+import clsx from 'clsx'
+import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
+import { useIntl } from 'react-intl'
+import * as Rx from 'rxjs'
+import * as RxOp from 'rxjs/operators'
+
+import { DEFAULT_ARB_RPC_URLS } from '../../../shared/arb/const'
+import { DEFAULT_AVAX_RPC_URLS } from '../../../shared/avax/const'
+import { DEFAULT_BASE_RPC_URLS } from '../../../shared/base/const'
+import { DEFAULT_BSC_RPC_URLS } from '../../../shared/bsc/const'
+import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
+import { DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
+import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
+import { validateDerivationPath, warnDerivationPath } from '../../../shared/utils/derivationPathValidation'
+import {
+  candidateKey,
+  DEFAULT_HD_SCAN_RANGE,
+  HD_SCAN_MAX_COUNT,
+  HD_SCAN_MAX_INDEX
+} from '../../../shared/utils/keystoreHdScan'
+import {
+  defaultCustomPathForChain,
+  defaultProfileForChain,
+  HdProfileOption,
+  initialCustomPathFromSettings,
+  pickDefaultScanSelection,
+  profilesForChain,
+  scanRangeFromDrafts
+} from '../../../shared/utils/keystoreHdUiLogic'
+import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS, WalletType } from '../../../shared/wallet/types'
+import { useWalletContext } from '../../contexts/WalletContext'
+import { truncateAddress } from '../../helpers/addressHelper'
+import {
+  arbRpc$,
+  avaxRpc$,
+  baseRpc$,
+  bscRpc$,
+  ethRpc$,
+  mayanodeRpc$,
+  thornodeRpc$
+} from '../../services/storage/common'
+import {
+  checkCustomPath,
+  defaultRpcUrlForChain,
+  KeystoreHdScanHit,
+  scanKeystoreFunds$
+} from '../../services/wallet/keystoreHdScan'
+import { keystoreChainHDSettings$, setKeystoreChainHDSettings } from '../../services/wallet/keystoreHDSettings'
+import { getPhrase } from '../../services/wallet/util'
+import { FlatButton, TextButton } from '../uielements/button'
+import { CopyLabel, Label } from '../uielements/label'
+import { Modal } from '../uielements/modal'
+import { Spin } from '../uielements/spin'
+
+type Props = {
+  open: boolean
+  chain: Chain
+  network: Network
+  onClose: () => void
+}
+
+type Step = 'pick' | 'results' | 'custom'
+
+type ProfileOption = HdProfileOption
+
+const nativeAssetForChain = (chain: Chain): AnyAsset | undefined => {
+  if (chain === ETHChain) return AssetETH
+  if (chain === BSCChain) return AssetBSC
+  if (chain === AVAXChain) return AssetAVAX
+  if (chain === ARBChain) return AssetAETH
+  if (chain === BASEChain) return AssetBETH
+  if (chain === THORChain) return AssetRuneNative
+  if (chain === MAYAChain) return AssetCacao
+  if (chain === BTCChain) return AssetBTC
+  if (chain === LTCChain) return AssetLTC
+  if (chain === BCHChain) return AssetBCH
+  if (chain === DOGEChain) return AssetDOGE
+  if (chain === DASHChain) return AssetDASH
+  if (chain === ZECChain) return AssetZEC
+  return undefined
+}
+
+const rangeInputClass =
+  'w-14 rounded-md border-0 bg-bg1 px-1.5 py-1 text-center font-mono text-[12px] tabular-nums text-text0 transition-colors hover:bg-bg2 focus:bg-turquoise/10 focus:outline-hidden focus:ring-1 focus:ring-turquoise/50 dark:bg-bg1d dark:text-text0d dark:hover:bg-bg2d dark:focus:bg-turquoise/15'
+
+/**
+ * Narrow HD recovery: pick wallet profile + index range, or custom path → lock selection.
+ * ETH / THOR / BTC keystore recovery.
+ */
+export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props): JSX.Element => {
+  const intl = useIntl()
+  const { keystoreService, reloadBalancesByChain } = useWalletContext()
+  const keystoreState = useObservableState(keystoreService.keystoreState$, O.none)
+  const currentSettings = useObservableState(keystoreChainHDSettings$(chain), DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
+  const ethRpcUrls = useObservableState(ethRpc$, DEFAULT_ETH_RPC_URLS)
+  const bscRpcUrls = useObservableState(bscRpc$, DEFAULT_BSC_RPC_URLS)
+  const arbRpcUrls = useObservableState(arbRpc$, DEFAULT_ARB_RPC_URLS)
+  const avaxRpcUrls = useObservableState(avaxRpc$, DEFAULT_AVAX_RPC_URLS)
+  const baseRpcUrls = useObservableState(baseRpc$, DEFAULT_BASE_RPC_URLS)
+  const thorRpcUrls = useObservableState(thornodeRpc$, DEFAULT_THORNODE_RPC_URLS)
+  const mayaRpcUrls = useObservableState(mayanodeRpc$, DEFAULT_MAYANODE_RPC_URLS)
+
+  const profiles = useMemo(() => profilesForChain(chain), [chain])
+  const [step, setStep] = useState<Step>('pick')
+  const [profile, setProfile] = useState<ProfileOption>(() => defaultProfileForChain(chain))
+  const [draftStart, setDraftStart] = useState(String(DEFAULT_HD_SCAN_RANGE.start))
+  const [draftEnd, setDraftEnd] = useState(String(DEFAULT_HD_SCAN_RANGE.end))
+  const [scanRD, setScanRD] = useState<RD.RemoteData<Error, KeystoreHdScanHit[]>>(RD.initial)
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
+
+  const [customPath, setCustomPath] = useState('')
+  const [customRD, setCustomRD] = useState<RD.RemoteData<Error, KeystoreHdScanHit>>(RD.initial)
+
+  const scanSubRef = useRef<Rx.Subscription | null>(null)
+  const customRunIdRef = useRef(0)
+
+  const phrase = useMemo(() => FP.pipe(getPhrase(keystoreState), O.toNullable), [keystoreState])
+  const rpcUrl = defaultRpcUrlForChain(chain, network, {
+    eth: ethRpcUrls[network] || DEFAULT_ETH_RPC_URLS[network],
+    bsc: bscRpcUrls[network] || DEFAULT_BSC_RPC_URLS[network],
+    arb: arbRpcUrls[network] || DEFAULT_ARB_RPC_URLS[network],
+    avax: avaxRpcUrls[network] || DEFAULT_AVAX_RPC_URLS[network],
+    base: baseRpcUrls[network] || DEFAULT_BASE_RPC_URLS[network],
+    thor: thorRpcUrls[network] || DEFAULT_THORNODE_RPC_URLS[network] || DEFAULT_THORNODE_RPC_URLS.mainnet,
+    maya: mayaRpcUrls[network] || DEFAULT_MAYANODE_RPC_URLS[network] || DEFAULT_MAYANODE_RPC_URLS.mainnet
+  })
+
+  const scanRange = useMemo(() => scanRangeFromDrafts(draftStart, draftEnd), [draftStart, draftEnd])
+  const scanCount = scanRange.end - scanRange.start + 1
+
+  const openCustomStep = useCallback(() => {
+    setCustomPath(initialCustomPathFromSettings(chain, network, currentSettings))
+    setCustomRD(RD.initial)
+    setStep('custom')
+  }, [chain, network, currentSettings])
+
+  const reset = useCallback(() => {
+    scanSubRef.current?.unsubscribe()
+    scanSubRef.current = null
+    customRunIdRef.current += 1
+    setStep('pick')
+    setProfile(defaultProfileForChain(chain))
+    setDraftStart(String(DEFAULT_HD_SCAN_RANGE.start))
+    setDraftEnd(String(DEFAULT_HD_SCAN_RANGE.end))
+    setScanRD(RD.initial)
+    setSelectedKey(null)
+    setCustomPath(defaultCustomPathForChain(chain, network))
+    setCustomRD(RD.initial)
+  }, [chain, network])
+
+  useEffect(() => {
+    if (!open) reset()
+  }, [open, reset])
+
+  useEffect(
+    () => () => {
+      scanSubRef.current?.unsubscribe()
+      customRunIdRef.current += 1
+    },
+    []
+  )
+
+  const runProfileScan = useCallback(
+    (p: ProfileOption) => {
+      if (!phrase) {
+        setScanRD(RD.failure(new Error(intl.formatMessage({ id: 'settings.wallet.hd.find.locked' }))))
+        return
+      }
+      // Snap drafts to the normalized range so UI matches what we scan
+      setDraftStart(String(scanRange.start))
+      setDraftEnd(String(scanRange.end))
+      setStep('results')
+      setScanRD(RD.pending)
+      setSelectedKey(null)
+      scanSubRef.current?.unsubscribe()
+      scanSubRef.current = scanKeystoreFunds$(chain, phrase, network, rpcUrl, p, scanRange)
+        .pipe(RxOp.take(1))
+        .subscribe({
+          next: (hits) => {
+            setScanRD(RD.success(hits))
+            const currentKey = candidateKey({ settings: currentSettings })
+            setSelectedKey(pickDefaultScanSelection(hits, currentKey))
+          },
+          error: (e: Error) => setScanRD(RD.failure(e))
+        })
+    },
+    [phrase, chain, network, rpcUrl, intl, currentSettings, scanRange]
+  )
+
+  const runCustomCheck = useCallback(() => {
+    const path = customPath.trim()
+    if (!phrase) {
+      setCustomRD(RD.failure(new Error(intl.formatMessage({ id: 'settings.wallet.hd.find.locked' }))))
+      return
+    }
+    if (!validateDerivationPath(path).valid) {
+      setCustomRD(RD.failure(new Error(intl.formatMessage({ id: 'settings.wallet.hd.customPath.invalid' }))))
+      return
+    }
+    setCustomRD(RD.pending)
+    const runId = ++customRunIdRef.current
+    checkCustomPath(chain, phrase, network, rpcUrl, path)
+      .then((hit) => {
+        if (runId === customRunIdRef.current) setCustomRD(RD.success(hit))
+      })
+      .catch((e: Error) => {
+        if (runId === customRunIdRef.current) setCustomRD(RD.failure(e))
+      })
+  }, [customPath, phrase, chain, network, rpcUrl, intl])
+
+  const applyHit = async (hit: KeystoreHdScanHit) => {
+    if (!hit.address) return
+    await setKeystoreChainHDSettings(chain, hit.settings)
+    reloadBalancesByChain(chain, WalletType.Keystore)()
+    onClose()
+  }
+
+  const hits = RD.isSuccess(scanRD) ? scanRD.value : []
+  const selected = hits.find((h) => h.key === selectedKey)
+  const customTrimmed = customPath.trim()
+  const customValid = customTrimmed.length === 0 || validateDerivationPath(customTrimmed).valid
+  const customWarnDesc =
+    customTrimmed.length > 0 && customValid ? warnDerivationPath(customTrimmed, chain, network) : undefined
+  const displayAsset = nativeAssetForChain(chain)
+
+  const formatHitBalance = (hit: KeystoreHdScanHit) => {
+    if (!hit.hasFunds) return intl.formatMessage({ id: 'settings.wallet.hd.find.empty' })
+    if (displayAsset) {
+      return formatAssetAmountCurrency({
+        amount: baseToAsset(hit.amount),
+        asset: displayAsset,
+        trimZeros: true,
+        decimal: 6
+      })
+    }
+    return `${hit.amount.amount().toString()} ${hit.assetTicker}`
+  }
+
+  return (
+    <Modal
+      visible={open}
+      title={intl.formatMessage({ id: 'settings.wallet.hd.find.title' })}
+      onCancel={onClose}
+      footer={false}
+      panelClassName="max-w-xl"
+      closable>
+      <div className="flex flex-col gap-3 px-4 pb-4">
+        {step === 'pick' && (
+          <>
+            <Label size="small" color="gray" className="!w-auto !p-0">
+              {intl.formatMessage({ id: 'settings.wallet.hd.find.pickSubtitle' })}
+            </Label>
+            <div className="flex flex-col gap-2">
+              {profiles.map(({ id, titleId, hintId }) => {
+                const active = profile === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setProfile(id)}
+                    className={clsx(
+                      'rounded-lg border px-3 py-2.5 text-left',
+                      active
+                        ? 'border-turquoise bg-turquoise/10 dark:bg-turquoise/15'
+                        : 'border-gray0 hover:bg-bg1 dark:border-gray0d dark:hover:bg-bg1d'
+                    )}>
+                    <div className="font-medium text-text0 dark:text-text0d">
+                      {intl.formatMessage({ id: titleId as 'settings.wallet.hd.profile.metamask' })}
+                    </div>
+                    <div className="text-xs text-text2 dark:text-text2d">
+                      {intl.formatMessage({ id: hintId as 'settings.wallet.hd.profile.metamask.hint' })}
+                    </div>
+                  </button>
+                )
+              })}
+              <button
+                type="button"
+                onClick={openCustomStep}
+                className="rounded-lg border border-gray0 px-3 py-2.5 text-left hover:bg-bg1 dark:border-gray0d dark:hover:bg-bg1d">
+                <div className="font-medium text-text0 dark:text-text0d">
+                  {intl.formatMessage({ id: 'settings.wallet.hd.profile.custom' })}
+                </div>
+                <div className="text-xs text-text2 dark:text-text2d">
+                  {intl.formatMessage({ id: 'settings.wallet.hd.profile.custom.hint' })}
+                </div>
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-gray0 px-3 py-2 dark:border-gray0d">
+              <span className="text-[11px] tracking-[0.42px] text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'settings.wallet.hd.find.rangeLabel' })}
+              </span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={draftStart}
+                onChange={(e) => setDraftStart(e.currentTarget.value.replace(/\D/g, ''))}
+                onBlur={() => setDraftStart(String(scanRange.start))}
+                aria-label={intl.formatMessage({ id: 'settings.wallet.hd.find.rangeFrom' })}
+                className={rangeInputClass}
+              />
+              <span className="text-[11px] text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'settings.wallet.hd.find.rangeTo' })}
+              </span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={draftEnd}
+                onChange={(e) => setDraftEnd(e.currentTarget.value.replace(/\D/g, ''))}
+                onBlur={() => setDraftEnd(String(scanRange.end))}
+                aria-label={intl.formatMessage({ id: 'settings.wallet.hd.find.rangeTo' })}
+                className={rangeInputClass}
+              />
+              <span className="text-[11px] text-text2 dark:text-text2d">
+                {intl.formatMessage(
+                  { id: 'settings.wallet.hd.find.rangeHint' },
+                  { count: scanCount, maxCount: HD_SCAN_MAX_COUNT, maxIndex: HD_SCAN_MAX_INDEX }
+                )}
+              </span>
+            </div>
+
+            <div className="mt-1 flex justify-end gap-2">
+              <TextButton onClick={onClose}>{intl.formatMessage({ id: 'common.cancel' })}</TextButton>
+              <FlatButton color="primary" onClick={() => runProfileScan(profile)} disabled={profiles.length === 0}>
+                {intl.formatMessage({ id: 'settings.wallet.hd.find.scan' })}
+              </FlatButton>
+            </div>
+          </>
+        )}
+
+        {step === 'results' && (
+          <>
+            <Label size="small" color="gray" className="!w-auto !p-0">
+              {intl.formatMessage({ id: 'settings.wallet.hd.find.nativeOnly' })}
+            </Label>
+
+            {RD.isPending(scanRD) && (
+              <div className="flex flex-col items-center gap-2 py-8">
+                <Spin />
+                <Label size="small" className="!w-auto !p-0">
+                  {intl.formatMessage({ id: 'settings.wallet.hd.find.scanning' })}
+                </Label>
+              </div>
+            )}
+
+            {RD.isFailure(scanRD) && (
+              <div className="rounded-lg border border-error0 p-3 dark:border-error0d">
+                <Label color="error" className="!w-auto !p-0">
+                  {scanRD.error.message}
+                </Label>
+              </div>
+            )}
+
+            {RD.isSuccess(scanRD) && (
+              <>
+                {hits.filter((h) => h.hasFunds).length === 0 && (
+                  <Label size="small" color="gray" className="!w-auto !p-0">
+                    {intl.formatMessage({ id: 'settings.wallet.hd.find.noneFound' })}
+                  </Label>
+                )}
+                <div className="max-h-80 overflow-y-auto rounded-lg border border-gray0 dark:border-gray0d">
+                  {hits
+                    .filter((h) => h.address)
+                    .map((hit) => {
+                      const selectedRow = hit.key === selectedKey
+                      return (
+                        <div
+                          key={hit.key}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setSelectedKey(hit.key)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              setSelectedKey(hit.key)
+                            }
+                          }}
+                          className={clsx(
+                            'flex w-full cursor-pointer flex-col gap-0.5 border-b border-gray0 px-3 py-2.5 text-left last:border-b-0 dark:border-gray0d',
+                            selectedRow ? 'bg-turquoise/10 dark:bg-turquoise/15' : 'hover:bg-bg1 dark:hover:bg-bg1d'
+                          )}>
+                          <div className="flex w-full items-center justify-between gap-2">
+                            <span className="flex min-w-0 items-center gap-1.5">
+                              <span className="font-main text-sm text-text0 dark:text-text0d" title={hit.address}>
+                                {truncateAddress(hit.address, chain, network)}
+                              </span>
+                              <span
+                                className="shrink-0"
+                                onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => e.stopPropagation()}>
+                                <CopyLabel iconClassName="!h-4 !w-4 text-turquoise" textToCopy={hit.address} />
+                              </span>
+                            </span>
+                            <span
+                              className={clsx(
+                                'shrink-0 text-sm font-medium',
+                                hit.hasFunds ? 'text-turquoise' : 'text-text2 dark:text-text2d'
+                              )}>
+                              {formatHitBalance(hit)}
+                            </span>
+                          </div>
+                          <span className="text-xs text-text2 dark:text-text2d">
+                            {intl.formatMessage({ id: 'settings.wallet.index' })} {hit.settings.index}
+                            {' · '}
+                            <span className="font-mono opacity-80">{hit.path}</span>
+                            {hit.error ? (
+                              <span className="block text-warning0 dark:text-warning0d" title={hit.error}>
+                                {hit.error}
+                              </span>
+                            ) : null}
+                          </span>
+                        </div>
+                      )
+                    })}
+                </div>
+              </>
+            )}
+
+            <div className="mt-1 flex justify-end gap-2">
+              <TextButton
+                onClick={() => {
+                  setStep('pick')
+                  setScanRD(RD.initial)
+                }}>
+                {intl.formatMessage({ id: 'common.back' })}
+              </TextButton>
+              <FlatButton
+                color="primary"
+                disabled={!selected?.address || RD.isPending(scanRD)}
+                onClick={() => selected && applyHit(selected)}>
+                {intl.formatMessage({ id: 'settings.wallet.hd.find.use' })}
+              </FlatButton>
+            </div>
+          </>
+        )}
+
+        {step === 'custom' && (
+          <>
+            <Label size="small" color="gray" className="!w-auto !p-0">
+              {intl.formatMessage({ id: 'settings.wallet.hd.profile.custom.hint' })}
+            </Label>
+            <input
+              aria-label={intl.formatMessage({ id: 'settings.wallet.hd.customPath' })}
+              aria-invalid={!customValid}
+              aria-describedby={!customValid ? 'hd-custom-path-error' : undefined}
+              value={customPath}
+              onChange={(e) => {
+                setCustomPath(e.currentTarget.value)
+                setCustomRD(RD.initial)
+              }}
+              onFocus={(e) => {
+                // Select all so a quick edit is easy; path stays editable (not placeholder-only)
+                e.currentTarget.select()
+              }}
+              spellCheck={false}
+              autoComplete="off"
+              className={clsx(
+                'w-full rounded-lg border bg-bg1 px-3 py-2 font-mono text-sm text-text0 focus:outline-hidden dark:bg-bg1d dark:text-text0d',
+                customValid ? 'border-gray0 dark:border-gray0d' : 'border-error0 dark:border-error0d'
+              )}
+            />
+            {!customValid && (
+              <p id="hd-custom-path-error" className="text-[11px] tracking-[0.42px] text-error0 dark:text-error0d">
+                {intl.formatMessage({ id: 'settings.wallet.hd.customPath.invalid' })}
+              </p>
+            )}
+            {customWarnDesc && (
+              <Label size="small" color="warning" className="!w-auto !p-0">
+                {intl.formatMessage({ id: customWarnDesc.id }, customWarnDesc.values)}
+              </Label>
+            )}
+
+            {RD.isPending(customRD) && (
+              <div className="flex justify-center py-4">
+                <Spin />
+              </div>
+            )}
+            {RD.isFailure(customRD) && (
+              <Label size="small" color="error" className="!w-auto !p-0">
+                {customRD.error.message}
+              </Label>
+            )}
+            {RD.isSuccess(customRD) && customRD.value.address && (
+              <div className="rounded-lg border border-turquoise/40 bg-turquoise/5 px-3 py-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-main text-sm text-text0 dark:text-text0d" title={customRD.value.address}>
+                    {truncateAddress(customRD.value.address, chain, network)}
+                  </span>
+                  <CopyLabel iconClassName="!h-4 !w-4 text-turquoise" textToCopy={customRD.value.address} />
+                </div>
+                <div className="text-xs text-text2 dark:text-text2d">{formatHitBalance(customRD.value)}</div>
+              </div>
+            )}
+
+            <div className="mt-1 flex justify-end gap-2">
+              <TextButton
+                onClick={() => {
+                  setStep('pick')
+                  setCustomRD(RD.initial)
+                }}>
+                {intl.formatMessage({ id: 'common.back' })}
+              </TextButton>
+              <TextButton onClick={runCustomCheck} disabled={!customTrimmed || !customValid}>
+                {intl.formatMessage({ id: 'settings.wallet.hd.find.check' })}
+              </TextButton>
+              <FlatButton
+                color="primary"
+                disabled={!RD.isSuccess(customRD) || !customRD.value.address}
+                onClick={() => RD.isSuccess(customRD) && applyHit(customRD.value)}>
+                {intl.formatMessage({ id: 'settings.wallet.hd.find.use' })}
+              </FlatButton>
+            </div>
+          </>
+        )}
+      </div>
+    </Modal>
+  )
+}

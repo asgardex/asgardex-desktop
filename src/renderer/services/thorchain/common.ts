@@ -16,12 +16,15 @@ import {
   maskThornodeRpcUrl,
   requestThornodeApiBases
 } from '../../../shared/thorchain/const'
+import { getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
+import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS } from '../../../shared/wallet/types'
 import { triggerStream } from '../../helpers/stateHelper'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { getStorageState, thornodeApi$, modifyStorage, thornodeRpc$ } from '../storage/common'
 import { keystoreService } from '../wallet/keystore'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 
@@ -109,6 +112,8 @@ const setThornodeApiUrl = (url: string, network: Network) => {
   modifyStorage(O.some({ thornodeApi: updated }))
 }
 
+const hdSettings$ = keystoreChainHDSettings$(THORChain)
+
 /**
  * Stream to create an observable `ThorchainClient` depending on existing phrase in keystore
  *
@@ -121,9 +126,9 @@ const resolveChainId$ = (configuredNode: string, network: Network) =>
   Rx.from(requestThornodeApiBases(getThornodeApiBaseUrls(configuredNode, network), (base) => getChainId(base)))
 
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$]),
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$, hdSettings$]),
   RxOp.switchMap(
-    ([keystore, network, clientUrl]): ClientState$ =>
+    ([keystore, network, clientUrl, hdSettings]): ClientState$ =>
       FP.pipe(
         resolveChainId$(clientUrl[network].node, network),
         RxOp.switchMap(() =>
@@ -140,8 +145,10 @@ const clientState$: ClientState$ = FP.pipe(
                   }
                 }
                 try {
+                  const { rootDerivationPaths } = getKeystoreDerivation(THORChain, hdSettings)
                   const client = new Client({
                     clientUrls: getDefaultClientUrls(),
+                    rootDerivationPaths,
                     network,
                     phrase
                   })
@@ -209,15 +216,22 @@ const readOnlyClient$ = readOnlyClientState$.pipe(RxOp.map(RD.toOption), RxOp.sh
 
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
-/**
- * `Address`
- */
-const address$: C.WalletAddress$ = C.address$(client$, THORChain)
+const addressHDSettings$ = hdSettings$.pipe(
+  RxOp.map((s) => {
+    const { walletIndex } = getKeystoreDerivation(THORChain, s ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
+    return { hdMode: s.hdMode, account: s.account, index: walletIndex }
+  })
+)
 
 /**
  * `Address`
  */
-const addressUI$: C.WalletAddress$ = C.addressUI$(client$, THORChain)
+const address$: C.WalletAddress$ = C.address$(client$, THORChain, addressHDSettings$)
+
+/**
+ * `Address`
+ */
+const addressUI$: C.WalletAddress$ = C.addressUI$(client$, THORChain, addressHDSettings$)
 
 /**
  * Explorer url depending on selected network
