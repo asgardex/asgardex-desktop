@@ -1,7 +1,6 @@
 import bchIcon from '../../assets/png/asset-bch.png'
 import cacaoIcon from '../../assets/png/asset-cacao.png'
 import dogeIcon from '../../assets/png/asset-doge.png'
-import kujiIcon from '../../assets/png/asset-kuji.png'
 import ltcIcon from '../../assets/png/asset-ltc.png'
 import mayaIconT from '../../assets/png/asset-maya-T.png'
 import mayaIcon from '../../assets/png/asset-maya.png'
@@ -62,7 +61,6 @@ export {
   UnlockIcon,
   usdpIcon,
   dashIcon,
-  kujiIcon,
   ltcIcon,
   adaIcon,
   uskIcon,

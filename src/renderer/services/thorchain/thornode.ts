@@ -2,7 +2,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import {
   Configuration,
   ConstantsResponse,
-  InboundAddressesResponse,
   LastBlockResponse,
   LiquidityProvidersApi,
   LiquidityProvidersResponse,
@@ -40,8 +39,10 @@ import { array as A, function as FP, number as N, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { getThornodeApiBaseUrls, requestThornodeApiBases } from '../../../shared/thorchain/const'
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
+import { isError } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
@@ -64,7 +65,6 @@ import {
   SaverProviderLD,
   SaverProvider,
   InboundAddresses,
-  InboundAddress,
   TxStagesLD,
   TxStages,
   ThorchainPoolLD,
@@ -93,66 +93,73 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   const { stream$: reloadThornodeUrl$, trigger: reloadThornodeUrl } = triggerStream()
 
   /**
-   * Thornode url
+   * Ordered REST bases: Liquify (keyed when set) → optional Asgardex API on mainnet.
    */
-  const thornodeUrl$: ThornodeApiUrlLD = Rx.combineLatest([network$, clientUrl$, reloadThornodeUrl$]).pipe(
-    RxOp.map(([network, url, _]) => RD.success(`${url[network].node}`)),
+  const thornodeApiBaseUrls$: Rx.Observable<string[]> = Rx.combineLatest([
+    network$,
+    clientUrl$,
+    reloadThornodeUrl$
+  ]).pipe(
+    RxOp.map(([network, url]) => getThornodeApiBaseUrls(url[network].node, network)),
+    RxOp.distinctUntilChanged((a, b) => a.length === b.length && a.every((u, i) => u === b[i])),
     RxOp.shareReplay(1)
   )
 
-  const apiGetNodeInfos$ = () =>
-    FP.pipe(
-      thornodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(new NodesApi(getThornodeAPIConfiguration(basePath)).nodes(height)),
-          RxOp.map((response: AxiosResponse<NodesResponse, unknown>) => RD.success(response.data)), // Extract nodes from AxiosResponse
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+  /**
+   * Primary thornode URL (for UI / diagnostics). Requests use multi-base fallback.
+   */
+  const thornodeUrl$: ThornodeApiUrlLD = thornodeApiBaseUrls$.pipe(
+    RxOp.map((urls) => (urls[0] ? RD.success(urls[0]) : RD.failure(new Error('No THORNode API URL configured')))),
+    RxOp.shareReplay(1)
+  )
+
+  /** Run a THORNode REST call against each base until one succeeds. */
+  const requestThornodeApi$ = <T>(request: (basePath: string) => Promise<T>): Rx.Observable<RD.RemoteData<Error, T>> =>
+    thornodeApiBaseUrls$.pipe(
+      RxOp.switchMap((urls) =>
+        Rx.from(requestThornodeApiBases(urls, request)).pipe(
+          RxOp.map((data) => RD.success(data)),
+          RxOp.catchError((e: unknown) => Rx.of(RD.failure<Error>(isError(e) ? e : new Error(String(e))))),
+          RxOp.startWith(RD.pending)
         )
-      ),
-      RxOp.startWith(RD.pending)
+      )
+    )
+
+  const apiGetNodeInfos$ = () =>
+    requestThornodeApi$((basePath) =>
+      new NodesApi(getThornodeAPIConfiguration(basePath))
+        .nodes(height)
+        .then((r: AxiosResponse<NodesResponse>) => r.data)
     )
 
   const loadInboundAddresses$ = (): InboundAddressesLD =>
     FP.pipe(
-      thornodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(new NetworkApi(getThornodeAPIConfiguration(basePath)).inboundAddresses()),
-          RxOp.map((response: AxiosResponse<InboundAddressesResponse, InboundAddress>) => {
-            const data: InboundAddresses = response.data.map((item) => ({
-              chain: item.chain || '', // provide a default value if chain is undefined
-              address: item.address || '',
-              router: item.router || '',
-              global_trading_paused: item.global_trading_paused,
-              chain_trading_paused: item.chain_trading_paused,
-              chain_lp_actions_paused: item.chain_lp_actions_paused,
-              outbound_fee: item.outbound_fee,
-              dust_threshold: item.dust_threshold,
-              halted: item.halted || false, // provide a default value if halted is undefined
-              gas_rate: item.gas_rate,
-              gas_rate_units: item.gas_rate_units,
-              outbound_tx_size: item.outbound_tx_size
-            }))
-            return RD.success(data)
-          }),
-          liveData.map(
-            FP.flow(
-              A.filterMap(({ chain, address, ...rest }) =>
-                // validate chain
-                chain !== undefined &&
-                isSupportedChain(chain) &&
-                // address is required
-                !!address
-                  ? O.some({ chain, address, ...rest })
-                  : O.none
-              )
-            )
-          ),
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-        )
+      requestThornodeApi$((basePath) =>
+        new NetworkApi(getThornodeAPIConfiguration(basePath)).inboundAddresses().then((response) => {
+          const data: InboundAddresses = response.data.map((item) => ({
+            chain: item.chain || '',
+            address: item.address || '',
+            router: item.router || '',
+            global_trading_paused: item.global_trading_paused,
+            chain_trading_paused: item.chain_trading_paused,
+            chain_lp_actions_paused: item.chain_lp_actions_paused,
+            outbound_fee: item.outbound_fee,
+            dust_threshold: item.dust_threshold,
+            halted: item.halted || false,
+            gas_rate: item.gas_rate,
+            gas_rate_units: item.gas_rate_units,
+            outbound_tx_size: item.outbound_tx_size
+          }))
+          return data
+        })
       ),
-      RxOp.startWith(RD.pending)
+      liveData.map(
+        FP.flow(
+          A.filterMap(({ chain, address, ...rest }) =>
+            chain !== undefined && isSupportedChain(chain) && !!address ? O.some({ chain, address, ...rest }) : O.none
+          )
+        )
+      )
     )
 
   // Trigger to reload pool addresses (`inbound_addresses`)
@@ -174,17 +181,12 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   )
 
   /**
-   * Get `ThorchainConstants` data from Midgard
+   * Get `ThorchainConstants` data from THORNode
    */
-  const apiGetThorchainConstants$ = FP.pipe(
-    thornodeUrl$,
-    liveData.chain((basePath) =>
-      FP.pipe(
-        Rx.from(new NetworkApi(getThornodeAPIConfiguration(basePath)).constants()),
-        RxOp.map((response: AxiosResponse<ConstantsResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
-        RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-      )
-    )
+  const apiGetThorchainConstants$ = requestThornodeApi$((basePath) =>
+    new NetworkApi(getThornodeAPIConfiguration(basePath))
+      .constants()
+      .then((response: AxiosResponse<ConstantsResponse>) => response.data)
   )
 
   const { stream$: reloadThorchainConstants$, trigger: reloadThorchainConstants } = triggerStream()
@@ -204,15 +206,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   /**
    * Api call to `lastblock` endpoint
    */
-  const apiGetThorchainLastblock$ = FP.pipe(
-    thornodeUrl$,
-    liveData.chain((basePath) =>
-      FP.pipe(
-        Rx.from(new NetworkApi(getThornodeAPIConfiguration(basePath)).lastblock()),
-        RxOp.map((response: AxiosResponse<LastBlockResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
-        RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-      )
-    )
+  const apiGetThorchainLastblock$ = requestThornodeApi$((basePath) =>
+    new NetworkApi(getThornodeAPIConfiguration(basePath))
+      .lastblock()
+      .then((response: AxiosResponse<LastBlockResponse>) => response.data)
   )
   const { stream$: reloadTxStatus$, trigger: reloadTxStatus } = triggerStream()
 
@@ -229,15 +226,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
    * Api call to `getTxStatus` endpoint
    */
   const apiGetTxStatus$ = (txHash: string) =>
-    FP.pipe(
-      thornodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(new TransactionsApi(getThornodeAPIConfiguration(basePath)).txStages(normalizeTxHash(txHash))),
-          RxOp.map((response: AxiosResponse<TxStagesResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-        )
-      )
+    requestThornodeApi$((basePath) =>
+      new TransactionsApi(getThornodeAPIConfiguration(basePath))
+        .txStages(normalizeTxHash(txHash))
+        .then((response: AxiosResponse<TxStagesResponse>) => response.data)
     )
 
   const getTxStatus$ = (txHash: string): TxStagesLD =>
@@ -306,7 +298,9 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
 
-  const loadThorchainLastblockInterval$ = Rx.timer(0 /* no delay for first value */, 15 * 1000 /* every 15 sec  */)
+  // 60s is enough for mimir halt height checks / pool maturity UI; cuts Liquify lastblock
+  // traffic 4× vs 15s. Scheduled halt detection can lag by ~1 min at most (rare).
+  const loadThorchainLastblockInterval$ = Rx.timer(0 /* no delay for first value */, 60 * 1000 /* every 60 sec  */)
 
   /**
    * State of `ThorchainLastblock`, it will be loaded data by first subscription only
@@ -364,17 +358,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   )
 
   const apiGetLiquidityProviders$ = (asset: AnyAsset): LiveData<Error, LiquidityProviderSummary[]> =>
-    FP.pipe(
-      thornodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(
-            new LiquidityProvidersApi(getThornodeAPIConfiguration(basePath)).liquidityProviders(assetToString(asset))
-          ),
-          RxOp.map((response: AxiosResponse<LiquidityProvidersResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-        )
-      )
+    requestThornodeApi$((basePath) =>
+      new LiquidityProvidersApi(getThornodeAPIConfiguration(basePath))
+        .liquidityProviders(assetToString(asset))
+        .then((response: AxiosResponse<LiquidityProvidersResponse>) => response.data)
     )
   const { stream$: reloadLiquidityProviders$, trigger: reloadLiquidityProviders } = triggerStream()
 
@@ -419,15 +406,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
   const apiGetTcyClaim$ = (address: Address): LiveData<Error, ApiTcyClaimResponse> =>
-    FP.pipe(
-      thornodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(new TCYClaimersApi(getThornodeAPIConfiguration(basePath)).tcyClaimer(address)),
-          RxOp.map((response: AxiosResponse<unknown>) => RD.success(response.data as ApiTcyClaimResponse)),
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-        )
-      )
+    requestThornodeApi$((basePath) =>
+      new TCYClaimersApi(getThornodeAPIConfiguration(basePath))
+        .tcyClaimer(address)
+        .then((response: AxiosResponse<unknown>) => response.data as ApiTcyClaimResponse)
     )
   const { stream$: reloadTcyClaim$, trigger: reloadTcyClaim } = triggerStream()
 
@@ -454,15 +436,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
   const apiGetTcyStaker$ = (address: Address): LiveData<Error, TCYStaker> =>
-    FP.pipe(
-      thornodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(new TCYStakersApi(getThornodeAPIConfiguration(basePath)).tcyStaker(address)),
-          RxOp.map((response: AxiosResponse<TCYStaker>) => RD.success(response.data)), // Extract data from AxiosResponse
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-        )
-      )
+    requestThornodeApi$((basePath) =>
+      new TCYStakersApi(getThornodeAPIConfiguration(basePath))
+        .tcyStaker(address)
+        .then((response: AxiosResponse<TCYStaker>) => response.data)
     )
   const { stream$: reloadTcyStaker$, trigger: reloadTcyStaker } = triggerStream()
 
@@ -481,38 +458,29 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
 
   const apiGetMimir$: MimirLD = FP.pipe(
-    thornodeUrl$,
-    liveData.chain((basePath) =>
-      FP.pipe(
-        Rx.from(
-          height !== undefined
-            ? new MimirApi(getThornodeAPIConfiguration(basePath)).mimir(height)
-            : new MimirApi(getThornodeAPIConfiguration(basePath)).mimir()
-        ),
-        RxOp.catchError((e) => Rx.of(RD.failure(Error(`Failed loading mimir: ${JSON.stringify(e)}`)))),
-        RxOp.map((response) => {
-          if ('data' in response) {
-            const responseData = response.data
-            if (responseData && typeof responseData === 'object') {
-              const result: Mimir = {}
-              for (const [key, value] of Object.entries(responseData)) {
-                const numberValue = Number(value)
-                if (!isNaN(numberValue)) {
-                  result[key] = numberValue
-                } else {
-                  return RD.failure(new Error(`Invalid value for key ${key}: ${value}`))
-                }
-              }
-              return RD.success(result as Mimir)
-            } else {
-              return RD.failure(new Error('Unexpected response format: responseData is not an object'))
-            }
-          } else {
-            return RD.failure(new Error('Response is not an AxiosResponse'))
-          }
-        })
-      )
-    )
+    requestThornodeApi$(async (basePath) => {
+      const response =
+        height !== undefined
+          ? await new MimirApi(getThornodeAPIConfiguration(basePath)).mimir(height)
+          : await new MimirApi(getThornodeAPIConfiguration(basePath)).mimir()
+      if (!('data' in response)) {
+        throw new Error('Response is not an AxiosResponse')
+      }
+      const responseData = response.data
+      if (!responseData || typeof responseData !== 'object') {
+        throw new Error('Unexpected response format: responseData is not an object')
+      }
+      const result: Mimir = {}
+      for (const [key, value] of Object.entries(responseData)) {
+        const numberValue = Number(value)
+        if (isNaN(numberValue)) {
+          throw new Error(`Invalid value for key ${key}: ${value}`)
+        }
+        result[key] = numberValue
+      }
+      return result as Mimir
+    }),
+    RxOp.map((rd) => (RD.isFailure(rd) ? RD.failure(Error(`Failed loading mimir: ${JSON.stringify(rd.error)}`)) : rd))
   )
 
   const { stream$: reloadMimir$, trigger: reloadMimir } = triggerStream()
@@ -528,16 +496,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   )
 
   const apiGetSaverProvider$ = (asset: AnyAsset, address: Address): LiveData<Error, Saver> =>
-    FP.pipe(
-      thornodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(new SaversApi(getThornodeAPIConfiguration(basePath)).saver(assetToString(asset), address)),
-          RxOp.map((response: AxiosResponse<Saver>) => RD.success(response.data)), // Extract data from AxiosResponse
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-        )
-      ),
-      RxOp.startWith(RD.pending)
+    requestThornodeApi$((basePath) =>
+      new SaversApi(getThornodeAPIConfiguration(basePath))
+        .saver(assetToString(asset), address)
+        .then((response: AxiosResponse<Saver>) => response.data)
     )
 
   const { stream$: reloadSaverProvider$, trigger: reloadSaverProvider } = triggerStream()
@@ -575,16 +537,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
   const apiGetRunePoolProvider$ = (address: Address): LiveData<Error, RUNEProvider> =>
-    FP.pipe(
-      thornodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(new RUNEPoolApi(getThornodeAPIConfiguration(basePath)).runeProvider(address)),
-          RxOp.map((response: AxiosResponse<RUNEProvider>) => RD.success(response.data)), // Extract data from AxiosResponse
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-        )
-      ),
-      RxOp.startWith(RD.pending)
+    requestThornodeApi$((basePath) =>
+      new RUNEPoolApi(getThornodeAPIConfiguration(basePath))
+        .runeProvider(address)
+        .then((response: AxiosResponse<RUNEProvider>) => response.data)
     )
 
   const { stream$: reloadRunePoolProvider$, trigger: reloadRunePoolProvider } = triggerStream()
@@ -623,16 +579,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
   const apiGetThorchainPool$ = (asset: AnyAsset): LiveData<Error, Pool> =>
-    FP.pipe(
-      thornodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(new PoolsApi(getThornodeAPIConfiguration(basePath)).pool(assetToString(asset))),
-          RxOp.map((response: AxiosResponse<Pool>) => RD.success(response.data)), // Extract data from AxiosResponse
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-        )
-      ),
-      RxOp.startWith(RD.pending)
+    requestThornodeApi$((basePath) =>
+      new PoolsApi(getThornodeAPIConfiguration(basePath))
+        .pool(assetToString(asset))
+        .then((response: AxiosResponse<Pool>) => response.data)
     )
   const { stream$: reloadThorchainPool$, trigger: reloadThorchainPool } = triggerStream()
 
@@ -696,19 +646,11 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
 
   const apiGetTradeAccount$ = (address: Address): LiveData<Error, TradeAccountResponse[]> =>
-    FP.pipe(
-      thornodeUrl$, // Fetch the base URL
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(new TradeAccountApi(getThornodeAPIConfiguration(basePath)).tradeAccount(address)), // Call the API
-          RxOp.map(
-            (response: AxiosResponse<TradeAccountResponse>) =>
-              RD.success(Array.isArray(response.data) ? response.data : [response.data]) // Handle single object as array
-          ),
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e))) // Handle errors
-        )
-      ),
-      RxOp.startWith(RD.pending) // Start with pending state
+    requestThornodeApi$((basePath) =>
+      new TradeAccountApi(getThornodeAPIConfiguration(basePath)).tradeAccount(address).then((response) => {
+        const data = response.data
+        return Array.isArray(data) ? data : [data]
+      })
     )
 
   const { stream$: reloadTradeAccount$, trigger: reloadTradeAccount } = triggerStream()

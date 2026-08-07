@@ -4,8 +4,10 @@ import * as RD from '@devexperts/remote-data-ts'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import { protocolMapping } from '../../../helpers/protocolHelper'
 import { ApiError } from '../../../services/wallet/types'
 import { ErrorView } from '../../shared/error'
+import { ProviderIcon } from '../../swap/ProviderIcon'
 import { Button, ButtonProps } from '../../uielements/button'
 import { Modal } from '../../uielements/modal'
 import { TxTimer } from '../../uielements/txTimer'
@@ -151,6 +153,20 @@ export const UnifiedTxModal = (props: TxModalProps): JSX.Element => {
 
       {/* Asset display */}
       <TxAssetDisplay txConfig={txConfig} network={network} />
+
+      {/* Protocol — surface which protocol executed the swap (was only used for tracking before) */}
+      {FP.pipe(
+        protocol,
+        O.fold(
+          () => <></>,
+          (p) => (
+            <div className="text-12 flex w-full items-center justify-center gap-1.5 pt-2 font-main text-text2 dark:text-text2d">
+              <ProviderIcon protocol={p} className="!h-4 !w-4" />
+              <span>{protocolMapping[p as keyof typeof protocolMapping] ?? p}</span>
+            </div>
+          )
+        )
+      )}
 
       {/* Escape hatch for custom content */}
       {extraContent && <div className="flex w-full items-center justify-center px-6 pt-3">{extraContent}</div>}

@@ -10,7 +10,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -118,7 +117,7 @@ const chainAddressFunctions: Record<
   [TRONChain]: getTRONAddress
 }
 
-const unsupportedChains: Chain[] = [KUJIChain, RadixChain, ZECChain, 'ADA']
+const unsupportedChains: Chain[] = [RadixChain, ZECChain, 'ADA']
 
 export const getAddress = async ({
   chain,

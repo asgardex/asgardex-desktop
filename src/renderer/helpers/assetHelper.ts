@@ -34,14 +34,12 @@ import {
   AssetRuneNative,
   AssetCacao,
   AssetMaya,
-  AssetKUJI,
   AssetBETH,
   ADAAsset,
   AssetARB,
   AssetAETH,
   AssetDASH,
   SOLAsset,
-  AssetUSK,
   AssetXRD,
   AssetZEC,
   AssetTRX
@@ -193,12 +191,6 @@ export const isBscAsset = (asset: AnyAsset): boolean =>
 export const isDogeAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetDOGE.chain && asset.symbol.toUpperCase() === AssetDOGE.symbol.toUpperCase()
 /**
- * Checks whether an asset is a Kuji asset
- */
-export const isKujiAsset = (asset: AnyAsset): boolean =>
-  asset.chain === AssetKUJI.chain && asset.symbol.toUpperCase() === AssetKUJI.symbol.toUpperCase()
-
-/**
  * Checks whether an asset is a Ada asset
  */
 export const isAdaAsset = (asset: AnyAsset): boolean =>
@@ -229,9 +221,6 @@ export const isTrxAsset = (asset: AnyAsset): boolean =>
 
 export const isSuiAsset = (asset: AnyAsset): boolean =>
   asset.chain === SUIAsset.chain && asset.symbol.toUpperCase() === SUIAsset.symbol.toUpperCase()
-
-export const isUskAsset = (asset: AnyAsset): boolean =>
-  asset.chain === AssetUSK.chain && asset.symbol.toUpperCase() === AssetUSK.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a ATOM asset

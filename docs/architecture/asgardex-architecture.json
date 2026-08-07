@@ -1,0 +1,1137 @@
+{
+  "meta": {
+    "name": "ASGARDEX Desktop",
+    "version": "1.45.0",
+    "description": "Cross-chain DeFi wallet (Electron + React + TypeScript) for THORChain, MAYAChain, Chainflip, and OneClick across 17+ blockchains. Supports Keystore, Ledger, and Vultisig MPC wallet modes.",
+    "repository": "https://github.com/asgardex/asgardex-desktop",
+    "generatedFor": "AI agents and architecture tooling",
+    "primaryLanguages": ["TypeScript", "React", "Electron"],
+    "stateManagement": {
+      "primary": "RxJS Observables + BehaviorSubject via observableState",
+      "async": "RemoteData (Initial | Pending | Failure | Success) + LiveData = Observable<RemoteData>",
+      "fp": "fp-ts Option, Either, pipe",
+      "secondaryRedux": "Redux Toolkit slices for aggregator, app UI prefs, gecko prices only"
+    },
+    "processModel": {
+      "main": "src/main/ — system, Ledger USB, Vultisig SDK, file storage, IPC handlers",
+      "preload": "src/main/preload.ts — contextBridge exposes window.api*",
+      "renderer": "src/renderer/ — all UI, business logic, chain services",
+      "shared": "src/shared/ — types, IPC codecs, chain constants"
+    },
+    "pathConventions": {
+      "chainServices": "src/renderer/services/[chain]/ {balances,common,transaction,types,fees}",
+      "contexts": "src/renderer/contexts/",
+      "views": "src/renderer/views/",
+      "hooks": "src/renderer/hooks/",
+      "i18n": "src/renderer/i18n/ (en,de,es,fr,hi,ko,ru)",
+      "ledgerMain": "src/main/api/ledger/",
+      "mpcMain": "src/main/api/mpc/"
+    },
+    "maintenance": {
+      "doc": "docs/architecture/MAINTENANCE.md",
+      "rule": "Update this JSON and the HTML embedded DATA when structural architecture changes (new chain, wallet mode, protocol, IPC surface, or documented flow). Skip pure bugfixes/i18n/styling. Validate all edge and flow nodeIds exist.",
+      "lastFullReview": "2026-08-04",
+      "appVersionAtReview": "1.45.0"
+    }
+  },
+  "nodes": [
+    {
+      "id": "electron-main",
+      "label": "Electron Main Process",
+      "layer": "runtime",
+      "path": "src/main/electron.ts",
+      "tooltip": "App lifecycle, BrowserWindow, menus, IPC registration, native integrations (Ledger HID, Vultisig SDK, filesystem).",
+      "tags": ["electron", "main", "native"]
+    },
+    {
+      "id": "preload",
+      "label": "Preload Bridge",
+      "layer": "runtime",
+      "path": "src/main/preload.ts",
+      "tooltip": "contextBridge exposes typed APIs on window (apiKeystore, apiHDWallet, apiMpc, storage, etc.). Renderer never imports main code directly.",
+      "tags": ["electron", "ipc", "security"]
+    },
+    {
+      "id": "renderer",
+      "label": "Renderer (React App)",
+      "layer": "runtime",
+      "path": "src/renderer/",
+      "tooltip": "React SPA: views, services, hooks, contexts. All DeFi business logic lives here.",
+      "tags": ["react", "ui"]
+    },
+    {
+      "id": "shared",
+      "label": "Shared Types & Utils",
+      "layer": "runtime",
+      "path": "src/shared/",
+      "tooltip": "IPC message types, io-ts codecs (BigInt-safe), wallet types, chain constants, derivation paths shared by main and renderer.",
+      "tags": ["types", "ipc"]
+    },
+
+    {
+      "id": "api-keystore",
+      "label": "Keystore API",
+      "layer": "main-api",
+      "path": "src/main/api/keystore.ts",
+      "tooltip": "Load/save encrypted keystore wallets to disk (wallets.json).",
+      "tags": ["wallet", "storage"]
+    },
+    {
+      "id": "api-ledger",
+      "label": "Ledger API",
+      "layer": "main-api",
+      "path": "src/main/api/ledger/",
+      "tooltip": "USB HID transport; per-chain address derivation and transaction signing for hardware wallets.",
+      "tags": ["wallet", "ledger", "hardware"]
+    },
+    {
+      "id": "api-mpc",
+      "label": "MPC / Vultisig API",
+      "layer": "main-api",
+      "path": "src/main/api/mpc/",
+      "tooltip": "Main-process-only Vultisig SDK lifecycle: vault create/import, addresses, balances, multi-party signing. Never import SDK in renderer.",
+      "tags": ["wallet", "vultisig", "mpc"]
+    },
+    {
+      "id": "api-filestore",
+      "label": "File Store API",
+      "layer": "main-api",
+      "path": "src/main/api/fileStore.ts",
+      "tooltip": "Persisted JSON stores: common, userNodes, userBondProviders, userChains, userAddresses, userAssets, pools, ledgers.",
+      "tags": ["storage"]
+    },
+    {
+      "id": "api-update",
+      "label": "App Update API",
+      "layer": "main-api",
+      "path": "src/main/api/appUpdate.ts",
+      "tooltip": "Check for desktop app updates via electron-updater.",
+      "tags": ["ops"]
+    },
+    {
+      "id": "api-url-export",
+      "label": "URL & Export API",
+      "layer": "main-api",
+      "path": "src/main/api/",
+      "tooltip": "openExternal URLs; export balances JSON.",
+      "tags": ["ops"]
+    },
+
+    {
+      "id": "window-api",
+      "label": "window.api* Bridge",
+      "layer": "ipc",
+      "path": "src/main/preload.ts",
+      "tooltip": "Renderer-facing IPC surface: apiKeystore, apiHDWallet, apiMpc, apiCommonStorage, apiAppUpdate, apiUrl, apiExport, chain/asset/pools storages. Serialize BigInt with String().",
+      "tags": ["ipc"]
+    },
+
+    {
+      "id": "app-tsx",
+      "label": "App Provider Tree",
+      "layer": "ui-shell",
+      "path": "src/renderer/App.tsx",
+      "tooltip": "Nests Redux Provider + Wallet + all chain/protocol contexts + Router + Theme around AppView.",
+      "tags": ["react", "context"]
+    },
+    {
+      "id": "view-routes",
+      "label": "ViewRoutes / Router",
+      "layer": "ui-shell",
+      "path": "src/renderer/views/ViewRoutes.tsx",
+      "tooltip": "HashRouter routes: wallet, pools, swap, deposit, bonds, portfolio, history, settings, Vultisig create, Ledger chain select. WalletAuth guards protected routes.",
+      "tags": ["routing"]
+    },
+    {
+      "id": "redux-store",
+      "label": "Redux Store (limited)",
+      "layer": "ui-shell",
+      "path": "src/renderer/store/",
+      "tooltip": "Slices: app (UI prefs), aggregator (protocol selection), gecko (prices). Not primary wallet state.",
+      "tags": ["redux"]
+    },
+    {
+      "id": "i18n",
+      "label": "i18n (7 locales)",
+      "layer": "ui-shell",
+      "path": "src/renderer/i18n/",
+      "tooltip": "Typed message keys; en + de, es, fr, hi, ko, ru. Always intl.formatMessage — never hardcode UI strings.",
+      "tags": ["i18n"]
+    },
+    {
+      "id": "theme",
+      "label": "Theme Context",
+      "layer": "ui-shell",
+      "path": "src/renderer/contexts/ThemeContext.tsx",
+      "tooltip": "Light/dark via Tailwind dark: tokens (text0/text0d, bg0/bg0d, turquoise).",
+      "tags": ["ui"]
+    },
+
+    {
+      "id": "ctx-wallet",
+      "label": "WalletContext",
+      "layer": "context",
+      "path": "src/renderer/contexts/WalletContext.tsx",
+      "tooltip": "Exposes appWalletService, balances, keystore ops, ledger addresses to the component tree.",
+      "tags": ["wallet", "context"]
+    },
+    {
+      "id": "ctx-chain",
+      "label": "ChainContext",
+      "layer": "context",
+      "path": "src/renderer/contexts/ChainContext.tsx",
+      "tooltip": "Unified chain ops: swap$, deposit, withdraw, transfer, fees across all chains.",
+      "tags": ["chain", "context"]
+    },
+    {
+      "id": "ctx-midgard",
+      "label": "MidgardContext (THOR)",
+      "layer": "context",
+      "path": "src/renderer/contexts/MidgardContext.tsx",
+      "tooltip": "THORChain Midgard: pools, actions/history, LP shares.",
+      "tags": ["thorchain", "midgard"]
+    },
+    {
+      "id": "ctx-maya-midgard",
+      "label": "MayaMidgardContext",
+      "layer": "context",
+      "path": "src/renderer/contexts/MidgardMayaContext.tsx",
+      "tooltip": "MAYAChain Midgard pools/actions/shares.",
+      "tags": ["mayachain", "midgard"]
+    },
+    {
+      "id": "ctx-thor",
+      "label": "ThorchainContext",
+      "layer": "context",
+      "path": "src/renderer/contexts/ThorchainContext.tsx",
+      "tooltip": "THORNode queries: mimir, inbound addresses, node infos, interact txs.",
+      "tags": ["thorchain"]
+    },
+    {
+      "id": "ctx-maya",
+      "label": "MayachainContext",
+      "layer": "context",
+      "path": "src/renderer/contexts/MayachainContext.tsx",
+      "tooltip": "MAYANode queries and interact transactions.",
+      "tags": ["mayachain"]
+    },
+    {
+      "id": "ctx-chainflip",
+      "label": "ChainflipContext",
+      "layer": "context",
+      "path": "src/renderer/contexts/ChainflipContext.tsx",
+      "tooltip": "Chainflip asset support checks and swap channel helpers.",
+      "tags": ["chainflip"]
+    },
+    {
+      "id": "ctx-oneclick",
+      "label": "OneClickContext",
+      "layer": "context",
+      "path": "src/renderer/contexts/OneClickContext.tsx",
+      "tooltip": "OneClick protocol asset support and tracking.",
+      "tags": ["oneclick"]
+    },
+    {
+      "id": "ctx-chain-clients",
+      "label": "Per-Chain Contexts",
+      "layer": "context",
+      "path": "src/renderer/contexts/*Context.tsx",
+      "tooltip": "BTC, ETH, AVAX, BSC, ARB, BASE, LTC, BCH, DOGE, DASH, ADA, SOL, TRON, XRD, ZEC, XRP, SUI, COSMOS providers wrapping chain services.",
+      "tags": ["chain"]
+    },
+
+    {
+      "id": "svc-app-wallet",
+      "label": "appWalletService",
+      "layer": "wallet",
+      "path": "src/renderer/services/wallet/appWallet.ts",
+      "tooltip": "Single source of truth for wallet mode: Keystore | Standalone Ledger | Vultisig. Orchestrates mode switches, lastOpenedWallet, unlock lifecycle. UI must not bypass this.",
+      "tags": ["wallet", "core"]
+    },
+    {
+      "id": "svc-keystore",
+      "label": "keystoreService",
+      "layer": "wallet",
+      "path": "src/renderer/services/wallet/keystore.ts",
+      "tooltip": "Encrypted mnemonic wallets: create, import phrase/keystore, unlock/lock, change password. Phrase never leaves renderer after unlock (in-memory clients).",
+      "tags": ["wallet", "keystore"]
+    },
+    {
+      "id": "svc-vault-manager",
+      "label": "vaultManager (Vultisig)",
+      "layer": "wallet",
+      "path": "src/renderer/services/wallet/vaultManager.ts",
+      "tooltip": "Vultisig standalone mode: vault list/create/import, unlock phase machine, address cache. Talks to window.apiMpc only.",
+      "tags": ["wallet", "vultisig"]
+    },
+    {
+      "id": "svc-standalone-ledger",
+      "label": "standaloneLedgerService",
+      "layer": "wallet",
+      "path": "src/renderer/services/wallet/standaloneLedger.ts",
+      "tooltip": "Standalone Ledger mode: chain selection, address detection via apiHDWallet, no keystore phrase.",
+      "tags": ["wallet", "ledger"]
+    },
+    {
+      "id": "svc-wallet-balances",
+      "label": "Wallet Balances Service",
+      "layer": "wallet",
+      "path": "src/renderer/services/wallet/balances.ts",
+      "tooltip": "Aggregates per-chain balances for keystore/ledger/vultisig into chainBalances$ / balancesState$.",
+      "tags": ["wallet", "balances"]
+    },
+    {
+      "id": "svc-wallet-ledger",
+      "label": "Ledger Address Service",
+      "layer": "wallet",
+      "path": "src/renderer/services/wallet/ledger.ts",
+      "tooltip": "Persisted ledger address refs (ledgers.json) for keystore+ledger hybrid accounts.",
+      "tags": ["wallet", "ledger"]
+    },
+    {
+      "id": "svc-wallet-tx",
+      "label": "Wallet Transaction Helpers",
+      "layer": "wallet",
+      "path": "src/renderer/services/wallet/transaction.ts",
+      "tooltip": "Wallet-level tx history and status helpers.",
+      "tags": ["wallet", "tx"]
+    },
+
+    {
+      "id": "svc-enhanced-client",
+      "label": "Enhanced Client Factory",
+      "layer": "chain-infra",
+      "path": "src/renderer/services/clients/enhancedClient.ts",
+      "tooltip": "createEnhancedClient$: keystore client if phrase available, else read-only client for Ledger/Vultisig. Prevents hanging on O.none in standalone modes.",
+      "tags": ["client", "core"]
+    },
+    {
+      "id": "svc-clients",
+      "label": "Client Utilities",
+      "layer": "chain-infra",
+      "path": "src/renderer/services/clients/",
+      "tooltip": "Shared address$, balances, fees, transfer, tx status factories used by all chain services.",
+      "tags": ["client"]
+    },
+    {
+      "id": "svc-chain-orchestrator",
+      "label": "Chain Orchestrator",
+      "layer": "chain-infra",
+      "path": "src/renderer/services/chain/",
+      "tooltip": "Cross-chain swap/deposit/withdraw/transfer routing, fee estimation, decimal resolution (tokenDecimalMap), memo-aware pool sends.",
+      "tags": ["chain", "core"]
+    },
+    {
+      "id": "svc-decimal",
+      "label": "Decimal Resolution",
+      "layer": "chain-infra",
+      "path": "src/renderer/services/chain/decimal.ts",
+      "tooltip": "Order: CHAIN_DECIMAL_MAP → tokenDecimalMap → chain default → Midgard nativeDecimal (last resort).",
+      "tags": ["decimals"]
+    },
+    {
+      "id": "svc-chain-services",
+      "label": "Per-Chain Services",
+      "layer": "chain-infra",
+      "path": "src/renderer/services/{bitcoin,ethereum,thorchain,...}/",
+      "tooltip": "One service folder per chain: common (client$), balances, fees, transaction. EVM chains share factory under services/evm/. Supported: THOR, MAYA, BTC, BCH, LTC, DOGE, DASH, ETH, AVAX, BSC, ARB, BASE, GAIA, ADA, SOL, TRON, XRP, XRD, ZEC, SUI.",
+      "tags": ["chain", "xchainjs"]
+    },
+    {
+      "id": "svc-evm-factory",
+      "label": "EVM Service Factory",
+      "layer": "chain-infra",
+      "path": "src/renderer/services/evm/factory/",
+      "tooltip": "Shared EVM client/balance/fee/tx factory for ETH, ARB, AVAX, BSC, BASE.",
+      "tags": ["evm"]
+    },
+    {
+      "id": "svc-utxo",
+      "label": "UTXO Helpers",
+      "layer": "chain-infra",
+      "path": "src/renderer/services/utxo/",
+      "tooltip": "Coin control, UTXO Vultisig tx helpers, sendMax semantics for UTXO chains.",
+      "tags": ["utxo"]
+    },
+
+    {
+      "id": "svc-midgard-thor",
+      "label": "THOR Midgard Service",
+      "layer": "protocol",
+      "path": "src/renderer/services/midgard/thorMidgard/",
+      "tooltip": "Pools, actions, LP shares, pool address validation. Endpoints via Liquify (not retired Nine Realms hosts).",
+      "tags": ["thorchain", "midgard"]
+    },
+    {
+      "id": "svc-midgard-maya",
+      "label": "MAYA Midgard Service",
+      "layer": "protocol",
+      "path": "src/renderer/services/midgard/mayaMidgard/",
+      "tooltip": "MAYA pools, actions, shares, validation.",
+      "tags": ["mayachain", "midgard"]
+    },
+    {
+      "id": "svc-thorchain",
+      "label": "THORChain Node Service",
+      "layer": "protocol",
+      "path": "src/renderer/services/thorchain/",
+      "tooltip": "THORNode client, balances, interact (bond/unbond/leave), tx tracking, mimir.",
+      "tags": ["thorchain"]
+    },
+    {
+      "id": "svc-mayachain",
+      "label": "MAYAChain Node Service",
+      "layer": "protocol",
+      "path": "src/renderer/services/mayachain/",
+      "tooltip": "MAYANode client, balances, interact, fees.",
+      "tags": ["mayachain"]
+    },
+    {
+      "id": "svc-chainflip",
+      "label": "Chainflip Service",
+      "layer": "protocol",
+      "path": "src/renderer/services/chainflip/",
+      "tooltip": "Chainflip SDK swaps: deposit channel + direct send; transaction tracking.",
+      "tags": ["chainflip"]
+    },
+    {
+      "id": "svc-oneclick",
+      "label": "OneClick Service",
+      "layer": "protocol",
+      "path": "src/renderer/services/oneclick/",
+      "tooltip": "OneClick dynamic-asset protocol quotes/execution and tracking.",
+      "tags": ["oneclick"]
+    },
+    {
+      "id": "svc-aggregator",
+      "label": "xchain Aggregator Slice",
+      "layer": "protocol",
+      "path": "src/renderer/store/aggregator/",
+      "tooltip": "Multi-protocol quote aggregation (THOR/MAYA/Chainflip/OneClick), protocol toggles, boost flags.",
+      "tags": ["swap", "aggregator"]
+    },
+    {
+      "id": "svc-storage",
+      "label": "Renderer Storage Services",
+      "layer": "protocol",
+      "path": "src/renderer/services/storage/",
+      "tooltip": "User prefs: enabled chains, addresses, bond providers, nodes, pool watchlist — backed by main fileStore.",
+      "tags": ["storage"]
+    },
+    {
+      "id": "svc-price-level",
+      "label": "Price Level Service",
+      "layer": "protocol",
+      "path": "src/renderer/services/priceLevel/",
+      "tooltip": "Price alerts / level monitoring.",
+      "tags": ["prices"]
+    },
+    {
+      "id": "svc-app",
+      "label": "App Service (network)",
+      "layer": "protocol",
+      "path": "src/renderer/services/app/",
+      "tooltip": "Network selection (mainnet/stagenet), app-level observables.",
+      "tags": ["app"]
+    },
+
+    {
+      "id": "hook-swap-quote",
+      "label": "useSwapQuote",
+      "layer": "hooks",
+      "path": "src/renderer/hooks/useSwapQuote.ts",
+      "tooltip": "Fetches multi-protocol quotes via aggregator; protocol validation; selects best expected output.",
+      "tags": ["swap"]
+    },
+    {
+      "id": "hook-swap-fees",
+      "label": "useSwapFees",
+      "layer": "hooks",
+      "path": "src/renderer/hooks/useSwapFees.ts",
+      "tooltip": "Inbound fee, max amount, affiliate BPS (USD threshold), fee-adjusted amounts.",
+      "tags": ["swap", "fees"]
+    },
+    {
+      "id": "hook-swap-exec",
+      "label": "useSwapExecution",
+      "layer": "hooks",
+      "path": "src/renderer/hooks/useSwapExecution.ts",
+      "tooltip": "Builds swap params and submits swap$ / swapCF$ / OneClick paths.",
+      "tags": ["swap", "tx"]
+    },
+    {
+      "id": "hook-swap-addresses",
+      "label": "useSwapAddresses",
+      "layer": "hooks",
+      "path": "src/renderer/hooks/useSwapAddresses.ts",
+      "tooltip": "Source/target addresses and wallet type resolution (Ledger → Vultisig → Keystore priority).",
+      "tags": ["swap", "wallet"]
+    },
+    {
+      "id": "hook-streaming",
+      "label": "useStreamingParams",
+      "layer": "hooks",
+      "path": "src/renderer/hooks/useStreamingParams.ts",
+      "tooltip": "THOR swap modes: Rapid (interval=0), Streaming (user qty), Instant (qty=1).",
+      "tags": ["swap"]
+    },
+    {
+      "id": "helper-memo",
+      "label": "memoHelper",
+      "layer": "hooks",
+      "path": "src/renderer/helpers/memoHelper.ts",
+      "tooltip": "CRITICAL: getSwapMemo/updateMemo build affiliate segment (dx + bps). Do not use SDK swap path or affiliate revenue is silently dropped.",
+      "tags": ["swap", "affiliate", "critical"]
+    },
+
+    {
+      "id": "view-swap",
+      "label": "SwapView / Swap UI",
+      "layer": "ui-feature",
+      "path": "src/renderer/views/swap/ + components/swap/",
+      "tooltip": "Swap page: asset pickers, quotes, streaming settings, confirmation modals (password/Ledger/Vultisig).",
+      "tags": ["swap", "ui"]
+    },
+    {
+      "id": "view-deposit",
+      "label": "Deposit / Withdraw UI",
+      "layer": "ui-feature",
+      "path": "src/renderer/views/deposit/ + components/deposit/",
+      "tooltip": "Symmetrical LP add/withdraw for THOR and MAYA pools.",
+      "tags": ["liquidity", "ui"]
+    },
+    {
+      "id": "view-wallet",
+      "label": "Wallet Views",
+      "layer": "ui-feature",
+      "path": "src/renderer/views/wallet/",
+      "tooltip": "Assets, send, create/import keystore, unlock, Ledger select, Vultisig create, interact, pool shares, TCY, trade assets.",
+      "tags": ["wallet", "ui"]
+    },
+    {
+      "id": "view-pools",
+      "label": "Pools Views",
+      "layer": "ui-feature",
+      "path": "src/renderer/views/pools/",
+      "tooltip": "Pool overview, detail, active/pending pools.",
+      "tags": ["pools", "ui"]
+    },
+    {
+      "id": "view-bonds",
+      "label": "Bonds View",
+      "layer": "ui-feature",
+      "path": "src/renderer/views/bonds/",
+      "tooltip": "Node bonding UI for THOR/MAYA operators.",
+      "tags": ["bonds", "ui"]
+    },
+    {
+      "id": "view-portfolio",
+      "label": "Portfolio View",
+      "layer": "ui-feature",
+      "path": "src/renderer/views/portfolio/",
+      "tooltip": "Aggregated portfolio value across chains and positions.",
+      "tags": ["portfolio", "ui"]
+    },
+    {
+      "id": "view-history",
+      "label": "History Views",
+      "layer": "ui-feature",
+      "path": "src/renderer/views/history/ + wallet/history",
+      "tooltip": "Midgard action history and wallet tx history.",
+      "tags": ["history", "ui"]
+    },
+    {
+      "id": "ui-modals",
+      "label": "Confirmation Modals",
+      "layer": "ui-feature",
+      "path": "src/renderer/components/modal/",
+      "tooltip": "Password, Ledger, Vultisig confirmation modals dispatched by swap/deposit/send flows.",
+      "tags": ["ui", "signing"]
+    },
+    {
+      "id": "ui-components",
+      "label": "Shared UI Components",
+      "layer": "ui-feature",
+      "path": "src/renderer/components/",
+      "tooltip": "Header, sidebar, uielements, settings, pool tables, assets filters — Tailwind + Headless UI.",
+      "tags": ["ui"]
+    },
+
+    {
+      "id": "ext-xchainjs",
+      "label": "xchainjs Libraries",
+      "layer": "external",
+      "path": "node_modules/@xchainjs/*",
+      "tooltip": "Chain clients, crypto, aggregator, midgard/query packages. App owns memos/affiliate; lib owns clients.",
+      "tags": ["dependency"]
+    },
+    {
+      "id": "ext-vultisig-sdk",
+      "label": "Vultisig SDK",
+      "layer": "external",
+      "path": "@vultisig/sdk (main only)",
+      "tooltip": "MPC vault and signing. Main process only.",
+      "tags": ["dependency", "mpc"]
+    },
+    {
+      "id": "ext-chainflip-sdk",
+      "label": "Chainflip SDK",
+      "layer": "external",
+      "path": "@chainflip/sdk",
+      "tooltip": "Deposit channels and Chainflip swap quotes.",
+      "tags": ["dependency"]
+    },
+    {
+      "id": "ext-midgard-api",
+      "label": "Midgard / Liquify APIs",
+      "layer": "external",
+      "path": "network endpoints",
+      "tooltip": "Pool state, history, inbound addresses. Use current Liquify providers — never reintroduce *.ninerealms.com.",
+      "tags": ["api"]
+    },
+    {
+      "id": "ext-thornode",
+      "label": "THORNode / MAYANode",
+      "layer": "external",
+      "path": "network endpoints",
+      "tooltip": "Chain state, mimir constants, inbound addresses, tx observation.",
+      "tags": ["api"]
+    },
+    {
+      "id": "ext-chain-rpcs",
+      "label": "Chain RPCs & Indexers",
+      "layer": "external",
+      "path": "BlockCypher, Etherscan, NOWNodes, etc.",
+      "tooltip": "UTXO/EVM/other RPC providers for balances, fees, broadcast. Keys via VITE_* env.",
+      "tags": ["api"]
+    },
+    {
+      "id": "ext-ledger-hw",
+      "label": "Ledger Hardware",
+      "layer": "external",
+      "path": "@ledgerhq/hw-transport-node-hid-singleton",
+      "tooltip": "Physical device over USB HID.",
+      "tags": ["hardware"]
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "electron-main", "target": "preload", "label": "loads", "kind": "runtime" },
+    { "id": "e2", "source": "preload", "target": "renderer", "label": "contextBridge", "kind": "runtime" },
+    { "id": "e3", "source": "electron-main", "target": "api-keystore", "label": "registers", "kind": "owns" },
+    { "id": "e4", "source": "electron-main", "target": "api-ledger", "label": "registers", "kind": "owns" },
+    { "id": "e5", "source": "electron-main", "target": "api-mpc", "label": "registers", "kind": "owns" },
+    { "id": "e6", "source": "electron-main", "target": "api-filestore", "label": "registers", "kind": "owns" },
+    { "id": "e7", "source": "electron-main", "target": "api-update", "label": "registers", "kind": "owns" },
+    { "id": "e8", "source": "electron-main", "target": "api-url-export", "label": "registers", "kind": "owns" },
+    { "id": "e9", "source": "preload", "target": "window-api", "label": "exposes", "kind": "ipc" },
+    { "id": "e10", "source": "window-api", "target": "api-keystore", "label": "invoke", "kind": "ipc" },
+    { "id": "e11", "source": "window-api", "target": "api-ledger", "label": "invoke", "kind": "ipc" },
+    { "id": "e12", "source": "window-api", "target": "api-mpc", "label": "invoke", "kind": "ipc" },
+    { "id": "e13", "source": "window-api", "target": "api-filestore", "label": "invoke", "kind": "ipc" },
+    { "id": "e14", "source": "shared", "target": "electron-main", "label": "types/codecs", "kind": "depends" },
+    { "id": "e15", "source": "shared", "target": "renderer", "label": "types/utils", "kind": "depends" },
+    { "id": "e16", "source": "shared", "target": "preload", "label": "API types", "kind": "depends" },
+
+    { "id": "e20", "source": "renderer", "target": "app-tsx", "label": "mounts", "kind": "owns" },
+    { "id": "e21", "source": "app-tsx", "target": "redux-store", "label": "Provider", "kind": "uses" },
+    { "id": "e22", "source": "app-tsx", "target": "ctx-wallet", "label": "wraps", "kind": "uses" },
+    { "id": "e23", "source": "app-tsx", "target": "ctx-chain", "label": "wraps", "kind": "uses" },
+    { "id": "e24", "source": "app-tsx", "target": "ctx-midgard", "label": "wraps", "kind": "uses" },
+    { "id": "e25", "source": "app-tsx", "target": "ctx-maya-midgard", "label": "wraps", "kind": "uses" },
+    { "id": "e26", "source": "app-tsx", "target": "ctx-thor", "label": "wraps", "kind": "uses" },
+    { "id": "e27", "source": "app-tsx", "target": "ctx-maya", "label": "wraps", "kind": "uses" },
+    { "id": "e28", "source": "app-tsx", "target": "ctx-chainflip", "label": "wraps", "kind": "uses" },
+    { "id": "e29", "source": "app-tsx", "target": "ctx-oneclick", "label": "wraps", "kind": "uses" },
+    { "id": "e30", "source": "app-tsx", "target": "ctx-chain-clients", "label": "wraps", "kind": "uses" },
+    { "id": "e31", "source": "app-tsx", "target": "view-routes", "label": "renders AppView→", "kind": "uses" },
+    { "id": "e32", "source": "app-tsx", "target": "i18n", "label": "I18nProvider", "kind": "uses" },
+    { "id": "e33", "source": "app-tsx", "target": "theme", "label": "ThemeProvider", "kind": "uses" },
+
+    { "id": "e40", "source": "ctx-wallet", "target": "svc-app-wallet", "label": "exposes", "kind": "uses" },
+    { "id": "e41", "source": "svc-app-wallet", "target": "svc-keystore", "label": "orchestrates", "kind": "uses" },
+    { "id": "e42", "source": "svc-app-wallet", "target": "svc-vault-manager", "label": "orchestrates", "kind": "uses" },
+    {
+      "id": "e43",
+      "source": "svc-app-wallet",
+      "target": "svc-standalone-ledger",
+      "label": "orchestrates",
+      "kind": "uses"
+    },
+    { "id": "e44", "source": "svc-keystore", "target": "window-api", "label": "save/load wallets", "kind": "ipc" },
+    { "id": "e45", "source": "svc-vault-manager", "target": "window-api", "label": "apiMpc", "kind": "ipc" },
+    { "id": "e46", "source": "svc-standalone-ledger", "target": "window-api", "label": "apiHDWallet", "kind": "ipc" },
+    { "id": "e47", "source": "svc-wallet-ledger", "target": "window-api", "label": "ledger storage", "kind": "ipc" },
+    {
+      "id": "e48",
+      "source": "svc-wallet-balances",
+      "target": "svc-app-wallet",
+      "label": "mode/addresses",
+      "kind": "uses"
+    },
+    {
+      "id": "e49",
+      "source": "svc-wallet-balances",
+      "target": "svc-chain-services",
+      "label": "per-chain balances",
+      "kind": "uses"
+    },
+    { "id": "e50", "source": "svc-storage", "target": "window-api", "label": "file stores", "kind": "ipc" },
+
+    { "id": "e60", "source": "svc-chain-services", "target": "svc-enhanced-client", "label": "uses", "kind": "uses" },
+    {
+      "id": "e61",
+      "source": "svc-enhanced-client",
+      "target": "svc-app-wallet",
+      "label": "mode switch",
+      "kind": "uses"
+    },
+    { "id": "e62", "source": "svc-chain-services", "target": "svc-clients", "label": "factories", "kind": "uses" },
+    {
+      "id": "e63",
+      "source": "svc-chain-services",
+      "target": "ext-xchainjs",
+      "label": "Client impl",
+      "kind": "depends"
+    },
+    {
+      "id": "e64",
+      "source": "svc-evm-factory",
+      "target": "svc-chain-services",
+      "label": "implements EVM",
+      "kind": "uses"
+    },
+    {
+      "id": "e65",
+      "source": "svc-chain-orchestrator",
+      "target": "svc-chain-services",
+      "label": "routes txs",
+      "kind": "uses"
+    },
+    { "id": "e66", "source": "svc-chain-orchestrator", "target": "svc-decimal", "label": "decimals", "kind": "uses" },
+    { "id": "e67", "source": "ctx-chain", "target": "svc-chain-orchestrator", "label": "exposes", "kind": "uses" },
+    {
+      "id": "e68",
+      "source": "svc-chain-services",
+      "target": "ext-chain-rpcs",
+      "label": "RPC/indexers",
+      "kind": "network"
+    },
+    { "id": "e69", "source": "svc-utxo", "target": "svc-chain-services", "label": "UTXO helpers", "kind": "uses" },
+
+    { "id": "e70", "source": "ctx-midgard", "target": "svc-midgard-thor", "label": "exposes", "kind": "uses" },
+    { "id": "e71", "source": "ctx-maya-midgard", "target": "svc-midgard-maya", "label": "exposes", "kind": "uses" },
+    { "id": "e72", "source": "ctx-thor", "target": "svc-thorchain", "label": "exposes", "kind": "uses" },
+    { "id": "e73", "source": "ctx-maya", "target": "svc-mayachain", "label": "exposes", "kind": "uses" },
+    { "id": "e74", "source": "svc-midgard-thor", "target": "ext-midgard-api", "label": "HTTP", "kind": "network" },
+    { "id": "e75", "source": "svc-midgard-maya", "target": "ext-midgard-api", "label": "HTTP", "kind": "network" },
+    { "id": "e76", "source": "svc-thorchain", "target": "ext-thornode", "label": "HTTP", "kind": "network" },
+    { "id": "e77", "source": "svc-mayachain", "target": "ext-thornode", "label": "HTTP", "kind": "network" },
+    { "id": "e78", "source": "svc-chainflip", "target": "ext-chainflip-sdk", "label": "SDK", "kind": "depends" },
+    {
+      "id": "e79",
+      "source": "svc-aggregator",
+      "target": "ext-xchainjs",
+      "label": "@xchainjs/xchain-aggregator",
+      "kind": "depends"
+    },
+    { "id": "e80", "source": "svc-aggregator", "target": "svc-chainflip", "label": "quotes", "kind": "uses" },
+    { "id": "e81", "source": "svc-aggregator", "target": "svc-oneclick", "label": "quotes", "kind": "uses" },
+    { "id": "e82", "source": "ctx-chainflip", "target": "svc-chainflip", "label": "exposes", "kind": "uses" },
+    { "id": "e83", "source": "ctx-oneclick", "target": "svc-oneclick", "label": "exposes", "kind": "uses" },
+    { "id": "e84", "source": "api-mpc", "target": "ext-vultisig-sdk", "label": "uses", "kind": "depends" },
+    { "id": "e85", "source": "api-ledger", "target": "ext-ledger-hw", "label": "USB HID", "kind": "depends" },
+
+    { "id": "e90", "source": "view-routes", "target": "view-swap", "label": "route", "kind": "routing" },
+    { "id": "e91", "source": "view-routes", "target": "view-deposit", "label": "route", "kind": "routing" },
+    { "id": "e92", "source": "view-routes", "target": "view-wallet", "label": "route", "kind": "routing" },
+    { "id": "e93", "source": "view-routes", "target": "view-pools", "label": "route", "kind": "routing" },
+    { "id": "e94", "source": "view-routes", "target": "view-bonds", "label": "route", "kind": "routing" },
+    { "id": "e95", "source": "view-routes", "target": "view-portfolio", "label": "route", "kind": "routing" },
+    { "id": "e96", "source": "view-routes", "target": "view-history", "label": "route", "kind": "routing" },
+    { "id": "e97", "source": "view-swap", "target": "hook-swap-quote", "label": "uses", "kind": "uses" },
+    { "id": "e98", "source": "view-swap", "target": "hook-swap-fees", "label": "uses", "kind": "uses" },
+    { "id": "e99", "source": "view-swap", "target": "hook-swap-exec", "label": "uses", "kind": "uses" },
+    { "id": "e100", "source": "view-swap", "target": "hook-swap-addresses", "label": "uses", "kind": "uses" },
+    { "id": "e101", "source": "view-swap", "target": "hook-streaming", "label": "uses", "kind": "uses" },
+    { "id": "e102", "source": "view-swap", "target": "ui-modals", "label": "confirm", "kind": "uses" },
+    { "id": "e103", "source": "hook-swap-quote", "target": "svc-aggregator", "label": "estimateSwap", "kind": "uses" },
+    {
+      "id": "e104",
+      "source": "hook-swap-exec",
+      "target": "svc-chain-orchestrator",
+      "label": "swap$/swapCF$",
+      "kind": "uses"
+    },
+    { "id": "e105", "source": "hook-swap-exec", "target": "helper-memo", "label": "build memo", "kind": "uses" },
+    { "id": "e106", "source": "hook-swap-fees", "target": "svc-chain-orchestrator", "label": "fees", "kind": "uses" },
+    {
+      "id": "e107",
+      "source": "view-deposit",
+      "target": "svc-chain-orchestrator",
+      "label": "deposit$/withdraw$",
+      "kind": "uses"
+    },
+    { "id": "e108", "source": "view-deposit", "target": "ui-modals", "label": "confirm", "kind": "uses" },
+    { "id": "e109", "source": "view-wallet", "target": "svc-app-wallet", "label": "state", "kind": "uses" },
+    { "id": "e110", "source": "view-wallet", "target": "svc-wallet-balances", "label": "balances", "kind": "uses" },
+    { "id": "e111", "source": "view-wallet", "target": "ui-modals", "label": "send confirm", "kind": "uses" },
+    { "id": "e112", "source": "view-pools", "target": "svc-midgard-thor", "label": "pools", "kind": "uses" },
+    { "id": "e113", "source": "view-pools", "target": "svc-midgard-maya", "label": "pools", "kind": "uses" },
+    { "id": "e114", "source": "view-bonds", "target": "svc-thorchain", "label": "interact", "kind": "uses" },
+    { "id": "e115", "source": "view-history", "target": "svc-midgard-thor", "label": "actions", "kind": "uses" },
+    { "id": "e116", "source": "ui-components", "target": "view-swap", "label": "layout chrome", "kind": "uses" },
+    {
+      "id": "e117",
+      "source": "svc-chain-orchestrator",
+      "target": "svc-midgard-thor",
+      "label": "validate pool",
+      "kind": "uses"
+    },
+    {
+      "id": "e118",
+      "source": "svc-chain-orchestrator",
+      "target": "svc-midgard-maya",
+      "label": "validate pool",
+      "kind": "uses"
+    },
+    { "id": "e119", "source": "redux-store", "target": "svc-aggregator", "label": "aggregator slice", "kind": "uses" },
+    { "id": "e120", "source": "ctx-chain-clients", "target": "svc-chain-services", "label": "exposes", "kind": "uses" }
+  ],
+  "flows": [
+    {
+      "id": "flow-app-startup",
+      "name": "App Startup & Wallet Restore",
+      "description": "Electron boots main process, loads renderer, restores last opened wallet mode from storage.",
+      "category": "lifecycle",
+      "steps": [
+        {
+          "order": 1,
+          "nodeId": "electron-main",
+          "action": "Start Electron, create BrowserWindow, register IPC handlers"
+        },
+        { "order": 2, "nodeId": "preload", "action": "Expose window.api* via contextBridge" },
+        { "order": 3, "nodeId": "renderer", "action": "Load React app bundle" },
+        { "order": 4, "nodeId": "app-tsx", "action": "Mount provider tree and AppView" },
+        {
+          "order": 5,
+          "nodeId": "svc-storage",
+          "action": "Read common storage (lastOpenedWallet, network, etc.) via IPC"
+        },
+        { "order": 6, "nodeId": "window-api", "action": "IPC to fileStore / keystore init" },
+        { "order": 7, "nodeId": "api-filestore", "action": "Load persisted JSON stores from disk" },
+        {
+          "order": 8,
+          "nodeId": "svc-app-wallet",
+          "action": "Restore Keystore | Ledger | Vultisig mode from lastOpenedWallet"
+        },
+        { "order": 9, "nodeId": "view-routes", "action": "Route to unlock / no-wallet / assets depending on state" }
+      ]
+    },
+    {
+      "id": "flow-keystore-unlock",
+      "name": "Keystore Unlock",
+      "description": "User unlocks encrypted mnemonic; chain clients receive phrase and emit addresses/balances.",
+      "category": "wallet",
+      "steps": [
+        { "order": 1, "nodeId": "view-wallet", "action": "UnlockView: user enters password" },
+        {
+          "order": 2,
+          "nodeId": "svc-keystore",
+          "action": "Decrypt keystore in renderer; set unlocked KeystoreState with phrase"
+        },
+        { "order": 3, "nodeId": "svc-app-wallet", "action": "appWalletState$ becomes unlocked keystore mode" },
+        { "order": 4, "nodeId": "svc-chain-services", "action": "client$ factories create xchain clients with phrase" },
+        { "order": 5, "nodeId": "svc-enhanced-client", "action": "enhancedClient$ prefers keystore client" },
+        { "order": 6, "nodeId": "svc-wallet-balances", "action": "Subscribe chain balances → balancesState$" },
+        { "order": 7, "nodeId": "ext-chain-rpcs", "action": "Fetch balances from RPC/indexers" },
+        { "order": 8, "nodeId": "view-wallet", "action": "AssetsView renders RemoteData success balances" }
+      ]
+    },
+    {
+      "id": "flow-ledger-standalone",
+      "name": "Standalone Ledger Connect",
+      "description": "User selects Ledger mode, picks chain, derives address over USB, loads balances via read-only client.",
+      "category": "wallet",
+      "steps": [
+        { "order": 1, "nodeId": "view-wallet", "action": "LedgerChainSelectView: choose chain + HD mode" },
+        { "order": 2, "nodeId": "svc-app-wallet", "action": "switchToStandaloneLedgerMode" },
+        { "order": 3, "nodeId": "svc-standalone-ledger", "action": "detectionPhase: detecting → request address" },
+        { "order": 4, "nodeId": "window-api", "action": "apiHDWallet.getAddress" },
+        { "order": 5, "nodeId": "api-ledger", "action": "HID transport + chain app derive address" },
+        { "order": 6, "nodeId": "ext-ledger-hw", "action": "Device confirms address" },
+        { "order": 7, "nodeId": "svc-enhanced-client", "action": "Use readOnlyClient$ (no phrase)" },
+        { "order": 8, "nodeId": "svc-wallet-balances", "action": "getBalanceByAddress$ for ledger address" },
+        { "order": 9, "nodeId": "view-wallet", "action": "Show assets for connected chain" }
+      ]
+    },
+    {
+      "id": "flow-vultisig-vault",
+      "name": "Vultisig Vault Create / Unlock",
+      "description": "MPC vault lifecycle via main-process SDK; renderer only uses apiMpc.",
+      "category": "wallet",
+      "steps": [
+        { "order": 1, "nodeId": "view-wallet", "action": "VaultCreateView or vault selection UI" },
+        { "order": 2, "nodeId": "svc-app-wallet", "action": "switchToVultisigMode" },
+        {
+          "order": 3,
+          "nodeId": "svc-vault-manager",
+          "action": "Phase machine: creation | verification | locked | active"
+        },
+        {
+          "order": 4,
+          "nodeId": "window-api",
+          "action": "apiMpc.init / createFastVault|createSecureVault / importVault"
+        },
+        { "order": 5, "nodeId": "api-mpc", "action": "Main-process SDK vault ops" },
+        { "order": 6, "nodeId": "ext-vultisig-sdk", "action": "MPC keygen / password unlock / address derivation" },
+        { "order": 7, "nodeId": "svc-vault-manager", "action": "Cache addresses; phase → Active" },
+        { "order": 8, "nodeId": "svc-enhanced-client", "action": "readOnlyClient$ for chain ops" },
+        { "order": 9, "nodeId": "svc-wallet-balances", "action": "Load balances for vault addresses" }
+      ]
+    },
+    {
+      "id": "flow-balance-load",
+      "name": "Multi-Chain Balance Loading",
+      "description": "Unified balances across enabled chains for current wallet mode.",
+      "category": "wallet",
+      "steps": [
+        { "order": 1, "nodeId": "svc-app-wallet", "action": "Emit current mode + addresses" },
+        { "order": 2, "nodeId": "svc-storage", "action": "userChains enabled set" },
+        { "order": 3, "nodeId": "svc-wallet-balances", "action": "Fan-out to per-chain balance services" },
+        { "order": 4, "nodeId": "svc-chain-services", "action": "balances.ts / getBalanceByAddress$" },
+        { "order": 5, "nodeId": "svc-enhanced-client", "action": "Resolve client for mode" },
+        { "order": 6, "nodeId": "ext-xchainjs", "action": "Client.getBalance" },
+        { "order": 7, "nodeId": "ext-chain-rpcs", "action": "Network fetch" },
+        { "order": 8, "nodeId": "svc-wallet-balances", "action": "Aggregate RemoteData → chainBalances$" },
+        { "order": 9, "nodeId": "ctx-wallet", "action": "Components subscribe via useObservableState" }
+      ]
+    },
+    {
+      "id": "flow-thor-swap",
+      "name": "THORChain Swap",
+      "description": "Quote via aggregator, build affiliate memo, validate pool/node, send inbound tx, track status.",
+      "category": "swap",
+      "steps": [
+        { "order": 1, "nodeId": "view-swap", "action": "User selects assets and amount" },
+        { "order": 2, "nodeId": "hook-swap-addresses", "action": "Resolve source/target addresses + wallet type" },
+        { "order": 3, "nodeId": "hook-swap-fees", "action": "Compute inbound fee, max, affiliateBps" },
+        { "order": 4, "nodeId": "hook-streaming", "action": "Rapid | Streaming | Instant params" },
+        { "order": 5, "nodeId": "hook-swap-quote", "action": "fetchQuote → aggregator estimateSwap" },
+        { "order": 6, "nodeId": "svc-aggregator", "action": "Query THOR (+ other protocols); sort by expected out" },
+        { "order": 7, "nodeId": "svc-midgard-thor", "action": "Pool data / inbound for quote path" },
+        { "order": 8, "nodeId": "ext-midgard-api", "action": "HTTP pool/inbound data" },
+        { "order": 9, "nodeId": "view-swap", "action": "Display quotes; user confirms" },
+        { "order": 10, "nodeId": "ui-modals", "action": "Password / Ledger / Vultisig confirmation" },
+        { "order": 11, "nodeId": "helper-memo", "action": "getSwapMemo with affiliate dx+bps" },
+        { "order": 12, "nodeId": "hook-swap-exec", "action": "submitSwap with memo + pool address" },
+        {
+          "order": 13,
+          "nodeId": "svc-chain-orchestrator",
+          "action": "swap$: validatePool$/validateNode$ then sendPoolTx$"
+        },
+        {
+          "order": 14,
+          "nodeId": "svc-chain-services",
+          "action": "Sign+broadcast via keystore client | Ledger IPC | Vultisig MPC"
+        },
+        { "order": 15, "nodeId": "ext-chain-rpcs", "action": "Broadcast source-chain tx" },
+        { "order": 16, "nodeId": "svc-thorchain", "action": "Tx tracking / observed inbound" },
+        { "order": 17, "nodeId": "ext-thornode", "action": "Observe swap completion" }
+      ]
+    },
+    {
+      "id": "flow-maya-swap",
+      "name": "MAYAChain Swap",
+      "description": "Same pattern as THOR swap but MAYA midgard/node and CACAO-native validation rules.",
+      "category": "swap",
+      "steps": [
+        { "order": 1, "nodeId": "view-swap", "action": "Select MAYA-supported pair" },
+        { "order": 2, "nodeId": "hook-swap-fees", "action": "Fees + affiliate for MAYA path" },
+        { "order": 3, "nodeId": "hook-swap-quote", "action": "Aggregator quote with MAYA protocol" },
+        { "order": 4, "nodeId": "svc-aggregator", "action": "MAYA quote" },
+        { "order": 5, "nodeId": "svc-midgard-maya", "action": "Pool/inbound validation data" },
+        { "order": 6, "nodeId": "ui-modals", "action": "Confirm signing" },
+        { "order": 7, "nodeId": "helper-memo", "action": "MAYA swap memo + affiliate" },
+        { "order": 8, "nodeId": "svc-chain-orchestrator", "action": "swap$ with protocol=MAYAChain" },
+        { "order": 9, "nodeId": "svc-chain-services", "action": "Send to MAYA inbound address" },
+        { "order": 10, "nodeId": "svc-mayachain", "action": "Observe via MAYANode" }
+      ]
+    },
+    {
+      "id": "flow-chainflip-swap",
+      "name": "Chainflip Swap",
+      "description": "Direct send to Chainflip deposit channel; no THOR-style memo pool validation.",
+      "category": "swap",
+      "steps": [
+        { "order": 1, "nodeId": "view-swap", "action": "User path selects Chainflip quote" },
+        { "order": 2, "nodeId": "ctx-chainflip", "action": "isChainflipSupportedAsset checks" },
+        { "order": 3, "nodeId": "hook-swap-quote", "action": "Quote includes Chainflip route" },
+        { "order": 4, "nodeId": "svc-chainflip", "action": "Open deposit channel via SDK" },
+        { "order": 5, "nodeId": "ext-chainflip-sdk", "action": "Channel address + quote" },
+        { "order": 6, "nodeId": "ui-modals", "action": "Confirm" },
+        { "order": 7, "nodeId": "hook-swap-exec", "action": "swapCF$ — send to channel recipient" },
+        { "order": 8, "nodeId": "svc-chain-orchestrator", "action": "sendTx$ to deposit address (no pool validate)" },
+        { "order": 9, "nodeId": "svc-chain-services", "action": "Sign and broadcast" },
+        { "order": 10, "nodeId": "svc-chainflip", "action": "transactionTracking until complete" }
+      ]
+    },
+    {
+      "id": "flow-oneclick-swap",
+      "name": "OneClick Swap",
+      "description": "Dynamic-asset protocol route through OneClick service and tracking.",
+      "category": "swap",
+      "steps": [
+        { "order": 1, "nodeId": "view-swap", "action": "Select OneClick-supported assets" },
+        { "order": 2, "nodeId": "ctx-oneclick", "action": "isOneClickSupportedAsset" },
+        { "order": 3, "nodeId": "hook-swap-quote", "action": "Aggregator includes OneClick" },
+        { "order": 4, "nodeId": "svc-oneclick", "action": "Quote / route params" },
+        { "order": 5, "nodeId": "ui-modals", "action": "Confirm" },
+        { "order": 6, "nodeId": "hook-swap-exec", "action": "Submit OneClick swap path" },
+        { "order": 7, "nodeId": "svc-chain-services", "action": "Broadcast source tx" },
+        { "order": 8, "nodeId": "svc-oneclick", "action": "transactionTracking" }
+      ]
+    },
+    {
+      "id": "flow-lp-deposit",
+      "name": "Symmetrical Liquidity Deposit",
+      "description": "Add liquidity to THOR or MAYA pool (sym deposit).",
+      "category": "liquidity",
+      "steps": [
+        { "order": 1, "nodeId": "view-deposit", "action": "User sets asset amounts for pool" },
+        { "order": 2, "nodeId": "svc-midgard-thor", "action": "Or MAYA midgard: pool address + status" },
+        { "order": 3, "nodeId": "svc-chain-orchestrator", "action": "Estimate deposit fees; build deposit memos" },
+        { "order": 4, "nodeId": "ui-modals", "action": "Confirm dual-sided or rune-side txs" },
+        { "order": 5, "nodeId": "svc-chain-orchestrator", "action": "deposit$ → sendPoolTx$ per asset" },
+        { "order": 6, "nodeId": "svc-chain-services", "action": "Sign/broadcast asset + RUNE/CACAO legs" },
+        { "order": 7, "nodeId": "ext-thornode", "action": "Match deposit; mint LP units" },
+        { "order": 8, "nodeId": "view-wallet", "action": "PoolShareView updates via midgard shares" }
+      ]
+    },
+    {
+      "id": "flow-lp-withdraw",
+      "name": "Liquidity Withdraw",
+      "description": "Withdraw symmetrical LP position via withdraw memo to pool/router.",
+      "category": "liquidity",
+      "steps": [
+        { "order": 1, "nodeId": "view-deposit", "action": "Withdraw tab: percent of shares" },
+        { "order": 2, "nodeId": "svc-chain-orchestrator", "action": "withdraw$ builds memo and fees" },
+        { "order": 3, "nodeId": "ui-modals", "action": "Confirm" },
+        { "order": 4, "nodeId": "svc-chain-services", "action": "Broadcast withdraw tx (typically RUNE/CACAO chain)" },
+        { "order": 5, "nodeId": "ext-thornode", "action": "Process withdraw; outbound assets" },
+        { "order": 6, "nodeId": "svc-midgard-thor", "action": "Shares/history refresh" }
+      ]
+    },
+    {
+      "id": "flow-send-tx",
+      "name": "Send Transaction",
+      "description": "Plain transfer of asset to address, optional memo; mode-specific signing.",
+      "category": "transfer",
+      "steps": [
+        { "order": 1, "nodeId": "view-wallet", "action": "SendView: recipient, amount, memo" },
+        { "order": 2, "nodeId": "svc-chain-orchestrator", "action": "transfer$ / sendTx$ fee estimation" },
+        { "order": 3, "nodeId": "ui-modals", "action": "Confirm with correct modal for WalletType" },
+        { "order": 4, "nodeId": "svc-app-wallet", "action": "Provide signing context (phrase | ledger | vault)" },
+        {
+          "order": 5,
+          "nodeId": "svc-chain-services",
+          "action": "prepareTx + sign + broadcast (or IPC for Ledger/MPC)"
+        },
+        { "order": 6, "nodeId": "window-api", "action": "If Ledger: apiHDWallet.sendTx; if Vultisig: apiMpc.sign" },
+        { "order": 7, "nodeId": "ext-chain-rpcs", "action": "Broadcast" },
+        { "order": 8, "nodeId": "svc-clients", "action": "txStatus$ polling" }
+      ]
+    },
+    {
+      "id": "flow-erc20-approve",
+      "name": "EVM ERC20 Approve",
+      "description": "Approve router/spender before EVM pool deposit or swap when allowance insufficient.",
+      "category": "transfer",
+      "steps": [
+        { "order": 1, "nodeId": "view-swap", "action": "Detect need approve (useERC20Approval)" },
+        { "order": 2, "nodeId": "svc-evm-factory", "action": "Build approve tx for router" },
+        { "order": 3, "nodeId": "ui-modals", "action": "Confirm approve" },
+        { "order": 4, "nodeId": "svc-chain-services", "action": "Sign approve (or Ledger approve IPC)" },
+        { "order": 5, "nodeId": "api-ledger", "action": "If Ledger: approveLedgerERC20Token" },
+        { "order": 6, "nodeId": "ext-chain-rpcs", "action": "Broadcast approve; wait receipt" },
+        { "order": 7, "nodeId": "view-swap", "action": "Continue main swap/deposit" }
+      ]
+    },
+    {
+      "id": "flow-bond-node",
+      "name": "Node Bond / Interact",
+      "description": "THOR/MAYA node operator bond, unbond, leave via interact memos.",
+      "category": "ops",
+      "steps": [
+        { "order": 1, "nodeId": "view-bonds", "action": "Select node / bond amount" },
+        { "order": 2, "nodeId": "svc-storage", "action": "userNodes / userBondProviders prefs" },
+        { "order": 3, "nodeId": "svc-thorchain", "action": "Or mayachain interact.ts: build bond memo" },
+        { "order": 4, "nodeId": "ui-modals", "action": "Confirm" },
+        { "order": 5, "nodeId": "svc-chain-services", "action": "Deposit/send on THOR or MAYA" },
+        { "order": 6, "nodeId": "ext-thornode", "action": "Update node bond state" }
+      ]
+    },
+    {
+      "id": "flow-tx-status",
+      "name": "Transaction Status Tracking",
+      "description": "Post-submit observation across source chain and protocol outbounds.",
+      "category": "ops",
+      "steps": [
+        { "order": 1, "nodeId": "svc-clients", "action": "txStatus$ on source chain hash" },
+        { "order": 2, "nodeId": "ext-chain-rpcs", "action": "Confirm inclusion" },
+        { "order": 3, "nodeId": "svc-thorchain", "action": "transactionTracking for THOR swaps/deposits" },
+        { "order": 4, "nodeId": "svc-chainflip", "action": "Or OneClick tracker if that protocol" },
+        { "order": 5, "nodeId": "ext-midgard-api", "action": "Action history update" },
+        { "order": 6, "nodeId": "view-history", "action": "User sees completed action" }
+      ]
+    },
+    {
+      "id": "flow-pools-browse",
+      "name": "Browse Pools",
+      "description": "Load and display THOR/MAYA pool overview and detail.",
+      "category": "ui",
+      "steps": [
+        { "order": 1, "nodeId": "view-pools", "action": "PoolsOverview mount" },
+        { "order": 2, "nodeId": "svc-midgard-thor", "action": "pools$ fetch" },
+        { "order": 3, "nodeId": "svc-midgard-maya", "action": "MAYA pools$ if protocol selected" },
+        { "order": 4, "nodeId": "ext-midgard-api", "action": "HTTP" },
+        { "order": 5, "nodeId": "redux-store", "action": "Optional gecko prices for display" },
+        { "order": 6, "nodeId": "view-pools", "action": "PoolDetailView depth, APY, volume" }
+      ]
+    }
+  ],
+  "walletModes": [
+    {
+      "id": "keystore",
+      "storage": "Encrypted mnemonic in wallets.json via apiKeystore",
+      "signing": "In-app xchainjs clients with phrase",
+      "typeGuard": "isKeystoreMode",
+      "service": "svc-keystore"
+    },
+    {
+      "id": "ledger",
+      "storage": "Address refs in ledgers.json; standalone mode has no phrase",
+      "signing": "Hardware via apiHDWallet / api-ledger",
+      "typeGuard": "isStandaloneLedgerMode",
+      "service": "svc-standalone-ledger"
+    },
+    {
+      "id": "vultisig",
+      "storage": "SDK-managed vaults on disk (main process)",
+      "signing": "MPC via apiMpc / @vultisig/sdk",
+      "typeGuard": "isVultisigMode",
+      "service": "svc-vault-manager"
+    }
+  ],
+  "criticalInvariants": [
+    "appWalletService is sole orchestrator; UI must not call keystore/vault/ledger services for mode questions",
+    "Affiliate fees live in app memoHelper (dx + bps), not SDK swap path",
+    "BigInt over IPC must be String(amount)",
+    "Vultisig SDK is main-process only",
+    "enhancedClient$ for Ledger/Vultisig — keystore client$ is O.none without phrase",
+    "Option is always truthy — use O.isNone/O.isSome",
+    "tokenDecimalMap before Midgard decimals",
+    "Do not reintroduce retired Nine Realms endpoints; use Liquify",
+    "Address resolution priority: Ledger → Vultisig → Keystore",
+    "sendMax: true only for UTXO chains"
+  ]
+}
