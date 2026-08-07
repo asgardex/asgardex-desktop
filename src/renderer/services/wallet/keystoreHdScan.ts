@@ -121,8 +121,36 @@ type DeriveCtx = {
     rootDerivationPaths: ReturnType<typeof getKeystoreDerivation>['rootDerivationPaths']
   ) => {
     getAddressAsync: (i: number) => Promise<string>
+    // Keep the shared client surface narrow (address only). Optional EVM `assets` is
+    // chain-specific and typed differently per xchain package — see fetchScanBalances.
     getBalance: (a: string) => Promise<{ asset: AnyAsset; amount: BaseAmount }[]>
   }
+}
+
+/**
+ * Native balance for one scan candidate.
+ *
+ * EVM xchain providers (`@xchainjs/xchain-evm-providers`) branch on the 2nd arg:
+ * - `undefined` → also loads full ERC-20 `tokentx` history (slow / flaky)
+ * - `[AssetETH]` → treats native as a token (`contractAddress` undefined) and throws
+ *   *after* `eth_getBalance` already succeeded (this hid ETH index 0 in the UI)
+ * - `[]` → native only, no tokentx
+ *
+ * Non-EVM clients keep the single-arg `getBalance(address)` call (their default).
+ */
+const fetchScanBalances = (
+  client: {
+    getBalance: (a: string) => Promise<{ asset: AnyAsset; amount: BaseAmount }[]>
+  },
+  chain: Chain,
+  address: string
+): Promise<{ asset: AnyAsset; amount: BaseAmount }[]> => {
+  if (isEvmHdScanChain(chain)) {
+    // EVM-only overload; not part of the shared DeriveCtx client type (UTXO uses Asset[], not AnyAsset[]).
+    type EvmBalance = (a: string, assets?: AnyAsset[]) => Promise<{ asset: AnyAsset; amount: BaseAmount }[]>
+    return (client.getBalance as EvmBalance)(address, [])
+  }
+  return client.getBalance(address)
 }
 
 const deriveHit = async (
@@ -135,11 +163,14 @@ const deriveHit = async (
     getChainDerivationPath(ctx.chain, settings.account, settings.index, ctx.network, settings.hdMode).path
   const key = candidateKey({ settings })
 
+  // Address first — do not drop a derived address when only the balance call fails.
+  let address = ''
   try {
     const { rootDerivationPaths, walletIndex } = getKeystoreDerivation(ctx.chain, settings)
     const client = ctx.createClient(ctx.phrase, ctx.network, ctx.rpcUrl, rootDerivationPaths)
-    const address = await withTimeout(client.getAddressAsync(walletIndex), SCAN_TIMEOUT_MS)
-    const balances = await withTimeout(client.getBalance(address), SCAN_TIMEOUT_MS)
+    address = await withTimeout(client.getAddressAsync(walletIndex), SCAN_TIMEOUT_MS)
+
+    const balances = await withTimeout(fetchScanBalances(client, ctx.chain, address), SCAN_TIMEOUT_MS)
     const native = balances.find((b) => eqAsset.equals(b.asset, ctx.nativeAsset))
     const amount = native?.amount ?? baseAmount(0)
     return {
@@ -155,11 +186,17 @@ const deriveHit = async (
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
-    logger.warn('keystore HD scan candidate failed', { chain: ctx.chain, path, error: msg })
+    logger.warn('keystore HD scan candidate failed', {
+      chain: ctx.chain,
+      path,
+      index: settings.index,
+      address: address || undefined,
+      error: msg
+    })
     return {
       key,
       settings,
-      address: '',
+      address, // keep derived address if we got past getAddressAsync
       amount: baseAmount(0),
       path,
       profile: meta.profile,

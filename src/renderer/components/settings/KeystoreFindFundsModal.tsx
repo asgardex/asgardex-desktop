@@ -424,6 +424,11 @@ export const KeystoreFindFundsModal = ({ open, chain, network, onClose }: Props)
                             {intl.formatMessage({ id: 'settings.wallet.index' })} {hit.settings.index}
                             {' · '}
                             <span className="font-mono opacity-80">{hit.path}</span>
+                            {hit.error ? (
+                              <span className="block text-warning0 dark:text-warning0d" title={hit.error}>
+                                {hit.error}
+                              </span>
+                            ) : null}
                           </span>
                         </div>
                       )
