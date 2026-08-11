@@ -37,7 +37,7 @@ module.exports = async function notarizing(context) {
     process.env
 
   let options = {
-    appBundleId: 'org.thorchain.asgardex',
+    appBundleId: 'com.asgardex.Asgardex',
     appPath: `${appOutDir}/${appName}.app`
   }
 

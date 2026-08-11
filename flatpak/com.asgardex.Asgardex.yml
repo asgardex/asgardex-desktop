@@ -1,0 +1,114 @@
+# Draft Flathub-style manifest (Path A: ship GitHub Release .deb).
+#
+# This is NOT accepted by dropping a prebuilt .flatpak on Flathub.
+# Submit a copy of this manifest (plus flathub.json, asgardex.sh, metainfo)
+# to flathub/flathub against the `new-pr` branch.
+#
+# Before first submission:
+#   1. Confirm app id + asgardex.com verification token
+#   2. Add screenshots to the metainfo
+#   3. Verify deb unpack paths match the current electron-builder layout
+#   4. Refresh sha256 for the release deb you pin
+#   5. Local: flatpak run --command=flathub-build org.flatpak.Builder --install com.asgardex.Asgardex.yml
+#   6. Lint:  flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest com.asgardex.Asgardex.yml
+#
+# App id is tied to https://asgardex.com/ for Flathub verification.
+
+id: com.asgardex.Asgardex
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '24.08'
+command: asgardex
+separate-locales: false
+
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  - --socket=pulseaudio
+  - --share=network
+  - --talk-name=org.freedesktop.Notifications
+  # Ledger USB (host udev rules still required)
+  - --device=all
+  # Native deb/AppImage keystore import
+  - --filesystem=~/.config/ASGARDEX:ro
+  # Migrate from previous Flatpak id
+  - --filesystem=~/.var/app/org.thorchain.asgardex/config/ASGARDEX:ro
+
+modules:
+  - name: asgardex
+    buildsystem: simple
+    build-commands:
+      # Adjust paths after inspecting the release .deb (dpkg-deb -c …).
+      - |
+        bsdtar -Oxf asgardex.deb data.tar.* |
+          bsdtar -xf - \
+            --exclude='./usr/share/doc' \
+            --exclude='./usr/share/lintian'
+      - |
+        if [ -d opt/ASGARDEX ]; then
+          mv opt/ASGARDEX "${FLATPAK_DEST}/asgardex"
+        elif [ -d opt/asgardex ]; then
+          mv opt/asgardex "${FLATPAK_DEST}/asgardex"
+        else
+          echo "Could not find unpacked Electron app under opt/" >&2
+          ls -la opt || true
+          exit 1
+        fi
+      - install -Dm0755 asgardex.sh "${FLATPAK_DEST}/bin/asgardex"
+      - install -Dm0644 com.asgardex.Asgardex.metainfo.xml "${FLATPAK_DEST}/share/metainfo/com.asgardex.Asgardex.metainfo.xml"
+      - install -Dm0644 com.asgardex.Asgardex.desktop "${FLATPAK_DEST}/share/applications/com.asgardex.Asgardex.desktop"
+      - desktop-file-edit --set-key=Exec --set-value='asgardex %U' "${FLATPAK_DEST}/share/applications/com.asgardex.Asgardex.desktop"
+      - desktop-file-edit --set-key=Icon --set-value=com.asgardex.Asgardex "${FLATPAK_DEST}/share/applications/com.asgardex.Asgardex.desktop"
+      # Prefer icons from the deb if present; else fall back to shipped PNG set.
+      - |
+        set -e
+        installed=0
+        if [ -d usr/share/icons ]; then
+          for f in usr/share/icons/hicolor/*/apps/*; do
+            [ -f "$f" ] || continue
+            size_dir=$(basename "$(dirname "$(dirname "$f")")")
+            install -Dm0644 "$f" \
+              "${FLATPAK_DEST}/share/icons/hicolor/${size_dir}/apps/com.asgardex.Asgardex.png"
+            installed=1
+          done
+        fi
+        if [ "$installed" -eq 0 ]; then
+          for size in 16 24 32 48 64 96 128 256 512; do
+            src="icons/${size}x${size}.png"
+            if [ -f "$src" ]; then
+              install -Dm0644 "$src" \
+                "${FLATPAK_DEST}/share/icons/hicolor/${size}x${size}/apps/com.asgardex.Asgardex.png"
+            fi
+          done
+        fi
+      - install -Dm0644 LICENSE -t "${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}"
+    sources:
+      - type: file
+        dest-filename: asgardex.deb
+        # Pin to a signed GitHub Release asset; bump version + sha256 on each Flathub update.
+        url: https://github.com/asgardex/asgardex-desktop/releases/download/v1.45.1/ASGARDEX-1.45.1-linux.deb
+        sha256: 2f6ad9b9becd4264dedcdf1bc0d6cb645411c7349aacbfa6034ed935bb7242a8
+        only-arches:
+          - x86_64
+        # Optional auto-update helper for maintainers (enable after submission):
+        # x-checker-data:
+        #   type: json
+        #   url: https://api.github.com/repos/asgardex/asgardex-desktop/releases/latest
+        #   tag-query: .tag_name
+        #   version-query: .tag_name | sub("^v"; "")
+        #   url-query: .assets[] | select(.name|test("linux\\.deb$")) | .browser_download_url
+      - type: file
+        path: asgardex.sh
+      - type: file
+        path: ../resources/linux/com.asgardex.Asgardex.metainfo.xml
+      - type: file
+        path: ../resources/linux/com.asgardex.Asgardex.desktop
+      - type: file
+        path: ../LICENSE
+      - type: dir
+        path: ../resources/icons
+        dest: icons

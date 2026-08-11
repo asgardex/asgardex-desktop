@@ -1,5 +1,7 @@
 module.exports = {
-  appId: 'org.thorchain.asgardex',
+  // Reverse-DNS id for Flathub verification under asgardex.com
+  // (token: https://asgardex.com/.well-known/org.flathub.VerifiedApps.txt)
+  appId: 'com.asgardex.Asgardex',
   productName: 'ASGARDEX',
   copyright: 'Copyright © 2025 ${author}',
 
@@ -110,7 +112,9 @@ module.exports = {
       // The app's own data lives in the per-app sandbox dir (no grant needed);
       // export/import of keystore files goes through the FileChooser portal.
       // Note: case-sensitive — must match app.name (`ASGARDEX`).
-      '--filesystem=~/.config/ASGARDEX:ro'
+      '--filesystem=~/.config/ASGARDEX:ro',
+      // One-time migration from the previous Flatpak id (org.thorchain.asgardex).
+      '--filesystem=~/.var/app/org.thorchain.asgardex/config/ASGARDEX:ro'
     ]
   },
   publish: {

@@ -304,7 +304,7 @@ The bundle is written to `release/ASGARDEX-<version>-linux.flatpak`. Install and
 
 ```bash
 flatpak install --user --bundle release/ASGARDEX-<version>-linux.flatpak
-flatpak run org.thorchain.asgardex
+flatpak run com.asgardex.Asgardex
 ```
 
 > Switching from a `*.deb`/AppImage install? Existing keystores are imported into the sandbox automatically on first launch — see [Keystores → Linux](#linux).
@@ -337,12 +337,14 @@ By creating or importing a keystore wallet, ASGARDEX is adding its encrypted key
 # ASGARDEX installed from *.deb
 ~/.config/ASGARDEX/storage/wallets.json
 # ASGARDEX installed from *.flatpak (sandboxed path)
-~/.var/app/org.thorchain.asgardex/config/ASGARDEX/storage/wallets.json
+~/.var/app/com.asgardex.Asgardex/config/ASGARDEX/storage/wallets.json
 # ASGARDEX built and run locally
 ~/.config/Electron/storage/wallets.json
 ```
 
-The Flatpak runs in a sandbox, so `~/.config` is redirected to `~/.var/app/org.thorchain.asgardex/config`. When switching from the `*.deb`/AppImage install, ASGARDEX imports the existing `~/.config/ASGARDEX/storage` into the sandbox automatically on first launch (the native files are left untouched).
+The Flatpak runs in a sandbox, so `~/.config` is redirected to `~/.var/app/com.asgardex.Asgardex/config`. When switching from the `*.deb`/AppImage install (or the previous Flatpak id `org.thorchain.asgardex`), ASGARDEX imports existing keystore storage into the sandbox automatically on first launch (the source files are left untouched).
+
+For Flathub packaging notes and the draft manifest, see [`flatpak/README.md`](./flatpak/README.md). AppStream metadata lives at `resources/linux/com.asgardex.Asgardex.metainfo.xml`.
 
 By removing a wallet in `Wallet` -> `Settings` its data will be removed from `wallets.json`. ASGARDEX will prompt a message to users to inform about saving its phrase on a save place before removing the wallet.
 
