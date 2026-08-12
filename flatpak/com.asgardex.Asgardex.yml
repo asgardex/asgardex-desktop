@@ -24,8 +24,11 @@ command: asgardex
 separate-locales: false
 
 finish-args:
+  # Match electron-builder Flatpak finishArgs: Wayland + always-available X11
+  # (XWayland on Wayland sessions). Safer default for Electron than
+  # fallback-x11 alone (native Wayland still experimental).
   - --socket=wayland
-  - --socket=fallback-x11
+  - --socket=x11
   - --share=ipc
   - --device=dri
   - --socket=pulseaudio
@@ -59,6 +62,15 @@ modules:
           echo "Could not find unpacked Electron app under opt/" >&2
           ls -la opt || true
           exit 1
+        fi
+      # Electron defaults to {appname}.desktop; Flatpak requires the app id.
+      # BaseApp ships patch-desktop-filename for repacked binaries (app.asar).
+      - |
+        asar="${FLATPAK_DEST}/asgardex/resources/app.asar"
+        if [ -f "$asar" ]; then
+          patch-desktop-filename "$asar"
+        else
+          echo "warning: no app.asar at $asar — skip desktopName patch" >&2
         fi
       - install -Dm0755 asgardex.sh "${FLATPAK_DEST}/bin/asgardex"
       - install -Dm0644 com.asgardex.Asgardex.metainfo.xml "${FLATPAK_DEST}/share/metainfo/com.asgardex.Asgardex.metainfo.xml"

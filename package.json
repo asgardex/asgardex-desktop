@@ -1,6 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
+  "desktopName": "com.asgardex.Asgardex.desktop",
   "version": "1.45.1",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN, MAYACHAIN, CHAINFLIP",
   "main": "build/main/electron.js",
