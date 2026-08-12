@@ -211,14 +211,31 @@ const importHostDirAtomically = async (opts: {
   markerBody: object
 }): Promise<void> => {
   const { sourceDir, destDir, stagingDir, markerFileName, markerBody } = opts
+  const stagingMarker = path.join(stagingDir, markerFileName)
 
-  await fs.remove(stagingDir)
+  // Crash recovery: a prior run may have finished copy+marker, removed dest, then
+  // failed before move. Promote that complete staging tree instead of wiping it.
+  if (await fs.pathExists(stagingMarker)) {
+    try {
+      if (await fs.pathExists(destDir)) {
+        await fs.remove(destDir)
+      }
+      await fs.move(stagingDir, destDir)
+      return
+    } catch (_) {
+      await fs.remove(stagingDir).catch(() => undefined)
+      // Fall through and re-copy from host.
+    }
+  } else if (await fs.pathExists(stagingDir)) {
+    // Incomplete staging (no marker) — discard and re-copy.
+    await fs.remove(stagingDir)
+  }
 
   try {
     await fs.copy(sourceDir, stagingDir)
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename -- trunk-ignore(eslint/security/detect-non-literal-fs-filename)
-    await fs.writeFile(path.join(stagingDir, markerFileName), JSON.stringify(markerBody, null, 2))
+    await fs.writeFile(stagingMarker, JSON.stringify(markerBody, null, 2))
 
     // Caller guaranteed dest has no real wallets/vaults. Empty/default ok to replace.
     if (await fs.pathExists(destDir)) {

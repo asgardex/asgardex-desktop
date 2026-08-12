@@ -52,6 +52,14 @@ module.exports = {
       }
     ]
   },
+  // Keep Windows uninstall/upgrade identity after appId rename for Flathub
+  // (org.thorchain.asgardex → com.asgardex.Asgardex). electron-builder defaults
+  // APP_GUID to UUID.v5(appId, NSIS namespace); pin the pre-rename value so NSIS
+  // replaces the existing install instead of installing side-by-side.
+  // UUID.v5("org.thorchain.asgardex", "50e065bc-3134-11e6-9bab-38c9862bdaf3")
+  nsis: {
+    guid: '5bcaf717-02bc-561e-bd5c-5ecf0e404bb5'
+  },
   linux: {
     artifactName: '${productName}-${version}-${os}.${ext}',
     category: 'Finance',
