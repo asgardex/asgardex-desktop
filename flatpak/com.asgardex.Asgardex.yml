@@ -24,9 +24,8 @@ command: asgardex
 separate-locales: false
 
 finish-args:
-  # Match electron-builder Flatpak finishArgs: Wayland + always-available X11
-  # (XWayland on Wayland sessions). Safer default for Electron than
-  # fallback-x11 alone (native Wayland still experimental).
+  # Display parity with electron-builder Flatpak finishArgs and Flatpak Electron
+  # docs (prefer X11/XWayland; native Wayland still experimental without ozone).
   - --socket=wayland
   - --socket=x11
   - --share=ipc
