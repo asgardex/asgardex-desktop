@@ -37,6 +37,8 @@ finish-args:
   - --filesystem=~/.config/ASGARDEX:ro
   # Migrate from previous Flatpak id
   - --filesystem=~/.var/app/org.thorchain.asgardex/config/ASGARDEX:ro
+  # Vultisig SDK default store (native). RO import only; live path is under app config.
+  - --filesystem=~/.vultisig:ro
 
 modules:
   - name: asgardex

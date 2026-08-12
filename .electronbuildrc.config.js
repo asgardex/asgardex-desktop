@@ -114,7 +114,10 @@ module.exports = {
       // Note: case-sensitive — must match app.name (`ASGARDEX`).
       '--filesystem=~/.config/ASGARDEX:ro',
       // One-time migration from the previous Flatpak id (org.thorchain.asgardex).
-      '--filesystem=~/.var/app/org.thorchain.asgardex/config/ASGARDEX:ro'
+      '--filesystem=~/.var/app/org.thorchain.asgardex/config/ASGARDEX:ro',
+      // Vultisig SDK default store (native deb/AppImage). RO import only —
+      // live Flatpak vaults go under app config (APP_DATA_DIR/vultisig).
+      '--filesystem=~/.vultisig:ro'
     ]
   },
   publish: {

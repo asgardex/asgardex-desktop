@@ -68,6 +68,8 @@ Docs: [Submission](https://docs.flathub.org/docs/for-app-authors/submission) · 
 Previous electron-builder / local Flatpak id: `org.thorchain.asgardex`.
 
 - New sandbox: `~/.var/app/com.asgardex.Asgardex/`
-- finishArgs + `storageMigration.ts` import once from:
-  - `~/.config/ASGARDEX` (deb/AppImage)
-  - `~/.var/app/org.thorchain.asgardex/config/ASGARDEX` (legacy Flatpak)
+- finishArgs + `storageMigration.ts` import once from host stores:
+  - Keystore: `~/.config/ASGARDEX` (deb/AppImage) and legacy Flatpak `…/org.thorchain.asgardex/config/ASGARDEX`
+  - Vultisig: host `~/.vultisig` (SDK default) into sandbox `…/ASGARDEX/vultisig`
+- If both native and legacy keystore trees have wallets, the **newest** `wallets.json` (mtime) wins; same idea for vault trees (`vault:*.json`). Copies are atomic (staging + rename). Separate markers so keystore and Vultisig can succeed/fail independently.
+- On Flatpak, the SDK is reconfigured to `FileStorage({ basePath: APP_DATA_DIR/vultisig })` so the live store is writable without RW host access.
