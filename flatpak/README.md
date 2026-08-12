@@ -2,16 +2,16 @@
 
 App id: **`com.asgardex.Asgardex`** (domain: [asgardex.com](https://asgardex.com/)).
 
-This is a **draft Path A** manifest for **local testing and future Flathub work**. A **source-build** (or an **approved Flathub exception**) will be required for an official Flathub submission. The `.deb`-based Path A layout here is packaging infrastructure, not a ready-to-submit Flathub PR.
+> **Draft status:** This is a draft Path A manifest for **local testing and future Flathub work**. A **source-build** (or an **approved exception**) will be required for an official Flathub submission. The checklist and steps below are retained as practical guidance for that future work; they do not mean this `.deb`-based layout is already the accepted store path.
 
 ## Two packaging paths
 
 | Path | What | Use |
 |------|------|-----|
 | **electron-builder** | `yarn package:electron` → `release/ASGARDEX-*-linux.flatpak` | Direct installs / GitHub Releases (current CI) |
-| **Draft Path A manifest** | `flatpak/com.asgardex.Asgardex.yml` | Local Flathub-style builds (unpack release `.deb`); not the official submission path yet |
+| **Draft Path A manifest** | `flatpak/com.asgardex.Asgardex.yml` | Local Flathub-style builds (unpack release `.deb`); foundation for a later Flathub PR |
 
-Flathub does **not** accept uploading the electron-builder `.flatpak` bundle. An official listing needs a **manifest** that meets [Flathub requirements](https://docs.flathub.org/docs/for-app-authors/requirements) (typically a full source build for source-available apps, unless maintainers get a documented exception).
+Flathub does **not** accept uploading the electron-builder `.flatpak` bundle. Official listing still needs a **manifest** Flathub CI can build. For a source-available app that usually means a **from-source** recipe (or a documented exception); Path A here is for local iteration and packaging infra, not a claim that the release `.deb` is already Flathub-ready.
 
 ## Verification (after Flathub accepts the app)
 
@@ -48,13 +48,15 @@ Inspect the release deb layout if install fails:
 dpkg-deb -c ASGARDEX-*-linux.deb | head -50
 ```
 
-## Submitting to Flathub
+## Submitting to Flathub (when ready — not this draft alone)
+
+Before opening an official Flathub PR, plan either a **from-source** module set or an **approved exception** for binary/extra-data packaging. The steps below remain the practical process once that packaging approach is settled:
 
 1. Upstream: merge this app id, metainfo, and stable Linux deb releases.
 2. Add screenshots URLs to `resources/linux/com.asgardex.Asgardex.metainfo.xml`.
 3. Fork [flathub/flathub](https://github.com/flathub/flathub), base branch **`new-pr`** (not `master`).
 4. Copy into the submission (paths flattened for Flathub repo layout):
-   - `com.asgardex.Asgardex.yml`
+   - `com.asgardex.Asgardex.yml` (or the future source-build manifest)
    - `flathub.json`
    - `asgardex.sh`
    - metainfo + desktop (as local `file` sources)
