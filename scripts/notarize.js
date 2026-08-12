@@ -36,8 +36,10 @@ module.exports = async function notarizing(context) {
   const { APPLE_API_KEY, APPLE_API_KEY_ID, APPLE_API_ISSUER, SIGNING_APPLE_ID, SIGNING_APP_PASSWORD, SIGNING_TEAM_ID } =
     process.env
 
+  // Single source of truth: same appId electron-builder used for this build
+  // (CFBundleIdentifier). Avoid a second hard-coded reverse-DNS string.
   let options = {
-    appBundleId: 'org.thorchain.asgardex',
+    appBundleId: context.packager.appInfo.id,
     appPath: `${appOutDir}/${appName}.app`
   }
 

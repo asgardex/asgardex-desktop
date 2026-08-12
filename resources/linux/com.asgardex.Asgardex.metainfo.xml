@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AppStream metainfo for Flathub / Linux software centers.
+  Id must match electron-builder appId and Flatpak application id.
+  https://docs.flathub.org/docs/for-app-authors/metainfo-guidelines
+-->
+<component type="desktop-application">
+  <id>com.asgardex.Asgardex</id>
+
+  <name>ASGARDEX</name>
+  <summary>Cross-chain DeFi wallet for THORChain, MAYAChain, and more</summary>
+
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+
+  <developer id="com.asgardex">
+    <name>ASGARDEX Maintainers</name>
+  </developer>
+
+  <url type="homepage">https://asgardex.com/</url>
+  <url type="bugtracker">https://github.com/asgardex/asgardex-desktop/issues</url>
+  <url type="vcs-browser">https://github.com/asgardex/asgardex-desktop</url>
+
+  <description>
+    <p>
+      ASGARDEX is a non-custodial desktop wallet and exchange client for
+      THORChain, MAYAChain, Chainflip, and other supported networks. Swap assets
+      across chains, manage liquidity, and hold funds with keystore, Ledger, or
+      Vultisig vaults.
+    </p>
+    <p>
+      <em>Ledger hardware wallets:</em> on Linux, install the Ledger udev rules
+      on the host once so the device is visible to the app (including Flatpak).
+      See the project README for the rule package and setup steps.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">com.asgardex.Asgardex.desktop</launchable>
+  <provides>
+    <id>com.asgardex.Asgardex.desktop</id>
+  </provides>
+
+  <categories>
+    <category>Office</category>
+    <category>Finance</category>
+  </categories>
+
+  <keywords>
+    <keyword>wallet</keyword>
+    <keyword>crypto</keyword>
+    <keyword>defi</keyword>
+    <keyword>thorchain</keyword>
+    <keyword>mayachain</keyword>
+    <keyword>swap</keyword>
+  </keywords>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="1.45.1" date="2026-08-07" />
+  </releases>
+
+  <!--
+    Add <screenshots> with HTTPS image URLs before Flathub submission
+    (required for a good store listing). Prefer asgardex.com or GitHub raw.
+  -->
+</component>
