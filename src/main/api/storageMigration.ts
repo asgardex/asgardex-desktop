@@ -207,6 +207,20 @@ const selectHostVultisigSource = async (): Promise<string | undefined> => {
 }
 
 /**
+ * Persist a one-shot migration marker. Used after a successful host import and
+ * when the sandbox already holds real wallets/vaults so we never re-import host
+ * data later if the user clears the sandbox list.
+ */
+const writeMigrationMarker = async (
+  markerPath: string,
+  body: { at: string; from: string; reason?: string }
+): Promise<void> => {
+  await fs.ensureDir(path.dirname(markerPath))
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- module-level constant marker path
+  await fs.writeFile(markerPath, JSON.stringify(body, null, 2))
+}
+
+/**
  * Copy a host directory into `dest` via sibling staging + rename.
  * Marker is written only inside staging so a half-copied tree never becomes live.
  * `stagingMarker` must be a module-level constant under `stagingDir` (no dynamic join).
@@ -281,7 +295,18 @@ export const migrateHostStorageIntoFlatpak = async (): Promise<void> => {
 
   try {
     if (await fs.pathExists(MIGRATION_MARKER)) return
-    if (await hasWallets(path.join(STORAGE_DIR, 'wallets.json'))) return
+
+    // Sandbox already has wallets (e.g. created in-app). Mark complete so we
+    // never re-import host data after the user later removes all wallets.
+    if (await hasWallets(path.join(STORAGE_DIR, 'wallets.json'))) {
+      await writeMigrationMarker(MIGRATION_MARKER, {
+        at: new Date().toISOString(),
+        from: 'sandbox-already-had-wallets',
+        reason: 'skip-import'
+      })
+      log.info('[storage-migration] Sandbox already has wallets; wrote keystore migration marker')
+      return
+    }
 
     const sourceStorage = await selectHostStorageSource()
     if (!sourceStorage) return
@@ -316,7 +341,18 @@ export const migrateHostVultisigIntoFlatpak = async (): Promise<void> => {
 
   try {
     if (await fs.pathExists(VULTISIG_MIGRATION_MARKER)) return
-    if (await hasVaults(VULTISIG_DIR)) return
+
+    // Sandbox already has vaults. Mark complete so clearing the vault list
+    // later does not re-import host ~/.vultisig on a subsequent launch.
+    if (await hasVaults(VULTISIG_DIR)) {
+      await writeMigrationMarker(VULTISIG_MIGRATION_MARKER, {
+        at: new Date().toISOString(),
+        from: 'sandbox-already-had-vaults',
+        reason: 'skip-import'
+      })
+      log.info('[storage-migration] Sandbox already has vaults; wrote Vultisig migration marker')
+      return
+    }
 
     const sourceDir = await selectHostVultisigSource()
     if (!sourceDir) return
