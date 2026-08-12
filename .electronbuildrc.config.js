@@ -97,7 +97,9 @@ module.exports = {
     runtimeVersion: '24.08',
     baseVersion: '24.08',
     finishArgs: [
-      // Rendering (Wayland + X11 fallback)
+      // Display: match Flatpak Electron sample / electron-builder defaults.
+      // wayland + x11 keeps XWayland available; native Wayland remains opt-in
+      // (ozone flags) until Electron 38+ is the app baseline.
       '--socket=wayland',
       '--socket=x11',
       '--share=ipc',

@@ -64,14 +64,16 @@ modules:
           exit 1
         fi
       # Electron defaults to {appname}.desktop; Flatpak requires the app id.
-      # BaseApp ships patch-desktop-filename for repacked binaries (app.asar).
+      # BaseApp 24.08 ships patch-desktop-filename for repacked binaries (app.asar).
+      # (BaseApp 25.08+ renames this to patch-electron-desktop-filename.)
       - |
         asar="${FLATPAK_DEST}/asgardex/resources/app.asar"
-        if [ -f "$asar" ]; then
-          patch-desktop-filename "$asar"
-        else
-          echo "warning: no app.asar at $asar — skip desktopName patch" >&2
+        if [ ! -f "$asar" ]; then
+          echo "error: expected Electron app.asar at $asar after deb unpack" >&2
+          ls -la "${FLATPAK_DEST}/asgardex" "${FLATPAK_DEST}/asgardex/resources" 2>/dev/null || true
+          exit 1
         fi
+        patch-desktop-filename "$asar"
       - install -Dm0755 asgardex.sh "${FLATPAK_DEST}/bin/asgardex"
       - install -Dm0644 com.asgardex.Asgardex.metainfo.xml "${FLATPAK_DEST}/share/metainfo/com.asgardex.Asgardex.metainfo.xml"
       - install -Dm0644 com.asgardex.Asgardex.desktop "${FLATPAK_DEST}/share/applications/com.asgardex.Asgardex.desktop"
