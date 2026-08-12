@@ -1,18 +1,15 @@
-# Draft Flathub-style manifest (Path A: ship GitHub Release .deb).
+# Draft Path A manifest (GitHub Release .deb unpack) for local testing and
+# future Flathub work — NOT an official Flathub submission by itself.
 #
-# This is NOT accepted by dropping a prebuilt .flatpak on Flathub.
-# Submit a copy of this manifest (plus flathub.json, asgardex.sh, metainfo)
-# to flathub/flathub against the `new-pr` branch.
+# Flathub will require a source build (or an approved exception) for a
+# source-available app. See flatpak/README.md.
 #
-# Before first submission:
-#   1. Confirm app id + asgardex.com verification token
-#   2. Add screenshots to the metainfo
-#   3. Verify deb unpack paths match the current electron-builder layout
-#   4. Refresh sha256 for the release deb you pin
-#   5. Local: flatpak run --command=flathub-build org.flatpak.Builder --install com.asgardex.Asgardex.yml
-#   6. Lint:  flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest com.asgardex.Asgardex.yml
+# Local:
+#   1. Confirm app id + deb unpack paths + sha256 pin
+#   2. flatpak run --command=flathub-build org.flatpak.Builder --install com.asgardex.Asgardex.yml
+#   3. flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest com.asgardex.Asgardex.yml
 #
-# App id is tied to https://asgardex.com/ for Flathub verification.
+# App id is tied to https://asgardex.com/ for eventual Flathub verification.
 
 id: com.asgardex.Asgardex
 runtime: org.freedesktop.Platform

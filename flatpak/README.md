@@ -2,14 +2,16 @@
 
 App id: **`com.asgardex.Asgardex`** (domain: [asgardex.com](https://asgardex.com/)).
 
+This is a **draft Path A** manifest for **local testing and future Flathub work**. A **source-build** (or an **approved Flathub exception**) will be required for an official Flathub submission. The `.deb`-based Path A layout here is packaging infrastructure, not a ready-to-submit Flathub PR.
+
 ## Two packaging paths
 
 | Path | What | Use |
 |------|------|-----|
 | **electron-builder** | `yarn package:electron` → `release/ASGARDEX-*-linux.flatpak` | Direct installs / GitHub Releases (current CI) |
-| **Flathub manifest** | `flatpak/com.asgardex.Asgardex.yml` | Flathub store (Path A: unpack release `.deb`) |
+| **Draft Path A manifest** | `flatpak/com.asgardex.Asgardex.yml` | Local Flathub-style builds (unpack release `.deb`); not the official submission path yet |
 
-Flathub does **not** accept uploading the electron-builder `.flatpak` bundle. Submit a **manifest** so Flathub CI builds the app.
+Flathub does **not** accept uploading the electron-builder `.flatpak` bundle. An official listing needs a **manifest** that meets [Flathub requirements](https://docs.flathub.org/docs/for-app-authors/requirements) (typically a full source build for source-available apps, unless maintainers get a documented exception).
 
 ## Verification (after Flathub accepts the app)
 
