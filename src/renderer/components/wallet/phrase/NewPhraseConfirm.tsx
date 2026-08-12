@@ -4,7 +4,6 @@ import { TrashIcon as DeleteOutlined, ArrowUturnRightIcon as RedoOutlined } from
 import shuffleArray from 'lodash/shuffle'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
-import { v4 as uuidv4 } from 'uuid'
 
 import { isError } from '../../../../shared/utils/guard'
 import { isSelectedFactory, sortedSelected } from '../../../helpers/array'
@@ -36,8 +35,7 @@ export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; on
     const words = mnemonic.split(' ')
     if (words && !initialized) {
       const res = words.map((e: string) => {
-        const uniqueId = uuidv4()
-        return { text: e, _id: uniqueId }
+        return { text: e, _id: crypto.randomUUID() }
       })
       updateWordList(res)
       setShuffledWordsList(shuffledWords(res))
