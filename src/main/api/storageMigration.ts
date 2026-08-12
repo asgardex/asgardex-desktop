@@ -13,10 +13,12 @@ const MIGRATION_MARKER = path.join(STORAGE_DIR, '.host-storage-migrated')
 // Staging dir beside `storage/` (same parent filesystem) so rename is atomic.
 // Leftover from a crashed import is cleaned on the next attempt.
 const STAGING_DIR = path.join(APP_DATA_DIR, 'storage.migrating')
+const STAGING_MARKER = path.join(STAGING_DIR, '.host-storage-migrated')
 
 // Separate vault marker so keystore and Vultisig succeed/fail independently.
 const VULTISIG_MIGRATION_MARKER = path.join(VULTISIG_DIR, '.host-vultisig-migrated')
 const VULTISIG_STAGING_DIR = path.join(APP_DATA_DIR, 'vultisig.migrating')
+const VULTISIG_STAGING_MARKER = path.join(VULTISIG_STAGING_DIR, '.host-vultisig-migrated')
 
 /**
  * Previous Flatpak app id (pre Flathub / asgardex.com reverse-DNS rename).
@@ -44,6 +46,8 @@ const hasWallets = async (walletsFile: string): Promise<boolean> => {
  */
 const isVaultPayloadFile = (name: string): boolean => {
   if (!name.endsWith('.json') || name.endsWith('.tmp')) return false
+  // Reject path segments / traversal before any join.
+  if (name !== path.basename(name)) return false
   // listVaults: split(':').length === 2 && parts[0] === 'vault'
   const base = name.slice(0, -'.json'.length)
   const parts = base.split(':')
@@ -57,7 +61,7 @@ const isVaultPayloadFile = (name: string): boolean => {
 const hasVaults = async (dir: string): Promise<boolean> => {
   try {
     if (!(await fs.pathExists(dir))) return false
-    // eslint-disable-next-line security/detect-non-literal-fs-filename -- trunk-ignore(eslint/security/detect-non-literal-fs-filename)
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed host candidate dir
     const entries = await fs.readdir(dir)
     return entries.some(isVaultPayloadFile)
   } catch (_) {
@@ -70,14 +74,17 @@ const hasVaults = async (dir: string): Promise<boolean> => {
  */
 const vaultTreeMtimeMs = async (dir: string): Promise<number | undefined> => {
   try {
-    // eslint-disable-next-line security/detect-non-literal-fs-filename -- trunk-ignore(eslint/security/detect-non-literal-fs-filename)
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed host candidate dir
     const entries = await fs.readdir(dir)
     let max: number | undefined
     for (const name of entries) {
       if (!isVaultPayloadFile(name)) continue
       try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename -- trunk-ignore(eslint/security/detect-non-literal-fs-filename)
-        const st = await fs.stat(path.join(dir, name))
+        // name is basename-only (isVaultPayloadFile); dir is a fixed host candidate.
+        /* trunk-ignore(semgrep/javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal) */
+        const filePath = path.join(dir, name)
+        // eslint-disable-next-line security/detect-non-literal-fs-filename -- sanitized vault payload basename
+        const st = await fs.stat(filePath)
         if (max === undefined || st.mtimeMs > max) max = st.mtimeMs
       } catch (_) {
         // skip unreadable entry
@@ -168,7 +175,7 @@ const selectHostStorageSource = async (): Promise<string | undefined> => {
     if (!(await hasWallets(walletsFile))) continue
     try {
       // Path is from fixed host candidates + APP_NAME, not user input.
-      // eslint-disable-next-line security/detect-non-literal-fs-filename -- trunk-ignore(eslint/security/detect-non-literal-fs-filename)
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed host candidate path
       const st = await fs.stat(walletsFile)
       withWallets.push({ dir, mtimeMs: st.mtimeMs })
     } catch (_) {
@@ -202,16 +209,16 @@ const selectHostVultisigSource = async (): Promise<string | undefined> => {
 /**
  * Copy a host directory into `dest` via sibling staging + rename.
  * Marker is written only inside staging so a half-copied tree never becomes live.
+ * `stagingMarker` must be a module-level constant under `stagingDir` (no dynamic join).
  */
 const importHostDirAtomically = async (opts: {
   sourceDir: string
   destDir: string
   stagingDir: string
-  markerFileName: string
+  stagingMarker: string
   markerBody: object
 }): Promise<void> => {
-  const { sourceDir, destDir, stagingDir, markerFileName, markerBody } = opts
-  const stagingMarker = path.join(stagingDir, markerFileName)
+  const { sourceDir, destDir, stagingDir, stagingMarker, markerBody } = opts
 
   // Crash recovery: a prior run may have finished copy+marker, removed dest, then
   // failed before move. Promote that complete staging tree instead of wiping it.
@@ -234,7 +241,8 @@ const importHostDirAtomically = async (opts: {
   try {
     await fs.copy(sourceDir, stagingDir)
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename -- trunk-ignore(eslint/security/detect-non-literal-fs-filename)
+    // stagingMarker is a module-level constant under APP_DATA_DIR.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     await fs.writeFile(stagingMarker, JSON.stringify(markerBody, null, 2))
 
     // Caller guaranteed dest has no real wallets/vaults. Empty/default ok to replace.
@@ -283,7 +291,7 @@ export const migrateHostStorageIntoFlatpak = async (): Promise<void> => {
       sourceDir: sourceStorage,
       destDir: STORAGE_DIR,
       stagingDir: STAGING_DIR,
-      markerFileName: '.host-storage-migrated',
+      stagingMarker: STAGING_MARKER,
       markerBody: { at: new Date().toISOString(), from: sourceStorage }
     })
     log.info('[storage-migration] Host storage imported successfully')
@@ -318,7 +326,7 @@ export const migrateHostVultisigIntoFlatpak = async (): Promise<void> => {
       sourceDir,
       destDir: VULTISIG_DIR,
       stagingDir: VULTISIG_STAGING_DIR,
-      markerFileName: '.host-vultisig-migrated',
+      stagingMarker: VULTISIG_STAGING_MARKER,
       markerBody: { at: new Date().toISOString(), from: sourceDir }
     })
     log.info('[storage-migration] Host Vultisig store imported successfully')
