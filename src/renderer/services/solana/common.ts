@@ -17,10 +17,12 @@ import { Client$, ClientState, ClientState$ } from './types'
 const solApiKey = envOrDefault(import.meta.env.VITE_SOL_API_KEY, '')
 
 const defaultClientUrls = (): Record<Network, string[]> => {
+  const heliusMain = solApiKey ? [`https://mainnet.helius-rpc.com/?api-key=${solApiKey}`] : []
+  const heliusDev = solApiKey ? [`https://devnet.helius-rpc.com/?api-key=${solApiKey}`] : []
   return {
     [Network.Testnet]: ['https://api.testnet.solana.com'],
-    [Network.Stagenet]: [`https://devnet.helius-rpc.com/?api-key=${solApiKey}`],
-    [Network.Mainnet]: [`https://mainnet.helius-rpc.com/?api-key=${solApiKey}`]
+    [Network.Stagenet]: ['https://api.devnet.solana.com', ...heliusDev],
+    [Network.Mainnet]: ['https://api.mainnet-beta.solana.com', ...heliusMain]
   }
 }
 
