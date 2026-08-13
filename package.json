@@ -77,7 +77,7 @@
     "@heroicons/react": "^2.2.0",
     "@ledgerhq/hw-transport": "^6.31.6",
     "@ledgerhq/hw-transport-node-hid-singleton": "6.31.8",
-    "@reduxjs/toolkit": "^2.3.0",
+    "@reduxjs/toolkit": "^2.12.0",
     "@tanstack/react-table": "^8.21.3",
     "@vultisig/sdk": "2.19.19",
     "@xchainjs/xchain-aggregator": "2.5.2",
