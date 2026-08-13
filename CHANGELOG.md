@@ -6,6 +6,21 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
+# 1.45.2 (2026-08-13)
+
+PRs merged to `develop` since tag `v1.45.1` / release branch for 1.45.1.
+
+## Update/Fixes
+
+- fix(sol): floor Solana priority fee so OneClick token swaps can broadcast [#1168](https://github.com/asgardex/asgardex-desktop/pull/1168)
+- fix(thorchain): cut Liquify load from swap `tx/stages` polling (block-time floor, no pending double-fire, incomplete max-age) [#1164](https://github.com/asgardex/asgardex-desktop/pull/1164)
+- fix(flatpak): rename app id to `com.asgardex.Asgardex` (asgardex.com), harden host keystore/Vultisig migration, pin Windows NSIS guid [#1165](https://github.com/asgardex/asgardex-desktop/pull/1165)
+
+## Chores
+
+- chore(deps): bump `@xchainjs/*` packages to latest [#1157](https://github.com/asgardex/asgardex-desktop/pull/1157)
+- chore: drop direct `uuid` dependency; use `crypto.randomUUID()` for phrase-confirm keys [#1167](https://github.com/asgardex/asgardex-desktop/pull/1167)
+
 # 1.45.1 (2026-08-07)
 
 PRs merged to `develop` since tag `v1.45.0` ([#1138](https://github.com/asgardex/asgardex-desktop/pull/1138)), plus [#1158](https://github.com/asgardex/asgardex-desktop/pull/1158) (EVM Max send fix; merge with or before this release).
