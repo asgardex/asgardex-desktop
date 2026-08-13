@@ -55,7 +55,11 @@ const EXTERNALS_WHITELIST = [
   'dashboard.radixdlt.com',
   'explorer.solana.com',
   'adastat.net',
-  'tronscan.org'
+  'tronscan.org',
+  'suiscan.xyz',
+  'basescan.org',
+  'x.com',
+  'livenet.xrpl.org'
 ]
 
 export const openExternal = (target: string) => {
