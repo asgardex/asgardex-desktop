@@ -2507,6 +2507,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/devices@npm:8.17.0":
+  version: 8.17.0
+  resolution: "@ledgerhq/devices@npm:8.17.0"
+  dependencies:
+    semver: "npm:7.7.3"
+  checksum: 10/26eedbf9c637e0c9b11fcf136af7db7321b8689802002ab7ef9b64ef0b486865f503df92f4f90bdde00485657421532c00625b15bf35e31148b3fc91896e20c4
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/devices@npm:8.4.7":
   version: 8.4.7
   resolution: "@ledgerhq/devices@npm:8.4.7"
@@ -2588,6 +2597,13 @@ __metadata:
   version: 6.26.0
   resolution: "@ledgerhq/errors@npm:6.26.0"
   checksum: 10/959e523fa3390443567f1b155cfdf06328bdc110d8b87afca3cca6691eab502f5cfa8ac848568da55b00bdfdd8908b78536d7af6c7ea0e27044bc6fd1cbe1160
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/errors@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@ledgerhq/errors@npm:7.0.0"
+  checksum: 10/aaf86d653835dc058c02ab6b4c4bcbb463f19f6dc1a431371ff2f5d1c9aa7af827dfde44dcf553c50282ade49acc185f71bf357e6dc21963899a1703db011d0b
   languageName: node
   linkType: hard
 
@@ -2787,6 +2803,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/hw-transport@npm:^6.35.7":
+  version: 6.35.7
+  resolution: "@ledgerhq/hw-transport@npm:6.35.7"
+  dependencies:
+    "@ledgerhq/devices": "npm:8.17.0"
+    "@ledgerhq/errors": "npm:^7.0.0"
+    "@ledgerhq/logs": "npm:^6.17.0"
+    events: "npm:^3.3.0"
+  checksum: 10/3b8e3b18e6cb1452fd93c72ad879b481c862620d974fdff3eea2672c447094ead642b563477f8bc690d2e19633f225c4362a48724a0ae7f4d24cbc0aad6af09e
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/live-env@npm:^2.11.0":
   version: 2.11.0
   resolution: "@ledgerhq/live-env@npm:2.11.0"
@@ -2801,6 +2829,13 @@ __metadata:
   version: 6.13.0
   resolution: "@ledgerhq/logs@npm:6.13.0"
   checksum: 10/3ac984bdc533505359cd1d8bc74175547fcfa51fef6294a9fd832e8ea88d462a385be5cfe68ccfa1b77cd68b840243e6f79c2be66fe28f123ae57c58625edf5f
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/logs@npm:^6.17.0":
+  version: 6.17.0
+  resolution: "@ledgerhq/logs@npm:6.17.0"
+  checksum: 10/81332b4db29e1e76ee24f8d741d30152b5c0676e58feedebfde93c7ef4bd641813596d9402d734af779fe3cb6e28599b91b6e6f57ac0017d1231f7d2dad49404
   languageName: node
   linkType: hard
 
@@ -7571,7 +7606,7 @@ __metadata:
     "@eslint/js": "npm:^8.57.1"
     "@headlessui/react": "npm:^2.2.4"
     "@heroicons/react": "npm:^2.2.0"
-    "@ledgerhq/hw-transport": "npm:^6.31.6"
+    "@ledgerhq/hw-transport": "npm:^6.35.7"
     "@ledgerhq/hw-transport-node-hid-singleton": "npm:6.31.8"
     "@reduxjs/toolkit": "npm:^2.12.0"
     "@rollup/plugin-inject": "npm:^5.0.5"
@@ -15541,6 +15576,15 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 10/4cfa1eb91ef3751e20fc52e47a935a0118d56d6f15a837ab814da0c150778ba2ca4f1a4d9068b33070ea4273629e615066664c2cfcd7c272caf7a8a0f6518b2c
+  languageName: node
+  linkType: hard
+
+"semver@npm:7.7.3":
+  version: 7.7.3
+  resolution: "semver@npm:7.7.3"
+  bin:
+    semver: bin/semver.js
+  checksum: 10/8dbc3168e057a38fc322af909c7f5617483c50caddba135439ff09a754b20bdd6482a5123ff543dad4affa488ecf46ec5fb56d61312ad20bb140199b88dfaea9
   languageName: node
   linkType: hard
 
