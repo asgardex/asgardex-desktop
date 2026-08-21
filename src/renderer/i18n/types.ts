@@ -846,6 +846,11 @@ type SwapMessageKey =
   | 'swap.destination.title'
   | 'swap.destination.info'
   | 'swap.destination.mismatch'
+  | 'swap.quote.expired'
+  | 'swap.deposit.title'
+  | 'swap.deposit.info'
+  | 'swap.deposit.channelId'
+  | 'swap.deposit.expiresAt'
 
 export type SwapMessages = { [key in SwapMessageKey]: string }
 

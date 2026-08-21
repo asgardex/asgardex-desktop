@@ -47,7 +47,14 @@ const swap: SwapMessages = {
   'swap.settings.subSwaps.auto': 'Cantidad auto de swaps',
   'swap.destination.title': 'Destino de salida',
   'swap.destination.info': 'La salida del swap se enviará a esta dirección. Verifica antes de firmar.',
-  'swap.destination.mismatch': 'Esto difiere del destinatario que ingresaste ({recipient}). Solo continúa si reconoces este destino.'
+  'swap.destination.mismatch':
+    'Esto difiere del destinatario que ingresaste ({recipient}). Solo continúa si reconoces este destino.',
+  'swap.quote.expired': 'Esta cotización ha caducado. Actualiza la cotización antes de hacer el swap.',
+  'swap.deposit.title': 'Dirección de depósito',
+  'swap.deposit.info':
+    'Tus fondos de origen se transferirán a esta dirección de depósito. No envíes después de que caduque la cotización.',
+  'swap.deposit.channelId': 'Canal de depósito',
+  'swap.deposit.expiresAt': 'La cotización caduca a las {time}'
 }
 
 export default swap

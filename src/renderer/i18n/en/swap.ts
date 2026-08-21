@@ -45,7 +45,14 @@ const swap: SwapMessages = {
   'swap.settings.subSwaps.auto': 'Auto swap count',
   'swap.destination.title': 'Output destination',
   'swap.destination.info': 'The swap output will be sent to this address. Verify it before signing.',
-  'swap.destination.mismatch': 'This differs from the recipient you entered ({recipient}). Only continue if you recognize this destination.'
+  'swap.destination.mismatch':
+    'This differs from the recipient you entered ({recipient}). Only continue if you recognize this destination.',
+  'swap.quote.expired': 'This quote has expired. Refresh the quote before swapping.',
+  'swap.deposit.title': 'Deposit address',
+  'swap.deposit.info':
+    'Your source funds will be transferred to this deposit address. Do not send after the quote expires.',
+  'swap.deposit.channelId': 'Deposit channel',
+  'swap.deposit.expiresAt': 'Quote expires at {time}'
 }
 
 export default swap

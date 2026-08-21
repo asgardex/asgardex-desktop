@@ -37,13 +37,18 @@ const PasswordModal = (props: PasswordModalProps) => {
   const intl = useIntl()
   const passwordRef = useRef<HTMLInputElement>(null)
 
-  /**
-   * Call onOk on success only
-   */
+  // Fire onOk exactly once per success cycle. Parent `onOk` identity can change
+  // (e.g. quote refresh recreating callbacks) while isSuccess stays true — without
+  // this guard that would re-invoke submit and can broadcast again (#1175).
+  const successHandledRef = useRef(false)
   useEffect(() => {
-    if (isSuccess) {
-      onOk()
+    if (!isSuccess) {
+      successHandledRef.current = false
+      return
     }
+    if (successHandledRef.current) return
+    successHandledRef.current = true
+    onOk()
   }, [isSuccess, onOk])
 
   useEffect(() => {

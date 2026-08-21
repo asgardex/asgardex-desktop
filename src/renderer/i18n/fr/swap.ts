@@ -46,7 +46,14 @@ const swap: SwapMessages = {
   'swap.settings.subSwaps.auto': 'Nombre auto de swaps',
   'swap.destination.title': 'Destination de sortie',
   'swap.destination.info': 'La sortie du swap sera envoyée à cette adresse. Vérifiez-la avant de signer.',
-  'swap.destination.mismatch': 'Cela diffère du destinataire que vous avez entré ({recipient}). Continuez uniquement si vous reconnaissez cette destination.'
+  'swap.destination.mismatch':
+    'Cela diffère du destinataire que vous avez entré ({recipient}). Continuez uniquement si vous reconnaissez cette destination.',
+  'swap.quote.expired': 'Ce devis a expiré. Actualisez le devis avant de swapper.',
+  'swap.deposit.title': 'Adresse de dépôt',
+  'swap.deposit.info':
+    'Vos fonds source seront transférés à cette adresse de dépôt. N’envoyez pas après l’expiration du devis.',
+  'swap.deposit.channelId': 'Canal de dépôt',
+  'swap.deposit.expiresAt': 'Le devis expire à {time}'
 }
 
 export default swap

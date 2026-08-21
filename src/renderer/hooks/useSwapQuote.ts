@@ -59,6 +59,10 @@ export const useSwapQuote = ({
   const [quoteError, setQuoteError] = useState<O.Option<Error>>(O.none)
   const [isFetching, setIsFetching] = useState(false)
 
+  // NOTE (#1175): Chainflip estimates currently call requestDepositAddressV2 inside
+  // @xchainjs/xchain-aggregator, so every refresh opens a live deposit channel.
+  // Deferring channel open until final confirm requires an aggregator/SDK change;
+  // Asgardex hard-disables submit after quote UI expiry as the interim guard.
   const fetchQuote = useCallback(
     async (amount: BaseAmount) => {
       if (amount.amount().isZero()) {

@@ -32,6 +32,8 @@ type SwapConfirmationModalsProps = {
   oSwapParams: O.Option<SwapTxParams>
   oCFSwapParams: O.Option<SendTxParams>
   oOneClickSwapParams: O.Option<SendTxParams>
+  // When true, refuse to open confirm modals or submit (stale quote / expired channel window).
+  quoteExpired: boolean
   // Submit actions
   submitSwapTx: () => void
   submitCFTx: () => void
@@ -72,6 +74,7 @@ export const useSwapConfirmationModals = ({
   oSwapParams,
   oCFSwapParams,
   oOneClickSwapParams,
+  quoteExpired,
   submitSwapTx,
   submitCFTx,
   submitOneClickTx,
@@ -91,8 +94,77 @@ export const useSwapConfirmationModals = ({
   const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
   const [showVultisigModal, setShowVultisigModal] = useState(ModalState.None)
 
+  // Keep latest params/actions in refs so confirm success handlers stay stable and
+  // cannot double-fire solely because a quote refresh recreated callback identities.
+  const oSwapParamsRef = useRef(oSwapParams)
+  const oCFSwapParamsRef = useRef(oCFSwapParams)
+  const oOneClickSwapParamsRef = useRef(oOneClickSwapParams)
+  const quoteExpiredRef = useRef(quoteExpired)
+  const submitSwapTxRef = useRef(submitSwapTx)
+  const submitCFTxRef = useRef(submitCFTx)
+  const submitOneClickTxRef = useRef(submitOneClickTx)
+  const submitApproveTxRef = useRef(submitApproveTx)
+  const passwordSubmitOnceRef = useRef(false)
+  const ledgerSubmitOnceRef = useRef(false)
+  const vultisigSubmitOnceRef = useRef(false)
+
+  useEffect(() => {
+    oSwapParamsRef.current = oSwapParams
+    oCFSwapParamsRef.current = oCFSwapParams
+    oOneClickSwapParamsRef.current = oOneClickSwapParams
+    quoteExpiredRef.current = quoteExpired
+    submitSwapTxRef.current = submitSwapTx
+    submitCFTxRef.current = submitCFTx
+    submitOneClickTxRef.current = submitOneClickTx
+    submitApproveTxRef.current = submitApproveTx
+  }, [
+    oSwapParams,
+    oCFSwapParams,
+    oOneClickSwapParams,
+    quoteExpired,
+    submitSwapTx,
+    submitCFTx,
+    submitOneClickTx,
+    submitApproveTx
+  ])
+
+  useEffect(() => {
+    if (showPasswordModal === ModalState.None) passwordSubmitOnceRef.current = false
+  }, [showPasswordModal])
+
+  useEffect(() => {
+    if (showLedgerModal === ModalState.None) ledgerSubmitOnceRef.current = false
+  }, [showLedgerModal])
+
+  useEffect(() => {
+    if (showVultisigModal === ModalState.None) vultisigSubmitOnceRef.current = false
+  }, [showVultisigModal])
+
+  const dispatchSwapSubmit = useCallback((mode: ModalState, onceRef: React.MutableRefObject<boolean>) => {
+    if (onceRef.current) return
+    if (mode === ModalState.Swap) {
+      if (quoteExpiredRef.current) {
+        logger.warn('Blocked swap submit: quote expired')
+        return
+      }
+      onceRef.current = true
+      if (O.isSome(oSwapParamsRef.current)) submitSwapTxRef.current()
+      else if (O.isSome(oCFSwapParamsRef.current)) submitCFTxRef.current()
+      else if (O.isSome(oOneClickSwapParamsRef.current)) submitOneClickTxRef.current()
+      return
+    }
+    if (mode === ModalState.Approve) {
+      onceRef.current = true
+      submitApproveTxRef.current()
+    }
+  }, [])
+
   // Dispatch to the correct modal based on wallet type
   const onSubmit = useCallback(() => {
+    if (quoteExpired) {
+      logger.warn('Blocked opening swap confirm: quote expired')
+      return
+    }
     if (useSourceAssetLedger) {
       setShowLedgerModal(ModalState.Swap)
     } else if (useSourceAssetVultisig) {
@@ -100,7 +172,7 @@ export const useSwapConfirmationModals = ({
     } else {
       setShowPasswordModal(ModalState.Swap)
     }
-  }, [useSourceAssetLedger, useSourceAssetVultisig])
+  }, [quoteExpired, useSourceAssetLedger, useSourceAssetVultisig])
 
   const onApprove = useCallback(() => {
     if (useSourceAssetLedger) {
@@ -113,58 +185,36 @@ export const useSwapConfirmationModals = ({
   }, [useSourceAssetLedger, useSourceAssetVultisig])
 
   // ─── Password Modal ──────────────────────────────────────────────────────
+  const onPasswordSuccess = useCallback(() => {
+    dispatchSwapSubmit(showPasswordModal, passwordSubmitOnceRef)
+    setShowPasswordModal(ModalState.None)
+  }, [dispatchSwapSubmit, showPasswordModal])
+
+  const onPasswordClose = useCallback(() => setShowPasswordModal(ModalState.None), [])
+
   const renderPasswordConfirmationModal = useMemo(() => {
-    const onSuccess = () => {
-      if (showPasswordModal === ModalState.Swap && O.isSome(oSwapParams)) {
-        submitSwapTx()
-      } else if (showPasswordModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
-        submitCFTx()
-      } else if (showPasswordModal === ModalState.Swap && O.isSome(oOneClickSwapParams)) {
-        submitOneClickTx()
-      } else if (showPasswordModal === ModalState.Approve) {
-        submitApproveTx()
-      }
-      setShowPasswordModal(ModalState.None)
-    }
-    const onClose = () => setShowPasswordModal(ModalState.None)
     const render = showPasswordModal === ModalState.Swap || showPasswordModal === ModalState.Approve
     return (
       render && (
         <WalletPasswordConfirmationModal
-          onSuccess={onSuccess}
-          onClose={onClose}
+          onSuccess={onPasswordSuccess}
+          onClose={onPasswordClose}
           validatePassword$={validatePassword$}
         />
       )
     )
-  }, [
-    oCFSwapParams,
-    oOneClickSwapParams,
-    oSwapParams,
-    showPasswordModal,
-    submitApproveTx,
-    submitCFTx,
-    submitOneClickTx,
-    submitSwapTx,
-    validatePassword$
-  ])
+  }, [onPasswordClose, onPasswordSuccess, showPasswordModal, validatePassword$])
 
   // ─── Ledger Modal ─────────────────────────────────────────────────────────
+  const onLedgerSuccess = useCallback(() => {
+    dispatchSwapSubmit(showLedgerModal, ledgerSubmitOnceRef)
+    setShowLedgerModal(ModalState.None)
+  }, [dispatchSwapSubmit, showLedgerModal])
+
+  const onLedgerClose = useCallback(() => setShowLedgerModal(ModalState.None), [])
+
   const renderLedgerConfirmationModal = useMemo(() => {
     const visible = showLedgerModal === ModalState.Swap || showLedgerModal === ModalState.Approve
-    const onClose = () => setShowLedgerModal(ModalState.None)
-    const onSuccess = () => {
-      if (showLedgerModal === ModalState.Swap && O.isSome(oSwapParams)) {
-        submitSwapTx()
-      } else if (showLedgerModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
-        submitCFTx()
-      } else if (showLedgerModal === ModalState.Swap && O.isSome(oOneClickSwapParams)) {
-        submitOneClickTx()
-      } else if (showLedgerModal === ModalState.Approve) {
-        submitApproveTx()
-      }
-      setShowLedgerModal(ModalState.None)
-    }
     const chainAsString = chainToString(sourceChain)
     const txtNeedsConnected = intl.formatMessage({ id: 'ledger.needsconnected' }, { chain: chainAsString })
     const description1 = isEvmChainToken(sourceAsset)
@@ -176,8 +226,8 @@ export const useSwapConfirmationModals = ({
       <LedgerConfirmationModal
         key="leder-conf-modal"
         network={network}
-        onSuccess={onSuccess}
-        onClose={onClose}
+        onSuccess={onLedgerSuccess}
+        onClose={onLedgerClose}
         visible={visible}
         chain={sourceChain}
         description1={description1}
@@ -199,12 +249,8 @@ export const useSwapConfirmationModals = ({
     sourceAsset,
     network,
     oSwapParams,
-    oCFSwapParams,
-    oOneClickSwapParams,
-    submitSwapTx,
-    submitCFTx,
-    submitOneClickTx,
-    submitApproveTx,
+    onLedgerSuccess,
+    onLedgerClose,
     useSourceAssetLedger
   ])
 
@@ -212,24 +258,8 @@ export const useSwapConfirmationModals = ({
   const onVultisigSuccess = useCallback(() => {
     logger.info('onVultisigSuccess', { vaultType })
     if (vaultType === 'fast') setShowVultisigModal(ModalState.None)
-    if (showVultisigModal === ModalState.Swap) {
-      if (O.isSome(oSwapParams)) submitSwapTx()
-      else if (O.isSome(oCFSwapParams)) submitCFTx()
-      else if (O.isSome(oOneClickSwapParams)) submitOneClickTx()
-    } else if (showVultisigModal === ModalState.Approve) {
-      submitApproveTx()
-    }
-  }, [
-    vaultType,
-    showVultisigModal,
-    oSwapParams,
-    oCFSwapParams,
-    oOneClickSwapParams,
-    submitSwapTx,
-    submitCFTx,
-    submitOneClickTx,
-    submitApproveTx
-  ])
+    dispatchSwapSubmit(showVultisigModal, vultisigSubmitOnceRef)
+  }, [dispatchSwapSubmit, showVultisigModal, vaultType])
 
   // Track Vultisig signing session
   const vultisigSessionRef = useRef(false)
