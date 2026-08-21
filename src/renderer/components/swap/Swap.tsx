@@ -52,6 +52,7 @@ import {
 } from '../../helpers/assetHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
 import { getChainAsset } from '../../helpers/chainHelper'
+import { isRouterApprovalError } from '../../helpers/evmApprovalHelper'
 import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams } from '../../helpers/fp/eq'
@@ -1023,7 +1024,7 @@ export const Swap = ({
     amountToSwapRef.current = amountToSwap
   }, [amountToSwap])
 
-  const { approveState, resetApproval, submitApproveTx, awaitingConfirmation } = useERC20Approval({
+  const { approveState, resetApproval, submitApproveTx, awaitingConfirmation, isApprovedState } = useERC20Approval({
     isApprovedERC20Token$,
     approveERC20Token$,
     oApproveParams,
@@ -1074,8 +1075,8 @@ export const Swap = ({
     [approveFeeRD]
   )
 
-  // Determine if approval is needed based on quote errors
-  const needsApproval = useMemo(() => {
+  // Quote-level signal (THOR/MAYA). Prefer on-chain `isApprovedState` when available.
+  const quoteSaysNeedsApproval = useMemo(() => {
     const errors = FP.pipe(
       oQuoteProtocol,
       O.fold(
@@ -1083,10 +1084,18 @@ export const Swap = ({
         (quoteSwap) => quoteSwap.errors
       )
     )
-    return (
-      !quoteOnly && errors.some((error: string) => error.includes('router has not been approved to spend this amount'))
-    )
+    return !quoteOnly && errors.some(isRouterApprovalError)
   }, [oQuoteProtocol, quoteOnly])
+
+  const isApproved = useMemo(() => {
+    if (O.isNone(needApprovement)) return true
+    if (awaitingConfirmation) return false
+    // Trust on-chain allowance when the check completed (fixes Swap ignoring isApprovedState
+    // after the useERC20Approval refactor — SymDeposit/TradeDeposit already did this).
+    if (RD.isSuccess(isApprovedState)) return isApprovedState.value
+    // While the check is in-flight / failed, fall back to the quote signal.
+    return !quoteSaysNeedsApproval
+  }, [needApprovement, awaitingConfirmation, isApprovedState, quoteSaysNeedsApproval])
 
   const reloadApproveFeesHandler = useCallback(() => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
@@ -1402,26 +1411,29 @@ export const Swap = ({
       )
     )
 
-    const filteredErrors = quoteOnly
-      ? swapErrors.filter((error) => {
-          const errorLower = error.toLowerCase()
-          const isBalanceError =
-            errorLower.includes('insufficient') ||
-            errorLower.includes('not enough') ||
-            errorLower.includes('exceed') ||
-            errorLower.includes('balance') ||
-            errorLower.includes('funds')
-          const isFeeError =
-            errorLower.includes('fee') ||
-            errorLower.includes('outbound') ||
-            errorLower.includes('inbound') ||
-            errorLower.includes('gas') ||
-            errorLower.includes('router has not been approved')
-          const isMemoError =
-            errorLower.includes('memo') || errorLower.includes('parsing') || errorLower.includes('undefined')
-          return !isBalanceError && !isFeeError && !isMemoError
-        })
-      : swapErrors
+    const filteredErrors = swapErrors.filter((error) => {
+      // Approval is handled by the Approve CTA — don't also render it as a hard error.
+      if (isRouterApprovalError(error) && !isApproved) return false
+
+      if (!quoteOnly) return true
+
+      const errorLower = error.toLowerCase()
+      const isBalanceError =
+        errorLower.includes('insufficient') ||
+        errorLower.includes('not enough') ||
+        errorLower.includes('exceed') ||
+        errorLower.includes('balance') ||
+        errorLower.includes('funds')
+      const isFeeError =
+        errorLower.includes('fee') ||
+        errorLower.includes('outbound') ||
+        errorLower.includes('inbound') ||
+        errorLower.includes('gas') ||
+        isRouterApprovalError(error)
+      const isMemoError =
+        errorLower.includes('memo') || errorLower.includes('parsing') || errorLower.includes('undefined')
+      return !isBalanceError && !isFeeError && !isMemoError
+    })
 
     if (filteredErrors.length === 0) return <></>
 
@@ -1453,7 +1465,7 @@ export const Swap = ({
         {!quoteOnly && belowDustThreshold && <>{`Amount to swap is Below DustThreshold`}</>}
       </ErrorLabel>
     )
-  }, [belowDustThreshold, oQuoteProtocol, sourceAsset, quoteOnly])
+  }, [belowDustThreshold, oQuoteProtocol, sourceAsset, quoteOnly, isApproved])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError || quoteOnly) return <></>
@@ -1555,12 +1567,6 @@ export const Swap = ({
       ),
     [approveState]
   )
-
-  const isApproved = useMemo(() => {
-    if (O.isNone(needApprovement)) return true
-    if (awaitingConfirmation) return false
-    return !needsApproval
-  }, [needApprovement, needsApproval, awaitingConfirmation])
 
   const priceApproveFee: CryptoAmount = useMemo(() => {
     const assetAmt = isApproved
