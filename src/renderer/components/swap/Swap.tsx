@@ -33,7 +33,7 @@ import * as RxOp from 'rxjs/operators'
 import { getAsgardexAffiliateFee } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
-import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
+import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
 import { isVultisigWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
@@ -970,24 +970,44 @@ export const Swap = ({
   )
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
+    // Prefer router from the selected quote's protocol; if no quote is selected yet
+    // (approval-blocked quotes used to be discarded), fall back to midgard inbound
+    // router for the source chain so the Approve CTA still works for ETH.USDC/DAI.
     const oRouterAddress: O.Option<Address> = FP.pipe(
       oQuoteProtocol,
-      O.chain((protocol) => {
-        switch (protocol.protocol) {
-          case 'Thorchain':
+      O.fold(
+        () => {
+          if (isChainOfThor(sourceChain)) {
             return FP.pipe(
               oPoolAddressThor,
               O.chain(({ router }) => router)
             )
-          case 'Mayachain':
+          }
+          if (isChainOfMaya(sourceChain)) {
             return FP.pipe(
               oPoolAddressMaya,
               O.chain(({ router }) => router)
             )
-          default:
-            return O.none
+          }
+          return O.none
+        },
+        (protocol) => {
+          switch (protocol.protocol) {
+            case 'Thorchain':
+              return FP.pipe(
+                oPoolAddressThor,
+                O.chain(({ router }) => router)
+              )
+            case 'Mayachain':
+              return FP.pipe(
+                oPoolAddressMaya,
+                O.chain(({ router }) => router)
+              )
+            default:
+              return O.none
+          }
         }
-      })
+      )
     )
     const oTokenAddress: O.Option<string> = getEVMTokenAddressForChain(sourceChain, sourceAsset as TokenAsset)
     const oNeedApprovement: O.Option<boolean> = FP.pipe(
@@ -1075,17 +1095,22 @@ export const Swap = ({
     [approveFeeRD]
   )
 
-  // Quote-level signal (THOR/MAYA). Prefer on-chain `isApprovedState` when available.
+  // Quote-level signal (THOR/MAYA). Check selected quote and any fetched quote so
+  // USDC/DAI still surface Approve when the selected route is missing.
   const quoteSaysNeedsApproval = useMemo(() => {
-    const errors = FP.pipe(
+    if (quoteOnly) return false
+    const selectedNeeds = FP.pipe(
       oQuoteProtocol,
-      O.fold(
-        () => [],
-        (quoteSwap) => quoteSwap.errors
-      )
+      O.map((quoteSwap) => quoteSwap.errors.some(isRouterApprovalError)),
+      O.getOrElse(() => false)
     )
-    return !quoteOnly && errors.some(isRouterApprovalError)
-  }, [oQuoteProtocol, quoteOnly])
+    if (selectedNeeds) return true
+    return FP.pipe(
+      oQuoteProcotols,
+      O.map((quotes) => quotes.some((q) => q.errors.some(isRouterApprovalError))),
+      O.getOrElse(() => false)
+    )
+  }, [oQuoteProtocol, oQuoteProcotols, quoteOnly])
 
   const isApproved = useMemo(() => {
     if (O.isNone(needApprovement)) return true

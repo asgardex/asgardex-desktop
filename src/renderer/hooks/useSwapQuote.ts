@@ -14,7 +14,7 @@ import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { useOneClickContext } from '../contexts/OneClickContext'
 import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
-import { quoteBlockedOnlyByApproval } from '../helpers/evmApprovalHelper'
+import { quoteNeedsRouterApproval } from '../helpers/evmApprovalHelper'
 import { logger } from '../helpers/logger'
 import { filterQuotableProtocols } from '../helpers/protocolTradingHalt'
 import { useAggregator } from '../store/aggregator/hooks'
@@ -194,8 +194,10 @@ export const useSwapQuote = ({
         // Exception: approval-only blocks must stay selected so Swap can build
         // approve params / show the Approve CTA (ETH.DAI → BTC regression).
         const viableQuotes = allQuotes.filter((quote) => quote.canSwap)
+        // Keep quotes that need router approval so Swap can build Approve params
+        // (ETH.USDC / ETH.DAI). Match if approval is present, even alongside other errors.
         const approvalBlockedQuotes = allQuotes.filter(
-          (quote) => !quote.canSwap && quoteBlockedOnlyByApproval(quote.errors)
+          (quote) => !quote.canSwap && quoteNeedsRouterApproval(quote.errors)
         )
 
         const sortByOutput = (quotesToSort: ExtendedQuoteSwap[]) =>
