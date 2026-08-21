@@ -1,5 +1,6 @@
+import { FeeOption } from '@xchainjs/xchain-client'
 import { GasPrices } from '@xchainjs/xchain-evm'
-import { baseAmount } from '@xchainjs/xchain-util'
+import { BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 
 /**
@@ -22,3 +23,25 @@ export const applyGasMultiplier = (gasPrices: GasPrices, multiplier: number): Ga
     fastest: multiplyAmount(gasPrices.fastest)
   }
 }
+
+/**
+ * Fee fields for `@xchainjs/xchain-evm` `transfer()` on EIP-1559 networks.
+ *
+ * Passing `gasPrice` makes xchain upgrade type-1 → type-2 by setting
+ * `maxFeePerGas = maxPriorityFeePerGas = gasPrice` with **no base-fee headroom**.
+ * When base fee ticks up, `maxFee < baseFee` and the tx stalls (seen on ETH
+ * DAI→BTC `depositWithExpiry`).
+ *
+ * Passing only `maxPriorityFeePerGas` lets xchain set
+ * `maxFeePerGas = 2 * baseFee + tip`, which is the ethers v5-compatible path.
+ */
+export type Eip1559TransferFees = {
+  maxPriorityFeePerGas: BaseAmount
+}
+
+export const eip1559FeesFromGasPrices = (
+  gasPrices: GasPrices,
+  feeOption: FeeOption = FeeOption.Fast
+): Eip1559TransferFees => ({
+  maxPriorityFeePerGas: gasPrices[feeOption]
+})
