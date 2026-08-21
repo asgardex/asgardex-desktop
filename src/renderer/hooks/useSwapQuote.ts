@@ -16,9 +16,9 @@ import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
 import { logger } from '../helpers/logger'
 import { filterQuotableProtocols } from '../helpers/protocolTradingHalt'
-import { useMayachainMimirHalt } from './useMimirHaltMaya'
-import { useThorchainMimirHalt } from './useMimirHalt'
 import { useAggregator } from '../store/aggregator/hooks'
+import { useThorchainMimirHalt } from './useMimirHalt'
+import { useMayachainMimirHalt } from './useMimirHaltMaya'
 
 type UseSwapQuoteParams = {
   sourceAsset: AnyAsset
