@@ -1,15 +1,24 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { AnyAsset, BaseAmount, baseAmount, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
+import * as RD from '@devexperts/remote-data-ts'
+import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
+import * as RxOp from 'rxjs/operators'
 
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 import { useChainflipContext } from '../contexts/ChainflipContext'
+import { useMidgardContext } from '../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { useOneClickContext } from '../contexts/OneClickContext'
 import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
 import { logger } from '../helpers/logger'
+import { filterQuotableProtocols } from '../helpers/protocolTradingHalt'
 import { useAggregator } from '../store/aggregator/hooks'
+import { useThorchainMimirHalt } from './useMimirHalt'
+import { useMayachainMimirHalt } from './useMimirHaltMaya'
 
 type UseSwapQuoteParams = {
   sourceAsset: AnyAsset
@@ -52,6 +61,40 @@ export const useSwapQuote = ({
   const { estimateSwap, protocols, isBoostEnabled } = useAggregator()
   const { isOneClickSupportedAsset } = useOneClickContext()
   const { isChainflipSupportedAssetSync } = useChainflipContext()
+  const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
+  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
+  const {
+    service: {
+      pools: { haltedChains$: haltedChainsThor$ }
+    }
+  } = useMidgardContext()
+  const {
+    service: {
+      pools: { haltedChains$: haltedChainsMaya$ }
+    }
+  } = useMidgardMayaContext()
+
+  const [haltedChainsThor] = useObservableState(
+    () => FP.pipe(haltedChainsThor$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    [] as Chain[]
+  )
+  const [haltedChainsMaya] = useObservableState(
+    () => FP.pipe(haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    [] as Chain[]
+  )
+
+  const haltState = useMemo(
+    () => ({
+      thor: { haltedChains: haltedChainsThor, mimirHalt: mimirHaltThor },
+      maya: { haltedChains: haltedChainsMaya, mimirHalt: mimirHaltMaya }
+    }),
+    [haltedChainsThor, mimirHaltThor, haltedChainsMaya, mimirHaltMaya]
+  )
+
+  const quotableProtocols: Protocol[] = useMemo(
+    () => filterQuotableProtocols(protocols, sourceAsset, targetAsset, haltState),
+    [protocols, sourceAsset, targetAsset, haltState]
+  )
 
   const requestIdRef = useRef(0)
   const [quotes, setQuotes] = useState<O.Option<ExtendedQuoteSwap[]>>(O.none)
@@ -74,12 +117,12 @@ export const useSwapQuote = ({
         O.getOrElse(() => false)
       )
 
-      // Validate protocols — both checks are backed by the protocols' fetched
-      // asset lists (with chain-level fallbacks), so picker and quote agree.
+      // Validate against halt-filtered protocols so a halted THOR/MAYA route is not
+      // treated as a usable enabled protocol for this pair.
       const protocolValidation = validateProtocolsForAssets(
         sourceAsset,
         targetAsset,
-        protocols,
+        quotableProtocols,
         isChainflipSupportedAssetSync,
         isOneClickSupportedAsset
       )
@@ -97,6 +140,13 @@ export const useSwapQuote = ({
         return
       }
 
+      if (quotableProtocols.length === 0) {
+        setQuoteError(O.some(new Error('No valid swap routes available')))
+        setSelectedQuote(O.none)
+        setIsFetching(false)
+        return
+      }
+
       setSelectedQuote(O.none)
       setIsFetching(true)
 
@@ -106,7 +156,8 @@ export const useSwapQuote = ({
         logger.debug('[useSwapQuote] fetchQuote amount:', {
           amountBase: amount.amount().toString(),
           amountDecimal: amount.decimal,
-          sourceAsset: `${sourceAsset.chain}.${sourceAsset.symbol}`
+          sourceAsset: `${sourceAsset.chain}.${sourceAsset.symbol}`,
+          protocols: quotableProtocols
         })
 
         const swapParams = {
@@ -124,7 +175,7 @@ export const useSwapQuote = ({
           toleranceBps: undefined
         }
 
-        const result = await estimateSwap({ ...swapParams, enableBoost: isBoostEnabled }, applyBps)
+        const result = await estimateSwap({ ...swapParams, enableBoost: isBoostEnabled }, applyBps, quotableProtocols)
 
         // Discard stale response if a newer request was fired
         if (currentRequestId !== requestIdRef.current) return
@@ -195,7 +246,7 @@ export const useSwapQuote = ({
       sourceAsset,
       sourceAssetDecimal,
       targetAsset,
-      protocols,
+      quotableProtocols,
       estimateSwap,
       sourceWalletAddress,
       quoteOnly,
