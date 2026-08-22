@@ -189,15 +189,15 @@ export const useSwapQuote = ({
             }) as ExtendedQuoteSwap
         )
 
-        // Protocols report failures as placeholder quotes (canSwap: false with
-        // the reason in `errors`) — never select hard failures as the "best" quote.
-        // Exception: approval-only blocks must stay selected so Swap can build
-        // approve params / show the Approve CTA (ETH.DAI → BTC regression).
+        // Prefer real canSwap quotes. If none, keep THOR/MAYA quotes blocked only by
+        // missing router allowance so Swap can select them and run an on-chain
+        // isApproved check (approval is not inferred from these error strings).
         const viableQuotes = allQuotes.filter((quote) => quote.canSwap)
-        // Keep quotes that need router approval so Swap can build Approve params
-        // (ETH.USDC / ETH.DAI). Match if approval is present, even alongside other errors.
         const approvalBlockedQuotes = allQuotes.filter(
-          (quote) => !quote.canSwap && quoteNeedsRouterApproval(quote.errors)
+          (quote) =>
+            !quote.canSwap &&
+            (quote.protocol === 'Thorchain' || quote.protocol === 'Mayachain') &&
+            quoteNeedsRouterApproval(quote.errors)
         )
 
         const sortByOutput = (quotesToSort: ExtendedQuoteSwap[]) =>

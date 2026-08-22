@@ -33,7 +33,7 @@ import * as RxOp from 'rxjs/operators'
 import { getAsgardexAffiliateFee } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
-import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
+import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
 import { isVultisigWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
@@ -969,63 +969,46 @@ export const Swap = ({
     [sourceAsset]
   )
 
+  /**
+   * Preemptive ERC-20 router allowance check — driven by the **selected quote**, not by
+   * parsing quote error strings. Only THOR/MAYA need a router approve; Chainflip/OneClick
+   * are plain transfers and skip this path.
+   */
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
-    // Prefer router from the selected quote's protocol; if no quote is selected yet
-    // (approval-blocked quotes used to be discarded), fall back to midgard inbound
-    // router for the source chain so the Approve CTA still works for ETH.USDC/DAI.
-    const oRouterAddress: O.Option<Address> = FP.pipe(
+    if (O.isNone(needApprovement)) return O.none
+
+    return FP.pipe(
       oQuoteProtocol,
-      O.fold(
-        () => {
-          if (isChainOfThor(sourceChain)) {
-            return FP.pipe(
-              oPoolAddressThor,
-              O.chain(({ router }) => router)
-            )
-          }
-          if (isChainOfMaya(sourceChain)) {
-            return FP.pipe(
-              oPoolAddressMaya,
-              O.chain(({ router }) => router)
-            )
-          }
-          return O.none
-        },
-        (protocol) => {
-          switch (protocol.protocol) {
-            case 'Thorchain':
-              return FP.pipe(
+      O.chain((protocol) => {
+        const oRouterAddress: O.Option<Address> =
+          protocol.protocol === 'Thorchain'
+            ? FP.pipe(
                 oPoolAddressThor,
                 O.chain(({ router }) => router)
               )
-            case 'Mayachain':
-              return FP.pipe(
-                oPoolAddressMaya,
-                O.chain(({ router }) => router)
-              )
-            default:
-              return O.none
-          }
-        }
-      )
-    )
-    const oTokenAddress: O.Option<string> = getEVMTokenAddressForChain(sourceChain, sourceAsset as TokenAsset)
-    const oNeedApprovement: O.Option<boolean> = FP.pipe(
-      needApprovement,
-      O.map((v) => !!v)
-    )
-    return FP.pipe(
-      sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
-      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
-        network,
-        spenderAddress: routerAddress,
-        contractAddress: tokenAddress,
-        fromAddress: walletAddress,
-        walletAccount,
-        walletIndex,
-        hdMode,
-        walletType
-      }))
+            : protocol.protocol === 'Mayachain'
+              ? FP.pipe(
+                  oPoolAddressMaya,
+                  O.chain(({ router }) => router)
+                )
+              : O.none
+
+        const oTokenAddress = getEVMTokenAddressForChain(sourceChain, sourceAsset as TokenAsset)
+
+        return FP.pipe(
+          sequenceTOption(oRouterAddress, oTokenAddress, oSourceAssetWB),
+          O.map(([routerAddress, tokenAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
+            network,
+            spenderAddress: routerAddress,
+            contractAddress: tokenAddress,
+            fromAddress: walletAddress,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            walletType
+          }))
+        )
+      })
     )
   }, [
     needApprovement,
@@ -1095,32 +1078,21 @@ export const Swap = ({
     [approveFeeRD]
   )
 
-  // Quote-level signal (THOR/MAYA). Check selected quote and any fetched quote so
-  // USDC/DAI still surface Approve when the selected route is missing.
-  const quoteSaysNeedsApproval = useMemo(() => {
-    if (quoteOnly) return false
-    const selectedNeeds = FP.pipe(
-      oQuoteProtocol,
-      O.map((quoteSwap) => quoteSwap.errors.some(isRouterApprovalError)),
-      O.getOrElse(() => false)
-    )
-    if (selectedNeeds) return true
-    return FP.pipe(
-      oQuoteProcotols,
-      O.map((quotes) => quotes.some((q) => q.errors.some(isRouterApprovalError))),
-      O.getOrElse(() => false)
-    )
-  }, [oQuoteProtocol, oQuoteProcotols, quoteOnly])
-
+  // On-chain allowance only. Quote error strings are never the source of truth here.
   const isApproved = useMemo(() => {
-    if (O.isNone(needApprovement)) return true
+    // Native / non-ERC20, or selected route does not need a router approve (e.g. Chainflip)
+    if (O.isNone(needApprovement) || O.isNone(oApproveParams)) return true
     if (awaitingConfirmation) return false
-    // Trust on-chain allowance when the check completed (fixes Swap ignoring isApprovedState
-    // after the useERC20Approval refactor — SymDeposit/TradeDeposit already did this).
     if (RD.isSuccess(isApprovedState)) return isApprovedState.value
-    // While the check is in-flight / failed, fall back to the quote signal.
-    return !quoteSaysNeedsApproval
-  }, [needApprovement, awaitingConfirmation, isApprovedState, quoteSaysNeedsApproval])
+    if (RD.isFailure(isApprovedState)) return false
+    // Pending/initial: keep Swap visible (disabled via disableSubmit) to avoid Approve flicker
+    return true
+  }, [needApprovement, oApproveParams, awaitingConfirmation, isApprovedState])
+
+  const isApprovalCheckPending = useMemo(
+    () => O.isSome(oApproveParams) && (RD.isInitial(isApprovedState) || RD.isPending(isApprovedState)),
+    [oApproveParams, isApprovedState]
+  )
 
   const reloadApproveFeesHandler = useCallback(() => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
@@ -1437,8 +1409,8 @@ export const Swap = ({
     )
 
     const filteredErrors = swapErrors.filter((error) => {
-      // Approval is handled by the Approve CTA — don't also render it as a hard error.
-      if (isRouterApprovalError(error) && !isApproved) return false
+      // ERC-20 router allowance is checked on-chain; never surface as a quote hard-error.
+      if (O.isSome(needApprovement) && isRouterApprovalError(error)) return false
 
       if (!quoteOnly) return true
 
@@ -1490,7 +1462,7 @@ export const Swap = ({
         {!quoteOnly && belowDustThreshold && <>{`Amount to swap is Below DustThreshold`}</>}
       </ErrorLabel>
     )
-  }, [belowDustThreshold, oQuoteProtocol, sourceAsset, quoteOnly, isApproved])
+  }, [belowDustThreshold, oQuoteProtocol, sourceAsset, quoteOnly, needApprovement])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError || quoteOnly) return <></>
@@ -1777,6 +1749,7 @@ export const Swap = ({
         RD.isPending(swapFeesRD) ||
         RD.isPending(approveState) ||
         awaitingConfirmation ||
+        isApprovalCheckPending ||
         isCausedSlippage ||
         !swapResultAmountMax.baseAmount ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax) ||
@@ -1796,6 +1769,7 @@ export const Swap = ({
       swapFeesRD,
       approveState,
       awaitingConfirmation,
+      isApprovalCheckPending,
       isCausedSlippage,
       swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax,
@@ -1809,8 +1783,13 @@ export const Swap = ({
   )
 
   const disableSubmitApprove = useMemo(
-    () => isApproveFeeError || sourceBalanceLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
-    [isApproveFeeError, sourceBalanceLoading, oApproveParams, approveState]
+    () =>
+      isApproveFeeError ||
+      sourceBalanceLoading ||
+      O.isNone(oApproveParams) ||
+      RD.isPending(approveState) ||
+      isApprovalCheckPending,
+    [isApproveFeeError, sourceBalanceLoading, oApproveParams, approveState, isApprovalCheckPending]
   )
 
   const onChangeRecipientAddress = useCallback(
