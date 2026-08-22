@@ -62,7 +62,16 @@ export const Fees = ({ fees, reloadFees, disabled = false, className }: Props) =
               O.map((fees) => fees),
               O.getOrElse(() => '...')
             ),
-          (error) => `${intl.formatMessage({ id: 'common.error' })}: ${error.message}`,
+          (error) => {
+            const raw = error?.message ?? String(error)
+            // EVM estimate reverts (e.g. USDT with existing allowance) are noisy; keep UI short
+            const short = /missing revert data|execution reverted/i.test(raw)
+              ? intl.formatMessage({ id: 'common.fee.estimated' }) + ': —'
+              : raw.length > 120
+                ? `${raw.slice(0, 117)}...`
+                : raw
+            return `${intl.formatMessage({ id: 'common.error' })}: ${short}`
+          },
           FP.identity
         )
       ),
@@ -73,7 +82,7 @@ export const Fees = ({ fees, reloadFees, disabled = false, className }: Props) =
   const isLoading = RD.isPending(fees)
 
   return (
-    <div className={clsx('flex items-center space-x-2 text-text0 dark:text-text0d', className)}>
+    <div className={clsx('flex min-w-0 items-start gap-2 text-text0 dark:text-text0d', className)}>
       {reloadFees && (
         <div
           onClick={(e) => {
@@ -81,7 +90,7 @@ export const Fees = ({ fees, reloadFees, disabled = false, className }: Props) =
             if (!isLoading && !disabled) reloadFees()
           }}
           className={clsx(
-            'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-turquoise dark:border-turquoise',
+            'flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border border-turquoise dark:border-turquoise',
             'transition-colors duration-200',
             'hover:bg-bg1 dark:hover:bg-bg1d',
             (isLoading || disabled) && 'pointer-events-none cursor-not-allowed opacity-50'
@@ -89,7 +98,10 @@ export const Fees = ({ fees, reloadFees, disabled = false, className }: Props) =
           <ArrowPathIcon className={clsx('h-3 w-3 text-text0 dark:text-text0d', isLoading && 'animate-spin')} />
         </div>
       )}
-      <Label color={isError ? 'error' : isLoading ? 'input' : 'normal'} textTransform="uppercase">
+      <Label
+        className="min-w-0 break-words"
+        color={isError ? 'error' : isLoading ? 'input' : 'normal'}
+        textTransform="uppercase">
         {feesFormattedValue}
       </Label>
     </div>

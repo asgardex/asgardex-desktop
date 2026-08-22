@@ -252,7 +252,7 @@ export const createVultisigEvmApprove = (
   chainName: string
 ): ((params: ApproveParams) => TxHashLD) => {
   return (params: ApproveParams): TxHashLD => {
-    const { contractAddress, spenderAddress } = params
+    const { contractAddress, spenderAddress, amount } = params
 
     const vaultId = appWalletService.getActiveVaultId()
     if (!vaultId) {
@@ -269,6 +269,8 @@ export const createVultisigEvmApprove = (
             () => Rx.of(RD.initial),
             (client): TxHashLD => {
               const nativeAsset = client.getAssetInfo()
+              // Omit amount → unlimited; explicit 0 → revoke; finite → limited approve
+              const approveAmount = amount !== undefined ? amount.amount().toFixed() : MAX_APPROVAL.toFixed()
 
               // Native coin (no id) — the IPC handler ABI-encodes the approve calldata
               // and puts it in memo, which the EVM resolver uses as tx data.
@@ -279,7 +281,7 @@ export const createVultisigEvmApprove = (
                 amount: '0', // IPC handler overrides to 1 for validation, then back to 0
                 decimals: nativeAsset.decimal,
                 ticker: nativeAsset.asset.ticker,
-                approve: { spender: spenderAddress, amount: MAX_APPROVAL.toFixed() }
+                approve: { spender: spenderAddress, amount: approveAmount }
               }
 
               logger.info(`${chainName} ERC20 approve via native calldata`, {

@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { abi, CompatibleAsset, getFee, isApproved } from '@xchainjs/xchain-evm'
+import { abi, CompatibleAsset, getAllowance, getFee, isApproved } from '@xchainjs/xchain-evm'
 import { Address, baseAmount, BaseAmount, Chain, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { Contract, getAddress, ZeroAddress } from 'ethers'
@@ -32,6 +32,8 @@ import { ApiError, ErrorId, TxHashLD } from '../../wallet/types'
 import { DEPOSIT_EXPIRATION_OFFSET, ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT } from '../const'
 import {
   ApproveParams,
+  AllowanceLD,
+  AllowanceParams,
   TransactionService,
   IsApprovedLD,
   SendPoolTxParams,
@@ -232,7 +234,7 @@ export const createEvmTransactionService = (
 
   const runApproveERC20Token$ = (
     client: EvmClient,
-    { walletIndex, contractAddress, spenderAddress }: ApproveParams
+    { walletIndex, contractAddress, spenderAddress, amount }: ApproveParams
   ): TxHashLD => {
     return FP.pipe(
       Rx.from(
@@ -240,7 +242,9 @@ export const createEvmTransactionService = (
           contractAddress,
           spenderAddress,
           feeOption: ChainTxFeeOption.APPROVE,
-          walletIndex
+          walletIndex,
+          // omit amount → unlimited; explicit 0 → revoke; finite → limited approve
+          ...(amount !== undefined ? { amount } : {})
         })
       ),
       RxOp.switchMap((txResult) => Rx.from(txResult)),
@@ -265,6 +269,7 @@ export const createEvmTransactionService = (
     walletAccount,
     walletIndex,
     hdMode,
+    amount,
     evmRpcUrl
   }: ApproveParams & { evmRpcUrl: string }): TxHashLD => {
     if (!isEvmHDMode(hdMode)) {
@@ -285,7 +290,9 @@ export const createEvmTransactionService = (
       walletIndex,
       hdMode,
       apiKey,
-      evmRpcUrl
+      evmRpcUrl,
+      // Serialize as string across IPC; omit for unlimited
+      amount: amount !== undefined ? amount.amount().toFixed() : undefined
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
 
@@ -382,6 +389,44 @@ export const createEvmTransactionService = (
           O.fold(
             () => Rx.of(RD.initial),
             (client) => runIsApprovedERC20Token$(client, params)
+          )
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+
+  const runGetERC20Allowance$ = (
+    client: EvmClient,
+    { contractAddress, spenderAddress, fromAddress, decimals }: AllowanceParams
+  ): AllowanceLD => {
+    const provider = client.getProvider()
+
+    return FP.pipe(
+      Rx.from(getAllowance({ provider, contractAddress, spenderAddress, fromAddress })),
+      RxOp.map((allowance) => RD.success(baseAmount(allowance.toFixed(), decimals))),
+      RxOp.catchError(
+        (error): AllowanceLD =>
+          Rx.of(
+            RD.failure({
+              msg: error?.message ?? error.toString(),
+              errorId: ErrorId.APPROVE_TX
+            })
+          )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  }
+
+  const getERC20Allowance$ = (params: AllowanceParams): AllowanceLD =>
+    readOnlyClient$.pipe(
+      RxOp.filter(O.isSome),
+      RxOp.take(1),
+      RxOp.switchMap((oClient) =>
+        FP.pipe(
+          oClient,
+          O.fold(
+            () => Rx.of(RD.initial),
+            (client) => runGetERC20Allowance$(client, params)
           )
         )
       ),
@@ -597,6 +642,7 @@ export const createEvmTransactionService = (
     sendTx,
     sendPoolTx$,
     approveERC20Token$,
-    isApprovedERC20Token$
+    isApprovedERC20Token$,
+    getERC20Allowance$
   }
 }

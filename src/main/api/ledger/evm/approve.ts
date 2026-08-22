@@ -1,6 +1,7 @@
 import { FeeOption, TxHash } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { ClientLedger, LedgerSigner } from '@xchainjs/xchain-evm'
+import { baseAmount } from '@xchainjs/xchain-util'
 
 import { IPCLedgerApproveERC20TokenParams } from '../../../../shared/api/io'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
@@ -18,7 +19,8 @@ export const approveLedgerERC20Token = async ({
   walletIndex,
   hdMode,
   apiKey,
-  evmRpcUrl
+  evmRpcUrl,
+  amount
 }: IPCLedgerApproveERC20TokenParams): Promise<TxHash> => {
   const config = EVM_LEDGER_CHAINS[chain]
   if (!config) {
@@ -42,10 +44,15 @@ export const approveLedgerERC20Token = async ({
     ...(config.chain === ETHChain && apiKey ? { dataProviders: [createEthProviders(apiKey)] } : {})
   })
 
+  // Omit amount → unlimited; "0" → revoke; finite base-unit string → limited approve.
+  // Decimal is unused by getApprovalAmount (reads amount().toFixed() only), so 0 is fine.
+  const approveAmount = amount !== undefined ? baseAmount(amount, 0) : undefined
+
   return client.approve({
     contractAddress,
     spenderAddress,
     feeOption: FeeOption.Fast,
-    walletIndex
+    walletIndex,
+    ...(approveAmount !== undefined ? { amount: approveAmount } : {})
   })
 }
