@@ -18,7 +18,7 @@ import {
 } from '../../../../shared/api/io'
 import { ApiUrls, LedgerError } from '../../../../shared/api/types'
 import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../../shared/const'
-import { applyGasMultiplier } from '../../../../shared/evm/gas'
+import { applyGasMultiplier, eip1559FeesFromGasPrices } from '../../../../shared/evm/gas'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet, isVultisigWallet } from '../../../../shared/utils/guard'
 import { getEVMAssetAddress, isChainAsset, isEVMTokenAsset } from '../../../helpers/assetHelper'
@@ -86,6 +86,8 @@ export const createEvmTransactionService = (
             }),
             RxOp.switchMap(({ gasPrices: rawGasPrices, blockTime }) => {
               const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+              // Prefer EIP-1559 tip + 2*baseFee maxFee (via xchain) over legacy gasPrice.
+              const { maxPriorityFeePerGas } = eip1559FeesFromGasPrices(gasPrices, params.feeOption)
               const isERC20 = isEVMTokenAsset(params.asset as TokenAsset)
               const checkSummedContractAddress = isERC20
                 ? getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
@@ -114,7 +116,7 @@ export const createEvmTransactionService = (
                       amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
                       memo: unsignedTx.data,
                       recipient: router,
-                      gasPrice: gasPrices[params.feeOption],
+                      maxPriorityFeePerGas,
                       isMemoEncoded: true,
                       walletIndex: params.walletIndex
                     }
@@ -137,7 +139,7 @@ export const createEvmTransactionService = (
                       amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
                       memo: unsignedTx.data,
                       recipient: router,
-                      gasPrice: gasPrices[params.feeOption],
+                      maxPriorityFeePerGas,
                       isMemoEncoded: true,
                       gasLimit: new BigNumber(defaultGasLimit),
                       walletIndex: params.walletIndex
