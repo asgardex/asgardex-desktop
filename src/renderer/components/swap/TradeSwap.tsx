@@ -1261,6 +1261,7 @@ export const TradeSwap = ({
     oSwapParams,
     oCFSwapParams: O.none,
     oOneClickSwapParams: O.none,
+    quoteExpired,
     submitSwapTx,
     submitCFTx: FP.constVoid,
     submitOneClickTx: FP.constVoid,

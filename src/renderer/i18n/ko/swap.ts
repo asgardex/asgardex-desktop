@@ -45,7 +45,12 @@ const swap: SwapMessages = {
   'swap.settings.subSwaps.auto': '자동 스왑 횟수',
   'swap.destination.title': '출력 대상',
   'swap.destination.info': '스왑 출력이 이 주소로 전송됩니다. 서명하기 전에 확인하세요.',
-  'swap.destination.mismatch': '이는 입력한 수신자({recipient})와 다릅니다. 이 대상을 인식하는 경우에만 계속하세요.'
+  'swap.destination.mismatch': '이는 입력한 수신자({recipient})와 다릅니다. 이 대상을 인식하는 경우에만 계속하세요.',
+  'swap.quote.expired': '이 견적이 만료되었습니다. 스왑하기 전에 견적을 새로고침하세요.',
+  'swap.deposit.title': '입금 주소',
+  'swap.deposit.info': '소스 자산이 이 입금 주소로 전송됩니다. 견적 만료 후에는 보내지 마세요.',
+  'swap.deposit.channelId': '입금 채널',
+  'swap.deposit.expiresAt': '견적 만료 시각 {time}'
 }
 
 export default swap

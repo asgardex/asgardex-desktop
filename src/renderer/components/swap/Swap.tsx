@@ -105,6 +105,7 @@ import { Tooltip } from '../uielements/tooltip'
 import { ErrorLabel } from './components/ErrorLabel'
 import { RecipientAddressSection } from './components/RecipientAddressSection'
 import { useSwapConfirmationModals } from './components/SwapConfirmationModals'
+import { SwapDepositConfirmation } from './components/SwapDepositConfirmation'
 import { SwapDestinationConfirmation } from './components/SwapDestinationConfirmation'
 import { SwapDetailsPanel } from './components/SwapDetailsPanel'
 import { SwapSettings } from './components/SwapSettings'
@@ -692,6 +693,47 @@ export const Swap = ({
       ),
     [oSwapParams]
   )
+
+  // Chainflip / OneClick: deposit address the source funds are transferred to.
+  const oDepositAddress: O.Option<Address> = useMemo(
+    () =>
+      FP.pipe(
+        oCFSwapParams,
+        O.map(({ recipient }) => recipient),
+        O.alt(() =>
+          FP.pipe(
+            oOneClickSwapParams,
+            O.map(({ recipient }) => recipient)
+          )
+        )
+      ),
+    [oCFSwapParams, oOneClickSwapParams]
+  )
+
+  const oDepositChannelId: O.Option<string> = useMemo(
+    () =>
+      FP.pipe(
+        oQuoteProtocol,
+        O.chain((quote) => (quote.depositChannelId ? O.some(quote.depositChannelId) : O.none))
+      ),
+    [oQuoteProtocol]
+  )
+
+  // Hard-gate submit when the selected quote's UI expiry has lapsed (#1175).
+  const [quoteExpired, setQuoteExpired] = useState(false)
+  const [quoteClock, setQuoteClock] = useState(() => new Date())
+  useEffect(() => {
+    if (O.isNone(oQuoteProtocol)) {
+      setQuoteExpired(false)
+      return
+    }
+    const timer = setInterval(() => setQuoteClock(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [oQuoteProtocol])
+  useEffect(() => {
+    const remainingMs = swapExpiry.getTime() - quoteClock.getTime()
+    setQuoteExpired(remainingMs < 60_000)
+  }, [swapExpiry, quoteClock])
 
   const setAmountToSwap = useCallback(
     (newAmountToSwap: BaseAmount) => {
@@ -1321,6 +1363,7 @@ export const Swap = ({
     oSwapParams,
     oCFSwapParams,
     oOneClickSwapParams,
+    quoteExpired,
     submitSwapTx,
     submitCFTx,
     submitOneClickTx,
@@ -1747,6 +1790,7 @@ export const Swap = ({
         RD.isPending(approveState) ||
         awaitingConfirmation ||
         isCausedSlippage ||
+        quoteExpired ||
         !swapResultAmountMax.baseAmount ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax) ||
         O.isNone(effectiveRecipientAddress) ||
@@ -1766,6 +1810,7 @@ export const Swap = ({
       approveState,
       awaitingConfirmation,
       isCausedSlippage,
+      quoteExpired,
       swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax,
       effectiveRecipientAddress,
@@ -2104,6 +2149,15 @@ export const Swap = ({
         <SwapDestinationConfirmation
           outputDestination={oOutputDestination}
           intendedRecipient={effectiveRecipientAddress}
+          hidePrivateData={hidePrivateData}
+        />
+      )}
+      {!lockedWallet && (
+        <SwapDepositConfirmation
+          depositAddress={oDepositAddress}
+          depositChannelId={oDepositChannelId}
+          quoteExpiry={swapExpiry}
+          quoteExpired={quoteExpired}
           hidePrivateData={hidePrivateData}
         />
       )}

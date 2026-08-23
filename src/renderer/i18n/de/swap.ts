@@ -46,7 +46,14 @@ const swap: SwapMessages = {
   'swap.settings.subSwaps.auto': 'Auto Swap-Anzahl',
   'swap.destination.title': 'Ausgabeziel',
   'swap.destination.info': 'Die Swap-Ausgabe wird an diese Adresse gesendet. Überprüfe sie vor dem Signieren.',
-  'swap.destination.mismatch': 'Dies unterscheidet sich vom Empfänger, den du eingegeben hast ({recipient}). Fahre nur fort, wenn du dieses Ziel erkennst.'
+  'swap.destination.mismatch':
+    'Dies unterscheidet sich vom Empfänger, den du eingegeben hast ({recipient}). Fahre nur fort, wenn du dieses Ziel erkennst.',
+  'swap.quote.expired': 'Dieses Angebot ist abgelaufen. Aktualisiere das Angebot vor dem Swap.',
+  'swap.deposit.title': 'Einzahlungsadresse',
+  'swap.deposit.info':
+    'Deine Quellmittel werden an diese Einzahlungsadresse gesendet. Sende nicht nach Ablauf des Angebots.',
+  'swap.deposit.channelId': 'Einzahlungskanal',
+  'swap.deposit.expiresAt': 'Angebot läuft ab um {time}'
 }
 
 export default swap

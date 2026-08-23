@@ -394,7 +394,14 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   )
 
   // ── Hook 4: Swap quote ────────────────────────────────────────────────
-  const { selectedQuote, quoteError, isFetching, fetchQuote, resetQuote } = useSwapQuote({
+  const {
+    selectedQuote,
+    quoteError,
+    isFetching,
+    fetchQuote,
+    resetQuote,
+    expiry: swapExpiry
+  } = useSwapQuote({
     sourceAsset: safeSourceAsset,
     targetAsset: safeTargetAsset,
     sourceAssetDecimal: sourceDecimal,
@@ -408,6 +415,21 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     slipTolerance,
     affiliateBps
   })
+
+  // Match main Swap: do not confirm/auto-submit an expired quote (#1175).
+  const [quoteExpired, setQuoteExpired] = useState(false)
+  const [quoteClock, setQuoteClock] = useState(() => new Date())
+  useEffect(() => {
+    if (O.isNone(selectedQuote)) {
+      setQuoteExpired(false)
+      return
+    }
+    const timer = setInterval(() => setQuoteClock(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [selectedQuote])
+  useEffect(() => {
+    setQuoteExpired(swapExpiry.getTime() - quoteClock.getTime() < 60_000)
+  }, [swapExpiry, quoteClock])
 
   // ── Hook 5: Swap execution ────────────────────────────────────────────
   const {
@@ -542,6 +564,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     oSwapParams,
     oCFSwapParams,
     oOneClickSwapParams,
+    quoteExpired,
     submitSwapTx,
     submitCFTx,
     submitOneClickTx,
@@ -848,6 +871,18 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
       return
     }
 
+    if (quoteExpired) {
+      autoSubmitPendingRef.current = false
+      if (executingLevelRef.current) {
+        priceLevelService.updateLevel(assetKey, executingLevelRef.current, {
+          status: 'failed',
+          error: 'Quote expired'
+        })
+        executingLevelRef.current = null
+      }
+      return
+    }
+
     autoSubmitPendingRef.current = false
 
     if (!selectedQuote.value.canSwap) {
@@ -882,6 +917,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     isFetching,
     needsApproval,
     isApprovedState,
+    quoteExpired,
     onSubmit,
     priceLevelService,
     assetKey,

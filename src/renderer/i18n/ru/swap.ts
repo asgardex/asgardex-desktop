@@ -46,7 +46,14 @@ const swap: SwapMessages = {
   'swap.settings.subSwaps.auto': 'Авто количество свопов',
   'swap.destination.title': 'Адрес вывода',
   'swap.destination.info': 'Результат обмена будет отправлен на этот адрес. Проверьте его перед подписанием.',
-  'swap.destination.mismatch': 'Это отличается от получателя, которого вы указали ({recipient}). Продолжайте только если вы узнаете этот адрес.'
+  'swap.destination.mismatch':
+    'Это отличается от получателя, которого вы указали ({recipient}). Продолжайте только если вы узнаете этот адрес.',
+  'swap.quote.expired': 'Этот котировочный запрос истёк. Обновите котировку перед обменом.',
+  'swap.deposit.title': 'Адрес депозита',
+  'swap.deposit.info':
+    'Исходные средства будут переведены на этот депозитный адрес. Не отправляйте после истечения котировки.',
+  'swap.deposit.channelId': 'Депозитный канал',
+  'swap.deposit.expiresAt': 'Котировка истекает в {time}'
 }
 
 export default swap
