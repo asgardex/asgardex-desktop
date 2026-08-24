@@ -171,7 +171,9 @@ export const ipcLedgerApproveERC20TokenParamsIO = t.type({
   walletIndex: t.number,
   hdMode: evmHDModeIO,
   apiKey: t.union([t.string, t.undefined]),
-  evmRpcUrl: t.union([t.string, t.undefined])
+  evmRpcUrl: t.union([t.string, t.undefined]),
+  // Base-unit amount as string across IPC. Omit / undefined → unlimited MAX_APPROVAL; "0" → revoke.
+  amount: t.union([t.string, t.undefined])
 })
 
 export type IPCLedgerApproveERC20TokenParams = t.TypeOf<typeof ipcLedgerApproveERC20TokenParamsIO>

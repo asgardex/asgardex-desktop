@@ -149,6 +149,14 @@ export const createEvmFeesService = (
       )
     )
 
+  /**
+   * Estimate approve fee. `estimateApprove` often reverts when a non-zero
+   * allowance already exists (USDT-style tokens that require reset-to-zero
+   * first) — ethers surfaces that as "missing revert data". Fall back to the
+   * client default approve gas limit so the UI still shows a usable fee.
+   */
+  const DEFAULT_APPROVE_GAS_LIMIT = new BigNumber(200000)
+
   const approveTxFee$ = ({ spenderAddress, contractAddress, fromAddress }: ApproveParams): FeeLD =>
     Rx.combineLatest([client$, gasMultiplier$]).pipe(
       RxOp.switchMap(([oClient, gasMultiplier]) =>
@@ -156,11 +164,26 @@ export const createEvmFeesService = (
           oClient,
           O.fold(
             () => Rx.of(RD.initial),
-            (client): FeeLD =>
-              Rx.combineLatest([
-                client.estimateApprove({ contractAddress, spenderAddress, fromAddress }),
-                client.estimateGasPrices()
-              ]).pipe(
+            (client): FeeLD => {
+              const estimatedGasLimit$ = Rx.from(
+                client.estimateApprove({ contractAddress, spenderAddress, fromAddress })
+              ).pipe(
+                RxOp.catchError((error) => {
+                  logger.warn('estimateApprove failed, using default approve gas limit', {
+                    chain,
+                    contractAddress,
+                    error: error?.message ?? String(error)
+                  })
+                  const network = client.getNetwork()
+                  // defaults is on the EVM client config; fall back to project-wide 200k
+                  const fromDefaults = (
+                    client as unknown as { defaults?: Record<string, { approveGasLimit?: BigNumber }> }
+                  ).defaults?.[network]?.approveGasLimit
+                  return Rx.of(fromDefaults ?? DEFAULT_APPROVE_GAS_LIMIT)
+                })
+              )
+
+              return Rx.combineLatest([estimatedGasLimit$, Rx.from(client.estimateGasPrices())]).pipe(
                 RxOp.map(([gasLimit, rawGasPrices]) => {
                   const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
                   return getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: gasAssetDecimal })
@@ -169,6 +192,7 @@ export const createEvmFeesService = (
                 RxOp.catchError((error) => Rx.of(RD.failure(error))),
                 RxOp.startWith(RD.pending)
               )
+            }
           )
         )
       )

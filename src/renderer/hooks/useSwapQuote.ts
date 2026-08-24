@@ -14,6 +14,7 @@ import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { useOneClickContext } from '../contexts/OneClickContext'
 import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
+import { quoteNeedsRouterApproval } from '../helpers/evmApprovalHelper'
 import { logger } from '../helpers/logger'
 import { filterQuotableProtocols } from '../helpers/protocolTradingHalt'
 import { useAggregator } from '../store/aggregator/hooks'
@@ -188,23 +189,35 @@ export const useSwapQuote = ({
             }) as ExtendedQuoteSwap
         )
 
-        // Protocols report failures as placeholder quotes (canSwap: false with
-        // the reason in `errors`) — never select those as the "best" quote, and
-        // surface their errors instead of silently rendering a 0 output.
+        // Prefer real canSwap quotes. If none, keep THOR/MAYA quotes blocked only by
+        // missing router allowance so Swap can select them and run an on-chain
+        // isApproved check (approval is not inferred from these error strings).
         const viableQuotes = allQuotes.filter((quote) => quote.canSwap)
+        const approvalBlockedQuotes = allQuotes.filter(
+          (quote) =>
+            !quote.canSwap &&
+            (quote.protocol === 'Thorchain' || quote.protocol === 'Mayachain') &&
+            quoteNeedsRouterApproval(quote.errors)
+        )
 
-        const sortedQuotes = [...viableQuotes].sort((a, b) => {
-          const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
-          const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
-          const timeA = a.totalSwapSeconds
-          const timeB = b.totalSwapSeconds
-          return amountA > amountB ? -1 : amountA < amountB ? 1 : timeA - timeB
-        })
+        const sortByOutput = (quotesToSort: ExtendedQuoteSwap[]) =>
+          [...quotesToSort].sort((a, b) => {
+            const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
+            const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
+            const timeA = a.totalSwapSeconds
+            const timeB = b.totalSwapSeconds
+            return amountA > amountB ? -1 : amountA < amountB ? 1 : timeA - timeB
+          })
+
+        const sortedQuotes = sortByOutput(viableQuotes)
 
         setQuotes(O.some(allQuotes))
 
         if (sortedQuotes.length > 0) {
           setSelectedQuote(O.some(sortedQuotes[0]))
+          setQuoteError(O.none)
+        } else if (approvalBlockedQuotes.length > 0) {
+          setSelectedQuote(O.some(sortByOutput(approvalBlockedQuotes)[0]))
           setQuoteError(O.none)
         } else {
           setSelectedQuote(O.none)

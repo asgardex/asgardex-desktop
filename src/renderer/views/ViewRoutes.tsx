@@ -28,6 +28,7 @@ import { LedgerChainSelectView } from './wallet/LedgerChainSelectView'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
 import { ProtocolPoolView } from './wallet/ProtocolPoolView'
+import { RouterApprovalsView } from './wallet/RouterApprovalsView'
 import { SendView } from './wallet/send'
 import { TcyView } from './wallet/TcyView'
 import { TradeAssetsView } from './wallet/TradeAssetsView'
@@ -126,6 +127,14 @@ export const ViewRoutes = (): JSX.Element => {
         element={
           <WalletAuth>
             <ProtocolPoolView />
+          </WalletAuth>
+        }
+      />
+      <Route
+        path={walletRoutes.approvals.template}
+        element={
+          <WalletAuth>
+            <RouterApprovalsView />
           </WalletAuth>
         }
       />
