@@ -1788,8 +1788,9 @@ export const Swap = ({
       sourceBalanceLoading ||
       O.isNone(oApproveParams) ||
       RD.isPending(approveState) ||
+      RD.isFailure(isApprovedState) ||
       isApprovalCheckPending,
-    [isApproveFeeError, sourceBalanceLoading, oApproveParams, approveState, isApprovalCheckPending]
+    [isApproveFeeError, sourceBalanceLoading, oApproveParams, approveState, isApprovedState, isApprovalCheckPending]
   )
 
   const onChangeRecipientAddress = useCallback(

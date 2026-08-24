@@ -6,13 +6,13 @@ import { Address, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
-import { AssetsNav } from '../../components/wallet/assets'
 import {
   ApprovalProtocol,
   ApprovalWalletOption,
   approvalWalletOptionId,
   RouterApprovals
 } from '../../components/wallet/approvals'
+import { AssetsNav } from '../../components/wallet/assets'
 import { useEvmContext } from '../../contexts/EvmContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'

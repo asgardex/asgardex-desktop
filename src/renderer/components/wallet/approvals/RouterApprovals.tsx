@@ -114,7 +114,7 @@ export const RouterApprovals = ({
   const intl = useIntl()
   const chainAsset = useMemo(() => getChainAsset(chain), [chain])
 
-  const tokenOptions = useMemo(() => tokensForChain(chain, walletBalances), [chain, walletBalances])
+  const tokenOptions = useMemo(() => tokensForChain(chain, walletBalances, network), [chain, walletBalances, network])
 
   const [selectedToken, setSelectedToken] = useState<ApprovalTokenOption | undefined>(tokenOptions[0])
   const [unlimited, setUnlimited] = useState(true)
@@ -131,29 +131,38 @@ export const RouterApprovals = ({
     subscribe: subscribeApproveState
   } = useSubscriptionState<TxHashRD>(RD.initial)
 
+  const allowanceSubRef = useRef<Subscription | null>(null)
+  const allowanceRequestIdRef = useRef(0)
+
+  const cancelAllowanceRequest = useCallback(() => {
+    allowanceSubRef.current?.unsubscribe()
+    allowanceSubRef.current = null
+    allowanceRequestIdRef.current += 1
+  }, [])
+
   // Reset token when chain/token list changes
   useEffect(() => {
+    cancelAllowanceRequest()
     setSelectedToken((prev) => {
       if (prev && tokenOptions.some((t) => t.contractAddress === prev.contractAddress)) return prev
       return tokenOptions[0]
     })
     setAllowanceRD(RD.initial)
     resetApproveState()
-  }, [tokenOptions, resetApproveState])
+  }, [tokenOptions, resetApproveState, cancelAllowanceRequest])
 
   // Clear allowance when wallet changes
   useEffect(() => {
+    cancelAllowanceRequest()
     setAllowanceRD(RD.initial)
     resetApproveState()
-  }, [selectedWallet, resetApproveState])
-
-  const allowanceSubRef = useRef<Subscription | null>(null)
+  }, [selectedWallet, resetApproveState, cancelAllowanceRequest])
 
   useEffect(
     () => () => {
-      allowanceSubRef.current?.unsubscribe()
+      cancelAllowanceRequest()
     },
-    []
+    [cancelAllowanceRequest]
   )
 
   const walletMeta = selectedWallet
@@ -210,7 +219,8 @@ export const RouterApprovals = ({
   const handleCheckAllowance = useCallback(() => {
     if (!selectedToken || O.isNone(walletMeta) || O.isNone(oRouterAddress)) return
 
-    allowanceSubRef.current?.unsubscribe()
+    cancelAllowanceRequest()
+    const requestId = allowanceRequestIdRef.current
     setAllowanceRD(RD.pending)
     allowanceSubRef.current = getERC20Allowance$({
       contractAddress: selectedToken.contractAddress,
@@ -218,6 +228,9 @@ export const RouterApprovals = ({
       fromAddress: walletMeta.value.fromAddress,
       decimals: selectedToken.decimals
     }).subscribe((rd) => {
+      // Ignore stale responses after token/wallet/chain change or a newer check
+      if (requestId !== allowanceRequestIdRef.current) return
+
       if (RD.isSuccess(rd)) {
         setAllowanceRD(
           RD.success(
@@ -236,7 +249,7 @@ export const RouterApprovals = ({
         allowanceSubRef.current = null
       }
     })
-  }, [selectedToken, walletMeta, oRouterAddress, getERC20Allowance$, intl])
+  }, [selectedToken, walletMeta, oRouterAddress, getERC20Allowance$, intl, cancelAllowanceRequest])
 
   const buildApproveParams = useCallback(
     (amount: BaseAmount | undefined): O.Option<ApproveParams> => {

@@ -17,7 +17,7 @@ const wallet: WalletMessages = {
   'wallet.nav.approvals': 'Approvals',
   'wallet.approvals.title': 'Router Approvals',
   'wallet.approvals.description':
-    'Check, approve, or revoke ERC-20 allowances for THORChain and MAYAChain routers. Approve is usually one-time per token and protocol.',
+    'Check, approve, or revoke ERC-20 allowances for THORChain and MAYAChain routers. Approval is usually a one-time action per token and protocol.',
   'wallet.approvals.check': 'Check allowance',
   'wallet.approvals.revoke': 'Revoke',
   'wallet.approvals.unlimited': 'Unlimited',

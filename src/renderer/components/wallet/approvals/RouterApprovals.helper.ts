@@ -2,6 +2,7 @@ import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX, AVAXChain } from '@xchainjs/xchain-avax'
 import { AssetBETH, BASEChain } from '@xchainjs/xchain-base'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, AssetType, baseToAsset, Chain, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -139,7 +140,11 @@ export const CURATED_TOKENS: ApprovalTokenOption[] = [
   }
 ]
 
-export const tokensForChain = (chain: Chain, walletBalances: WalletBalances): ApprovalTokenOption[] => {
+export const tokensForChain = (
+  chain: Chain,
+  walletBalances: WalletBalances,
+  network: Network = Network.Mainnet
+): ApprovalTokenOption[] => {
   const fromWallet: ApprovalTokenOption[] = FP.pipe(walletBalances, (balances) =>
     balances.flatMap((wb: WalletBalance) => {
       const asset = wb.asset as TokenAsset
@@ -162,6 +167,9 @@ export const tokensForChain = (chain: Chain, walletBalances: WalletBalances): Ap
   )
 
   if (fromWallet.length > 0) return fromWallet
+
+  // Curated list is mainnet-only — never surface mainnet contracts on testnet/stagenet
+  if (network !== Network.Mainnet) return []
 
   return CURATED_TOKENS.filter((t) => t.asset.chain === chain)
 }

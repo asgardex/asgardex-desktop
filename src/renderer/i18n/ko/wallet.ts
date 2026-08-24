@@ -35,7 +35,7 @@ const wallet: WalletMessages = {
   'wallet.approvals.wallet': '지갑',
   'wallet.approvals.selectWallet': '지갑 선택',
   'wallet.approvals.existingAllowanceNote':
-    '허용치가 이미 설정되어 있습니다. 변경하려면 먼저 초기 트랜잭션이 필요할 수 있습니다(일부 토큰은 서명 2회).',
+    '허용치가 이미 설정되어 있습니다. 변경하려면 먼저 재설정 트랜잭션이 필요할 수 있습니다(일부 토큰은 서명 2회).',
   'wallet.column.name': '이름',
   'wallet.column.ticker': '티커',
   'wallet.action.send': '보내기',
