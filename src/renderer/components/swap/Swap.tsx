@@ -1566,7 +1566,8 @@ export const Swap = ({
   )
 
   const priceApproveFee: CryptoAmount = useMemo(() => {
-    const assetAmt = isApproved
+    // Approve fee applies when approval is still required, not after it's done
+    const assetAmt = !isApproved
       ? new CryptoAmount(approveFee, swapFees.inFee.asset)
       : new CryptoAmount(baseAmount(0), swapFees.inFee.asset)
     const result = FP.pipe(

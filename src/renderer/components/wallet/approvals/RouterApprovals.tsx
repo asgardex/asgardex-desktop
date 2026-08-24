@@ -469,6 +469,7 @@ export const RouterApprovals = ({
                 type="button"
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-text0 dark:text-text0d"
                 onClick={() => {
+                  cancelAllowanceRequest()
                   setSelectedToken(t)
                   setAllowanceRD(RD.initial)
                 }}>
