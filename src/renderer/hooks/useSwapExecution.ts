@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
+import * as RD from '@devexperts/remote-data-ts'
+import { ChainflipDepositChannel } from '@xchainjs/xchain-aggregator'
 import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
@@ -7,6 +9,7 @@ import {
   AnyAsset,
   BaseAmount,
   baseAmount,
+  CryptoAmount,
   isTokenAsset,
   isTradeAsset,
   isSynthAsset,
@@ -14,17 +17,27 @@ import {
 } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
+import * as Rx from 'rxjs'
 
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 import { useWalletContext } from '../contexts/WalletContext'
 import { isRujiAsset, isUtxoAssetChain } from '../helpers/assetHelper'
+import {
+  buildChainflipBroadcastParams,
+  openChainflipChannelForSubmit,
+  toChainflipQuoteAsset
+} from '../helpers/chainflipSwapHelper'
 import { sequenceTOption } from '../helpers/fpHelpers'
+import { createScopedLogger } from '../helpers/logger'
 import { applyStreamingToMemo, updateMemo } from '../helpers/memoHelper'
 import { INITIAL_SWAP_STATE } from '../services/chain/const'
 import { SwapTxParams, SwapTxState, SendTxParams, SwapHandler, SwapCFHandler, SwapFees } from '../services/chain/types'
 import { PoolAddress } from '../services/midgard/midgardTypes'
-import { WalletBalance, isStandaloneLedgerMode } from '../services/wallet/types'
+import { ErrorId, WalletBalance, isStandaloneLedgerMode } from '../services/wallet/types'
+import { useAggregator } from '../store/aggregator/hooks'
 import { useSubscriptionState } from './useSubscriptionState'
+
+const logger = createScopedLogger('SwapExecution')
 
 type UseSwapExecutionParams = {
   swap$: SwapHandler
@@ -32,6 +45,10 @@ type UseSwapExecutionParams = {
   swapOneClick$: SwapCFHandler
   selectedQuote: O.Option<ExtendedQuoteSwap>
   sourceAsset: AnyAsset
+  /** Destination asset for Chainflip channel open (egress). */
+  targetAsset: AnyAsset
+  /** User egress address required by Chainflip openDepositChannel. */
+  destinationAddress: O.Option<string>
   amountToSwap: BaseAmount
   sourceWalletBalance: O.Option<WalletBalance>
   sourceChainBalance: BaseAmount
@@ -50,12 +67,15 @@ type UseSwapExecutionResult = {
   cfSwapParams: O.Option<SendTxParams>
   oneClickSwapParams: O.Option<SendTxParams>
   submitSwap: () => void
-  submitCFSwap: () => void
+  /** Opens a Chainflip deposit channel then broadcasts the transfer. */
+  submitCFSwap: () => Promise<void>
   submitOneClickSwap: () => void
   resetSwapState: () => void
   subscribeSwapState: (s: import('rxjs').Observable<SwapTxState>) => void
   swapStartTime: number
   lastTrackedTxHashRef: React.MutableRefObject<string | null>
+  /** Set when a CF channel is opened for the in-flight submit (for tracker / modal). */
+  lastCFChannelRef: React.MutableRefObject<ChainflipDepositChannel | null>
 }
 
 export const useSwapExecution = ({
@@ -64,6 +84,8 @@ export const useSwapExecution = ({
   swapOneClick$,
   selectedQuote,
   sourceAsset,
+  targetAsset,
+  destinationAddress,
   amountToSwap,
   sourceWalletBalance,
   sourceChainBalance,
@@ -76,6 +98,7 @@ export const useSwapExecution = ({
   streamingQuantity
 }: UseSwapExecutionParams): UseSwapExecutionResult => {
   const { appWalletService } = useWalletContext()
+  const { requestChainflipDepositAddress, isBoostEnabled } = useAggregator()
   const appWalletState = useObservableState(appWalletService.appWalletState$)
   const standaloneLedgerState = useObservableState(appWalletService.standaloneLedgerService.standaloneLedgerState$)
 
@@ -90,6 +113,7 @@ export const useSwapExecution = ({
 
   const [swapStartTime, setSwapStartTime] = useState<number>(0)
   const lastTrackedTxHashRef = useRef<string | null>(null)
+  const lastCFChannelRef = useRef<ChainflipDepositChannel | null>(null)
 
   // Build swap params (THORChain / Maya)
   const swapParams: O.Option<SwapTxParams> = useMemo(() => {
@@ -184,6 +208,10 @@ export const useSwapExecution = ({
   // Build SendTxParams for the "vanilla transfer to a recipient" protocols (Chainflip, OneClick).
   // Filtered by protocol so the three param builders are mutually exclusive — callers can rely
   // on at most one being Some for a given selected quote.
+  //
+  // Chainflip: after aggregator 3.0, estimate quotes have empty `toAddress`. Recipient is filled
+  // at submit time via requestChainflipDepositAddress. Params still exist so confirm modals can
+  // detect a CF route (O.isSome) and carry wallet/amount metadata.
   const buildSendSwapParams = (allowedProtocols: ReadonlyArray<string>): O.Option<SendTxParams> =>
     FP.pipe(
       sequenceTOption(sourceWalletBalance, selectedQuote),
@@ -289,16 +317,80 @@ export const useSwapExecution = ({
     )
   }, [swapParams, subscribeSwapState, swap$])
 
-  const submitCFSwap = useCallback(() => {
-    FP.pipe(
-      cfSwapParams,
-      O.map((params) => {
-        setSwapStartTime(Date.now())
-        subscribeSwapState(swapCF$(params))
-        return true
+  const publishCFSubmitFailure = useCallback(
+    (error: unknown) => {
+      const msg = error instanceof Error ? error.message : 'Chainflip swap submit failed'
+      logger.error('Chainflip submit failed before broadcast', error)
+      setSwapStartTime(Date.now())
+      // Surface via SwapTxModal — channel open can fail before swapCF$ is subscribed.
+      subscribeSwapState(Rx.of({ swapTx: RD.failure({ errorId: ErrorId.SEND_TX, msg }) }))
+    },
+    [subscribeSwapState]
+  )
+
+  const submitCFSwap = useCallback(async () => {
+    if (O.isNone(cfSwapParams) || O.isNone(selectedQuote) || O.isNone(destinationAddress)) {
+      const error = new Error('Missing Chainflip swap params, quote, or destination address')
+      publishCFSubmitFailure(error)
+      throw error
+    }
+
+    const params = cfSwapParams.value
+    const quote = selectedQuote.value
+    if (quote.protocol !== 'Chainflip') {
+      const error = new Error('Selected quote is not a Chainflip route')
+      publishCFSubmitFailure(error)
+      throw error
+    }
+
+    const fromAsset = toChainflipQuoteAsset(sourceAsset)
+    const destinationAsset = toChainflipQuoteAsset(targetAsset)
+
+    logger.info('Opening Chainflip deposit channel before broadcast', {
+      from: `${fromAsset.chain}.${fromAsset.symbol}`,
+      to: `${destinationAsset.chain}.${destinationAsset.symbol}`,
+      enableBoost: isBoostEnabled
+    })
+
+    let channel: ChainflipDepositChannel
+    try {
+      channel = await openChainflipChannelForSubmit({
+        requestChainflipDepositAddress,
+        quoteParams: {
+          fromAsset: fromAsset as CryptoAmount['asset'],
+          destinationAsset: destinationAsset as CryptoAmount['asset'],
+          amount: new CryptoAmount(params.amount, fromAsset as CryptoAmount['asset']),
+          fromAddress: params.sender,
+          destinationAddress: destinationAddress.value,
+          enableBoost: isBoostEnabled
+        }
       })
-    )
-  }, [cfSwapParams, subscribeSwapState, swapCF$])
+    } catch (error) {
+      publishCFSubmitFailure(error)
+      throw error
+    }
+
+    lastCFChannelRef.current = channel
+    logger.info('Chainflip channel opened', {
+      depositChannelId: channel.depositChannelId,
+      depositAddress: channel.depositAddress,
+      expiresAt: channel.expiresAt.toISOString()
+    })
+
+    setSwapStartTime(Date.now())
+    subscribeSwapState(swapCF$(buildChainflipBroadcastParams(params, channel)))
+  }, [
+    cfSwapParams,
+    selectedQuote,
+    destinationAddress,
+    sourceAsset,
+    targetAsset,
+    isBoostEnabled,
+    requestChainflipDepositAddress,
+    publishCFSubmitFailure,
+    subscribeSwapState,
+    swapCF$
+  ])
 
   const submitOneClickSwap = useCallback(() => {
     FP.pipe(
@@ -322,6 +414,7 @@ export const useSwapExecution = ({
     resetSwapState,
     subscribeSwapState,
     swapStartTime,
-    lastTrackedTxHashRef
+    lastTrackedTxHashRef,
+    lastCFChannelRef
   }
 }

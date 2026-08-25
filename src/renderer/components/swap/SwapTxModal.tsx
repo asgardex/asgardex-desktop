@@ -5,6 +5,7 @@ import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import { resolveChainflipChannelId } from '../../helpers/chainflipSwapHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import { SwapTxState } from '../../services/chain/types'
@@ -19,6 +20,8 @@ export type SwapTxModalProps = {
   source: AssetData
   target: AssetData
   oQuoteProtocol: O.Option<QuoteSwapProtocol>
+  /** Live Chainflip channel id from requestChainflipDepositAddress (aggregator 3.0+). */
+  depositChannelId?: O.Option<string>
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   onCloseTxModal: () => void
@@ -32,6 +35,7 @@ export const SwapTxModal = ({
   source,
   target,
   oQuoteProtocol,
+  depositChannelId = O.none,
   goToTransaction,
   getExplorerTxUrl,
   onCloseTxModal,
@@ -62,9 +66,15 @@ export const SwapTxModal = ({
     O.map((qp) => qp.protocol as string)
   )
 
-  const channelId: O.Option<string> = FP.pipe(
-    oQuoteProtocol,
-    O.chain((qp) => (qp.depositChannelId ? O.some(qp.depositChannelId) : O.none))
+  const channelId: O.Option<string> = O.fromNullable(
+    resolveChainflipChannelId(
+      O.toUndefined(depositChannelId),
+      FP.pipe(
+        oQuoteProtocol,
+        O.map((qp) => qp.depositChannelId),
+        O.toUndefined
+      )
+    )
   )
 
   const oTxHash = useMemo(

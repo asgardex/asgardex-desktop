@@ -34,9 +34,11 @@ import { usePriceLevelContext } from '../../../contexts/PriceLevelContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { isUSDAsset } from '../../../helpers/assetHelper'
+import { resolveChainflipChannelId } from '../../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../../helpers/chainflipTransactionTracker'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
+import { createScopedLogger } from '../../../helpers/logger'
 import { addOneClickSwapToTrackerFromQuote } from '../../../helpers/oneClickTransactionTracker'
 import { addSwapToTracker } from '../../../helpers/transactionTracker'
 import { useERC20Approval } from '../../../hooks/useERC20Approval'
@@ -71,6 +73,8 @@ type Props = {
   setTradeMode: (mode: TradeMode) => void
   handleRef?: React.MutableRefObject<TradingPanelHandle | null>
 }
+
+const logger = createScopedLogger('TradingPanel')
 
 export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, handleRef }: Props) => {
   // ── Contexts ──────────────────────────────────────────────────────────
@@ -420,13 +424,16 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     submitOneClickSwap: submitOneClickTx,
     resetSwapState,
     swapStartTime,
-    lastTrackedTxHashRef
+    lastTrackedTxHashRef,
+    lastCFChannelRef
   } = useSwapExecution({
     swap$,
     swapCF$,
     swapOneClick$,
     selectedQuote,
     sourceAsset: safeSourceAsset,
+    targetAsset: safeTargetAsset,
+    destinationAddress: O.fromNullable(destinationAddressString || undefined),
     amountToSwap,
     sourceWalletBalance,
     sourceChainBalance,
@@ -668,13 +675,19 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
             amount: amountToSwap.amount().toString()
           })
           lastTrackedTxHashRef.current = txHash
-        } else if (quoteProtocol.protocol === 'Chainflip' && quoteProtocol.depositChannelId) {
-          addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, quoteProtocol.depositChannelId, {
-            srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },
-            destAsset: { chain: safeTargetAsset.chain, symbol: safeTargetAsset.symbol },
-            depositAmount: amountToSwap.amount().toString()
-          })
-          lastTrackedTxHashRef.current = txHash
+        } else if (quoteProtocol.protocol === 'Chainflip') {
+          const channelId = resolveChainflipChannelId(
+            lastCFChannelRef.current?.depositChannelId,
+            quoteProtocol.depositChannelId
+          )
+          if (channelId) {
+            addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, channelId, {
+              srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },
+              destAsset: { chain: safeTargetAsset.chain, symbol: safeTargetAsset.symbol },
+              depositAmount: amountToSwap.amount().toString()
+            })
+            lastTrackedTxHashRef.current = txHash
+          }
         } else if (quoteProtocol.protocol === 'OneClick') {
           // 1Click (NEAR Intents) keys swap status by deposit address (`toAddress` in the quote),
           // not the on-chain tx hash. Mirrors the main Swap screen; the global TransactionQuickDial
@@ -698,7 +711,8 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     safeSourceAsset,
     safeTargetAsset,
     amountToSwap,
-    lastTrackedTxHashRef
+    lastTrackedTxHashRef,
+    lastCFChannelRef
   ])
 
   const onCloseTxModal = useCallback(() => {
@@ -866,13 +880,27 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
 
     if (isPreAuthorized) {
       // Pre-authorized keystore order: bypass password modal, submit directly
-      if (O.isSome(oSwapParams)) {
-        submitSwapTx()
-      } else if (O.isSome(oCFSwapParams)) {
-        submitCFTx()
-      }
-      // Clean up cached auth
-      if (levelId) orderPasswordCache.current.delete(levelId)
+      void (async () => {
+        try {
+          if (O.isSome(oSwapParams)) {
+            submitSwapTx()
+          } else if (O.isSome(oCFSwapParams)) {
+            await submitCFTx()
+          }
+        } catch (error) {
+          logger.error('Pre-authorized swap submit failed', error)
+          // Channel open can fail before swapCF$ emits — mark the limit order failed now.
+          if (levelId) {
+            priceLevelService.updateLevel(assetKey, levelId, {
+              status: 'failed',
+              error: error instanceof Error ? error.message : 'Swap submission failed'
+            })
+            executingLevelRef.current = null
+          }
+        } finally {
+          if (levelId) orderPasswordCache.current.delete(levelId)
+        }
+      })()
     } else {
       // Hardware wallet or non-pre-authorized: show confirmation modal
       onSubmit()
@@ -962,6 +990,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
         source={swapTxSource}
         target={swapTxTarget}
         oQuoteProtocol={selectedQuote}
+        depositChannelId={O.fromNullable(lastCFChannelRef.current?.depositChannelId)}
         goToTransaction={openExplorerTxUrl}
         getExplorerTxUrl={getExplorerTxUrl}
         onCloseTxModal={onCloseTxModal}

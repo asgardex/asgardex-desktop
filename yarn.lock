@@ -6412,23 +6412,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-aggregator@npm:2.5.2":
-  version: 2.5.2
-  resolution: "@xchainjs/xchain-aggregator@npm:2.5.2"
+"@xchainjs/xchain-aggregator@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@xchainjs/xchain-aggregator@npm:3.0.0"
   dependencies:
     "@chainflip/sdk": "npm:2.2.1"
     "@xchainjs/xchain-client": "npm:2.0.17"
-    "@xchainjs/xchain-mayachain": "npm:4.2.0"
-    "@xchainjs/xchain-mayachain-amm": "npm:4.2.4"
+    "@xchainjs/xchain-mayachain": "npm:4.2.1"
+    "@xchainjs/xchain-mayachain-amm": "npm:4.2.5"
     "@xchainjs/xchain-mayachain-query": "npm:2.2.3"
     "@xchainjs/xchain-mayamidgard-query": "npm:1.0.19"
     "@xchainjs/xchain-midgard-query": "npm:2.0.20"
-    "@xchainjs/xchain-thorchain": "npm:3.1.0"
-    "@xchainjs/xchain-thorchain-amm": "npm:3.1.4"
+    "@xchainjs/xchain-thorchain": "npm:3.1.1"
+    "@xchainjs/xchain-thorchain-amm": "npm:3.1.5"
     "@xchainjs/xchain-thorchain-query": "npm:3.1.3"
     "@xchainjs/xchain-util": "npm:2.0.7"
-    "@xchainjs/xchain-wallet": "npm:2.0.33"
-  checksum: 10/c8e8bc520cf7fdbbfc2772fd59250240c13d526483ae8854cb65ffc256997bdfad57caf1361b6def7a6b06fd8dbf43ad4c72f8107fe30bcf97c095894c1990d1
+    "@xchainjs/xchain-wallet": "npm:2.0.34"
+  checksum: 10/2ba2b19481375d693c538613b72a58696d90f8581459128c0909e284af661d9a3e352ea1d58150cab7e85cb08107e0bf213644c5c359732228d26ff137673c98
   languageName: node
   linkType: hard
 
@@ -6553,9 +6553,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-cosmos-sdk@npm:2.1.0":
-  version: 2.1.0
-  resolution: "@xchainjs/xchain-cosmos-sdk@npm:2.1.0"
+"@xchainjs/xchain-cosmos-sdk@npm:2.1.1":
+  version: 2.1.1
+  resolution: "@xchainjs/xchain-cosmos-sdk@npm:2.1.1"
   dependencies:
     "@bitcoin-js/tiny-secp256k1-asmjs": "npm:^2.2.3"
     "@cosmjs/crypto": "npm:0.37.0"
@@ -6567,13 +6567,13 @@ __metadata:
     "@xchainjs/xchain-client": "npm:2.0.17"
     "@xchainjs/xchain-crypto": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:2.0.7"
-  checksum: 10/564e2d9fd69ae1e12a02ff84dbed1368957abe976b0370116ff8c79676d9967bebc565d66713f8c35c087c5b9cea9d2343c86089907ce7ea3ce50fa544017e32
+  checksum: 10/5240e94423bd943fdab336035439bfcaa29d0553818b3e3b181d9e8e7881bfb3105418ac8ecca3afb42397bac5c942363633137ffa30be58afa0c68d11305727
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-cosmos@npm:3.1.0":
-  version: 3.1.0
-  resolution: "@xchainjs/xchain-cosmos@npm:3.1.0"
+"@xchainjs/xchain-cosmos@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@xchainjs/xchain-cosmos@npm:3.1.1"
   dependencies:
     "@bitcoin-js/tiny-secp256k1-asmjs": "npm:^2.2.3"
     "@cosmjs/amino": "npm:0.37.0"
@@ -6586,14 +6586,14 @@ __metadata:
     "@scure/base": "npm:^1.2.6"
     "@scure/bip32": "npm:^1.7.0"
     "@xchainjs/xchain-client": "npm:2.0.17"
-    "@xchainjs/xchain-cosmos-sdk": "npm:2.1.0"
+    "@xchainjs/xchain-cosmos-sdk": "npm:2.1.1"
     "@xchainjs/xchain-crypto": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:2.0.7"
     axios: "npm:1.18.1"
     bignumber.js: "npm:^11.0.0"
     cosmjs-types: "npm:0.10.1"
     protobufjs: "npm:7.6.4"
-  checksum: 10/54e92e9ee1cf8bc701e4b628dbe224b1bf4aa07b9a3ecacecdd442fee0beef9c450d7568cb0e76e668d117ab6efa2e479958d27347f06d9be4482369f9586571
+  checksum: 10/6380b3072406709b13f96b29dec1337791d377d01fb05393ef268ea351f2ffd5377e825a779c91c1480bc7b8a6976657d5a9e26dbc251d4071dd3cac9623ec83
   languageName: node
   linkType: hard
 
@@ -6689,9 +6689,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-kujira@npm:2.1.0":
-  version: 2.1.0
-  resolution: "@xchainjs/xchain-kujira@npm:2.1.0"
+"@xchainjs/xchain-kujira@npm:2.1.1":
+  version: 2.1.1
+  resolution: "@xchainjs/xchain-kujira@npm:2.1.1"
   dependencies:
     "@bitcoin-js/tiny-secp256k1-asmjs": "npm:^2.2.3"
     "@cosmjs/amino": "npm:0.37.0"
@@ -6701,11 +6701,11 @@ __metadata:
     "@scure/base": "npm:^1.2.6"
     "@scure/bip32": "npm:^1.7.0"
     "@xchainjs/xchain-client": "npm:2.0.17"
-    "@xchainjs/xchain-cosmos-sdk": "npm:2.1.0"
+    "@xchainjs/xchain-cosmos-sdk": "npm:2.1.1"
     "@xchainjs/xchain-crypto": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:2.0.7"
     cosmjs-types: "npm:0.10.1"
-  checksum: 10/a4fbeae91f901a0b9c012bdf4684bdf82c6b358381750554590c53f687c02413ca051a5975537e3071e2bb88998ca173c29fcca18f4042ff152f2949175ed885
+  checksum: 10/7ee1257e788c87a2699fe00ad0392df566d3325a3e519c6c2b413e54d291ff0b8870cb6bf210333bbfbd967f420936fd25a40ed201604b51990322a266ad395d
   languageName: node
   linkType: hard
 
@@ -6729,9 +6729,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-mayachain-amm@npm:4.2.4":
-  version: 4.2.4
-  resolution: "@xchainjs/xchain-mayachain-amm@npm:4.2.4"
+"@xchainjs/xchain-mayachain-amm@npm:4.2.5":
+  version: 4.2.5
+  resolution: "@xchainjs/xchain-mayachain-amm@npm:4.2.5"
   dependencies:
     "@xchainjs/xchain-arbitrum": "npm:2.1.8"
     "@xchainjs/xchain-bitcoin": "npm:2.4.0"
@@ -6741,16 +6741,16 @@ __metadata:
     "@xchainjs/xchain-dash": "npm:2.2.10"
     "@xchainjs/xchain-ethereum": "npm:2.1.0"
     "@xchainjs/xchain-evm": "npm:2.1.0"
-    "@xchainjs/xchain-kujira": "npm:2.1.0"
-    "@xchainjs/xchain-mayachain": "npm:4.2.0"
+    "@xchainjs/xchain-kujira": "npm:2.1.1"
+    "@xchainjs/xchain-mayachain": "npm:4.2.1"
     "@xchainjs/xchain-mayachain-query": "npm:2.2.3"
     "@xchainjs/xchain-radix": "npm:2.0.18"
-    "@xchainjs/xchain-thorchain": "npm:3.1.0"
+    "@xchainjs/xchain-thorchain": "npm:3.1.1"
     "@xchainjs/xchain-util": "npm:2.0.7"
-    "@xchainjs/xchain-wallet": "npm:2.0.33"
+    "@xchainjs/xchain-wallet": "npm:2.0.34"
     "@xchainjs/xchain-zcash": "npm:1.3.10"
     ethers: "npm:^6.14.3"
-  checksum: 10/dccc8a919d06883288a0a0ff2fed3446bcb226df7e64acaa27ad6c2d68f8c4a8c12ef6ee21a789d8940b197d9ed9d51972add7ffe46fb8495d18fb71126e77a9
+  checksum: 10/abbbf671821ce0563c739b611dcadbda811139d02c847c01d86a31133aca2d7fee0ef941334e9e8c370a7eb1020fa7582693c2c989b7b42a5f839d537a8865c0
   languageName: node
   linkType: hard
 
@@ -6770,9 +6770,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-mayachain@npm:4.2.0":
-  version: 4.2.0
-  resolution: "@xchainjs/xchain-mayachain@npm:4.2.0"
+"@xchainjs/xchain-mayachain@npm:4.2.1":
+  version: 4.2.1
+  resolution: "@xchainjs/xchain-mayachain@npm:4.2.1"
   dependencies:
     "@bitcoin-js/tiny-secp256k1-asmjs": "npm:^2.2.3"
     "@cosmjs/amino": "npm:0.37.0"
@@ -6784,14 +6784,14 @@ __metadata:
     "@scure/bip32": "npm:^1.7.0"
     "@xchainjs/ledger-thorchain": "npm:^0.3.1"
     "@xchainjs/xchain-client": "npm:2.0.17"
-    "@xchainjs/xchain-cosmos-sdk": "npm:2.1.0"
+    "@xchainjs/xchain-cosmos-sdk": "npm:2.1.1"
     "@xchainjs/xchain-crypto": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:2.0.7"
     axios: "npm:1.18.1"
     bignumber.js: "npm:^11.0.0"
     cosmjs-types: "npm:0.10.1"
     protobufjs: "npm:7.6.4"
-  checksum: 10/4eb86c52d7f2ee1bf03e3a8bbf1520718c43b4e8cd5afaa3375bfc78a911004f27f9b0018d411c509271c3a4324cd233b7de400a1cbefbc2e8d3abc84b7bfde0
+  checksum: 10/09e132039b7b037ae39cdf02196314b4c505144f510bd275efb606465f83838283caa2f7b2faa1fbaf779ed2eaaf9203979931ffacdcd059289ba3b78b61c6d3
   languageName: node
   linkType: hard
 
@@ -6910,9 +6910,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-thorchain-amm@npm:3.1.4":
-  version: 3.1.4
-  resolution: "@xchainjs/xchain-thorchain-amm@npm:3.1.4"
+"@xchainjs/xchain-thorchain-amm@npm:3.1.5":
+  version: 3.1.5
+  resolution: "@xchainjs/xchain-thorchain-amm@npm:3.1.5"
   dependencies:
     "@xchainjs/xchain-avax": "npm:2.0.22"
     "@xchainjs/xchain-base": "npm:1.0.22"
@@ -6920,7 +6920,7 @@ __metadata:
     "@xchainjs/xchain-bitcoincash": "npm:2.3.2"
     "@xchainjs/xchain-bsc": "npm:2.0.23"
     "@xchainjs/xchain-client": "npm:2.0.17"
-    "@xchainjs/xchain-cosmos": "npm:3.1.0"
+    "@xchainjs/xchain-cosmos": "npm:3.1.1"
     "@xchainjs/xchain-doge": "npm:2.3.2"
     "@xchainjs/xchain-ethereum": "npm:2.1.0"
     "@xchainjs/xchain-evm": "npm:2.1.0"
@@ -6928,14 +6928,14 @@ __metadata:
     "@xchainjs/xchain-ripple": "npm:1.0.19"
     "@xchainjs/xchain-solana": "npm:1.1.9"
     "@xchainjs/xchain-sui": "npm:0.2.1"
-    "@xchainjs/xchain-thorchain": "npm:3.1.0"
+    "@xchainjs/xchain-thorchain": "npm:3.1.1"
     "@xchainjs/xchain-thorchain-query": "npm:3.1.3"
     "@xchainjs/xchain-tron": "npm:3.0.10"
     "@xchainjs/xchain-util": "npm:2.0.7"
-    "@xchainjs/xchain-wallet": "npm:2.0.33"
+    "@xchainjs/xchain-wallet": "npm:2.0.34"
     "@xchainjs/xchain-zcash": "npm:1.3.10"
     ethers: "npm:^6.14.3"
-  checksum: 10/54eb6d96f044adf904b891b4643c89d47507cf4e778f87ccf436886a35e36f35b59a88f4c8064b74fb467cf69d5c89f4258db02280542d0acc6a617396e92894
+  checksum: 10/0856c29265cf72ab4ae554d137efe05c7b8a535bea1841722fa6ba35cf65de5cf841864ced545aad02f5aec05e28344c10e0cc3436e77253cfc5fc760ef714c4
   languageName: node
   linkType: hard
 
@@ -6954,9 +6954,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-thorchain@npm:3.1.0":
-  version: 3.1.0
-  resolution: "@xchainjs/xchain-thorchain@npm:3.1.0"
+"@xchainjs/xchain-thorchain@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@xchainjs/xchain-thorchain@npm:3.1.1"
   dependencies:
     "@bitcoin-js/tiny-secp256k1-asmjs": "npm:^2.2.3"
     "@cosmjs/amino": "npm:0.37.0"
@@ -6970,14 +6970,14 @@ __metadata:
     "@scure/bip32": "npm:^1.7.0"
     "@xchainjs/ledger-thorchain": "npm:^0.3.1"
     "@xchainjs/xchain-client": "npm:2.0.17"
-    "@xchainjs/xchain-cosmos-sdk": "npm:2.1.0"
+    "@xchainjs/xchain-cosmos-sdk": "npm:2.1.1"
     "@xchainjs/xchain-crypto": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:2.0.7"
     axios: "npm:1.18.1"
     bignumber.js: "npm:^11.0.0"
     cosmjs-types: "npm:0.10.1"
     protobufjs: "npm:7.6.4"
-  checksum: 10/745c79ff24fe40317348b4e6b9e8b1d8f4f775d8b8c8fefdc9c95a3bcffb6cb4e92871d8861ee0d9721acfc0934de0bb4c74265a9654532dc0694d06c4cce5e2
+  checksum: 10/217479fc6f6e2e64bfc3b6d5beeeb8a9021971f2c3a9339a8c5c8d3afcf02bda5b41afc786c1c19f1b6e8cd36e464e0a058def3b20b079c8978d845d85e9c24e
   languageName: node
   linkType: hard
 
@@ -7037,20 +7037,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-wallet@npm:2.0.33":
-  version: 2.0.33
-  resolution: "@xchainjs/xchain-wallet@npm:2.0.33"
+"@xchainjs/xchain-wallet@npm:2.0.34":
+  version: 2.0.34
+  resolution: "@xchainjs/xchain-wallet@npm:2.0.34"
   dependencies:
     "@xchainjs/xchain-client": "npm:2.0.17"
     "@xchainjs/xchain-evm": "npm:2.1.0"
-    "@xchainjs/xchain-mayachain": "npm:4.2.0"
+    "@xchainjs/xchain-mayachain": "npm:4.2.1"
     "@xchainjs/xchain-radix": "npm:2.0.18"
-    "@xchainjs/xchain-thorchain": "npm:3.1.0"
+    "@xchainjs/xchain-thorchain": "npm:3.1.1"
     "@xchainjs/xchain-util": "npm:2.0.7"
     "@xchainjs/xchain-utxo": "npm:2.2.9"
     bignumber.js: "npm:^11.0.0"
     ethers: "npm:^6.14.3"
-  checksum: 10/bfb8cfa2a62474af54dcf613363f5c0c4ca139662a06909995cfad4b549d0937fd2c58e90c706f053e4b28e2575bc2a9fcad97c94e317c57d55512e38b490908
+  checksum: 10/ac6e1fa9dcb2fd8a206e621266f10bd6bd0620224f48727197d861404ff1591f9c901d464d2b50c5cee1dc35bc6aad7b6b739b73123193f47fab5a122ba3567b
   languageName: node
   linkType: hard
 
@@ -7593,7 +7593,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.4.1"
     "@vitest/ui": "npm:^4.1.9"
     "@vultisig/sdk": "npm:2.19.19"
-    "@xchainjs/xchain-aggregator": "npm:2.5.2"
+    "@xchainjs/xchain-aggregator": "npm:3.0.0"
     "@xchainjs/xchain-arbitrum": "npm:2.1.8"
     "@xchainjs/xchain-avax": "npm:2.0.22"
     "@xchainjs/xchain-base": "npm:1.0.22"
@@ -7602,7 +7602,7 @@ __metadata:
     "@xchainjs/xchain-bsc": "npm:2.0.23"
     "@xchainjs/xchain-cardano": "npm:1.2.4"
     "@xchainjs/xchain-client": "npm:2.0.17"
-    "@xchainjs/xchain-cosmos": "npm:3.1.0"
+    "@xchainjs/xchain-cosmos": "npm:3.1.1"
     "@xchainjs/xchain-crypto": "npm:1.0.8"
     "@xchainjs/xchain-dash": "npm:2.2.10"
     "@xchainjs/xchain-doge": "npm:2.3.2"
@@ -7610,7 +7610,7 @@ __metadata:
     "@xchainjs/xchain-evm": "npm:2.1.0"
     "@xchainjs/xchain-evm-providers": "npm:2.0.20"
     "@xchainjs/xchain-litecoin": "npm:2.4.2"
-    "@xchainjs/xchain-mayachain": "npm:4.2.0"
+    "@xchainjs/xchain-mayachain": "npm:4.2.1"
     "@xchainjs/xchain-mayachain-query": "npm:2.2.3"
     "@xchainjs/xchain-mayamidgard": "npm:1.1.4"
     "@xchainjs/xchain-mayanode": "npm:1.2.4"
@@ -7619,14 +7619,14 @@ __metadata:
     "@xchainjs/xchain-ripple": "npm:1.0.19"
     "@xchainjs/xchain-solana": "npm:1.1.9"
     "@xchainjs/xchain-sui": "npm:0.2.1"
-    "@xchainjs/xchain-thorchain": "npm:3.1.0"
+    "@xchainjs/xchain-thorchain": "npm:3.1.1"
     "@xchainjs/xchain-thorchain-query": "npm:3.1.3"
     "@xchainjs/xchain-thornode": "npm:1.2.3"
     "@xchainjs/xchain-tron": "npm:3.0.10"
     "@xchainjs/xchain-util": "npm:2.0.7"
     "@xchainjs/xchain-utxo": "npm:2.2.9"
     "@xchainjs/xchain-utxo-providers": "npm:2.1.1"
-    "@xchainjs/xchain-wallet": "npm:2.0.33"
+    "@xchainjs/xchain-wallet": "npm:2.0.34"
     "@xchainjs/xchain-zcash": "npm:1.3.10"
     assert: "npm:^2.1.0"
     axios: "npm:1.18.1"
