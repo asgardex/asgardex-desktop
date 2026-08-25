@@ -15,16 +15,12 @@ import {
 import { LedgerError } from '../../../shared/api/types'
 import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { recoverTxHashFromBroadcastTimeout } from '../../helpers/cosmosBroadcastError'
-import { createScopedLogger } from '../../helpers/logger'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { createVultisigCosmosTx } from '../cosmos/vultisigTx'
 import { ClientUrl } from '../thorchain/types'
 import { TxHashLD, ErrorId } from '../wallet/types'
 import { TransactionService, Client$, ClientUrl$, SendTxParams } from './types'
-
-const logger = createScopedLogger('mayachain.transaction')
 
 export const createTransactionService = (
   client$: Client$,
@@ -107,23 +103,14 @@ export const createTransactionService = (
               (client) =>
                 Rx.from(client.deposit(params)).pipe(
                   RxOp.map(RD.success),
-                  RxOp.catchError((e) => {
-                    // CosmJS inclusion-poll timeout after a successful submit — treat as success.
-                    const recovered = recoverTxHashFromBroadcastTimeout(e)
-                    if (recovered) {
-                      logger.warn('Deposit broadcast confirmation timed out; using submitted tx hash', {
-                        txHash: recovered.txHash,
-                        message: recovered.message
-                      })
-                      return Rx.of(RD.success(recovered.txHash))
-                    }
-                    return Rx.of(
+                  RxOp.catchError((e) =>
+                    Rx.of(
                       RD.failure({
                         msg: e?.message ?? e.toString(),
                         errorId: ErrorId.SEND_TX
                       })
                     )
-                  })
+                  )
                 )
             )
           )
