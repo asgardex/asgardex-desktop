@@ -61,4 +61,21 @@ describe('services/mayachain/transaction depositTx', () => {
     expect(deposit).toHaveBeenCalledTimes(1)
     expect(result).toEqual(RD.success('txhash-once'))
   })
+
+  it('treats CosmJS inclusion-poll TimeoutError as success using txId', async () => {
+    const txHash = '5082A38F91694E4DD64A44FCA37D00DE9BD11CA5AC29648CDB732FA655449DDF'
+    const timeoutError = Object.assign(
+      new Error(
+        `Transaction with ID ${txHash} was submitted but was not yet found on the chain. There was a wait of 60 seconds.`
+      ),
+      { name: 'TimeoutError', txId: txHash }
+    )
+    const deposit = vi.fn().mockRejectedValue(timeoutError)
+    const client = { deposit } as unknown as Client
+
+    const result = await resolveDeposit(client)
+
+    expect(deposit).toHaveBeenCalledTimes(1)
+    expect(result).toEqual(RD.success(txHash))
+  })
 })
