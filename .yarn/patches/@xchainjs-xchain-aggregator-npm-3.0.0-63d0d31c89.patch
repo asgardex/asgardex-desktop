@@ -1,0 +1,47 @@
+diff --git a/lib/index.esm.js b/lib/index.esm.js
+index 99b2d2ba19d9398d37d1db3562d70124f52b0bcb..6c24648492e059a901e491daa5e71da97dc9202c 100644
+--- a/lib/index.esm.js
++++ b/lib/index.esm.js
+@@ -187,10 +187,8 @@ class ChainflipProtocol {
+                 },
+                 affiliateBrokers: this.affiliateBrokers,
+             });
+-            const expiresAtSeconds = resp.estimatedDepositChannelExpiryTime;
+-            if (expiresAtSeconds == null) {
+-                throw Error('Chainflip deposit channel response missing estimatedDepositChannelExpiryTime');
+-            }
++            // Broker-mode SDK omits estimatedDepositChannelExpiryTime; channels live ~24h.
++            const expiresAtSeconds = resp.estimatedDepositChannelExpiryTime ?? (Math.floor(Date.now() / 1000) + 24 * 60 * 60);
+             return {
+                 depositAddress: resp.depositAddress,
+                 depositChannelId: resp.depositChannelId,
+diff --git a/lib/index.js b/lib/index.js
+index 43252589d52b741382b54086bfd72886be12c273..9b79e67e87e1d95d7b841216fd8a4c405168a08e 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -189,10 +189,8 @@ class ChainflipProtocol {
+                 },
+                 affiliateBrokers: this.affiliateBrokers,
+             });
+-            const expiresAtSeconds = resp.estimatedDepositChannelExpiryTime;
+-            if (expiresAtSeconds == null) {
+-                throw Error('Chainflip deposit channel response missing estimatedDepositChannelExpiryTime');
+-            }
++            // Broker-mode SDK omits estimatedDepositChannelExpiryTime; channels live ~24h.
++            const expiresAtSeconds = resp.estimatedDepositChannelExpiryTime ?? (Math.floor(Date.now() / 1000) + 24 * 60 * 60);
+             return {
+                 depositAddress: resp.depositAddress,
+                 depositChannelId: resp.depositChannelId,
+diff --git a/lib/protocols/chainflip/types.d.ts b/lib/protocols/chainflip/types.d.ts
+index 77c09dd2b905387c3fad81e5ee7c143df4692410..7323bd525e16fdaec0beec7c073f0484a59d97a6 100644
+--- a/lib/protocols/chainflip/types.d.ts
++++ b/lib/protocols/chainflip/types.d.ts
+@@ -11,7 +11,7 @@ export type CompatibleAsset = Asset | TokenAsset;
+ export type ChainflipDepositChannel = {
+     depositAddress: string;
+     depositChannelId: string;
+-    /** From SDK `estimatedDepositChannelExpiryTime` (unix seconds). */
++    /** Prefer SDK estimatedDepositChannelExpiryTime; broker mode falls back to ~24h. */
+     expiresAt: Date;
+     depositChannelExpiryBlock?: bigint;
+     /** Egress amount from the quote bound to this channel. */
