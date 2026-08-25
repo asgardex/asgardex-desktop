@@ -38,6 +38,7 @@ import { resolveChainflipChannelId } from '../../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../../helpers/chainflipTransactionTracker'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
+import { createScopedLogger } from '../../../helpers/logger'
 import { addOneClickSwapToTrackerFromQuote } from '../../../helpers/oneClickTransactionTracker'
 import { addSwapToTracker } from '../../../helpers/transactionTracker'
 import { useERC20Approval } from '../../../hooks/useERC20Approval'
@@ -72,6 +73,8 @@ type Props = {
   setTradeMode: (mode: TradeMode) => void
   handleRef?: React.MutableRefObject<TradingPanelHandle | null>
 }
+
+const logger = createScopedLogger('TradingPanel')
 
 export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, handleRef }: Props) => {
   // ── Contexts ──────────────────────────────────────────────────────────
@@ -885,7 +888,15 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
             await submitCFTx()
           }
         } catch (error) {
-          console.error('Pre-authorized swap submit failed', error)
+          logger.error('Pre-authorized swap submit failed', error)
+          // Channel open can fail before swapCF$ emits — mark the limit order failed now.
+          if (levelId) {
+            priceLevelService.updateLevel(assetKey, levelId, {
+              status: 'failed',
+              error: error instanceof Error ? error.message : 'Swap submission failed'
+            })
+            executingLevelRef.current = null
+          }
         } finally {
           if (levelId) orderPasswordCache.current.delete(levelId)
         }

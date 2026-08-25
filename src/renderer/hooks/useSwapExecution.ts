@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
+import * as RD from '@devexperts/remote-data-ts'
 import { ChainflipDepositChannel } from '@xchainjs/xchain-aggregator'
 import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
@@ -16,6 +17,7 @@ import {
 } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
+import * as Rx from 'rxjs'
 
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 import { useWalletContext } from '../contexts/WalletContext'
@@ -31,7 +33,7 @@ import { applyStreamingToMemo, updateMemo } from '../helpers/memoHelper'
 import { INITIAL_SWAP_STATE } from '../services/chain/const'
 import { SwapTxParams, SwapTxState, SendTxParams, SwapHandler, SwapCFHandler, SwapFees } from '../services/chain/types'
 import { PoolAddress } from '../services/midgard/midgardTypes'
-import { WalletBalance, isStandaloneLedgerMode } from '../services/wallet/types'
+import { ErrorId, WalletBalance, isStandaloneLedgerMode } from '../services/wallet/types'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useSubscriptionState } from './useSubscriptionState'
 
@@ -315,15 +317,30 @@ export const useSwapExecution = ({
     )
   }, [swapParams, subscribeSwapState, swap$])
 
+  const publishCFSubmitFailure = useCallback(
+    (error: unknown) => {
+      const msg = error instanceof Error ? error.message : 'Chainflip swap submit failed'
+      logger.error('Chainflip submit failed before broadcast', error)
+      setSwapStartTime(Date.now())
+      // Surface via SwapTxModal — channel open can fail before swapCF$ is subscribed.
+      subscribeSwapState(Rx.of({ swapTx: RD.failure({ errorId: ErrorId.SEND_TX, msg }) }))
+    },
+    [subscribeSwapState]
+  )
+
   const submitCFSwap = useCallback(async () => {
     if (O.isNone(cfSwapParams) || O.isNone(selectedQuote) || O.isNone(destinationAddress)) {
-      throw new Error('Missing Chainflip swap params, quote, or destination address')
+      const error = new Error('Missing Chainflip swap params, quote, or destination address')
+      publishCFSubmitFailure(error)
+      throw error
     }
 
     const params = cfSwapParams.value
     const quote = selectedQuote.value
     if (quote.protocol !== 'Chainflip') {
-      throw new Error('Selected quote is not a Chainflip route')
+      const error = new Error('Selected quote is not a Chainflip route')
+      publishCFSubmitFailure(error)
+      throw error
     }
 
     const fromAsset = toChainflipQuoteAsset(sourceAsset)
@@ -349,7 +366,7 @@ export const useSwapExecution = ({
         }
       })
     } catch (error) {
-      logger.error('Chainflip channel open failed', error)
+      publishCFSubmitFailure(error)
       throw error
     }
 
@@ -370,6 +387,7 @@ export const useSwapExecution = ({
     targetAsset,
     isBoostEnabled,
     requestChainflipDepositAddress,
+    publishCFSubmitFailure,
     subscribeSwapState,
     swapCF$
   ])
