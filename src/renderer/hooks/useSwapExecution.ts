@@ -20,6 +20,11 @@ import { useObservableState } from 'observable-hooks'
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 import { useWalletContext } from '../contexts/WalletContext'
 import { isRujiAsset, isUtxoAssetChain } from '../helpers/assetHelper'
+import {
+  buildChainflipBroadcastParams,
+  openChainflipChannelForSubmit,
+  toChainflipQuoteAsset
+} from '../helpers/chainflipSwapHelper'
 import { sequenceTOption } from '../helpers/fpHelpers'
 import { createScopedLogger } from '../helpers/logger'
 import { applyStreamingToMemo, updateMemo } from '../helpers/memoHelper'
@@ -31,9 +36,6 @@ import { useAggregator } from '../store/aggregator/hooks'
 import { useSubscriptionState } from './useSubscriptionState'
 
 const logger = createScopedLogger('SwapExecution')
-
-/** Reject channels that expire sooner than this — Ledger/EVM inclusion needs headroom. */
-const MIN_CHANNEL_TTL_MS = 90_000
 
 type UseSwapExecutionParams = {
   swap$: SwapHandler
@@ -324,8 +326,8 @@ export const useSwapExecution = ({
       throw new Error('Selected quote is not a Chainflip route')
     }
 
-    const fromAsset = { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() }
-    const destinationAsset = { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() }
+    const fromAsset = toChainflipQuoteAsset(sourceAsset)
+    const destinationAsset = toChainflipQuoteAsset(targetAsset)
 
     logger.info('Opening Chainflip deposit channel before broadcast', {
       from: `${fromAsset.chain}.${fromAsset.symbol}`,
@@ -333,21 +335,22 @@ export const useSwapExecution = ({
       enableBoost: isBoostEnabled
     })
 
-    const channel = await requestChainflipDepositAddress({
-      fromAsset: fromAsset as CryptoAmount['asset'],
-      destinationAsset: destinationAsset as CryptoAmount['asset'],
-      amount: new CryptoAmount(params.amount, fromAsset as CryptoAmount['asset']),
-      fromAddress: params.sender,
-      destinationAddress: destinationAddress.value,
-      enableBoost: isBoostEnabled
-    })
-
-    const ttlMs = channel.expiresAt.getTime() - Date.now()
-    if (ttlMs < MIN_CHANNEL_TTL_MS) {
-      logger.error('Chainflip channel expires too soon', { expiresAt: channel.expiresAt, ttlMs })
-      throw new Error(
-        `Chainflip deposit channel expires in ${Math.max(0, Math.floor(ttlMs / 1000))}s — too soon to broadcast safely. Retry.`
-      )
+    let channel: ChainflipDepositChannel
+    try {
+      channel = await openChainflipChannelForSubmit({
+        requestChainflipDepositAddress,
+        quoteParams: {
+          fromAsset: fromAsset as CryptoAmount['asset'],
+          destinationAsset: destinationAsset as CryptoAmount['asset'],
+          amount: new CryptoAmount(params.amount, fromAsset as CryptoAmount['asset']),
+          fromAddress: params.sender,
+          destinationAddress: destinationAddress.value,
+          enableBoost: isBoostEnabled
+        }
+      })
+    } catch (error) {
+      logger.error('Chainflip channel open failed', error)
+      throw error
     }
 
     lastCFChannelRef.current = channel
@@ -358,13 +361,7 @@ export const useSwapExecution = ({
     })
 
     setSwapStartTime(Date.now())
-    subscribeSwapState(
-      swapCF$({
-        ...params,
-        recipient: channel.depositAddress,
-        memo: ''
-      })
-    )
+    subscribeSwapState(swapCF$(buildChainflipBroadcastParams(params, channel)))
   }, [
     cfSwapParams,
     selectedQuote,

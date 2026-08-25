@@ -50,6 +50,7 @@ import {
   convertBaseAmountDecimal,
   isUtxoAssetChain
 } from '../../helpers/assetHelper'
+import { resolveChainflipChannelId } from '../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { isRouterApprovalError } from '../../helpers/evmApprovalHelper'
@@ -1682,7 +1683,10 @@ export const Swap = ({
               lastTrackedTxHashRef.current = txHash
             } else if (quoteProtocol.protocol === 'Chainflip') {
               // Aggregator 3.0+: channel id comes from requestChainflipDepositAddress at submit, not estimateSwap
-              const channelId = lastCFChannelRef.current?.depositChannelId ?? quoteProtocol.depositChannelId
+              const channelId = resolveChainflipChannelId(
+                lastCFChannelRef.current?.depositChannelId,
+                quoteProtocol.depositChannelId
+              )
               if (channelId) {
                 addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, channelId, {
                   srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },

@@ -34,6 +34,7 @@ import { usePriceLevelContext } from '../../../contexts/PriceLevelContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { isUSDAsset } from '../../../helpers/assetHelper'
+import { resolveChainflipChannelId } from '../../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../../helpers/chainflipTransactionTracker'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
@@ -672,7 +673,10 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
           })
           lastTrackedTxHashRef.current = txHash
         } else if (quoteProtocol.protocol === 'Chainflip') {
-          const channelId = lastCFChannelRef.current?.depositChannelId ?? quoteProtocol.depositChannelId
+          const channelId = resolveChainflipChannelId(
+            lastCFChannelRef.current?.depositChannelId,
+            quoteProtocol.depositChannelId
+          )
           if (channelId) {
             addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, channelId, {
               srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },

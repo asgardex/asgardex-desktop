@@ -5,6 +5,7 @@ import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
+import { resolveChainflipChannelId } from '../../helpers/chainflipSwapHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import { SwapTxState } from '../../services/chain/types'
@@ -65,12 +66,13 @@ export const SwapTxModal = ({
     O.map((qp) => qp.protocol as string)
   )
 
-  const channelId: O.Option<string> = FP.pipe(
-    depositChannelId,
-    O.alt(() =>
+  const channelId: O.Option<string> = O.fromNullable(
+    resolveChainflipChannelId(
+      O.toUndefined(depositChannelId),
       FP.pipe(
         oQuoteProtocol,
-        O.chain((qp) => (qp.depositChannelId ? O.some(qp.depositChannelId) : O.none))
+        O.map((qp) => qp.depositChannelId),
+        O.toUndefined
       )
     )
   )
