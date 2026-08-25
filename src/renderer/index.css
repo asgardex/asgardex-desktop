@@ -195,6 +195,28 @@ body {
   animation: progress-wave 1.8s ease-in-out infinite;
 }
 
+/* Halt / Midgard news ticker — seamless right → left marquee */
+@keyframes news-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.news-ticker-track {
+  animation-name: news-ticker-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .news-ticker-track {
+    animation: none;
+  }
+}
+
 /* Custom Scrollbar for WebKit Browsers */
 ::-webkit-scrollbar {
   width: 6px; /* Width of the scrollbar */

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import { function as FP, array as A, option as O } from 'fp-ts'
@@ -9,8 +9,7 @@ import { useIntl, IntlShape } from 'react-intl'
 import { matchPath, useLocation } from 'react-router-dom'
 
 import { chainToString, DEFAULT_ENABLED_CHAINS, isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
-import { Alert } from '../../components/uielements/alert'
-import { BorderButton } from '../../components/uielements/button'
+import { NewsTicker } from '../../components/uielements/newsTicker'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { unionChains } from '../../helpers/fp/array'
 import * as poolsRoutes from '../../routes/pools'
@@ -37,7 +36,7 @@ type HaltedChainsState = {
   pausedLPDeposit: boolean
 }
 
-type PageContext = {
+export type PageContext = {
   isSwapPage: boolean
   isPoolPage: boolean
   isDepositPage: boolean
@@ -72,6 +71,41 @@ const chainFromRouteAssetString = (raw?: string): O.Option<Chain> => {
     getAssetFromNullableString(decoded),
     O.map((asset) => asset.chain)
   )
+}
+
+/**
+ * Classify the current route for halt / Midgard banners.
+ *
+ * Swap lives under `/pools/swap/...`, so a naive `includes('/pools')` check would
+ * treat Swap as a pool/LP page and surface liquidity-only warnings there.
+ */
+export const getHaltPageContext = (pathname: string): PageContext => {
+  const isPoolDetailPage = pathname.includes('/pools/detail')
+  const isSwapPage = pathname.includes('/swap')
+  const isDepositPage = pathname.includes('/deposit') || pathname.includes('/liquidity')
+  // Pool overview only — never Swap, deposit, or pool-detail trading.
+  const isPoolPage = pathname.includes('/pools') && !isPoolDetailPage && !isSwapPage && !isDepositPage
+
+  // Pull chains out of the URL where the page has a concrete asset selection
+  // so alerts can be filtered to the swap pair / pool asset instead of dumping
+  // every halt every time.
+  let selectedChains: Chain[] | undefined
+  if (isSwapPage) {
+    const swapMatch = matchPath(poolsRoutes.swap.template, pathname)
+    const params = swapMatch?.params as { source?: string; target?: string } | undefined
+    const chains = FP.pipe(
+      [chainFromRouteAssetString(params?.source), chainFromRouteAssetString(params?.target)],
+      A.compact
+    )
+    selectedChains = chains.length > 0 ? Array.from(new Set(chains)) : undefined
+  } else if (isDepositPage) {
+    const depositMatch = matchPath(poolsRoutes.deposit.template, pathname)
+    const params = depositMatch?.params as { asset?: string } | undefined
+    const chain = FP.pipe(chainFromRouteAssetString(params?.asset), O.toNullable)
+    selectedChains = chain ? [chain] : undefined
+  }
+
+  return { isSwapPage, isPoolPage, isDepositPage, selectedChains }
 }
 
 // A globally halted protocol is only relevant to the user if at least one of their
@@ -189,33 +223,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [hasRendered, setHasRendered] = useState(false)
 
-  const pageContext: PageContext = useMemo(() => {
-    const isPoolDetailPage = location.pathname.includes('/pools/detail')
-    const isSwapPage = location.pathname.includes('/swap')
-    const isPoolPage = location.pathname.includes('/pools') && !isPoolDetailPage
-    const isDepositPage = location.pathname.includes('/deposit') || location.pathname.includes('/liquidity')
-
-    // Pull chains out of the URL where the page has a concrete asset selection
-    // so alerts can be filtered to the swap pair / pool asset instead of dumping
-    // every halt every time.
-    let selectedChains: Chain[] | undefined
-    if (isSwapPage) {
-      const swapMatch = matchPath(poolsRoutes.swap.template, location.pathname)
-      const params = swapMatch?.params as { source?: string; target?: string } | undefined
-      const chains = FP.pipe(
-        [chainFromRouteAssetString(params?.source), chainFromRouteAssetString(params?.target)],
-        A.compact
-      )
-      selectedChains = chains.length > 0 ? Array.from(new Set(chains)) : undefined
-    } else if (isDepositPage) {
-      const depositMatch = matchPath(poolsRoutes.deposit.template, location.pathname)
-      const params = depositMatch?.params as { asset?: string } | undefined
-      const chain = FP.pipe(chainFromRouteAssetString(params?.asset), O.toNullable)
-      selectedChains = chain ? [chain] : undefined
-    }
-
-    return { isSwapPage, isPoolPage, isDepositPage, selectedChains }
-  }, [location.pathname])
+  const pageContext: PageContext = useMemo(() => getHaltPageContext(location.pathname), [location.pathname])
 
   const RENDER_DELAY_MS = 200
   useEffect(() => {
@@ -282,9 +290,11 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
     }
 
     // Midgard offline (per-protocol — protocol name is embedded so no dedup collision).
+    // LP shares / add-liquidity depend on Midgard; Swap quotes still work via aggregator
+    // fallbacks, so do not surface this on the Swap screen.
     // Filter to the protocol that actually serves one of the selected chains so a Maya
-    // outage doesn't pop up while the user is swapping a THOR-only pair (and vice versa).
-    if (pageContext.isSwapPage || pageContext.isPoolPage) {
+    // outage doesn't pop up while the user is depositing on a THOR-only pool (and vice versa).
+    if (pageContext.isDepositPage || pageContext.isPoolPage) {
       for (const { protocol, midgard } of resolvedProtocols) {
         if (!midgard && isProtocolRelevant(protocol, pageContext.selectedChains)) {
           push(intl.formatMessage({ id: 'midgard.status.offline' }, { protocol }))
@@ -310,27 +320,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
     )
   }
 
-  return (
-    <>
-      {uniqueMessages.map((msg, idx) => (
-        <Alert
-          key={msg}
-          type="warning"
-          description={msg}
-          action={
-            idx === 0 ? (
-              <BorderButton
-                size="small"
-                onClick={() => setIsCollapsed(true)}
-                className="p-1 hover:bg-bg1 dark:hover:bg-bg1d">
-                <XMarkIcon className="h-4 w-4" />
-              </BorderButton>
-            ) : undefined
-          }
-        />
-      ))}
-    </>
-  )
+  return <NewsTicker messages={uniqueMessages} onDismiss={() => setIsCollapsed(true)} badgeLabel="NETWORK" />
 }
 
 export default HaltedChainsWarning
