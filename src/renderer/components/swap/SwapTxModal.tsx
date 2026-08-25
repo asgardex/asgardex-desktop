@@ -19,6 +19,8 @@ export type SwapTxModalProps = {
   source: AssetData
   target: AssetData
   oQuoteProtocol: O.Option<QuoteSwapProtocol>
+  /** Live Chainflip channel id from requestChainflipDepositAddress (aggregator 3.0+). */
+  depositChannelId?: O.Option<string>
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   onCloseTxModal: () => void
@@ -32,6 +34,7 @@ export const SwapTxModal = ({
   source,
   target,
   oQuoteProtocol,
+  depositChannelId = O.none,
   goToTransaction,
   getExplorerTxUrl,
   onCloseTxModal,
@@ -63,8 +66,13 @@ export const SwapTxModal = ({
   )
 
   const channelId: O.Option<string> = FP.pipe(
-    oQuoteProtocol,
-    O.chain((qp) => (qp.depositChannelId ? O.some(qp.depositChannelId) : O.none))
+    depositChannelId,
+    O.alt(() =>
+      FP.pipe(
+        oQuoteProtocol,
+        O.chain((qp) => (qp.depositChannelId ? O.some(qp.depositChannelId) : O.none))
+      )
+    )
   )
 
   const oTxHash = useMemo(

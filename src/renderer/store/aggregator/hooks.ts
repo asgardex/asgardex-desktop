@@ -57,12 +57,22 @@ export const useAggregator = () => {
     [aggregator, protocols, dispatch, network]
   )
 
+  /**
+   * Open a live Chainflip deposit channel immediately before broadcast.
+   * Aggregator 3.0+: estimateSwap is quote-only and does not create channels.
+   */
+  const requestChainflipDepositAddress = useCallback(
+    (params: QuoteSwapParams) => aggregator.requestChainflipDepositAddress(params),
+    [aggregator]
+  )
+
   return {
     aggregator,
     protocols,
     isBoostEnabled,
     ...rest,
     estimateSwap,
+    requestChainflipDepositAddress,
     setAggProtocol,
     setBoostEnabled
   }

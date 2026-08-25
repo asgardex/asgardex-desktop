@@ -657,13 +657,16 @@ export const Swap = ({
     submitOneClickSwap: submitOneClickTx,
     resetSwapState,
     swapStartTime,
-    lastTrackedTxHashRef
+    lastTrackedTxHashRef,
+    lastCFChannelRef
   } = useSwapExecution({
     swap$,
     swapCF$,
     swapOneClick$,
     selectedQuote: oQuoteProtocol,
     sourceAsset,
+    targetAsset,
+    destinationAddress: effectiveRecipientAddress,
     amountToSwap,
     sourceWalletBalance: oSourceAssetWB,
     sourceChainBalance: sourceChainAssetAmount,
@@ -1677,13 +1680,17 @@ export const Swap = ({
                 amount: amountToSwap.amount().toString()
               })
               lastTrackedTxHashRef.current = txHash
-            } else if (quoteProtocol.protocol === 'Chainflip' && quoteProtocol.depositChannelId) {
-              addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, quoteProtocol.depositChannelId, {
-                srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
-                destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
-                depositAmount: amountToSwap.amount().toString()
-              })
-              lastTrackedTxHashRef.current = txHash
+            } else if (quoteProtocol.protocol === 'Chainflip') {
+              // Aggregator 3.0+: channel id comes from requestChainflipDepositAddress at submit, not estimateSwap
+              const channelId = lastCFChannelRef.current?.depositChannelId ?? quoteProtocol.depositChannelId
+              if (channelId) {
+                addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, channelId, {
+                  srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
+                  destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
+                  depositAmount: amountToSwap.amount().toString()
+                })
+                lastTrackedTxHashRef.current = txHash
+              }
             } else if (quoteProtocol.protocol === 'OneClick') {
               // 1Click keys swap status by deposit address (returned in the quote as `toAddress`),
               // not by the on-chain tx hash. The tracker polls GET /v0/status?depositAddress=... .
@@ -1708,7 +1715,8 @@ export const Swap = ({
     amountToSwap,
     chainflipTransactionTrackingService,
     oneClickTransactionTrackingService,
-    lastTrackedTxHashRef
+    lastTrackedTxHashRef,
+    lastCFChannelRef
   ])
 
   const onSwitchAssets = useCallback(async () => {
@@ -2150,6 +2158,7 @@ export const Swap = ({
           source={swapTxSource}
           target={swapTxTarget}
           oQuoteProtocol={oQuoteProtocol}
+          depositChannelId={O.fromNullable(lastCFChannelRef.current?.depositChannelId)}
           goToTransaction={openExplorerResolved.openExplorerTxUrl}
           getExplorerTxUrl={openExplorerResolved.getExplorerTxUrl}
           onCloseTxModal={onCloseTxModal}
