@@ -569,20 +569,21 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     showPasswordModal !== ModalState.None ||
     showLedgerModal !== ModalState.None ||
     showVultisigModal !== ModalState.None
+  const isSwapTxInFlight = !RD.isInitial(swapState.swapTx)
+  const pauseQuoteRefresh = isConfirmModalOpen || isSwapTxInFlight
 
   // ── Explorer URL for tx modal ─────────────────────────────────────────
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(sourceChain))
 
   // ── Auto-fetch quote when order section is open and inputs change ───
   // Debounced: amount changes wait 600ms, other changes fire immediately.
-  // Skipped while password/Ledger/Vultisig confirm is open so the selected
-  // protocol cannot flip mid-submit.
+  // Skipped while confirming or while SwapTxModal is showing an in-flight swap.
   const quoteFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevAmountRef = useRef(amountStr)
 
   useEffect(() => {
     if (!orderSectionOpen) return
-    if (isConfirmModalOpen) return
+    if (pauseQuoteRefresh) return
     if (affiliateBpsValue === 'none') return // fees not ready yet
 
     const doFetch = () => {
@@ -609,7 +610,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     }
     // Use affiliateBpsValue (primitive) instead of affiliateBps (object) to avoid re-render loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderSectionOpen, isConfirmModalOpen, amountStr, tradeMode, selectedTarget, sourceDecimal, affiliateBpsValue])
+  }, [orderSectionOpen, pauseQuoteRefresh, amountStr, tradeMode, selectedTarget, sourceDecimal, affiliateBpsValue])
 
   // ── Actions ───────────────────────────────────────────────────────────
   const handleTrade = useCallback(

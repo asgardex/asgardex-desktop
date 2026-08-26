@@ -1336,28 +1336,29 @@ export const Swap = ({
     resetSwapState
   })
 
-  // Freeze auto-requotes while the user is confirming — halt/affiliate dependency
-  // churn was re-firing estimateSwap and flipping the selected protocol mid-password.
+  // Freeze auto-requotes while confirming or while a swap tx is in flight —
+  // otherwise estimateSwap keeps hitting Chainflip/aggregator under the tx modal.
   const isConfirmModalOpen =
     showPasswordModal !== ModalState.None ||
     showLedgerModal !== ModalState.None ||
     showVultisigModal !== ModalState.None
+  const isSwapTxInFlight = !RD.isInitial(swapState.swapTx)
+  const pauseQuoteRefresh = isConfirmModalOpen || isSwapTxInFlight
 
-  // Fetch / refresh quotes when inputs change — skipped while a confirm modal is open.
+  // Fetch / refresh quotes when inputs change — skipped during confirm / in-flight swap.
   useEffect(() => {
-    if (isConfirmModalOpen) return
+    if (pauseQuoteRefresh) return
     if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && O.isSome(oApplyBps)) {
       fetchSwap(amountToSwap)
     }
-  }, [sourceAsset, targetAsset, fetchSwap, amountToSwap, oApplyBps, isConfirmModalOpen])
+  }, [sourceAsset, targetAsset, fetchSwap, amountToSwap, oApplyBps, pauseQuoteRefresh])
 
   const onInputBlurHandler = useCallback(() => {
-    // Do not requote from blur while password/Ledger/Vultisig confirm is up.
-    if (isConfirmModalOpen) return
+    if (pauseQuoteRefresh) return
     if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
       fetchSwap(amountToSwap)
     }
-  }, [amountToSwap, fetchSwap, isConfirmModalOpen])
+  }, [amountToSwap, fetchSwap, pauseQuoteRefresh])
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
