@@ -7,7 +7,7 @@ const halt: HaltMessages = {
   'halt.chain': '{chain} Chain auf {dex} wurde vorübergehend gestoppt.',
   'halt.chains': '{chains} Ketten auf {protocol} wurden vorübergehend gestoppt.',
   'halt.chain.synth': 'Synthetischer Handel für {chain} ist nicht verfügbar, während {chain} gestoppt ist.',
-  'halt.chain.trading': 'Der Handel für {chains} Chain(s) wurde vorübergehend gestoppt.',
+  'halt.chain.trading': '{protocol}: Handel für {chains} vorübergehend gestoppt.',
   'halt.chain.pause':
     'Liquidity-Aktivitäten (Hinzufügen/Entfernen) wurden für {chains} Chain(s) vorübergehend gestoppt.',
   'halt.chain.pauseall': 'Liquidity-Aktivitäten (Hinzufügen/Entfernen) wurden für alle Chains vorübergehend gestoppt.',

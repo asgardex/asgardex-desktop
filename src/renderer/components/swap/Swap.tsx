@@ -716,12 +716,7 @@ export const Swap = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceAssetDecimal])
 
-  // Fetch new quote when assets change
-  useEffect(() => {
-    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && O.isSome(oApplyBps)) {
-      fetchSwap(amountToSwap)
-    }
-  }, [sourceAsset, targetAsset, fetchSwap, amountToSwap, oApplyBps])
+  // Quote auto-fetch is declared after confirmation-modal state (see isConfirmModalOpen).
 
   // Input display state
   const [inputDisplayAmount, setInputDisplayAmount] = useState<BaseAmount>(amountToSwap)
@@ -1047,12 +1042,6 @@ export const Swap = ({
     })
   }, [reloadFees, sourceAsset, swapMemo, targetAsset])
 
-  const onInputBlurHandler = useCallback(() => {
-    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
-      fetchSwap(amountToSwap)
-    }
-  }, [amountToSwap, fetchSwap])
-
   const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
 
   const [approveFeeRD, approveFeeParamsUpdated] = useObservableState<FeeRD, ApproveParams>((approveFeeParam$) => {
@@ -1317,6 +1306,8 @@ export const Swap = ({
 
   // ─── Confirmation modals (all 3 wallet types) ─────────────────────────────
   const {
+    showPasswordModal,
+    showLedgerModal,
     showVultisigModal,
     onSubmit,
     onApprove,
@@ -1344,6 +1335,30 @@ export const Swap = ({
     getActiveVaultId: appWalletService.getActiveVaultId,
     resetSwapState
   })
+
+  // Freeze auto-requotes while confirming or while a swap tx is in flight —
+  // otherwise estimateSwap keeps hitting Chainflip/aggregator under the tx modal.
+  const isConfirmModalOpen =
+    showPasswordModal !== ModalState.None ||
+    showLedgerModal !== ModalState.None ||
+    showVultisigModal !== ModalState.None
+  const isSwapTxInFlight = !RD.isInitial(swapState.swapTx)
+  const pauseQuoteRefresh = isConfirmModalOpen || isSwapTxInFlight
+
+  // Fetch / refresh quotes when inputs change — skipped during confirm / in-flight swap.
+  useEffect(() => {
+    if (pauseQuoteRefresh) return
+    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && O.isSome(oApplyBps)) {
+      fetchSwap(amountToSwap)
+    }
+  }, [sourceAsset, targetAsset, fetchSwap, amountToSwap, oApplyBps, pauseQuoteRefresh])
+
+  const onInputBlurHandler = useCallback(() => {
+    if (pauseQuoteRefresh) return
+    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
+      fetchSwap(amountToSwap)
+    }
+  }, [amountToSwap, fetchSwap, pauseQuoteRefresh])
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {

@@ -46,21 +46,6 @@ export const SwapTxModal = ({
 
   const timerValue = useMemo(() => getTxTimerValue(swapTx), [swapTx])
 
-  const txModalTitle = useMemo(
-    () =>
-      FP.pipe(
-        swapTx,
-        RD.fold(
-          () => 'swap.state.sending',
-          () => 'swap.state.pending',
-          () => 'swap.state.error',
-          () => 'common.tx.success'
-        ),
-        (id) => intl.formatMessage({ id })
-      ),
-    [intl, swapTx]
-  )
-
   const protocol: O.Option<string> = FP.pipe(
     oQuoteProtocol,
     O.map((qp) => qp.protocol as string)
@@ -75,6 +60,31 @@ export const SwapTxModal = ({
         O.toUndefined
       )
     )
+  )
+
+  const isOpeningChainflipChannel =
+    RD.isPending(swapTx) &&
+    FP.pipe(
+      protocol,
+      O.exists((p) => p === 'Chainflip')
+    ) &&
+    O.isNone(channelId)
+
+  const txModalTitle = useMemo(
+    () =>
+      isOpeningChainflipChannel
+        ? intl.formatMessage({ id: 'swap.state.openingChannel' })
+        : FP.pipe(
+            swapTx,
+            RD.fold(
+              () => 'swap.state.sending',
+              () => 'swap.state.pending',
+              () => 'swap.state.error',
+              () => 'common.tx.success'
+            ),
+            (id) => intl.formatMessage({ id })
+          ),
+    [intl, isOpeningChainflipChannel, swapTx]
   )
 
   const oTxHash = useMemo(

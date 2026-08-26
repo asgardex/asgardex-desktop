@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
@@ -20,6 +20,7 @@ import { filterQuotableProtocols } from '../helpers/protocolTradingHalt'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useThorchainMimirHalt } from './useMimirHalt'
 import { useMayachainMimirHalt } from './useMimirHaltMaya'
+import { pickSelectedQuote, sortQuotesByOutput } from './useSwapQuote.helpers'
 
 type UseSwapQuoteParams = {
   sourceAsset: AnyAsset
@@ -98,14 +99,22 @@ export const useSwapQuote = ({
   )
 
   const requestIdRef = useRef(0)
+  /** Sticky user/auto selection across background re-quotes (Chainflip stays Chainflip). */
+  const preferredProtocolRef = useRef<Protocol | null>(null)
   const [quotes, setQuotes] = useState<O.Option<ExtendedQuoteSwap[]>>(O.none)
   const [selectedQuote, setSelectedQuote] = useState<O.Option<ExtendedQuoteSwap>>(O.none)
   const [quoteError, setQuoteError] = useState<O.Option<Error>>(O.none)
   const [isFetching, setIsFetching] = useState(false)
 
+  // Pair change invalidates any sticky protocol preference from the previous route.
+  useEffect(() => {
+    preferredProtocolRef.current = null
+  }, [sourceAsset, targetAsset])
+
   const fetchQuote = useCallback(
     async (amount: BaseAmount) => {
       if (amount.amount().isZero()) {
+        preferredProtocolRef.current = null
         setSelectedQuote(O.none)
         setQuoteError(O.none)
         return
@@ -136,6 +145,7 @@ export const useSwapQuote = ({
           isOneClickSupportedAsset
         )
         setQuoteError(O.some(new Error(errorMessage)))
+        preferredProtocolRef.current = null
         setSelectedQuote(O.none)
         setIsFetching(false)
         return
@@ -143,12 +153,14 @@ export const useSwapQuote = ({
 
       if (quotableProtocols.length === 0) {
         setQuoteError(O.some(new Error('No valid swap routes available')))
+        preferredProtocolRef.current = null
         setSelectedQuote(O.none)
         setIsFetching(false)
         return
       }
 
-      setSelectedQuote(O.none)
+      // Keep the current selection visible while fetching — clearing it caused the UI to
+      // flash and then re-pick "best output", which could flip Chainflip → OneClick.
       setIsFetching(true)
 
       const currentRequestId = ++requestIdRef.current
@@ -200,26 +212,21 @@ export const useSwapQuote = ({
             quoteNeedsRouterApproval(quote.errors)
         )
 
-        const sortByOutput = (quotesToSort: ExtendedQuoteSwap[]) =>
-          [...quotesToSort].sort((a, b) => {
-            const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
-            const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
-            const timeA = a.totalSwapSeconds
-            const timeB = b.totalSwapSeconds
-            return amountA > amountB ? -1 : amountA < amountB ? 1 : timeA - timeB
-          })
-
-        const sortedQuotes = sortByOutput(viableQuotes)
+        const sortedQuotes = sortQuotesByOutput(viableQuotes)
+        const sortedApprovalBlocked = sortQuotesByOutput(approvalBlockedQuotes)
+        const nextSelected = pickSelectedQuote(sortedQuotes, sortedApprovalBlocked, preferredProtocolRef.current)
 
         setQuotes(O.some(allQuotes))
 
-        if (sortedQuotes.length > 0) {
-          setSelectedQuote(O.some(sortedQuotes[0]))
-          setQuoteError(O.none)
-        } else if (approvalBlockedQuotes.length > 0) {
-          setSelectedQuote(O.some(sortByOutput(approvalBlockedQuotes)[0]))
+        if (nextSelected) {
+          // Only clear a sticky preference when that protocol disappeared from the new set.
+          if (preferredProtocolRef.current && nextSelected.protocol !== preferredProtocolRef.current) {
+            preferredProtocolRef.current = null
+          }
+          setSelectedQuote(O.some(nextSelected))
           setQuoteError(O.none)
         } else {
+          preferredProtocolRef.current = null
           setSelectedQuote(O.none)
           const protocolErrors = allQuotes.flatMap((quote) =>
             quote.errors.filter((err) => err.length > 0).map((err) => `${quote.protocol}: ${err}`)
@@ -274,10 +281,12 @@ export const useSwapQuote = ({
   )
 
   const selectQuote = useCallback((quote: ExtendedQuoteSwap) => {
+    preferredProtocolRef.current = quote.protocol
     setSelectedQuote(O.some(quote))
   }, [])
 
   const resetQuote = useCallback(() => {
+    preferredProtocolRef.current = null
     setQuotes(O.none)
     setSelectedQuote(O.none)
     setQuoteError(O.none)
