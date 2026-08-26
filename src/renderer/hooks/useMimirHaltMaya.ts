@@ -79,7 +79,7 @@ export const useMayachainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: 
         ),
         // lastblock ticks every 60s for scheduled-halt height checks; only emit when
         // halt flags actually change so quote/fetch callbacks do not churn identity.
-        RxOp.distinctUntilChanged((prev, curr) => isEqual(prev, curr)),
+        RxOp.distinctUntilChanged(isEqual),
         RxOp.shareReplay(1)
       ),
     RD.initial

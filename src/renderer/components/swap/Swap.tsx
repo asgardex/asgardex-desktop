@@ -94,7 +94,6 @@ import {
   isVultisigMode,
   isVultisigVaultPasswordRequired
 } from '../../services/wallet/types'
-import { useAggregator } from '../../store/aggregator/hooks'
 import { useCoingecko } from '../../store/gecko/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
 import { GECKO_MAP } from '../../types/generated/geckoMap'
@@ -476,6 +475,7 @@ export const Swap = ({
     fetchQuote: fetchSwap,
     selectQuote: handleSelectQuote,
     resetQuote,
+    quoteRefreshKey,
     canSwap,
     slippage: swapSlippage,
     expiry: swapExpiry,
@@ -1346,11 +1346,11 @@ export const Swap = ({
   const isSwapTxInFlight = !RD.isInitial(swapState.swapTx)
   const pauseQuoteRefresh = isConfirmModalOpen || isSwapTxInFlight
 
-  // Keep latest fetchSwap without putting its identity in effect deps — halt/lastblock
-  // polls used to recreate the callback every ~60s and re-fire every provider quote.
+  // Latest fetchSwap via ref + value-key deps (not fetchSwap identity).
   const fetchSwapRef = useRef(fetchSwap)
-  fetchSwapRef.current = fetchSwap
-  const { protocols, isBoostEnabled } = useAggregator()
+  useEffect(() => {
+    fetchSwapRef.current = fetchSwap
+  }, [fetchSwap])
   // Primitive so price-driven Option recreation does not re-fire quotes.
   const applyBpsValue = FP.pipe(
     oApplyBps,
@@ -1372,16 +1372,13 @@ export const Swap = ({
     amountToSwap,
     applyBpsValue,
     pauseQuoteRefresh,
-    // Include quote-relevant settings so changing them still refreshes without
-    // depending on fetchSwap identity.
     streamingInterval,
     streamingQuantity,
     slipTolerance,
     quoteOnly,
     sourceWalletAddress,
     effectiveRecipientAddressString,
-    protocols,
-    isBoostEnabled
+    quoteRefreshKey
   ])
 
   const onInputBlurHandler = useCallback(() => {

@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
-import { isEqual } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
@@ -18,6 +17,7 @@ import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpe
 import { quoteNeedsRouterApproval } from '../helpers/evmApprovalHelper'
 import { logger } from '../helpers/logger'
 import { filterQuotableProtocols } from '../helpers/protocolTradingHalt'
+import { getCurrentNetworkState } from '../services/app/service'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useThorchainMimirHalt } from './useMimirHalt'
 import { useMayachainMimirHalt } from './useMimirHaltMaya'
@@ -43,6 +43,11 @@ type UseSwapQuoteResult = {
   fetchQuote: (amount: BaseAmount) => Promise<void>
   selectQuote: (quote: ExtendedQuoteSwap) => void
   resetQuote: () => void
+  /**
+   * Content-stable signature of hook-owned quote inputs (halt-filtered protocols,
+   * boost, network). Use in refresh effects instead of `fetchQuote` identity.
+   */
+  quoteRefreshKey: string
   // Derived
   canSwap: boolean
   slippage: number
@@ -62,6 +67,7 @@ export const useSwapQuote = ({
   affiliateBps
 }: UseSwapQuoteParams): UseSwapQuoteResult => {
   const { estimateSwap, protocols, isBoostEnabled } = useAggregator()
+  const network = getCurrentNetworkState()
   const { isOneClickSupportedAsset } = useOneClickContext()
   const { isChainflipSupportedAssetSync } = useChainflipContext()
   const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
@@ -94,19 +100,16 @@ export const useSwapQuote = ({
     [haltedChainsThor, mimirHaltThor, haltedChainsMaya, mimirHaltMaya]
   )
 
-  const quotableProtocolsRaw: Protocol[] = useMemo(
+  const quotableProtocols: Protocol[] = useMemo(
     () => filterQuotableProtocols(protocols, sourceAsset, targetAsset, haltState),
     [protocols, sourceAsset, targetAsset, haltState]
   )
-  // Keep a stable array identity when halt/pool polls rebuild equivalent protocol lists.
-  const quotableProtocolsRef = useRef(quotableProtocolsRaw)
-  const quotableProtocols = useMemo(() => {
-    if (isEqual(quotableProtocolsRef.current, quotableProtocolsRaw)) {
-      return quotableProtocolsRef.current
-    }
-    quotableProtocolsRef.current = quotableProtocolsRaw
-    return quotableProtocolsRaw
-  }, [quotableProtocolsRaw])
+
+  // Halt-filtered protocol set + boost/network — not fetchQuote identity.
+  const quoteRefreshKey = useMemo(
+    () => `${quotableProtocols.join(',')}|boost:${isBoostEnabled}|net:${network}`,
+    [quotableProtocols, isBoostEnabled, network]
+  )
 
   const requestIdRef = useRef(0)
   /** Sticky user/auto selection across background re-quotes (Chainflip stays Chainflip). */
@@ -357,6 +360,7 @@ export const useSwapQuote = ({
     fetchQuote,
     selectQuote,
     resetQuote,
+    quoteRefreshKey,
     canSwap,
     slippage,
     expiry,
