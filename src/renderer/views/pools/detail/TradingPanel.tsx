@@ -20,6 +20,7 @@ import { ASGARDEX_AFFILIATE_FEE_MIN } from '../../../../shared/const'
 import { isVultisigWallet } from '../../../../shared/utils/guard'
 import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
 import { useSwapConfirmationModals } from '../../../components/swap/components/SwapConfirmationModals'
+import { ModalState } from '../../../components/swap/Swap.types'
 import { SwapTxModal } from '../../../components/swap/SwapTxModal'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useAppContext } from '../../../contexts/AppContext'
@@ -539,40 +540,49 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
 
   const getActiveVaultId = useCallback(() => appWalletService.getActiveVaultId(), [appWalletService])
 
-  const { onSubmit, onApprove, renderModals } = useSwapConfirmationModals({
-    useSourceAssetLedger: useSourceLedger,
-    useSourceAssetVultisig: useSourceVultisig,
-    sourceAsset: safeSourceAsset,
-    sourceChain,
-    sourceWalletType,
-    network,
-    oSwapParams,
-    oCFSwapParams,
-    oOneClickSwapParams,
-    submitSwapTx,
-    submitCFTx,
-    submitOneClickTx,
-    submitApproveTx,
-    validatePassword$,
-    validatePasswordForVultisig,
-    vaultType,
-    isVaultEncrypted,
-    approveState: RD.initial,
-    swapState,
-    getActiveVaultId,
-    resetSwapState
-  })
+  const { showPasswordModal, showLedgerModal, showVultisigModal, onSubmit, onApprove, renderModals } =
+    useSwapConfirmationModals({
+      useSourceAssetLedger: useSourceLedger,
+      useSourceAssetVultisig: useSourceVultisig,
+      sourceAsset: safeSourceAsset,
+      sourceChain,
+      sourceWalletType,
+      network,
+      oSwapParams,
+      oCFSwapParams,
+      oOneClickSwapParams,
+      submitSwapTx,
+      submitCFTx,
+      submitOneClickTx,
+      submitApproveTx,
+      validatePassword$,
+      validatePasswordForVultisig,
+      vaultType,
+      isVaultEncrypted,
+      approveState: RD.initial,
+      swapState,
+      getActiveVaultId,
+      resetSwapState
+    })
+
+  const isConfirmModalOpen =
+    showPasswordModal !== ModalState.None ||
+    showLedgerModal !== ModalState.None ||
+    showVultisigModal !== ModalState.None
 
   // ── Explorer URL for tx modal ─────────────────────────────────────────
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(sourceChain))
 
   // ── Auto-fetch quote when order section is open and inputs change ───
   // Debounced: amount changes wait 600ms, other changes fire immediately.
+  // Skipped while password/Ledger/Vultisig confirm is open so the selected
+  // protocol cannot flip mid-submit.
   const quoteFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevAmountRef = useRef(amountStr)
 
   useEffect(() => {
     if (!orderSectionOpen) return
+    if (isConfirmModalOpen) return
     if (affiliateBpsValue === 'none') return // fees not ready yet
 
     const doFetch = () => {
@@ -599,7 +609,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     }
     // Use affiliateBpsValue (primitive) instead of affiliateBps (object) to avoid re-render loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderSectionOpen, amountStr, tradeMode, selectedTarget, sourceDecimal, affiliateBpsValue])
+  }, [orderSectionOpen, isConfirmModalOpen, amountStr, tradeMode, selectedTarget, sourceDecimal, affiliateBpsValue])
 
   // ── Actions ───────────────────────────────────────────────────────────
   const handleTrade = useCallback(
