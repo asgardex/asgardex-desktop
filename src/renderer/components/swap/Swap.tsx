@@ -475,6 +475,7 @@ export const Swap = ({
     fetchQuote: fetchSwap,
     selectQuote: handleSelectQuote,
     resetQuote,
+    quoteRefreshKey,
     canSwap,
     slippage: swapSlippage,
     expiry: swapExpiry,
@@ -1345,20 +1346,47 @@ export const Swap = ({
   const isSwapTxInFlight = !RD.isInitial(swapState.swapTx)
   const pauseQuoteRefresh = isConfirmModalOpen || isSwapTxInFlight
 
+  // Latest fetchSwap via ref + value-key deps (not fetchSwap identity).
+  const fetchSwapRef = useRef(fetchSwap)
+  useEffect(() => {
+    fetchSwapRef.current = fetchSwap
+  }, [fetchSwap])
+  // Primitive so price-driven Option recreation does not re-fire quotes.
+  const applyBpsValue = FP.pipe(
+    oApplyBps,
+    O.fold(
+      () => 'none' as const,
+      (apply) => (apply ? 'true' : 'false')
+    )
+  )
+
   // Fetch / refresh quotes when inputs change — skipped during confirm / in-flight swap.
   useEffect(() => {
     if (pauseQuoteRefresh) return
-    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && O.isSome(oApplyBps)) {
-      fetchSwap(amountToSwap)
+    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && applyBpsValue !== 'none') {
+      void fetchSwapRef.current(amountToSwap)
     }
-  }, [sourceAsset, targetAsset, fetchSwap, amountToSwap, oApplyBps, pauseQuoteRefresh])
+  }, [
+    sourceAsset,
+    targetAsset,
+    amountToSwap,
+    applyBpsValue,
+    pauseQuoteRefresh,
+    streamingInterval,
+    streamingQuantity,
+    slipTolerance,
+    quoteOnly,
+    sourceWalletAddress,
+    effectiveRecipientAddressString,
+    quoteRefreshKey
+  ])
 
   const onInputBlurHandler = useCallback(() => {
     if (pauseQuoteRefresh) return
     if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
-      fetchSwap(amountToSwap)
+      void fetchSwapRef.current(amountToSwap)
     }
-  }, [amountToSwap, fetchSwap, pauseQuoteRefresh])
+  }, [amountToSwap, pauseQuoteRefresh])
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {

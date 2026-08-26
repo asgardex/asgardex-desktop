@@ -17,6 +17,7 @@ import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpe
 import { quoteNeedsRouterApproval } from '../helpers/evmApprovalHelper'
 import { logger } from '../helpers/logger'
 import { filterQuotableProtocols } from '../helpers/protocolTradingHalt'
+import { getCurrentNetworkState } from '../services/app/service'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useThorchainMimirHalt } from './useMimirHalt'
 import { useMayachainMimirHalt } from './useMimirHaltMaya'
@@ -42,6 +43,11 @@ type UseSwapQuoteResult = {
   fetchQuote: (amount: BaseAmount) => Promise<void>
   selectQuote: (quote: ExtendedQuoteSwap) => void
   resetQuote: () => void
+  /**
+   * Content-stable signature of hook-owned quote inputs (halt-filtered protocols,
+   * boost, network). Use in refresh effects instead of `fetchQuote` identity.
+   */
+  quoteRefreshKey: string
   // Derived
   canSwap: boolean
   slippage: number
@@ -61,6 +67,7 @@ export const useSwapQuote = ({
   affiliateBps
 }: UseSwapQuoteParams): UseSwapQuoteResult => {
   const { estimateSwap, protocols, isBoostEnabled } = useAggregator()
+  const network = getCurrentNetworkState()
   const { isOneClickSupportedAsset } = useOneClickContext()
   const { isChainflipSupportedAssetSync } = useChainflipContext()
   const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
@@ -98,6 +105,12 @@ export const useSwapQuote = ({
     [protocols, sourceAsset, targetAsset, haltState]
   )
 
+  // Halt-filtered protocol set + boost/network — not fetchQuote identity.
+  const quoteRefreshKey = useMemo(
+    () => `${quotableProtocols.join(',')}|boost:${isBoostEnabled}|net:${network}`,
+    [quotableProtocols, isBoostEnabled, network]
+  )
+
   const requestIdRef = useRef(0)
   /** Sticky user/auto selection across background re-quotes (Chainflip stays Chainflip). */
   const preferredProtocolRef = useRef<Protocol | null>(null)
@@ -105,6 +118,8 @@ export const useSwapQuote = ({
   const [selectedQuote, setSelectedQuote] = useState<O.Option<ExtendedQuoteSwap>>(O.none)
   const [quoteError, setQuoteError] = useState<O.Option<Error>>(O.none)
   const [isFetching, setIsFetching] = useState(false)
+  // Aggregator QuoteSwap has no expiry field — capture a 15m window when a fetch lands.
+  const [expiry, setExpiry] = useState<Date>(() => new Date())
 
   // Pair change invalidates any sticky protocol preference from the previous route.
   useEffect(() => {
@@ -117,6 +132,7 @@ export const useSwapQuote = ({
         preferredProtocolRef.current = null
         setSelectedQuote(O.none)
         setQuoteError(O.none)
+        setExpiry(new Date())
         return
       }
 
@@ -217,6 +233,9 @@ export const useSwapQuote = ({
         const nextSelected = pickSelectedQuote(sortedQuotes, sortedApprovalBlocked, preferredProtocolRef.current)
 
         setQuotes(O.some(allQuotes))
+        // Reset the UI expiry window only when a new quote response lands — not when the
+        // user merely switches the selected protocol in the existing result set.
+        setExpiry(new Date(Date.now() + 15 * 60 * 1000))
 
         if (nextSelected) {
           // Only clear a sticky preference when that protocol disappeared from the new set.
@@ -290,6 +309,7 @@ export const useSwapQuote = ({
     setQuotes(O.none)
     setSelectedQuote(O.none)
     setQuoteError(O.none)
+    setExpiry(new Date())
   }, [])
 
   // Derived values from selected quote
@@ -312,22 +332,6 @@ export const useSwapQuote = ({
         O.fold(
           () => 0,
           (txDetails) => txDetails.slipBasisPoints / 100
-        )
-      ),
-    [selectedQuote]
-  )
-
-  const expiry: Date = useMemo(
-    () =>
-      FP.pipe(
-        selectedQuote,
-        O.fold(
-          () => new Date(),
-          () => {
-            const now = new Date()
-            now.setMinutes(now.getMinutes() + 15)
-            return now
-          }
         )
       ),
     [selectedQuote]
@@ -356,6 +360,7 @@ export const useSwapQuote = ({
     fetchQuote,
     selectQuote,
     resetQuote,
+    quoteRefreshKey,
     canSwap,
     slippage,
     expiry,
