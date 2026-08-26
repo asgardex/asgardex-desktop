@@ -5,7 +5,7 @@ import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } fr
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
+import { function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { getChainAsset } from '../../../../helpers/chainHelper'
@@ -15,6 +15,7 @@ import { BaseButton, FilterButton } from '../../button'
 import { InputSearch } from '../../input'
 import { AssetData } from '../assetData'
 import { AssetIcon } from '../assetIcon/AssetIcon'
+import { ExtendedAssetType, filterAndSortAssetsForMenu, filterButtons } from './AssetMenu.helper'
 
 export type Props = {
   asset: AnyAsset
@@ -28,27 +29,7 @@ export type Props = {
   synthDisabled?: boolean
 }
 
-export enum ExtendedAssetType {
-  All = 'all',
-  Favorite = 'favorite',
-  Native = AssetType.NATIVE,
-  Secured = AssetType.SECURED
-}
-
-export const filterButtons = [
-  {
-    text: 'All',
-    type: ExtendedAssetType.All
-  },
-  {
-    text: 'Native',
-    type: ExtendedAssetType.Native
-  },
-  {
-    text: 'Secured',
-    type: ExtendedAssetType.Secured
-  }
-]
+export { ExtendedAssetType, filterButtons } from './AssetMenu.helper'
 
 export const AssetMenu = (props: Props): JSX.Element => {
   const {
@@ -81,24 +62,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
   )
 
   const filteredAssets = useMemo(
-    () =>
-      FP.pipe(
-        assets,
-        A.filter((asset) => {
-          // if synth asset is disabled for To Asset type
-          if (asset.type === AssetType.SYNTH) return false
-
-          if (activeFilter === ExtendedAssetType.Native && asset.type !== AssetType.NATIVE) return false
-          if (activeFilter === ExtendedAssetType.Secured && asset.type !== AssetType.SECURED) return false
-
-          if (searchValue) {
-            const lowerSearchValue = searchValue.toLowerCase()
-            return assetToString(asset).toLowerCase().includes(lowerSearchValue)
-          }
-          // If there's no search value, return all assets
-          return true
-        })
-      ),
+    () => filterAndSortAssetsForMenu(assets, searchValue, activeFilter),
     [activeFilter, assets, searchValue]
   )
 
