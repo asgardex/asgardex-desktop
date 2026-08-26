@@ -20,7 +20,7 @@ const makeQuote = (protocol: ExtendedQuoteSwap['protocol'], outAmount: number): 
       affiliateFee: new CryptoAmount(baseAmount(0), AssetETH),
       liquidityFee: new CryptoAmount(baseAmount(0), AssetETH)
     }
-  }) as ExtendedQuoteSwap
+  }) as unknown as ExtendedQuoteSwap
 
 describe('useSwapQuote.helpers', () => {
   describe('sortQuotesByOutput', () => {
@@ -52,7 +52,7 @@ describe('useSwapQuote.helpers', () => {
     })
 
     it('can keep preferred from approval-blocked quotes', () => {
-      const blocked = [{ ...thor, canSwap: false }] as ExtendedQuoteSwap[]
+      const blocked = [{ ...thor, canSwap: false }] as unknown as ExtendedQuoteSwap[]
       expect(pickSelectedQuote([], blocked, 'Thorchain')?.protocol).toBe('Thorchain')
     })
   })
