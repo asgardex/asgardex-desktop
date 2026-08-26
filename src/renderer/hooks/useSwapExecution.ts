@@ -346,6 +346,12 @@ export const useSwapExecution = ({
     const fromAsset = toChainflipQuoteAsset(sourceAsset)
     const destinationAsset = toChainflipQuoteAsset(targetAsset)
 
+    // Show SwapTxModal immediately (pending) while the deposit channel opens.
+    // Channel open can take seconds on the broker path — do not leave a blank gap
+    // after the password/Ledger confirm modal closes.
+    setSwapStartTime(Date.now())
+    subscribeSwapState(Rx.of({ swapTx: RD.pending }))
+
     logger.info('Opening Chainflip deposit channel before broadcast', {
       from: `${fromAsset.chain}.${fromAsset.symbol}`,
       to: `${destinationAsset.chain}.${destinationAsset.symbol}`,
@@ -377,7 +383,6 @@ export const useSwapExecution = ({
       expiresAt: channel.expiresAt.toISOString()
     })
 
-    setSwapStartTime(Date.now())
     subscribeSwapState(swapCF$(buildChainflipBroadcastParams(params, channel)))
   }, [
     cfSwapParams,

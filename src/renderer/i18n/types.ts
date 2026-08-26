@@ -839,6 +839,7 @@ type SwapMessageKey =
   | 'swap.streaming.quantity.info'
   | 'swap.state.sending'
   | 'swap.state.pending'
+  | 'swap.state.openingChannel'
   | 'swap.state.success'
   | 'swap.state.error'
   | 'swap.info.max.balance'

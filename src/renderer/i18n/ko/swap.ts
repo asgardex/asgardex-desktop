@@ -3,6 +3,7 @@ import { SwapMessages } from '../types'
 const swap: SwapMessages = {
   'swap.state.sending': '트랜잭션 전송 중',
   'swap.state.pending': '스왑 중',
+  'swap.state.openingChannel': 'Chainflip 채널 여는 중',
   'swap.state.success': '스왑 성공',
   'swap.state.error': '스왑 오류',
   'swap.input': '입력',
