@@ -6,7 +6,7 @@ const halt: HaltMessages = {
     'L’échange sur {protocols} est temporairement interrompu. L’échange via {alternatives} reste disponible.',
   'halt.chain': 'La chaîne {chain} sur {dex} a été temporairement interrompue.',
   'halt.chains': 'Les chaînes {chains} sur {protocol} sont temporairement interrompues.',
-  'halt.chain.trading': 'L’échange pour {chains} est temporairement interrompu.',
+  'halt.chain.trading': '{protocol} : échange temporairement interrompu pour {chains}.',
   'halt.chain.synth': "Le trading synthétique pour {chain} n'est pas disponible pendant que {chain} est arrêté",
   'halt.chain.pause':
     'Les activités de liquidité (ajouter/retirer) pour la(es) chaîne(s) {chains} sont temporairement désactivées.',
