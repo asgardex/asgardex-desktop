@@ -3,6 +3,7 @@ import { SwapMessages } from '../types'
 const swap: SwapMessages = {
   'swap.state.sending': 'Envoi de la transaction',
   'swap.state.pending': 'Échange en cours',
+  'swap.state.openingChannel': 'Ouverture du canal Chainflip',
   'swap.state.success': 'Échange réussi',
   'swap.state.error': "Erreur lors de l'échange",
   'swap.input': 'Entrée',

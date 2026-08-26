@@ -116,21 +116,23 @@ export const useSwapConfirmationModals = ({
   // ─── Password Modal ──────────────────────────────────────────────────────
   const renderPasswordConfirmationModal = useMemo(() => {
     const onSuccess = () => {
+      // Close immediately so Chainflip channel-open / broadcast wait lives in SwapTxModal,
+      // not in a blank gap after password confirm.
+      const mode = showPasswordModal
+      setShowPasswordModal(ModalState.None)
       void (async () => {
         try {
-          if (showPasswordModal === ModalState.Swap && O.isSome(oSwapParams)) {
+          if (mode === ModalState.Swap && O.isSome(oSwapParams)) {
             submitSwapTx()
-          } else if (showPasswordModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
+          } else if (mode === ModalState.Swap && O.isSome(oCFSwapParams)) {
             await submitCFTx()
-          } else if (showPasswordModal === ModalState.Swap && O.isSome(oOneClickSwapParams)) {
+          } else if (mode === ModalState.Swap && O.isSome(oOneClickSwapParams)) {
             submitOneClickTx()
-          } else if (showPasswordModal === ModalState.Approve) {
+          } else if (mode === ModalState.Approve) {
             submitApproveTx()
           }
         } catch (error) {
           logger.error('Swap confirm failed after password', error)
-        } finally {
-          setShowPasswordModal(ModalState.None)
         }
       })()
     }
@@ -162,21 +164,21 @@ export const useSwapConfirmationModals = ({
     const visible = showLedgerModal === ModalState.Swap || showLedgerModal === ModalState.Approve
     const onClose = () => setShowLedgerModal(ModalState.None)
     const onSuccess = () => {
+      const mode = showLedgerModal
+      setShowLedgerModal(ModalState.None)
       void (async () => {
         try {
-          if (showLedgerModal === ModalState.Swap && O.isSome(oSwapParams)) {
+          if (mode === ModalState.Swap && O.isSome(oSwapParams)) {
             submitSwapTx()
-          } else if (showLedgerModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
+          } else if (mode === ModalState.Swap && O.isSome(oCFSwapParams)) {
             await submitCFTx()
-          } else if (showLedgerModal === ModalState.Swap && O.isSome(oOneClickSwapParams)) {
+          } else if (mode === ModalState.Swap && O.isSome(oOneClickSwapParams)) {
             submitOneClickTx()
-          } else if (showLedgerModal === ModalState.Approve) {
+          } else if (mode === ModalState.Approve) {
             submitApproveTx()
           }
         } catch (error) {
           logger.error('Swap confirm failed after Ledger', error)
-        } finally {
-          setShowLedgerModal(ModalState.None)
         }
       })()
     }
@@ -226,14 +228,17 @@ export const useSwapConfirmationModals = ({
   // ─── Vultisig Modal ───────────────────────────────────────────────────────
   const onVultisigSuccess = useCallback(() => {
     logger.info('onVultisigSuccess', { vaultType })
+    const mode = showVultisigModal
+    // FastVault: close confirm modal immediately; SecureVault stays open for QR / device signing.
+    // Either way, Chainflip channel-open pending state is published by submitCFTx into swapState.
     if (vaultType === 'fast') setShowVultisigModal(ModalState.None)
     void (async () => {
       try {
-        if (showVultisigModal === ModalState.Swap) {
+        if (mode === ModalState.Swap) {
           if (O.isSome(oSwapParams)) submitSwapTx()
           else if (O.isSome(oCFSwapParams)) await submitCFTx()
           else if (O.isSome(oOneClickSwapParams)) submitOneClickTx()
-        } else if (showVultisigModal === ModalState.Approve) {
+        } else if (mode === ModalState.Approve) {
           submitApproveTx()
         }
       } catch (error) {
