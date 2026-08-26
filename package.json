@@ -80,7 +80,7 @@
     "@reduxjs/toolkit": "^2.12.0",
     "@tanstack/react-table": "^8.21.3",
     "@vultisig/sdk": "2.19.19",
-    "@xchainjs/xchain-aggregator": "3.0.0",
+    "@xchainjs/xchain-aggregator": "3.0.1",
     "@xchainjs/xchain-arbitrum": "2.1.8",
     "@xchainjs/xchain-avax": "2.0.22",
     "@xchainjs/xchain-base": "1.0.22",
