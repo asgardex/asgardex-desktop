@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
+import { isEqual } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
@@ -93,10 +94,19 @@ export const useSwapQuote = ({
     [haltedChainsThor, mimirHaltThor, haltedChainsMaya, mimirHaltMaya]
   )
 
-  const quotableProtocols: Protocol[] = useMemo(
+  const quotableProtocolsRaw: Protocol[] = useMemo(
     () => filterQuotableProtocols(protocols, sourceAsset, targetAsset, haltState),
     [protocols, sourceAsset, targetAsset, haltState]
   )
+  // Keep a stable array identity when halt/pool polls rebuild equivalent protocol lists.
+  const quotableProtocolsRef = useRef(quotableProtocolsRaw)
+  const quotableProtocols = useMemo(() => {
+    if (isEqual(quotableProtocolsRef.current, quotableProtocolsRaw)) {
+      return quotableProtocolsRef.current
+    }
+    quotableProtocolsRef.current = quotableProtocolsRaw
+    return quotableProtocolsRaw
+  }, [quotableProtocolsRaw])
 
   const requestIdRef = useRef(0)
   /** Sticky user/auto selection across background re-quotes (Chainflip stays Chainflip). */
@@ -105,6 +115,8 @@ export const useSwapQuote = ({
   const [selectedQuote, setSelectedQuote] = useState<O.Option<ExtendedQuoteSwap>>(O.none)
   const [quoteError, setQuoteError] = useState<O.Option<Error>>(O.none)
   const [isFetching, setIsFetching] = useState(false)
+  // Aggregator QuoteSwap has no expiry field — capture a 15m window when a fetch lands.
+  const [expiry, setExpiry] = useState<Date>(() => new Date())
 
   // Pair change invalidates any sticky protocol preference from the previous route.
   useEffect(() => {
@@ -117,6 +129,7 @@ export const useSwapQuote = ({
         preferredProtocolRef.current = null
         setSelectedQuote(O.none)
         setQuoteError(O.none)
+        setExpiry(new Date())
         return
       }
 
@@ -217,6 +230,9 @@ export const useSwapQuote = ({
         const nextSelected = pickSelectedQuote(sortedQuotes, sortedApprovalBlocked, preferredProtocolRef.current)
 
         setQuotes(O.some(allQuotes))
+        // Reset the UI expiry window only when a new quote response lands — not when the
+        // user merely switches the selected protocol in the existing result set.
+        setExpiry(new Date(Date.now() + 15 * 60 * 1000))
 
         if (nextSelected) {
           // Only clear a sticky preference when that protocol disappeared from the new set.
@@ -290,6 +306,7 @@ export const useSwapQuote = ({
     setQuotes(O.none)
     setSelectedQuote(O.none)
     setQuoteError(O.none)
+    setExpiry(new Date())
   }, [])
 
   // Derived values from selected quote
@@ -312,22 +329,6 @@ export const useSwapQuote = ({
         O.fold(
           () => 0,
           (txDetails) => txDetails.slipBasisPoints / 100
-        )
-      ),
-    [selectedQuote]
-  )
-
-  const expiry: Date = useMemo(
-    () =>
-      FP.pipe(
-        selectedQuote,
-        O.fold(
-          () => new Date(),
-          () => {
-            const now = new Date()
-            now.setMinutes(now.getMinutes() + 15)
-            return now
-          }
         )
       ),
     [selectedQuote]

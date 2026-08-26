@@ -94,6 +94,7 @@ import {
   isVultisigMode,
   isVultisigVaultPasswordRequired
 } from '../../services/wallet/types'
+import { useAggregator } from '../../store/aggregator/hooks'
 import { useCoingecko } from '../../store/gecko/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
 import { GECKO_MAP } from '../../types/generated/geckoMap'
@@ -1345,20 +1346,50 @@ export const Swap = ({
   const isSwapTxInFlight = !RD.isInitial(swapState.swapTx)
   const pauseQuoteRefresh = isConfirmModalOpen || isSwapTxInFlight
 
+  // Keep latest fetchSwap without putting its identity in effect deps — halt/lastblock
+  // polls used to recreate the callback every ~60s and re-fire every provider quote.
+  const fetchSwapRef = useRef(fetchSwap)
+  fetchSwapRef.current = fetchSwap
+  const { protocols, isBoostEnabled } = useAggregator()
+  // Primitive so price-driven Option recreation does not re-fire quotes.
+  const applyBpsValue = FP.pipe(
+    oApplyBps,
+    O.fold(
+      () => 'none' as const,
+      (apply) => (apply ? 'true' : 'false')
+    )
+  )
+
   // Fetch / refresh quotes when inputs change — skipped during confirm / in-flight swap.
   useEffect(() => {
     if (pauseQuoteRefresh) return
-    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && O.isSome(oApplyBps)) {
-      fetchSwap(amountToSwap)
+    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && applyBpsValue !== 'none') {
+      void fetchSwapRef.current(amountToSwap)
     }
-  }, [sourceAsset, targetAsset, fetchSwap, amountToSwap, oApplyBps, pauseQuoteRefresh])
+  }, [
+    sourceAsset,
+    targetAsset,
+    amountToSwap,
+    applyBpsValue,
+    pauseQuoteRefresh,
+    // Include quote-relevant settings so changing them still refreshes without
+    // depending on fetchSwap identity.
+    streamingInterval,
+    streamingQuantity,
+    slipTolerance,
+    quoteOnly,
+    sourceWalletAddress,
+    effectiveRecipientAddressString,
+    protocols,
+    isBoostEnabled
+  ])
 
   const onInputBlurHandler = useCallback(() => {
     if (pauseQuoteRefresh) return
     if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
-      fetchSwap(amountToSwap)
+      void fetchSwapRef.current(amountToSwap)
     }
-  }, [amountToSwap, fetchSwap, pauseQuoteRefresh])
+  }, [amountToSwap, pauseQuoteRefresh])
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
