@@ -14,8 +14,7 @@ import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { unionChains } from '../../helpers/fp/array'
 import * as poolsRoutes from '../../routes/pools'
 import { MimirHalt } from '../../services/thorchain/types'
-
-const CHAINFLIP_LABEL = 'Chainflip'
+import { getSwapAlternativeLabels, isProtocolGloballyHalted, ResolvedProtocolData } from './AppHaltedChains.helpers'
 
 export type HaltedProtocol = {
   haltedChainsRD: RD.RemoteData<Error, Chain[]>
@@ -46,21 +45,11 @@ export type PageContext = {
   selectedChains?: Chain[]
 }
 
-type ResolvedProtocolData = {
-  protocol: Chain
-  inboundHaltedChains: Chain[]
-  mimirHalt: MimirHalt
-  midgard: boolean
-}
-
 const EMPTY_MIMIR: MimirHalt = {
   HALTTHORCHAIN: false,
   haltGlobalTrading: false,
   pauseGlobalLp: false
 } as MimirHalt
-
-const isProtocolGloballyHalted = ({ protocol, mimirHalt }: ResolvedProtocolData): boolean =>
-  mimirHalt.haltGlobalTrading || (protocol === THORChain && mimirHalt.HALTTHORCHAIN)
 
 // Reverse the asset-string transform the swap route applies (handles synth + raw form)
 // so we can recover a Chain to filter halt messages against.
@@ -128,8 +117,11 @@ const buildGlobalHaltMessage = (
   if (halted.length === 0) return undefined
 
   const haltedNames = halted.map((p) => p.protocol)
-  const availableProtocolNames = resolvedProtocols.filter((p) => !isProtocolGloballyHalted(p)).map((p) => p.protocol)
-  const alternativesList = intl.formatList([CHAINFLIP_LABEL, ...availableProtocolNames], { type: 'disjunction' })
+  // Only advertise routes that can actually serve this page's chains — never
+  // "Maya still available" beside Maya per-chain trading halt lines.
+  const alternativesList = intl.formatList(getSwapAlternativeLabels(resolvedProtocols, selectedChains), {
+    type: 'disjunction'
+  })
 
   // Use the THORChain-specific message only if THORChain is the only halted protocol and the full-chain halt is set
   const onlyThorchainFullyHalted =
@@ -190,7 +182,11 @@ const buildPerProtocolMessages = (
       .map(({ chain }) => chain)
       .filter((chain) => !fullyHaltedChains.includes(chain))
     if (haltedTradingChains.length > 0) {
-      messages.push(intl.formatMessage({ id: 'halt.chain.trading' }, { chains: haltedTradingChains.join(', ') }))
+      // Name the protocol; do not append "still available" alternatives (those belong
+      // only on the global-halt message, and must not list this same protocol).
+      messages.push(
+        intl.formatMessage({ id: 'halt.chain.trading' }, { protocol, chains: haltedTradingChains.join(', ') })
+      )
     }
   }
 
