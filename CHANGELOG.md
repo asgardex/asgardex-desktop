@@ -6,6 +6,27 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
+# 1.45.3 (2026-08-27)
+
+PRs merged to `develop` since tag `v1.45.2` / release branch for 1.45.2.
+
+## Update/Fixes
+
+- fix(swap): show OneClick affiliate from aggregator echoed `appFees` (no more false `free`); protocol-tuned swap details for Chainflip/OneClick (hide THOR streaming + slip controls); outbound fee uses quote destination asset + USD (not stale sats); don’t freeze all swap routes when THOR Midgard is down (affiliate USD gate + empty-pool pair fallback) [#1191](https://github.com/asgardex/asgardex-desktop/pull/1191)
+- fix(swap): stop lastblock polls from re-firing quotes every 60s [#1190](https://github.com/asgardex/asgardex-desktop/pull/1190)
+- fix: Chainflip submit UX (channel-open in tx modal), aggregator 3.0.1 broker expiry, asset search ranks native ETH first, smarter halt banners, sticky protocol + pause requotes on confirm [#1188](https://github.com/asgardex/asgardex-desktop/pull/1188)
+- fix(thor/maya): never auto-retry keystore `MsgDeposit` broadcasts [#1182](https://github.com/asgardex/asgardex-desktop/pull/1182)
+- fix(swap): restore ERC20 Approve CTA when quote is approval-blocked [#1178](https://github.com/asgardex/asgardex-desktop/pull/1178)
+- fix(evm): EIP-1559 tip+baseFee headroom for THOR/MAYA pool deposit txs [#1179](https://github.com/asgardex/asgardex-desktop/pull/1179)
+- fix(swap): skip quote requests for trading-halted THOR/MAYA routes [#1177](https://github.com/asgardex/asgardex-desktop/pull/1177)
+
+## Chores
+
+- chore(deps): bump `@xchainjs/xchain-aggregator` to 3.0.2 (OneClick affiliateFee from echoed appFees) [#1191](https://github.com/asgardex/asgardex-desktop/pull/1191)
+- chore(deps): bump `@xchainjs/*` + Chainflip deposit-channel for aggregator 3.0 [#1181](https://github.com/asgardex/asgardex-desktop/pull/1181)
+- chore(deps): bump axios to 1.18.1 to match xchainjs [#1173](https://github.com/asgardex/asgardex-desktop/pull/1173)
+- chore(deps): bump `@reduxjs/toolkit` from 2.3.0 to 2.12.0 [#1160](https://github.com/asgardex/asgardex-desktop/pull/1160)
+
 # 1.45.2 (2026-08-13)
 
 PRs merged to `develop` since tag `v1.45.1` / release branch for 1.45.1.

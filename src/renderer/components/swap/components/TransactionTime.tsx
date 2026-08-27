@@ -6,6 +6,7 @@ import { option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 
 import { DefaultChainAttributes } from '../../../../shared/utils/chain'
+import { isDexStreamingProtocol } from '../../../helpers/protocolHelper'
 import { formatSwapTime } from '../../../helpers/timeHelper'
 import { ExtendedQuoteSwap } from '../Swap.types'
 
@@ -18,6 +19,11 @@ type Props = {
 }
 
 export const TransactionTime = ({ intl, showDetails, sourceChain, targetAsset, oQuoteProtocol }: Props) => {
+  const protocol = O.toNullable(O.map((quote: ExtendedQuoteSwap) => quote.protocol)(oQuoteProtocol))
+  // Chainflip/OneClick quotes carry a single total estimate — THOR-style inbound/confirm
+  // breakdown from DefaultChainAttributes is misleading for those protocols.
+  const showDexTimeBreakdown = isDexStreamingProtocol(protocol) || protocol === null
+
   const transactionTime = O.isSome(oQuoteProtocol)
     ? (oQuoteProtocol.value.totalSwapSeconds ??
       DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs +
@@ -38,7 +44,7 @@ export const TransactionTime = ({ intl, showDetails, sourceChain, targetAsset, o
         <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.time.title' })}</div>
         <div className="text-text2 dark:text-text2d">{formatSwapTime(transactionTime)}</div>
       </div>
-      {showDetails && (
+      {showDetails && showDexTimeBreakdown && (
         <>
           <div className="flex w-full justify-between pl-10px text-[12px]">
             <div className="flex items-center text-text2 dark:text-text2d">

@@ -515,13 +515,14 @@ export const Swap = ({
     )
   }, [oQuoteProtocol, swapFees.outFee.amount, swapFees.outFee.asset])
 
-  const [outFeePriceValue, setOutFeePriceValue] = useState<CryptoAmount>(
-    new CryptoAmount(swapFees.outFee.amount, targetAsset)
-  )
+  const [outFeePriceValue, setOutFeePriceValue] = useState<CryptoAmount>(oSwapOutFee)
 
   useEffect(() => {
-    if (O.isNone(oQuoteProtocol)) return
-    const calculateSwapOutFeePrice = () => {
+    if (O.isNone(oQuoteProtocol)) {
+      setOutFeePriceValue(oSwapOutFee)
+      return
+    }
+    const calculateSwapOutFeePrice = (): O.Option<BaseAmount> => {
       if (isUSDAsset(oSwapOutFee.asset)) {
         return O.some(oSwapOutFee.baseAmount)
       }
@@ -538,49 +539,35 @@ export const Swap = ({
           })
     }
     const swapOutFeePrice = calculateSwapOutFeePrice()
-    if (O.isSome(swapOutFeePrice)) {
-      const newOutFeePriceValue = new CryptoAmount(swapOutFeePrice.value, pricePoolThor.asset)
-      setOutFeePriceValue((prevValue) =>
-        prevValue?.baseAmount.eq(newOutFeePriceValue.baseAmount) ? prevValue : newOutFeePriceValue
-      )
-    }
-  }, [
-    pricePoolThor,
-    pricePoolMaya,
-    oQuoteProtocol,
-    oSwapOutFee.asset,
-    oSwapOutFee.baseAmount,
-    poolDetailsThor,
-    poolDetailsMaya
-  ])
+    // Always refresh: USD when pools can price the quote outbound asset, otherwise the
+    // destination-asset fee itself — never keep a stale prior-swap price (e.g. BTC sats).
+    setOutFeePriceValue(
+      O.isSome(swapOutFeePrice) ? new CryptoAmount(swapOutFeePrice.value, pricePoolThor.asset) : oSwapOutFee
+    )
+  }, [pricePoolThor, pricePoolMaya, oQuoteProtocol, oSwapOutFee, poolDetailsThor, poolDetailsMaya])
 
+  // Quote outbound fee asset (destination / egress), not swapFees.outFee.asset from the
+  // chain fee estimator — mixing those produced "546 sats" on USDC→SOL etc.
   const priceSwapOutFeeLabel = useMemo(() => {
-    if (!swapFees) return ''
-    const {
-      outFee: { asset: feeAsset }
-    } = swapFees
+    const feeAsset = oSwapOutFee.asset
     const fee = formatAssetAmountCurrency({
       amount: baseToAsset(oSwapOutFee.baseAmount),
       asset: feeAsset,
       decimal: isUSDAsset(feeAsset) ? 2 : 6,
       trimZeros: !isUSDAsset(feeAsset)
     })
-    const price = FP.pipe(
-      O.some(outFeePriceValue),
-      O.map((cryptoAmount: CryptoAmount) =>
-        eqAsset.equals(feeAsset, cryptoAmount.asset)
-          ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
-      ),
-      O.getOrElse(() => '')
-    )
-    return price ? `${price} (${fee})` : fee
-  }, [swapFees, oSwapOutFee, outFeePriceValue])
+    if (!isUSDAsset(outFeePriceValue.asset) || eqAsset.equals(feeAsset, outFeePriceValue.asset)) {
+      return fee
+    }
+    const isVerySmallUSDAmount = outFeePriceValue.assetAmount.amount().lt(0.01)
+    const price = formatAssetAmountCurrency({
+      amount: outFeePriceValue.assetAmount,
+      asset: outFeePriceValue.asset,
+      decimal: isVerySmallUSDAmount ? 6 : 2,
+      trimZeros: isVerySmallUSDAmount
+    })
+    return `${price} (${fee})`
+  }, [oSwapOutFee, outFeePriceValue])
 
   // Affiliate fee from quote
   const affiliateFee: CryptoAmount = useMemo(() => {
@@ -639,14 +626,53 @@ export const Swap = ({
       ),
       O.getOrElse(() => '')
     )
-    const bps = getAsgardexAffiliateFee(network)
+    const configuredBps = getAsgardexAffiliateFee(network)
     const applyBps = FP.pipe(
       oApplyBps,
       O.getOrElse(() => false)
     )
-    const displayBps = applyBps && bps !== undefined ? `${bps / 100}%` : '0%'
-    return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee
-  }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, oApplyBps, network, sourceAsset])
+    const protocol = FP.pipe(
+      oQuoteProtocol,
+      O.map((q) => q.protocol),
+      O.toUndefined
+    )
+    // OneClick (aggregator ≥3.0.2): fees.affiliateFee is amountIn * echoed partner bps
+    // after 1Click's 50/50 split — prefer that effective rate over the requested 30 bps.
+    let displayBps = '0%'
+    if (applyBps && configuredBps !== undefined) {
+      if (
+        protocol === 'OneClick' &&
+        amountToSwap.amount().gt(0) &&
+        affiliateFee.baseAmount.amount().gt(0) &&
+        eqAsset.equals(affiliateFee.asset, sourceAsset)
+      ) {
+        const effectiveBps = affiliateFee.baseAmount
+          .amount()
+          .multipliedBy(10000)
+          .dividedToIntegerBy(amountToSwap.amount())
+          .toNumber()
+        displayBps = `${effectiveBps / 100}%`
+      } else {
+        displayBps = `${configuredBps / 100}%`
+      }
+    }
+    // OneClick can still return a non-zero affiliateFee while applyBps is true; never show
+    // "free" when the quote itself reports an affiliate amount.
+    if (!applyBps && affiliateFee.baseAmount.amount().isZero()) return `free`
+    if (!applyBps) return price ? `${price} (${fee})` : fee
+    return price ? `${price} (${fee}) ${displayBps}` : `${fee} ${displayBps}`
+  }, [
+    swapFees,
+    affiliateFee.assetAmount,
+    affiliateFee.asset,
+    affiliateFee.baseAmount,
+    affiliatePriceValue,
+    oApplyBps,
+    oQuoteProtocol,
+    network,
+    sourceAsset,
+    amountToSwap
+  ])
 
   // ─── Hook 4: Swap execution ────────────────────────────────────────────────
   const {

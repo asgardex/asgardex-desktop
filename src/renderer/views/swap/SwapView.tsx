@@ -556,23 +556,32 @@ const SuccessRouteView = ({
   // Falls back to assets routable without THOR/MAYA pools (Chainflip + OneClick,
   // with zero RUNE-denominated price) so the swap UI loads when pool data is
   // unavailable or the pair only exists on a poolless protocol (e.g. SUI, ADA).
+  // When Midgard is down, poolAssetDetails is often only the RUNE/CACAO stub —
+  // still allow the selected pair through so aggregator quotes (Thornode /
+  // Chainflip / 1Click) can run; USD prices stay 0 until Midgard recovers.
   const validatePoolAssets = (
     poolAssetDetails: PoolAssetDetail[],
     sourceAsset: AssetWithDecimal,
     targetAsset: AssetWithDecimal,
     poollessAssets: ReadonlyArray<AnyAsset>
   ): Either<Error, { sourceAssetDetail: PoolAssetDetail; targetAssetDetail: PoolAssetDetail }> => {
-    const findPoollessFallback = (asset: AnyAsset): PoolAssetDetail | null => {
+    const isProtocolStub = (asset: AnyAsset) =>
+      (asset.chain === THORChain && asset.symbol === AssetRuneNative.symbol) ||
+      (asset.chain === MAYAChain && asset.symbol === AssetCacao.symbol)
+    const midgardPoolsUnavailable =
+      poolAssetDetails.length === 0 || poolAssetDetails.every(({ asset }) => isProtocolStub(asset))
+
+    const findFallback = (asset: AnyAsset): PoolAssetDetail | null => {
       const target = assetToString(asset)
       const match = poollessAssets.find((a) => assetToString(a) === target)
-      return match ? { asset: match, assetPrice: bn(0) } : null
+      if (match) return { asset: match, assetPrice: bn(0) }
+      if (midgardPoolsUnavailable) return { asset, assetPrice: bn(0) }
+      return null
     }
     const sourceAssetDetail =
-      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable) ??
-      findPoollessFallback(sourceAsset.asset)
+      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable) ?? findFallback(sourceAsset.asset)
     const targetAssetDetail =
-      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, targetAsset.asset), O.toNullable) ??
-      findPoollessFallback(targetAsset.asset)
+      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, targetAsset.asset), O.toNullable) ?? findFallback(targetAsset.asset)
 
     if (!sourceAssetDetail) {
       return left(new Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))

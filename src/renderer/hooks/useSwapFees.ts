@@ -278,16 +278,14 @@ export const useSwapFees = ({
     }
 
     if (balanceUsdValue.amount().isZero()) {
-      // Pools couldn't price the source. Distinguish "pool data not loaded yet"
-      // (defer via O.none — fetchQuote waits) from "no THOR/MAYA pool will ever
-      // price this" (e.g. SUI — 1Click-only). Note isChainOfThor can't tell the
-      // difference: DEX_CHAINS buckets every enabled non-MAYA chain as a THOR
-      // chain, pools or not (the SOL special case above exists because of that).
-      const poolsLoaded = poolDetailsThor.length > 0 || poolDetailsMaya.length > 0
-      if (!poolsLoaded) return O.none
-      // Pools are loaded and still no price — fall back to 1Click's token list
-      // so the affiliate threshold still applies; if it has no price either,
-      // skip the fee rather than blocking the quote (no price, no fee).
+      // Midgard/Maya pool USD prices unavailable (down, empty, or asset not pooled).
+      // Fall back to 1Click token list prices when possible.
+      //
+      // IMPORTANT: never return O.none here. useSwapQuote.fetchQuote bails while
+      // affiliateBps is none — historically that froze *all* protocols (Chainflip,
+      // OneClick, MAYA) whenever THOR Midgard failed, even though aggregator quotes
+      // hit Thornode/Chainflip/1Click APIs and do not need Midgard.
+      // Missing USD price → skip affiliate rather than block the swap page.
       const oneClickUsdPrice = getOneClickUsdPrice(sourceAsset)
       if (oneClickUsdPrice === undefined) return O.some(false)
       balanceUsdValue = assetToBase(
