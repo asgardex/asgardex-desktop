@@ -319,6 +319,10 @@ export type ThorchainPool = {
 export type ThorchainPoolRD = RD.RemoteData<Error, ThorchainPool>
 export type ThorchainPoolLD = LiveData<Error, ThorchainPool>
 
+/** Raw THORNode `/thorchain/pools` list (Midgard poolsState fallback). */
+export type ThorchainPoolsLD = LiveData<Error, TN.Pool[]>
+export type ThorchainPoolsRD = RD.RemoteData<Error, TN.Pool[]>
+
 export type TxStages = {
   inboundObserved: {
     finalCount: number | undefined

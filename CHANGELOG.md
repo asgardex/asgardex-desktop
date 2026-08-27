@@ -6,6 +6,12 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
+# Unreleased
+
+## Update/Fixes
+
+- fix(midgard): when THOR Midgard is down or hung, synthesize `poolsState` from THORNode `/thorchain/pools` so USD prices and the swap page keep working [#1193](https://github.com/asgardex/asgardex-desktop/pull/1193)
+
 # 1.45.2 (2026-08-13)
 
 PRs merged to `develop` since tag `v1.45.1` / release branch for 1.45.1.

@@ -13,7 +13,7 @@ import { triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
 import { network$ } from '../../app/service'
 import { MIDGARD_MAX_RETRY } from '../../const'
 import { midgard$, modifyStorage, getStorageState } from '../../storage/common'
-import { inboundAddressesShared$, loadInboundAddresses$ } from '../../thorchain'
+import { inboundAddressesShared$, loadInboundAddresses$, loadThorchainPools$ } from '../../thorchain'
 import { ErrorId } from '../../wallet/types'
 import {
   NetworkInfoRD,
@@ -249,7 +249,8 @@ export const service: MidgardService = {
     getMidgardDefaultApi,
     selectedPoolAsset$,
     loadInboundAddresses$,
-    inboundAddressesShared$
+    inboundAddressesShared$,
+    loadThorchainPools$
   }),
   shares: createSharesService(midgardUrl$, getMidgardDefaultApi),
   actions: createActionsService(midgardUrl$, getMidgardDefaultApi)
