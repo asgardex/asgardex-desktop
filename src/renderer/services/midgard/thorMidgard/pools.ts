@@ -1,5 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { DefaultApi } from '@xchainjs/xchain-midgard'
+import { Pool as ThornodePool } from '@xchainjs/xchain-thornode'
 import { AnyAsset, assetFromString, assetToString, bn, Chain, currencySymbolByAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, nonEmptyArray as NEA, predicate as P, option as O } from 'fp-ts'
@@ -12,6 +14,7 @@ import { validAssetForETH, isPricePoolAsset, midgardAssetFromString } from '../.
 import { isEthChain } from '../../../helpers/chainHelper'
 import { eqAsset, eqOAsset, eqOPoolAddresses, eqHaltedChain } from '../../../helpers/fp/eq'
 import { sequenceTOption } from '../../../helpers/fpHelpers'
+import { logger } from '../../../helpers/logger'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import { observableState, triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
 import { roundUnixTimestampToMinutes } from '../../../helpers/timeHelper'
@@ -63,6 +66,7 @@ import {
   PricePool,
   PausedChainsLD
 } from '../midgardTypes'
+import { poolsStateFromThornodePools } from './thornodePoolsFallback'
 import {
   getPoolAddressesByChain,
   getPoolAssetDetail,
@@ -74,6 +78,9 @@ import {
   toPoolsData,
   poolsPeriodToPoolPeriod
 } from './utils'
+
+/** Midgard hung / unreachable long enough — fall back to Thornode pools. */
+const MIDGARD_POOLS_TIMEOUT_MS = 20_000
 
 const PRICE_POOL_KEY = 'asgdx-price-pool'
 
@@ -93,13 +100,16 @@ const createPoolsService = ({
   getMidgardDefaultApi,
   selectedPoolAsset$,
   loadInboundAddresses$,
-  inboundAddressesShared$
+  inboundAddressesShared$,
+  loadThorchainPools$
 }: {
   midgardUrl$: MidgardUrlLD
   getMidgardDefaultApi: (basePath: string) => DefaultApi
   selectedPoolAsset$: Rx.Observable<SelectedPoolAsset>
   loadInboundAddresses$: () => InboundAddressesLD
   inboundAddressesShared$: InboundAddressesLD
+  /** THORNode `/thorchain/pools` — Midgard poolsState resilience fallback. */
+  loadThorchainPools$: () => LiveData<Error, ThornodePool[]>
 }): PoolsService => {
   const midgardDefaultApi$: LiveData<Error, DefaultApi> = FP.pipe(
     midgardUrl$,
@@ -334,6 +344,29 @@ const createPoolsService = ({
     RxOp.shareReplay(1)
   )
 
+  const applySelectedPricePool = (pricePools: O.Option<PricePools>) => {
+    const nullablePricePools = O.toNullable(pricePools)
+    if (nullablePricePools) {
+      const selectedPricePool = pricePoolSelector(nullablePricePools, getSelectedPricePoolAsset())
+      setSelectedPricePoolAsset(selectedPricePool.asset)
+    }
+  }
+
+  /**
+   * Synthesize Midgard-shaped poolsState from THORNode when Midgard is down.
+   */
+  const loadPoolsStateFromThornode$ = (network: Network): PoolsStateLD =>
+    FP.pipe(
+      loadThorchainPools$(),
+      liveData.map((pools) => {
+        logger.warn('[pools] Midgard unavailable — using THORNode poolsState fallback')
+        const state = poolsStateFromThornodePools({ pools, network })
+        applySelectedPricePool(state.pricePools)
+        return state
+      }),
+      RxOp.catchError((error: Error) => Rx.of(RD.failure(error)))
+    )
+
   /**
    * Loading queue to get all needed data for `PoolsState`
    */
@@ -368,17 +401,12 @@ const createPoolsService = ({
       RxOp.shareReplay(1)
     )
 
-    return FP.pipe(
+    const midgardPoolsState$: PoolsStateLD = FP.pipe(
       Rx.combineLatest([poolAssets$, assetDetails$, poolDetails$, pricePools$]),
       RxOp.map((state) => RD.combine(...state)),
       RxOp.map(
         RD.map(([poolAssets, assetDetails, poolDetails, pricePools]): PoolsState => {
-          const prevAsset = getSelectedPricePoolAsset()
-          const nullablePricePools = O.toNullable(pricePools)
-          if (nullablePricePools) {
-            const selectedPricePool = pricePoolSelector(nullablePricePools, prevAsset)
-            setSelectedPricePoolAsset(selectedPricePool.asset)
-          }
+          applySelectedPricePool(pricePools)
           // Provide `PoolData` map (needed for pricing)
           const poolsData = toPoolsData(poolDetails)
 
@@ -393,6 +421,35 @@ const createPoolsService = ({
       ),
       RxOp.startWith(RD.pending),
       RxOp.catchError((error: Error) => Rx.of(RD.failure(error)))
+    )
+
+    // Prefer Midgard; on failure / hang / empty, synthesize poolsState from THORNode
+    // so USD prices and swap UI keep working while Midgard is down.
+    return FP.pipe(
+      midgardPoolsState$,
+      RxOp.withLatestFrom(network$),
+      RxOp.switchMap(([midgardRD, network]) => {
+        if (RD.isSuccess(midgardRD) && midgardRD.value.poolDetails.length > 0) {
+          return Rx.of(midgardRD)
+        }
+        if (RD.isFailure(midgardRD) || (RD.isSuccess(midgardRD) && midgardRD.value.poolDetails.length === 0)) {
+          return loadPoolsStateFromThornode$(network)
+        }
+        // Pending/initial: surface pending now; if Midgard never resolves, fall back.
+        // switchMap cancels the timer when Midgard later emits success/failure.
+        return Rx.concat(
+          Rx.of(midgardRD),
+          Rx.timer(MIDGARD_POOLS_TIMEOUT_MS).pipe(
+            RxOp.tap(() =>
+              logger.warn(
+                `[pools] Midgard poolsState pending >${MIDGARD_POOLS_TIMEOUT_MS}ms — falling back to THORNode`
+              )
+            ),
+            RxOp.switchMap(() => loadPoolsStateFromThornode$(network))
+          )
+        )
+      }),
+      RxOp.startWith(RD.pending)
     )
   }
 

@@ -586,6 +586,30 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
   const { stream$: reloadThorchainPool$, trigger: reloadThorchainPool } = triggerStream()
 
+  /**
+   * One-shot load of all THORNode pools (`GET /thorchain/pools`).
+   * Used as Midgard `poolsState` fallback when Midgard is down.
+   */
+  const loadThorchainPools$ = (): LiveData<Error, Pool[]> =>
+    requestThornodeApi$((basePath) =>
+      new PoolsApi(getThornodeAPIConfiguration(basePath)).pools().then((response: AxiosResponse<Pool[]>) => {
+        const data = response.data
+        return Array.isArray(data) ? data : []
+      })
+    )
+
+  const { stream$: reloadThorchainPools$, trigger: reloadThorchainPools } = triggerStream()
+
+  const getThorchainPools$ = (): LiveData<Error, Pool[]> =>
+    FP.pipe(
+      reloadThorchainPools$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap(() => loadThorchainPools$()),
+      RxOp.catchError((): LiveData<Error, Pool[]> => Rx.of(RD.failure(Error('Failed to load THORNode pools')))),
+      RxOp.startWith(RD.pending),
+      RxOp.shareReplay(1)
+    )
+
   const getThorchainPool$ = (asset: AnyAsset): ThorchainPoolLD =>
     FP.pipe(
       reloadThorchainPool$,
@@ -704,6 +728,9 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     reloadTxStatus,
     getThorchainPool$,
     reloadThorchainPool,
+    loadThorchainPools$,
+    getThorchainPools$,
+    reloadThorchainPools,
     getTradeAccount$,
     reloadTradeAccount,
     getTcyClaim$,
