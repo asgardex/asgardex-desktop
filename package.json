@@ -2,7 +2,7 @@
   "name": "asgardex",
   "productName": "ASGARDEX",
   "desktopName": "com.asgardex.Asgardex.desktop",
-  "version": "1.45.2",
+  "version": "1.45.3",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN, MAYACHAIN, CHAINFLIP",
   "main": "build/main/electron.js",
   "scripts": {
@@ -80,7 +80,7 @@
     "@reduxjs/toolkit": "^2.12.0",
     "@tanstack/react-table": "^8.21.3",
     "@vultisig/sdk": "2.19.19",
-    "@xchainjs/xchain-aggregator": "3.0.1",
+    "@xchainjs/xchain-aggregator": "3.0.2",
     "@xchainjs/xchain-arbitrum": "2.1.8",
     "@xchainjs/xchain-avax": "2.0.22",
     "@xchainjs/xchain-base": "1.0.22",

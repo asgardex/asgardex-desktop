@@ -26,6 +26,7 @@ import { envOrDefault } from './utils/env'
 
 export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
+/** Requested affiliate fee in basis points (30 = 0.30%). */
 export const ASGARDEX_AFFILIATE_FEE = 30
 export const ASGARDEX_THORNAME = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNAME, 'dx')
 
@@ -44,6 +45,10 @@ export const ASGARDEX_ONECLICK_API_KEY = envOrDefault(import.meta.env.VITE_ASGAR
 // a native address on that chain. Configure as a JSON map of chain → address, e.g.
 // VITE_ASGARDEX_ONECLICK_AFFILIATES='{"BTC":"bc1...","ETH":"0x..."}'
 // When the destination chain has no entry, no affiliate fee is applied to that quote.
+//
+// 1Click applies a 50/50 revenue share on appFees by default: requesting
+// ASGARDEX_AFFILIATE_FEE (30) yields ~15 bps to our recipient in quoteRequest.appFees
+// (aggregator ≥3.0.2 surfaces that as fees.affiliateFee).
 const parseOneClickAffiliates = (raw: string): Record<string, string> => {
   if (!raw) return {}
   try {

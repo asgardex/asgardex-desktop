@@ -22,6 +22,7 @@ import * as O from 'fp-ts/Option'
 import { useIntl } from 'react-intl'
 
 import { isUSDAsset } from '../../../helpers/assetHelper'
+import { isDexStreamingProtocol } from '../../../helpers/protocolHelper'
 import { ChangeSlipToleranceHandler } from '../../../services/app/types'
 import { SwapFeesRD, SwapTxParams } from '../../../services/chain/types'
 import { SlipTolerance } from '../../../types/asgardex'
@@ -112,6 +113,11 @@ export const SwapDetailsPanel = ({
 }: Props) => {
   const intl = useIntl()
 
+  const protocol = O.toNullable(O.map((quote: ExtendedQuoteSwap) => quote.protocol)(oQuoteProtocol))
+  // Chainflip / OneClick: no streaming params and no slip-tolerance / min-result controls.
+  // Keep THOR/MAYA (and no-quote fallback) on the existing DEX details layout.
+  const showDexSlipAndStreaming = isDexStreamingProtocol(protocol) || protocol === null
+
   const slippageValue = useMemo(
     () =>
       formatAssetAmountCurrency({
@@ -185,7 +191,8 @@ export const SwapDetailsPanel = ({
           trimZeros: true
         })
 
-  const memoSection = showDetails && (
+  // Chainflip / OneClick quotes have an empty memo — hide the empty section.
+  const memoSection = showDetails && showDexSlipAndStreaming && (
     <>
       <div className="ml-[-2px] flex w-full items-start pt-10px font-main-bold text-[14px] text-text2 dark:text-text2d">
         {memoTitle}
@@ -237,66 +244,70 @@ export const SwapDetailsPanel = ({
     </>
   )
 
-  const renderSlippageSection = () => (
-    <>
-      <div
-        className={clsx(
-          'flex w-full justify-between font-main-bold text-[14px]',
-          { 'pt-10px': showDetails },
-          { 'text-error0 dark:text-error0d': isCausedSlippage }
-        )}>
-        <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-        <div className="text-text2 dark:text-text2d">{slippageValue}</div>
-      </div>
+  const renderSlippageSection = () => {
+    if (!showDexSlipAndStreaming) return null
 
-      {showDetails && (
-        <>
-          <div className="flex w-full justify-between pl-10px text-[12px]">
-            <div className="flex items-center">
-              {intl.formatMessage({ id: 'swap.slip.tolerance' })}
-              <InfoIcon
-                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
-              />
+    return (
+      <>
+        <div
+          className={clsx(
+            'flex w-full justify-between font-main-bold text-[14px]',
+            { 'pt-10px': showDetails },
+            { 'text-error0 dark:text-error0d': isCausedSlippage }
+          )}>
+          <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'swap.slip.title' })}</div>
+          <div className="text-text2 dark:text-text2d">{slippageValue}</div>
+        </div>
+
+        {showDetails && (
+          <>
+            <div className="flex w-full justify-between pl-10px text-[12px]">
+              <div className="flex items-center">
+                {intl.formatMessage({ id: 'swap.slip.tolerance' })}
+                <InfoIcon
+                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                  tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
+                />
+              </div>
+              <div>
+                <SelectableSlipTolerance value={slipTolerance} onChange={changeSlipTolerance} />
+              </div>
             </div>
-            <div>
-              <SelectableSlipTolerance value={slipTolerance} onChange={changeSlipTolerance} />
+            <div className="flex w-full justify-between pl-10px text-[12px]">
+              <div className="flex items-center">
+                {intl.formatMessage({ id: 'swap.min.result.protected' })}
+                <InfoIcon
+                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                  tooltip={intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })}
+                />
+              </div>
+              <div>{swapMinResultLabel}</div>
             </div>
-          </div>
-          <div className="flex w-full justify-between pl-10px text-[12px]">
-            <div className="flex items-center">
-              {intl.formatMessage({ id: 'swap.min.result.protected' })}
-              <InfoIcon
-                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                tooltip={intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })}
-              />
+            <div className="flex w-full justify-between pl-10px text-[12px]">
+              <div className="flex items-center text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'swap.streaming.interval' })}
+                <InfoIcon
+                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                  tooltip={intl.formatMessage({ id: 'swap.streaming.interval.info' })}
+                />
+              </div>
+              <div className="text-text2 dark:text-text2d">{streamingInterval}</div>
             </div>
-            <div>{swapMinResultLabel}</div>
-          </div>
-          <div className="flex w-full justify-between pl-10px text-[12px]">
-            <div className="flex items-center text-text2 dark:text-text2d">
-              {intl.formatMessage({ id: 'swap.streaming.interval' })}
-              <InfoIcon
-                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                tooltip={intl.formatMessage({ id: 'swap.streaming.interval.info' })}
-              />
+            <div className="flex w-full justify-between pl-10px text-[12px]">
+              <div className="flex items-center text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'swap.streaming.quantity' })}
+                <InfoIcon
+                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                  tooltip={intl.formatMessage({ id: 'swap.streaming.quantity.info' })}
+                />
+              </div>
+              <div className="text-text2 dark:text-text2d">{streamingQuantity}</div>
             </div>
-            <div className="text-text2 dark:text-text2d">{streamingInterval}</div>
-          </div>
-          <div className="flex w-full justify-between pl-10px text-[12px]">
-            <div className="flex items-center text-text2 dark:text-text2d">
-              {intl.formatMessage({ id: 'swap.streaming.quantity' })}
-              <InfoIcon
-                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                tooltip={intl.formatMessage({ id: 'swap.streaming.quantity.info' })}
-              />
-            </div>
-            <div className="text-text2 dark:text-text2d">{streamingQuantity}</div>
-          </div>
-        </>
-      )}
-    </>
-  )
+          </>
+        )}
+      </>
+    )
+  }
 
   const rateSection = (
     <div className="flex w-full justify-between font-main-bold text-[14px]">
@@ -381,10 +392,12 @@ export const SwapDetailsPanel = ({
           <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
           <div className="text-text2 dark:text-text2d">{priceSwapInFeeLabel}</div>
         </div>
-        <div className="flex w-full justify-between pl-10px text-[12px]">
-          <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-          <div className="text-text2 dark:text-text2d">{slippageValue}</div>
-        </div>
+        {showDexSlipAndStreaming && (
+          <div className="flex w-full justify-between pl-10px text-[12px]">
+            <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'swap.slip.title' })}</div>
+            <div className="text-text2 dark:text-text2d">{slippageValue}</div>
+          </div>
+        )}
         <div className="flex w-full justify-between pl-10px text-[12px]">
           <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
           <div className="text-text2 dark:text-text2d">{priceSwapOutFeeLabel}</div>
