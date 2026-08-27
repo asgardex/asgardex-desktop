@@ -9,6 +9,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { DEFAULT_MIDGARD_MAYA_URLS } from '../../../../shared/mayaMidgard/const'
 import { DEFAULT_MIDGARD_URLS } from '../../../../shared/midgard/const'
+import { resolveMidgardUrl } from '../../../../shared/thorchain/const'
 import { logger } from '../../../helpers/logger'
 import { network$ } from '../../app/service'
 import { midgard$, midgardMaya$ } from '../../storage/common'
@@ -142,7 +143,8 @@ const midgardBaseUrl$ = (protocol: MidgardProtocol): Rx.Observable<string> =>
   Rx.combineLatest([protocol === 'thor' ? midgard$ : midgardMaya$, network$]).pipe(
     RxOp.map(([urls, network]) => {
       const defaults = protocol === 'thor' ? DEFAULT_MIDGARD_URLS : DEFAULT_MIDGARD_MAYA_URLS
-      return urls[network as Network] || defaults[network as Network] || defaults.mainnet
+      const configured = urls[network as Network] || defaults[network as Network] || defaults.mainnet
+      return protocol === 'thor' ? resolveMidgardUrl(configured, network as Network) : configured
     }),
     RxOp.distinctUntilChanged()
   )

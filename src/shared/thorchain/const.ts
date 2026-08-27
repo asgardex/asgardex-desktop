@@ -9,6 +9,9 @@ export const PUBLIC_LIQUIFY_THORNODE_RPC = 'https://gateway.liquify.com/chain/th
 /** Public Liquify THORNode REST / LCD base — no API key. */
 export const PUBLIC_LIQUIFY_THORNODE_API = 'https://gateway.liquify.com/chain/thorchain_api'
 
+/** Public Liquify THOR Midgard base — no API key. */
+export const PUBLIC_LIQUIFY_THORCHAIN_MIDGARD = 'https://gateway.liquify.com/chain/thorchain_midgard'
+
 /**
  * Optional private mainnet THORNode fallbacks (full base URLs from env / GH secrets).
  * Not Liquify; empty when unset.
@@ -18,12 +21,13 @@ export const ASGARDEX_THORNODE_RPC = envOrDefault(import.meta.env.VITE_ASGARDEX_
 
 /**
  * Liquify portal keys — Liquify gateway only (not private Asgardex fallbacks).
- * Same path form for both products; the key value selects API vs RPC:
+ * Same path form for API / RPC / Midgard; the key value selects the product:
  *   `https://gateway.liquify.com/api=<KEY>`
  * Never surface in Expert Mode / storage — only inject at request/client construction.
  */
 export const LIQUIFY_THORCHAIN_API_KEY = envOrDefault(import.meta.env.VITE_LIQUIFY_THORCHAIN_API_KEY, '')
 export const LIQUIFY_THORCHAIN_RPC_KEY = envOrDefault(import.meta.env.VITE_LIQUIFY_THORCHAIN_RPC_KEY, '')
+export const LIQUIFY_THORCHAIN_MIDGARD_KEY = envOrDefault(import.meta.env.VITE_LIQUIFY_THORCHAIN_MIDGARD_KEY, '')
 
 /** Build authenticated Liquify gateway URL from a portal key, or empty if unset. */
 export const liquifyAuthenticatedUrl = (key: string): string => (key ? `https://gateway.liquify.com/api=${key}` : '')
@@ -47,6 +51,13 @@ export const maskThornodeRpcUrl = (url: string): string =>
  */
 export const maskThornodeApiUrl = (url: string): string =>
   isLiquifyAuthenticatedUrl(url) ? PUBLIC_LIQUIFY_THORNODE_API : url
+
+/**
+ * URL safe for Expert Mode UI and persistent storage (Midgard field).
+ * Strips Liquify `/api=<KEY>` endpoints back to the public Midgard path.
+ */
+export const maskMidgardUrl = (url: string): string =>
+  isLiquifyAuthenticatedUrl(url) ? PUBLIC_LIQUIFY_THORCHAIN_MIDGARD : url
 
 /**
  * Resolve the THORNode REST/LCD base used for queries (inbound_addresses, etc.).
@@ -83,6 +94,26 @@ export const resolveThornodeRpcUrl = (configured: string, network: Network = Net
 
   const normalized = maskThornodeRpcUrl(configured)
   if (!normalized || normalized === PUBLIC_LIQUIFY_THORNODE_RPC) {
+    return authenticated
+  }
+
+  return normalized
+}
+
+/**
+ * Resolve the THOR Midgard base URL.
+ * Liquify portal Midgard key injection is **mainnet only**.
+ * On mainnet, when the key is set and the configured URL is empty or the public Liquify
+ * Midgard, use the authenticated portal URL. Custom Expert URLs are left alone.
+ */
+export const resolveMidgardUrl = (configured: string, network: Network = Network.Mainnet): string => {
+  if (network !== Network.Mainnet) return configured
+
+  const authenticated = liquifyAuthenticatedUrl(LIQUIFY_THORCHAIN_MIDGARD_KEY)
+  if (!authenticated) return configured
+
+  const normalized = maskMidgardUrl(configured)
+  if (!normalized || normalized === PUBLIC_LIQUIFY_THORCHAIN_MIDGARD) {
     return authenticated
   }
 

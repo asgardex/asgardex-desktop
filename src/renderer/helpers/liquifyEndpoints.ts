@@ -1,6 +1,11 @@
 import { Network } from '@xchainjs/xchain-client'
 
-import { THORNODE_API_BASE_URLS } from '../../shared/thorchain/const'
+import {
+  LIQUIFY_THORCHAIN_MIDGARD_KEY,
+  liquifyAuthenticatedUrl,
+  PUBLIC_LIQUIFY_THORCHAIN_MIDGARD,
+  THORNODE_API_BASE_URLS
+} from '../../shared/thorchain/const'
 
 // Prefer the Liquify gateway over the public THORChain / MAYAChain endpoints.
 //
@@ -15,8 +20,10 @@ import { THORNODE_API_BASE_URLS } from '../../shared/thorchain/const'
 // THORNode: Liquify → optional Asgardex-hosted node from VITE_ASGARDEX_THORNODE_API.
 export const LIQUIFY_THORNODE_URLS = THORNODE_API_BASE_URLS
 
+const authenticatedMidgard = liquifyAuthenticatedUrl(LIQUIFY_THORCHAIN_MIDGARD_KEY)
 const LIQUIFY_MIDGARD_URLS = [
-  'https://gateway.liquify.com/chain/thorchain_midgard',
+  ...(authenticatedMidgard ? [authenticatedMidgard] : []),
+  PUBLIC_LIQUIFY_THORCHAIN_MIDGARD,
   'https://midgard.thorchain.network'
 ]
 const LIQUIFY_MAYANODE_URLS = ['https://api-maya.liquify.com', 'https://mayanode.mayachain.info']

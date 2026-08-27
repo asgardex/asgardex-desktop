@@ -56,6 +56,7 @@ jobs:
           VITE_ASGARDEX_THORNODE_RPC: ${{ secrets.VITE_ASGARDEX_THORNODE_RPC }}
           VITE_LIQUIFY_THORCHAIN_API_KEY: ${{ secrets.VITE_LIQUIFY_THORCHAIN_API_KEY }}
           VITE_LIQUIFY_THORCHAIN_RPC_KEY: ${{ secrets.VITE_LIQUIFY_THORCHAIN_RPC_KEY }}
+          VITE_LIQUIFY_THORCHAIN_MIDGARD_KEY: ${{ secrets.VITE_LIQUIFY_THORCHAIN_MIDGARD_KEY }}
       - name: Upload artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

@@ -7,6 +7,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { ApiUrls } from '../../../../shared/api/types'
 import { DEFAULT_MIDGARD_URLS, FALLBACK_MIDGARD_URLS } from '../../../../shared/midgard/const'
+import { maskMidgardUrl, resolveMidgardUrl } from '../../../../shared/thorchain/const'
 import { eqApiUrls } from '../../../helpers/fp/eq'
 import { liveData } from '../../../helpers/rx/liveData'
 import { triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
@@ -53,10 +54,11 @@ const getMidgardUrl = (): ApiUrls =>
   )
 
 /**
- * Updates Midgard url and stores it persistently
+ * Updates Midgard url and stores it persistently.
+ * Liquify `/api=<KEY>` URLs are masked before storage (same as THORNode API/RPC).
  */
 const setMidgardUrl = (url: string, network: Network) => {
-  const midgardUrls = { ...getMidgardUrl(), [network]: url }
+  const midgardUrls = { ...getMidgardUrl(), [network]: maskMidgardUrl(url) }
   modifyStorage(O.some({ midgard: midgardUrls }))
 }
 
@@ -99,7 +101,8 @@ const healthInterval$ = Rx.timer(0 /* no delay for first value */, 5 * 60 * 1000
  */
 const midgardUrl$: MidgardUrlLD = Rx.combineLatest([network$, getMidgardUrl$, healthInterval$]).pipe(
   RxOp.switchMap(([network, midgardUrl]) => {
-    const primary = midgardUrl[network]
+    // Inject Liquify authenticated Midgard when the portal key is set (mainnet only).
+    const primary = resolveMidgardUrl(midgardUrl[network], network)
     const fallback = fallbackUrlForNetwork(network)
     if (!fallback || fallback === primary) return Rx.of(RD.success(primary))
     return probeMidgardHealth$(primary).pipe(RxOp.map((ok) => RD.success(ok ? primary : fallback)))
@@ -238,7 +241,9 @@ export const service: MidgardService = {
   reloadChartDataUI$,
   setSelectedPoolAsset,
   selectedPoolAsset$,
-  apiEndpoint$: midgardUrl$,
+  // Expert Mode must never display Liquify `/api=<KEY>` URLs — mask for UI only.
+  // Request traffic still uses the resolved (authenticated) midgardUrl$ below.
+  apiEndpoint$: midgardUrl$.pipe(liveData.map(maskMidgardUrl)),
   reloadApiEndpoint: reloadMidgardUrl,
   setMidgardUrl,
   checkMidgardUrl$,
