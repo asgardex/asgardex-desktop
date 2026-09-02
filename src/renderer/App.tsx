@@ -24,6 +24,7 @@ import { MayaMidgardProvider } from './contexts/MidgardMayaContext'
 import { OneClickProvider } from './contexts/OneClickContext'
 import { PriceLevelProvider } from './contexts/PriceLevelContext'
 import { SolProvider } from './contexts/SolContext'
+import { NearProvider } from './contexts/NearContext'
 import { SuiProvider } from './contexts/SuiContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ThorchainProvider } from './contexts/ThorchainContext'
@@ -62,35 +63,37 @@ export const App = (): JSX.Element => {
                                           <XrpProvider>
                                             <DashProvider>
                                               <SuiProvider>
-                                                <CosmosProvider>
-                                                  <MidgardProvider>
-                                                    <PriceLevelProvider>
-                                                      <ThorchainQueryProvider>
-                                                        <MayachainProvider>
-                                                          <MayachainQueryProvider>
-                                                            <MayaMidgardProvider>
-                                                              <UserNodesProvider>
-                                                                <UserBondProvidersProvider>
-                                                                  <ChainflipProvider>
-                                                                    <OneClickProvider>
-                                                                      <I18nProvider>
-                                                                        <Router>
-                                                                          <ThemeProvider>
-                                                                            <AppView />
-                                                                          </ThemeProvider>
-                                                                        </Router>
-                                                                      </I18nProvider>
-                                                                    </OneClickProvider>
-                                                                  </ChainflipProvider>
-                                                                </UserBondProvidersProvider>
-                                                              </UserNodesProvider>
-                                                            </MayaMidgardProvider>
-                                                          </MayachainQueryProvider>
-                                                        </MayachainProvider>
-                                                      </ThorchainQueryProvider>
-                                                    </PriceLevelProvider>
-                                                  </MidgardProvider>
-                                                </CosmosProvider>
+                                                <NearProvider>
+                                                  <CosmosProvider>
+                                                    <MidgardProvider>
+                                                      <PriceLevelProvider>
+                                                        <ThorchainQueryProvider>
+                                                          <MayachainProvider>
+                                                            <MayachainQueryProvider>
+                                                              <MayaMidgardProvider>
+                                                                <UserNodesProvider>
+                                                                  <UserBondProvidersProvider>
+                                                                    <ChainflipProvider>
+                                                                      <OneClickProvider>
+                                                                        <I18nProvider>
+                                                                          <Router>
+                                                                            <ThemeProvider>
+                                                                              <AppView />
+                                                                            </ThemeProvider>
+                                                                          </Router>
+                                                                        </I18nProvider>
+                                                                      </OneClickProvider>
+                                                                    </ChainflipProvider>
+                                                                  </UserBondProvidersProvider>
+                                                                </UserNodesProvider>
+                                                              </MayaMidgardProvider>
+                                                            </MayachainQueryProvider>
+                                                          </MayachainProvider>
+                                                        </ThorchainQueryProvider>
+                                                      </PriceLevelProvider>
+                                                    </MidgardProvider>
+                                                  </CosmosProvider>
+                                                </NearProvider>
                                               </SuiProvider>
                                             </DashProvider>
                                           </XrpProvider>

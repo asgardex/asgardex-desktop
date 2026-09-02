@@ -14,6 +14,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { SUIChain } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
@@ -56,7 +57,8 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [ADAChain]: 'all',
   [ZECChain]: 'all',
   [XRPChain]: 'all',
-  [SUIChain]: 'all'
+  [SUIChain]: 'all',
+  [NEARChain]: 'all'
 }
 
 export const INITIAL_LOAD_TXS_PROPS: LoadTxsParams = {

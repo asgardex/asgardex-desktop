@@ -102,6 +102,7 @@
     "@xchainjs/xchain-mayamidgard": "1.1.4",
     "@xchainjs/xchain-mayanode": "1.2.4",
     "@xchainjs/xchain-midgard": "1.1.4",
+    "@xchainjs/xchain-near": "0.2.0",
     "@xchainjs/xchain-radix": "2.0.18",
     "@xchainjs/xchain-ripple": "1.0.19",
     "@xchainjs/xchain-solana": "1.1.9",

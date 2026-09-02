@@ -14,6 +14,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { SUIChain } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
@@ -42,6 +43,7 @@ import { selectedPoolChain$ } from '../midgard/thorMidgard/common'
 import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
+import * as NEAR from '../near'
 import * as SUI from '../sui'
 import * as THOR from '../thorchain'
 import * as TRON from '../tron'
@@ -92,6 +94,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return TRON.client$
     case SUIChain:
       return SUI.client$
+    case NEARChain:
+      return NEAR.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
@@ -148,6 +152,8 @@ export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ 
       return TRON.client$
     case SUIChain:
       return SUI.client$
+    case NEARChain:
+      return NEAR.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }

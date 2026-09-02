@@ -14,6 +14,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { SUIChain } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
@@ -40,6 +41,7 @@ import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
+import * as NEAR from '../near'
 import * as SUI from '../sui'
 import * as THOR from '../thorchain'
 import * as TRON from '../tron'
@@ -93,6 +95,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return TRON.address$
     case SUIChain:
       return SUI.address$
+    case NEARChain:
+      return NEAR.address$
     default:
       return Rx.of(O.none)
   }

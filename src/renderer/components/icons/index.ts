@@ -8,6 +8,7 @@ import rujiIcon from '../../assets/png/asset-ruji.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
 import usdpIcon from '../../assets/png/asset-usdp.png'
 import uskIcon from '../../assets/png/asset-usk.png'
+import nearIcon from '../../assets/png/asset-near.png'
 import zecIcon from '../../assets/png/asset-zec.png'
 import adaIcon from '../../assets/svg/asset-ada.svg?url'
 import arbIcon from '../../assets/svg/asset-arb.svg?url'
@@ -71,5 +72,6 @@ export {
   xrpIcon,
   tronIcon,
   suiIcon,
+  nearIcon,
   zecIcon
 }

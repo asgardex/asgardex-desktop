@@ -46,6 +46,7 @@ import {
   isXrpAsset,
   isTrxAsset,
   isSuiAsset,
+  isNearAsset,
   iconUrlInTRONTRC20Whitelist
 } from '../../../../helpers/assetHelper'
 import {
@@ -85,6 +86,7 @@ import {
   rujiIcon,
   tronIcon,
   suiIcon,
+  nearIcon,
   zecIcon
 } from '../../../icons'
 import { sizes, borders, fontSizes } from './AssetIcon.styles'
@@ -215,6 +217,10 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     // SUI
     if (isSuiAsset(asset)) {
       return suiIcon
+    }
+    // NEAR
+    if (isNearAsset(asset)) {
+      return nearIcon
     }
     // Hack for USDP // 1inch doesn't supply
     if (asset.symbol === 'USDP-0X8E870D67F660D95D5BE530380D0EC0BD388289E1') {

@@ -14,6 +14,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
 import { AssetXRP, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
+import { NEARAsset, NEARChain } from '@xchainjs/xchain-near'
 import { SUIAsset, SUIChain } from '@xchainjs/xchain-sui'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetTRX, TRONChain } from '@xchainjs/xchain-tron'
@@ -44,7 +45,8 @@ const chainAssets: Record<Chain, Asset> = {
   TRON: AssetTRX,
   ZEC: AssetZEC,
   XRP: AssetXRP,
-  SUI: SUIAsset
+  SUI: SUIAsset,
+  NEAR: NEARAsset
 }
 
 export const getChainAsset = (chain: Chain): Asset => {
@@ -174,6 +176,8 @@ export const isTronChain = (chain: Chain): boolean => eqChain.equals(chain.toUpp
 
 export const isSuiChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), SUIChain)
 
+export const isNearChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), NEARChain)
+
 type ChainValues<T> = {
   [k in Chain]?: T[]
 }
@@ -229,6 +233,8 @@ export const getChain = (chain: string): Chain => {
       return TRONChain
     case 'SUI':
       return SUIChain
+    case 'NEAR':
+      return NEARChain
     default:
       throw Error('Unknown chain')
   }

@@ -18,6 +18,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { SUIChain } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
@@ -46,6 +47,7 @@ import {
   xrpIcon,
   tronIcon,
   suiIcon,
+  nearIcon,
   zecIcon
 } from '../../../icons'
 import { sizes, fontSizes } from './ChainIcon.styles'
@@ -100,6 +102,8 @@ const chainIconMap = (chain: string): string => {
       return xrdIcon
     case SUIChain:
       return suiIcon
+    case NEARChain:
+      return nearIcon
     default:
       return '' // return null if no chain matches
   }
