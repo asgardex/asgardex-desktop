@@ -76,7 +76,7 @@ const getSupportedProtocolsForAsset = (
   // Synth/trade/secured assets are protocol-specific and never route through 1Click.
   // Prefer the dynamic check (backed by 1Click's /v0/tokens list via the OneClick
   // service); the chain-level whitelist below is a fallback only and mirrors the
-  // aggregator's X_TO_ONECLICK map — incl. SUI and ADA, which only OneClick routes.
+  // aggregator's X_TO_ONECLICK map — incl. SUI, ADA, and NEAR, which only OneClick routes.
   if (asset.type !== AssetType.TRADE && !isSynthAsset(asset) && !isSecuredAsset(asset)) {
     if (oneClickAssetCheck) {
       if (oneClickAssetCheck(asset)) {
@@ -96,7 +96,8 @@ const getSupportedProtocolsForAsset = (
         'SOL',
         'XRP',
         'ADA',
-        'SUI'
+        'SUI',
+        'NEAR'
       ]
       if (oneClickSupportedChains.includes(asset.chain)) {
         supportedProtocols.add('OneClick')

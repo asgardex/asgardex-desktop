@@ -14,6 +14,7 @@ import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { PoolDetail as MayaPoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
+import { NEAR_DECIMALS } from '@xchainjs/xchain-near'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRP_DECIMAL } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
@@ -58,7 +59,8 @@ const CHAIN_DECIMAL_MAP = new Map([
   ['XRP', XRP_DECIMAL],
   ['ZEC', ZEC_DECIMAL],
   ['ADA', ADA_DECIMALS],
-  ['SUI', SUI_DECIMALS]
+  ['SUI', SUI_DECIMALS],
+  ['NEAR', NEAR_DECIMALS]
 ])
 
 /**

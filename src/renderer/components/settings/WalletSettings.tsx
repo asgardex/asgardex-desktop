@@ -25,6 +25,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
@@ -225,7 +226,8 @@ const initialMap = {
   [ZECChain]: 0,
   [XRPChain]: 0,
   [TRONChain]: 0,
-  [SUIChain]: 0
+  [SUIChain]: 0,
+  [NEARChain]: 0
 }
 
 export const WalletSettings = (props: Props): JSX.Element => {

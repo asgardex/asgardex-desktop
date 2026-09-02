@@ -12,6 +12,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
@@ -55,6 +56,8 @@ import * as MAYA from '../../mayachain'
 import { inboundAddressesShared$ as mayaInboundAddresses$ } from '../../mayachain'
 import { service as midgardMayaService } from '../../midgard/mayaMidgard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
+import * as NEAR from '../../near'
+import { ZERO_ADDRESS as NEAR_ZERO_ADDRESS } from '../../near/fees'
 import * as XRD from '../../radix'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
@@ -829,6 +832,8 @@ export const standaloneLedgerFees$ = (params: { chain: Chain; amount: BaseAmount
       return SOL.fees$({ amount, recipient })
     case TRONChain:
       return TRON.fees$()
+    case NEARChain:
+      return NEAR.fees$({ amount: baseAmount(1), recipient: NEAR_ZERO_ADDRESS })
     default:
       // Fallback to THOR for unknown chains
       return THOR.fees$()
@@ -863,6 +868,9 @@ export const reloadStandaloneLedgerFees = (chain: Chain): void => {
       break
     case TRONChain:
       TRON.reloadFees()
+      break
+    case NEARChain:
+      NEAR.reloadFees({ amount: baseAmount(1), recipient: NEAR_ZERO_ADDRESS })
       break
     default:
       // Fallback to THOR for unknown chains

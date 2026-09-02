@@ -12,6 +12,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
@@ -44,6 +45,7 @@ import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
+import * as NEAR from '../near'
 import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
@@ -157,6 +159,7 @@ export const createBalancesService = ({
         if (enabledChainsSet.has(TRONChain)) reloadFunctions.push(() => TRON.reloadBalances(walletType))
         if (enabledChainsSet.has(ZECChain)) reloadFunctions.push(() => ZEC.reloadBalances(walletType))
         if (enabledChainsSet.has(SUIChain)) reloadFunctions.push(() => SUI.reloadBalances())
+        if (enabledChainsSet.has(NEARChain)) reloadFunctions.push(() => NEAR.reloadBalances())
 
         // Process in batches to limit concurrency
         processBatchedReloads(reloadFunctions)
@@ -184,7 +187,8 @@ export const createBalancesService = ({
     [TRONChain]: TRON.reloadBalances,
     [ZECChain]: ZEC.reloadBalances,
     [XRPChain]: XRP.reloadBalances,
-    [SUIChain]: SUI.reloadBalances
+    [SUIChain]: SUI.reloadBalances,
+    [NEARChain]: NEAR.reloadBalances
   }
 
   const reloadBalancesByChain =
@@ -399,6 +403,13 @@ export const createBalancesService = ({
             resetReloadBalances: SUI.resetReloadBalances,
             balances$: SUI.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: SUI.reloadBalances$
+          }
+        case NEARChain:
+          return {
+            reloadBalances: NEAR.reloadBalances,
+            resetReloadBalances: NEAR.resetReloadBalances,
+            balances$: NEAR.balances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances$: NEAR.reloadBalances$
           }
         default:
           return {
@@ -626,6 +637,15 @@ export const createBalancesService = ({
   const suiChainBalance$: ChainBalance$ = createChainBalance$({
     chain: SUIChain,
     addressUI$: SUI.addressUI$,
+    walletBalanceType: 'all'
+  })
+
+  /**
+   * Transforms NEAR balances into `ChainBalances`
+   */
+  const nearChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: NEARChain,
+    addressUI$: NEAR.addressUI$,
     walletBalanceType: 'all'
   })
 
@@ -1411,7 +1431,8 @@ export const createBalancesService = ({
     BASE: [baseChainBalance$, baseLedgerChainBalance$],
     ZEC: [zecChainBalance$, zecLedgerChainBalance$],
     XRP: [xrpChainBalance$, xrpLedgerChainBalance$],
-    SUI: [suiChainBalance$, suiLedgerChainBalance$]
+    SUI: [suiChainBalance$, suiLedgerChainBalance$],
+    NEAR: [nearChainBalance$]
   }
 
   // Create ledger balance observables for filtering in standalone mode
@@ -1441,7 +1462,8 @@ export const createBalancesService = ({
     BASE: [baseLedgerChainBalance$],
     ZEC: [zecLedgerChainBalance$],
     XRP: [xrpLedgerChainBalance$],
-    SUI: [suiLedgerChainBalance$]
+    SUI: [suiLedgerChainBalance$],
+    NEAR: []
   }
 
   // Vultisig balance observables for standalone Vultisig mode

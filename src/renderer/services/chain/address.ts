@@ -11,6 +11,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
@@ -37,6 +38,7 @@ import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
+import * as NEAR from '../near'
 import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
@@ -93,6 +95,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return TRON.address$
     case SUIChain:
       return SUI.address$
+    case NEARChain:
+      return NEAR.address$
     default:
       return Rx.of(O.none)
   }

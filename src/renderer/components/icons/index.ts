@@ -4,6 +4,7 @@ import dogeIcon from '../../assets/png/asset-doge.png'
 import ltcIcon from '../../assets/png/asset-ltc.png'
 import mayaIconT from '../../assets/png/asset-maya-T.png'
 import mayaIcon from '../../assets/png/asset-maya.png'
+import nearIcon from '../../assets/png/asset-near.png'
 import rujiIcon from '../../assets/png/asset-ruji.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
 import usdpIcon from '../../assets/png/asset-usdp.png'
@@ -71,5 +72,6 @@ export {
   xrpIcon,
   tronIcon,
   suiIcon,
+  nearIcon,
   zecIcon
 }

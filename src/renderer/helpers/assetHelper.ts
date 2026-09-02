@@ -1,6 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { NEARAsset } from '@xchainjs/xchain-near'
 import { AssetXRP } from '@xchainjs/xchain-ripple'
 import { SUIAsset } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -221,6 +222,9 @@ export const isTrxAsset = (asset: AnyAsset): boolean =>
 
 export const isSuiAsset = (asset: AnyAsset): boolean =>
   asset.chain === SUIAsset.chain && asset.symbol.toUpperCase() === SUIAsset.symbol.toUpperCase()
+
+export const isNearAsset = (asset: AnyAsset): boolean =>
+  asset.chain === NEARAsset.chain && asset.symbol.toUpperCase() === NEARAsset.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a ATOM asset
