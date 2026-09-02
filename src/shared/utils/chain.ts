@@ -80,10 +80,8 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
   MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'XRD', 'ZEC', 'ADA'],
-  // For THOR, filter out chains that are maya specific
-  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter(
-    (chain) => !['DASH', 'MAYA', 'ARB', 'XRD', 'ZEC', 'ADA'].includes(chain)
-  )
+  // For THOR, filter out chains that are maya specific. ZEC is dual-routable (THOR + MAYA).
+  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'MAYA', 'ARB', 'XRD', 'ADA'].includes(chain))
 }
 
 // Function to retrieve chains for a specific DEX
