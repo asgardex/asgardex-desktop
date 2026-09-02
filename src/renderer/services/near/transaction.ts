@@ -78,9 +78,11 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       network$,
       RxOp.take(1),
       RxOp.switchMap((network) => {
-        if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
-        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params })
-        return common.sendTx(params)
+        // xchain-near rejects any truthy memo on native transfers
+        const nearParams = { ...params, memo: '' }
+        if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params: nearParams })
+        if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params: nearParams })
+        return common.sendTx(nearParams)
       })
     )
 
