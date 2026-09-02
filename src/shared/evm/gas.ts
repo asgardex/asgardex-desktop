@@ -45,3 +45,12 @@ export const eip1559FeesFromGasPrices = (
 ): Eip1559TransferFees => ({
   maxPriorityFeePerGas: gasPrices[feeOption]
 })
+
+/**
+ * EIP-1559 maxFeePerGas = 2 * baseFee + tip (ethers v5 / xchain-evm default).
+ * Use for Max-send feeCap reclamping so reserved gas matches what transfer() will attach.
+ */
+export const eip1559MaxFeePerGas = (tip: BaseAmount, baseFeePerGas: bigint): BaseAmount => {
+  const maxFee = baseFeePerGas * BigInt(2) + BigInt(tip.amount().toFixed(0))
+  return baseAmount(maxFee.toString(), tip.decimal)
+}

@@ -18,7 +18,7 @@ import {
 } from '../../../../shared/api/io'
 import { ApiUrls, LedgerError } from '../../../../shared/api/types'
 import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../../shared/const'
-import { applyGasMultiplier, eip1559FeesFromGasPrices } from '../../../../shared/evm/gas'
+import { applyGasMultiplier, eip1559FeesFromGasPrices, eip1559MaxFeePerGas } from '../../../../shared/evm/gas'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet, isVultisigWallet } from '../../../../shared/utils/guard'
 import { getEVMAssetAddress, isChainAsset, isEVMTokenAsset } from '../../../helpers/assetHelper'
@@ -491,20 +491,23 @@ export const createEvmTransactionService = (
   }
 
   /**
-   * Keystore EVM send.
+   * Keystore EVM send (wallet Send, Chainflip, OneClick deposits).
    *
    * Max in the UI is `balance − feeQuote`, but fee quotes can be stale or estimated with
    * dummy amount/recipient (`SendView`). Send used to re-call `estimateGasPrices()` and
    * let xchain re-estimate gasLimit — so the fee attached to the tx could exceed what Max
    * reserved → node "insufficient funds for gas * price + value" by dust.
    *
+   * Also: passing `gasPrice` into xchain `transfer()` upgrades type-1 → type-2 with
+   * `maxFee = maxPriority = gasPrice` and **no 2×baseFee headroom**, so txs can stall when
+   * base fee ticks up (same bug #1179 fixed for pool deposits). Prefer tip-only EIP-1559.
+   *
    * Fix for native sends:
-   * 1. Fresh gasPrice (tier + multiplier)
+   * 1. Fresh fee tier + multiplier → `maxPriorityFeePerGas` (tip)
    * 2. Estimate gasLimit for the current amount
-   * 3. feeCap = gasPrice × gasLimit; reclamp amount to balance − feeCap
-   * 4. Re-estimate gasLimit for the **final** amount and reclamp again if feeCap grew
-   *    (amount can affect eth_estimateGas; one re-pass is enough for simple transfers)
-   * 5. Pass pinned gasPrice + gasLimit into transfer so xchain does not re-quote
+   * 3. feeCap = (2×baseFee + tip) × gasLimit when EIP-1559; else gasPrice × gasLimit
+   * 4. Reclamp amount to balance − feeCap; re-estimate gasLimit; repeat (max 3 passes)
+   * 5. Pass tip (or legacy gasPrice) + pinned gasLimit into transfer
    *
    * Token sends leave amount alone (gas paid in native separately).
    */
@@ -522,10 +525,17 @@ export const createEvmTransactionService = (
         (async (): Promise<TxHash> => {
           const rawGasPrices = await client.estimateGasPrices()
           const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
-          const gasPrice = gasPrices[params.feeOption]
+          const { maxPriorityFeePerGas } = eip1559FeesFromGasPrices(gasPrices, params.feeOption)
+          const legacyGasPrice = gasPrices[params.feeOption]
           const assetInfo = client.getAssetInfo()
           const isNative = isChainAsset(params.asset)
           const fallbackGasLimit = isNative ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
+
+          // Prefer EIP-1559 tip + 2×baseFee (via xchain) when the chain exposes baseFee.
+          const latestBlock = await client.getProvider().getBlock('latest')
+          const baseFeePerGas = latestBlock?.baseFeePerGas ?? null
+          const useEip1559 = baseFeePerGas != null
+          const feeUnit = useEip1559 ? eip1559MaxFeePerGas(maxPriorityFeePerGas, baseFeePerGas) : legacyGasPrice
 
           let amount: BaseAmount = params.amount
 
@@ -542,6 +552,8 @@ export const createEvmTransactionService = (
               return fallbackGasLimit
             }
           }
+
+          const transferFees = useEip1559 ? { maxPriorityFeePerGas } : { gasPrice: legacyGasPrice }
 
           if (isNative) {
             const sender = await client.getAddressAsync(params.walletIndex)
@@ -561,7 +573,7 @@ export const createEvmTransactionService = (
             let gasLimit = await estimateGasLimitFor(amount, sender)
             for (let pass = 0; pass < 3; pass++) {
               const feeCap = getFee({
-                gasPrice,
+                gasPrice: feeUnit,
                 gasLimit,
                 decimals: assetInfo.decimal
               })
@@ -589,7 +601,7 @@ export const createEvmTransactionService = (
               amount,
               recipient: params.recipient,
               memo: params.memo,
-              gasPrice,
+              ...transferFees,
               gasLimit,
               walletIndex: params.walletIndex
             })
@@ -602,7 +614,7 @@ export const createEvmTransactionService = (
             amount,
             recipient: params.recipient,
             memo: params.memo,
-            gasPrice,
+            ...transferFees,
             gasLimit,
             walletIndex: params.walletIndex
           })
