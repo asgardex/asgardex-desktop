@@ -9,6 +9,7 @@ import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { NEARAsset, NEARChain } from '@xchainjs/xchain-near'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
@@ -57,8 +58,16 @@ const ONECLICK_TO_XCHAIN: Record<string, Chain> = {
   bch: BCHChain,
   xrp: XRPChain,
   cardano: ADAChain,
-  sui: SUIChain
+  sui: SUIChain,
+  near: NEARChain
 }
+
+/** 1Click lists native NEAR as wNEAR (wrap.near), not a contract-less native entry. */
+const isOneClickNativeNearToken = (token: OneClickToken): boolean =>
+  token.blockchain === 'near' &&
+  (token.contractAddress === 'wrap.near' ||
+    token.assetId === 'nep141:wrap.near' ||
+    token.symbol.toUpperCase() === 'WNEAR')
 
 /**
  * Chain-level OneClick support, used as a fallback while the token list hasn't
@@ -83,9 +92,12 @@ const tokensCache = new CachedValue<OneClickToken[]>(() => fetchTokens(), 24 * 6
 
 // Same symbol convention as the rest of the app (and Chainflip's cAssetToXAsset):
 // `TICKER-CONTRACT` for tokens, plain ticker for natives.
+// Native NEAR is special-cased to NEARAsset so wallet balances / swap UI match
+// aggregator ≥3.1.0 (which maps NEAR.NEAR ↔ wrap.near).
 const oneClickTokenToXAsset = (token: OneClickToken): Asset | TokenAsset | null => {
   const chain = ONECLICK_TO_XCHAIN[token.blockchain]
   if (!chain) return null
+  if (isOneClickNativeNearToken(token)) return NEARAsset
   return {
     chain,
     symbol: token.contractAddress ? `${token.symbol}-${token.contractAddress}` : token.symbol,
@@ -160,6 +172,10 @@ export const getOneClickUsdPrice = (asset: AnyAsset): number | undefined => {
   const contract = asset.symbol.includes('-') ? asset.symbol.split('-')[1] : undefined
   const token = tokensSnapshot.find((t) => {
     if (t.blockchain !== blockchain) return false
+    // Native NEAR ↔ wrap.near / wNEAR (same rule as aggregator findOneClickToken)
+    if (asset.chain === NEARChain && asset.type === AssetType.NATIVE) {
+      return isOneClickNativeNearToken(t)
+    }
     if (contract) return t.contractAddress ? t.contractAddress.toLowerCase() === contract.toLowerCase() : false
     return t.symbol.toUpperCase() === asset.symbol.toUpperCase() && !t.contractAddress
   })

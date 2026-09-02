@@ -154,7 +154,7 @@ const SuccessRouteView = ({
   )
 
   // OneClick (NEAR Intents) routable assets — extends the swap asset universe
-  // beyond THOR/MAYA pools and Chainflip (e.g. SUI, ADA which only 1Click routes).
+  // beyond THOR/MAYA pools and Chainflip (e.g. SUI, ADA, NEAR which only 1Click routes).
   // The service degrades to an empty success on API failure, so no extra guard.
   const { getAssetsData$: getOneClickAssetsData$ } = useOneClickContext()
   const [oneClickAssetsRD] = useObservableState(() => getOneClickAssetsData$(), RD.success([]))
