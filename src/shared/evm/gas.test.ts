@@ -2,7 +2,7 @@ import { FeeOption } from '@xchainjs/xchain-client'
 import { baseAmount } from '@xchainjs/xchain-util'
 import { describe, expect, it } from 'vitest'
 
-import { applyGasMultiplier, eip1559FeesFromGasPrices } from './gas'
+import { applyGasMultiplier, eip1559FeesFromGasPrices, eip1559MaxFeePerGas } from './gas'
 
 describe('shared/evm/gas', () => {
   const gasPrices = {
@@ -38,5 +38,14 @@ describe('shared/evm/gas', () => {
     expect(eip1559FeesFromGasPrices(gasPrices)).toEqual({
       maxPriorityFeePerGas: gasPrices.fast
     })
+  })
+
+  it('eip1559MaxFeePerGas is 2*baseFee + tip', () => {
+    const tip = baseAmount(1_500_000_000, 18)
+    const baseFee = BigInt(20_000_000_000)
+    const maxFee = eip1559MaxFeePerGas(tip, baseFee)
+    // 2 * 20 gwei + 1.5 gwei = 41.5 gwei
+    expect(maxFee.amount().toFixed(0)).toBe('41500000000')
+    expect(maxFee.decimal).toBe(18)
   })
 })
