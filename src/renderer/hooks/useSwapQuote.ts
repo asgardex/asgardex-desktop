@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
@@ -189,13 +190,20 @@ export const useSwapQuote = ({
           protocols: quotableProtocols
         })
 
+        // OneClick/Chainflip APIs require an integer base-unit string (no decimals /
+        // scientific notation). NEAR's 24dp makes BigNumber.toString() emit "1e+22";
+        // convertBaseAmountDecimal + integer clamp keep the payload clean.
+        const amountForQuote = convertBaseAmountDecimal(amount, sourceAssetDecimal)
         const swapParams = {
           fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
           destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
-          amount: new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), {
-            ...sourceAsset,
-            symbol: sourceAsset.symbol.toUpperCase()
-          }),
+          amount: new CryptoAmount(
+            baseAmount(amountForQuote.amount().integerValue(BigNumber.ROUND_DOWN).toFixed(0), amountForQuote.decimal),
+            {
+              ...sourceAsset,
+              symbol: sourceAsset.symbol.toUpperCase()
+            }
+          ),
           fromAddress: isSecuredAsset(sourceAsset) ? undefined : sourceWalletAddress,
           destinationAddress: quoteOnly ? undefined : destinationAddress,
           streamingInterval: streaming.interval,

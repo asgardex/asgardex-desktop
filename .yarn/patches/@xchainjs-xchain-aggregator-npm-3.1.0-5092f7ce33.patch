@@ -1,5 +1,5 @@
 diff --git a/lib/index.esm.js b/lib/index.esm.js
-index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..79912360fcbdde3ab053d58c57906e78f0a9593e 100644
+index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..a313856ac37ae48ba9dc02529203b22cf4c9721b 100644
 --- a/lib/index.esm.js
 +++ b/lib/index.esm.js
 @@ -281,7 +281,7 @@ class ChainflipProtocol {
@@ -7,7 +7,7 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..79912360fcbdde3ab053d58c57906e78
                  destChain: destAssetData.chain,
                  destAsset: destAssetData.asset,
 -                amount: params.amount.baseAmount.amount().toString(),
-+                amount: params.amount.baseAmount.amount().toFixed(0),
++                amount: params.amount.baseAmount.amount().integerValue(1).toFixed(0),
                  affiliateBrokers: this.affiliateBrokers,
              });
              let selectedQuote;
@@ -16,12 +16,12 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..79912360fcbdde3ab053d58c57906e78
                      originAsset: srcToken.assetId,
                      destinationAsset: destToken.assetId,
 -                    amount: params.amount.baseAmount.amount().toString(),
-+                    amount: params.amount.baseAmount.amount().toFixed(0),
++                    amount: params.amount.baseAmount.amount().integerValue(1).toFixed(0),
                      refundTo: params.fromAddress || '',
                      recipient: params.destinationAddress || '',
                      slippageTolerance: (_a = params.toleranceBps) !== null && _a !== void 0 ? _a : 100,
 diff --git a/lib/index.js b/lib/index.js
-index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..f453034735a345c7c3261da1f3201539345b2efa 100644
+index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be7bdb0031225df3c23866c4ea677babb663adff 100644
 --- a/lib/index.js
 +++ b/lib/index.js
 @@ -283,7 +283,7 @@ class ChainflipProtocol {
@@ -29,7 +29,7 @@ index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..f453034735a345c7c3261da1f3201539
                  destChain: destAssetData.chain,
                  destAsset: destAssetData.asset,
 -                amount: params.amount.baseAmount.amount().toString(),
-+                amount: params.amount.baseAmount.amount().toFixed(0),
++                amount: params.amount.baseAmount.amount().integerValue(1).toFixed(0),
                  affiliateBrokers: this.affiliateBrokers,
              });
              let selectedQuote;
@@ -38,7 +38,7 @@ index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..f453034735a345c7c3261da1f3201539
                      originAsset: srcToken.assetId,
                      destinationAsset: destToken.assetId,
 -                    amount: params.amount.baseAmount.amount().toString(),
-+                    amount: params.amount.baseAmount.amount().toFixed(0),
++                    amount: params.amount.baseAmount.amount().integerValue(1).toFixed(0),
                      refundTo: params.fromAddress || '',
                      recipient: params.destinationAddress || '',
                      slippageTolerance: (_a = params.toleranceBps) !== null && _a !== void 0 ? _a : 100,
