@@ -1,5 +1,5 @@
 diff --git a/lib/index.esm.js b/lib/index.esm.js
-index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..95b4cd092a807990c8b8e7974f51b7ff913a42c5 100644
+index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..a313856ac37ae48ba9dc02529203b22cf4c9721b 100644
 --- a/lib/index.esm.js
 +++ b/lib/index.esm.js
 @@ -281,7 +281,7 @@ class ChainflipProtocol {
@@ -11,59 +11,7 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..95b4cd092a807990c8b8e7974f51b7ff
                  affiliateBrokers: this.affiliateBrokers,
              });
              let selectedQuote;
-@@ -504,6 +504,36 @@ class MayachainProtocol {
- }
- 
- const BASE_URL = 'https://1click.chaindefuser.com';
-+
-+function toOneClickAmountString(amount) {
-+    if (typeof amount !== 'string') return amount;
-+    if (/^\d+$/.test(amount)) return amount;
-+    // Expand scientific notation / decimals to a pure integer digit string.
-+    const match = amount.trim().toLowerCase().match(/^([+-]?)(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/);
-+    if (!match) return amount;
-+    const sign = match[1] === '-' ? '-' : '';
-+    const intPart = match[2];
-+    const fracPart = match[3] || '';
-+    const exp = parseInt(match[4] || '0', 10);
-+    const digits = intPart + fracPart;
-+    const fracLen = fracPart.length;
-+    const newExp = exp - fracLen;
-+    let result;
-+    if (newExp >= 0) {
-+        result = digits + '0'.repeat(newExp);
-+    } else {
-+        const split = digits.length + newExp;
-+        if (split <= 0) {
-+            result = '0';
-+        } else {
-+            // truncate fractional base units
-+            result = digits.slice(0, split) || '0';
-+        }
-+    }
-+    result = result.replace(/^0+(?=\d)/, '');
-+    return sign === '-' ? '0' : result; // amounts must be non-negative integers
-+}
-+
- class OneClickApi {
-     constructor(apiKey) {
-         this.headers = { 'Content-Type': 'application/json' };
-@@ -521,10 +551,13 @@ class OneClickApi {
-     }
-     getQuote(params) {
-         return __awaiter(this, void 0, void 0, function* () {
-+            const body = Object.assign({}, params, {
-+                amount: toOneClickAmountString(params.amount),
-+            });
-             const resp = yield fetch(`${BASE_URL}/v0/quote`, {
-                 method: 'POST',
-                 headers: this.headers,
--                body: JSON.stringify(params),
-+                body: JSON.stringify(body),
-             });
-             if (!resp.ok)
-                 throw new Error(`1Click getQuote failed: ${resp.status}`);
-@@ -658,7 +691,7 @@ class OneClickProtocol {
+@@ -658,7 +658,7 @@ class OneClickProtocol {
                      refundType: 'ORIGIN_CHAIN',
                      originAsset: srcToken.assetId,
                      destinationAsset: destToken.assetId,
@@ -73,7 +21,7 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..95b4cd092a807990c8b8e7974f51b7ff
                      recipient: params.destinationAddress || '',
                      slippageTolerance: (_a = params.toleranceBps) !== null && _a !== void 0 ? _a : 100,
 diff --git a/lib/index.js b/lib/index.js
-index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..147d91a7da0da42d59b7edc8e6e2e434735d7d45 100644
+index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be7bdb0031225df3c23866c4ea677babb663adff 100644
 --- a/lib/index.js
 +++ b/lib/index.js
 @@ -283,7 +283,7 @@ class ChainflipProtocol {
@@ -85,59 +33,7 @@ index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..147d91a7da0da42d59b7edc8e6e2e434
                  affiliateBrokers: this.affiliateBrokers,
              });
              let selectedQuote;
-@@ -506,6 +506,36 @@ class MayachainProtocol {
- }
- 
- const BASE_URL = 'https://1click.chaindefuser.com';
-+
-+function toOneClickAmountString(amount) {
-+    if (typeof amount !== 'string') return amount;
-+    if (/^\d+$/.test(amount)) return amount;
-+    // Expand scientific notation / decimals to a pure integer digit string.
-+    const match = amount.trim().toLowerCase().match(/^([+-]?)(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/);
-+    if (!match) return amount;
-+    const sign = match[1] === '-' ? '-' : '';
-+    const intPart = match[2];
-+    const fracPart = match[3] || '';
-+    const exp = parseInt(match[4] || '0', 10);
-+    const digits = intPart + fracPart;
-+    const fracLen = fracPart.length;
-+    const newExp = exp - fracLen;
-+    let result;
-+    if (newExp >= 0) {
-+        result = digits + '0'.repeat(newExp);
-+    } else {
-+        const split = digits.length + newExp;
-+        if (split <= 0) {
-+            result = '0';
-+        } else {
-+            // truncate fractional base units
-+            result = digits.slice(0, split) || '0';
-+        }
-+    }
-+    result = result.replace(/^0+(?=\d)/, '');
-+    return sign === '-' ? '0' : result; // amounts must be non-negative integers
-+}
-+
- class OneClickApi {
-     constructor(apiKey) {
-         this.headers = { 'Content-Type': 'application/json' };
-@@ -523,10 +553,13 @@ class OneClickApi {
-     }
-     getQuote(params) {
-         return __awaiter(this, void 0, void 0, function* () {
-+            const body = Object.assign({}, params, {
-+                amount: toOneClickAmountString(params.amount),
-+            });
-             const resp = yield fetch(`${BASE_URL}/v0/quote`, {
-                 method: 'POST',
-                 headers: this.headers,
--                body: JSON.stringify(params),
-+                body: JSON.stringify(body),
-             });
-             if (!resp.ok)
-                 throw new Error(`1Click getQuote failed: ${resp.status}`);
-@@ -660,7 +693,7 @@ class OneClickProtocol {
+@@ -660,7 +660,7 @@ class OneClickProtocol {
                      refundType: 'ORIGIN_CHAIN',
                      originAsset: srcToken.assetId,
                      destinationAsset: destToken.assetId,
