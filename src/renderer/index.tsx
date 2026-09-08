@@ -4,9 +4,6 @@ import './index.css'
 import { createRoot } from 'react-dom/client'
 
 import { App } from './App'
-import { installOneClickReferralStamp } from './services/oneclick/referralStamp'
-
-installOneClickReferralStamp()
 
 // // Registers custom headers (9R endpoints only)
 // register9Rheader('')

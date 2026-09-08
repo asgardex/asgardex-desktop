@@ -46,6 +46,7 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..8094b1f6bac8842cfd1cbb7642c220cf
          return __awaiter(this, void 0, void 0, function* () {
 +            const body = Object.assign({}, params, {
 +                amount: toOneClickAmountString(params.amount),
++                referral: 'asgardex',
 +            });
              const resp = yield fetch(`${BASE_URL}/v0/quote`, {
                  method: 'POST',
@@ -126,6 +127,7 @@ index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be45d6415511119abc249165884384bf
          return __awaiter(this, void 0, void 0, function* () {
 +            const body = Object.assign({}, params, {
 +                amount: toOneClickAmountString(params.amount),
++                referral: 'asgardex',
 +            });
              const resp = yield fetch(`${BASE_URL}/v0/quote`, {
                  method: 'POST',
