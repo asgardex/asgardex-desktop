@@ -4,4 +4,10 @@ const transactionTrackingService = createOneClickTransactionTrackingService()
 
 export { transactionTrackingService }
 export * from './transactionTracking'
-export { getAssetsData$, getOneClickUsdPrice, isOneClickSupportedAsset, ONECLICK_FALLBACK_CHAINS } from './assets'
+export {
+  getAssetsData$,
+  getOneClickAssetIconUrl,
+  getOneClickUsdPrice,
+  isOneClickSupportedAsset,
+  ONECLICK_FALLBACK_CHAINS
+} from './assets'

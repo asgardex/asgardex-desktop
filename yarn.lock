@@ -6450,6 +6450,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-aggregator@patch:@xchainjs/xchain-aggregator@npm%3A3.1.0#~/.yarn/patches/@xchainjs-xchain-aggregator-npm-3.1.0-5092f7ce33.patch":
+  version: 3.1.0
+  resolution: "@xchainjs/xchain-aggregator@patch:@xchainjs/xchain-aggregator@npm%3A3.1.0#~/.yarn/patches/@xchainjs-xchain-aggregator-npm-3.1.0-5092f7ce33.patch::version=3.1.0&hash=0a8585"
+  dependencies:
+    "@chainflip/sdk": "npm:2.2.1"
+    "@xchainjs/xchain-client": "npm:2.0.17"
+    "@xchainjs/xchain-mayachain": "npm:4.2.1"
+    "@xchainjs/xchain-mayachain-amm": "npm:4.2.5"
+    "@xchainjs/xchain-mayachain-query": "npm:2.2.3"
+    "@xchainjs/xchain-mayamidgard-query": "npm:1.0.19"
+    "@xchainjs/xchain-midgard-query": "npm:2.0.21"
+    "@xchainjs/xchain-thorchain": "npm:3.1.1"
+    "@xchainjs/xchain-thorchain-amm": "npm:3.1.6"
+    "@xchainjs/xchain-thorchain-query": "npm:3.2.0"
+    "@xchainjs/xchain-util": "npm:2.0.7"
+    "@xchainjs/xchain-wallet": "npm:2.0.34"
+  checksum: 10/6d9f1a8b9a9689006c9caf8725992d70f6b139bec9e4cfdece83cc8bc32ee4d6a2a5ae51197f7bac24a71116d4bbf7bbdec3dd0dc3183d215bd8ed7901f42acc
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-arbitrum@npm:2.1.8":
   version: 2.1.8
   resolution: "@xchainjs/xchain-arbitrum@npm:2.1.8"
@@ -7624,7 +7644,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.4.1"
     "@vitest/ui": "npm:^4.1.9"
     "@vultisig/sdk": "npm:2.19.19"
-    "@xchainjs/xchain-aggregator": "npm:3.1.0"
+    "@xchainjs/xchain-aggregator": "patch:@xchainjs/xchain-aggregator@npm%3A3.1.0#~/.yarn/patches/@xchainjs-xchain-aggregator-npm-3.1.0-5092f7ce33.patch"
     "@xchainjs/xchain-arbitrum": "npm:2.1.8"
     "@xchainjs/xchain-avax": "npm:2.0.22"
     "@xchainjs/xchain-base": "npm:1.0.22"

@@ -56,11 +56,13 @@ import {
   isBscChain,
   isEthChain,
   isMayaChain,
+  isNearChain,
   isSolChain,
   isTronChain
 } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
+import { getOneClickAssetIconUrl } from '../../../../services/oneclick'
 import {
   arbIcon,
   atomIcon,
@@ -218,7 +220,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     if (isSuiAsset(asset)) {
       return suiIcon
     }
-    // NEAR
+    // NEAR native
     if (isNearAsset(asset)) {
       return nearIcon
     }
@@ -228,6 +230,13 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     }
 
     if (network !== Network.Testnet) {
+      // NEAR NEP-141 (and other 1Click-listed NEAR tokens): CoinGecko via OneClick list
+      if (isNearChain(asset.chain) && asset.type === AssetType.TOKEN) {
+        return FP.pipe(
+          getOneClickAssetIconUrl(asset),
+          O.getOrElse(() => '')
+        )
+      }
       // Since we've already checked ETH.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isEthTokenAsset`
       if (isEthChain(asset.chain)) {

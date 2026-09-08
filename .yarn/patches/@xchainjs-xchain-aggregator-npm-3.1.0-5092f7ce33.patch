@@ -1,0 +1,162 @@
+diff --git a/lib/index.esm.js b/lib/index.esm.js
+index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..8094b1f6bac8842cfd1cbb7642c220cf5c549445 100644
+--- a/lib/index.esm.js
++++ b/lib/index.esm.js
+@@ -281,7 +281,7 @@ class ChainflipProtocol {
+                 srcAsset: srcAssetData.asset,
+                 destChain: destAssetData.chain,
+                 destAsset: destAssetData.asset,
+-                amount: params.amount.baseAmount.amount().toString(),
++                amount: params.amount.baseAmount.amount().toFixed(0),
+                 affiliateBrokers: this.affiliateBrokers,
+             });
+             let selectedQuote;
+@@ -504,6 +504,28 @@ class MayachainProtocol {
+ }
+ 
+ const BASE_URL = 'https://1click.chaindefuser.com';
++
++function toOneClickAmountString(amount) {
++    if (typeof amount !== 'string') return amount;
++    if (/^\d+$/.test(amount)) return amount;
++    const match = amount.trim().toLowerCase().match(/^([+-]?)(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/);
++    if (!match) return amount;
++    const intPart = match[2];
++    const fracPart = match[3] || '';
++    const exp = parseInt(match[4] || '0', 10);
++    const digits = intPart + fracPart;
++    const newExp = exp - fracPart.length;
++    let result;
++    if (newExp >= 0) {
++        result = digits + '0'.repeat(newExp);
++    }
++    else {
++        const split = digits.length + newExp;
++        result = split <= 0 ? '0' : (digits.slice(0, split) || '0');
++    }
++    return result.replace(/^0+(?=\d)/, '');
++}
++
+ class OneClickApi {
+     constructor(apiKey) {
+         this.headers = { 'Content-Type': 'application/json' };
+@@ -521,13 +543,25 @@ class OneClickApi {
+     }
+     getQuote(params) {
+         return __awaiter(this, void 0, void 0, function* () {
++            const body = Object.assign({}, params, {
++                amount: toOneClickAmountString(params.amount),
++                referral: 'asgardex',
++            });
+             const resp = yield fetch(`${BASE_URL}/v0/quote`, {
+                 method: 'POST',
+                 headers: this.headers,
+-                body: JSON.stringify(params),
++                body: JSON.stringify(body),
+             });
+-            if (!resp.ok)
+-                throw new Error(`1Click getQuote failed: ${resp.status}`);
++            if (!resp.ok) {
++                let detail = `1Click getQuote failed: ${resp.status}`;
++                try {
++                    const errBody = yield resp.json();
++                    if (errBody && (errBody.message || errBody.error)) {
++                        detail = errBody.message || errBody.error;
++                    }
++                }
++                catch (_a) { }
++                throw new Error(detail);
++            }
+             return resp.json();
+         });
+     }
+@@ -658,7 +692,7 @@ class OneClickProtocol {
+                     refundType: 'ORIGIN_CHAIN',
+                     originAsset: srcToken.assetId,
+                     destinationAsset: destToken.assetId,
+-                    amount: params.amount.baseAmount.amount().toString(),
++                    amount: params.amount.baseAmount.amount().toFixed(0),
+                     refundTo: params.fromAddress || '',
+                     recipient: params.destinationAddress || '',
+                     slippageTolerance: (_a = params.toleranceBps) !== null && _a !== void 0 ? _a : 100,
+diff --git a/lib/index.js b/lib/index.js
+index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be45d6415511119abc249165884384bf5ee97c66 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -283,7 +283,7 @@ class ChainflipProtocol {
+                 srcAsset: srcAssetData.asset,
+                 destChain: destAssetData.chain,
+                 destAsset: destAssetData.asset,
+-                amount: params.amount.baseAmount.amount().toString(),
++                amount: params.amount.baseAmount.amount().toFixed(0),
+                 affiliateBrokers: this.affiliateBrokers,
+             });
+             let selectedQuote;
+@@ -506,6 +506,28 @@ class MayachainProtocol {
+ }
+ 
+ const BASE_URL = 'https://1click.chaindefuser.com';
++
++function toOneClickAmountString(amount) {
++    if (typeof amount !== 'string') return amount;
++    if (/^\d+$/.test(amount)) return amount;
++    const match = amount.trim().toLowerCase().match(/^([+-]?)(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/);
++    if (!match) return amount;
++    const intPart = match[2];
++    const fracPart = match[3] || '';
++    const exp = parseInt(match[4] || '0', 10);
++    const digits = intPart + fracPart;
++    const newExp = exp - fracPart.length;
++    let result;
++    if (newExp >= 0) {
++        result = digits + '0'.repeat(newExp);
++    }
++    else {
++        const split = digits.length + newExp;
++        result = split <= 0 ? '0' : (digits.slice(0, split) || '0');
++    }
++    return result.replace(/^0+(?=\d)/, '');
++}
++
+ class OneClickApi {
+     constructor(apiKey) {
+         this.headers = { 'Content-Type': 'application/json' };
+@@ -523,13 +545,25 @@ class OneClickApi {
+     }
+     getQuote(params) {
+         return __awaiter(this, void 0, void 0, function* () {
++            const body = Object.assign({}, params, {
++                amount: toOneClickAmountString(params.amount),
++                referral: 'asgardex',
++            });
+             const resp = yield fetch(`${BASE_URL}/v0/quote`, {
+                 method: 'POST',
+                 headers: this.headers,
+-                body: JSON.stringify(params),
++                body: JSON.stringify(body),
+             });
+-            if (!resp.ok)
+-                throw new Error(`1Click getQuote failed: ${resp.status}`);
++            if (!resp.ok) {
++                let detail = `1Click getQuote failed: ${resp.status}`;
++                try {
++                    const errBody = yield resp.json();
++                    if (errBody && (errBody.message || errBody.error)) {
++                        detail = errBody.message || errBody.error;
++                    }
++                }
++                catch (_a) { }
++                throw new Error(detail);
++            }
+             return resp.json();
+         });
+     }
+@@ -660,7 +694,7 @@ class OneClickProtocol {
+                     refundType: 'ORIGIN_CHAIN',
+                     originAsset: srcToken.assetId,
+                     destinationAsset: destToken.assetId,
+-                    amount: params.amount.baseAmount.amount().toString(),
++                    amount: params.amount.baseAmount.amount().toFixed(0),
+                     refundTo: params.fromAddress || '',
+                     recipient: params.destinationAddress || '',
+                     slippageTolerance: (_a = params.toleranceBps) !== null && _a !== void 0 ? _a : 100,
