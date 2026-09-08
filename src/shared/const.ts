@@ -1,5 +1,6 @@
 import { Network } from '@xchainjs/xchain-client'
 
+import pkg from '../../package.json'
 import { DEFAULT_USER_ASSETS } from '../renderer/const'
 import { PoolsStorageEncoded } from './api/io'
 import {
@@ -25,6 +26,8 @@ import { DEFAULT_ENABLED_CHAINS, EnabledChain } from './utils/chain'
 import { envOrDefault } from './utils/env'
 
 export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
+// Lowercase productName; same identity as main-process APP_NAME.
+export const ASGARDEX_NAME = pkg.productName.toLowerCase()
 
 /** Requested affiliate fee in basis points (30 = 0.30%). */
 export const ASGARDEX_AFFILIATE_FEE = 30
