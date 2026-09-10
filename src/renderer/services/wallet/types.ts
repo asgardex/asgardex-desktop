@@ -276,7 +276,11 @@ export type VaultManager = {
   importVault: (
     content: string,
     password?: string
-  ) => Promise<{ status: 'imported'; vault: SerializedVault } | { status: 'duplicate' }>
+  ) => Promise<
+    | { status: 'imported'; vault: SerializedVault }
+    | { status: 'duplicate' }
+    | { status: 'existing-locked'; vaultId?: string }
+  >
   importVaultReplace: (content: string, password?: string) => Promise<SerializedVault>
 
   // State management

@@ -26,7 +26,10 @@ export type VaultImportOptions = {
   conflictResolution?: 'replace'
 }
 
-export type ImportVaultResult = { ok: true; vault: SerializedVault } | { ok: false; code: 'DUPLICATE_VAULT' }
+export type ImportVaultResult =
+  | { ok: true; vault: SerializedVault }
+  | { ok: false; code: 'DUPLICATE_VAULT' }
+  | { ok: false; code: 'EXISTING_VAULT_PASSWORD_REQUIRED'; vaultId?: string }
 
 // ============================================
 // Request/Response Types

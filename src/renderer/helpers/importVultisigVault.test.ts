@@ -35,6 +35,19 @@ describe('helpers/importVultisigVault', () => {
     expect(importVault).toHaveBeenCalledWith('content', 'pw')
   })
 
+  it('probe returns existing-locked when IPC returns EXISTING_VAULT_PASSWORD_REQUIRED', async () => {
+    importVault.mockResolvedValue({
+      ok: false,
+      code: 'EXISTING_VAULT_PASSWORD_REQUIRED',
+      vaultId: 'existing-id'
+    })
+    await expect(probeVultisigVaultImport('content')).resolves.toEqual({
+      status: 'existing-locked',
+      vaultId: 'existing-id'
+    })
+    expect(importVault).toHaveBeenCalledWith('content', undefined)
+  })
+
   it('replace calls importVault with conflictResolution replace', async () => {
     importVault.mockResolvedValue({ ok: true, vault })
     await expect(replaceVultisigVaultImport('content', 'pw')).resolves.toEqual(vault)

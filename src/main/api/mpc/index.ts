@@ -23,7 +23,7 @@ import {
   SignBytesParams,
   VaultImportOptions
 } from '../../../shared/api/mpcTypes'
-import { disposeSDK, getSDK, initializeSDK, isSDKInitialized } from './sdk'
+import { disposeSDK, getSDK, initializeSDK, isSDKInitialized, takeLastPasswordRequiredVaultId } from './sdk'
 
 /**
  * Safely send IPC message — guards against destroyed renderer windows
@@ -364,6 +364,7 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(
     MpcIPCMessages.MPC_IMPORT_VAULT,
     async (_event, vultContent: string, password?: string, options?: VaultImportOptions) => {
+      takeLastPasswordRequiredVaultId()
       try {
         const sdk = getSDK()
         log.info(`[MPC IPC] Importing vault from .vult file`)
@@ -375,6 +376,12 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
         const code = (error as { code?: string }).code
         if (code === 'DUPLICATE_VAULT') {
           return { ok: false as const, code: 'DUPLICATE_VAULT' as const }
+        }
+        if (code === 'EXISTING_VAULT_PASSWORD_REQUIRED') {
+          const vaultId = takeLastPasswordRequiredVaultId()
+          return vaultId
+            ? { ok: false as const, code: 'EXISTING_VAULT_PASSWORD_REQUIRED' as const, vaultId }
+            : { ok: false as const, code: 'EXISTING_VAULT_PASSWORD_REQUIRED' as const }
         }
         log.error(`[MPC IPC] Failed to import vault:`, errorMsg(error))
         const wrapped = wrapSDKError(error)
