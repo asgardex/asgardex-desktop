@@ -555,6 +555,7 @@ type WalletMessageKey =
   | 'wallet.vultisig.import.success'
   | 'wallet.vultisig.import.error'
   | 'wallet.vultisig.import.error.invalidPassword'
+  | 'wallet.vultisig.import.error.duplicate'
   | 'wallet.vultisig.confirm.title'
   | 'wallet.vultisig.confirm.enterPassword'
   | 'wallet.vultisig.confirm.scanQr'

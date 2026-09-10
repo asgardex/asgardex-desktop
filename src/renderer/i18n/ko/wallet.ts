@@ -162,6 +162,7 @@ const wallet: WalletMessages = {
   'wallet.vultisig.import.success': 'Vault를 성공적으로 가져왔습니다',
   'wallet.vultisig.import.error': 'Vault 가져오기 실패',
   'wallet.vultisig.import.error.invalidPassword': '잘못된 비밀번호',
+  'wallet.vultisig.import.error.duplicate': '이 로컬 vault 공유가 이미 있습니다',
   'wallet.vultisig.confirm.title': '거래 확인',
   'wallet.vultisig.confirm.enterPassword': '계속하려면 vault 비밀번호를 입력하세요',
   'wallet.vultisig.confirm.scanQr': 'Vultisig 앱으로 스캔하여 승인하세요',

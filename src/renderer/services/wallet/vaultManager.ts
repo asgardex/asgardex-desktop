@@ -572,5 +572,3 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     isVaultLocked
   }
 }
-
-export { DUPLICATE_VAULT_MESSAGE } from '../../helpers/importVultisigVault'

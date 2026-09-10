@@ -18,7 +18,6 @@ import { useWalletContext } from '../../../contexts/WalletContext'
 import { createScopedLogger } from '../../../helpers/logger'
 import * as walletRoutes from '../../../routes/wallet'
 import { hasImportedKeystore } from '../../../services/wallet/util'
-import { DUPLICATE_VAULT_MESSAGE } from '../../../services/wallet/vaultManager'
 
 const logger = createScopedLogger('NoWalletView')
 
@@ -340,7 +339,7 @@ export const NoWalletView = () => {
       />
       <ConfirmationModal
         visible={showReplaceConfirm}
-        content={DUPLICATE_VAULT_MESSAGE}
+        content={intl.formatMessage({ id: 'wallet.vultisig.import.error.duplicate' })}
         onSuccess={handleReplaceConfirm}
         onClose={handleReplaceConfirmClose}
       />

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { useObservableState } from 'observable-hooks'
+import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { ConfirmationModal } from '../../components/modal/confirmation'
@@ -12,7 +13,6 @@ import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import * as walletRoutes from '../../routes/wallet'
 import { isVultisigMode, VultisigPhase } from '../../services/wallet/types'
-import { DUPLICATE_VAULT_MESSAGE } from '../../services/wallet/vaultManager'
 
 const logger = createScopedLogger('UnlockView')
 
@@ -22,6 +22,7 @@ export const UnlockView = (): JSX.Element => {
   const { appWalletService } = useWalletContext()
   const vaultManager = appWalletService.vaultManager
   const navigate = useNavigate()
+  const intl = useIntl()
 
   // Get app wallet state to check if we're in Vultisig mode
   const appWalletState = useObservableState(appWalletService.appWalletState$, undefined)
@@ -109,19 +110,15 @@ export const UnlockView = (): JSX.Element => {
     [appWalletService, vaultManager, navigate]
   )
 
-  const handleExistingLocked = useCallback(
-    (content: string, filePassword: string | undefined, vaultIdFromProbe?: string) => {
-      const vaultId = vaultIdFromProbe || vultisigState.activeVault?.id
-      if (!vaultId) {
-        logger.error('EXISTING_VAULT_PASSWORD_REQUIRED without vaultId')
-        return
-      }
-      setPendingExistingUnlock({ vaultId, content, filePassword })
-      setPasswordMode('existing')
-      setShowPasswordModal(true)
-    },
-    [vultisigState.activeVault?.id]
-  )
+  const handleExistingLocked = useCallback((content: string, filePassword: string | undefined, vaultId?: string) => {
+    if (!vaultId) {
+      logger.error('EXISTING_VAULT_PASSWORD_REQUIRED without vaultId')
+      return
+    }
+    setPendingExistingUnlock({ vaultId, content, filePassword })
+    setPasswordMode('existing')
+    setShowPasswordModal(true)
+  }, [])
 
   // Import Vultisig vault from .vult file
   const importVaultHandler = useCallback(async () => {
@@ -253,7 +250,7 @@ export const UnlockView = (): JSX.Element => {
       />
       <ConfirmationModal
         visible={showReplaceConfirm}
-        content={DUPLICATE_VAULT_MESSAGE}
+        content={intl.formatMessage({ id: 'wallet.vultisig.import.error.duplicate' })}
         onSuccess={handleReplaceConfirm}
         onClose={handleReplaceConfirmClose}
       />

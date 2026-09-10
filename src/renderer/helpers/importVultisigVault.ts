@@ -1,7 +1,5 @@
 import type { SerializedVault } from '../../shared/api/mpcTypes'
 
-export const DUPLICATE_VAULT_MESSAGE = 'This exact local vault share already exists'
-
 export type VultisigVaultImportProbe =
   | { status: 'imported'; vault: SerializedVault }
   | { status: 'duplicate' }

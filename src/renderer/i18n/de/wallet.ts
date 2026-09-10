@@ -166,6 +166,7 @@ const wallet: WalletMessages = {
   'wallet.vultisig.import.success': 'Vault erfolgreich importiert',
   'wallet.vultisig.import.error': 'Fehler beim Importieren des Vaults',
   'wallet.vultisig.import.error.invalidPassword': 'Ungültiges Passwort',
+  'wallet.vultisig.import.error.duplicate': 'Dieser lokale Vault-Share existiert bereits',
   'wallet.vultisig.confirm.title': 'Transaktion bestätigen',
   'wallet.vultisig.confirm.enterPassword': 'Vault-Passwort eingeben, um fortzufahren',
   'wallet.vultisig.confirm.scanQr': 'Mit Vultisig-App scannen, um zu genehmigen',
