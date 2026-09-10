@@ -10,6 +10,7 @@ type NonEmptyArray<T> = nonEmptyArray.NonEmptyArray<T>
 const { getMonoid } = array
 
 import { KeystoreWallet, KeystoreWallets } from '../../../shared/api/io'
+import { OpenVaultFileResult, SerializedVault } from '../../../shared/api/mpcTypes'
 import { KeystoreId, LastOpenedWallet, LedgerError } from '../../../shared/api/types'
 import { EnabledChain } from '../../../shared/utils/chain'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
@@ -271,6 +272,12 @@ export type VaultManager = {
   deleteVault: (vaultId: string) => Promise<void>
   renameVault: (vaultId: string, newName: string) => Promise<void>
   exportVault: (vaultId: string, password?: string) => Promise<void>
+  openVaultFile: () => Promise<OpenVaultFileResult>
+  importVault: (
+    content: string,
+    password?: string
+  ) => Promise<{ status: 'imported'; vault: SerializedVault } | { status: 'duplicate' }>
+  importVaultReplace: (content: string, password?: string) => Promise<SerializedVault>
 
   // State management
   resetToVaultSelection: () => void

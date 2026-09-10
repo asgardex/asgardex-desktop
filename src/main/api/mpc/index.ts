@@ -370,18 +370,15 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
 
         const vault = await sdk.importVault(vultContent, password, options)
         log.info(`[MPC IPC] Vault imported: ${vault.name} (${vault.id})`)
-        return serializeVault(vault)
+        return { ok: true as const, vault: serializeVault(vault) }
       } catch (error) {
+        const code = (error as { code?: string }).code
+        if (code === 'DUPLICATE_VAULT') {
+          return { ok: false as const, code: 'DUPLICATE_VAULT' as const }
+        }
         log.error(`[MPC IPC] Failed to import vault:`, errorMsg(error))
         const wrapped = wrapSDKError(error)
-        if (
-          typeof error === 'object' &&
-          error !== null &&
-          'code' in error &&
-          (error as { code: unknown }).code === 'DUPLICATE_VAULT'
-        ) {
-          wrapped.name = 'DUPLICATE_VAULT'
-        }
+        if (typeof code === 'string' && code) wrapped.name = code
         throw wrapped
       }
     }

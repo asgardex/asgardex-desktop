@@ -26,6 +26,8 @@ export type VaultImportOptions = {
   conflictResolution?: 'replace'
 }
 
+export type ImportVaultResult = { ok: true; vault: SerializedVault } | { ok: false; code: 'DUPLICATE_VAULT' }
+
 // ============================================
 // Request/Response Types
 // ============================================
@@ -248,7 +250,7 @@ export type ApiMpc = {
   getBalances: (vaultId: string) => Promise<GetBalancesResult>
 
   // Vault Import/Export
-  importVault: (vultContent: string, password?: string, options?: VaultImportOptions) => Promise<SerializedVault>
+  importVault: (vultContent: string, password?: string, options?: VaultImportOptions) => Promise<ImportVaultResult>
   exportVault: (vaultId: string, password?: string) => Promise<{ saved: boolean; filePath?: string }>
   openVaultFile: () => Promise<OpenVaultFileResult>
 

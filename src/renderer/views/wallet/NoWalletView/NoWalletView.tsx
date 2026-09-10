@@ -11,10 +11,12 @@ import AsgardexLogo from '../../../assets/svg/logo-asgardex.svg?react'
 import SproutIcon from '../../../assets/svg/sprout.svg?react'
 import { HeaderTheme } from '../../../components/header/theme'
 import { LocaleDropdown } from '../../../components/LayoutlessWrapper/LocaleDropdown'
+import { ConfirmationModal } from '../../../components/modal/confirmation'
 import { VaultPasswordModal } from '../../../components/modal/VaultPasswordModal'
 import { BackLinkButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { createScopedLogger } from '../../../helpers/logger'
+import { DUPLICATE_VAULT_MESSAGE } from '../../../services/wallet/vaultManager'
 import * as walletRoutes from '../../../routes/wallet'
 import { hasImportedKeystore } from '../../../services/wallet/util'
 
@@ -31,6 +33,11 @@ export const NoWalletView = () => {
   // Vultisig vault import state
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [pendingVaultFile, setPendingVaultFile] = useState<{ content: string; filename: string } | null>(null)
+  const [showReplaceConfirm, setShowReplaceConfirm] = useState(false)
+  const [pendingReplace, setPendingReplace] = useState<{
+    content: string
+    password?: string
+  } | null>(null)
 
   const createWalletHandler = useCallback(() => {
     navigate(walletRoutes.create.phrase.path())
@@ -62,7 +69,7 @@ export const NoWalletView = () => {
   // Import Vultisig vault from .vult file
   const importVaultHandler = useCallback(async () => {
     try {
-      const result = await window.apiMpc.openVaultFile()
+      const result = await vaultManager.openVaultFile()
       if (!result) return // User canceled
 
       if (result.isEncrypted) {
@@ -70,8 +77,13 @@ export const NoWalletView = () => {
         setPendingVaultFile({ content: result.content, filename: result.filename })
         setShowPasswordModal(true)
       } else {
-        // Import unencrypted vault directly
-        const vault = await window.apiMpc.importVault(result.content)
+        const imported = await vaultManager.importVault(result.content)
+        if (imported.status === 'duplicate') {
+          setPendingReplace({ content: result.content })
+          setShowReplaceConfirm(true)
+          return
+        }
+        const vault = imported.vault
         await appWalletService.switchToVultisigMode(true)
         await vaultManager.loadVaults()
         await vaultManager.selectVault(vault.id, false)
@@ -88,7 +100,14 @@ export const NoWalletView = () => {
       if (!pendingVaultFile) return
 
       try {
-        const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
+        const imported = await vaultManager.importVault(pendingVaultFile.content, password)
+        if (imported.status === 'duplicate') {
+          setPendingReplace({ content: pendingVaultFile.content, password })
+          setShowPasswordModal(false)
+          setShowReplaceConfirm(true)
+          return
+        }
+        const vault = imported.vault
         await appWalletService.switchToVultisigMode(true)
         await vaultManager.loadVaults()
         await vaultManager.selectVault(vault.id, false)
@@ -106,6 +125,29 @@ export const NoWalletView = () => {
   const handlePasswordModalClose = useCallback(() => {
     setShowPasswordModal(false)
     setPendingVaultFile(null)
+  }, [])
+
+  const handleReplaceConfirm = useCallback(async () => {
+    if (!pendingReplace) return
+
+    try {
+      const vault = await vaultManager.importVaultReplace(pendingReplace.content, pendingReplace.password)
+      await appWalletService.switchToVultisigMode(true)
+      await vaultManager.loadVaults()
+      await vaultManager.selectVault(vault.id, false)
+      setShowPasswordModal(false)
+      setPendingVaultFile(null)
+      setShowReplaceConfirm(false)
+      setPendingReplace(null)
+      navigate(walletRoutes.assets.path())
+    } catch (error) {
+      logger.error('Failed to import vault:', error)
+    }
+  }, [pendingReplace, navigate, vaultManager, appWalletService])
+
+  const handleReplaceConfirmClose = useCallback(() => {
+    setShowReplaceConfirm(false)
+    setPendingReplace(null)
   }, [])
 
   return (
@@ -242,6 +284,12 @@ export const NoWalletView = () => {
         subject={pendingVaultFile?.filename || ''}
         onSubmit={handlePasswordSubmit}
         onClose={handlePasswordModalClose}
+      />
+      <ConfirmationModal
+        visible={showReplaceConfirm}
+        content={DUPLICATE_VAULT_MESSAGE}
+        onSuccess={handleReplaceConfirm}
+        onClose={handleReplaceConfirmClose}
       />
     </div>
   )

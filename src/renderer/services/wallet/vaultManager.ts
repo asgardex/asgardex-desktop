@@ -19,6 +19,7 @@ import { timer } from 'rxjs'
 
 import { LastOpenedWallet } from '../../../shared/api/types'
 import { WalletType } from '../../../shared/wallet/types'
+import { probeVultisigVaultImport, replaceVultisigVaultImport } from '../../helpers/importVultisigVault'
 import { createScopedLogger } from '../../helpers/logger'
 import { observableState } from '../../helpers/stateHelper'
 
@@ -336,6 +337,26 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     }
   }
 
+  const openVaultFile = () => window.apiMpc.openVaultFile()
+
+  const importVault = async (content: string, password?: string) => {
+    try {
+      return await probeVultisigVaultImport(content, password)
+    } catch (error) {
+      logger.error('Failed to import vault:', error)
+      throw error
+    }
+  }
+
+  const importVaultReplace = async (content: string, password?: string) => {
+    try {
+      return await replaceVultisigVaultImport(content, password)
+    } catch (error) {
+      logger.error('Failed to replace imported vault:', error)
+      throw error
+    }
+  }
+
   /**
    * Reset to vault selection phase
    */
@@ -540,6 +561,9 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     deleteVault,
     renameVault,
     exportVault,
+    openVaultFile,
+    importVault,
+    importVaultReplace,
     resetToVaultSelection,
     setActiveVault,
     lockVault,
@@ -548,3 +572,5 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     isVaultLocked
   }
 }
+
+export { DUPLICATE_VAULT_MESSAGE } from '../../helpers/importVultisigVault'
