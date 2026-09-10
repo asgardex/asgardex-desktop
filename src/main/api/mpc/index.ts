@@ -20,7 +20,8 @@ import {
   MpcIPCMessages,
   SendTransactionParams,
   SerializedVault,
-  SignBytesParams
+  SignBytesParams,
+  VaultImportOptions
 } from '../../../shared/api/mpcTypes'
 import { disposeSDK, getSDK, initializeSDK, isSDKInitialized } from './sdk'
 
@@ -360,19 +361,31 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   // Vault Import/Export
   // ============================================
 
-  ipcMain.handle(MpcIPCMessages.MPC_IMPORT_VAULT, async (_event, vultContent: string, password?: string) => {
-    try {
-      const sdk = getSDK()
-      log.info(`[MPC IPC] Importing vault from .vult file`)
+  ipcMain.handle(
+    MpcIPCMessages.MPC_IMPORT_VAULT,
+    async (_event, vultContent: string, password?: string, options?: VaultImportOptions) => {
+      try {
+        const sdk = getSDK()
+        log.info(`[MPC IPC] Importing vault from .vult file`)
 
-      const vault = await sdk.importVault(vultContent, password)
-      log.info(`[MPC IPC] Vault imported: ${vault.name} (${vault.id})`)
-      return serializeVault(vault)
-    } catch (error) {
-      log.error(`[MPC IPC] Failed to import vault:`, errorMsg(error))
-      throw wrapSDKError(error)
+        const vault = await sdk.importVault(vultContent, password, options)
+        log.info(`[MPC IPC] Vault imported: ${vault.name} (${vault.id})`)
+        return serializeVault(vault)
+      } catch (error) {
+        log.error(`[MPC IPC] Failed to import vault:`, errorMsg(error))
+        const wrapped = wrapSDKError(error)
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'code' in error &&
+          (error as { code: unknown }).code === 'DUPLICATE_VAULT'
+        ) {
+          wrapped.name = 'DUPLICATE_VAULT'
+        }
+        throw wrapped
+      }
     }
-  })
+  )
 
   ipcMain.handle(MpcIPCMessages.MPC_EXPORT_VAULT, async (_event, vaultId: string, password?: string) => {
     try {

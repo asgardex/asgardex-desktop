@@ -117,7 +117,8 @@ const apiMpc: ApiMpc = {
   getBalances: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_GET_BALANCES, vaultId),
 
   // Vault Import/Export
-  importVault: (vultContent, password) => ipcRenderer.invoke(MpcIPCMessages.MPC_IMPORT_VAULT, vultContent, password),
+  importVault: (vultContent, password, options) =>
+    ipcRenderer.invoke(MpcIPCMessages.MPC_IMPORT_VAULT, vultContent, password, options),
   exportVault: (vaultId, password) => ipcRenderer.invoke(MpcIPCMessages.MPC_EXPORT_VAULT, vaultId, password),
   openVaultFile: () => ipcRenderer.invoke(MpcIPCMessages.MPC_OPEN_VAULT_FILE),
 

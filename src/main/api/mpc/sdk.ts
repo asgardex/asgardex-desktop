@@ -61,7 +61,8 @@ export async function initializeSDK(): Promise<Vultisig> {
     //
     // Flatpak: do not use default ~/.vultisig (host path is RO for migration only
     // and is not sandbox-writable). Pin storage under APP_DATA_DIR instead.
-    // SDK 2.19.19 does not honor VULTISIG_CONFIG_DIR — pass FileStorage basePath.
+    // SDK ≥3.0.0 honors VULTISIG_CONFIG_DIR for default storage; still pass
+    // FileStorage basePath so Flatpak does not depend on that env.
     let storage: unknown
     if (isFlatpak()) {
       if (!FileStorage) {
