@@ -21,6 +21,16 @@ export type SerializedVault = {
   isEncrypted: boolean
 }
 
+// IPC-facing subset of SDK VaultImportOptions. `replace-unvalidated` is not exposed.
+export type VaultImportOptions = {
+  conflictResolution?: 'replace'
+}
+
+export type ImportVaultResult =
+  | { ok: true; vault: SerializedVault }
+  | { ok: false; code: 'DUPLICATE_VAULT' }
+  | { ok: false; code: 'EXISTING_VAULT_PASSWORD_REQUIRED'; vaultId?: string }
+
 // ============================================
 // Request/Response Types
 // ============================================
@@ -243,7 +253,7 @@ export type ApiMpc = {
   getBalances: (vaultId: string) => Promise<GetBalancesResult>
 
   // Vault Import/Export
-  importVault: (vultContent: string, password?: string) => Promise<SerializedVault>
+  importVault: (vultContent: string, password?: string, options?: VaultImportOptions) => Promise<ImportVaultResult>
   exportVault: (vaultId: string, password?: string) => Promise<{ saved: boolean; filePath?: string }>
   openVaultFile: () => Promise<OpenVaultFileResult>
 

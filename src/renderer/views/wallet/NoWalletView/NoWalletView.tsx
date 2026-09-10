@@ -11,6 +11,7 @@ import AsgardexLogo from '../../../assets/svg/logo-asgardex.svg?react'
 import SproutIcon from '../../../assets/svg/sprout.svg?react'
 import { HeaderTheme } from '../../../components/header/theme'
 import { LocaleDropdown } from '../../../components/LayoutlessWrapper/LocaleDropdown'
+import { ConfirmationModal } from '../../../components/modal/confirmation'
 import { VaultPasswordModal } from '../../../components/modal/VaultPasswordModal'
 import { BackLinkButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -30,7 +31,18 @@ export const NoWalletView = () => {
 
   // Vultisig vault import state
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [passwordMode, setPasswordMode] = useState<'file' | 'existing'>('file')
   const [pendingVaultFile, setPendingVaultFile] = useState<{ content: string; filename: string } | null>(null)
+  const [pendingExistingUnlock, setPendingExistingUnlock] = useState<{
+    vaultId: string
+    content: string
+    filePassword?: string
+  } | null>(null)
+  const [showReplaceConfirm, setShowReplaceConfirm] = useState(false)
+  const [pendingReplace, setPendingReplace] = useState<{
+    content: string
+    password?: string
+  } | null>(null)
 
   const createWalletHandler = useCallback(() => {
     navigate(walletRoutes.create.phrase.path())
@@ -59,53 +71,135 @@ export const NoWalletView = () => {
     navigate(walletRoutes.vultisigSecureCreate.path())
   }, [navigate])
 
+  const applyImportedVault = useCallback(
+    async (vault: { id: string }) => {
+      await appWalletService.switchToVultisigMode(true)
+      await vaultManager.loadVaults()
+      await vaultManager.selectVault(vault.id, false)
+      setShowPasswordModal(false)
+      setPendingVaultFile(null)
+      setPendingExistingUnlock(null)
+      setPasswordMode('file')
+      setShowReplaceConfirm(false)
+      setPendingReplace(null)
+      navigate(walletRoutes.assets.path())
+    },
+    [appWalletService, vaultManager, navigate]
+  )
+
+  const handleExistingLocked = useCallback((content: string, filePassword: string | undefined, vaultId?: string) => {
+    if (!vaultId) {
+      logger.error('EXISTING_VAULT_PASSWORD_REQUIRED without vaultId')
+      return
+    }
+    setPendingExistingUnlock({ vaultId, content, filePassword })
+    setPasswordMode('existing')
+    setShowPasswordModal(true)
+  }, [])
+
   // Import Vultisig vault from .vult file
   const importVaultHandler = useCallback(async () => {
     try {
-      const result = await window.apiMpc.openVaultFile()
+      const result = await vaultManager.openVaultFile()
       if (!result) return // User canceled
 
       if (result.isEncrypted) {
-        // Show password modal for encrypted vaults
+        setPasswordMode('file')
         setPendingVaultFile({ content: result.content, filename: result.filename })
         setShowPasswordModal(true)
       } else {
-        // Import unencrypted vault directly
-        const vault = await window.apiMpc.importVault(result.content)
-        await appWalletService.switchToVultisigMode(true)
-        await vaultManager.loadVaults()
-        await vaultManager.selectVault(vault.id, false)
-        navigate(walletRoutes.assets.path())
+        const imported = await vaultManager.importVault(result.content)
+        if (imported.status === 'existing-locked') {
+          handleExistingLocked(result.content, undefined, imported.vaultId)
+          return
+        }
+        if (imported.status === 'duplicate') {
+          setPendingReplace({ content: result.content })
+          setShowReplaceConfirm(true)
+          return
+        }
+        await applyImportedVault(imported.vault)
       }
     } catch (error) {
       logger.error('Failed to import vault:', error)
     }
-  }, [navigate, vaultManager, appWalletService])
+  }, [vaultManager, handleExistingLocked, applyImportedVault])
 
-  // Handle password submission for encrypted vault
   const handlePasswordSubmit = useCallback(
     async (password: string) => {
-      if (!pendingVaultFile) return
-
       try {
-        const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
-        await appWalletService.switchToVultisigMode(true)
-        await vaultManager.loadVaults()
-        await vaultManager.selectVault(vault.id, false)
-        setShowPasswordModal(false)
-        setPendingVaultFile(null)
-        navigate(walletRoutes.assets.path())
+        if (passwordMode === 'existing') {
+          if (!pendingExistingUnlock) return
+          await window.apiMpc.unlockVault(pendingExistingUnlock.vaultId, password)
+          const imported = await vaultManager.importVault(
+            pendingExistingUnlock.content,
+            pendingExistingUnlock.filePassword
+          )
+          if (imported.status === 'existing-locked') {
+            throw new Error('Existing vault is still locked')
+          }
+          if (imported.status === 'duplicate') {
+            setPendingReplace({
+              content: pendingExistingUnlock.content,
+              password: pendingExistingUnlock.filePassword
+            })
+            setShowPasswordModal(false)
+            setShowReplaceConfirm(true)
+            return
+          }
+          await applyImportedVault(imported.vault)
+          return
+        }
+
+        if (!pendingVaultFile) return
+        const imported = await vaultManager.importVault(pendingVaultFile.content, password)
+        if (imported.status === 'existing-locked') {
+          handleExistingLocked(pendingVaultFile.content, password, imported.vaultId)
+          return
+        }
+        if (imported.status === 'duplicate') {
+          setPendingReplace({ content: pendingVaultFile.content, password })
+          setShowPasswordModal(false)
+          setShowReplaceConfirm(true)
+          return
+        }
+        await applyImportedVault(imported.vault)
       } catch (error) {
         logger.error('Failed to import vault with password:', error)
         throw error
       }
     },
-    [pendingVaultFile, navigate, vaultManager, appWalletService]
+    [passwordMode, pendingExistingUnlock, pendingVaultFile, vaultManager, handleExistingLocked, applyImportedVault]
   )
 
   const handlePasswordModalClose = useCallback(() => {
     setShowPasswordModal(false)
     setPendingVaultFile(null)
+    setPendingExistingUnlock(null)
+    setPasswordMode('file')
+  }, [])
+
+  const handleReplaceConfirm = useCallback(async () => {
+    if (!pendingReplace) return
+
+    try {
+      const vault = await vaultManager.importVaultReplace(pendingReplace.content, pendingReplace.password)
+      await appWalletService.switchToVultisigMode(true)
+      await vaultManager.loadVaults()
+      await vaultManager.selectVault(vault.id, false)
+      setShowPasswordModal(false)
+      setPendingVaultFile(null)
+      setShowReplaceConfirm(false)
+      setPendingReplace(null)
+      navigate(walletRoutes.assets.path())
+    } catch (error) {
+      logger.error('Failed to import vault:', error)
+    }
+  }, [pendingReplace, navigate, vaultManager, appWalletService])
+
+  const handleReplaceConfirmClose = useCallback(() => {
+    setShowReplaceConfirm(false)
+    setPendingReplace(null)
   }, [])
 
   return (
@@ -239,9 +333,15 @@ export const NoWalletView = () => {
 
       <VaultPasswordModal
         visible={showPasswordModal}
-        subject={pendingVaultFile?.filename || ''}
+        subject={passwordMode === 'existing' ? pendingExistingUnlock?.vaultId || '' : pendingVaultFile?.filename || ''}
         onSubmit={handlePasswordSubmit}
         onClose={handlePasswordModalClose}
+      />
+      <ConfirmationModal
+        visible={showReplaceConfirm}
+        content={intl.formatMessage({ id: 'wallet.vultisig.import.error.duplicate' })}
+        onSuccess={handleReplaceConfirm}
+        onClose={handleReplaceConfirmClose}
       />
     </div>
   )
