@@ -38,8 +38,6 @@ const swap: SwapMessages = {
     'Your swap is protected by this minimum value based on selected {tolerance}% slippage tolerance. In case the price changes unfavourable more than {tolerance}% your swap transaction will be reverted before confirmation.',
   'swap.min.result.protected': 'Protected swap result',
   'swap.address.evm.warning': 'Do NOT swap to Smart Contract addresses',
-  'swap.synth.warning':
-    'Synth minting has been discontinued. Synth redemption will remain available for the next 3 months — please redeem while you can.',
   'swap.mode.rapid': 'Rapid',
   'swap.mode.streaming': 'Streaming',
   'swap.mode.instant': 'Instant',
