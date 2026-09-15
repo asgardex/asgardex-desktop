@@ -16,6 +16,8 @@ import {
 
 const assetUSDT = assetFromStringEx('ETH.USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7')
 const assetUSDC = assetFromStringEx('ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+const assetSecuredUSDT = assetFromStringEx('ETH-USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7')
+const assetSynthUSDT = assetFromStringEx('ETH/USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7')
 const assetAvaxEth = { ...AssetETH, chain: AssetAVAX.chain, type: AssetType.TOKEN }
 const assetBscEth = { ...AssetETH, chain: AssetBSC.chain, type: AssetType.TOKEN }
 
@@ -61,6 +63,27 @@ describe('AssetMenu.helper', () => {
     it('matches via assetMatchesSearch substring', () => {
       expect(assetMatchesSearch(assetUSDT, 'usdt')).toBe(true)
       expect(assetMatchesSearch(AssetETH, 'usdt')).toBe(false)
+    })
+
+    it('keeps L1 and secured USDT on All + usdt, drops synths', () => {
+      const assets = [assetUSDT, assetSecuredUSDT, assetSynthUSDT, AssetETH]
+      const sorted = filterAndSortAssetsForMenu(assets, 'usdt', ExtendedAssetType.All)
+      expect(sorted).toContainEqual(assetUSDT)
+      expect(sorted).toContainEqual(assetSecuredUSDT)
+      expect(sorted).not.toContainEqual(assetSynthUSDT)
+      expect(sorted.every((a) => a.type !== AssetType.SYNTH)).toBe(true)
+    })
+
+    it('returns no USDT matches on Native + usdt (token, not native)', () => {
+      const assets = [assetUSDT, assetSecuredUSDT, assetSynthUSDT, AssetETH]
+      const sorted = filterAndSortAssetsForMenu(assets, 'usdt', ExtendedAssetType.Native)
+      expect(sorted).toEqual([])
+    })
+
+    it('keeps secured USDT on the Secured filter', () => {
+      const assets = [assetUSDT, assetSecuredUSDT, assetSynthUSDT]
+      const sorted = filterAndSortAssetsForMenu(assets, '', ExtendedAssetType.Secured)
+      expect(sorted).toEqual([assetSecuredUSDT])
     })
   })
 })

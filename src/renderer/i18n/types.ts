@@ -858,7 +858,6 @@ type SwapMessageKey =
   | 'swap.min.result.info'
   | 'swap.min.result.protected'
   | 'swap.address.evm.warning'
-  | 'swap.synth.warning'
   | 'swap.mode.rapid'
   | 'swap.mode.streaming'
   | 'swap.mode.instant'
