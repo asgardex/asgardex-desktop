@@ -314,3 +314,8 @@ export const ipcSaveBalancesJsonParamsIO = t.type({
   fileName: t.string,
   data: balanceExportDataIO
 })
+
+export const ipcSaveCsvParamsIO = t.type({
+  fileName: t.string,
+  content: t.string
+})

@@ -59,7 +59,9 @@ const EXTERNALS_WHITELIST = [
   'suiscan.xyz',
   'basescan.org',
   'x.com',
-  'livenet.xrpl.org'
+  'livenet.xrpl.org',
+  'runebond.com',
+  'www.runebond.com'
 ]
 
 export const openExternal = (target: string) => {

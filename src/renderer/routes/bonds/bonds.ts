@@ -8,3 +8,36 @@ export const base: Route<RedirectUrl | void> = {
     return redirectUrl ? `${this.template}?redirectUrl=${redirectUrl}` : this.template
   }
 }
+
+export type NodeDetailParams = { nodeAddress: string }
+
+export const node: Route<NodeDetailParams> = {
+  template: `${base.template}/node/:nodeAddress`,
+  path({ nodeAddress }) {
+    if (nodeAddress) {
+      return `${base.template}/node/${nodeAddress}`
+    }
+    return base.path()
+  }
+}
+
+export const rewards: Route<void> = {
+  template: `${base.template}/rewards`,
+  path() {
+    return this.template
+  }
+}
+
+/** tabs of the bonds overview, also used as `?tab=` query param */
+export enum BondsTab {
+  BondProvider = 'bondProvider',
+  NodeOperator = 'nodeOperator'
+}
+
+export const TAB_QUERY_PARAM = 'tab'
+
+export const isBondsTab = (value: unknown): value is BondsTab =>
+  value === BondsTab.BondProvider || value === BondsTab.NodeOperator
+
+export const basePathWithTab = (tab: BondsTab): string =>
+  tab === BondsTab.BondProvider ? base.path() : `${base.path()}?${TAB_QUERY_PARAM}=${tab}`

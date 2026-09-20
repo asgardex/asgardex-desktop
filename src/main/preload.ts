@@ -10,6 +10,7 @@ import type {
   AppUpdateRD,
   IPCExportKeystoreParams,
   IPCSaveBalancesJsonParams,
+  IPCSaveCsvParams,
   StoreFileData,
   StoreFileName
 } from '../shared/api/types'
@@ -44,7 +45,8 @@ contextBridge.exposeInMainWorld('apiKeystore', apiKeystore)
 // `apiExport` object
 //
 const apiExport: ApiExport = {
-  saveBalancesJson: (params: IPCSaveBalancesJsonParams) => ipcRenderer.invoke(IPCMessages.SAVE_BALANCES_JSON, params)
+  saveBalancesJson: (params: IPCSaveBalancesJsonParams) => ipcRenderer.invoke(IPCMessages.SAVE_BALANCES_JSON, params),
+  saveCsv: (params: IPCSaveCsvParams) => ipcRenderer.invoke(IPCMessages.SAVE_CSV, params)
 }
 contextBridge.exposeInMainWorld('apiExport', apiExport)
 
