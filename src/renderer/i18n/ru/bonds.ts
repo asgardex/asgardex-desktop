@@ -22,6 +22,7 @@ const bonds: BondsMessages = {
   // TODO: Need Russian translation by native speaker
   'bonds.tooltip.removeFromWatchlist': 'Remove this bond provider from the watch list',
   'bonds.tooltip.addToWatchlist': 'Add this bond provider to the watch list',
+  'bonds.mainnetOnly': 'Bonds доступны только в mainnet',
   'bonds.provider.tab.bondProvider': 'Бонд-провайдер',
   'bonds.provider.tab.nodeOperator': 'Оператор ноды',
   'bonds.provider.findNodeHint': 'Ищете ноду для бонда?',
@@ -32,6 +33,7 @@ const bonds: BondsMessages = {
   'bonds.provider.paidLastChurn': 'Выплачено за последний черн',
   'bonds.provider.history': 'История',
   'bonds.provider.node.paidLastChurn': 'выплачено {amount} RUNE за последний черн',
+  'bonds.provider.node.earning': 'приносит доход · выплата каждый churn',
   'bonds.provider.node.notEarning': 'не приносит доход · доступен анбонд',
   'bonds.provider.node.notEarningLocked': 'без дохода · анбонд пока недоступен',
   'bonds.provider.bondMore': 'Увеличить бонд',
@@ -97,9 +99,7 @@ const bonds: BondsMessages = {
   'bonds.provider.rewards.totalPaid': 'Всего выплачено',
   'bonds.provider.rewards.churnsPaid': 'выплат: {count} чернов',
   'bonds.provider.rewards.standby': 'не приносит доход · standby',
-  'bonds.provider.data.unavailable': 'История наград пока недоступна',
-  'bonds.provider.data.unavailable.desc':
-    'Эти данные появятся после подключения сервиса данных RUNEBond в одном из следующих обновлений.',
+  'bonds.provider.data.unavailable': 'История наград недоступна',
   'bonds.operator.detail.back': 'Ваши узлы',
   'bonds.operator.detail.fee': 'комиссия {fee}%',
   'bonds.operator.bondUnderManagement': 'Бонд под управлением',

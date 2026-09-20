@@ -33,26 +33,15 @@ const useLiveData = <T>(observable: Rx.Observable<RD.RemoteData<Error, T>>): RD.
   return state
 }
 
-export const useProviderRewards = (addresses: Address[]): ProviderRewardsRD => {
-  const key = addresses.join('|')
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const rewards$ = useMemo(() => providerRewards$(addresses), [key])
-  return useLiveData(rewards$)
-}
+const NO_HISTORY$ = Rx.of<NodeHistoryRD>(RD.initial)
 
-export const useNodeProviderRewards = (addresses: Address[]): NodeProviderRewardsRD => {
-  const key = addresses.join('|')
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const rewards$ = useMemo(() => nodeProviderRewards$(addresses), [key])
-  return useLiveData(rewards$)
-}
+export const useProviderRewards = (addresses: Address[]): ProviderRewardsRD =>
+  useLiveData(useMemo(() => providerRewards$(addresses), [addresses]))
 
-export const useNodeHistory = (nodeAddress: Address | undefined, addresses: Address[]): NodeHistoryRD => {
-  const key = `${nodeAddress ?? ''}|${addresses.join('|')}`
-  const history$ = useMemo(
-    () => (nodeAddress ? nodeHistory$(nodeAddress, addresses) : Rx.of<NodeHistoryRD>(RD.initial)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [key]
+export const useNodeProviderRewards = (addresses: Address[]): NodeProviderRewardsRD =>
+  useLiveData(useMemo(() => nodeProviderRewards$(addresses), [addresses]))
+
+export const useNodeHistory = (nodeAddress: Address | undefined, addresses: Address[]): NodeHistoryRD =>
+  useLiveData(
+    useMemo(() => (nodeAddress ? nodeHistory$(nodeAddress, addresses) : NO_HISTORY$), [addresses, nodeAddress])
   )
-  return useLiveData(history$)
-}

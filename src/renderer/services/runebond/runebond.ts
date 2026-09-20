@@ -25,8 +25,6 @@ import {
 
 export const RUNEBOND_URL = 'https://runebond.com'
 
-export const RUNEBOND_API_PENDING = 'RUNEBOND_API_PENDING'
-
 const INTEGRATORS_URL = envOrDefault(import.meta.env.VITE_RUNEBOND_INTEGRATORS_URL, '')
 const INTEGRATORS_API_KEY = envOrDefault(import.meta.env.VITE_RUNEBOND_INTEGRATORS_API_KEY, '')
 
@@ -40,9 +38,7 @@ const oClient: O.Option<RunebondIntegratorsApiClient> =
     ? O.some(createIntegratorsClient({ baseUrl: INTEGRATORS_URL, apiKey: INTEGRATORS_API_KEY }))
     : O.none
 
-const pendingError = () => Error(RUNEBOND_API_PENDING)
-
-export const isRunebondPendingError = (error: Error): boolean => error.message === RUNEBOND_API_PENDING
+const notConfiguredError = () => Error('RUNEBond data service is not configured')
 
 const { stream$: reloadRewards$, trigger: reloadRewards } = triggerStream()
 
@@ -86,7 +82,7 @@ const liveRequest = <T>(
   FP.pipe(
     oClient,
     O.fold(
-      () => Rx.of(RD.failure<Error, T>(pendingError())).pipe(RxOp.shareReplay(1)),
+      () => Rx.of(RD.failure<Error, T>(notConfiguredError())).pipe(RxOp.shareReplay(1)),
       (client) =>
         reloadRewards$.pipe(
           RxOp.switchMap(() =>

@@ -51,7 +51,7 @@ export const BondNodeCard = ({
         RD.toOption,
         O.flatten,
         O.fold(
-          () => null,
+          () => intl.formatMessage({ id: 'bonds.provider.node.earning' }),
           (amount) =>
             intl.formatMessage(
               { id: 'bonds.provider.node.paidLastChurn' },
@@ -102,7 +102,8 @@ export const BondNodeCard = ({
           {isPrivate ? hiddenString : formatRuneAmount(position.myBond)}
         </span>
       </div>
-      {subtitle && <span className="mt-2 font-main text-[14px] text-gray2 dark:text-gray2d">{subtitle}</span>}
+      <span className="mt-2 font-main text-[14px] text-gray2 dark:text-gray2d">{subtitle}</span>
+      <div className="flex-1" />
       <FlatButton
         className="mt-6 w-full"
         size="large"

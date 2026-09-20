@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import {
   ChurnBars,
-  RunebondPendingPanel,
+  RunebondUnavailablePanel,
   SegmentedTabs,
   formatChurnDate,
   formatRuneAmount
@@ -23,7 +23,7 @@ import { truncateAddress } from '../../../helpers/addressHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { useNodeProviderRewards, useProviderRewards } from '../../../hooks/useRunebondRewards'
 import * as bondsRoutes from '../../../routes/bonds'
-import { NodeProviderRewards, ProviderRewards, isRunebondPendingError } from '../../../services/runebond'
+import { NodeProviderRewards, ProviderRewards } from '../../../services/runebond'
 import { useApp } from '../../../store/app/hooks'
 import { useBondProviderData } from './useBondProviderData'
 
@@ -71,14 +71,7 @@ export const BondRewardsView = (): JSX.Element => {
     })
   }, [])
 
-  const renderPending = (error: Error) =>
-    isRunebondPendingError(error) ? (
-      <RunebondPendingPanel className="min-h-[280px]" />
-    ) : (
-      <div className="flex min-h-[280px] w-full items-center justify-center">
-        <span className="font-main text-[14px] text-error0 dark:text-error0d">{error.message}</span>
-      </div>
-    )
+  const renderUnavailable = () => <RunebondUnavailablePanel className="min-h-[280px]" />
 
   const renderAllNodes = (rewards: ProviderRewards) => {
     const avgPerChurn = rewards.churnCount > 0 ? rewards.totalPaid.div(rewards.churnCount) : rewards.totalPaid
@@ -277,7 +270,7 @@ export const BondRewardsView = (): JSX.Element => {
               RD.fold(
                 () => <Spin className="m-auto" />,
                 () => <Spin className="m-auto" />,
-                renderPending,
+                renderUnavailable,
                 renderAllNodes
               )
             )
@@ -286,7 +279,7 @@ export const BondRewardsView = (): JSX.Element => {
               RD.fold(
                 () => <Spin className="m-auto" />,
                 () => <Spin className="m-auto" />,
-                renderPending,
+                renderUnavailable,
                 renderPerNode
               )
             )}

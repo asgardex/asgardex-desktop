@@ -4,10 +4,10 @@ import * as RD from '@devexperts/remote-data-ts'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { NodeHistory, NodeHistoryRD, isRunebondPendingError } from '../../../services/runebond'
+import { NodeHistory, NodeHistoryRD } from '../../../services/runebond'
 import { InfoIcon } from '../../uielements/info'
 import { Spin } from '../../uielements/spin'
-import { RunebondPendingPanel } from './RunebondPendingPanel'
+import { RunebondUnavailablePanel } from './RunebondUnavailablePanel'
 
 type Props = {
   title: string
@@ -26,7 +26,7 @@ export const NodeHistoryCard = ({ title, extra, historyRD, hasData, children }: 
 
   return (
     <div className="flex flex-col rounded-lg border border-solid border-gray0 bg-bg0 p-6 dark:border-gray0d dark:bg-bg0d">
-      <div className="flex items-center justify-between">
+      <div className="flex min-h-[32px] items-center justify-between">
         <div className="flex items-center gap-2 font-main-semi-bold text-[12px] tracking-[2px] text-gray2 uppercase dark:text-gray2d">
           {title}
           <InfoIcon tooltip={intl.formatMessage({ id: 'bonds.provider.detail.churnInfo' })} />
@@ -46,14 +46,7 @@ export const NodeHistoryCard = ({ title, extra, historyRD, hasData, children }: 
               <Spin />
             </Centered>
           ),
-          (error) =>
-            isRunebondPendingError(error) ? (
-              <RunebondPendingPanel className="mt-4 min-h-[220px]" />
-            ) : (
-              <Centered>
-                <span className="font-main text-[14px] text-error0 dark:text-error0d">{error.message}</span>
-              </Centered>
-            ),
+          () => <RunebondUnavailablePanel className="mt-4 min-h-[220px] flex-1" />,
           (history) =>
             hasData(history) ? (
               children(history)
