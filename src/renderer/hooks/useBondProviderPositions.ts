@@ -1,21 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { array as A, function as FP, option as O } from 'fp-ts'
+import { useObservableEagerState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeInfo } from '../services/thorchain/types'
 import { BondProviderPosition, BondWalletInfo } from '../views/bonds/types'
-
-const currentValue = <T>(observable: Rx.Observable<T>, initial: T): T => {
-  let value = initial
-  const subscription = observable.subscribe((next) => {
-    value = next
-  })
-  subscription.unsubscribe()
-  return value
-}
 
 type UseBondProviderPositionsParams = {
   addressesFetched: boolean
@@ -76,14 +68,5 @@ export const useBondProviderPositions = ({
     )
   }, [addressesFetched, getNodeInfos$, walletByAddress])
 
-  const [positions, setPositions] = useState<RD.RemoteData<Error, BondProviderPosition[]>>(() =>
-    currentValue(positions$, RD.initial)
-  )
-
-  useEffect(() => {
-    const subscription = positions$.subscribe(setPositions)
-    return () => subscription.unsubscribe()
-  }, [positions$])
-
-  return positions
+  return useObservableEagerState(positions$)
 }

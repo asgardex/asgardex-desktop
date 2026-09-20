@@ -1,20 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { array as A, function as FP } from 'fp-ts'
+import { useObservableEagerState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeInfo } from '../services/thorchain/types'
-
-const currentValue = <T>(observable: Rx.Observable<T>, initial: T): T => {
-  let value = initial
-  const subscription = observable.subscribe((next) => {
-    value = next
-  })
-  subscription.unsubscribe()
-  return value
-}
 
 export type OperatorNodeInfo = NodeInfo & {
   isOperator: boolean
@@ -64,12 +56,5 @@ export const useOperatorNodes = ({
     [getNodeInfos$, userNodes$, walletAddressSet]
   )
 
-  const [nodes, setNodes] = useState<RD.RemoteData<Error, OperatorNodeInfo[]>>(() => currentValue(nodes$, RD.initial))
-
-  useEffect(() => {
-    const subscription = nodes$.subscribe(setNodes)
-    return () => subscription.unsubscribe()
-  }, [nodes$])
-
-  return nodes
+  return useObservableEagerState(nodes$)
 }
