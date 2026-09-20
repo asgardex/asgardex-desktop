@@ -16,6 +16,7 @@ import { useBondProviderPositions } from '../../../hooks/useBondProviderPosition
 import { useNetwork } from '../../../hooks/useNetwork'
 import { PricePool } from '../../../services/midgard/midgardTypes'
 import { reloadRewards } from '../../../services/runebond'
+import { userChains$ } from '../../../services/storage/userChains'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { WalletBalances } from '../../../services/wallet/types'
@@ -25,7 +26,7 @@ import { BondWalletInfo } from '../types'
 export const useBondProviderData = () => {
   const { network } = useNetwork()
   const { getNodeInfos$, reloadNodeInfos } = useThorchainContext()
-  const { balancesState$ } = useWalletContext()
+  const { balancesState$, chainBalances$ } = useWalletContext()
   const {
     service: {
       networkInfo$,
@@ -37,6 +38,9 @@ export const useBondProviderData = () => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
+
+  const chainBalances = useObservableState(chainBalances$, [])
+  const userChains = useObservableState(userChains$, [])
 
   const networkInfoRD = useObservableState(networkInfo$, RD.initial)
   const poolsRD = useObservableState(poolsState$, RD.initial)
@@ -84,7 +88,12 @@ export const useBondProviderData = () => {
 
   const addressesFetched = walletInfos.length > 0
 
-  const noThorAddress = !balancesLoading && !addressesFetched && (O.isSome(oBalances) || O.isSome(oBalanceErrors))
+  const thorDisabled = userChains.length > 0 && !userChains.includes(THORChain)
+  const thorBalances = chainBalances.filter(({ chain }) => chain === THORChain)
+  const thorBalancesSettled = thorBalances.length > 0 && thorBalances.every(({ balances }) => !RD.isPending(balances))
+  const allBalancesSettled = !balancesLoading && (O.isSome(oBalances) || O.isSome(oBalanceErrors))
+
+  const noThorAddress = thorDisabled || (!addressesFetched && (thorBalancesSettled || allBalancesSettled))
 
   const hasMultipleWalletTypes = useMemo(
     () => new Set(walletInfos.map(({ walletType }) => walletType)).size > 1,

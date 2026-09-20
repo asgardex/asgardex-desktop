@@ -348,7 +348,6 @@ export const BondNodeDetailView = (): JSX.Element => {
                   network={network}
                   position={position}
                   walletBalance={balanceByAddress(position.signer.address)}
-                  bondingApy={bondingApy}
                   nextChurn={nextChurn}
                   fee={feeRD}
                   interact$={interact$}

@@ -28,7 +28,7 @@ import { UnifiedTxModal, extractTxHash, getTxTimerValue, txHashRDToBoolean } fro
 import { BaseButton, FlatButton } from '../../uielements/button'
 import { InputBigNumber } from '../../uielements/input'
 import { Modal } from '../../uielements/modal'
-import { formatApy, formatDuration, formatRuneAmount } from './helpers'
+import { formatDuration, formatRuneAmount } from './helpers'
 
 export type BondActionType = 'bond' | 'unbond'
 
@@ -37,7 +37,6 @@ type Props = {
   network: Network
   position: BondProviderPosition
   walletBalance: BaseAmount
-  bondingApy: O.Option<number>
   nextChurn: O.Option<NextChurn>
   fee: FeeRD
   interact$: InteractStateHandler
@@ -53,7 +52,6 @@ export const BondActionModal = ({
   network,
   position,
   walletBalance,
-  bondingApy,
   nextChurn,
   fee: feeRD,
   interact$,
@@ -257,17 +255,7 @@ export const BondActionModal = ({
     ? intl.formatMessage({ id: 'bonds.provider.modal.signedLocally' }, { fee: feeLabel })
     : `${intl.formatMessage({ id: 'common.fee' })}: ${feeLabel}`
 
-  const subtitle = useMemo(() => {
-    const nodeLabel = truncateAddress(position.nodeAddress, THORChain, network)
-    return FP.pipe(
-      bondingApy,
-      O.filter(() => isBond),
-      O.fold(
-        () => nodeLabel,
-        (apy) => `${nodeLabel} · ${formatApy(apy)} APY`
-      )
-    )
-  }, [bondingApy, isBond, network, position.nodeAddress])
+  const subtitle = truncateAddress(position.nodeAddress, THORChain, network)
 
   return (
     <>

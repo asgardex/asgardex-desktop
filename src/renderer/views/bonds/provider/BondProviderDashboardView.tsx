@@ -52,7 +52,6 @@ export const BondProviderDashboardView = (): JSX.Element => {
     freeToBond,
     balanceByAddress,
     positionsRD,
-    bondingApy,
     noThorAddress,
     formatPrice,
     reload
@@ -226,7 +225,6 @@ export const BondProviderDashboardView = (): JSX.Element => {
           network={network}
           position={modal.position}
           walletBalance={balanceByAddress(modal.position.signer.address)}
-          bondingApy={bondingApy}
           nextChurn={nextChurn}
           fee={feeRD}
           interact$={interact$}
