@@ -1,11 +1,13 @@
 import { TrashIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { WalletType } from '../../../../shared/wallet/types'
+import { truncateAddress } from '../../../helpers/addressHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { OperatorNodeInfo } from '../../../hooks/useOperatorNodes'
 import { walletTypeToI18n } from '../../../services/wallet/util'
@@ -14,14 +16,13 @@ import { BaseButton } from '../../uielements/button'
 import { WalletTypeLabel } from '../../uielements/common'
 import { CopyLabel } from '../../uielements/label'
 import { Tooltip } from '../../uielements/tooltip'
-import { formatOperatorFee, formatRuneAmount, shortenAddress } from './helpers'
+import { formatOperatorFee, formatRuneAmount } from './helpers'
 import { NodeStatusTag } from './NodeStatusTag'
 
 type Props = {
   network: Network
   isPrivate: boolean
   node: OperatorNodeInfo
-  /** wallet type of the operator address, when the wallet operates this node */
   operatorWalletType?: WalletType
   onRemoveMonitored: (nodeAddress: Address) => void
   onOpenDetail: (nodeAddress: Address) => void
@@ -59,9 +60,8 @@ export const OperatorNodeCard = ({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-1">
           <span className="font-main text-[16px] text-text0 group-hover:text-turquoise dark:text-text0d">
-            {shortenAddress(node.address)}
+            {truncateAddress(node.address, THORChain, network)}
           </span>
-          {/* copy must not open the detail */}
           <div onClick={(event) => event.stopPropagation()}>
             <CopyLabel textToCopy={node.address} iconClassName="!h-4 !w-4" />
           </div>

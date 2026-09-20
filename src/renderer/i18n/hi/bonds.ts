@@ -52,6 +52,9 @@ const bonds: BondsMessages = {
   'bonds.provider.empty.noWhitelist':
     'अभी तक किसी नोड ने आपको व्हाइटलिस्ट नहीं किया है · आपके वॉलेट में {amount} RUNE निष्क्रिय',
   'bonds.provider.empty.findNode': 'RUNEBond पर नोड खोजें',
+  'bonds.provider.noThorAddress.title': 'इस वॉलेट में कोई THORChain पता नहीं है',
+  'bonds.provider.noThorAddress.desc':
+    'बॉन्ड के लिए RUNE पता चाहिए। वॉलेट सेटिंग्स में THORChain सक्षम करें या अपने Ledger में THORChain खाता जोड़ें, फिर रीफ़्रेश करें।',
   'bonds.provider.empty.howTitle': 'बॉन्डिंग कैसे काम करती है',
   'bonds.provider.empty.howIntro':
     'THORChain पर बॉन्डिंग अनुमति-आधारित है: आपका RUNE स्वीकार होने से पहले नोड ऑपरेटर को आपका पता व्हाइटलिस्ट करना होगा।',

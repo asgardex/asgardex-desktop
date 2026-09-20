@@ -19,11 +19,6 @@ import { LegacyBondsView } from './LegacyBondsView'
 import { BondProviderDashboardView } from './provider/BondProviderDashboardView'
 import { NodeOperatorView } from './provider/NodeOperatorView'
 
-/**
- * `/bonds` — THORChain shows the bond provider / node operator dashboards
- * (block 1 redesign), MAYAChain keeps the previous bonds table until its own
- * redesign lands.
- */
 export const BondsView = (): JSX.Element => {
   const intl = useIntl()
   const { protocol } = useApp()
@@ -37,8 +32,6 @@ export const BondsView = (): JSX.Element => {
   const nextChurn = useNextChurn()
 
   if (protocol === Protocol.MAYAChain) return <LegacyBondsView />
-
-  // Bonds are not implemented for Vultisig wallets — neither tab can do anything useful
   if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
     return <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
   }

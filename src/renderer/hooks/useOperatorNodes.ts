@@ -7,7 +7,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { NodeInfo } from '../services/thorchain/types'
 
-/** last value replayed synchronously by a shared stream, `initial` otherwise */
 const currentValue = <T>(observable: Rx.Observable<T>, initial: T): T => {
   let value = initial
   const subscription = observable.subscribe((next) => {
@@ -28,10 +27,6 @@ type UseOperatorNodesParams = {
   getNodeInfos$: Rx.Observable<RD.RemoteData<Error, NodeInfo[]>>
 }
 
-/**
- * Nodes shown on the node operator tab: the ones the connected wallet operates
- * plus the ones the user added to the monitoring list.
- */
 export const useOperatorNodes = ({
   walletAddresses,
   userNodes$,
@@ -69,7 +64,6 @@ export const useOperatorNodes = ({
     [getNodeInfos$, userNodes$, walletAddressSet]
   )
 
-  // start from the replayed value so a remount renders the data right away
   const [nodes, setNodes] = useState<RD.RemoteData<Error, OperatorNodeInfo[]>>(() => currentValue(nodes$, RD.initial))
 
   useEffect(() => {

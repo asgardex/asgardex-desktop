@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { baseToAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -13,12 +14,12 @@ import {
   RunebondPendingPanel,
   SegmentedTabs,
   formatChurnDate,
-  formatRuneAmount,
-  shortenAddress
+  formatRuneAmount
 } from '../../../components/Bonds/provider'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { BaseButton } from '../../../components/uielements/button'
 import { Spin } from '../../../components/uielements/spin'
+import { truncateAddress } from '../../../helpers/addressHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { useNodeProviderRewards, useProviderRewards } from '../../../hooks/useRunebondRewards'
 import * as bondsRoutes from '../../../routes/bonds'
@@ -26,7 +27,6 @@ import { NodeProviderRewards, ProviderRewards, isRunebondPendingError } from '..
 import { useApp } from '../../../store/app/hooks'
 import { useBondProviderData } from './useBondProviderData'
 
-/** the LAST PAYOUTS list shows the most recent churns only (CSV exports all) */
 const PAYOUT_LIST_CHURNS = 10
 
 enum RewardsTab {
@@ -170,7 +170,7 @@ export const BondRewardsView = (): JSX.Element => {
                     </span>
                   </div>
                   <span className="mt-1 font-main text-[13px] text-gray2 dark:text-gray2d">
-                    {shortenAddress(payout.nodeAddress)}
+                    {truncateAddress(payout.nodeAddress, THORChain, network)}
                   </span>
                 </div>
                 <span className="font-main text-[14px] text-gray2 dark:text-gray2d">
@@ -185,7 +185,6 @@ export const BondRewardsView = (): JSX.Element => {
   }
 
   const renderPerNode = (allNodes: NodeProviderRewards[]) => {
-    // nodes that never paid anything (e.g. whitelisted only) are left out
     const nodes = allNodes.filter(({ totalPaid }) => totalPaid.gt(0))
 
     return (
@@ -200,7 +199,7 @@ export const BondRewardsView = (): JSX.Element => {
             <div key={node.nodeAddress} className="flex items-center gap-6 py-5">
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="font-main text-[16px] text-text0 dark:text-text0d">
-                  {shortenAddress(node.nodeAddress)}
+                  {truncateAddress(node.nodeAddress, THORChain, network)}
                 </span>
                 <span className="mt-1 font-main text-[13px] text-gray2 dark:text-gray2d">
                   {node.churnsPaid > 0

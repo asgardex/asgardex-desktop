@@ -12,7 +12,6 @@ type ChartProps = {
   isPrivate?: boolean
   isLegendHidden?: boolean
   showLabelLine?: boolean
-  /** value formatter for tooltip/legend (USD by default) */
   formatValue?: (value: number) => string
 }
 

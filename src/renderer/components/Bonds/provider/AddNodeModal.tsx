@@ -12,9 +12,7 @@ import { Modal } from '../../uielements/modal'
 type FormValues = { nodeAddress: string }
 
 type Props = {
-  /** node addresses already monitored, used to reject duplicates */
   monitoredNodes: Address[]
-  /** every known node address, `none` while the node list has not loaded */
   oNodeAddresses: O.Option<Address[]>
   validateAddress: (address: Address) => boolean
   onAdd: (nodeAddress: Address) => void
@@ -41,6 +39,7 @@ export const AddNodeModal = ({ monitoredNodes, oNodeAddresses, validateAddress, 
   return (
     <Modal
       containerClassName="lg:pl-[240px]"
+      backdropClassName="bg-bg0/40 dark:bg-bg0d/40"
       visible
       title={intl.formatMessage({ id: 'bonds.operator.addNode.title' })}
       onCancel={onClose}
@@ -64,8 +63,6 @@ export const AddNodeModal = ({ monitoredNodes, oNodeAddresses, validateAddress, 
               validate: {
                 valid: (value) =>
                   validateAddress(value.trim()) || intl.formatMessage({ id: 'wallet.errors.address.invalid' }),
-                // checked before `unique`: an address that is not a node may already
-                // be in the monitoring list, and "already added" would hide the real reason
                 known: (value) =>
                   FP.pipe(
                     oNodeAddresses,

@@ -11,9 +11,6 @@ export type BondPayout = {
   date: Date
 }
 
-/**
- * Aggregated per-churn amount (payouts to the provider or node earnings)
- */
 export type ChurnPoint = {
   churnHeight: number
   date: Date
@@ -23,11 +20,8 @@ export type ChurnPoint = {
 export type ProviderRewards = {
   totalPaid: BaseAmount
   churnCount: number
-  /** paid at the most recent churn (across all nodes) */
   lastChurnTotal: O.Option<BaseAmount>
-  /** per-churn totals, oldest first (e.g. last 12 churns) */
   series: ChurnPoint[]
-  /** individual payouts, newest first */
   payouts: BondPayout[]
 }
 
@@ -36,14 +30,12 @@ export type NodeProviderRewards = {
   churnsPaid: number
   lastPayout: O.Option<BaseAmount>
   totalPaid: BaseAmount
-  /** per-churn payouts, oldest first */
   series: ChurnPoint[]
 }
 
 export type NodeApyPoint = {
   churnHeight: number
   date: Date
-  /** e.g. 0.214 = 21.4% */
   apy: number
 }
 
@@ -55,9 +47,7 @@ export type NodeBondPoint = {
 
 export type NodeHistory = {
   apySeries: NodeApyPoint[]
-  /** provider bond over churns, oldest first */
   bondSeries: NodeBondPoint[]
-  /** provider earnings per churn, oldest first */
   earningsSeries: ChurnPoint[]
 }
 

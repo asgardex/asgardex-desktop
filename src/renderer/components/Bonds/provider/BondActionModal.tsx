@@ -12,6 +12,7 @@ import { ONE_RUNE_BASE_AMOUNT } from '../../../../shared/mock/amount'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../../const'
+import { truncateAddress } from '../../../helpers/addressHelper'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getBondMemo, getUnbondMemo } from '../../../helpers/memoHelper'
 import { NextChurn } from '../../../hooks/useNextChurn'
@@ -27,7 +28,7 @@ import { UnifiedTxModal, extractTxHash, getTxTimerValue, txHashRDToBoolean } fro
 import { BaseButton, FlatButton } from '../../uielements/button'
 import { InputBigNumber } from '../../uielements/input'
 import { Modal } from '../../uielements/modal'
-import { formatDuration, formatRuneAmount, shortenAddress } from './helpers'
+import { formatApy, formatDuration, formatRuneAmount } from './helpers'
 
 export type BondActionType = 'bond' | 'unbond'
 
@@ -35,10 +36,8 @@ type Props = {
   type: BondActionType
   network: Network
   position: BondProviderPosition
-  /** spendable RUNE balance of the signing address */
   walletBalance: BaseAmount
-  /** already formatted APR, e.g. "21.4% APR" */
-  apr: O.Option<string>
+  bondingApy: O.Option<number>
   nextChurn: O.Option<NextChurn>
   fee: FeeRD
   interact$: InteractStateHandler
@@ -46,7 +45,6 @@ type Props = {
   openExplorerTxUrl: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   onClose: () => void
-  /** called when the tx modal is closed after a submit (success or failure) */
   onFinish: () => void
 }
 
@@ -55,7 +53,7 @@ export const BondActionModal = ({
   network,
   position,
   walletBalance,
-  apr,
+  bondingApy,
   nextChurn,
   fee: feeRD,
   interact$,
@@ -91,7 +89,6 @@ export const BondActionModal = ({
       O.fold(
         () => ZERO_BASE_AMOUNT,
         (fee) => {
-          // keep 1 RUNE + fee untouched (see InteractFormThor)
           const max = walletBalance.minus(fee.plus(ONE_RUNE_BASE_AMOUNT))
           return max.gt(ZERO_BASE_AMOUNT) ? max : ZERO_BASE_AMOUNT
         }
@@ -104,13 +101,38 @@ export const BondActionModal = ({
     [amountInput]
   )
 
+  const feeReady = O.isSome(oFee)
+
+  const feeError: string | null = useMemo(
+    () =>
+      FP.pipe(
+        oFee,
+        O.filter((fee) => walletBalance.lt(fee)),
+        O.fold(
+          () => null,
+          () =>
+            intl.formatMessage(
+              { id: 'wallet.errors.fee.notCovered' },
+              {
+                balance: formatAssetAmountCurrency({
+                  amount: baseToAsset(walletBalance),
+                  asset: AssetRuneNative,
+                  trimZeros: true
+                })
+              }
+            )
+        )
+      ),
+    [intl, oFee, walletBalance]
+  )
+
   const amountError: string | null = useMemo(() => {
-    if (amountInput.isZero()) return null
+    if (!feeReady || amountInput.isZero()) return null
     if (amountToSend.gt(maxAmount)) {
       return intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
     }
     return null
-  }, [amountInput, amountToSend, intl, maxAmount])
+  }, [amountInput, amountToSend, feeReady, intl, maxAmount])
 
   const memo = useMemo(
     () => (isBond ? getBondMemo(position.nodeAddress) : getUnbondMemo(position.nodeAddress, amountToSend)),
@@ -122,7 +144,7 @@ export const BondActionModal = ({
     [amountToSend, isBond, position.myBond]
   )
 
-  const submitDisabled = isLoading || amountInput.isZero() || amountError !== null
+  const submitDisabled = isLoading || !feeReady || feeError !== null || amountInput.isZero() || amountError !== null
 
   const submitTx = useCallback(() => {
     setSendTxStartTime(Date.now())
@@ -132,7 +154,6 @@ export const BondActionModal = ({
         walletAccount: signer.walletAccount,
         walletIndex: signer.walletIndex,
         hdMode: signer.hdMode,
-        // UNBOND deposits zero — the amount to unbond travels in the memo
         amount: isBond ? amountToSend : ZERO_BASE_AMOUNT,
         memo,
         asset: AssetRuneNative
@@ -237,21 +258,22 @@ export const BondActionModal = ({
     : `${intl.formatMessage({ id: 'common.fee' })}: ${feeLabel}`
 
   const subtitle = useMemo(() => {
-    const nodeLabel = shortenAddress(position.nodeAddress)
+    const nodeLabel = truncateAddress(position.nodeAddress, THORChain, network)
     return FP.pipe(
-      apr,
+      bondingApy,
       O.filter(() => isBond),
       O.fold(
         () => nodeLabel,
-        (aprLabel) => `${nodeLabel} · ${aprLabel}`
+        (apy) => `${nodeLabel} · ${formatApy(apy)} APY`
       )
     )
-  }, [apr, isBond, position.nodeAddress])
+  }, [bondingApy, isBond, network, position.nodeAddress])
 
   return (
     <>
       <Modal
         containerClassName="lg:pl-[240px]"
+        backdropClassName="bg-bg0/40 dark:bg-bg0d/40"
         visible
         title={intl.formatMessage({ id: isBond ? 'bonds.provider.bondMore' : 'bonds.provider.unbond' })}
         onCancel={isLoading ? undefined : onClose}
@@ -273,7 +295,7 @@ export const BondActionModal = ({
             />
             <BaseButton
               className="absolute top-1/2 right-3 -translate-y-1/2 !p-0 font-main-semi-bold text-[12px] text-turquoise uppercase"
-              disabled={isLoading}
+              disabled={isLoading || !feeReady}
               onClick={() => setAmountInput(baseToAsset(maxAmount).amount())}>
               {intl.formatMessage({ id: 'common.max' })}
             </BaseButton>
@@ -286,8 +308,8 @@ export const BondActionModal = ({
                 )
               : intl.formatMessage({ id: 'bonds.provider.modal.unbondMax' })}
           </span>
-          {amountError && (
-            <span className="mt-1 font-main text-[14px] text-error0 dark:text-error0d">{amountError}</span>
+          {(feeError ?? amountError) && (
+            <span className="mt-1 font-main text-[14px] text-error0 dark:text-error0d">{feeError ?? amountError}</span>
           )}
 
           <div className="mt-4 flex flex-col gap-2 rounded-lg bg-bg1 p-4 dark:bg-bg1d">

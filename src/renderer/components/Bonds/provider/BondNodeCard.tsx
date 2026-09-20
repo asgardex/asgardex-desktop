@@ -1,11 +1,13 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { truncateAddress } from '../../../helpers/addressHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { NodeStatusEnum } from '../../../services/thorchain/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
@@ -14,16 +16,14 @@ import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { FlatButton } from '../../uielements/button'
 import { WalletTypeLabel } from '../../uielements/common'
 import { CopyLabel } from '../../uielements/label'
-import { formatRuneAmount, isUnbondLocked, shortenAddress } from './helpers'
+import { formatRuneAmount, isUnbondLocked } from './helpers'
 import { NodeStatusTag } from './NodeStatusTag'
 
 type Props = {
   network: Network
   isPrivate: boolean
   position: BondProviderPosition
-  /** paid at last churn on this node — comes from the RUNEBond data service */
   lastPayout: RD.RemoteData<Error, O.Option<BaseAmount>>
-  /** set when any node holds more than one of the wallet's positions, to tell them apart */
   showWalletType?: boolean
   onBondMore: (position: BondProviderPosition) => void
   onUnbond: (position: BondProviderPosition) => void
@@ -83,9 +83,8 @@ export const BondNodeCard = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <span className="font-main text-[16px] text-text0 group-hover:text-turquoise dark:text-text0d">
-            {shortenAddress(position.nodeAddress)}
+            {truncateAddress(position.nodeAddress, THORChain, network)}
           </span>
-          {/* copy must not open the detail */}
           <div onClick={(event) => event.stopPropagation()}>
             <CopyLabel textToCopy={position.nodeAddress} iconClassName="!h-4 !w-4" />
           </div>

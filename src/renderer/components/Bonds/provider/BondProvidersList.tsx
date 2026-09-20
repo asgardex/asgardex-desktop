@@ -1,24 +1,22 @@
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { truncateAddress } from '../../../helpers/addressHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { Providers } from '../../../services/thorchain/types'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
-import { formatRuneAmount, shortenAddress } from './helpers'
+import { formatRuneAmount } from './helpers'
 
 type Props = {
   network: Network
   isPrivate: boolean
-  /** bond providers of the node, sorted by bond desc */
   providers: Providers[]
-  /** total bond of the node, the 100% of the list */
   nodeBond: BaseAmount
-  /** occupied slots, already formatted, e.g. "27 of 100 slots" */
   slotsLabel: string
-  /** the address belongs to the connected wallet */
   isMine: (address: string) => boolean
 }
 
@@ -58,7 +56,7 @@ export const BondProvidersList = ({ network, isPrivate, providers, nodeBond, slo
                   'min-w-0 truncate font-main text-[14px]',
                   mine ? 'font-main-semi-bold text-turquoise' : 'text-text0 dark:text-text0d'
                 )}>
-                {shortenAddress(provider.bondAddress, 7, 5)}
+                {truncateAddress(provider.bondAddress, THORChain, network)}
               </span>
               <div className="flex shrink-0 items-center gap-6">
                 <span className="flex items-center gap-2 font-main-semi-bold text-[14px] text-text0 dark:text-text0d">

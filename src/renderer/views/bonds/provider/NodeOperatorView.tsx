@@ -41,7 +41,6 @@ export const NodeOperatorView = (): JSX.Element => {
 
   const walletAddresses = useMemo(() => walletInfos.map(({ address }) => address), [walletInfos])
 
-  // the operator address tells which wallet will sign this node's operator actions
   const operatorWalletType = useCallback(
     (nodeOperatorAddress: Address) =>
       hasMultipleWalletTypes

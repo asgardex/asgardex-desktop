@@ -25,28 +25,13 @@ import {
 
 export const RUNEBOND_URL = 'https://runebond.com'
 
-/**
- * RUNEBond data service, backed by the RUNEBond Integrators API
- * (`@runebond/integrators-client`).
- *
- * THORNode does not expose per-provider reward history (rewards are credited to
- * the provider bond at churn without an on-chain tx), so historical data —
- * "paid last churn", payout history, node APY series — comes from RUNEBond.
- *
- * When `VITE_RUNEBOND_INTEGRATORS_URL` / `VITE_RUNEBOND_INTEGRATORS_API_KEY`
- * are not configured, every stream fails with `RUNEBOND_API_PENDING` and the
- * views degrade to their "not available" state.
- */
 export const RUNEBOND_API_PENDING = 'RUNEBOND_API_PENDING'
 
 const INTEGRATORS_URL = envOrDefault(import.meta.env.VITE_RUNEBOND_INTEGRATORS_URL, '')
 const INTEGRATORS_API_KEY = envOrDefault(import.meta.env.VITE_RUNEBOND_INTEGRATORS_API_KEY, '')
 
-/** number of churns shown in history charts (mirrors the designs) */
 const HISTORY_CHURNS = 12
-/** payout page size — enough to cover the whole history (churns are ~weekly) */
 const PAYOUTS_LIMIT = 500
-/** fallback churn interval (~3 days) when a series has a single point */
 const DEFAULT_CHURN_INTERVAL_MS = 3 * 24 * 3600 * 1000
 const YEAR_MS = 365 * 24 * 3600 * 1000
 
@@ -61,6 +46,9 @@ export const isRunebondPendingError = (error: Error): boolean => error.message =
 
 const { stream$: reloadRewards$, trigger: reloadRewards } = triggerStream()
 
+const CACHE_GRACE_MS = 60_000
+const REQUEST_TIMEOUT_MS = 20_000
+
 const toBase = (value: string) => baseAmount(bn(value), THORCHAIN_DECIMAL)
 
 const toChurnPoint = ({ blockNumber, timestamp, amount }: ApiChurnPoint): ChurnPoint => ({
@@ -69,7 +57,6 @@ const toChurnPoint = ({ blockNumber, timestamp, amount }: ApiChurnPoint): ChurnP
   amount: toBase(amount)
 })
 
-/** merges per-churn series of several addresses, summing amounts per churn (asc) */
 const mergeSeries = (series: ChurnPoint[][]): ChurnPoint[] => {
   const byBlock = new Map<number, ChurnPoint>()
   for (const points of series) {
@@ -81,13 +68,9 @@ const mergeSeries = (series: ChurnPoint[][]): ChurnPoint[] => {
   return [...byBlock.values()].sort((a, b) => a.churnHeight - b.churnHeight).slice(-HISTORY_CHURNS)
 }
 
-/**
- * Streams are cached per request key so a view that unmounts and mounts
- * again (e.g. switching bonds tabs) replays the last result instead of
- * flashing a pending state and hitting the API again. `reloadRewards`
- * still refreshes every cached stream.
- */
 const streamCache = new Map<string, Rx.Observable<unknown>>()
+
+const addressesKey = (addresses: Address[]): string => Array.from(new Set(addresses)).sort().join('|')
 
 const cached = <T>(key: string, create: () => Rx.Observable<T>): Rx.Observable<T> => {
   const existing = streamCache.get(key) as Rx.Observable<T> | undefined
@@ -108,6 +91,7 @@ const liveRequest = <T>(
         reloadRewards$.pipe(
           RxOp.switchMap(() =>
             Rx.from(request(client)).pipe(
+              RxOp.timeout(REQUEST_TIMEOUT_MS),
               RxOp.map((result) => RD.success<Error, T>(result)),
               RxOp.catchError((error) =>
                 Rx.of(RD.failure<Error, T>(error instanceof Error ? error : Error(String(error))))
@@ -115,20 +99,21 @@ const liveRequest = <T>(
               RxOp.startWith(RD.pending)
             )
           ),
-          RxOp.shareReplay(1)
+          RxOp.share({
+            connector: () => new Rx.ReplaySubject<RD.RemoteData<Error, T>>(1),
+            resetOnRefCountZero: () => Rx.timer(CACHE_GRACE_MS)
+          })
         )
     )
   )
 
 const providerRewards$ = (addresses: Address[]): ProviderRewardsLD =>
-  cached(`providerRewards|${addresses.join('|')}`, () =>
+  cached(`providerRewards|${addressesKey(addresses)}`, () =>
     liveRequest(async (client): Promise<ProviderRewards> => {
       const results = await Promise.all(
         addresses.map((address) => client.bondProviders.getProviderRewards(address, PAYOUTS_LIMIT, 0, HISTORY_CHURNS))
       )
 
-      // every payout reported by RUNEBond, including zero-amount ones (e.g. a
-      // churn the node was not rewarded for) — used for the churn count
       const allPayouts: BondPayout[] = FP.pipe(
         results,
         A.chain((result) =>
@@ -142,7 +127,6 @@ const providerRewards$ = (addresses: Address[]): ProviderRewardsLD =>
         (all) => all.sort((a, b) => b.churnHeight - a.churnHeight)
       )
 
-      // the payout list (and its CSV export) only shows what was actually paid
       const payouts = allPayouts.filter(({ amount }) => amount.gt(0))
 
       const series = mergeSeries(results.map((result) => result.series.map(toChurnPoint)))
@@ -152,9 +136,10 @@ const providerRewards$ = (addresses: Address[]): ProviderRewardsLD =>
         baseAmount(0, THORCHAIN_DECIMAL)
       )
 
-      // distinct churns across addresses, derived from the (practically
-      // complete) payout list
-      const churnCount = new Set(allPayouts.map(({ churnHeight }) => churnHeight)).size
+      const churnCount =
+        results.length === 1
+          ? results[0].totals.churnCount
+          : new Set(allPayouts.map(({ churnHeight }) => churnHeight)).size
 
       const lastChurnTotal = FP.pipe(
         A.last(series),
@@ -166,7 +151,7 @@ const providerRewards$ = (addresses: Address[]): ProviderRewardsLD =>
   )
 
 const nodeProviderRewards$ = (addresses: Address[]): NodeProviderRewardsLD =>
-  cached(`nodeProviderRewards|${addresses.join('|')}`, () =>
+  cached(`nodeProviderRewards|${addressesKey(addresses)}`, () =>
     liveRequest(async (client): Promise<NodeProviderRewards[]> => {
       const results = await Promise.all(
         addresses.map((address) => client.bondProviders.getProviderRewardsByNode(address, HISTORY_CHURNS))
@@ -210,7 +195,7 @@ const nodeProviderRewards$ = (addresses: Address[]): NodeProviderRewardsLD =>
   )
 
 const nodeHistory$ = (nodeAddress: Address, providerAddresses: Address[]): NodeHistoryLD =>
-  cached(`nodeHistory|${nodeAddress}|${providerAddresses.join('|')}`, () =>
+  cached(`nodeHistory|${nodeAddress}|${addressesKey(providerAddresses)}`, () =>
     liveRequest(async (client): Promise<NodeHistory> => {
       const [nodeHistory, bondHistories, rewardsByNode] = await Promise.all([
         client.nodes.getNodeHistory(nodeAddress, HISTORY_CHURNS),
@@ -224,8 +209,6 @@ const nodeHistory$ = (nodeAddress: Address, providerAddresses: Address[]): NodeH
         )
       ])
 
-      // node APY per churn: earnings of the churn annualized over the interval
-      // since the previous one
       const apySeries = nodeHistory.points.map((point, index) => {
         const date = new Date(point.timestamp)
         const previous = nodeHistory.points[index - 1]
@@ -233,16 +216,10 @@ const nodeHistory$ = (nodeAddress: Address, providerAddresses: Address[]): NodeH
           ? Math.max(date.getTime() - new Date(previous.timestamp).getTime(), 1)
           : DEFAULT_CHURN_INTERVAL_MS
         const bond = bn(point.totalBond)
-        const apy = bond.gt(0)
-          ? bn(point.earnings)
-              .div(bond)
-              .times(YEAR_MS / intervalMs)
-              .toNumber()
-          : 0
-        return { churnHeight: point.blockNumber, date, apy }
+        const apy = bond.gt(0) ? Math.pow(1 + bn(point.earnings).div(bond).toNumber(), YEAR_MS / intervalMs) - 1 : 0
+        return { churnHeight: point.blockNumber, date, apy: Number.isFinite(apy) ? apy : 0 }
       })
 
-      // provider bond over churns, summed across the wallet addresses
       const bondByBlock = new Map<number, { date: Date; bond: ReturnType<typeof toBase> }>()
       for (const history of bondHistories) {
         for (const point of history.points) {
@@ -259,7 +236,6 @@ const nodeHistory$ = (nodeAddress: Address, providerAddresses: Address[]): NodeH
         .sort((a, b) => a.churnHeight - b.churnHeight)
         .slice(-HISTORY_CHURNS)
 
-      // provider earnings per churn on this node, summed across addresses
       const earningsSeries = mergeSeries(
         rewardsByNode.map((result) =>
           FP.pipe(

@@ -61,7 +61,6 @@ export const ViewRoutes = (): JSX.Element => {
           </WalletAuth>
         }
       />
-      {/* bonds routes — nested so the protocol switch stays mounted */}
       <Route
         path={bondsRoutes.base.template}
         element={

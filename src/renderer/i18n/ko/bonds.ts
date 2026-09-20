@@ -52,6 +52,9 @@ const bonds: BondsMessages = {
   'bonds.provider.empty.noWhitelist':
     '아직 어떤 노드도 회원님을 화이트리스트에 추가하지 않았습니다 · 지갑에 {amount} RUNE 유휴 상태',
   'bonds.provider.empty.findNode': 'RUNEBond에서 노드 찾기',
+  'bonds.provider.noThorAddress.title': '이 지갑에 THORChain 주소가 없습니다',
+  'bonds.provider.noThorAddress.desc':
+    '본드에는 RUNE 주소가 필요합니다. 지갑 설정에서 THORChain을 활성화하거나 Ledger에 THORChain 계정을 추가한 뒤 새로고침하세요.',
   'bonds.provider.empty.howTitle': '본딩 작동 방식',
   'bonds.provider.empty.howIntro':
     'THORChain의 본딩은 허가제입니다: 노드 운영자가 주소를 화이트리스트에 추가해야 RUNE이 수락됩니다.',

@@ -51,6 +51,9 @@ const bonds: BondsMessages = {
   'bonds.provider.empty.noWhitelist':
     'ningún nodo te ha incluido aún en su lista blanca · {amount} RUNE sin usar en tu cartera',
   'bonds.provider.empty.findNode': 'Encuentra un nodo en RUNEBond',
+  'bonds.provider.noThorAddress.title': 'Este wallet no tiene dirección THORChain',
+  'bonds.provider.noThorAddress.desc':
+    'Los bonds necesitan una dirección RUNE. Activa THORChain en los ajustes del wallet o añade una cuenta THORChain en tu Ledger y actualiza.',
   'bonds.provider.empty.howTitle': 'Cómo funciona el bonding',
   'bonds.provider.empty.howIntro':
     'El bonding en THORChain requiere permiso: un operador de nodo debe incluir tu dirección en su lista blanca antes de aceptar tu RUNE.',

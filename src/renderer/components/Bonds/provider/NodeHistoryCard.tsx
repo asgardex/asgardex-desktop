@@ -11,10 +11,8 @@ import { RunebondPendingPanel } from './RunebondPendingPanel'
 
 type Props = {
   title: string
-  /** rendered at the right of the title, e.g. the APY figure or the chart legend */
   extra?: ReactNode
   historyRD: NodeHistoryRD
-  /** false when the loaded history has nothing to draw yet */
   hasData: (history: NodeHistory) => boolean
   children: (history: NodeHistory) => JSX.Element
 }
@@ -23,11 +21,6 @@ const Centered = ({ children }: { children: ReactNode }) => (
   <div className="mt-4 flex min-h-[220px] flex-1 items-center justify-center">{children}</div>
 )
 
-/**
- * Chart card of the node detail: renders the title row and resolves the four
- * states of the RUNEBond history (loading, service pending, error, no data yet)
- * so each chart only has to draw its series.
- */
 export const NodeHistoryCard = ({ title, extra, historyRD, hasData, children }: Props) => {
   const intl = useIntl()
 
@@ -65,8 +58,6 @@ export const NodeHistoryCard = ({ title, extra, historyRD, hasData, children }: 
             hasData(history) ? (
               children(history)
             ) : (
-              // A position bonded before its first churn has no series to draw:
-              // the card stays and explains itself instead of vanishing.
               <Centered>
                 <span className="max-w-[320px] text-center font-main text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'bonds.provider.detail.noHistoryYet' })}

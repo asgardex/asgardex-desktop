@@ -13,7 +13,6 @@ import {
   providerRewards$
 } from '../services/runebond'
 
-/** last value replayed synchronously by a cached stream, `initial` otherwise */
 const currentValue = <T>(observable: Rx.Observable<RD.RemoteData<Error, T>>): RD.RemoteData<Error, T> => {
   let value: RD.RemoteData<Error, T> = RD.initial
   const subscription = observable.subscribe((next) => {
@@ -24,7 +23,6 @@ const currentValue = <T>(observable: Rx.Observable<RD.RemoteData<Error, T>>): RD
 }
 
 const useLiveData = <T>(observable: Rx.Observable<RD.RemoteData<Error, T>>): RD.RemoteData<Error, T> => {
-  // start from the replayed value so a remount renders the data right away
   const [state, setState] = useState<RD.RemoteData<Error, T>>(() => currentValue(observable))
 
   useEffect(() => {
@@ -35,10 +33,6 @@ const useLiveData = <T>(observable: Rx.Observable<RD.RemoteData<Error, T>>): RD.
   return state
 }
 
-/**
- * Rewards paid to the connected wallet addresses (RUNEBond Integrators API).
- * Re-subscribes whenever the set of addresses changes.
- */
 export const useProviderRewards = (addresses: Address[]): ProviderRewardsRD => {
   const key = addresses.join('|')
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -21,6 +21,7 @@ export type HeadlessModalProps = {
   className?: string // wrapper
   panelClassName?: string // Dialog.Panel
   containerClassName?: string // centering container (the flex wrapper)
+  backdropClassName?: string // Dialog.Backdrop
   okButtonProps?: ButtonProps
   cancelButtonProps?: ButtonProps
   children?: React.ReactNode
@@ -39,6 +40,7 @@ export const Modal = ({
   className = '',
   panelClassName = '',
   containerClassName = '',
+  backdropClassName = 'bg-bg0/10 dark:bg-bg0d/10',
   okButtonProps,
   cancelButtonProps,
   children
@@ -47,7 +49,7 @@ export const Modal = ({
     <Transition appear show={visible} as={Fragment}>
       <Dialog as="div" className={clsx('relative z-50', className)} onClose={onCancel ?? (() => {})}>
         {/* Backdrop */}
-        <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
+        <DialogBackdrop className={clsx('fixed inset-0', backdropClassName)} />
 
         {/* Modal container */}
         <div className="fixed inset-0 overflow-y-auto">

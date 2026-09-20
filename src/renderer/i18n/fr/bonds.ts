@@ -51,6 +51,9 @@ const bonds: BondsMessages = {
   'bonds.provider.empty.noWhitelist':
     'aucun nœud ne vous a encore ajouté à sa liste blanche · {amount} RUNE inutilisés dans votre portefeuille',
   'bonds.provider.empty.findNode': 'Trouver un nœud sur RUNEBond',
+  'bonds.provider.noThorAddress.title': 'Aucune adresse THORChain dans ce portefeuille',
+  'bonds.provider.noThorAddress.desc':
+    'Les bonds nécessitent une adresse RUNE. Activez THORChain dans les paramètres du portefeuille ou ajoutez un compte THORChain à votre Ledger, puis actualisez.',
   'bonds.provider.empty.howTitle': 'Comment fonctionne le bonding',
   'bonds.provider.empty.howIntro':
     'Le bonding sur THORChain est soumis à autorisation : un opérateur de nœud doit ajouter votre adresse à sa liste blanche avant que votre RUNE soit accepté.',

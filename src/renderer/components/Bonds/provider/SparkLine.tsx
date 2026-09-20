@@ -3,17 +3,10 @@ import { useCallback, useState } from 'react'
 import clsx from 'clsx'
 
 type Props = {
-  /** oldest first */
   values: number[]
-  /**
-   * tooltip per point (same order as `values`); enables hover handling when
-   * `activeIndex` is not controlled from outside
-   */
   labels?: string[]
-  /** hovered point controlled by the parent (shared hover across overlaid charts) */
   activeIndex?: number | null
   className?: string
-  /** stroke uses `currentColor`, so set a text color class here */
   strokeClassName?: string
   strokeWidth?: number
   showLastDot?: boolean
@@ -23,10 +16,6 @@ const WIDTH = 100
 const HEIGHT = 40
 const PADDING = 3
 
-/**
- * The hover dot and the tooltip are HTML so they keep their shape while the
- * SVG stretches (`preserveAspectRatio="none"`).
- */
 export const SparkLine = ({
   values,
   labels,

@@ -18,7 +18,6 @@ const Step = ({ index, title, description }: { index: number; title: React.React
 export const HowBondingWorks = () => {
   const intl = useIntl()
 
-  // render "runebond.com" inside the (translated) step title as external link
   const [step1Prefix, step1Suffix = ''] = intl
     .formatMessage({ id: 'bonds.provider.empty.step1.title' })
     .split('runebond.com')
@@ -28,7 +27,6 @@ export const HowBondingWorks = () => {
       <span className="font-main-semi-bold text-[12px] tracking-[2px] text-gray2 uppercase dark:text-gray2d">
         {intl.formatMessage({ id: 'bonds.provider.empty.howTitle' })}
       </span>
-      {/* the copy keeps a reading width while the card spans the page */}
       <p className="mt-4 mb-6 max-w-[720px] font-main text-[16px] text-text0 dark:text-text0d">
         {intl.formatMessage({ id: 'bonds.provider.empty.howIntro' })}
       </p>

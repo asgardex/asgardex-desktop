@@ -28,7 +28,6 @@ export const rewards: Route<void> = {
   }
 }
 
-/** tabs of the bonds overview, also used as `?tab=` query param */
 export enum BondsTab {
   BondProvider = 'bondProvider',
   NodeOperator = 'nodeOperator'

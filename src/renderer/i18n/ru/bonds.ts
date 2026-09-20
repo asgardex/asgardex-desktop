@@ -52,6 +52,9 @@ const bonds: BondsMessages = {
   'bonds.provider.empty.noWhitelist':
     'ни одна нода ещё не добавила вас в вайтлист · {amount} RUNE не задействовано в кошельке',
   'bonds.provider.empty.findNode': 'Найти ноду на RUNEBond',
+  'bonds.provider.noThorAddress.title': 'В этом кошельке нет адреса THORChain',
+  'bonds.provider.noThorAddress.desc':
+    'Для бондов нужен адрес RUNE. Включите THORChain в настройках кошелька или добавьте аккаунт THORChain на Ledger, затем обновите.',
   'bonds.provider.empty.howTitle': 'Как работает бондинг',
   'bonds.provider.empty.howIntro':
     'Бондинг в THORChain требует разрешения: оператор ноды должен добавить ваш адрес в вайтлист, прежде чем ваш RUNE будет принят.',

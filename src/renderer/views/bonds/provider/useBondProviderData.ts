@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -15,6 +15,7 @@ import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { useBondProviderPositions } from '../../../hooks/useBondProviderPositions'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { PricePool } from '../../../services/midgard/midgardTypes'
+import { reloadRewards } from '../../../services/runebond'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { WalletBalances } from '../../../services/wallet/types'
@@ -32,7 +33,7 @@ export const useBondProviderData = () => {
     }
   } = useMidgardContext()
 
-  const [{ balances: oBalances }] = useObservableState(
+  const [{ balances: oBalances, errors: oBalanceErrors, loading: balancesLoading }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
@@ -41,9 +42,6 @@ export const useBondProviderData = () => {
   const poolsRD = useObservableState(poolsState$, RD.initial)
   const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
 
-  // Price pool used for the "≈ <price>" subtitles. Bonds are denominated in
-  // RUNE, so pricing them in the RUNE pool would just repeat the same figure —
-  // fall back to the USD pool in that case (and show no price if there is none).
   const oPricePool: O.Option<PricePool> = useMemo(() => {
     if (!isRuneNativeAsset(selectedPricePool.asset)) return O.some(selectedPricePool)
     return FP.pipe(
@@ -64,23 +62,30 @@ export const useBondProviderData = () => {
     [oBalances]
   )
 
-  const walletInfos: BondWalletInfo[] = useMemo(
-    () =>
-      runeBalances.map(({ walletAddress, walletType, walletAccount, walletIndex, hdMode }) => ({
+  const settledWalletInfos = useRef<BondWalletInfo[]>([])
+
+  const walletInfos: BondWalletInfo[] = useMemo(() => {
+    const current: BondWalletInfo[] = runeBalances.map(
+      ({ walletAddress, walletType, walletAccount, walletIndex, hdMode }) => ({
         address: walletAddress,
         walletType,
         walletAccount,
         walletIndex,
         hdMode
-      })),
-    [runeBalances]
-  )
+      })
+    )
+    if (!balancesLoading) {
+      settledWalletInfos.current = current
+      return current
+    }
+    const known = new Set(current.map(({ address }) => address.toLowerCase()))
+    return [...current, ...settledWalletInfos.current.filter(({ address }) => !known.has(address.toLowerCase()))]
+  }, [balancesLoading, runeBalances])
 
   const addressesFetched = walletInfos.length > 0
 
-  // The wallet can expose THOR addresses from more than one source at a time
-  // (keystore + ledger). When it does, every position has to say which one it
-  // signs with — an unlabelled card would be read as the keystore one.
+  const noThorAddress = !balancesLoading && !addressesFetched && (O.isSome(oBalances) || O.isSome(oBalanceErrors))
+
   const hasMultipleWalletTypes = useMemo(
     () => new Set(walletInfos.map(({ walletType }) => walletType)).size > 1,
     [walletInfos]
@@ -108,15 +113,14 @@ export const useBondProviderData = () => {
     getNodeInfos$
   })
 
-  // network-wide bonding APR from Midgard, e.g. "21.4% APR"
-  const aprLabel: O.Option<string> = useMemo(
+  const bondingApy: O.Option<number> = useMemo(
     () =>
       FP.pipe(
         networkInfoRD,
         RD.toOption,
         O.chain(({ bondingAPY }) => {
           const apy = parseFloat(bondingAPY)
-          return Number.isFinite(apy) ? O.some(`${(apy * 100).toFixed(1)}% APR`) : O.none
+          return Number.isFinite(apy) ? O.some(apy) : O.none
         })
       ),
     [networkInfoRD]
@@ -139,6 +143,7 @@ export const useBondProviderData = () => {
 
   const reload = useCallback(() => {
     reloadNodeInfos()
+    reloadRewards()
     const walletTypes = Array.from(new Set(walletInfos.map(({ walletType }) => walletType)))
     walletTypes.forEach((walletType) => reloadBalancesByChain(THORChain, walletType)())
   }, [reloadNodeInfos, walletInfos])
@@ -148,10 +153,11 @@ export const useBondProviderData = () => {
     walletInfos,
     hasMultipleWalletTypes,
     addressesFetched,
+    noThorAddress,
     freeToBond,
     balanceByAddress,
     positionsRD,
-    aprLabel,
+    bondingApy,
     formatPrice,
     reload
   }

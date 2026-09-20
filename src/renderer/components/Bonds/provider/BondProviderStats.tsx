@@ -15,7 +15,6 @@ type Props = {
   network: Network
   isPrivate: boolean
   totalBond: BaseAmount
-  /** already formatted price, e.g. "$ 445,961" */
   totalBondPrice: O.Option<string>
   freeToBond: BaseAmount
   paidLastChurn: RD.RemoteData<Error, BaseAmount>

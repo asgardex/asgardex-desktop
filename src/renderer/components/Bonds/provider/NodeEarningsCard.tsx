@@ -11,7 +11,6 @@ import { SparkLine } from './SparkLine'
 type Props = {
   historyRD: NodeHistoryRD
   isPrivate: boolean
-  /** hovered churn, shared by the bars and the bond line drawn on top of them */
   activeIndex: number | null
   onActiveIndexChange: (index: number | null) => void
 }

@@ -191,7 +191,6 @@ export const LegacyBondsView = (): JSX.Element => {
     [allBalances, navigate, network, setSelectedAsset]
   )
 
-  // THORChain-specific bond total calculation (Connected)
   const calculateTotalBondThor = (nodes: NodeInfoThor[], walletAddresses: WalletAddressInfo[]): BaseAmount => {
     const walletAddressSet = new Set(walletAddresses.map((info) => info.address.toLowerCase()))
     return nodes.reduce(
@@ -212,7 +211,6 @@ export const LegacyBondsView = (): JSX.Element => {
     )
   }
 
-  // MayaChain-specific bond total calculation (Connected)
   const calculateTotalBondMaya = (nodes: NodeInfoMaya[], walletAddresses: WalletAddressInfo[]): BaseAmount => {
     const walletAddressSet = new Set(walletAddresses.map((info) => info.address.toLowerCase()))
     return nodes.reduce(
@@ -234,7 +232,6 @@ export const LegacyBondsView = (): JSX.Element => {
   }
 
   const renderBondTotal = useMemo(() => {
-    // THORChain-specific monitored bond total calculation
     const calculateTotalMonitoredBondThor = (nodes: NodeInfoThor[]): BaseAmount => {
       return nodes.reduce(
         (acc: BaseAmount, node: NodeInfoThor) => {
@@ -254,7 +251,6 @@ export const LegacyBondsView = (): JSX.Element => {
       )
     }
 
-    // MayaChain-specific monitored bond total calculation
     const calculateTotalMonitoredBondMaya = (nodes: NodeInfoMaya[]): BaseAmount => {
       return nodes.reduce(
         (acc: BaseAmount, node: NodeInfoMaya) => {
@@ -361,7 +357,6 @@ export const LegacyBondsView = (): JSX.Element => {
     selectedPricePoolMaya.asset
   ])
 
-  // Guard: Bonds not yet implemented for Vultisig wallet
   if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
     return <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
   }

@@ -7,7 +7,6 @@ import { useObservableState } from 'observable-hooks'
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 
-/** Average THORChain block time in ms */
 const THOR_BLOCK_TIME_MS = 6000
 
 export type NextChurn = {
@@ -15,10 +14,6 @@ export type NextChurn = {
   msLeft: number
 }
 
-/**
- * Estimated time until the next churn, from Midgard's `nextChurnHeight`
- * and THORNode's last block height (~6s per block).
- */
 export const useNextChurn = (): O.Option<NextChurn> => {
   const {
     service: { networkInfo$ }

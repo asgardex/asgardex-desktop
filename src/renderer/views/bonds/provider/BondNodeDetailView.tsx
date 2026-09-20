@@ -17,12 +17,13 @@ import {
   BondSplit,
   NodeApyCard,
   NodeEarningsCard,
+  NoThorAddressCard,
   addressExplorerUrl,
+  formatApy,
   formatOperatorFee,
   formatRuneAmount,
   isUnbondLocked,
-  nodeExplorerUrl,
-  shortenAddress
+  nodeExplorerUrl
 } from '../../../components/Bonds/provider'
 import { NodeStatusTag } from '../../../components/Bonds/provider/NodeStatusTag'
 import { ErrorView } from '../../../components/shared/error'
@@ -35,6 +36,7 @@ import { Tooltip } from '../../../components/uielements/tooltip'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { truncateAddress } from '../../../helpers/addressHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { useMimirConstants } from '../../../hooks/useMimirConstants'
@@ -51,18 +53,10 @@ import { useBondProviderData } from './useBondProviderData'
 
 const MIMIR_KEYS = ['MAXBONDPROVIDERS']
 
-/** what the detail renders: the node plus, if the wallet is a bond provider on it, the position */
 type NodeDetail = {
   node: NodeInfo
 }
 
-/**
- * Node detail (`/bonds/node/:nodeAddress`)
- *
- * Reached from a position card (bond provider tab) or from a node card (node
- * operator tab). Bond/unbond actions are available only when the connected
- * wallet is a bond provider of the node.
- */
 export const BondNodeDetailView = (): JSX.Element => {
   const intl = useIntl()
   const navigate = useNavigate()
@@ -70,15 +64,20 @@ export const BondNodeDetailView = (): JSX.Element => {
   const { nodeAddress } = useParams<bondsRoutes.NodeDetailParams>()
   const { isPrivate } = useApp()
 
-  // back to the tab the user came from (node operator cards pass it in the location state)
   const backTab = bondsRoutes.isBondsTab(state?.tab) ? state.tab : bondsRoutes.BondsTab.BondProvider
-  // the operator detail lists the bond providers, the bond provider detail shows the reward history
   const isOperatorView = backTab === bondsRoutes.BondsTab.NodeOperator
-  // address of the position the user opened, when the card passed it along
   const signerAddress: string | undefined = typeof state?.signer === 'string' ? state.signer : undefined
 
-  const { network, walletInfos, hasMultipleWalletTypes, balanceByAddress, positionsRD, aprLabel, reload } =
-    useBondProviderData()
+  const {
+    network,
+    walletInfos,
+    hasMultipleWalletTypes,
+    balanceByAddress,
+    positionsRD,
+    bondingApy,
+    noThorAddress,
+    reload
+  } = useBondProviderData()
 
   const providerAddresses = useMemo(() => walletInfos.map(({ address }) => address), [walletInfos])
   const walletTypeByAddress = useMemo(
@@ -86,8 +85,6 @@ export const BondNodeDetailView = (): JSX.Element => {
     [walletInfos]
   )
 
-  // the position this detail is about: the one whose card was opened, or the
-  // first one on the node when the caller did not say (e.g. the operator tab)
   const oViewedPosition: O.Option<BondProviderPosition> = useMemo(
     () =>
       FP.pipe(
@@ -104,20 +101,21 @@ export const BondNodeDetailView = (): JSX.Element => {
     [nodeAddress, positionsRD, signerAddress]
   )
 
-  // bond and earnings are per bond provider, so the charts follow the viewed
-  // position — otherwise both positions on a node would draw the same series
   const historyAddresses = useMemo(
     () =>
       FP.pipe(
         oViewedPosition,
         O.fold(
-          () => providerAddresses,
+          () => [],
           ({ signer }) => [signer.address]
         )
       ),
-    [oViewedPosition, providerAddresses]
+    [oViewedPosition]
   )
-  const nodeHistoryRD = useNodeHistory(isOperatorView ? undefined : nodeAddress, historyAddresses)
+  const nodeHistoryRD = useNodeHistory(
+    isOperatorView || O.isNone(oViewedPosition) ? undefined : nodeAddress,
+    historyAddresses
+  )
 
   const { interact$, fees$, getNodeInfos$ } = useThorchainContext()
   const {
@@ -139,7 +137,6 @@ export const BondNodeDetailView = (): JSX.Element => {
   )
 
   const [modalType, setModalType] = useState<BondActionType | null>(null)
-  // hovered churn of the earnings chart, shared by the bars and the bond line
   const [hoveredChurn, setHoveredChurn] = useState<number | null>(null)
 
   const goBack = useCallback(() => navigate(bondsRoutes.basePathWithTab(backTab)), [backTab, navigate])
@@ -164,22 +161,17 @@ export const BondNodeDetailView = (): JSX.Element => {
     reload()
   }, [reload])
 
-  // node APY of the last churn (from RUNEBond history), network-wide APR as fallback
   const nodeApyLabel: O.Option<string> = useMemo(
     () =>
       FP.pipe(
         nodeHistoryRD,
         RD.toOption,
         O.chain(({ apySeries }) => O.fromNullable(apySeries[apySeries.length - 1])),
-        O.map(({ apy }) => `${(apy * 100).toFixed(1)}%`),
-        O.alt(() =>
-          FP.pipe(
-            aprLabel,
-            O.map((label) => label.replace(' APR', ''))
-          )
-        )
+        O.map(({ apy }) => apy),
+        O.alt(() => bondingApy),
+        O.map(formatApy)
       ),
-    [aprLabel, nodeHistoryRD]
+    [bondingApy, nodeHistoryRD]
   )
 
   const renderDetail = ({ node }: NodeDetail) => {
@@ -207,7 +199,7 @@ export const BondNodeDetailView = (): JSX.Element => {
         : intl.formatMessage({ id: 'bonds.provider.detail.providersCount' }, { count: providers.length })
 
     const providerName = (address: string) => {
-      if (!isMine(address)) return shortenAddress(address, 7, 5)
+      if (!isMine(address)) return truncateAddress(address, THORChain, network)
       const you = intl.formatMessage({ id: 'bonds.provider.detail.you' })
       const walletType = walletTypeByAddress.get(address.toLowerCase())
       return hasMultipleWalletTypes && walletType ? `${you} (${walletTypeToI18n(walletType, intl)})` : you
@@ -227,14 +219,16 @@ export const BondNodeDetailView = (): JSX.Element => {
         <div className="flex w-full flex-col gap-6 rounded-lg border border-solid border-gray0 bg-bg0 p-6 lg:flex-row lg:items-start lg:justify-between dark:border-gray0d dark:bg-bg0d">
           <div className="flex flex-col">
             <div className="flex items-center gap-3">
-              <span className="font-main text-[16px] text-text0 dark:text-text0d">{shortenAddress(node.address)}</span>
+              <span className="font-main text-[16px] text-text0 dark:text-text0d">
+                {truncateAddress(node.address, THORChain, network)}
+              </span>
               <CopyLabel textToCopy={node.address} iconClassName="!h-4 !w-4" />
               {renderExplorerLink(nodeExplorerUrl(node.address))}
               <NodeStatusTag status={node.status} />
             </div>
             <div className="mt-1 flex items-center gap-1.5 font-main text-[13px] text-gray2 dark:text-gray2d">
               <span>{intl.formatMessage({ id: 'bonds.provider.detail.operator' })}</span>
-              <span>{shortenAddress(node.nodeOperatorAddress)}</span>
+              <span>{truncateAddress(node.nodeOperatorAddress, THORChain, network)}</span>
               {renderExplorerLink(addressExplorerUrl(node.nodeOperatorAddress))}
               {isMine(node.nodeOperatorAddress) && (
                 <>
@@ -267,8 +261,8 @@ export const BondNodeDetailView = (): JSX.Element => {
                     { fee: formatOperatorFee(node.bondProviders.nodeOperatorFee, intl.locale) }
                   )}`
                 : intl.formatMessage({ id: 'bonds.provider.detail.share' }, { percent: percentOf(myBond) })}
-              {/* which of the wallet's addresses this detail bonds and signs with */}
-              {hasMultipleWalletTypes &&
+              {!isOperatorView &&
+                hasMultipleWalletTypes &&
                 FP.pipe(
                   oViewedPosition,
                   O.fold(
@@ -354,7 +348,7 @@ export const BondNodeDetailView = (): JSX.Element => {
                   network={network}
                   position={position}
                   walletBalance={balanceByAddress(position.signer.address)}
-                  apr={aprLabel}
+                  bondingApy={bondingApy}
                   nextChurn={nextChurn}
                   fee={feeRD}
                   interact$={interact$}
@@ -378,27 +372,31 @@ export const BondNodeDetailView = (): JSX.Element => {
         {intl.formatMessage({ id: isOperatorView ? 'bonds.operator.detail.back' : 'bonds.provider.detail.back' })}
       </BaseButton>
       <div className="mt-8 w-full">
-        {FP.pipe(
-          detailRD,
-          RD.fold(
-            () => <Spin className="m-auto" />,
-            () => <Spin className="m-auto" />,
-            (error) => (
-              <ErrorView
-                title={intl.formatMessage({ id: 'bonds.nodes.error' })}
-                subTitle={error?.message ?? error.toString()}
-              />
-            ),
-            (oDetail) =>
-              FP.pipe(
-                oDetail,
-                O.fold(
-                  () => (
-                    <ErrorView title={intl.formatMessage({ id: 'bonds.nodes.error' })} subTitle={nodeAddress ?? ''} />
-                  ),
-                  renderDetail
+        {noThorAddress ? (
+          <NoThorAddressCard onReload={reload} />
+        ) : (
+          FP.pipe(
+            detailRD,
+            RD.fold(
+              () => <Spin className="m-auto" />,
+              () => <Spin className="m-auto" />,
+              (error) => (
+                <ErrorView
+                  title={intl.formatMessage({ id: 'bonds.nodes.error' })}
+                  subTitle={error?.message ?? error.toString()}
+                />
+              ),
+              (oDetail) =>
+                FP.pipe(
+                  oDetail,
+                  O.fold(
+                    () => (
+                      <ErrorView title={intl.formatMessage({ id: 'bonds.nodes.error' })} subTitle={nodeAddress ?? ''} />
+                    ),
+                    renderDetail
+                  )
                 )
-              )
+            )
           )
         )}
       </div>

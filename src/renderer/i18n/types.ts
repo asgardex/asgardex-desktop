@@ -660,6 +660,8 @@ type BondsMessageKey =
   | 'bonds.provider.modal.signedLocally'
   | 'bonds.provider.empty.noWhitelist'
   | 'bonds.provider.empty.findNode'
+  | 'bonds.provider.noThorAddress.title'
+  | 'bonds.provider.noThorAddress.desc'
   | 'bonds.provider.empty.howTitle'
   | 'bonds.provider.empty.howIntro'
   | 'bonds.provider.empty.step1.title'

@@ -50,6 +50,9 @@ const bonds: BondsMessages = {
   'bonds.provider.modal.signedLocally': 'Signed on this machine · network fee {fee}',
   'bonds.provider.empty.noWhitelist': 'no node has whitelisted you yet · {amount} RUNE idle in your wallet',
   'bonds.provider.empty.findNode': 'Find a node on RUNEBond',
+  'bonds.provider.noThorAddress.title': 'No THORChain address in this wallet',
+  'bonds.provider.noThorAddress.desc':
+    'Bonds need a RUNE address. Enable THORChain in the wallet settings or add a THORChain account to your Ledger, then refresh.',
   'bonds.provider.empty.howTitle': 'How bonding works',
   'bonds.provider.empty.howIntro':
     'Bonding on THORChain is permissioned: a node operator has to whitelist your address before your RUNE is accepted.',

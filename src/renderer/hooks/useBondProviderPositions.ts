@@ -8,7 +8,6 @@ import * as RxOp from 'rxjs/operators'
 import { NodeInfo } from '../services/thorchain/types'
 import { BondProviderPosition, BondWalletInfo } from '../views/bonds/types'
 
-/** last value replayed synchronously by a shared stream, `initial` otherwise */
 const currentValue = <T>(observable: Rx.Observable<T>, initial: T): T => {
   let value = initial
   const subscription = observable.subscribe((next) => {
@@ -24,11 +23,6 @@ type UseBondProviderPositionsParams = {
   getNodeInfos$: Rx.Observable<RD.RemoteData<Error, NodeInfo[]>>
 }
 
-/**
- * Positions of the connected wallet as bond provider — one position per
- * (node, wallet address) pair. Nodes that merely whitelisted an address
- * (bond = 0) are included, so users can bond right after being whitelisted.
- */
 export const useBondProviderPositions = ({
   addressesFetched,
   thorWalletAddresses,
@@ -38,7 +32,6 @@ export const useBondProviderPositions = ({
     const map = new Map<string, BondWalletInfo>()
     thorWalletAddresses.forEach((info) => {
       const key = info.address.toLowerCase()
-      // prefer the first entry (keystore comes first in balances)
       if (!map.has(key)) map.set(key, info)
     })
     return map
@@ -83,7 +76,6 @@ export const useBondProviderPositions = ({
     )
   }, [addressesFetched, getNodeInfos$, walletByAddress])
 
-  // start from the replayed value so a remount renders the data right away
   const [positions, setPositions] = useState<RD.RemoteData<Error, BondProviderPosition[]>>(() =>
     currentValue(positions$, RD.initial)
   )

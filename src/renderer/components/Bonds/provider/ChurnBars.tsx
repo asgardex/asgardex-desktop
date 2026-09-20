@@ -4,15 +4,12 @@ import clsx from 'clsx'
 
 export type ChurnBar = {
   value: number
-  /** tooltip content shown on hover, e.g. "1,498 RUNE · 21 Jun 2026" */
   label?: ReactNode
 }
 
 type Props = {
-  /** oldest first */
   bars: ChurnBar[]
   highlightLast?: boolean
-  /** hovered bar controlled by the parent (shared hover across overlaid charts) */
   activeIndex?: number | null
   onActiveIndexChange?: (index: number | null) => void
   className?: string

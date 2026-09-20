@@ -16,6 +16,7 @@ import {
   BondNodeCard,
   BondProviderStats,
   HowBondingWorks,
+  NoThorAddressCard,
   formatRuneAmount
 } from '../../../components/Bonds/provider'
 import { ErrorView } from '../../../components/shared/error'
@@ -51,7 +52,8 @@ export const BondProviderDashboardView = (): JSX.Element => {
     freeToBond,
     balanceByAddress,
     positionsRD,
-    aprLabel,
+    bondingApy,
+    noThorAddress,
     formatPrice,
     reload
   } = useBondProviderData()
@@ -117,8 +119,6 @@ export const BondProviderDashboardView = (): JSX.Element => {
   }, [reload])
 
   const openDetail = useCallback(
-    // the wallet can hold several positions on one node — the detail must keep
-    // signing with the address of the card that was opened
     ({ nodeAddress, signer }: BondProviderPosition) =>
       navigate(bondsRoutes.node.path({ nodeAddress }), { state: { signer: signer.address } }),
     [navigate]
@@ -200,19 +200,23 @@ export const BondProviderDashboardView = (): JSX.Element => {
   return (
     <div className="flex w-full flex-col">
       <div className="w-full">
-        {FP.pipe(
-          positionsRD,
-          RD.fold(
-            () => <Spin className="m-auto" />,
-            () => <Spin className="m-auto" />,
-            (error) => (
-              <ErrorView
-                title={intl.formatMessage({ id: 'bonds.nodes.error' })}
-                subTitle={error?.message ?? error.toString()}
-                extra={<FlatButton onClick={reload}>{intl.formatMessage({ id: 'common.retry' })}</FlatButton>}
-              />
-            ),
-            renderPositions
+        {noThorAddress ? (
+          <NoThorAddressCard onReload={reload} />
+        ) : (
+          FP.pipe(
+            positionsRD,
+            RD.fold(
+              () => <Spin className="m-auto" />,
+              () => <Spin className="m-auto" />,
+              (error) => (
+                <ErrorView
+                  title={intl.formatMessage({ id: 'bonds.nodes.error' })}
+                  subTitle={error?.message ?? error.toString()}
+                  extra={<FlatButton onClick={reload}>{intl.formatMessage({ id: 'common.retry' })}</FlatButton>}
+                />
+              ),
+              renderPositions
+            )
           )
         )}
       </div>
@@ -222,7 +226,7 @@ export const BondProviderDashboardView = (): JSX.Element => {
           network={network}
           position={modal.position}
           walletBalance={balanceByAddress(modal.position.signer.address)}
-          apr={aprLabel}
+          bondingApy={bondingApy}
           nextChurn={nextChurn}
           fee={feeRD}
           interact$={interact$}

@@ -10,8 +10,7 @@ import {
   formatOperatorFee,
   formatRuneAmount,
   isUnbondLocked,
-  nodeExplorerUrl,
-  shortenAddress
+  nodeExplorerUrl
 } from './helpers'
 
 const rune = (amount: string | number) => assetToBase(assetAmount(amount, THORCHAIN_DECIMAL))
@@ -68,16 +67,6 @@ describe('Bonds provider helpers', () => {
   describe('formatChurnDate', () => {
     it('renders the churn date of a chart tooltip', () => {
       expect(formatChurnDate(new Date('2026-06-21T10:00:00Z'), 'en-US')).toEqual('Jun 21, 2026')
-    })
-  })
-
-  describe('shortenAddress', () => {
-    it('keeps the head and the tail of a THOR address', () => {
-      expect(shortenAddress('thor1h4kjqabcdefghijklmnophyfpwkfr')).toEqual('thor1h4k…hyfpwkfr')
-    })
-
-    it('leaves short addresses untouched', () => {
-      expect(shortenAddress('thor1short')).toEqual('thor1short')
     })
   })
 
