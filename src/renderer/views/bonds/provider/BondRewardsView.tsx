@@ -20,6 +20,7 @@ import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { BaseButton } from '../../../components/uielements/button'
 import { Spin } from '../../../components/uielements/spin'
 import { truncateAddress } from '../../../helpers/addressHelper'
+import { logger } from '../../../helpers/logger'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { useNodeProviderRewards, useProviderRewards } from '../../../hooks/useRunebondRewards'
 import * as bondsRoutes from '../../../routes/bonds'
@@ -60,15 +61,20 @@ export const BondRewardsView = (): JSX.Element => {
 
   const goBack = useCallback(() => navigate(bondsRoutes.base.path()), [navigate])
 
-  const exportCsv = useCallback((rewards: ProviderRewards) => {
+  const exportCsv = useCallback(async (rewards: ProviderRewards) => {
     const header = 'date,node_address,amount_rune'
     const rows = rewards.payouts.map(({ date, nodeAddress, amount }) =>
       [date.toISOString(), csvEscape(nodeAddress), baseToAsset(amount).amount().toFixed(8)].join(',')
     )
-    window.apiExport.saveCsv({
-      fileName: `bond-rewards-${new Date().toISOString().slice(0, 10)}.csv`,
-      content: [header, ...rows].join('\n')
-    })
+    try {
+      // Resolves `undefined` when the user cancels the dialog - not an error
+      await window.apiExport.saveCsv({
+        fileName: `bond-rewards-${new Date().toISOString().slice(0, 10)}.csv`,
+        content: [header, ...rows].join('\n')
+      })
+    } catch (err) {
+      logger.error('Failed to export rewards CSV:', err)
+    }
   }, [])
 
   const renderUnavailable = () => <RunebondUnavailablePanel className="min-h-[280px]" />
@@ -146,7 +152,7 @@ export const BondRewardsView = (): JSX.Element => {
             </span>
             <BaseButton
               className="!p-0 font-main-semi-bold text-[12px] tracking-[1px] text-turquoise uppercase"
-              onClick={() => exportCsv(rewards)}>
+              onClick={() => void exportCsv(rewards)}>
               {intl.formatMessage({ id: 'bonds.provider.rewards.exportCsv' })}
             </BaseButton>
           </div>

@@ -64,7 +64,7 @@ export const BondProvidersList = ({ network, isPrivate, providers, nodeBond, slo
                   {isPrivate ? hiddenString : formatRuneAmount(provider.bond)}
                 </span>
                 <span className="w-[56px] text-right font-main text-[13px] text-gray2 dark:text-gray2d">
-                  {percentOf(provider.bond)}
+                  {isPrivate ? hiddenString : percentOf(provider.bond)}
                 </span>
               </div>
             </div>

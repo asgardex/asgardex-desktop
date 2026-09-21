@@ -78,7 +78,7 @@ export const BondSplit = ({ network, isPrivate, providers, nodeBond, providerNam
             <span className="truncate">{name}</span>
           </span>
           <span className="shrink-0 font-main-semi-bold text-[13px] text-text0 dark:text-text0d">
-            {percentOf(amount)}
+            {isPrivate ? hiddenString : percentOf(amount)}
           </span>
         </div>
       ))}
