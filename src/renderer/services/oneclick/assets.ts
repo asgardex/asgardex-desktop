@@ -227,20 +227,19 @@ export const isOneClickSupportedAsset = (asset: AnyAsset): boolean => {
 }
 
 /**
- * Synchronous USD price for an asset from 1Click's token list (their /v0/tokens
- * payload carries a `price` per token). Returns undefined until the list has
- * loaded or when the asset isn't in it. Matching mirrors the aggregator's
- * findOneClickToken: tokens by contract address (case-insensitive, taken from
- * the `TICKER-CONTRACT` symbol convention), natives by plain symbol.
+ * Find a 1Click token entry for an asgardex asset. Matching mirrors the
+ * aggregator's findOneClickToken: tokens by contract address (case-insensitive,
+ * from the `TICKER-CONTRACT` symbol convention), natives by plain symbol, and
+ * native NEAR ↔ wrap.near / wNEAR.
  */
-export const getOneClickUsdPrice = (asset: AnyAsset): number | undefined => {
+export const findOneClickToken = (asset: AnyAsset): OneClickToken | undefined => {
   if (isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)) return undefined
   if (!tokensSnapshot) return undefined
   const blockchain = XCHAIN_TO_ONECLICK[asset.chain]
   if (!blockchain) return undefined
 
   const contract = asset.symbol.includes('-') ? asset.symbol.split('-')[1] : undefined
-  const token = tokensSnapshot.find((t) => {
+  return tokensSnapshot.find((t) => {
     if (t.blockchain !== blockchain) return false
     // Native NEAR ↔ wrap.near / wNEAR (same rule as aggregator findOneClickToken)
     if (asset.chain === NEARChain && asset.type === AssetType.NATIVE) {
@@ -249,6 +248,14 @@ export const getOneClickUsdPrice = (asset: AnyAsset): number | undefined => {
     if (contract) return t.contractAddress ? t.contractAddress.toLowerCase() === contract.toLowerCase() : false
     return t.symbol.toUpperCase() === asset.symbol.toUpperCase() && !t.contractAddress
   })
+}
 
+/**
+ * Synchronous USD price for an asset from 1Click's token list (their /v0/tokens
+ * payload carries a `price` per token). Returns undefined until the list has
+ * loaded or when the asset isn't in it.
+ */
+export const getOneClickUsdPrice = (asset: AnyAsset): number | undefined => {
+  const token = findOneClickToken(asset)
   return token?.price !== undefined && token.price > 0 ? token.price : undefined
 }

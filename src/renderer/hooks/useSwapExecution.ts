@@ -33,6 +33,7 @@ import { applyStreamingToMemo, updateMemo } from '../helpers/memoHelper'
 import { INITIAL_SWAP_STATE } from '../services/chain/const'
 import { SwapTxParams, SwapTxState, SendTxParams, SwapHandler, SwapCFHandler, SwapFees } from '../services/chain/types'
 import { PoolAddress } from '../services/midgard/midgardTypes'
+import { requestOneClickDepositAddress } from '../services/oneclick'
 import { ErrorId, WalletBalance, isStandaloneLedgerMode } from '../services/wallet/types'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useSubscriptionState } from './useSubscriptionState'
@@ -69,7 +70,8 @@ type UseSwapExecutionResult = {
   submitSwap: () => void
   /** Opens a Chainflip deposit channel then broadcasts the transfer. */
   submitCFSwap: () => Promise<void>
-  submitOneClickSwap: () => void
+  /** Fetches a wet OneClick deposit address then broadcasts the transfer. */
+  submitOneClickSwap: () => Promise<void>
   resetSwapState: () => void
   subscribeSwapState: (s: import('rxjs').Observable<SwapTxState>) => void
   swapStartTime: number
@@ -397,16 +399,78 @@ export const useSwapExecution = ({
     swapCF$
   ])
 
-  const submitOneClickSwap = useCallback(() => {
-    FP.pipe(
-      oneClickSwapParams,
-      O.map((params) => {
-        setSwapStartTime(Date.now())
-        subscribeSwapState(swapOneClick$(params))
-        return true
+  const publishOneClickSubmitFailure = useCallback(
+    (error: unknown) => {
+      const msg = error instanceof Error ? error.message : 'OneClick swap submit failed'
+      logger.error('OneClick submit failed before broadcast', error)
+      setSwapStartTime(Date.now())
+      subscribeSwapState(Rx.of({ swapTx: RD.failure({ errorId: ErrorId.SEND_TX, msg }) }))
+    },
+    [subscribeSwapState]
+  )
+
+  const submitOneClickSwap = useCallback(async () => {
+    if (O.isNone(oneClickSwapParams) || O.isNone(selectedQuote) || O.isNone(destinationAddress)) {
+      const error = new Error('Missing OneClick swap params, quote, or destination address')
+      publishOneClickSubmitFailure(error)
+      throw error
+    }
+
+    const params = oneClickSwapParams.value
+    const quote = selectedQuote.value
+    if (quote.protocol !== 'OneClick') {
+      const error = new Error('Selected quote is not a OneClick route')
+      publishOneClickSubmitFailure(error)
+      throw error
+    }
+
+    if (!params.sender) {
+      const error = new Error('Missing OneClick sender address')
+      publishOneClickSubmitFailure(error)
+      throw error
+    }
+
+    // Show SwapTxModal immediately while the wet quote (deposit address) is fetched.
+    setSwapStartTime(Date.now())
+    subscribeSwapState(Rx.of({ swapTx: RD.pending }))
+
+    logger.info('Requesting OneClick deposit address before broadcast', {
+      from: `${sourceAsset.chain}.${sourceAsset.symbol}`,
+      to: `${targetAsset.chain}.${targetAsset.symbol}`
+    })
+
+    let depositAddress: string
+    try {
+      const wet = await requestOneClickDepositAddress({
+        fromAsset: sourceAsset,
+        destinationAsset: targetAsset,
+        amount: params.amount,
+        fromAddress: params.sender,
+        destinationAddress: destinationAddress.value,
+        slippageToleranceBps: 100
       })
-    )
-  }, [oneClickSwapParams, subscribeSwapState, swapOneClick$])
+      depositAddress = wet.depositAddress
+      logger.info('OneClick deposit address ready', {
+        depositAddress,
+        amountOut: wet.amountOut,
+        correlationId: wet.correlationId
+      })
+    } catch (error) {
+      publishOneClickSubmitFailure(error)
+      throw error
+    }
+
+    subscribeSwapState(swapOneClick$({ ...params, recipient: depositAddress, memo: '' }))
+  }, [
+    oneClickSwapParams,
+    selectedQuote,
+    destinationAddress,
+    sourceAsset,
+    targetAsset,
+    publishOneClickSubmitFailure,
+    subscribeSwapState,
+    swapOneClick$
+  ])
 
   return {
     swapState,

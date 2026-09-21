@@ -6452,7 +6452,7 @@ __metadata:
 
 "@xchainjs/xchain-aggregator@patch:@xchainjs/xchain-aggregator@npm%3A3.1.0#~/.yarn/patches/@xchainjs-xchain-aggregator-npm-3.1.0-5092f7ce33.patch":
   version: 3.1.0
-  resolution: "@xchainjs/xchain-aggregator@patch:@xchainjs/xchain-aggregator@npm%3A3.1.0#~/.yarn/patches/@xchainjs-xchain-aggregator-npm-3.1.0-5092f7ce33.patch::version=3.1.0&hash=90cd31"
+  resolution: "@xchainjs/xchain-aggregator@patch:@xchainjs/xchain-aggregator@npm%3A3.1.0#~/.yarn/patches/@xchainjs-xchain-aggregator-npm-3.1.0-5092f7ce33.patch::version=3.1.0&hash=1d57c1"
   dependencies:
     "@chainflip/sdk": "npm:2.2.1"
     "@xchainjs/xchain-client": "npm:2.0.17"
@@ -6466,7 +6466,7 @@ __metadata:
     "@xchainjs/xchain-thorchain-query": "npm:3.2.0"
     "@xchainjs/xchain-util": "npm:2.0.7"
     "@xchainjs/xchain-wallet": "npm:2.0.34"
-  checksum: 10/a26512950055a5f22761c7f583b7e19470ffd0fbe32309b869966b60b28d4274809dcf33bd1758ab53f2d7c4c00ed60b1fa9438556ac4a9cd78686e672ff8cbd
+  checksum: 10/0f33340890be41c47e0f47750bfb726186f707dbf662e9a5ee7c5e179ef3259f547b10ff351f22134512f411a8443e7d8919bdbb8c03f02ded0797c9e7adf22d
   languageName: node
   linkType: hard
 

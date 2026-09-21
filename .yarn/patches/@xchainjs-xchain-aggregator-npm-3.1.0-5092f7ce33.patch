@@ -1,8 +1,7 @@
 diff --git a/lib/index.esm.js b/lib/index.esm.js
-index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..8094b1f6bac8842cfd1cbb7642c220cf5c549445 100644
 --- a/lib/index.esm.js
 +++ b/lib/index.esm.js
-@@ -281,7 +281,7 @@ class ChainflipProtocol {
+@@ -281,7 +281,7 @@
                  srcAsset: srcAssetData.asset,
                  destChain: destAssetData.chain,
                  destAsset: destAssetData.asset,
@@ -11,7 +10,7 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..8094b1f6bac8842cfd1cbb7642c220cf
                  affiliateBrokers: this.affiliateBrokers,
              });
              let selectedQuote;
-@@ -504,6 +504,28 @@ class MayachainProtocol {
+@@ -504,6 +504,28 @@
  }
  
  const BASE_URL = 'https://1click.chaindefuser.com';
@@ -40,7 +39,7 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..8094b1f6bac8842cfd1cbb7642c220cf
  class OneClickApi {
      constructor(apiKey) {
          this.headers = { 'Content-Type': 'application/json' };
-@@ -521,13 +543,26 @@ class OneClickApi {
+@@ -521,13 +543,26 @@
      }
      getQuote(params) {
          return __awaiter(this, void 0, void 0, function* () {
@@ -70,20 +69,60 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..8094b1f6bac8842cfd1cbb7642c220cf
              return resp.json();
          });
      }
-@@ -658,7 +693,7 @@ class OneClickProtocol {
+@@ -645,22 +680,27 @@
+                 return this.errorQuote(params, srcToken ? 'Destination asset not supported' : 'Source asset not supported');
+             }
+             try {
+-                const isDry = !(params.fromAddress && params.destinationAddress);
++                // Preview quotes must be dry — wet quotes require persisting an order and often
++                // fail or omit depositAddress until submit. Price the route whenever amountOut is set;
++                // asgardex fetches a wet deposit address immediately before broadcast.
+                 const deadline = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+                 const appFees = this.affiliateAddress && this.affiliateBps
+                     ? [{ recipient: this.affiliateAddress, fee: this.affiliateBps }]
+                     : undefined;
++                // 1Click rejects empty refundTo/recipient even on dry — use placeholders when previewing.
++                const refundTo = params.fromAddress || 'aurora';
++                const recipient = params.destinationAddress || params.fromAddress || 'aurora';
+                 const resp = yield this.api.getQuote({
+-                    dry: isDry,
++                    dry: true,
+                     swapType: 'EXACT_INPUT',
+                     depositType: 'ORIGIN_CHAIN',
+                     recipientType: 'DESTINATION_CHAIN',
                      refundType: 'ORIGIN_CHAIN',
                      originAsset: srcToken.assetId,
                      destinationAsset: destToken.assetId,
 -                    amount: params.amount.baseAmount.amount().toString(),
+-                    refundTo: params.fromAddress || '',
+-                    recipient: params.destinationAddress || '',
 +                    amount: params.amount.baseAmount.amount().toFixed(0),
-                     refundTo: params.fromAddress || '',
-                     recipient: params.destinationAddress || '',
++                    refundTo,
++                    recipient,
                      slippageTolerance: (_a = params.toleranceBps) !== null && _a !== void 0 ? _a : 100,
+                     deadline,
+                     appFees,
+@@ -670,6 +710,7 @@
+                 }
+                 const quote = resp.quote;
+                 const toAddress = (_b = quote.depositAddress) !== null && _b !== void 0 ? _b : '';
++                const hasAmountOut = quote.amountOut != null && String(quote.amountOut) !== '' && String(quote.amountOut) !== '0';
+                 return {
+                     protocol: this.name,
+                     toAddress,
+@@ -678,7 +719,7 @@
+                     dustThreshold: new CryptoAmount(baseAmount(0), params.fromAsset),
+                     totalSwapSeconds: (_c = quote.timeEstimate) !== null && _c !== void 0 ? _c : 0,
+                     maxStreamingQuantity: undefined,
+-                    canSwap: toAddress !== '',
++                    canSwap: hasAmountOut,
+                     warning: '',
+                     errors: [],
+                     slipBasisPoints: 0,
 diff --git a/lib/index.js b/lib/index.js
-index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be45d6415511119abc249165884384bf5ee97c66 100644
 --- a/lib/index.js
 +++ b/lib/index.js
-@@ -283,7 +283,7 @@ class ChainflipProtocol {
+@@ -283,7 +283,7 @@
                  srcAsset: srcAssetData.asset,
                  destChain: destAssetData.chain,
                  destAsset: destAssetData.asset,
@@ -92,11 +131,10 @@ index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be45d6415511119abc249165884384bf
                  affiliateBrokers: this.affiliateBrokers,
              });
              let selectedQuote;
-@@ -506,6 +506,28 @@ class MayachainProtocol {
+@@ -506,6 +506,26 @@
  }
  
  const BASE_URL = 'https://1click.chaindefuser.com';
-+
 +function toOneClickAmountString(amount) {
 +    if (typeof amount !== 'string') return amount;
 +    if (/^\d+$/.test(amount)) return amount;
@@ -117,11 +155,10 @@ index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be45d6415511119abc249165884384bf
 +    }
 +    return result.replace(/^0+(?=\d)/, '');
 +}
-+
  class OneClickApi {
      constructor(apiKey) {
          this.headers = { 'Content-Type': 'application/json' };
-@@ -523,13 +545,26 @@ class OneClickApi {
+@@ -523,13 +543,26 @@
      }
      getQuote(params) {
          return __awaiter(this, void 0, void 0, function* () {
@@ -151,12 +188,56 @@ index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be45d6415511119abc249165884384bf
              return resp.json();
          });
      }
-@@ -660,7 +695,7 @@ class OneClickProtocol {
+@@ -647,22 +680,27 @@
+                 return this.errorQuote(params, srcToken ? 'Destination asset not supported' : 'Source asset not supported');
+             }
+             try {
+-                const isDry = !(params.fromAddress && params.destinationAddress);
++                // Preview quotes must be dry — wet quotes require persisting an order and often
++                // fail or omit depositAddress until submit. Price the route whenever amountOut is set;
++                // asgardex fetches a wet deposit address immediately before broadcast.
+                 const deadline = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+                 const appFees = this.affiliateAddress && this.affiliateBps
+                     ? [{ recipient: this.affiliateAddress, fee: this.affiliateBps }]
+                     : undefined;
++                // 1Click rejects empty refundTo/recipient even on dry — use placeholders when previewing.
++                const refundTo = params.fromAddress || 'aurora';
++                const recipient = params.destinationAddress || params.fromAddress || 'aurora';
+                 const resp = yield this.api.getQuote({
+-                    dry: isDry,
++                    dry: true,
+                     swapType: 'EXACT_INPUT',
+                     depositType: 'ORIGIN_CHAIN',
+                     recipientType: 'DESTINATION_CHAIN',
                      refundType: 'ORIGIN_CHAIN',
                      originAsset: srcToken.assetId,
                      destinationAsset: destToken.assetId,
 -                    amount: params.amount.baseAmount.amount().toString(),
+-                    refundTo: params.fromAddress || '',
+-                    recipient: params.destinationAddress || '',
 +                    amount: params.amount.baseAmount.amount().toFixed(0),
-                     refundTo: params.fromAddress || '',
-                     recipient: params.destinationAddress || '',
++                    refundTo,
++                    recipient,
                      slippageTolerance: (_a = params.toleranceBps) !== null && _a !== void 0 ? _a : 100,
+                     deadline,
+                     appFees,
+@@ -672,15 +710,16 @@
+                 }
+                 const quote = resp.quote;
+                 const toAddress = (_b = quote.depositAddress) !== null && _b !== void 0 ? _b : '';
++                const hasAmountOut = quote.amountOut != null && String(quote.amountOut) !== '' && String(quote.amountOut) !== '0';
+                 return {
+                     protocol: this.name,
+                     toAddress,
+                     memo: '',
+-                    expectedAmount: new xchainUtil.CryptoAmount(xchainUtil.baseAmount(quote.amountOut, destToken.decimals), params.destinationAsset),
+-                    dustThreshold: new xchainUtil.CryptoAmount(xchainUtil.baseAmount(0), params.fromAsset),
++                    expectedAmount: new CryptoAmount(baseAmount(quote.amountOut, destToken.decimals), params.destinationAsset),
++                    dustThreshold: new CryptoAmount(baseAmount(0), params.fromAsset),
+                     totalSwapSeconds: (_c = quote.timeEstimate) !== null && _c !== void 0 ? _c : 0,
+                     maxStreamingQuantity: undefined,
+-                    canSwap: toAddress !== '',
++                    canSwap: hasAmountOut,
+                     warning: '',
+                     errors: [],
+                     slipBasisPoints: 0,

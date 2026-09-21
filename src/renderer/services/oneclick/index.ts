@@ -5,9 +5,12 @@ const transactionTrackingService = createOneClickTransactionTrackingService()
 export { transactionTrackingService }
 export * from './transactionTracking'
 export {
+  findOneClickToken,
   getAssetsData$,
   getOneClickAssetIconUrl,
   getOneClickUsdPrice,
   isOneClickSupportedAsset,
   ONECLICK_FALLBACK_CHAINS
 } from './assets'
+export { requestOneClickDepositAddress } from './quote'
+export type { OneClickDepositQuote } from './quote'
