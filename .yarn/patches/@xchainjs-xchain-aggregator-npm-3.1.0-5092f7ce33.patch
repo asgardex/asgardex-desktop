@@ -40,7 +40,7 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..8094b1f6bac8842cfd1cbb7642c220cf
  class OneClickApi {
      constructor(apiKey) {
          this.headers = { 'Content-Type': 'application/json' };
-@@ -521,13 +543,25 @@ class OneClickApi {
+@@ -521,13 +543,26 @@ class OneClickApi {
      }
      getQuote(params) {
          return __awaiter(this, void 0, void 0, function* () {
@@ -70,7 +70,7 @@ index da9f5c1144e1bb0bc4f19c7fcc6a4b9b4c4d3b0a..8094b1f6bac8842cfd1cbb7642c220cf
              return resp.json();
          });
      }
-@@ -658,7 +692,7 @@ class OneClickProtocol {
+@@ -658,7 +693,7 @@ class OneClickProtocol {
                      refundType: 'ORIGIN_CHAIN',
                      originAsset: srcToken.assetId,
                      destinationAsset: destToken.assetId,
@@ -121,7 +121,7 @@ index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be45d6415511119abc249165884384bf
  class OneClickApi {
      constructor(apiKey) {
          this.headers = { 'Content-Type': 'application/json' };
-@@ -523,13 +545,25 @@ class OneClickApi {
+@@ -523,13 +545,26 @@ class OneClickApi {
      }
      getQuote(params) {
          return __awaiter(this, void 0, void 0, function* () {
@@ -151,7 +151,7 @@ index 73c62eebdd7c1cf64d9ed012b781dbede92862cf..be45d6415511119abc249165884384bf
              return resp.json();
          });
      }
-@@ -660,7 +694,7 @@ class OneClickProtocol {
+@@ -660,7 +695,7 @@ class OneClickProtocol {
                      refundType: 'ORIGIN_CHAIN',
                      originAsset: srcToken.assetId,
                      destinationAsset: destToken.assetId,

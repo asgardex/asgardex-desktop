@@ -224,8 +224,11 @@ export const Swap = ({
 
   const { isChainflipSupportedAssetSync, transactionTrackingService: chainflipTransactionTrackingService } =
     useChainflipContext()
-  const { transactionTrackingService: oneClickTransactionTrackingService, isOneClickSupportedAsset } =
-    useOneClickContext()
+  const {
+    transactionTrackingService: oneClickTransactionTrackingService,
+    isOneClickSupportedAsset,
+    getOneClickUsdPrice
+  } = useOneClickContext()
 
   const {
     streamingInterval,
@@ -432,8 +435,26 @@ export const Swap = ({
       )
     }
 
+    // Poolless assets (e.g. NEAR via OneClick) have no Midgard/Maya USD price.
+    // Fall back to 1Click token-list prices (same source as affiliate BPS).
+    if (result.amount().isZero()) {
+      const oneClickUsdPrice = getOneClickUsdPrice(sourceAsset)
+      if (oneClickUsdPrice !== undefined && oneClickUsdPrice > 0) {
+        result = amountToSwap.times(oneClickUsdPrice)
+      }
+    }
+
     return new CryptoAmount(result, pricePoolThor.asset)
-  }, [amountToSwap, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor, sourceAsset, sourceChain])
+  }, [
+    amountToSwap,
+    getOneClickUsdPrice,
+    poolDetailsMaya,
+    poolDetailsThor,
+    pricePoolMaya,
+    pricePoolThor,
+    sourceAsset,
+    sourceChain
+  ])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwap.amount().isZero(), [amountToSwap])
 
@@ -855,7 +876,8 @@ export const Swap = ({
               })
             )
           } else if (quoteProtocol.protocol === 'Chainflip' || quoteProtocol.protocol === 'OneClick') {
-            // Neither protocol exposes pool data, so fall back to a Gecko-priced USD value.
+            // Neither protocol exposes Midgard pool data. Prefer CoinGecko, then 1Click
+            // token-list prices (covers poolless assets like NEAR that aren't in GECKO_MAP).
             if (
               !swapResultAmountMax?.asset?.symbol ||
               !swapResultAmountMax?.baseAmount ||
@@ -865,10 +887,17 @@ export const Swap = ({
             }
             const assetSymbol = swapResultAmountMax.asset.symbol.toUpperCase()
             const geckoId = GECKO_MAP[assetSymbol]
-            const geckoPrice = geckoId ? geckoPriceMap[geckoId]?.usd : 0
+            const geckoPrice = geckoId ? geckoPriceMap[geckoId]?.usd : undefined
+            const oneClickUsdPrice = getOneClickUsdPrice(swapResultAmountMax.asset)
+            const usdPrice =
+              geckoPrice && geckoPrice > 0
+                ? geckoPrice
+                : oneClickUsdPrice && oneClickUsdPrice > 0
+                  ? oneClickUsdPrice
+                  : 0
             if (swapResultAmountMax.baseAmount && typeof swapResultAmountMax.baseAmount.times === 'function') {
               try {
-                return swapResultAmountMax.baseAmount.times(geckoPrice)
+                return swapResultAmountMax.baseAmount.times(usdPrice)
               } catch (error) {
                 logger.warn(`Error calculating ${quoteProtocol.protocol} USD value:`, error)
                 return baseAmount(0, THORCHAIN_DECIMAL)
@@ -888,7 +917,8 @@ export const Swap = ({
     poolDetailsThor,
     poolDetailsMaya,
     pricePoolMaya,
-    geckoPriceMap
+    geckoPriceMap,
+    getOneClickUsdPrice
   ])
 
   /**

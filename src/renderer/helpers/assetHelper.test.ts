@@ -313,6 +313,17 @@ describe('helpers/assetHelper', () => {
       const result = convertBaseAmountDecimal(amount, 6)
       expect(eqBaseAmount.equals(result, amount)).toBeTruthy()
     })
+    it('scales to NEAR 24 decimals without JS number precision loss', () => {
+      // 0.01 ETH (1e8 pool scale) → 1e22 base units at 24dp; `10 ** 16` as Number is exact,
+      // but larger diffs (e.g. 8→24 with bigger amounts) need BN.pow — guard the path.
+      const result = convertBaseAmountDecimal(baseAmount('1000000', 8), 24)
+      expect(eqBaseAmount.equals(result, baseAmount('10000000000000000000000', 24))).toBeTruthy()
+    })
+    it('rounds down fractional base units when scaling up', () => {
+      // multipliedBy can produce fractions before decimalPlaces; BaseAmount must stay integer
+      const result = convertBaseAmountDecimal(baseAmount('1', 0), 3)
+      expect(eqBaseAmount.equals(result, baseAmount('1000', 3))).toBeTruthy()
+    })
   })
 
   describe('max1e8BaseAmount', () => {
