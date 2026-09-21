@@ -18,7 +18,7 @@ import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { SUIAsset, SUIChain } from '@xchainjs/xchain-sui'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetTRX, TRONChain } from '@xchainjs/xchain-tron'
-import { AnyAsset, Asset, AssetType, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, AssetType, Chain, isTokenAsset } from '@xchainjs/xchain-util'
 import { AssetZEC, ZECChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDZEC } from '@xchainjs/xchain-zcash'
 
 import { isSupportedChain } from '../../shared/utils/chain'
@@ -177,6 +177,9 @@ export const isTronChain = (chain: Chain): boolean => eqChain.equals(chain.toUpp
 export const isSuiChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), SUIChain)
 
 export const isNearChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), NEARChain)
+
+/** NEP-141 FT on NEAR (not native NEAR.NEAR). */
+export const isNearChainToken = (asset: AnyAsset): boolean => isNearChain(asset.chain) && isTokenAsset(asset)
 
 type ChainValues<T> = {
   [k in Chain]?: T[]

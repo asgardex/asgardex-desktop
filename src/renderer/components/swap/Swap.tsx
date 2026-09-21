@@ -52,7 +52,7 @@ import {
 } from '../../helpers/assetHelper'
 import { resolveChainflipChannelId } from '../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
-import { getChainAsset } from '../../helpers/chainHelper'
+import { getChainAsset, isNearChainToken } from '../../helpers/chainHelper'
 import { isRouterApprovalError } from '../../helpers/evmApprovalHelper'
 import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
@@ -1489,7 +1489,9 @@ export const Swap = ({
     reloadBalances()
     setAmountToSwap(initialAmountToSwap)
     resetQuote()
-    if (isEvmChainToken(targetAsset)) {
+    // Persist swapped-into tokens so the next balance reload queries them
+    // (EVM ERC-20s and NEAR NEP-141s via getUserAssetsByChain$ → getBalance).
+    if (isEvmChainToken(targetAsset) || isNearChainToken(targetAsset)) {
       addAsset(targetAsset as TokenAsset)
     }
   }, [resetSwapState, reloadBalances, setAmountToSwap, initialAmountToSwap, resetQuote, targetAsset])

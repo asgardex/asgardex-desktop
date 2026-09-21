@@ -6886,16 +6886,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-near@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@xchainjs/xchain-near@npm:0.2.0"
+"@xchainjs/xchain-near@npm:0.3.0":
+  version: 0.3.0
+  resolution: "@xchainjs/xchain-near@npm:0.3.0"
   dependencies:
     "@xchainjs/xchain-client": "npm:2.0.17"
     "@xchainjs/xchain-crypto": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:2.0.7"
     micro-key-producer: "npm:^0.7.6"
     near-api-js: "npm:^7.3.1"
-  checksum: 10/5be13cc1decc9487ed8741a3ae9072e09899e6b7bf228605fd6d2e55c904bcc0aa1c2c5c44f0fb1018e68517eeb40836655e786fb95c434d14e2e0e03f9d5697
+  checksum: 10/6fde332f2360fa2324e7038c0c7cc304c56f6545f794e97487a05620c17d6769ac34efad757a82c9566a277092c1dcde9e25ef3797252bc6e120b074f60b652c
   languageName: node
   linkType: hard
 
@@ -7666,7 +7666,7 @@ __metadata:
     "@xchainjs/xchain-mayamidgard": "npm:1.1.4"
     "@xchainjs/xchain-mayanode": "npm:1.2.4"
     "@xchainjs/xchain-midgard": "npm:1.1.4"
-    "@xchainjs/xchain-near": "npm:0.2.0"
+    "@xchainjs/xchain-near": "npm:0.3.0"
     "@xchainjs/xchain-radix": "npm:2.0.18"
     "@xchainjs/xchain-ripple": "npm:1.0.19"
     "@xchainjs/xchain-solana": "npm:1.1.9"
