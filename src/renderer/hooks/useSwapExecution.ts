@@ -85,6 +85,8 @@ type UseSwapExecutionResult = {
   lastTrackedTxHashRef: React.MutableRefObject<string | null>
   /** Set when a CF channel is opened for the in-flight submit (for tracker / modal). */
   lastCFChannelRef: React.MutableRefObject<ChainflipDepositChannel | null>
+  /** Wet 1Click deposit address for the in-flight submit. Dry quotes leave `toAddress` empty. */
+  lastOneClickDepositAddressRef: React.MutableRefObject<string | null>
 }
 
 export const useSwapExecution = ({
@@ -124,6 +126,7 @@ export const useSwapExecution = ({
   const [swapStartTime, setSwapStartTime] = useState<number>(0)
   const lastTrackedTxHashRef = useRef<string | null>(null)
   const lastCFChannelRef = useRef<ChainflipDepositChannel | null>(null)
+  const lastOneClickDepositAddressRef = useRef<string | null>(null)
 
   // Build swap params (THORChain / Maya)
   const swapParams: O.Option<SwapTxParams> = useMemo(() => {
@@ -447,6 +450,7 @@ export const useSwapExecution = ({
       to: `${targetAsset.chain}.${targetAsset.symbol}`
     })
 
+    lastOneClickDepositAddressRef.current = null
     let depositAddress: string
     try {
       const wet = await requestOneClickDepositAddress({
@@ -457,6 +461,7 @@ export const useSwapExecution = ({
         destinationAddress: destinationAddress.value
       })
       depositAddress = wet.depositAddress
+      lastOneClickDepositAddressRef.current = depositAddress
       logger.info('OneClick deposit address ready', {
         depositAddress,
         expectedAmount: wet.expectedAmount.assetAmount.amount().toFixed(),
@@ -493,6 +498,7 @@ export const useSwapExecution = ({
     subscribeSwapState,
     swapStartTime,
     lastTrackedTxHashRef,
-    lastCFChannelRef
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   }
 }

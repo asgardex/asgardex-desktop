@@ -426,7 +426,8 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     resetSwapState,
     swapStartTime,
     lastTrackedTxHashRef,
-    lastCFChannelRef
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   } = useSwapExecution({
     swap$,
     swapCF$,
@@ -700,15 +701,16 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
             lastTrackedTxHashRef.current = txHash
           }
         } else if (quoteProtocol.protocol === 'OneClick') {
-          // 1Click (NEAR Intents) keys swap status by deposit address (`toAddress` in the quote),
-          // not the on-chain tx hash. Mirrors the main Swap screen; the global TransactionQuickDial
-          // (AppView) polls GET /v0/status?depositAddress=… and renders it.
-          addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, quoteProtocol.toAddress, {
-            srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },
-            destAsset: { chain: safeTargetAsset.chain, symbol: safeTargetAsset.symbol },
-            depositAmount: amountToSwap.amount().toString()
-          })
-          lastTrackedTxHashRef.current = txHash
+          // Dry quotes leave toAddress empty. Status is keyed by the wet deposit address.
+          const depositAddress = lastOneClickDepositAddressRef.current || quoteProtocol.toAddress
+          if (depositAddress) {
+            addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, depositAddress, {
+              srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },
+              destAsset: { chain: safeTargetAsset.chain, symbol: safeTargetAsset.symbol },
+              depositAmount: amountToSwap.amount().toString()
+            })
+            lastTrackedTxHashRef.current = txHash
+          }
         }
       })
     )
@@ -723,7 +725,8 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     safeTargetAsset,
     amountToSwap,
     lastTrackedTxHashRef,
-    lastCFChannelRef
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   ])
 
   const onCloseTxModal = useCallback(() => {

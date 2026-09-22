@@ -707,7 +707,8 @@ export const Swap = ({
     resetSwapState,
     swapStartTime,
     lastTrackedTxHashRef,
-    lastCFChannelRef
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   } = useSwapExecution({
     swap$,
     swapCF$,
@@ -1797,14 +1798,16 @@ export const Swap = ({
                 lastTrackedTxHashRef.current = txHash
               }
             } else if (quoteProtocol.protocol === 'OneClick') {
-              // 1Click keys swap status by deposit address (returned in the quote as `toAddress`),
-              // not by the on-chain tx hash. The tracker polls GET /v0/status?depositAddress=... .
-              addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, quoteProtocol.toAddress, {
-                srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
-                destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
-                depositAmount: amountToSwap.amount().toString()
-              })
-              lastTrackedTxHashRef.current = txHash
+              // Dry quotes leave toAddress empty. Status is keyed by the wet deposit address.
+              const depositAddress = lastOneClickDepositAddressRef.current || quoteProtocol.toAddress
+              if (depositAddress) {
+                addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, depositAddress, {
+                  srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
+                  destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
+                  depositAmount: amountToSwap.amount().toString()
+                })
+                lastTrackedTxHashRef.current = txHash
+              }
             }
           }
         })
@@ -1821,7 +1824,8 @@ export const Swap = ({
     chainflipTransactionTrackingService,
     oneClickTransactionTrackingService,
     lastTrackedTxHashRef,
-    lastCFChannelRef
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   ])
 
   const onSwitchAssets = useCallback(async () => {
