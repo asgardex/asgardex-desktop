@@ -6430,9 +6430,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-aggregator@npm:3.1.0":
-  version: 3.1.0
-  resolution: "@xchainjs/xchain-aggregator@npm:3.1.0"
+"@xchainjs/xchain-aggregator@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@xchainjs/xchain-aggregator@npm:3.2.0"
   dependencies:
     "@chainflip/sdk": "npm:2.2.1"
     "@xchainjs/xchain-client": "npm:2.0.17"
@@ -6446,27 +6446,7 @@ __metadata:
     "@xchainjs/xchain-thorchain-query": "npm:3.2.0"
     "@xchainjs/xchain-util": "npm:2.0.7"
     "@xchainjs/xchain-wallet": "npm:2.0.34"
-  checksum: 10/d0a6439cf767ab2620243beb163fb64b73a3bf376ecf113bf110ba1d72905096fd65910edec34b9b55914c78a0b87939fb04db634a70cbaabbdd0402e5f93286
-  languageName: node
-  linkType: hard
-
-"@xchainjs/xchain-aggregator@patch:@xchainjs/xchain-aggregator@npm%3A3.1.0#~/.yarn/patches/@xchainjs-xchain-aggregator-npm-3.1.0-5092f7ce33.patch":
-  version: 3.1.0
-  resolution: "@xchainjs/xchain-aggregator@patch:@xchainjs/xchain-aggregator@npm%3A3.1.0#~/.yarn/patches/@xchainjs-xchain-aggregator-npm-3.1.0-5092f7ce33.patch::version=3.1.0&hash=1d57c1"
-  dependencies:
-    "@chainflip/sdk": "npm:2.2.1"
-    "@xchainjs/xchain-client": "npm:2.0.17"
-    "@xchainjs/xchain-mayachain": "npm:4.2.1"
-    "@xchainjs/xchain-mayachain-amm": "npm:4.2.5"
-    "@xchainjs/xchain-mayachain-query": "npm:2.2.3"
-    "@xchainjs/xchain-mayamidgard-query": "npm:1.0.19"
-    "@xchainjs/xchain-midgard-query": "npm:2.0.21"
-    "@xchainjs/xchain-thorchain": "npm:3.1.1"
-    "@xchainjs/xchain-thorchain-amm": "npm:3.1.6"
-    "@xchainjs/xchain-thorchain-query": "npm:3.2.0"
-    "@xchainjs/xchain-util": "npm:2.0.7"
-    "@xchainjs/xchain-wallet": "npm:2.0.34"
-  checksum: 10/0f33340890be41c47e0f47750bfb726186f707dbf662e9a5ee7c5e179ef3259f547b10ff351f22134512f411a8443e7d8919bdbb8c03f02ded0797c9e7adf22d
+  checksum: 10/233fb2173e771af673ecf4f5025595e705d71f25f244c9176ded137c49141743fbe9edb89922a34204bcb22e8b7ea4a96484ec4ac7eda0311d50209fb8679faf
   languageName: node
   linkType: hard
 
@@ -7644,7 +7624,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.4.1"
     "@vitest/ui": "npm:^4.1.9"
     "@vultisig/sdk": "npm:2.19.19"
-    "@xchainjs/xchain-aggregator": "patch:@xchainjs/xchain-aggregator@npm%3A3.1.0#~/.yarn/patches/@xchainjs-xchain-aggregator-npm-3.1.0-5092f7ce33.patch"
+    "@xchainjs/xchain-aggregator": "npm:3.2.0"
     "@xchainjs/xchain-arbitrum": "npm:2.1.8"
     "@xchainjs/xchain-avax": "npm:2.0.22"
     "@xchainjs/xchain-base": "npm:1.0.22"

@@ -12,5 +12,3 @@ export {
   isOneClickSupportedAsset,
   ONECLICK_FALLBACK_CHAINS
 } from './assets'
-export { requestOneClickDepositAddress } from './quote'
-export type { OneClickDepositQuote } from './quote'

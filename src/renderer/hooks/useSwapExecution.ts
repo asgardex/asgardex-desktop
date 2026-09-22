@@ -31,9 +31,16 @@ import { sequenceTOption } from '../helpers/fpHelpers'
 import { createScopedLogger } from '../helpers/logger'
 import { applyStreamingToMemo, updateMemo } from '../helpers/memoHelper'
 import { INITIAL_SWAP_STATE } from '../services/chain/const'
-import { SwapTxParams, SwapTxState, SendTxParams, SwapHandler, SwapCFHandler, SwapFees } from '../services/chain/types'
+import {
+  SwapTxParams,
+  SwapTxState,
+  SendTxParams,
+  SwapHandler,
+  SwapCFHandler,
+  SwapOneClickHandler,
+  SwapFees
+} from '../services/chain/types'
 import { PoolAddress } from '../services/midgard/midgardTypes'
-import { requestOneClickDepositAddress } from '../services/oneclick'
 import { ErrorId, WalletBalance, isStandaloneLedgerMode } from '../services/wallet/types'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useSubscriptionState } from './useSubscriptionState'
@@ -43,7 +50,7 @@ const logger = createScopedLogger('SwapExecution')
 type UseSwapExecutionParams = {
   swap$: SwapHandler
   swapCF$: SwapCFHandler
-  swapOneClick$: SwapCFHandler
+  swapOneClick$: SwapOneClickHandler
   selectedQuote: O.Option<ExtendedQuoteSwap>
   sourceAsset: AnyAsset
   /** Destination asset for Chainflip channel open (egress). */
@@ -100,7 +107,8 @@ export const useSwapExecution = ({
   streamingQuantity
 }: UseSwapExecutionParams): UseSwapExecutionResult => {
   const { appWalletService } = useWalletContext()
-  const { requestChainflipDepositAddress, isBoostEnabled } = useAggregator()
+  const { requestChainflipDepositAddress, requestOneClickDepositAddress, submitOneClickDeposit, isBoostEnabled } =
+    useAggregator()
   const appWalletState = useObservableState(appWalletService.appWalletState$)
   const standaloneLedgerState = useObservableState(appWalletService.standaloneLedgerService.standaloneLedgerState$)
 
@@ -444,15 +452,14 @@ export const useSwapExecution = ({
       const wet = await requestOneClickDepositAddress({
         fromAsset: sourceAsset,
         destinationAsset: targetAsset,
-        amount: params.amount,
+        amount: new CryptoAmount(params.amount, sourceAsset),
         fromAddress: params.sender,
-        destinationAddress: destinationAddress.value,
-        slippageToleranceBps: 100
+        destinationAddress: destinationAddress.value
       })
       depositAddress = wet.depositAddress
       logger.info('OneClick deposit address ready', {
         depositAddress,
-        amountOut: wet.amountOut,
+        expectedAmount: wet.expectedAmount.assetAmount.amount().toFixed(),
         correlationId: wet.correlationId
       })
     } catch (error) {
@@ -460,13 +467,15 @@ export const useSwapExecution = ({
       throw error
     }
 
-    subscribeSwapState(swapOneClick$({ ...params, recipient: depositAddress, memo: '' }))
+    subscribeSwapState(swapOneClick$({ ...params, recipient: depositAddress, memo: '' }, submitOneClickDeposit))
   }, [
     oneClickSwapParams,
     selectedQuote,
     destinationAddress,
     sourceAsset,
     targetAsset,
+    requestOneClickDepositAddress,
+    submitOneClickDeposit,
     publishOneClickSubmitFailure,
     subscribeSwapState,
     swapOneClick$
