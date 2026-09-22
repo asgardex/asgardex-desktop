@@ -174,6 +174,11 @@ export type SwapStateHandler = (p: SwapTxParams) => SwapState$
 export type SwapHandler = (p: SwapTxParams) => SwapTxState$
 export type SwapCFHandler = (p: SendTxParams) => SwapCFTxState$
 
+/** Optional post-broadcast registration for OneClick (aggregator.submitOneClickDeposit). */
+export type OneClickRegisterDeposit = (txHash: string, depositAddress: string) => Promise<void>
+
+export type SwapOneClickHandler = (p: SendTxParams, registerDeposit?: OneClickRegisterDeposit) => SwapCFTxState$
+
 export type PoolFeeLD = LiveData<Error, AssetWithAmount>
 
 export type SwapFees = {

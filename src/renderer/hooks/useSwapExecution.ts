@@ -31,7 +31,15 @@ import { sequenceTOption } from '../helpers/fpHelpers'
 import { createScopedLogger } from '../helpers/logger'
 import { applyStreamingToMemo, updateMemo } from '../helpers/memoHelper'
 import { INITIAL_SWAP_STATE } from '../services/chain/const'
-import { SwapTxParams, SwapTxState, SendTxParams, SwapHandler, SwapCFHandler, SwapFees } from '../services/chain/types'
+import {
+  SwapTxParams,
+  SwapTxState,
+  SendTxParams,
+  SwapHandler,
+  SwapCFHandler,
+  SwapOneClickHandler,
+  SwapFees
+} from '../services/chain/types'
 import { PoolAddress } from '../services/midgard/midgardTypes'
 import { ErrorId, WalletBalance, isStandaloneLedgerMode } from '../services/wallet/types'
 import { useAggregator } from '../store/aggregator/hooks'
@@ -42,7 +50,7 @@ const logger = createScopedLogger('SwapExecution')
 type UseSwapExecutionParams = {
   swap$: SwapHandler
   swapCF$: SwapCFHandler
-  swapOneClick$: SwapCFHandler
+  swapOneClick$: SwapOneClickHandler
   selectedQuote: O.Option<ExtendedQuoteSwap>
   sourceAsset: AnyAsset
   /** Destination asset for Chainflip channel open (egress). */
@@ -69,13 +77,16 @@ type UseSwapExecutionResult = {
   submitSwap: () => void
   /** Opens a Chainflip deposit channel then broadcasts the transfer. */
   submitCFSwap: () => Promise<void>
-  submitOneClickSwap: () => void
+  /** Fetches a wet OneClick deposit address then broadcasts the transfer. */
+  submitOneClickSwap: () => Promise<void>
   resetSwapState: () => void
   subscribeSwapState: (s: import('rxjs').Observable<SwapTxState>) => void
   swapStartTime: number
   lastTrackedTxHashRef: React.MutableRefObject<string | null>
   /** Set when a CF channel is opened for the in-flight submit (for tracker / modal). */
   lastCFChannelRef: React.MutableRefObject<ChainflipDepositChannel | null>
+  /** Wet 1Click deposit address for the in-flight submit. Dry quotes leave `toAddress` empty. */
+  lastOneClickDepositAddressRef: React.MutableRefObject<string | null>
 }
 
 export const useSwapExecution = ({
@@ -98,7 +109,8 @@ export const useSwapExecution = ({
   streamingQuantity
 }: UseSwapExecutionParams): UseSwapExecutionResult => {
   const { appWalletService } = useWalletContext()
-  const { requestChainflipDepositAddress, isBoostEnabled } = useAggregator()
+  const { requestChainflipDepositAddress, requestOneClickDepositAddress, submitOneClickDeposit, isBoostEnabled } =
+    useAggregator()
   const appWalletState = useObservableState(appWalletService.appWalletState$)
   const standaloneLedgerState = useObservableState(appWalletService.standaloneLedgerService.standaloneLedgerState$)
 
@@ -114,6 +126,7 @@ export const useSwapExecution = ({
   const [swapStartTime, setSwapStartTime] = useState<number>(0)
   const lastTrackedTxHashRef = useRef<string | null>(null)
   const lastCFChannelRef = useRef<ChainflipDepositChannel | null>(null)
+  const lastOneClickDepositAddressRef = useRef<string | null>(null)
 
   // Build swap params (THORChain / Maya)
   const swapParams: O.Option<SwapTxParams> = useMemo(() => {
@@ -397,16 +410,81 @@ export const useSwapExecution = ({
     swapCF$
   ])
 
-  const submitOneClickSwap = useCallback(() => {
-    FP.pipe(
-      oneClickSwapParams,
-      O.map((params) => {
-        setSwapStartTime(Date.now())
-        subscribeSwapState(swapOneClick$(params))
-        return true
+  const publishOneClickSubmitFailure = useCallback(
+    (error: unknown) => {
+      const msg = error instanceof Error ? error.message : 'OneClick swap submit failed'
+      logger.error('OneClick submit failed before broadcast', error)
+      setSwapStartTime(Date.now())
+      subscribeSwapState(Rx.of({ swapTx: RD.failure({ errorId: ErrorId.SEND_TX, msg }) }))
+    },
+    [subscribeSwapState]
+  )
+
+  const submitOneClickSwap = useCallback(async () => {
+    if (O.isNone(oneClickSwapParams) || O.isNone(selectedQuote) || O.isNone(destinationAddress)) {
+      const error = new Error('Missing OneClick swap params, quote, or destination address')
+      publishOneClickSubmitFailure(error)
+      throw error
+    }
+
+    const params = oneClickSwapParams.value
+    const quote = selectedQuote.value
+    if (quote.protocol !== 'OneClick') {
+      const error = new Error('Selected quote is not a OneClick route')
+      publishOneClickSubmitFailure(error)
+      throw error
+    }
+
+    if (!params.sender) {
+      const error = new Error('Missing OneClick sender address')
+      publishOneClickSubmitFailure(error)
+      throw error
+    }
+
+    // Show SwapTxModal immediately while the wet quote (deposit address) is fetched.
+    setSwapStartTime(Date.now())
+    subscribeSwapState(Rx.of({ swapTx: RD.pending }))
+
+    logger.info('Requesting OneClick deposit address before broadcast', {
+      from: `${sourceAsset.chain}.${sourceAsset.symbol}`,
+      to: `${targetAsset.chain}.${targetAsset.symbol}`
+    })
+
+    lastOneClickDepositAddressRef.current = null
+    let depositAddress: string
+    try {
+      const wet = await requestOneClickDepositAddress({
+        fromAsset: sourceAsset,
+        destinationAsset: targetAsset,
+        amount: new CryptoAmount(params.amount, sourceAsset),
+        fromAddress: params.sender,
+        destinationAddress: destinationAddress.value
       })
-    )
-  }, [oneClickSwapParams, subscribeSwapState, swapOneClick$])
+      depositAddress = wet.depositAddress
+      lastOneClickDepositAddressRef.current = depositAddress
+      logger.info('OneClick deposit address ready', {
+        depositAddress,
+        expectedAmount: wet.expectedAmount.assetAmount.amount().toFixed(),
+        correlationId: wet.correlationId
+      })
+    } catch (error) {
+      publishOneClickSubmitFailure(error)
+      throw error
+    }
+
+    subscribeSwapState(swapOneClick$({ ...params, recipient: depositAddress, memo: '' }, submitOneClickDeposit))
+  }, [
+    oneClickSwapParams,
+    selectedQuote,
+    destinationAddress,
+    sourceAsset,
+    targetAsset,
+    requestOneClickDepositAddress,
+    submitOneClickDeposit,
+    publishOneClickSubmitFailure,
+    subscribeSwapState,
+    swapOneClick$
+  ])
 
   return {
     swapState,
@@ -420,6 +498,7 @@ export const useSwapExecution = ({
     subscribeSwapState,
     swapStartTime,
     lastTrackedTxHashRef,
-    lastCFChannelRef
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   }
 }

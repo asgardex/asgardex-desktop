@@ -25,6 +25,7 @@ import {
   isSynthAsset,
   isTradeAsset
 } from '@xchainjs/xchain-util'
+import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -41,6 +42,8 @@ type OneClickToken = {
   decimals: number
   contractAddress?: string
   price?: number
+  /** CoinGecko id when 1Click knows one — used for token icons */
+  coingeckoId?: string
 }
 
 // Mirrors the aggregator's internal ONECLICK_TO_X map, which isn't exported
@@ -111,6 +114,8 @@ const oneClickTokenToXAsset = (token: OneClickToken): Asset | TokenAsset | null 
 // the swap asset filters, protocol validation and fee checks are sync paths.
 let assetsSnapshot: ReadonlyArray<Asset | TokenAsset> | null = null
 let tokensSnapshot: ReadonlyArray<OneClickToken> | null = null
+/** assetToString(asset).toLowerCase() → CoinGecko image URL (populated after token load) */
+const iconUrlByAsset = new Map<string, string>()
 
 const XCHAIN_TO_ONECLICK: Record<string, string> = Object.fromEntries(
   Object.entries(ONECLICK_TO_XCHAIN).map(([blockchain, chain]) => [chain, blockchain])
@@ -118,6 +123,50 @@ const XCHAIN_TO_ONECLICK: Record<string, string> = Object.fromEntries(
 
 const toAssets = (tokens: OneClickToken[]): (Asset | TokenAsset)[] =>
   tokens.map(oneClickTokenToXAsset).filter((asset): asset is Asset | TokenAsset => asset !== null)
+
+const isUsableGeckoId = (id: string | undefined): id is string => !!id && id !== 'None' && !id.startsWith('custom:')
+
+/**
+ * Resolve CoinGecko image URLs for 1Click tokens (batched). Failures are soft —
+ * icons stay on letter placeholders until a later reload succeeds.
+ */
+const hydrateIconUrls = async (tokens: OneClickToken[]): Promise<void> => {
+  const geckoIds = [...new Set(tokens.map((t) => t.coingeckoId).filter(isUsableGeckoId))]
+  if (geckoIds.length === 0) return
+
+  const imageByGeckoId = new Map<string, string>()
+  const chunkSize = 100
+  for (let i = 0; i < geckoIds.length; i += chunkSize) {
+    const chunk = geckoIds.slice(i, i + chunkSize)
+    try {
+      const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${encodeURIComponent(
+        chunk.join(',')
+      )}&per_page=${chunk.length}`
+      const resp = await fetch(url, { signal: AbortSignal.timeout(ONECLICK_TOKENS_TIMEOUT_MS) })
+      if (!resp.ok) {
+        logger.warn('CoinGecko icon fetch failed', { status: resp.status, chunkSize: chunk.length })
+        continue
+      }
+      const rows = (await resp.json()) as { id?: string; image?: string }[]
+      for (const row of rows) {
+        if (row.id && row.image) imageByGeckoId.set(row.id, row.image)
+      }
+    } catch (error) {
+      logger.warn('CoinGecko icon fetch error', error)
+    }
+  }
+
+  for (const token of tokens) {
+    if (!isUsableGeckoId(token.coingeckoId)) continue
+    const image = imageByGeckoId.get(token.coingeckoId)
+    if (!image) continue
+    const asset = oneClickTokenToXAsset(token)
+    if (!asset) continue
+    // Skip native NEAR — AssetIcon already uses the local nearIcon
+    if (asset.chain === NEARChain && asset.type === AssetType.NATIVE) continue
+    iconUrlByAsset.set(assetToString(asset).toLowerCase(), image)
+  }
+}
 
 export type OneClickAssetsRD = RD.RemoteData<Error, (Asset | TokenAsset)[]>
 
@@ -128,18 +177,39 @@ export type OneClickAssetsRD = RD.RemoteData<Error, (Asset | TokenAsset)[]>
  */
 export const getAssetsData$ = (): Rx.Observable<OneClickAssetsRD> =>
   Rx.defer(() => tokensCache.getValue()).pipe(
-    RxOp.map((tokens): OneClickAssetsRD => {
-      const assets = toAssets(tokens)
-      assetsSnapshot = assets
-      tokensSnapshot = tokens
-      return RD.success(assets)
-    }),
+    RxOp.switchMap((tokens) =>
+      Rx.from(hydrateIconUrls(tokens)).pipe(
+        RxOp.map((): OneClickAssetsRD => {
+          const assets = toAssets(tokens)
+          assetsSnapshot = assets
+          tokensSnapshot = tokens
+          return RD.success(assets)
+        }),
+        // Icons are best-effort; still publish assets if CoinGecko fails
+        RxOp.catchError((error): Rx.Observable<OneClickAssetsRD> => {
+          logger.warn('1Click icon hydrate failed; publishing assets without icons', error)
+          const assets = toAssets(tokens)
+          assetsSnapshot = assets
+          tokensSnapshot = tokens
+          return Rx.of(RD.success(assets))
+        })
+      )
+    ),
     RxOp.catchError((error): Rx.Observable<OneClickAssetsRD> => {
       logger.warn('1Click tokens unavailable, falling back to chain-level support', error)
       return Rx.of(RD.success([]))
     }),
     RxOp.shareReplay(1)
   )
+
+/**
+ * Icon URL for a 1Click-listed token (e.g. NEAR NEP-141), from CoinGecko via
+ * the token's `coingeckoId`. Empty until `getAssetsData$` has hydrated icons.
+ */
+export const getOneClickAssetIconUrl = (asset: AnyAsset): O.Option<string> => {
+  const url = iconUrlByAsset.get(assetToString(asset).toLowerCase())
+  return url ? O.some(url) : O.none
+}
 
 /**
  * Synchronous OneClick support check: exact (full asset identity against the
@@ -157,20 +227,19 @@ export const isOneClickSupportedAsset = (asset: AnyAsset): boolean => {
 }
 
 /**
- * Synchronous USD price for an asset from 1Click's token list (their /v0/tokens
- * payload carries a `price` per token). Returns undefined until the list has
- * loaded or when the asset isn't in it. Matching mirrors the aggregator's
- * findOneClickToken: tokens by contract address (case-insensitive, taken from
- * the `TICKER-CONTRACT` symbol convention), natives by plain symbol.
+ * Find a 1Click token entry for an asgardex asset. Matching mirrors the
+ * aggregator's findOneClickToken: tokens by contract address (case-insensitive,
+ * from the `TICKER-CONTRACT` symbol convention), natives by plain symbol, and
+ * native NEAR ↔ wrap.near / wNEAR.
  */
-export const getOneClickUsdPrice = (asset: AnyAsset): number | undefined => {
+export const findOneClickToken = (asset: AnyAsset): OneClickToken | undefined => {
   if (isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)) return undefined
   if (!tokensSnapshot) return undefined
   const blockchain = XCHAIN_TO_ONECLICK[asset.chain]
   if (!blockchain) return undefined
 
   const contract = asset.symbol.includes('-') ? asset.symbol.split('-')[1] : undefined
-  const token = tokensSnapshot.find((t) => {
+  return tokensSnapshot.find((t) => {
     if (t.blockchain !== blockchain) return false
     // Native NEAR ↔ wrap.near / wNEAR (same rule as aggregator findOneClickToken)
     if (asset.chain === NEARChain && asset.type === AssetType.NATIVE) {
@@ -179,6 +248,14 @@ export const getOneClickUsdPrice = (asset: AnyAsset): number | undefined => {
     if (contract) return t.contractAddress ? t.contractAddress.toLowerCase() === contract.toLowerCase() : false
     return t.symbol.toUpperCase() === asset.symbol.toUpperCase() && !t.contractAddress
   })
+}
 
+/**
+ * Synchronous USD price for an asset from 1Click's token list (their /v0/tokens
+ * payload carries a `price` per token). Returns undefined until the list has
+ * loaded or when the asset isn't in it.
+ */
+export const getOneClickUsdPrice = (asset: AnyAsset): number | undefined => {
+  const token = findOneClickToken(asset)
   return token?.price !== undefined && token.price > 0 ? token.price : undefined
 }

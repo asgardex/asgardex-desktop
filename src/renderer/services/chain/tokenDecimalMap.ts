@@ -11,6 +11,7 @@
  *   - EVM chains (ETH, ARB, AVAX, BSC, BASE): 18
  *   - SOL: 9
  *   - TRON: 6
+ *   - NEAR native: 24 (NEP-141 tokens must be listed — do not inherit 24)
  *
  * To add a new token: add an entry with the chain, lowercase contract address, and decimal count.
  */
@@ -137,6 +138,19 @@ const TRON_TOKENS: Record<string, number> = {
 }
 
 // ────────────────────────────────────────────────
+// NEAR NEP-141 tokens (contract id is account id, often lowercase)
+// Native NEAR is 24dp; tokens must NOT inherit that.
+// ────────────────────────────────────────────────
+const NEAR_TOKENS: Record<string, number> = {
+  // Circle USDC (native NEAR)
+  '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1': 6,
+  'usdt.tether-token.near': 6,
+  'wrap.near': 24, // wNEAR
+  'eth.bridge.near': 18,
+  '2260fac5e5542a773aa44fbcfedf7c193bc2c599.factory.bridge.near': 8 // wBTC
+}
+
+// ────────────────────────────────────────────────
 // Combined map: CHAIN -> { address -> decimals }
 // ────────────────────────────────────────────────
 const CHAIN_TOKEN_DECIMALS: Record<string, Record<string, number>> = {
@@ -146,7 +160,8 @@ const CHAIN_TOKEN_DECIMALS: Record<string, Record<string, number>> = {
   BSC: BSC_TOKENS,
   BASE: BASE_TOKENS,
   SOL: SOL_TOKENS,
-  TRON: TRON_TOKENS
+  TRON: TRON_TOKENS,
+  NEAR: NEAR_TOKENS
 }
 
 /**
@@ -174,9 +189,9 @@ export const getTokenDecimal = (chain: string, symbol: string): number | null =>
   const address = extractAddress(symbol)
   if (!address) return null
 
-  // EVM addresses are case-insensitive, SOL/TRON are case-sensitive
-  const isEVM = ['ETH', 'ARB', 'AVAX', 'BSC', 'BASE'].includes(chain)
-  const normalizedAddress = isEVM ? address.toLowerCase() : address
+  // EVM + NEAR account ids are case-insensitive; SOL/TRON are case-sensitive
+  const normalizeLower = ['ETH', 'ARB', 'AVAX', 'BSC', 'BASE', 'NEAR'].includes(chain)
+  const normalizedAddress = normalizeLower ? address.toLowerCase() : address
 
   const decimal = chainMap[normalizedAddress]
   return decimal !== undefined ? decimal : null

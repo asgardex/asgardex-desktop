@@ -107,7 +107,8 @@ export const getEstimate = createAsyncThunk(
         affiliateBrokers,
         ...liquifyAggregatorConfig(network),
         ...(brokerUrl && { brokerUrl }), // Only include brokerUrl if it's non-empty
-        ...(ASGARDEX_ONECLICK_API_KEY && { oneClickApiKey: ASGARDEX_ONECLICK_API_KEY })
+        ...(ASGARDEX_ONECLICK_API_KEY && { oneClickApiKey: ASGARDEX_ONECLICK_API_KEY }),
+        oneClickReferral: 'asgardex'
       }
 
       aggregator.setConfiguration(config)

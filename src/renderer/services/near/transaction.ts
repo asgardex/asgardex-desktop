@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { NEARChain, NEARAsset } from '@xchainjs/xchain-near'
+import { eqAsset } from '@xchainjs/xchain-util'
 import { either as E, function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -20,7 +21,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     const sendLedgerTxParams: IPCLedgerSendTxParams = {
       chain: NEARChain,
       network,
-      asset: NEARAsset,
+      asset: params.asset ?? NEARAsset,
       feeAsset: undefined,
       amount: params.amount,
       sender: params.sender,
@@ -78,8 +79,9 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       network$,
       RxOp.take(1),
       RxOp.switchMap((network) => {
-        // xchain-near rejects any truthy memo on native transfers
-        const nearParams = { ...params, memo: '' }
+        // Native NEAR rejects memos; NEP-141 ft_transfer accepts an optional memo.
+        const isNative = !params.asset || eqAsset(params.asset, NEARAsset)
+        const nearParams = isNative ? { ...params, memo: '' } : params
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params: nearParams })
         if (isVultisigWallet(params.walletType)) return sendVultisigTx({ network, params: nearParams })
         return common.sendTx(nearParams)

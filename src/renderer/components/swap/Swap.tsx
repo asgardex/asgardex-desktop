@@ -52,7 +52,7 @@ import {
 } from '../../helpers/assetHelper'
 import { resolveChainflipChannelId } from '../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
-import { getChainAsset } from '../../helpers/chainHelper'
+import { getChainAsset, isNearChainToken } from '../../helpers/chainHelper'
 import { isRouterApprovalError } from '../../helpers/evmApprovalHelper'
 import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
@@ -224,8 +224,11 @@ export const Swap = ({
 
   const { isChainflipSupportedAssetSync, transactionTrackingService: chainflipTransactionTrackingService } =
     useChainflipContext()
-  const { transactionTrackingService: oneClickTransactionTrackingService, isOneClickSupportedAsset } =
-    useOneClickContext()
+  const {
+    transactionTrackingService: oneClickTransactionTrackingService,
+    isOneClickSupportedAsset,
+    getOneClickUsdPrice
+  } = useOneClickContext()
 
   const {
     streamingInterval,
@@ -432,8 +435,26 @@ export const Swap = ({
       )
     }
 
+    // Poolless assets (e.g. NEAR via OneClick) have no Midgard/Maya USD price.
+    // Fall back to 1Click token-list prices (same source as affiliate BPS).
+    if (result.amount().isZero()) {
+      const oneClickUsdPrice = getOneClickUsdPrice(sourceAsset)
+      if (oneClickUsdPrice !== undefined && oneClickUsdPrice > 0) {
+        result = amountToSwap.times(oneClickUsdPrice)
+      }
+    }
+
     return new CryptoAmount(result, pricePoolThor.asset)
-  }, [amountToSwap, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor, sourceAsset, sourceChain])
+  }, [
+    amountToSwap,
+    getOneClickUsdPrice,
+    poolDetailsMaya,
+    poolDetailsThor,
+    pricePoolMaya,
+    pricePoolThor,
+    sourceAsset,
+    sourceChain
+  ])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwap.amount().isZero(), [amountToSwap])
 
@@ -686,7 +707,8 @@ export const Swap = ({
     resetSwapState,
     swapStartTime,
     lastTrackedTxHashRef,
-    lastCFChannelRef
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   } = useSwapExecution({
     swap$,
     swapCF$,
@@ -855,7 +877,8 @@ export const Swap = ({
               })
             )
           } else if (quoteProtocol.protocol === 'Chainflip' || quoteProtocol.protocol === 'OneClick') {
-            // Neither protocol exposes pool data, so fall back to a Gecko-priced USD value.
+            // Neither protocol exposes Midgard pool data. Prefer CoinGecko, then 1Click
+            // token-list prices (covers poolless assets like NEAR that aren't in GECKO_MAP).
             if (
               !swapResultAmountMax?.asset?.symbol ||
               !swapResultAmountMax?.baseAmount ||
@@ -865,10 +888,17 @@ export const Swap = ({
             }
             const assetSymbol = swapResultAmountMax.asset.symbol.toUpperCase()
             const geckoId = GECKO_MAP[assetSymbol]
-            const geckoPrice = geckoId ? geckoPriceMap[geckoId]?.usd : 0
+            const geckoPrice = geckoId ? geckoPriceMap[geckoId]?.usd : undefined
+            const oneClickUsdPrice = getOneClickUsdPrice(swapResultAmountMax.asset)
+            const usdPrice =
+              geckoPrice && geckoPrice > 0
+                ? geckoPrice
+                : oneClickUsdPrice && oneClickUsdPrice > 0
+                  ? oneClickUsdPrice
+                  : 0
             if (swapResultAmountMax.baseAmount && typeof swapResultAmountMax.baseAmount.times === 'function') {
               try {
-                return swapResultAmountMax.baseAmount.times(geckoPrice)
+                return swapResultAmountMax.baseAmount.times(usdPrice)
               } catch (error) {
                 logger.warn(`Error calculating ${quoteProtocol.protocol} USD value:`, error)
                 return baseAmount(0, THORCHAIN_DECIMAL)
@@ -888,7 +918,8 @@ export const Swap = ({
     poolDetailsThor,
     poolDetailsMaya,
     pricePoolMaya,
-    geckoPriceMap
+    geckoPriceMap,
+    getOneClickUsdPrice
   ])
 
   /**
@@ -1459,7 +1490,9 @@ export const Swap = ({
     reloadBalances()
     setAmountToSwap(initialAmountToSwap)
     resetQuote()
-    if (isEvmChainToken(targetAsset)) {
+    // Persist swapped-into tokens so the next balance reload queries them
+    // (EVM ERC-20s and NEAR NEP-141s via getUserAssetsByChain$ → getBalance).
+    if (isEvmChainToken(targetAsset) || isNearChainToken(targetAsset)) {
       addAsset(targetAsset as TokenAsset)
     }
   }, [resetSwapState, reloadBalances, setAmountToSwap, initialAmountToSwap, resetQuote, targetAsset])
@@ -1765,14 +1798,16 @@ export const Swap = ({
                 lastTrackedTxHashRef.current = txHash
               }
             } else if (quoteProtocol.protocol === 'OneClick') {
-              // 1Click keys swap status by deposit address (returned in the quote as `toAddress`),
-              // not by the on-chain tx hash. The tracker polls GET /v0/status?depositAddress=... .
-              addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, quoteProtocol.toAddress, {
-                srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
-                destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
-                depositAmount: amountToSwap.amount().toString()
-              })
-              lastTrackedTxHashRef.current = txHash
+              // Dry quotes leave toAddress empty. Status is keyed by the wet deposit address.
+              const depositAddress = lastOneClickDepositAddressRef.current || quoteProtocol.toAddress
+              if (depositAddress) {
+                addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, depositAddress, {
+                  srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
+                  destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
+                  depositAmount: amountToSwap.amount().toString()
+                })
+                lastTrackedTxHashRef.current = txHash
+              }
             }
           }
         })
@@ -1789,7 +1824,8 @@ export const Swap = ({
     chainflipTransactionTrackingService,
     oneClickTransactionTrackingService,
     lastTrackedTxHashRef,
-    lastCFChannelRef
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   ])
 
   const onSwitchAssets = useCallback(async () => {
