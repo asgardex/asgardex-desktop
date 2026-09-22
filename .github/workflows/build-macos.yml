@@ -71,6 +71,8 @@ jobs:
           VITE_ASGARDEX_THORNODE_RPC: ${{ secrets.VITE_ASGARDEX_THORNODE_RPC }}
           VITE_LIQUIFY_THORCHAIN_API_KEY: ${{ secrets.VITE_LIQUIFY_THORCHAIN_API_KEY }}
           VITE_LIQUIFY_THORCHAIN_RPC_KEY: ${{ secrets.VITE_LIQUIFY_THORCHAIN_RPC_KEY }}
+          VITE_RUNEBOND_INTEGRATORS_URL: ${{ secrets.VITE_RUNEBOND_INTEGRATORS_URL }}
+          VITE_RUNEBOND_INTEGRATORS_API_KEY: ${{ secrets.VITE_RUNEBOND_INTEGRATORS_API_KEY }}
           OS_NAME: ${{ matrix.os-name }}
           OS_VERSION: ${{ matrix.os-version }}
           OS_VERSION_SUFFIX: '${{ matrix.os-version }}-${{ matrix.os-name }}'

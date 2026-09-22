@@ -12,6 +12,7 @@ type ChartProps = {
   isPrivate?: boolean
   isLegendHidden?: boolean
   showLabelLine?: boolean
+  formatValue?: (value: number) => string
 }
 
 type SliceData = {
@@ -217,7 +218,8 @@ export const PieChart = ({
   isLegendHidden = false,
   showLabelLine = false,
   isPrivate = false,
-  chartData
+  chartData,
+  formatValue = (value) => usdFormatter.format(value)
 }: ChartProps) => {
   const { isLight: isLightTheme } = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -267,7 +269,7 @@ export const PieChart = ({
             fill={s.color}
             role="img"
             tabIndex={0}
-            aria-label={`${s.name}: ${isPrivate ? hiddenString : usdFormatter.format(s.value)}`}
+            aria-label={`${s.name}: ${isPrivate ? hiddenString : formatValue(s.value)}`}
             style={{
               opacity: hovered !== null && hovered !== i ? 0.6 : 1,
               transition: 'opacity 0.2s',
@@ -309,7 +311,7 @@ export const PieChart = ({
                   fontSize={9}
                   textAnchor={isRight ? 'start' : 'end'}
                   dominantBaseline="central">
-                  {s.name}: {isPrivate ? hiddenString : usdFormatter.format(s.value)}
+                  {s.name}: {isPrivate ? hiddenString : formatValue(s.value)}
                 </text>
               </g>
             )
@@ -345,7 +347,7 @@ export const PieChart = ({
             }}
           />
           <span style={{ verticalAlign: 'middle' }}>
-            {slices[hovered].name}: {isPrivate ? hiddenString : usdFormatter.format(slices[hovered].value)}
+            {slices[hovered].name}: {isPrivate ? hiddenString : formatValue(slices[hovered].value)}
           </span>
         </div>
       )}

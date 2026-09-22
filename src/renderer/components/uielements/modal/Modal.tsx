@@ -21,6 +21,7 @@ export type HeadlessModalProps = {
   className?: string // wrapper
   panelClassName?: string // Dialog.Panel
   containerClassName?: string // centering container (the flex wrapper)
+  backdropClassName?: string // Dialog.Backdrop
   okButtonProps?: ButtonProps
   cancelButtonProps?: ButtonProps
   children?: React.ReactNode
@@ -39,6 +40,7 @@ export const Modal = ({
   className = '',
   panelClassName = '',
   containerClassName = '',
+  backdropClassName = 'bg-bg0/10 dark:bg-bg0d/10',
   okButtonProps,
   cancelButtonProps,
   children
@@ -47,7 +49,7 @@ export const Modal = ({
     <Transition appear show={visible} as={Fragment}>
       <Dialog as="div" className={clsx('relative z-50', className)} onClose={onCancel ?? (() => {})}>
         {/* Backdrop */}
-        <DialogBackdrop className="fixed inset-0 bg-bg0/10 dark:bg-bg0d/10" />
+        <DialogBackdrop className={clsx('fixed inset-0', backdropClassName)} />
 
         {/* Modal container */}
         <div className="fixed inset-0 overflow-y-auto">
@@ -77,7 +79,7 @@ export const Modal = ({
                     <button
                       type="button"
                       onClick={onCancel}
-                      className="absolute top-0 right-0 grid size-10 place-items-center rounded text-text1 focus:outline-hidden dark:text-text1d/90">
+                      className="absolute top-0 right-0 grid size-10 cursor-pointer place-items-center rounded text-text1 focus:outline-hidden dark:text-text1d/90">
                       <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M18 6L6 18M6 6l12 12" />
                       </svg>

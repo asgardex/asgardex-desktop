@@ -13,13 +13,14 @@ import {
   ipcLedgerApproveERC20TokenParamsIO,
   ipcLedgerDepositTxParamsIO,
   ipcLedgerSendTxParamsIO,
-  ipcSaveBalancesJsonParamsIO
+  ipcSaveBalancesJsonParamsIO,
+  ipcSaveCsvParamsIO
 } from '../shared/api/io'
 import type { IPCExportKeystoreParams, IPCLedgerAddressParams, StoreFileName } from '../shared/api/types'
 import { DEFAULT_STORAGES } from '../shared/const'
 import type { Locale } from '../shared/i18n/types'
 import { registerAppCheckUpdatedHandler } from './api/appUpdate'
-import { saveBalancesJson } from './api/export'
+import { saveBalancesJson, saveCsv } from './api/export'
 import { getFileStoreService } from './api/fileStore'
 import { exportKeystore, initKeystoreWallets, loadKeystore, saveKeystoreWallets } from './api/keystore'
 import {
@@ -203,6 +204,15 @@ const initIPC = () => {
       E.fold(
         (e) => Promise.reject(e),
         (p) => saveBalancesJson(p)
+      )
+    )
+  )
+  ipcMain.handle(IPCMessages.SAVE_CSV, async (_, params: unknown) =>
+    FP.pipe(
+      ipcSaveCsvParamsIO.decode(params),
+      E.fold(
+        (e) => Promise.reject(e),
+        (p) => saveCsv(p)
       )
     )
   )

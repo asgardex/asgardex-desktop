@@ -348,7 +348,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
                   }))
                 : []
             },
-            signMembership: signer_membership
+            signMembership: Array.isArray(signer_membership) ? signer_membership : []
           })
         )
       )
