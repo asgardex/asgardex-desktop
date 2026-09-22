@@ -2507,6 +2507,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/devices@npm:8.18.0":
+  version: 8.18.0
+  resolution: "@ledgerhq/devices@npm:8.18.0"
+  dependencies:
+    semver: "npm:7.7.3"
+  checksum: 10/b2043c9330ec82af64a31030d34cf7cd19d3881f148383e451e4fc2324ecba21ba30c331d4d2bda7dc4e3bda0c2106afd7bafa5d8e4e77946d8821c1a83d1a3e
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/devices@npm:8.4.7":
   version: 8.4.7
   resolution: "@ledgerhq/devices@npm:8.4.7"
@@ -2787,6 +2796,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/hw-transport@npm:^6.36.0":
+  version: 6.36.0
+  resolution: "@ledgerhq/hw-transport@npm:6.36.0"
+  dependencies:
+    "@ledgerhq/devices": "npm:8.18.0"
+    "@ledgerhq/logs": "npm:6.19.0"
+    events: "npm:^3.3.0"
+  checksum: 10/6346fc49faa19909b903dce53153339d1075e7d08e3ffd7d3a95e0f6e668ded81c9e934bea195ff16521d9864efa428dd615a15403c36ee78626ec68865903ae
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/live-env@npm:^2.11.0":
   version: 2.11.0
   resolution: "@ledgerhq/live-env@npm:2.11.0"
@@ -2794,6 +2814,13 @@ __metadata:
     rxjs: "npm:^7.8.1"
     utility-types: "npm:^3.10.0"
   checksum: 10/073be8cdca6012c47c1458da96448f3d1b07653a250f48a7142b3fab46a6ac38350897ad6d530ca357a45ebd2977e147b0a0457398abf61eb250899bd0c86123
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/logs@npm:6.19.0":
+  version: 6.19.0
+  resolution: "@ledgerhq/logs@npm:6.19.0"
+  checksum: 10/73ad01bc3436ee7a50ee9401addf4c3800f4f870dfa3a006aec619bbe5fc5fa96a4df4c790d9a30d509514935b6023492dc8fb4037e2c3dc8bef1c2872a79d15
   languageName: node
   linkType: hard
 
@@ -7609,7 +7636,7 @@ __metadata:
     "@eslint/js": "npm:^8.57.1"
     "@headlessui/react": "npm:^2.2.10"
     "@heroicons/react": "npm:^2.2.0"
-    "@ledgerhq/hw-transport": "npm:^6.31.6"
+    "@ledgerhq/hw-transport": "npm:^6.36.0"
     "@ledgerhq/hw-transport-node-hid-singleton": "npm:6.31.8"
     "@reduxjs/toolkit": "npm:^2.12.0"
     "@rollup/plugin-inject": "npm:^5.0.5"
@@ -15700,6 +15727,15 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 10/4cfa1eb91ef3751e20fc52e47a935a0118d56d6f15a837ab814da0c150778ba2ca4f1a4d9068b33070ea4273629e615066664c2cfcd7c272caf7a8a0f6518b2c
+  languageName: node
+  linkType: hard
+
+"semver@npm:7.7.3":
+  version: 7.7.3
+  resolution: "semver@npm:7.7.3"
+  bin:
+    semver: bin/semver.js
+  checksum: 10/8dbc3168e057a38fc322af909c7f5617483c50caddba135439ff09a754b20bdd6482a5123ff543dad4affa488ecf46ec5fb56d61312ad20bb140199b88dfaea9
   languageName: node
   linkType: hard
 

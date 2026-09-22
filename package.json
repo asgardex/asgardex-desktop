@@ -75,7 +75,7 @@
     "@devexperts/remote-data-ts": "^2.1.1",
     "@headlessui/react": "^2.2.10",
     "@heroicons/react": "^2.2.0",
-    "@ledgerhq/hw-transport": "^6.31.6",
+    "@ledgerhq/hw-transport": "^6.36.0",
     "@ledgerhq/hw-transport-node-hid-singleton": "6.31.8",
     "@reduxjs/toolkit": "^2.12.0",
     "@runebond/integrators-client": "^0.1.1",
