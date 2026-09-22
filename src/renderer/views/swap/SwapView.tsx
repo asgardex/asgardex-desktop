@@ -523,7 +523,10 @@ const SuccessRouteView = ({
 
   const { validateSwapAddress } = useValidateAddress(targetChain)
 
-  // Helper function to determine pool set
+  // Helper function to determine Midgard pool set for pricing stubs.
+  // OneClick/Chainflip-only chains (e.g. NEAR) are on neither THOR nor MAYA —
+  // return an empty list so validatePoolAssets can fill from poolless asset lists
+  // instead of hard-failing the swap page.
   const getPoolAssetDetails = (
     sourceAsset: AssetWithDecimal,
     targetAsset: AssetWithDecimal,
@@ -549,7 +552,8 @@ const SuccessRouteView = ({
     if (isChainOfMaya(sourceChain) && isChainOfThor(targetChain)) {
       return right(thorchainPoolAssetDetails)
     }
-    return left(new Error(`Unsupported chain combination: source (${sourceChain}), target (${targetChain})`))
+    // e.g. ETH↔NEAR (OneClick): neither side shares a Midgard DEX set
+    return right([])
   }
 
   // Helper function to pick and validate pool assets.

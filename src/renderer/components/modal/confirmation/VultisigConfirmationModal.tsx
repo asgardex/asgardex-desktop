@@ -389,7 +389,7 @@ export const VultisigConfirmationModal = ({
   return (
     // Use static to prevent HeadlessUI from auto-closing on backdrop click during signing flow
     // The handleCancel callback controls when closing is allowed
-    <Dialog static as="div" className="relative z-10" open={visible} onClose={handleCancel}>
+    <Dialog static as="div" className="relative z-50" open={visible} onClose={handleCancel}>
       <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
       {/* `lg:pl-[240px]` offsets the sidebar so the panel centers within the
           content area, matching `UnifiedTxModal` (the tx-tracking modal). */}

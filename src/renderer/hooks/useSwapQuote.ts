@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
@@ -189,10 +190,17 @@ export const useSwapQuote = ({
           protocols: quotableProtocols
         })
 
+        // 1Click rejects BigNumber.toString() scientific notation (e.g. NEAR 24dp → "7.7e+24")
+        // and non-integer strings. Always pass a pure integer digit string as base units.
+        const amountForQuote = convertBaseAmountDecimal(amount, sourceAssetDecimal)
+        const amountInteger = baseAmount(
+          amountForQuote.amount().integerValue(BigNumber.ROUND_DOWN).toFixed(0),
+          amountForQuote.decimal
+        )
         const swapParams = {
           fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
           destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
-          amount: new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), {
+          amount: new CryptoAmount(amountInteger, {
             ...sourceAsset,
             symbol: sourceAsset.symbol.toUpperCase()
           }),

@@ -89,7 +89,8 @@ const initialState: State = {
     brokerUrl: getBrokerUrl(),
     affiliateBrokers: getAffiliateBrokers(),
     ...liquifyAggregatorConfig(getCurrentNetworkState()),
-    ...(ASGARDEX_ONECLICK_API_KEY && { oneClickApiKey: ASGARDEX_ONECLICK_API_KEY })
+    ...(ASGARDEX_ONECLICK_API_KEY && { oneClickApiKey: ASGARDEX_ONECLICK_API_KEY }),
+    oneClickReferral: 'asgardex'
   }),
   quoteSwap: null
 }

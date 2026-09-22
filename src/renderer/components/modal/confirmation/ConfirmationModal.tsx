@@ -25,7 +25,7 @@ export const ConfirmationModal = ({ visible, title, okText, content, onSuccess, 
   }, [onSuccess, onClose])
 
   return (
-    <Dialog as="div" className="relative z-10" transition open={visible} onClose={onClose}>
+    <Dialog as="div" className="relative z-50" transition open={visible} onClose={onClose}>
       <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
       {/* container to center the panel */}
       <div className="fixed inset-0 flex items-center justify-center p-4">

@@ -2308,9 +2308,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@headlessui/react@npm:^2.2.4":
-  version: 2.2.4
-  resolution: "@headlessui/react@npm:2.2.4"
+"@headlessui/react@npm:^2.2.10":
+  version: 2.2.10
+  resolution: "@headlessui/react@npm:2.2.10"
   dependencies:
     "@floating-ui/react": "npm:^0.26.16"
     "@react-aria/focus": "npm:^3.20.2"
@@ -2320,7 +2320,7 @@ __metadata:
   peerDependencies:
     react: ^18 || ^19 || ^19.0.0-rc
     react-dom: ^18 || ^19 || ^19.0.0-rc
-  checksum: 10/0e146027069a21a8852d4b678903ad7181003566e7e086575d12854812f06b98e4baa2f40eecc9d6ab65512fb7a88c38c3c2b177def3b2a9e438e83ae449a35c
+  checksum: 10/1b8445fffa8c20312b9af2c131ea4202fe17875447137d7cc06a1b7c2c5eac02edd7862465e848efba9fdc6792a96980a6943a70a2871648a24faac31480a0e8
   languageName: node
   linkType: hard
 
@@ -4605,6 +4605,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@runebond/integrators-client@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@runebond/integrators-client@npm:0.1.1"
+  checksum: 10/a54115ea54b4029a4a4d5b71292d65884a9f60325308855d64fe490f70de718a2470b8e9185988b35efdb000ea26bccb49e4a7aca72f4d08f59757c37a673246
+  languageName: node
+  linkType: hard
+
 "@scure/base@npm:1.1.5":
   version: 1.1.5
   resolution: "@scure/base@npm:1.1.5"
@@ -5993,10 +6000,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/use-sync-external-store@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "@types/use-sync-external-store@npm:0.0.3"
-  checksum: 10/161ddb8eec5dbe7279ac971531217e9af6b99f7783213566d2b502e2e2378ea19cf5e5ea4595039d730aa79d3d35c6567d48599f69773a02ffcff1776ec2a44e
+"@types/use-sync-external-store@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@types/use-sync-external-store@npm:0.0.6"
+  checksum: 10/a95ce330668501ad9b1c5b7f2b14872ad201e552a0e567787b8f1588b22c7040c7c3d80f142cbb9f92d13c4ea41c46af57a20f2af4edf27f224d352abcfe4049
   languageName: node
   linkType: hard
 
@@ -6602,9 +6609,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-aggregator@npm:3.1.0":
-  version: 3.1.0
-  resolution: "@xchainjs/xchain-aggregator@npm:3.1.0"
+"@xchainjs/xchain-aggregator@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@xchainjs/xchain-aggregator@npm:3.2.0"
   dependencies:
     "@chainflip/sdk": "npm:2.2.1"
     "@xchainjs/xchain-client": "npm:2.0.17"
@@ -6618,7 +6625,7 @@ __metadata:
     "@xchainjs/xchain-thorchain-query": "npm:3.2.0"
     "@xchainjs/xchain-util": "npm:2.0.7"
     "@xchainjs/xchain-wallet": "npm:2.0.34"
-  checksum: 10/d0a6439cf767ab2620243beb163fb64b73a3bf376ecf113bf110ba1d72905096fd65910edec34b9b55914c78a0b87939fb04db634a70cbaabbdd0402e5f93286
+  checksum: 10/233fb2173e771af673ecf4f5025595e705d71f25f244c9176ded137c49141743fbe9edb89922a34204bcb22e8b7ea4a96484ec4ac7eda0311d50209fb8679faf
   languageName: node
   linkType: hard
 
@@ -7038,16 +7045,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-near@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@xchainjs/xchain-near@npm:0.2.0"
+"@xchainjs/xchain-near@npm:0.3.0":
+  version: 0.3.0
+  resolution: "@xchainjs/xchain-near@npm:0.3.0"
   dependencies:
     "@xchainjs/xchain-client": "npm:2.0.17"
     "@xchainjs/xchain-crypto": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:2.0.7"
     micro-key-producer: "npm:^0.7.6"
     near-api-js: "npm:^7.3.1"
-  checksum: 10/5be13cc1decc9487ed8741a3ae9072e09899e6b7bf228605fd6d2e55c904bcc0aa1c2c5c44f0fb1018e68517eeb40836655e786fb95c434d14e2e0e03f9d5697
+  checksum: 10/6fde332f2360fa2324e7038c0c7cc304c56f6545f794e97487a05620c17d6769ac34efad757a82c9566a277092c1dcde9e25ef3797252bc6e120b074f60b652c
   languageName: node
   linkType: hard
 
@@ -7772,13 +7779,14 @@ __metadata:
     "@eslint/compat": "npm:2.1.0"
     "@eslint/eslintrc": "npm:^3.3.5"
     "@eslint/js": "npm:^8.57.1"
-    "@headlessui/react": "npm:^2.2.4"
+    "@headlessui/react": "npm:^2.2.10"
     "@heroicons/react": "npm:^2.2.0"
     "@ledgerhq/hw-transport": "npm:^6.31.6"
     "@ledgerhq/hw-transport-node-hid-singleton": "npm:6.31.8"
     "@reduxjs/toolkit": "npm:^2.12.0"
     "@rollup/plugin-inject": "npm:^5.0.5"
     "@rollup/plugin-typescript": "npm:^12.3.0"
+    "@runebond/integrators-client": "npm:^0.1.1"
     "@tailwindcss/postcss": "npm:^4.3.1"
     "@tanstack/react-table": "npm:^8.21.3"
     "@tsconfig/node16": "npm:^16.1.8"
@@ -7796,7 +7804,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.4.1"
     "@vitest/ui": "npm:^4.1.9"
     "@vultisig/sdk": "npm:6.1.0"
-    "@xchainjs/xchain-aggregator": "npm:3.1.0"
+    "@xchainjs/xchain-aggregator": "npm:3.2.0"
     "@xchainjs/xchain-arbitrum": "npm:2.1.8"
     "@xchainjs/xchain-avax": "npm:2.0.22"
     "@xchainjs/xchain-base": "npm:1.0.22"
@@ -7818,7 +7826,7 @@ __metadata:
     "@xchainjs/xchain-mayamidgard": "npm:1.1.4"
     "@xchainjs/xchain-mayanode": "npm:1.2.4"
     "@xchainjs/xchain-midgard": "npm:1.1.4"
-    "@xchainjs/xchain-near": "npm:0.2.0"
+    "@xchainjs/xchain-near": "npm:0.3.0"
     "@xchainjs/xchain-radix": "npm:2.0.18"
     "@xchainjs/xchain-ripple": "npm:1.0.19"
     "@xchainjs/xchain-solana": "npm:1.1.9"
@@ -7877,7 +7885,7 @@ __metadata:
     react-dom: "npm:^18.2.0"
     react-hook-form: "npm:^7.34.0"
     react-intl: "npm:^6.0.4"
-    react-redux: "npm:^9.1.2"
+    react-redux: "npm:^9.3.0"
     react-router-dom: "npm:^6.6.1"
     redux-logger: "npm:^3.0.6"
     rimraf: "npm:5.0.10"
@@ -15127,22 +15135,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-redux@npm:^9.1.2":
-  version: 9.1.2
-  resolution: "react-redux@npm:9.1.2"
+"react-redux@npm:^9.3.0":
+  version: 9.3.0
+  resolution: "react-redux@npm:9.3.0"
   dependencies:
-    "@types/use-sync-external-store": "npm:^0.0.3"
-    use-sync-external-store: "npm:^1.0.0"
+    "@types/use-sync-external-store": "npm:^0.0.6"
+    use-sync-external-store: "npm:^1.4.0"
   peerDependencies:
-    "@types/react": ^18.2.25
-    react: ^18.0
+    "@types/react": ^18.2.25 || ^19
+    react: ^18.0 || ^19
     redux: ^5.0.0
   peerDependenciesMeta:
     "@types/react":
       optional: true
     redux:
       optional: true
-  checksum: 10/319b3286f538da7e609ca90fc6762ffae007c5cf75e525a25237ac2feaee63d9cf76fe766817de1fc8f27e7bde825ca409c463037d26dd8e57c435d383f80c50
+  checksum: 10/3384e98e382ddb2f2a8f35bc7145fabd60f2fb0ccd999df5587bd926de9590f52cd3a29c4a01fe191d710a9c8f9d7293efff8d5fc32debc84de25c911b70fc45
   languageName: node
   linkType: hard
 
@@ -17338,12 +17346,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:^1.0.0":
-  version: 1.2.2
-  resolution: "use-sync-external-store@npm:1.2.2"
+"use-sync-external-store@npm:^1.4.0":
+  version: 1.6.0
+  resolution: "use-sync-external-store@npm:1.6.0"
   peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/671e9c190aab9a8374a5d468c6ba17f52c38b6fae970110bc196fc1e2b57204149aea9619be49a1bb5207fb6e51d8afd19c3bcb94afe61813fed039821461dc0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10/b40ad2847ba220695bff2d4ba4f4d60391c0fb4fb012faa7a4c18eb38b69181936f5edc55a522c4d20a788d1a879b73c3810952c9d0fd128d01cb3f22042c09e
   languageName: node
   linkType: hard
 

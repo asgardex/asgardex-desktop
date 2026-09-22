@@ -6,6 +6,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { TokenAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
@@ -15,16 +16,17 @@ import { useIntl } from 'react-intl'
 
 import { emptyString } from '../../helpers/stringHelper'
 import { EVMChains } from '../../services/evm/const'
-
-// Supported whitelist chains (EVM + TRON)
-const WhitelistChains = [...EVMChains, TRONChain]
 import { addAsset, removeAsset, getUserAssetsByChain$ } from '../../services/storage/userChainTokens'
 import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whitelist'
+import { NEAR_TOKEN_WHITELIST } from '../../types/generated/near/nep141whitelist'
 import { AVAX_TOKEN_WHITELIST } from '../../types/generated/thorchain/avaxerc20whitelist'
 import { BASE_TOKEN_WHITELIST } from '../../types/generated/thorchain/baseerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../../types/generated/thorchain/bscerc20whitelist'
 import { ETH_TOKEN_WHITELIST } from '../../types/generated/thorchain/etherc20whitelist'
 import { TRON_TOKEN_WHITELIST } from '../../types/generated/thorchain/trontrc20whitelist'
+
+// Supported whitelist chains (EVM + TRON + NEAR NEP-141)
+const WhitelistChains = [...EVMChains, TRONChain, NEARChain]
 import { Tabs } from '../tabs'
 import { AssetData } from '../uielements/assets/assetData'
 import { ChainIcon } from '../uielements/assets/chainIcon/ChainIcon'
@@ -46,13 +48,14 @@ const getWhitelistAssets = (
 ) => {
   const upperSearchValue = searchQuery.toUpperCase()
 
-  const whitelistMap = {
+  const whitelistMap: Partial<Record<(typeof WhitelistChains)[number], typeof ETH_TOKEN_WHITELIST>> = {
     [ETHChain]: ETH_TOKEN_WHITELIST,
     [AVAXChain]: AVAX_TOKEN_WHITELIST,
     [BASEChain]: BASE_TOKEN_WHITELIST,
     [BSCChain]: BSC_TOKEN_WHITELIST,
     [ARBChain]: ARB_TOKEN_WHITELIST,
-    [TRONChain]: TRON_TOKEN_WHITELIST
+    [TRONChain]: TRON_TOKEN_WHITELIST,
+    [NEARChain]: NEAR_TOKEN_WHITELIST
   }
 
   const whitelist = whitelistMap[chain] || []

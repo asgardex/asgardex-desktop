@@ -30,7 +30,8 @@ export const apiKeystore: ApiKeystore = {
 
 // Mock `apiExport`
 export const apiExport: ApiExport = {
-  saveBalancesJson: (_) => Promise.resolve()
+  saveBalancesJson: (_) => Promise.resolve(),
+  saveCsv: (_) => Promise.resolve()
 }
 
 // Mock `apiLang`

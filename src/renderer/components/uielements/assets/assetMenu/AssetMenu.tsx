@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useMemo, useRef } from 'react'
 
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
-import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
@@ -26,7 +26,6 @@ export type Props = {
   className?: string
   headline?: string
   network: Network
-  synthDisabled?: boolean
 }
 
 export { ExtendedAssetType, filterButtons } from './AssetMenu.helper'
@@ -40,8 +39,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
     headline = emptyString,
     network,
     onClose,
-    className = '',
-    synthDisabled = false
+    className = ''
   } = props
 
   const [searchValue, setSearchValue] = useState<string>(emptyString)
@@ -72,22 +70,14 @@ export const AssetMenu = (props: Props): JSX.Element => {
         filteredAssets,
         NEA.fromArray,
         O.fold(
-          () =>
-            !synthDisabled ? (
-              <div className="flex h-full w-[calc(100%-32px)] flex-col items-center justify-center rounded-lg border border-solid border-gray0 p-1 px-20px py-50px dark:border-gray0d">
-                <ArchiveBoxXMarkIcon className="h-[75px] w-[75px] text-gray0 dark:text-gray0d" />
-                <h2 className="mb-10px text-[14px] text-gray1 uppercase dark:text-gray1d">
-                  {intl.formatMessage({ id: 'common.noResult' })}
-                </h2>
-              </div>
-            ) : (
-              <div className="flex h-full w-[calc(100%-32px)] flex-col items-center justify-center rounded-lg border border-solid border-gray0 p-1 px-20px py-50px dark:border-gray0d">
-                <ExclamationTriangleIcon className="h-[75px] w-[75px] text-warning0 dark:text-warning0d" />
-                <h2 className="mb-10px text-center text-[14px] text-warning0 uppercase dark:text-warning0d">
-                  {intl.formatMessage({ id: 'swap.synth.warning' })}
-                </h2>
-              </div>
-            ),
+          () => (
+            <div className="flex h-full w-[calc(100%-32px)] flex-col items-center justify-center rounded-lg border border-solid border-gray0 p-1 px-20px py-50px dark:border-gray0d">
+              <ArchiveBoxXMarkIcon className="h-[75px] w-[75px] text-gray0 dark:text-gray0d" />
+              <h2 className="mb-10px text-[14px] text-gray1 uppercase dark:text-gray1d">
+                {intl.formatMessage({ id: 'common.noResult' })}
+              </h2>
+            </div>
+          ),
           (assets) => (
             <div className="w-[calc(100%-32px)] overflow-y-auto rounded-lg border border-solid border-gray0 p-1 dark:border-gray0d">
               {FP.pipe(
@@ -110,7 +100,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
           )
         )
       ),
-    [asset, filteredAssets, handleChangeAsset, intl, network, synthDisabled]
+    [asset, filteredAssets, handleChangeAsset, intl, network]
   )
 
   const searchHandler = useCallback(({ target }: React.ChangeEvent<HTMLInputElement>) => {

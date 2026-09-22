@@ -1,7 +1,12 @@
+import { NEARChain } from '@xchainjs/xchain-near'
+import { function as FP } from 'fp-ts'
+import { switchMap } from 'rxjs/operators'
+
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { createEnhancedClient$ } from '../clients'
+import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { client$, readOnlyClient$ } from './common'
 
 /**
@@ -24,7 +29,8 @@ const reloadBalances = () => {
   setReloadBalances(true)
 }
 
-// State of balances loaded by Client
+// State of balances loaded by Client — include user-selected NEP-141s
+// (Settings → Import Tokens) so xchain-near 0.3.0 can query ft_balance_of.
 const balances$ = ({
   walletType,
   walletAccount,
@@ -36,17 +42,24 @@ const balances$ = ({
   walletIndex: number
   hdMode: HDMode
 }): C.WalletBalancesLD =>
-  C.balances$({
-    client$: enhancedClient$,
-    trigger$: reloadBalances$,
-    walletType,
-    walletAccount,
-    walletIndex,
-    hdMode,
-    walletBalanceType: 'all'
-  })
+  FP.pipe(
+    getUserAssetsByChain$(NEARChain),
+    switchMap((assets) =>
+      C.balances$({
+        client$: enhancedClient$,
+        trigger$: reloadBalances$,
+        assets: assets.length === 0 ? undefined : assets,
+        walletType,
+        walletAccount,
+        walletIndex,
+        hdMode,
+        walletBalanceType: 'all'
+      })
+    )
+  )
 
-// State of balances loaded by Client and Address
+// State of balances loaded by Client and Address (Ledger / standalone).
+// balancesByAddress$ already merges getUserAssetsByChain$ internally.
 const getBalanceByAddress$ = C.balancesByAddress$({
   client$: enhancedClient$,
   trigger$: reloadBalances$,

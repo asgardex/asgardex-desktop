@@ -66,6 +66,23 @@ export const useAggregator = () => {
     [aggregator]
   )
 
+  /**
+   * Wet OneClick quote → deposit address. Aggregator 3.2+: estimateSwap is dry /
+   * quote-only; call this immediately before broadcast (same pattern as Chainflip).
+   */
+  const requestOneClickDepositAddress = useCallback(
+    (params: QuoteSwapParams) => aggregator.requestOneClickDepositAddress(params),
+    [aggregator]
+  )
+
+  /**
+   * Register an already-broadcast OneClick deposit (or retry registration).
+   */
+  const submitOneClickDeposit = useCallback(
+    (txHash: string, depositAddress: string) => aggregator.submitOneClickDeposit(txHash, depositAddress),
+    [aggregator]
+  )
+
   return {
     aggregator,
     protocols,
@@ -73,6 +90,8 @@ export const useAggregator = () => {
     ...rest,
     estimateSwap,
     requestChainflipDepositAddress,
+    requestOneClickDepositAddress,
+    submitOneClickDeposit,
     setAggProtocol,
     setBoostEnabled
   }

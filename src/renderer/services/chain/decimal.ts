@@ -28,6 +28,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
 import { isMayaAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { findOneClickToken } from '../oneclick/assets'
 import { getTokenDecimal } from './tokenDecimalMap'
 import { AssetWithDecimalLD } from './types'
 
@@ -117,10 +118,14 @@ export const getDecimalSync = (
     return tokenDecimal
   }
 
-  // Fallback: use chain decimal for any remaining asset type on this chain
-  if (chainDecimal !== undefined) {
-    return chainDecimal
+  // OneClick / NEAR Intents token list (includes NEP-141 decimals once loaded)
+  const oneClickToken = findOneClickToken(asset)
+  if (oneClickToken?.decimals !== undefined && oneClickToken.decimals >= 0) {
+    return oneClickToken.decimals
   }
+
+  // Do NOT fall back to chain gas decimals for tokens (e.g. NEAR USDC is 6dp,
+  // native NEAR is 24dp). That mis-scale caused 1Click "No liquidity available".
 
   // Try to find the asset in MAYAChain pool details first
   if (mayaPoolDetails && isMayaSupportedAsset(asset, mayaPoolDetails)) {

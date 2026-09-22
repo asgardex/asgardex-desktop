@@ -143,6 +143,11 @@ export type IPCSaveBalancesJsonParams = {
   data: BalanceExportData
 }
 
+export type IPCSaveCsvParams = {
+  fileName: string
+  content: string
+}
+
 export type ApiKeystore = {
   saveKeystoreWallets: (wallets: KeystoreWallets) => Promise<E.Either<Error, KeystoreWallets>>
   exportKeystore: (params: IPCExportKeystoreParams) => Promise<void>
@@ -152,6 +157,7 @@ export type ApiKeystore = {
 
 export type ApiExport = {
   saveBalancesJson: (params: IPCSaveBalancesJsonParams) => Promise<void>
+  saveCsv: (params: IPCSaveCsvParams) => Promise<void>
 }
 
 /**
