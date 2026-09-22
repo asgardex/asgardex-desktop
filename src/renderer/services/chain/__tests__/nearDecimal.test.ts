@@ -1,7 +1,6 @@
-import { describe, expect, it } from 'vitest'
-
 import { NEARChain } from '@xchainjs/xchain-near'
 import { AssetType } from '@xchainjs/xchain-util'
+import { describe, expect, it } from 'vitest'
 
 import { getDecimalSync } from '../decimal'
 import { getTokenDecimal } from '../tokenDecimalMap'
