@@ -29,8 +29,13 @@ export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 // Lowercase productName; same identity as main-process APP_NAME.
 export const ASGARDEX_NAME = pkg.productName.toLowerCase()
 
-/** Requested affiliate fee in basis points (30 = 0.30%). */
+/** Requested affiliate fee in basis points (30 = 0.30%) for THORChain, MAYAChain, and Chainflip. */
 export const ASGARDEX_AFFILIATE_FEE = 30
+/**
+ * 1Click splits appFees 50/50 and keeps at least 20 bps, so this request is twice
+ * ASGARDEX_AFFILIATE_FEE. A 60 bps appFee leaves AsgardEx 30 bps.
+ */
+export const ASGARDEX_ONECLICK_AFFILIATE_FEE = ASGARDEX_AFFILIATE_FEE * 2
 export const ASGARDEX_THORNAME = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNAME, 'dx')
 
 // Chainflip broker configuration
@@ -49,9 +54,8 @@ export const ASGARDEX_ONECLICK_API_KEY = envOrDefault(import.meta.env.VITE_ASGAR
 // VITE_ASGARDEX_ONECLICK_AFFILIATES='{"BTC":"bc1...","ETH":"0x..."}'
 // When the destination chain has no entry, no affiliate fee is applied to that quote.
 //
-// 1Click applies a 50/50 revenue share on appFees by default: requesting
-// ASGARDEX_AFFILIATE_FEE (30) yields ~15 bps to our recipient in quoteRequest.appFees
-// (aggregator ≥3.0.2 surfaces that as fees.affiliateFee).
+// 1Click splits appFees 50/50 and keeps at least 20 bps. ASGARDEX_ONECLICK_AFFILIATE_FEE
+// (60) is what we send; the echoed partner share is about 30 bps.
 const parseOneClickAffiliates = (raw: string): Record<string, string> => {
   if (!raw) return {}
   try {

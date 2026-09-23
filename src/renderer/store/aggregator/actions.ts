@@ -15,6 +15,7 @@ import { defaultBaseParams } from '../../../shared/base/const'
 import { defaultBscParams } from '../../../shared/bsc/const'
 import {
   ASGARDEX_AFFILIATE_FEE,
+  ASGARDEX_ONECLICK_AFFILIATE_FEE,
   ASGARDEX_THORNAME,
   ASGARDEX_BROKER_URL,
   ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
@@ -112,6 +113,13 @@ export const getEstimate = createAsyncThunk(
       }
 
       aggregator.setConfiguration(config)
+      // The aggregator has one basisPoints value for every protocol. 1Click must
+      // request twice that, or its 50/50 split leaves AsgardEx half of the THOR fee.
+      if (oneClickAffiliate) {
+        const protocols = (aggregator as unknown as { protocols?: { name: string; affiliateBps?: number }[] }).protocols
+        const oneClick = protocols?.find((protocol) => protocol.name === 'OneClick')
+        if (oneClick) oneClick.affiliateBps = ASGARDEX_ONECLICK_AFFILIATE_FEE
+      }
 
       const estimate = await aggregator.estimateSwap(params)
 
