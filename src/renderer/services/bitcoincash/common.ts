@@ -27,30 +27,29 @@ const hdSettings$ = keystoreChainHDSettings$(BCHChain)
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
-  RxOp.switchMap(
-    ([keystore, network, hdSettings]): ClientState$ =>
-      Rx.of(
-        FP.pipe(
-          getPhrase(keystore),
-          O.map<string, ClientState>((phrase) => {
-            try {
-              const { rootDerivationPaths } = getKeystoreDerivation(BCHChain, hdSettings)
-              const bchInitParams = {
-                ...defaultBchParams,
-                phrase: phrase,
-                network: network,
-                rootDerivationPaths
-              }
-              const client = new BitcoinCashClient(bchInitParams)
-              return RD.success(client)
-            } catch (error) {
-              return RD.failure<Error>(isError(error) ? error : new Error('Failed to create BCH client'))
+  RxOp.switchMap(([keystore, network, hdSettings]): ClientState$ =>
+    Rx.of(
+      FP.pipe(
+        getPhrase(keystore),
+        O.map<string, ClientState>((phrase) => {
+          try {
+            const { rootDerivationPaths } = getKeystoreDerivation(BCHChain, hdSettings)
+            const bchInitParams = {
+              ...defaultBchParams,
+              phrase: phrase,
+              network: network,
+              rootDerivationPaths
             }
-          }),
-          // Set back to `initial` if no phrase is available (locked wallet)
-          O.getOrElse<ClientState>(() => RD.initial)
-        )
-      ).pipe(RxOp.startWith(RD.pending))
+            const client = new BitcoinCashClient(bchInitParams)
+            return RD.success(client)
+          } catch (error) {
+            return RD.failure<Error>(isError(error) ? error : new Error('Failed to create BCH client'))
+          }
+        }),
+        // Set back to `initial` if no phrase is available (locked wallet)
+        O.getOrElse<ClientState>(() => RD.initial)
+      )
+    ).pipe(RxOp.startWith(RD.pending))
   ),
   RxOp.startWith<ClientState>(RD.initial),
   RxOp.shareReplay(1)

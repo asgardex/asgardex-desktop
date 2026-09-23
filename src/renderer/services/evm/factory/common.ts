@@ -34,32 +34,31 @@ export const createEvmCommonService = (config: EvmCommonConfig) => {
 
   const clientState$: ClientState$ = FP.pipe(
     Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, rpc$, hdSettings$]),
-    RxOp.switchMap(
-      ([keystore, network, rpcUrls, hdSettings]): ClientState$ =>
-        Rx.of(
-          FP.pipe(
-            getPhrase(keystore),
-            O.map<string, ClientState>((phrase) => {
-              try {
-                const rpcUrl = rpcUrls[network]
-                const params = createClientParams(rpcUrl, network)
-                // Override the client's derivation with the selected account/hdMode
-                // so both address derivation and signing use the chosen path.
-                const { rootDerivationPaths } = getKeystoreDerivation(chain, hdSettings)
-                const client = new ClientClass({
-                  ...params,
-                  rootDerivationPaths,
-                  network: network,
-                  phrase: phrase
-                })
-                return RD.success(client)
-              } catch (error) {
-                return RD.failure<Error>(isError(error) ? error : new Error(`Failed to create ${chainName} client`))
-              }
-            }),
-            O.getOrElse<ClientState>(() => RD.initial)
-          )
-        ).pipe(RxOp.startWith(RD.pending))
+    RxOp.switchMap(([keystore, network, rpcUrls, hdSettings]): ClientState$ =>
+      Rx.of(
+        FP.pipe(
+          getPhrase(keystore),
+          O.map<string, ClientState>((phrase) => {
+            try {
+              const rpcUrl = rpcUrls[network]
+              const params = createClientParams(rpcUrl, network)
+              // Override the client's derivation with the selected account/hdMode
+              // so both address derivation and signing use the chosen path.
+              const { rootDerivationPaths } = getKeystoreDerivation(chain, hdSettings)
+              const client = new ClientClass({
+                ...params,
+                rootDerivationPaths,
+                network: network,
+                phrase: phrase
+              })
+              return RD.success(client)
+            } catch (error) {
+              return RD.failure<Error>(isError(error) ? error : new Error(`Failed to create ${chainName} client`))
+            }
+          }),
+          O.getOrElse<ClientState>(() => RD.initial)
+        )
+      ).pipe(RxOp.startWith(RD.pending))
     ),
     RxOp.startWith<ClientState>(RD.initial),
     RxOp.shareReplay(1)

@@ -13,13 +13,7 @@ const ONECLICK_STATUS_URL = 'https://1click.chaindefuser.com/v0/status'
 // State machine from @defuse-protocol/one-click-sdk-typescript.
 // SUCCESS / REFUNDED / FAILED are terminal — we stop polling on those.
 export type OneClickStatusState =
-  | 'KNOWN_DEPOSIT_TX'
-  | 'PENDING_DEPOSIT'
-  | 'INCOMPLETE_DEPOSIT'
-  | 'PROCESSING'
-  | 'SUCCESS'
-  | 'REFUNDED'
-  | 'FAILED'
+  'KNOWN_DEPOSIT_TX' | 'PENDING_DEPOSIT' | 'INCOMPLETE_DEPOSIT' | 'PROCESSING' | 'SUCCESS' | 'REFUNDED' | 'FAILED'
 
 export type OneClickTransactionDetails = {
   hash: string

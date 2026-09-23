@@ -92,38 +92,37 @@ const pathsForFormat = (addressFormat: AddressFormat, hd: KeystoreChainHDSetting
 const createKeystoreClientState$ = (addressFormat: AddressFormat): ClientState$ =>
   FP.pipe(
     Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
-    RxOp.switchMap(
-      ([keystore, network, hdSettings]): ClientState$ =>
-        Rx.of(
-          FP.pipe(
-            getPhrase(keystore),
-            O.map<string, ClientState>((phrase) => {
-              try {
-                const hd = hdSettings ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS
-                const { rootDerivationPaths } = pathsForFormat(addressFormat, hd)
-                const btcInitParams = {
-                  ...defaultBTCParams,
-                  phrase,
-                  network,
-                  dataProviders,
-                  addressFormat,
-                  rootDerivationPaths:
-                    rootDerivationPaths ??
-                    (addressFormat === AddressFormat.P2TR
-                      ? tapRootDerivationPaths
-                      : defaultBTCParams.rootDerivationPaths),
-                  feeBounds
-                }
-                const client = new BitcoinClient(btcInitParams)
-                return RD.success(client)
-              } catch (error) {
-                logger.error(`Failed to create BTC client (addressFormat=${AddressFormat[addressFormat]})`, error)
-                return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+    RxOp.switchMap(([keystore, network, hdSettings]): ClientState$ =>
+      Rx.of(
+        FP.pipe(
+          getPhrase(keystore),
+          O.map<string, ClientState>((phrase) => {
+            try {
+              const hd = hdSettings ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS
+              const { rootDerivationPaths } = pathsForFormat(addressFormat, hd)
+              const btcInitParams = {
+                ...defaultBTCParams,
+                phrase,
+                network,
+                dataProviders,
+                addressFormat,
+                rootDerivationPaths:
+                  rootDerivationPaths ??
+                  (addressFormat === AddressFormat.P2TR
+                    ? tapRootDerivationPaths
+                    : defaultBTCParams.rootDerivationPaths),
+                feeBounds
               }
-            }),
-            O.getOrElse<ClientState>(() => RD.initial)
-          )
-        ).pipe(RxOp.startWith(RD.pending))
+              const client = new BitcoinClient(btcInitParams)
+              return RD.success(client)
+            } catch (error) {
+              logger.error(`Failed to create BTC client (addressFormat=${AddressFormat[addressFormat]})`, error)
+              return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+            }
+          }),
+          O.getOrElse<ClientState>(() => RD.initial)
+        )
+      ).pipe(RxOp.startWith(RD.pending))
     ),
     RxOp.startWith<ClientState>(RD.initial),
     RxOp.shareReplay(1)

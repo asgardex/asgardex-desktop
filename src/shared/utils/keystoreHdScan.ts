@@ -70,15 +70,7 @@ export const normalizeHdScanRange = (start: number, end: number): HdScanIndexRan
  * - Other UTXO: utxo (single BIP formula per chain)
  */
 export type HdScanProfile =
-  | 'metamask'
-  | 'ledgerlive'
-  | 'legacy'
-  | 'thor'
-  | 'maya'
-  | 'p2wpkh'
-  | 'p2tr'
-  | 'utxo'
-  | 'custom'
+  'metamask' | 'ledgerlive' | 'legacy' | 'thor' | 'maya' | 'p2wpkh' | 'p2tr' | 'utxo' | 'custom'
 
 export type HdScanCandidate = {
   settings: KeystoreChainHDSettings

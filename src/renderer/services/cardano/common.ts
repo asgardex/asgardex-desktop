@@ -31,32 +31,31 @@ const blockfrostApiKeys: BlockfrostApiKey[] = [
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
-  RxOp.switchMap(
-    ([keystore, network]): ClientState$ =>
-      Rx.of(
-        FP.pipe(
-          getPhrase(keystore),
-          O.map<string, ClientState>((phrase) => {
-            try {
-              const adaInitParams = {
-                ...defaultAdaParams,
-                network: network,
-                phrase: phrase,
-                apiKeys: {
-                  blockfrostApiKeys
-                }
+  RxOp.switchMap(([keystore, network]): ClientState$ =>
+    Rx.of(
+      FP.pipe(
+        getPhrase(keystore),
+        O.map<string, ClientState>((phrase) => {
+          try {
+            const adaInitParams = {
+              ...defaultAdaParams,
+              network: network,
+              phrase: phrase,
+              apiKeys: {
+                blockfrostApiKeys
               }
-              const client = new ADAClient(adaInitParams)
-              return RD.success(client)
-            } catch (error) {
-              logger.error('Failed to create ADA client', error)
-              return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
-          }),
-          // Set back to `initial` if no phrase is available (locked wallet)
-          O.getOrElse<ClientState>(() => RD.initial)
-        )
-      ).pipe(RxOp.startWith(RD.pending))
+            const client = new ADAClient(adaInitParams)
+            return RD.success(client)
+          } catch (error) {
+            logger.error('Failed to create ADA client', error)
+            return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+          }
+        }),
+        // Set back to `initial` if no phrase is available (locked wallet)
+        O.getOrElse<ClientState>(() => RD.initial)
+      )
+    ).pipe(RxOp.startWith(RD.pending))
   ),
   RxOp.startWith<ClientState>(RD.initial),
   RxOp.shareReplay(1)

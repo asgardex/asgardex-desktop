@@ -545,8 +545,7 @@ export type KeystoreWalletsUI$ = Rx.Observable<KeystoreWalletsUI>
  * Uses WalletType enum for type safety and consistency
  */
 export type Wallet =
-  | { type: WalletType.Keystore; id: KeystoreId; name: string }
-  | { type: WalletType.Vultisig; id: string; name: string }
+  { type: WalletType.Keystore; id: KeystoreId; name: string } | { type: WalletType.Vultisig; id: string; name: string }
 
 export type Wallets = Wallet[]
 export type Wallets$ = Rx.Observable<Wallets>

@@ -92,16 +92,15 @@ export const getPricePools = (details: PoolDetails, whitelist: PricePoolAssets):
       return asset ? O.some(detail) : O.none
     }),
     // Map `PoolDetail` -> `PricePool`
-    A.filterMap(
-      (detail: PoolDetail): O.Option<PricePool> =>
-        FP.pipe(
-          assetFromString(detail.asset),
-          O.fromNullable,
-          O.map((asset) => ({
-            asset,
-            poolData: toPoolData(detail)
-          }))
-        )
+    A.filterMap((detail: PoolDetail): O.Option<PricePool> =>
+      FP.pipe(
+        assetFromString(detail.asset),
+        O.fromNullable,
+        O.map((asset) => ({
+          asset,
+          poolData: toPoolData(detail)
+        }))
+      )
     ),
     // Add USD price pool (if available)
     (pricePools) =>
@@ -394,16 +393,14 @@ export const combineSharesByAsset = (shares: PoolShares, asset: Asset): O.Option
     A.reduce<PoolShare, O.Option<PoolShare>>(O.none, (oAcc, cur) => {
       return FP.pipe(
         oAcc,
-        O.map(
-          (acc): PoolShare => ({
-            ...acc,
-            units: cur.units.plus(acc.units),
-            assetAddedAmount: baseAmount(cur.assetAddedAmount.amount().plus(acc.assetAddedAmount.amount())),
-            assetAddress: acc.assetAddress,
-            runeAddress: O.isSome(acc.runeAddress) ? acc.runeAddress : cur.runeAddress,
-            type: 'all'
-          })
-        ),
+        O.map((acc): PoolShare => ({
+          ...acc,
+          units: cur.units.plus(acc.units),
+          assetAddedAmount: baseAmount(cur.assetAddedAmount.amount().plus(acc.assetAddedAmount.amount())),
+          assetAddress: acc.assetAddress,
+          runeAddress: O.isSome(acc.runeAddress) ? acc.runeAddress : cur.runeAddress,
+          type: 'all'
+        })),
         O.getOrElse<PoolShare>(() => ({ ...cur, type: 'all' })),
         O.some
       )

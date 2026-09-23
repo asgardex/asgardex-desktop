@@ -88,32 +88,31 @@ export const createTransactionService = (
     client$.pipe(
       // Avoid restarting an in-flight deposit if client$ re-emits.
       RxOp.take(1),
-      RxOp.switchMap(
-        (oClient): TxHashLD =>
-          FP.pipe(
-            oClient,
-            O.fold(
-              () =>
-                Rx.of(
-                  RD.failure({
-                    errorId: ErrorId.SEND_TX,
-                    msg: 'MAYA client not ready'
-                  })
-                ),
-              (client) =>
-                Rx.from(client.deposit(params)).pipe(
-                  RxOp.map(RD.success),
-                  RxOp.catchError((e) =>
-                    Rx.of(
-                      RD.failure({
-                        msg: e?.message ?? e.toString(),
-                        errorId: ErrorId.SEND_TX
-                      })
-                    )
+      RxOp.switchMap((oClient): TxHashLD =>
+        FP.pipe(
+          oClient,
+          O.fold(
+            () =>
+              Rx.of(
+                RD.failure({
+                  errorId: ErrorId.SEND_TX,
+                  msg: 'MAYA client not ready'
+                })
+              ),
+            (client) =>
+              Rx.from(client.deposit(params)).pipe(
+                RxOp.map(RD.success),
+                RxOp.catchError((e) =>
+                  Rx.of(
+                    RD.failure({
+                      msg: e?.message ?? e.toString(),
+                      errorId: ErrorId.SEND_TX
+                    })
                   )
                 )
-            )
+              )
           )
+        )
       ),
       RxOp.startWith(RD.pending)
     )

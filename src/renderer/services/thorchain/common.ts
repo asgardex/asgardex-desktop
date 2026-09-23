@@ -127,45 +127,44 @@ const resolveChainId$ = (configuredNode: string, network: Network) =>
 
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$, hdSettings$]),
-  RxOp.switchMap(
-    ([keystore, network, clientUrl, hdSettings]): ClientState$ =>
-      FP.pipe(
-        resolveChainId$(clientUrl[network].node, network),
-        RxOp.switchMap(() =>
-          Rx.of(
-            FP.pipe(
-              getPhrase(keystore),
-              O.map<string, ClientState>((phrase) => {
-                // Primary RPC (+ Liquify key if set) then Asgardex mainnet fallback — not shown in Expert UI
-                const getDefaultClientUrls = (): Record<Network, string[]> => {
-                  return {
-                    [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
-                    [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
-                    [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
-                  }
+  RxOp.switchMap(([keystore, network, clientUrl, hdSettings]): ClientState$ =>
+    FP.pipe(
+      resolveChainId$(clientUrl[network].node, network),
+      RxOp.switchMap(() =>
+        Rx.of(
+          FP.pipe(
+            getPhrase(keystore),
+            O.map<string, ClientState>((phrase) => {
+              // Primary RPC (+ Liquify key if set) then Asgardex mainnet fallback — not shown in Expert UI
+              const getDefaultClientUrls = (): Record<Network, string[]> => {
+                return {
+                  [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
+                  [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
+                  [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
                 }
-                try {
-                  const { rootDerivationPaths } = getKeystoreDerivation(THORChain, hdSettings)
-                  const client = new Client({
-                    clientUrls: getDefaultClientUrls(),
-                    rootDerivationPaths,
-                    network,
-                    phrase
-                  })
-                  return RD.success(client)
-                } catch (error) {
-                  return RD.failure<Error>(isError(error) ? error : new Error('Failed to create THOR client'))
-                }
-              }),
-              // Set back to `initial` if no phrase is available (locked wallet)
-              O.getOrElse<ClientState>(() => RD.initial)
-            )
+              }
+              try {
+                const { rootDerivationPaths } = getKeystoreDerivation(THORChain, hdSettings)
+                const client = new Client({
+                  clientUrls: getDefaultClientUrls(),
+                  rootDerivationPaths,
+                  network,
+                  phrase
+                })
+                return RD.success(client)
+              } catch (error) {
+                return RD.failure<Error>(isError(error) ? error : new Error('Failed to create THOR client'))
+              }
+            }),
+            // Set back to `initial` if no phrase is available (locked wallet)
+            O.getOrElse<ClientState>(() => RD.initial)
           )
-        ),
-        RxOp.catchError((error) =>
-          Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Failed to get THOR chain id')))
         )
+      ),
+      RxOp.catchError((error) =>
+        Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Failed to get THOR chain id')))
       )
+    )
   ),
   RxOp.startWith(RD.initial),
   RxOp.shareReplay(1)
@@ -177,36 +176,35 @@ const clientState$: ClientState$ = FP.pipe(
  */
 const readOnlyClientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([clientNetwork$, clientUrl$]),
-  RxOp.switchMap(
-    ([network, clientUrl]): ClientState$ =>
-      FP.pipe(
-        resolveChainId$(clientUrl[network].node, network),
-        RxOp.switchMap(() =>
-          Rx.of(
-            (() => {
-              const getDefaultClientUrls = (): Record<Network, string[]> => {
-                return {
-                  [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
-                  [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
-                  [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
-                }
+  RxOp.switchMap(([network, clientUrl]): ClientState$ =>
+    FP.pipe(
+      resolveChainId$(clientUrl[network].node, network),
+      RxOp.switchMap(() =>
+        Rx.of(
+          (() => {
+            const getDefaultClientUrls = (): Record<Network, string[]> => {
+              return {
+                [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
+                [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
+                [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
               }
-              try {
-                // Create client without phrase for read-only operations
-                const readOnlyClient = new Client({
-                  clientUrls: getDefaultClientUrls(),
-                  network
-                  // No phrase - this limits functionality to read-only operations
-                })
-                return RD.success(readOnlyClient)
-              } catch (error) {
-                return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only THOR client'))
-              }
-            })()
-          )
-        ),
-        RxOp.catchError((error) => Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))))
-      )
+            }
+            try {
+              // Create client without phrase for read-only operations
+              const readOnlyClient = new Client({
+                clientUrls: getDefaultClientUrls(),
+                network
+                // No phrase - this limits functionality to read-only operations
+              })
+              return RD.success(readOnlyClient)
+            } catch (error) {
+              return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only THOR client'))
+            }
+          })()
+        )
+      ),
+      RxOp.catchError((error) => Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))))
+    )
   ),
   RxOp.startWith(RD.initial),
   RxOp.shareReplay(1)

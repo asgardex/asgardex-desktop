@@ -30,53 +30,52 @@ const hdSettings$ = keystoreChainHDSettings$(DOGEChain)
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
-  RxOp.switchMap(
-    ([keystore, network, hdSettings]): ClientState$ =>
-      Rx.of(
-        FP.pipe(
-          getPhrase(keystore),
-          O.map<string, ClientState>((phrase) => {
-            try {
-              const testnetBlockcypherProvider = new BlockcypherProvider(
-                blockcypherUrl,
-                DOGEChain,
-                AssetDOGE,
-                8,
-                BlockcypherNetwork.DOGE,
-                blockcypherApiKey || ''
-              )
-              const mainnetBlockcypherProvider = new BlockcypherProvider(
-                blockcypherUrl,
-                DOGEChain,
-                AssetDOGE,
-                8,
-                BlockcypherNetwork.DOGE,
-                blockcypherApiKey || ''
-              )
-              const BlockcypherDataProviders: UtxoOnlineDataProviders = {
-                [Network.Testnet]: testnetBlockcypherProvider,
-                [Network.Stagenet]: mainnetBlockcypherProvider,
-                [Network.Mainnet]: mainnetBlockcypherProvider
-              }
-              const { rootDerivationPaths } = getKeystoreDerivation(DOGEChain, hdSettings)
-              const dogeInitParams = {
-                ...defaultDogeParams,
-                network: network,
-                dataProviders: [BlockcypherDataProviders, BitgoProviders],
-                phrase: phrase,
-                rootDerivationPaths
-              }
-              const client = new DogeClient(dogeInitParams)
-              return RD.success(client)
-            } catch (error) {
-              logger.error('Failed to create DOGE client', error)
-              return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+  RxOp.switchMap(([keystore, network, hdSettings]): ClientState$ =>
+    Rx.of(
+      FP.pipe(
+        getPhrase(keystore),
+        O.map<string, ClientState>((phrase) => {
+          try {
+            const testnetBlockcypherProvider = new BlockcypherProvider(
+              blockcypherUrl,
+              DOGEChain,
+              AssetDOGE,
+              8,
+              BlockcypherNetwork.DOGE,
+              blockcypherApiKey || ''
+            )
+            const mainnetBlockcypherProvider = new BlockcypherProvider(
+              blockcypherUrl,
+              DOGEChain,
+              AssetDOGE,
+              8,
+              BlockcypherNetwork.DOGE,
+              blockcypherApiKey || ''
+            )
+            const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+              [Network.Testnet]: testnetBlockcypherProvider,
+              [Network.Stagenet]: mainnetBlockcypherProvider,
+              [Network.Mainnet]: mainnetBlockcypherProvider
             }
-          }),
-          // Set back to `initial` if no phrase is available (locked wallet)
-          O.getOrElse<ClientState>(() => RD.initial)
-        )
-      ).pipe(RxOp.startWith(RD.pending))
+            const { rootDerivationPaths } = getKeystoreDerivation(DOGEChain, hdSettings)
+            const dogeInitParams = {
+              ...defaultDogeParams,
+              network: network,
+              dataProviders: [BlockcypherDataProviders, BitgoProviders],
+              phrase: phrase,
+              rootDerivationPaths
+            }
+            const client = new DogeClient(dogeInitParams)
+            return RD.success(client)
+          } catch (error) {
+            logger.error('Failed to create DOGE client', error)
+            return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+          }
+        }),
+        // Set back to `initial` if no phrase is available (locked wallet)
+        O.getOrElse<ClientState>(() => RD.initial)
+      )
+    ).pipe(RxOp.startWith(RD.pending))
   ),
   RxOp.startWith<ClientState>(RD.initial),
   RxOp.shareReplay(1)
