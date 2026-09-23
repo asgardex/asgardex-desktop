@@ -18,7 +18,7 @@ import { either as E } from 'fp-ts'
 import { isEVMTokenAsset } from '../../../../renderer/helpers/assetHelper'
 import { EVMZeroAddress } from '../../../../renderer/services/evm/const'
 import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { applyGasMultiplier } from '../../../../shared/evm/gas'
+import { applyGasMultiplier, eip1559FeesFromGasPrices } from '../../../../shared/evm/gas'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
@@ -74,6 +74,13 @@ export const evmSend = async ({
 
     const rawGasPrices = await ledgerClient.estimateGasPrices()
     const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+    // Prefer EIP-1559 tip + 2×baseFee headroom (same as keystore send / pool deposits).
+    // Passing gasPrice makes xchain set maxFee = tip with no baseFee buffer → stuck txs.
+    const latestBlock = await provider.getBlock('latest')
+    const transferFees =
+      latestBlock?.baseFeePerGas != null
+        ? eip1559FeesFromGasPrices(gasPrices, feeOption)
+        : { gasPrice: gasPrices[feeOption] }
 
     const txHash = await ledgerClient.transfer({
       walletIndex,
@@ -81,7 +88,7 @@ export const evmSend = async ({
       recipient,
       amount,
       memo,
-      gasPrice: gasPrices[feeOption]
+      ...transferFees
     })
 
     if (!txHash) {

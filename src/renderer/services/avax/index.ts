@@ -8,6 +8,7 @@ import { network$ } from '../app/service'
 import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
 import { avaxRpc$, evmGasMultiplier$ } from '../storage/common'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 
 const {
   client$,
@@ -31,6 +32,7 @@ const {
   createClientParams: createAvaxParams,
   ClientClass: Client,
   rpc$: avaxRpc$,
+  hdSettings$: keystoreChainHDSettings$(AVAXChain),
   addressInWhitelist: addressInAvaxWhitelist,
   assetsFallback: AVAXAssetsFallback,
   assetsTestnet: AvaxAssetsTestnet,
@@ -48,7 +50,8 @@ const {
   txRD$,
   sendPoolTx$,
   approveERC20Token$,
-  isApprovedERC20Token$
+  isApprovedERC20Token$,
+  getERC20Allowance$
 } = createTransactionService(client$, network$, avaxRpc$, evmGasMultiplier$, enhancedClient$)
 const { reloadFees, fees$, poolInTxFees$, approveFee$, reloadApproveFee } = createFeesService(
   enhancedClient$,
@@ -80,5 +83,6 @@ export {
   approveFee$,
   reloadApproveFee,
   approveERC20Token$,
-  isApprovedERC20Token$
+  isApprovedERC20Token$,
+  getERC20Allowance$
 }

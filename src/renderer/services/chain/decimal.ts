@@ -14,6 +14,7 @@ import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { PoolDetail as MayaPoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
+import { NEAR_DECIMALS } from '@xchainjs/xchain-near'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRP_DECIMAL } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
@@ -27,7 +28,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
 import { isMayaAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { KUJI_DECIMAL } from '../kuji/const'
+import { findOneClickToken } from '../oneclick/assets'
 import { getTokenDecimal } from './tokenDecimalMap'
 import { AssetWithDecimalLD } from './types'
 
@@ -51,7 +52,6 @@ const CHAIN_DECIMAL_MAP = new Map([
   ['DOGE', DOGE_DECIMAL],
   ['LTC', LTC_DECIMAL],
   ['GAIA', COSMOS_DECIMAL],
-  ['KUJI', KUJI_DECIMAL],
   ['XRD', XRD_DECIMAL],
   ['BTC', BTC_DECIMAL],
   ['BCH', BCH_DECIMAL],
@@ -60,7 +60,8 @@ const CHAIN_DECIMAL_MAP = new Map([
   ['XRP', XRP_DECIMAL],
   ['ZEC', ZEC_DECIMAL],
   ['ADA', ADA_DECIMALS],
-  ['SUI', SUI_DECIMALS]
+  ['SUI', SUI_DECIMALS],
+  ['NEAR', NEAR_DECIMALS]
 ])
 
 /**
@@ -117,10 +118,14 @@ export const getDecimalSync = (
     return tokenDecimal
   }
 
-  // Fallback: use chain decimal for any remaining asset type on this chain
-  if (chainDecimal !== undefined) {
-    return chainDecimal
+  // OneClick / NEAR Intents token list (includes NEP-141 decimals once loaded)
+  const oneClickToken = findOneClickToken(asset)
+  if (oneClickToken?.decimals !== undefined && oneClickToken.decimals >= 0) {
+    return oneClickToken.decimals
   }
+
+  // Do NOT fall back to chain gas decimals for tokens (e.g. NEAR USDC is 6dp,
+  // native NEAR is 24dp). That mis-scale caused 1Click "No liquidity available".
 
   // Try to find the asset in MAYAChain pool details first
   if (mayaPoolDetails && isMayaSupportedAsset(asset, mayaPoolDetails)) {

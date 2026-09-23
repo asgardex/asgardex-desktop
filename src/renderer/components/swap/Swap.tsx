@@ -50,8 +50,10 @@ import {
   convertBaseAmountDecimal,
   isUtxoAssetChain
 } from '../../helpers/assetHelper'
+import { resolveChainflipChannelId } from '../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
-import { getChainAsset } from '../../helpers/chainHelper'
+import { getChainAsset, isNearChainToken } from '../../helpers/chainHelper'
+import { isRouterApprovalError } from '../../helpers/evmApprovalHelper'
 import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams } from '../../helpers/fp/eq'
@@ -89,7 +91,8 @@ import {
   WalletBalances,
   isKeystoreMode,
   isStandaloneLedgerMode,
-  isVultisigMode
+  isVultisigMode,
+  isVultisigVaultPasswordRequired
 } from '../../services/wallet/types'
 import { useCoingecko } from '../../store/gecko/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
@@ -221,8 +224,11 @@ export const Swap = ({
 
   const { isChainflipSupportedAssetSync, transactionTrackingService: chainflipTransactionTrackingService } =
     useChainflipContext()
-  const { transactionTrackingService: oneClickTransactionTrackingService, isOneClickSupportedAsset } =
-    useOneClickContext()
+  const {
+    transactionTrackingService: oneClickTransactionTrackingService,
+    isOneClickSupportedAsset,
+    getOneClickUsdPrice
+  } = useOneClickContext()
 
   const {
     streamingInterval,
@@ -429,8 +435,26 @@ export const Swap = ({
       )
     }
 
+    // Poolless assets (e.g. NEAR via OneClick) have no Midgard/Maya USD price.
+    // Fall back to 1Click token-list prices (same source as affiliate BPS).
+    if (result.amount().isZero()) {
+      const oneClickUsdPrice = getOneClickUsdPrice(sourceAsset)
+      if (oneClickUsdPrice !== undefined && oneClickUsdPrice > 0) {
+        result = amountToSwap.times(oneClickUsdPrice)
+      }
+    }
+
     return new CryptoAmount(result, pricePoolThor.asset)
-  }, [amountToSwap, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor, sourceAsset, sourceChain])
+  }, [
+    amountToSwap,
+    getOneClickUsdPrice,
+    poolDetailsMaya,
+    poolDetailsThor,
+    pricePoolMaya,
+    pricePoolThor,
+    sourceAsset,
+    sourceChain
+  ])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwap.amount().isZero(), [amountToSwap])
 
@@ -472,6 +496,7 @@ export const Swap = ({
     fetchQuote: fetchSwap,
     selectQuote: handleSelectQuote,
     resetQuote,
+    quoteRefreshKey,
     canSwap,
     slippage: swapSlippage,
     expiry: swapExpiry,
@@ -511,13 +536,14 @@ export const Swap = ({
     )
   }, [oQuoteProtocol, swapFees.outFee.amount, swapFees.outFee.asset])
 
-  const [outFeePriceValue, setOutFeePriceValue] = useState<CryptoAmount>(
-    new CryptoAmount(swapFees.outFee.amount, targetAsset)
-  )
+  const [outFeePriceValue, setOutFeePriceValue] = useState<CryptoAmount>(oSwapOutFee)
 
   useEffect(() => {
-    if (O.isNone(oQuoteProtocol)) return
-    const calculateSwapOutFeePrice = () => {
+    if (O.isNone(oQuoteProtocol)) {
+      setOutFeePriceValue(oSwapOutFee)
+      return
+    }
+    const calculateSwapOutFeePrice = (): O.Option<BaseAmount> => {
       if (isUSDAsset(oSwapOutFee.asset)) {
         return O.some(oSwapOutFee.baseAmount)
       }
@@ -534,49 +560,35 @@ export const Swap = ({
           })
     }
     const swapOutFeePrice = calculateSwapOutFeePrice()
-    if (O.isSome(swapOutFeePrice)) {
-      const newOutFeePriceValue = new CryptoAmount(swapOutFeePrice.value, pricePoolThor.asset)
-      setOutFeePriceValue((prevValue) =>
-        prevValue?.baseAmount.eq(newOutFeePriceValue.baseAmount) ? prevValue : newOutFeePriceValue
-      )
-    }
-  }, [
-    pricePoolThor,
-    pricePoolMaya,
-    oQuoteProtocol,
-    oSwapOutFee.asset,
-    oSwapOutFee.baseAmount,
-    poolDetailsThor,
-    poolDetailsMaya
-  ])
+    // Always refresh: USD when pools can price the quote outbound asset, otherwise the
+    // destination-asset fee itself — never keep a stale prior-swap price (e.g. BTC sats).
+    setOutFeePriceValue(
+      O.isSome(swapOutFeePrice) ? new CryptoAmount(swapOutFeePrice.value, pricePoolThor.asset) : oSwapOutFee
+    )
+  }, [pricePoolThor, pricePoolMaya, oQuoteProtocol, oSwapOutFee, poolDetailsThor, poolDetailsMaya])
 
+  // Quote outbound fee asset (destination / egress), not swapFees.outFee.asset from the
+  // chain fee estimator — mixing those produced "546 sats" on USDC→SOL etc.
   const priceSwapOutFeeLabel = useMemo(() => {
-    if (!swapFees) return ''
-    const {
-      outFee: { asset: feeAsset }
-    } = swapFees
+    const feeAsset = oSwapOutFee.asset
     const fee = formatAssetAmountCurrency({
       amount: baseToAsset(oSwapOutFee.baseAmount),
       asset: feeAsset,
       decimal: isUSDAsset(feeAsset) ? 2 : 6,
       trimZeros: !isUSDAsset(feeAsset)
     })
-    const price = FP.pipe(
-      O.some(outFeePriceValue),
-      O.map((cryptoAmount: CryptoAmount) =>
-        eqAsset.equals(feeAsset, cryptoAmount.asset)
-          ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
-      ),
-      O.getOrElse(() => '')
-    )
-    return price ? `${price} (${fee})` : fee
-  }, [swapFees, oSwapOutFee, outFeePriceValue])
+    if (!isUSDAsset(outFeePriceValue.asset) || eqAsset.equals(feeAsset, outFeePriceValue.asset)) {
+      return fee
+    }
+    const isVerySmallUSDAmount = outFeePriceValue.assetAmount.amount().lt(0.01)
+    const price = formatAssetAmountCurrency({
+      amount: outFeePriceValue.assetAmount,
+      asset: outFeePriceValue.asset,
+      decimal: isVerySmallUSDAmount ? 6 : 2,
+      trimZeros: isVerySmallUSDAmount
+    })
+    return `${price} (${fee})`
+  }, [oSwapOutFee, outFeePriceValue])
 
   // Affiliate fee from quote
   const affiliateFee: CryptoAmount = useMemo(() => {
@@ -635,14 +647,53 @@ export const Swap = ({
       ),
       O.getOrElse(() => '')
     )
-    const bps = getAsgardexAffiliateFee(network)
+    const configuredBps = getAsgardexAffiliateFee(network)
     const applyBps = FP.pipe(
       oApplyBps,
       O.getOrElse(() => false)
     )
-    const displayBps = applyBps && bps !== undefined ? `${bps / 100}%` : '0%'
-    return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee
-  }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, oApplyBps, network, sourceAsset])
+    const protocol = FP.pipe(
+      oQuoteProtocol,
+      O.map((q) => q.protocol),
+      O.toUndefined
+    )
+    // OneClick (aggregator ≥3.0.2): fees.affiliateFee is amountIn * echoed partner bps
+    // after 1Click's 50/50 split — prefer that effective rate over the requested 30 bps.
+    let displayBps = '0%'
+    if (applyBps && configuredBps !== undefined) {
+      if (
+        protocol === 'OneClick' &&
+        amountToSwap.amount().gt(0) &&
+        affiliateFee.baseAmount.amount().gt(0) &&
+        eqAsset.equals(affiliateFee.asset, sourceAsset)
+      ) {
+        const effectiveBps = affiliateFee.baseAmount
+          .amount()
+          .multipliedBy(10000)
+          .dividedToIntegerBy(amountToSwap.amount())
+          .toNumber()
+        displayBps = `${effectiveBps / 100}%`
+      } else {
+        displayBps = `${configuredBps / 100}%`
+      }
+    }
+    // OneClick can still return a non-zero affiliateFee while applyBps is true; never show
+    // "free" when the quote itself reports an affiliate amount.
+    if (!applyBps && affiliateFee.baseAmount.amount().isZero()) return `free`
+    if (!applyBps) return price ? `${price} (${fee})` : fee
+    return price ? `${price} (${fee}) ${displayBps}` : `${fee} ${displayBps}`
+  }, [
+    swapFees,
+    affiliateFee.assetAmount,
+    affiliateFee.asset,
+    affiliateFee.baseAmount,
+    affiliatePriceValue,
+    oApplyBps,
+    oQuoteProtocol,
+    network,
+    sourceAsset,
+    amountToSwap
+  ])
 
   // ─── Hook 4: Swap execution ────────────────────────────────────────────────
   const {
@@ -655,13 +706,17 @@ export const Swap = ({
     submitOneClickSwap: submitOneClickTx,
     resetSwapState,
     swapStartTime,
-    lastTrackedTxHashRef
+    lastTrackedTxHashRef,
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   } = useSwapExecution({
     swap$,
     swapCF$,
     swapOneClick$,
     selectedQuote: oQuoteProtocol,
     sourceAsset,
+    targetAsset,
+    destinationAddress: effectiveRecipientAddress,
     amountToSwap,
     sourceWalletBalance: oSourceAssetWB,
     sourceChainBalance: sourceChainAssetAmount,
@@ -710,12 +765,7 @@ export const Swap = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceAssetDecimal])
 
-  // Fetch new quote when assets change
-  useEffect(() => {
-    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && O.isSome(oApplyBps)) {
-      fetchSwap(amountToSwap)
-    }
-  }, [sourceAsset, targetAsset, fetchSwap, amountToSwap, oApplyBps])
+  // Quote auto-fetch is declared after confirmation-modal state (see isConfirmModalOpen).
 
   // Input display state
   const [inputDisplayAmount, setInputDisplayAmount] = useState<BaseAmount>(amountToSwap)
@@ -827,7 +877,8 @@ export const Swap = ({
               })
             )
           } else if (quoteProtocol.protocol === 'Chainflip' || quoteProtocol.protocol === 'OneClick') {
-            // Neither protocol exposes pool data, so fall back to a Gecko-priced USD value.
+            // Neither protocol exposes Midgard pool data. Prefer CoinGecko, then 1Click
+            // token-list prices (covers poolless assets like NEAR that aren't in GECKO_MAP).
             if (
               !swapResultAmountMax?.asset?.symbol ||
               !swapResultAmountMax?.baseAmount ||
@@ -837,10 +888,17 @@ export const Swap = ({
             }
             const assetSymbol = swapResultAmountMax.asset.symbol.toUpperCase()
             const geckoId = GECKO_MAP[assetSymbol]
-            const geckoPrice = geckoId ? geckoPriceMap[geckoId]?.usd : 0
+            const geckoPrice = geckoId ? geckoPriceMap[geckoId]?.usd : undefined
+            const oneClickUsdPrice = getOneClickUsdPrice(swapResultAmountMax.asset)
+            const usdPrice =
+              geckoPrice && geckoPrice > 0
+                ? geckoPrice
+                : oneClickUsdPrice && oneClickUsdPrice > 0
+                  ? oneClickUsdPrice
+                  : 0
             if (swapResultAmountMax.baseAmount && typeof swapResultAmountMax.baseAmount.times === 'function') {
               try {
-                return swapResultAmountMax.baseAmount.times(geckoPrice)
+                return swapResultAmountMax.baseAmount.times(usdPrice)
               } catch (error) {
                 logger.warn(`Error calculating ${quoteProtocol.protocol} USD value:`, error)
                 return baseAmount(0, THORCHAIN_DECIMAL)
@@ -860,7 +918,8 @@ export const Swap = ({
     poolDetailsThor,
     poolDetailsMaya,
     pricePoolMaya,
-    geckoPriceMap
+    geckoPriceMap,
+    getOneClickUsdPrice
   ])
 
   /**
@@ -967,43 +1026,46 @@ export const Swap = ({
     [sourceAsset]
   )
 
+  /**
+   * Preemptive ERC-20 router allowance check — driven by the **selected quote**, not by
+   * parsing quote error strings. Only THOR/MAYA need a router approve; Chainflip/OneClick
+   * are plain transfers and skip this path.
+   */
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
-    const oRouterAddress: O.Option<Address> = FP.pipe(
+    if (O.isNone(needApprovement)) return O.none
+
+    return FP.pipe(
       oQuoteProtocol,
       O.chain((protocol) => {
-        switch (protocol.protocol) {
-          case 'Thorchain':
-            return FP.pipe(
-              oPoolAddressThor,
-              O.chain(({ router }) => router)
-            )
-          case 'Mayachain':
-            return FP.pipe(
-              oPoolAddressMaya,
-              O.chain(({ router }) => router)
-            )
-          default:
-            return O.none
-        }
+        const oRouterAddress: O.Option<Address> =
+          protocol.protocol === 'Thorchain'
+            ? FP.pipe(
+                oPoolAddressThor,
+                O.chain(({ router }) => router)
+              )
+            : protocol.protocol === 'Mayachain'
+              ? FP.pipe(
+                  oPoolAddressMaya,
+                  O.chain(({ router }) => router)
+                )
+              : O.none
+
+        const oTokenAddress = getEVMTokenAddressForChain(sourceChain, sourceAsset as TokenAsset)
+
+        return FP.pipe(
+          sequenceTOption(oRouterAddress, oTokenAddress, oSourceAssetWB),
+          O.map(([routerAddress, tokenAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
+            network,
+            spenderAddress: routerAddress,
+            contractAddress: tokenAddress,
+            fromAddress: walletAddress,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            walletType
+          }))
+        )
       })
-    )
-    const oTokenAddress: O.Option<string> = getEVMTokenAddressForChain(sourceChain, sourceAsset as TokenAsset)
-    const oNeedApprovement: O.Option<boolean> = FP.pipe(
-      needApprovement,
-      O.map((v) => !!v)
-    )
-    return FP.pipe(
-      sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
-      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
-        network,
-        spenderAddress: routerAddress,
-        contractAddress: tokenAddress,
-        fromAddress: walletAddress,
-        walletAccount,
-        walletIndex,
-        hdMode,
-        walletType
-      }))
     )
   }, [
     needApprovement,
@@ -1022,7 +1084,7 @@ export const Swap = ({
     amountToSwapRef.current = amountToSwap
   }, [amountToSwap])
 
-  const { approveState, resetApproval, submitApproveTx, awaitingConfirmation } = useERC20Approval({
+  const { approveState, resetApproval, submitApproveTx, awaitingConfirmation, isApprovedState } = useERC20Approval({
     isApprovedERC20Token$,
     approveERC20Token$,
     oApproveParams,
@@ -1037,12 +1099,6 @@ export const Swap = ({
       outAsset: targetAsset
     })
   }, [reloadFees, sourceAsset, swapMemo, targetAsset])
-
-  const onInputBlurHandler = useCallback(() => {
-    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
-      fetchSwap(amountToSwap)
-    }
-  }, [amountToSwap, fetchSwap])
 
   const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
 
@@ -1073,19 +1129,21 @@ export const Swap = ({
     [approveFeeRD]
   )
 
-  // Determine if approval is needed based on quote errors
-  const needsApproval = useMemo(() => {
-    const errors = FP.pipe(
-      oQuoteProtocol,
-      O.fold(
-        () => [],
-        (quoteSwap) => quoteSwap.errors
-      )
-    )
-    return (
-      !quoteOnly && errors.some((error: string) => error.includes('router has not been approved to spend this amount'))
-    )
-  }, [oQuoteProtocol, quoteOnly])
+  // On-chain allowance only. Quote error strings are never the source of truth here.
+  const isApproved = useMemo(() => {
+    // Native / non-ERC20, or selected route does not need a router approve (e.g. Chainflip)
+    if (O.isNone(needApprovement) || O.isNone(oApproveParams)) return true
+    if (awaitingConfirmation) return false
+    if (RD.isSuccess(isApprovedState)) return isApprovedState.value
+    if (RD.isFailure(isApprovedState)) return false
+    // Pending/initial: keep Swap visible (disabled via disableSubmit) to avoid Approve flicker
+    return true
+  }, [needApprovement, oApproveParams, awaitingConfirmation, isApprovedState])
+
+  const isApprovalCheckPending = useMemo(
+    () => O.isSome(oApproveParams) && (RD.isInitial(isApprovedState) || RD.isPending(isApprovedState)),
+    [oApproveParams, isApprovedState]
+  )
 
   const reloadApproveFeesHandler = useCallback(() => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
@@ -1277,12 +1335,13 @@ export const Swap = ({
     return 'fast'
   }, [appWalletState])
 
-  const isVaultEncrypted: boolean = useMemo(() => {
-    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
-      return appWalletState.activeVault.isEncrypted
-    }
-    return true // Default to encrypted (safe fallback — will show password prompt)
-  }, [appWalletState])
+  // Whether the Vultisig modal must prompt for the vault password. Skips the
+  // redundant prompt once the vault is already unlocked for the session
+  // (see `isVultisigVaultPasswordRequired`).
+  const isVaultEncrypted: boolean = useMemo(
+    () => (appWalletState ? isVultisigVaultPasswordRequired(appWalletState) : true),
+    [appWalletState]
+  )
 
   // Password validation for Vultisig
   const validatePasswordForVultisig = useCallback(
@@ -1305,6 +1364,8 @@ export const Swap = ({
 
   // ─── Confirmation modals (all 3 wallet types) ─────────────────────────────
   const {
+    showPasswordModal,
+    showLedgerModal,
     showVultisigModal,
     onSubmit,
     onApprove,
@@ -1332,6 +1393,57 @@ export const Swap = ({
     getActiveVaultId: appWalletService.getActiveVaultId,
     resetSwapState
   })
+
+  // Freeze auto-requotes while confirming or while a swap tx is in flight —
+  // otherwise estimateSwap keeps hitting Chainflip/aggregator under the tx modal.
+  const isConfirmModalOpen =
+    showPasswordModal !== ModalState.None ||
+    showLedgerModal !== ModalState.None ||
+    showVultisigModal !== ModalState.None
+  const isSwapTxInFlight = !RD.isInitial(swapState.swapTx)
+  const pauseQuoteRefresh = isConfirmModalOpen || isSwapTxInFlight
+
+  // Latest fetchSwap via ref + value-key deps (not fetchSwap identity).
+  const fetchSwapRef = useRef(fetchSwap)
+  useEffect(() => {
+    fetchSwapRef.current = fetchSwap
+  }, [fetchSwap])
+  // Primitive so price-driven Option recreation does not re-fire quotes.
+  const applyBpsValue = FP.pipe(
+    oApplyBps,
+    O.fold(
+      () => 'none' as const,
+      (apply) => (apply ? 'true' : 'false')
+    )
+  )
+
+  // Fetch / refresh quotes when inputs change — skipped during confirm / in-flight swap.
+  useEffect(() => {
+    if (pauseQuoteRefresh) return
+    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal)) && applyBpsValue !== 'none') {
+      void fetchSwapRef.current(amountToSwap)
+    }
+  }, [
+    sourceAsset,
+    targetAsset,
+    amountToSwap,
+    applyBpsValue,
+    pauseQuoteRefresh,
+    streamingInterval,
+    streamingQuantity,
+    slipTolerance,
+    quoteOnly,
+    sourceWalletAddress,
+    effectiveRecipientAddressString,
+    quoteRefreshKey
+  ])
+
+  const onInputBlurHandler = useCallback(() => {
+    if (pauseQuoteRefresh) return
+    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
+      void fetchSwapRef.current(amountToSwap)
+    }
+  }, [amountToSwap, pauseQuoteRefresh])
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
@@ -1378,7 +1490,9 @@ export const Swap = ({
     reloadBalances()
     setAmountToSwap(initialAmountToSwap)
     resetQuote()
-    if (isEvmChainToken(targetAsset)) {
+    // Persist swapped-into tokens so the next balance reload queries them
+    // (EVM ERC-20s and NEAR NEP-141s via getUserAssetsByChain$ → getBalance).
+    if (isEvmChainToken(targetAsset) || isNearChainToken(targetAsset)) {
       addAsset(targetAsset as TokenAsset)
     }
   }, [resetSwapState, reloadBalances, setAmountToSwap, initialAmountToSwap, resetQuote, targetAsset])
@@ -1400,26 +1514,29 @@ export const Swap = ({
       )
     )
 
-    const filteredErrors = quoteOnly
-      ? swapErrors.filter((error) => {
-          const errorLower = error.toLowerCase()
-          const isBalanceError =
-            errorLower.includes('insufficient') ||
-            errorLower.includes('not enough') ||
-            errorLower.includes('exceed') ||
-            errorLower.includes('balance') ||
-            errorLower.includes('funds')
-          const isFeeError =
-            errorLower.includes('fee') ||
-            errorLower.includes('outbound') ||
-            errorLower.includes('inbound') ||
-            errorLower.includes('gas') ||
-            errorLower.includes('router has not been approved')
-          const isMemoError =
-            errorLower.includes('memo') || errorLower.includes('parsing') || errorLower.includes('undefined')
-          return !isBalanceError && !isFeeError && !isMemoError
-        })
-      : swapErrors
+    const filteredErrors = swapErrors.filter((error) => {
+      // ERC-20 router allowance is checked on-chain; never surface as a quote hard-error.
+      if (O.isSome(needApprovement) && isRouterApprovalError(error)) return false
+
+      if (!quoteOnly) return true
+
+      const errorLower = error.toLowerCase()
+      const isBalanceError =
+        errorLower.includes('insufficient') ||
+        errorLower.includes('not enough') ||
+        errorLower.includes('exceed') ||
+        errorLower.includes('balance') ||
+        errorLower.includes('funds')
+      const isFeeError =
+        errorLower.includes('fee') ||
+        errorLower.includes('outbound') ||
+        errorLower.includes('inbound') ||
+        errorLower.includes('gas') ||
+        isRouterApprovalError(error)
+      const isMemoError =
+        errorLower.includes('memo') || errorLower.includes('parsing') || errorLower.includes('undefined')
+      return !isBalanceError && !isFeeError && !isMemoError
+    })
 
     if (filteredErrors.length === 0) return <></>
 
@@ -1451,7 +1568,7 @@ export const Swap = ({
         {!quoteOnly && belowDustThreshold && <>{`Amount to swap is Below DustThreshold`}</>}
       </ErrorLabel>
     )
-  }, [belowDustThreshold, oQuoteProtocol, sourceAsset, quoteOnly])
+  }, [belowDustThreshold, oQuoteProtocol, sourceAsset, quoteOnly, needApprovement])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError || quoteOnly) return <></>
@@ -1554,14 +1671,9 @@ export const Swap = ({
     [approveState]
   )
 
-  const isApproved = useMemo(() => {
-    if (O.isNone(needApprovement)) return true
-    if (awaitingConfirmation) return false
-    return !needsApproval
-  }, [needApprovement, needsApproval, awaitingConfirmation])
-
   const priceApproveFee: CryptoAmount = useMemo(() => {
-    const assetAmt = isApproved
+    // Approve fee applies when approval is still required, not after it's done
+    const assetAmt = !isApproved
       ? new CryptoAmount(approveFee, swapFees.inFee.asset)
       : new CryptoAmount(baseAmount(0), swapFees.inFee.asset)
     const result = FP.pipe(
@@ -1671,22 +1783,31 @@ export const Swap = ({
                 amount: amountToSwap.amount().toString()
               })
               lastTrackedTxHashRef.current = txHash
-            } else if (quoteProtocol.protocol === 'Chainflip' && quoteProtocol.depositChannelId) {
-              addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, quoteProtocol.depositChannelId, {
-                srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
-                destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
-                depositAmount: amountToSwap.amount().toString()
-              })
-              lastTrackedTxHashRef.current = txHash
+            } else if (quoteProtocol.protocol === 'Chainflip') {
+              // Aggregator 3.0+: channel id comes from requestChainflipDepositAddress at submit, not estimateSwap
+              const channelId = resolveChainflipChannelId(
+                lastCFChannelRef.current?.depositChannelId,
+                quoteProtocol.depositChannelId
+              )
+              if (channelId) {
+                addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, channelId, {
+                  srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
+                  destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
+                  depositAmount: amountToSwap.amount().toString()
+                })
+                lastTrackedTxHashRef.current = txHash
+              }
             } else if (quoteProtocol.protocol === 'OneClick') {
-              // 1Click keys swap status by deposit address (returned in the quote as `toAddress`),
-              // not by the on-chain tx hash. The tracker polls GET /v0/status?depositAddress=... .
-              addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, quoteProtocol.toAddress, {
-                srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
-                destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
-                depositAmount: amountToSwap.amount().toString()
-              })
-              lastTrackedTxHashRef.current = txHash
+              // Dry quotes leave toAddress empty. Status is keyed by the wet deposit address.
+              const depositAddress = lastOneClickDepositAddressRef.current || quoteProtocol.toAddress
+              if (depositAddress) {
+                addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, depositAddress, {
+                  srcAsset: { chain: sourceAsset.chain, symbol: sourceAsset.symbol },
+                  destAsset: { chain: targetAsset.chain, symbol: targetAsset.symbol },
+                  depositAmount: amountToSwap.amount().toString()
+                })
+                lastTrackedTxHashRef.current = txHash
+              }
             }
           }
         })
@@ -1702,7 +1823,9 @@ export const Swap = ({
     amountToSwap,
     chainflipTransactionTrackingService,
     oneClickTransactionTrackingService,
-    lastTrackedTxHashRef
+    lastTrackedTxHashRef,
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   ])
 
   const onSwitchAssets = useCallback(async () => {
@@ -1744,6 +1867,7 @@ export const Swap = ({
         RD.isPending(swapFeesRD) ||
         RD.isPending(approveState) ||
         awaitingConfirmation ||
+        isApprovalCheckPending ||
         isCausedSlippage ||
         !swapResultAmountMax.baseAmount ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax) ||
@@ -1763,6 +1887,7 @@ export const Swap = ({
       swapFeesRD,
       approveState,
       awaitingConfirmation,
+      isApprovalCheckPending,
       isCausedSlippage,
       swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax,
@@ -1776,8 +1901,14 @@ export const Swap = ({
   )
 
   const disableSubmitApprove = useMemo(
-    () => isApproveFeeError || sourceBalanceLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
-    [isApproveFeeError, sourceBalanceLoading, oApproveParams, approveState]
+    () =>
+      isApproveFeeError ||
+      sourceBalanceLoading ||
+      O.isNone(oApproveParams) ||
+      RD.isPending(approveState) ||
+      RD.isFailure(isApprovedState) ||
+      isApprovalCheckPending,
+    [isApproveFeeError, sourceBalanceLoading, oApproveParams, approveState, isApprovedState, isApprovalCheckPending]
   )
 
   const onChangeRecipientAddress = useCallback(
@@ -1976,7 +2107,6 @@ export const Swap = ({
             useLedger={useTargetAssetLedger}
             useLedgerHandler={onClickUseTargetAssetLedger}
             hasLedger={hasTargetAssetLedger}
-            synthDisabled
           />
           <div className="absolute -top-[32px] left-[calc(50%-30px)] flex flex-col justify-center">
             <div className="w-60px h-60px">
@@ -2136,6 +2266,7 @@ export const Swap = ({
           source={swapTxSource}
           target={swapTxTarget}
           oQuoteProtocol={oQuoteProtocol}
+          depositChannelId={O.fromNullable(lastCFChannelRef.current?.depositChannelId)}
           goToTransaction={openExplorerResolved.openExplorerTxUrl}
           getExplorerTxUrl={openExplorerResolved.getExplorerTxUrl}
           onCloseTxModal={onCloseTxModal}

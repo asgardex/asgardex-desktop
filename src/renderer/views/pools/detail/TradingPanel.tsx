@@ -20,6 +20,7 @@ import { ASGARDEX_AFFILIATE_FEE_MIN } from '../../../../shared/const'
 import { isVultisigWallet } from '../../../../shared/utils/guard'
 import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
 import { useSwapConfirmationModals } from '../../../components/swap/components/SwapConfirmationModals'
+import { ModalState } from '../../../components/swap/Swap.types'
 import { SwapTxModal } from '../../../components/swap/SwapTxModal'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useAppContext } from '../../../contexts/AppContext'
@@ -29,13 +30,17 @@ import { useEvmContext } from '../../../contexts/EvmContext'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
+import { useOneClickContext } from '../../../contexts/OneClickContext'
 import { usePriceLevelContext } from '../../../contexts/PriceLevelContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { isUSDAsset } from '../../../helpers/assetHelper'
+import { resolveChainflipChannelId } from '../../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../../helpers/chainflipTransactionTracker'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
+import { createScopedLogger } from '../../../helpers/logger'
+import { addOneClickSwapToTrackerFromQuote } from '../../../helpers/oneClickTransactionTracker'
 import { addSwapToTracker } from '../../../helpers/transactionTracker'
 import { useERC20Approval } from '../../../hooks/useERC20Approval'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
@@ -50,7 +55,7 @@ import { getPoolDetail as getPoolDetailMaya } from '../../../services/midgard/ma
 import { PoolsState, PoolDetails } from '../../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../../services/midgard/thorMidgard/utils'
 import type { PriceLevel } from '../../../services/priceLevel/types'
-import { isStandaloneLedgerMode, isVultisigMode } from '../../../services/wallet/types'
+import { isStandaloneLedgerMode, isVultisigMode, isVultisigVaultPasswordRequired } from '../../../services/wallet/types'
 import type { VaultType } from '../../../services/wallet/types'
 import { hasImportedKeystore } from '../../../services/wallet/util'
 import { TradingPanelBar, type TradeMode } from './TradingPanelBar'
@@ -69,6 +74,8 @@ type Props = {
   setTradeMode: (mode: TradeMode) => void
   handleRef?: React.MutableRefObject<TradingPanelHandle | null>
 }
+
+const logger = createScopedLogger('TradingPanel')
 
 export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, handleRef }: Props) => {
   // ── Contexts ──────────────────────────────────────────────────────────
@@ -93,6 +100,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   const { transactionTrackingService } = useThorchainContext()
   const { transactionTrackingService: mayaTransactionTrackingService } = useMayachainContext()
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
+  const { transactionTrackingService: oneClickTransactionTrackingService } = useOneClickContext()
 
   const {
     service: {
@@ -417,13 +425,17 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     submitOneClickSwap: submitOneClickTx,
     resetSwapState,
     swapStartTime,
-    lastTrackedTxHashRef
+    lastTrackedTxHashRef,
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   } = useSwapExecution({
     swap$,
     swapCF$,
     swapOneClick$,
     selectedQuote,
     sourceAsset: safeSourceAsset,
+    targetAsset: safeTargetAsset,
+    destinationAddress: O.fromNullable(destinationAddressString || undefined),
     amountToSwap,
     sourceWalletBalance,
     sourceChainBalance,
@@ -501,12 +513,13 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     return 'fast'
   }, [appWalletState])
 
-  const isVaultEncrypted: boolean = useMemo(() => {
-    if (appWalletState && isVultisigMode(appWalletState) && appWalletState.activeVault) {
-      return appWalletState.activeVault.isEncrypted
-    }
-    return true
-  }, [appWalletState])
+  // Whether the Vultisig modal must prompt for the vault password. Skips the
+  // redundant prompt once a fast vault is already unlocked for the session
+  // (see `isVultisigVaultPasswordRequired`).
+  const isVaultEncrypted: boolean = useMemo(
+    () => (appWalletState ? isVultisigVaultPasswordRequired(appWalletState) : true),
+    [appWalletState]
+  )
 
   const validatePasswordForVultisig = useCallback(
     async (password: string): Promise<boolean> => {
@@ -528,40 +541,50 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
 
   const getActiveVaultId = useCallback(() => appWalletService.getActiveVaultId(), [appWalletService])
 
-  const { onSubmit, onApprove, renderModals } = useSwapConfirmationModals({
-    useSourceAssetLedger: useSourceLedger,
-    useSourceAssetVultisig: useSourceVultisig,
-    sourceAsset: safeSourceAsset,
-    sourceChain,
-    sourceWalletType,
-    network,
-    oSwapParams,
-    oCFSwapParams,
-    oOneClickSwapParams,
-    submitSwapTx,
-    submitCFTx,
-    submitOneClickTx,
-    submitApproveTx,
-    validatePassword$,
-    validatePasswordForVultisig,
-    vaultType,
-    isVaultEncrypted,
-    approveState: RD.initial,
-    swapState,
-    getActiveVaultId,
-    resetSwapState
-  })
+  const { showPasswordModal, showLedgerModal, showVultisigModal, onSubmit, onApprove, renderModals } =
+    useSwapConfirmationModals({
+      useSourceAssetLedger: useSourceLedger,
+      useSourceAssetVultisig: useSourceVultisig,
+      sourceAsset: safeSourceAsset,
+      sourceChain,
+      sourceWalletType,
+      network,
+      oSwapParams,
+      oCFSwapParams,
+      oOneClickSwapParams,
+      submitSwapTx,
+      submitCFTx,
+      submitOneClickTx,
+      submitApproveTx,
+      validatePassword$,
+      validatePasswordForVultisig,
+      vaultType,
+      isVaultEncrypted,
+      approveState: RD.initial,
+      swapState,
+      getActiveVaultId,
+      resetSwapState
+    })
+
+  const isConfirmModalOpen =
+    showPasswordModal !== ModalState.None ||
+    showLedgerModal !== ModalState.None ||
+    showVultisigModal !== ModalState.None
+  const isSwapTxInFlight = !RD.isInitial(swapState.swapTx)
+  const pauseQuoteRefresh = isConfirmModalOpen || isSwapTxInFlight
 
   // ── Explorer URL for tx modal ─────────────────────────────────────────
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(sourceChain))
 
   // ── Auto-fetch quote when order section is open and inputs change ───
   // Debounced: amount changes wait 600ms, other changes fire immediately.
+  // Skipped while confirming or while SwapTxModal is showing an in-flight swap.
   const quoteFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevAmountRef = useRef(amountStr)
 
   useEffect(() => {
     if (!orderSectionOpen) return
+    if (pauseQuoteRefresh) return
     if (affiliateBpsValue === 'none') return // fees not ready yet
 
     const doFetch = () => {
@@ -588,7 +611,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     }
     // Use affiliateBpsValue (primitive) instead of affiliateBps (object) to avoid re-render loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderSectionOpen, amountStr, tradeMode, selectedTarget, sourceDecimal, affiliateBpsValue])
+  }, [orderSectionOpen, pauseQuoteRefresh, amountStr, tradeMode, selectedTarget, sourceDecimal, affiliateBpsValue])
 
   // ── Actions ───────────────────────────────────────────────────────────
   const handleTrade = useCallback(
@@ -664,13 +687,30 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
             amount: amountToSwap.amount().toString()
           })
           lastTrackedTxHashRef.current = txHash
-        } else if (quoteProtocol.protocol === 'Chainflip' && quoteProtocol.depositChannelId) {
-          addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, quoteProtocol.depositChannelId, {
-            srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },
-            destAsset: { chain: safeTargetAsset.chain, symbol: safeTargetAsset.symbol },
-            depositAmount: amountToSwap.amount().toString()
-          })
-          lastTrackedTxHashRef.current = txHash
+        } else if (quoteProtocol.protocol === 'Chainflip') {
+          const channelId = resolveChainflipChannelId(
+            lastCFChannelRef.current?.depositChannelId,
+            quoteProtocol.depositChannelId
+          )
+          if (channelId) {
+            addChainflipSwapToTrackerFromQuote(chainflipTransactionTrackingService, channelId, {
+              srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },
+              destAsset: { chain: safeTargetAsset.chain, symbol: safeTargetAsset.symbol },
+              depositAmount: amountToSwap.amount().toString()
+            })
+            lastTrackedTxHashRef.current = txHash
+          }
+        } else if (quoteProtocol.protocol === 'OneClick') {
+          // Dry quotes leave toAddress empty. Status is keyed by the wet deposit address.
+          const depositAddress = lastOneClickDepositAddressRef.current || quoteProtocol.toAddress
+          if (depositAddress) {
+            addOneClickSwapToTrackerFromQuote(oneClickTransactionTrackingService, depositAddress, {
+              srcAsset: { chain: safeSourceAsset.chain, symbol: safeSourceAsset.symbol },
+              destAsset: { chain: safeTargetAsset.chain, symbol: safeTargetAsset.symbol },
+              depositAmount: amountToSwap.amount().toString()
+            })
+            lastTrackedTxHashRef.current = txHash
+          }
         }
       })
     )
@@ -680,10 +720,13 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     transactionTrackingService,
     mayaTransactionTrackingService,
     chainflipTransactionTrackingService,
+    oneClickTransactionTrackingService,
     safeSourceAsset,
     safeTargetAsset,
     amountToSwap,
-    lastTrackedTxHashRef
+    lastTrackedTxHashRef,
+    lastCFChannelRef,
+    lastOneClickDepositAddressRef
   ])
 
   const onCloseTxModal = useCallback(() => {
@@ -851,13 +894,27 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
 
     if (isPreAuthorized) {
       // Pre-authorized keystore order: bypass password modal, submit directly
-      if (O.isSome(oSwapParams)) {
-        submitSwapTx()
-      } else if (O.isSome(oCFSwapParams)) {
-        submitCFTx()
-      }
-      // Clean up cached auth
-      if (levelId) orderPasswordCache.current.delete(levelId)
+      void (async () => {
+        try {
+          if (O.isSome(oSwapParams)) {
+            submitSwapTx()
+          } else if (O.isSome(oCFSwapParams)) {
+            await submitCFTx()
+          }
+        } catch (error) {
+          logger.error('Pre-authorized swap submit failed', error)
+          // Channel open can fail before swapCF$ emits — mark the limit order failed now.
+          if (levelId) {
+            priceLevelService.updateLevel(assetKey, levelId, {
+              status: 'failed',
+              error: error instanceof Error ? error.message : 'Swap submission failed'
+            })
+            executingLevelRef.current = null
+          }
+        } finally {
+          if (levelId) orderPasswordCache.current.delete(levelId)
+        }
+      })()
     } else {
       // Hardware wallet or non-pre-authorized: show confirmation modal
       onSubmit()
@@ -947,6 +1004,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
         source={swapTxSource}
         target={swapTxTarget}
         oQuoteProtocol={selectedQuote}
+        depositChannelId={O.fromNullable(lastCFChannelRef.current?.depositChannelId)}
         goToTransaction={openExplorerTxUrl}
         getExplorerTxUrl={getExplorerTxUrl}
         onCloseTxModal={onCloseTxModal}

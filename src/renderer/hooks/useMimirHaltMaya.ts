@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { array as A, function as FP, option as O } from 'fp-ts'
+import { isEqual } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -76,6 +77,9 @@ export const useMayachainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: 
             })
           )
         ),
+        // lastblock ticks every 60s for scheduled-halt height checks; only emit when
+        // halt flags actually change so quote/fetch callbacks do not churn identity.
+        RxOp.distinctUntilChanged(isEqual),
         RxOp.shareReplay(1)
       ),
     RD.initial

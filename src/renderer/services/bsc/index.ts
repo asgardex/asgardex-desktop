@@ -9,6 +9,7 @@ import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
 import { replaceSymbol } from '../evm/utils'
 import { bscRpc$, evmGasMultiplier$ } from '../storage/common'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { WalletBalance } from '../wallet/types'
 
 const {
@@ -33,6 +34,7 @@ const {
   createClientParams: createBscParams,
   ClientClass: Client,
   rpc$: bscRpc$,
+  hdSettings$: keystoreChainHDSettings$(BSCChain),
   addressInWhitelist: addressInBscWhitelist,
   assetsFallback: BSCAssetsFallBack,
   assetsTestnet: BscAssetsTestnet,
@@ -54,7 +56,8 @@ const {
   txRD$,
   sendPoolTx$,
   approveERC20Token$,
-  isApprovedERC20Token$
+  isApprovedERC20Token$,
+  getERC20Allowance$
 } = createTransactionService(client$, network$, bscRpc$, evmGasMultiplier$, enhancedClient$)
 const { reloadFees, fees$, poolInTxFees$, approveFee$, reloadApproveFee } = createFeesService(
   enhancedClient$,
@@ -86,5 +89,6 @@ export {
   approveFee$,
   reloadApproveFee,
   approveERC20Token$,
-  isApprovedERC20Token$
+  isApprovedERC20Token$,
+  getERC20Allowance$
 }

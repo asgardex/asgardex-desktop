@@ -27,14 +27,13 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
         Rx.from(client.transfer({ walletIndex, asset: asset as Asset, amount, recipient, memo }))
       ),
       RxOp.map(RD.success),
-      RxOp.catchError(
-        (e): TxHashLD =>
-          Rx.of(
-            RD.failure({
-              msg: e?.message ?? e.toString(),
-              errorId: ErrorId.SEND_TX
-            })
-          )
+      RxOp.catchError((e): TxHashLD =>
+        Rx.of(
+          RD.failure({
+            msg: e?.message ?? e.toString(),
+            errorId: ErrorId.SEND_TX
+          })
+        )
       ),
       RxOp.startWith(RD.pending)
     )

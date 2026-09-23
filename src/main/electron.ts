@@ -13,13 +13,14 @@ import {
   ipcLedgerApproveERC20TokenParamsIO,
   ipcLedgerDepositTxParamsIO,
   ipcLedgerSendTxParamsIO,
-  ipcSaveBalancesJsonParamsIO
+  ipcSaveBalancesJsonParamsIO,
+  ipcSaveCsvParamsIO
 } from '../shared/api/io'
 import type { IPCExportKeystoreParams, IPCLedgerAddressParams, StoreFileName } from '../shared/api/types'
 import { DEFAULT_STORAGES } from '../shared/const'
 import type { Locale } from '../shared/i18n/types'
 import { registerAppCheckUpdatedHandler } from './api/appUpdate'
-import { saveBalancesJson } from './api/export'
+import { saveBalancesJson, saveCsv } from './api/export'
 import { getFileStoreService } from './api/fileStore'
 import { exportKeystore, initKeystoreWallets, loadKeystore, saveKeystoreWallets } from './api/keystore'
 import {
@@ -33,7 +34,7 @@ import {
 import { approveLedgerERC20Token } from './api/ledger/evm/approve'
 import { registerMpcIpcHandlers } from './api/mpc'
 import { disposeSDK } from './api/mpc/sdk'
-import { migrateHostStorageIntoFlatpak } from './api/storageMigration'
+import { migrateHostDataIntoFlatpak } from './api/storageMigration'
 import { openExternal } from './api/url'
 import IPCMessages from './ipc/messages'
 import { setMenu } from './menu'
@@ -206,6 +207,15 @@ const initIPC = () => {
       )
     )
   )
+  ipcMain.handle(IPCMessages.SAVE_CSV, async (_, params: unknown) =>
+    FP.pipe(
+      ipcSaveCsvParamsIO.decode(params),
+      E.fold(
+        (e) => Promise.reject(e),
+        (p) => saveCsv(p)
+      )
+    )
+  )
   ipcMain.handle(IPCMessages.LOAD_KEYSTORE, async () => loadKeystore())
   ipcMain.handle(IPCMessages.INIT_KEYSTORE_WALLETS, async () => initKeystoreWallets())
   // Url
@@ -255,9 +265,9 @@ const init = async () => {
   if (IS_DEV) {
     await setupDevEnv()
   }
-  // Import keystores/storage from a native (.deb/AppImage) install on first
-  // Flatpak run, before the renderer reads them. No-op outside Flatpak.
-  await migrateHostStorageIntoFlatpak()
+  // Import keystores + Vultisig vaults from host/legacy Flatpak on first sandbox
+  // run, before the renderer or MPC SDK reads them. No-op outside Flatpak.
+  await migrateHostDataIntoFlatpak()
   await initMainWindow()
   app.on('window-all-closed', allClosedHandler)
   app.on('activate', activateHandler)

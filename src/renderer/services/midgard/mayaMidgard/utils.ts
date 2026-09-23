@@ -10,7 +10,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASH_DECIMAL, DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
@@ -35,7 +34,7 @@ import {
 import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
-import { AssetBTC, AssetETH, AssetKUJI, AssetDASH, AssetAETH, AssetZEC } from '../../../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetDASH, AssetAETH, AssetZEC } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
@@ -44,7 +43,6 @@ import { ordPricePool } from '../../../helpers/fp/ord'
 import { getDeepestPool, MAYA_POOL_ADDRESS, MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { AssetWithAmount } from '../../../types/asgardex'
 import { PricePoolAssets, PricePoolAsset } from '../../../views/pools/Pools.types'
-import { KUJI_DECIMAL } from '../../kuji/const'
 import { InboundAddress } from '../../mayachain/types'
 import {
   PoolAssetDetails as PoolAssetsDetail,
@@ -94,16 +92,15 @@ export const getPricePools = (details: PoolDetails, whitelist: PricePoolAssets):
       return asset ? O.some(detail) : O.none
     }),
     // Map `PoolDetail` -> `PricePool`
-    A.filterMap(
-      (detail: PoolDetail): O.Option<PricePool> =>
-        FP.pipe(
-          assetFromString(detail.asset),
-          O.fromNullable,
-          O.map((asset) => ({
-            asset,
-            poolData: toPoolData(detail)
-          }))
-        )
+    A.filterMap((detail: PoolDetail): O.Option<PricePool> =>
+      FP.pipe(
+        assetFromString(detail.asset),
+        O.fromNullable,
+        O.map((asset) => ({
+          asset,
+          poolData: toPoolData(detail)
+        }))
+      )
     ),
     // Add USD price pool (if available)
     (pricePools) =>
@@ -299,11 +296,6 @@ export const getOutboundAssetFeeByChain = (
             amount: baseAmount(value, THORCHAIN_DECIMAL),
             asset: AssetRuneNative
           })
-        case KUJIChain:
-          return O.some({
-            amount: baseAmount(value, KUJI_DECIMAL),
-            asset: AssetKUJI
-          })
         case ADAChain:
           return O.some({
             amount: baseAmount(value, ADA_DECIMALS),
@@ -401,16 +393,14 @@ export const combineSharesByAsset = (shares: PoolShares, asset: Asset): O.Option
     A.reduce<PoolShare, O.Option<PoolShare>>(O.none, (oAcc, cur) => {
       return FP.pipe(
         oAcc,
-        O.map(
-          (acc): PoolShare => ({
-            ...acc,
-            units: cur.units.plus(acc.units),
-            assetAddedAmount: baseAmount(cur.assetAddedAmount.amount().plus(acc.assetAddedAmount.amount())),
-            assetAddress: acc.assetAddress,
-            runeAddress: O.isSome(acc.runeAddress) ? acc.runeAddress : cur.runeAddress,
-            type: 'all'
-          })
-        ),
+        O.map((acc): PoolShare => ({
+          ...acc,
+          units: cur.units.plus(acc.units),
+          assetAddedAmount: baseAmount(cur.assetAddedAmount.amount().plus(acc.assetAddedAmount.amount())),
+          assetAddress: acc.assetAddress,
+          runeAddress: O.isSome(acc.runeAddress) ? acc.runeAddress : cur.runeAddress,
+          type: 'all'
+        })),
         O.getOrElse<PoolShare>(() => ({ ...cur, type: 'all' })),
         O.some
       )

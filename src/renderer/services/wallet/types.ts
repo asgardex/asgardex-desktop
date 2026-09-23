@@ -10,6 +10,7 @@ type NonEmptyArray<T> = nonEmptyArray.NonEmptyArray<T>
 const { getMonoid } = array
 
 import { KeystoreWallet, KeystoreWallets } from '../../../shared/api/io'
+import { OpenVaultFileResult, SerializedVault } from '../../../shared/api/mpcTypes'
 import { KeystoreId, LastOpenedWallet, LedgerError } from '../../../shared/api/types'
 import { EnabledChain } from '../../../shared/utils/chain'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
@@ -78,6 +79,29 @@ export const isVultisigMode = (state: AppWalletState): state is VultisigState =>
   typeof state === 'object' && state !== null && 'mode' in state && state.mode === 'standalone-vultisig'
 
 export const isVultisigVaultLocked = (state: VultisigState): boolean => state.phase === VultisigPhase.VaultLocked
+
+/**
+ * Whether the active Vultisig vault is password-protected (encrypted) — i.e.
+ * a password is required *in principle* before it can sign.
+ *
+ * This is intentionally NOT the "should we show the prompt right now?" decision.
+ * A password-protected vault stays encrypted for its whole life, but the SDK
+ * caches the password with a TTL after an unlock, so re-prompting on every tx is
+ * redundant while the cache is warm. The *live* decision — skip while the SDK's
+ * password cache is valid, prompt once it has expired — is made in
+ * `VultisigConfirmationModal` via `window.apiMpc.isVaultUnlocked`, because only
+ * the SDK knows the true cache state (the renderer's `phase` does not track the
+ * TTL).
+ *
+ * - Not Vultisig / no active vault → `true` (safe default; callers only render
+ *   the Vultisig modal in Vultisig mode anyway).
+ * - Un-encrypted vault → `false` (no password ever needed).
+ * - Encrypted vault → `true`.
+ */
+export const isVultisigVaultPasswordRequired = (state: AppWalletState): boolean => {
+  if (!isVultisigMode(state) || !state.activeVault) return true
+  return state.activeVault.isEncrypted
+}
 
 export const isKeystoreMode = (state: AppWalletState): state is KeystoreState =>
   !isStandaloneLedgerMode(state) && !isVultisigMode(state)
@@ -248,6 +272,20 @@ export type VaultManager = {
   deleteVault: (vaultId: string) => Promise<void>
   renameVault: (vaultId: string, newName: string) => Promise<void>
   exportVault: (vaultId: string, password?: string) => Promise<void>
+  openVaultFile: () => Promise<OpenVaultFileResult>
+  importVault: (
+    content: string,
+    password?: string
+  ) => Promise<
+    | { status: 'imported'; vault: SerializedVault }
+    | { status: 'duplicate' }
+    | { status: 'existing-locked'; vaultId?: string }
+  >
+  importVaultReplace: (content: string, password?: string) => Promise<SerializedVault>
+  /** Unlock a stored vault so a later import can read it. Does not select it or change phase. */
+  unlockStoredVault: (vaultId: string, password: string) => Promise<void>
+  /** Load and select a just-imported vault. True only when that vault is active. */
+  activateImportedVault: (vaultId: string) => Promise<boolean>
 
   // State management
   resetToVaultSelection: () => void
@@ -272,6 +310,8 @@ export type AppWalletService = {
   switchToKeystoreMode: () => Promise<void>
   switchToStandaloneLedgerMode: (autoLock?: boolean) => Promise<void>
   switchToVultisigMode: (autoLock?: boolean) => Promise<void>
+  /** Switch into Vultisig mode and activate a vault that was just imported. */
+  openImportedVault: (vaultId: string) => Promise<boolean>
   restoreLastOpenedWallet: () => Promise<void>
   saveLastOpenedWallet: (wallet: LastOpenedWallet | undefined) => void
   // Unified wallet methods
@@ -522,8 +562,7 @@ export type KeystoreWalletsUI$ = Rx.Observable<KeystoreWalletsUI>
  * Uses WalletType enum for type safety and consistency
  */
 export type Wallet =
-  | { type: WalletType.Keystore; id: KeystoreId; name: string }
-  | { type: WalletType.Vultisig; id: string; name: string }
+  { type: WalletType.Keystore; id: KeystoreId; name: string } | { type: WalletType.Vultisig; id: string; name: string }
 
 export type Wallets = Wallet[]
 export type Wallets$ = Rx.Observable<Wallets>

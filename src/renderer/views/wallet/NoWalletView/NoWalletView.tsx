@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { KeyIcon, CpuChipIcon, ShieldCheckIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
@@ -7,18 +7,17 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import FolderKeyIcon from '../../../assets/svg/folder-key.svg?react'
-import AsgardexLogo from '../../../assets/svg/logo-asgardex.svg?react'
 import SproutIcon from '../../../assets/svg/sprout.svg?react'
 import { HeaderTheme } from '../../../components/header/theme'
 import { LocaleDropdown } from '../../../components/LayoutlessWrapper/LocaleDropdown'
+import { ConfirmationModal } from '../../../components/modal/confirmation'
 import { VaultPasswordModal } from '../../../components/modal/VaultPasswordModal'
 import { BackLinkButton } from '../../../components/uielements/button'
+import { AsgardexLogo } from '../../../components/uielements/logo/AsgardexLogo'
 import { useWalletContext } from '../../../contexts/WalletContext'
-import { createScopedLogger } from '../../../helpers/logger'
+import { useVultisigVaultImport } from '../../../hooks/useVultisigVaultImport'
 import * as walletRoutes from '../../../routes/wallet'
 import { hasImportedKeystore } from '../../../services/wallet/util'
-
-const logger = createScopedLogger('NoWalletView')
 
 export const NoWalletView = () => {
   const navigate = useNavigate()
@@ -28,9 +27,20 @@ export const NoWalletView = () => {
 
   const keystore = useObservableState(keystoreService.keystoreState$, undefined)
 
-  // Vultisig vault import state
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
-  const [pendingVaultFile, setPendingVaultFile] = useState<{ content: string; filename: string } | null>(null)
+  const onActivated = useCallback(() => {
+    navigate(walletRoutes.assets.path())
+  }, [navigate])
+
+  const {
+    importVault,
+    showPasswordModal,
+    passwordSubject,
+    handlePasswordSubmit,
+    handlePasswordModalClose,
+    showReplaceConfirm,
+    handleReplaceConfirm,
+    handleReplaceConfirmClose
+  } = useVultisigVaultImport(onActivated)
 
   const createWalletHandler = useCallback(() => {
     navigate(walletRoutes.create.phrase.path())
@@ -59,55 +69,6 @@ export const NoWalletView = () => {
     navigate(walletRoutes.vultisigSecureCreate.path())
   }, [navigate])
 
-  // Import Vultisig vault from .vult file
-  const importVaultHandler = useCallback(async () => {
-    try {
-      const result = await window.apiMpc.openVaultFile()
-      if (!result) return // User canceled
-
-      if (result.isEncrypted) {
-        // Show password modal for encrypted vaults
-        setPendingVaultFile({ content: result.content, filename: result.filename })
-        setShowPasswordModal(true)
-      } else {
-        // Import unencrypted vault directly
-        const vault = await window.apiMpc.importVault(result.content)
-        await appWalletService.switchToVultisigMode(true)
-        await vaultManager.loadVaults()
-        await vaultManager.selectVault(vault.id, false)
-        navigate(walletRoutes.assets.path())
-      }
-    } catch (error) {
-      logger.error('Failed to import vault:', error)
-    }
-  }, [navigate, vaultManager, appWalletService])
-
-  // Handle password submission for encrypted vault
-  const handlePasswordSubmit = useCallback(
-    async (password: string) => {
-      if (!pendingVaultFile) return
-
-      try {
-        const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
-        await appWalletService.switchToVultisigMode(true)
-        await vaultManager.loadVaults()
-        await vaultManager.selectVault(vault.id, false)
-        setShowPasswordModal(false)
-        setPendingVaultFile(null)
-        navigate(walletRoutes.assets.path())
-      } catch (error) {
-        logger.error('Failed to import vault with password:', error)
-        throw error
-      }
-    },
-    [pendingVaultFile, navigate, vaultManager, appWalletService]
-  )
-
-  const handlePasswordModalClose = useCallback(() => {
-    setShowPasswordModal(false)
-    setPendingVaultFile(null)
-  }, [])
-
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-center gap-8 bg-bg1 dark:bg-bg1d">
       {((keystore && hasImportedKeystore(keystore)) || vaultManager.vultisigState().availableVaults.length > 0) && (
@@ -120,7 +81,7 @@ export const NoWalletView = () => {
         <HeaderTheme isDesktopView />
       </div>
       <div className="flex flex-col items-center justify-center">
-        <AsgardexLogo className="[&>*]:fill-text1 [&>*]:dark:fill-text1d" />
+        <AsgardexLogo className="text-text1 dark:text-text1d" />
         <span className="text-xs text-gray2 dark:text-gray2d">{intl.formatMessage({ id: 'common.welcome' })}</span>
       </div>
       <div className="flex flex-col gap-4">
@@ -226,7 +187,7 @@ export const NoWalletView = () => {
             'bg-bg2/50 hover:bg-bg2 dark:bg-bg2d/20 dark:hover:bg-bg2d/40',
             'cursor-pointer rounded-lg p-6 text-center transition duration-300 ease-in-out'
           )}
-          onClick={importVaultHandler}>
+          onClick={importVault}>
           <ArrowDownTrayIcon className="text-gray-500" width={40} height={40} />
           <div className="flex flex-col items-start">
             <span className="text-lg text-text1 dark:text-text1d">
@@ -239,9 +200,16 @@ export const NoWalletView = () => {
 
       <VaultPasswordModal
         visible={showPasswordModal}
-        subject={pendingVaultFile?.filename || ''}
+        subject={passwordSubject}
         onSubmit={handlePasswordSubmit}
         onClose={handlePasswordModalClose}
+      />
+      <ConfirmationModal
+        visible={showReplaceConfirm}
+        content={intl.formatMessage({ id: 'wallet.vultisig.import.replace.description' })}
+        okText={intl.formatMessage({ id: 'wallet.vultisig.import.replace.confirm' })}
+        onSuccess={handleReplaceConfirm}
+        onClose={handleReplaceConfirmClose}
       />
     </div>
   )

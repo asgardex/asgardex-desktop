@@ -13,9 +13,9 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
@@ -40,7 +40,6 @@ import {
   runeIcon,
   cacaoIcon,
   dashIcon,
-  kujiIcon,
   adaIcon,
   xrdIcon,
   solIcon,
@@ -48,6 +47,7 @@ import {
   xrpIcon,
   tronIcon,
   suiIcon,
+  nearIcon,
   zecIcon
 } from '../../../icons'
 import { sizes, fontSizes } from './ChainIcon.styles'
@@ -100,10 +100,10 @@ const chainIconMap = (chain: string): string => {
       return cacaoIcon
     case RadixChain:
       return xrdIcon
-    case KUJIChain:
-      return kujiIcon
     case SUIChain:
       return suiIcon
+    case NEARChain:
+      return nearIcon
     default:
       return '' // return null if no chain matches
   }

@@ -291,6 +291,15 @@ export const createAppWalletService = (): AppWalletService => {
     }
   }
 
+  /**
+   * Enter Vultisig mode and activate a vault that import just stored.
+   * False when that vault did not become the active vault.
+   */
+  const openImportedVault = async (vaultId: string): Promise<boolean> => {
+    await switchToVultisigMode(true)
+    return vaultManager.activateImportedVault(vaultId)
+  }
+
   // ============================================
   // Unified Wallet Methods
   // ============================================
@@ -458,20 +467,16 @@ export const createAppWalletService = (): AppWalletService => {
     vaultManager.vultisigState$
   ]).pipe(
     RxOp.map(([keystoreWallets, vultisigState]) => [
-      ...keystoreWallets.map(
-        (w): Wallet => ({
-          type: WalletType.Keystore,
-          id: w.id,
-          name: w.name
-        })
-      ),
-      ...vultisigState.availableVaults.map(
-        (v): Wallet => ({
-          type: WalletType.Vultisig,
-          id: v.id,
-          name: v.name
-        })
-      )
+      ...keystoreWallets.map((w): Wallet => ({
+        type: WalletType.Keystore,
+        id: w.id,
+        name: w.name
+      })),
+      ...vultisigState.availableVaults.map((v): Wallet => ({
+        type: WalletType.Vultisig,
+        id: v.id,
+        name: v.name
+      }))
     ]),
     RxOp.shareReplay(1)
   )
@@ -504,24 +509,20 @@ export const createAppWalletService = (): AppWalletService => {
         }
         return FP.pipe(
           keystoreState,
-          O.map(
-            (kc): Wallet => ({
-              type: WalletType.Keystore,
-              id: kc.id,
-              name: kc.name
-            })
-          )
+          O.map((kc): Wallet => ({
+            type: WalletType.Keystore,
+            id: kc.id,
+            name: kc.name
+          }))
         )
       } else if (isKeystoreMode(state)) {
         return FP.pipe(
           state,
-          O.map(
-            (kc): Wallet => ({
-              type: WalletType.Keystore,
-              id: kc.id,
-              name: kc.name
-            })
-          )
+          O.map((kc): Wallet => ({
+            type: WalletType.Keystore,
+            id: kc.id,
+            name: kc.name
+          }))
         )
       }
       return O.none
@@ -642,6 +643,7 @@ export const createAppWalletService = (): AppWalletService => {
     switchToKeystoreMode,
     switchToStandaloneLedgerMode,
     switchToVultisigMode,
+    openImportedVault,
     restoreLastOpenedWallet,
     saveLastOpenedWallet,
     // Unified methods (Phase A-C)

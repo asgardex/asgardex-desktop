@@ -8,6 +8,7 @@ import { network$ } from '../app/service'
 import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
 import { baseRpc$, evmGasMultiplier$ } from '../storage/common'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 
 const {
   client$,
@@ -31,6 +32,7 @@ const {
   createClientParams: createBaseParams,
   ClientClass: Client,
   rpc$: baseRpc$,
+  hdSettings$: keystoreChainHDSettings$(BASEChain),
   addressInWhitelist: addressInBaseWhitelist,
   assetsFallback: BASEAssetsFallback,
   assetsTestnet: BASEAssetsFallback,
@@ -48,7 +50,8 @@ const {
   txRD$,
   sendPoolTx$,
   approveERC20Token$,
-  isApprovedERC20Token$
+  isApprovedERC20Token$,
+  getERC20Allowance$
 } = createTransactionService(client$, network$, baseRpc$, evmGasMultiplier$, enhancedClient$)
 const { reloadFees, fees$, poolInTxFees$, approveFee$, reloadApproveFee } = createFeesService(
   enhancedClient$,
@@ -80,5 +83,6 @@ export {
   approveFee$,
   reloadApproveFee,
   approveERC20Token$,
-  isApprovedERC20Token$
+  isApprovedERC20Token$,
+  getERC20Allowance$
 }

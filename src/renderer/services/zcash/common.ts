@@ -13,13 +13,18 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
+import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS } from '../../../shared/wallet/types'
 import { logger } from '../../helpers/logger'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$ } from './types'
+
+const hdSettings$ = keystoreChainHDSettings$(ZECChain)
 
 const LOWER_FEE_BOUND = 10000
 const UPPER_FEE_BOUND = 100000
@@ -32,60 +37,61 @@ const UPPER_FEE_BOUND = 100000
  * A `ZcashClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
-  RxOp.switchMap(
-    ([keystore, network]): ClientState$ =>
-      Rx.of(
-        FP.pipe(
-          getPhrase(keystore),
-          O.map<string, ClientState>((phrase) => {
-            try {
-              // Create custom data provider with API key
-              const apiKey = import.meta.env.VITE_NOWNODES_API_KEY || ''
-              const mainnetNownodesProvider = new NownodesProvider(
-                'https://zecbook.nownodes.io/api/v2',
-                ZECChain,
-                AssetZEC,
-                ZEC_DECIMAL,
-                apiKey
-              )
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
+  RxOp.switchMap(([keystore, network, hdSettings]): ClientState$ =>
+    Rx.of(
+      FP.pipe(
+        getPhrase(keystore),
+        O.map<string, ClientState>((phrase) => {
+          try {
+            // Create custom data provider with API key
+            const apiKey = import.meta.env.VITE_NOWNODES_API_KEY || ''
+            const mainnetNownodesProvider = new NownodesProvider(
+              'https://zecbook.nownodes.io/api/v2',
+              ZECChain,
+              AssetZEC,
+              ZEC_DECIMAL,
+              apiKey
+            )
 
-              // Create provider configuration based on network
-              // For testnet, we'll skip the provider since Nownodes doesn't support ZEC testnet
-              const providers: UtxoOnlineDataProviders[] =
-                network === Network.Testnet
-                  ? [] // No providers for testnet
-                  : [
-                      {
-                        [Network.Testnet]: undefined,
-                        [Network.Stagenet]: mainnetNownodesProvider,
-                        [Network.Mainnet]: mainnetNownodesProvider
-                      }
-                    ]
+            // Create provider configuration based on network
+            // For testnet, we'll skip the provider since Nownodes doesn't support ZEC testnet
+            const providers: UtxoOnlineDataProviders[] =
+              network === Network.Testnet
+                ? [] // No providers for testnet
+                : [
+                    {
+                      [Network.Testnet]: undefined,
+                      [Network.Stagenet]: mainnetNownodesProvider,
+                      [Network.Mainnet]: mainnetNownodesProvider
+                    }
+                  ]
 
-              const zecInitParams = {
-                ...defaultZECParams,
-                phrase: phrase,
-                network: network,
-                explorerProviders: zcashExplorerProviders,
-                dataProviders: providers,
-                feeBounds: {
-                  lower: LOWER_FEE_BOUND,
-                  upper: UPPER_FEE_BOUND
-                }
+            const { rootDerivationPaths } = getKeystoreDerivation(ZECChain, hdSettings)
+            const zecInitParams = {
+              ...defaultZECParams,
+              phrase: phrase,
+              network: network,
+              explorerProviders: zcashExplorerProviders,
+              dataProviders: providers,
+              rootDerivationPaths,
+              feeBounds: {
+                lower: LOWER_FEE_BOUND,
+                upper: UPPER_FEE_BOUND
               }
-
-              const client = new Client(zecInitParams)
-              return RD.success(client)
-            } catch (error) {
-              logger.error('Failed to create ZEC client', error)
-              return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
-          }),
-          // Set back to `initial` if no phrase is available (locked wallet)
-          O.getOrElse<ClientState>(() => RD.initial)
-        )
-      ).pipe(RxOp.startWith(RD.pending))
+
+            const client = new Client(zecInitParams)
+            return RD.success(client)
+          } catch (error) {
+            logger.error('Failed to create ZEC client', error)
+            return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+          }
+        }),
+        // Set back to `initial` if no phrase is available (locked wallet)
+        O.getOrElse<ClientState>(() => RD.initial)
+      )
+    ).pipe(RxOp.startWith(RD.pending))
   ),
   RxOp.startWith<ClientState>(RD.initial),
   RxOp.shareReplay(1)
@@ -125,12 +131,19 @@ const readOnlyClient$: Rx.Observable<O.Option<Client>> = readOnlyClientState$.pi
 /**
  * ZEC `Address`
  */
-const address$: C.WalletAddress$ = C.address$(client$, ZECChain)
+const addressHDSettings$ = hdSettings$.pipe(
+  RxOp.map((s) => {
+    const { walletIndex } = getKeystoreDerivation(ZECChain, s ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
+    return { hdMode: s.hdMode, account: s.account, index: walletIndex }
+  })
+)
+
+const address$: C.WalletAddress$ = C.address$(client$, ZECChain, addressHDSettings$)
 
 /**
  * ZEC `Address`
  */
-const addressUI$: C.WalletAddress$ = C.addressUI$(client$, ZECChain)
+const addressUI$: C.WalletAddress$ = C.addressUI$(client$, ZECChain, addressHDSettings$)
 
 /**
  * Explorer url depending on selected network

@@ -21,24 +21,23 @@ import { Client$, ClientState, ClientState$ } from './types'
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
-  RxOp.switchMap(
-    ([keystore, network]): ClientState$ =>
-      Rx.of(
-        FP.pipe(
-          getPhrase(keystore),
-          O.map<string, ClientState>((phrase) => {
-            try {
-              const client = new XRPClient({ ...defaultXRPParams, phrase, network })
-              return RD.success(client)
-            } catch (error) {
-              logger.error('Failed to create XRP client', error)
-              return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
-            }
-          }),
-          // Set back to `initial` if no phrase is available (locked wallet)
-          O.getOrElse<ClientState>(() => RD.initial)
-        )
-      ).pipe(RxOp.startWith(RD.pending))
+  RxOp.switchMap(([keystore, network]): ClientState$ =>
+    Rx.of(
+      FP.pipe(
+        getPhrase(keystore),
+        O.map<string, ClientState>((phrase) => {
+          try {
+            const client = new XRPClient({ ...defaultXRPParams, phrase, network })
+            return RD.success(client)
+          } catch (error) {
+            logger.error('Failed to create XRP client', error)
+            return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+          }
+        }),
+        // Set back to `initial` if no phrase is available (locked wallet)
+        O.getOrElse<ClientState>(() => RD.initial)
+      )
+    ).pipe(RxOp.startWith(RD.pending))
   ),
   RxOp.startWith<ClientState>(RD.initial),
   RxOp.shareReplay(1)

@@ -35,10 +35,8 @@ import {
   isRujiAsset,
   isMayaAsset,
   isDashAsset,
-  isKujiAsset,
   isXrdAsset,
   isZecAsset,
-  isUskAsset,
   iconUrlInARBERC20Whitelist,
   isAethAsset,
   isSolAsset,
@@ -48,6 +46,7 @@ import {
   isXrpAsset,
   isTrxAsset,
   isSuiAsset,
+  isNearAsset,
   iconUrlInTRONTRC20Whitelist
 } from '../../../../helpers/assetHelper'
 import {
@@ -57,11 +56,13 @@ import {
   isBscChain,
   isEthChain,
   isMayaChain,
+  isNearChain,
   isSolChain,
   isTronChain
 } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
+import { getOneClickAssetIconUrl } from '../../../../services/oneclick'
 import {
   arbIcon,
   atomIcon,
@@ -78,9 +79,7 @@ import {
   cacaoIcon,
   usdpIcon,
   dashIcon,
-  kujiIcon,
   adaIcon,
-  uskIcon,
   xrdIcon,
   solIcon,
   baseIcon,
@@ -89,6 +88,7 @@ import {
   rujiIcon,
   tronIcon,
   suiIcon,
+  nearIcon,
   zecIcon
 } from '../../../icons'
 import { sizes, borders, fontSizes } from './AssetIcon.styles'
@@ -195,10 +195,6 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
       return dogeIcon
     }
 
-    // KUJI
-    if (isKujiAsset(asset)) {
-      return kujiIcon
-    }
     // ADA
     if (isAdaAsset(asset)) {
       return adaIcon
@@ -210,10 +206,6 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     // Sol
     if (isSolAsset(asset)) {
       return solIcon
-    }
-    // USK
-    if (isUskAsset(asset)) {
-      return uskIcon
     }
 
     // Atom
@@ -228,12 +220,23 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     if (isSuiAsset(asset)) {
       return suiIcon
     }
+    // NEAR native
+    if (isNearAsset(asset)) {
+      return nearIcon
+    }
     // Hack for USDP // 1inch doesn't supply
     if (asset.symbol === 'USDP-0X8E870D67F660D95D5BE530380D0EC0BD388289E1') {
       return usdpIcon
     }
 
     if (network !== Network.Testnet) {
+      // NEAR NEP-141 (and other 1Click-listed NEAR tokens): CoinGecko via OneClick list
+      if (isNearChain(asset.chain) && asset.type === AssetType.TOKEN) {
+        return FP.pipe(
+          getOneClickAssetIconUrl(asset),
+          O.getOrElse(() => '')
+        )
+      }
       // Since we've already checked ETH.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isEthTokenAsset`
       if (isEthChain(asset.chain)) {

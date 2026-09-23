@@ -3,6 +3,7 @@ import { SwapMessages } from '../types'
 const swap: SwapMessages = {
   'swap.state.sending': '트랜잭션 전송 중',
   'swap.state.pending': '스왑 중',
+  'swap.state.openingChannel': 'Chainflip 채널 여는 중',
   'swap.state.success': '스왑 성공',
   'swap.state.error': '스왑 오류',
   'swap.input': '입력',
@@ -37,8 +38,6 @@ const swap: SwapMessages = {
     '선택한 {tolerance}% 슬리피지 허용 범위를 기반으로 스왑이 보호됩니다. 가격이 {tolerance}% 이상 불리하게 변할 경우 스왑 트랜잭션은 확인 전에 되돌려집니다.',
   'swap.min.result.protected': '보호된 스왑 결과',
   'swap.address.evm.warning': '스마트 컨트랙트 주소로 스왑하지 마세요',
-  'swap.synth.warning':
-    'Synth 발행이 중단되었습니다. Synth 상환은 앞으로 3개월 동안만 가능합니다 — 가능한 한 빨리 상환해 주세요.',
   'swap.mode.rapid': '래피드',
   'swap.mode.streaming': '스트리밍',
   'swap.mode.instant': '즉시',

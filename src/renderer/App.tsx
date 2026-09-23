@@ -16,12 +16,12 @@ import { DashProvider } from './contexts/DashContext'
 import { DogeProvider } from './contexts/DogeContext'
 import { EthereumProvider } from './contexts/EthereumContext'
 import { I18nProvider } from './contexts/I18nContext'
-import { KujiProvider } from './contexts/KujiContext'
 import { LitecoinProvider } from './contexts/LitecoinContext'
 import { MayachainProvider } from './contexts/MayachainContext'
 import { MayachainQueryProvider } from './contexts/MayachainQueryContext'
 import { MidgardProvider } from './contexts/MidgardContext'
 import { MayaMidgardProvider } from './contexts/MidgardMayaContext'
+import { NearProvider } from './contexts/NearContext'
 import { OneClickProvider } from './contexts/OneClickContext'
 import { PriceLevelProvider } from './contexts/PriceLevelContext'
 import { SolProvider } from './contexts/SolContext'
@@ -55,15 +55,15 @@ export const App = (): JSX.Element => {
                           <BscProvider>
                             <ArbProvider>
                               <DogeProvider>
-                                <KujiProvider>
-                                  <AdaProvider>
-                                    <SolProvider>
-                                      <TronProvider>
-                                        <XrdProvider>
-                                          <ZcashProvider>
-                                            <XrpProvider>
-                                              <DashProvider>
-                                                <SuiProvider>
+                                <AdaProvider>
+                                  <SolProvider>
+                                    <TronProvider>
+                                      <XrdProvider>
+                                        <ZcashProvider>
+                                          <XrpProvider>
+                                            <DashProvider>
+                                              <SuiProvider>
+                                                <NearProvider>
                                                   <CosmosProvider>
                                                     <MidgardProvider>
                                                       <PriceLevelProvider>
@@ -93,15 +93,15 @@ export const App = (): JSX.Element => {
                                                       </PriceLevelProvider>
                                                     </MidgardProvider>
                                                   </CosmosProvider>
-                                                </SuiProvider>
-                                              </DashProvider>
-                                            </XrpProvider>
-                                          </ZcashProvider>
-                                        </XrdProvider>
-                                      </TronProvider>
-                                    </SolProvider>
-                                  </AdaProvider>
-                                </KujiProvider>
+                                                </NearProvider>
+                                              </SuiProvider>
+                                            </DashProvider>
+                                          </XrpProvider>
+                                        </ZcashProvider>
+                                      </XrdProvider>
+                                    </TronProvider>
+                                  </SolProvider>
+                                </AdaProvider>
                               </DogeProvider>
                             </ArbProvider>
                           </BscProvider>

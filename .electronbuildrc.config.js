@@ -1,5 +1,7 @@
 module.exports = {
-  appId: 'org.thorchain.asgardex',
+  // Reverse-DNS id for Flathub verification under asgardex.com
+  // (token: https://asgardex.com/.well-known/org.flathub.VerifiedApps.txt)
+  appId: 'com.asgardex.Asgardex',
   productName: 'ASGARDEX',
   copyright: 'Copyright © 2025 ${author}',
 
@@ -50,6 +52,14 @@ module.exports = {
       }
     ]
   },
+  // Keep Windows uninstall/upgrade identity after appId rename for Flathub
+  // (org.thorchain.asgardex → com.asgardex.Asgardex). electron-builder defaults
+  // APP_GUID to UUID.v5(appId, NSIS namespace); pin the pre-rename value so NSIS
+  // replaces the existing install instead of installing side-by-side.
+  // UUID.v5("org.thorchain.asgardex", "50e065bc-3134-11e6-9bab-38c9862bdaf3")
+  nsis: {
+    guid: '5bcaf717-02bc-561e-bd5c-5ecf0e404bb5'
+  },
   linux: {
     artifactName: '${productName}-${version}-${os}.${ext}',
     category: 'Finance',
@@ -87,7 +97,9 @@ module.exports = {
     runtimeVersion: '24.08',
     baseVersion: '24.08',
     finishArgs: [
-      // Rendering (Wayland + X11 fallback)
+      // Display: match Flatpak Electron sample / electron-builder defaults.
+      // wayland + x11 keeps XWayland available; native Wayland remains opt-in
+      // (ozone flags) until Electron 38+ is the app baseline.
       '--socket=wayland',
       '--socket=x11',
       '--share=ipc',
@@ -110,7 +122,12 @@ module.exports = {
       // The app's own data lives in the per-app sandbox dir (no grant needed);
       // export/import of keystore files goes through the FileChooser portal.
       // Note: case-sensitive — must match app.name (`ASGARDEX`).
-      '--filesystem=~/.config/ASGARDEX:ro'
+      '--filesystem=~/.config/ASGARDEX:ro',
+      // One-time migration from the previous Flatpak id (org.thorchain.asgardex).
+      '--filesystem=~/.var/app/org.thorchain.asgardex/config/ASGARDEX:ro',
+      // Vultisig SDK default store (native deb/AppImage). RO import only —
+      // live Flatpak vaults go under app config (APP_DATA_DIR/vultisig).
+      '--filesystem=~/.vultisig:ro'
     ]
   },
   publish: {

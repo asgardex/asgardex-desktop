@@ -10,9 +10,9 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
@@ -25,6 +25,7 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { observableState } from '../../helpers/stateHelper'
 import * as ARB from '../arb'
@@ -36,18 +37,17 @@ import * as BSC from '../bsc'
 import * as ADA from '../cardano'
 import * as C from '../clients'
 import { ExplorerUrl$, TxsPageLD, LoadTxsParams } from '../clients'
+import { midgardTxs$ } from '../clients/transaction/midgardHistory'
 import * as COSMOS from '../cosmos'
 import * as DASH from '../dash'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
-import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
-import * as MAYA from '../mayachain'
+import * as NEAR from '../near'
 import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
 import * as SUI from '../sui'
-import * as THOR from '../thorchain'
 import * as TRON from '../tron'
 import * as ZEC from '../zcash'
 import { client$, selectedAsset$ } from './common'
@@ -101,17 +101,34 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
               case BSCChain:
                 return BSC.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case THORChain:
-                return THOR.txs$({ asset: O.some(asset), walletAddress, walletIndex })
+                // Midgard paginated history — never CosmJS txSearchAll (RPC storm / timeouts)
+                return midgardTxs$(
+                  'thor',
+                  AssetRuneNative
+                )({
+                  asset: O.some(asset),
+                  limit,
+                  offset,
+                  walletAddress,
+                  walletIndex
+                })
               case MAYAChain:
-                return MAYA.txs$({ asset: O.none, walletAddress, walletIndex })
+                return midgardTxs$(
+                  'maya',
+                  AssetCacao
+                )({
+                  asset: O.none,
+                  limit,
+                  offset,
+                  walletAddress,
+                  walletIndex
+                })
               case LTCChain:
                 return LTC.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case BCHChain:
                 return BCH.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case DOGEChain:
                 return DOGE.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
-              case KUJIChain:
-                return KUJI.txs$({ asset: O.none, walletAddress, walletIndex })
               case ADAChain:
                 return ADA.txs$({ asset: O.none, walletAddress, walletIndex })
               case GAIAChain:
@@ -128,6 +145,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return XRP.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case SUIChain:
                 return SUI.txs$({ asset: O.some(asset), walletAddress, walletIndex })
+              case NEARChain:
+                return NEAR.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               default:
                 return Rx.of(
                   RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` })

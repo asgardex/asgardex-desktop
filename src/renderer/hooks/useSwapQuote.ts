@@ -1,15 +1,28 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { AnyAsset, BaseAmount, baseAmount, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
+import * as RD from '@devexperts/remote-data-ts'
+import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
+import * as RxOp from 'rxjs/operators'
 
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 import { useChainflipContext } from '../contexts/ChainflipContext'
+import { useMidgardContext } from '../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { useOneClickContext } from '../contexts/OneClickContext'
 import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
+import { quoteNeedsRouterApproval } from '../helpers/evmApprovalHelper'
 import { logger } from '../helpers/logger'
+import { filterQuotableProtocols } from '../helpers/protocolTradingHalt'
+import { getCurrentNetworkState } from '../services/app/service'
 import { useAggregator } from '../store/aggregator/hooks'
+import { useThorchainMimirHalt } from './useMimirHalt'
+import { useMayachainMimirHalt } from './useMimirHaltMaya'
+import { pickSelectedQuote, sortQuotesByOutput } from './useSwapQuote.helpers'
 
 type UseSwapQuoteParams = {
   sourceAsset: AnyAsset
@@ -31,6 +44,11 @@ type UseSwapQuoteResult = {
   fetchQuote: (amount: BaseAmount) => Promise<void>
   selectQuote: (quote: ExtendedQuoteSwap) => void
   resetQuote: () => void
+  /**
+   * Content-stable signature of hook-owned quote inputs (halt-filtered protocols,
+   * boost, network). Use in refresh effects instead of `fetchQuote` identity.
+   */
+  quoteRefreshKey: string
   // Derived
   canSwap: boolean
   slippage: number
@@ -50,20 +68,72 @@ export const useSwapQuote = ({
   affiliateBps
 }: UseSwapQuoteParams): UseSwapQuoteResult => {
   const { estimateSwap, protocols, isBoostEnabled } = useAggregator()
+  const network = getCurrentNetworkState()
   const { isOneClickSupportedAsset } = useOneClickContext()
   const { isChainflipSupportedAssetSync } = useChainflipContext()
+  const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
+  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
+  const {
+    service: {
+      pools: { haltedChains$: haltedChainsThor$ }
+    }
+  } = useMidgardContext()
+  const {
+    service: {
+      pools: { haltedChains$: haltedChainsMaya$ }
+    }
+  } = useMidgardMayaContext()
+
+  const [haltedChainsThor] = useObservableState(
+    () => FP.pipe(haltedChainsThor$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    [] as Chain[]
+  )
+  const [haltedChainsMaya] = useObservableState(
+    () => FP.pipe(haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    [] as Chain[]
+  )
+
+  const haltState = useMemo(
+    () => ({
+      thor: { haltedChains: haltedChainsThor, mimirHalt: mimirHaltThor },
+      maya: { haltedChains: haltedChainsMaya, mimirHalt: mimirHaltMaya }
+    }),
+    [haltedChainsThor, mimirHaltThor, haltedChainsMaya, mimirHaltMaya]
+  )
+
+  const quotableProtocols: Protocol[] = useMemo(
+    () => filterQuotableProtocols(protocols, sourceAsset, targetAsset, haltState),
+    [protocols, sourceAsset, targetAsset, haltState]
+  )
+
+  // Halt-filtered protocol set + boost/network — not fetchQuote identity.
+  const quoteRefreshKey = useMemo(
+    () => `${quotableProtocols.join(',')}|boost:${isBoostEnabled}|net:${network}`,
+    [quotableProtocols, isBoostEnabled, network]
+  )
 
   const requestIdRef = useRef(0)
+  /** Sticky user/auto selection across background re-quotes (Chainflip stays Chainflip). */
+  const preferredProtocolRef = useRef<Protocol | null>(null)
   const [quotes, setQuotes] = useState<O.Option<ExtendedQuoteSwap[]>>(O.none)
   const [selectedQuote, setSelectedQuote] = useState<O.Option<ExtendedQuoteSwap>>(O.none)
   const [quoteError, setQuoteError] = useState<O.Option<Error>>(O.none)
   const [isFetching, setIsFetching] = useState(false)
+  // Aggregator QuoteSwap has no expiry field — capture a 15m window when a fetch lands.
+  const [expiry, setExpiry] = useState<Date>(() => new Date())
+
+  // Pair change invalidates any sticky protocol preference from the previous route.
+  useEffect(() => {
+    preferredProtocolRef.current = null
+  }, [sourceAsset, targetAsset])
 
   const fetchQuote = useCallback(
     async (amount: BaseAmount) => {
       if (amount.amount().isZero()) {
+        preferredProtocolRef.current = null
         setSelectedQuote(O.none)
         setQuoteError(O.none)
+        setExpiry(new Date())
         return
       }
 
@@ -74,12 +144,12 @@ export const useSwapQuote = ({
         O.getOrElse(() => false)
       )
 
-      // Validate protocols — both checks are backed by the protocols' fetched
-      // asset lists (with chain-level fallbacks), so picker and quote agree.
+      // Validate against halt-filtered protocols so a halted THOR/MAYA route is not
+      // treated as a usable enabled protocol for this pair.
       const protocolValidation = validateProtocolsForAssets(
         sourceAsset,
         targetAsset,
-        protocols,
+        quotableProtocols,
         isChainflipSupportedAssetSync,
         isOneClickSupportedAsset
       )
@@ -92,12 +162,22 @@ export const useSwapQuote = ({
           isOneClickSupportedAsset
         )
         setQuoteError(O.some(new Error(errorMessage)))
+        preferredProtocolRef.current = null
         setSelectedQuote(O.none)
         setIsFetching(false)
         return
       }
 
-      setSelectedQuote(O.none)
+      if (quotableProtocols.length === 0) {
+        setQuoteError(O.some(new Error('No valid swap routes available')))
+        preferredProtocolRef.current = null
+        setSelectedQuote(O.none)
+        setIsFetching(false)
+        return
+      }
+
+      // Keep the current selection visible while fetching — clearing it caused the UI to
+      // flash and then re-pick "best output", which could flip Chainflip → OneClick.
       setIsFetching(true)
 
       const currentRequestId = ++requestIdRef.current
@@ -106,13 +186,21 @@ export const useSwapQuote = ({
         logger.debug('[useSwapQuote] fetchQuote amount:', {
           amountBase: amount.amount().toString(),
           amountDecimal: amount.decimal,
-          sourceAsset: `${sourceAsset.chain}.${sourceAsset.symbol}`
+          sourceAsset: `${sourceAsset.chain}.${sourceAsset.symbol}`,
+          protocols: quotableProtocols
         })
 
+        // 1Click rejects BigNumber.toString() scientific notation (e.g. NEAR 24dp → "7.7e+24")
+        // and non-integer strings. Always pass a pure integer digit string as base units.
+        const amountForQuote = convertBaseAmountDecimal(amount, sourceAssetDecimal)
+        const amountInteger = baseAmount(
+          amountForQuote.amount().integerValue(BigNumber.ROUND_DOWN).toFixed(0),
+          amountForQuote.decimal
+        )
         const swapParams = {
           fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
           destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
-          amount: new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), {
+          amount: new CryptoAmount(amountInteger, {
             ...sourceAsset,
             symbol: sourceAsset.symbol.toUpperCase()
           }),
@@ -124,7 +212,7 @@ export const useSwapQuote = ({
           toleranceBps: undefined
         }
 
-        const result = await estimateSwap({ ...swapParams, enableBoost: isBoostEnabled }, applyBps)
+        const result = await estimateSwap({ ...swapParams, enableBoost: isBoostEnabled }, applyBps, quotableProtocols)
 
         // Discard stale response if a newer request was fired
         if (currentRequestId !== requestIdRef.current) return
@@ -137,25 +225,35 @@ export const useSwapQuote = ({
             }) as ExtendedQuoteSwap
         )
 
-        // Protocols report failures as placeholder quotes (canSwap: false with
-        // the reason in `errors`) — never select those as the "best" quote, and
-        // surface their errors instead of silently rendering a 0 output.
+        // Prefer real canSwap quotes. If none, keep THOR/MAYA quotes blocked only by
+        // missing router allowance so Swap can select them and run an on-chain
+        // isApproved check (approval is not inferred from these error strings).
         const viableQuotes = allQuotes.filter((quote) => quote.canSwap)
+        const approvalBlockedQuotes = allQuotes.filter(
+          (quote) =>
+            !quote.canSwap &&
+            (quote.protocol === 'Thorchain' || quote.protocol === 'Mayachain') &&
+            quoteNeedsRouterApproval(quote.errors)
+        )
 
-        const sortedQuotes = [...viableQuotes].sort((a, b) => {
-          const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
-          const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
-          const timeA = a.totalSwapSeconds
-          const timeB = b.totalSwapSeconds
-          return amountA > amountB ? -1 : amountA < amountB ? 1 : timeA - timeB
-        })
+        const sortedQuotes = sortQuotesByOutput(viableQuotes)
+        const sortedApprovalBlocked = sortQuotesByOutput(approvalBlockedQuotes)
+        const nextSelected = pickSelectedQuote(sortedQuotes, sortedApprovalBlocked, preferredProtocolRef.current)
 
         setQuotes(O.some(allQuotes))
+        // Reset the UI expiry window only when a new quote response lands — not when the
+        // user merely switches the selected protocol in the existing result set.
+        setExpiry(new Date(Date.now() + 15 * 60 * 1000))
 
-        if (sortedQuotes.length > 0) {
-          setSelectedQuote(O.some(sortedQuotes[0]))
+        if (nextSelected) {
+          // Only clear a sticky preference when that protocol disappeared from the new set.
+          if (preferredProtocolRef.current && nextSelected.protocol !== preferredProtocolRef.current) {
+            preferredProtocolRef.current = null
+          }
+          setSelectedQuote(O.some(nextSelected))
           setQuoteError(O.none)
         } else {
+          preferredProtocolRef.current = null
           setSelectedQuote(O.none)
           const protocolErrors = allQuotes.flatMap((quote) =>
             quote.errors.filter((err) => err.length > 0).map((err) => `${quote.protocol}: ${err}`)
@@ -195,7 +293,7 @@ export const useSwapQuote = ({
       sourceAsset,
       sourceAssetDecimal,
       targetAsset,
-      protocols,
+      quotableProtocols,
       estimateSwap,
       sourceWalletAddress,
       quoteOnly,
@@ -210,13 +308,16 @@ export const useSwapQuote = ({
   )
 
   const selectQuote = useCallback((quote: ExtendedQuoteSwap) => {
+    preferredProtocolRef.current = quote.protocol
     setSelectedQuote(O.some(quote))
   }, [])
 
   const resetQuote = useCallback(() => {
+    preferredProtocolRef.current = null
     setQuotes(O.none)
     setSelectedQuote(O.none)
     setQuoteError(O.none)
+    setExpiry(new Date())
   }, [])
 
   // Derived values from selected quote
@@ -239,22 +340,6 @@ export const useSwapQuote = ({
         O.fold(
           () => 0,
           (txDetails) => txDetails.slipBasisPoints / 100
-        )
-      ),
-    [selectedQuote]
-  )
-
-  const expiry: Date = useMemo(
-    () =>
-      FP.pipe(
-        selectedQuote,
-        O.fold(
-          () => new Date(),
-          () => {
-            const now = new Date()
-            now.setMinutes(now.getMinutes() + 15)
-            return now
-          }
         )
       ),
     [selectedQuote]
@@ -283,6 +368,7 @@ export const useSwapQuote = ({
     fetchQuote,
     selectQuote,
     resetQuote,
+    quoteRefreshKey,
     canSwap,
     slippage,
     expiry,

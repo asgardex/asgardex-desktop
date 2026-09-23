@@ -43,7 +43,13 @@ stats.html
 # Claude
 CLAUDE.md
 .claude/
-/docs
+# Ignore local docs, but track the shared architecture map
+/docs/*
+!/docs/architecture/
+!/docs/architecture/**
+
+# Grok Build (local project agents/rules/skills)
+.grok/
 
 # Test wallets / vault files
 wallets/

@@ -10,9 +10,9 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
@@ -43,9 +43,9 @@ import * as COSMOS from '../cosmos'
 import * as DASH from '../dash'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
-import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
+import * as NEAR from '../near'
 import * as XRD from '../radix'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
@@ -152,7 +152,6 @@ export const createBalancesService = ({
         if (enabledChainsSet.has(LTCChain)) reloadFunctions.push(() => LTC.reloadBalances(walletType))
         if (enabledChainsSet.has(DOGEChain)) reloadFunctions.push(() => DOGE.reloadBalances(walletType))
         if (enabledChainsSet.has(GAIAChain)) reloadFunctions.push(() => COSMOS.reloadBalances(walletType))
-        if (enabledChainsSet.has(KUJIChain)) reloadFunctions.push(() => KUJI.reloadBalances(walletType))
         if (enabledChainsSet.has(ADAChain)) reloadFunctions.push(() => ADA.reloadBalances(walletType))
         if (enabledChainsSet.has(XRPChain)) reloadFunctions.push(() => XRP.reloadBalances(walletType))
         if (enabledChainsSet.has(RadixChain)) reloadFunctions.push(() => XRD.reloadBalances(walletType))
@@ -160,6 +159,7 @@ export const createBalancesService = ({
         if (enabledChainsSet.has(TRONChain)) reloadFunctions.push(() => TRON.reloadBalances(walletType))
         if (enabledChainsSet.has(ZECChain)) reloadFunctions.push(() => ZEC.reloadBalances(walletType))
         if (enabledChainsSet.has(SUIChain)) reloadFunctions.push(() => SUI.reloadBalances())
+        if (enabledChainsSet.has(NEARChain)) reloadFunctions.push(() => NEAR.reloadBalances())
 
         // Process in batches to limit concurrency
         processBatchedReloads(reloadFunctions)
@@ -179,7 +179,6 @@ export const createBalancesService = ({
     [MAYAChain]: MAYA.reloadBalances,
     [LTCChain]: LTC.reloadBalances,
     [DOGEChain]: DOGE.reloadBalances,
-    [KUJIChain]: KUJI.reloadBalances,
     [GAIAChain]: COSMOS.reloadBalances,
     [RadixChain]: XRD.reloadBalances,
     [SOLChain]: SOL.reloadBalances,
@@ -188,7 +187,8 @@ export const createBalancesService = ({
     [TRONChain]: TRON.reloadBalances,
     [ZECChain]: ZEC.reloadBalances,
     [XRPChain]: XRP.reloadBalances,
-    [SUIChain]: SUI.reloadBalances
+    [SUIChain]: SUI.reloadBalances,
+    [NEARChain]: NEAR.reloadBalances
   }
 
   const reloadBalancesByChain =
@@ -345,13 +345,6 @@ export const createBalancesService = ({
             balances$: DOGE.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: DOGE.reloadBalances$
           }
-        case KUJIChain:
-          return {
-            reloadBalances: () => KUJI.reloadBalances(walletType),
-            resetReloadBalances: () => KUJI.resetReloadBalances(walletType),
-            balances$: KUJI.balances$({ walletType, walletAccount, walletIndex, hdMode }),
-            reloadBalances$: KUJI.reloadBalances$
-          }
         case ADAChain:
           return {
             reloadBalances: () => ADA.reloadBalances(walletType),
@@ -410,6 +403,13 @@ export const createBalancesService = ({
             resetReloadBalances: SUI.resetReloadBalances,
             balances$: SUI.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: SUI.reloadBalances$
+          }
+        case NEARChain:
+          return {
+            reloadBalances: NEAR.reloadBalances,
+            resetReloadBalances: NEAR.resetReloadBalances,
+            balances$: NEAR.balances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances$: NEAR.reloadBalances$
           }
         default:
           return {
@@ -637,6 +637,15 @@ export const createBalancesService = ({
   const suiChainBalance$: ChainBalance$ = createChainBalance$({
     chain: SUIChain,
     addressUI$: SUI.addressUI$,
+    walletBalanceType: 'all'
+  })
+
+  /**
+   * Transforms NEAR balances into `ChainBalances`
+   */
+  const nearChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: NEARChain,
+    addressUI$: NEAR.addressUI$,
     walletBalanceType: 'all'
   })
 
@@ -956,22 +965,6 @@ export const createBalancesService = ({
     addressUI$: DOGE.addressUI$,
     walletBalanceType: 'all'
   })
-  /**
-   * Transforms KUJI balances into `ChainBalance`
-   */
-  const kujiChainBalance$: ChainBalance$ = createChainBalance$({
-    chain: KUJIChain,
-    addressUI$: KUJI.addressUI$,
-    walletBalanceType: 'all'
-  })
-  /**
-   * KUJI Ledger balances
-   */
-  const kujiLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
-    chain: KUJIChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: KUJI.getBalanceByAddress$
-  })
 
   /**
    * Transforms ADA balances into `ChainBalance`
@@ -1217,7 +1210,7 @@ export const createBalancesService = ({
 
   // ============================================
   // Vultisig Balance Observables
-  // Supported chains: BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL, ZEC, KUJI, ADA, XRD, TRON
+  // Supported chains: BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL, ZEC, ADA, XRD, TRON
   // ============================================
 
   /**
@@ -1320,6 +1313,20 @@ export const createBalancesService = ({
   })
 
   /**
+   * TRON Vultisig balances
+   */
+  const tronVultisigChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      vultisigChainBalance$({
+        chain: TRONChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: TRON.getBalanceByAddress$(network)
+      })
+    )
+  )
+
+  /**
    * ETH Vultisig balances
    */
   const ethVultisigChainBalance$: ChainBalance$ = FP.pipe(
@@ -1417,7 +1424,6 @@ export const createBalancesService = ({
     LTC: [ltcBalance$, ltcLedgerChainBalance$],
     DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],
     GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$],
-    KUJI: [kujiChainBalance$, kujiLedgerChainBalance$],
     ADA: [adaChainBalance$, adaLedgerChainBalance$],
     XRD: [xrdChainBalance$, xrdLedgerChainBalance$],
     SOL: [solChainBalance$, solLedgerChainBalance$],
@@ -1425,7 +1431,8 @@ export const createBalancesService = ({
     BASE: [baseChainBalance$, baseLedgerChainBalance$],
     ZEC: [zecChainBalance$, zecLedgerChainBalance$],
     XRP: [xrpChainBalance$, xrpLedgerChainBalance$],
-    SUI: [suiChainBalance$, suiLedgerChainBalance$]
+    SUI: [suiChainBalance$, suiLedgerChainBalance$],
+    NEAR: [nearChainBalance$]
   }
 
   // Create ledger balance observables for filtering in standalone mode
@@ -1448,7 +1455,6 @@ export const createBalancesService = ({
     LTC: [ltcLedgerChainBalance$],
     DOGE: [dogeLedgerChainBalance$],
     GAIA: [cosmosLedgerChainBalance$],
-    KUJI: [kujiLedgerChainBalance$],
     ADA: [adaLedgerChainBalance$],
     XRD: [xrdLedgerChainBalance$],
     SOL: [solLedgerChainBalance$],
@@ -1456,7 +1462,8 @@ export const createBalancesService = ({
     BASE: [baseLedgerChainBalance$],
     ZEC: [zecLedgerChainBalance$],
     XRP: [xrpLedgerChainBalance$],
-    SUI: [suiLedgerChainBalance$]
+    SUI: [suiLedgerChainBalance$],
+    NEAR: []
   }
 
   // Vultisig balance observables for standalone Vultisig mode
@@ -1476,7 +1483,8 @@ export const createBalancesService = ({
     GAIA: [cosmosVultisigChainBalance$],
     BASE: [baseVultisigChainBalance$],
     XRP: [xrpVultisigChainBalance$],
-    SOL: [solVultisigChainBalance$]
+    SOL: [solVultisigChainBalance$],
+    TRON: [tronVultisigChainBalance$]
   }
 
   // Combine enabled chains with their corresponding balance observables

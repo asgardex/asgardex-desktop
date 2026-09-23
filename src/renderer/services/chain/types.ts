@@ -112,6 +112,12 @@ export type SendTxParams = {
   sendMax?: boolean
   selectedUtxos?: UTXO[]
   utxoSelectionPreferences?: UtxoSelectionPreferences
+  /**
+   * UTXO chains only. Floors the fee rate at the inbound vault's `gas_rate`.
+   * Set for THORChain/MAYAChain inbounds; leave unset for ordinary sends, where `gas_rate`
+   * is padded well above what a plain transfer needs.
+   */
+  useNodeFeeRate?: boolean
 }
 
 export type SendPoolTxParams = SendTxParams & {
@@ -167,6 +173,11 @@ export type SwapTxParams = {
 export type SwapStateHandler = (p: SwapTxParams) => SwapState$
 export type SwapHandler = (p: SwapTxParams) => SwapTxState$
 export type SwapCFHandler = (p: SendTxParams) => SwapCFTxState$
+
+/** Optional post-broadcast registration for OneClick (aggregator.submitOneClickDeposit). */
+export type OneClickRegisterDeposit = (txHash: string, depositAddress: string) => Promise<void>
+
+export type SwapOneClickHandler = (p: SendTxParams, registerDeposit?: OneClickRegisterDeposit) => SwapCFTxState$
 
 export type PoolFeeLD = LiveData<Error, AssetWithAmount>
 

@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 
+import { NEARChain } from '@xchainjs/xchain-near'
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain, TokenAsset, AssetType } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
@@ -15,8 +16,8 @@ import { FlatButton } from '../uielements/button'
 import { Input } from '../uielements/input'
 import { Label } from '../uielements/label'
 
-// Supported custom token chains (EVM + TRON)
-const CustomTokenChains = [...EVMChains, TRONChain]
+// Supported custom token chains (EVM + TRON + NEAR NEP-141)
+const CustomTokenChains = [...EVMChains, TRONChain, NEARChain]
 
 export const CustomTokenPanel = (): JSX.Element => {
   const [contractAddress, setContractAddress] = useState<string>(emptyString)
@@ -167,7 +168,9 @@ export const CustomTokenPanel = (): JSX.Element => {
                 ? '0x...'
                 : selectedChain === TRONChain
                   ? 'T...'
-                  : intl.formatMessage({ id: 'settings.custom.token.modal.address.placeholder' })
+                  : selectedChain === NEARChain
+                    ? 'wrap.near or 64-char contract id'
+                    : intl.formatMessage({ id: 'settings.custom.token.modal.address.placeholder' })
             }
             error={!!contractAddress && !isValidAddress}
           />

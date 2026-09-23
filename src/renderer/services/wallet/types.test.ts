@@ -10,6 +10,7 @@ import {
   isKeystoreMode,
   isStandaloneLedgerMode,
   isVultisigVaultLocked,
+  isVultisigVaultPasswordRequired,
   getWalletTypeFromState,
   isKeystoreReloadTrigger
 } from './types'
@@ -107,6 +108,34 @@ describe('services/wallet/types', () => {
     })
     it('returns false when phase is vault-selection', () => {
       expect(isVultisigVaultLocked(vultisigSelection)).toBe(false)
+    })
+  })
+
+  describe('isVultisigVaultPasswordRequired', () => {
+    // Reports whether the vault is password-protected (encrypted), independent of
+    // phase. The live "is the cache still warm?" decision lives in the modal.
+    const encryptedActive: VultisigState = {
+      ...vultisigActive,
+      activeVault: { id: 'v', name: 'V', type: 'secure', isEncrypted: true, chains: [] }
+    }
+
+    it('is true for an encrypted vault (Active)', () => {
+      expect(isVultisigVaultPasswordRequired(encryptedActive)).toBe(true)
+    })
+    it('is true for an encrypted vault (VaultLocked)', () => {
+      // vultisigLocked is a secure, encrypted vault in the VaultLocked phase
+      expect(isVultisigVaultPasswordRequired(vultisigLocked)).toBe(true)
+    })
+    it('is false for an un-encrypted vault', () => {
+      // vultisigActive is a fast, un-encrypted vault
+      expect(isVultisigVaultPasswordRequired(vultisigActive)).toBe(false)
+    })
+    it('falls back to true when there is no active vault', () => {
+      expect(isVultisigVaultPasswordRequired(vultisigSelection)).toBe(true)
+    })
+    it('falls back to true for non-Vultisig states', () => {
+      expect(isVultisigVaultPasswordRequired(keystoreUnlocked)).toBe(true)
+      expect(isVultisigVaultPasswordRequired(ledgerState)).toBe(true)
     })
   })
 

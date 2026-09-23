@@ -13,9 +13,9 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
+import { resolveThornodeApiUrl } from '../../../shared/thorchain/const'
 import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { retryRequest } from '../../helpers/rx/retryRequest'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { createVultisigCosmosTx } from '../cosmos/vultisigTx'
@@ -53,7 +53,7 @@ export const createTransactionService = (
       walletAccount: params.walletAccount,
       walletIndex: params.walletIndex,
       feeOption: undefined,
-      nodeUrl: clientUrl[network].node,
+      nodeUrl: resolveThornodeApiUrl(clientUrl[network].node, network),
       hdMode: params.hdMode,
       apiKey: undefined,
       evmRpcUrl: undefined,
@@ -81,30 +81,38 @@ export const createTransactionService = (
   }
 
   /**
-   * Sends a deposit request by given `DepositParam`
+   * Sends a deposit request by given `DepositParam`.
+   * No auto-retry: deposit already broadcasts; retrying on RPC timeout can resend funds.
    */
   const depositTx = (params: DepositParam): TxHashLD =>
     client$.pipe(
-      RxOp.switchMap((oClient) =>
+      // Avoid restarting an in-flight deposit if client$ re-emits.
+      RxOp.take(1),
+      RxOp.switchMap((oClient): TxHashLD =>
         FP.pipe(
           oClient,
           O.fold(
-            () => Rx.EMPTY,
-            (client) => Rx.of(client)
+            () =>
+              Rx.of(
+                RD.failure({
+                  errorId: ErrorId.SEND_TX,
+                  msg: 'THOR client not ready'
+                })
+              ),
+            (client) =>
+              Rx.from(client.deposit(params)).pipe(
+                RxOp.map(RD.success),
+                RxOp.catchError((e) =>
+                  Rx.of(
+                    RD.failure({
+                      msg: e?.message ?? e.toString(),
+                      errorId: ErrorId.SEND_TX
+                    })
+                  )
+                )
+              )
           )
         )
-      ),
-      RxOp.switchMap((client) => Rx.from(client.deposit(params))),
-      RxOp.map(RD.success),
-      RxOp.retryWhen(retryRequest({ maxRetry: 3, scalingDuration: 1000 /* 1 sec. */ })),
-      RxOp.catchError(
-        (e): TxHashLD =>
-          Rx.of(
-            RD.failure({
-              msg: e.toString(),
-              errorId: ErrorId.SEND_TX
-            })
-          )
       ),
       RxOp.startWith(RD.pending)
     )
@@ -163,7 +171,7 @@ export const createTransactionService = (
       feeRate: NaN,
       feeOption: undefined,
       feeAmount: undefined,
-      nodeUrl: clientUrl[network].node,
+      nodeUrl: resolveThornodeApiUrl(clientUrl[network].node, network),
       hdMode: 'default',
       apiKey: undefined,
       destinationTag: undefined,

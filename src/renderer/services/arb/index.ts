@@ -8,6 +8,7 @@ import { network$ } from '../app/service'
 import { EVMZeroAddress } from '../evm/const'
 import { createEvmChainService } from '../evm/factory'
 import { arbRpc$, evmGasMultiplier$ } from '../storage/common'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 
 const {
   client$,
@@ -31,6 +32,7 @@ const {
   createClientParams: createArbParams,
   ClientClass: Client,
   rpc$: arbRpc$,
+  hdSettings$: keystoreChainHDSettings$(ARBChain),
   addressInWhitelist: addressInArbWhitelist,
   assetsFallback: ARBAssetsFallback,
   assetsTestnet: ArbAssetsTestnet,
@@ -49,7 +51,8 @@ const {
   txRD$,
   sendPoolTx$,
   approveERC20Token$,
-  isApprovedERC20Token$
+  isApprovedERC20Token$,
+  getERC20Allowance$
 } = createTransactionService(client$, network$, arbRpc$, evmGasMultiplier$, enhancedClient$)
 const { reloadFees, fees$, poolInTxFees$, approveFee$, reloadApproveFee } = createFeesService(
   enhancedClient$,
@@ -81,5 +84,6 @@ export {
   approveFee$,
   reloadApproveFee,
   approveERC20Token$,
-  isApprovedERC20Token$
+  isApprovedERC20Token$,
+  getERC20Allowance$
 }

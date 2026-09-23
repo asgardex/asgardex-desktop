@@ -180,6 +180,64 @@ body {
   animation: fade-in 0.3s ease-in;
 }
 
+/* Wrong-password cue: two red pulses, then the error border stays put. */
+@keyframes password-error-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 73, 84, 0);
+    background-color: transparent;
+  }
+  18%,
+  58% {
+    box-shadow: 0 0 0 3px rgba(255, 73, 84, 0.45);
+    background-color: rgba(255, 73, 84, 0.12);
+  }
+  36%,
+  76% {
+    box-shadow: 0 0 0 0 rgba(255, 73, 84, 0);
+    background-color: transparent;
+  }
+}
+
+.password-error-flash {
+  animation: password-error-flash 0.7s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .password-error-flash {
+    animation: none;
+  }
+}
+
+/* Mint gleam across the logo triangles. Distance is a share of the viewBox so it scales. */
+@keyframes asgardex-logo-gleam {
+  0% {
+    transform: translateX(-18%);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateX(32%);
+    opacity: 0;
+  }
+}
+
+.asgardex-logo-gleam {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  filter: drop-shadow(0 0 2px #20f0a0);
+  animation: asgardex-logo-gleam 2.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asgardex-logo-gleam {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* Progress bar wave — sweeping highlight */
 @keyframes progress-wave {
   0% {
@@ -193,6 +251,28 @@ body {
 .progress-bar-wave {
   background: linear-gradient(90deg, transparent 0%, rgba(35, 220, 200, 0.35) 50%, transparent 100%);
   animation: progress-wave 1.8s ease-in-out infinite;
+}
+
+/* Halt / Midgard news ticker — seamless right → left marquee */
+@keyframes news-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.news-ticker-track {
+  animation-name: news-ticker-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .news-ticker-track {
+    animation: none;
+  }
 }
 
 /* Custom Scrollbar for WebKit Browsers */

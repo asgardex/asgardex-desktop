@@ -36,14 +36,13 @@ export const createTransferService = <Client extends XChainClient>(client$: XCha
       RxOp.switchMap(FP.flow(O.fold<XChainClient, Rx.Observable<XChainClient>>(() => Rx.EMPTY, Rx.of))),
       RxOp.switchMap((client) => Rx.from(client.transfer(params))),
       RxOp.map(RD.success),
-      RxOp.catchError(
-        (e): TxHashLD =>
-          Rx.of(
-            RD.failure({
-              msg: e.toString(),
-              errorId: ErrorId.SEND_TX
-            })
-          )
+      RxOp.catchError((e): TxHashLD =>
+        Rx.of(
+          RD.failure({
+            msg: e.toString(),
+            errorId: ErrorId.SEND_TX
+          })
+        )
       ),
       RxOp.startWith(RD.pending)
     )

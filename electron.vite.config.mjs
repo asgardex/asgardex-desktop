@@ -83,9 +83,7 @@ export default defineConfig(async ({ mode }) => {
         alias: {
           process: 'process/browser',
           stream: 'stream-browserify',
-          // Shim wraps crypto-browserify and adds `timingSafeEqual` (missing in
-          // the browser polyfill) so xchain-crypto >= 1.0.7 keystore decrypt works.
-          crypto: path.resolve(__dirname, 'src/shims/crypto-shim.js'),
+          crypto: 'crypto-browserify',
           assert: 'assert',
           path: path.resolve(__dirname, 'empty.js'),
           url: path.resolve(__dirname, 'empty.js'),

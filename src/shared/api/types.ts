@@ -10,7 +10,7 @@ import { THORCHAIN_DECIMAL } from '../../renderer/helpers/assetHelper'
 import { EvmHDMode } from '../evm/types'
 import { Locale } from '../i18n/types'
 import { EnabledChain } from '../utils/chain'
-import { HDMode, WalletAddress, WalletType } from '../wallet/types'
+import { HDMode, KeystoreHDSettingsRecord, WalletAddress, WalletType } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 
 export type Dex = {
@@ -53,8 +53,7 @@ export type UserBondProvidersStorage = Readonly<Record<Network, Address[]> & Sto
 // Unified type for tracking which wallet was last opened
 // Uses WalletType enum for consistency (values match string literals for backwards compat)
 export type LastOpenedWallet =
-  | { type: WalletType.Keystore; id: number }
-  | { type: WalletType.Vultisig; vaultId: string }
+  { type: WalletType.Keystore; id: number } | { type: WalletType.Vultisig; vaultId: string }
 
 // Gas price multiplier options (1x, 1.5x, 2x, 3x, 5x, 10x)
 export type GasMultiplier = 1 | 1.5 | 2 | 3 | 5 | 10
@@ -77,6 +76,9 @@ export type CommonStorage = Readonly<
     // Last opened wallet (keystore or vultisig)
     lastOpenedWallet?: LastOpenedWallet
     evmGasMultiplier: GasMultiplier
+    // Per-keystore, per-chain HD derivation selections (account/index/hdMode/customPath).
+    // Optional: absent → {} → each chain falls back to the default 0/0/'default'.
+    keystoreHDSettings?: KeystoreHDSettingsRecord
   } & StorageVersion
 >
 
@@ -140,6 +142,11 @@ export type IPCSaveBalancesJsonParams = {
   data: BalanceExportData
 }
 
+export type IPCSaveCsvParams = {
+  fileName: string
+  content: string
+}
+
 export type ApiKeystore = {
   saveKeystoreWallets: (wallets: KeystoreWallets) => Promise<E.Either<Error, KeystoreWallets>>
   exportKeystore: (params: IPCExportKeystoreParams) => Promise<void>
@@ -149,6 +156,7 @@ export type ApiKeystore = {
 
 export type ApiExport = {
   saveBalancesJson: (params: IPCSaveBalancesJsonParams) => Promise<void>
+  saveCsv: (params: IPCSaveCsvParams) => Promise<void>
 }
 
 /**

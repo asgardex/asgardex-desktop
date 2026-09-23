@@ -47,7 +47,7 @@ const EXTERNALS_WHITELIST = [
   'explorer.mayachain.info',
   'www.explorer.mayachain.info',
   'insight.dash.org',
-  'finder.kujira.network',
+
   'midgard.mayachain.com',
   'asgardex.com',
   'arbiscan.io',
@@ -55,7 +55,13 @@ const EXTERNALS_WHITELIST = [
   'dashboard.radixdlt.com',
   'explorer.solana.com',
   'adastat.net',
-  'tronscan.org'
+  'tronscan.org',
+  'suiscan.xyz',
+  'basescan.org',
+  'x.com',
+  'livenet.xrpl.org',
+  'runebond.com',
+  'www.runebond.com'
 ]
 
 export const openExternal = (target: string) => {

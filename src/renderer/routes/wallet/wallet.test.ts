@@ -1,5 +1,17 @@
 import { InteractType } from '../../components/wallet/txs/interact/Interact.types'
-import { base, imports, locked, assets, bonds, assetDetail, send, poolShares, history, interact } from './wallet'
+import {
+  base,
+  imports,
+  locked,
+  assets,
+  bonds,
+  assetDetail,
+  send,
+  poolShares,
+  history,
+  interact,
+  approvals
+} from './wallet'
 
 describe('Wallet routes', () => {
   describe('base routes', () => {
@@ -47,6 +59,14 @@ describe('Wallet routes', () => {
     })
     it('path ', () => {
       expect(poolShares.path()).toEqual('/wallet/poolshares')
+    })
+  })
+  describe('approvals route', () => {
+    it('template', () => {
+      expect(approvals.template).toEqual('/wallet/approvals')
+    })
+    it('path', () => {
+      expect(approvals.path()).toEqual('/wallet/approvals')
     })
   })
   describe('bonds route', () => {

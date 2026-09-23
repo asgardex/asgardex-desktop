@@ -104,26 +104,31 @@ export const WalletHistoryView = () => {
         Rx.combineLatest([keystoreAddresses$, ledgerAddresses$]),
         RxOp.map(A.flatten),
         RxOp.map(A.sort(ordWalletAddressByChain)),
-        RxOp.switchMap((addresses) => {
-          FP.pipe(
-            addresses,
-            // Get first address by default
-            A.findFirst((address) => address.chain === protocol),
-            O.map(({ address }) => {
-              const hist =
-                protocol === THORChain
-                  ? loadHistory({ addresses: [address] })
-                  : loadHistoryMaya({ addresses: [address] })
-              return hist
-            })
-          )
-          return Rx.of(addresses)
-        })
+        // Avoid reloading history on every address-stream flap (client reconnects, etc.)
+        RxOp.distinctUntilChanged(
+          (a, b) =>
+            a.length === b.length && a.every((wa, i) => wa.address === b[i]?.address && wa.chain === b[i]?.chain)
+        )
       ),
-    [protocol, keystoreAddresses$, ledgerAddresses$, loadHistory, loadHistoryMaya]
+    [keystoreAddresses$, ledgerAddresses$]
   )
 
   const addresses = useObservableState(addresses$, [])
+
+  // Load history when addresses or protocol change — once per distinct selection
+  useEffect(() => {
+    FP.pipe(
+      addresses,
+      A.findFirst((wa) => wa.chain === protocol),
+      O.map(({ address }) => {
+        if (protocol === THORChain) {
+          loadHistory({ addresses: [address] })
+        } else {
+          loadHistoryMaya({ addresses: [address] })
+        }
+      })
+    )
+  }, [addresses, protocol, loadHistory, loadHistoryMaya])
 
   const currentFilter = useMemo(() => requestParams.type || 'ALL', [requestParams])
 

@@ -3,6 +3,7 @@ import { SwapMessages } from '../types'
 const swap: SwapMessages = {
   'swap.state.sending': 'Envoi de la transaction',
   'swap.state.pending': 'Échange en cours',
+  'swap.state.openingChannel': 'Ouverture du canal Chainflip',
   'swap.state.success': 'Échange réussi',
   'swap.state.error': "Erreur lors de l'échange",
   'swap.input': 'Entrée',
@@ -38,8 +39,6 @@ const swap: SwapMessages = {
     "Votre échange est protégé par cette valeur minimale basée sur la tolérance de slippage de {tolerance} % sélectionnée. Dans le cas où le prix change défavorablement de plus de {tolerance} %, votre transaction d'échange sera annulée avant la confirmation.",
   'swap.min.result.protected': 'Résultat du swap protégé',
   'swap.address.evm.warning': 'NE PAS échanger vers des adresses de Smart Contract',
-  'swap.synth.warning':
-    "La création de Synths a été arrêtée. Le rachat des Synths restera disponible pendant encore 3 mois — veuillez les échanger tant que c'est possible.",
   'swap.mode.rapid': 'Rapid',
   'swap.mode.streaming': 'Streaming',
   'swap.mode.instant': 'Instantané',

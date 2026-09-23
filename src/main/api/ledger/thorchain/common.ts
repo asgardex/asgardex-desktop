@@ -1,7 +1,7 @@
 import { Network, RootDerivationPaths } from '@xchainjs/xchain-client'
 
 import { DEFAULT_STORAGES } from '../../../../shared/const'
-import { DEFAULT_THORNODE_RPC_URLS } from '../../../../shared/thorchain/const'
+import { DEFAULT_THORNODE_RPC_URLS, getThornodeRpcClientUrls } from '../../../../shared/thorchain/const'
 import { getFileContent } from '../../fileStore'
 
 // BIP44 compliant
@@ -28,8 +28,8 @@ export const getDefaultClientUrls = async (): Promise<Record<Network, string[]>>
   const storage = await getFileContent('common', DEFAULT_STORAGES.common)
   const rpcUrls = storage.thornodeRpc ?? DEFAULT_THORNODE_RPC_URLS
   return {
-    [Network.Testnet]: [rpcUrls.testnet || ''],
-    [Network.Stagenet]: [rpcUrls.stagenet || ''],
-    [Network.Mainnet]: [rpcUrls.mainnet || DEFAULT_THORNODE_RPC_URLS.mainnet]
+    [Network.Testnet]: getThornodeRpcClientUrls(rpcUrls.testnet || '', Network.Testnet),
+    [Network.Stagenet]: getThornodeRpcClientUrls(rpcUrls.stagenet || '', Network.Stagenet),
+    [Network.Mainnet]: getThornodeRpcClientUrls(rpcUrls.mainnet || DEFAULT_THORNODE_RPC_URLS.mainnet, Network.Mainnet)
   }
 }

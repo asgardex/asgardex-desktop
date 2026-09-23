@@ -13,6 +13,7 @@ enum MenuKey {
   POOLSHARES = 'poolshares',
   TCY = 'tcy',
   RUNEPOOL = 'runepool',
+  APPROVALS = 'approvals',
   HISTORY = 'history',
   WALLETSETTINGS = 'walletsettings',
   UNKNOWN = 'unknown'
@@ -56,6 +57,11 @@ export const AssetsNav = (): JSX.Element => {
         path: walletRoutes.runepool.path()
       },
       {
+        key: MenuKey.APPROVALS,
+        label: intl.formatMessage({ id: 'wallet.nav.approvals' }),
+        path: walletRoutes.approvals.path()
+      },
+      {
         key: MenuKey.HISTORY,
         label: intl.formatMessage({ id: 'common.history' }),
         path: walletRoutes.history.path()
@@ -69,6 +75,7 @@ export const AssetsNav = (): JSX.Element => {
   const poolSharesRoute = matchPath(walletRoutes.poolShares.path(), pathname)
   const tcyRoute = matchPath(walletRoutes.tcy.path(), pathname)
   const runepoolRoute = matchPath(walletRoutes.runepool.path(), pathname)
+  const approvalsRoute = matchPath(walletRoutes.approvals.path(), pathname)
   const matchHistoryRoute = matchPath(walletRoutes.history.path(), pathname)
 
   const activeMenu: MenuKey = useMemo(() => {
@@ -77,9 +84,10 @@ export const AssetsNav = (): JSX.Element => {
     if (poolSharesRoute) return MenuKey.POOLSHARES
     if (tcyRoute) return MenuKey.TCY
     if (runepoolRoute) return MenuKey.RUNEPOOL
+    if (approvalsRoute) return MenuKey.APPROVALS
     if (matchHistoryRoute) return MenuKey.HISTORY
     return MenuKey.UNKNOWN
-  }, [assetsRoute, tradeAssetsRoute, poolSharesRoute, tcyRoute, runepoolRoute, matchHistoryRoute])
+  }, [assetsRoute, tradeAssetsRoute, poolSharesRoute, tcyRoute, runepoolRoute, approvalsRoute, matchHistoryRoute])
 
   const activeItem = menuItems.find((m) => m.key === activeMenu) ?? menuItems[0]
 

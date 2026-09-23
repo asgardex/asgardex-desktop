@@ -3,6 +3,7 @@ import { SwapMessages } from '../types'
 const swap: SwapMessages = {
   'swap.state.sending': 'लेन-देन भेजा जा रहा है',
   'swap.state.pending': 'स्वैपिंग जारी है',
+  'swap.state.openingChannel': 'Chainflip चैनल खोला जा रहा है',
   'swap.state.success': 'सफल स्वैप',
   'swap.state.error': 'स्वैप में त्रुटि',
   'swap.input': 'इनपुट',
@@ -37,8 +38,6 @@ const swap: SwapMessages = {
     'चुने गए {tolerance}% स्लिपेज सहिष्णुता के आधार पर आपके स्वैप को इस न्यूनतम मूल्य द्वारा सुरक्षित किया जाता है। यदि मूल्य {tolerance}% से अधिक अनुकूल नहीं बदलता है तो आपका स्वैप लेन-देन पुष्टि से पहले वापस कर दिया जाएगा।',
   'swap.min.result.protected': 'सुरक्षित स्वैप परिणाम',
   'swap.address.evm.warning': 'स्मार्ट कॉन्ट्रैक्ट पतों पर स्वैप न करें',
-  'swap.synth.warning':
-    'Synth मिंटिंग बंद कर दी गई है। Synth रिडेम्प्शन अगले 3 महीनों तक उपलब्ध रहेगा — कृपया समय रहते रिडीम कर लें।',
   'swap.mode.rapid': 'रैपिड',
   'swap.mode.streaming': 'स्ट्रीमिंग',
   'swap.mode.instant': 'तुरंत',

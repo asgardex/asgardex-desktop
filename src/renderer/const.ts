@@ -10,9 +10,9 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
@@ -227,14 +227,14 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [GAIAChain]: 10,
   [ARBChain]: 11,
   [DASHChain]: 12,
-  [KUJIChain]: 13,
   [RadixChain]: 14,
   [BASEChain]: 15,
   [ADAChain]: 16,
   [ZECChain]: 17,
   [XRPChain]: 18,
   [TRONChain]: 19,
-  [SUIChain]: 20
+  [SUIChain]: 20,
+  [NEARChain]: 21
 }
 
 // Weight of currencies needed for pricing

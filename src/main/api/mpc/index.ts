@@ -20,9 +20,10 @@ import {
   MpcIPCMessages,
   SendTransactionParams,
   SerializedVault,
-  SignBytesParams
+  SignBytesParams,
+  VaultImportOptions
 } from '../../../shared/api/mpcTypes'
-import { disposeSDK, getSDK, initializeSDK, isSDKInitialized } from './sdk'
+import { disposeSDK, getSDK, initializeSDK, isSDKInitialized, takeLastPasswordRequiredVaultId } from './sdk'
 
 /**
  * Safely send IPC message — guards against destroyed renderer windows
@@ -360,19 +361,39 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
   // Vault Import/Export
   // ============================================
 
-  ipcMain.handle(MpcIPCMessages.MPC_IMPORT_VAULT, async (_event, vultContent: string, password?: string) => {
-    try {
-      const sdk = getSDK()
-      log.info(`[MPC IPC] Importing vault from .vult file`)
+  ipcMain.handle(
+    MpcIPCMessages.MPC_IMPORT_VAULT,
+    async (_event, vultContent: string, password?: string, options?: VaultImportOptions) => {
+      takeLastPasswordRequiredVaultId()
+      try {
+        const sdk = getSDK()
+        log.info(`[MPC IPC] Importing vault from .vult file`)
 
-      const vault = await sdk.importVault(vultContent, password)
-      log.info(`[MPC IPC] Vault imported: ${vault.name} (${vault.id})`)
-      return serializeVault(vault)
-    } catch (error) {
-      log.error(`[MPC IPC] Failed to import vault:`, errorMsg(error))
-      throw wrapSDKError(error)
+        const vault = await sdk.importVault(vultContent, password, options)
+        log.info(`[MPC IPC] Vault imported: ${vault.name} (${vault.id})`)
+        return { ok: true as const, vault: serializeVault(vault) }
+      } catch (error) {
+        const code = (error as { code?: string }).code
+        if (code === 'DUPLICATE_VAULT') {
+          return { ok: false as const, code: 'DUPLICATE_VAULT' as const }
+        }
+        if (code === 'EXISTING_VAULT_PASSWORD_REQUIRED') {
+          const vaultId = takeLastPasswordRequiredVaultId()
+          return vaultId
+            ? { ok: false as const, code: 'EXISTING_VAULT_PASSWORD_REQUIRED' as const, vaultId }
+            : { ok: false as const, code: 'EXISTING_VAULT_PASSWORD_REQUIRED' as const }
+        }
+        if (code === 'INVALID_PASSWORD') {
+          log.info('[MPC IPC] Import rejected: invalid password')
+          return { ok: false as const, code: 'INVALID_PASSWORD' as const }
+        }
+        log.error(`[MPC IPC] Failed to import vault:`, errorMsg(error))
+        const wrapped = wrapSDKError(error)
+        if (typeof code === 'string' && code) wrapped.name = code
+        throw wrapped
+      }
     }
-  })
+  )
 
   ipcMain.handle(MpcIPCMessages.MPC_EXPORT_VAULT, async (_event, vaultId: string, password?: string) => {
     try {
@@ -478,6 +499,25 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
       const msg = error instanceof Error ? error.message : String(error)
       log.error(`[MPC IPC] Failed to unlock vault: ${vaultId}`, msg)
       throw new Error(msg.includes('authenticate') ? 'Incorrect password' : msg)
+    }
+  })
+
+  // Whether the vault can currently sign without a fresh password prompt, i.e.
+  // its password is still cached and not expired. `getUnlockTimeRemaining()`
+  // tracks exactly the password-cache TTL, so `> 0` means a signing request
+  // won't hit an `onPasswordRequired` cache miss. Fails safe to `false` (prompt).
+  ipcMain.handle(MpcIPCMessages.MPC_IS_VAULT_UNLOCKED, async (_event, vaultId: string) => {
+    try {
+      assertString(vaultId, 'vaultId')
+      if (!isSDKInitialized()) return false
+      const sdk = getSDK()
+      const vault = await sdk.getVaultById(vaultId)
+      if (!vault) return false
+      const remaining = vault.getUnlockTimeRemaining()
+      return typeof remaining === 'number' && remaining > 0
+    } catch (error) {
+      log.warn(`[MPC IPC] isVaultUnlocked check failed for ${vaultId}:`, errorMsg(error))
+      return false
     }
   })
 

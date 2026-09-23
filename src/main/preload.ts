@@ -10,6 +10,7 @@ import type {
   AppUpdateRD,
   IPCExportKeystoreParams,
   IPCSaveBalancesJsonParams,
+  IPCSaveCsvParams,
   StoreFileData,
   StoreFileName
 } from '../shared/api/types'
@@ -44,7 +45,8 @@ contextBridge.exposeInMainWorld('apiKeystore', apiKeystore)
 // `apiExport` object
 //
 const apiExport: ApiExport = {
-  saveBalancesJson: (params: IPCSaveBalancesJsonParams) => ipcRenderer.invoke(IPCMessages.SAVE_BALANCES_JSON, params)
+  saveBalancesJson: (params: IPCSaveBalancesJsonParams) => ipcRenderer.invoke(IPCMessages.SAVE_BALANCES_JSON, params),
+  saveCsv: (params: IPCSaveCsvParams) => ipcRenderer.invoke(IPCMessages.SAVE_CSV, params)
 }
 contextBridge.exposeInMainWorld('apiExport', apiExport)
 
@@ -117,13 +119,15 @@ const apiMpc: ApiMpc = {
   getBalances: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_GET_BALANCES, vaultId),
 
   // Vault Import/Export
-  importVault: (vultContent, password) => ipcRenderer.invoke(MpcIPCMessages.MPC_IMPORT_VAULT, vultContent, password),
+  importVault: (vultContent, password, options) =>
+    ipcRenderer.invoke(MpcIPCMessages.MPC_IMPORT_VAULT, vultContent, password, options),
   exportVault: (vaultId, password) => ipcRenderer.invoke(MpcIPCMessages.MPC_EXPORT_VAULT, vaultId, password),
   openVaultFile: () => ipcRenderer.invoke(MpcIPCMessages.MPC_OPEN_VAULT_FILE),
 
   // Vault Lock/Unlock
   lockVault: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_LOCK_VAULT, vaultId),
   unlockVault: (vaultId, password) => ipcRenderer.invoke(MpcIPCMessages.MPC_UNLOCK_VAULT, vaultId, password),
+  isVaultUnlocked: (vaultId) => ipcRenderer.invoke(MpcIPCMessages.MPC_IS_VAULT_UNLOCKED, vaultId),
 
   // Transaction Signing
   signBytes: (params) => ipcRenderer.invoke(MpcIPCMessages.MPC_SIGN_BYTES, params),

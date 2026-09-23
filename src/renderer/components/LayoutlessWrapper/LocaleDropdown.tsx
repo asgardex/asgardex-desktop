@@ -7,7 +7,7 @@ import { useObservableState } from 'observable-hooks'
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
 import { Locale } from '../../../shared/i18n/types'
 import { useI18nContext } from '../../contexts/I18nContext'
-import { LOCALES } from '../../i18n'
+import { LOCALE_LABELS, LOCALES } from '../../i18n'
 import { DownIcon } from '../icons'
 import { Dropdown } from '../uielements/dropdown'
 
@@ -23,11 +23,11 @@ export const LocaleDropdown = () => {
           <div
             key={l}
             className={clsx(
-              'flex items-center px-2 py-1 text-sm uppercase',
+              'flex items-center px-2 py-1 text-sm',
               l === currentLocale ? 'text-turquoise' : 'text-text1 dark:text-text1d'
             )}
             onClick={() => changeLocale(l)}>
-            {l}
+            {LOCALE_LABELS[l]}
           </div>
         ))
       ),
@@ -39,7 +39,9 @@ export const LocaleDropdown = () => {
       anchor={{ to: 'bottom', gap: 4 }}
       trigger={
         <div className="flex cursor-pointer items-center justify-between gap-x-2 rounded-lg border border-solid border-gray0 px-2 py-1 dark:border-gray0d">
-          <h3 className="m-0 font-main text-[16px] leading-5 text-text1 uppercase dark:text-text1d">{currentLocale}</h3>
+          <h3 className="m-0 font-main text-[16px] leading-5 text-text1 dark:text-text1d">
+            {LOCALE_LABELS[currentLocale]}
+          </h3>
           <DownIcon />
         </div>
       }

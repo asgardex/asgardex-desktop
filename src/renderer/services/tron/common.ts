@@ -20,27 +20,26 @@ import { Client$, ClientState, ClientState$, Client } from './types'
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
-  RxOp.switchMap(
-    ([keystore, network]): ClientState$ =>
-      Rx.of(
-        FP.pipe(
-          getPhrase(keystore),
-          O.map<string, ClientState>((phrase) => {
-            try {
-              const client = new TRONClient({
-                ...defaultTRONParams,
-                network: network,
-                phrase: phrase
-              }) as Client
-              return RD.success(client)
-            } catch (error) {
-              return RD.failure<Error>(isError(error) ? error : new Error('Failed to create TRON client'))
-            }
-          }),
-          // Set back to `initial` if no phrase is available (locked wallet)
-          O.getOrElse<ClientState>(() => RD.initial)
-        )
-      ).pipe(RxOp.startWith(RD.pending))
+  RxOp.switchMap(([keystore, network]): ClientState$ =>
+    Rx.of(
+      FP.pipe(
+        getPhrase(keystore),
+        O.map<string, ClientState>((phrase) => {
+          try {
+            const client = new TRONClient({
+              ...defaultTRONParams,
+              network: network,
+              phrase: phrase
+            }) as Client
+            return RD.success(client)
+          } catch (error) {
+            return RD.failure<Error>(isError(error) ? error : new Error('Failed to create TRON client'))
+          }
+        }),
+        // Set back to `initial` if no phrase is available (locked wallet)
+        O.getOrElse<ClientState>(() => RD.initial)
+      )
+    ).pipe(RxOp.startWith(RD.pending))
   ),
   RxOp.startWith<ClientState>(RD.initial),
   RxOp.shareReplay(1)

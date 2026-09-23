@@ -79,10 +79,6 @@ describe('shared/api/mpcTypes', () => {
       expect(ASGARDEX_TO_SDK_CHAIN['ZEC']).toBe('Zcash')
     })
 
-    it('maps KUJI to Kujira', () => {
-      expect(ASGARDEX_TO_SDK_CHAIN['KUJI']).toBe('Kujira')
-    })
-
     it('maps ADA to Cardano', () => {
       expect(ASGARDEX_TO_SDK_CHAIN['ADA']).toBe('Cardano')
     })

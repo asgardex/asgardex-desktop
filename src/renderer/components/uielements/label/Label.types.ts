@@ -1,15 +1,6 @@
 export type Size = 'tiny' | 'small' | 'normal' | 'big' | 'xbig' | 'large'
 export type Color =
-  | 'primary'
-  | 'success'
-  | 'warning'
-  | 'error'
-  | 'normal'
-  | 'light'
-  | 'dark'
-  | 'gray'
-  | 'input'
-  | 'white'
+  'primary' | 'success' | 'warning' | 'error' | 'normal' | 'light' | 'dark' | 'gray' | 'input' | 'white'
 export type TextTransform = 'none' | 'uppercase' | 'lowercase' | 'capitalize'
 export type TextAlignment = 'left' | 'center' | 'right'
 

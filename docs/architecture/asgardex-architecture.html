@@ -1,0 +1,2188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASGARDEX Desktop — Architecture Map</title>
+    <style>
+      :root {
+        --bg: #0b0f14;
+        --bg-panel: #121820;
+        --bg-elevated: #1a222d;
+        --border: #2a3544;
+        --text: #e8eef6;
+        --text-muted: #8b9bb0;
+        --accent: #23dcc8;
+        --accent-dim: rgba(35, 220, 200, 0.15);
+        --accent-glow: rgba(35, 220, 200, 0.35);
+        --warn: #f5a623;
+        --danger: #ff6b6b;
+        --node-stroke: #3d4f63;
+        --edge: #3a4a5c;
+        --edge-active: #23dcc8;
+        --highlight: #23dcc8;
+        --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        --radius: 10px;
+        --shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        overflow: hidden;
+      }
+
+      .app {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        height: 100vh;
+      }
+
+      /* ── Header ── */
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem 1.25rem;
+        background: linear-gradient(180deg, #151c26 0%, #0f141b 100%);
+        border-bottom: 1px solid var(--border);
+        z-index: 20;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 0;
+      }
+
+      .logo {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        background: linear-gradient(135deg, #23dcc8, #1a9e90);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: #04120f;
+        flex-shrink: 0;
+      }
+
+      .brand h1 {
+        font-size: 1.05rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+
+      .brand p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: flex-end;
+      }
+
+      .search {
+        position: relative;
+      }
+
+      .search input {
+        width: 220px;
+        max-width: 40vw;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 0.45rem 0.75rem 0.45rem 2rem;
+        font-size: 0.85rem;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .search input:focus {
+        border-color: var(--accent);
+      }
+      .search::before {
+        content: '⌕';
+        position: absolute;
+        left: 0.65rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+
+      .btn {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.15s,
+          color 0.15s;
+        white-space: nowrap;
+      }
+
+      .btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .badge {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.45rem;
+        border-radius: 999px;
+        background: var(--accent-dim);
+        color: var(--accent);
+        border: 1px solid rgba(35, 220, 200, 0.3);
+        font-weight: 600;
+      }
+
+      /* ── Body ── */
+      .main {
+        display: grid;
+        grid-template-columns: 1fr minmax(340px, 420px);
+        min-height: 0;
+      }
+
+      @media (max-width: 900px) {
+        .main {
+          grid-template-columns: 1fr;
+          grid-template-rows: 1fr minmax(240px, 42vh);
+        }
+        .panel {
+          border-left: none;
+          border-top: 1px solid var(--border);
+        }
+      }
+
+      /* ── Canvas ── */
+      .canvas-wrap {
+        position: relative;
+        min-height: 0;
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse 80% 60% at 50% 40%, rgba(35, 220, 200, 0.04), transparent 70%),
+          linear-gradient(rgba(42, 53, 68, 0.22) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(42, 53, 68, 0.22) 1px, transparent 1px);
+        background-size:
+          auto,
+          32px 32px,
+          32px 32px;
+        background-position:
+          center,
+          -1px -1px,
+          -1px -1px;
+        background-color: var(--bg);
+      }
+
+      #graph {
+        width: 100%;
+        height: 100%;
+        cursor: grab;
+        display: block;
+      }
+
+      #graph.dragging {
+        cursor: grabbing;
+      }
+
+      .hint {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        background: rgba(18, 24, 32, 0.85);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.4rem 0.65rem;
+        pointer-events: none;
+        backdrop-filter: blur(6px);
+        max-width: min(360px, 90%);
+        line-height: 1.4;
+      }
+
+      .legend {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        max-width: min(520px, 70%);
+        pointer-events: none;
+      }
+
+      .legend span {
+        font-size: 0.68rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: rgba(18, 24, 32, 0.9);
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .legend i {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        display: inline-block;
+      }
+
+      /* ── Panel ── */
+      .panel {
+        background: var(--bg-panel);
+        border-left: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        z-index: 10;
+      }
+
+      .panel-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .panel-tabs button {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+      }
+
+      .panel-tabs button.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+
+      .panel-body {
+        flex: 1;
+        overflow: auto;
+        padding: 0.85rem;
+        min-height: 0;
+      }
+
+      .panel-body::-webkit-scrollbar {
+        width: 8px;
+      }
+      .panel-body::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 4px;
+      }
+
+      .section-title {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin: 0.5rem 0 0.6rem;
+        font-weight: 700;
+      }
+
+      .flow-card {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.75rem;
+        margin-bottom: 0.55rem;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s,
+          transform 0.1s;
+      }
+
+      .flow-card:hover {
+        border-color: #4a6078;
+        transform: translateY(-1px);
+      }
+
+      .flow-card.selected {
+        border-color: var(--accent);
+        box-shadow:
+          0 0 0 1px var(--accent),
+          0 0 20px var(--accent-glow);
+      }
+
+      .flow-card h3 {
+        font-size: 0.88rem;
+        font-weight: 650;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .flow-card p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+      }
+
+      .flow-meta {
+        display: flex;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .chip {
+        font-size: 0.65rem;
+        padding: 0.12rem 0.4rem;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .chip.cat-swap {
+        color: #7dd3fc;
+        border-color: #0e7490;
+        background: rgba(14, 116, 144, 0.2);
+      }
+      .chip.cat-wallet {
+        color: #c4b5fd;
+        border-color: #6d28d9;
+        background: rgba(109, 40, 217, 0.2);
+      }
+      .chip.cat-liquidity {
+        color: #86efac;
+        border-color: #15803d;
+        background: rgba(21, 128, 61, 0.2);
+      }
+      .chip.cat-transfer {
+        color: #fcd34d;
+        border-color: #a16207;
+        background: rgba(161, 98, 7, 0.2);
+      }
+      .chip.cat-ops {
+        color: #fda4af;
+        border-color: #be123c;
+        background: rgba(190, 18, 60, 0.2);
+      }
+      .chip.cat-lifecycle {
+        color: #f9a8d4;
+        border-color: #9d174d;
+        background: rgba(157, 23, 77, 0.2);
+      }
+      .chip.cat-ui {
+        color: #a5b4fc;
+        border-color: #4338ca;
+        background: rgba(67, 56, 202, 0.2);
+      }
+
+      .steps {
+        margin-top: 0.75rem;
+        display: none;
+        padding-left: 0.15rem;
+      }
+
+      .flow-card.selected .steps {
+        display: block;
+      }
+
+      /*
+   * Timeline rail: number is absolutely positioned on the left border.
+   * Do NOT use a 2-col grid with a single child — that squeezed text into ~24px
+   * and caused extreme word-by-word wrapping.
+   */
+      .step {
+        display: block;
+        position: relative;
+        margin-left: 12px;
+        padding: 0.45rem 0 0.45rem 1rem;
+        border-left: 2px solid var(--border);
+        min-width: 0;
+      }
+
+      .step::before {
+        content: attr(data-n);
+        position: absolute;
+        left: -12px;
+        top: 0.5rem;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--bg-elevated);
+        border: 2px solid var(--accent);
+        color: var(--accent);
+        font-size: 0.62rem;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
+        line-height: 1;
+        z-index: 1;
+      }
+
+      .step-body {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+
+      .step strong {
+        font-size: 0.8rem;
+        font-weight: 650;
+        color: var(--accent);
+        line-height: 1.3;
+        overflow-wrap: break-word;
+      }
+
+      .step span {
+        font-size: 0.74rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+        overflow-wrap: break-word;
+      }
+
+      /* Detail panel */
+      .detail-empty {
+        text-align: center;
+        color: var(--text-muted);
+        padding: 2rem 1rem;
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+
+      .detail-card h2 {
+        font-size: 1.05rem;
+        margin-bottom: 0.35rem;
+      }
+
+      .detail-card .path {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--accent);
+        background: var(--accent-dim);
+        padding: 0.35rem 0.5rem;
+        border-radius: 6px;
+        margin: 0.6rem 0;
+        word-break: break-all;
+      }
+
+      .detail-card .desc {
+        font-size: 0.84rem;
+        color: var(--text-muted);
+        line-height: 1.55;
+        margin-bottom: 0.85rem;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-bottom: 1rem;
+      }
+
+      .tag {
+        font-size: 0.68rem;
+        padding: 0.15rem 0.45rem;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+      }
+
+      .conn-list {
+        list-style: none;
+      }
+
+      .conn-list li {
+        font-size: 0.78rem;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 0.4rem;
+        align-items: baseline;
+      }
+
+      .conn-list .arrow {
+        color: var(--accent);
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        flex-shrink: 0;
+      }
+
+      .invariants {
+        font-size: 0.78rem;
+        line-height: 1.5;
+      }
+
+      .invariants li {
+        margin-bottom: 0.5rem;
+        padding-left: 0.25rem;
+        color: var(--text-muted);
+      }
+
+      .invariants li::marker {
+        color: var(--warn);
+      }
+
+      /* Tooltip */
+      #tooltip {
+        position: fixed;
+        z-index: 100;
+        pointer-events: none;
+        background: #1c2531;
+        border: 1px solid var(--accent);
+        border-radius: 10px;
+        padding: 0.7rem 0.85rem;
+        max-width: 320px;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(4px);
+        transition:
+          opacity 0.12s,
+          transform 0.12s;
+      }
+
+      #tooltip.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      #tooltip h4 {
+        font-size: 0.88rem;
+        margin-bottom: 0.3rem;
+        color: var(--text);
+      }
+
+      #tooltip .tt-layer {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--accent);
+        margin-bottom: 0.35rem;
+      }
+
+      #tooltip p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        line-height: 1.45;
+      }
+
+      #tooltip .tt-path {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: #7dd3fc;
+        margin-top: 0.4rem;
+        word-break: break-all;
+      }
+
+      /* SVG nodes */
+      .node-group {
+        cursor: pointer;
+      }
+      .node-group rect {
+        transition:
+          stroke 0.15s,
+          filter 0.15s,
+          opacity 0.15s;
+      }
+      .node-group text {
+        pointer-events: none;
+        user-select: none;
+      }
+      .node-group.dimmed {
+        opacity: 0.18;
+      }
+      .node-group.highlighted rect {
+        stroke: var(--highlight);
+        stroke-width: 2.5;
+        filter: drop-shadow(0 0 8px var(--accent-glow));
+      }
+      .node-group.selected rect {
+        stroke: var(--highlight);
+        stroke-width: 2.5;
+        filter: drop-shadow(0 0 12px var(--accent-glow));
+      }
+      .edge-line {
+        fill: none;
+        stroke: var(--edge);
+        stroke-width: 1.2;
+        opacity: 0.55;
+        transition:
+          stroke 0.15s,
+          opacity 0.15s,
+          stroke-width 0.15s;
+      }
+      .edge-line.dimmed {
+        opacity: 0.06;
+      }
+      .edge-line.highlighted {
+        stroke: var(--edge-active);
+        stroke-width: 2.4;
+        opacity: 0.95;
+        filter: drop-shadow(0 0 4px var(--accent-glow));
+      }
+      .edge-label {
+        font-size: 9px;
+        fill: var(--text-muted);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .edge-label.visible {
+        opacity: 0.9;
+      }
+
+      .layer-band text {
+        font-size: 11px;
+        fill: var(--text-muted);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <div class="brand">
+          <div class="logo">AX</div>
+          <div>
+            <h1>ASGARDEX Desktop Architecture</h1>
+            <p>v1.45.0 · Electron · React · RxJS · 17+ chains</p>
+          </div>
+        </div>
+        <div class="toolbar">
+          <span class="badge" id="stats-badge">—</span>
+          <div class="search">
+            <input id="search" type="search" placeholder="Search nodes…" autocomplete="off" />
+          </div>
+          <button class="btn" id="btn-fit" title="Fit graph">Fit</button>
+          <button class="btn" id="btn-clear" title="Clear selection">Clear</button>
+          <button class="btn active" id="btn-layers" title="Toggle layer bands">Layers</button>
+        </div>
+      </header>
+
+      <div class="main">
+        <div class="canvas-wrap">
+          <div class="legend" id="legend"></div>
+          <svg id="graph" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div class="hint">
+            Drag canvas to pan · Scroll to zoom · Click node for details · Select a flow to highlight its path
+          </div>
+        </div>
+
+        <aside class="panel">
+          <div class="panel-tabs">
+            <button class="active" data-tab="flows">Flows</button>
+            <button data-tab="detail">Detail</button>
+            <button data-tab="invariants">Invariants</button>
+          </div>
+          <div class="panel-body" id="panel-flows"></div>
+          <div class="panel-body" id="panel-detail" style="display: none"></div>
+          <div class="panel-body" id="panel-invariants" style="display: none"></div>
+        </aside>
+      </div>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <script>
+      /* ═══════════════════════════════════════════════════════════════
+   Embedded architecture graph (mirrors asgardex-architecture.json)
+   ═══════════════════════════════════════════════════════════════ */
+      const DATA = {
+        nodes: [
+          {
+            id: 'electron-main',
+            label: 'Electron Main',
+            layer: 'runtime',
+            path: 'src/main/electron.ts',
+            tooltip:
+              'App lifecycle, BrowserWindow, menus, IPC registration, native integrations (Ledger HID, Vultisig SDK, filesystem).',
+            tags: ['electron', 'main']
+          },
+          {
+            id: 'preload',
+            label: 'Preload Bridge',
+            layer: 'runtime',
+            path: 'src/main/preload.ts',
+            tooltip:
+              'contextBridge exposes typed APIs on window (apiKeystore, apiHDWallet, apiMpc, storage). Renderer never imports main code.',
+            tags: ['ipc']
+          },
+          {
+            id: 'renderer',
+            label: 'Renderer (React)',
+            layer: 'runtime',
+            path: 'src/renderer/',
+            tooltip: 'React SPA: views, services, hooks, contexts. All DeFi business logic lives here.',
+            tags: ['react']
+          },
+          {
+            id: 'shared',
+            label: 'Shared Types',
+            layer: 'runtime',
+            path: 'src/shared/',
+            tooltip:
+              'IPC message types, io-ts codecs (BigInt-safe), wallet types, chain constants shared by main and renderer.',
+            tags: ['types']
+          },
+
+          {
+            id: 'api-keystore',
+            label: 'Keystore API',
+            layer: 'main-api',
+            path: 'src/main/api/keystore.ts',
+            tooltip: 'Load/save encrypted keystore wallets to disk (wallets.json).',
+            tags: ['wallet']
+          },
+          {
+            id: 'api-ledger',
+            label: 'Ledger API',
+            layer: 'main-api',
+            path: 'src/main/api/ledger/',
+            tooltip: 'USB HID transport; per-chain address derivation and transaction signing for hardware wallets.',
+            tags: ['ledger']
+          },
+          {
+            id: 'api-mpc',
+            label: 'MPC / Vultisig API',
+            layer: 'main-api',
+            path: 'src/main/api/mpc/',
+            tooltip:
+              'Main-process-only Vultisig SDK: vault create/import, addresses, multi-party signing. Never import SDK in renderer.',
+            tags: ['vultisig']
+          },
+          {
+            id: 'api-filestore',
+            label: 'File Store API',
+            layer: 'main-api',
+            path: 'src/main/api/fileStore.ts',
+            tooltip: 'Persisted JSON: common, userNodes, userChains, addresses, assets, pools, ledgers.',
+            tags: ['storage']
+          },
+          {
+            id: 'api-update',
+            label: 'App Update API',
+            layer: 'main-api',
+            path: 'src/main/api/appUpdate.ts',
+            tooltip: 'Check for desktop updates via electron-updater.',
+            tags: ['ops']
+          },
+          {
+            id: 'api-url-export',
+            label: 'URL & Export',
+            layer: 'main-api',
+            path: 'src/main/api/',
+            tooltip: 'openExternal URLs; export balances JSON.',
+            tags: ['ops']
+          },
+
+          {
+            id: 'window-api',
+            label: 'window.api* Bridge',
+            layer: 'ipc',
+            path: 'src/main/preload.ts',
+            tooltip:
+              'Renderer IPC surface. Serialize BigInt with String() — never pass non-serializable objects across IPC.',
+            tags: ['ipc']
+          },
+
+          {
+            id: 'app-tsx',
+            label: 'App Provider Tree',
+            layer: 'ui-shell',
+            path: 'src/renderer/App.tsx',
+            tooltip: 'Nests Redux + Wallet + all chain/protocol contexts + Router + Theme around AppView.',
+            tags: ['react']
+          },
+          {
+            id: 'view-routes',
+            label: 'ViewRoutes',
+            layer: 'ui-shell',
+            path: 'src/renderer/views/ViewRoutes.tsx',
+            tooltip:
+              'HashRouter: wallet, pools, swap, deposit, bonds, portfolio, history. WalletAuth guards protected routes.',
+            tags: ['routing']
+          },
+          {
+            id: 'redux-store',
+            label: 'Redux (limited)',
+            layer: 'ui-shell',
+            path: 'src/renderer/store/',
+            tooltip: 'Slices: app UI prefs, aggregator protocols, gecko prices. Not primary wallet state.',
+            tags: ['redux']
+          },
+          {
+            id: 'i18n',
+            label: 'i18n (7 locales)',
+            layer: 'ui-shell',
+            path: 'src/renderer/i18n/',
+            tooltip: 'Typed keys; en, de, es, fr, hi, ko, ru. Always formatMessage — never hardcode strings.',
+            tags: ['i18n']
+          },
+          {
+            id: 'theme',
+            label: 'Theme Context',
+            layer: 'ui-shell',
+            path: 'src/renderer/contexts/ThemeContext.tsx',
+            tooltip: 'Light/dark via Tailwind dark: tokens.',
+            tags: ['ui']
+          },
+
+          {
+            id: 'ctx-wallet',
+            label: 'WalletContext',
+            layer: 'context',
+            path: 'src/renderer/contexts/WalletContext.tsx',
+            tooltip: 'Exposes appWalletService, balances, keystore/ledger ops to components.',
+            tags: ['wallet']
+          },
+          {
+            id: 'ctx-chain',
+            label: 'ChainContext',
+            layer: 'context',
+            path: 'src/renderer/contexts/ChainContext.tsx',
+            tooltip: 'Unified swap$, deposit, withdraw, transfer, fees across chains.',
+            tags: ['chain']
+          },
+          {
+            id: 'ctx-midgard',
+            label: 'Midgard (THOR)',
+            layer: 'context',
+            path: 'src/renderer/contexts/MidgardContext.tsx',
+            tooltip: 'THORChain Midgard: pools, actions, LP shares.',
+            tags: ['thorchain']
+          },
+          {
+            id: 'ctx-maya-midgard',
+            label: 'Maya Midgard',
+            layer: 'context',
+            path: 'src/renderer/contexts/MidgardMayaContext.tsx',
+            tooltip: 'MAYAChain Midgard pools/actions/shares.',
+            tags: ['mayachain']
+          },
+          {
+            id: 'ctx-thor',
+            label: 'ThorchainContext',
+            layer: 'context',
+            path: 'src/renderer/contexts/ThorchainContext.tsx',
+            tooltip: 'THORNode: mimir, inbound addresses, node infos, interact.',
+            tags: ['thorchain']
+          },
+          {
+            id: 'ctx-maya',
+            label: 'MayachainContext',
+            layer: 'context',
+            path: 'src/renderer/contexts/MayachainContext.tsx',
+            tooltip: 'MAYANode queries and interact transactions.',
+            tags: ['mayachain']
+          },
+          {
+            id: 'ctx-chainflip',
+            label: 'ChainflipContext',
+            layer: 'context',
+            path: 'src/renderer/contexts/ChainflipContext.tsx',
+            tooltip: 'Chainflip asset support and swap helpers.',
+            tags: ['chainflip']
+          },
+          {
+            id: 'ctx-oneclick',
+            label: 'OneClickContext',
+            layer: 'context',
+            path: 'src/renderer/contexts/OneClickContext.tsx',
+            tooltip: 'OneClick protocol asset support and tracking.',
+            tags: ['oneclick']
+          },
+          {
+            id: 'ctx-chain-clients',
+            label: 'Per-Chain Contexts',
+            layer: 'context',
+            path: 'src/renderer/contexts/*Context.tsx',
+            tooltip:
+              'BTC, ETH, AVAX, BSC, ARB, BASE, LTC, BCH, DOGE, DASH, ADA, SOL, TRON, XRD, ZEC, XRP, SUI, COSMOS providers.',
+            tags: ['chain']
+          },
+
+          {
+            id: 'svc-app-wallet',
+            label: 'appWalletService',
+            layer: 'wallet',
+            path: 'src/renderer/services/wallet/appWallet.ts',
+            tooltip:
+              'Single source of truth: Keystore | Ledger | Vultisig. Orchestrates mode switches. UI must not bypass this.',
+            tags: ['core', 'wallet']
+          },
+          {
+            id: 'svc-keystore',
+            label: 'keystoreService',
+            layer: 'wallet',
+            path: 'src/renderer/services/wallet/keystore.ts',
+            tooltip: 'Encrypted mnemonic: create, import, unlock/lock. Phrase stays in renderer after unlock.',
+            tags: ['keystore']
+          },
+          {
+            id: 'svc-vault-manager',
+            label: 'vaultManager',
+            layer: 'wallet',
+            path: 'src/renderer/services/wallet/vaultManager.ts',
+            tooltip: 'Vultisig mode: vault list/create/import, unlock phase machine. Talks to window.apiMpc only.',
+            tags: ['vultisig']
+          },
+          {
+            id: 'svc-standalone-ledger',
+            label: 'standaloneLedger',
+            layer: 'wallet',
+            path: 'src/renderer/services/wallet/standaloneLedger.ts',
+            tooltip: 'Standalone Ledger: chain selection, address detection via apiHDWallet.',
+            tags: ['ledger']
+          },
+          {
+            id: 'svc-wallet-balances',
+            label: 'Wallet Balances',
+            layer: 'wallet',
+            path: 'src/renderer/services/wallet/balances.ts',
+            tooltip: 'Aggregates per-chain balances for all wallet modes into chainBalances$.',
+            tags: ['balances']
+          },
+          {
+            id: 'svc-wallet-ledger',
+            label: 'Ledger Addresses',
+            layer: 'wallet',
+            path: 'src/renderer/services/wallet/ledger.ts',
+            tooltip: 'Persisted ledger address refs for keystore+ledger hybrid accounts.',
+            tags: ['ledger']
+          },
+
+          {
+            id: 'svc-enhanced-client',
+            label: 'Enhanced Client',
+            layer: 'chain-infra',
+            path: 'src/renderer/services/clients/enhancedClient.ts',
+            tooltip:
+              'keystore client if phrase available, else read-only for Ledger/Vultisig. Prevents hanging on O.none.',
+            tags: ['core']
+          },
+          {
+            id: 'svc-clients',
+            label: 'Client Utilities',
+            layer: 'chain-infra',
+            path: 'src/renderer/services/clients/',
+            tooltip: 'Shared address$, balances, fees, transfer, tx status factories.',
+            tags: ['client']
+          },
+          {
+            id: 'svc-chain-orchestrator',
+            label: 'Chain Orchestrator',
+            layer: 'chain-infra',
+            path: 'src/renderer/services/chain/',
+            tooltip: 'Cross-chain swap/deposit/withdraw/transfer routing, fees, decimals, pool sends.',
+            tags: ['core']
+          },
+          {
+            id: 'svc-decimal',
+            label: 'Decimal Resolution',
+            layer: 'chain-infra',
+            path: 'src/renderer/services/chain/decimal.ts',
+            tooltip: 'CHAIN_DECIMAL_MAP → tokenDecimalMap → chain default → Midgard (last resort).',
+            tags: ['decimals']
+          },
+          {
+            id: 'svc-chain-services',
+            label: 'Per-Chain Services',
+            layer: 'chain-infra',
+            path: 'src/renderer/services/[chain]/',
+            tooltip: 'common/balances/fees/transaction per chain. EVM factory for ETH/ARB/AVAX/BSC/BASE. 17+ chains.',
+            tags: ['chain']
+          },
+          {
+            id: 'svc-evm-factory',
+            label: 'EVM Factory',
+            layer: 'chain-infra',
+            path: 'src/renderer/services/evm/factory/',
+            tooltip: 'Shared EVM client/balance/fee/tx factory.',
+            tags: ['evm']
+          },
+          {
+            id: 'svc-utxo',
+            label: 'UTXO Helpers',
+            layer: 'chain-infra',
+            path: 'src/renderer/services/utxo/',
+            tooltip: 'Coin control, sendMax for UTXO chains, Vultisig UTXO helpers.',
+            tags: ['utxo']
+          },
+
+          {
+            id: 'svc-midgard-thor',
+            label: 'THOR Midgard',
+            layer: 'protocol',
+            path: 'src/renderer/services/midgard/thorMidgard/',
+            tooltip: 'Pools, actions, LP shares. Liquify endpoints (not retired Nine Realms).',
+            tags: ['thorchain']
+          },
+          {
+            id: 'svc-midgard-maya',
+            label: 'MAYA Midgard',
+            layer: 'protocol',
+            path: 'src/renderer/services/midgard/mayaMidgard/',
+            tooltip: 'MAYA pools, actions, shares, validation.',
+            tags: ['mayachain']
+          },
+          {
+            id: 'svc-thorchain',
+            label: 'THORChain Service',
+            layer: 'protocol',
+            path: 'src/renderer/services/thorchain/',
+            tooltip: 'THORNode client, interact (bond), tx tracking, mimir.',
+            tags: ['thorchain']
+          },
+          {
+            id: 'svc-mayachain',
+            label: 'MAYAChain Service',
+            layer: 'protocol',
+            path: 'src/renderer/services/mayachain/',
+            tooltip: 'MAYANode client, balances, interact, fees.',
+            tags: ['mayachain']
+          },
+          {
+            id: 'svc-chainflip',
+            label: 'Chainflip Service',
+            layer: 'protocol',
+            path: 'src/renderer/services/chainflip/',
+            tooltip: 'Deposit channel + direct send; transaction tracking.',
+            tags: ['chainflip']
+          },
+          {
+            id: 'svc-oneclick',
+            label: 'OneClick Service',
+            layer: 'protocol',
+            path: 'src/renderer/services/oneclick/',
+            tooltip: 'Dynamic-asset protocol quotes/execution and tracking.',
+            tags: ['oneclick']
+          },
+          {
+            id: 'svc-aggregator',
+            label: 'Aggregator Slice',
+            layer: 'protocol',
+            path: 'src/renderer/store/aggregator/',
+            tooltip: 'Multi-protocol quotes (THOR/MAYA/Chainflip/OneClick), protocol toggles.',
+            tags: ['swap']
+          },
+          {
+            id: 'svc-storage',
+            label: 'Storage Services',
+            layer: 'protocol',
+            path: 'src/renderer/services/storage/',
+            tooltip: 'User prefs backed by main fileStore via IPC.',
+            tags: ['storage']
+          },
+          {
+            id: 'svc-app',
+            label: 'App Service',
+            layer: 'protocol',
+            path: 'src/renderer/services/app/',
+            tooltip: 'Network selection (mainnet/stagenet).',
+            tags: ['app']
+          },
+
+          {
+            id: 'hook-swap-quote',
+            label: 'useSwapQuote',
+            layer: 'hooks',
+            path: 'src/renderer/hooks/useSwapQuote.ts',
+            tooltip: 'Multi-protocol quotes via aggregator; selects best expected output.',
+            tags: ['swap']
+          },
+          {
+            id: 'hook-swap-fees',
+            label: 'useSwapFees',
+            layer: 'hooks',
+            path: 'src/renderer/hooks/useSwapFees.ts',
+            tooltip: 'Inbound fee, max amount, affiliate BPS, fee-adjusted amounts.',
+            tags: ['fees']
+          },
+          {
+            id: 'hook-swap-exec',
+            label: 'useSwapExecution',
+            layer: 'hooks',
+            path: 'src/renderer/hooks/useSwapExecution.ts',
+            tooltip: 'Builds params and submits swap$ / swapCF$ / OneClick.',
+            tags: ['swap']
+          },
+          {
+            id: 'hook-swap-addresses',
+            label: 'useSwapAddresses',
+            layer: 'hooks',
+            path: 'src/renderer/hooks/useSwapAddresses.ts',
+            tooltip: 'Source/target addresses. Priority: Ledger → Vultisig → Keystore.',
+            tags: ['wallet']
+          },
+          {
+            id: 'hook-streaming',
+            label: 'useStreamingParams',
+            layer: 'hooks',
+            path: 'src/renderer/hooks/useStreamingParams.ts',
+            tooltip: 'THOR modes: Rapid (i=0), Streaming, Instant (qty=1).',
+            tags: ['swap']
+          },
+          {
+            id: 'helper-memo',
+            label: 'memoHelper',
+            layer: 'hooks',
+            path: 'src/renderer/helpers/memoHelper.ts',
+            tooltip:
+              'CRITICAL: builds affiliate segment (dx + bps). Do not use SDK swap path or affiliate revenue is dropped.',
+            tags: ['critical']
+          },
+
+          {
+            id: 'view-swap',
+            label: 'Swap UI',
+            layer: 'ui-feature',
+            path: 'src/renderer/views/swap/',
+            tooltip: 'Asset pickers, quotes, streaming, confirmation modals.',
+            tags: ['swap']
+          },
+          {
+            id: 'view-deposit',
+            label: 'Deposit / Withdraw',
+            layer: 'ui-feature',
+            path: 'src/renderer/views/deposit/',
+            tooltip: 'Symmetrical LP add/withdraw for THOR and MAYA.',
+            tags: ['liquidity']
+          },
+          {
+            id: 'view-wallet',
+            label: 'Wallet Views',
+            layer: 'ui-feature',
+            path: 'src/renderer/views/wallet/',
+            tooltip: 'Assets, send, create/import, unlock, Ledger, Vultisig, interact, shares.',
+            tags: ['wallet']
+          },
+          {
+            id: 'view-pools',
+            label: 'Pools Views',
+            layer: 'ui-feature',
+            path: 'src/renderer/views/pools/',
+            tooltip: 'Pool overview, detail, active/pending.',
+            tags: ['pools']
+          },
+          {
+            id: 'view-bonds',
+            label: 'Bonds View',
+            layer: 'ui-feature',
+            path: 'src/renderer/views/bonds/',
+            tooltip: 'Node bonding UI for THOR/MAYA operators.',
+            tags: ['bonds']
+          },
+          {
+            id: 'view-portfolio',
+            label: 'Portfolio View',
+            layer: 'ui-feature',
+            path: 'src/renderer/views/portfolio/',
+            tooltip: 'Aggregated portfolio across chains and positions.',
+            tags: ['portfolio']
+          },
+          {
+            id: 'view-history',
+            label: 'History Views',
+            layer: 'ui-feature',
+            path: 'src/renderer/views/history/',
+            tooltip: 'Midgard action history and wallet tx history.',
+            tags: ['history']
+          },
+          {
+            id: 'ui-modals',
+            label: 'Confirmation Modals',
+            layer: 'ui-feature',
+            path: 'src/renderer/components/modal/',
+            tooltip: 'Password, Ledger, Vultisig confirmation for signing flows.',
+            tags: ['signing']
+          },
+          {
+            id: 'ui-components',
+            label: 'Shared UI',
+            layer: 'ui-feature',
+            path: 'src/renderer/components/',
+            tooltip: 'Header, sidebar, uielements — Tailwind + Headless UI.',
+            tags: ['ui']
+          },
+
+          {
+            id: 'ext-xchainjs',
+            label: 'xchainjs',
+            layer: 'external',
+            path: '@xchainjs/*',
+            tooltip: 'Chain clients, crypto, aggregator. App owns memos/affiliate; lib owns clients.',
+            tags: ['dep']
+          },
+          {
+            id: 'ext-vultisig-sdk',
+            label: 'Vultisig SDK',
+            layer: 'external',
+            path: '@vultisig/sdk',
+            tooltip: 'MPC vault and signing. Main process only.',
+            tags: ['dep']
+          },
+          {
+            id: 'ext-chainflip-sdk',
+            label: 'Chainflip SDK',
+            layer: 'external',
+            path: '@chainflip/sdk',
+            tooltip: 'Deposit channels and Chainflip quotes.',
+            tags: ['dep']
+          },
+          {
+            id: 'ext-midgard-api',
+            label: 'Midgard / Liquify',
+            layer: 'external',
+            path: 'network',
+            tooltip: 'Pool state, history, inbound. Use Liquify — never *.ninerealms.com.',
+            tags: ['api']
+          },
+          {
+            id: 'ext-thornode',
+            label: 'THORNode / MAYANode',
+            layer: 'external',
+            path: 'network',
+            tooltip: 'Chain state, mimir, inbound addresses, tx observation.',
+            tags: ['api']
+          },
+          {
+            id: 'ext-chain-rpcs',
+            label: 'Chain RPCs',
+            layer: 'external',
+            path: 'BlockCypher, Etherscan, NOWNodes…',
+            tooltip: 'Balances, fees, broadcast. Keys via VITE_* env.',
+            tags: ['api']
+          },
+          {
+            id: 'ext-ledger-hw',
+            label: 'Ledger Hardware',
+            layer: 'external',
+            path: '@ledgerhq/hw-transport…',
+            tooltip: 'Physical device over USB HID.',
+            tags: ['hardware']
+          }
+        ],
+
+        edges: [
+          { id: 'e1', source: 'electron-main', target: 'preload', label: 'loads' },
+          { id: 'e2', source: 'preload', target: 'renderer', label: 'bridge' },
+          { id: 'e3', source: 'electron-main', target: 'api-keystore', label: 'registers' },
+          { id: 'e4', source: 'electron-main', target: 'api-ledger', label: 'registers' },
+          { id: 'e5', source: 'electron-main', target: 'api-mpc', label: 'registers' },
+          { id: 'e6', source: 'electron-main', target: 'api-filestore', label: 'registers' },
+          { id: 'e7', source: 'electron-main', target: 'api-update', label: 'registers' },
+          { id: 'e8', source: 'electron-main', target: 'api-url-export', label: 'registers' },
+          { id: 'e9', source: 'preload', target: 'window-api', label: 'exposes' },
+          { id: 'e10', source: 'window-api', target: 'api-keystore', label: 'invoke' },
+          { id: 'e11', source: 'window-api', target: 'api-ledger', label: 'invoke' },
+          { id: 'e12', source: 'window-api', target: 'api-mpc', label: 'invoke' },
+          { id: 'e13', source: 'window-api', target: 'api-filestore', label: 'invoke' },
+          { id: 'e14', source: 'shared', target: 'electron-main', label: 'types' },
+          { id: 'e15', source: 'shared', target: 'renderer', label: 'types' },
+          { id: 'e16', source: 'shared', target: 'preload', label: 'types' },
+          { id: 'e20', source: 'renderer', target: 'app-tsx', label: 'mounts' },
+          { id: 'e21', source: 'app-tsx', target: 'redux-store', label: 'Provider' },
+          { id: 'e22', source: 'app-tsx', target: 'ctx-wallet', label: 'wraps' },
+          { id: 'e23', source: 'app-tsx', target: 'ctx-chain', label: 'wraps' },
+          { id: 'e24', source: 'app-tsx', target: 'ctx-midgard', label: 'wraps' },
+          { id: 'e25', source: 'app-tsx', target: 'ctx-maya-midgard', label: 'wraps' },
+          { id: 'e26', source: 'app-tsx', target: 'ctx-thor', label: 'wraps' },
+          { id: 'e27', source: 'app-tsx', target: 'ctx-maya', label: 'wraps' },
+          { id: 'e28', source: 'app-tsx', target: 'ctx-chainflip', label: 'wraps' },
+          { id: 'e29', source: 'app-tsx', target: 'ctx-oneclick', label: 'wraps' },
+          { id: 'e30', source: 'app-tsx', target: 'ctx-chain-clients', label: 'wraps' },
+          { id: 'e31', source: 'app-tsx', target: 'view-routes', label: 'routes' },
+          { id: 'e32', source: 'app-tsx', target: 'i18n', label: 'i18n' },
+          { id: 'e33', source: 'app-tsx', target: 'theme', label: 'theme' },
+          { id: 'e40', source: 'ctx-wallet', target: 'svc-app-wallet', label: 'exposes' },
+          { id: 'e41', source: 'svc-app-wallet', target: 'svc-keystore', label: 'orchestrates' },
+          { id: 'e42', source: 'svc-app-wallet', target: 'svc-vault-manager', label: 'orchestrates' },
+          { id: 'e43', source: 'svc-app-wallet', target: 'svc-standalone-ledger', label: 'orchestrates' },
+          { id: 'e44', source: 'svc-keystore', target: 'window-api', label: 'IPC' },
+          { id: 'e45', source: 'svc-vault-manager', target: 'window-api', label: 'apiMpc' },
+          { id: 'e46', source: 'svc-standalone-ledger', target: 'window-api', label: 'apiHDWallet' },
+          { id: 'e47', source: 'svc-wallet-ledger', target: 'window-api', label: 'storage' },
+          { id: 'e48', source: 'svc-wallet-balances', target: 'svc-app-wallet', label: 'mode' },
+          { id: 'e49', source: 'svc-wallet-balances', target: 'svc-chain-services', label: 'balances' },
+          { id: 'e50', source: 'svc-storage', target: 'window-api', label: 'IPC' },
+          { id: 'e60', source: 'svc-chain-services', target: 'svc-enhanced-client', label: 'uses' },
+          { id: 'e61', source: 'svc-enhanced-client', target: 'svc-app-wallet', label: 'mode' },
+          { id: 'e62', source: 'svc-chain-services', target: 'svc-clients', label: 'factories' },
+          { id: 'e63', source: 'svc-chain-services', target: 'ext-xchainjs', label: 'clients' },
+          { id: 'e64', source: 'svc-evm-factory', target: 'svc-chain-services', label: 'EVM' },
+          { id: 'e65', source: 'svc-chain-orchestrator', target: 'svc-chain-services', label: 'routes' },
+          { id: 'e66', source: 'svc-chain-orchestrator', target: 'svc-decimal', label: 'decimals' },
+          { id: 'e67', source: 'ctx-chain', target: 'svc-chain-orchestrator', label: 'exposes' },
+          { id: 'e68', source: 'svc-chain-services', target: 'ext-chain-rpcs', label: 'RPC' },
+          { id: 'e69', source: 'svc-utxo', target: 'svc-chain-services', label: 'helpers' },
+          { id: 'e70', source: 'ctx-midgard', target: 'svc-midgard-thor', label: 'exposes' },
+          { id: 'e71', source: 'ctx-maya-midgard', target: 'svc-midgard-maya', label: 'exposes' },
+          { id: 'e72', source: 'ctx-thor', target: 'svc-thorchain', label: 'exposes' },
+          { id: 'e73', source: 'ctx-maya', target: 'svc-mayachain', label: 'exposes' },
+          { id: 'e74', source: 'svc-midgard-thor', target: 'ext-midgard-api', label: 'HTTP' },
+          { id: 'e75', source: 'svc-midgard-maya', target: 'ext-midgard-api', label: 'HTTP' },
+          { id: 'e76', source: 'svc-thorchain', target: 'ext-thornode', label: 'HTTP' },
+          { id: 'e77', source: 'svc-mayachain', target: 'ext-thornode', label: 'HTTP' },
+          { id: 'e78', source: 'svc-chainflip', target: 'ext-chainflip-sdk', label: 'SDK' },
+          { id: 'e79', source: 'svc-aggregator', target: 'ext-xchainjs', label: 'aggregator' },
+          { id: 'e80', source: 'svc-aggregator', target: 'svc-chainflip', label: 'quotes' },
+          { id: 'e81', source: 'svc-aggregator', target: 'svc-oneclick', label: 'quotes' },
+          { id: 'e82', source: 'ctx-chainflip', target: 'svc-chainflip', label: 'exposes' },
+          { id: 'e83', source: 'ctx-oneclick', target: 'svc-oneclick', label: 'exposes' },
+          { id: 'e84', source: 'api-mpc', target: 'ext-vultisig-sdk', label: 'uses' },
+          { id: 'e85', source: 'api-ledger', target: 'ext-ledger-hw', label: 'USB' },
+          { id: 'e90', source: 'view-routes', target: 'view-swap', label: 'route' },
+          { id: 'e91', source: 'view-routes', target: 'view-deposit', label: 'route' },
+          { id: 'e92', source: 'view-routes', target: 'view-wallet', label: 'route' },
+          { id: 'e93', source: 'view-routes', target: 'view-pools', label: 'route' },
+          { id: 'e94', source: 'view-routes', target: 'view-bonds', label: 'route' },
+          { id: 'e95', source: 'view-routes', target: 'view-portfolio', label: 'route' },
+          { id: 'e96', source: 'view-routes', target: 'view-history', label: 'route' },
+          { id: 'e97', source: 'view-swap', target: 'hook-swap-quote', label: 'uses' },
+          { id: 'e98', source: 'view-swap', target: 'hook-swap-fees', label: 'uses' },
+          { id: 'e99', source: 'view-swap', target: 'hook-swap-exec', label: 'uses' },
+          { id: 'e100', source: 'view-swap', target: 'hook-swap-addresses', label: 'uses' },
+          { id: 'e101', source: 'view-swap', target: 'hook-streaming', label: 'uses' },
+          { id: 'e102', source: 'view-swap', target: 'ui-modals', label: 'confirm' },
+          { id: 'e103', source: 'hook-swap-quote', target: 'svc-aggregator', label: 'estimate' },
+          { id: 'e104', source: 'hook-swap-exec', target: 'svc-chain-orchestrator', label: 'swap$' },
+          { id: 'e105', source: 'hook-swap-exec', target: 'helper-memo', label: 'memo' },
+          { id: 'e106', source: 'hook-swap-fees', target: 'svc-chain-orchestrator', label: 'fees' },
+          { id: 'e107', source: 'view-deposit', target: 'svc-chain-orchestrator', label: 'deposit$' },
+          { id: 'e108', source: 'view-deposit', target: 'ui-modals', label: 'confirm' },
+          { id: 'e109', source: 'view-wallet', target: 'svc-app-wallet', label: 'state' },
+          { id: 'e110', source: 'view-wallet', target: 'svc-wallet-balances', label: 'balances' },
+          { id: 'e111', source: 'view-wallet', target: 'ui-modals', label: 'confirm' },
+          { id: 'e112', source: 'view-pools', target: 'svc-midgard-thor', label: 'pools' },
+          { id: 'e113', source: 'view-pools', target: 'svc-midgard-maya', label: 'pools' },
+          { id: 'e114', source: 'view-bonds', target: 'svc-thorchain', label: 'interact' },
+          { id: 'e115', source: 'view-history', target: 'svc-midgard-thor', label: 'actions' },
+          { id: 'e116', source: 'ui-components', target: 'view-swap', label: 'chrome' },
+          { id: 'e117', source: 'svc-chain-orchestrator', target: 'svc-midgard-thor', label: 'validate' },
+          { id: 'e118', source: 'svc-chain-orchestrator', target: 'svc-midgard-maya', label: 'validate' },
+          { id: 'e119', source: 'redux-store', target: 'svc-aggregator', label: 'slice' },
+          { id: 'e120', source: 'ctx-chain-clients', target: 'svc-chain-services', label: 'exposes' }
+        ],
+
+        flows: [
+          {
+            id: 'flow-app-startup',
+            name: 'App Startup & Wallet Restore',
+            description: 'Electron boots, loads renderer, restores last opened wallet mode from storage.',
+            category: 'lifecycle',
+            steps: [
+              { order: 1, nodeId: 'electron-main', action: 'Start Electron, BrowserWindow, register IPC' },
+              { order: 2, nodeId: 'preload', action: 'Expose window.api* via contextBridge' },
+              { order: 3, nodeId: 'renderer', action: 'Load React app bundle' },
+              { order: 4, nodeId: 'app-tsx', action: 'Mount provider tree and AppView' },
+              { order: 5, nodeId: 'svc-storage', action: 'Read common storage (lastOpenedWallet)' },
+              { order: 6, nodeId: 'window-api', action: 'IPC to fileStore / keystore init' },
+              { order: 7, nodeId: 'api-filestore', action: 'Load persisted JSON from disk' },
+              { order: 8, nodeId: 'svc-app-wallet', action: 'Restore Keystore | Ledger | Vultisig mode' },
+              { order: 9, nodeId: 'view-routes', action: 'Route to unlock / no-wallet / assets' }
+            ]
+          },
+          {
+            id: 'flow-keystore-unlock',
+            name: 'Keystore Unlock',
+            description: 'Decrypt mnemonic; chain clients receive phrase and emit addresses/balances.',
+            category: 'wallet',
+            steps: [
+              { order: 1, nodeId: 'view-wallet', action: 'UnlockView: user enters password' },
+              { order: 2, nodeId: 'svc-keystore', action: 'Decrypt keystore; set unlocked state' },
+              { order: 3, nodeId: 'svc-app-wallet', action: 'appWalletState$ → unlocked keystore' },
+              { order: 4, nodeId: 'svc-chain-services', action: 'Create xchain clients with phrase' },
+              { order: 5, nodeId: 'svc-enhanced-client', action: 'Prefer keystore client' },
+              { order: 6, nodeId: 'svc-wallet-balances', action: 'Subscribe chain balances' },
+              { order: 7, nodeId: 'ext-chain-rpcs', action: 'Fetch balances from RPC/indexers' },
+              { order: 8, nodeId: 'view-wallet', action: 'AssetsView renders RD.success balances' }
+            ]
+          },
+          {
+            id: 'flow-ledger-standalone',
+            name: 'Standalone Ledger Connect',
+            description: 'Pick chain, derive address over USB, load balances via read-only client.',
+            category: 'wallet',
+            steps: [
+              { order: 1, nodeId: 'view-wallet', action: 'LedgerChainSelectView: chain + HD mode' },
+              { order: 2, nodeId: 'svc-app-wallet', action: 'switchToStandaloneLedgerMode' },
+              { order: 3, nodeId: 'svc-standalone-ledger', action: 'detectionPhase → request address' },
+              { order: 4, nodeId: 'window-api', action: 'apiHDWallet.getAddress' },
+              { order: 5, nodeId: 'api-ledger', action: 'HID transport + chain app' },
+              { order: 6, nodeId: 'ext-ledger-hw', action: 'Device confirms address' },
+              { order: 7, nodeId: 'svc-enhanced-client', action: 'Use readOnlyClient$ (no phrase)' },
+              { order: 8, nodeId: 'svc-wallet-balances', action: 'getBalanceByAddress$' },
+              { order: 9, nodeId: 'view-wallet', action: 'Show assets for connected chain' }
+            ]
+          },
+          {
+            id: 'flow-vultisig-vault',
+            name: 'Vultisig Vault Create / Unlock',
+            description: 'MPC vault lifecycle via main-process SDK; renderer uses apiMpc only.',
+            category: 'wallet',
+            steps: [
+              { order: 1, nodeId: 'view-wallet', action: 'Vault create or selection UI' },
+              { order: 2, nodeId: 'svc-app-wallet', action: 'switchToVultisigMode' },
+              { order: 3, nodeId: 'svc-vault-manager', action: 'Phase: creation | locked | active' },
+              { order: 4, nodeId: 'window-api', action: 'apiMpc vault ops' },
+              { order: 5, nodeId: 'api-mpc', action: 'Main-process SDK vault ops' },
+              { order: 6, nodeId: 'ext-vultisig-sdk', action: 'MPC keygen / unlock / addresses' },
+              { order: 7, nodeId: 'svc-vault-manager', action: 'Cache addresses; phase → Active' },
+              { order: 8, nodeId: 'svc-enhanced-client', action: 'readOnlyClient$ for chain ops' },
+              { order: 9, nodeId: 'svc-wallet-balances', action: 'Load balances for vault addresses' }
+            ]
+          },
+          {
+            id: 'flow-balance-load',
+            name: 'Multi-Chain Balance Loading',
+            description: 'Unified balances across enabled chains for current wallet mode.',
+            category: 'wallet',
+            steps: [
+              { order: 1, nodeId: 'svc-app-wallet', action: 'Emit current mode + addresses' },
+              { order: 2, nodeId: 'svc-storage', action: 'userChains enabled set' },
+              { order: 3, nodeId: 'svc-wallet-balances', action: 'Fan-out to per-chain balances' },
+              { order: 4, nodeId: 'svc-chain-services', action: 'balances.ts / getBalanceByAddress$' },
+              { order: 5, nodeId: 'svc-enhanced-client', action: 'Resolve client for mode' },
+              { order: 6, nodeId: 'ext-xchainjs', action: 'Client.getBalance' },
+              { order: 7, nodeId: 'ext-chain-rpcs', action: 'Network fetch' },
+              { order: 8, nodeId: 'svc-wallet-balances', action: 'Aggregate → chainBalances$' },
+              { order: 9, nodeId: 'ctx-wallet', action: 'useObservableState in UI' }
+            ]
+          },
+          {
+            id: 'flow-thor-swap',
+            name: 'THORChain Swap',
+            description: 'Quote → affiliate memo → validate pool → send inbound → track status.',
+            category: 'swap',
+            steps: [
+              { order: 1, nodeId: 'view-swap', action: 'Select assets and amount' },
+              { order: 2, nodeId: 'hook-swap-addresses', action: 'Resolve addresses + wallet type' },
+              { order: 3, nodeId: 'hook-swap-fees', action: 'Inbound fee, max, affiliateBps' },
+              { order: 4, nodeId: 'hook-streaming', action: 'Rapid | Streaming | Instant' },
+              { order: 5, nodeId: 'hook-swap-quote', action: 'fetchQuote → estimateSwap' },
+              { order: 6, nodeId: 'svc-aggregator', action: 'Multi-protocol quotes; pick best' },
+              { order: 7, nodeId: 'svc-midgard-thor', action: 'Pool / inbound data' },
+              { order: 8, nodeId: 'ext-midgard-api', action: 'HTTP pool/inbound' },
+              { order: 9, nodeId: 'view-swap', action: 'Display quotes; user confirms' },
+              { order: 10, nodeId: 'ui-modals', action: 'Password / Ledger / Vultisig confirm' },
+              { order: 11, nodeId: 'helper-memo', action: 'getSwapMemo with affiliate dx+bps' },
+              { order: 12, nodeId: 'hook-swap-exec', action: 'submitSwap' },
+              { order: 13, nodeId: 'svc-chain-orchestrator', action: 'swap$: validate then sendPoolTx$' },
+              { order: 14, nodeId: 'svc-chain-services', action: 'Sign+broadcast (mode-specific)' },
+              { order: 15, nodeId: 'ext-chain-rpcs', action: 'Broadcast source-chain tx' },
+              { order: 16, nodeId: 'svc-thorchain', action: 'Tx tracking / observed inbound' },
+              { order: 17, nodeId: 'ext-thornode', action: 'Observe swap completion' }
+            ]
+          },
+          {
+            id: 'flow-maya-swap',
+            name: 'MAYAChain Swap',
+            description: 'Same as THOR swap with MAYA midgard/node and CACAO rules.',
+            category: 'swap',
+            steps: [
+              { order: 1, nodeId: 'view-swap', action: 'Select MAYA-supported pair' },
+              { order: 2, nodeId: 'hook-swap-fees', action: 'Fees + affiliate' },
+              { order: 3, nodeId: 'hook-swap-quote', action: 'Aggregator MAYA quote' },
+              { order: 4, nodeId: 'svc-aggregator', action: 'MAYA quote' },
+              { order: 5, nodeId: 'svc-midgard-maya', action: 'Pool/inbound validation' },
+              { order: 6, nodeId: 'ui-modals', action: 'Confirm signing' },
+              { order: 7, nodeId: 'helper-memo', action: 'MAYA swap memo + affiliate' },
+              { order: 8, nodeId: 'svc-chain-orchestrator', action: 'swap$ protocol=MAYAChain' },
+              { order: 9, nodeId: 'svc-chain-services', action: 'Send to MAYA inbound' },
+              { order: 10, nodeId: 'svc-mayachain', action: 'Observe via MAYANode' }
+            ]
+          },
+          {
+            id: 'flow-chainflip-swap',
+            name: 'Chainflip Swap',
+            description: 'Direct send to Chainflip deposit channel; no THOR memo pool path.',
+            category: 'swap',
+            steps: [
+              { order: 1, nodeId: 'view-swap', action: 'Select Chainflip quote' },
+              { order: 2, nodeId: 'ctx-chainflip', action: 'Asset support checks' },
+              { order: 3, nodeId: 'hook-swap-quote', action: 'Quote includes Chainflip' },
+              { order: 4, nodeId: 'svc-chainflip', action: 'Open deposit channel' },
+              { order: 5, nodeId: 'ext-chainflip-sdk', action: 'Channel address + quote' },
+              { order: 6, nodeId: 'ui-modals', action: 'Confirm' },
+              { order: 7, nodeId: 'hook-swap-exec', action: 'swapCF$ send to channel' },
+              { order: 8, nodeId: 'svc-chain-orchestrator', action: 'sendTx$ to deposit address' },
+              { order: 9, nodeId: 'svc-chain-services', action: 'Sign and broadcast' },
+              { order: 10, nodeId: 'svc-chainflip', action: 'Track until complete' }
+            ]
+          },
+          {
+            id: 'flow-oneclick-swap',
+            name: 'OneClick Swap',
+            description: 'Dynamic-asset protocol route and tracking.',
+            category: 'swap',
+            steps: [
+              { order: 1, nodeId: 'view-swap', action: 'Select OneClick assets' },
+              { order: 2, nodeId: 'ctx-oneclick', action: 'isOneClickSupportedAsset' },
+              { order: 3, nodeId: 'hook-swap-quote', action: 'Aggregator includes OneClick' },
+              { order: 4, nodeId: 'svc-oneclick', action: 'Quote / route params' },
+              { order: 5, nodeId: 'ui-modals', action: 'Confirm' },
+              { order: 6, nodeId: 'hook-swap-exec', action: 'Submit OneClick path' },
+              { order: 7, nodeId: 'svc-chain-services', action: 'Broadcast source tx' },
+              { order: 8, nodeId: 'svc-oneclick', action: 'transactionTracking' }
+            ]
+          },
+          {
+            id: 'flow-lp-deposit',
+            name: 'Symmetrical Liquidity Deposit',
+            description: 'Add liquidity to THOR or MAYA pool.',
+            category: 'liquidity',
+            steps: [
+              { order: 1, nodeId: 'view-deposit', action: 'Set asset amounts for pool' },
+              { order: 2, nodeId: 'svc-midgard-thor', action: 'Pool address + status (or MAYA)' },
+              { order: 3, nodeId: 'svc-chain-orchestrator', action: 'Deposit fees + memos' },
+              { order: 4, nodeId: 'ui-modals', action: 'Confirm dual-sided txs' },
+              { order: 5, nodeId: 'svc-chain-orchestrator', action: 'deposit$ → sendPoolTx$' },
+              { order: 6, nodeId: 'svc-chain-services', action: 'Sign/broadcast asset + RUNE/CACAO' },
+              { order: 7, nodeId: 'ext-thornode', action: 'Match deposit; mint LP units' },
+              { order: 8, nodeId: 'view-wallet', action: 'Pool shares refresh' }
+            ]
+          },
+          {
+            id: 'flow-lp-withdraw',
+            name: 'Liquidity Withdraw',
+            description: 'Withdraw symmetrical LP via withdraw memo.',
+            category: 'liquidity',
+            steps: [
+              { order: 1, nodeId: 'view-deposit', action: 'Withdraw percent of shares' },
+              { order: 2, nodeId: 'svc-chain-orchestrator', action: 'withdraw$ memo + fees' },
+              { order: 3, nodeId: 'ui-modals', action: 'Confirm' },
+              { order: 4, nodeId: 'svc-chain-services', action: 'Broadcast withdraw tx' },
+              { order: 5, nodeId: 'ext-thornode', action: 'Process withdraw; outbound' },
+              { order: 6, nodeId: 'svc-midgard-thor', action: 'Shares/history refresh' }
+            ]
+          },
+          {
+            id: 'flow-send-tx',
+            name: 'Send Transaction',
+            description: 'Plain transfer with optional memo; mode-specific signing.',
+            category: 'transfer',
+            steps: [
+              { order: 1, nodeId: 'view-wallet', action: 'SendView: recipient, amount, memo' },
+              { order: 2, nodeId: 'svc-chain-orchestrator', action: 'transfer$ fee estimation' },
+              { order: 3, nodeId: 'ui-modals', action: 'Confirm for WalletType' },
+              { order: 4, nodeId: 'svc-app-wallet', action: 'Signing context for mode' },
+              { order: 5, nodeId: 'svc-chain-services', action: 'prepareTx + sign + broadcast' },
+              { order: 6, nodeId: 'window-api', action: 'Ledger/MPC IPC if needed' },
+              { order: 7, nodeId: 'ext-chain-rpcs', action: 'Broadcast' },
+              { order: 8, nodeId: 'svc-clients', action: 'txStatus$ polling' }
+            ]
+          },
+          {
+            id: 'flow-erc20-approve',
+            name: 'EVM ERC20 Approve',
+            description: 'Approve router before EVM swap/deposit when allowance is low.',
+            category: 'transfer',
+            steps: [
+              { order: 1, nodeId: 'view-swap', action: 'Detect need approve' },
+              { order: 2, nodeId: 'svc-evm-factory', action: 'Build approve tx' },
+              { order: 3, nodeId: 'ui-modals', action: 'Confirm approve' },
+              { order: 4, nodeId: 'svc-chain-services', action: 'Sign approve' },
+              { order: 5, nodeId: 'api-ledger', action: 'Ledger ERC20 approve if HW' },
+              { order: 6, nodeId: 'ext-chain-rpcs', action: 'Broadcast; wait receipt' },
+              { order: 7, nodeId: 'view-swap', action: 'Continue main swap/deposit' }
+            ]
+          },
+          {
+            id: 'flow-bond-node',
+            name: 'Node Bond / Interact',
+            description: 'THOR/MAYA node bond, unbond, leave via interact memos.',
+            category: 'ops',
+            steps: [
+              { order: 1, nodeId: 'view-bonds', action: 'Select node / bond amount' },
+              { order: 2, nodeId: 'svc-storage', action: 'userNodes prefs' },
+              { order: 3, nodeId: 'svc-thorchain', action: 'Build bond/interact memo' },
+              { order: 4, nodeId: 'ui-modals', action: 'Confirm' },
+              { order: 5, nodeId: 'svc-chain-services', action: 'Deposit/send on THOR/MAYA' },
+              { order: 6, nodeId: 'ext-thornode', action: 'Update node bond state' }
+            ]
+          },
+          {
+            id: 'flow-tx-status',
+            name: 'Transaction Status Tracking',
+            description: 'Post-submit observation across source chain and protocol outbounds.',
+            category: 'ops',
+            steps: [
+              { order: 1, nodeId: 'svc-clients', action: 'txStatus$ on source hash' },
+              { order: 2, nodeId: 'ext-chain-rpcs', action: 'Confirm inclusion' },
+              { order: 3, nodeId: 'svc-thorchain', action: 'Protocol tracking (or CF/OneClick)' },
+              { order: 4, nodeId: 'svc-chainflip', action: 'Optional protocol tracker' },
+              { order: 5, nodeId: 'ext-midgard-api', action: 'Action history update' },
+              { order: 6, nodeId: 'view-history', action: 'Completed action visible' }
+            ]
+          },
+          {
+            id: 'flow-pools-browse',
+            name: 'Browse Pools',
+            description: 'Load and display THOR/MAYA pool overview and detail.',
+            category: 'ui',
+            steps: [
+              { order: 1, nodeId: 'view-pools', action: 'PoolsOverview mount' },
+              { order: 2, nodeId: 'svc-midgard-thor', action: 'pools$ fetch' },
+              { order: 3, nodeId: 'svc-midgard-maya', action: 'MAYA pools if selected' },
+              { order: 4, nodeId: 'ext-midgard-api', action: 'HTTP' },
+              { order: 5, nodeId: 'redux-store', action: 'Optional gecko prices' },
+              { order: 6, nodeId: 'view-pools', action: 'Detail: depth, APY, volume' }
+            ]
+          }
+        ],
+
+        invariants: [
+          'appWalletService is the sole wallet orchestrator — UI must not query keystore/vault/ledger services for mode questions',
+          'Affiliate fees live in memoHelper (dx + bps), not the SDK swap path — silent revenue loss if bypassed',
+          'BigInt over IPC must be String(amount)',
+          'Vultisig SDK is main-process only — renderer uses window.apiMpc',
+          'Use enhancedClient$ for Ledger/Vultisig — keystore client$ is O.none without phrase',
+          'fp-ts Option is always truthy — use O.isNone / O.isSome',
+          'tokenDecimalMap before Midgard decimals',
+          'Do not reintroduce retired Nine Realms hosts — use Liquify',
+          'Address resolution priority: Ledger → Vultisig → Keystore',
+          'sendMax: true only for UTXO chains',
+          'Keep this map updated: after structural changes, edit asgardex-architecture.json then mirror DATA here — see docs/architecture/MAINTENANCE.md'
+        ]
+      }
+
+      /* ── Layer visual config ── */
+      const LAYERS = [
+        { id: 'runtime', label: 'Runtime Processes', color: '#38bdf8', y: 0 },
+        { id: 'main-api', label: 'Main Process APIs', color: '#818cf8', y: 1 },
+        { id: 'ipc', label: 'IPC Surface', color: '#c084fc', y: 2 },
+        { id: 'ui-shell', label: 'UI Shell', color: '#f472b6', y: 3 },
+        { id: 'context', label: 'React Contexts', color: '#fb7185', y: 4 },
+        { id: 'wallet', label: 'Wallet Services', color: '#fb923c', y: 5 },
+        { id: 'chain-infra', label: 'Chain Infrastructure', color: '#fbbf24', y: 6 },
+        { id: 'protocol', label: 'Protocol Services', color: '#a3e635', y: 7 },
+        { id: 'hooks', label: 'Hooks & Helpers', color: '#34d399', y: 8 },
+        { id: 'ui-feature', label: 'Feature Views', color: '#2dd4bf', y: 9 },
+        { id: 'external', label: 'External Systems', color: '#67e8f9', y: 10 }
+      ]
+
+      const LAYER_MAP = Object.fromEntries(LAYERS.map((l) => [l.id, l]))
+      const NODE_W = 128
+      const NODE_H = 40
+      const LAYER_GAP = 88
+      const NODE_GAP_X = 18
+      const PAD_X = 80
+      const PAD_Y = 48
+
+      /* ── Layout ── */
+      function layoutNodes() {
+        const byLayer = {}
+        DATA.nodes.forEach((n) => {
+          if (!byLayer[n.layer]) byLayer[n.layer] = []
+          byLayer[n.layer].push(n)
+        })
+
+        let maxWidth = 0
+        LAYERS.forEach((layer) => {
+          const nodes = byLayer[layer.id] || []
+          const rowW = nodes.length * NODE_W + Math.max(0, nodes.length - 1) * NODE_GAP_X
+          maxWidth = Math.max(maxWidth, rowW)
+        })
+
+        const positions = {}
+        LAYERS.forEach((layer) => {
+          const nodes = byLayer[layer.id] || []
+          const rowW = nodes.length * NODE_W + Math.max(0, nodes.length - 1) * NODE_GAP_X
+          const startX = PAD_X + (maxWidth - rowW) / 2
+          const y = PAD_Y + layer.y * LAYER_GAP
+          nodes.forEach((n, i) => {
+            positions[n.id] = {
+              x: startX + i * (NODE_W + NODE_GAP_X),
+              y,
+              cx: startX + i * (NODE_W + NODE_GAP_X) + NODE_W / 2,
+              cy: y + NODE_H / 2
+            }
+          })
+        })
+
+        const totalH = PAD_Y + LAYERS.length * LAYER_GAP + 40
+        const totalW = maxWidth + PAD_X * 2
+        return { positions, totalW, totalH }
+      }
+
+      /* ── State ── */
+      const state = {
+        selectedFlow: null,
+        selectedNode: null,
+        search: '',
+        showLayers: true,
+        highlightNodes: new Set(),
+        highlightEdges: new Set(),
+        transform: { x: 40, y: 20, k: 0.72 }
+      }
+
+      const nodeById = Object.fromEntries(DATA.nodes.map((n) => [n.id, n]))
+      const { positions, totalW, totalH } = layoutNodes()
+
+      /* ── SVG render ── */
+      const svg = document.getElementById('graph')
+      const tooltip = document.getElementById('tooltip')
+
+      function edgePath(e) {
+        const a = positions[e.source]
+        const b = positions[e.target]
+        if (!a || !b) return ''
+        const x1 = a.cx,
+          y1 = a.y + NODE_H
+        const x2 = b.cx,
+          y2 = b.y
+        // If target is above source (upward edge), exit top / enter bottom
+        const upward = b.y < a.y
+        const sy = upward ? a.y : a.y + NODE_H
+        const ty = upward ? b.y + NODE_H : b.y
+        const midY = (sy + ty) / 2
+        return `M ${a.cx} ${sy} C ${a.cx} ${midY}, ${b.cx} ${midY}, ${b.cx} ${ty}`
+      }
+
+      function applyTransform() {
+        const g = svg.querySelector('#viewport')
+        if (g) {
+          const { x, y, k } = state.transform
+          g.setAttribute('transform', `translate(${x},${y}) scale(${k})`)
+        }
+      }
+
+      function renderGraph() {
+        const q = state.search.trim().toLowerCase()
+        const hasHL = state.highlightNodes.size > 0
+
+        let edgesHtml = ''
+        DATA.edges.forEach((e) => {
+          const hl = state.highlightEdges.has(e.id)
+          const dim = hasHL && !hl
+          const d = edgePath(e)
+          if (!d) return
+          edgesHtml += `<path class="edge-line${hl ? ' highlighted' : ''}${dim ? ' dimmed' : ''}" data-id="${e.id}" d="${d}" />`
+        })
+
+        let bandsHtml = ''
+        if (state.showLayers) {
+          LAYERS.forEach((layer) => {
+            const y = PAD_Y + layer.y * LAYER_GAP - 18
+            bandsHtml += `
+        <g class="layer-band">
+          <rect x="12" y="${y}" width="${totalW - 24}" height="${NODE_H + 36}"
+            rx="8" fill="${layer.color}" opacity="0.04" stroke="${layer.color}" stroke-opacity="0.12" />
+          <text x="24" y="${y + 14}" fill="${layer.color}">${layer.label}</text>
+        </g>`
+          })
+        }
+
+        let nodesHtml = ''
+        DATA.nodes.forEach((n) => {
+          const p = positions[n.id]
+          if (!p) return
+          const layer = LAYER_MAP[n.layer]
+          const color = layer ? layer.color : '#23dcc8'
+          const hl = state.highlightNodes.has(n.id)
+          const sel = state.selectedNode === n.id
+          const match =
+            !q ||
+            n.label.toLowerCase().includes(q) ||
+            n.id.includes(q) ||
+            (n.path && n.path.toLowerCase().includes(q)) ||
+            (n.tags || []).some((t) => t.includes(q))
+          const dim = (hasHL && !hl && !sel) || (q && !match)
+          nodesHtml += `
+      <g class="node-group${hl ? ' highlighted' : ''}${sel ? ' selected' : ''}${dim ? ' dimmed' : ''}"
+         data-id="${n.id}" transform="translate(${p.x},${p.y})">
+        <rect width="${NODE_W}" height="${NODE_H}" rx="8"
+          fill="#151c26" stroke="${color}" stroke-width="1.5" />
+        <rect width="4" height="${NODE_H}" rx="2" fill="${color}" />
+        <text x="${NODE_W / 2 + 2}" y="${NODE_H / 2 + 4}" text-anchor="middle"
+          fill="#e8eef6" font-size="11" font-weight="600">${escapeXml(truncate(n.label, 16))}</text>
+      </g>`
+        })
+
+        svg.innerHTML = `
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5"
+        markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#3a4a5c" />
+      </marker>
+      <marker id="arrow-hl" viewBox="0 0 10 10" refX="8" refY="5"
+        markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#23dcc8" />
+      </marker>
+    </defs>
+    <g id="viewport">
+      ${bandsHtml}
+      <g id="edges">${edgesHtml}</g>
+      <g id="nodes">${nodesHtml}</g>
+    </g>`
+
+        applyTransform()
+
+        svg.querySelectorAll('.node-group').forEach((el) => {
+          el.addEventListener('mouseenter', (ev) => showTooltip(el.dataset.id, ev))
+          el.addEventListener('mousemove', moveTooltip)
+          el.addEventListener('mouseleave', hideTooltip)
+          el.addEventListener('click', (ev) => {
+            ev.stopPropagation()
+            selectNode(el.dataset.id)
+          })
+        })
+      }
+
+      function truncate(s, n) {
+        return s.length > n ? s.slice(0, n - 1) + '…' : s
+      }
+
+      function escapeXml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      }
+
+      /* ── Tooltip ── */
+      function showTooltip(id, ev) {
+        const n = nodeById[id]
+        if (!n) return
+        const layer = LAYER_MAP[n.layer]
+        tooltip.innerHTML = `
+    <div class="tt-layer">${layer ? layer.label : n.layer}</div>
+    <h4>${escapeXml(n.label)}</h4>
+    <p>${escapeXml(n.tooltip)}</p>
+    <div class="tt-path">${escapeXml(n.path || '')}</div>`
+        tooltip.classList.add('visible')
+        moveTooltip(ev)
+      }
+
+      function moveTooltip(ev) {
+        const pad = 14
+        let x = ev.clientX + pad
+        let y = ev.clientY + pad
+        const rect = tooltip.getBoundingClientRect()
+        if (x + rect.width > window.innerWidth - 8) x = ev.clientX - rect.width - pad
+        if (y + rect.height > window.innerHeight - 8) y = ev.clientY - rect.height - pad
+        tooltip.style.left = x + 'px'
+        tooltip.style.top = y + 'px'
+      }
+
+      function hideTooltip() {
+        tooltip.classList.remove('visible')
+      }
+
+      /* ── Selection / highlight ── */
+      function selectNode(id) {
+        state.selectedNode = id
+        state.selectedFlow = null
+        // Highlight node + adjacent edges
+        state.highlightNodes = new Set([id])
+        state.highlightEdges = new Set()
+        DATA.edges.forEach((e) => {
+          if (e.source === id || e.target === id) {
+            state.highlightEdges.add(e.id)
+            state.highlightNodes.add(e.source)
+            state.highlightNodes.add(e.target)
+          }
+        })
+        document.querySelectorAll('.flow-card').forEach((c) => c.classList.remove('selected'))
+        showDetail(id)
+        switchTab('detail')
+        renderGraph()
+      }
+
+      function selectFlow(flowId) {
+        const flow = DATA.flows.find((f) => f.id === flowId)
+        if (!flow) return
+        state.selectedFlow = flowId
+        state.selectedNode = null
+
+        const nodes = new Set(flow.steps.map((s) => s.nodeId))
+        state.highlightNodes = nodes
+        state.highlightEdges = new Set()
+
+        // Highlight edges between consecutive steps (and any direct edge between path nodes)
+        const stepIds = flow.steps.map((s) => s.nodeId)
+        for (let i = 0; i < stepIds.length - 1; i++) {
+          const a = stepIds[i],
+            b = stepIds[i + 1]
+          DATA.edges.forEach((e) => {
+            if ((e.source === a && e.target === b) || (e.source === b && e.target === a)) {
+              state.highlightEdges.add(e.id)
+            }
+          })
+        }
+        // Also highlight any edge fully within the path set for denser path visibility
+        DATA.edges.forEach((e) => {
+          if (nodes.has(e.source) && nodes.has(e.target)) {
+            state.highlightEdges.add(e.id)
+          }
+        })
+
+        document.querySelectorAll('.flow-card').forEach((c) => {
+          c.classList.toggle('selected', c.dataset.id === flowId)
+        })
+        renderGraph()
+      }
+
+      function clearSelection() {
+        state.selectedFlow = null
+        state.selectedNode = null
+        state.highlightNodes = new Set()
+        state.highlightEdges = new Set()
+        document.querySelectorAll('.flow-card').forEach((c) => c.classList.remove('selected'))
+        document.getElementById('panel-detail').innerHTML = `
+    <div class="detail-empty">Click a node on the diagram<br/>or select a flow to explore.</div>`
+        renderGraph()
+      }
+
+      /* ── Panels ── */
+      function renderFlows() {
+        const el = document.getElementById('panel-flows')
+        const cats = {}
+        DATA.flows.forEach((f) => {
+          if (!cats[f.category]) cats[f.category] = []
+          cats[f.category].push(f)
+        })
+
+        let html = ''
+        Object.keys(cats).forEach((cat) => {
+          html += `<div class="section-title">${cat}</div>`
+          cats[cat].forEach((f) => {
+            const steps = f.steps
+              .map(
+                (s) => `
+        <div class="step" data-n="${s.order}">
+          <div class="step-body">
+            <strong>${escapeXml(nodeById[s.nodeId]?.label || s.nodeId)}</strong>
+            <span>${escapeXml(s.action)}</span>
+          </div>
+        </div>`
+              )
+              .join('')
+            html += `
+        <div class="flow-card" data-id="${f.id}">
+          <h3>${escapeXml(f.name)}</h3>
+          <p>${escapeXml(f.description)}</p>
+          <div class="flow-meta">
+            <span class="chip cat-${f.category}">${f.category}</span>
+            <span class="chip">${f.steps.length} steps</span>
+          </div>
+          <div class="steps">${steps}</div>
+        </div>`
+          })
+        })
+        el.innerHTML = html
+        el.querySelectorAll('.flow-card').forEach((card) => {
+          card.addEventListener('click', () => selectFlow(card.dataset.id))
+        })
+      }
+
+      function showDetail(id) {
+        const n = nodeById[id]
+        if (!n) return
+        const layer = LAYER_MAP[n.layer]
+        const incoming = DATA.edges.filter((e) => e.target === id)
+        const outgoing = DATA.edges.filter((e) => e.source === id)
+        const tags = (n.tags || []).map((t) => `<span class="tag">${escapeXml(t)}</span>`).join('')
+
+        const conn = (list, dir) =>
+          list
+            .map((e) => {
+              const other = dir === 'in' ? e.source : e.target
+              return `<li><span class="arrow">${dir === 'in' ? '←' : '→'}</span>
+          <span><strong>${escapeXml(nodeById[other]?.label || other)}</strong>
+          <span style="color:var(--text-muted)"> · ${escapeXml(e.label || '')}</span></span></li>`
+            })
+            .join('') || `<li style="color:var(--text-muted)">None</li>`
+
+        document.getElementById('panel-detail').innerHTML = `
+    <div class="detail-card">
+      <div class="section-title" style="color:${layer?.color || 'var(--accent)'}">${layer?.label || n.layer}</div>
+      <h2>${escapeXml(n.label)}</h2>
+      <div class="path">${escapeXml(n.path || '')}</div>
+      <p class="desc">${escapeXml(n.tooltip)}</p>
+      <div class="tag-row">${tags}</div>
+      <div class="section-title">Incoming</div>
+      <ul class="conn-list">${conn(incoming, 'in')}</ul>
+      <div class="section-title" style="margin-top:1rem">Outgoing</div>
+      <ul class="conn-list">${conn(outgoing, 'out')}</ul>
+    </div>`
+      }
+
+      function renderInvariants() {
+        document.getElementById('panel-invariants').innerHTML = `
+    <div class="section-title">Critical Invariants</div>
+    <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.85rem;line-height:1.45">
+      Rules that agents and contributors must preserve. Violations cause silent bugs
+      (wrong wallet mode, lost affiliate fees, hung clients, IPC crashes).
+    </p>
+    <ol class="invariants">
+      ${DATA.invariants.map((i) => `<li>${escapeXml(i)}</li>`).join('')}
+    </ol>
+    <div class="section-title" style="margin-top:1.25rem">Wallet Modes</div>
+    <div class="flow-card" style="cursor:default">
+      <h3>Keystore</h3>
+      <p>Encrypted mnemonic in wallets.json · in-app xchainjs signing</p>
+    </div>
+    <div class="flow-card" style="cursor:default">
+      <h3>Ledger</h3>
+      <p>Address refs / standalone mode · hardware signing via HID</p>
+    </div>
+    <div class="flow-card" style="cursor:default">
+      <h3>Vultisig</h3>
+      <p>SDK-managed vaults · MPC signing in main process</p>
+    </div>
+  `
+      }
+
+      function switchTab(name) {
+        document.querySelectorAll('.panel-tabs button').forEach((b) => {
+          b.classList.toggle('active', b.dataset.tab === name)
+        })
+        document.getElementById('panel-flows').style.display = name === 'flows' ? 'block' : 'none'
+        document.getElementById('panel-detail').style.display = name === 'detail' ? 'block' : 'none'
+        document.getElementById('panel-invariants').style.display = name === 'invariants' ? 'block' : 'none'
+      }
+
+      /* ── Legend ── */
+      function renderLegend() {
+        document.getElementById('legend').innerHTML = LAYERS.map(
+          (l) => `<span><i style="background:${l.color}"></i>${l.label}</span>`
+        ).join('')
+      }
+
+      /* ── Zoom / pan ── */
+      function fitView() {
+        const wrap = document.querySelector('.canvas-wrap')
+        const w = wrap.clientWidth
+        const h = wrap.clientHeight
+        const k = Math.min(w / totalW, h / totalH) * 0.92
+        state.transform = {
+          k,
+          x: (w - totalW * k) / 2,
+          y: Math.max(12, (h - totalH * k) / 2)
+        }
+        applyTransform()
+      }
+
+      let dragging = false
+      let last = { x: 0, y: 0 }
+
+      svg.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.node-group')) return
+        dragging = true
+        svg.classList.add('dragging')
+        last = { x: e.clientX, y: e.clientY }
+        svg.setPointerCapture(e.pointerId)
+      })
+
+      svg.addEventListener('pointermove', (e) => {
+        if (!dragging) return
+        state.transform.x += e.clientX - last.x
+        state.transform.y += e.clientY - last.y
+        last = { x: e.clientX, y: e.clientY }
+        applyTransform()
+      })
+
+      svg.addEventListener('pointerup', () => {
+        dragging = false
+        svg.classList.remove('dragging')
+      })
+
+      svg.addEventListener(
+        'wheel',
+        (e) => {
+          e.preventDefault()
+          const rect = svg.getBoundingClientRect()
+          const mx = e.clientX - rect.left
+          const my = e.clientY - rect.top
+          const factor = e.deltaY < 0 ? 1.08 : 0.92
+          const { x, y, k } = state.transform
+          const nk = Math.min(2.2, Math.max(0.25, k * factor))
+          state.transform.x = mx - (mx - x) * (nk / k)
+          state.transform.y = my - (my - y) * (nk / k)
+          state.transform.k = nk
+          applyTransform()
+        },
+        { passive: false }
+      )
+
+      /* ── Wire UI ── */
+      document.getElementById('btn-fit').addEventListener('click', fitView)
+      document.getElementById('btn-clear').addEventListener('click', clearSelection)
+      document.getElementById('btn-layers').addEventListener('click', (e) => {
+        state.showLayers = !state.showLayers
+        e.currentTarget.classList.toggle('active', state.showLayers)
+        renderGraph()
+      })
+
+      document.getElementById('search').addEventListener('input', (e) => {
+        state.search = e.target.value
+        renderGraph()
+      })
+
+      document.querySelectorAll('.panel-tabs button').forEach((b) => {
+        b.addEventListener('click', () => switchTab(b.dataset.tab))
+      })
+
+      document.getElementById('stats-badge').textContent =
+        `${DATA.nodes.length} nodes · ${DATA.edges.length} edges · ${DATA.flows.length} flows`
+
+      renderLegend()
+      renderFlows()
+      renderInvariants()
+      document.getElementById('panel-detail').innerHTML = `
+  <div class="detail-empty">Click a node on the diagram<br/>or select a flow to explore.</div>`
+      renderGraph()
+
+      // Fit after layout
+      requestAnimationFrame(() => {
+        fitView()
+        // Auto-demo: highlight THOR swap path briefly on first load so the UX is obvious
+        setTimeout(() => selectFlow('flow-thor-swap'), 400)
+      })
+
+      window.addEventListener('resize', () => {
+        // keep transform; optional re-fit if desired
+      })
+    </script>
+  </body>
+</html>

@@ -9,9 +9,9 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARChain } from '@xchainjs/xchain-near'
 import { RadixChain as RADIXChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
@@ -34,7 +34,6 @@ const CHAIN_STRINGS: Record<Chain, string> = {
   [BSCChain]: 'BNB Chain (BSC)',
   [MAYAChain]: 'MAYAChain',
   [DASHChain]: 'Dash',
-  [KUJIChain]: 'Kujira',
   [RADIXChain]: 'Radix',
   [SOLChain]: 'Solana',
   [BASEChain]: 'Base',
@@ -42,7 +41,8 @@ const CHAIN_STRINGS: Record<Chain, string> = {
   [ZECChain]: 'Zcash',
   [XRPChain]: 'Ripple',
   [TRONChain]: 'Tron',
-  [SUIChain]: 'Sui'
+  [SUIChain]: 'Sui',
+  [NEARChain]: 'NEAR'
 }
 
 export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
@@ -58,7 +58,6 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [BSCChain]: CHAIN_STRINGS[BSCChain],
   [MAYAChain]: CHAIN_STRINGS[MAYAChain],
   [DASHChain]: CHAIN_STRINGS[DASHChain],
-  [KUJIChain]: CHAIN_STRINGS[KUJIChain],
   [RADIXChain]: CHAIN_STRINGS[RADIXChain],
   [SOLChain]: CHAIN_STRINGS[SOLChain],
   [BASEChain]: CHAIN_STRINGS[BASEChain],
@@ -66,7 +65,8 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [ZECChain]: CHAIN_STRINGS[ZECChain],
   [XRPChain]: CHAIN_STRINGS[XRPChain],
   [TRONChain]: CHAIN_STRINGS[TRONChain],
-  [SUIChain]: CHAIN_STRINGS[SUIChain]
+  [SUIChain]: CHAIN_STRINGS[SUIChain],
+  [NEARChain]: CHAIN_STRINGS[NEARChain]
 }
 
 export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
@@ -82,10 +82,10 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
-  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB', 'XRD', 'ZEC', 'ADA'],
-  // For THOR, filter out chains that are maya specific
+  MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'XRD', 'ZEC', 'ADA'],
+  // ZEC is dual-routable (THOR + MAYA). NEAR is wallet/OneClick-only (exclude from THOR).
   THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter(
-    (chain) => !['DASH', 'KUJI', 'MAYA', 'ARB', 'XRD', 'ZEC', 'ADA'].includes(chain)
+    (chain) => !['DASH', 'MAYA', 'ARB', 'XRD', 'ADA', 'NEAR'].includes(chain)
   )
 }
 
@@ -170,10 +170,6 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
     blockReward: 0,
     avgBlockTimeInSecs: 160
   },
-  KUJI: {
-    blockReward: 0,
-    avgBlockTimeInSecs: 4
-  },
   ARB: {
     blockReward: 0,
     avgBlockTimeInSecs: 3
@@ -209,5 +205,9 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   SUI: {
     blockReward: 0,
     avgBlockTimeInSecs: 0.5
+  },
+  NEAR: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 1
   }
 }

@@ -54,9 +54,12 @@ export const createVultisigEvmTx = (
       return Rx.of(RD.failure({ errorId: ErrorId.SEND_TX, msg: 'No active Vultisig vault' }))
     }
 
-    // Native gas tokens get no id; ERC20 tokens get their contract address (with 0x prefix for SDK/viem)
+    // Native gas tokens get no id; ERC20 tokens get their contract address (with 0x prefix for SDK/viem).
+    // getContractAddressFromAsset returns the address in THORChain asset notation (UPPERCASE); SDK 2.x
+    // runs a viem balanceOf preflight in prepareSendTx that rejects a non-EIP-55 address ("must match
+    // its checksum counterpart"). Normalize via getAddress so viem accepts it. (0.22.5 had no preflight.)
     const id = isEVMTokenAsset(asset as TokenAsset)
-      ? `0x${getContractAddressFromAsset(asset as TokenAsset)}`
+      ? getAddress(`0x${getContractAddressFromAsset(asset as TokenAsset)}`)
       : undefined
 
     const txParams: SendTransactionParams = {
@@ -249,7 +252,7 @@ export const createVultisigEvmApprove = (
   chainName: string
 ): ((params: ApproveParams) => TxHashLD) => {
   return (params: ApproveParams): TxHashLD => {
-    const { contractAddress, spenderAddress } = params
+    const { contractAddress, spenderAddress, amount } = params
 
     const vaultId = appWalletService.getActiveVaultId()
     if (!vaultId) {
@@ -266,6 +269,8 @@ export const createVultisigEvmApprove = (
             () => Rx.of(RD.initial),
             (client): TxHashLD => {
               const nativeAsset = client.getAssetInfo()
+              // Omit amount → unlimited; explicit 0 → revoke; finite → limited approve
+              const approveAmount = amount !== undefined ? amount.amount().toFixed() : MAX_APPROVAL.toFixed()
 
               // Native coin (no id) — the IPC handler ABI-encodes the approve calldata
               // and puts it in memo, which the EVM resolver uses as tx data.
@@ -276,7 +281,7 @@ export const createVultisigEvmApprove = (
                 amount: '0', // IPC handler overrides to 1 for validation, then back to 0
                 decimals: nativeAsset.decimal,
                 ticker: nativeAsset.asset.ticker,
-                approve: { spender: spenderAddress, amount: MAX_APPROVAL.toFixed() }
+                approve: { spender: spenderAddress, amount: approveAmount }
               }
 
               logger.info(`${chainName} ERC20 approve via native calldata`, {

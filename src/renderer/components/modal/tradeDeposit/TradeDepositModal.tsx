@@ -793,7 +793,6 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
             hasLedger={false}
             useLedgerHandler={FP.constVoid}
             protocol={currentProtocol}
-            synthDisabled
           />
 
           {/* Wallet Type Selection */}

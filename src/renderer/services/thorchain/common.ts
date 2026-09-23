@@ -6,13 +6,25 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ApiUrls } from '../../../shared/api/types'
-import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
+import {
+  DEFAULT_THORNODE_API_URLS,
+  DEFAULT_THORNODE_RPC_URLS,
+  getThornodeApiBaseUrls,
+  getThornodeRpcClientUrls,
+  isLiquifyAuthenticatedUrl,
+  maskThornodeApiUrl,
+  maskThornodeRpcUrl,
+  requestThornodeApiBases
+} from '../../../shared/thorchain/const'
+import { getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
+import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS } from '../../../shared/wallet/types'
 import { triggerStream } from '../../helpers/stateHelper'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { getStorageState, thornodeApi$, modifyStorage, thornodeRpc$ } from '../storage/common'
 import { keystoreService } from '../wallet/keystore'
+import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 
@@ -20,22 +32,59 @@ import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
 
 /**
- * Stream of ClientUrl (from storage)
+ * Stream of ClientUrl (from storage) for UI / config display.
+ * API/RPC values are masked so Liquify portal keys (`/api=<KEY>`) never appear in Expert Mode.
+ * Authenticated URLs are applied only at request/client construction via resolve helpers.
  */
 const clientUrl$: ClientUrl$ = FP.pipe(
   Rx.combineLatest([thornodeApi$, thornodeRpc$, reloadClientUrl$]),
+  // Scrub any portal `/api=<KEY>` URLs previously saved into storage
+  RxOp.tap(([thornodeApi, thornodeRpc]) => {
+    const apiNeedsScrub =
+      isLiquifyAuthenticatedUrl(thornodeApi.mainnet) ||
+      isLiquifyAuthenticatedUrl(thornodeApi.stagenet) ||
+      isLiquifyAuthenticatedUrl(thornodeApi.testnet)
+    const rpcNeedsScrub =
+      isLiquifyAuthenticatedUrl(thornodeRpc.mainnet) ||
+      isLiquifyAuthenticatedUrl(thornodeRpc.stagenet) ||
+      isLiquifyAuthenticatedUrl(thornodeRpc.testnet)
+    if (apiNeedsScrub || rpcNeedsScrub) {
+      modifyStorage(
+        O.some({
+          ...(apiNeedsScrub
+            ? {
+                thornodeApi: {
+                  mainnet: maskThornodeApiUrl(thornodeApi.mainnet),
+                  stagenet: maskThornodeApiUrl(thornodeApi.stagenet),
+                  testnet: maskThornodeApiUrl(thornodeApi.testnet)
+                }
+              }
+            : {}),
+          ...(rpcNeedsScrub
+            ? {
+                thornodeRpc: {
+                  mainnet: maskThornodeRpcUrl(thornodeRpc.mainnet),
+                  stagenet: maskThornodeRpcUrl(thornodeRpc.stagenet),
+                  testnet: maskThornodeRpcUrl(thornodeRpc.testnet)
+                }
+              }
+            : {})
+        })
+      )
+    }
+  }),
   RxOp.map(([thornodeApi, thornodeRpc, _]) => ({
     [ClientNetwork.Testnet]: {
-      node: thornodeApi.testnet,
-      rpc: thornodeRpc.testnet
+      node: maskThornodeApiUrl(thornodeApi.testnet),
+      rpc: maskThornodeRpcUrl(thornodeRpc.testnet)
     },
     [ClientNetwork.Stagenet]: {
-      node: thornodeApi.stagenet,
-      rpc: thornodeRpc.stagenet
+      node: maskThornodeApiUrl(thornodeApi.stagenet),
+      rpc: maskThornodeRpcUrl(thornodeRpc.stagenet)
     },
     [ClientNetwork.Mainnet]: {
-      node: thornodeApi.mainnet,
-      rpc: thornodeRpc.mainnet
+      node: maskThornodeApiUrl(thornodeApi.mainnet),
+      rpc: maskThornodeRpcUrl(thornodeRpc.mainnet)
     }
   })),
   RxOp.distinctUntilChanged()
@@ -47,7 +96,8 @@ const setThornodeRpcUrl = (url: string, network: Network) => {
     O.map(({ thornodeRpc }) => thornodeRpc),
     O.getOrElse(() => DEFAULT_THORNODE_RPC_URLS)
   )
-  const updated: ApiUrls = { ...current, [network]: url }
+  // Never persist Liquify `/api=<KEY>` URLs
+  const updated: ApiUrls = { ...current, [network]: maskThornodeRpcUrl(url) }
   modifyStorage(O.some({ thornodeRpc: updated }))
 }
 
@@ -57,9 +107,12 @@ const setThornodeApiUrl = (url: string, network: Network) => {
     O.map(({ thornodeApi }) => thornodeApi),
     O.getOrElse(() => DEFAULT_THORNODE_API_URLS)
   )
-  const updated: ApiUrls = { ...current, [network]: url }
+  // Never persist Liquify `/api=<KEY>` URLs
+  const updated: ApiUrls = { ...current, [network]: maskThornodeApiUrl(url) }
   modifyStorage(O.some({ thornodeApi: updated }))
 }
+
+const hdSettings$ = keystoreChainHDSettings$(THORChain)
 
 /**
  * Stream to create an observable `ThorchainClient` depending on existing phrase in keystore
@@ -68,42 +121,50 @@ const setThornodeApiUrl = (url: string, network: Network) => {
  * By the other hand: Whenever a phrase has been removed, `ClientState` is set to `initial`
  * A `ThorchainClient` will never be created as long as no phrase is available
  */
+// Multi-base getChainId so Asgardex REST can save client init when Liquify is down
+const resolveChainId$ = (configuredNode: string, network: Network) =>
+  Rx.from(requestThornodeApiBases(getThornodeApiBaseUrls(configuredNode, network), (base) => getChainId(base)))
+
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$]),
-  RxOp.switchMap(
-    ([keystore, network, clientUrl]): ClientState$ =>
-      FP.pipe(
-        // request chain id from node whenever network or keystore state have been changed
-        Rx.from(getChainId(clientUrl[network].node)),
-        RxOp.switchMap(() =>
-          Rx.of(
-            FP.pipe(
-              getPhrase(keystore),
-              O.map<string, ClientState>((phrase) => {
-                const getDefaultClientUrls = (): Record<Network, string[]> => {
-                  return {
-                    [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
-                    [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
-                    [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
-                  }
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$, hdSettings$]),
+  RxOp.switchMap(([keystore, network, clientUrl, hdSettings]): ClientState$ =>
+    FP.pipe(
+      resolveChainId$(clientUrl[network].node, network),
+      RxOp.switchMap(() =>
+        Rx.of(
+          FP.pipe(
+            getPhrase(keystore),
+            O.map<string, ClientState>((phrase) => {
+              // Primary RPC (+ Liquify key if set) then Asgardex mainnet fallback — not shown in Expert UI
+              const getDefaultClientUrls = (): Record<Network, string[]> => {
+                return {
+                  [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
+                  [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
+                  [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
                 }
-                try {
-                  const client = new Client({
-                    clientUrls: getDefaultClientUrls(),
-                    network,
-                    phrase
-                  })
-                  return RD.success(client)
-                } catch (error) {
-                  return RD.failure<Error>(isError(error) ? error : new Error('Failed to create THOR client'))
-                }
-              }),
-              // Set back to `initial` if no phrase is available (locked wallet)
-              O.getOrElse<ClientState>(() => RD.initial)
-            )
+              }
+              try {
+                const { rootDerivationPaths } = getKeystoreDerivation(THORChain, hdSettings)
+                const client = new Client({
+                  clientUrls: getDefaultClientUrls(),
+                  rootDerivationPaths,
+                  network,
+                  phrase
+                })
+                return RD.success(client)
+              } catch (error) {
+                return RD.failure<Error>(isError(error) ? error : new Error('Failed to create THOR client'))
+              }
+            }),
+            // Set back to `initial` if no phrase is available (locked wallet)
+            O.getOrElse<ClientState>(() => RD.initial)
           )
         )
+      ),
+      RxOp.catchError((error) =>
+        Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Failed to get THOR chain id')))
       )
+    )
   ),
   RxOp.startWith(RD.initial),
   RxOp.shareReplay(1)
@@ -115,37 +176,35 @@ const clientState$: ClientState$ = FP.pipe(
  */
 const readOnlyClientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([clientNetwork$, clientUrl$]),
-  RxOp.switchMap(
-    ([network, clientUrl]): ClientState$ =>
-      FP.pipe(
-        // request chain id from node whenever network changes
-        Rx.from(getChainId(clientUrl[network].node)),
-        RxOp.switchMap(() =>
-          Rx.of(
-            (() => {
-              const getDefaultClientUrls = (): Record<Network, string[]> => {
-                return {
-                  [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
-                  [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
-                  [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
-                }
+  RxOp.switchMap(([network, clientUrl]): ClientState$ =>
+    FP.pipe(
+      resolveChainId$(clientUrl[network].node, network),
+      RxOp.switchMap(() =>
+        Rx.of(
+          (() => {
+            const getDefaultClientUrls = (): Record<Network, string[]> => {
+              return {
+                [Network.Testnet]: getThornodeRpcClientUrls(clientUrl[Network.Testnet].rpc, Network.Testnet),
+                [Network.Stagenet]: getThornodeRpcClientUrls(clientUrl[Network.Stagenet].rpc, Network.Stagenet),
+                [Network.Mainnet]: getThornodeRpcClientUrls(clientUrl[Network.Mainnet].rpc, Network.Mainnet)
               }
-              try {
-                // Create client without phrase for read-only operations
-                const readOnlyClient = new Client({
-                  clientUrls: getDefaultClientUrls(),
-                  network
-                  // No phrase - this limits functionality to read-only operations
-                })
-                return RD.success(readOnlyClient)
-              } catch (error) {
-                return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only THOR client'))
-              }
-            })()
-          )
-        ),
-        RxOp.catchError((error) => Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))))
-      )
+            }
+            try {
+              // Create client without phrase for read-only operations
+              const readOnlyClient = new Client({
+                clientUrls: getDefaultClientUrls(),
+                network
+                // No phrase - this limits functionality to read-only operations
+              })
+              return RD.success(readOnlyClient)
+            } catch (error) {
+              return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only THOR client'))
+            }
+          })()
+        )
+      ),
+      RxOp.catchError((error) => Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))))
+    )
   ),
   RxOp.startWith(RD.initial),
   RxOp.shareReplay(1)
@@ -155,15 +214,22 @@ const readOnlyClient$ = readOnlyClientState$.pipe(RxOp.map(RD.toOption), RxOp.sh
 
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
-/**
- * `Address`
- */
-const address$: C.WalletAddress$ = C.address$(client$, THORChain)
+const addressHDSettings$ = hdSettings$.pipe(
+  RxOp.map((s) => {
+    const { walletIndex } = getKeystoreDerivation(THORChain, s ?? DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS)
+    return { hdMode: s.hdMode, account: s.account, index: walletIndex }
+  })
+)
 
 /**
  * `Address`
  */
-const addressUI$: C.WalletAddress$ = C.addressUI$(client$, THORChain)
+const address$: C.WalletAddress$ = C.address$(client$, THORChain, addressHDSettings$)
+
+/**
+ * `Address`
+ */
+const addressUI$: C.WalletAddress$ = C.addressUI$(client$, THORChain, addressHDSettings$)
 
 /**
  * Explorer url depending on selected network

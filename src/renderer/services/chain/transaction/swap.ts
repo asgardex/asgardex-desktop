@@ -13,7 +13,15 @@ import { service as mayaMidgardService } from '../../midgard/mayaMidgard/service
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import { getTxStatus$ } from '../../thorchain'
 import { ChainTxFeeOption } from '../const'
-import { SendTxParams, StreamingTxState, StreamingTxState$, SwapCFTxState$, SwapTxParams, SwapTxState$ } from '../types'
+import {
+  OneClickRegisterDeposit,
+  SendTxParams,
+  StreamingTxState,
+  StreamingTxState$,
+  SwapCFTxState$,
+  SwapTxParams,
+  SwapTxState$
+} from '../types'
 import { sendPoolTx$, sendTx$ } from './common'
 
 const { pools: midgardPoolsService, validateNode$ } = midgardService
@@ -129,19 +137,13 @@ export const swapCF$ = ({
 }
 
 /**
- * Registers a 1Click deposit with NEAR's chain abstraction backend. The on-chain
- * transfer alone isn't enough — 1Click needs the tx hash + deposit address mapped
- * to the quote so they can bridge to the destination chain. Failure here doesn't
- * roll back the transfer (it's already on-chain); we log and surface a warning so
- * the user knows the deposit may need to be re-registered manually.
+ * Fallback registration when callers do not pass Aggregator.submitOneClickDeposit.
+ * Prefer the Aggregator method (3.2+) from useSwapExecution.
  */
 const ONECLICK_SUBMIT_DEPOSIT_URL = 'https://1click.chaindefuser.com/v0/deposit/submit'
-// Abort a hung submitDeposit — this call runs inside the swap flow after the
-// on-chain send, so a fetch that never settles would leave the swap progress
-// pending forever. A timeout rejects into the catchError below instead.
 const ONECLICK_SUBMIT_DEPOSIT_TIMEOUT_MS = 15_000
 
-const submitOneClickDeposit = async (txHash: string, depositAddress: string): Promise<void> => {
+const submitOneClickDepositHttp = async (txHash: string, depositAddress: string): Promise<void> => {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (ASGARDEX_ONECLICK_API_KEY) headers['Authorization'] = `Bearer ${ASGARDEX_ONECLICK_API_KEY}`
   const resp = await fetch(ONECLICK_SUBMIT_DEPOSIT_URL, {
@@ -156,25 +158,17 @@ const submitOneClickDeposit = async (txHash: string, depositAddress: string): Pr
 /**
  * OneClick (NEAR Intents) swaps: 2 steps
  *
- * 1. Send a plain transfer to the deposit address from the quote (no memo).
- * 2. POST submitDeposit so 1Click's backend knows to bridge it to the destination.
+ * 1. Send a plain transfer to the deposit address from the wet quote (no memo).
+ * 2. Register the deposit via Aggregator.submitOneClickDeposit (or HTTP fallback).
  *
  * If step 2 fails after step 1 succeeded, the tx hash is preserved because the
- * funds are already on the wire. 1Click's backend can usually still pick up the
- * deposit by polling on-chain, but the user should be told it may need a manual
- * heads-up via 1Click support.
+ * funds are already on the wire — retry registration with the same hash/address;
+ * do not transfer again.
  */
-export const swapOneClick$ = ({
-  asset,
-  amount,
-  walletType,
-  sender,
-  recipient,
-  walletAccount,
-  walletIndex,
-  hdMode,
-  sendMax
-}: SendTxParams): SwapCFTxState$ => {
+export const swapOneClick$ = (
+  { asset, amount, walletType, sender, recipient, walletAccount, walletIndex, hdMode, sendMax }: SendTxParams,
+  registerDeposit: OneClickRegisterDeposit = submitOneClickDepositHttp
+): SwapCFTxState$ => {
   return Rx.of(RD.pending).pipe(
     RxOp.switchMap(() =>
       sendTx$({
@@ -195,7 +189,7 @@ export const swapOneClick$ = ({
     RxOp.switchMap((txHashRD) => {
       if (!RD.isSuccess(txHashRD)) return Rx.of({ swapTx: txHashRD })
       const txHash = txHashRD.value
-      return Rx.from(submitOneClickDeposit(txHash, recipient)).pipe(
+      return Rx.from(registerDeposit(txHash, recipient)).pipe(
         RxOp.map(() => ({ swapTx: txHashRD })),
         RxOp.catchError((err) => {
           logger.warn('1Click submitDeposit failed; tx is on-chain but may need manual registration', {

@@ -8,7 +8,10 @@ import * as poolsRoutes from '../routes/pools'
 import * as portfolioRoutes from '../routes/portfolio'
 import * as walletRoutes from '../routes/wallet'
 import { AppSettings } from './app/AppSettings'
+import { BondsLayout } from './bonds/BondsLayout'
 import { BondsView } from './bonds/BondsView'
+import { BondNodeDetailView } from './bonds/provider/BondNodeDetailView'
+import { BondRewardsView } from './bonds/provider/BondRewardsView'
 import { DepositView } from './deposit/DepositView'
 import { HistoryView } from './history/HistoryView'
 import { NoContentView } from './NoContentView'
@@ -28,6 +31,7 @@ import { LedgerChainSelectView } from './wallet/LedgerChainSelectView'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
 import { ProtocolPoolView } from './wallet/ProtocolPoolView'
+import { RouterApprovalsView } from './wallet/RouterApprovalsView'
 import { SendView } from './wallet/send'
 import { TcyView } from './wallet/TcyView'
 import { TradeAssetsView } from './wallet/TradeAssetsView'
@@ -57,15 +61,17 @@ export const ViewRoutes = (): JSX.Element => {
           </WalletAuth>
         }
       />
-      {/* bonds routes */}
       <Route
         path={bondsRoutes.base.template}
         element={
           <WalletAuth>
-            <BondsView />
+            <BondsLayout />
           </WalletAuth>
-        }
-      />
+        }>
+        <Route index element={<BondsView />} />
+        <Route path={bondsRoutes.node.template} element={<BondNodeDetailView />} />
+        <Route path={bondsRoutes.rewards.template} element={<BondRewardsView />} />
+      </Route>
       {/* portfolio routes */}
       <Route
         path={portfolioRoutes.base.template}
@@ -126,6 +132,14 @@ export const ViewRoutes = (): JSX.Element => {
         element={
           <WalletAuth>
             <ProtocolPoolView />
+          </WalletAuth>
+        }
+      />
+      <Route
+        path={walletRoutes.approvals.template}
+        element={
+          <WalletAuth>
+            <RouterApprovalsView />
           </WalletAuth>
         }
       />

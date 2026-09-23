@@ -14,7 +14,6 @@ import { useCosmosContext } from '../contexts/CosmosContext'
 import { useDashContext } from '../contexts/DashContext'
 import { useDogeContext } from '../contexts/DogeContext'
 import { useEthereumContext } from '../contexts/EthereumContext'
-import { useKujiContext } from '../contexts/KujiContext'
 import { useLitecoinContext } from '../contexts/LitecoinContext'
 import { useMayachainContext } from '../contexts/MayachainContext'
 import { useThorchainContext } from '../contexts/ThorchainContext'
@@ -36,7 +35,6 @@ export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates 
   const { clientState$: avaxClientState$ } = useAvaxContext()
   const { clientState$: baseClientState$ } = useBaseContext()
   const { clientState$: xrdClientState$ } = useXrdContext()
-  const { clientState$: kujiClientState$ } = useKujiContext()
   const { clientState$: adaClientState$ } = useAdaContext()
   const { clientState$: dashClientState$ } = useDashContext()
   const { clientState$: arbClientState$ } = useArbContext()
@@ -58,7 +56,6 @@ export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates 
           avax: avaxClientState$,
           arb: arbClientState$,
           dash: dashClientState$,
-          kuji: kujiClientState$,
           xrd: xrdClientState$,
           base: baseClientState$,
           ada: adaClientState$

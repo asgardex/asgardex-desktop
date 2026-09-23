@@ -1,20 +1,16 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX, AVAX_GAS_ASSET_DECIMAL, AVAXChain } from '@xchainjs/xchain-avax'
 import { AssetBETH, BASE_GAS_ASSET_DECIMAL, BASEChain } from '@xchainjs/xchain-base'
 import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL, BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSC_GAS_ASSET_DECIMAL, BSCChain } from '@xchainjs/xchain-bsc'
-import { ADAChain } from '@xchainjs/xchain-cardano'
 import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGE_DECIMAL, DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
-import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { RadixChain } from '@xchainjs/xchain-radix'
 import { AssetXRP, XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -103,16 +99,15 @@ export const getPricePools = (details: PoolDetails, whitelist: PricePoolAssets):
       return asset ? O.some(detail) : O.none
     }),
     // Map `PoolDetail` -> `PricePool`
-    A.filterMap(
-      (detail: PoolDetail): O.Option<PricePool> =>
-        FP.pipe(
-          assetFromString(detail.asset),
-          O.fromNullable,
-          O.map((asset) => ({
-            asset,
-            poolData: toPoolData(detail)
-          }))
-        )
+    A.filterMap((detail: PoolDetail): O.Option<PricePool> =>
+      FP.pipe(
+        assetFromString(detail.asset),
+        O.fromNullable,
+        O.map((asset) => ({
+          asset,
+          poolData: toPoolData(detail)
+        }))
+      )
     ),
     // Add USD price pool (if available)
     (pricePools) =>
@@ -365,11 +360,6 @@ export const getOutboundAssetFeeByChain = (
         case THORChain:
         case DASHChain:
         case MAYAChain:
-        case KUJIChain:
-        case ADAChain:
-        case ARBChain:
-        case RadixChain:
-          return O.none
         default:
           return O.none
       }
@@ -438,16 +428,14 @@ export const combineSharesByAsset = (shares: PoolShares, asset: Asset): O.Option
     A.reduce<PoolShare, O.Option<PoolShare>>(O.none, (oAcc, cur) => {
       return FP.pipe(
         oAcc,
-        O.map(
-          (acc): PoolShare => ({
-            ...acc,
-            units: cur.units.plus(acc.units),
-            assetAddedAmount: baseAmount(cur.assetAddedAmount.amount().plus(acc.assetAddedAmount.amount())),
-            assetAddress: acc.assetAddress,
-            runeAddress: O.isSome(acc.runeAddress) ? acc.runeAddress : cur.runeAddress,
-            type: 'all'
-          })
-        ),
+        O.map((acc): PoolShare => ({
+          ...acc,
+          units: cur.units.plus(acc.units),
+          assetAddedAmount: baseAmount(cur.assetAddedAmount.amount().plus(acc.assetAddedAmount.amount())),
+          assetAddress: acc.assetAddress,
+          runeAddress: O.isSome(acc.runeAddress) ? acc.runeAddress : cur.runeAddress,
+          type: 'all'
+        })),
         O.getOrElse<PoolShare>(() => ({ ...cur, type: 'all' })),
         O.some
       )

@@ -6,8 +6,10 @@ import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { SwapSettings } from '../../../components/swap/components/SwapSettings'
+import { ProviderIcon } from '../../../components/swap/ProviderIcon'
 import type { ExtendedQuoteSwap } from '../../../components/swap/Swap.types'
 import { Spin } from '../../../components/uielements/spin'
+import { protocolMapping } from '../../../helpers/protocolHelper'
 import type { StreamingMode } from '../../../hooks/useStreamingParams'
 import { IsApprovedRD } from '../../../services/evm/types'
 import type { TradeMode } from './TradingPanelBar'
@@ -216,12 +218,15 @@ const QuoteDetails = ({
       </span>
     </div>
 
-    {/* Protocol */}
+    {/* Protocol — emphasized (icon + humanized name) so the routing protocol is obvious */}
     <div className="flex items-center justify-between">
       <span className="font-main text-11 text-gray-500">
         {intl.formatMessage({ id: 'pools.chart.tradingPanel.quote.protocol' })}
       </span>
-      <span className="font-main text-11 text-gray-300">{quote.protocol}</span>
+      <span className="text-12 flex items-center gap-1.5 font-main font-semibold text-gray-200">
+        <ProviderIcon protocol={quote.protocol} className="!h-4 !w-4" />
+        {protocolMapping[quote.protocol as keyof typeof protocolMapping] ?? quote.protocol}
+      </span>
     </div>
 
     {/* Estimated time */}

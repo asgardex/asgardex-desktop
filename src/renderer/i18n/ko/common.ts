@@ -13,6 +13,9 @@ const common: CommonMessages = {
   'common.addresses': '주소 목록',
   'common.savedAddresses': '저장된 주소',
   'common.addAddress': '주소가 성공적으로 추가되었습니다',
+  'common.addAddress.missing': '체인을 선택하고 주소와 이름을 입력하세요',
+  'common.addAddress.duplicate': '이 주소는 이미 저장되어 있습니다',
+  'common.stored': '저장됨',
   'common.removeAddress': '주소가 성공적으로 삭제되었습니다',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':

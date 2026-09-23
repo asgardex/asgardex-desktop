@@ -154,7 +154,7 @@ const SuccessRouteView = ({
   )
 
   // OneClick (NEAR Intents) routable assets — extends the swap asset universe
-  // beyond THOR/MAYA pools and Chainflip (e.g. SUI, ADA which only 1Click routes).
+  // beyond THOR/MAYA pools and Chainflip (e.g. SUI, ADA, NEAR which only 1Click routes).
   // The service degrades to an empty success on API failure, so no extra guard.
   const { getAssetsData$: getOneClickAssetsData$ } = useOneClickContext()
   const [oneClickAssetsRD] = useObservableState(() => getOneClickAssetsData$(), RD.success([]))
@@ -523,7 +523,10 @@ const SuccessRouteView = ({
 
   const { validateSwapAddress } = useValidateAddress(targetChain)
 
-  // Helper function to determine pool set
+  // Helper function to determine Midgard pool set for pricing stubs.
+  // OneClick/Chainflip-only chains (e.g. NEAR) are on neither THOR nor MAYA —
+  // return an empty list so validatePoolAssets can fill from poolless asset lists
+  // instead of hard-failing the swap page.
   const getPoolAssetDetails = (
     sourceAsset: AssetWithDecimal,
     targetAsset: AssetWithDecimal,
@@ -549,30 +552,40 @@ const SuccessRouteView = ({
     if (isChainOfMaya(sourceChain) && isChainOfThor(targetChain)) {
       return right(thorchainPoolAssetDetails)
     }
-    return left(new Error(`Unsupported chain combination: source (${sourceChain}), target (${targetChain})`))
+    // e.g. ETH↔NEAR (OneClick): neither side shares a Midgard DEX set
+    return right([])
   }
 
   // Helper function to pick and validate pool assets.
   // Falls back to assets routable without THOR/MAYA pools (Chainflip + OneClick,
   // with zero RUNE-denominated price) so the swap UI loads when pool data is
   // unavailable or the pair only exists on a poolless protocol (e.g. SUI, ADA).
+  // When Midgard is down, poolAssetDetails is often only the RUNE/CACAO stub —
+  // still allow the selected pair through so aggregator quotes (Thornode /
+  // Chainflip / 1Click) can run; USD prices stay 0 until Midgard recovers.
   const validatePoolAssets = (
     poolAssetDetails: PoolAssetDetail[],
     sourceAsset: AssetWithDecimal,
     targetAsset: AssetWithDecimal,
     poollessAssets: ReadonlyArray<AnyAsset>
   ): Either<Error, { sourceAssetDetail: PoolAssetDetail; targetAssetDetail: PoolAssetDetail }> => {
-    const findPoollessFallback = (asset: AnyAsset): PoolAssetDetail | null => {
+    const isProtocolStub = (asset: AnyAsset) =>
+      (asset.chain === THORChain && asset.symbol === AssetRuneNative.symbol) ||
+      (asset.chain === MAYAChain && asset.symbol === AssetCacao.symbol)
+    const midgardPoolsUnavailable =
+      poolAssetDetails.length === 0 || poolAssetDetails.every(({ asset }) => isProtocolStub(asset))
+
+    const findFallback = (asset: AnyAsset): PoolAssetDetail | null => {
       const target = assetToString(asset)
       const match = poollessAssets.find((a) => assetToString(a) === target)
-      return match ? { asset: match, assetPrice: bn(0) } : null
+      if (match) return { asset: match, assetPrice: bn(0) }
+      if (midgardPoolsUnavailable) return { asset, assetPrice: bn(0) }
+      return null
     }
     const sourceAssetDetail =
-      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable) ??
-      findPoollessFallback(sourceAsset.asset)
+      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable) ?? findFallback(sourceAsset.asset)
     const targetAssetDetail =
-      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, targetAsset.asset), O.toNullable) ??
-      findPoollessFallback(targetAsset.asset)
+      FP.pipe(Utils.pickPoolAsset(poolAssetDetails, targetAsset.asset), O.toNullable) ?? findFallback(targetAsset.asset)
 
     if (!sourceAssetDetail) {
       return left(new Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))

@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { abi, CompatibleAsset, isApproved } from '@xchainjs/xchain-evm'
-import { Address, baseAmount, Chain, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
+import { abi, CompatibleAsset, getAllowance, getFee, isApproved } from '@xchainjs/xchain-evm'
+import { Address, baseAmount, BaseAmount, Chain, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { Contract, getAddress, ZeroAddress } from 'ethers'
 import { either as E, function as FP, option as O } from 'fp-ts'
@@ -18,19 +18,22 @@ import {
 } from '../../../../shared/api/io'
 import { ApiUrls, LedgerError } from '../../../../shared/api/types'
 import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../../shared/const'
-import { applyGasMultiplier } from '../../../../shared/evm/gas'
+import { applyGasMultiplier, eip1559FeesFromGasPrices, eip1559MaxFeePerGas } from '../../../../shared/evm/gas'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet, isVultisigWallet } from '../../../../shared/utils/guard'
-import { getEVMAssetAddress, isEVMTokenAsset } from '../../../helpers/assetHelper'
+import { getEVMAssetAddress, isChainAsset, isEVMTokenAsset } from '../../../helpers/assetHelper'
+import { eqAsset } from '../../../helpers/fp/eq'
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { LiveData } from '../../../helpers/rx/liveData'
 import { Network$ } from '../../app/types'
 import { ChainTxFeeOption } from '../../chain/const'
 import * as C from '../../clients'
 import { ApiError, ErrorId, TxHashLD } from '../../wallet/types'
-import { DEPOSIT_EXPIRATION_OFFSET } from '../const'
+import { DEPOSIT_EXPIRATION_OFFSET, ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT } from '../const'
 import {
   ApproveParams,
+  AllowanceLD,
+  AllowanceParams,
   TransactionService,
   IsApprovedLD,
   SendPoolTxParams,
@@ -85,6 +88,8 @@ export const createEvmTransactionService = (
             }),
             RxOp.switchMap(({ gasPrices: rawGasPrices, blockTime }) => {
               const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+              // Prefer EIP-1559 tip + 2*baseFee maxFee (via xchain) over legacy gasPrice.
+              const { maxPriorityFeePerGas } = eip1559FeesFromGasPrices(gasPrices, params.feeOption)
               const isERC20 = isEVMTokenAsset(params.asset as TokenAsset)
               const checkSummedContractAddress = isERC20
                 ? getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
@@ -113,8 +118,9 @@ export const createEvmTransactionService = (
                       amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
                       memo: unsignedTx.data,
                       recipient: router,
-                      gasPrice: gasPrices[params.feeOption],
-                      isMemoEncoded: true
+                      maxPriorityFeePerGas,
+                      isMemoEncoded: true,
+                      walletIndex: params.walletIndex
                     }
                     return Rx.from(client.estimateGasLimit(tx)).pipe(
                       RxOp.catchError(() => Rx.of(new BigNumber(defaultGasLimit))),
@@ -135,9 +141,10 @@ export const createEvmTransactionService = (
                       amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
                       memo: unsignedTx.data,
                       recipient: router,
-                      gasPrice: gasPrices[params.feeOption],
+                      maxPriorityFeePerGas,
                       isMemoEncoded: true,
-                      gasLimit: new BigNumber(defaultGasLimit)
+                      gasLimit: new BigNumber(defaultGasLimit),
+                      walletIndex: params.walletIndex
                     })
                   )
                 })
@@ -229,7 +236,7 @@ export const createEvmTransactionService = (
 
   const runApproveERC20Token$ = (
     client: EvmClient,
-    { walletIndex, contractAddress, spenderAddress }: ApproveParams
+    { walletIndex, contractAddress, spenderAddress, amount }: ApproveParams
   ): TxHashLD => {
     return FP.pipe(
       Rx.from(
@@ -237,19 +244,20 @@ export const createEvmTransactionService = (
           contractAddress,
           spenderAddress,
           feeOption: ChainTxFeeOption.APPROVE,
-          walletIndex
+          walletIndex,
+          // omit amount → unlimited; explicit 0 → revoke; finite → limited approve
+          ...(amount !== undefined ? { amount } : {})
         })
       ),
       RxOp.switchMap((txResult) => Rx.from(txResult)),
       RxOp.map(RD.success),
-      RxOp.catchError(
-        (error): TxHashLD =>
-          Rx.of(
-            RD.failure({
-              msg: error?.message ?? error.toString(),
-              errorId: ErrorId.APPROVE_TX
-            })
-          )
+      RxOp.catchError((error): TxHashLD =>
+        Rx.of(
+          RD.failure({
+            msg: error?.message ?? error.toString(),
+            errorId: ErrorId.APPROVE_TX
+          })
+        )
       ),
       RxOp.startWith(RD.pending)
     )
@@ -262,6 +270,7 @@ export const createEvmTransactionService = (
     walletAccount,
     walletIndex,
     hdMode,
+    amount,
     evmRpcUrl
   }: ApproveParams & { evmRpcUrl: string }): TxHashLD => {
     if (!isEvmHDMode(hdMode)) {
@@ -282,7 +291,9 @@ export const createEvmTransactionService = (
       walletIndex,
       hdMode,
       apiKey,
-      evmRpcUrl
+      evmRpcUrl,
+      // Serialize as string across IPC; omit for unlimited
+      amount: amount !== undefined ? amount.amount().toFixed() : undefined
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
 
@@ -356,14 +367,13 @@ export const createEvmTransactionService = (
     return FP.pipe(
       Rx.from(isApproved({ provider, contractAddress, spenderAddress, fromAddress })),
       RxOp.map(RD.success),
-      RxOp.catchError(
-        (error): LiveData<ApiError, boolean> =>
-          Rx.of(
-            RD.failure({
-              msg: error?.message ?? error.toString(),
-              errorId: ErrorId.APPROVE_TX
-            })
-          )
+      RxOp.catchError((error): LiveData<ApiError, boolean> =>
+        Rx.of(
+          RD.failure({
+            msg: error?.message ?? error.toString(),
+            errorId: ErrorId.APPROVE_TX
+          })
+        )
       ),
       RxOp.startWith(RD.pending)
     )
@@ -379,6 +389,43 @@ export const createEvmTransactionService = (
           O.fold(
             () => Rx.of(RD.initial),
             (client) => runIsApprovedERC20Token$(client, params)
+          )
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+
+  const runGetERC20Allowance$ = (
+    client: EvmClient,
+    { contractAddress, spenderAddress, fromAddress, decimals }: AllowanceParams
+  ): AllowanceLD => {
+    const provider = client.getProvider()
+
+    return FP.pipe(
+      Rx.from(getAllowance({ provider, contractAddress, spenderAddress, fromAddress })),
+      RxOp.map((allowance) => RD.success(baseAmount(allowance.toFixed(), decimals))),
+      RxOp.catchError((error): AllowanceLD =>
+        Rx.of(
+          RD.failure({
+            msg: error?.message ?? error.toString(),
+            errorId: ErrorId.APPROVE_TX
+          })
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  }
+
+  const getERC20Allowance$ = (params: AllowanceParams): AllowanceLD =>
+    readOnlyClient$.pipe(
+      RxOp.filter(O.isSome),
+      RxOp.take(1),
+      RxOp.switchMap((oClient) =>
+        FP.pipe(
+          oClient,
+          O.fold(
+            () => Rx.of(RD.initial),
+            (client) => runGetERC20Allowance$(client, params)
           )
         )
       ),
@@ -440,6 +487,27 @@ export const createEvmTransactionService = (
     )
   }
 
+  /**
+   * Keystore EVM send (wallet Send, Chainflip, OneClick deposits).
+   *
+   * Max in the UI is `balance − feeQuote`, but fee quotes can be stale or estimated with
+   * dummy amount/recipient (`SendView`). Send used to re-call `estimateGasPrices()` and
+   * let xchain re-estimate gasLimit — so the fee attached to the tx could exceed what Max
+   * reserved → node "insufficient funds for gas * price + value" by dust.
+   *
+   * Also: passing `gasPrice` into xchain `transfer()` upgrades type-1 → type-2 with
+   * `maxFee = maxPriority = gasPrice` and **no 2×baseFee headroom**, so txs can stall when
+   * base fee ticks up (same bug #1179 fixed for pool deposits). Prefer tip-only EIP-1559.
+   *
+   * Fix for native sends:
+   * 1. Fresh fee tier + multiplier → `maxPriorityFeePerGas` (tip)
+   * 2. Estimate gasLimit for the current amount
+   * 3. feeCap = (2×baseFee + tip) × gasLimit when EIP-1559; else gasPrice × gasLimit
+   * 4. Reclamp amount to balance − feeCap; re-estimate gasLimit; repeat (max 3 passes)
+   * 5. Pass tip (or legacy gasPrice) + pinned gasLimit into transfer
+   *
+   * Token sends leave amount alone (gas paid in native separately).
+   */
   const runSendTx$ = (client: EvmClient, params: SendTxParams, gasMultiplier: number): TxHashLD => {
     const failure$ = (msg: string) =>
       Rx.of<RD.RemoteData<ApiError, never>>(
@@ -450,21 +518,105 @@ export const createEvmTransactionService = (
       )
 
     return FP.pipe(
-      Rx.from(client.estimateGasPrices()),
-      RxOp.switchMap((rawGasPrices) => {
-        const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+      Rx.from(
+        (async (): Promise<TxHash> => {
+          const rawGasPrices = await client.estimateGasPrices()
+          const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
+          const { maxPriorityFeePerGas } = eip1559FeesFromGasPrices(gasPrices, params.feeOption)
+          const legacyGasPrice = gasPrices[params.feeOption]
+          const assetInfo = client.getAssetInfo()
+          const isNative = isChainAsset(params.asset)
+          const fallbackGasLimit = isNative ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
 
-        return Rx.from(
-          client.transfer({
+          // Prefer EIP-1559 tip + 2×baseFee (via xchain) when the chain exposes baseFee.
+          const latestBlock = await client.getProvider().getBlock('latest')
+          const baseFeePerGas = latestBlock?.baseFeePerGas ?? null
+          const useEip1559 = baseFeePerGas != null
+          const feeUnit = useEip1559 ? eip1559MaxFeePerGas(maxPriorityFeePerGas, baseFeePerGas) : legacyGasPrice
+
+          let amount: BaseAmount = params.amount
+
+          const estimateGasLimitFor = async (amt: BaseAmount, from?: string): Promise<BigNumber> => {
+            try {
+              return await client.estimateGasLimit({
+                asset: params.asset as CompatibleAsset,
+                amount: amt,
+                recipient: params.recipient,
+                memo: params.memo,
+                from: from ?? params.sender
+              })
+            } catch {
+              return fallbackGasLimit
+            }
+          }
+
+          const transferFees = useEip1559 ? { maxPriorityFeePerGas } : { gasPrice: legacyGasPrice }
+
+          if (isNative) {
+            const sender = await client.getAddressAsync(params.walletIndex)
+            // Native-only: empty assets array skips EVM provider ERC-20 tokentx fan-out.
+            type EvmGetBalance = (
+              address: string,
+              assets?: CompatibleAsset[]
+            ) => Promise<{ asset: CompatibleAsset; amount: BaseAmount }[]>
+            const balances = await (client.getBalance as EvmGetBalance)(sender, [])
+            const nativeBal = balances.find((b) => eqAsset.equals(b.asset, assetInfo.asset))?.amount
+            if (!nativeBal) {
+              throw new Error('Unable to read native balance for send')
+            }
+
+            // Estimate gas for current amount → reclamp amount → re-estimate for final amount.
+            // Cap at 3 passes. Keep the higher gasLimit so feeCap never under-covers.
+            let gasLimit = await estimateGasLimitFor(amount, sender)
+            for (let pass = 0; pass < 3; pass++) {
+              const feeCap = getFee({
+                gasPrice: feeUnit,
+                gasLimit,
+                decimals: assetInfo.decimal
+              })
+              const maxSendableBn = nativeBal.amount().minus(feeCap.amount())
+              if (maxSendableBn.lte(0)) {
+                throw new Error('Insufficient funds for gas')
+              }
+              const nextAmount = amount.amount().gt(maxSendableBn)
+                ? baseAmount(maxSendableBn.integerValue(BigNumber.ROUND_FLOOR), amount.decimal)
+                : amount
+
+              const nextGasLimit = await estimateGasLimitFor(nextAmount, sender)
+              const gasForCap = BigNumber.max(gasLimit, nextGasLimit)
+              const amountUnchanged = nextAmount.amount().eq(amount.amount())
+              const gasUnchanged = gasForCap.eq(gasLimit)
+
+              amount = nextAmount
+              gasLimit = gasForCap
+
+              if (amountUnchanged && gasUnchanged) break
+            }
+
+            return client.transfer({
+              asset: params.asset as CompatibleAsset,
+              amount,
+              recipient: params.recipient,
+              memo: params.memo,
+              ...transferFees,
+              gasLimit,
+              walletIndex: params.walletIndex
+            })
+          }
+
+          // Token (and other non-native) path: estimate once, pin gas, leave amount alone
+          const gasLimit = await estimateGasLimitFor(amount)
+          return client.transfer({
             asset: params.asset as CompatibleAsset,
-            amount: params.amount,
+            amount,
             recipient: params.recipient,
             memo: params.memo,
-            gasPrice: gasPrices[params.feeOption],
+            ...transferFees,
+            gasLimit,
             walletIndex: params.walletIndex
           })
-        )
-      }),
+        })()
+      ),
       RxOp.map(RD.success),
       RxOp.catchError((error): TxHashLD => failure$(error?.message ?? error.toString())),
       RxOp.startWith(RD.pending)
@@ -501,6 +653,7 @@ export const createEvmTransactionService = (
     sendTx,
     sendPoolTx$,
     approveERC20Token$,
-    isApprovedERC20Token$
+    isApprovedERC20Token$,
+    getERC20Allowance$
   }
 }

@@ -83,6 +83,14 @@ export const runepool: Route<void> = {
     return this.template
   }
 }
+
+export const approvals: Route<void> = {
+  template: `${base.template}/approvals`,
+  path() {
+    return this.template
+  }
+}
+
 export const cacaopool: Route<void> = {
   template: `${base.template}/cacaopool`,
   path() {

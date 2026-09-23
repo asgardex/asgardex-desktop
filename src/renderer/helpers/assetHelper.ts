@@ -1,6 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { NEARAsset } from '@xchainjs/xchain-near'
 import { AssetXRP } from '@xchainjs/xchain-ripple'
 import { SUIAsset } from '@xchainjs/xchain-sui'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -34,14 +35,12 @@ import {
   AssetRuneNative,
   AssetCacao,
   AssetMaya,
-  AssetKUJI,
   AssetBETH,
   ADAAsset,
   AssetARB,
   AssetAETH,
   AssetDASH,
   SOLAsset,
-  AssetUSK,
   AssetXRD,
   AssetZEC,
   AssetTRX
@@ -193,12 +192,6 @@ export const isBscAsset = (asset: AnyAsset): boolean =>
 export const isDogeAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetDOGE.chain && asset.symbol.toUpperCase() === AssetDOGE.symbol.toUpperCase()
 /**
- * Checks whether an asset is a Kuji asset
- */
-export const isKujiAsset = (asset: AnyAsset): boolean =>
-  asset.chain === AssetKUJI.chain && asset.symbol.toUpperCase() === AssetKUJI.symbol.toUpperCase()
-
-/**
  * Checks whether an asset is a Ada asset
  */
 export const isAdaAsset = (asset: AnyAsset): boolean =>
@@ -230,8 +223,8 @@ export const isTrxAsset = (asset: AnyAsset): boolean =>
 export const isSuiAsset = (asset: AnyAsset): boolean =>
   asset.chain === SUIAsset.chain && asset.symbol.toUpperCase() === SUIAsset.symbol.toUpperCase()
 
-export const isUskAsset = (asset: AnyAsset): boolean =>
-  asset.chain === AssetUSK.chain && asset.symbol.toUpperCase() === AssetUSK.symbol.toUpperCase()
+export const isNearAsset = (asset: AnyAsset): boolean =>
+  asset.chain === NEARAsset.chain && asset.symbol.toUpperCase() === NEARAsset.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a ATOM asset
@@ -622,17 +615,19 @@ export const midgardAssetFromString: (assetString: string) => O.Option<AnyAsset>
 export const convertBaseAmountDecimal = (amount: BaseAmount, decimal: number): BaseAmount => {
   const decimalDiff = decimal - amount.decimal
 
+  // Use BN pow — `10 ** n` as a JS number loses precision for large n (e.g. NEAR 24).
+  // Always keep BaseAmount integer (no fractional base units).
   const amountBN =
     decimalDiff < 0
       ? amount
           .amount()
-          .dividedBy(bn(10 ** (decimalDiff * -1)))
+          .dividedBy(bn(10).pow(-decimalDiff))
           // Never use `BigNumber`s with decimal within `BaseAmount`
           // that's why we need to set `decimalPlaces` to `0`
           // round down is needed to make sure amount of currency is still available
           // without that, `dividedBy` might round up and provide an currency amount which does not exist
           .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      : amount.amount().multipliedBy(bn(10 ** decimalDiff))
+      : amount.amount().multipliedBy(bn(10).pow(decimalDiff)).decimalPlaces(0, BigNumber.ROUND_DOWN)
   return baseAmount(amountBN, decimal)
 }
 

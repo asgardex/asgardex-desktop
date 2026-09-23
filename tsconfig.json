@@ -19,5 +19,5 @@
     "types": ["vitest/globals"]
   },
   "include": ["src/shared", "src/renderer", "src/setupTests.ts", "src/vite-env.d.ts"],
-  "exclude": ["src/main/"]
+  "exclude": ["src/main/", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

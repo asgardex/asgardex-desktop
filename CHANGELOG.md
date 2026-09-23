@@ -1,5 +1,130 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+<!--
+  Note: From v1.44.0 the release workflow also auto-generates GitHub Release notes
+  from PR labels (see RELEASE.md / .github/release.yml). This file is still the
+  in-repo human changelog — keep it updated when cutting releases.
+-->
+
+# 1.45.3 (2026-08-27)
+
+PRs merged to `develop` since tag `v1.45.2` / release branch for 1.45.2.
+
+## Update/Fixes
+
+- fix(swap): show OneClick affiliate from aggregator echoed `appFees` (no more false `free`); protocol-tuned swap details for Chainflip/OneClick (hide THOR streaming + slip controls); outbound fee uses quote destination asset + USD (not stale sats); don’t freeze all swap routes when THOR Midgard is down (affiliate USD gate + empty-pool pair fallback) [#1191](https://github.com/asgardex/asgardex-desktop/pull/1191)
+- fix(swap): stop lastblock polls from re-firing quotes every 60s [#1190](https://github.com/asgardex/asgardex-desktop/pull/1190)
+- fix: Chainflip submit UX (channel-open in tx modal), aggregator 3.0.1 broker expiry, asset search ranks native ETH first, smarter halt banners, sticky protocol + pause requotes on confirm [#1188](https://github.com/asgardex/asgardex-desktop/pull/1188)
+- fix(thor/maya): never auto-retry keystore `MsgDeposit` broadcasts [#1182](https://github.com/asgardex/asgardex-desktop/pull/1182)
+- fix(swap): restore ERC20 Approve CTA when quote is approval-blocked [#1178](https://github.com/asgardex/asgardex-desktop/pull/1178)
+- fix(evm): EIP-1559 tip+baseFee headroom for THOR/MAYA pool deposit txs [#1179](https://github.com/asgardex/asgardex-desktop/pull/1179)
+- fix(swap): skip quote requests for trading-halted THOR/MAYA routes [#1177](https://github.com/asgardex/asgardex-desktop/pull/1177)
+
+## Chores
+
+- chore(deps): bump `@xchainjs/xchain-aggregator` to 3.0.2 (OneClick affiliateFee from echoed appFees) [#1191](https://github.com/asgardex/asgardex-desktop/pull/1191)
+- chore(deps): bump `@xchainjs/*` + Chainflip deposit-channel for aggregator 3.0 [#1181](https://github.com/asgardex/asgardex-desktop/pull/1181)
+- chore(deps): bump axios to 1.18.1 to match xchainjs [#1173](https://github.com/asgardex/asgardex-desktop/pull/1173)
+- chore(deps): bump `@reduxjs/toolkit` from 2.3.0 to 2.12.0 [#1160](https://github.com/asgardex/asgardex-desktop/pull/1160)
+
+# 1.45.2 (2026-08-13)
+
+PRs merged to `develop` since tag `v1.45.1` / release branch for 1.45.1.
+
+## Update/Fixes
+
+- fix(sol): floor Solana priority fee so OneClick token swaps can broadcast [#1168](https://github.com/asgardex/asgardex-desktop/pull/1168)
+- fix(thorchain): cut Liquify load from swap `tx/stages` polling (block-time floor, no pending double-fire, incomplete max-age) [#1164](https://github.com/asgardex/asgardex-desktop/pull/1164)
+- fix(flatpak): rename app id to `com.asgardex.Asgardex` (asgardex.com), harden host keystore/Vultisig migration, pin Windows NSIS guid [#1165](https://github.com/asgardex/asgardex-desktop/pull/1165)
+
+## Chores
+
+- chore(deps): bump `@xchainjs/*` packages to latest [#1157](https://github.com/asgardex/asgardex-desktop/pull/1157)
+- chore: drop direct `uuid` dependency; use `crypto.randomUUID()` for phrase-confirm keys [#1167](https://github.com/asgardex/asgardex-desktop/pull/1167)
+
+# 1.45.1 (2026-08-07)
+
+PRs merged to `develop` since tag `v1.45.0` ([#1138](https://github.com/asgardex/asgardex-desktop/pull/1138)), plus [#1158](https://github.com/asgardex/asgardex-desktop/pull/1158) (EVM Max send fix; merge with or before this release).
+
+## Add
+
+- feat(keystore): HD Find my funds for EVM, THOR/MAYA, and UTXO chains [#1152](https://github.com/asgardex/asgardex-desktop/pull/1152)
+
+## Update/Fixes
+
+- fix(evm): reclamp native Max send at broadcast so fee re-quotes cannot overshoot balance (Max no longer fails with dust insufficient-funds) [#1158](https://github.com/asgardex/asgardex-desktop/pull/1158)
+- fix(security): update `keyv` to 5.6.0 via resolutions (supply-chain mitigation) [#1154](https://github.com/asgardex/asgardex-desktop/pull/1154)
+- fix: source UTXO inbound fee rates from the node `gas_rate` [#1150](https://github.com/asgardex/asgardex-desktop/pull/1150)
+- fix(swap): surface routing protocol in chart panel + track OneClick (NEAR Intents) swaps [#1143](https://github.com/asgardex/asgardex-desktop/pull/1143)
+- remove native Kujira (KUJI) chain client — no longer listed on THOR/MAYA pools; drop `@xchainjs/xchain-kujira` [#1151](https://github.com/asgardex/asgardex-desktop/pull/1151)
+
+## Chores
+
+- chore: THOR lastblock 60s poll, Liquify RPC key, Asgardex node fallbacks [#1147](https://github.com/asgardex/asgardex-desktop/pull/1147)
+- chore(deps): bump `@xchainjs/*` packages to latest [#1140](https://github.com/asgardex/asgardex-desktop/pull/1140)
+- chore(deps): bump `@vultisig/sdk` from 0.22.5 to 2.19.19 [#1131](https://github.com/asgardex/asgardex-desktop/pull/1131)
+- ci: pass `VITE_ASGARDEX_ONECLICK_AFFILIATES` into production builds [#1149](https://github.com/asgardex/asgardex-desktop/pull/1149)
+- ci(actions): bump actions/checkout from 6.0.3 to 7.0.1 [#1145](https://github.com/asgardex/asgardex-desktop/pull/1145)
+- ci(actions): bump actions/setup-node from 6.4.0 to 7.0.0 [#1139](https://github.com/asgardex/asgardex-desktop/pull/1139)
+- ci(actions): bump actions/setup-python from 6.3.0 to 7.0.0 [#1146](https://github.com/asgardex/asgardex-desktop/pull/1146)
+- docs: interactive architecture map and maintenance guide [#1155](https://github.com/asgardex/asgardex-desktop/pull/1155)
+- docs: backfill CHANGELOG for 1.44.0, 1.45.0, and post-1.45 develop [#1148](https://github.com/asgardex/asgardex-desktop/pull/1148)
+
+# 1.45.0 (2026-07-22)
+
+## Add
+
+- Chainflip: Tron support + bump `@chainflip/sdk` to 2.2.1 [#1112](https://github.com/asgardex/asgardex-desktop/pull/1112)
+- 24-word seed phrase option + randomized keystore id [#1120](https://github.com/asgardex/asgardex-desktop/pull/1120)
+- Flatpak Linux build target + auto-import native keystores on first sandbox run [#1111](https://github.com/asgardex/asgardex-desktop/pull/1111)
+
+## Update/Fixes
+
+- Vultisig: re-prompt on expired password cache + center confirm modal [#1137](https://github.com/asgardex/asgardex-desktop/pull/1137)
+- Vultisig: don't re-prompt for vault password once unlocked [#1134](https://github.com/asgardex/asgardex-desktop/pull/1134)
+- Vultisig: add TRON to wallet balance observables [#1118](https://github.com/asgardex/asgardex-desktop/pull/1118)
+- fees: don't hang fee estimation for phrase-less wallets (e.g. TRON/XRP) [#1135](https://github.com/asgardex/asgardex-desktop/pull/1135)
+- keystore: polyfill `crypto.timingSafeEqual` for renderer unlock [#1115](https://github.com/asgardex/asgardex-desktop/pull/1115)
+- Flatpak: scope home access to `~/.config/ASGARDEX`, license path, lint fixes
+- header: show RUNE ticker and refresh RUNE/TCY icons [#1113](https://github.com/asgardex/asgardex-desktop/pull/1113)
+- style: hover feedback on mobile drawer menu rows [#1121](https://github.com/asgardex/asgardex-desktop/pull/1121)
+
+## Chores / docs
+
+- bump `@xchainjs/*` packages [#1114](https://github.com/asgardex/asgardex-desktop/pull/1114) [#1140](https://github.com/asgardex/asgardex-desktop/pull/1140)
+- harden CI workflows for supply-chain rules [#1122](https://github.com/asgardex/asgardex-desktop/pull/1122)
+- document Linux Ledger udev rules and Flatpak build/install/keystore paths
+
+# 1.44.0 (2026-06-19)
+
+## Add
+
+- NEAR Intents (OneClick) swap protocol integration [#1061](https://github.com/asgardex/asgardex-desktop/pull/1061)
+- BTC Taproot (P2TR) keystore balances and send path [#1052](https://github.com/asgardex/asgardex-desktop/pull/1052)
+- surface swap output destination at signing (THOR/MAYA) [#1107](https://github.com/asgardex/asgardex-desktop/pull/1107)
+
+## Update/Fixes
+
+- fix Ledger BTC address dedup / HD mode matching [#1053](https://github.com/asgardex/asgardex-desktop/pull/1053)
+- fix MAYA pool decimal resolution (Midgard depth scale) [#1057](https://github.com/asgardex/asgardex-desktop/pull/1057)
+- keep swap UI reachable when Midgard endpoints fail [#1059](https://github.com/asgardex/asgardex-desktop/pull/1059)
+- ungate swap feature buttons; improve fallbacks when controls would disappear
+- fix nested-button DOM warning in ProtocolSwitch dropdown [#1095](https://github.com/asgardex/asgardex-desktop/pull/1095)
+- surface silent failures, theme colors, i18n for hardcoded strings [#1062](https://github.com/asgardex/asgardex-desktop/pull/1062)
+- pin `pbkdf2` / `browserify-sign` to fix renderer `readable-stream` crash [#1082](https://github.com/asgardex/asgardex-desktop/pull/1082)
+- migrate RxJS `toPromise()` → `lastValueFrom` for RxJS 7 [#1078](https://github.com/asgardex/asgardex-desktop/pull/1078)
+- header stats layout on narrow viewports [#1054](https://github.com/asgardex/asgardex-desktop/pull/1054)
+- send form: tooltip for EVM pool-transaction toggle
+
+## Chores
+
+- automate release pipeline (draft release on `release/**` push) [#1063](https://github.com/asgardex/asgardex-desktop/pull/1063)
+- add Dependabot for npm + GitHub Actions [#1064](https://github.com/asgardex/asgardex-desktop/pull/1064)
+- remove Storybook [#1060](https://github.com/asgardex/asgardex-desktop/pull/1060)
+- upgrade ESLint to 9 [#1081](https://github.com/asgardex/asgardex-desktop/pull/1081)
+- bump RxJS 7, Vitest 4, electron-vite 5, electron-log 5, Prettier 3.8, xchainjs, and related deps
+- shape GitHub release-draft notes (ASGARDEX header, summary, folded deps) [#1096](https://github.com/asgardex/asgardex-desktop/pull/1096)
+
 # 1.43.3
 
 ## Add

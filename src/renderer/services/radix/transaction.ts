@@ -54,6 +54,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                   asset: params.asset as CompatibleAsset,
                   recipient: router,
                   amount: params.amount,
+                  walletIndex: params.walletIndex,
                   methodToCall: {
                     address: router,
                     methodName: 'user_deposit',

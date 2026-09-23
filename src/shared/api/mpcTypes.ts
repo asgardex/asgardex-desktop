@@ -21,6 +21,17 @@ export type SerializedVault = {
   isEncrypted: boolean
 }
 
+// IPC-facing subset of SDK VaultImportOptions. `replace-unvalidated` is not exposed.
+export type VaultImportOptions = {
+  conflictResolution?: 'replace'
+}
+
+export type ImportVaultResult =
+  | { ok: true; vault: SerializedVault }
+  | { ok: false; code: 'DUPLICATE_VAULT' }
+  | { ok: false; code: 'EXISTING_VAULT_PASSWORD_REQUIRED'; vaultId?: string }
+  | { ok: false; code: 'INVALID_PASSWORD' }
+
 // ============================================
 // Request/Response Types
 // ============================================
@@ -154,7 +165,6 @@ export const ASGARDEX_TO_SDK_CHAIN: Record<string, string> = {
   XRP: 'Ripple',
   SOL: 'Solana',
   ZEC: 'Zcash',
-  KUJI: 'Kujira',
   ADA: 'Cardano',
   TRON: 'Tron'
   // XRD (Radix) is not supported by ASGARDEX and will not be added.
@@ -196,6 +206,7 @@ export enum MpcIPCMessages {
   // Vault Lock/Unlock
   MPC_LOCK_VAULT = 'mpc:lockVault',
   MPC_UNLOCK_VAULT = 'mpc:unlockVault',
+  MPC_IS_VAULT_UNLOCKED = 'mpc:isVaultUnlocked',
 
   // Events (main -> renderer)
   MPC_CREATION_PROGRESS = 'mpc:creationProgress',
@@ -243,13 +254,16 @@ export type ApiMpc = {
   getBalances: (vaultId: string) => Promise<GetBalancesResult>
 
   // Vault Import/Export
-  importVault: (vultContent: string, password?: string) => Promise<SerializedVault>
+  importVault: (vultContent: string, password?: string, options?: VaultImportOptions) => Promise<ImportVaultResult>
   exportVault: (vaultId: string, password?: string) => Promise<{ saved: boolean; filePath?: string }>
   openVaultFile: () => Promise<OpenVaultFileResult>
 
   // Vault Lock/Unlock
   lockVault: (vaultId: string) => Promise<void>
   unlockVault: (vaultId: string, password: string) => Promise<void>
+  // Whether the vault's password is currently cached & not expired (i.e. it can
+  // sign without a fresh password prompt). Reflects the SDK's password-cache TTL.
+  isVaultUnlocked: (vaultId: string) => Promise<boolean>
 
   // Transaction Signing
   signBytes: (params: SignBytesParams) => Promise<SignBytesResult>

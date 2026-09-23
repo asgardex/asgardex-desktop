@@ -34,12 +34,19 @@ export const useAggregator = () => {
   /**
    * Estimate swap function
    * Dispatches `getEstimate` thunk and returns the result.
+   * `protocolsOverride` lets callers drop halted THOR/MAYA routes before the aggregator request.
    */
   const estimateSwap = useCallback(
-    async (params: QuoteSwapParams, useAffiliate: boolean) => {
+    async (params: QuoteSwapParams, useAffiliate: boolean, protocolsOverride?: Protocol[]) => {
       try {
         const result = await dispatch(
-          xchainActions.getEstimate({ aggregator, protocols, params, useAffiliate, network })
+          xchainActions.getEstimate({
+            aggregator,
+            protocols: protocolsOverride ?? protocols,
+            params,
+            useAffiliate,
+            network
+          })
         ).unwrap()
         return result
       } catch (error) {
@@ -50,12 +57,41 @@ export const useAggregator = () => {
     [aggregator, protocols, dispatch, network]
   )
 
+  /**
+   * Open a live Chainflip deposit channel immediately before broadcast.
+   * Aggregator 3.0+: estimateSwap is quote-only and does not create channels.
+   */
+  const requestChainflipDepositAddress = useCallback(
+    (params: QuoteSwapParams) => aggregator.requestChainflipDepositAddress(params),
+    [aggregator]
+  )
+
+  /**
+   * Wet OneClick quote → deposit address. Aggregator 3.2+: estimateSwap is dry /
+   * quote-only; call this immediately before broadcast (same pattern as Chainflip).
+   */
+  const requestOneClickDepositAddress = useCallback(
+    (params: QuoteSwapParams) => aggregator.requestOneClickDepositAddress(params),
+    [aggregator]
+  )
+
+  /**
+   * Register an already-broadcast OneClick deposit (or retry registration).
+   */
+  const submitOneClickDeposit = useCallback(
+    (txHash: string, depositAddress: string) => aggregator.submitOneClickDeposit(txHash, depositAddress),
+    [aggregator]
+  )
+
   return {
     aggregator,
     protocols,
     isBoostEnabled,
     ...rest,
     estimateSwap,
+    requestChainflipDepositAddress,
+    requestOneClickDepositAddress,
+    submitOneClickDeposit,
     setAggProtocol,
     setBoostEnabled
   }

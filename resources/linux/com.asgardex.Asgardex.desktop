@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ASGARDEX
+Comment=Cross-chain DeFi wallet for THORChain, MAYAChain, and more
+Exec=asgardex %U
+Icon=com.asgardex.Asgardex
+Terminal=false
+StartupNotify=true
+Categories=Office;Finance;
+Keywords=wallet;crypto;defi;thorchain;swap;

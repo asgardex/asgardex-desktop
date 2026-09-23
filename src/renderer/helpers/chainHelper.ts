@@ -9,16 +9,16 @@ import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { AssetDASH, DASHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDASH } from '@xchainjs/xchain-dash'
 import { AssetDOGE, DOGEChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
-import { AssetKUJI, KUJIChain } from '@xchainjs/xchain-kujira'
 import { AssetLTC, LTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { NEARAsset, NEARChain } from '@xchainjs/xchain-near'
 import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
 import { AssetXRP, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { SUIAsset, SUIChain } from '@xchainjs/xchain-sui'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetTRX, TRONChain } from '@xchainjs/xchain-tron'
-import { AnyAsset, Asset, AssetType, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, AssetType, Chain, isTokenAsset } from '@xchainjs/xchain-util'
 import { AssetZEC, ZECChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDZEC } from '@xchainjs/xchain-zcash'
 
 import { isSupportedChain } from '../../shared/utils/chain'
@@ -37,7 +37,6 @@ const chainAssets: Record<Chain, Asset> = {
   LTC: AssetLTC,
   DOGE: AssetDOGE,
   DASH: AssetDASH,
-  KUJI: AssetKUJI,
   ARB: AssetAETH,
   XRD: AssetXRD,
   SOL: SOLAsset,
@@ -46,7 +45,8 @@ const chainAssets: Record<Chain, Asset> = {
   TRON: AssetTRX,
   ZEC: AssetZEC,
   XRP: AssetXRP,
-  SUI: SUIAsset
+  SUI: SUIAsset,
+  NEAR: NEARAsset
 }
 
 export const getChainAsset = (chain: Chain): Asset => {
@@ -156,15 +156,11 @@ export const isBchChain = (chain: Chain): boolean => eqChain.equals(chain, BCHCh
 export const isDogeChain = (chain: Chain): boolean => eqChain.equals(chain, DOGEChain)
 
 /**
- * Check whether chain is KUJI chain
- */
-export const isKujiChain = (chain: Chain): boolean => eqChain.equals(chain, KUJIChain)
-/**
  * Check whether chain is ADA chain
  */
 export const isAdaChain = (chain: Chain): boolean => eqChain.equals(chain, ADAChain)
 /**
- * Check whether chain is KUJI chain
+ * Check whether chain is Radix chain
  */
 export const isXrdChain = (chain: Chain): boolean => eqChain.equals(chain, RadixChain)
 
@@ -179,6 +175,11 @@ export const isCosmosChain = (chain: Chain): boolean => eqChain.equals(chain, GA
 export const isTronChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), TRONChain)
 
 export const isSuiChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), SUIChain)
+
+export const isNearChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), NEARChain)
+
+/** NEP-141 FT on NEAR (not native NEAR.NEAR). */
+export const isNearChainToken = (asset: AnyAsset): boolean => isNearChain(asset.chain) && isTokenAsset(asset)
 
 type ChainValues<T> = {
   [k in Chain]?: T[]
@@ -219,8 +220,6 @@ export const getChain = (chain: string): Chain => {
       return MAYAChain
     case 'DASH':
       return DASHChain
-    case 'KUJI':
-      return KUJIChain
     case 'XRD':
       return RadixChain
     case 'SOL':
@@ -237,6 +236,8 @@ export const getChain = (chain: string): Chain => {
       return TRONChain
     case 'SUI':
       return SUIChain
+    case 'NEAR':
+      return NEARChain
     default:
       throw Error('Unknown chain')
   }
