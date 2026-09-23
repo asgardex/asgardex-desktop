@@ -99,15 +99,19 @@ export const UnlockView = (): JSX.Element => {
       await appWalletService.switchToVultisigMode(true)
       await vaultManager.loadVaults()
       await vaultManager.selectVault(vault.id, false)
+      const state = vaultManager.vultisigState()
+      const activated = state.phase === VultisigPhase.Active && state.activeVault?.id === vault.id
       setShowPasswordModal(false)
       setPendingVaultFile(null)
       setPendingExistingUnlock(null)
       setPasswordMode('file')
       setShowReplaceConfirm(false)
       setPendingReplace(null)
-      navigate(walletRoutes.assets.path())
+      if (!activated) {
+        logger.error('Imported vault is not active:', vault.id)
+      }
     },
-    [appWalletService, vaultManager, navigate]
+    [appWalletService, vaultManager]
   )
 
   const handleExistingLocked = useCallback((content: string, filePassword: string | undefined, vaultId?: string) => {
@@ -207,18 +211,11 @@ export const UnlockView = (): JSX.Element => {
 
     try {
       const vault = await vaultManager.importVaultReplace(pendingReplace.content, pendingReplace.password)
-      await appWalletService.switchToVultisigMode(true)
-      await vaultManager.loadVaults()
-      await vaultManager.selectVault(vault.id, false)
-      setShowPasswordModal(false)
-      setPendingVaultFile(null)
-      setShowReplaceConfirm(false)
-      setPendingReplace(null)
-      navigate(walletRoutes.assets.path())
+      await applyImportedVault(vault)
     } catch (error) {
       logger.error('Failed to import vault:', error)
     }
-  }, [pendingReplace, navigate, appWalletService, vaultManager])
+  }, [pendingReplace, vaultManager, applyImportedVault])
 
   const handleReplaceConfirmClose = useCallback(() => {
     setShowReplaceConfirm(false)
@@ -250,7 +247,8 @@ export const UnlockView = (): JSX.Element => {
       />
       <ConfirmationModal
         visible={showReplaceConfirm}
-        content={intl.formatMessage({ id: 'wallet.vultisig.import.error.duplicate' })}
+        content={intl.formatMessage({ id: 'wallet.vultisig.import.replace.description' })}
+        okText={intl.formatMessage({ id: 'wallet.vultisig.import.replace.confirm' })}
         onSuccess={handleReplaceConfirm}
         onClose={handleReplaceConfirmClose}
       />

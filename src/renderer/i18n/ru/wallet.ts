@@ -164,6 +164,8 @@ const wallet: WalletMessages = {
   'wallet.vultisig.import.error': 'Не удалось импортировать vault',
   'wallet.vultisig.import.error.invalidPassword': 'Неверный пароль',
   'wallet.vultisig.import.error.duplicate': 'Эта локальная копия vault уже существует',
+  'wallet.vultisig.import.replace.description': 'Подтверждение заменит существующую локальную копию vault.',
+  'wallet.vultisig.import.replace.confirm': 'Заменить',
   'wallet.vultisig.confirm.title': 'Подтверждение транзакции',
   'wallet.vultisig.confirm.enterPassword': 'Введите пароль vault для продолжения',
   'wallet.vultisig.confirm.scanQr': 'Отсканируйте в приложении Vultisig для подтверждения',

@@ -17,6 +17,7 @@ import { BackLinkButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { createScopedLogger } from '../../../helpers/logger'
 import * as walletRoutes from '../../../routes/wallet'
+import { VultisigPhase } from '../../../services/wallet/types'
 import { hasImportedKeystore } from '../../../services/wallet/util'
 
 const logger = createScopedLogger('NoWalletView')
@@ -76,12 +77,18 @@ export const NoWalletView = () => {
       await appWalletService.switchToVultisigMode(true)
       await vaultManager.loadVaults()
       await vaultManager.selectVault(vault.id, false)
+      const state = vaultManager.vultisigState()
+      const activated = state.phase === VultisigPhase.Active && state.activeVault?.id === vault.id
       setShowPasswordModal(false)
       setPendingVaultFile(null)
       setPendingExistingUnlock(null)
       setPasswordMode('file')
       setShowReplaceConfirm(false)
       setPendingReplace(null)
+      if (!activated) {
+        logger.error('Imported vault is not active:', vault.id)
+        return
+      }
       navigate(walletRoutes.assets.path())
     },
     [appWalletService, vaultManager, navigate]
@@ -184,18 +191,11 @@ export const NoWalletView = () => {
 
     try {
       const vault = await vaultManager.importVaultReplace(pendingReplace.content, pendingReplace.password)
-      await appWalletService.switchToVultisigMode(true)
-      await vaultManager.loadVaults()
-      await vaultManager.selectVault(vault.id, false)
-      setShowPasswordModal(false)
-      setPendingVaultFile(null)
-      setShowReplaceConfirm(false)
-      setPendingReplace(null)
-      navigate(walletRoutes.assets.path())
+      await applyImportedVault(vault)
     } catch (error) {
       logger.error('Failed to import vault:', error)
     }
-  }, [pendingReplace, navigate, vaultManager, appWalletService])
+  }, [pendingReplace, vaultManager, applyImportedVault])
 
   const handleReplaceConfirmClose = useCallback(() => {
     setShowReplaceConfirm(false)
@@ -339,7 +339,8 @@ export const NoWalletView = () => {
       />
       <ConfirmationModal
         visible={showReplaceConfirm}
-        content={intl.formatMessage({ id: 'wallet.vultisig.import.error.duplicate' })}
+        content={intl.formatMessage({ id: 'wallet.vultisig.import.replace.description' })}
+        okText={intl.formatMessage({ id: 'wallet.vultisig.import.replace.confirm' })}
         onSuccess={handleReplaceConfirm}
         onClose={handleReplaceConfirmClose}
       />
