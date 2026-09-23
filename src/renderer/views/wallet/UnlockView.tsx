@@ -1,24 +1,35 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { useObservableState } from 'observable-hooks'
+import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
+import { ConfirmationModal } from '../../components/modal/confirmation'
 import { VaultPasswordModal } from '../../components/modal/VaultPasswordModal'
 import { UnlockForm } from '../../components/wallet/unlock'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { createScopedLogger } from '../../helpers/logger'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
+import { useVultisigVaultImport } from '../../hooks/useVultisigVaultImport'
 import * as walletRoutes from '../../routes/wallet'
 import { isVultisigMode, VultisigPhase } from '../../services/wallet/types'
-
-const logger = createScopedLogger('UnlockView')
 
 export const UnlockView = (): JSX.Element => {
   const { state: keystore, unlock, remove, change$ } = useKeystoreState()
   const { walletsUI } = useKeystoreWallets()
   const { appWalletService } = useWalletContext()
   const navigate = useNavigate()
+  const intl = useIntl()
+  const {
+    importVault,
+    showPasswordModal,
+    passwordSubject,
+    handlePasswordSubmit,
+    handlePasswordModalClose,
+    showReplaceConfirm,
+    handleReplaceConfirm,
+    handleReplaceConfirmClose
+  } = useVultisigVaultImport()
 
   // Get app wallet state to check if we're in Vultisig mode
   const appWalletState = useObservableState(appWalletService.appWalletState$, undefined)
@@ -75,59 +86,6 @@ export const UnlockView = (): JSX.Element => {
   const isVultisigLocked = vultisigState.phase === VultisigPhase.VaultLocked && vultisigState.activeVault !== null
   const isVultisigVaultEncrypted = vultisigState.activeVault?.isEncrypted ?? true
 
-  // Vultisig vault import state
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
-  const [pendingVaultFile, setPendingVaultFile] = useState<{ content: string; filename: string } | null>(null)
-
-  // Import Vultisig vault from .vult file
-  const importVaultHandler = useCallback(async () => {
-    try {
-      const result = await window.apiMpc.openVaultFile()
-      if (!result) return // User canceled
-
-      if (result.isEncrypted) {
-        // Show password modal for encrypted vaults
-        setPendingVaultFile({ content: result.content, filename: result.filename })
-        setShowPasswordModal(true)
-      } else {
-        // Import unencrypted vault directly
-        const vault = await window.apiMpc.importVault(result.content)
-        await appWalletService.switchToVultisigMode(true)
-        await appWalletService.vaultManager.loadVaults()
-        await appWalletService.vaultManager.selectVault(vault.id, false)
-        navigate(walletRoutes.assets.path())
-      }
-    } catch (error) {
-      logger.error('Failed to import vault:', error)
-    }
-  }, [navigate, appWalletService])
-
-  // Handle password submission for encrypted vault
-  const handlePasswordSubmit = useCallback(
-    async (password: string) => {
-      if (!pendingVaultFile) return
-
-      try {
-        const vault = await window.apiMpc.importVault(pendingVaultFile.content, password)
-        await appWalletService.switchToVultisigMode(true)
-        await appWalletService.vaultManager.loadVaults()
-        await appWalletService.vaultManager.selectVault(vault.id, false)
-        setShowPasswordModal(false)
-        setPendingVaultFile(null)
-        navigate(walletRoutes.assets.path())
-      } catch (error) {
-        logger.error('Failed to import vault with password:', error)
-        throw error
-      }
-    },
-    [pendingVaultFile, navigate, appWalletService]
-  )
-
-  const handlePasswordModalClose = useCallback(() => {
-    setShowPasswordModal(false)
-    setPendingVaultFile(null)
-  }, [])
-
   return (
     <>
       <UnlockForm
@@ -143,13 +101,20 @@ export const UnlockView = (): JSX.Element => {
         isVultisigVaultEncrypted={isVultisigVaultEncrypted}
         onVultisigUnlock={unlockVultisigVault}
         vultisigError={vultisigState.error}
-        onVultisigImport={importVaultHandler}
+        onVultisigImport={importVault}
       />
       <VaultPasswordModal
         visible={showPasswordModal}
-        subject={pendingVaultFile?.filename || ''}
+        subject={passwordSubject}
         onSubmit={handlePasswordSubmit}
         onClose={handlePasswordModalClose}
+      />
+      <ConfirmationModal
+        visible={showReplaceConfirm}
+        content={intl.formatMessage({ id: 'wallet.vultisig.import.replace.description' })}
+        okText={intl.formatMessage({ id: 'wallet.vultisig.import.replace.confirm' })}
+        onSuccess={handleReplaceConfirm}
+        onClose={handleReplaceConfirmClose}
       />
     </>
   )

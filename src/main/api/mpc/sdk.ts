@@ -15,6 +15,13 @@ import { VULTISIG_DIR } from '../const'
 let sdkInstance: Vultisig | null = null
 let initPromise: Promise<Vultisig> | null = null
 let _disposing = false
+let lastPasswordRequiredVaultId: string | undefined
+
+export function takeLastPasswordRequiredVaultId(): string | undefined {
+  const id = lastPasswordRequiredVaultId
+  lastPasswordRequiredVaultId = undefined
+  return id
+}
 
 // Password cache TTL (5 minutes)
 const PASSWORD_CACHE_TTL = 5 * 60 * 1000
@@ -61,7 +68,8 @@ export async function initializeSDK(): Promise<Vultisig> {
     //
     // Flatpak: do not use default ~/.vultisig (host path is RO for migration only
     // and is not sandbox-writable). Pin storage under APP_DATA_DIR instead.
-    // SDK 2.19.19 does not honor VULTISIG_CONFIG_DIR — pass FileStorage basePath.
+    // SDK ≥3.0.0 honors VULTISIG_CONFIG_DIR for default storage; still pass
+    // FileStorage basePath so Flatpak does not depend on that env.
     let storage: unknown
     if (isFlatpak()) {
       if (!FileStorage) {
@@ -78,6 +86,7 @@ export async function initializeSDK(): Promise<Vultisig> {
         defaultTTL: PASSWORD_CACHE_TTL
       },
       onPasswordRequired: async (vaultId: string, vaultName: string) => {
+        lastPasswordRequiredVaultId = vaultId
         const msg = `Password required for vault "${vaultName}" (${vaultId}) — unlock the vault first via apiMpc.unlockVault`
         log.warn(`[MPC SDK] onPasswordRequired fired (cache miss): ${msg}`)
         throw new Error(msg)

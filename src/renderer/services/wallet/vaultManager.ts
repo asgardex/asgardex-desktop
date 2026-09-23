@@ -19,6 +19,7 @@ import { timer } from 'rxjs'
 
 import { LastOpenedWallet } from '../../../shared/api/types'
 import { WalletType } from '../../../shared/wallet/types'
+import { probeVultisigVaultImport, replaceVultisigVaultImport } from '../../helpers/importVultisigVault'
 import { createScopedLogger } from '../../helpers/logger'
 import { observableState } from '../../helpers/stateHelper'
 
@@ -336,6 +337,47 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     }
   }
 
+  const openVaultFile = () => window.apiMpc.openVaultFile()
+
+  const importVault = async (content: string, password?: string) => {
+    try {
+      return await probeVultisigVaultImport(content, password)
+    } catch (error) {
+      logger.error('Failed to import vault:', error)
+      throw error
+    }
+  }
+
+  const importVaultReplace = async (content: string, password?: string) => {
+    try {
+      return await replaceVultisigVaultImport(content, password)
+    } catch (error) {
+      logger.error('Failed to replace imported vault:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Fill the SDK password cache for a vault that is already stored.
+   * Used when import cannot compare an encrypted local share yet.
+   * Unlike unlockVault(), this does not select the vault or change phase.
+   */
+  const unlockStoredVault = async (vaultId: string, password: string) => {
+    await window.apiMpc.unlockVault(vaultId, password)
+  }
+
+  /**
+   * Reload the vault list and select a vault that was just imported, with no
+   * further password prompt. True only when that vault is the active one.
+   * Wallet-mode switching stays on appWalletService.
+   */
+  const activateImportedVault = async (vaultId: string): Promise<boolean> => {
+    await loadVaults()
+    await selectVault(vaultId, false)
+    const state = vultisigState()
+    return state.phase === VultisigPhase.Active && state.activeVault?.id === vaultId
+  }
+
   /**
    * Reset to vault selection phase
    */
@@ -540,6 +582,11 @@ export const createVaultManager = (onSaveWallet: SaveWalletCallback): VaultManag
     deleteVault,
     renameVault,
     exportVault,
+    openVaultFile,
+    importVault,
+    importVaultReplace,
+    unlockStoredVault,
+    activateImportedVault,
     resetToVaultSelection,
     setActiveVault,
     lockVault,
