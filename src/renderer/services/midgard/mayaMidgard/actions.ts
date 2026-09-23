@@ -37,9 +37,8 @@ export const createActionsService = (
               itemsPerPage * page // offset parameter
             )
           ),
-          RxOp.catchError(
-            (): Rx.Observable<GetActions200Response> =>
-              Rx.of({ actions: [], count: '0', meta: { nextPageToken: '', prevPageToken: '' } })
+          RxOp.catchError((): Rx.Observable<GetActions200Response> =>
+            Rx.of({ actions: [], count: '0', meta: { nextPageToken: '', prevPageToken: '' } })
           ),
           RxOp.switchMap((response) => Rx.of(RD.success(response))),
           liveData.map((response) => {

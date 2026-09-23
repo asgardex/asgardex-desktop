@@ -602,21 +602,20 @@ const createPoolsService = ({
   const validatePool$ = (poolAddress: PoolAddress, chain: Chain): ValidatePoolLD =>
     FP.pipe(
       poolAddresses$(),
-      liveData.chain(
-        (poolAddresses): PoolAddressesLD =>
-          FP.pipe(
-            poolAddresses,
-            liveData.fromPredicate(
-              (addresses) =>
-                FP.pipe(
-                  addresses,
-                  A.map(({ chain, halted }) => ({ chain, halted })),
-                  // Valid chains only that ones which are NOT included to the halted array
-                  P.not(A.elem(eqHaltedChain)({ chain, halted: true }))
-                ),
-              () => new Error(`Trading for pools on ${chain} chain(s) is halted for maintenance.`)
-            )
+      liveData.chain((poolAddresses): PoolAddressesLD =>
+        FP.pipe(
+          poolAddresses,
+          liveData.fromPredicate(
+            (addresses) =>
+              FP.pipe(
+                addresses,
+                A.map(({ chain, halted }) => ({ chain, halted })),
+                // Valid chains only that ones which are NOT included to the halted array
+                P.not(A.elem(eqHaltedChain)({ chain, halted: true }))
+              ),
+            () => new Error(`Trading for pools on ${chain} chain(s) is halted for maintenance.`)
           )
+        )
       ),
       liveData.map((addresses) => getPoolAddressesByChain(addresses, chain)),
       liveData.chain((oAddresses) =>

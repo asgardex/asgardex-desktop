@@ -38,61 +38,60 @@ const UPPER_FEE_BOUND = 100000
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
-  RxOp.switchMap(
-    ([keystore, network, hdSettings]): ClientState$ =>
-      Rx.of(
-        FP.pipe(
-          getPhrase(keystore),
-          O.map<string, ClientState>((phrase) => {
-            try {
-              // Create custom data provider with API key
-              const apiKey = import.meta.env.VITE_NOWNODES_API_KEY || ''
-              const mainnetNownodesProvider = new NownodesProvider(
-                'https://zecbook.nownodes.io/api/v2',
-                ZECChain,
-                AssetZEC,
-                ZEC_DECIMAL,
-                apiKey
-              )
+  RxOp.switchMap(([keystore, network, hdSettings]): ClientState$ =>
+    Rx.of(
+      FP.pipe(
+        getPhrase(keystore),
+        O.map<string, ClientState>((phrase) => {
+          try {
+            // Create custom data provider with API key
+            const apiKey = import.meta.env.VITE_NOWNODES_API_KEY || ''
+            const mainnetNownodesProvider = new NownodesProvider(
+              'https://zecbook.nownodes.io/api/v2',
+              ZECChain,
+              AssetZEC,
+              ZEC_DECIMAL,
+              apiKey
+            )
 
-              // Create provider configuration based on network
-              // For testnet, we'll skip the provider since Nownodes doesn't support ZEC testnet
-              const providers: UtxoOnlineDataProviders[] =
-                network === Network.Testnet
-                  ? [] // No providers for testnet
-                  : [
-                      {
-                        [Network.Testnet]: undefined,
-                        [Network.Stagenet]: mainnetNownodesProvider,
-                        [Network.Mainnet]: mainnetNownodesProvider
-                      }
-                    ]
+            // Create provider configuration based on network
+            // For testnet, we'll skip the provider since Nownodes doesn't support ZEC testnet
+            const providers: UtxoOnlineDataProviders[] =
+              network === Network.Testnet
+                ? [] // No providers for testnet
+                : [
+                    {
+                      [Network.Testnet]: undefined,
+                      [Network.Stagenet]: mainnetNownodesProvider,
+                      [Network.Mainnet]: mainnetNownodesProvider
+                    }
+                  ]
 
-              const { rootDerivationPaths } = getKeystoreDerivation(ZECChain, hdSettings)
-              const zecInitParams = {
-                ...defaultZECParams,
-                phrase: phrase,
-                network: network,
-                explorerProviders: zcashExplorerProviders,
-                dataProviders: providers,
-                rootDerivationPaths,
-                feeBounds: {
-                  lower: LOWER_FEE_BOUND,
-                  upper: UPPER_FEE_BOUND
-                }
+            const { rootDerivationPaths } = getKeystoreDerivation(ZECChain, hdSettings)
+            const zecInitParams = {
+              ...defaultZECParams,
+              phrase: phrase,
+              network: network,
+              explorerProviders: zcashExplorerProviders,
+              dataProviders: providers,
+              rootDerivationPaths,
+              feeBounds: {
+                lower: LOWER_FEE_BOUND,
+                upper: UPPER_FEE_BOUND
               }
-
-              const client = new Client(zecInitParams)
-              return RD.success(client)
-            } catch (error) {
-              logger.error('Failed to create ZEC client', error)
-              return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
-          }),
-          // Set back to `initial` if no phrase is available (locked wallet)
-          O.getOrElse<ClientState>(() => RD.initial)
-        )
-      ).pipe(RxOp.startWith(RD.pending))
+
+            const client = new Client(zecInitParams)
+            return RD.success(client)
+          } catch (error) {
+            logger.error('Failed to create ZEC client', error)
+            return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+          }
+        }),
+        // Set back to `initial` if no phrase is available (locked wallet)
+        O.getOrElse<ClientState>(() => RD.initial)
+      )
+    ).pipe(RxOp.startWith(RD.pending))
   ),
   RxOp.startWith<ClientState>(RD.initial),
   RxOp.shareReplay(1)

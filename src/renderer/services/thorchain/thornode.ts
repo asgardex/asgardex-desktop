@@ -400,8 +400,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
           }
         })
       ),
-      RxOp.catchError(
-        (): LiquidityProvidersLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
+      RxOp.catchError((): LiquidityProvidersLD =>
+        Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
       ),
       RxOp.startWith(RD.pending)
     )
@@ -427,9 +427,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
               l1Address: item.l1_address
             }))
           ),
-          RxOp.catchError(
-            (err: unknown): Rx.Observable<RD.RemoteData<Error, TcyClaim[]>> =>
-              Rx.of(RD.failure(err instanceof Error ? err : new Error(`Unknown error for ${address}`)))
+          RxOp.catchError((err: unknown): Rx.Observable<RD.RemoteData<Error, TcyClaim[]>> =>
+            Rx.of(RD.failure(err instanceof Error ? err : new Error(`Unknown error for ${address}`)))
           )
         )
       ),
@@ -531,8 +530,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
           }
         }
       ),
-      RxOp.catchError(
-        (): SaverProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} saver`)))
+      RxOp.catchError((): SaverProviderLD =>
+        Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} saver`)))
       ),
       RxOp.startWith(RD.pending)
     )
@@ -573,8 +572,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
           }
         }
       ),
-      RxOp.catchError(
-        (): RunePoolProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${address} provider`)))
+      RxOp.catchError((): RunePoolProviderLD =>
+        Rx.of(RD.failure(Error(`Failed to load info for ${address} provider`)))
       ),
       RxOp.startWith(RD.pending)
     )
@@ -639,8 +638,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
           }
         }
       ),
-      RxOp.catchError(
-        (): ThorchainPoolLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} earner`)))
+      RxOp.catchError((): ThorchainPoolLD =>
+        Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} earner`)))
       ),
       RxOp.startWith(RD.pending)
     )

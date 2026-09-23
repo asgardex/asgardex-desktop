@@ -467,20 +467,16 @@ export const createAppWalletService = (): AppWalletService => {
     vaultManager.vultisigState$
   ]).pipe(
     RxOp.map(([keystoreWallets, vultisigState]) => [
-      ...keystoreWallets.map(
-        (w): Wallet => ({
-          type: WalletType.Keystore,
-          id: w.id,
-          name: w.name
-        })
-      ),
-      ...vultisigState.availableVaults.map(
-        (v): Wallet => ({
-          type: WalletType.Vultisig,
-          id: v.id,
-          name: v.name
-        })
-      )
+      ...keystoreWallets.map((w): Wallet => ({
+        type: WalletType.Keystore,
+        id: w.id,
+        name: w.name
+      })),
+      ...vultisigState.availableVaults.map((v): Wallet => ({
+        type: WalletType.Vultisig,
+        id: v.id,
+        name: v.name
+      }))
     ]),
     RxOp.shareReplay(1)
   )
@@ -513,24 +509,20 @@ export const createAppWalletService = (): AppWalletService => {
         }
         return FP.pipe(
           keystoreState,
-          O.map(
-            (kc): Wallet => ({
-              type: WalletType.Keystore,
-              id: kc.id,
-              name: kc.name
-            })
-          )
+          O.map((kc): Wallet => ({
+            type: WalletType.Keystore,
+            id: kc.id,
+            name: kc.name
+          }))
         )
       } else if (isKeystoreMode(state)) {
         return FP.pipe(
           state,
-          O.map(
-            (kc): Wallet => ({
-              type: WalletType.Keystore,
-              id: kc.id,
-              name: kc.name
-            })
-          )
+          O.map((kc): Wallet => ({
+            type: WalletType.Keystore,
+            id: kc.id,
+            name: kc.name
+          }))
         )
       }
       return O.none

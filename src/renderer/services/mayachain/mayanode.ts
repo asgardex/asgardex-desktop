@@ -326,9 +326,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           assetRedeemValue: baseAmount(bnOrZero(provider.asset_redeem_value))
         }
       }),
-      RxOp.catchError(
-        (): LiquidityProviderForPoolLD =>
-          Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
+      RxOp.catchError((): LiquidityProviderForPoolLD =>
+        Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
       ),
       RxOp.startWith(RD.pending)
     )
@@ -383,8 +382,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           }
         })
       ),
-      RxOp.catchError(
-        (): LiquidityProvidersLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
+      RxOp.catchError((): LiquidityProvidersLD =>
+        Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
       ),
       RxOp.startWith(RD.pending)
     )
@@ -478,8 +477,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           }
         }
       ),
-      RxOp.catchError(
-        (): SaverProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} saver`)))
+      RxOp.catchError((): SaverProviderLD =>
+        Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} saver`)))
       ),
       RxOp.startWith(RD.pending)
     )
@@ -696,8 +695,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           }
         }
       ),
-      RxOp.catchError(
-        (): CacaoPoolProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${address} cacao pool provider`)))
+      RxOp.catchError((): CacaoPoolProviderLD =>
+        Rx.of(RD.failure(Error(`Failed to load info for ${address} cacao pool provider`)))
       ),
       RxOp.startWith(RD.pending)
     )

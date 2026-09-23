@@ -64,16 +64,15 @@ export const addressUI$: (
           () => Rx.of<O.Option<WalletAddress>>(O.none),
           (client) =>
             Rx.from(client.getAddressAsync(walletIndex)).pipe(
-              RxOp.map(
-                (address: Address): O.Option<WalletAddress> =>
-                  O.some({
-                    address,
-                    chain,
-                    type: WalletType.Keystore,
-                    walletAccount,
-                    walletIndex,
-                    hdMode
-                  })
+              RxOp.map((address: Address): O.Option<WalletAddress> =>
+                O.some({
+                  address,
+                  chain,
+                  type: WalletType.Keystore,
+                  walletAccount,
+                  walletIndex,
+                  hdMode
+                })
               ),
               RxOp.catchError(() => Rx.of<O.Option<WalletAddress>>(O.none))
             )
@@ -135,16 +134,15 @@ export const keystoreAddressUI$: (
           () => Rx.of<O.Option<WalletAddress>>(O.none),
           (client) =>
             Rx.from(client.getAddressAsync(walletIndex)).pipe(
-              RxOp.map(
-                (address: Address): O.Option<WalletAddress> =>
-                  O.some({
-                    address,
-                    chain,
-                    type: WalletType.Keystore,
-                    walletAccount,
-                    walletIndex,
-                    hdMode
-                  })
+              RxOp.map((address: Address): O.Option<WalletAddress> =>
+                O.some({
+                  address,
+                  chain,
+                  type: WalletType.Keystore,
+                  walletAccount,
+                  walletIndex,
+                  hdMode
+                })
               ),
               RxOp.catchError(() => Rx.of<O.Option<WalletAddress>>(O.none))
             )

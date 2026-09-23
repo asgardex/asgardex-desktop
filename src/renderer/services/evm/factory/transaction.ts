@@ -251,14 +251,13 @@ export const createEvmTransactionService = (
       ),
       RxOp.switchMap((txResult) => Rx.from(txResult)),
       RxOp.map(RD.success),
-      RxOp.catchError(
-        (error): TxHashLD =>
-          Rx.of(
-            RD.failure({
-              msg: error?.message ?? error.toString(),
-              errorId: ErrorId.APPROVE_TX
-            })
-          )
+      RxOp.catchError((error): TxHashLD =>
+        Rx.of(
+          RD.failure({
+            msg: error?.message ?? error.toString(),
+            errorId: ErrorId.APPROVE_TX
+          })
+        )
       ),
       RxOp.startWith(RD.pending)
     )
@@ -368,14 +367,13 @@ export const createEvmTransactionService = (
     return FP.pipe(
       Rx.from(isApproved({ provider, contractAddress, spenderAddress, fromAddress })),
       RxOp.map(RD.success),
-      RxOp.catchError(
-        (error): LiveData<ApiError, boolean> =>
-          Rx.of(
-            RD.failure({
-              msg: error?.message ?? error.toString(),
-              errorId: ErrorId.APPROVE_TX
-            })
-          )
+      RxOp.catchError((error): LiveData<ApiError, boolean> =>
+        Rx.of(
+          RD.failure({
+            msg: error?.message ?? error.toString(),
+            errorId: ErrorId.APPROVE_TX
+          })
+        )
       ),
       RxOp.startWith(RD.pending)
     )
@@ -406,14 +404,13 @@ export const createEvmTransactionService = (
     return FP.pipe(
       Rx.from(getAllowance({ provider, contractAddress, spenderAddress, fromAddress })),
       RxOp.map((allowance) => RD.success(baseAmount(allowance.toFixed(), decimals))),
-      RxOp.catchError(
-        (error): AllowanceLD =>
-          Rx.of(
-            RD.failure({
-              msg: error?.message ?? error.toString(),
-              errorId: ErrorId.APPROVE_TX
-            })
-          )
+      RxOp.catchError((error): AllowanceLD =>
+        Rx.of(
+          RD.failure({
+            msg: error?.message ?? error.toString(),
+            errorId: ErrorId.APPROVE_TX
+          })
+        )
       ),
       RxOp.startWith(RD.pending)
     )

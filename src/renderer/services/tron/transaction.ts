@@ -40,14 +40,13 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
         })
       ),
       RxOp.map(RD.success),
-      RxOp.catchError(
-        (error): TxHashLD =>
-          Rx.of(
-            RD.failure({
-              msg: error?.message ?? error.toString(),
-              errorId: ErrorId.APPROVE_TX
-            })
-          )
+      RxOp.catchError((error): TxHashLD =>
+        Rx.of(
+          RD.failure({
+            msg: error?.message ?? error.toString(),
+            errorId: ErrorId.APPROVE_TX
+          })
+        )
       ),
       RxOp.startWith(RD.pending)
     )
@@ -147,14 +146,13 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
         })
       ),
       RxOp.map(RD.success),
-      RxOp.catchError(
-        (error): LiveData<ApiError, boolean> =>
-          Rx.of(
-            RD.failure({
-              msg: error?.message ?? error.toString(),
-              errorId: ErrorId.APPROVE_TX
-            })
-          )
+      RxOp.catchError((error): LiveData<ApiError, boolean> =>
+        Rx.of(
+          RD.failure({
+            msg: error?.message ?? error.toString(),
+            errorId: ErrorId.APPROVE_TX
+          })
+        )
       ),
       RxOp.startWith(RD.pending)
     )

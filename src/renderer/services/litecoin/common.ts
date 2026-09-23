@@ -54,31 +54,30 @@ const BlockcypherDataProviders: UtxoOnlineDataProviders = {
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, hdSettings$]),
-  RxOp.switchMap(
-    ([keystore, network, hdSettings]): ClientState$ =>
-      Rx.of(
-        FP.pipe(
-          getPhrase(keystore),
-          O.map<string, ClientState>((phrase) => {
-            try {
-              const { rootDerivationPaths } = getKeystoreDerivation(LTCChain, hdSettings)
-              const ltcInitParams = {
-                ...defaultLtcParams,
-                phrase: phrase,
-                network: network,
-                dataProviders: [BlockcypherDataProviders, BitgoProviders],
-                rootDerivationPaths
-              }
-              const client = new Client(ltcInitParams)
-              return RD.success(client)
-            } catch (error) {
-              return RD.failure<Error>(isError(error) ? error : new Error('Failed to create LTC client'))
+  RxOp.switchMap(([keystore, network, hdSettings]): ClientState$ =>
+    Rx.of(
+      FP.pipe(
+        getPhrase(keystore),
+        O.map<string, ClientState>((phrase) => {
+          try {
+            const { rootDerivationPaths } = getKeystoreDerivation(LTCChain, hdSettings)
+            const ltcInitParams = {
+              ...defaultLtcParams,
+              phrase: phrase,
+              network: network,
+              dataProviders: [BlockcypherDataProviders, BitgoProviders],
+              rootDerivationPaths
             }
-          }),
-          // Set back to `initial` if no phrase is available (locked wallet)
-          O.getOrElse<ClientState>(() => RD.initial)
-        )
-      ).pipe(RxOp.startWith(RD.pending))
+            const client = new Client(ltcInitParams)
+            return RD.success(client)
+          } catch (error) {
+            return RD.failure<Error>(isError(error) ? error : new Error('Failed to create LTC client'))
+          }
+        }),
+        // Set back to `initial` if no phrase is available (locked wallet)
+        O.getOrElse<ClientState>(() => RD.initial)
+      )
+    ).pipe(RxOp.startWith(RD.pending))
   ),
   RxOp.startWith<ClientState>(RD.initial),
   RxOp.shareReplay(1)
