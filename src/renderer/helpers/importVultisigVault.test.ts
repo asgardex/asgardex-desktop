@@ -48,6 +48,11 @@ describe('helpers/importVultisigVault', () => {
     expect(importVault).toHaveBeenCalledWith('content', undefined)
   })
 
+  it('probe throws when IPC returns INVALID_PASSWORD', async () => {
+    importVault.mockResolvedValue({ ok: false, code: 'INVALID_PASSWORD' })
+    await expect(probeVultisigVaultImport('content', 'pw')).rejects.toThrow('INVALID_PASSWORD')
+  })
+
   it('replace calls importVault with conflictResolution replace', async () => {
     importVault.mockResolvedValue({ ok: true, vault })
     await expect(replaceVultisigVaultImport('content', 'pw')).resolves.toEqual(vault)

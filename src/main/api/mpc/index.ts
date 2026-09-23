@@ -383,6 +383,10 @@ export function registerMpcIpcHandlers(ipcMain: IpcMain): void {
             ? { ok: false as const, code: 'EXISTING_VAULT_PASSWORD_REQUIRED' as const, vaultId }
             : { ok: false as const, code: 'EXISTING_VAULT_PASSWORD_REQUIRED' as const }
         }
+        if (code === 'INVALID_PASSWORD') {
+          log.info('[MPC IPC] Import rejected: invalid password')
+          return { ok: false as const, code: 'INVALID_PASSWORD' as const }
+        }
         log.error(`[MPC IPC] Failed to import vault:`, errorMsg(error))
         const wrapped = wrapSDKError(error)
         if (typeof code === 'string' && code) wrapped.name = code

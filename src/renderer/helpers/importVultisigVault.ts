@@ -14,6 +14,9 @@ export const probeVultisigVaultImport = async (
   if (!result.ok && result.code === 'EXISTING_VAULT_PASSWORD_REQUIRED') {
     return { status: 'existing-locked', vaultId: result.vaultId }
   }
+  if (!result.ok && result.code === 'INVALID_PASSWORD') {
+    throw new Error('INVALID_PASSWORD')
+  }
   if (result.ok) return { status: 'imported', vault: result.vault }
   throw new Error('Unexpected vault import result')
 }
