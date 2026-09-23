@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { Locale } from '../../../shared/i18n/types'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { LOCALES } from '../../i18n'
+import { LOCALE_LABELS, LOCALES } from '../../i18n'
 import * as walletRoutes from '../../routes/wallet'
 import { AVAILABLE_NETWORKS } from '../../services/const'
 import { isStandaloneLedgerMode } from '../../services/wallet/types'
@@ -104,11 +104,11 @@ export const AppGeneralSettings = (props: Props) => {
           <div
             key={l}
             className={clsx(
-              'flex min-w-[222px] items-center px-10px py-2 font-main text-16 text-text1 uppercase dark:text-text1d',
+              'flex min-w-[222px] items-center px-10px py-2 font-main text-16 text-text1 dark:text-text1d',
               l === locale ? 'font-main-semi-bold' : 'font-main'
             )}
             onClick={() => changeLocale(l)}>
-            {l}
+            {LOCALE_LABELS[l]}
           </div>
         ))
       ),
@@ -120,7 +120,7 @@ export const AppGeneralSettings = (props: Props) => {
       <Dropdown
         trigger={
           <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-            <h3 className="m-0 font-main text-[16px] leading-5 text-text1 uppercase dark:text-text1d">{locale}</h3>
+            <h3 className="m-0 font-main text-[16px] leading-5 text-text1 dark:text-text1d">{LOCALE_LABELS[locale]}</h3>
             <DownIcon />
           </div>
         }

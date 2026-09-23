@@ -13,6 +13,9 @@ const common: CommonMessages = {
   'common.addresses': 'Addresses',
   'common.savedAddresses': 'Saved Addresses',
   'common.addAddress': 'Address added successfully',
+  'common.addAddress.missing': 'Choose a chain and enter an address and a name',
+  'common.addAddress.duplicate': 'This address is already saved',
+  'common.stored': 'Saved',
   'common.removeAddress': 'Address removed successfully',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':

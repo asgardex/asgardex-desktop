@@ -10,6 +10,17 @@ import { Messages } from './types'
 
 export const LOCALES = [Locale.EN, Locale.DE, Locale.FR, Locale.RU, Locale.HI, Locale.ES, Locale.KO]
 
+/** Each language's own name, so the picker stays readable before you can read the UI. */
+export const LOCALE_LABELS: Record<Locale, string> = {
+  [Locale.EN]: 'English',
+  [Locale.DE]: 'Deutsch',
+  [Locale.FR]: 'Français',
+  [Locale.RU]: 'Русский',
+  [Locale.HI]: 'हिन्दी',
+  [Locale.ES]: 'Español',
+  [Locale.KO]: '한국어'
+}
+
 export const getLocaleFromString = (s: string): Locale => {
   switch (s) {
     case 'en':

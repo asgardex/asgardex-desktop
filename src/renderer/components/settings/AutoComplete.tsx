@@ -1,4 +1,3 @@
-import { useCallback, useState } from 'react'
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
@@ -6,34 +5,27 @@ import { Label } from '../uielements/label'
 
 export const AutoComplete = ({
   placeholder,
-  value: defaultValue,
+  value,
   options,
-  onChange
+  onChange,
+  invalid = false
 }: {
   value?: string
   placeholder: string
   options: { value: string }[]
   onChange: (address: string) => void
+  invalid?: boolean
 }) => {
-  const [selected, setSelected] = useState(defaultValue)
-
-  const handleChange = useCallback(
-    (value: string) => {
-      setSelected(value)
-      onChange(value)
-    },
-    [onChange]
-  )
-
   return (
-    <Listbox onChange={handleChange}>
+    <Listbox value={value ?? ''} onChange={onChange}>
       <div className="relative">
         <ListboxButton
           className={clsx(
-            'relative block w-full rounded-lg border border-solid border-gray0 bg-bg0 py-1.5 pr-8 pl-3 text-left text-sm/6 text-text0 dark:border-gray0d dark:bg-bg0d dark:text-text0d',
-            'focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25'
+            'relative block w-full rounded-lg border border-solid bg-bg0 py-1.5 pr-8 pl-3 text-left text-sm/6 text-text0 dark:bg-bg0d dark:text-text0d',
+            'focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25',
+            invalid ? 'border-error0 dark:border-error0d' : 'border-gray0 dark:border-gray0d'
           )}>
-          <Label>{selected ? selected : placeholder.toUpperCase()}</Label>
+          <Label>{value ? value : placeholder.toUpperCase()}</Label>
           <ChevronDownIcon className="group pointer-events-none absolute top-2.5 right-2.5 size-4 stroke-text0 dark:stroke-text0d" />
         </ListboxButton>
       </div>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import {
@@ -9,7 +9,8 @@ import {
   LockClosedIcon,
   QrCodeIcon,
   ArrowUpRightIcon,
-  PlusCircleIcon
+  PlusCircleIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
@@ -832,21 +833,43 @@ export const WalletSettings = (props: Props): JSX.Element => {
 
   const [trustedAddresses, setTrustedAddresses] = useState<TrustedAddresses>()
   const [newAddress, setNewAddress] = useState<Partial<TrustedAddress>>({})
+  const [addressFeedback, setAddressFeedback] = useState<'saved' | 'missing' | 'duplicate' | null>(null)
+  const addressFeedbackTimer = useRef<number | undefined>(undefined)
 
   useEffect(() => {
     const subscription = userAddresses$.subscribe((addresses) => setTrustedAddresses({ addresses }))
     return () => subscription.unsubscribe()
   }, [])
 
+  useEffect(
+    () => () => {
+      if (addressFeedbackTimer.current) window.clearTimeout(addressFeedbackTimer.current)
+    },
+    []
+  )
+
+  const clearAddressFeedback = useCallback(() => {
+    setAddressFeedback(null)
+    if (addressFeedbackTimer.current) window.clearTimeout(addressFeedbackTimer.current)
+  }, [])
+
   const handleAddAddress = useCallback(() => {
-    if (newAddress.name && newAddress.address && newAddress.chain) {
-      addAddress({ name: newAddress.name, address: newAddress.address, chain: newAddress.chain })
-      setNewAddress({})
-      // TODO: notification
-      // message.success(intl.formatMessage({ id: 'common.addAddress' }))
-    } else {
-      // message.error(intl.formatMessage({ id: 'common.error' }))
+    if (addressFeedbackTimer.current) window.clearTimeout(addressFeedbackTimer.current)
+    const name = newAddress.name?.trim() ?? ''
+    const address = newAddress.address?.trim() ?? ''
+    const chain = newAddress.chain
+    if (!name || !address || !chain) {
+      setAddressFeedback('missing')
+      return
     }
+    if (!addAddress({ name, address, chain })) {
+      setAddressFeedback('duplicate')
+      return
+    }
+    setNewAddress({ chain })
+    setAddressFeedback('saved')
+    if (addressFeedbackTimer.current) window.clearTimeout(addressFeedbackTimer.current)
+    addressFeedbackTimer.current = window.setTimeout(() => setAddressFeedback(null), 4000)
   }, [newAddress])
 
   const handleRemoveAddress = useCallback((address: TrustedAddress) => {
@@ -855,44 +878,81 @@ export const WalletSettings = (props: Props): JSX.Element => {
     // message.success(intl.formatMessage({ id: 'common.removeAddress' }))
   }, [])
 
-  const renderAddAddressForm = useCallback(
-    () => (
-      <div className="mb-4 flex items-center gap-3">
-        <AutoComplete
-          placeholder={intl.formatMessage({ id: 'common.chain' })}
-          options={enabledChains.map((chain) => ({ value: chain }))}
-          value={newAddress.chain}
-          onChange={(value) => setNewAddress((prev) => ({ ...prev, chain: value as Chain }))}
-        />
-        <Input
-          className="h-[38px] border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
-          uppercase={false}
-          placeholder={intl.formatMessage({ id: 'common.address' })}
-          value={newAddress.address}
-          onChange={(e) => setNewAddress((prev) => ({ ...prev, address: e.target.value }))}
-        />
-        <Input
-          className="h-[38px] border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
-          uppercase={false}
-          placeholder={intl.formatMessage({ id: 'wallet.column.name' })}
-          value={newAddress.name}
-          onChange={(e) => setNewAddress((prev) => ({ ...prev, name: e.target.value }))}
-        />
+  const renderAddAddressForm = useCallback(() => {
+    const missing = addressFeedback === 'missing'
+    const addressInvalid = (missing && !newAddress.address?.trim()) || addressFeedback === 'duplicate'
+    const nameInvalid = missing && !newAddress.name?.trim()
+    const inputClass = (invalid: boolean) =>
+      clsx(
+        'h-[38px] border border-solid bg-bg0 dark:bg-bg0d',
+        invalid ? '!border-error0 dark:!border-error0d' : 'border-bg2 dark:border-bg2d'
+      )
 
-        <div className="mr-30px flex items-center md:mr-0">
-          <Button
-            typevalue="transparent"
-            className="cursor-pointer gap-x-1 pl-0 text-[12px]"
-            onClick={handleAddAddress}>
-            <PlusCircleIcon className="text-turquoise" width={20} height={20} />
-            {intl.formatMessage({ id: 'common.store' })}
-          </Button>
-          <InfoIcon className="ml-2" tooltip={intl.formatMessage({ id: 'settings.wallet.storeAddress.info' })} />
+    return (
+      <div className="mb-4 flex flex-col gap-2">
+        <div className="flex items-center gap-3">
+          <AutoComplete
+            placeholder={intl.formatMessage({ id: 'common.chain' })}
+            options={enabledChains.map((chain) => ({ value: chain }))}
+            value={newAddress.chain}
+            invalid={missing && !newAddress.chain}
+            onChange={(value) => {
+              clearAddressFeedback()
+              setNewAddress((prev) => ({ ...prev, chain: value as Chain }))
+            }}
+          />
+          <Input
+            className={inputClass(addressInvalid)}
+            uppercase={false}
+            placeholder={intl.formatMessage({ id: 'common.address' })}
+            value={newAddress.address ?? ''}
+            onChange={(e) => {
+              clearAddressFeedback()
+              setNewAddress((prev) => ({ ...prev, address: e.target.value }))
+            }}
+          />
+          <Input
+            className={inputClass(nameInvalid)}
+            uppercase={false}
+            placeholder={intl.formatMessage({ id: 'wallet.column.name' })}
+            value={newAddress.name ?? ''}
+            onChange={(e) => {
+              clearAddressFeedback()
+              setNewAddress((prev) => ({ ...prev, name: e.target.value }))
+            }}
+          />
+
+          <div className="mr-30px flex items-center md:mr-0">
+            <Button
+              typevalue="transparent"
+              className={clsx(
+                'cursor-pointer gap-x-1 pl-0 text-[12px]',
+                addressFeedback === 'saved' && '!text-success'
+              )}
+              onClick={handleAddAddress}>
+              {addressFeedback === 'saved' ? (
+                <CheckCircleIcon className="text-success" width={20} height={20} />
+              ) : (
+                <PlusCircleIcon className="text-turquoise" width={20} height={20} />
+              )}
+              {intl.formatMessage({ id: addressFeedback === 'saved' ? 'common.stored' : 'common.store' })}
+            </Button>
+            <InfoIcon className="ml-2" tooltip={intl.formatMessage({ id: 'settings.wallet.storeAddress.info' })} />
+          </div>
         </div>
+        {addressFeedback === 'missing' && (
+          <p className="font-main text-11 text-error0 dark:text-error0d">
+            {intl.formatMessage({ id: 'common.addAddress.missing' })}
+          </p>
+        )}
+        {addressFeedback === 'duplicate' && (
+          <p className="font-main text-11 text-error0 dark:text-error0d">
+            {intl.formatMessage({ id: 'common.addAddress.duplicate' })}
+          </p>
+        )}
       </div>
-    ),
-    [newAddress, handleAddAddress, intl, enabledChains]
-  )
+    )
+  }, [newAddress, handleAddAddress, intl, enabledChains, addressFeedback, clearAddressFeedback])
 
   const renderTrustedAddresses = useCallback(
     (chain: Chain) => {

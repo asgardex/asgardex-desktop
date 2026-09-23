@@ -1,16 +1,48 @@
-import { forwardRef, useState } from 'react'
+import { forwardRef, useEffect, useState } from 'react'
 
 import clsx from 'clsx'
 
 import { EyeHideIcon, EyeIcon } from '../../icons'
 import { Input, InputProps } from './Input'
 
-export type PasswordProps = { inputClassName?: string; error?: string } & Omit<InputProps, 'error' | 'uppercase'>
+export type PasswordProps = {
+  inputClassName?: string
+  error?: string
+  /** Replaces the default error-text classes. */
+  errorClassName?: string
+  /** Increment to replay the red border flash (each failed submit). */
+  errorPulse?: number
+} & Omit<InputProps, 'error' | 'uppercase'>
 
 export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props, ref): JSX.Element => {
-  const { id = 'input-pw', disabled = false, error, className = '', inputClassName = '', ...otherProps } = props
+  const {
+    id = 'input-pw',
+    disabled = false,
+    error,
+    errorClassName = 'mt-2 font-main text-sm text-error0 uppercase',
+    errorPulse = 0,
+    className = '',
+    inputClassName = '',
+    ...otherProps
+  } = props
 
   const [showPw, setShowPw] = useState(false)
+  const [flashing, setFlashing] = useState(false)
+
+  // Drop the class for a frame so a second failure replays the animation.
+  useEffect(() => {
+    if (!errorPulse || !error) {
+      setFlashing(false)
+      return
+    }
+    setFlashing(false)
+    const start = window.requestAnimationFrame(() => setFlashing(true))
+    const timer = window.setTimeout(() => setFlashing(false), 700)
+    return () => {
+      window.cancelAnimationFrame(start)
+      window.clearTimeout(timer)
+    }
+  }, [errorPulse, error])
 
   const Icon = showPw ? EyeIcon : EyeHideIcon
 
@@ -19,10 +51,11 @@ export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props,
       <div
         className={clsx(
           'flex w-full items-center rounded-lg border bg-bg0 dark:bg-bg0d',
-          error ? 'border-error0 dark:border-error0d' : 'border-gray0 dark:border-gray0d'
+          error ? 'border-error0 dark:border-error0d' : 'border-gray0 dark:border-gray0d',
+          flashing && 'password-error-flash'
         )}>
         <Input
-          className={clsx('!border-0 placeholder:uppercase', inputClassName)}
+          className={clsx('!border-0 placeholder:uppercase', flashing && '!bg-transparent', inputClassName)}
           ref={ref}
           error={!!error}
           id={id}
@@ -44,7 +77,7 @@ export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props,
           <Icon className={clsx('h-20px w-20px', error ? 'text-error0' : 'text-gray1 dark:text-gray1d')} />
         </div>
       </div>
-      {error && <p className="mt-2 font-main text-sm text-error0 uppercase">{error}</p>}
+      {error && <p className={errorClassName}>{error}</p>}
     </div>
   )
 })
