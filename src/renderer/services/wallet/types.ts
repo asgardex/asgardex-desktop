@@ -282,6 +282,10 @@ export type VaultManager = {
     | { status: 'existing-locked'; vaultId?: string }
   >
   importVaultReplace: (content: string, password?: string) => Promise<SerializedVault>
+  /** Unlock a stored vault so a later import can read it. Does not select it or change phase. */
+  unlockStoredVault: (vaultId: string, password: string) => Promise<void>
+  /** Load and select a just-imported vault. True only when that vault is active. */
+  activateImportedVault: (vaultId: string) => Promise<boolean>
 
   // State management
   resetToVaultSelection: () => void
@@ -306,6 +310,8 @@ export type AppWalletService = {
   switchToKeystoreMode: () => Promise<void>
   switchToStandaloneLedgerMode: (autoLock?: boolean) => Promise<void>
   switchToVultisigMode: (autoLock?: boolean) => Promise<void>
+  /** Switch into Vultisig mode and activate a vault that was just imported. */
+  openImportedVault: (vaultId: string) => Promise<boolean>
   restoreLastOpenedWallet: () => Promise<void>
   saveLastOpenedWallet: (wallet: LastOpenedWallet | undefined) => void
   // Unified wallet methods

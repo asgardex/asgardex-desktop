@@ -291,6 +291,15 @@ export const createAppWalletService = (): AppWalletService => {
     }
   }
 
+  /**
+   * Enter Vultisig mode and activate a vault that import just stored.
+   * False when that vault did not become the active vault.
+   */
+  const openImportedVault = async (vaultId: string): Promise<boolean> => {
+    await switchToVultisigMode(true)
+    return vaultManager.activateImportedVault(vaultId)
+  }
+
   // ============================================
   // Unified Wallet Methods
   // ============================================
@@ -642,6 +651,7 @@ export const createAppWalletService = (): AppWalletService => {
     switchToKeystoreMode,
     switchToStandaloneLedgerMode,
     switchToVultisigMode,
+    openImportedVault,
     restoreLastOpenedWallet,
     saveLastOpenedWallet,
     // Unified methods (Phase A-C)

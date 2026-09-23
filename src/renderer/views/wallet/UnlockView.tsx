@@ -96,11 +96,7 @@ export const UnlockView = (): JSX.Element => {
 
   const applyImportedVault = useCallback(
     async (vault: { id: string }) => {
-      await appWalletService.switchToVultisigMode(true)
-      await vaultManager.loadVaults()
-      await vaultManager.selectVault(vault.id, false)
-      const state = vaultManager.vultisigState()
-      const activated = state.phase === VultisigPhase.Active && state.activeVault?.id === vault.id
+      const activated = await appWalletService.openImportedVault(vault.id)
       setShowPasswordModal(false)
       setPendingVaultFile(null)
       setPendingExistingUnlock(null)
@@ -111,7 +107,7 @@ export const UnlockView = (): JSX.Element => {
         logger.error('Imported vault is not active:', vault.id)
       }
     },
-    [appWalletService, vaultManager]
+    [appWalletService]
   )
 
   const handleExistingLocked = useCallback((content: string, filePassword: string | undefined, vaultId?: string) => {
@@ -157,7 +153,7 @@ export const UnlockView = (): JSX.Element => {
       try {
         if (passwordMode === 'existing') {
           if (!pendingExistingUnlock) return
-          await window.apiMpc.unlockVault(pendingExistingUnlock.vaultId, password)
+          await vaultManager.unlockStoredVault(pendingExistingUnlock.vaultId, password)
           const imported = await vaultManager.importVault(
             pendingExistingUnlock.content,
             pendingExistingUnlock.filePassword

@@ -17,7 +17,6 @@ import { BackLinkButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { createScopedLogger } from '../../../helpers/logger'
 import * as walletRoutes from '../../../routes/wallet'
-import { VultisigPhase } from '../../../services/wallet/types'
 import { hasImportedKeystore } from '../../../services/wallet/util'
 
 const logger = createScopedLogger('NoWalletView')
@@ -74,11 +73,7 @@ export const NoWalletView = () => {
 
   const applyImportedVault = useCallback(
     async (vault: { id: string }) => {
-      await appWalletService.switchToVultisigMode(true)
-      await vaultManager.loadVaults()
-      await vaultManager.selectVault(vault.id, false)
-      const state = vaultManager.vultisigState()
-      const activated = state.phase === VultisigPhase.Active && state.activeVault?.id === vault.id
+      const activated = await appWalletService.openImportedVault(vault.id)
       setShowPasswordModal(false)
       setPendingVaultFile(null)
       setPendingExistingUnlock(null)
@@ -91,7 +86,7 @@ export const NoWalletView = () => {
       }
       navigate(walletRoutes.assets.path())
     },
-    [appWalletService, vaultManager, navigate]
+    [appWalletService, navigate]
   )
 
   const handleExistingLocked = useCallback((content: string, filePassword: string | undefined, vaultId?: string) => {
@@ -137,7 +132,7 @@ export const NoWalletView = () => {
       try {
         if (passwordMode === 'existing') {
           if (!pendingExistingUnlock) return
-          await window.apiMpc.unlockVault(pendingExistingUnlock.vaultId, password)
+          await vaultManager.unlockStoredVault(pendingExistingUnlock.vaultId, password)
           const imported = await vaultManager.importVault(
             pendingExistingUnlock.content,
             pendingExistingUnlock.filePassword
