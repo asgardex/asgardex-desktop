@@ -13,7 +13,7 @@ const common: CommonMessages = {
   'common.addresses': 'Адреса',
   'common.savedAddresses': 'Сохраненные адреса',
   'common.addAddress': 'Адрес успешно добавлен',
-  'common.addAddress.missing': 'Выберите сеть и введите адрес и имя',
+  'common.addAddress.missing': 'Выберите цепь и введите адрес и имя',
   'common.addAddress.duplicate': 'Этот адрес уже сохранён',
   'common.stored': 'Сохранено',
   'common.removeAddress': 'Адрес успешно удален',

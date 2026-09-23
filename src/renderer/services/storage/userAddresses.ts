@@ -1,10 +1,10 @@
-import { array as A, function as FP, option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { TrustedAddress, UserTrustedAddressStorage } from '../../../shared/api/types'
 import { ADDRESS_STORAGE_DEFAULT } from '../../../shared/const'
-import { eqString } from '../../helpers/fp/eq'
+import { eqChain, eqString } from '../../helpers/fp/eq'
 import { observableState } from '../../helpers/stateHelper'
 import { StoragePartialState, StorageState } from './types'
 
@@ -41,18 +41,17 @@ const userAddresses$: Rx.Observable<TrustedAddress[]> = FP.pipe(
   RxOp.shareReplay(1)
 )
 
-/** Returns false when this address string is already stored. */
+const sameEntry = (saved: TrustedAddress, next: TrustedAddress) =>
+  eqChain.equals(saved.chain, next.chain) && eqString.equals(saved.address, next.address)
+
+/** Returns false when this chain and address are already stored together. */
 const addAddress = (userAddress: TrustedAddress): boolean => {
   const savedAddress: UserTrustedAddressStorage = FP.pipe(
     getStorageState(),
     O.getOrElse(() => ADDRESS_STORAGE_DEFAULT)
   )
 
-  const alreadySaved = FP.pipe(
-    savedAddress.addresses,
-    A.map((saved) => saved.address),
-    A.elem(eqString)(userAddress.address)
-  )
+  const alreadySaved = savedAddress.addresses.some((saved) => sameEntry(saved, userAddress))
   if (alreadySaved) return false
 
   modifyStorage(
@@ -69,22 +68,12 @@ const removeAddress = (userAddress: TrustedAddress) => {
     O.getOrElse(() => ADDRESS_STORAGE_DEFAULT)
   )
 
-  FP.pipe(
-    savedAddresses.addresses,
-    A.map((savedAddress) => savedAddress.address),
-    A.elem(eqString)(userAddress.address),
-    (isAssetExistsInSavedArray) => {
-      if (isAssetExistsInSavedArray) {
-        modifyStorage(
-          O.some({
-            addresses: FP.pipe(
-              savedAddresses.addresses,
-              A.filter((savedAddress) => savedAddress.address !== userAddress.address)
-            )
-          })
-        )
-      }
-    }
+  if (!savedAddresses.addresses.some((saved) => sameEntry(saved, userAddress))) return
+
+  modifyStorage(
+    O.some({
+      addresses: savedAddresses.addresses.filter((saved) => !sameEntry(saved, userAddress))
+    })
   )
 }
 
