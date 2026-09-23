@@ -22,7 +22,8 @@ export const decentralizationByProtocol: Partial<Record<Protocol, { percent: num
   },
   Mayachain: {
     percent: 73,
-    detail: 'Same inbound vault as THORChain, with a smaller node set. No per-swap address is issued first.'
+    detail:
+      'Like THORChain, MAYAChain accepts swaps at its own shared inbound vault, with a smaller node set. No per-swap address is issued first.'
   },
   Chainflip: {
     percent: 58,
