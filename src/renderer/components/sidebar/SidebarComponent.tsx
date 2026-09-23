@@ -24,7 +24,6 @@ import PortfolioIcon from '../../assets/svg/icon-portfolio.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import TwitterIcon from '../../assets/svg/icon-twitter.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
-import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useOneClickContext } from '../../contexts/OneClickContext'
@@ -38,6 +37,7 @@ import * as poolsRoutes from '../../routes/pools'
 import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
 import { Label } from '../uielements/label'
+import { AsgardexLogo } from '../uielements/logo/AsgardexLogo'
 import { Tooltip } from '../uielements/tooltip'
 import { TransactionSlideshow } from '../uielements/transactionProgress/TransactionSlideshow'
 
@@ -229,7 +229,7 @@ export const SidebarComponent = memo(function SidebarComponent(props: Props): JS
   const renderLogo = useMemo(
     () => (
       <div className="mt-4 flex flex-col items-center justify-center">
-        <AsgardexLogo className="[&>*]:fill-text1 [&>*]:dark:fill-text1d" />
+        <AsgardexLogo className="text-text1 dark:text-text1d" />
         <Label
           className={clsx('-mt-3 !w-auto rounded-full px-2', networkBgCn)}
           color="white"

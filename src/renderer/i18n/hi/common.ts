@@ -13,6 +13,9 @@ const common: CommonMessages = {
   'common.addresses': 'पते',
   'common.savedAddresses': 'सहेजे गए पते',
   'common.addAddress': 'पता सफलतापूर्वक जोड़ा गया',
+  'common.addAddress.missing': 'एक चेन चुनें और पता तथा नाम दर्ज करें',
+  'common.addAddress.duplicate': 'यह पता पहले से सहेजा गया है',
+  'common.stored': 'सहेजा गया',
   'common.removeAddress': 'पता सफलतापूर्वक हटाया गया',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':

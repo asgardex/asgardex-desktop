@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useMemo } from 'react'
+import { useCallback, useState, useEffect, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { CpuChipIcon, ShieldCheckIcon, ArrowDownTrayIcon, BoltIcon } from '@heroicons/react/24/outline'
@@ -89,6 +89,9 @@ export const UnlockForm = ({
   const [unlocking, setUnlocking] = useState(false)
 
   const [unlockError, setUnlockError] = useState<O.Option<Error>>(O.none)
+  // Bumped on each failed unlock so the password field replays its red flash.
+  const [failedAttempts, setFailedAttempts] = useState(0)
+  const [dismissedVultisigError, setDismissedVultisigError] = useState<string | undefined>(undefined)
 
   // Re-direct to previous view after unlocking the wallet
   useEffect(() => {
@@ -112,6 +115,8 @@ export const UnlockForm = ({
   const submitForm = useCallback(
     async ({ password }: FormData) => {
       setUnlockError(O.none)
+      // Hide the previous raw vault message while this attempt is in flight.
+      setDismissedVultisigError(vultisigError)
       setUnlocking(true)
 
       try {
@@ -126,12 +131,13 @@ export const UnlockForm = ({
         }
       } catch (error) {
         setUnlockError(O.some(error as Error))
+        setFailedAttempts((attempts) => attempts + 1)
         setValidPassword(false)
       } finally {
         setUnlocking(false)
       }
     },
-    [unlock, isVultisigLocked, onVultisigUnlock]
+    [unlock, isVultisigLocked, onVultisigUnlock, vultisigError]
   )
 
   const showRemoveConfirm = useCallback(() => {
@@ -142,20 +148,31 @@ export const UnlockForm = ({
     setShowRemoveModal(false)
   }, [])
 
-  const renderUnlockError = useMemo(
-    () =>
-      O.fold(
-        () =>
-          // Also show Vultisig error if present
-          vultisigError ? <p className="mt-2 font-main text-sm text-error0 uppercase">{vultisigError}</p> : <></>,
-        (_: Error) => (
-          <p className="mt-2 font-main text-sm text-error0 uppercase">
-            {intl.formatMessage({ id: 'wallet.unlock.error' })}
-          </p>
-        )
-      )(unlockError),
-    [unlockError, intl, vultisigError]
-  )
+  // Submit already counts a thrown unlock. This covers a vault-state error that
+  // arrives on its own, and ignores the copy of that error from the same attempt.
+  const unlockErrorRef = useRef(unlockError)
+  unlockErrorRef.current = unlockError
+  const seenVultisigError = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (!vultisigError) {
+      seenVultisigError.current = undefined
+      setDismissedVultisigError(undefined)
+      return
+    }
+    if (vultisigError === seenVultisigError.current) return
+    seenVultisigError.current = vultisigError
+    if (O.isSome(unlockErrorRef.current)) return
+    setFailedAttempts((attempts) => attempts + 1)
+  }, [vultisigError])
+
+  const passwordField = register('password', { required: passwordRequired })
+  const unlockErrorMessage = O.isSome(unlockError) ? intl.formatMessage({ id: 'wallet.unlock.error' }) : ''
+  const visibleVultisigError = vultisigError && vultisigError !== dismissedVultisigError ? vultisigError : ''
+  const shownVultisigError = unlocking ? '' : visibleVultisigError
+  const passwordErrorMessage =
+    unlockErrorMessage ||
+    shownVultisigError ||
+    (errors.password ? intl.formatMessage({ id: 'wallet.password.empty' }) : '')
 
   const removeConfirmed = useCallback(async () => {
     const noAccounts = await removeKeystore()
@@ -266,9 +283,14 @@ export const UnlockForm = ({
               />
               <InputPassword
                 id="password"
-                className="mx-auto flex h-[38px] w-full items-center justify-between"
-                inputClassName="!ring-0 w-full"
-                {...register('password', { required: passwordRequired })}
+                className="mx-auto w-full"
+                inputClassName="!ring-0 h-[38px] w-full"
+                {...passwordField}
+                onChange={(event) => {
+                  void passwordField.onChange(event)
+                  if (O.isSome(unlockError)) setUnlockError(O.none)
+                  if (vultisigError) setDismissedVultisigError(vultisigError)
+                }}
                 placeholder={
                   passwordRequired
                     ? intl.formatMessage({ id: 'common.password' }).toUpperCase()
@@ -277,7 +299,9 @@ export const UnlockForm = ({
                 ghost
                 size="normal"
                 autoFocus={true}
-                error={errors.password ? intl.formatMessage({ id: 'wallet.password.empty' }) : ''}
+                error={passwordErrorMessage}
+                errorPulse={unlockErrorMessage || shownVultisigError ? failedAttempts : 0}
+                errorClassName="mt-1.5 px-1 font-main text-11 text-error0 dark:text-error0d"
                 disabled={unlocking}
               />
             </div>
@@ -379,7 +403,6 @@ export const UnlockForm = ({
 
             {renderChangeWalletError}
           </div>
-          {renderUnlockError}
         </div>
       </form>
       <RemoveWalletConfirmationModal

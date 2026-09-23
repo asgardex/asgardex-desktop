@@ -41,26 +41,26 @@ const userAddresses$: Rx.Observable<TrustedAddress[]> = FP.pipe(
   RxOp.shareReplay(1)
 )
 
-const addAddress = (userAddress: TrustedAddress) => {
+/** Returns false when this address string is already stored. */
+const addAddress = (userAddress: TrustedAddress): boolean => {
   const savedAddress: UserTrustedAddressStorage = FP.pipe(
     getStorageState(),
     O.getOrElse(() => ADDRESS_STORAGE_DEFAULT)
   )
 
-  FP.pipe(
+  const alreadySaved = FP.pipe(
     savedAddress.addresses,
-    A.map((savedAddress) => savedAddress.address),
-    A.elem(eqString)(userAddress.address),
-    (isAddressExistsInSavedArray) => {
-      if (!isAddressExistsInSavedArray) {
-        modifyStorage(
-          O.some({
-            addresses: [...savedAddress.addresses, userAddress]
-          })
-        )
-      }
-    }
+    A.map((saved) => saved.address),
+    A.elem(eqString)(userAddress.address)
   )
+  if (alreadySaved) return false
+
+  modifyStorage(
+    O.some({
+      addresses: [...savedAddress.addresses, userAddress]
+    })
+  )
+  return true
 }
 
 const removeAddress = (userAddress: TrustedAddress) => {

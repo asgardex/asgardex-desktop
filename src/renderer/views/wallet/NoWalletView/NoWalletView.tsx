@@ -7,12 +7,12 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import FolderKeyIcon from '../../../assets/svg/folder-key.svg?react'
-import AsgardexLogo from '../../../assets/svg/logo-asgardex.svg?react'
 import SproutIcon from '../../../assets/svg/sprout.svg?react'
 import { HeaderTheme } from '../../../components/header/theme'
 import { LocaleDropdown } from '../../../components/LayoutlessWrapper/LocaleDropdown'
 import { VaultPasswordModal } from '../../../components/modal/VaultPasswordModal'
 import { BackLinkButton } from '../../../components/uielements/button'
+import { AsgardexLogo } from '../../../components/uielements/logo/AsgardexLogo'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { createScopedLogger } from '../../../helpers/logger'
 import * as walletRoutes from '../../../routes/wallet'
@@ -120,7 +120,7 @@ export const NoWalletView = () => {
         <HeaderTheme isDesktopView />
       </div>
       <div className="flex flex-col items-center justify-center">
-        <AsgardexLogo className="[&>*]:fill-text1 [&>*]:dark:fill-text1d" />
+        <AsgardexLogo className="text-text1 dark:text-text1d" />
         <span className="text-xs text-gray2 dark:text-gray2d">{intl.formatMessage({ id: 'common.welcome' })}</span>
       </div>
       <div className="flex flex-col gap-4">

@@ -11,7 +11,6 @@ import CloseIcon from '../../assets/svg/icon-close.svg?react'
 import MenuIcon from '../../assets/svg/icon-menu.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
-import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import * as appRoutes from '../../routes/app'
 import * as poolsRoutes from '../../routes/pools'
@@ -31,6 +30,7 @@ import { KeystoreState, Wallet } from '../../services/wallet/types'
 import { PricePoolAsset, PricePoolAssets } from '../../views/pools/Pools.types'
 import { Drawer } from '../uielements/drawer'
 import { Label } from '../uielements/label'
+import { AsgardexLogo } from '../uielements/logo/AsgardexLogo'
 import { HeaderLock } from './lock/'
 import { HeaderLockMobile } from './lock/HeaderLockMobile'
 import { HeaderNetStatus } from './netstatus'
@@ -332,7 +332,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
       </div>
       {!isDesktopView && (
         <Drawer
-          title={<AsgardexLogo className="text-text2 dark:text-text2d [&>*]:fill-current" />}
+          title={<AsgardexLogo className="text-text2 dark:text-text2d" />}
           isOpen={menuVisible}
           onClose={() => setMenuVisible(false)}>
           {links}
