@@ -91,6 +91,14 @@ export const ASGARDEX_ONECLICK_AFFILIATES: Record<string, string> = parseOneClic
   envOrDefault(import.meta.env.VITE_ASGARDEX_ONECLICK_AFFILIATES, '')
 )
 
+// One deposit address from a 1Click ANY_INPUT quote. When set, every OneClick
+// appFee is credited here and 1Click sweeps the pot to one wallet. The per-chain
+// map is used only when this is empty.
+export const ASGARDEX_ONECLICK_ANY_INPUT_ADDRESS = envOrDefault(
+  import.meta.env.VITE_ASGARDEX_ONECLICK_ANY_INPUT_ADDRESS,
+  ''
+)
+
 export const getAsgardexThorname = (network: Network): string | undefined =>
   network === Network.Mainnet ? ASGARDEX_THORNAME : undefined
 
