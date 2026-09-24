@@ -5952,12 +5952,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18.0.6":
-  version: 18.3.1
-  resolution: "@types/react-dom@npm:18.3.1"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10/33f9ba79b26641ddf00a8699c30066b7e3573ab254e97475bf08f82fab83a6d3ce8d4ebad86afeb49bb8df3374390a9ba93125cece33badc4b3e8f7eac3c84d8
+"@types/react-dom@npm:^19.3.0":
+  version: 19.3.0
+  resolution: "@types/react-dom@npm:19.3.0"
+  peerDependencies:
+    "@types/react": ^19.3.0
+  checksum: 10/e24ee9948dc3a6c81e8aa4acf120a1194d3a3b68e97205b1e5e24e087b9f0c0c2e40b128fd258663ccb5889c852aeee558c0daa3255c3d82e0fc1c5d64c4b69a
   languageName: node
   linkType: hard
 
@@ -7804,7 +7804,7 @@ __metadata:
     "@types/node": "npm:^22.14"
     "@types/qrcode": "npm:^1.4.2"
     "@types/react": "npm:^18.0.15"
-    "@types/react-dom": "npm:^18.0.6"
+    "@types/react-dom": "npm:^19.3.0"
     "@types/redux-logger": "npm:^3"
     "@typescript-eslint/eslint-plugin": "npm:^8.70.0"
     "@typescript-eslint/parser": "npm:^8.70.0"
@@ -7889,7 +7889,7 @@ __metadata:
     process: "npm:^0.11.10"
     qrcode: "npm:^1.5.3"
     react: "npm:^18.2.0"
-    react-dom: "npm:^18.2.0"
+    react-dom: "npm:^19.3.0"
     react-hook-form: "npm:^7.34.0"
     react-intl: "npm:^6.0.4"
     react-redux: "npm:^9.3.0"
@@ -15085,6 +15085,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-dom@npm:^19.3.0":
+  version: 19.3.0
+  resolution: "react-dom@npm:19.3.0"
+  dependencies:
+    scheduler: "npm:^0.28.0"
+  peerDependencies:
+    react: ^19.3.0
+  checksum: 10/fa6c6a3d0cca3f98280017936f818a1f9e474d61d1a64a7b02bfedabbf936234dd3752ba5b7f35efa7f2264c9a073ebace56cb2521e1cbfe7a50444a43ef5690
+  languageName: node
+  linkType: hard
+
 "react-hook-form@npm:^7.34.0":
   version: 7.34.2
   resolution: "react-hook-form@npm:7.34.2"
@@ -15893,6 +15904,13 @@ __metadata:
   dependencies:
     loose-envify: "npm:^1.1.0"
   checksum: 10/e8d68b89d18d5b028223edf090092846868a765a591944760942b77ea1f69b17235f7e956696efbb62c8130ab90af7e0949bfb8eba7896335507317236966bc9
+  languageName: node
+  linkType: hard
+
+"scheduler@npm:^0.28.0":
+  version: 0.28.0
+  resolution: "scheduler@npm:0.28.0"
+  checksum: 10/2a936a3729df438bd42e6af7a16a62b83543796209c9d2e637f3d7b198bd5c25c5909478a9da4f66923d290e01997816338cf740587c440448863783bd33d31d
   languageName: node
   linkType: hard
 
