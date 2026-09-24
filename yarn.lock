@@ -7881,7 +7881,7 @@ __metadata:
     io-ts-types: "npm:^0.5.19"
     lightweight-charts: "npm:^5.2.0"
     lodash: "npm:^4.18.1"
-    observable-hooks: "npm:^4.2.1"
+    observable-hooks: "npm:^4.2.4"
     postcss: "npm:8.5.28"
     prebuild-install: "npm:^7.1.3"
     prettier: "npm:3.9.6"
@@ -14251,14 +14251,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"observable-hooks@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "observable-hooks@npm:4.2.1"
+"observable-hooks@npm:^4.2.4":
+  version: 4.2.4
+  resolution: "observable-hooks@npm:4.2.4"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     rxjs: ">=6.0.0"
-  checksum: 10/4d147a8f8ebe5b262c321e65a50cfe02979f56732cc32eadb00da0a4a82120eea491007943ef37a446ca8a4a4ca68a51cfec9667fd2b9ce7f1670232b0c42ec9
+  checksum: 10/fdf62b22949397c7b3fd58742f54bfc98d5632e5018b83c8cfed3684a741296e6a420aca88047d36aaafb2b8087c07504cd68d2c3c67422c77f0b8714d4744e0
   languageName: node
   linkType: hard
 
