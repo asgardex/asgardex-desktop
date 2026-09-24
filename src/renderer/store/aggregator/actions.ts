@@ -19,7 +19,6 @@ import {
   ASGARDEX_THORNAME,
   ASGARDEX_BROKER_URL,
   ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
-  ASGARDEX_ONECLICK_AFFILIATES,
   ASGARDEX_ONECLICK_ANY_INPUT_ADDRESS,
   ASGARDEX_ONECLICK_API_KEY
 } from '../../../shared/const'
@@ -88,11 +87,8 @@ export const getEstimate = createAsyncThunk(
         logger.warn('Invalid or missing affiliate broker address, skipping affiliate broker configuration')
       }
 
-      // ANY_INPUT collects every chain into one pot. Otherwise the recipient is the
-      // destination chain's address, and a missing entry sends no fee.
-      const oneClickAffiliate = useAffiliate
-        ? ASGARDEX_ONECLICK_ANY_INPUT_ADDRESS || ASGARDEX_ONECLICK_AFFILIATES[params.destinationAsset.chain]
-        : undefined
+      // ANY_INPUT collects every chain into one pot. Empty address sends no fee.
+      const oneClickAffiliate = useAffiliate ? ASGARDEX_ONECLICK_ANY_INPUT_ADDRESS : undefined
 
       // Fetch estimates for all selected protocols
       const config = {
