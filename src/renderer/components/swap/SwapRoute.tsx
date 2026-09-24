@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from 'react'
 
+import { InformationCircleIcon } from '@heroicons/react/20/solid'
 import { QuoteSwap } from '@xchainjs/xchain-aggregator'
 import clsx from 'clsx'
 import { option as O } from 'fp-ts'
@@ -7,10 +8,11 @@ import { option as O } from 'fp-ts'
 import Amount from '../../assets/svg/amount.svg?react'
 import BoostIcon from '../../assets/svg/boost.svg'
 import StopWatch from '../../assets/svg/stopwatch.svg?react'
-import { protocolMapping } from '../../helpers/protocolHelper'
+import { decentralizationByProtocol, protocolMapping } from '../../helpers/protocolHelper'
 import { useAggregator } from '../../store/aggregator/hooks'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import { Collapse } from '../uielements/collapse'
+import { Tooltip } from '../uielements/tooltip'
 import { ProviderIcon } from './ProviderIcon'
 
 // Extended QuoteSwap type to include boost information
@@ -85,6 +87,13 @@ const Route = memo(function Route({
   quoteOnly
 }: RouteProps) {
   const isChainflip = quote.protocol === 'Chainflip'
+  const decentralization = decentralizationByProtocol[quote.protocol]
+  const decentralizationBarClass =
+    decentralization && decentralization.percent >= 80
+      ? 'bg-[#1aa884]'
+      : decentralization && decentralization.percent >= 50
+        ? 'bg-[#e0a325]'
+        : 'bg-[#e07a3d]'
 
   // Memoize filtered errors to avoid calling getPreviewModeErrors multiple times
   const filteredErrors = useMemo(() => {
@@ -134,6 +143,27 @@ const Route = memo(function Route({
             <span className="text-[12px] text-text0 dark:text-gray2d">
               Est. Time: <b>{formatTime(quote.totalSwapSeconds)}</b>
             </span>
+          </div>
+        )}
+        {decentralization && (
+          <div className="pt-1">
+            <div className="flex items-center justify-between text-[12px] text-text0 dark:text-gray2d">
+              <span className="flex items-center gap-1">
+                Decentralization
+                <span onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+                  <Tooltip title={decentralization.detail} size="big" placement="bottom">
+                    <InformationCircleIcon className="h-3.5 w-3.5 text-text2 dark:text-text2d" />
+                  </Tooltip>
+                </span>
+              </span>
+              <b>{decentralization.percent}%</b>
+            </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-bg2 dark:bg-bg2d">
+              <div
+                className={clsx('h-full rounded-full', decentralizationBarClass)}
+                style={{ width: `${decentralization.percent}%` }}
+              />
+            </div>
           </div>
         )}
         {filteredErrors.length > 0 && (

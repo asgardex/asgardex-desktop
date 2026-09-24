@@ -29,8 +29,13 @@ export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 // Lowercase productName; same identity as main-process APP_NAME.
 export const ASGARDEX_NAME = pkg.productName.toLowerCase()
 
-/** Requested affiliate fee in basis points (30 = 0.30%). */
+/** Requested affiliate fee in basis points (30 = 0.30%) for THORChain, MAYAChain, and Chainflip. */
 export const ASGARDEX_AFFILIATE_FEE = 30
+/**
+ * 1Click splits appFees 50/50 and keeps at least 20 bps, so this request is twice
+ * ASGARDEX_AFFILIATE_FEE. A 60 bps appFee leaves AsgardEx 30 bps.
+ */
+export const ASGARDEX_ONECLICK_AFFILIATE_FEE = ASGARDEX_AFFILIATE_FEE * 2
 export const ASGARDEX_THORNAME = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNAME, 'dx')
 
 // Chainflip broker configuration
@@ -44,47 +49,14 @@ export const ASGARDEX_AFFILIATE_BROKERS_ADDRESS = envOrDefault(
 // API key is optional — 1Click works anonymously but rate-limits more aggressively.
 export const ASGARDEX_ONECLICK_API_KEY = envOrDefault(import.meta.env.VITE_ASGARDEX_ONECLICK_API_KEY, '')
 
-// 1Click pays the affiliate fee on the destination chain, so the recipient must be
-// a native address on that chain. Configure as a JSON map of chain → address, e.g.
-// VITE_ASGARDEX_ONECLICK_AFFILIATES='{"BTC":"bc1...","ETH":"0x..."}'
-// When the destination chain has no entry, no affiliate fee is applied to that quote.
+// 1Click splits appFees 50/50 and keeps at least 20 bps. ASGARDEX_ONECLICK_AFFILIATE_FEE
+// (60) is what we send; the echoed partner share is about 30 bps.
 //
-// 1Click applies a 50/50 revenue share on appFees by default: requesting
-// ASGARDEX_AFFILIATE_FEE (30) yields ~15 bps to our recipient in quoteRequest.appFees
-// (aggregator ≥3.0.2 surfaces that as fees.affiliateFee).
-const parseOneClickAffiliates = (raw: string): Record<string, string> => {
-  if (!raw) return {}
-  try {
-    const parsed = JSON.parse(raw)
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      // eslint-disable-next-line no-console -- shared module, no logger available at env-parse time
-      console.warn(
-        'VITE_ASGARDEX_ONECLICK_AFFILIATES must be a JSON object mapping chain → address, e.g. {"ETH":"0x..."} — affiliate fees disabled'
-      )
-      return {}
-    }
-    return Object.fromEntries(
-      Object.entries(parsed).flatMap(([chain, address]) => {
-        if (typeof address !== 'string' || chain.trim() === '' || address.trim() === '') {
-          // eslint-disable-next-line no-console -- shared module, no logger available at env-parse time
-          console.warn(`VITE_ASGARDEX_ONECLICK_AFFILIATES: skipping invalid entry for "${chain}"`)
-          return []
-        }
-        // Lookup happens by xchainjs chain id (e.g. 'ETH'), so normalize keys —
-        // a lowercase "eth" in .env should still match.
-        return [[chain.trim().toUpperCase(), address.trim()]]
-      })
-    )
-  } catch {
-    // eslint-disable-next-line no-console -- shared module, no logger available at env-parse time
-    console.warn(
-      'VITE_ASGARDEX_ONECLICK_AFFILIATES is not valid JSON — affiliate fees disabled. Expected e.g. {"ETH":"0x..."}'
-    )
-    return {}
-  }
-}
-export const ASGARDEX_ONECLICK_AFFILIATES: Record<string, string> = parseOneClickAffiliates(
-  envOrDefault(import.meta.env.VITE_ASGARDEX_ONECLICK_AFFILIATES, '')
+// One deposit address from a 1Click ANY_INPUT quote. Every OneClick appFee is
+// credited here and 1Click sweeps the pot to one wallet. Empty means no OneClick fee.
+export const ASGARDEX_ONECLICK_ANY_INPUT_ADDRESS = envOrDefault(
+  import.meta.env.VITE_ASGARDEX_ONECLICK_ANY_INPUT_ADDRESS,
+  ''
 )
 
 export const getAsgardexThorname = (network: Network): string | undefined =>

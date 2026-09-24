@@ -15,10 +15,11 @@ import { defaultBaseParams } from '../../../shared/base/const'
 import { defaultBscParams } from '../../../shared/bsc/const'
 import {
   ASGARDEX_AFFILIATE_FEE,
+  ASGARDEX_ONECLICK_AFFILIATE_FEE,
   ASGARDEX_THORNAME,
   ASGARDEX_BROKER_URL,
   ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
-  ASGARDEX_ONECLICK_AFFILIATES,
+  ASGARDEX_ONECLICK_ANY_INPUT_ADDRESS,
   ASGARDEX_ONECLICK_API_KEY
 } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
@@ -86,10 +87,8 @@ export const getEstimate = createAsyncThunk(
         logger.warn('Invalid or missing affiliate broker address, skipping affiliate broker configuration')
       }
 
-      // 1Click pays the affiliate fee in the destination asset on the destination chain,
-      // so we pick the recipient address based on the quote's destinationAsset.chain.
-      // Missing entry = no affiliate fee on that quote, not an error.
-      const oneClickAffiliate = useAffiliate ? ASGARDEX_ONECLICK_AFFILIATES[params.destinationAsset.chain] : undefined
+      // ANY_INPUT collects every chain into one pot. Empty address sends no fee.
+      const oneClickAffiliate = useAffiliate ? ASGARDEX_ONECLICK_ANY_INPUT_ADDRESS : undefined
 
       // Fetch estimates for all selected protocols
       const config = {
@@ -112,6 +111,13 @@ export const getEstimate = createAsyncThunk(
       }
 
       aggregator.setConfiguration(config)
+      // The aggregator has one basisPoints value for every protocol. 1Click must
+      // request twice that, or its 50/50 split leaves AsgardEx half of the THOR fee.
+      if (oneClickAffiliate) {
+        const protocols = (aggregator as unknown as { protocols?: { name: string; affiliateBps?: number }[] }).protocols
+        const oneClick = protocols?.find((protocol) => protocol.name === 'OneClick')
+        if (oneClick) oneClick.affiliateBps = ASGARDEX_ONECLICK_AFFILIATE_FEE
+      }
 
       const estimate = await aggregator.estimateSwap(params)
 
