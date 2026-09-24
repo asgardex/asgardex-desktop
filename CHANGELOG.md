@@ -6,6 +6,34 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
+# 1.46.0 (2026-09-24)
+
+PRs merged to `develop` since tag `v1.45.3`.
+
+## Add
+
+- feat(near): NEAR wallet client and Near Intents (OneClick) trading [#1195](https://github.com/asgardex/asgardex-desktop/pull/1195)
+- feat(zec): enable THORChain routing for Zcash [#1194](https://github.com/asgardex/asgardex-desktop/pull/1194)
+- feat(swap): static decentralization score on quotes (THORChain 90, MAYAChain 73, Chainflip 58, NEAR Intents 25) [#1211](https://github.com/asgardex/asgardex-desktop/pull/1211)
+
+## Update/Fixes
+
+- fix(oneclick): request 60 bps so the partner share stays 30, and collect every OneClick affiliate fee in one ANY_INPUT pot instead of the per-chain address map [#1211](https://github.com/asgardex/asgardex-desktop/pull/1211)
+- fix(swap): allow ETH↔NEAR via Near Intents [#1197](https://github.com/asgardex/asgardex-desktop/pull/1197)
+- fix(ui): unlock error on the password field, stored-address confirmation, language names, logo gleam, single search border [#1210](https://github.com/asgardex/asgardex-desktop/pull/1210)
+- fix(evm): EIP-1559 tip and base-fee headroom for plain transfers [#1196](https://github.com/asgardex/asgardex-desktop/pull/1196)
+- fix(swap): stop synth sunset copy on an empty asset picker [#1203](https://github.com/asgardex/asgardex-desktop/pull/1203)
+- Bond provider refactor, block I [#1205](https://github.com/asgardex/asgardex-desktop/pull/1205)
+
+## Chores
+
+- chore(deps): bump `@vultisig/sdk` from 2.19.19 to 6.1.0 [#1199](https://github.com/asgardex/asgardex-desktop/pull/1199)
+- chore(deps): bump `ethers` to 6.17.0 [#1103](https://github.com/asgardex/asgardex-desktop/pull/1103)
+- chore(deps): bump `axios` from 1.18.1 to 1.20.0 [#1163](https://github.com/asgardex/asgardex-desktop/pull/1163)
+- chore(deps): bump `@headlessui/react` from 2.2.4 to 2.2.10 [#1174](https://github.com/asgardex/asgardex-desktop/pull/1174)
+- chore(deps): bump `react-redux` from 9.1.2 to 9.3.0 [#1198](https://github.com/asgardex/asgardex-desktop/pull/1198)
+- chore(dev-deps): bump the dev-dependencies group [#1204](https://github.com/asgardex/asgardex-desktop/pull/1204)
+
 # 1.45.3 (2026-08-27)
 
 PRs merged to `develop` since tag `v1.45.2` / release branch for 1.45.2.
