@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -784,11 +785,11 @@ export const Swap = ({
 
   const onInputChange = useCallback(
     (amount: BaseAmount) => {
-      if (isSourceUTXO) setIsSendMax(false)
+      if (isSourceUTXO || sourceAsset.chain === ADAChain) setIsSendMax(false)
       setInputDisplayAmount(amount)
       debouncedSetAmountToSwap(amount)
     },
-    [debouncedSetAmountToSwap, isSourceUTXO]
+    [debouncedSetAmountToSwap, isSourceUTXO, sourceAsset]
   )
 
   useEffect(() => {
@@ -1447,13 +1448,13 @@ export const Swap = ({
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
-      if (isSourceUTXO) setIsSendMax(percents === 100)
+      if (isSourceUTXO || sourceAsset.chain === ADAChain) setIsSendMax(percents === 100)
       const amountFromPercentage = maxAmountToSwap.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmountToSwap.decimal)
       setAmountToSwap(newAmount)
       return newAmount
     },
-    [maxAmountToSwap, setAmountToSwap, isSourceUTXO]
+    [maxAmountToSwap, setAmountToSwap, isSourceUTXO, sourceAsset]
   )
 
   const quoteOnlyButton = () => {
@@ -1753,6 +1754,7 @@ export const Swap = ({
         outAsset: targetAsset
       })
       resetApproval()
+      setIsSendMax(false)
     }
     prevSourceAsset.current = O.some(sourceAsset)
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
