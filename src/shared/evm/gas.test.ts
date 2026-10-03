@@ -2,7 +2,7 @@ import { FeeOption } from '@xchainjs/xchain-client'
 import { baseAmount } from '@xchainjs/xchain-util'
 import { describe, expect, it } from 'vitest'
 
-import { applyGasMultiplier, eip1559FeesFromGasPrices, eip1559MaxFeePerGas } from './gas'
+import { applyGasMultiplier, eip1559FeesFromGasPrices, eip1559MaxFeePerGas, evmTransferFees } from './gas'
 
 describe('shared/evm/gas', () => {
   const gasPrices = {
@@ -47,5 +47,24 @@ describe('shared/evm/gas', () => {
     // 2 * 20 gwei + 1.5 gwei = 41.5 gwei
     expect(maxFee.amount().toFixed(0)).toBe('41500000000')
     expect(maxFee.decimal).toBe(18)
+  })
+
+  it('evmTransferFees sets maxFeePerGas = 2*baseFee + tip', () => {
+    const fees = evmTransferFees(gasPrices, FeeOption.Fast, BigInt(20_000_000_000))
+    if ('gasPrice' in fees) throw new Error('expected EIP-1559 fees')
+    expect(fees.maxFeePerGas.amount().toFixed(0)).toBe('41500000000')
+    expect(fees.maxPriorityFeePerGas).toBe(gasPrices.fast)
+  })
+
+  it('evmTransferFees keeps maxFeePerGas = tip when the base fee is zero (BSC)', () => {
+    const fees = evmTransferFees(gasPrices, FeeOption.Fast, BigInt(0))
+    if ('gasPrice' in fees) throw new Error('expected EIP-1559 fees')
+    expect(fees.maxFeePerGas.amount().toFixed(0)).toBe('1500000000')
+    expect(fees.maxPriorityFeePerGas).toBe(gasPrices.fast)
+  })
+
+  it('evmTransferFees falls back to legacy gasPrice without a base fee', () => {
+    expect(evmTransferFees(gasPrices, FeeOption.Fastest, null)).toEqual({ gasPrice: gasPrices.fastest })
+    expect(evmTransferFees(gasPrices, FeeOption.Average, undefined)).toEqual({ gasPrice: gasPrices.average })
   })
 })

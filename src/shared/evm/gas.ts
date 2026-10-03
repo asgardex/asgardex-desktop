@@ -54,3 +54,26 @@ export const eip1559MaxFeePerGas = (tip: BaseAmount, baseFeePerGas: bigint): Bas
   const maxFee = baseFeePerGas * BigInt(2) + BigInt(tip.amount().toFixed(0))
   return baseAmount(maxFee.toString(), tip.decimal)
 }
+
+/**
+ * Fee fields for `@xchainjs/xchain-evm` `transfer()`, with `maxFeePerGas` always set explicitly
+ * on EIP-1559 networks.
+ *
+ * xchain only derives `maxFeePerGas` from a tip when `block.baseFeePerGas` is truthy.
+ * BSC reports a base fee of `0`, so the tip-only path left `maxFeePerGas` unset and ethers
+ * rejected the tx ("priorityFee cannot be more than maxFee"). Passing both avoids that.
+ *
+ * Chains without a base fee fall back to a legacy `gasPrice`.
+ */
+export type EvmTransferFees = { maxFeePerGas: BaseAmount; maxPriorityFeePerGas: BaseAmount } | { gasPrice: BaseAmount }
+
+export const evmTransferFees = (
+  gasPrices: GasPrices,
+  feeOption: FeeOption = FeeOption.Fast,
+  baseFeePerGas: bigint | null | undefined
+): EvmTransferFees => {
+  const tip = gasPrices[feeOption]
+  return baseFeePerGas != null
+    ? { maxFeePerGas: eip1559MaxFeePerGas(tip, baseFeePerGas), maxPriorityFeePerGas: tip }
+    : { gasPrice: tip }
+}
