@@ -2,7 +2,6 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ChainflipDepositChannel } from '@xchainjs/xchain-aggregator'
-import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import {
@@ -21,7 +20,7 @@ import * as Rx from 'rxjs'
 
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 import { useWalletContext } from '../contexts/WalletContext'
-import { isRujiAsset, isUtxoAssetChain } from '../helpers/assetHelper'
+import { isMaxSweepAsset, isRujiAsset } from '../helpers/assetHelper'
 import {
   buildChainflipBroadcastParams,
   openChainflipChannelForSubmit,
@@ -114,8 +113,7 @@ export const useSwapExecution = ({
   const appWalletState = useObservableState(appWalletService.appWalletState$)
   const standaloneLedgerState = useObservableState(appWalletService.standaloneLedgerService.standaloneLedgerState$)
 
-  // Source chains that support MAX-sweep (transferMax): UTXO clients + Cardano (xchain-cardano>=1.2.0)
-  const isSourceMaxSweep = useMemo(() => isUtxoAssetChain(sourceAsset) || sourceAsset.chain === ADAChain, [sourceAsset])
+  const isSourceMaxSweep = useMemo(() => isMaxSweepAsset(sourceAsset), [sourceAsset])
 
   const {
     state: swapState,

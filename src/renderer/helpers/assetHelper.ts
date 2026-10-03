@@ -1,3 +1,4 @@
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
@@ -564,6 +565,18 @@ export const isUtxoAssetChain = ({ chain }: AnyAsset) =>
   isDogeChain(chain) ||
   isDashChain(chain) ||
   isZecChain(chain)
+
+/** Chains that support transferMax (sendKeystoreMaxTx): UTXO clients + Cardano. */
+export const isMaxSweepAsset = (asset: AnyAsset): boolean =>
+  isUtxoAssetChain(asset) || asset.chain === ADAChain
+
+/**
+ * Derives the new isSendMax value from a percent-slider change.
+ * Returns `percents === 100` for chains that support transferMax (UTXO + Cardano).
+ * Returns `undefined` for all other chains — callers should leave isSendMax unchanged.
+ */
+export const sendMaxFromPercent = (asset: AnyAsset, percents: number): boolean | undefined =>
+  isMaxSweepAsset(asset) ? percents === 100 : undefined
 
 // Assuming you have an appropriate `isTokenAsset` predicate function
 export const isTokenAsset = (asset: AnyAsset): asset is TokenAsset => asset.type === AssetType.TOKEN

@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
-import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -49,7 +48,7 @@ import {
   isEVMTokenAsset,
   getEVMTokenAddressForChain,
   convertBaseAmountDecimal,
-  isUtxoAssetChain
+  isMaxSweepAsset
 } from '../../helpers/assetHelper'
 import { resolveChainflipChannelId } from '../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
@@ -388,7 +387,7 @@ export const Swap = ({
 
   const [isSendMax, setIsSendMax] = useState<boolean>(false)
 
-  const isSourceUTXO = useMemo(() => isUtxoAssetChain(sourceAsset), [sourceAsset])
+  const isSourceMaxSweep = useMemo(() => isMaxSweepAsset(sourceAsset), [sourceAsset])
 
   const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
@@ -785,11 +784,11 @@ export const Swap = ({
 
   const onInputChange = useCallback(
     (amount: BaseAmount) => {
-      if (isSourceUTXO || sourceAsset.chain === ADAChain) setIsSendMax(false)
+      if (isSourceMaxSweep) setIsSendMax(false)
       setInputDisplayAmount(amount)
       debouncedSetAmountToSwap(amount)
     },
-    [debouncedSetAmountToSwap, isSourceUTXO, sourceAsset]
+    [debouncedSetAmountToSwap, isSourceMaxSweep]
   )
 
   useEffect(() => {
@@ -1448,13 +1447,13 @@ export const Swap = ({
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
-      if (isSourceUTXO || sourceAsset.chain === ADAChain) setIsSendMax(percents === 100)
+      if (isSourceMaxSweep) setIsSendMax(percents === 100)
       const amountFromPercentage = maxAmountToSwap.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmountToSwap.decimal)
       setAmountToSwap(newAmount)
       return newAmount
     },
-    [maxAmountToSwap, setAmountToSwap, isSourceUTXO, sourceAsset]
+    [maxAmountToSwap, setAmountToSwap, isSourceMaxSweep]
   )
 
   const quoteOnlyButton = () => {
