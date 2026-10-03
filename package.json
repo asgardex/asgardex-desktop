@@ -183,6 +183,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-security": "^3.0.1",
     "eslint-plugin-unused-imports": "^4.4.1",
+    "fast-check": "^4.10.2",
     "happy-dom": "20.14.5",
     "postcss": "8.5.28",
     "prebuild-install": "^7.1.3",
