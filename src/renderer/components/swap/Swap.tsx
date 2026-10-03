@@ -475,7 +475,6 @@ export const Swap = ({
     targetAsset,
     fees$,
     destinationAddress: effectiveRecipientAddress,
-    slipTolerance,
     streaming: { interval: streamingInterval, quantity: streamingQuantity },
     network,
     sourceBalance: sourceAssetAmountNative,

@@ -13,8 +13,8 @@ import * as fc from 'fast-check'
 import { option as O } from 'fp-ts'
 
 import { AssetRuneNative } from '../../shared/utils/asset'
-import { eqBaseAmount } from './fp/eq'
 import { getSwapLimit1e8 } from '../components/swap/Swap.utils'
+import { eqBaseAmount } from './fp/eq'
 import { applyStreamingToMemo, getSwapMemo, parseSwapMemoDestination, swapDestinationMatches } from './memoHelper'
 
 // ─── arbitraries ──────────────────────────────────────────────────────────────
@@ -32,9 +32,11 @@ const arbStreamParam = fc.nat({ max: 1000 })
 
 // A well-formed THORChain swap-quote memo: `<op>:<asset>:<address>:<limit>`.
 // This is the format the THORNode API returns before streaming injection.
-const arbQuoteMemo = fc.tuple(arbPart, arbPart, arbPart, arbLimit).map(
-  ([op, asset, addr, limit]) => `${op}:${asset}:${addr}:${limit}`
-)
+const arbQuoteMemo = fc
+  .tuple(arbPart, arbPart, arbPart, arbLimit)
+  .map(([op, asset, addr, limit]) => `${op}:${asset}:${addr}:${limit}`)
+
+const arbBps = fc.nat({ max: 10000 })
 
 // Addresses without ':' — they survive the colon-split round-trip intact.
 const arbAddress = fc.stringMatching(/^[a-zA-Z0-9]{10,40}$/)
@@ -71,11 +73,18 @@ describe('applyStreamingToMemo', () => {
     // limit, so re-applying strips the first /interval/qty before injecting
     // the new one.  The base limit must survive both applications intact.
     fc.assert(
-      fc.property(arbQuoteMemo, arbStreamParam, arbStreamParam, arbStreamParam, arbStreamParam, (memo, i1, q1, i2, q2) => {
-        const once = applyStreamingToMemo(memo, i1, q1)
-        const twice = applyStreamingToMemo(once, i2, q2)
-        return eqBaseAmount.equals(getSwapLimit1e8(twice), getSwapLimit1e8(memo))
-      })
+      fc.property(
+        arbQuoteMemo,
+        arbStreamParam,
+        arbStreamParam,
+        arbStreamParam,
+        arbStreamParam,
+        (memo, i1, q1, i2, q2) => {
+          const once = applyStreamingToMemo(memo, i1, q1)
+          const twice = applyStreamingToMemo(once, i2, q2)
+          return eqBaseAmount.equals(getSwapLimit1e8(twice), getSwapLimit1e8(memo))
+        }
+      )
     )
   })
 
@@ -86,6 +95,51 @@ describe('applyStreamingToMemo', () => {
       fc.property(arbQuoteMemo, arbStreamParam, arbStreamParam, (memo, interval, qty) => {
         const streamed = applyStreamingToMemo(memo, interval, qty)
         return streamed.includes(`/${interval}/${qty}`)
+      })
+    )
+  })
+})
+
+// ─── getSwapMemo shape ────────────────────────────────────────────────────────
+//
+// THORChain swap memo layout: `=:ASSET:DEST:LIM/INTERVAL/QTY[:AFFILIATE:FEE]`.
+// Every field must land in its slot — a stray extra field shifts streaming
+// params into the affiliate slot.
+
+describe('getSwapMemo produces a well-formed THORChain swap memo', () => {
+  const arbAffiliate = fc.option(fc.tuple(arbPart, arbBps), { nil: undefined })
+
+  it('every field is in its THORChain slot', () => {
+    fc.assert(
+      fc.property(arbAddress, arbStreamParam, arbStreamParam, arbAffiliate, (address, interval, qty, affiliate) => {
+        const memo = getSwapMemo({
+          targetAsset: AssetRuneNative,
+          targetAddress: address,
+          streamingInterval: interval,
+          streamingQuantity: qty,
+          affiliateName: affiliate?.[0],
+          affiliateBps: affiliate?.[1]
+        })
+        const expected = ['=', 'THOR.RUNE', address, `0/${interval}/${qty}`]
+        if (affiliate) expected.push(affiliate[0], `${affiliate[1]}`)
+        expect(memo.split(':')).toEqual(expected)
+      })
+    )
+  })
+
+  it('applyStreamingToMemo with the same params is a no-op', () => {
+    // Both functions must agree that the streaming params live in position 3.
+    fc.assert(
+      fc.property(arbAddress, arbStreamParam, arbStreamParam, arbAffiliate, (address, interval, qty, affiliate) => {
+        const memo = getSwapMemo({
+          targetAsset: AssetRuneNative,
+          targetAddress: address,
+          streamingInterval: interval,
+          streamingQuantity: qty,
+          affiliateName: affiliate?.[0],
+          affiliateBps: affiliate?.[1]
+        })
+        return applyStreamingToMemo(memo, interval, qty) === memo
       })
     )
   })
@@ -104,7 +158,6 @@ describe('parseSwapMemoDestination ∘ getSwapMemo round-trip', () => {
         const memo = getSwapMemo({
           targetAsset: AssetRuneNative,
           targetAddress: address,
-          toleranceBps: undefined,
           streamingInterval: interval,
           streamingQuantity: qty,
           affiliateName: undefined,
@@ -116,20 +169,16 @@ describe('parseSwapMemoDestination ∘ getSwapMemo round-trip', () => {
     )
   })
 
-  it('toleranceBps does not affect address extraction', () => {
-    // When toleranceBps is defined, it inserts an extra field at position 3,
-    // pushing streaming to position 4.  Address remains at position 2 regardless.
-    const arbBps = fc.nat({ max: 10000 })
+  it('affiliate fields do not affect address extraction', () => {
     fc.assert(
-      fc.property(arbAddress, arbBps, arbStreamParam, arbStreamParam, (address, bps, interval, qty) => {
+      fc.property(arbAddress, arbPart, arbBps, arbStreamParam, arbStreamParam, (address, name, bps, interval, qty) => {
         const memo = getSwapMemo({
           targetAsset: AssetRuneNative,
           targetAddress: address,
-          toleranceBps: bps,
           streamingInterval: interval,
           streamingQuantity: qty,
-          affiliateName: undefined,
-          affiliateBps: undefined
+          affiliateName: name,
+          affiliateBps: bps
         })
         const result = parseSwapMemoDestination(memo)
         return O.isSome(result) && result.value === address
