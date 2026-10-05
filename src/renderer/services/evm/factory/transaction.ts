@@ -18,8 +18,7 @@ import {
 } from '../../../../shared/api/io'
 import { ApiUrls, LedgerError } from '../../../../shared/api/types'
 import { DEFAULT_EVM_GAS_MULTIPLIER } from '../../../../shared/const'
-import { applyGasMultiplier, eip1559FeesFromGasPrices, eip1559MaxFeePerGas } from '../../../../shared/evm/gas'
-import { getBlocktime } from '../../../../shared/evm/provider'
+import { applyGasMultiplier, evmTransferFees } from '../../../../shared/evm/gas'
 import { isError, isEvmHDMode, isLedgerWallet, isVultisigWallet } from '../../../../shared/utils/guard'
 import { getEVMAssetAddress, isChainAsset, isEVMTokenAsset } from '../../../helpers/assetHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
@@ -84,12 +83,14 @@ export const createEvmTransactionService = (
           FP.pipe(
             Rx.forkJoin({
               gasPrices: Rx.from(client.estimateGasPrices()),
-              blockTime: Rx.from(getBlocktime(provider))
+              latestBlock: Rx.from(provider.getBlock('latest'))
             }),
-            RxOp.switchMap(({ gasPrices: rawGasPrices, blockTime }) => {
+            RxOp.switchMap(({ gasPrices: rawGasPrices, latestBlock }) => {
               const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
-              // Prefer EIP-1559 tip + 2*baseFee maxFee (via xchain) over legacy gasPrice.
-              const { maxPriorityFeePerGas } = eip1559FeesFromGasPrices(gasPrices, params.feeOption)
+              const blockTime = latestBlock?.timestamp ?? 0
+              // Prefer EIP-1559 tip + 2*baseFee maxFee over legacy gasPrice.
+              // maxFee is set here, not by xchain — it skips it when baseFee is 0 (BSC).
+              const transferFees = evmTransferFees(gasPrices, params.feeOption, latestBlock?.baseFeePerGas)
               const isERC20 = isEVMTokenAsset(params.asset as TokenAsset)
               const checkSummedContractAddress = isERC20
                 ? getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
@@ -118,7 +119,7 @@ export const createEvmTransactionService = (
                       amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
                       memo: unsignedTx.data,
                       recipient: router,
-                      maxPriorityFeePerGas,
+                      ...transferFees,
                       isMemoEncoded: true,
                       walletIndex: params.walletIndex
                     }
@@ -141,7 +142,7 @@ export const createEvmTransactionService = (
                       amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
                       memo: unsignedTx.data,
                       recipient: router,
-                      maxPriorityFeePerGas,
+                      ...transferFees,
                       isMemoEncoded: true,
                       gasLimit: new BigNumber(defaultGasLimit),
                       walletIndex: params.walletIndex
@@ -522,17 +523,15 @@ export const createEvmTransactionService = (
         (async (): Promise<TxHash> => {
           const rawGasPrices = await client.estimateGasPrices()
           const gasPrices = applyGasMultiplier(rawGasPrices, gasMultiplier)
-          const { maxPriorityFeePerGas } = eip1559FeesFromGasPrices(gasPrices, params.feeOption)
-          const legacyGasPrice = gasPrices[params.feeOption]
           const assetInfo = client.getAssetInfo()
           const isNative = isChainAsset(params.asset)
           const fallbackGasLimit = isNative ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
 
           // Prefer EIP-1559 tip + 2×baseFee (via xchain) when the chain exposes baseFee.
           const latestBlock = await client.getProvider().getBlock('latest')
-          const baseFeePerGas = latestBlock?.baseFeePerGas ?? null
-          const useEip1559 = baseFeePerGas != null
-          const feeUnit = useEip1559 ? eip1559MaxFeePerGas(maxPriorityFeePerGas, baseFeePerGas) : legacyGasPrice
+          // maxFee is set here, not by xchain — it skips it when baseFee is 0 (BSC).
+          const transferFees = evmTransferFees(gasPrices, params.feeOption, latestBlock?.baseFeePerGas)
+          const feeUnit = 'gasPrice' in transferFees ? transferFees.gasPrice : transferFees.maxFeePerGas
 
           let amount: BaseAmount = params.amount
 
@@ -549,8 +548,6 @@ export const createEvmTransactionService = (
               return fallbackGasLimit
             }
           }
-
-          const transferFees = useEip1559 ? { maxPriorityFeePerGas } : { gasPrice: legacyGasPrice }
 
           if (isNative) {
             const sender = await client.getAddressAsync(params.walletIndex)
