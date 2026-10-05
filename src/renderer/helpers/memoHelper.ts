@@ -151,7 +151,6 @@ export const getWithdrawMemo = ({
 export const getSwapMemo = ({
   targetAsset,
   targetAddress,
-  toleranceBps,
   streamingInterval,
   streamingQuantity,
   affiliateName,
@@ -159,7 +158,6 @@ export const getSwapMemo = ({
 }: {
   targetAsset: AnyAsset
   targetAddress: Address
-  toleranceBps: number | undefined
   streamingInterval: number
   streamingQuantity: number
   affiliateName: string | undefined
@@ -171,7 +169,7 @@ export const getSwapMemo = ({
   // Streaming (interval>0): explicit interval between sub-swaps
   const streaming = `0/${streamingInterval}/${streamingQuantity}`
   const memo = '='
-  return mkMemo([memo, target, targetAddress, toleranceBps, streaming, affiliateName, affiliateBps])
+  return mkMemo([memo, target, targetAddress, streaming, affiliateName, affiliateBps])
 }
 /**
  * Applies streaming params to a swap memo returned by THORNode quote API.

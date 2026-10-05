@@ -36,7 +36,6 @@ import { getZeroSwapFees } from '../services/chain/fees/swap'
 import { SwapFeesHandler, SwapFees, SwapFeesRD } from '../services/chain/types'
 import type { PoolDetails as PoolDetailsMaya } from '../services/midgard/mayaMidgard/types'
 import type { PoolDetails } from '../services/midgard/midgardTypes'
-import type { SlipTolerance } from '../types/asgardex'
 import { usePricePool } from './usePricePool'
 import { usePricePoolMaya } from './usePricePoolMaya'
 
@@ -45,7 +44,6 @@ type UseSwapFeesParams = {
   targetAsset: AnyAsset
   fees$: SwapFeesHandler
   destinationAddress: O.Option<Address>
-  slipTolerance: SlipTolerance
   streaming: { interval: number; quantity: number }
   network: Network
   sourceBalance: BaseAmount
@@ -81,7 +79,6 @@ export const useSwapFees = ({
   targetAsset,
   fees$,
   destinationAddress,
-  slipTolerance,
   streaming,
   network,
   sourceBalance,
@@ -117,14 +114,12 @@ export const useSwapFees = ({
     return O.fold(
       () => '',
       (recipientAddress: string) => {
-        const toleranceBps = slipTolerance * 100
         const affiliateName = getAsgardexThorname(network)
         const affiliateBps = getAsgardexAffiliateFee(network)
 
         return getSwapMemo({
           targetAsset,
           targetAddress: recipientAddress,
-          toleranceBps,
           streamingInterval: streaming.interval,
           streamingQuantity: streaming.quantity,
           affiliateName: affiliateName,
@@ -132,7 +127,7 @@ export const useSwapFees = ({
         })
       }
     )(destinationAddress)
-  }, [destinationAddress, slipTolerance, network, targetAsset, streaming.interval, streaming.quantity])
+  }, [destinationAddress, network, targetAsset, streaming.interval, streaming.quantity])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(

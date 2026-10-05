@@ -353,7 +353,6 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     targetAsset: safeTargetAsset,
     fees$: swapFees$,
     destinationAddress,
-    slipTolerance,
     streaming: { interval: streamingInterval, quantity: streamingQuantity },
     network,
     sourceBalance,
