@@ -48,7 +48,7 @@ import {
   isEVMTokenAsset,
   getEVMTokenAddressForChain,
   convertBaseAmountDecimal,
-  isUtxoAssetChain
+  isMaxSweepAsset
 } from '../../helpers/assetHelper'
 import { resolveChainflipChannelId } from '../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
@@ -387,7 +387,7 @@ export const Swap = ({
 
   const [isSendMax, setIsSendMax] = useState<boolean>(false)
 
-  const isSourceUTXO = useMemo(() => isUtxoAssetChain(sourceAsset), [sourceAsset])
+  const isSourceMaxSweep = useMemo(() => isMaxSweepAsset(sourceAsset), [sourceAsset])
 
   const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
@@ -784,11 +784,11 @@ export const Swap = ({
 
   const onInputChange = useCallback(
     (amount: BaseAmount) => {
-      if (isSourceUTXO) setIsSendMax(false)
+      if (isSourceMaxSweep) setIsSendMax(false)
       setInputDisplayAmount(amount)
       debouncedSetAmountToSwap(amount)
     },
-    [debouncedSetAmountToSwap, isSourceUTXO]
+    [debouncedSetAmountToSwap, isSourceMaxSweep]
   )
 
   useEffect(() => {
@@ -1447,13 +1447,13 @@ export const Swap = ({
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
-      if (isSourceUTXO) setIsSendMax(percents === 100)
+      if (isSourceMaxSweep) setIsSendMax(percents === 100)
       const amountFromPercentage = maxAmountToSwap.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmountToSwap.decimal)
       setAmountToSwap(newAmount)
       return newAmount
     },
-    [maxAmountToSwap, setAmountToSwap, isSourceUTXO]
+    [maxAmountToSwap, setAmountToSwap, isSourceMaxSweep]
   )
 
   const quoteOnlyButton = () => {
@@ -1753,6 +1753,7 @@ export const Swap = ({
         outAsset: targetAsset
       })
       resetApproval()
+      setIsSendMax(false)
     }
     prevSourceAsset.current = O.some(sourceAsset)
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
