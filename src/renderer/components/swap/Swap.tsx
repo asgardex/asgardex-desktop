@@ -48,7 +48,7 @@ import {
   isEVMTokenAsset,
   getEVMTokenAddressForChain,
   convertBaseAmountDecimal,
-  isMaxSweepAsset
+  reduceIsSendMax
 } from '../../helpers/assetHelper'
 import { resolveChainflipChannelId } from '../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../helpers/chainflipTransactionTracker'
@@ -386,8 +386,6 @@ export const Swap = ({
   const [amountToSwap, _setAmountToSwap] = useState(initialAmountToSwap)
 
   const [isSendMax, setIsSendMax] = useState<boolean>(false)
-
-  const isSourceMaxSweep = useMemo(() => isMaxSweepAsset(sourceAsset), [sourceAsset])
 
   const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
@@ -783,11 +781,11 @@ export const Swap = ({
 
   const onInputChange = useCallback(
     (amount: BaseAmount) => {
-      if (isSourceMaxSweep) setIsSendMax(false)
+      setIsSendMax((flag) => reduceIsSendMax(flag, { type: 'typeAmount', asset: sourceAsset }))
       setInputDisplayAmount(amount)
       debouncedSetAmountToSwap(amount)
     },
-    [debouncedSetAmountToSwap, isSourceMaxSweep]
+    [debouncedSetAmountToSwap, sourceAsset]
   )
 
   useEffect(() => {
@@ -1446,13 +1444,13 @@ export const Swap = ({
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
-      if (isSourceMaxSweep) setIsSendMax(percents === 100)
+      setIsSendMax((flag) => reduceIsSendMax(flag, { type: 'percent', asset: sourceAsset, percents }))
       const amountFromPercentage = maxAmountToSwap.amount().multipliedBy(percents / 100)
       const newAmount = baseAmount(amountFromPercentage, maxAmountToSwap.decimal)
       setAmountToSwap(newAmount)
       return newAmount
     },
-    [maxAmountToSwap, setAmountToSwap, isSourceMaxSweep]
+    [maxAmountToSwap, setAmountToSwap, sourceAsset]
   )
 
   const quoteOnlyButton = () => {
@@ -1752,7 +1750,7 @@ export const Swap = ({
         outAsset: targetAsset
       })
       resetApproval()
-      setIsSendMax(false)
+      setIsSendMax((flag) => reduceIsSendMax(flag, { type: 'changeSource' }))
     }
     prevSourceAsset.current = O.some(sourceAsset)
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {

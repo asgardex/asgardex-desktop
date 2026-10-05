@@ -7874,7 +7874,6 @@ __metadata:
     eslint-plugin-security: "npm:^3.0.1"
     eslint-plugin-unused-imports: "npm:^4.4.1"
     ethers: "npm:6.17.0"
-    fast-check: "npm:^4.10.2"
     fp-ts: "npm:^2.16.11"
     fs-extra: "npm:^10.1.0"
     happy-dom: "npm:20.14.5"
@@ -11028,15 +11027,6 @@ __metadata:
   version: 2.1.0
   resolution: "fancy-canvas@npm:2.1.0"
   checksum: 10/b23f666446b0a77054f047e282a4186444d65482d97824ebfbd7ae2bf5b41700de1f449226d6b4a6161eddd6dbb1fd75c4f815d92ee49d59e0654a2d4a63451a
-  languageName: node
-  linkType: hard
-
-"fast-check@npm:^4.10.2":
-  version: 4.10.2
-  resolution: "fast-check@npm:4.10.2"
-  dependencies:
-    pure-rand: "npm:^8.0.0"
-  checksum: 10/bfc74fc464d3d0447b47711f33d036b92438df7b3203f07a35db0c52e1a2b63df3df77dbfc07e881e5f39c0cd0c8cb2dd171c4060ea7d37acf5d3e3d67658910
   languageName: node
   linkType: hard
 
@@ -14987,13 +14977,6 @@ __metadata:
   version: 2.1.1
   resolution: "punycode@npm:2.1.1"
   checksum: 10/939daa010c2cacebdb060c40ecb52fef0a739324a66f7fffe0f94353a1ee83e3b455e9032054c4a0c4977b0a28e27086f2171c392832b59a01bd948fd8e20914
-  languageName: node
-  linkType: hard
-
-"pure-rand@npm:^8.0.0":
-  version: 8.4.2
-  resolution: "pure-rand@npm:8.4.2"
-  checksum: 10/6c118f0ef4e1d5856cc9085a172c2e3c9b2b5009c9437d96df55515585847cc4a5c4abcdc5c62692f352b3343b6eebd694c8ff609705a1d45cf524dc429e20d1
   languageName: node
   linkType: hard
 

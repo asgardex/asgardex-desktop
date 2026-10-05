@@ -567,8 +567,7 @@ export const isUtxoAssetChain = ({ chain }: AnyAsset) =>
   isZecChain(chain)
 
 /** Chains that support transferMax (sendKeystoreMaxTx): UTXO clients + Cardano. */
-export const isMaxSweepAsset = (asset: AnyAsset): boolean =>
-  isUtxoAssetChain(asset) || asset.chain === ADAChain
+export const isMaxSweepAsset = (asset: AnyAsset): boolean => isUtxoAssetChain(asset) || asset.chain === ADAChain
 
 /**
  * Derives the new isSendMax value from a percent-slider change.
@@ -577,6 +576,29 @@ export const isMaxSweepAsset = (asset: AnyAsset): boolean =>
  */
 export const sendMaxFromPercent = (asset: AnyAsset, percents: number): boolean | undefined =>
   isMaxSweepAsset(asset) ? percents === 100 : undefined
+
+export type IsSendMaxEvent =
+  | { type: 'typeAmount'; asset: AnyAsset }
+  | { type: 'percent'; asset: AnyAsset; percents: number }
+  | { type: 'changeSource' }
+
+/**
+ * Next isSendMax value. Max-sweep assets (UTXO + ADA) clear on typing and
+ * follow the percent slider. Other assets leave the flag unchanged.
+ * Switching the source asset always clears it.
+ */
+export const reduceIsSendMax = (flag: boolean, event: IsSendMaxEvent): boolean => {
+  switch (event.type) {
+    case 'typeAmount':
+      return isMaxSweepAsset(event.asset) ? false : flag
+    case 'percent': {
+      const next = sendMaxFromPercent(event.asset, event.percents)
+      return next === undefined ? flag : next
+    }
+    case 'changeSource':
+      return false
+  }
+}
 
 // Assuming you have an appropriate `isTokenAsset` predicate function
 export const isTokenAsset = (asset: AnyAsset): asset is TokenAsset => asset.type === AssetType.TOKEN
