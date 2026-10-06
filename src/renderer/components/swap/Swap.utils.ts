@@ -2,13 +2,14 @@ import { ADAChain } from '@xchainjs/xchain-cardano'
 import { QuoteSwap } from '@xchainjs/xchain-mayachain-query'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { DEFAULT_FEE } from '@xchainjs/xchain-thorchain'
 import { THORChain, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../const'
-import { isChainAsset, max1e8BaseAmount, convertBaseAmountDecimal } from '../../helpers/assetHelper'
+import { isChainAsset, isRuneNativeAsset, max1e8BaseAmount, convertBaseAmountDecimal } from '../../helpers/assetHelper'
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
@@ -59,6 +60,22 @@ export const pickPoolAsset = (assets: PoolAssetDetails, asset: AnyAsset): O.Opti
   )
 
 export const calcRefundFee = (inboundFee: BaseAmount): BaseAmount => inboundFee.times(3)
+
+/**
+ * Cap a native RUNE amount at `balance - 0.02`.
+ *
+ * THORChain debits `DEFAULT_FEE` before `MsgDeposit` runs, and the client signs
+ * that message with an empty fee list. The ante is a flat chain fee, so the
+ * quoted inbound fee is not used. Returns `amount` when it already fits.
+ */
+export const capNativeRuneDeposit = (amount: BaseAmount, balance: BaseAmount): BaseAmount => {
+  const reserve = convertBaseAmountDecimal(DEFAULT_FEE, balance.decimal)
+  const max = balance.minus(reserve)
+  const zero = baseAmount(0, balance.decimal)
+  const capped = max.gt(zero) ? max : zero
+  const amountInBalance = convertBaseAmountDecimal(amount, balance.decimal)
+  return amountInBalance.gt(capped) ? capped : amount
+}
 
 /**
  * Helper to get min. amount to swap
@@ -141,6 +158,9 @@ export const maxAmountToSwapMax1e8 = ({
   // Ignore non-chain assets
   if (!isChainAsset(asset)) return balanceAmountMax1e8
 
+  // Flat 0.02 RUNE ante. The quoted fee is not consulted.
+  if (isRuneNativeAsset(asset)) return capNativeRuneDeposit(balanceAmountMax1e8, balanceAmountMax1e8)
+
   // Convert fee to match balance decimal (max 1e8)
   // This ensures both amounts have the same decimal before subtraction
   const estimatedFeeMax1e8 = max1e8BaseAmount(feeAmount)
@@ -187,6 +207,9 @@ export const maxAmountToSwap = ({
 }): BaseAmount => {
   // Ignore non-chain assets
   if (!isChainAsset(asset)) return balanceAmount
+
+  // Flat 0.02 RUNE ante. The quoted fee is not consulted.
+  if (isRuneNativeAsset(asset)) return capNativeRuneDeposit(balanceAmount, balanceAmount)
 
   // Ensure fee has same decimal as balance for proper subtraction
   const feeInBalanceDecimal =

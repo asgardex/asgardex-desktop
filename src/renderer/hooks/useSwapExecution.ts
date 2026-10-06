@@ -19,8 +19,9 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
+import { capNativeRuneDeposit } from '../components/swap/Swap.utils'
 import { useWalletContext } from '../contexts/WalletContext'
-import { isMaxSweepAsset, isRujiAsset } from '../helpers/assetHelper'
+import { isMaxSweepAsset, isRujiAsset, isRuneNativeAsset } from '../helpers/assetHelper'
 import {
   buildChainflipBroadcastParams,
   openChainflipChannelForSubmit,
@@ -149,7 +150,9 @@ export const useSwapExecution = ({
       O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
         let amountToSwapAdjusted = amountToSwap
 
-        if (
+        if (isRuneNativeAsset(sourceAsset)) {
+          amountToSwapAdjusted = capNativeRuneDeposit(amountToSwapAdjusted, sourceChainBalance)
+        } else if (
           !isTokenAsset(sourceAsset) &&
           !isTradeAsset(sourceAsset) &&
           !isSynthAsset(sourceAsset) &&
@@ -231,7 +234,9 @@ export const useSwapExecution = ({
 
         let amountToSwapAdjusted = amountToSwap
 
-        if (
+        if (isRuneNativeAsset(sourceAsset)) {
+          amountToSwapAdjusted = capNativeRuneDeposit(amountToSwapAdjusted, sourceChainBalance)
+        } else if (
           !isTokenAsset(sourceAsset) &&
           !isTradeAsset(sourceAsset) &&
           !isSynthAsset(sourceAsset) &&

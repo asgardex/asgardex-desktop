@@ -17,7 +17,9 @@ import {
   pickPoolAsset,
   calcRefundFee,
   minAmountToSwapMax1e8,
+  maxAmountToSwap,
   maxAmountToSwapMax1e8,
+  capNativeRuneDeposit,
   assetsInWallet,
   balancesToSwapFrom,
   hasLedgerInBalancesByChain
@@ -410,6 +412,41 @@ describe('components/swap/utils', () => {
       }
       const result = maxAmountToSwapMax1e8(params)
       expect(eqBaseAmount.equals(result, baseAmount(100))).toBeTruthy()
+    })
+
+    // 1 RUNE = 100_000_000 base units. NativeTransactionFee is 0.02 RUNE = 2_000_000.
+    const oneRune = baseAmount(100_000_000, THORCHAIN_DECIMAL)
+
+    it('native RUNE leaves 0.02 and ignores the quoted fee', () => {
+      const result = maxAmountToSwapMax1e8({
+        balanceAmountMax1e8: oneRune,
+        asset: AssetRuneNative,
+        feeAmount: baseAmount(50_000_000, BTC_DECIMAL)
+      })
+      expect(eqBaseAmount.equals(result, baseAmount(98_000_000, THORCHAIN_DECIMAL))).toBeTruthy()
+    })
+
+    it('native RUNE balance below 0.02 is zero', () => {
+      const result = maxAmountToSwap({
+        balanceAmount: baseAmount(1_000_000, THORCHAIN_DECIMAL),
+        asset: AssetRuneNative,
+        feeAmount: baseAmount(0, THORCHAIN_DECIMAL)
+      })
+      expect(eqBaseAmount.equals(result, baseAmount(0, THORCHAIN_DECIMAL))).toBeTruthy()
+    })
+  })
+
+  describe('capNativeRuneDeposit', () => {
+    const oneRune = baseAmount(100_000_000, THORCHAIN_DECIMAL)
+
+    it('lowers a full-balance amount to balance - 0.02', () => {
+      const result = capNativeRuneDeposit(oneRune, oneRune)
+      expect(eqBaseAmount.equals(result, baseAmount(98_000_000, THORCHAIN_DECIMAL))).toBeTruthy()
+    })
+
+    it('leaves an amount that already covers the ante', () => {
+      const half = baseAmount(50_000_000, THORCHAIN_DECIMAL)
+      expect(eqBaseAmount.equals(capNativeRuneDeposit(half, oneRune), half)).toBeTruthy()
     })
   })
 
