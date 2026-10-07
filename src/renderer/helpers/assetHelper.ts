@@ -567,8 +567,7 @@ export const isUtxoAssetChain = ({ chain }: AnyAsset) =>
   isZecChain(chain)
 
 /** Chains that support transferMax (sendKeystoreMaxTx): UTXO clients + Cardano. */
-export const isMaxSweepAsset = (asset: AnyAsset): boolean =>
-  isUtxoAssetChain(asset) || asset.chain === ADAChain
+export const isMaxSweepAsset = (asset: AnyAsset): boolean => isUtxoAssetChain(asset) || asset.chain === ADAChain
 
 /**
  * Derives the new isSendMax value from a percent-slider change.

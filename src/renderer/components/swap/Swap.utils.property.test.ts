@@ -6,9 +6,9 @@
  * hand-picked examples miss.
  */
 
-import * as fc from 'fast-check'
 import { AssetXRP } from '@xchainjs/xchain-ripple'
 import { baseAmount } from '@xchainjs/xchain-util'
+import * as fc from 'fast-check'
 
 import { AssetBTC, AssetETH, AssetRuneNative, ADAAsset, SOLAsset } from '../../../shared/utils/asset'
 import { ZERO_BASE_AMOUNT, AssetUSDCBSC } from '../../const'
@@ -29,9 +29,7 @@ const arbPart = fc.stringMatching(/^[a-z0-9]{1,20}$/)
 const arbAmount8 = arbNat.map((n) => baseAmount(n, 8))
 
 // Fee amounts can come in at any decimal (e.g. 18 for EVM gas).
-const arbFeeAmount = fc
-  .tuple(arbNat, fc.constantFrom(6, 8, 9, 18))
-  .map(([n, d]) => baseAmount(n, d))
+const arbFeeAmount = fc.tuple(arbNat, fc.constantFrom(6, 8, 9, 18)).map(([n, d]) => baseAmount(n, d))
 
 // ─── getSwapLimit1e8 ──────────────────────────────────────────────────────────
 //
