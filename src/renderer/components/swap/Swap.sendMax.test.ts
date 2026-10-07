@@ -24,10 +24,10 @@
  * becomes the passing signal.
  */
 
-import * as fc from 'fast-check'
 import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
-import { isMaxSweepAsset, isUtxoAssetChain, sendMaxFromPercent } from '../../helpers/assetHelper'
+import * as fc from 'fast-check'
 import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { isMaxSweepAsset, isUtxoAssetChain, sendMaxFromPercent } from '../../helpers/assetHelper'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -122,10 +122,10 @@ const simulateBuggy = (actions: Action[]): boolean => {
     const isUTXO = isUtxoAssetChain(asset)
     switch (action.type) {
       case 'setPercent100':
-        if (isUTXO) isSendMax = true          // only UTXO, ADA excluded
+        if (isUTXO) isSendMax = true // only UTXO, ADA excluded
         break
       case 'typeAmount':
-        if (isUTXO) isSendMax = false          // only UTXO, ADA excluded
+        if (isUTXO) isSendMax = false // only UTXO, ADA excluded
         break
       case 'changeAsset':
         /* BUG: no reset */
@@ -153,15 +153,15 @@ const simulateFixed = (actions: Action[]): boolean => {
     const asset = nativeAsset(action.chain)
     switch (action.type) {
       case 'setPercent100': {
-        const newVal = sendMaxFromPercent(asset, 100)   // real production function
+        const newVal = sendMaxFromPercent(asset, 100) // real production function
         if (newVal !== undefined) isSendMax = newVal
         break
       }
       case 'typeAmount':
-        if (isMaxSweepAsset(asset)) isSendMax = false  // real production function
+        if (isMaxSweepAsset(asset)) isSendMax = false // real production function
         break
       case 'changeAsset':
-        isSendMax = false                               // fix: always reset on asset change
+        isSendMax = false // fix: always reset on asset change
         break
     }
   }
@@ -193,8 +193,8 @@ describe('stale isSendMax from any isMaxSweepAsset chain must not reach another 
     .map(([preamble, setterChain, targetChain]): Action[] => [
       ...preamble,
       { type: 'setPercent100', chain: setterChain }, // stale isSendMax=true
-      { type: 'changeAsset',   chain: targetChain  }, // switch to any isMaxSweepAsset chain
-      { type: 'typeAmount',    chain: targetChain  }  // type a specific amount
+      { type: 'changeAsset', chain: targetChain }, // switch to any isMaxSweepAsset chain
+      { type: 'typeAmount', chain: targetChain } // type a specific amount
     ])
 
   it('simulateBuggy reproduces the bug (sendMax is true — expected failure)', () => {
@@ -210,7 +210,7 @@ describe('stale isSendMax from any isMaxSweepAsset chain must not reach another 
           return sendMax !== true
         })
       )
-    }).toThrow()                                    // fast-check throws on counterexample
+    }).toThrow() // fast-check throws on counterexample
   })
 
   it('simulateFixed holds the invariant (sendMax is never true after switching source asset)', () => {
