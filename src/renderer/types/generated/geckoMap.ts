@@ -15,6 +15,7 @@ export const GECKO_MAP: Record<string, string> = {
   LTC: 'litecoin',
   SOL: 'solana',
   ADA: 'cardano',
+  XRD: 'radix',
   'FORE-0XCBE94D75EC713B7EAD84F55620DC3174BEEB1CFE': 'fore-protocol',
   'GOOD-0X17176A9868F321411B15CCB9B934CF95597E89C4': 'good-entry',
   'GG-0X000000000026839B3F4181F2CF69336AF6153B99': 'reboot',

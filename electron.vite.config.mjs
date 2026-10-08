@@ -99,7 +99,25 @@ export default defineConfig(async ({ mode }) => {
           inject: ['./src/shims/buffer-shim.js']
         }
       },
-      plugins: [wasm(), react(), svgr(), typescript({ outDir: 'build/renderer' })],
+      plugins: [
+        // Maya AMM imports @xchainjs/xchain-radix at module scope, which pulls the
+        // Radix Engine Toolkit wasm into the initial renderer script. Maya delisted
+        // XRD, so that import is a stand-in. services/radix keeps the real package.
+        {
+          name: 'stub-mayachain-amm-radix',
+          enforce: 'pre',
+          resolveId(source, importer) {
+            if (source !== '@xchainjs/xchain-radix' || !importer) return null
+            const id = importer.split('?')[0].replace(/\\/g, '/')
+            if (!id.includes('/@xchainjs/xchain-mayachain-amm/')) return null
+            return path.resolve(__dirname, 'src/shared/radixAmmStub.ts')
+          }
+        },
+        wasm(),
+        react(),
+        svgr(),
+        typescript({ outDir: 'build/renderer' })
+      ],
       define: {
         'process.env': {}, // TODO: Fix from xchain
         global: 'globalThis',

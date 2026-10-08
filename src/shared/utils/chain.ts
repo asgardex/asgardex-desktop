@@ -12,7 +12,6 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { NEARChain } from '@xchainjs/xchain-near'
-import { RadixChain as RADIXChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
@@ -20,6 +19,8 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
+
+import { RadixChain as RADIXChain } from '../radix'
 
 const CHAIN_STRINGS: Record<Chain, string> = {
   [BCHChain]: 'Bitcoin Cash',
@@ -82,7 +83,8 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
-  MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'XRD', 'ZEC', 'ADA'],
+  // XRD stays a wallet chain. MayaChain delisted it (no pool, no inbound).
+  MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'ZEC', 'ADA'],
   // ZEC is dual-routable (THOR + MAYA). NEAR is wallet/OneClick-only (exclude from THOR).
   THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter(
     (chain) => !['DASH', 'MAYA', 'ARB', 'XRD', 'ADA', 'NEAR'].includes(chain)

@@ -13,7 +13,6 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { NEARChain } from '@xchainjs/xchain-near'
-import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
@@ -25,6 +24,7 @@ import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'f
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { RadixChain } from '../../../shared/radix'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { eqBalancesRD } from '../../helpers/fp/eq'
@@ -46,7 +46,14 @@ import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import * as NEAR from '../near'
-import * as XRD from '../radix'
+import {
+  radixAddressUI$,
+  radixBalances$,
+  radixGetBalanceByAddress$,
+  radixReloadBalances$,
+  reloadRadixBalances,
+  resetReloadRadixBalances
+} from '../radix/load'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
 import * as SUI from '../sui'
@@ -154,7 +161,7 @@ export const createBalancesService = ({
         if (enabledChainsSet.has(GAIAChain)) reloadFunctions.push(() => COSMOS.reloadBalances(walletType))
         if (enabledChainsSet.has(ADAChain)) reloadFunctions.push(() => ADA.reloadBalances(walletType))
         if (enabledChainsSet.has(XRPChain)) reloadFunctions.push(() => XRP.reloadBalances(walletType))
-        if (enabledChainsSet.has(RadixChain)) reloadFunctions.push(() => XRD.reloadBalances(walletType))
+        if (enabledChainsSet.has(RadixChain)) reloadFunctions.push(() => reloadRadixBalances(walletType))
         if (enabledChainsSet.has(SOLChain)) reloadFunctions.push(() => SOL.reloadBalances())
         if (enabledChainsSet.has(TRONChain)) reloadFunctions.push(() => TRON.reloadBalances(walletType))
         if (enabledChainsSet.has(ZECChain)) reloadFunctions.push(() => ZEC.reloadBalances(walletType))
@@ -180,7 +187,7 @@ export const createBalancesService = ({
     [LTCChain]: LTC.reloadBalances,
     [DOGEChain]: DOGE.reloadBalances,
     [GAIAChain]: COSMOS.reloadBalances,
-    [RadixChain]: XRD.reloadBalances,
+    [RadixChain]: reloadRadixBalances,
     [SOLChain]: SOL.reloadBalances,
     [BASEChain]: BASE.reloadBalances,
     [ADAChain]: ADA.reloadBalances,
@@ -361,10 +368,10 @@ export const createBalancesService = ({
           }
         case RadixChain:
           return {
-            reloadBalances: () => XRD.reloadBalances(walletType),
-            resetReloadBalances: () => XRD.resetReloadBalances(walletType),
-            balances$: XRD.balances$({ walletType, walletAccount, walletIndex, hdMode }),
-            reloadBalances$: XRD.reloadBalances$
+            reloadBalances: () => reloadRadixBalances(walletType),
+            resetReloadBalances: () => resetReloadRadixBalances(walletType),
+            balances$: radixBalances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances$: radixReloadBalances$
           }
         case SOLChain:
           return {
@@ -1052,7 +1059,7 @@ export const createBalancesService = ({
    */
   const xrdChainBalance$: ChainBalance$ = createChainBalance$({
     chain: RadixChain,
-    addressUI$: XRD.addressUI$,
+    addressUI$: radixAddressUI$,
     walletBalanceType: 'all'
   })
 
@@ -1071,7 +1078,7 @@ export const createBalancesService = ({
   const xrdLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
     chain: RadixChain,
     walletBalanceType: 'all',
-    getBalanceByAddress$: XRD.getBalanceByAddress$
+    getBalanceByAddress$: radixGetBalanceByAddress$
   })
 
   /**

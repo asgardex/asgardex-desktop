@@ -1,8 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import {
-  RadixChain,
-  AssetXRD,
   Client as XrdClient,
   generateAddressParam,
   generateBucketParam,
@@ -20,6 +18,7 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
+import { AssetXRD, RadixChain } from '../../../shared/radix'
 import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { Network$ } from '../app/types'

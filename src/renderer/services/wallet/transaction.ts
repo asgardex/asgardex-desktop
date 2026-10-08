@@ -13,7 +13,6 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { NEARChain } from '@xchainjs/xchain-near'
-import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
@@ -25,6 +24,7 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { RadixChain } from '../../../shared/radix'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { observableState } from '../../helpers/stateHelper'
@@ -44,7 +44,7 @@ import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
 import * as NEAR from '../near'
-import * as XRD from '../radix'
+import { radixTxs$ } from '../radix/load'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
 import * as SUI from '../sui'
@@ -134,7 +134,7 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
               case GAIAChain:
                 return COSMOS.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               case RadixChain:
-                return XRD.txs$({ asset: O.some(asset), walletAddress, walletIndex })
+                return radixTxs$({ asset: O.some(asset), walletAddress, walletIndex })
               case SOLChain:
                 return SOL.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               case TRONChain:

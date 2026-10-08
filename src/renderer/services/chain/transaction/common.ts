@@ -14,7 +14,6 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { NEARChain } from '@xchainjs/xchain-near'
-import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
@@ -25,6 +24,7 @@ import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
+import { RadixChain } from '../../../../shared/radix'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
 import { getAssetChain } from '../../../helpers/chainHelper'
@@ -43,7 +43,7 @@ import * as ETH from '../../ethereum'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import * as NEAR from '../../near'
-import * as XRD from '../../radix'
+import { radixSendPoolTx$, radixSendTx, radixTxStatus$ } from '../../radix/load'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
 import * as SUI from '../../sui'
@@ -169,7 +169,7 @@ export const sendTx$ = ({
     case ADAChain:
       return ADA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode, sendMax })
     case RadixChain:
-      return XRD.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
+      return radixSendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case XRPChain:
       return XRP.sendTx({
         walletType,
@@ -465,7 +465,7 @@ export const sendPoolTx$ = ({
         feeOption
       })
     case RadixChain:
-      return XRD.sendPoolTx$({
+      return radixSendPoolTx$({
         walletType,
         router,
         recipient,
@@ -559,7 +559,7 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
     case ADAChain:
       return ADA.txStatus$(txHash, O.none)
     case RadixChain:
-      return XRD.txStatus$(txHash, O.none)
+      return radixTxStatus$(txHash, O.none)
     case XRPChain:
       return XRP.txStatus$(txHash, O.none)
     case SOLChain:
