@@ -1,21 +1,21 @@
 import React, { createContext, useContext } from 'react'
 
 import {
-  client$,
-  clientState$,
-  address$,
-  addressUI$,
-  explorerUrl$,
-  reloadBalances,
-  balances$,
-  txs$,
-  subscribeTx,
-  resetTx,
-  sendTx,
-  txRD$,
-  reloadFees,
-  fees$
-} from '../services/radix'
+  radixClient$ as client$,
+  radixClientState$ as clientState$,
+  radixAddress$ as address$,
+  radixAddressUI$ as addressUI$,
+  radixExplorerUrl$ as explorerUrl$,
+  reloadRadixBalances as reloadBalances,
+  radixBalances$ as balances$,
+  radixTxs$ as txs$,
+  subscribeRadixTx as subscribeTx,
+  resetRadixTx as resetTx,
+  radixSendTx as sendTx,
+  radixTxRD$ as txRD$,
+  reloadRadixFees as reloadFees,
+  radixFees$ as fees$
+} from '../services/radix/load'
 
 type XrdContextValue = {
   client$: typeof client$

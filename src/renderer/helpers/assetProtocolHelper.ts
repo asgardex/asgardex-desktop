@@ -1,6 +1,7 @@
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { AnyAsset, AssetType, isSecuredAsset, isSynthAsset } from '@xchainjs/xchain-util'
 
+import { radixTradeDisabled } from '../../shared/radix'
 import { isChainOfMaya, isChainOfThor } from '../../shared/utils/chain'
 import { isCacaoAsset, isRuneNativeAsset } from './assetHelper'
 
@@ -33,6 +34,9 @@ const getSupportedProtocolsForAsset = (
   chainflipAssetCheck?: (asset: AnyAsset) => boolean,
   oneClickAssetCheck?: (asset: AnyAsset) => boolean
 ): Protocol[] => {
+  // MayaChain delisted Radix. Keep native XRD out of every swap rail, including OneClick.
+  if (radixTradeDisabled(asset.chain)) return []
+
   const supportedProtocols: Set<Protocol> = new Set()
 
   // THORChain protocol can handle:

@@ -13,7 +13,6 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { NEARChain } from '@xchainjs/xchain-near'
-import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
@@ -34,6 +33,7 @@ import { function as FP, option as O, array as A } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { RadixChain } from '../../../../shared/radix'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isChainOfThor } from '../../../../shared/utils/chain'
 import { isCacaoAsset, isRujiAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
@@ -58,7 +58,7 @@ import { service as midgardMayaService } from '../../midgard/mayaMidgard/service
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import * as NEAR from '../../near'
 import { ZERO_ADDRESS as NEAR_ZERO_ADDRESS } from '../../near/fees'
-import * as XRD from '../../radix'
+import { radixFees$, reloadRadixFees } from '../../radix/load'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
 import { ZERO_ADDRESS } from '../../solana/fees'
@@ -683,7 +683,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
       )
     case RadixChain:
       return FP.pipe(
-        XRD.fees$(),
+        radixFees$(),
         liveData.map((fees) => ({ asset, amount: fees.fast }))
       )
     case DASHChain:
@@ -827,7 +827,7 @@ export const standaloneLedgerFees$ = (params: { chain: Chain; amount: BaseAmount
     case XRPChain:
       return XRP.fees$()
     case RadixChain:
-      return XRD.fees$()
+      return radixFees$()
     case SOLChain:
       return SOL.fees$({ amount, recipient })
     case TRONChain:
@@ -861,7 +861,7 @@ export const reloadStandaloneLedgerFees = (chain: Chain): void => {
       XRP.reloadFees()
       break
     case RadixChain:
-      XRD.reloadFees()
+      reloadRadixFees()
       break
     case SOLChain:
       SOL.reloadFees({ amount: baseAmount(1), recipient: ZERO_ADDRESS })

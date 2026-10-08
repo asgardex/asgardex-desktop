@@ -38,6 +38,8 @@ const wallet: WalletMessages = {
     'An allowance is already set. Changing it may require a reset transaction first (two signatures on some tokens).',
   'wallet.column.name': 'Name',
   'wallet.column.ticker': 'Ticker',
+  'wallet.radix.delisted':
+    'MayaChain delisted Radix. Swaps and liquidity are unavailable. Send on the Radix network still works.',
   'wallet.action.send': 'Send',
   'wallet.action.receive': 'Receive',
   'wallet.action.receive.title': 'Receive {asset}',

@@ -13,7 +13,6 @@ import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
-import { AssetXRD, RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -34,6 +33,7 @@ import {
 import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
+import { RadixChain } from '../../../../shared/radix'
 import { AssetBTC, AssetETH, AssetDASH, AssetAETH, AssetZEC } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
@@ -273,6 +273,7 @@ export const getOutboundAssetFeeByChain = (
         case LTCChain:
         case XRPChain:
         case TRONChain:
+        case RadixChain:
           return O.none
         case BTCChain:
           return O.some({
@@ -300,11 +301,6 @@ export const getOutboundAssetFeeByChain = (
           return O.some({
             amount: baseAmount(value, ADA_DECIMALS),
             asset: ADAAsset
-          })
-        case RadixChain:
-          return O.some({
-            amount: baseAmount(value, XRD_DECIMAL),
-            asset: AssetXRD
           })
         case SOLChain:
           return O.some({

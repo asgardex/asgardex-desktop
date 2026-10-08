@@ -12,7 +12,6 @@ import { AssetETH } from '@xchainjs/xchain-ethereum'
 
 import { AssetLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
-import { AssetXRD } from '@xchainjs/xchain-radix'
 import { SOLAsset } from '@xchainjs/xchain-solana'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { AssetTRX } from '@xchainjs/xchain-tron'
@@ -22,6 +21,7 @@ import { AssetZEC } from '@xchainjs/xchain-zcash'
 import { eqAsset } from '../../renderer/helpers/fp/eq'
 import { PoolDetails as PoolDetailsMaya } from '../../renderer/services/midgard/mayaMidgard/types'
 import { PoolDetails } from '../../renderer/services/midgard/midgardTypes'
+import { AssetXRD } from '../radix'
 
 // Re-export to have asset definition at one place only to handle xchain-* changes easily in the future
 export {

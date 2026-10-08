@@ -6,6 +6,12 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
+# Unreleased
+
+## Update/Fixes
+
+- MayaChain delisted Radix. Swaps and liquidity for XRD are unavailable. Send on the Radix network still works, and the Radix client loads only when XRD is enabled or a Radix screen is opened. [#1225](https://github.com/asgardex/asgardex-desktop/issues/1225)
+
 # 1.46.0 (2026-09-24)
 
 PRs merged to `develop` since tag `v1.45.3`.

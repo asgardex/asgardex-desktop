@@ -12,7 +12,6 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { NEARChain } from '@xchainjs/xchain-near'
-import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
@@ -23,6 +22,7 @@ import { ZECChain } from '@xchainjs/xchain-zcash'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
+import { RadixChain } from '../../../shared/radix'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
@@ -39,7 +39,7 @@ import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import * as NEAR from '../near'
-import * as XRD from '../radix'
+import { radixAddress$ } from '../radix/load'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
 import * as SUI from '../sui'
@@ -82,7 +82,7 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
     case DOGEChain:
       return DOGE.address$
     case RadixChain:
-      return XRD.address$
+      return radixAddress$
     case SOLChain:
       return SOL.address$
     case ZECChain:

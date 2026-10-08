@@ -1,9 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client as RADIXClient, RadixChain } from '@xchainjs/xchain-radix'
+import { Client as RADIXClient } from '@xchainjs/xchain-radix'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { RadixChain } from '../../../shared/radix'
 import { isError } from '../../../shared/utils/guard'
 import { logger } from '../../helpers/logger'
 import { clientNetwork$ } from '../app/service'

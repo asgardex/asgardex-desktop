@@ -12,7 +12,6 @@ import { DOGE_DECIMAL, DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain, SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { RUNE_DECIMAL as THOR_DECIMAL, THORChain } from '@xchainjs/xchain-thorchain'
@@ -20,6 +19,7 @@ import { TRONChain, TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import { BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 
+import { RadixChain, XRD_DECIMAL } from '../../../../shared/radix'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 
 /**
