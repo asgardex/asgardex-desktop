@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { Keystore } from '@xchainjs/xchain-crypto'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -7,6 +6,7 @@ import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { BTCChain } from '../utils/chainIds'
 
 import { WalletAddresses, WalletType } from '../wallet/types'
 

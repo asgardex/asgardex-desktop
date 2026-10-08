@@ -1,26 +1,32 @@
 import { ARBChain, ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
 import { BASEChain, BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
-import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL, BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain, BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ADAChain, ADA_DECIMALS } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DASHChain, DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { DOGE_DECIMAL, DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain, SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { RUNE_DECIMAL as THOR_DECIMAL, THORChain } from '@xchainjs/xchain-thorchain'
 import { TRONChain, TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import { BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
-import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
+import {
+  BTC_DECIMAL,
+  BTCChain,
+  DASHChain,
+  DASH_DECIMAL,
+  RadixChain,
+  XRD_DECIMAL,
+  ZEC_DECIMAL,
+  ZECChain
+} from '../../../../shared/utils/chainIds'
 
 /**
  * Returns minimal amount (dust threshold) needed to send a tx for Thorchain to acknowledge

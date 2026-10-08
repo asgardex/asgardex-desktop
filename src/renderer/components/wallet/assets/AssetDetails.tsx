@@ -10,7 +10,6 @@ import {
   ChartBarIcon,
   ChartPieIcon
 } from '@heroicons/react/24/outline'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -29,6 +28,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
+import { AssetBTC } from '../../../../shared/utils/chainIds'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useChainflipContext } from '../../../contexts/ChainflipContext'

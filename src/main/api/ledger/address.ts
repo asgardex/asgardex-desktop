@@ -1,43 +1,34 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
-import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BASEChain } from '@xchainjs/xchain-base'
-import { AddressFormat, BTCChain } from '@xchainjs/xchain-bitcoin'
-import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { BSCChain } from '@xchainjs/xchain-bsc'
+import type { AddressFormat } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DASHChain } from '@xchainjs/xchain-dash'
-import { DOGEChain } from '@xchainjs/xchain-doge'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { RadixChain } from '@xchainjs/xchain-radix'
-import { XRPChain } from '@xchainjs/xchain-ripple'
-import { SOLChain } from '@xchainjs/xchain-solana'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain } from '@xchainjs/xchain-util'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
 
 import { IPCLedgerAddressParams, LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { LEDGER_TRANSPORT_TIMEOUT_MS } from '../../../shared/const'
 import { isSupportedChain } from '../../../shared/utils/chain'
+import {
+  ARBChain,
+  AVAXChain,
+  BASEChain,
+  BCHChain,
+  BSCChain,
+  BTCChain,
+  DASHChain,
+  DOGEChain,
+  ETHChain,
+  GAIAChain,
+  LTCChain,
+  MAYAChain,
+  RadixChain,
+  SOLChain,
+  THORChain,
+  TRONChain,
+  XRPChain,
+  ZECChain
+} from '../../../shared/utils/chainIds'
 import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress } from '../../../shared/wallet/types'
-import { getAddress as getBTCAddress, verifyAddress as verifyBTCAddress } from './bitcoin/address'
-import { getAddress as getBCHAddress, verifyAddress as verifyBCHAddress } from './bitcoincash/address'
-import { getAddress as getCOSMOSAddress, verifyAddress as verifyCOSMOSAddress } from './cosmos/address'
-import { getAddress as getDASHAddress, verifyAddress as verifyDASHAddress } from './dash/address'
-import { getAddress as getDOGEAddress, verifyAddress as verifyDOGEAddress } from './doge/address'
-import { getEVMAddress, verifyEVMAddress } from './evm/address'
-import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
-import { getAddress as getMAYAAddress, verifyAddress as verifyMAYAAddress } from './mayachain/address'
-import { getAddress as getXRPAddress, verifyAddress as verifyXRPAddress } from './ripple/address'
-import { getAddress as getSOLAddress, verifyAddress as verifySOLAddress } from './solana/address'
-import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
-import { getAddress as getTRONAddress, verifyAddress as verifyTRONAddress } from './tron/address'
 
 const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
@@ -61,7 +52,7 @@ const withTimeout = <T>(promise: Promise<T>, ms: number, label: string): Promise
   })
 }
 
-const handleEVMChain = (
+const handleEVMChain = async (
   chain: Chain,
   transport: Transport,
   network: Network,
@@ -78,6 +69,7 @@ const handleEVMChain = (
       })
     )
   }
+  const { getEVMAddress } = await import('./evm/address')
   return getEVMAddress({ chain, transport, walletAccount, walletIndex, evmHDMode: hdMode, network })
 }
 
@@ -103,18 +95,51 @@ const chainAddressFunctions: Record<
   [BASEChain]: (transport, network, walletAccount, walletIndex, hdMode) =>
     handleEVMChain(BASEChain, transport, network, walletAccount, walletIndex, hdMode, 'Invalid BASE HD mode'),
 
-  // Non-EVM chains
-  [THORChain]: getTHORAddress,
-  [MAYAChain]: getMAYAAddress,
-  [BTCChain]: getBTCAddress,
-  [LTCChain]: getLTCAddress,
-  [BCHChain]: getBCHAddress,
-  [DOGEChain]: getDOGEAddress,
-  [DASHChain]: getDASHAddress,
-  [GAIAChain]: getCOSMOSAddress,
-  [XRPChain]: getXRPAddress,
-  [SOLChain]: getSOLAddress,
-  [TRONChain]: getTRONAddress
+  // Non-EVM chains. Each client loads only when that chain is asked for.
+  [THORChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./thorchain/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  },
+  [MAYAChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./mayachain/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  },
+  [BTCChain]: async (transport, network, walletAccount, walletIndex, hdMode, addressFormat) => {
+    const { getAddress } = await import('./bitcoin/address')
+    return getAddress(transport, network, walletAccount, walletIndex, hdMode, addressFormat)
+  },
+  [LTCChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./litecoin/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  },
+  [BCHChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./bitcoincash/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  },
+  [DOGEChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./doge/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  },
+  [DASHChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./dash/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  },
+  [GAIAChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./cosmos/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  },
+  [XRPChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./ripple/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  },
+  [SOLChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./solana/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  },
+  [TRONChain]: async (transport, network, walletAccount, walletIndex) => {
+    const { getAddress } = await import('./tron/address')
+    return getAddress(transport, network, walletAccount, walletIndex)
+  }
 }
 
 const unsupportedChains: Chain[] = [RadixChain, ZECChain, 'ADA']
@@ -188,33 +213,48 @@ export const verifyLedgerAddress = async ({
     )
     transport = t
     switch (chain) {
-      case THORChain:
-        result = await verifyTHORAddress({ transport: t, network, walletAccount, walletIndex })
+      case THORChain: {
+        const { verifyAddress } = await import('./thorchain/address')
+        result = await verifyAddress({ transport: t, network, walletAccount, walletIndex })
         break
-      case MAYAChain:
-        result = await verifyMAYAAddress({ transport: t, network, walletAccount, walletIndex })
+      }
+      case MAYAChain: {
+        const { verifyAddress } = await import('./mayachain/address')
+        result = await verifyAddress({ transport: t, network, walletAccount, walletIndex })
         break
-      case BTCChain:
-        result = await verifyBTCAddress({ transport: t, network, walletAccount, walletIndex, hdMode })
+      }
+      case BTCChain: {
+        const { verifyAddress } = await import('./bitcoin/address')
+        result = await verifyAddress({ transport: t, network, walletAccount, walletIndex, hdMode })
         break
-      case LTCChain:
-        result = await verifyLTCAddress({ transport: t, network, walletAccount, walletIndex })
+      }
+      case LTCChain: {
+        const { verifyAddress } = await import('./litecoin/address')
+        result = await verifyAddress({ transport: t, network, walletAccount, walletIndex })
         break
-      case BCHChain:
-        result = await verifyBCHAddress({ transport: t, network, walletAccount, walletIndex })
+      }
+      case BCHChain: {
+        const { verifyAddress } = await import('./bitcoincash/address')
+        result = await verifyAddress({ transport: t, network, walletAccount, walletIndex })
         break
-      case DOGEChain:
-        result = await verifyDOGEAddress({ transport: t, network, walletAccount, walletIndex })
+      }
+      case DOGEChain: {
+        const { verifyAddress } = await import('./doge/address')
+        result = await verifyAddress({ transport: t, network, walletAccount, walletIndex })
         break
-      case DASHChain:
-        result = await verifyDASHAddress({ transport: t, network, walletAccount, walletIndex })
+      }
+      case DASHChain: {
+        const { verifyAddress } = await import('./dash/address')
+        result = await verifyAddress({ transport: t, network, walletAccount, walletIndex })
         break
+      }
       case ETHChain:
       case AVAXChain:
       case BASEChain:
       case BSCChain:
       case ARBChain: {
         if (!isEvmHDMode(hdMode)) throw Error(`Invalid 'EvmHDMode' - needed for ${chain} to verify Ledger address`)
+        const { verifyEVMAddress } = await import('./evm/address')
         result = await verifyEVMAddress({
           chain,
           transport: t,
@@ -225,18 +265,26 @@ export const verifyLedgerAddress = async ({
         })
         break
       }
-      case GAIAChain:
-        result = await verifyCOSMOSAddress(t, walletAccount, walletIndex, network)
+      case GAIAChain: {
+        const { verifyAddress } = await import('./cosmos/address')
+        result = await verifyAddress(t, walletAccount, walletIndex, network)
         break
-      case XRPChain:
-        result = await verifyXRPAddress(t, walletAccount, walletIndex, network)
+      }
+      case XRPChain: {
+        const { verifyAddress } = await import('./ripple/address')
+        result = await verifyAddress(t, walletAccount, walletIndex, network)
         break
-      case SOLChain:
-        result = await verifySOLAddress({ transport: t, network, walletAccount, walletIndex })
+      }
+      case SOLChain: {
+        const { verifyAddress } = await import('./solana/address')
+        result = await verifyAddress({ transport: t, network, walletAccount, walletIndex })
         break
-      case TRONChain:
-        result = await verifyTRONAddress({ transport: t, network, walletAccount, walletIndex })
+      }
+      case TRONChain: {
+        const { verifyAddress } = await import('./tron/address')
+        result = await verifyAddress({ transport: t, network, walletAccount, walletIndex })
         break
+      }
     }
   } finally {
     if (transport) {

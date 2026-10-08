@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Asset, Chain } from '@xchainjs/xchain-util'
@@ -11,6 +10,7 @@ import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { AssetBTC } from '../../../shared/utils/chainIds'
 
 import { Deposit } from '../../components/deposit'
 import { ErrorView } from '../../components/shared/error'

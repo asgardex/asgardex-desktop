@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -8,6 +7,7 @@ import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { BTCChain } from '../../../shared/utils/chainIds'
 
 import { isEvmHdScanChain, isUtxoStandardHdScanChain } from '../../../shared/utils/keystoreHdScan'
 import {

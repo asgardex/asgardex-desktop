@@ -8,7 +8,6 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline'
 import { AssetAETH } from '@xchainjs/xchain-arbitrum'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -19,6 +18,7 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
+import { AssetBTC } from '../../../../../../shared/utils/chainIds'
 
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../../shared/wallet/types'

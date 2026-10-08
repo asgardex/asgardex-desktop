@@ -1,11 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetAVAX, AVAX_GAS_ASSET_DECIMAL, AVAXChain } from '@xchainjs/xchain-avax'
 import { AssetBETH, BASE_GAS_ASSET_DECIMAL, BASEChain } from '@xchainjs/xchain-base'
-import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL, BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSC_GAS_ASSET_DECIMAL, BSCChain } from '@xchainjs/xchain-bsc'
 import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGE_DECIMAL, DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
@@ -28,7 +26,6 @@ import {
   AnyAsset,
   Chain
 } from '@xchainjs/xchain-util'
-import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
 import {
@@ -42,6 +39,7 @@ import {
   AssetZEC
 } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
+import { BTC_DECIMAL, BTCChain, DASHChain, ZEC_DECIMAL, ZECChain } from '../../../../shared/utils/chainIds'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqAsset, eqChain, eqOAddress } from '../../../helpers/fp/eq'

@@ -1,21 +1,19 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
-import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 
 import { EvmHDMode } from '../evm/types'
 import { UtxoHDMode } from '../utxo/types'
 import { KeystoreChainHDSettings } from '../wallet/types'
+import { BTCChain, DASHChain, ZECChain } from './chainIds'
 
 /** Default scan window when the user does not pick a range (indexes 0–4). */
 export const HD_SCAN_DEFAULT_START = 0
