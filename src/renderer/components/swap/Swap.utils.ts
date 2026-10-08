@@ -2,10 +2,11 @@ import { ADAChain } from '@xchainjs/xchain-cardano'
 import { QuoteSwap } from '@xchainjs/xchain-mayachain-query'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
-import { DEFAULT_FEE } from '@xchainjs/xchain-thorchain'
+
 import { THORChain, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
+import { DEFAULT_FEE } from '../../../shared/utils/chainIds'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../const'

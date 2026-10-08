@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network as ClientNetwork, Network } from '@xchainjs/xchain-client'
-import { Client, getChainId, THORChain } from '@xchainjs/xchain-thorchain'
+import { Client, getChainId } from '@xchainjs/xchain-thorchain'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -16,6 +16,7 @@ import {
   maskThornodeRpcUrl,
   requestThornodeApiBases
 } from '../../../shared/thorchain/const'
+import { THORChain } from '../../../shared/utils/chainIds'
 import { getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import { isError } from '../../../shared/utils/guard'
 import { DEFAULT_KEYSTORE_CHAIN_HD_SETTINGS } from '../../../shared/wallet/types'

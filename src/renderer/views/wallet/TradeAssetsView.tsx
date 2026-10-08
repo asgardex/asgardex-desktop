@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { BaseAmount, Chain } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { THORChain, MAYAChain } from '../../../shared/utils/chainIds'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { TradeDepositModal } from '../../components/modal/tradeDeposit'

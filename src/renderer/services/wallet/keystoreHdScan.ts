@@ -7,18 +7,8 @@ import { Network } from '@xchainjs/xchain-client'
 import { Client as DogeClient, DOGEChain, AssetDOGE, defaultDogeParams } from '@xchainjs/xchain-doge'
 import { Client as EthClient, ETHChain, AssetETH } from '@xchainjs/xchain-ethereum'
 import { Client as LtcClient, LTCChain, AssetLTC, defaultLtcParams } from '@xchainjs/xchain-litecoin'
-import {
-  Client as MayaClient,
-  MAYAChain,
-  AssetCacao,
-  defaultClientConfig as mayaDefaultConfig
-} from '@xchainjs/xchain-mayachain'
-import {
-  Client as ThorClient,
-  THORChain,
-  AssetRuneNative,
-  defaultClientConfig as thorDefaultConfig
-} from '@xchainjs/xchain-thorchain'
+import { Client as MayaClient, defaultClientConfig as mayaDefaultConfig } from '@xchainjs/xchain-mayachain'
+import { Client as ThorClient, defaultClientConfig as thorDefaultConfig } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 
@@ -30,7 +20,15 @@ import { createEthParams } from '../../../shared/ethereum/const'
 import { DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { AssetBTC, AssetDASH, AssetZEC } from '../../../shared/utils/asset'
-import { BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  AssetRuneNative,
+  MAYAChain,
+  AssetCacao,
+  BTCChain,
+  DASHChain,
+  ZECChain
+} from '../../../shared/utils/chainIds'
 import { getChainDerivationPath, getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import {
   candidateKey,

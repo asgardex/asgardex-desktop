@@ -4,15 +4,15 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { RadixChain } from '@xchainjs/xchain-radix'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 
 import { chainToString, isSupportedChain } from './chain'
+import { THORChain, MAYAChain, GAIAChain } from './chainIds'
 
 describe('chain', () => {
   it('isSupportedChain', () => {

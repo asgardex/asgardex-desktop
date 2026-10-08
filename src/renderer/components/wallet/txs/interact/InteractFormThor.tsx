@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   assetAmount,
@@ -29,6 +29,7 @@ import { useIntl } from 'react-intl'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../../../../shared/mock/amount'
 import { AssetRuneNative } from '../../../../../shared/utils/asset'
+import { THORChain } from '../../../../../shared/utils/chainIds'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'

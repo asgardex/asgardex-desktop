@@ -5,16 +5,16 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { NEARChain } from '@xchainjs/xchain-near'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
@@ -22,7 +22,15 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
-import { BTCChain, DASHChain, RadixChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  RadixChain,
+  ZECChain
+} from '../../../shared/utils/chainIds'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { eqBalancesRD } from '../../helpers/fp/eq'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'

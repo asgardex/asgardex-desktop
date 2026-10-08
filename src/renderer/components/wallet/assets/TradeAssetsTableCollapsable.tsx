@@ -3,10 +3,10 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
 import { Balance, Network } from '@xchainjs/xchain-client'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { PoolDetails as PoolDetailsMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import {
   Address,
   AnyAsset,
@@ -25,6 +25,7 @@ import * as Rx from 'rxjs'
 
 import { DEFAULT_EVM_HD_MODE } from '../../../../shared/evm/types'
 import { chainToString, EnabledChain } from '../../../../shared/utils/chain'
+import { AssetRuneNative, THORChain, AssetCacao, MAYAChain } from '../../../../shared/utils/chainIds'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../shared/wallet/types'
 import { CHAIN_WEIGHTS_THOR, ZERO_BASE_AMOUNT } from '../../../const'

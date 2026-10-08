@@ -1,10 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+
 import { DefaultApi, MemberPool } from '@xchainjs/xchain-mayamidgard'
 import { Address, Asset, assetFromString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { CACAO_DECIMAL } from '../../../../shared/utils/chainIds'
 
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { liveData } from '../../../helpers/rx/liveData'

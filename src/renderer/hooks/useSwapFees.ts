@@ -2,8 +2,7 @@ import { useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+
 import {
   AnyAsset,
   BaseAmount,
@@ -23,6 +22,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { ASGARDEX_AFFILIATE_FEE_MIN, getAsgardexAffiliateFee, getAsgardexThorname } from '../../shared/const'
 import { isChainOfThor } from '../../shared/utils/chain'
+import { AssetRuneNative, AssetCacao } from '../../shared/utils/chainIds'
 import * as Utils from '../components/swap/Swap.utils'
 import { useOneClickContext } from '../contexts/OneClickContext'
 import { THORCHAIN_DECIMAL, isUSDAsset, convertBaseAmountDecimal } from '../helpers/assetHelper'

@@ -10,8 +10,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetDOGE, DOGEChain } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetLTC, LTCChain } from '@xchainjs/xchain-litecoin'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AnyAsset, baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
@@ -27,7 +26,18 @@ import { DEFAULT_BSC_RPC_URLS } from '../../../shared/bsc/const'
 import { DEFAULT_ETH_RPC_URLS } from '../../../shared/ethereum/const'
 import { DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
-import { AssetBTC, BTCChain, AssetDASH, DASHChain, AssetZEC, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  AssetRuneNative,
+  THORChain,
+  AssetCacao,
+  MAYAChain,
+  AssetBTC,
+  BTCChain,
+  AssetDASH,
+  DASHChain,
+  AssetZEC,
+  ZECChain
+} from '../../../shared/utils/chainIds'
 import { validateDerivationPath, warnDerivationPath } from '../../../shared/utils/derivationPathValidation'
 import {
   candidateKey,

@@ -338,9 +338,10 @@ export const sendTx = async ({
 
   let transport: Transport | undefined
   try {
-    transport = await TransportNodeHidSingleton.default.create()
+    const opened: Transport = await TransportNodeHidSingleton.default.create()
+    transport = opened
     return await sendFunction({
-      transport,
+      transport: opened,
       chain,
       network,
       sender,
@@ -445,9 +446,10 @@ export const deposit = async ({
 
   let transport: Transport | undefined
   try {
-    transport = await TransportNodeHidSingleton.default.create()
+    const opened: Transport = await TransportNodeHidSingleton.default.create()
+    transport = opened
     return await depositFunction({
-      transport,
+      transport: opened,
       chain,
       network,
       asset,

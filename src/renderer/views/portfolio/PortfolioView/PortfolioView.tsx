@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Squares2X2Icon, ChartPieIcon } from '@heroicons/react/24/outline'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import {
   assetAmount,
   assetToBase,
@@ -20,6 +19,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
+import { AssetRuneNative, THORChain, AssetCacao, MAYAChain } from '../../../../shared/utils/chainIds'
 import { RefreshButton } from '../../../components/uielements/button'
 import { PieChart } from '../../../components/uielements/charts'
 import { Label } from '../../../components/uielements/label'

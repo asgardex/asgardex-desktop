@@ -4,16 +4,16 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { NEARChain } from '@xchainjs/xchain-near'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
@@ -21,7 +21,15 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
-import { BTCChain, DASHChain, RadixChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  RadixChain,
+  ZECChain
+} from '../../../shared/utils/chainIds'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BASE from '../base'

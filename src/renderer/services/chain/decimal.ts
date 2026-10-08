@@ -5,25 +5,34 @@ import { BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ADA_DECIMALS } from '@xchainjs/xchain-cardano'
-import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
+
 import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
-import { CACAO_DECIMAL, MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
+
 import { PoolDetail as MayaPoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { NEAR_DECIMALS } from '@xchainjs/xchain-near'
 import { XRP_DECIMAL } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { SUI_DECIMALS } from '@xchainjs/xchain-sui'
-import { isTCYAsset } from '@xchainjs/xchain-thorchain'
+
 import { TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
-import { BTC_DECIMAL, DASH_DECIMAL, XRD_DECIMAL, ZEC_DECIMAL } from '../../../shared/utils/chainIds'
+import {
+  isTCYAsset,
+  CACAO_DECIMAL,
+  MAYA_DECIMAL,
+  COSMOS_DECIMAL,
+  BTC_DECIMAL,
+  DASH_DECIMAL,
+  XRD_DECIMAL,
+  ZEC_DECIMAL
+} from '../../../shared/utils/chainIds'
 import { isMayaAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { findOneClickToken } from '../oneclick/assets'
 import { getTokenDecimal } from './tokenDecimalMap'

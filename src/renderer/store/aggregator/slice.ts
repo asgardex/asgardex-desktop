@@ -1,97 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Aggregator } from '@xchainjs/xchain-aggregator'
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
-import { Client as ArbClient } from '@xchainjs/xchain-arbitrum'
-import { Client as AvaxClient } from '@xchainjs/xchain-avax'
-import { Client as BaseClient } from '@xchainjs/xchain-base'
-import { Client as BscClient } from '@xchainjs/xchain-bsc'
-import { Client as EthClient } from '@xchainjs/xchain-ethereum'
-import { Wallet } from '@xchainjs/xchain-wallet'
+import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 
-import { defaultArbParams } from '../../../shared/arb/const'
-import { defaultAvaxParams } from '../../../shared/avax/const'
-import { defaultBaseParams } from '../../../shared/base/const'
-import { defaultBscParams } from '../../../shared/bsc/const'
-import {
-  ASGARDEX_AFFILIATE_FEE,
-  ASGARDEX_THORNAME,
-  ASGARDEX_BROKER_URL,
-  ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
-  ASGARDEX_ONECLICK_API_KEY
-} from '../../../shared/const'
-import { defaultEthParams } from '../../../shared/ethereum/const'
-import { liquifyAggregatorConfig } from '../../helpers/liquifyEndpoints'
-import { logger } from '../../helpers/logger'
 import { getProtocolFromStorage, setValueToStorage, StorageKey } from '../../helpers/storage'
-import { getCurrentNetworkState } from '../../services/app/service'
 import { State } from './types'
 
 const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip', 'OneClick']
-
-// Validate Chainflip address pattern
-const isValidChainflipAddress = (address: string): address is `cF${string}` => {
-  return typeof address === 'string' && address.length > 2 && address.startsWith('cF')
-}
-
-// Prepare affiliate brokers configuration with validation
-const getAffiliateBrokers = () => {
-  if (ASGARDEX_AFFILIATE_BROKERS_ADDRESS && isValidChainflipAddress(ASGARDEX_AFFILIATE_BROKERS_ADDRESS)) {
-    return [
-      {
-        account: ASGARDEX_AFFILIATE_BROKERS_ADDRESS,
-        commissionBps: ASGARDEX_AFFILIATE_FEE
-      }
-    ]
-  }
-  logger.warn('Invalid or missing affiliate broker address in slice initialization, using empty array')
-  return []
-}
-
-// Validate broker URL
-const getBrokerUrl = () => {
-  if (!ASGARDEX_BROKER_URL || typeof ASGARDEX_BROKER_URL !== 'string' || ASGARDEX_BROKER_URL.trim() === '') {
-    logger.warn('Invalid broker URL in slice initialization, using empty string')
-    return ''
-  }
-  return ASGARDEX_BROKER_URL
-}
 
 const initialState: State = {
   isLoading: false,
   protocols: JSON.parse(getProtocolFromStorage(JSON.stringify(AllProtocols))),
   isBoostEnabled: false, // Boost disabled by default
-  aggregator: new Aggregator({
-    affiliate: {
-      basisPoints: ASGARDEX_AFFILIATE_FEE,
-      affiliates: {
-        Thorchain: ASGARDEX_THORNAME,
-        Mayachain: ASGARDEX_THORNAME
-      }
-    },
-    wallet: new Wallet({
-      ETH: new EthClient({
-        ...defaultEthParams
-      }),
-      BSC: new BscClient({
-        ...defaultBscParams
-      }),
-      AVAX: new AvaxClient({
-        ...defaultAvaxParams
-      }),
-      ARB: new ArbClient({
-        ...defaultArbParams
-      }),
-      BASE: new BaseClient({
-        ...defaultBaseParams
-      })
-    }),
-    network: getCurrentNetworkState(),
-    brokerUrl: getBrokerUrl(),
-    affiliateBrokers: getAffiliateBrokers(),
-    ...liquifyAggregatorConfig(getCurrentNetworkState()),
-    ...(ASGARDEX_ONECLICK_API_KEY && { oneClickApiKey: ASGARDEX_ONECLICK_API_KEY }),
-    oneClickReferral: 'asgardex'
-  }),
   quoteSwap: null
 }
 

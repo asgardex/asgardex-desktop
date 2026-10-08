@@ -1,7 +1,8 @@
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { describe, expect, it } from 'vitest'
+import { THORChain } from './chainIds'
 
 import { getChainDerivationPath } from './derivationPath'
 import {

@@ -2,8 +2,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao, CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { THORCHAIN_DECIMAL } from '@xchainjs/xchain-thorchain-query'
 import {
   AnyAsset,
@@ -18,6 +17,7 @@ import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
+import { AssetRuneNative, THORChain, AssetCacao, CACAO_DECIMAL } from '../../../../shared/utils/chainIds'
 
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'

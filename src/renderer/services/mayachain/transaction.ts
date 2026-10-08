@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { CACAO_DENOM, DepositParam, getDenom, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { CACAO_DENOM, DepositParam, getDenom } from '@xchainjs/xchain-mayachain'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -13,6 +13,7 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
+import { MAYAChain } from '../../../shared/utils/chainIds'
 import { isLedgerWallet, isVultisigWallet } from '../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { Network$ } from '../app/types'

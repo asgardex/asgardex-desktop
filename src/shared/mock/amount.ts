@@ -1,7 +1,7 @@
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
 import { THORCHAIN_DECIMAL } from '../../renderer/helpers/assetHelper'
+import { CACAO_DECIMAL } from '../utils/chainIds'
 
 const ONE_RUNE_AMOUNT = assetAmount(1, THORCHAIN_DECIMAL)
 export const ONE_RUNE_BASE_AMOUNT = assetToBase(ONE_RUNE_AMOUNT)

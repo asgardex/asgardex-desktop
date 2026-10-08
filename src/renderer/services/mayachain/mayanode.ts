@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetCacao, CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+
 import {
   Configuration,
   MimirApi,
@@ -40,6 +40,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
+import { AssetCacao, CACAO_DECIMAL } from '../../../shared/utils/chainIds'
 import { WalletType } from '../../../shared/wallet/types'
 import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'

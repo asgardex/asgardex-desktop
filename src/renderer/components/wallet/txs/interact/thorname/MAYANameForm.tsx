@@ -10,15 +10,15 @@ import {
 import { AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { MayachainQuery, QuoteMAYANameParams, MAYANameDetails } from '@xchainjs/xchain-mayachain-query'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AnyAsset, Asset, Chain, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
-import { AssetBTC } from '../../../../../../shared/utils/chainIds'
+import { THORChain, AssetCacao, MAYAChain, AssetBTC } from '../../../../../../shared/utils/chainIds'
 
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../../shared/wallet/types'

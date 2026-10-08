@@ -2,12 +2,12 @@ import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ScaleIcon } from '@heroicons/react/24/outline'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
+import { AssetRuneNative, THORChain, AssetCacao } from '../../../shared/utils/chainIds'
 
 import { IncentivePendulumRD } from '../../hooks/useIncentivePendulum'
 import { Label } from '../uielements/label'

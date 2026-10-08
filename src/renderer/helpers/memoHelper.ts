@@ -1,9 +1,10 @@
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Address, AnyAsset, AssetType, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 
 import { getAsgardexThorname } from '../../shared/const'
+import { THORChain } from '../../shared/utils/chainIds'
 
 const DELIMITER = ':'
 

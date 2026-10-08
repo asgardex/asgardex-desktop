@@ -5,9 +5,9 @@ import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/re
 import { ADAChain } from '@xchainjs/xchain-cardano'
 import { FeeOption, Fees, FeesWithRates, Network } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { XRPChain } from '@xchainjs/xchain-ripple'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import {
   Address,
   assetAmount,
@@ -30,6 +30,7 @@ import { FormattedMessage, useIntl } from 'react-intl'
 
 import { GasMultiplier, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
 import { isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
+import { THORChain, MAYAChain } from '../../../../../shared/utils/chainIds'
 import { isKeystoreWallet, isLedgerWallet, isVultisigWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'

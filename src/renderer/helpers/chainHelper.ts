@@ -4,21 +4,24 @@ import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
 import { AssetBCH, BCHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain, ADAAsset, UPPER_FEE_BOUND as UPPER_FEE_BOUNDADA } from '@xchainjs/xchain-cardano'
-import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
-import { AssetDOGE, DOGEChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
-import { AssetLTC, LTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDLTC } from '@xchainjs/xchain-litecoin'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { NEARAsset, NEARChain } from '@xchainjs/xchain-near'
 import { AssetXRP, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { SUIAsset, SUIChain } from '@xchainjs/xchain-sui'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AssetTRX, TRONChain } from '@xchainjs/xchain-tron'
 import { AnyAsset, Asset, AssetType, Chain, isTokenAsset } from '@xchainjs/xchain-util'
 
 import { isSupportedChain } from '../../shared/utils/chain'
 import {
+  AssetRuneNative,
+  THORChain,
+  AssetCacao,
+  MAYAChain,
+  AssetATOM,
+  GAIAChain,
   AssetBTC,
   BTCChain,
   UPPER_FEE_BOUNDBTC,
@@ -29,7 +32,13 @@ import {
   RadixChain,
   AssetZEC,
   ZECChain,
-  UPPER_FEE_BOUNDZEC
+  UPPER_FEE_BOUNDZEC,
+  AssetDOGE,
+  DOGEChain,
+  UPPER_FEE_BOUNDDOGE,
+  AssetLTC,
+  LTCChain,
+  UPPER_FEE_BOUNDLTC
 } from '../../shared/utils/chainIds'
 import { eqChain } from './fp/eq'
 

@@ -1,5 +1,4 @@
-import { THORChain } from '@xchainjs/xchain-thorchain'
-
+import { THORChain } from '../../../shared/utils/chainIds'
 import { network$ } from '../app/service'
 import {
   reloadBalances,

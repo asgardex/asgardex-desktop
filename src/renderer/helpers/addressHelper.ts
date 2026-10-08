@@ -5,17 +5,14 @@ import { getPrefix as getBCHPrefix, BCHChain } from '@xchainjs/xchain-bitcoincas
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
-import { getPrefix as getCosmosPrefix, GAIAChain } from '@xchainjs/xchain-cosmos'
-import { getPrefix as getDogePrefix, DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { getPrefix as getEvmPrefix } from '@xchainjs/xchain-evm'
-import { getPrefix as getLitecoinPrefix, LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain, getPrefix as getMayachainPrefix } from '@xchainjs/xchain-mayachain'
+
 import { NEARChain } from '@xchainjs/xchain-near'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
-import { getPrefix as getThorchainPrefix, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, Chain } from '@xchainjs/xchain-util'
 
@@ -23,7 +20,17 @@ import { getAddress } from 'ethers'
 import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { isSupportedChain } from '../../shared/utils/chain'
-import { BTCChain, DASHChain, RadixChain, ZECChain } from '../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  DOGEChain,
+  LTCChain,
+  RadixChain,
+  ZECChain
+} from '../../shared/utils/chainIds'
 import { LedgerAddresses } from '../services/wallet/types'
 import { eqChain } from './fp/eq'
 
@@ -35,16 +42,18 @@ export const truncateAddress = (addr: Address, chain: Chain, network: Network): 
 
 const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = {
   [BTCChain]: (network: Network) => (network === Network.Testnet ? 'tb1' : 'bc1').length,
-  [GAIAChain]: () => getCosmosPrefix().length,
+  [GAIAChain]: () => 'cosmos'.length,
   [ETHChain]: () => getEvmPrefix().length,
   [ARBChain]: () => getEvmPrefix().length,
   [AVAXChain]: () => getEvmPrefix().length,
   [BASEChain]: () => getEvmPrefix().length,
   [BSCChain]: () => getEvmPrefix().length,
-  [DOGEChain]: (network: Network) => getDogePrefix(network).length,
-  [THORChain]: (network: Network) => getThorchainPrefix(network).length,
-  [MAYAChain]: (network: Network) => getMayachainPrefix(network).length,
-  [LTCChain]: (network: Network) => getLitecoinPrefix(network).length,
+  [DOGEChain]: (network: Network) => (network === Network.Testnet ? 'n' : '').length,
+  [THORChain]: (network: Network) =>
+    (network === Network.Testnet ? 'tthor' : network === Network.Stagenet ? 'sthor' : 'thor').length,
+  [MAYAChain]: (network: Network) =>
+    (network === Network.Testnet ? 'tmaya' : network === Network.Stagenet ? 'smaya' : 'maya').length,
+  [LTCChain]: (network: Network) => (network === Network.Testnet ? 'tltc1' : 'ltc1').length,
   [DASHChain]: (network: Network) => (network === Network.Testnet ? 'y' : 'X').length,
   [BCHChain]: () => getBCHPrefix().length,
   [RadixChain]: () => 'account_'.length,

@@ -1,6 +1,5 @@
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import { THORChain, MAYAChain } from '../../shared/utils/chainIds'
 
 export const chainToProtocol = {
   [THORChain]: 'THORChain',

@@ -9,9 +9,9 @@ import {
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { MayachainQuery, QuoteSwap } from '@xchainjs/xchain-mayachain-query'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
@@ -37,6 +37,7 @@ import { useIntl } from 'react-intl'
 import { ASGARDEX_ADDRESS, getAsgardexThorname } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
+import { AssetRuneNative, THORChain, AssetCacao, MAYAChain } from '../../../shared/utils/chainIds'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import {

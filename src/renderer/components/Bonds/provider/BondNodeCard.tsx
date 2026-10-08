@@ -1,12 +1,13 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { BaseAmount } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain } from '../../../../shared/utils/chainIds'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { NodeStatusEnum } from '../../../services/thorchain/types'

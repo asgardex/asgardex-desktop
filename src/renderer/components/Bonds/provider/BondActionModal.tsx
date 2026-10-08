@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { BaseAmount, assetAmount, assetToBase, baseToAsset, bn, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
@@ -10,6 +10,7 @@ import { useIntl } from 'react-intl'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../../../shared/mock/amount'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain } from '../../../../shared/utils/chainIds'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { truncateAddress } from '../../../helpers/addressHelper'

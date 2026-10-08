@@ -1,9 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Address, TokenAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { THORChain } from '../../../../shared/utils/chainIds'
 
 import { getEVMTokenAddressForChain, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { getTradeMemo, Action } from '../../../helpers/memoHelper'

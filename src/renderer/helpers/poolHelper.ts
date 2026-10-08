@@ -1,6 +1,5 @@
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { isAssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O, ord as Ord } from 'fp-ts'
@@ -8,6 +7,7 @@ import { array as A, function as FP, option as O, ord as Ord } from 'fp-ts'
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_RUNE_BASE_AMOUNT } from '../../shared/mock/amount'
 import { AssetRuneNative } from '../../shared/utils/asset'
+import { THORChain } from '../../shared/utils/chainIds'
 import { PoolDetails as PoolDetailsMaya } from '../services/midgard/mayaMidgard/types'
 import { PoolAddress, PoolData, PoolDetails, PricePool } from '../services/midgard/midgardTypes'
 import { getPoolDetail, toPoolData } from '../services/midgard/thorMidgard/utils'
@@ -202,7 +202,7 @@ export const getUSDValue = ({
 }): O.Option<BaseAmount> => {
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
-  if (isAssetRuneNative(asset)) {
+  if (eqAsset.equals(asset, AssetRuneNative)) {
     return O.some(getValueOfRuneInAsset(amount, pricePoolData))
   }
 

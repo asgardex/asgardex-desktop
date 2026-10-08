@@ -5,16 +5,16 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { NEARChain } from '@xchainjs/xchain-near'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { AssetType } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
@@ -23,7 +23,15 @@ import * as RxOp from 'rxjs/operators'
 
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
-import { BTCChain, DASHChain, RadixChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  RadixChain,
+  ZECChain
+} from '../../../shared/utils/chainIds'
 import { observableState } from '../../helpers/stateHelper'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'

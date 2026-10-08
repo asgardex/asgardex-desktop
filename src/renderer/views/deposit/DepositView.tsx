@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AnyAsset, Asset, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -10,7 +9,7 @@ import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
-import { AssetBTC } from '../../../shared/utils/chainIds'
+import { THORChain, MAYAChain, AssetBTC } from '../../../shared/utils/chainIds'
 
 import { Deposit } from '../../components/deposit'
 import { ErrorView } from '../../components/shared/error'

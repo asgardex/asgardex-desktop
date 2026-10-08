@@ -3,15 +3,15 @@ import { AssetAVAX, AVAX_GAS_ASSET_DECIMAL, AVAXChain } from '@xchainjs/xchain-a
 import { AssetBETH, BASE_GAS_ASSET_DECIMAL, BASEChain } from '@xchainjs/xchain-base'
 import { BCH_DECIMAL, BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSC_GAS_ASSET_DECIMAL, BSCChain } from '@xchainjs/xchain-bsc'
-import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGE_DECIMAL, DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { AssetXRP, XRP_DECIMAL, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain, TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import {
   assetFromString,
@@ -39,7 +39,17 @@ import {
   AssetZEC
 } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
-import { BTC_DECIMAL, BTCChain, DASHChain, ZEC_DECIMAL, ZECChain } from '../../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  COSMOS_DECIMAL,
+  GAIAChain,
+  BTC_DECIMAL,
+  BTCChain,
+  DASHChain,
+  ZEC_DECIMAL,
+  ZECChain
+} from '../../../../shared/utils/chainIds'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqAsset, eqChain, eqOAddress } from '../../../helpers/fp/eq'

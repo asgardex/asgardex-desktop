@@ -1,12 +1,13 @@
 import { BTCChain, BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { assetAmount, assetToBase, baseAmount, bn } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 
 import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBTC, AssetETH, AssetRuneNative, AssetBSC } from '../../../shared/utils/asset'
+import { THORChain } from '../../../shared/utils/chainIds'
 import { WalletType } from '../../../shared/wallet/types'
 import { AssetUSDCBSC, AssetUSDT62E, AssetUSDTERC20Testnet } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'

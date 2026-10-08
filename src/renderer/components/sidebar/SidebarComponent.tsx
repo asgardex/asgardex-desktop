@@ -1,7 +1,7 @@
 import React, { memo, useMemo, useCallback, useRef } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+
 import { assetToString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { option as O } from 'fp-ts'
@@ -9,7 +9,7 @@ import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router-dom'
 
 import { ExternalUrl } from '../../../shared/const'
-import { AssetBTC } from '../../../shared/utils/chainIds'
+import { AssetRuneNative, AssetBTC } from '../../../shared/utils/chainIds'
 import BondsIcon from '../../assets/svg/icon-bonds.svg?react'
 import BranchIcon from '../../assets/svg/icon-branch.svg?react'
 import BugIcon from '../../assets/svg/icon-bug.svg?react'

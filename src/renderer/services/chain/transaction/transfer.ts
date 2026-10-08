@@ -1,10 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AssetType, Chain, TokenAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { THORChain, MAYAChain } from '../../../../shared/utils/chainIds'
 
 import { WalletType } from '../../../../shared/wallet/types'
 import { getEVMTokenAddressForChain } from '../../../helpers/assetHelper'

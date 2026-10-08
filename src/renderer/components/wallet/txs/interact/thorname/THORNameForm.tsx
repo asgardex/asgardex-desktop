@@ -8,7 +8,7 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { QuoteTHORNameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, Asset, Chain, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
@@ -17,6 +17,7 @@ import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
 
 import { AssetBTC, AssetDOGE, AssetETH, AssetRuneNative, AssetAVAX } from '../../../../../../shared/utils/asset'
+import { THORChain } from '../../../../../../shared/utils/chainIds'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../../shared/wallet/types'
 import { AssetUSDT, ZERO_BASE_AMOUNT } from '../../../../../const'

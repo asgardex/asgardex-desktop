@@ -5,14 +5,11 @@ import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network, RootDerivationPaths } from '@xchainjs/xchain-client'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain } from '@xchainjs/xchain-util'
 
@@ -20,7 +17,17 @@ import { getDerivationPath as getEvmDerivationPath } from '../evm/ledger'
 import { EvmHDMode } from '../evm/types'
 import { UtxoHDMode } from '../utxo/types'
 import { HDMode, KeystoreChainHDSettings } from '../wallet/types'
-import { BTCChain, DASHChain, RadixChain, ZECChain } from './chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  DOGEChain,
+  LTCChain,
+  RadixChain,
+  ZECChain
+} from './chainIds'
 
 export type ChainDerivationInfo = {
   path: string

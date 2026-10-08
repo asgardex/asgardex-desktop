@@ -8,7 +8,7 @@ import {
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import {
@@ -30,6 +30,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 
 import { ONE_CACAO_BASE_AMOUNT } from '../../../../../shared/mock/amount'
+import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '../../../../../shared/utils/chainIds'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'

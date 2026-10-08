@@ -1,12 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TvIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Address, BaseAmount, baseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain, MAYAChain } from '../../../../shared/utils/chainIds'
 import RemoveIcon from '../../../assets/svg/icon-remove.svg?react'
 import { getUSDValue } from '../../../helpers/poolHelperMaya'
 import {

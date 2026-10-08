@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Chain, assetToString, baseToAsset } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 import { debounce } from 'lodash'
@@ -13,6 +12,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { BalanceExportData, BalanceExportEntry, BalanceExportToken, LPExportEntry } from '../../../shared/api/types'
 import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
+import { AssetTCY, THORChain, MAYAChain } from '../../../shared/utils/chainIds'
 import { RefreshButton, TextButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'

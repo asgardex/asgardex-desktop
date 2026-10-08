@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'

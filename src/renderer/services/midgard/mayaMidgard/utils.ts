@@ -5,15 +5,15 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain, ADA_DECIMALS, ADAAsset } from '@xchainjs/xchain-cardano'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
 import {
   assetFromString,
@@ -33,6 +33,11 @@ import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicat
 import { AssetBTC, AssetETH, AssetDASH, AssetAETH, AssetZEC } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import {
+  AssetRuneNative,
+  THORChain,
+  CACAO_DECIMAL,
+  MAYAChain,
+  GAIAChain,
   BTC_DECIMAL,
   BTCChain,
   DASH_DECIMAL,

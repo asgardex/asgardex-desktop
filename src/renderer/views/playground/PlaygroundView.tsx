@@ -2,10 +2,11 @@ import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Button } from '@headlessui/react'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { THORChain } from '../../../shared/utils/chainIds'
 
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { useMidgardContext } from '../../contexts/MidgardContext'

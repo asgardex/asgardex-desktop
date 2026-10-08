@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+
 import { baseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
+import { CACAO_DECIMAL } from '../../../../shared/utils/chainIds'
 
 import { isCacaoAsset } from '../../../helpers/assetHelper'
 import { AssetIcon } from '../assets/assetIcon'

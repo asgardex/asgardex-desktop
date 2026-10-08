@@ -4,9 +4,9 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { describe, expect, it } from 'vitest'
+import { THORChain, MAYAChain } from './chainIds'
 
 import { HD_SCAN_MAX_COUNT, HD_SCAN_MAX_INDEX } from './keystoreHdScan'
 import {
