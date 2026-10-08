@@ -38,6 +38,8 @@ const wallet: WalletMessages = {
     'अनुमति पहले से सेट है। बदलने के लिए पहले रीसेट लेनदेन लग सकता है (कुछ टोकन पर दो हस्ताक्षर)।',
   'wallet.column.name': 'नाम',
   'wallet.column.ticker': 'टिकर',
+  'wallet.radix.delisted':
+    'MayaChain ने Radix को हटा दिया है. स्वैप और लिक्विडिटी उपलब्ध नहीं हैं. Radix नेटवर्क पर भेजना अब भी काम करता है.',
   'wallet.action.send': 'भेजें',
   'wallet.action.receive': 'प्राप्त करें',
   'wallet.action.receive.title': '{asset} प्राप्त करें',

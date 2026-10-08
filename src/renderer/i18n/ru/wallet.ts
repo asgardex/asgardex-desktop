@@ -38,6 +38,8 @@ const wallet: WalletMessages = {
     'Разрешение уже установлено. Чтобы изменить его, может потребоваться сначала сброс (для некоторых токенов — две подписи).',
   'wallet.column.name': 'Имя',
   'wallet.column.ticker': 'Тикер',
+  'wallet.radix.delisted':
+    'MayaChain исключила Radix. Обмены и ликвидность недоступны. Отправка в сети Radix по-прежнему работает.',
   'wallet.action.send': 'Отправить',
   'wallet.action.receive': 'Получить',
   'wallet.action.receive.title': 'Получить {asset}',
