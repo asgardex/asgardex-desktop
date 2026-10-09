@@ -1,8 +1,8 @@
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
+import { BTCChain } from '../utils/chainIds'
 
 type Assets = 'ETH' | 'BTC' | 'DOGE' | 'USDT'
 

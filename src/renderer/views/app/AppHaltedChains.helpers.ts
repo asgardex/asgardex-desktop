@@ -1,7 +1,7 @@
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 
 import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { THORChain } from '../../../shared/utils/chainIds'
 import { MimirHalt } from '../../services/thorchain/types'
 
 export const CHAINFLIP_LABEL = 'Chainflip'

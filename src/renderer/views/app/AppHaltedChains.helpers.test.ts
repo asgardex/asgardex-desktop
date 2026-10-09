@@ -1,6 +1,5 @@
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { describe, expect, it } from 'vitest'
+import { THORChain, MAYAChain } from '../../../shared/utils/chainIds'
 
 import { MimirHalt } from '../../services/thorchain/types'
 import {

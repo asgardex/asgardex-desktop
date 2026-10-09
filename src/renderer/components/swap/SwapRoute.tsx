@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from 'react'
 
 import { InformationCircleIcon } from '@heroicons/react/20/solid'
-import { QuoteSwap } from '@xchainjs/xchain-aggregator'
+import type { QuoteSwap } from '@xchainjs/xchain-aggregator'
 import clsx from 'clsx'
 import { option as O } from 'fp-ts'
 

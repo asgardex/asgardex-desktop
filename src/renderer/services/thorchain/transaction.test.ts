@@ -1,11 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetRuneNative, Client } from '@xchainjs/xchain-thorchain'
+import { Client } from '@xchainjs/xchain-thorchain'
 import { baseAmount } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 import { describe, expect, it, vi } from 'vitest'
+import { AssetRuneNative } from '../../../shared/utils/chainIds'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { ErrorId } from '../wallet/types'

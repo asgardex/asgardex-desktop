@@ -1,4 +1,4 @@
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 

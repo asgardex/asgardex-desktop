@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Chain } from '@xchainjs/xchain-util'
+import { THORChain } from '../../../shared/utils/chainIds'
 
 import { AppState } from './types'
 

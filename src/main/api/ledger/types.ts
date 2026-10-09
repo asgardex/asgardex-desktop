@@ -1,5 +1,5 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { AddressFormat } from '@xchainjs/xchain-bitcoin'
+import type { AddressFormat } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 
 import { HDMode } from '../../../shared/wallet/types'

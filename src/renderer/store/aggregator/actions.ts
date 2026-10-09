@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { Aggregator, QuoteSwapParams } from '@xchainjs/xchain-aggregator'
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import type { QuoteSwapParams } from '@xchainjs/xchain-aggregator'
+import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { Client as ArbClient } from '@xchainjs/xchain-arbitrum'
 import { Client as AvaxClient } from '@xchainjs/xchain-avax'
 import { Client as BaseClient } from '@xchainjs/xchain-base'
@@ -25,23 +25,23 @@ import {
 import { defaultEthParams } from '../../../shared/ethereum/const'
 import { liquifyAggregatorConfig } from '../../helpers/liquifyEndpoints'
 import { logger } from '../../helpers/logger'
+import { getAggregator } from './client'
 
 export const getEstimate = createAsyncThunk(
   'aggregator/estimate',
   async ({
-    aggregator,
     protocols,
     params,
     useAffiliate,
     network
   }: {
-    aggregator: Aggregator
     protocols: Protocol[]
     params: QuoteSwapParams
     useAffiliate: boolean
     network: Network
   }) => {
     try {
+      const aggregator = await getAggregator()
       const wallet = new Wallet({
         ETH: new EthClient({
           ...defaultEthParams

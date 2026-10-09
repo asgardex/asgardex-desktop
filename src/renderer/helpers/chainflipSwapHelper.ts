@@ -1,4 +1,4 @@
-import { ChainflipDepositChannel, QuoteSwapParams } from '@xchainjs/xchain-aggregator'
+import type { ChainflipDepositChannel, QuoteSwapParams } from '@xchainjs/xchain-aggregator'
 import { AnyAsset } from '@xchainjs/xchain-util'
 
 import { SendTxParams } from '../services/chain/types'

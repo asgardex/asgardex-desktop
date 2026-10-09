@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { Network } from '@xchainjs/xchain-client'
-import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { Chain } from '@xchainjs/xchain-util'
@@ -10,6 +8,7 @@ import clsx from 'clsx'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { BTCChain, DASHChain } from '../../../shared/utils/chainIds'
 
 import {
   getChainDerivationPath,

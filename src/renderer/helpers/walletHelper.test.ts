@@ -2,15 +2,16 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { assetToBase, assetAmount } from '@xchainjs/xchain-util'
 import { function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 
 import { ASSETS_MAINNET } from '../../shared/mock/assets'
 import { AssetBSC, AssetLTC, AssetRuneNative } from '../../shared/utils/asset'
+import { THORChain, GAIAChain } from '../../shared/utils/chainIds'
 import { WalletType } from '../../shared/wallet/types'
 import { AssetUSDCBSC } from '../const'
 import { NonEmptyWalletBalances, WalletBalance, WalletBalances } from '../services/wallet/types'

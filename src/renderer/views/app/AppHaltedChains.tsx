@@ -2,13 +2,14 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Chain } from '@xchainjs/xchain-util'
 import { function as FP, array as A, option as O } from 'fp-ts'
 import { useIntl, IntlShape } from 'react-intl'
 import { matchPath, useLocation } from 'react-router-dom'
 
 import { chainToString, DEFAULT_ENABLED_CHAINS, isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
+import { THORChain } from '../../../shared/utils/chainIds'
 import { NewsTicker } from '../../components/uielements/newsTicker'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { unionChains } from '../../helpers/fp/array'

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
+import type { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 

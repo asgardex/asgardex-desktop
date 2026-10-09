@@ -1,5 +1,4 @@
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-
+import { GAIAChain } from '../../../shared/utils/chainIds'
 import { network$ } from '../app/service'
 import {
   balances$,

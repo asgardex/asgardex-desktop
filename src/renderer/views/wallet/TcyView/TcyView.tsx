@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { InformationCircleIcon } from '@heroicons/react/20/solid'
 import { ArchiveBoxXMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
-import { AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
+
 import {
   Address,
   assetToBase,
@@ -24,6 +24,7 @@ import { combineLatest, of } from 'rxjs'
 import { map, shareReplay, switchMap } from 'rxjs/operators'
 
 import { chainToString, getChainsForDex } from '../../../../shared/utils/chain'
+import { AssetTCY, THORChain } from '../../../../shared/utils/chainIds'
 import { WalletType } from '../../../../shared/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
 import {

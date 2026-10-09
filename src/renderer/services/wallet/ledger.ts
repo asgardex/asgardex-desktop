@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O, number as N } from 'fp-ts'
@@ -8,6 +7,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { KeystoreId, LedgerErrorId } from '../../../shared/api/types'
 import { LEDGER_IPC_TIMEOUT_MS } from '../../../shared/const'
+import { BTCChain } from '../../../shared/utils/chainIds'
 import { isError } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqChain, eqKeystoreId, eqNetwork, eqOLedgerAddress } from '../../helpers/fp/eq'

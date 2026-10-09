@@ -1,5 +1,5 @@
 import { Balance, Network } from '@xchainjs/xchain-client'
-import { AssetCacao, CACAO_DECIMAL, MAYA_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { AnyAsset, bnOrZero, assetFromString, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -7,6 +7,7 @@ import { array as A, function as FP, option as O, ord as Ord } from 'fp-ts'
 
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
+import { AssetCacao, CACAO_DECIMAL, MAYA_DECIMAL, MAYAChain } from '../../shared/utils/chainIds'
 import { MimirHalt } from '../services/mayachain/types'
 import { PoolDetails } from '../services/midgard/mayaMidgard/types'
 import { getPoolDetail, toPoolData } from '../services/midgard/mayaMidgard/utils'

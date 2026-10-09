@@ -1,10 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ASGARDEX_ONECLICK_API_KEY } from '../../../../shared/const'
+import { THORChain } from '../../../../shared/utils/chainIds'
 import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { getAssetChain } from '../../../helpers/chainHelper'
 import { logger } from '../../../helpers/logger'

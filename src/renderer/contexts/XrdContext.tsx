@@ -15,7 +15,7 @@ import {
   txRD$,
   reloadFees,
   fees$
-} from '../services/radix'
+} from '../services/chain/lazyRadix'
 
 type XrdContextValue = {
   client$: typeof client$

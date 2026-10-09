@@ -1,9 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+
 import { baseAmount } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
+import { CACAO_DECIMAL } from '../../shared/utils/chainIds'
 
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { Color, IncentivePendulum, IncentivePendulumRD } from './useIncentivePendulum'

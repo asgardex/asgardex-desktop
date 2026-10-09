@@ -1,24 +1,22 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import { Client as UTXOClient } from '@xchainjs/xchain-utxo'
 import type { UTXO } from '@xchainjs/xchain-utxo-providers'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
 
 import { LiveData } from '../../helpers/rx/liveData'
-import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
-import * as DASH from '../dash'
+import * as BTC from '../chain/lazyBitcoin'
+import * as DASH from '../chain/lazyDash'
+import * as ZEC from '../chain/lazyZcash'
 import * as DOGE from '../doge'
 import * as LTC from '../litecoin'
-import * as ZEC from '../zcash'
 
 export type UTXOsRD = RD.RemoteData<Error, UTXO[]>
 export type UTXOsLD = LiveData<Error, UTXO[]>

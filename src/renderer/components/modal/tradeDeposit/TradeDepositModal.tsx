@@ -1,10 +1,8 @@
 import { useCallback, useMemo, useState, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import {
   AnyAsset,
   BaseAmount,
@@ -19,6 +17,7 @@ import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { THORChain, AssetCacao, AssetBTC } from '../../../../shared/utils/chainIds'
 
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'

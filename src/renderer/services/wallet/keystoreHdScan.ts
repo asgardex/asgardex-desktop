@@ -1,35 +1,15 @@
 import { Client as ArbClient, ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { Client as AvaxClient, AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { Client as BaseClient, BASEChain, AssetBETH } from '@xchainjs/xchain-base'
-import {
-  AddressFormat,
-  AssetBTC,
-  BTCChain,
-  Client as BitcoinClient,
-  defaultBTCParams,
-  tapRootDerivationPaths
-} from '@xchainjs/xchain-bitcoin'
 import { BCHChain, Client as BitcoinCashClient, defaultBchParams, AssetBCH } from '@xchainjs/xchain-bitcoincash'
 import { Client as BscClient, BSCChain, AssetBSC } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
-import { ClientKeystore as DashClient, DASHChain, AssetDASH, defaultDashParams } from '@xchainjs/xchain-dash'
 import { Client as DogeClient, DOGEChain, AssetDOGE, defaultDogeParams } from '@xchainjs/xchain-doge'
 import { Client as EthClient, ETHChain, AssetETH } from '@xchainjs/xchain-ethereum'
 import { Client as LtcClient, LTCChain, AssetLTC, defaultLtcParams } from '@xchainjs/xchain-litecoin'
-import {
-  Client as MayaClient,
-  MAYAChain,
-  AssetCacao,
-  defaultClientConfig as mayaDefaultConfig
-} from '@xchainjs/xchain-mayachain'
-import {
-  Client as ThorClient,
-  THORChain,
-  AssetRuneNative,
-  defaultClientConfig as thorDefaultConfig
-} from '@xchainjs/xchain-thorchain'
+import { Client as MayaClient, defaultClientConfig as mayaDefaultConfig } from '@xchainjs/xchain-mayachain'
+import { Client as ThorClient, defaultClientConfig as thorDefaultConfig } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
-import { Client as ZecClient, ZECChain, AssetZEC, defaultZECParams } from '@xchainjs/xchain-zcash'
 import * as Rx from 'rxjs'
 
 import { createArbParams } from '../../../shared/arb/const'
@@ -39,6 +19,16 @@ import { createBscParams } from '../../../shared/bsc/const'
 import { createEthParams } from '../../../shared/ethereum/const'
 import { DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
 import { DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
+import { AssetBTC, AssetDASH, AssetZEC } from '../../../shared/utils/asset'
+import {
+  THORChain,
+  AssetRuneNative,
+  MAYAChain,
+  AssetCacao,
+  BTCChain,
+  DASHChain,
+  ZECChain
+} from '../../../shared/utils/chainIds'
 import { getChainDerivationPath, getKeystoreDerivation } from '../../../shared/utils/derivationPath'
 import {
   candidateKey,
@@ -264,28 +254,34 @@ const cosmosFamilyCtx = (
   }
 })
 
-const btcCtx = (
-  phrase: string,
-  network: Network,
-  addressFormat: AddressFormat,
-  fallbackPaths: typeof defaultBTCParams.rootDerivationPaths
-): DeriveCtx => ({
-  chain: BTCChain,
-  phrase,
-  network,
-  rpcUrl: '',
-  nativeAsset: AssetBTC,
-  assetTicker: 'BTC',
-  createClient: (p, net, _rpc, rootDerivationPaths) =>
-    new BitcoinClient({
-      ...defaultBTCParams,
-      phrase: p,
-      network: net,
-      addressFormat,
-      rootDerivationPaths: rootDerivationPaths ?? fallbackPaths,
-      feeBounds: defaultBTCParams.feeBounds
-    })
-})
+const btcWantsTaproot = (profile: Exclude<HdScanProfile, 'custom'> | 'custom', fullPath?: string): boolean => {
+  if (profile === 'p2tr') return true
+  if (profile === 'custom' && fullPath?.includes("86'")) return true
+  return false
+}
+
+const btcCtx = async (phrase: string, network: Network, taproot: boolean): Promise<DeriveCtx> => {
+  const { AddressFormat, Client, defaultBTCParams, tapRootDerivationPaths } = await import('@xchainjs/xchain-bitcoin')
+  const addressFormat = taproot ? AddressFormat.P2TR : AddressFormat.P2WPKH
+  const fallbackPaths = taproot ? tapRootDerivationPaths : defaultBTCParams.rootDerivationPaths
+  return {
+    chain: BTCChain,
+    phrase,
+    network,
+    rpcUrl: '',
+    nativeAsset: AssetBTC,
+    assetTicker: 'BTC',
+    createClient: (p, net, _rpc, rootDerivationPaths) =>
+      new Client({
+        ...defaultBTCParams,
+        phrase: p,
+        network: net,
+        addressFormat,
+        rootDerivationPaths: rootDerivationPaths ?? fallbackPaths,
+        feeBounds: defaultBTCParams.feeBounds
+      })
+  }
+}
 
 const makeUtxoCtx = (
   chain: Chain,
@@ -312,20 +308,14 @@ const makeUtxoCtx = (
     })
 })
 
-const btcFormatFor = (profile: Exclude<HdScanProfile, 'custom'> | 'custom', fullPath?: string): AddressFormat => {
-  if (profile === 'p2tr') return AddressFormat.P2TR
-  if (profile === 'custom' && fullPath?.includes("86'")) return AddressFormat.P2TR
-  return AddressFormat.P2WPKH
-}
-
-const ctxForChain = (
+const ctxForChain = async (
   chain: Chain,
   phrase: string,
   network: Network,
   rpcUrl: string,
   profile: Exclude<HdScanProfile, 'custom'> | 'custom' = 'metamask',
   fullPath?: string
-): DeriveCtx | null => {
+): Promise<DeriveCtx | null> => {
   if (chain === ETHChain)
     return makeEvmCtx(ETHChain, phrase, network, rpcUrl, AssetETH, 'ETH', EthClient, createEthParams)
   if (chain === BSCChain)
@@ -340,23 +330,20 @@ const ctxForChain = (
     return cosmosFamilyCtx(THORChain, phrase, network, rpcUrl, AssetRuneNative, 'RUNE', ThorClient, thorDefaultConfig)
   if (chain === MAYAChain)
     return cosmosFamilyCtx(MAYAChain, phrase, network, rpcUrl, AssetCacao, 'CACAO', MayaClient, mayaDefaultConfig)
-  if (chain === BTCChain) {
-    const format = btcFormatFor(profile, fullPath)
-    return btcCtx(
-      phrase,
-      network,
-      format,
-      format === AddressFormat.P2TR ? tapRootDerivationPaths : defaultBTCParams.rootDerivationPaths
-    )
-  }
+  if (chain === BTCChain) return btcCtx(phrase, network, btcWantsTaproot(profile, fullPath))
   if (chain === LTCChain) return makeUtxoCtx(LTCChain, phrase, network, AssetLTC, 'LTC', LtcClient, defaultLtcParams)
   if (chain === BCHChain)
     return makeUtxoCtx(BCHChain, phrase, network, AssetBCH, 'BCH', BitcoinCashClient, defaultBchParams)
   if (chain === DOGEChain)
     return makeUtxoCtx(DOGEChain, phrase, network, AssetDOGE, 'DOGE', DogeClient, defaultDogeParams)
-  if (chain === DASHChain)
-    return makeUtxoCtx(DASHChain, phrase, network, AssetDASH, 'DASH', DashClient, defaultDashParams)
-  if (chain === ZECChain) return makeUtxoCtx(ZECChain, phrase, network, AssetZEC, 'ZEC', ZecClient, defaultZECParams)
+  if (chain === DASHChain) {
+    const { ClientKeystore, defaultDashParams } = await import('@xchainjs/xchain-dash')
+    return makeUtxoCtx(DASHChain, phrase, network, AssetDASH, 'DASH', ClientKeystore, defaultDashParams)
+  }
+  if (chain === ZECChain) {
+    const { Client, defaultZECParams } = await import('@xchainjs/xchain-zcash')
+    return makeUtxoCtx(ZECChain, phrase, network, AssetZEC, 'ZEC', Client, defaultZECParams)
+  }
   return null
 }
 
@@ -372,7 +359,7 @@ export const scanKeystoreFundsForChain = async (
   profile: Exclude<HdScanProfile, 'custom'>,
   range: HdScanIndexRange = DEFAULT_HD_SCAN_RANGE
 ): Promise<KeystoreHdScanHit[]> => {
-  const ctx = ctxForChain(chain, phrase, network, rpcUrl, profile)
+  const ctx = await ctxForChain(chain, phrase, network, rpcUrl, profile)
   if (!ctx) return []
 
   const candidates: HdScanCandidate[] = getHdScanCandidates(
@@ -398,7 +385,7 @@ export const checkCustomPath = async (
   if (chain === BTCChain) {
     settings.hdMode = fullPath.includes("86'") ? 'p2tr' : 'p2wpkh'
   }
-  const ctx = ctxForChain(chain, phrase, network, rpcUrl, 'custom', fullPath)
+  const ctx = await ctxForChain(chain, phrase, network, rpcUrl, 'custom', fullPath)
   if (!ctx) {
     return {
       key: `custom:${fullPath}`,

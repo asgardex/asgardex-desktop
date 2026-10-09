@@ -3,11 +3,9 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, ChartBarIcon, QrCodeIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
+
 import {
   Address,
   AnyAsset,
@@ -29,6 +27,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
 import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
+import { isTCYAsset, THORChain, AssetCacao, MAYAChain, AssetBTC } from '../../../../shared/utils/chainIds'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'

@@ -2,21 +2,18 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ARB_GAS_ASSET_DECIMAL, ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
-import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain, ADA_DECIMALS, ADAAsset } from '@xchainjs/xchain-cardano'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DASH_DECIMAL, DASHChain } from '@xchainjs/xchain-dash'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
-import { AssetXRD, RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
 import {
   assetFromString,
@@ -31,11 +28,26 @@ import {
   AnyAsset,
   Chain
 } from '@xchainjs/xchain-util'
-import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
 import { AssetBTC, AssetETH, AssetDASH, AssetAETH, AssetZEC } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
+import {
+  AssetRuneNative,
+  THORChain,
+  CACAO_DECIMAL,
+  MAYAChain,
+  GAIAChain,
+  BTC_DECIMAL,
+  BTCChain,
+  DASH_DECIMAL,
+  DASHChain,
+  AssetXRD,
+  RadixChain,
+  XRD_DECIMAL,
+  ZEC_DECIMAL,
+  ZECChain
+} from '../../../../shared/utils/chainIds'
 import { optionFromNullableString } from '../../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqAsset, eqChain, eqOAddress } from '../../../helpers/fp/eq'

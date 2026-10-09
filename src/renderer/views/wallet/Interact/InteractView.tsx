@@ -1,12 +1,11 @@
 import { useCallback } from 'react'
 
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
+import { THORChain, MAYAChain } from '../../../../shared/utils/chainIds'
 import { Spin } from '../../../components/uielements/spin'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { SelectedWalletAsset } from '../../../services/wallet/types'

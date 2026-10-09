@@ -1,7 +1,7 @@
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as RxOp from 'rxjs/operators'
+import { THORChain } from '../../../../shared/utils/chainIds'
 
 import { eqOAsset } from '../../../helpers/fp/eq'
 import { liveData } from '../../../helpers/rx/liveData'

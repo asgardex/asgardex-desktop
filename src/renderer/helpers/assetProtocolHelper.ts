@@ -1,4 +1,4 @@
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { AnyAsset, AssetType, isSecuredAsset, isSynthAsset } from '@xchainjs/xchain-util'
 
 import { isChainOfMaya, isChainOfThor } from '../../shared/utils/chain'

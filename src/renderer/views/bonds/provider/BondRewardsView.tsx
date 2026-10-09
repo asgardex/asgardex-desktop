@@ -2,13 +2,14 @@ import { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { baseToAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain } from '../../../../shared/utils/chainIds'
 import {
   ChurnBars,
   RunebondUnavailablePanel,
