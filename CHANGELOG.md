@@ -6,6 +6,21 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
+# 1.46.1 (2026-10-09)
+
+PRs merged to `develop` since tag `v1.46.0`.
+
+## Update/Fixes
+
+- fix(swap): a max ADA swap no longer spends the entire wallet balance [#1218](https://github.com/asgardex/asgardex-desktop/pull/1218)
+- fix(evm): set `maxFeePerGas` explicitly so BSC transactions build when the base fee is zero [#1219](https://github.com/asgardex/asgardex-desktop/pull/1219)
+- fix(swap): fee-estimate placeholder memos no longer write the slippage tolerance into the THORChain limit field [#1222](https://github.com/asgardex/asgardex-desktop/pull/1222)
+- fix(swap): a max native RUNE swap leaves the flat 0.02 RUNE ante on the account instead of subtracting a quoted inbound fee that can still be zero [#1224](https://github.com/asgardex/asgardex-desktop/pull/1224)
+
+## Chores
+
+- chore(deps): bump `@xchainjs/*` to the 2026-10-06 releases (`xchain-evm` keeps `maxFeePerGas` when the base fee is zero, `xchain-zcash` accepts ZIP 320 `tex1` recipients, THORNode/Midgard/Mayanode clients regenerated) [#1224](https://github.com/asgardex/asgardex-desktop/pull/1224)
+
 # 1.46.0 (2026-09-24)
 
 PRs merged to `develop` since tag `v1.45.3`.
