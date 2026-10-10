@@ -85,7 +85,8 @@ export const sendTx$ = ({
   sendMax,
   selectedUtxos,
   utxoSelectionPreferences,
-  useNodeFeeRate = false
+  useNodeFeeRate = false,
+  nodeFeeRateProtocol
 }: SendTxParams): TxHashLD => {
   const { chain } =
     asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.SECURED ? { chain: THORChain } : asset
@@ -100,7 +101,7 @@ export const sendTx$ = ({
         })),
         liveData.chain(({ rates }) =>
           FP.pipe(
-            utxoFeeRate$(BTCChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(BTCChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               BTC.sendTx({
@@ -219,7 +220,7 @@ export const sendTx$ = ({
         })),
         liveData.chain(({ rates }) =>
           FP.pipe(
-            utxoFeeRate$(DOGEChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(DOGEChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               DOGE.sendTx({
@@ -252,7 +253,7 @@ export const sendTx$ = ({
         })),
         liveData.chain(({ rates }) =>
           FP.pipe(
-            utxoFeeRate$(BCHChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(BCHChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               BCH.sendTx({
@@ -285,7 +286,7 @@ export const sendTx$ = ({
         liveData.chain(({ rates }) =>
           FP.pipe(
             // replaces `Math.floor`, which turned LTC's sub-1 estimates into a 0 fee rate
-            utxoFeeRate$(LTCChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(LTCChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               LTC.sendTx({
@@ -317,7 +318,7 @@ export const sendTx$ = ({
         })),
         liveData.chain(({ rates }) =>
           FP.pipe(
-            utxoFeeRate$(DASHChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(DASHChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               DASH.sendTx({
@@ -513,7 +514,8 @@ export const sendPoolTx$ = ({
         hdMode,
         sendMax,
         // inbounds must not be sent below the vault's recommended `gas_rate`
-        useNodeFeeRate: true
+        useNodeFeeRate: true,
+        nodeFeeRateProtocol: protocol
       })
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
