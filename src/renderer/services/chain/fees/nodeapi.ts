@@ -1,4 +1,6 @@
 import { FeeOption } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { baseAmount, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O, array as A } from 'fp-ts'
 
@@ -354,16 +356,35 @@ export const resolveUtxoFeeRate = (chain: Chain, estimatedRate: number, oFeeData
 }
 
 /**
+ * Determines which node's inbound addresses price an inbound on `chain`.
+ *
+ * BTC is served by both THORChain and MAYAChain, and their vaults publish different `gas_rate`s,
+ * so the protocol the tx is actually going to wins. Falls back to the chain's home protocol when
+ * the caller does not know (or passes something that is not a node protocol).
+ */
+export const getInboundNodeProtocol = (chain: Chain, inboundProtocol?: Chain): NodeProtocol => {
+  if (inboundProtocol === MAYAChain) return NodeProtocol.MAYACHAIN
+  if (inboundProtocol === THORChain) return NodeProtocol.THORCHAIN
+  return getChainNodeProtocol(chain)
+}
+
+/**
  * Resolves the fee rate for a UTXO tx, sourcing `gas_rate` from inbound addresses when
- * `useNodeFeeRate` is set (i.e. the tx is a THORChain/MAYAChain inbound).
+ * `useNodeFeeRate` is set (i.e. the tx is a THORChain/MAYAChain inbound). `inboundProtocol` names
+ * the protocol whose vault receives the tx, so its `gas_rate` is the one applied.
  *
  * Never fails: if node fee data is unavailable the local estimate is used, clamped to the chain's
  * minimum, so an outage can neither block a send nor let a sub-relay-fee rate through.
  */
-export const utxoFeeRate$ = (chain: Chain, estimatedRate: number, useNodeFeeRate: boolean): LiveData<Error, number> => {
+export const utxoFeeRate$ = (
+  chain: Chain,
+  estimatedRate: number,
+  useNodeFeeRate: boolean,
+  inboundProtocol?: Chain
+): LiveData<Error, number> => {
   if (!useNodeFeeRate) return liveData.right(resolveUtxoFeeRate(chain, estimatedRate, O.none))
 
-  const protocol = getChainNodeProtocol(chain)
+  const protocol = getInboundNodeProtocol(chain, inboundProtocol)
   const inboundAddresses$ = (
     protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$
   ) as LiveData<Error, InboundAddress[]>
