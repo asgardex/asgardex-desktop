@@ -4,7 +4,52 @@ import { Observable, Subscription } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { EnabledChain } from '../../../shared/utils/chain'
+import { logger } from '../../helpers/logger'
 import { userChains$, userChainsLoaded$ } from '../storage/userChains'
+
+const toError = (error: unknown): Error => (error instanceof Error ? error : new Error(String(error)))
+
+const isRemoteTag = (value: unknown, tag: string): boolean =>
+  typeof value === 'object' && value !== null && '_tag' in value && (value as { _tag: string })._tag === tag
+
+/**
+ * A rejected import must not error the stream. `RD.initial` placeholders (client,
+ * balance, fee, tx) become a failure those screens already fold. An existing
+ * `RD.failure` (a disabled send or tx) keeps its error id and reports the load
+ * error. Anything else keeps the empty value.
+ */
+const moduleFailure = <T>(fallback: T, chain: string, error: unknown): T => {
+  const message = `Failed to load ${chain}: ${toError(error).message}`
+  if (isRemoteTag(fallback, 'RemoteInitial')) {
+    // Error for client and fee streams, plus the `msg` / `errorId` balance and tx views read.
+    return RD.failure(Object.assign(new Error(message), { errorId: 'GET_BALANCES', msg: message })) as T
+  }
+  if (isRemoteTag(fallback, 'RemoteFailure')) {
+    const current = (fallback as RD.RemoteFailure<unknown>).error
+    if (typeof current === 'object' && current !== null) {
+      return RD.failure({ ...current, msg: message }) as T
+    }
+  }
+  return fallback
+}
+
+const loadModule = <M, T>(
+  chain: string,
+  load: () => Promise<M>,
+  pick: (mod: M) => Observable<T>,
+  fallback: T
+): Observable<T> =>
+  Rx.from(
+    load().then(
+      (mod) => ({ ok: true as const, mod }),
+      (error: unknown) => {
+        logger.error(`failed to load ${chain}`, error)
+        return { ok: false as const, error }
+      }
+    )
+  ).pipe(
+    RxOp.switchMap((result) => (result.ok ? pick(result.mod) : Rx.of(moduleFailure(fallback, chain, result.error))))
+  )
 
 /** A cached loader. `peek` is synchronous once `load` has resolved, so hot streams can replay in the subscribe turn. */
 export type ChainLoader<T> = (() => Promise<T>) & { peek: () => T | undefined }
@@ -55,7 +100,8 @@ export const followChain = <M, T>(
       // waits a microtask, and ImportPhrase treats that extra pending frame as a stuck lock.
       const ready = load.peek()
       if (ready) return pick(ready)
-      return Rx.from(load()).pipe(RxOp.switchMap((mod) => pick(mod)))
+      // Failure stays a value, so this subscription can retry on the next enable.
+      return loadModule(chain, load, pick, empty)
     }),
     RxOp.shareReplay({ bufferSize: 1, refCount: true })
   )
@@ -73,9 +119,7 @@ export const onceChain = <M, T>(
   Rx.combineLatest([userChains$, userChainsLoaded$]).pipe(
     RxOp.filter(([, loaded]) => loaded),
     RxOp.take(1),
-    RxOp.switchMap(([chains]) =>
-      chains.includes(chain) ? Rx.from(load()).pipe(RxOp.switchMap((mod) => pick(mod))) : Rx.of(disabled)
-    )
+    RxOp.switchMap(([chains]) => (chains.includes(chain) ? loadModule(chain, load, pick, disabled) : Rx.of(disabled)))
   )
 
 /** Fire-and-forget after storage settles. No-op when the chain is disabled. */
@@ -87,7 +131,11 @@ export const runChain = <M>(chain: EnabledChain, load: () => Promise<M>, run: (m
     )
     .subscribe(([chains]) => {
       if (!chains.includes(chain)) return
-      void load().then((mod) => run(mod))
+      void load()
+        .then((mod) => run(mod))
+        .catch((error: unknown) => {
+          logger.error(`failed to load ${chain}`, error)
+        })
     })
 }
 
@@ -105,10 +153,14 @@ export const subscribeChain = <M, A>(
     )
     .subscribe(([chains]) => {
       if (!chains.includes(chain)) return
-      void load().then((mod) => {
-        if (subscription.closed) return
-        subscription.add(subscribe(mod, arg))
-      })
+      void load()
+        .then((mod) => {
+          if (subscription.closed) return
+          subscription.add(subscribe(mod, arg))
+        })
+        .catch((error: unknown) => {
+          logger.error(`failed to load ${chain}`, error)
+        })
     })
   subscription.add(gate)
   return subscription
