@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
+import { THORChain, MAYAChain } from '../../../../shared/utils/chainIds'
 
 import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { Dropdown } from '../dropdown'

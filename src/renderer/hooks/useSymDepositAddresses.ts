@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { THORChain } from '../../shared/utils/chainIds'
 
 import { isLedgerWallet } from '../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../shared/wallet/types'

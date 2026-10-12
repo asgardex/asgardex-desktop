@@ -1,10 +1,11 @@
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain } from '../../../../shared/utils/chainIds'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { Providers } from '../../../services/thorchain/types'

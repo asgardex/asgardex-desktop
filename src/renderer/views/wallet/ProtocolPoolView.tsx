@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+
 import {
   Asset,
   BaseAmount,
@@ -17,6 +16,7 @@ import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { AssetRuneNative, AssetCacao } from '../../../shared/utils/chainIds'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { ProtocolPoolTable } from '../../components/runePool/runePoolTable'

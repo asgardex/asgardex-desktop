@@ -18,7 +18,7 @@ import {
   subscribeTx,
   resetTx,
   explorerUrl$
-} from '../services/bitcoin'
+} from '../services/chain/lazyBitcoin'
 
 type BitcoinContextValue = {
   client$: typeof client$

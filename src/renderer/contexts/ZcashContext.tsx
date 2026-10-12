@@ -17,7 +17,7 @@ import {
   reloadFeesWithRates,
   feesWithRates$,
   txStatus$
-} from '../services/zcash'
+} from '../services/chain/lazyZcash'
 
 export type ZcashContextValue = {
   client$: typeof client$

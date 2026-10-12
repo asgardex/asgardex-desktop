@@ -1,11 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TxHash, XChainClient } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Address, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { THORChain, MAYAChain } from '../../../../shared/utils/chainIds'
 
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'

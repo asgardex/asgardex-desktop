@@ -1,11 +1,10 @@
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain, AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 
 import { DefaultChainAttributes } from '../../../../shared/utils/chain'
+import { THORChain, MAYAChain } from '../../../../shared/utils/chainIds'
 import { isDexStreamingProtocol } from '../../../helpers/protocolHelper'
 import { formatSwapTime } from '../../../helpers/timeHelper'
 import { ExtendedQuoteSwap } from '../Swap.types'

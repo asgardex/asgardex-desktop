@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AssetType } from '@xchainjs/xchain-util'
 import { function as FP, option as O, nonEmptyArray as NEA } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { THORChain } from '../../../shared/utils/chainIds'
 
 import { Spin } from '../../components/uielements/spin'
 import { AssetDetails } from '../../components/wallet/assets'

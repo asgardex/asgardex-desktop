@@ -4,8 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import {
   Address,
   AnyAsset,
@@ -24,6 +23,7 @@ import * as RxOp from 'rxjs/operators'
 import { getAsgardexThorname } from '../../../../shared/const'
 import { AssetBTC, AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
+import { THORChain, CACAO_DECIMAL, MAYAChain } from '../../../../shared/utils/chainIds'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { Spin } from '../../../components/uielements/spin'

@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+
 import { Address, AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { lastValueFrom } from 'rxjs'
 
 import { ASGARDEX_TO_SDK_CHAIN } from '../../shared/api/mpcTypes'
+import { AssetRuneNative, AssetCacao } from '../../shared/utils/chainIds'
 import { isLedgerWallet } from '../../shared/utils/guard'
 import { HDMode, WalletType } from '../../shared/wallet/types'
 import { useWalletContext } from '../contexts/WalletContext'

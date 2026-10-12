@@ -2,12 +2,13 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { option as O } from 'fp-ts'
+import { THORChain, GAIAChain } from '../../shared/utils/chainIds'
 
 import { WalletType } from '../../shared/wallet/types'
 import { LedgerAddresses } from '../services/wallet/types'

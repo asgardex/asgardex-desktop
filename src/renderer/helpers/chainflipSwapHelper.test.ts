@@ -1,4 +1,4 @@
-import { ChainflipDepositChannel, QuoteSwapParams } from '@xchainjs/xchain-aggregator'
+import type { ChainflipDepositChannel, QuoteSwapParams } from '@xchainjs/xchain-aggregator'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { baseAmount, CryptoAmount } from '@xchainjs/xchain-util'

@@ -1,12 +1,13 @@
 import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AnyAsset, assetFromString, assetToString } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { THORChain } from '../../shared/utils/chainIds'
 
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'

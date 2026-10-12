@@ -1,4 +1,4 @@
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { AnyAsset, Chain } from '@xchainjs/xchain-util'
 
 import { MimirHalt as MimirHaltMaya } from '../services/mayachain/types'

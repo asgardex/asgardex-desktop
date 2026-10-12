@@ -1,25 +1,29 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DASHChain } from '@xchainjs/xchain-dash'
-import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { NEARChain } from '@xchainjs/xchain-near'
-import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { option as O } from 'fp-ts'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  DOGEChain,
+  LTCChain,
+  RadixChain,
+  ZECChain
+} from '../../../shared/utils/chainIds'
 
 import { LoadTxsParams } from '../clients'
 import { MAX_ITEMS_PER_PAGE } from '../const'

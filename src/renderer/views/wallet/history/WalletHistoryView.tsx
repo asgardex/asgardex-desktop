@@ -1,13 +1,14 @@
 import { useMemo, useCallback, useState, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
+import { THORChain } from '../../../../shared/utils/chainIds'
 import { WalletAddress, WalletAddresses } from '../../../../shared/wallet/types'
 import { PoolActionsHistory } from '../../../components/poolActionsHistory'
 import { historyFilterToViewblockFilter } from '../../../components/poolActionsHistory/PoolActionsHistory.helper'

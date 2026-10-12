@@ -1,8 +1,9 @@
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
+import { THORChain } from '../../../shared/utils/chainIds'
 
 import { WalletAddress, WalletAddresses } from '../../../shared/wallet/types'
 import { AccountAddressSelector } from '../AccountAddressSelector'

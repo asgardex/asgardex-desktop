@@ -1,9 +1,10 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network } from '@xchainjs/xchain-client'
-import { ClientLedger, GAIAChain, defaultClientConfig } from '@xchainjs/xchain-cosmos'
+import { ClientLedger, defaultClientConfig } from '@xchainjs/xchain-cosmos'
 import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { GAIAChain } from '../../../../shared/utils/chainIds'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../../../shared/wallet/types'
 import { getDerivationPaths } from './common'

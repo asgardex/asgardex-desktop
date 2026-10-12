@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'

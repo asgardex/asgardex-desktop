@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AssetType, baseAmount, Asset, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -11,6 +10,7 @@ import { scheduled, asapScheduler } from 'rxjs'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
 import { isChainOfMaya, isSupportedChain } from '../../../../shared/utils/chain'
+import { THORChain, MAYAChain } from '../../../../shared/utils/chainIds'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { Spin } from '../../../components/uielements/spin'
 import { SendForm } from '../../../components/wallet/txs/send'

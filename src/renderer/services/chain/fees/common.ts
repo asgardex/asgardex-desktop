@@ -2,21 +2,18 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DASHChain } from '@xchainjs/xchain-dash'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { NEARChain } from '@xchainjs/xchain-near'
-import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
-import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
 import {
   Address,
@@ -29,26 +26,34 @@ import {
   isSecuredAsset,
   isSynthAsset
 } from '@xchainjs/xchain-util'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O, array as A } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isChainOfThor } from '../../../../shared/utils/chain'
+import {
+  isTCYAsset,
+  THORChain,
+  AssetCacao,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  RadixChain,
+  ZECChain
+} from '../../../../shared/utils/chainIds'
 import { isCacaoAsset, isRujiAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
 import * as BASE from '../../base'
-import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
 import * as BSC from '../../bsc'
 import * as ADA from '../../cardano'
 import { FeesLD } from '../../clients'
 import * as COSMOS from '../../cosmos'
-import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
 import * as LTC from '../../litecoin'
@@ -58,7 +63,6 @@ import { service as midgardMayaService } from '../../midgard/mayaMidgard/service
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import * as NEAR from '../../near'
 import { ZERO_ADDRESS as NEAR_ZERO_ADDRESS } from '../../near/fees'
-import * as XRD from '../../radix'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
 import { ZERO_ADDRESS } from '../../solana/fees'
@@ -67,8 +71,11 @@ import { inboundAddressesShared$ as thorInboundAddresses$ } from '../../thorchai
 import { InboundAddress as ThorInboundAddress, InboundAddressesLD } from '../../thorchain/types'
 import * as TRON from '../../tron'
 import { FeesWithRatesLD } from '../../utxo/types'
-import * as ZEC from '../../zcash'
 import { getDecimal } from '../decimal'
+import * as BTC from '../lazyBitcoin'
+import * as DASH from '../lazyDash'
+import * as XRD from '../lazyRadix'
+import * as ZEC from '../lazyZcash'
 import { PoolFeeLD } from '../types'
 import { getChainNodeProtocol, NodeProtocol } from './nodeapi'
 

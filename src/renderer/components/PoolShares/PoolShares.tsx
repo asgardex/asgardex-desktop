@@ -3,11 +3,11 @@ import { useMemo } from 'react'
 import { ArrowUpIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AnyAsset, baseAmount, baseToAsset, Chain, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
+import { AssetRuneNative, THORChain, AssetCacao } from '../../../shared/utils/chainIds'
 
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { useBreakpoint } from '../../hooks/useBreakpoint'

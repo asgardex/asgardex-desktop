@@ -1,8 +1,8 @@
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
 import { DefaultChainAttributes } from '../../shared/utils/chain'
+import { THORChain } from '../../shared/utils/chainIds'
 
 /**
  * timeStamp will be rounded-down based on roundBasis

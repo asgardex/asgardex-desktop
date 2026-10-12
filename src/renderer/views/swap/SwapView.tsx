@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import {
   Address,
   assetToString,
@@ -27,6 +25,7 @@ import * as RxOp from 'rxjs/operators'
 import { mayaDetails } from '../../../shared/api/types'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
+import { THORChain, MAYAChain, BTCChain } from '../../../shared/utils/chainIds'
 import { isLedgerWallet, isWalletType } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ErrorView } from '../../components/shared/error/'

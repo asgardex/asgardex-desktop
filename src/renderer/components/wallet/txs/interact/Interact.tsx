@@ -3,11 +3,11 @@ import React, { useMemo } from 'react'
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
+import { THORChain, MAYAChain } from '../../../../../shared/utils/chainIds'
 
 import { isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'

@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ChainflipDepositChannel } from '@xchainjs/xchain-aggregator'
+import type { ChainflipDepositChannel } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
-import { isTCYAsset } from '@xchainjs/xchain-thorchain'
+
 import {
   AnyAsset,
   BaseAmount,
@@ -17,6 +17,7 @@ import {
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
+import { isTCYAsset } from '../../shared/utils/chainIds'
 
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 import { capNativeRuneDeposit } from '../components/swap/Swap.utils'

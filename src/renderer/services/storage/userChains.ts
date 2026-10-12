@@ -15,6 +15,9 @@ const {
   set: setStorageState
 } = observableState<StorageState<UserChainStorage>>(O.none)
 
+/** False until `apiChainStorage.get()` resolves or fails. The first `userChains$` value is `[]` either way. */
+const { get$: userChainsLoaded$, set: setUserChainsLoaded } = observableState(false)
+
 const modifyStorage = (oPartialData: StoragePartialState<UserChainStorage>) => {
   FP.pipe(
     oPartialData,
@@ -24,8 +27,14 @@ const modifyStorage = (oPartialData: StoragePartialState<UserChainStorage>) => {
 
 // Run at the start of application
 window.apiChainStorage.get().then(
-  (result) => setStorageState(O.some(result)),
-  (_) => setStorageState(O.none /* any error while parsing JSON file*/)
+  (result) => {
+    setStorageState(O.some(result))
+    setUserChainsLoaded(true)
+  },
+  (_) => {
+    setStorageState(O.none /* any error while parsing JSON file*/)
+    setUserChainsLoaded(true)
+  }
 )
 
 const userChains$: Rx.Observable<EnabledChain[]> = FP.pipe(
@@ -74,4 +83,4 @@ const removeChain = (chain: string) => {
   })
 }
 
-export { userChains$, addChain, removeChain }
+export { userChains$, userChainsLoaded$, addChain, removeChain }

@@ -1,13 +1,14 @@
 import { useCallback, useMemo, useEffect, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { MAYAChain } from '../../../../shared/utils/chainIds'
 
 import { ErrorView } from '../../../components/shared/error'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'

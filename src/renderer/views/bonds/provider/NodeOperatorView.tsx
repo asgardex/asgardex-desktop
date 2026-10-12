@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { PlusIcon } from '@heroicons/react/24/outline'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Address } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -10,6 +10,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain } from '../../../../shared/utils/chainIds'
 import { AddNodeModal, OperatorNodeCard, formatRuneAmount } from '../../../components/Bonds/provider'
 import { ErrorView } from '../../../components/shared/error'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'

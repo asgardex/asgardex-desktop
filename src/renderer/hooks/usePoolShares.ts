@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Chain } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { getChainsForDex } from '../../shared/utils/chain'
+import { THORChain } from '../../shared/utils/chainIds'
 import { useChainContext } from '../contexts/ChainContext'
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'

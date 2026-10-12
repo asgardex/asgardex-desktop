@@ -1,8 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { Keystore } from '@xchainjs/xchain-crypto'
-import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Address, Asset, Chain, TokenAsset } from '@xchainjs/xchain-util'
 import { either as E, option as O } from 'fp-ts'
 
@@ -10,6 +9,7 @@ import { THORCHAIN_DECIMAL } from '../../renderer/helpers/assetHelper'
 import { EvmHDMode } from '../evm/types'
 import { Locale } from '../i18n/types'
 import { EnabledChain } from '../utils/chain'
+import { AssetRuneNative, THORChain, AssetCacao, CACAO_DECIMAL, MAYAChain } from '../utils/chainIds'
 import { HDMode, KeystoreHDSettingsRecord, WalletAddress, WalletType } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 

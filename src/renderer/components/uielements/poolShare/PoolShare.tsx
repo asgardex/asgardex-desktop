@@ -1,7 +1,5 @@
 import { RefObject, useCallback, useMemo, useRef } from 'react'
 
-import { AssetCacao, CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { THORCHAIN_DECIMAL } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
@@ -17,6 +15,7 @@ import {
 import BigNumber from 'bignumber.js'
 import { option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
+import { AssetRuneNative, THORChain, AssetCacao, CACAO_DECIMAL } from '../../../../shared/utils/chainIds'
 
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { AssetLabel } from '../assets/assetLabel'

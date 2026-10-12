@@ -16,7 +16,7 @@ import {
   subscribeTx,
   resetTx,
   explorerUrl$
-} from '../services/dash'
+} from '../services/chain/lazyDash'
 
 type DashContextValue = {
   client$: typeof client$

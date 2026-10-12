@@ -1,13 +1,13 @@
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 
 import { AssetBTC, AssetETH, AssetRuneNative } from '../../shared/utils/asset'
+import { THORChain, GAIAChain } from '../../shared/utils/chainIds'
 import {
   getChainAsset,
   isBchChain,

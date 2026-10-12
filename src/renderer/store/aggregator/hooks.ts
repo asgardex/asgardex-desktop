@@ -1,21 +1,21 @@
 import { useCallback } from 'react'
 
-import { QuoteSwapParams } from '@xchainjs/xchain-aggregator'
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
+import type { QuoteSwapParams } from '@xchainjs/xchain-aggregator'
+import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { useSelector } from 'react-redux'
 
 import { logger } from '../../helpers/logger'
 import { getCurrentNetworkState } from '../../services/app/service'
 import { RootState, useAppDispatch } from '../store'
 import * as xchainActions from './actions'
+import { getAggregator } from './client'
 import { actions } from './slice'
 
 export const useAggregator = () => {
   const dispatch = useAppDispatch()
   const network = getCurrentNetworkState()
 
-  // Selector to get aggregator state from Redux
-  const { aggregator, protocols, isBoostEnabled, ...rest } = useSelector((state: RootState) => state.aggregator)
+  const { protocols, isBoostEnabled, ...rest } = useSelector((state: RootState) => state.aggregator)
 
   const setAggProtocol = useCallback(
     (protocol: Protocol, isActive: boolean) => {
@@ -41,7 +41,6 @@ export const useAggregator = () => {
       try {
         const result = await dispatch(
           xchainActions.getEstimate({
-            aggregator,
             protocols: protocolsOverride ?? protocols,
             params,
             useAffiliate,
@@ -54,37 +53,36 @@ export const useAggregator = () => {
         throw error
       }
     },
-    [aggregator, protocols, dispatch, network]
+    [protocols, dispatch, network]
   )
 
   /**
    * Open a live Chainflip deposit channel immediately before broadcast.
    * Aggregator 3.0+: estimateSwap is quote-only and does not create channels.
    */
-  const requestChainflipDepositAddress = useCallback(
-    (params: QuoteSwapParams) => aggregator.requestChainflipDepositAddress(params),
-    [aggregator]
-  )
+  const requestChainflipDepositAddress = useCallback(async (params: QuoteSwapParams) => {
+    const aggregator = await getAggregator()
+    return aggregator.requestChainflipDepositAddress(params)
+  }, [])
 
   /**
    * Wet OneClick quote → deposit address. Aggregator 3.2+: estimateSwap is dry /
    * quote-only; call this immediately before broadcast (same pattern as Chainflip).
    */
-  const requestOneClickDepositAddress = useCallback(
-    (params: QuoteSwapParams) => aggregator.requestOneClickDepositAddress(params),
-    [aggregator]
-  )
+  const requestOneClickDepositAddress = useCallback(async (params: QuoteSwapParams) => {
+    const aggregator = await getAggregator()
+    return aggregator.requestOneClickDepositAddress(params)
+  }, [])
 
   /**
    * Register an already-broadcast OneClick deposit (or retry registration).
    */
-  const submitOneClickDeposit = useCallback(
-    (txHash: string, depositAddress: string) => aggregator.submitOneClickDeposit(txHash, depositAddress),
-    [aggregator]
-  )
+  const submitOneClickDeposit = useCallback(async (txHash: string, depositAddress: string) => {
+    const aggregator = await getAggregator()
+    return aggregator.submitOneClickDeposit(txHash, depositAddress)
+  }, [])
 
   return {
-    aggregator,
     protocols,
     isBoostEnabled,
     ...rest,
