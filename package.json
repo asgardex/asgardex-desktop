@@ -202,6 +202,7 @@
     "vitest": "^4.1.9"
   },
   "resolutions": {
+    "@polkadot/api": "portal:./stubs/polkadot-api",
     "@types/react": "^18.3.22",
     "secp256k1": "^5.0.1",
     "typescript": "^5.8.3",
