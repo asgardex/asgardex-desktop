@@ -728,9 +728,41 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         )
       )
     case TRONChain:
+      // `fees$()` calls getFees({ sender }) and drops the asset and memo, so a
+      // native swap is quoted as a TRC20 transfer and the memo fee is missing.
+      // A nominal amount is enough: TRON energy depends on the contract and
+      // whether the inbound address already holds the token, not on the size.
       return FP.pipe(
-        TRON.fees$(),
-        liveData.map((fees) => ({ asset: getChainAsset(TRONChain), amount: fees.fast }))
+        Rx.combineLatest([Rx.from(getDecimal(asset)), getInboundAddresses$(TRONChain)]),
+        RxOp.switchMap(([decimal, inboundAddressesRD]) =>
+          FP.pipe(
+            inboundAddressesRD,
+            RD.fold(
+              () => Rx.of(RD.pending),
+              () => Rx.of(RD.pending),
+              (error) => Rx.of(RD.failure(error)),
+              (inboundAddresses) =>
+                FP.pipe(
+                  getInboundAddress(inboundAddresses, TRONChain),
+                  O.fold(
+                    () => Rx.of(RD.failure(new Error('No TRON inbound address'))),
+                    (recipient) =>
+                      FP.pipe(
+                        TRON.poolInTxFees$({
+                          asset,
+                          amount: baseAmount(1, decimal),
+                          recipient,
+                          memo
+                        }),
+                        liveData.map((fees) => ({ asset: getChainAsset(TRONChain), amount: fees.fast }))
+                      )
+                  )
+                )
+            )
+          )
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error))),
+        RxOp.startWith(RD.pending)
       )
     default:
       return FP.pipe(
