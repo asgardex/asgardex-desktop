@@ -1,9 +1,21 @@
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { DASHChain } from '@xchainjs/xchain-dash'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 import { describe, expect, it } from 'vitest'
 
-import { ChainFeeData, getUtxoMinFeeRate, resolveUtxoFeeRate, UTXO_MAX_FEE_RATES, UTXO_MIN_FEE_RATES } from './nodeapi'
+import {
+  ChainFeeData,
+  getInboundNodeProtocol,
+  getUtxoMinFeeRate,
+  NodeProtocol,
+  resolveUtxoFeeRate,
+  UTXO_MAX_FEE_RATES,
+  UTXO_MIN_FEE_RATES
+} from './nodeapi'
 
 const feeData = (chain: Chain, gas_rate: string): O.Option<ChainFeeData> =>
   O.some({ chain, gas_rate, gas_rate_units: 'satsperbyte', outbound_fee: '0' })
@@ -100,5 +112,19 @@ describe('resolveUtxoFeeRate', () => {
         expect(rate).toBeGreaterThanOrEqual(getUtxoMinFeeRate(chain))
       }
     }
+  })
+})
+
+describe('getInboundNodeProtocol', () => {
+  it('uses the protocol the inbound is going to, not the chain default', () => {
+    // BTC is served by both protocols and their vaults publish different gas_rates
+    expect(getInboundNodeProtocol(BTCChain, MAYAChain)).toEqual(NodeProtocol.MAYACHAIN)
+    expect(getInboundNodeProtocol(BTCChain, THORChain)).toEqual(NodeProtocol.THORCHAIN)
+  })
+
+  it('falls back to the chain default when the protocol is unknown', () => {
+    expect(getInboundNodeProtocol(BCHChain)).toEqual(NodeProtocol.THORCHAIN)
+    expect(getInboundNodeProtocol(DASHChain)).toEqual(NodeProtocol.MAYACHAIN)
+    expect(getInboundNodeProtocol(BCHChain, BTCChain)).toEqual(NodeProtocol.THORCHAIN)
   })
 })
