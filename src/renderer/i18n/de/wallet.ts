@@ -38,6 +38,8 @@ const wallet: WalletMessages = {
     'Es ist bereits eine Freigabe gesetzt. Eine Änderung kann zuerst eine Reset-Transaktion erfordern (bei manchen Token zwei Signaturen).',
   'wallet.column.name': 'Name',
   'wallet.column.ticker': 'Ticker',
+  'wallet.radix.delisted':
+    'MayaChain hat Radix ausgelistet. Swaps und Liquidität sind nicht verfügbar. Senden im Radix-Netzwerk funktioniert weiterhin.',
   'wallet.action.send': 'Senden',
   'wallet.action.receive': 'Empfangen',
   'wallet.action.receive.title': 'Empfangen {asset}',

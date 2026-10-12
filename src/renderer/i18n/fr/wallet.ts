@@ -38,6 +38,8 @@ const wallet: WalletMessages = {
     'Une autorisation est déjà définie. La modifier peut nécessiter d’abord une transaction de réinitialisation (deux signatures pour certains jetons).',
   'wallet.column.name': 'Nom',
   'wallet.column.ticker': 'Ticker',
+  'wallet.radix.delisted':
+    'MayaChain a retiré Radix. Les échanges et la liquidité ne sont plus disponibles. L’envoi sur le réseau Radix fonctionne toujours.',
   'wallet.action.send': 'Envoyer',
   'wallet.action.receive': 'Recevoir',
   'wallet.action.receive.title': 'Recevoir du {asset}',

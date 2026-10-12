@@ -85,7 +85,8 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
-  MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'XRD', 'ZEC', 'ADA'],
+  // XRD stays a wallet chain. MayaChain delisted it (no pool, no inbound).
+  MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'ZEC', 'ADA'],
   // ZEC is dual-routable (THOR + MAYA). NEAR is wallet/OneClick-only (exclude from THOR).
   THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter(
     (chain) => !['DASH', 'MAYA', 'ARB', 'XRD', 'ADA', 'NEAR'].includes(chain)
@@ -108,6 +109,10 @@ export const isChainOfThor = (chain: Chain): boolean => {
   const thorChains = DEX_CHAINS[THORChain] // Retrieve THOR's chains from the mapping
   return thorChains.includes(chain)
 }
+
+/** MayaChain delisted Radix. Native send stays; swap and liquidity do not. */
+export const radixTradeDisabled = (chain: Chain): boolean => chain === RADIXChain
+
 /**
  * Convert chain to string.
  *

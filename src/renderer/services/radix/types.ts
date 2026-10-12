@@ -1,4 +1,4 @@
-import { Client } from '@xchainjs/xchain-radix'
+import type { Client } from '@xchainjs/xchain-radix'
 import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 
