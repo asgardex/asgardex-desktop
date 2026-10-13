@@ -31,7 +31,6 @@ import {
   getAddresses as getLedgerAddresses,
   saveAddresses as saveLedgerAddresses
 } from './api/ledger'
-import { approveLedgerERC20Token } from './api/ledger/evm/approve'
 import { registerMpcIpcHandlers } from './api/mpc'
 import { disposeSDK } from './api/mpc/sdk'
 import { migrateHostDataIntoFlatpak } from './api/storageMigration'
@@ -243,7 +242,13 @@ const initIPC = () => {
     return FP.pipe(
       // params need to be decoded
       ipcLedgerApproveERC20TokenParamsIO.decode(params),
-      E.fold((e) => Promise.reject(e), approveLedgerERC20Token)
+      E.fold(
+        (e) => Promise.reject(e),
+        async (p) => {
+          const { approveLedgerERC20Token } = await import('./api/ledger/evm/approve')
+          return approveLedgerERC20Token(p)
+        }
+      )
     )
   })
   ipcMain.handle(IPCMessages.SAVE_LEDGER_ADDRESSES, async (_, params: IPCLedgerAddressesIO) =>

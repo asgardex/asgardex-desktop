@@ -3,11 +3,9 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, ChartBarIcon, QrCodeIcon } from '@heroicons/react/24/outline'
 import { ColumnDef } from '@tanstack/react-table'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
+
 import {
   Address,
   AnyAsset,
@@ -28,7 +26,14 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
-import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
+import {
+  chainToString,
+  EnabledChain,
+  isChainOfMaya,
+  isChainOfThor,
+  radixTradeDisabled
+} from '../../../../shared/utils/chain'
+import { isTCYAsset, THORChain, AssetCacao, MAYAChain, AssetBTC } from '../../../../shared/utils/chainIds'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
@@ -84,6 +89,7 @@ import { WalletTypeLabel, AssetSynthLabel, AssetSecuredLabel } from '../../uiele
 import { InfoIcon } from '../../uielements/info'
 import { CopyLabel, Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
+import { RadixDelistedNotice } from '../radix/RadixDelistedNotice'
 
 export type AssetAction = 'send' | 'deposit'
 
@@ -307,6 +313,9 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
             (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
             (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
             price
+        } else if (radixTradeDisabled(asset.chain)) {
+          // MayaChain delisted XRD, so the row prices from CoinGecko.
+          price = (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) || price
         } else {
           // Handle pending pool details
           const priceOptionFromPendingPoolDetails = getPoolPriceValue({
@@ -443,7 +452,13 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         pushSwapAction(`${asset.chain}/${asset.symbol}`, assetToString(AssetCacao))
       }
 
-      if (!isSynthAsset(asset) && !isCacaoAsset(asset) && !isRuneNativeAsset(asset) && !isSecuredAsset(asset)) {
+      if (
+        !isSynthAsset(asset) &&
+        !isCacaoAsset(asset) &&
+        !isRuneNativeAsset(asset) &&
+        !isSecuredAsset(asset) &&
+        !radixTradeDisabled(asset.chain)
+      ) {
         pushSwapAction(assetToString(asset), assetToString(defaultSwapTargetAsset))
       }
       if (isSecuredAsset(asset)) {
@@ -455,7 +470,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         pushSwapAction(assetToString(asset), securedTarget)
       }
 
-      if (hasActivePool && !isStandaloneLedger) {
+      if (hasActivePool && !isStandaloneLedger && !radixTradeDisabled(asset.chain)) {
         actions.push(
           createAction('common.add', () => {
             setProtocol(isChainOfThor(asset.chain) && !isRuneNativeAsset(asset) ? THORChain : MAYAChain)
@@ -515,6 +530,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
                     {asset.chain}
                   </Label>
                 )}
+                {radixTradeDisabled(asset.chain) && <RadixDelistedNotice />}
                 {isSynthAsset(asset) && (
                   <AssetSynthLabel className="mt-0.5 px-1 text-[10px] leading-[12px]">synth</AssetSynthLabel>
                 )}
@@ -686,13 +702,15 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
                 }}>
                 <QrCodeIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />
               </IconButton>
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation()
-                  navigate(poolsRoutes.detail.path({ asset: assetToString(getChainAsset(chain)) }))
-                }}>
-                <ChartBarIcon className="ease h-5 w-5 text-text0 dark:text-text0d" />
-              </IconButton>
+              {!radixTradeDisabled(chain) && (
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigate(poolsRoutes.detail.path({ asset: assetToString(getChainAsset(chain)) }))
+                  }}>
+                  <ChartBarIcon className="ease h-5 w-5 text-text0 dark:text-text0d" />
+                </IconButton>
+              )}
             </div>
           </div>
         </div>

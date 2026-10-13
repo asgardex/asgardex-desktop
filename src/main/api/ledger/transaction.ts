@@ -1,49 +1,39 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
-import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BASEChain } from '@xchainjs/xchain-base'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
-import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DASHChain } from '@xchainjs/xchain-dash'
-import { DOGEChain } from '@xchainjs/xchain-doge'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { RadixChain } from '@xchainjs/xchain-radix'
-import { XRPChain } from '@xchainjs/xchain-ripple'
-import { SOLChain } from '@xchainjs/xchain-solana'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { TRONChain } from '@xchainjs/xchain-tron'
 import { Chain } from '@xchainjs/xchain-util'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { either as E } from 'fp-ts'
 
 import { IPCLedgerDepositTxParams, IPCLedgerSendTxParams } from '../../../shared/api/io'
 import { GasMultiplier, LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { chainToString, isSupportedChain } from '../../../shared/utils/chain'
+import {
+  ARBChain,
+  AVAXChain,
+  BASEChain,
+  BCHChain,
+  BSCChain,
+  BTCChain,
+  DASHChain,
+  DOGEChain,
+  ETHChain,
+  GAIAChain,
+  LTCChain,
+  MAYAChain,
+  RadixChain,
+  SOLChain,
+  THORChain,
+  TRONChain,
+  XRPChain,
+  ZECChain
+} from '../../../shared/utils/chainIds'
 import { isError, isEvmHDMode, isUtxoHDMode } from '../../../shared/utils/guard'
-import * as BTC from './bitcoin/transaction'
-import * as BCH from './bitcoincash/transaction'
-import * as COSMOS from './cosmos/transaction'
-import * as DASH from './dash/transaction'
-import * as DOGE from './doge/transaction'
-import { EVM_LEDGER_CHAINS } from './evm/common'
-import { evmDeposit, evmSend } from './evm/transaction'
-import * as LTC from './litecoin/transaction'
-import * as MAYA from './mayachain/transaction'
-import * as XRP from './ripple/transaction'
-import * as SOL from './solana/transaction'
-import * as THOR from './thorchain/transaction'
-import * as TRON from './tron/transaction'
 
 const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
 const evmChainSend = async (
   params: IPCLedgerSendTxParams & { transport: Transport }
 ): Promise<E.Either<LedgerError, TxHash>> => {
+  const [{ EVM_LEDGER_CHAINS }, { evmSend }] = await Promise.all([import('./evm/common'), import('./evm/transaction')])
   const config = EVM_LEDGER_CHAINS[params.chain]
   if (!config) {
     return E.left({ errorId: LedgerErrorId.NOT_IMPLEMENTED, msg: `${params.chain} is not a supported EVM chain` })
@@ -87,6 +77,10 @@ const evmChainSend = async (
 const evmChainDeposit = async (
   params: IPCLedgerDepositTxParams & { transport: Transport }
 ): Promise<E.Either<LedgerError, TxHash>> => {
+  const [{ EVM_LEDGER_CHAINS }, { evmDeposit }] = await Promise.all([
+    import('./evm/common'),
+    import('./evm/transaction')
+  ])
   const config = EVM_LEDGER_CHAINS[params.chain]
   if (!config) {
     return E.left({ errorId: LedgerErrorId.NOT_IMPLEMENTED, msg: `${params.chain} is not a supported EVM chain` })
@@ -157,6 +151,7 @@ const chainSendFunctions: Record<
         msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(THORChain)}`
       })
     }
+    const THOR = await import('./thorchain/transaction')
     return THOR.send({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex })
   },
   [MAYAChain]: async ({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex }) => {
@@ -166,6 +161,7 @@ const chainSendFunctions: Record<
         msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(MAYAChain)}`
       })
     }
+    const MAYA = await import('./mayachain/transaction')
     return MAYA.send({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex })
   },
   [BTCChain]: async (params) => {
@@ -188,6 +184,7 @@ const chainSendFunctions: Record<
         msg: `Invalid UtxoHDMode set for Bitcoin transaction: ${params.hdMode}`
       })
     }
+    const BTC = await import('./bitcoin/transaction')
     return BTC.send({ ...params, feeOption: params.feeOption, hdMode: params.hdMode, apiKey: params.apiKey })
   },
   [LTCChain]: async (params) => {
@@ -203,6 +200,7 @@ const chainSendFunctions: Record<
         msg: `${chainToString(params.asset.chain)} needs an api key`
       })
     }
+    const LTC = await import('./litecoin/transaction')
     return LTC.send({ ...params, feeOption: params.feeOption, apiKey: params.apiKey })
   },
   [BCHChain]: async (params) => {
@@ -212,6 +210,7 @@ const chainSendFunctions: Record<
         msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(params.asset.chain)}`
       })
     }
+    const BCH = await import('./bitcoincash/transaction')
     return BCH.send({ ...params, feeOption: params.feeOption })
   },
   [DOGEChain]: async (params) => {
@@ -221,6 +220,7 @@ const chainSendFunctions: Record<
         msg: `${chainToString(params.asset.chain)} needs an api key`
       })
     }
+    const DOGE = await import('./doge/transaction')
     return DOGE.send({ ...params, apiKey: params.apiKey })
   },
   [DASHChain]: async (params) => {
@@ -230,6 +230,7 @@ const chainSendFunctions: Record<
         msg: `${chainToString(params.asset.chain)} needs an api key`
       })
     }
+    const DASH = await import('./dash/transaction')
     return DASH.send({ ...params, apiKey: params.apiKey })
   },
   [ETHChain]: evmChainSend,
@@ -250,6 +251,7 @@ const chainSendFunctions: Record<
         msg: `Fee amount needs to be defined to send Ledger transaction on ${chainToString(GAIAChain)}`
       })
     }
+    const COSMOS = await import('./cosmos/transaction')
     return COSMOS.send(params)
   },
   [XRPChain]: async (params) => {
@@ -259,6 +261,7 @@ const chainSendFunctions: Record<
         msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(XRPChain)}`
       })
     }
+    const XRP = await import('./ripple/transaction')
     return XRP.send({
       transport: params.transport,
       network: params.network,
@@ -278,6 +281,7 @@ const chainSendFunctions: Record<
         msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(SOLChain)}`
       })
     }
+    const SOL = await import('./solana/transaction')
     return SOL.send({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex })
   },
   [TRONChain]: async (params) => {
@@ -287,6 +291,7 @@ const chainSendFunctions: Record<
         msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(TRONChain)}`
       })
     }
+    const TRON = await import('./tron/transaction')
     return TRON.send({ ...params, walletAccount: params.walletAccount })
   }
 }
@@ -316,26 +321,27 @@ export const sendTx = async ({
   selectedUtxos,
   utxoSelectionPreferences
 }: IPCLedgerSendTxParams): Promise<E.Either<LedgerError, TxHash>> => {
+  if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
+    return E.left({
+      errorId: LedgerErrorId.NOT_IMPLEMENTED,
+      msg: `${chain} is not supported or enabled for 'sendTx'`
+    })
+  }
+
+  const sendFunction = chainSendFunctions[chain]
+  if (!sendFunction) {
+    return E.left({
+      errorId: LedgerErrorId.NOT_IMPLEMENTED,
+      msg: `${chain} is not supported for 'sendTx'`
+    })
+  }
+
+  let transport: Transport | undefined
   try {
-    const transport = await TransportNodeHidSingleton.default.create()
-
-    if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
-      return E.left({
-        errorId: LedgerErrorId.NOT_IMPLEMENTED,
-        msg: `${chain} is not supported or enabled for 'sendTx'`
-      })
-    }
-
-    const sendFunction = chainSendFunctions[chain]
-    if (!sendFunction) {
-      return E.left({
-        errorId: LedgerErrorId.NOT_IMPLEMENTED,
-        msg: `${chain} is not supported for 'sendTx'`
-      })
-    }
-
-    const res = await sendFunction({
-      transport,
+    const opened: Transport = await TransportNodeHidSingleton.default.create()
+    transport = opened
+    return await sendFunction({
+      transport: opened,
       chain,
       network,
       sender,
@@ -359,13 +365,19 @@ export const sendTx = async ({
       selectedUtxos,
       utxoSelectionPreferences
     })
-    await transport.close()
-    return res
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.SEND_TX_FAILED,
       msg: isError(error) ? (error?.message ?? error.toString()) : `${error}`
     })
+  } finally {
+    if (transport) {
+      try {
+        await transport.close()
+      } catch {
+        // A failed chunk import or send must not leave the HID handle open.
+      }
+    }
   }
 }
 
@@ -380,6 +392,7 @@ const chainDepositFunctions: Record<
         msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(THORChain)}`
       })
     }
+    const THOR = await import('./thorchain/transaction')
     return THOR.deposit({ transport, network, amount, asset, memo, walletAccount, walletIndex })
   },
   [MAYAChain]: async ({ transport, network, asset, amount, memo, walletAccount, walletIndex, nodeUrl }) => {
@@ -389,6 +402,7 @@ const chainDepositFunctions: Record<
         msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(MAYAChain)}`
       })
     }
+    const MAYA = await import('./mayachain/transaction')
     return MAYA.deposit({ transport, network, amount, asset, memo, walletAccount, walletIndex })
   },
   [ETHChain]: evmChainDeposit,
@@ -415,26 +429,27 @@ export const deposit = async ({
   evmRpcUrl,
   gasMultiplier
 }: IPCLedgerDepositTxParams): Promise<E.Either<LedgerError, TxHash>> => {
+  if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
+    return E.left({
+      errorId: LedgerErrorId.NOT_IMPLEMENTED,
+      msg: `${chain} is not supported or enabled for 'deposit'`
+    })
+  }
+
+  const depositFunction = chainDepositFunctions[chain]
+  if (!depositFunction) {
+    return E.left({
+      errorId: LedgerErrorId.NOT_IMPLEMENTED,
+      msg: `${chain} is not supported for 'deposit'`
+    })
+  }
+
+  let transport: Transport | undefined
   try {
-    const transport = await TransportNodeHidSingleton.default.create()
-
-    if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
-      return E.left({
-        errorId: LedgerErrorId.NOT_IMPLEMENTED,
-        msg: `${chain} is not supported or enabled for 'deposit'`
-      })
-    }
-
-    const depositFunction = chainDepositFunctions[chain]
-    if (!depositFunction) {
-      return E.left({
-        errorId: LedgerErrorId.NOT_IMPLEMENTED,
-        msg: `${chain} is not supported for 'deposit'`
-      })
-    }
-
-    const res = await depositFunction({
-      transport,
+    const opened: Transport = await TransportNodeHidSingleton.default.create()
+    transport = opened
+    return await depositFunction({
+      transport: opened,
       chain,
       network,
       asset,
@@ -451,12 +466,18 @@ export const deposit = async ({
       evmRpcUrl,
       gasMultiplier
     })
-    await transport.close()
-    return res
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.DEPOSIT_TX_FAILED,
       msg: isError(error) ? (error?.message ?? error.toString()) : `${error}`
     })
+  } finally {
+    if (transport) {
+      try {
+        await transport.close()
+      } catch {
+        // A failed chunk import or deposit must not leave the HID handle open.
+      }
+    }
   }
 }

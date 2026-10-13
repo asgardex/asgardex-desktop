@@ -54,23 +54,20 @@ export const ImportPhrase = (props: Props): JSX.Element => {
 
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState<O.Option<Error>>(O.none)
+  // Client init is separate from the submit spinner. Folding "pending" into `importing`
+  // stuck the button: the success branch never cleared it once pending painted on its own.
+  const clientsLoading = RD.isPending(clientStates)
 
   useEffect(() => {
     FP.pipe(
       clientStates,
       RD.fold(
-        () => {
-          // reset states
-          setImportError(O.none)
-          setImporting(false)
-        },
-        () => {
-          setImporting(true)
-        },
+        () => setImportError(O.none),
+        () => undefined,
         (error) => {
           setImportError(O.some(Error(`Could not create client: ${error?.message ?? error.toString()}`)))
         },
-        (_) => {}
+        () => setImportError(O.none)
       )
     )
   }, [clientStates])
@@ -116,7 +113,7 @@ export const ImportPhrase = (props: Props): JSX.Element => {
   )
 
   return (
-    <Spin spinning={importing} tip={intl.formatMessage({ id: 'common.loading' })}>
+    <Spin spinning={importing || clientsLoading} tip={intl.formatMessage({ id: 'common.loading' })}>
       <form className="w-full p-8 pt-4" onSubmit={handleSubmit(submitForm)}>
         <div className="flex flex-col items-center">
           {/* phrase */}
@@ -214,7 +211,7 @@ export const ImportPhrase = (props: Props): JSX.Element => {
             size="large"
             color="primary"
             type="submit"
-            disabled={!isValid || importing}>
+            disabled={!isValid || importing || clientsLoading}>
             {intl.formatMessage({ id: 'wallet.action.import' })}
           </FlatButton>
         </div>

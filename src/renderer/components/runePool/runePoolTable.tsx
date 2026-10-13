@@ -1,11 +1,11 @@
 import { useMemo, useCallback } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+
 import { baseToAsset, formatAssetAmountCurrency, baseAmount, formatBN } from '@xchainjs/xchain-util'
 import { option as O, nonEmptyArray as NEA } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
+import { AssetRuneNative, AssetCacao } from '../../../shared/utils/chainIds'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BN } from '../../const'

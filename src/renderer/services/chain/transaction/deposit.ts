@@ -1,11 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TxHash } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Address, TokenAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { AssetRuneNative, THORChain, AssetCacao } from '../../../../shared/utils/chainIds'
 
 import { getEVMTokenAddressForChain, isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { sequenceSOption } from '../../../helpers/fpHelpers'

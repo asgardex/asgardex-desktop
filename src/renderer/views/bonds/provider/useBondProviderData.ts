@@ -1,10 +1,11 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Address, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
+import { THORChain } from '../../../../shared/utils/chainIds'
 
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'

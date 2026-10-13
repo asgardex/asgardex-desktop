@@ -2,10 +2,11 @@ import { useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { AssetTCY } from '@xchainjs/xchain-thorchain'
+
 import { formatAssetAmountCurrency, baseToAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
+import { AssetTCY } from '../../../../shared/utils/chainIds'
 
 import { AssetData } from '../../../components/uielements/assets/assetData'
 import { BaseButton, FlatButton } from '../../../components/uielements/button'

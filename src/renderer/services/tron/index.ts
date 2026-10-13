@@ -13,7 +13,7 @@ import { createTransactionService } from './transaction'
 
 const { subscribeTx, txRD$, resetTx, sendTx, txs$, tx$, txStatus$, approveTRC20Token$, isApprovedTRC20Token$ } =
   createTransactionService(enhancedClient$, network$)
-const { fees$, reloadFees } = createFeesService(enhancedClient$)
+const { fees$, reloadFees, poolInTxFees$ } = createFeesService(enhancedClient$)
 
 export {
   client$,
@@ -28,6 +28,7 @@ export {
   getBalanceByAddress$,
   reloadFees,
   fees$,
+  poolInTxFees$,
   subscribeTx,
   sendTx,
   txRD$,

@@ -1,7 +1,6 @@
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, Chain } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
+import { THORChain, CACAO_DECIMAL } from '../../../shared/utils/chainIds'
 
 import { PoolShareTableData } from '../../components/PoolShares/PoolShares.types'
 import { ZERO_BASE_AMOUNT } from '../../const'

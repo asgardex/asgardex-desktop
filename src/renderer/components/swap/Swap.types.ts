@@ -1,4 +1,4 @@
-import { QuoteSwap } from '@xchainjs/xchain-aggregator'
+import type { QuoteSwap } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, Asset, CryptoAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'

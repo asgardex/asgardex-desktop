@@ -38,6 +38,8 @@ const wallet: WalletMessages = {
     'Разрешение уже установлено. Чтобы изменить его, может потребоваться сначала сброс (для некоторых токенов — две подписи).',
   'wallet.column.name': 'Имя',
   'wallet.column.ticker': 'Тикер',
+  'wallet.radix.delisted.title': 'Только отправка',
+  'wallet.radix.delisted.detail': 'Нет на Maya',
   'wallet.action.send': 'Отправить',
   'wallet.action.receive': 'Получить',
   'wallet.action.receive.title': 'Получить {asset}',

@@ -118,6 +118,11 @@ export type SendTxParams = {
    * is padded well above what a plain transfer needs.
    */
   useNodeFeeRate?: boolean
+  /**
+   * UTXO chains only, with `useNodeFeeRate`. The protocol whose vault receives the tx, so that
+   * its `gas_rate` is the one applied. Defaults to the chain's home protocol.
+   */
+  nodeFeeRateProtocol?: Chain
 }
 
 export type SendPoolTxParams = SendTxParams & {

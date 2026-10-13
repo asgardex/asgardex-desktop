@@ -1,16 +1,17 @@
 import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { THORCHAIN_DECIMAL } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { THORChain, CACAO_DECIMAL } from '../../../../shared/utils/chainIds'
 
 import { EmptyResult } from '../../../components/shared/result/EmptyResult'
 import { PoolShare as PoolShareUI } from '../../../components/uielements/poolShare'

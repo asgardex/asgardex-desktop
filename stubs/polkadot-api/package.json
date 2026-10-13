@@ -1,0 +1,7 @@
+{
+  "name": "@polkadot/api",
+  "version": "0.0.0-asgardex-stub",
+  "private": true,
+  "description": "Replaces the real @polkadot/api. ASGARDEX has no Polkadot client. @vultisig/sdk bundles Polkadot itself and never require()s this package, but still declares it, which installs ~186MB of @polkadot and @substrate.",
+  "main": "index.js"
+}

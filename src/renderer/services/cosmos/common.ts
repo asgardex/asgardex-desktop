@@ -1,8 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, defaultClientConfig, GAIAChain } from '@xchainjs/xchain-cosmos'
+import { Client, defaultClientConfig } from '@xchainjs/xchain-cosmos'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { GAIAChain } from '../../../shared/utils/chainIds'
 
 import { isError } from '../../../shared/utils/guard'
 import { logger } from '../../helpers/logger'

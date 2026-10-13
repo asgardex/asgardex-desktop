@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -12,6 +10,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain, AssetCacao, AssetBTC, BTCChain } from '../../../../shared/utils/chainIds'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { SymDeposit } from '../../../components/deposit/add'

@@ -1,12 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { AnyAsset, BaseAmount, bn } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
@@ -15,6 +14,7 @@ import { map } from 'rxjs/operators'
 import * as RxOp from 'rxjs/operators'
 
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain, CACAO_DECIMAL, BTCChain } from '../../../../shared/utils/chainIds'
 import { Withdraw } from '../../../components/deposit/withdraw'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../const'
 import { useAppContext } from '../../../contexts/AppContext'

@@ -1,5 +1,4 @@
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-
+import { MAYAChain } from '../../../shared/utils/chainIds'
 import { network$ } from '../app/service'
 import { createTransactionTrackingService } from '../thorchain/transactionTracking'
 import {

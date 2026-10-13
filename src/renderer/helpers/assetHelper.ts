@@ -1,11 +1,11 @@
 import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+
 import { NEARAsset } from '@xchainjs/xchain-near'
 import { AssetXRP } from '@xchainjs/xchain-ripple'
 import { SUIAsset } from '@xchainjs/xchain-sui'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { validateAddress as validateTRONAddress } from '@xchainjs/xchain-tron'
 import {
   Address,
@@ -47,6 +47,7 @@ import {
   AssetTRX
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
+import { THORChain, CACAO_DECIMAL } from '../../shared/utils/chainIds'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
 import { EVMZeroAddress } from '../services/evm/const'
 import { ARB_TOKEN_WHITELIST } from '../types/generated/mayachain/arberc20whitelist'

@@ -1,7 +1,7 @@
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { THORChain } from './chainIds'
 
 import { validateDerivationPath, warnDerivationPath } from './derivationPathValidation'
 

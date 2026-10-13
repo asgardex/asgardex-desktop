@@ -4,15 +4,13 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { RadixChain } from '@xchainjs/xchain-radix'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 
-import { chainToString, isSupportedChain } from './chain'
+import { chainToString, isChainOfMaya, isChainOfThor, isSupportedChain } from './chain'
+import { GAIAChain, MAYAChain, RadixChain, THORChain } from './chainIds'
 
 describe('chain', () => {
   it('isSupportedChain', () => {
@@ -28,6 +26,9 @@ describe('chain', () => {
     expect(isSupportedChain('GAIA')).toBeTruthy()
     expect(isSupportedChain('ARB')).toBeTruthy()
     expect(isSupportedChain('XRD')).toBeTruthy()
+    expect(isChainOfMaya(RadixChain)).toBeFalsy()
+    expect(isChainOfThor(RadixChain)).toBeFalsy()
+    expect(isChainOfMaya('BTC')).toBeTruthy()
     expect(isSupportedChain('invalid')).toBeFalsy()
     expect(isSupportedChain('')).toBeFalsy()
   })

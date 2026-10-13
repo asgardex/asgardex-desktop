@@ -2,11 +2,11 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
-import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
+
 import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { assetAmount, assetToBase, assetToString, baseAmount, bn, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
@@ -18,6 +18,7 @@ import {
   TWO_RUNE_BASE_AMOUNT
 } from '../../../../shared/mock/amount'
 import { AssetATOM, AssetBSC, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain, COSMOS_DECIMAL, GAIAChain } from '../../../../shared/utils/chainIds'
 import { PRICE_POOLS_WHITELIST, AssetUSDC, AssetUSDT, AssetUSDCBSC } from '../../../const'
 import { eqAsset, eqPoolShare, eqPoolShares, eqOAssetWithAmount, eqString } from '../../../helpers/fp/eq'
 import { RUNE_POOL_ADDRESS, RUNE_PRICE_POOL } from '../../../helpers/poolHelper'

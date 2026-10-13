@@ -2,11 +2,12 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
-import { CACAO_DECIMAL, MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
+
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 
 import { AssetBTC, AssetETH, AssetBSC } from '../../../../shared/utils/asset'
+import { CACAO_DECIMAL, MAYA_DECIMAL } from '../../../../shared/utils/chainIds'
 import { AssetUSDCBSC, AssetUSDTBSC, AssetUSDT } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'

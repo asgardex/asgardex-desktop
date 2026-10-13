@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+
 import {
   AnyAsset,
   AssetType,
@@ -17,6 +16,7 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState, useSubscription } from 'observable-hooks'
 
 import { ASGARDEX_AFFILIATE_FEE_MIN } from '../../../../shared/const'
+import { AssetRuneNative, AssetCacao } from '../../../../shared/utils/chainIds'
 import { isVultisigWallet } from '../../../../shared/utils/guard'
 import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
 import { useSwapConfirmationModals } from '../../../components/swap/components/SwapConfirmationModals'

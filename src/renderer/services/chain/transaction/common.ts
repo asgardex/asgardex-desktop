@@ -2,56 +2,62 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
 import { TxHash } from '@xchainjs/xchain-client'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DASHChain } from '@xchainjs/xchain-dash'
+
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+
 import { NEARChain } from '@xchainjs/xchain-near'
-import { RadixChain } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { TRONChain } from '@xchainjs/xchain-tron'
 import { Address, AssetType, Chain } from '@xchainjs/xchain-util'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
+import {
+  THORChain,
+  AssetCacao,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  RadixChain,
+  ZECChain
+} from '../../../../shared/utils/chainIds'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
 import { getAssetChain } from '../../../helpers/chainHelper'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
 import * as BASE from '../../base'
-import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
 import * as BSC from '../../bsc'
 import * as ADA from '../../cardano'
 import * as COSMOS from '../../cosmos'
-import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import * as NEAR from '../../near'
-import * as XRD from '../../radix'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
 import * as SUI from '../../sui'
 import * as THOR from '../../thorchain'
 import * as TRON from '../../tron'
 import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
-import * as ZEC from '../../zcash'
 import { utxoFeeRate$ } from '../fees/nodeapi'
+import * as BTC from '../lazyBitcoin'
+import * as DASH from '../lazyDash'
+import * as XRD from '../lazyRadix'
+import * as ZEC from '../lazyZcash'
 import { SendPoolTxParams, SendTxParams } from '../types'
 
 // shared error mapper for UTXO fee-rate resolution
@@ -85,7 +91,8 @@ export const sendTx$ = ({
   sendMax,
   selectedUtxos,
   utxoSelectionPreferences,
-  useNodeFeeRate = false
+  useNodeFeeRate = false,
+  nodeFeeRateProtocol
 }: SendTxParams): TxHashLD => {
   const { chain } =
     asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.SECURED ? { chain: THORChain } : asset
@@ -100,7 +107,7 @@ export const sendTx$ = ({
         })),
         liveData.chain(({ rates }) =>
           FP.pipe(
-            utxoFeeRate$(BTCChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(BTCChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               BTC.sendTx({
@@ -219,7 +226,7 @@ export const sendTx$ = ({
         })),
         liveData.chain(({ rates }) =>
           FP.pipe(
-            utxoFeeRate$(DOGEChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(DOGEChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               DOGE.sendTx({
@@ -252,7 +259,7 @@ export const sendTx$ = ({
         })),
         liveData.chain(({ rates }) =>
           FP.pipe(
-            utxoFeeRate$(BCHChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(BCHChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               BCH.sendTx({
@@ -285,7 +292,7 @@ export const sendTx$ = ({
         liveData.chain(({ rates }) =>
           FP.pipe(
             // replaces `Math.floor`, which turned LTC's sub-1 estimates into a 0 fee rate
-            utxoFeeRate$(LTCChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(LTCChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               LTC.sendTx({
@@ -317,7 +324,7 @@ export const sendTx$ = ({
         })),
         liveData.chain(({ rates }) =>
           FP.pipe(
-            utxoFeeRate$(DASHChain, rates[feeOption], useNodeFeeRate),
+            utxoFeeRate$(DASHChain, rates[feeOption], useNodeFeeRate, nodeFeeRateProtocol),
             liveData.mapLeft(feeRateError),
             liveData.chain((feeRate) =>
               DASH.sendTx({
@@ -513,7 +520,8 @@ export const sendPoolTx$ = ({
         hdMode,
         sendMax,
         // inbounds must not be sent below the vault's recommended `gas_rate`
-        useNodeFeeRate: true
+        useNodeFeeRate: true,
+        nodeFeeRateProtocol: protocol
       })
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)

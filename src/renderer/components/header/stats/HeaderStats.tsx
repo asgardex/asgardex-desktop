@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, AssetTCY } from '@xchainjs/xchain-thorchain'
+
 import { assetFromStringEx, baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
+import { AssetRuneNative, AssetTCY, AssetCacao, MAYAChain } from '../../../../shared/utils/chainIds'
 
 import { abbreviateNumber } from '../../../helpers/numberHelper'
 import { loadingString } from '../../../helpers/stringHelper'

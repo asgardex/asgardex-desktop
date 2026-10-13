@@ -1,11 +1,12 @@
 import { TrashIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+
 import { Address } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { THORChain } from '../../../../shared/utils/chainIds'
 import { WalletType } from '../../../../shared/wallet/types'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { hiddenString } from '../../../helpers/stringHelper'

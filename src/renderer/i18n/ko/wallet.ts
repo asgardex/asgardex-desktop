@@ -38,6 +38,8 @@ const wallet: WalletMessages = {
     '허용치가 이미 설정되어 있습니다. 변경하려면 먼저 재설정 트랜잭션이 필요할 수 있습니다(일부 토큰은 서명 2회).',
   'wallet.column.name': '이름',
   'wallet.column.ticker': '티커',
+  'wallet.radix.delisted.title': '전송만 가능',
+  'wallet.radix.delisted.detail': 'Maya에서 제외됨',
   'wallet.action.send': '보내기',
   'wallet.action.receive': '받기',
   'wallet.action.receive.title': '{asset} 받기',

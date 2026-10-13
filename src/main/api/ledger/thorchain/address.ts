@@ -1,9 +1,10 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network } from '@xchainjs/xchain-client'
-import { ClientLedger, defaultClientConfig, THORChain } from '@xchainjs/xchain-thorchain'
+import { ClientLedger, defaultClientConfig } from '@xchainjs/xchain-thorchain'
 import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { THORChain } from '../../../../shared/utils/chainIds'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
