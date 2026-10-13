@@ -702,13 +702,15 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
                 }}>
                 <QrCodeIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />
               </IconButton>
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation()
-                  navigate(poolsRoutes.detail.path({ asset: assetToString(getChainAsset(chain)) }))
-                }}>
-                <ChartBarIcon className="ease h-5 w-5 text-text0 dark:text-text0d" />
-              </IconButton>
+              {!radixTradeDisabled(chain) && (
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigate(poolsRoutes.detail.path({ asset: assetToString(getChainAsset(chain)) }))
+                  }}>
+                  <ChartBarIcon className="ease h-5 w-5 text-text0 dark:text-text0d" />
+                </IconButton>
+              )}
             </div>
           </div>
         </div>
