@@ -8,6 +8,8 @@ import { catchError, startWith, map, shareReplay, debounceTime } from 'rxjs/oper
 
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { liveData } from '../../helpers/rx/liveData'
+import { preserveSuccessUntil } from '../../helpers/rx/preserveSuccess'
+import { network$ } from '../app/service'
 import { replaceSymbol } from '../evm/utils'
 import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { ApiError, ErrorId, WalletBalance } from '../wallet/types'
@@ -162,6 +164,9 @@ export const balances$: Balances$ = ({
         )
       )
     }),
+    // A reload's Pending frame used to drop the chain from the wallet total and cover Send.
+    // A network change still clears the previous network's balances.
+    preserveSuccessUntil(network$),
     shareReplay(1) // Prevent duplicate balance requests for the same parameters
   )
 
@@ -228,5 +233,7 @@ export const balancesByAddress$: BalancesByAddress$ =
           )
         )
       }),
+      // Same hold as balances$: keep the last addresses while one of them reloads.
+      preserveSuccessUntil(network$),
       shareReplay(1)
     )

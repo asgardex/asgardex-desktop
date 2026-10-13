@@ -42,6 +42,7 @@ import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
+import { useProtocolLimitMaya } from '../../hooks/useProtocolLimitMaya'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { LastblockItems as MayaLastblockItems } from '../../services/mayachain/types'
 import { PendingPoolsState as PendingPoolsStateMaya } from '../../services/midgard/mayaMidgard/types'
@@ -93,7 +94,10 @@ export const PendingPools = (): JSX.Element => {
   }, [isThorProtocol, mayachainLastblockState$, thorchainLastblockState$])
   const lastblockRD = useObservableLayoutState(lastblock$, RD.pending)
 
-  const { reload: reloadLimit, data: limitRD } = useProtocolLimit()
+  const { reload: reloadLimitThor, data: limitThorRD } = useProtocolLimit(isThorProtocol)
+  const { reload: reloadLimitMaya, data: limitMayaRD } = useProtocolLimitMaya(!isThorProtocol)
+  const limitRD = isThorProtocol ? limitThorRD : limitMayaRD
+  const reloadLimit = isThorProtocol ? reloadLimitThor : reloadLimitMaya
   const { data: incentivePendulumThorRD } = useIncentivePendulum(isThorProtocol)
   const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya(!isThorProtocol)
 
@@ -290,7 +294,7 @@ export const PendingPools = (): JSX.Element => {
             activeFilter={poolFilter}
             poolFilters={DEFAULT_POOL_FILTERS}
           />
-          <ProtocolLimit limit={limitRD} />
+          <ProtocolLimit limit={limitRD} protocol={protocol} />
           <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
           <Table key={protocol} columns={columns} data={dataSource} loading={loading} />
         </>

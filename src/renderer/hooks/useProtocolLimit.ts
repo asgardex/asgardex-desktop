@@ -1,12 +1,14 @@
+import { useMemo } from 'react'
+
 import * as RD from '@devexperts/remote-data-ts'
 import { baseAmount, BaseAmount } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
-import { useObservableState } from 'observable-hooks'
-import * as RxOp from 'rxjs/operators'
+import * as Rx from 'rxjs'
 
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { THORCHAIN_DECIMAL } from '../helpers/assetHelper'
 import { liveData } from '../helpers/rx/liveData'
+import { useObservableLayoutState } from './useObservableLayoutState'
 
 type Limit = {
   reached: boolean
@@ -16,9 +18,9 @@ type Limit = {
 
 export type LimitRD = RD.RemoteData<Error, Limit>
 
-export const getLimit = (totalPooledRune: string, totalActiveBond: string): Limit => {
-  const totalActiveBondAmount = baseAmount(totalActiveBond, THORCHAIN_DECIMAL)
-  const totalPooledRuneAmount = baseAmount(totalPooledRune, THORCHAIN_DECIMAL)
+export const getLimit = (totalPooledRune: string, totalActiveBond: string, decimal = THORCHAIN_DECIMAL): Limit => {
+  const totalActiveBondAmount = baseAmount(totalActiveBond, decimal)
+  const totalPooledRuneAmount = baseAmount(totalPooledRune, decimal)
   const reached = totalPooledRuneAmount.gte(totalActiveBondAmount)
 
   return {
@@ -28,22 +30,22 @@ export const getLimit = (totalPooledRune: string, totalActiveBond: string): Limi
   }
 }
 
-export const useProtocolLimit = (): { data: LimitRD; reload: FP.Lazy<void> } => {
+export const useProtocolLimit = (enabled = true): { data: LimitRD; reload: FP.Lazy<void> } => {
   const {
     service: { networkInfo$, reloadNetworkInfo }
   } = useMidgardContext()
 
-  const [data] = useObservableState<LimitRD>(
-    () =>
-      FP.pipe(
-        networkInfo$,
-        liveData.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) =>
-          getLimit(totalPooledRune, totalActiveBond)
-        ),
-        RxOp.shareReplay(1)
-      ),
-    RD.initial
-  )
+  const source$ = useMemo((): Rx.Observable<LimitRD> => {
+    if (!enabled) return Rx.EMPTY
+    return FP.pipe(
+      networkInfo$,
+      liveData.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) =>
+        getLimit(totalPooledRune, totalActiveBond)
+      )
+    )
+  }, [enabled, networkInfo$])
+
+  const data = useObservableLayoutState(source$, RD.initial)
 
   return { data, reload: reloadNetworkInfo }
 }

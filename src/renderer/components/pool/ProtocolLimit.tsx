@@ -1,20 +1,22 @@
 import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetCacao, AssetRuneNative, THORChain } from '../../../shared/utils/chainIds'
 import { LimitRD } from '../../hooks/useProtocolLimit'
 import { Alert } from '../uielements/alert'
 
 type Props = {
   limit: LimitRD
+  protocol: Chain
 }
 
-export const ProtocolLimit = ({ limit: limitRD }: Props) => {
+export const ProtocolLimit = ({ limit: limitRD, protocol }: Props) => {
   const intl = useIntl()
+  const asset = protocol === THORChain ? AssetRuneNative : AssetCacao
 
   const render = useMemo(() => {
     const empty = <></>
@@ -30,12 +32,12 @@ export const ProtocolLimit = ({ limit: limitRD }: Props) => {
             {
               pooled: formatAssetAmountCurrency({
                 amount: baseToAsset(totalPooledRuneAmount),
-                asset: AssetRuneNative,
+                asset,
                 decimal: 0
               }),
               bonded: formatAssetAmountCurrency({
                 amount: baseToAsset(totalActiveBondAmount),
-                asset: AssetRuneNative,
+                asset,
                 decimal: 0
               })
             }
@@ -45,7 +47,7 @@ export const ProtocolLimit = ({ limit: limitRD }: Props) => {
         }
       )
     )
-  }, [limitRD, intl])
+  }, [asset, limitRD, intl])
 
   return render
 }
