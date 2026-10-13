@@ -49,7 +49,7 @@ import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
-import { preserveSuccess } from '../../helpers/rx/preserveSuccess'
+import { preserveSuccessUntil } from '../../helpers/rx/preserveSuccess'
 import { triggerStream } from '../../helpers/stateHelper'
 import { Network$ } from '../app/types'
 import {
@@ -179,7 +179,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.debounceTime(300),
     RxOp.switchMap((_) => loadInboundAddresses$()),
     // A reload's Pending frame used to clear halted-chain lists and re-quote swaps.
-    preserveSuccess,
+    // A network change still drops the held vault addresses.
+    preserveSuccessUntil(network$),
     RxOp.shareReplay(1)
   )
 
@@ -313,7 +314,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     // start request
     RxOp.switchMap((_) => loadThorchainLastblock$()),
     // Halt checks read the height. Pending on each 60s tick made halts look cleared.
-    preserveSuccess,
+    preserveSuccessUntil(network$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )
@@ -496,7 +497,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.debounceTime(300),
     RxOp.switchMap(() => apiGetMimir$),
     RxOp.startWith(RD.pending),
-    preserveSuccess,
+    preserveSuccessUntil(network$),
     RxOp.shareReplay(1)
   )
 

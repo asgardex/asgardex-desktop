@@ -1,9 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { firstValueFrom, of } from 'rxjs'
+import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 import { describe, expect, it } from 'vitest'
 
-import { preserveSuccess } from './preserveSuccess'
+import { preserveSuccess, preserveSuccessUntil } from './preserveSuccess'
 
 describe('preserveSuccess', () => {
   it('keeps the last success while a reload is pending', async () => {
@@ -26,5 +26,24 @@ describe('preserveSuccess', () => {
       'RemotePending',
       'RemoteSuccess'
     ])
+  })
+})
+
+describe('preserveSuccessUntil', () => {
+  it('drops the held success when the network changes, then accepts the next pending', () => {
+    const reset$ = new BehaviorSubject('mainnet')
+    const source$ = new Subject<RD.RemoteData<Error, string>>()
+    const emitted: RD.RemoteData<Error, string>[] = []
+    const subscription = source$.pipe(preserveSuccessUntil(reset$)).subscribe((value) => emitted.push(value))
+
+    source$.next(RD.pending)
+    source$.next(RD.success('mainnet-vault'))
+    source$.next(RD.pending)
+    reset$.next('stagenet')
+    source$.next(RD.pending)
+    source$.next(RD.success('stagenet-vault'))
+    subscription.unsubscribe()
+
+    expect(emitted).toEqual([RD.pending, RD.success('mainnet-vault'), RD.pending, RD.success('stagenet-vault')])
   })
 })

@@ -20,7 +20,7 @@ import { isEthChain } from '../../../helpers/chainHelper'
 import { eqAsset, eqOAsset, eqOPoolAddresses, eqHaltedChain } from '../../../helpers/fp/eq'
 import { sequenceTOption } from '../../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
-import { preserveSuccess } from '../../../helpers/rx/preserveSuccess'
+import { preserveSuccessUntil } from '../../../helpers/rx/preserveSuccess'
 import { observableState, triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
 import { roundUnixTimestampToMinutes } from '../../../helpers/timeHelper'
 import { PricePoolAsset } from '../../../views/pools/Pools.types'
@@ -348,7 +348,7 @@ const createPoolsService = ({
     // start loading queue
     RxOp.switchMap(loadAllPoolDetails$),
     // Keep the list on screen while a reload is in flight.
-    preserveSuccess,
+    preserveSuccessUntil(network$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )
@@ -422,7 +422,8 @@ const createPoolsService = ({
     // start loading queue
     RxOp.switchMap(loadPoolsStateData$),
     // Keep prices, swap decimals, and wallet totals on the last success during reload.
-    preserveSuccess,
+    // A network change still drops the previous network's pools.
+    preserveSuccessUntil(network$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )
@@ -474,7 +475,7 @@ const createPoolsService = ({
     reloadPendingPools$,
     // start loading queue
     RxOp.switchMap(loadPendingPoolsStateData$),
-    preserveSuccess,
+    preserveSuccessUntil(network$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )

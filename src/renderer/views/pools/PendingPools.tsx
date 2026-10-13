@@ -13,6 +13,7 @@ import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
+import * as RxOp from 'rxjs/operators'
 
 import { THORChain } from '../../../shared/utils/chainIds'
 
@@ -82,9 +83,14 @@ export const PendingPools = (): JSX.Element => {
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
   const poolsRD = useObservableLayoutState(isThorProtocol ? pendingPoolsState$ : pendingPoolStateMaya$, RD.pending)
-  const lastblock$ = (isThorProtocol ? thorchainLastblockState$ : mayachainLastblockState$) as Rx.Observable<
-    RD.RemoteData<Error, ThorLastblockItems | MayaLastblockItems>
-  >
+  // timer(0) does not replay. Pending is synchronous, so the layout subscription replaces the
+  // other protocol's height before paint instead of handing it to the wrong blocks-left helper.
+  const lastblock$ = useMemo(() => {
+    const source$ = (isThorProtocol ? thorchainLastblockState$ : mayachainLastblockState$) as Rx.Observable<
+      RD.RemoteData<Error, ThorLastblockItems | MayaLastblockItems>
+    >
+    return source$.pipe(RxOp.startWith(RD.pending as RD.RemoteData<Error, ThorLastblockItems | MayaLastblockItems>))
+  }, [isThorProtocol, mayachainLastblockState$, thorchainLastblockState$])
   const lastblockRD = useObservableLayoutState(lastblock$, RD.pending)
 
   const { reload: reloadLimit, data: limitRD } = useProtocolLimit()
@@ -286,7 +292,7 @@ export const PendingPools = (): JSX.Element => {
           />
           <ProtocolLimit limit={limitRD} />
           <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
-          <Table columns={columns} data={dataSource} loading={loading} />
+          <Table key={protocol} columns={columns} data={dataSource} loading={loading} />
         </>
       )
     },
