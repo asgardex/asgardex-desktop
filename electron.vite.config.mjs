@@ -95,6 +95,8 @@ export default defineConfig(async ({ mode }) => {
       },
       optimizeDeps: {
         include: ['process', 'buffer', 'assert', '@xchainjs/zcash-js'],
+        // esbuild pre-bundles nested imports without this file's resolveId stub.
+        exclude: ['@xchainjs/xchain-aggregator', '@xchainjs/xchain-mayachain-amm'],
         esbuildOptions: {
           inject: ['./src/shims/buffer-shim.js']
         }
