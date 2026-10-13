@@ -1,6 +1,5 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { fixupPluginRules } from '@eslint/compat'
 import { FlatCompat } from '@eslint/eslintrc'
 import js from '@eslint/js'
 import tsParser from '@typescript-eslint/parser'
@@ -45,7 +44,7 @@ export default [
   {
     plugins: {
       react,
-      'react-hooks': fixupPluginRules(reactHooks),
+      'react-hooks': reactHooks,
       prettier,
       'unused-imports': unusedImports,
       security,
