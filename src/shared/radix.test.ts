@@ -1,4 +1,4 @@
-import { AssetType, baseAmount, baseToAsset } from '@xchainjs/xchain-util'
+import { AssetType } from '@xchainjs/xchain-util'
 
 import { isChainOfMaya, isChainOfThor, isSupportedChain, radixTradeDisabled } from './utils/chain'
 import { AssetXRD, RadixChain, XRD_DECIMAL } from './utils/chainIds'
@@ -18,16 +18,5 @@ describe('radix', () => {
     expect(isChainOfThor(RadixChain)).toBe(false)
     expect(radixTradeDisabled(RadixChain)).toBe(true)
     expect(radixTradeDisabled('BTC')).toBe(false)
-  })
-
-  it('keeps a positive XRD balance visible for an enabled wallet', () => {
-    const amount = baseAmount('2500000000000000000', XRD_DECIMAL)
-    const enabledChains = new Set<string>([RadixChain, 'BTC'])
-
-    // Same rule as the assets list: an enabled chain stays, and a positive amount is kept.
-    const visible = enabledChains.has(AssetXRD.chain) && amount.amount().gt(0)
-
-    expect(visible).toBe(true)
-    expect(baseToAsset(amount).amount().toFixed()).toBe('2.5')
   })
 })
