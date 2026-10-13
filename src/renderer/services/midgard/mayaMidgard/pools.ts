@@ -183,6 +183,9 @@ const createPoolsService = ({
 
   const poolsPeriod$ = FP.pipe(_getPoolsPeriod$, RxOp.distinctUntilChanged(), RxOp.shareReplay(1))
 
+  // One replayed value for preserveSuccessUntil to ignore, then Pending when the network or period changes.
+  const poolsReset$ = Rx.merge(network$.pipe(RxOp.skip(1)), poolsPeriod$.pipe(RxOp.skip(1))).pipe(RxOp.startWith(0))
+
   /**
    * Data of enabled `Pools` from Midgard
    */
@@ -348,7 +351,7 @@ const createPoolsService = ({
     // start loading queue
     RxOp.switchMap(loadAllPoolDetails$),
     // Keep the list on screen while a reload is in flight.
-    preserveSuccessUntil(network$),
+    preserveSuccessUntil(poolsReset$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )
@@ -422,8 +425,8 @@ const createPoolsService = ({
     // start loading queue
     RxOp.switchMap(loadPoolsStateData$),
     // Keep prices, swap decimals, and wallet totals on the last success during reload.
-    // A network change still drops the previous network's pools.
-    preserveSuccessUntil(network$),
+    // A network or pool-period change still drops the previous list.
+    preserveSuccessUntil(poolsReset$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )
@@ -475,7 +478,7 @@ const createPoolsService = ({
     reloadPendingPools$,
     // start loading queue
     RxOp.switchMap(loadPendingPoolsStateData$),
-    preserveSuccessUntil(network$),
+    preserveSuccessUntil(poolsReset$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )

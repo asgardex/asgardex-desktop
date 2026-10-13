@@ -695,12 +695,18 @@ export const TradeSwap = ({
     ]
   )
 
+  // Read at call time. The debounced function is created once, and a protocol switch
+  // must quote with the client for the protocol on screen.
+  const quoteClientRef = useRef({ protocol, thorchainQuery, mayachainQuery })
+  quoteClientRef.current = { protocol, thorchainQuery, mayachainQuery }
+
   const debouncedEffect = useRef(
     debounce((quoteSwapData: QuoteSwapParams, requestId: number, inputKey: string) => {
+      const { protocol: quoteProtocol, thorchainQuery: thorQuery, mayachainQuery: mayaQuery } = quoteClientRef.current
       const isCurrent = () => quoteRequestRef.current === requestId
       // Include isStreaming as a parameter
-      if (protocol === THORChain) {
-        thorchainQuery
+      if (quoteProtocol === THORChain) {
+        thorQuery
           .quoteSwap(quoteSwapData)
           .then((quote) => {
             if (!isCurrent()) return
@@ -715,7 +721,7 @@ export const TradeSwap = ({
             setErrorProtocol(O.some(error as Error))
           })
       } else {
-        mayachainQuery
+        mayaQuery
           .quoteSwap(quoteSwapData)
           .then((quote) => {
             if (!isCurrent()) return
