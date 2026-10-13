@@ -1,16 +1,23 @@
-import { useObservableState } from 'observable-hooks'
+import { useMemo } from 'react'
+
+import * as Rx from 'rxjs'
 
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { MAYA_PRICE_POOL } from '../helpers/poolHelperMaya'
+import { PricePool } from '../services/midgard/midgardTypes'
+import { useObservableLayoutState } from './useObservableLayoutState'
 
-export const usePricePoolMaya = () => {
+export const usePricePoolMaya = (enabled = true) => {
   const {
     service: {
       pools: { selectedPricePool$ }
     }
   } = useMidgardMayaContext()
 
-  const pricePool = useObservableState(selectedPricePool$, MAYA_PRICE_POOL)
+  const source$ = useMemo(
+    (): Rx.Observable<PricePool> => (enabled ? selectedPricePool$ : Rx.EMPTY),
+    [enabled, selectedPricePool$]
+  )
 
-  return pricePool
+  return useObservableLayoutState(source$, MAYA_PRICE_POOL)
 }

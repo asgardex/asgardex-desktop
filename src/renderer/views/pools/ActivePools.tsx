@@ -34,6 +34,7 @@ import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
+import { useObservableLayoutState } from '../../hooks/useObservableLayoutState'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { usePricePool } from '../../hooks/usePricePool'
@@ -74,11 +75,12 @@ export const ActivePools = (): JSX.Element => {
       }
     }
   } = useMidgardMayaContext()
+  const isThorProtocol = protocol === THORChain
   const { reload: reloadLimit, data: limitRD } = useProtocolLimit()
-  const { data: incentivePendulumThorRD } = useIncentivePendulum()
-  const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya()
+  const { data: incentivePendulumThorRD } = useIncentivePendulum(isThorProtocol)
+  const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya(!isThorProtocol)
 
-  const incentivePendulumRD = protocol === THORChain ? incentivePendulumThorRD : incentivePendulumMayaRD
+  const incentivePendulumRD = isThorProtocol ? incentivePendulumThorRD : incentivePendulumMayaRD
 
   const poolsPeriod = useObservableState(
     protocol === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
@@ -91,10 +93,7 @@ export const ActivePools = (): JSX.Element => {
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('active')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
-  const poolsThorRD = useObservableState(poolsState$, RD.pending)
-  const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
-
-  const poolsRD = protocol === THORChain ? poolsThorRD : poolsMayaRD
+  const poolsRD = useObservableLayoutState(isThorProtocol ? poolsState$ : mayaPoolsState$, RD.pending)
 
   const isDesktopView = useBreakpoint()?.lg ?? false
   const isLargeScreen = useBreakpoint()?.xl ?? false
@@ -113,9 +112,9 @@ export const ActivePools = (): JSX.Element => {
     reloadLimit()
   }, [protocol, reloadLimit, reloadPools, reloadMayaPools])
 
-  const pricePoolThor = usePricePool()
-  const pricePoolMaya = usePricePoolMaya()
-  const pricePool = protocol === THORChain ? pricePoolThor : pricePoolMaya
+  const pricePoolThor = usePricePool(isThorProtocol)
+  const pricePoolMaya = usePricePoolMaya(!isThorProtocol)
+  const pricePool = isThorProtocol ? pricePoolThor : pricePoolMaya
 
   const renderBtnPoolsColumn = useCallback(
     (asset: AnyAsset) => {

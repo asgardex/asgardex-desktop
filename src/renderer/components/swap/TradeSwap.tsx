@@ -15,6 +15,7 @@ import { MayachainQuery, QuoteSwap } from '@xchainjs/xchain-mayachain-query'
 import { QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
+  assetToString,
   baseToAsset,
   BaseAmount,
   baseAmount,
@@ -117,6 +118,7 @@ import { SwapSubmitSection } from './components/SwapSubmitSection'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
 import { SwapAsset } from './Swap.types'
 import * as Utils from './Swap.utils'
+import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 
 const ErrorLabel = ({ children, className }: { children: ReactNode; className?: string }): JSX.Element => (
   <div
@@ -295,8 +297,8 @@ export const TradeSwap = ({
   const prevTargetAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
-  const [currentDate, setCurrentDate] = useState(new Date())
   const [quoteExpired, setQuoteExpired] = useState<boolean>(false)
+  const quoteRequestRef = useRef(0)
 
   const sourceWalletAddress = useMemo(() => {
     return FP.pipe(
@@ -692,15 +694,18 @@ export const TradeSwap = ({
   )
 
   const debouncedEffect = useRef(
-    debounce((quoteSwapData) => {
+    debounce((quoteSwapData: QuoteSwapParams, requestId: number) => {
+      const isCurrent = () => quoteRequestRef.current === requestId
       // Include isStreaming as a parameter
       if (protocol === THORChain) {
         thorchainQuery
           .quoteSwap(quoteSwapData)
           .then((quote) => {
+            if (!isCurrent()) return
             setQuote(O.some(quote))
           })
           .catch((error) => {
+            if (!isCurrent()) return
             setQuote(O.none)
             logger.error('Failed to get quote:', error)
             setErrorProtocol(O.some(error as Error))
@@ -709,9 +714,11 @@ export const TradeSwap = ({
         mayachainQuery
           .quoteSwap(quoteSwapData)
           .then((quote) => {
+            if (!isCurrent()) return
             setQuoteMaya(O.some(quote))
           })
           .catch((error) => {
+            if (!isCurrent()) return
             setQuoteMaya(O.none)
             logger.error('Failed to get quote:', error)
             setErrorProtocol(O.some(error as Error))
@@ -720,10 +727,21 @@ export const TradeSwap = ({
     }, 500)
   )
 
+  const sourceAssetKey = assetToString(sourceAsset)
+  const targetAssetKey = assetToString(targetAsset)
   useEffect(() => {
     setQuote(O.none)
     setQuoteMaya(O.none)
+  }, [sourceAssetKey, targetAssetKey])
+
+  useEffect(() => {
+    const requestId = ++quoteRequestRef.current
     const currentDebouncedEffect = debouncedEffect.current
+    if (amountToSwapMax1e8.amount().isZero()) {
+      setQuote(O.none)
+      setQuoteMaya(O.none)
+      return () => currentDebouncedEffect.cancel()
+    }
     FP.pipe(
       sequenceTOption(oQuoteSwapData, oSourceAssetWB),
       O.fold(
@@ -741,14 +759,14 @@ export const TradeSwap = ({
           }
           const estimateSwap = estimateThorDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
-            currentDebouncedEffect(estimateSwap)
+            currentDebouncedEffect(estimateSwap, requestId)
           }
         },
         ([quoteSwapDataThor]) => {
           const quoteSwapData = quoteSwapDataThor
           if (!quoteSwapData.amount.baseAmount.eq(baseAmount(0)) && !disableSwapAction) {
             setErrorProtocol(O.none)
-            currentDebouncedEffect(quoteSwapData)
+            currentDebouncedEffect(quoteSwapData, requestId)
           }
         }
       )
@@ -1297,41 +1315,17 @@ export const TradeSwap = ({
     setQuoteMaya(O.none)
   }
 
-  // swap expiry progress bar
+  // Flip the submit lock once, when less than a minute remains. The bar ticks on its own.
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date())
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  // Track quote expiry separately to avoid setState inside useMemo
-  useEffect(() => {
-    const remainingTime = swapExpiry.getTime() - currentDate.getTime()
-    const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
-    setQuoteExpired(remainingTimeInMinutes < 1)
-  }, [swapExpiry, currentDate])
-
-  const renderSwapExpiry = useMemo(() => {
-    const quoteValidTime = 15 * 60 * 1000 // 15 minutes in milliseconds
-
-    const remainingTime = swapExpiry.getTime() - currentDate.getTime()
-    const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
-
-    const progress = Math.max(0, (remainingTime / quoteValidTime) * 100)
-    const expiryLabel =
-      remainingTimeInMinutes < 0 ? `Quote Expired` : `Quote expiring in ${remainingTimeInMinutes} minutes`
-
-    return (
-      <ProgressBar
-        key={'Quote expiry progress bar'}
-        percent={progress}
-        withLabel={true}
-        labels={[`${expiryLabel}`, ``]}
-      />
-    )
-  }, [swapExpiry, currentDate])
+    const delay = swapExpiry.getTime() - 60_000 - Date.now()
+    if (delay <= 0) {
+      setQuoteExpired(true)
+      return
+    }
+    setQuoteExpired(false)
+    const timer = window.setTimeout(() => setQuoteExpired(true), delay)
+    return () => window.clearTimeout(timer)
+  }, [swapExpiry])
 
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
@@ -2211,7 +2205,11 @@ export const TradeSwap = ({
               hidePrivateData={hidePrivateData}
             />
           )}
-          {!isLocked(keystore) && <div className="w-full">{renderSwapExpiry}</div>}
+          {!isLocked(keystore) && (
+            <div className="w-full">
+              <SwapExpiryProgressBar swapExpiry={swapExpiry} />
+            </div>
+          )}
         </div>
       </div>
       <div className="flex flex-col items-center justify-center">

@@ -1,13 +1,16 @@
+import { useMemo } from 'react'
+
 import * as RD from '@devexperts/remote-data-ts'
 
 import { baseAmount } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
-import { useObservableState } from 'observable-hooks'
+import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 import { CACAO_DECIMAL } from '../../shared/utils/chainIds'
 
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { Color, IncentivePendulum, IncentivePendulumRD } from './useIncentivePendulum'
+import { useObservableLayoutState } from './useObservableLayoutState'
 
 export const getIncentivePendulum = (totalPooledRune: string, totalActiveBond: string): IncentivePendulum => {
   const totalActiveBondAmount = baseAmount(totalActiveBond, CACAO_DECIMAL)
@@ -31,24 +34,24 @@ export const getIncentivePendulum = (totalPooledRune: string, totalActiveBond: s
   }
 }
 
-export const useIncentivePendulumMaya = (): { data: IncentivePendulumRD; reload: FP.Lazy<void> } => {
+export const useIncentivePendulumMaya = (enabled = true): { data: IncentivePendulumRD; reload: FP.Lazy<void> } => {
   const {
     service: { networkInfo$, reloadNetworkInfo }
   } = useMidgardMayaContext()
 
-  const [data] = useObservableState<IncentivePendulumRD>(
-    () =>
-      FP.pipe(
-        networkInfo$,
-        RxOp.map(
-          RD.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) =>
-            getIncentivePendulum(totalPooledRune, totalActiveBond)
-          )
-        ),
-        RxOp.shareReplay(1)
-      ),
-    RD.initial
-  )
+  const source$ = useMemo((): Rx.Observable<IncentivePendulumRD> => {
+    if (!enabled) return Rx.EMPTY
+    return FP.pipe(
+      networkInfo$,
+      RxOp.map(
+        RD.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) =>
+          getIncentivePendulum(totalPooledRune, totalActiveBond)
+        )
+      )
+    )
+  }, [enabled, networkInfo$])
+
+  const data = useObservableLayoutState(source$, RD.initial)
 
   return { data, reload: reloadNetworkInfo }
 }

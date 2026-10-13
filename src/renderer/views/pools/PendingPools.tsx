@@ -12,6 +12,8 @@ import clsx from 'clsx'
 import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import * as Rx from 'rxjs'
+
 import { THORChain } from '../../../shared/utils/chainIds'
 
 import { AssetsFilter } from '../../components/AssetsFilter'
@@ -31,6 +33,7 @@ import { getPoolTableRowsData as getPoolTableRowsDataMaya } from '../../helpers/
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
+import { useObservableLayoutState } from '../../hooks/useObservableLayoutState'
 import { usePoolCycle } from '../../hooks/usePoolCycle'
 import { usePoolCycleMaya } from '../../hooks/usePoolCycleMaya'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
@@ -39,10 +42,10 @@ import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import { DEFAULT_NETWORK } from '../../services/const'
-import { MayachainLastblockRD } from '../../services/mayachain/types'
+import { LastblockItems as MayaLastblockItems } from '../../services/mayachain/types'
 import { PendingPoolsState as PendingPoolsStateMaya } from '../../services/midgard/mayaMidgard/types'
 import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
-import { ThorchainLastblockRD } from '../../services/thorchain/types'
+import { LastblockItems as ThorLastblockItems } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
 import { FixmeType } from '../../types/asgardex'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
@@ -74,18 +77,21 @@ export const PendingPools = (): JSX.Element => {
   const { thorchainLastblockState$ } = useThorchainContext()
   const { mayachainLastblockState$ } = useMayachainContext()
 
+  const isThorProtocol = protocol === THORChain
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('pending')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
-  const poolsRD = useObservableState(protocol === THORChain ? pendingPoolsState$ : pendingPoolStateMaya$, RD.pending)
-  const thorchainLastblockRD: ThorchainLastblockRD = useObservableState(thorchainLastblockState$, RD.pending)
-  const mayachainLastblockRD: MayachainLastblockRD = useObservableState(mayachainLastblockState$, RD.pending)
+  const poolsRD = useObservableLayoutState(isThorProtocol ? pendingPoolsState$ : pendingPoolStateMaya$, RD.pending)
+  const lastblock$ = (isThorProtocol ? thorchainLastblockState$ : mayachainLastblockState$) as Rx.Observable<
+    RD.RemoteData<Error, ThorLastblockItems | MayaLastblockItems>
+  >
+  const lastblockRD = useObservableLayoutState(lastblock$, RD.pending)
 
   const { reload: reloadLimit, data: limitRD } = useProtocolLimit()
-  const { data: incentivePendulumThorRD } = useIncentivePendulum()
-  const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya()
+  const { data: incentivePendulumThorRD } = useIncentivePendulum(isThorProtocol)
+  const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya(!isThorProtocol)
 
-  const incentivePendulumRD = protocol === THORChain ? incentivePendulumThorRD : incentivePendulumMayaRD
+  const incentivePendulumRD = isThorProtocol ? incentivePendulumThorRD : incentivePendulumMayaRD
 
   const isDesktopView = useBreakpoint()?.lg ?? false
   const isXLargeView = useBreakpoint()?.xl ?? false
@@ -93,10 +99,10 @@ export const PendingPools = (): JSX.Element => {
   // store previous data of pending pools to render these while reloading
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
-  const { poolCycle: poolCycleThor, reloadPoolCycle } = usePoolCycle()
-  const { poolCycle: poolCycleMaya, reloadPoolCycle: reloadPoolCycleMaya } = usePoolCycleMaya()
+  const { poolCycle: poolCycleThor, reloadPoolCycle } = usePoolCycle(isThorProtocol)
+  const { poolCycle: poolCycleMaya, reloadPoolCycle: reloadPoolCycleMaya } = usePoolCycleMaya(!isThorProtocol)
 
-  const poolCycle = protocol === THORChain ? poolCycleThor : poolCycleMaya
+  const poolCycle = isThorProtocol ? poolCycleThor : poolCycleMaya
 
   const oNewPoolCycle = useMemo(() => FP.pipe(poolCycle, RD.toOption), [poolCycle])
 
@@ -112,9 +118,9 @@ export const PendingPools = (): JSX.Element => {
     reloadLimit()
   }, [protocol, reloadLimit, reloadPendingPools, reloadPendingPoolsMaya, reloadPoolCycle, reloadPoolCycleMaya])
 
-  const pricePoolThor = usePricePool()
-  const pricePoolMaya = usePricePoolMaya()
-  const pricePool = protocol === THORChain ? pricePoolThor : pricePoolMaya
+  const pricePoolThor = usePricePool(isThorProtocol)
+  const pricePoolMaya = usePricePoolMaya(!isThorProtocol)
+  const pricePool = isThorProtocol ? pricePoolThor : pricePoolMaya
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: PoolTableRowData) => {
@@ -138,25 +144,24 @@ export const PendingPools = (): JSX.Element => {
       const { deepest, asset } = record
 
       const blocksLeft: string = FP.pipe(
-        thorchainLastblockRD,
-        RD.map((lastblockItems) => getBlocksLeftForPendingPoolAsString(lastblockItems, asset, oNewPoolCycle)),
-        RD.getOrElse(() => '--')
-      )
-      const blocksLeftMaya: string = FP.pipe(
-        mayachainLastblockRD,
-        RD.map((lastblockItems) => getBlocksLeftForPendingPoolAsStringMaya(lastblockItems, asset, oNewPoolCycle)),
+        lastblockRD,
+        RD.map((lastblockItems) =>
+          isThorProtocol
+            ? getBlocksLeftForPendingPoolAsString(lastblockItems as ThorLastblockItems, asset, oNewPoolCycle)
+            : getBlocksLeftForPendingPoolAsStringMaya(lastblockItems as MayaLastblockItems, asset, oNewPoolCycle)
+        ),
         RD.getOrElse(() => '--')
       )
 
       return (
         <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
           <Label className="inline-block w-24 !text-16" align="right">
-            {deepest ? (protocol === THORChain ? blocksLeft : blocksLeftMaya) : '--'}
+            {deepest ? blocksLeft : '--'}
           </Label>
         </div>
       )
     },
-    [thorchainLastblockRD, mayachainLastblockRD, protocol, oNewPoolCycle]
+    [isThorProtocol, lastblockRD, oNewPoolCycle]
   )
 
   const columns: ColumnDef<PoolTableRowData, FixmeType>[] = useMemo(
