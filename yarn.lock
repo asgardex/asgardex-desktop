@@ -6075,9 +6075,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-aggregator@npm:3.2.2":
-  version: 3.2.2
-  resolution: "@xchainjs/xchain-aggregator@npm:3.2.2"
+"@xchainjs/xchain-aggregator@npm:3.2.3":
+  version: 3.2.3
+  resolution: "@xchainjs/xchain-aggregator@npm:3.2.3"
   dependencies:
     "@chainflip/sdk": "npm:2.2.1"
     "@xchainjs/xchain-client": "npm:2.0.18"
@@ -6087,11 +6087,11 @@ __metadata:
     "@xchainjs/xchain-mayamidgard-query": "npm:1.0.20"
     "@xchainjs/xchain-midgard-query": "npm:2.0.22"
     "@xchainjs/xchain-thorchain": "npm:3.1.2"
-    "@xchainjs/xchain-thorchain-amm": "npm:3.1.8"
+    "@xchainjs/xchain-thorchain-amm": "npm:3.1.9"
     "@xchainjs/xchain-thorchain-query": "npm:3.2.1"
     "@xchainjs/xchain-util": "npm:2.0.7"
     "@xchainjs/xchain-wallet": "npm:2.0.36"
-  checksum: 10/ffe704530288155e893ecdfec61a2ab7031f19b514265a6e35ef5ebc9f800c71006c1e6750f29dbdc9443f9504f2b1d966ca8d60bb139824efef6db9439fa047
+  checksum: 10/c8065072c71b625b5e23f823b5d4b13df4a62ab4d9790651c8bc9b1b96b67cececd0002b788a22074de5eff7280970caff5695bfdf254f00b84f63d56fb04766
   languageName: node
   linkType: hard
 
@@ -6586,9 +6586,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-thorchain-amm@npm:3.1.8":
-  version: 3.1.8
-  resolution: "@xchainjs/xchain-thorchain-amm@npm:3.1.8"
+"@xchainjs/xchain-thorchain-amm@npm:3.1.9":
+  version: 3.1.9
+  resolution: "@xchainjs/xchain-thorchain-amm@npm:3.1.9"
   dependencies:
     "@xchainjs/xchain-avax": "npm:2.0.24"
     "@xchainjs/xchain-base": "npm:1.0.24"
@@ -6606,12 +6606,12 @@ __metadata:
     "@xchainjs/xchain-sui": "npm:0.2.2"
     "@xchainjs/xchain-thorchain": "npm:3.1.2"
     "@xchainjs/xchain-thorchain-query": "npm:3.2.1"
-    "@xchainjs/xchain-tron": "npm:3.0.11"
+    "@xchainjs/xchain-tron": "npm:3.0.12"
     "@xchainjs/xchain-util": "npm:2.0.7"
     "@xchainjs/xchain-wallet": "npm:2.0.36"
     "@xchainjs/xchain-zcash": "npm:1.3.11"
     ethers: "npm:^6.17.0"
-  checksum: 10/8bcbb2fe323a7aef1ab5c24304bc39b5e36c64ca91fae2c18dfedaa6cefe4fcd9d6655045562bb48aa412f242dfc9d686845e26ed175aca2dd6afe046f5202d2
+  checksum: 10/7ec5d608b5b567996e2c07e4941065220328b7e1f37a992510e1e628052810c44a74462c37c835a3426808098aa17a3422530763d0bc6fc51b93fecfdb37776c
   languageName: node
   linkType: hard
 
@@ -6663,21 +6663,6 @@ __metadata:
   dependencies:
     axios: "npm:1.20.0"
   checksum: 10/ae73fbdfdc51a1ded5fafae4e3e112dbf8a0d90b4ed5ee41ff33db45bd991303066babfbf90a832134e22d5e90cab6a82bbb6f26218db2d7be7ab7fd4a01cc56
-  languageName: node
-  linkType: hard
-
-"@xchainjs/xchain-tron@npm:3.0.11":
-  version: 3.0.11
-  resolution: "@xchainjs/xchain-tron@npm:3.0.11"
-  dependencies:
-    "@ledgerhq/hw-app-trx": "npm:^6.31.8"
-    "@scure/bip32": "npm:^1.7.0"
-    "@scure/bip39": "npm:^1.6.0"
-    "@xchainjs/xchain-client": "npm:^2.0.18"
-    "@xchainjs/xchain-crypto": "npm:^1.0.8"
-    "@xchainjs/xchain-util": "npm:^2.0.7"
-    tronweb: "npm:^6.0.4"
-  checksum: 10/1d90f504cf1b374941003da45b473b170b0695bfa90166e1e28d9af43715c615d9783bdebd061831b32db82c504c77ac78f6f7865beb0d8fdc6cef035e847e04
   languageName: node
   linkType: hard
 
@@ -7286,7 +7271,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.4.1"
     "@vitest/ui": "npm:^4.1.9"
     "@vultisig/sdk": "npm:6.1.0"
-    "@xchainjs/xchain-aggregator": "npm:3.2.2"
+    "@xchainjs/xchain-aggregator": "npm:3.2.3"
     "@xchainjs/xchain-arbitrum": "npm:2.1.10"
     "@xchainjs/xchain-avax": "npm:2.0.24"
     "@xchainjs/xchain-base": "npm:1.0.24"
