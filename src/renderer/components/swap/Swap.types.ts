@@ -4,7 +4,7 @@ import { Address, AnyAsset, Asset, CryptoAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 
-import { WalletType } from '../../../shared/wallet/types'
+import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { SwapFeesHandler, ReloadSwapFeesHandler, SwapHandler, SwapCFHandler } from '../../services/chain/types'
@@ -45,6 +45,10 @@ export type SwapProps = {
   sourceKeystoreAddress: O.Option<Address>
   sourceLedgerAddress: O.Option<Address>
   sourceWalletType: WalletType
+  /** `p2tr` spends the BTC Taproot wallet. Absent means Native SegWit or a non-BTC source. */
+  sourceHdMode?: HDMode
+  /** `p2tr` pays the BTC Taproot wallet. Absent means Native SegWit or a non-BTC target. */
+  targetHdMode?: HDMode
   targetWalletType: O.Option<WalletType>
   poolAddressMaya: O.Option<PoolAddress>
   poolAddressThor: O.Option<PoolAddress>
@@ -77,6 +81,8 @@ export type SwapProps = {
     sourceWalletType: WalletType
     targetWalletType: O.Option<WalletType>
     recipientAddress: O.Option<Address>
+    sourceHdMode?: HDMode
+    targetHdMode?: HDMode
   }) => void
   network: Network
   slipTolerance: SlipTolerance

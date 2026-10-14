@@ -53,6 +53,10 @@ export type Props = {
   className?: string
   classNameInput?: string
   onChangePercent?: (percents: number) => void
+  /** Inline ticker label, such as "BTC · Taproot". Menu rows stay unlabeled. */
+  assetBadge?: string
+  /** Shown on the right of the title row when Half and Max are hidden. */
+  headerExtra?: React.ReactNode
 }
 
 /**
@@ -97,7 +101,9 @@ export const AssetInput = (props: Props): JSX.Element => {
     useLedgerHandler,
     protocol,
     className = '',
-    classNameInput = ''
+    classNameInput = '',
+    assetBadge,
+    headerExtra
   } = props
 
   const inputWrapperRef = useRef<FixmeType>()
@@ -149,7 +155,8 @@ export const AssetInput = (props: Props): JSX.Element => {
             ))}
           </div>
         )}
-        {!hasAmountShortcut && protocol && (
+        {!hasAmountShortcut && headerExtra}
+        {!hasAmountShortcut && !headerExtra && protocol && (
           <div className="flex items-center space-x-1">
             <ProviderIcon protocol={protocol} />
             <Label textTransform="uppercase" color="gray" size="small">
@@ -191,9 +198,9 @@ export const AssetInput = (props: Props): JSX.Element => {
           )}
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col items-end">
           <AssetSelect
-            className={clsx('h-full', ASSET_SELECT_BUTTON_WIDTH)}
+            className="h-full w-max"
             onSelect={onChangeAsset}
             asset={asset}
             assets={assets}
@@ -201,6 +208,7 @@ export const AssetInput = (props: Props): JSX.Element => {
             dialogHeadline={intl.formatMessage({ id: 'common.asset.chooseAsset' })}
             shadowless
             disabled={disabled}
+            badge={assetBadge}
           />
           {walletBalance ? (
             <div className="flex items-center justify-end space-x-1 pr-4">

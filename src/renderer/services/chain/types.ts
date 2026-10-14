@@ -200,6 +200,8 @@ export type SwapFeesParams = {
   readonly inAsset: AnyAsset
   readonly memo: string
   readonly outAsset: AnyAsset
+  /** Spender address. BTC fee estimation scans this address's UTXOs. */
+  readonly sender?: string
 }
 
 export type SwapFeesHandler = (p: SwapFeesParams) => SwapFeesLD

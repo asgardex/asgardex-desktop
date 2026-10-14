@@ -6,6 +6,7 @@ import { assetFromString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
+import { assetChainTicker } from '../../../helpers/assetHelper'
 import { truncateMiddle } from '../../../helpers/stringHelper'
 import { formatSwapTime } from '../../../helpers/timeHelper'
 import { ChainflipTrackedTransaction } from '../../../services/chainflip/transactionTracking'
@@ -36,7 +37,7 @@ export const ChainflipTransactionItem = ({
 
     if (!asset) return transaction.fromAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.ticker}`
+    return assetChainTicker(asset)
   }, [transaction.fromAsset, isMini])
 
   const toAsset = useMemo(() => {
@@ -44,7 +45,7 @@ export const ChainflipTransactionItem = ({
 
     if (!asset) return transaction.toAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.ticker}`
+    return assetChainTicker(asset)
   }, [transaction.toAsset, isMini])
 
   // Detect when transaction becomes complete for animation

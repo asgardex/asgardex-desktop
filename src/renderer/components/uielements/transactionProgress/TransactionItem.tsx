@@ -6,6 +6,7 @@ import { assetFromString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
+import { assetChainTicker } from '../../../helpers/assetHelper'
 import { formatSwapTime } from '../../../helpers/timeHelper'
 import { TrackedTransaction } from '../../../services/thorchain/transactionTracking'
 import { CopyLabel, Label } from '../label'
@@ -29,7 +30,7 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
 
     if (!asset) return transaction.fromAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.ticker}`
+    return assetChainTicker(asset)
   }, [transaction.fromAsset, isMini])
 
   const toAsset = useMemo(() => {
@@ -37,7 +38,7 @@ export const TransactionItem = ({ className, isMini, protocol, transaction, onRe
 
     if (!asset) return transaction.toAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.ticker}`
+    return assetChainTicker(asset)
   }, [transaction.toAsset, isMini])
 
   // Detect when transaction becomes complete for animation

@@ -9,7 +9,7 @@ import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
-import { isUSDAsset } from '../../../helpers/assetHelper'
+import { distinctChainId, isUSDAsset } from '../../../helpers/assetHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
 
 export type TradeMode = 'buy' | 'sell'
@@ -144,6 +144,7 @@ export const TradingPanelBar = ({
               <ListboxOptions className="absolute right-0 bottom-full z-50 mb-1 max-h-[240px] w-[220px] overflow-y-auto rounded-lg border border-white/10 bg-[#1e222d] shadow-xl focus:outline-hidden">
                 {availableAssets.map((asset) => {
                   const isSelected = eqAsset.equals(asset, selectedTarget)
+                  const chainId = distinctChainId(asset)
                   return (
                     <ListboxOption
                       key={assetToString(asset)}
@@ -162,7 +163,7 @@ export const TradingPanelBar = ({
                         className="pointer-events-none !h-5 !w-5"
                       />
                       <span className="text-12 font-main text-white">{asset.ticker}</span>
-                      <span className="font-main text-11 text-gray-500">{asset.chain}</span>
+                      {chainId && <span className="font-main text-11 text-gray-500">{chainId}</span>}
                       {isUSDAsset(asset) && (
                         <span className="ml-auto rounded bg-turquoise/20 px-1.5 py-0.5 font-main text-[9px] font-semibold text-turquoise">
                           USD

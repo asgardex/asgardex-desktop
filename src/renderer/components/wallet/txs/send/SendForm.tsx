@@ -213,6 +213,8 @@ export const SendForm = (props: Props): JSX.Element => {
   const {
     handleSubmit,
     setValue,
+    getValues,
+    trigger,
     watch,
     control,
     formState: { errors }
@@ -376,7 +378,7 @@ export const SendForm = (props: Props): JSX.Element => {
     const netAmount = baseAmount(Math.max(netSats, 0), balance.amount.decimal)
 
     setAmountToSend(netAmount)
-    setValue('amount', baseToAsset(netAmount).amount())
+    setValue('amount', baseToAsset(netAmount).amount(), { shouldValidate: true })
     setIsSendMax(true)
   }, [coinControlState, isUTXOChain, selectedFee, balance.amount.decimal, setValue])
 
@@ -475,6 +477,11 @@ export const SendForm = (props: Props): JSX.Element => {
     sourceChainAsset,
     effectiveChain
   ])
+
+  // react-hook-form keeps the first `validate` callback. Read the latest max through a ref
+  // so a fee that arrives after mount is the cap that actually gets checked.
+  const amountCheckRef = useRef({ maxAmount, isEVMChain })
+  amountCheckRef.current = { maxAmount, isEVMChain }
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
@@ -717,23 +724,34 @@ export const SendForm = (props: Props): JSX.Element => {
 
   const amountValidator = useCallback(
     async (value: BigNumber) => {
+      const { maxAmount: currentMax, isEVMChain: evm } = amountCheckRef.current
       const errors = {
         msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
         msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
-        msg3: isEVMChain
+        msg3: evm
           ? intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalanceAndFee' })
           : intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
       }
 
       try {
-        await validateTxAmountInput({ input: value, maxAmount: baseToAsset(maxAmount), errors })
+        const input = BigNumber.isBigNumber(value) ? value : bn(value)
+        await validateTxAmountInput({ input, maxAmount: baseToAsset(currentMax), errors })
         return true
       } catch (error) {
-        return error as string
+        return typeof error === 'string' ? error : errors.msg1
       }
     },
-    [intl, maxAmount, isEVMChain]
+    [intl]
   )
+
+  // Fee quotes arrive after the amount can already be set. Recheck a positive amount
+  // so a stale "greater than 0" or balance error does not stay on screen.
+  useEffect(() => {
+    const current = getValues('amount')
+    if (BigNumber.isBigNumber(current) && current.isGreaterThan(0)) {
+      void trigger('amount')
+    }
+  }, [maxAmount, getValues, trigger])
 
   const handleMemo = useCallback(
     (e?: React.ChangeEvent<HTMLInputElement>) => {
@@ -822,7 +840,7 @@ export const SendForm = (props: Props): JSX.Element => {
       })
     }
     if (isMaxSweepChain) setIsSendMax(true)
-    setValue('amount', baseToAsset(maxAmount).amount())
+    setValue('amount', baseToAsset(maxAmount).amount(), { shouldValidate: true })
   }, [isEVMChain, isMaxSweepChain, maxAmount, setValue])
 
   const feeOptionsLabel: Record<FeeOption, string> = useMemo(
@@ -937,7 +955,7 @@ export const SendForm = (props: Props): JSX.Element => {
           return prev
         })
       }
-      setValue('amount', baseToAsset(newAmount).amount())
+      setValue('amount', baseToAsset(newAmount).amount(), { shouldValidate: true })
     }
 
     return (

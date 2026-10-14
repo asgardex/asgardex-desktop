@@ -5,7 +5,12 @@ import { describe, expect, it } from 'vitest'
 
 import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../services/mayachain/const'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
-import { filterQuotableProtocols, isProtocolTradingHaltedForAssets } from './protocolTradingHalt'
+import {
+  dropMayachainForBtcTaproot,
+  filterQuotableProtocols,
+  isBtcTaprootAddress,
+  isProtocolTradingHaltedForAssets
+} from './protocolTradingHalt'
 
 const ethUsdc = assetFromStringEx('ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48')
 const solNative = assetFromStringEx('SOL.SOL')
@@ -99,5 +104,36 @@ describe('protocolTradingHalt', () => {
 
     expect(isProtocolTradingHaltedForAssets('Mayachain', ethMaya, ethMaya, haltState)).toBe(true)
     expect(isProtocolTradingHaltedForAssets('Thorchain', ethMaya, ethMaya, haltState)).toBe(false)
+  })
+})
+
+describe('dropMayachainForBtcTaproot', () => {
+  const protocols = ['Thorchain', 'Mayachain', 'Chainflip', 'OneClick'] as const
+  const segwit = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'
+  const taproot = 'bc1p5cyxnuxmeuwuvkwfem96llyr29s8l68p7z6zgt7zdkv3g7zv3qvqz6z8h7'
+
+  it('keeps every protocol for native segwit', () => {
+    expect(isBtcTaprootAddress(segwit)).toBe(false)
+    expect(isBtcTaprootAddress('')).toBe(false)
+    expect(isBtcTaprootAddress(undefined)).toBe(false)
+    expect(dropMayachainForBtcTaproot([...protocols], segwit, '0xabc')).toEqual([...protocols])
+  })
+
+  it('drops Mayachain when the sender is taproot', () => {
+    expect(dropMayachainForBtcTaproot([...protocols], taproot, '0xabc')).toEqual(['Thorchain', 'Chainflip', 'OneClick'])
+  })
+
+  it('drops Mayachain when the recipient is taproot, including testnet and upper case', () => {
+    expect(isBtcTaprootAddress('  TB1Pqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq  ')).toBe(true)
+    expect(dropMayachainForBtcTaproot([...protocols], '0xabc', 'tb1pqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq')).toEqual(
+      ['Thorchain', 'Chainflip', 'OneClick']
+    )
+  })
+
+  it('drops Mayachain for a regtest taproot sender', () => {
+    expect(isBtcTaprootAddress('bcrt1pqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq')).toBe(true)
+    expect(
+      dropMayachainForBtcTaproot([...protocols], 'bcrt1pqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq', '')
+    ).toEqual(['Thorchain', 'Chainflip', 'OneClick'])
   })
 })

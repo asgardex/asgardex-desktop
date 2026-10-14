@@ -31,6 +31,7 @@ import {
 import { sequenceTOption } from '../helpers/fpHelpers'
 import { createScopedLogger } from '../helpers/logger'
 import { applyStreamingToMemo, updateMemo } from '../helpers/memoHelper'
+import { isBtcTaprootAddress } from '../helpers/protocolTradingHalt'
 import { INITIAL_SWAP_STATE } from '../services/chain/const'
 import {
   SwapTxParams,
@@ -148,7 +149,7 @@ export const useSwapExecution = ({
 
     return FP.pipe(
       sequenceTOption(oPoolAddress, sourceWalletBalance, selectedQuote),
-      O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+      O.chain(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
         let amountToSwapAdjusted = amountToSwap
 
         if (isRuneNativeAsset(sourceAsset)) {
@@ -187,7 +188,13 @@ export const useSwapExecution = ({
             ? standaloneLedgerState.address.hdMode
             : hdMode
 
-        return {
+        // MAYAChain loses funds sent to or from a BTC Taproot address.
+        const destinationIsTaproot = O.isSome(destinationAddress) && isBtcTaprootAddress(destinationAddress.value)
+        if (quoteSwap.protocol === 'Mayachain' && (isBtcTaprootAddress(finalWalletAddress) || destinationIsTaproot)) {
+          return O.none
+        }
+
+        return O.some({
           poolAddress,
           asset: sourceAsset,
           amount: amountToSwapAdjusted,
@@ -199,7 +206,7 @@ export const useSwapExecution = ({
           hdMode: finalHDMode,
           protocol: poolAddress.protocol,
           sendMax: isSourceMaxSweep ? isSendMax : undefined
-        }
+        })
       })
     )
   }, [
@@ -217,7 +224,8 @@ export const useSwapExecution = ({
     isSourceMaxSweep,
     isSendMax,
     streamingInterval,
-    streamingQuantity
+    streamingQuantity,
+    destinationAddress
   ])
 
   // Build SendTxParams for the "vanilla transfer to a recipient" protocols (Chainflip, OneClick).

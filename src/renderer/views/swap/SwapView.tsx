@@ -19,7 +19,7 @@ import { function as FP, array as A, eq as Eq, option as O } from 'fp-ts'
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -27,8 +27,8 @@ import { mayaDetails } from '../../../shared/api/types'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
 import { THORChain, MAYAChain, BTCChain } from '../../../shared/utils/chainIds'
-import { isLedgerWallet, isWalletType } from '../../../shared/utils/guard'
-import { WalletType } from '../../../shared/wallet/types'
+import { isLedgerWallet, isVultisigWallet, isWalletType } from '../../../shared/utils/guard'
+import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { ErrorView } from '../../components/shared/error/'
 import { Swap, TradeSwap } from '../../components/swap'
 import { SLIP_TOLERANCE_KEY } from '../../components/swap/SelectableSlipTolerance'
@@ -60,9 +60,16 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
-import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/swap'
+import {
+  SWAP_SOURCE_HD_MODE_PARAM,
+  SWAP_TARGET_HD_MODE_PARAM,
+  sourceHdModeFromQuery,
+  SwapRouteParams,
+  SwapRouteTargetWalletType
+} from '../../routes/pools/swap'
 import * as walletRoutes from '../../routes/wallet'
 import { getDecimalSync } from '../../services/chain/decimal'
+import { addressTR$ } from '../../services/chain/lazyBitcoin'
 import { AssetWithDecimalRD } from '../../services/chain/types'
 import { cAssetToXAsset, cChainToXChain } from '../../services/chainflip/utils'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
@@ -129,6 +136,10 @@ type Props = {
   sourceAsset: AnyAsset
   targetAsset: AnyAsset
   sourceWalletType: WalletType
+  /** `p2tr` selects the BTC Taproot wallet you spend from. Absent means Native SegWit. */
+  sourceHdMode?: HDMode
+  /** `p2tr` selects the BTC Taproot wallet you receive to. Absent means Native SegWit. */
+  targetHdMode?: HDMode
   targetWalletType: O.Option<WalletType>
   recipientAddress: O.Option<Address>
 }
@@ -137,6 +148,8 @@ const SuccessRouteView = ({
   sourceAsset,
   targetAsset,
   sourceWalletType,
+  sourceHdMode,
+  targetHdMode,
   targetWalletType: oTargetWalletType,
   recipientAddress: oRecipientAddress
 }: Props): JSX.Element => {
@@ -322,23 +335,39 @@ const SuccessRouteView = ({
     reloadMayaPools()
   }, [reloadMayaPools, reloadThorPools])
 
-  const [oSourceKeystoreAddress, updateSourceKeystoreAddress$] = useObservableState<O.Option<Address>, Chain>(
+  const taprootSource = sourceHdMode === 'p2tr' && sourceChain === BTCChain
+  const taprootTarget =
+    targetHdMode === 'p2tr' &&
+    targetChain === BTCChain &&
+    !FP.pipe(
+      oTargetWalletType,
+      O.map(isVultisigWallet),
+      O.getOrElse(() => false)
+    )
+
+  const [oSourceKeystoreAddress, updateSourceKeystoreAddress$] = useObservableState<
+    O.Option<Address>,
+    { chain: Chain; taproot: boolean }
+  >(
     (sourceChain$) =>
-      FP.pipe(
-        sourceChain$,
-        RxOp.distinctUntilChanged(eqChain.equals),
-        RxOp.switchMap(addressByChain$),
+      sourceChain$.pipe(
+        RxOp.distinctUntilChanged((prev, next) => prev.chain === next.chain && prev.taproot === next.taproot),
+        // The chain alone always resolves Native SegWit. Taproot is a second keystore address.
+        RxOp.switchMap(({ chain, taproot }) => (taproot ? addressTR$ : addressByChain$(chain))),
         RxOp.map(addressFromOptionalWalletAddress)
       ),
     O.none
   )
 
-  const [oTargetKeystoreAddress, updateTargetKeystoreAddress$] = useObservableState<O.Option<Address>, Chain>(
+  const [oTargetKeystoreAddress, updateTargetKeystoreAddress$] = useObservableState<
+    O.Option<Address>,
+    { chain: Chain; taproot: boolean }
+  >(
     (targetChain$) =>
-      FP.pipe(
-        targetChain$,
-        RxOp.distinctUntilChanged(eqChain.equals),
-        RxOp.switchMap(addressByChain$),
+      targetChain$.pipe(
+        RxOp.distinctUntilChanged((prev, next) => prev.chain === next.chain && prev.taproot === next.taproot),
+        // The chain alone always resolves Native SegWit. Taproot is a second keystore address.
+        RxOp.switchMap(({ chain, taproot }) => (taproot ? addressTR$ : addressByChain$(chain))),
         RxOp.map(addressFromOptionalWalletAddress)
       ),
     O.none
@@ -397,13 +426,17 @@ const SuccessRouteView = ({
     ({
       source,
       sourceWalletType,
+      sourceHdMode: nextSourceHdMode,
       target,
+      targetHdMode: nextTargetHdMode,
       targetWalletType: oTargetWalletType,
       recipientAddress: oRecipientAddress
     }: {
       source: AnyAsset
       target: AnyAsset
       sourceWalletType: WalletType
+      sourceHdMode?: HDMode
+      targetHdMode?: HDMode
       targetWalletType: O.Option<WalletType>
       recipientAddress: O.Option<Address>
     }) => {
@@ -418,7 +451,9 @@ const SuccessRouteView = ({
         sourceWalletType,
         target: assetToString(target),
         targetWalletType,
-        recipient
+        recipient,
+        sourceHdMode: nextSourceHdMode,
+        targetHdMode: nextTargetHdMode
       })
       navigate(path, { replace: true })
     },
@@ -429,25 +464,33 @@ const SuccessRouteView = ({
     navigate(walletRoutes.base.path(location.pathname))
   }, [location.pathname, navigate])
 
-  const [oTargetLedgerAddress, updateTargetLedgerAddress$] = useObservableState<O.Option<Address>, UpdateLedgerAddress>(
+  const [oTargetLedgerAddress, updateTargetLedgerAddress$] = useObservableState<
+    O.Option<Address>,
+    UpdateLedgerAddress & { hdMode?: HDMode }
+  >(
     (targetLedgerAddressChain$) =>
       FP.pipe(
         targetLedgerAddressChain$,
-        RxOp.distinctUntilChanged(eqUpdateLedgerAddress.equals),
-        RxOp.switchMap(({ chain }) => getLedgerAddress$(chain)),
+        RxOp.distinctUntilChanged(
+          (prev, next) => eqUpdateLedgerAddress.equals(prev, next) && prev.hdMode === next.hdMode
+        ),
+        RxOp.switchMap(({ chain, hdMode }) => getLedgerAddress$(chain, hdMode)),
         RxOp.map(O.map(ledgerAddressToWalletAddress)),
         RxOp.map(addressFromOptionalWalletAddress)
       ),
     O.none
   )
-  const [oSourceLedgerAddress, updateSourceLedgerAddress$] = useObservableState<O.Option<Address>, UpdateLedgerAddress>(
+  const [oSourceLedgerAddress, updateSourceLedgerAddress$] = useObservableState<
+    O.Option<Address>,
+    UpdateLedgerAddress & { hdMode?: HDMode }
+  >(
     (sourceLedgerAddressChain$) =>
       FP.pipe(
         sourceLedgerAddressChain$,
-        RxOp.distinctUntilChanged(eqUpdateLedgerAddress.equals),
-        RxOp.switchMap(({ chain }) => {
-          return getLedgerAddress$(chain)
-        }),
+        RxOp.distinctUntilChanged(
+          (prev, next) => eqUpdateLedgerAddress.equals(prev, next) && prev.hdMode === next.hdMode
+        ),
+        RxOp.switchMap(({ chain, hdMode }) => getLedgerAddress$(chain, hdMode)),
         RxOp.map(O.map(ledgerAddressToWalletAddress)),
         RxOp.map(addressFromOptionalWalletAddress)
       ),
@@ -455,13 +498,15 @@ const SuccessRouteView = ({
   )
 
   useEffect(() => {
-    updateTargetKeystoreAddress$(targetChain)
-    updateSourceKeystoreAddress$(sourceChain)
-    updateSourceLedgerAddress$({ chain: sourceChain, network })
-    updateTargetLedgerAddress$({ chain: targetChain, network })
+    updateTargetKeystoreAddress$({ chain: targetChain, taproot: taprootTarget })
+    updateSourceKeystoreAddress$({ chain: sourceChain, taproot: taprootSource })
+    updateSourceLedgerAddress$({ chain: sourceChain, network, hdMode: taprootSource ? 'p2tr' : undefined })
+    updateTargetLedgerAddress$({ chain: targetChain, network, hdMode: taprootTarget ? 'p2tr' : undefined })
   }, [
     network,
     sourceChain,
+    taprootSource,
+    taprootTarget,
     targetChain,
     updateSourceKeystoreAddress$,
     updateSourceLedgerAddress$,
@@ -650,6 +695,8 @@ const SuccessRouteView = ({
                     sourceKeystoreAddress={oSourceKeystoreAddress}
                     sourceLedgerAddress={oSourceLedgerAddress}
                     sourceWalletType={sourceWalletType}
+                    sourceHdMode={taprootSource ? 'p2tr' : undefined}
+                    targetHdMode={taprootTarget ? 'p2tr' : undefined}
                     targetWalletType={oTargetWalletType}
                     poolAddressMaya={selectedPoolAddressMaya}
                     poolAddressThor={selectedPoolAddressThor}
@@ -745,6 +792,8 @@ const SuccessRouteView = ({
                     sourceKeystoreAddress={oSourceKeystoreAddress}
                     sourceLedgerAddress={oSourceLedgerAddress}
                     sourceWalletType={sourceWalletType}
+                    sourceHdMode={taprootSource ? 'p2tr' : undefined}
+                    targetHdMode={taprootTarget ? 'p2tr' : undefined}
                     targetWalletType={oTargetWalletType}
                     poolAddressMaya={selectedPoolAddressMaya}
                     poolAddressThor={selectedPoolAddressThor}
@@ -1436,6 +1485,9 @@ export const SwapView = (): JSX.Element => {
     targetWalletType: routeTargetWalletType,
     recipient
   } = useParams<SwapRouteParams>()
+  const [searchParams] = useSearchParams()
+  const sourceHdModeQuery = searchParams.get(SWAP_SOURCE_HD_MODE_PARAM)
+  const targetHdModeQuery = searchParams.get(SWAP_TARGET_HD_MODE_PARAM)
   const sourceAssetString = source && source.match('_synth_') ? source.replace('_synth_', '/') : source
   const targetAssetString = target && target.match('_synth_') ? target.replace('_synth_', '/') : target
 
@@ -1473,6 +1525,8 @@ export const SwapView = (): JSX.Element => {
             sourceAsset={sourceAsset}
             targetAsset={targetAsset}
             sourceWalletType={sourceWalletType}
+            sourceHdMode={sourceHdModeFromQuery(sourceAsset.chain, sourceHdModeQuery)}
+            targetHdMode={sourceHdModeFromQuery(targetAsset.chain, targetHdModeQuery)}
             targetWalletType={oTargetWalletType}
             recipientAddress={oRecipientAddress}
           />
