@@ -99,38 +99,15 @@ export default defineConfig(async ({ mode }) => {
           'buffer',
           'assert',
           '@xchainjs/zcash-js',
-          // Imported only by the excluded packages below. Pre-bundle them up front so the
-          // first lazy aggregator load does not trigger a dep re-optimize and page reload.
-          '@xchainjs/xchain-thorchain-amm',
-          '@xchainjs/xchain-midgard-query',
-          '@xchainjs/xchain-mayamidgard-query',
-          '@xchainjs/xchain-kujira'
+          // The swap screen loads the aggregator lazily. Pre-bundle it so the first
+          // quote does not re-optimize deps and reload the page.
+          '@xchainjs/xchain-aggregator'
         ],
-        // esbuild pre-bundles nested imports without this file's resolveId stub.
-        exclude: ['@xchainjs/xchain-aggregator', '@xchainjs/xchain-mayachain-amm'],
         esbuildOptions: {
           inject: ['./src/shims/buffer-shim.js']
         }
       },
-      plugins: [
-        // Maya AMM imports @xchainjs/xchain-radix at module scope, which pulls the
-        // Radix Engine Toolkit wasm into the lazy aggregator chunk. Maya delisted
-        // XRD, so that import is a stand-in. services/radix keeps the real package.
-        {
-          name: 'stub-mayachain-amm-radix',
-          enforce: 'pre',
-          resolveId(source, importer) {
-            if (source !== '@xchainjs/xchain-radix' || !importer) return null
-            const id = importer.split('?')[0].replace(/\\/g, '/')
-            if (!id.includes('/@xchainjs/xchain-mayachain-amm/')) return null
-            return path.resolve(__dirname, 'src/shared/radixAmmStub.ts')
-          }
-        },
-        wasm(),
-        react(),
-        svgr(),
-        typescript({ outDir: 'build/renderer' })
-      ],
+      plugins: [wasm(), react(), svgr(), typescript({ outDir: 'build/renderer' })],
       define: {
         'process.env': {}, // TODO: Fix from xchain
         global: 'globalThis',
