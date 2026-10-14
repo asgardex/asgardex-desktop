@@ -19,6 +19,7 @@ import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
 import { useVolume24PriceMaya } from '../../hooks/useVolume24HrPriceMaya'
 import { useVolume24Price } from '../../hooks/useVolume24Price'
 import { SelectedPricePoolAsset } from '../../services/midgard/midgardTypes'
+import { isStandaloneLedgerMode } from '../../services/wallet/types'
 import { HeaderComponent } from './HeaderComponent'
 
 export const Header = (): JSX.Element => {
@@ -34,6 +35,8 @@ export const Header = (): JSX.Element => {
   // Phase D: Subscribe to unified wallet observables
   const allWallets = useObservableState(appWalletService.allWallets$, [])
   const activeWallet = useObservableState(appWalletService.activeWallet$, O.none)
+  const appWalletState = useObservableState(appWalletService.appWalletState$, O.none)
+  const ledgerMode = isStandaloneLedgerMode(appWalletState)
 
   const { mimir$ } = useThorchainContext()
   const mimir = useObservableState(mimir$, RD.initial)
@@ -79,6 +82,7 @@ export const Header = (): JSX.Element => {
       // Phase D: Unified wallet props
       allWallets={allWallets}
       activeWallet={activeWallet}
+      ledgerMode={ledgerMode}
       selectWallet={appWalletService.selectWallet}
       pricePools={pricePools}
       setSelectedPricePool={setSelectedPricePool}
