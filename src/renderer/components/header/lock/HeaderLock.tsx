@@ -99,7 +99,12 @@ export const HeaderLock = (props: Props): JSX.Element => {
           </div>
         )}
         {selectedWallet ? (
-          <Listbox value={selectedWallet} onChange={handleWalletChange}>
+          <Listbox
+            by={(a, b) => !!a && !!b && a.type === b.type && a.id === b.id}
+            onChange={(wallet) => {
+              if (wallet) handleWalletChange(wallet)
+            }}
+            value={ledgerMode ? null : selectedWallet}>
             <div className="relative">
               <ListboxButton
                 as="div"
@@ -134,16 +139,14 @@ export const HeaderLock = (props: Props): JSX.Element => {
                     return (
                       <ListboxOption
                         disabled={selected}
-                        className={({ selected }) =>
-                          clsx(
-                            'flex items-center justify-between select-none',
-                            'px-20px py-10px',
-                            'font-main text-14 text-text1 dark:text-text1d',
-                            selected
-                              ? 'cursor-disabled text-gray2 dark:text-gray2d'
-                              : 'cursor-pointer hover:bg-gray0 hover:text-gray2 dark:hover:bg-gray0d dark:hover:text-gray2d'
-                          )
-                        }
+                        className={clsx(
+                          'flex items-center justify-between select-none',
+                          'px-20px py-10px',
+                          'font-main text-14 text-text1 dark:text-text1d',
+                          selected
+                            ? 'cursor-disabled text-gray2 dark:text-gray2d'
+                            : 'cursor-pointer hover:bg-gray0 hover:text-gray2 dark:hover:bg-gray0d dark:hover:text-gray2d'
+                        )}
                         key={`${wallet.type}-${wallet.id}`}
                         value={wallet}>
                         <span className="flex items-center">
