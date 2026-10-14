@@ -17,6 +17,7 @@ import { KeystoreState, Wallet } from '../../../services/wallet/types'
 import { LockIcon, UnlockIcon } from '../../icons'
 import { BaseButton } from '../../uielements/button'
 import { Tooltip } from '../../uielements/tooltip'
+import { VultisigMark } from './VultisigMark'
 
 // Phase D → 4F: Props simplified to use unified wallet API from appWalletService
 export type Props = {
@@ -26,6 +27,8 @@ export type Props = {
   // Phase D → 4F: Unified wallet props
   allWallets: Wallet[]
   activeWallet: O.Option<Wallet>
+  /** Standalone Ledger mode. Label is Ledger and the keystore lock is hidden. */
+  ledgerMode: boolean
   selectWallet: (wallet: Wallet) => Promise<void>
 }
 
@@ -37,6 +40,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
     // Phase D: Unified wallet props from appWalletService
     allWallets,
     activeWallet: oSelectedWallet,
+    ledgerMode,
     selectWallet
   } = props
 
@@ -68,101 +72,100 @@ export const HeaderLock = (props: Props): JSX.Element => {
     [selectWallet]
   )
 
-  const renderWallets = useMemo(
-    () =>
-      FP.pipe(
-        oSelectedWallet,
-        O.fold(
-          () => <></>,
-          (selectedWallet) => (
-            <div className="ease z-10 flex h-[25px] items-center rounded-full bg-bg0 drop-shadow dark:bg-gray0d">
-              <div
-                className="ease rounded-full border-4 border-bg0 bg-bg0 dark:border-gray0d dark:bg-gray0d"
-                onClick={() => onPress()}>
-                {isLocked ? (
-                  <LockIcon className="h-[28px] w-[28px] cursor-pointer" />
-                ) : (
-                  <UnlockIcon className="h-[28px] w-[28px] cursor-pointer" />
+  const renderWallets = useMemo(() => {
+    if (O.isNone(oSelectedWallet) && !ledgerMode) return <></>
+
+    const selectedWallet = O.toUndefined(oSelectedWallet)
+    const label = ledgerMode
+      ? intl.formatMessage({ id: 'common.ledger' })
+      : selectedWallet
+        ? truncateMiddle(selectedWallet.name, { start: 3, end: 3, max: 6 })
+        : ''
+    const vultisigSelected = !ledgerMode && selectedWallet?.type === WalletType.Vultisig
+
+    return (
+      <div className="ease z-10 flex h-[25px] items-center rounded-full bg-bg0 drop-shadow dark:bg-gray0d">
+        {!ledgerMode && (
+          <div
+            className="ease rounded-full border-4 border-bg0 bg-bg0 dark:border-gray0d dark:bg-gray0d"
+            onClick={() => onPress()}>
+            {vultisigSelected ? (
+              <VultisigMark className="h-[28px] w-[28px] cursor-pointer" />
+            ) : isLocked ? (
+              <LockIcon className="h-[28px] w-[28px] cursor-pointer" />
+            ) : (
+              <UnlockIcon className="h-[28px] w-[28px] cursor-pointer" />
+            )}
+          </div>
+        )}
+        {selectedWallet ? (
+          <Listbox value={selectedWallet} onChange={handleWalletChange}>
+            <div className="relative">
+              <ListboxButton
+                as="div"
+                className={clsx(
+                  'group flex cursor-pointer items-center',
+                  'font-main text-14 text-text1 dark:text-text1d',
+                  ledgerMode ? 'px-10px' : 'pr-10px pl-5px',
+                  'transition duration-300 ease-in-out'
+                )}>
+                {({ open }) => (
+                  <>
+                    <span className="flex w-full items-center">{label}</span>
+                    <ChevronDownIcon
+                      className={clsx('ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })}
+                    />
+                  </>
                 )}
-              </div>
-              <Listbox value={selectedWallet} onChange={handleWalletChange}>
-                <div className="relative">
-                  <ListboxButton
-                    as="div"
-                    className={clsx(
-                      'group flex cursor-pointer items-center',
-                      'font-main text-14 text-text1 dark:text-text1d',
-                      'pr-10px pl-5px',
-                      'transition duration-300 ease-in-out'
-                    )}>
-                    {({ open }) => (
-                      <>
-                        <span className="flex w-full items-center">
-                          {truncateMiddle(selectedWallet.name, { start: 3, end: 3, max: 6 })}
-                          {selectedWallet.type === WalletType.Vultisig && (
-                            <span className="ml-1 rounded-full bg-warning0 px-[5px] py-[1px] text-[9px] leading-tight font-bold text-white">
-                              BETA
-                            </span>
+              </ListboxButton>
+              <ListboxOptions
+                className={clsx(
+                  'absolute top-[35px] left-[-100px]',
+                  'z-[2000] mt-1 max-h-60 w-[200px]',
+                  'overflow-auto bg-bg0 dark:bg-bg0d',
+                  'drop-shadow-lg focus:outline-hidden',
+                  'rounded-md border border-solid border-gray0 dark:border-gray0d'
+                )}>
+                {FP.pipe(
+                  allWallets,
+                  A.map((wallet) => {
+                    const selected =
+                      !ledgerMode && wallet.type === selectedWallet.type && wallet.id === selectedWallet.id
+                    return (
+                      <ListboxOption
+                        disabled={selected}
+                        className={({ selected }) =>
+                          clsx(
+                            'flex items-center justify-between select-none',
+                            'px-20px py-10px',
+                            'font-main text-14 text-text1 dark:text-text1d',
+                            selected
+                              ? 'cursor-disabled text-gray2 dark:text-gray2d'
+                              : 'cursor-pointer hover:bg-gray0 hover:text-gray2 dark:hover:bg-gray0d dark:hover:text-gray2d'
+                          )
+                        }
+                        key={`${wallet.type}-${wallet.id}`}
+                        value={wallet}>
+                        <span className="flex items-center">
+                          {truncateMiddle(wallet.name, { start: 9, end: 9, max: 20 })}
+                          {wallet.type === WalletType.Vultisig && (
+                            <span className="text-10 ml-1 text-turquoise">(V)</span>
                           )}
                         </span>
-                        <ChevronDownIcon
-                          className={clsx('ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })}
-                        />
-                      </>
-                    )}
-                  </ListboxButton>
-                  <ListboxOptions
-                    className={clsx(
-                      'absolute top-[35px] left-[-100px]',
-                      'z-[2000] mt-1 max-h-60 w-[200px]',
-                      'overflow-auto bg-bg0 dark:bg-bg0d',
-                      'drop-shadow-lg focus:outline-hidden',
-                      'rounded-md border border-solid border-gray0 dark:border-gray0d'
-                    )}>
-                    {FP.pipe(
-                      allWallets,
-                      A.map((wallet) => {
-                        const selected = wallet.type === selectedWallet.type && wallet.id === selectedWallet.id
-                        return (
-                          <ListboxOption
-                            disabled={selected}
-                            className={({ selected }) =>
-                              clsx(
-                                'flex items-center justify-between select-none',
-                                'px-20px py-10px',
-                                'font-main text-14 text-text1 dark:text-text1d',
-                                selected
-                                  ? 'cursor-disabled text-gray2 dark:text-gray2d'
-                                  : 'cursor-pointer hover:bg-gray0 hover:text-gray2 dark:hover:bg-gray0d dark:hover:text-gray2d'
-                              )
-                            }
-                            key={`${wallet.type}-${wallet.id}`}
-                            value={wallet}>
-                            <span className="flex items-center">
-                              {truncateMiddle(wallet.name, { start: 9, end: 9, max: 20 })}
-                              {wallet.type === WalletType.Vultisig && (
-                                <>
-                                  <span className="text-10 ml-1 text-turquoise">(V)</span>
-                                  <span className="ml-1 rounded-full bg-warning0 px-[5px] py-[1px] text-[9px] leading-tight font-bold text-white">
-                                    BETA
-                                  </span>
-                                </>
-                              )}
-                            </span>
-                            {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
-                          </ListboxOption>
-                        )
-                      })
-                    )}
-                  </ListboxOptions>
-                </div>
-              </Listbox>
+                        {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
+                      </ListboxOption>
+                    )
+                  })
+                )}
+              </ListboxOptions>
             </div>
-          )
-        )
-      ),
-    [handleWalletChange, isLocked, oSelectedWallet, onPress, allWallets]
-  )
+          </Listbox>
+        ) : (
+          <span className="px-10px font-main text-14 text-text1 dark:text-text1d">{label}</span>
+        )}
+      </div>
+    )
+  }, [allWallets, handleWalletChange, intl, isLocked, ledgerMode, oSelectedWallet, onPress])
 
   const renderAddWallet = useMemo(
     () => (
@@ -177,7 +180,7 @@ export const HeaderLock = (props: Props): JSX.Element => {
 
   return (
     <div className="relative flex justify-center">
-      {hasWallets ? renderWallets : renderAddWallet}
+      {ledgerMode || hasWallets ? renderWallets : renderAddWallet}
       {selectError && (
         <span
           className={clsx(

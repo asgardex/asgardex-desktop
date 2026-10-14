@@ -60,6 +60,8 @@ export type Props = {
   // Phase D → 4F: Unified wallet props
   allWallets: Wallet[]
   activeWallet: O.Option<Wallet>
+  /** Standalone Ledger mode. The header shows Ledger instead of the last keystore. */
+  ledgerMode: boolean
   selectWallet: (wallet: Wallet) => Promise<void>
   setSelectedPricePool: (asset: PricePoolAsset) => void
   pricePools: O.Option<PricePools>
@@ -114,6 +116,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
     // Phase D: Unified wallet props
     allWallets,
     activeWallet,
+    ledgerMode,
     selectWallet,
     setSelectedPricePool,
     midgardUrl: midgardUrlRD,
@@ -316,6 +319,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
               isLocked={isLocked}
               allWallets={allWallets}
               activeWallet={activeWallet}
+              ledgerMode={ledgerMode}
               selectWallet={selectWallet}
             />
             {renderHeaderSettings}
@@ -348,6 +352,7 @@ export const HeaderComponent = (props: Props): JSX.Element => {
               isLocked={isLocked}
               onPress={clickLockHandler}
               activeWallet={activeWallet}
+              ledgerMode={ledgerMode}
             />
           </div>
           <div className="flex h-[60px] cursor-pointer items-center border-b border-solid border-bg2 transition-colors hover:bg-turquoise/10 dark:border-bg2d">
