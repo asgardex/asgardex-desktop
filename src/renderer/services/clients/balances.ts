@@ -8,6 +8,8 @@ import { catchError, startWith, map, shareReplay, debounceTime } from 'rxjs/oper
 
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { liveData } from '../../helpers/rx/liveData'
+import { preserveSuccess } from '../../helpers/rx/preserveSuccess'
+import { network$ } from '../app/service'
 import { replaceSymbol } from '../evm/utils'
 import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { ApiError, ErrorId, WalletBalance } from '../wallet/types'
@@ -141,27 +143,37 @@ export const balances$: Balances$ = ({
   hdMode,
   walletBalanceType
 }) =>
-  Rx.combineLatest([trigger$.pipe(debounceTime(300)), client$]).pipe(
-    RxOp.switchMap(([_, oClient]) => {
-      return FP.pipe(
-        oClient,
-        O.fold(
-          // if a client is not available, "reset" state to "initial"
-          () => Rx.of(RD.initial),
-          // or start request and return state
-          (client) =>
-            loadBalances$({
-              walletType,
-              client,
-              assets,
-              walletAccount,
-              walletIndex,
-              hdMode,
-              walletBalanceType
-            })
-        )
+  // A new network drops the previous scan and unsubscribes an in-flight request,
+  // so that request cannot arrive after Pending and be kept as the new network's balance.
+  network$.pipe(
+    RxOp.switchMap(() =>
+      Rx.combineLatest([trigger$.pipe(debounceTime(300)), client$]).pipe(
+        RxOp.switchMap(([_, oClient]) => {
+          return FP.pipe(
+            oClient,
+            O.fold(
+              // if a client is not available, "reset" state to "initial"
+              () => Rx.of(RD.initial),
+              // or start request and return state
+              (client) =>
+                loadBalances$({
+                  walletType,
+                  client,
+                  assets,
+                  walletAccount,
+                  walletIndex,
+                  hdMode,
+                  walletBalanceType
+                })
+            )
+          )
+        }),
+        // A reload's Pending frame used to drop the chain from the wallet total and cover Send.
+        preserveSuccess,
+        // Pending immediately on the network boundary. The reload hold above does not see this.
+        RxOp.startWith(RD.pending)
       )
-    }),
+    ),
     shareReplay(1) // Prevent duplicate balance requests for the same parameters
   )
 
@@ -192,41 +204,48 @@ type BalancesByAddress$ = ({
 export const balancesByAddress$: BalancesByAddress$ =
   ({ client$, trigger$, walletBalanceType }) =>
   ({ address, walletType, walletAccount, walletIndex, hdMode }) =>
-    Rx.combineLatest([trigger$.pipe(RxOp.debounceTime(300)), client$]).pipe(
-      RxOp.mergeMap(([_, oClient]) => {
-        return FP.pipe(
-          oClient,
-          O.fold(
-            () => Rx.of(RD.initial),
-            (client) =>
-              FP.pipe(
-                getUserAssetsByChain$(client.getAssetInfo().asset.chain),
-                RxOp.switchMap((assets) => {
-                  return loadBalances$({
-                    client,
-                    address,
-                    walletType,
-                    assets: assets.length === 0 ? undefined : assets, // Use filtered assets
-                    walletAccount,
-                    walletIndex,
-                    walletBalanceType,
-                    hdMode
-                  }).pipe(
-                    liveData.map(
-                      FP.flow(
-                        A.map((balance: WalletBalance) => {
-                          return {
-                            ...balance,
-                            asset: replaceSymbol(balance.asset)
-                          }
-                        })
+    network$.pipe(
+      RxOp.switchMap(() =>
+        Rx.combineLatest([trigger$.pipe(RxOp.debounceTime(300)), client$]).pipe(
+          RxOp.mergeMap(([_, oClient]) => {
+            return FP.pipe(
+              oClient,
+              O.fold(
+                () => Rx.of(RD.initial),
+                (client) =>
+                  FP.pipe(
+                    getUserAssetsByChain$(client.getAssetInfo().asset.chain),
+                    RxOp.switchMap((assets) => {
+                      return loadBalances$({
+                        client,
+                        address,
+                        walletType,
+                        assets: assets.length === 0 ? undefined : assets, // Use filtered assets
+                        walletAccount,
+                        walletIndex,
+                        walletBalanceType,
+                        hdMode
+                      }).pipe(
+                        liveData.map(
+                          FP.flow(
+                            A.map((balance: WalletBalance) => {
+                              return {
+                                ...balance,
+                                asset: replaceSymbol(balance.asset)
+                              }
+                            })
+                          )
+                        )
                       )
-                    )
+                    })
                   )
-                })
               )
-          )
+            )
+          }),
+          // Same hold as balances$: keep the last addresses while one of them reloads.
+          preserveSuccess,
+          RxOp.startWith(RD.pending)
         )
-      }),
+      ),
       shareReplay(1)
     )

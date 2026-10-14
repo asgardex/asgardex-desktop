@@ -29,7 +29,9 @@ import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
+import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useNetwork } from '../../hooks/useNetwork'
+import { useObservableLayoutState } from '../../hooks/useObservableLayoutState'
 import { usePoolShares } from '../../hooks/usePoolShares'
 import { useApp } from '../../store/app/hooks'
 import * as H from './PoolShareView.helper'
@@ -96,9 +98,20 @@ export const PoolShareView = (): JSX.Element => {
     return () => subscription.unsubscribe() // Cleanup by unsubscribing when the component unmounts or dex changes
   }, [addressByChain$, protocol])
 
-  const haltedChains$ = protocol === THORChain ? haltedChainsThor$ : haltedMayaChains$
-  const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
-  const { mimirHalt } = useThorchainMimirHalt()
+  const isThorProtocol = protocol === THORChain
+  const haltedChains$ = useMemo(
+    () =>
+      (isThorProtocol ? haltedChainsThor$ : haltedMayaChains$).pipe(
+        RxOp.map(RD.getOrElse((): Chain[] => [])),
+        // Synchronous, so a protocol switch does not keep the other protocol's halted list.
+        RxOp.startWith([] as Chain[])
+      ),
+    [haltedChainsThor$, haltedMayaChains$, isThorProtocol]
+  )
+  const haltedChains = useObservableLayoutState(haltedChains$, [] as Chain[])
+  const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt(isThorProtocol)
+  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt(!isThorProtocol)
+  const mimirHalt = isThorProtocol ? mimirHaltThor : mimirHaltMaya
   const poolDetailsRD = useObservableState(allPoolDetails$, RD.pending)
   const { poolData: pricePoolData } = useObservableState(
     selectedPricePool$,

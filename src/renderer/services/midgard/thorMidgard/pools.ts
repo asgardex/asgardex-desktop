@@ -13,6 +13,7 @@ import { isEthChain } from '../../../helpers/chainHelper'
 import { eqAsset, eqOAsset, eqOPoolAddresses, eqHaltedChain } from '../../../helpers/fp/eq'
 import { sequenceTOption } from '../../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
+import { preserveSuccessUntil } from '../../../helpers/rx/preserveSuccess'
 import { observableState, triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
 import { roundUnixTimestampToMinutes } from '../../../helpers/timeHelper'
 import { PricePoolAsset } from '../../../views/pools/Pools.types'
@@ -165,6 +166,9 @@ const createPoolsService = ({
   const { get$: _getPoolsPeriod$, set: setPoolsPeriod } = observableState<GetPoolsPeriodEnum>(DEFAULT_GET_POOLS_PERIOD)
 
   const poolsPeriod$ = FP.pipe(_getPoolsPeriod$, RxOp.distinctUntilChanged(), RxOp.shareReplay(1))
+
+  // One replayed value for preserveSuccessUntil to ignore, then Pending when the network or period changes.
+  const poolsReset$ = Rx.merge(network$.pipe(RxOp.skip(1)), poolsPeriod$.pipe(RxOp.skip(1))).pipe(RxOp.startWith(0))
 
   /**
    * Data of enabled `Pools` from Midgard
@@ -330,6 +334,8 @@ const createPoolsService = ({
     reloadPools$,
     // start loading queue
     RxOp.switchMap(loadAllPoolDetails$),
+    // Keep the list on screen while a reload is in flight.
+    preserveSuccessUntil(poolsReset$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )
@@ -402,6 +408,9 @@ const createPoolsService = ({
   const poolsState$: PoolsStateLD = reloadPools$.pipe(
     // start loading queue
     RxOp.switchMap(loadPoolsStateData$),
+    // Keep prices, swap decimals, and wallet totals on the last success during reload.
+    // A network or pool-period change still drops the previous list.
+    preserveSuccessUntil(poolsReset$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )
@@ -453,6 +462,7 @@ const createPoolsService = ({
     reloadPendingPools$,
     // start loading queue
     RxOp.switchMap(loadPendingPoolsStateData$),
+    preserveSuccessUntil(poolsReset$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )

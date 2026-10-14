@@ -17,6 +17,7 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
+import * as Rx from 'rxjs'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
 import { AssetRuneNative, THORChain, AssetCacao, MAYAChain } from '../../../../shared/utils/chainIds'
@@ -38,6 +39,7 @@ import { filterWalletBalancesByAssets } from '../../../helpers/walletHelper'
 import { useRunePoolProviders } from '../../../hooks/useAllRunePoolProviders'
 import { useThorNodeInfos } from '../../../hooks/useNodeInfos'
 import { useMayaNodeInfos } from '../../../hooks/useNodeInfosMaya'
+import { useObservableLayoutState } from '../../../hooks/useObservableLayoutState'
 import { usePoolShares } from '../../../hooks/usePoolShares'
 import { useTotalWalletBalance } from '../../../hooks/useWalletBalance'
 import * as bondsRoutes from '../../../routes/bonds'
@@ -120,15 +122,32 @@ export const PortfolioView = (): JSX.Element => {
     }
   } = useMidgardMayaContext()
 
-  // State for selected price pools
-  const [selectedPricePoolThor] = useObservableState(() => selectedPricePoolThor$, RUNE_PRICE_POOL)
-  const [selectedPricePoolMaya] = useObservableState(() => selectedPricePoolMaya$, MAYA_PRICE_POOL)
+  const showThor = protocol === Protocol.All || protocol === THORChain
+  const showMaya = protocol === Protocol.All || protocol === MAYAChain
 
-  // Separate price pool data states for each chain
-  const { poolData: pricePoolDataThor } = useObservableState(selectedPricePoolThor$, RUNE_PRICE_POOL)
-  const { poolData: pricePoolDataMaya } = useObservableState(selectedPricePoolMaya$, MAYA_PRICE_POOL)
-  const poolDetailsThorRD = useObservableState(allPoolDetailsThor$, RD.pending)
-  const poolDetailsMayaRD = useObservableState(allPoolDetailsMaya$, RD.pending)
+  const thorPricePool$ = useMemo(
+    () => (showThor ? selectedPricePoolThor$ : Rx.EMPTY) as typeof selectedPricePoolThor$,
+    [selectedPricePoolThor$, showThor]
+  )
+  const mayaPricePool$ = useMemo(
+    () => (showMaya ? selectedPricePoolMaya$ : Rx.EMPTY) as typeof selectedPricePoolMaya$,
+    [selectedPricePoolMaya$, showMaya]
+  )
+  const selectedPricePoolThor = useObservableLayoutState(thorPricePool$, RUNE_PRICE_POOL)
+  const selectedPricePoolMaya = useObservableLayoutState(mayaPricePool$, MAYA_PRICE_POOL)
+  const { poolData: pricePoolDataThor } = selectedPricePoolThor
+  const { poolData: pricePoolDataMaya } = selectedPricePoolMaya
+
+  const thorPoolDetails$ = useMemo(
+    () => (showThor ? allPoolDetailsThor$ : Rx.EMPTY) as typeof allPoolDetailsThor$,
+    [allPoolDetailsThor$, showThor]
+  )
+  const mayaPoolDetails$ = useMemo(
+    () => (showMaya ? allPoolDetailsMaya$ : Rx.EMPTY) as typeof allPoolDetailsMaya$,
+    [allPoolDetailsMaya$, showMaya]
+  )
+  const poolDetailsThorRD = useObservableLayoutState(thorPoolDetails$, RD.pending)
+  const poolDetailsMayaRD = useObservableLayoutState(mayaPoolDetails$, RD.pending)
 
   useEffect(() => {
     const subscription = userChains$.subscribe((chains: EnabledChain[]) => {
@@ -184,13 +203,13 @@ export const PortfolioView = (): JSX.Element => {
   }, [allBalances])
 
   const nodeInfosThor = useThorNodeInfos({
-    addressesFetched,
+    addressesFetched: addressesFetched && showThor,
     thorWalletAddresses: walletAddresses.THOR,
     userNodes$,
     getNodeInfosThor$: getNodeInfos$
   })
   const nodeInfosMaya = useMayaNodeInfos({
-    addressesFetched,
+    addressesFetched: addressesFetched && showMaya,
     mayaWalletAddresses: walletAddresses.MAYA,
     userNodes$,
     getNodeInfosMaya$
@@ -305,8 +324,8 @@ export const PortfolioView = (): JSX.Element => {
     return [thorTotal, mayaTotal].filter(Boolean).join('\n')
   }, [protocol, renderBondTotalThor, renderBondTotalMaya])
 
-  const { allSharesRD: allThorSharesRD } = usePoolShares(THORChain)
-  const { allSharesRD: allMayaSharesRD } = usePoolShares(MAYAChain)
+  const { allSharesRD: allThorSharesRD } = usePoolShares(THORChain, showThor)
+  const { allSharesRD: allMayaSharesRD } = usePoolShares(MAYAChain, showMaya)
 
   const renderSharesTotal = useMemo((): string => {
     const sharesThorTotalRD: BaseAmountRD = FP.pipe(
@@ -366,13 +385,15 @@ export const PortfolioView = (): JSX.Element => {
     userChains$,
     addressByChain$,
     getLedgerAddress$,
-    getRunePoolProvider$
+    getRunePoolProvider$,
+    showThor
   )
   const isRemoteSuccess = (provider: RunePoolProviderRD): provider is RD.RemoteSuccess<RunePoolProvider> => {
     return provider._tag === 'RemoteSuccess'
   }
 
   const renderRunePoolTotal = useMemo(() => {
+    if (!showThor) return ''
     // Wrap allRunePoolProviders in RD.success
     const allRunePoolProvidersRD = RD.success(allRunePoolProviders)
     const calculateTotalDepositAmount = (allRunePoolProviders: Record<string, RunePoolProviderRD>): BaseAmount => {
@@ -408,7 +429,7 @@ export const PortfolioView = (): JSX.Element => {
           })
       )
     )
-  }, [allRunePoolProviders, intl, selectedPricePoolThor.asset])
+  }, [allRunePoolProviders, intl, selectedPricePoolThor.asset, showThor])
 
   const totalBalanceDisplay = useMemo(() => {
     const chainValues = Object.entries(balancesByChain).map(([_, balance]) => baseToAsset(balance).amount().toNumber())

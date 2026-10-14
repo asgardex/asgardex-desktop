@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { function as FP, number as N, option as O } from 'fp-ts'
-import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -10,13 +9,16 @@ import { useMayachainContext } from '../contexts/MayachainContext'
 import { eqApiError } from '../helpers/fp/eq'
 import { LiveData, liveData } from '../helpers/rx/liveData'
 import { ApiError, ErrorId } from '../services/wallet/types'
+import { useObservableLayoutState } from './useObservableLayoutState'
 
 type PoolCycleRD = RD.RemoteData<ApiError, number>
 type PoolCycleLD = LiveData<ApiError, number>
 
 const eqPoolCycle = RD.getEq<ApiError, number>(eqApiError, N.Eq)
 
-export const usePoolCycleMaya = (): {
+export const usePoolCycleMaya = (
+  enabled = true
+): {
   poolCycle: PoolCycleRD
   reloadPoolCycle: FP.Lazy<void>
 } => {
@@ -55,26 +57,27 @@ export const usePoolCycleMaya = (): {
     reloadMayachainConstants()
   }, [reloadMayachainConstants, reloadMimir])
 
-  const [data] = useObservableState(
-    () =>
-      FP.pipe(
-        Rx.combineLatest([tnConstantsPoolCycle$, mimirPoolCycle$]),
-        RxOp.map(([tnPoolCycleRD, mimirPoolCycleRD]) =>
-          FP.pipe(
-            mimirPoolCycleRD,
-            RD.alt(() => tnPoolCycleRD)
-          )
-        ),
-        RxOp.distinctUntilChanged(eqPoolCycle.equals)
+  const cycle$ = useMemo((): Rx.Observable<PoolCycleRD> => {
+    if (!enabled) return Rx.EMPTY
+    return FP.pipe(
+      Rx.combineLatest([tnConstantsPoolCycle$, mimirPoolCycle$]),
+      RxOp.map(([tnPoolCycleRD, mimirPoolCycleRD]) =>
+        FP.pipe(
+          mimirPoolCycleRD,
+          RD.alt(() => tnPoolCycleRD)
+        )
       ),
-    RD.initial
-  )
+      RxOp.distinctUntilChanged(eqPoolCycle.equals)
+    )
+  }, [enabled, mimirPoolCycle$, tnConstantsPoolCycle$])
 
-  // Reload data on mount
+  const data = useObservableLayoutState(cycle$, RD.initial)
+
+  // Load constants and mimir only for the protocol this screen is showing.
   useEffect(() => {
+    if (!enabled) return
     getData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [enabled, getData])
 
   return { poolCycle: data, reloadPoolCycle: getData }
 }

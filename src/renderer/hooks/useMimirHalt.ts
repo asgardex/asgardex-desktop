@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { isEqual } from 'lodash'
-import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -19,6 +18,7 @@ import {
   MimirHaltLpGlobal,
   LastblockItems
 } from '../services/thorchain/types'
+import { useObservableLayoutState } from './useObservableLayoutState'
 
 /**
  * Helper to check Mimir status by given Mimir value and last height
@@ -38,7 +38,7 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
  *
  * Note: Same rule as we have for services - Use this hook in top level *views only (but in child components)
  */
-export const useThorchainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt } => {
+export const useThorchainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt } => {
   const { mimir$, thorchainLastblockState$ } = useThorchainContext()
 
   const createMimirGroup = (keys: string[], mimir: Mimir, lastHeight?: number) => {
@@ -51,51 +51,52 @@ export const useThorchainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: 
     )
   }
 
-  const [mimirHaltRD] = useObservableState<MimirHaltRD>(
-    () =>
-      FP.pipe(
-        Rx.combineLatest([mimir$, thorchainLastblockState$, userChains$]),
-        RxOp.map(([mimirRD, chainLastblockRD, enabledChains]) =>
-          FP.pipe(
-            sequenceTRD(mimirRD, chainLastblockRD),
-            RD.map(([mimir, lastblockItems]) => {
-              const lastHeight = getLastHeightThorchain(lastblockItems as LastblockItems)
+  const mimirHaltSource$ = useMemo((): Rx.Observable<MimirHaltRD> => {
+    if (!enabled) return Rx.EMPTY
+    return FP.pipe(
+      Rx.combineLatest([mimir$, thorchainLastblockState$, userChains$]),
+      RxOp.map(([mimirRD, chainLastblockRD, enabledChains]) =>
+        FP.pipe(
+          sequenceTRD(mimirRD, chainLastblockRD),
+          RD.map(([mimir, lastblockItems]) => {
+            const lastHeight = getLastHeightThorchain(lastblockItems as LastblockItems)
 
-              const haltChainKeys = enabledChains.map((chain) => `HALT${chain}Chain`)
-              const haltTradingKeys = enabledChains.map((chain) => `HALT${chain}TRADING`)
-              const pauseLPKeys = enabledChains.map((chain) => `PAUSELP${chain}`)
-              const pauseLPDepositKeys = enabledChains.map((chain) => `PAUSELPDEPOSIT-${chain}-${chain}`)
-              const haltChain = createMimirGroup(haltChainKeys, mimir, lastHeight)
-              const haltTrading = createMimirGroup(haltTradingKeys, mimir, lastHeight)
-              const pauseLP = createMimirGroup(pauseLPKeys, mimir, lastHeight)
-              const pauseLPDeposit = createMimirGroup(pauseLPDepositKeys, mimir, lastHeight)
+            const haltChainKeys = enabledChains.map((chain) => `HALT${chain}Chain`)
+            const haltTradingKeys = enabledChains.map((chain) => `HALT${chain}TRADING`)
+            const pauseLPKeys = enabledChains.map((chain) => `PAUSELP${chain}`)
+            const pauseLPDepositKeys = enabledChains.map((chain) => `PAUSELPDEPOSIT-${chain}-${chain}`)
+            const haltChain = createMimirGroup(haltChainKeys, mimir, lastHeight)
+            const haltTrading = createMimirGroup(haltTradingKeys, mimir, lastHeight)
+            const pauseLP = createMimirGroup(pauseLPKeys, mimir, lastHeight)
+            const pauseLPDeposit = createMimirGroup(pauseLPDepositKeys, mimir, lastHeight)
 
-              const haltTradingGlobal: MimirHaltTradingGlobal = {
-                haltGlobalTrading: getMimirStatus(mimir.HALTTRADING, lastHeight)
-              }
+            const haltTradingGlobal: MimirHaltTradingGlobal = {
+              haltGlobalTrading: getMimirStatus(mimir.HALTTRADING, lastHeight)
+            }
 
-              const pauseLpGlobal: MimirHaltLpGlobal = {
-                pauseGlobalLp: getMimirStatus(mimir.PAUSELP, lastHeight)
-              }
+            const pauseLpGlobal: MimirHaltLpGlobal = {
+              pauseGlobalLp: getMimirStatus(mimir.PAUSELP, lastHeight)
+            }
 
-              return {
-                ...haltChain,
-                ...haltTrading,
-                ...pauseLP,
-                ...pauseLPDeposit,
-                ...haltTradingGlobal,
-                ...pauseLpGlobal
-              } as MimirHalt
-            })
-          )
-        ),
-        // lastblock ticks every 60s for scheduled-halt height checks; only emit when
-        // halt flags actually change so quote/fetch callbacks do not churn identity.
-        RxOp.distinctUntilChanged(isEqual),
-        RxOp.shareReplay(1)
+            return {
+              ...haltChain,
+              ...haltTrading,
+              ...pauseLP,
+              ...pauseLPDeposit,
+              ...haltTradingGlobal,
+              ...pauseLpGlobal
+            } as MimirHalt
+          })
+        )
       ),
-    RD.initial
-  )
+      // lastblock ticks every 60s for scheduled-halt height checks; only emit when
+      // halt flags actually change so quote/fetch callbacks do not churn identity.
+      RxOp.distinctUntilChanged(isEqual),
+      RxOp.shareReplay(1)
+    )
+  }, [enabled, mimir$, thorchainLastblockState$])
+
+  const mimirHaltRD = useObservableLayoutState(mimirHaltSource$, RD.initial)
 
   const getLastHeightThorchain = (lastblockItems: LastblockItems) => {
     return FP.pipe(

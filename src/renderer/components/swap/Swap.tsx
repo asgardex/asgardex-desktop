@@ -1437,11 +1437,10 @@ export const Swap = ({
   ])
 
   const onInputBlurHandler = useCallback(() => {
-    if (pauseQuoteRefresh) return
-    if (amountToSwap.gt(baseAmount(0, amountToSwap.decimal))) {
-      void fetchSwapRef.current(amountToSwap)
-    }
-  }, [amountToSwap, pauseQuoteRefresh])
+    // Commit the typed amount once. The quote effect fetches that value.
+    // Fetching here as well quoted the previous amount, then the debounce quoted again.
+    debouncedSetAmountToSwap.flush()
+  }, [debouncedSetAmountToSwap])
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {

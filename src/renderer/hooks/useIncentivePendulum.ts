@@ -1,11 +1,14 @@
+import { useMemo } from 'react'
+
 import * as RD from '@devexperts/remote-data-ts'
 import { BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
-import { useObservableState } from 'observable-hooks'
+import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { THORCHAIN_DECIMAL } from '../helpers/assetHelper'
+import { useObservableLayoutState } from './useObservableLayoutState'
 
 export type Color = 'green' | 'yellow' | 'red' | 'grey'
 
@@ -40,24 +43,24 @@ export const getIncentivePendulum = (totalPooledRune: string, totalActiveBond: s
   }
 }
 
-export const useIncentivePendulum = (): { data: IncentivePendulumRD; reload: FP.Lazy<void> } => {
+export const useIncentivePendulum = (enabled = true): { data: IncentivePendulumRD; reload: FP.Lazy<void> } => {
   const {
     service: { networkInfo$, reloadNetworkInfo }
   } = useMidgardContext()
 
-  const [data] = useObservableState<IncentivePendulumRD>(
-    () =>
-      FP.pipe(
-        networkInfo$,
-        RxOp.map(
-          RD.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) =>
-            getIncentivePendulum(totalPooledRune, totalActiveBond)
-          )
-        ),
-        RxOp.shareReplay(1)
-      ),
-    RD.initial
-  )
+  const source$ = useMemo((): Rx.Observable<IncentivePendulumRD> => {
+    if (!enabled) return Rx.EMPTY
+    return FP.pipe(
+      networkInfo$,
+      RxOp.map(
+        RD.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) =>
+          getIncentivePendulum(totalPooledRune, totalActiveBond)
+        )
+      )
+    )
+  }, [enabled, networkInfo$])
+
+  const data = useObservableLayoutState(source$, RD.initial)
 
   return { data, reload: reloadNetworkInfo }
 }

@@ -47,6 +47,7 @@ import { ZERO_BASE_AMOUNT } from '../../const'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { logger } from '../../helpers/logger'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
+import { preserveSuccessUntil } from '../../helpers/rx/preserveSuccess'
 import { triggerStream } from '../../helpers/stateHelper'
 import { Network$ } from '../app/types'
 import {
@@ -166,6 +167,9 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     // debounce it, reloadInboundAddresses might be called by UI many times
     RxOp.debounceTime(300),
     RxOp.switchMap((_) => loadInboundAddresses$()),
+    // A reload's Pending frame used to clear halted-chain lists and re-quote swaps.
+    // A network change still drops the held vault addresses.
+    preserveSuccessUntil(network$),
     RxOp.shareReplay(1)
   )
 
@@ -234,6 +238,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     Rx.combineLatest([reloadMayachainLastblock$, loadMayachainLastblockInterval$]),
     // start request
     RxOp.switchMap((_) => loadMayachainLastblock$()),
+    // Halt checks read the height. Pending on each 60s tick made halts look cleared.
+    preserveSuccessUntil(network$),
     // cache it to avoid reloading data by every subscription
     RxOp.shareReplay(1)
   )
@@ -433,6 +439,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.debounceTime(300),
     RxOp.switchMap(() => apiGetMimir$),
     RxOp.startWith(RD.pending),
+    preserveSuccessUntil(network$),
     RxOp.shareReplay(1)
   )
 

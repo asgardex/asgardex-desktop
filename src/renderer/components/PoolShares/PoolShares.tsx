@@ -10,7 +10,9 @@ import { useIntl } from 'react-intl'
 import { AssetRuneNative, THORChain, AssetCacao } from '../../../shared/utils/chainIds'
 
 import * as PoolHelpers from '../../helpers/poolHelper'
+import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
+import { MimirHalt as MayaMimirHalt } from '../../services/mayachain/types'
 import { MimirHalt } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
 import { FixmeType } from '../../types/asgardex'
@@ -27,7 +29,7 @@ export type Props = {
   network: Network
   openShareInfo: FP.Lazy<void>
   haltedChains: Chain[]
-  mimirHalt: MimirHalt
+  mimirHalt: MimirHalt | MayaMimirHalt
 }
 
 export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, haltedChains, mimirHalt }: Props) => {
@@ -133,7 +135,14 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
         header: '',
         cell: ({ row }) => {
           const { asset, type } = row.original
-          const disablePool = PoolHelpers.disableAllActions({ chain: asset.chain, haltedChains, mimirHalt })
+          const disablePool =
+            protocol === THORChain
+              ? PoolHelpers.disableAllActions({ chain: asset.chain, haltedChains, mimirHalt: mimirHalt as MimirHalt })
+              : PoolHelpersMaya.disableAllActions({
+                  chain: asset.chain,
+                  haltedChains,
+                  mimirHalt: mimirHalt as MayaMimirHalt
+                })
 
           return (
             <div className="flex items-center justify-center">
@@ -154,7 +163,7 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
         enableSorting: false
       }
     ],
-    [haltedChains, intl, isDesktopView, isXLargeScreen, mimirHalt, network, priceAsset, protocolAsset]
+    [haltedChains, intl, isDesktopView, isXLargeScreen, mimirHalt, network, priceAsset, protocol, protocolAsset]
   )
 
   const renderAnalyticsInfo = useMemo(() => {

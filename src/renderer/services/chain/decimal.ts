@@ -20,7 +20,6 @@ import { SUI_DECIMALS } from '@xchainjs/xchain-sui'
 import { TRX_DECIMAL } from '@xchainjs/xchain-tron'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
-import * as RxOp from 'rxjs/operators'
 
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
 import {
@@ -188,13 +187,10 @@ export const assetWithDecimal$ = (
   thorPoolDetails?: PoolDetail[],
   mayaPoolDetails?: MayaPoolDetail[]
 ): AssetWithDecimalLD =>
-  Rx.from(getDecimal(asset, thorPoolDetails, mayaPoolDetails)).pipe(
-    RxOp.map((decimal) =>
-      RD.success({
-        asset,
-        decimal
-      })
-    ),
-    RxOp.catchError((error) => Rx.of(RD.failure(error?.msg ?? error.toString()))),
-    RxOp.startWith(RD.pending)
+  // Decimals are synchronous. A leading Pending made swap and deposit forms unmount on each pool refresh.
+  Rx.of(
+    RD.success({
+      asset,
+      decimal: getDecimalSync(asset, thorPoolDetails, mayaPoolDetails)
+    })
   )

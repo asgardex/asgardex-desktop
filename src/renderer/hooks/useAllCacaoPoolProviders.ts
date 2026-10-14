@@ -15,65 +15,60 @@ export const useCacaoPoolProviders = (
   userChains$: Rx.Observable<Chain[]>,
   addressByChain$: (chain: Chain) => Rx.Observable<O.Option<WalletAddress>>,
   getLedgerAddress$: (chain: Chain) => Rx.Observable<O.Option<LedgerAddress>>,
-  getCacaoPoolProvider$: (address: string, type: WalletType) => Rx.Observable<CacaoPoolProviderRD>
+  getCacaoPoolProvider$: (address: string, type: WalletType) => Rx.Observable<CacaoPoolProviderRD>,
+  enabled = true
 ) => {
   const [allCacaoPoolProviders, setAllCacaoPoolProviders] = useState<Record<string, CacaoPoolProviderRD>>({})
 
   useEffect(() => {
-    const userChainsSubscription = userChains$.subscribe((enabledChains) => {
-      // Keystore addresses
-      const keystoreAddresses$ = FP.pipe(
-        enabledChains,
-        A.filter((chain) => isMayaChain(chain)),
-        A.map(addressByChain$)
-      )
+    if (!enabled) return
 
-      // Ledger addresses
-      const ledgerAddresses$ = FP.pipe(
-        enabledChains,
-        A.filter((chain) => isMayaChain(chain)),
-        A.map((chain) => getLedgerAddress$(chain)),
-        A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
-      )
+    const subscription = userChains$
+      .pipe(
+        RxOp.switchMap((enabledChains) => {
+          const keystoreAddresses$ = FP.pipe(
+            enabledChains,
+            A.filter((chain) => isMayaChain(chain)),
+            A.map(addressByChain$)
+          )
+          const ledgerAddresses$ = FP.pipe(
+            enabledChains,
+            A.filter((chain) => isMayaChain(chain)),
+            A.map((chain) => getLedgerAddress$(chain)),
+            A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
+          )
+          const addressStreams = [...keystoreAddresses$, ...ledgerAddresses$]
+          if (addressStreams.length === 0) return Rx.of(null)
 
-      const combinedAddresses$ = Rx.combineLatest([...keystoreAddresses$, ...ledgerAddresses$]).pipe(
-        RxOp.map((addressOptionsArray) => FP.pipe(addressOptionsArray, A.filterMap(FP.identity))),
-        RxOp.map((walletAddresses) =>
-          walletAddresses.map((walletAddress) => ({
-            address: walletAddress.address,
-            type: walletAddress.type
-          }))
-        )
-      )
-
-      const subscriptions = combinedAddresses$
-        .pipe(
-          RxOp.switchMap((walletAddresses) => {
-            if (walletAddresses.length > 0) {
+          return Rx.combineLatest(addressStreams).pipe(
+            RxOp.map((addressOptionsArray) => FP.pipe(addressOptionsArray, A.filterMap(FP.identity))),
+            RxOp.map((walletAddresses) =>
+              walletAddresses.map((walletAddress) => ({
+                address: walletAddress.address,
+                type: walletAddress.type
+              }))
+            ),
+            RxOp.switchMap((walletAddresses) => {
+              if (walletAddresses.length === 0) return Rx.of(null)
               return Rx.combineLatest(
                 walletAddresses.map((walletAddress) => getCacaoPoolProvider$(walletAddress.address, walletAddress.type))
               )
-            }
-            return Rx.of(null)
-          })
-        )
-        .subscribe((cacaoPoolProviders) => {
-          if (cacaoPoolProviders) {
-            cacaoPoolProviders.forEach((provider) => {
-              if (provider && provider._tag === 'RemoteSuccess' && provider.value.depositAmount.amount().gt(0)) {
-                const key = `${provider.value.address}.${provider.value.walletType}`
-                setAllCacaoPoolProviders((prev) => ({ ...prev, [key]: provider }))
-              }
             })
+          )
+        })
+      )
+      .subscribe((cacaoPoolProviders) => {
+        if (!cacaoPoolProviders) return
+        cacaoPoolProviders.forEach((provider) => {
+          if (provider && provider._tag === 'RemoteSuccess' && provider.value.depositAmount.amount().gt(0)) {
+            const key = `${provider.value.address}.${provider.value.walletType}`
+            setAllCacaoPoolProviders((prev) => ({ ...prev, [key]: provider }))
           }
         })
+      })
 
-      return () => {
-        subscriptions.unsubscribe()
-        userChainsSubscription.unsubscribe()
-      }
-    })
-  }, [userChains$, addressByChain$, getLedgerAddress$, getCacaoPoolProvider$])
+    return () => subscription.unsubscribe()
+  }, [enabled, userChains$, addressByChain$, getLedgerAddress$, getCacaoPoolProvider$])
 
   return allCacaoPoolProviders
 }
