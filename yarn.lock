@@ -596,6 +596,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@chainflip/bitcoin@npm:2.3.1":
+  version: 2.3.1
+  resolution: "@chainflip/bitcoin@npm:2.3.1"
+  dependencies:
+    "@chainflip/utils": "npm:2.3.3"
+    bignumber.js: "npm:^11.1.5"
+    bitcoinjs-lib: "npm:7.0.1"
+    scale-ts: "npm:^1.6.1"
+    zod: "npm:^3.25.75"
+  checksum: 10/9731a845e50346e7e98df50821ff42d480f08365fc8148e0093616bb3819a1ce671468da71056e7ad0f9bb853c9e95eea47d38dfba3be96571311b690de8cf97
+  languageName: node
+  linkType: hard
+
 "@chainflip/rpc@npm:2.2.0":
   version: 2.2.0
   resolution: "@chainflip/rpc@npm:2.2.0"
@@ -603,6 +616,26 @@ __metadata:
     "@chainflip/utils": "npm:2.2.0"
     zod: "npm:^3.25.75"
   checksum: 10/8e29e06a3bef2df6e1738d338cb1641051a85d79dcbce60caf6743e0492920a9503b73a1fabc497aa3de8d0d21a5726e0323d5def754329733b9f56baee0c4ef
+  languageName: node
+  linkType: hard
+
+"@chainflip/rpc@npm:2.3.3":
+  version: 2.3.3
+  resolution: "@chainflip/rpc@npm:2.3.3"
+  dependencies:
+    "@chainflip/utils": "npm:2.3.3"
+    zod: "npm:^3.25.75"
+  checksum: 10/da61397483a68f661f572bd161fa5a06228a8e2320d24719a81f598d8041c0ded7cdf02ae8ef81dce5e6f97fd18c5e5b84c713a648dcbb4f314b5daffd57c080
+  languageName: node
+  linkType: hard
+
+"@chainflip/scale@npm:2.3.1":
+  version: 2.3.1
+  resolution: "@chainflip/scale@npm:2.3.1"
+  dependencies:
+    "@chainflip/utils": "npm:2.3.3"
+    scale-ts: "npm:^1.6.1"
+  checksum: 10/bad45c8a3b6992c91d188ab77da21c309d939e390cc5bb817dc3af095e915bb73f429e12d8fc6b557d7587915263b52084fe364831c01d44ad4f6ca6a3e90384
   languageName: node
   linkType: hard
 
@@ -633,6 +666,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@chainflip/sdk@npm:2.3.1":
+  version: 2.3.1
+  resolution: "@chainflip/sdk@npm:2.3.1"
+  dependencies:
+    "@chainflip/bitcoin": "npm:2.3.1"
+    "@chainflip/rpc": "npm:2.3.3"
+    "@chainflip/solana": "npm:2.3.1"
+    "@chainflip/utils": "npm:2.3.3"
+    "@ts-rest/core": "npm:^3.52.1"
+    axios: "npm:^1.15.0"
+    bignumber.js: "npm:^9.3.0"
+    ethers: "npm:^6.14.4"
+    zod: "npm:^3.25.76"
+  checksum: 10/e601c548ac63efc1d8e07872d25c873405a66b75fca31f7d3cf4897a0ecf48587b7ba67cc7cfbb2bc04281115eb70576a8c692388108312020b58738d308a0df
+  languageName: node
+  linkType: hard
+
 "@chainflip/solana@npm:2.2.5":
   version: 2.2.5
   resolution: "@chainflip/solana@npm:2.2.5"
@@ -648,6 +698,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@chainflip/solana@npm:2.3.1":
+  version: 2.3.1
+  resolution: "@chainflip/solana@npm:2.3.1"
+  dependencies:
+    "@chainflip/scale": "npm:2.3.1"
+    "@chainflip/utils": "npm:2.3.3"
+    "@coral-xyz/anchor": "npm:^0.32.1"
+    "@solana/web3.js": "npm:^1.98.4"
+    bn.js: "npm:^5.2.5"
+    scale-ts: "npm:^1.6.1"
+    zod: "npm:^3.25.75"
+  checksum: 10/d8cc59b5adb138f1a7b7b4dbd56de982e97eec41d713930adba4ab24f252b3822299dfbaa8434a769838c26415d9a521582a2f3a8f68ff021e872e255766232e
+  languageName: node
+  linkType: hard
+
 "@chainflip/utils@npm:2.2.0":
   version: 2.2.0
   resolution: "@chainflip/utils@npm:2.2.0"
@@ -657,6 +722,18 @@ __metadata:
     bignumber.js: "npm:^11.1.1"
     date-fns: "npm:4.1.0"
   checksum: 10/3aaa3bb3f51a07edaa8f78ace33c688be6ba7f645e20ac69ef9fe072714f6bcf6ca5ca95965dcd140d33c06f258cbab8865985cac40285955890995cbeca31ff
+  languageName: node
+  linkType: hard
+
+"@chainflip/utils@npm:2.3.3":
+  version: 2.3.3
+  resolution: "@chainflip/utils@npm:2.3.3"
+  dependencies:
+    "@date-fns/utc": "npm:^2.1.1"
+    "@noble/hashes": "npm:^2.3.0"
+    bignumber.js: "npm:^11.1.5"
+    date-fns: "npm:4.4.0"
+  checksum: 10/73803dc98a5fe87bc6bdaa5955c8b80730de6a49305a216937263ff445b1e97f02e176b58840783d080d190e96f1e969853cb8daf7512a7804908ae8dbe99dd4
   languageName: node
   linkType: hard
 
@@ -7193,7 +7270,7 @@ __metadata:
   resolution: "asgardex@workspace:."
   dependencies:
     "@asgardex/asgardex-theme": "npm:^0.2.0"
-    "@chainflip/sdk": "npm:2.2.1"
+    "@chainflip/sdk": "npm:2.3.1"
     "@devexperts/remote-data-ts": "npm:^2.1.1"
     "@electron/notarize": "npm:^2.5.0"
     "@eslint/compat": "npm:2.1.1"
@@ -8841,7 +8918,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^4.4.0":
+"date-fns@npm:4.4.0, date-fns@npm:^4.4.0":
   version: 4.4.0
   resolution: "date-fns@npm:4.4.0"
   checksum: 10/ae702acea42fb8452abe74f6d133c2360de9a14f00985645684b0df9c12280276649e95b52298a4fd7dabcc3b38799eb111107da99320d1cd94ba1d8a3d1c174
