@@ -203,6 +203,27 @@ export const poolsStorageIO = t.type({
 export type PoolsStorageEncoded = ReturnType<typeof poolsStorageIO.encode>
 
 /**
+ * Assets starred in the asset picker. Separate from the pools watchlist.
+ * Same per-network shape, stored in its own file.
+ */
+const assetFavouritesListIO = t.array(assetIO)
+
+export const assetFavouritesListsIO = t.type({
+  testnet: assetFavouritesListIO,
+  stagenet: assetFavouritesListIO,
+  mainnet: assetFavouritesListIO
+})
+
+export type AssetFavouritesLists = t.TypeOf<typeof assetFavouritesListsIO>
+
+export const assetFavouritesStorageIO = t.type({
+  favourites: assetFavouritesListsIO,
+  version: storageVersionIO
+})
+
+export type AssetFavouritesStorageEncoded = ReturnType<typeof assetFavouritesStorageIO.encode>
+
+/**
  * Guard to check `Keystore`
  */
 export const isKeystore = (u: unknown): u is Keystore =>

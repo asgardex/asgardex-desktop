@@ -8,6 +8,7 @@ import { assetFromStringEx, AssetType } from '@xchainjs/xchain-util'
 import { describe, expect, it } from 'vitest'
 
 import {
+  arrangeAssetsForMenu,
   assetMatchesSearch,
   ExtendedAssetType,
   filterAndSortAssetsForMenu,
@@ -84,6 +85,69 @@ describe('AssetMenu.helper', () => {
       const assets = [assetUSDT, assetSecuredUSDT, assetSynthUSDT]
       const sorted = filterAndSortAssetsForMenu(assets, '', ExtendedAssetType.Secured)
       expect(sorted).toEqual([assetSecuredUSDT])
+    })
+  })
+
+  describe('arrangeAssetsForMenu', () => {
+    const poolOrder = [assetUSDT, assetUSDC, assetAvaxEth, AssetBETH, AssetARB, AssetAETH, AssetETH, AssetBTC]
+
+    it('keeps pool order when nothing is starred', () => {
+      expect(arrangeAssetsForMenu(poolOrder, '', ExtendedAssetType.All, [])).toEqual({
+        kind: 'flat',
+        assets: poolOrder
+      })
+    })
+
+    it('pins favourites in star order and leaves the rest in pool order', () => {
+      const arranged = arrangeAssetsForMenu(poolOrder, '', ExtendedAssetType.All, [AssetETH, assetUSDT])
+      expect(arranged).toEqual({
+        kind: 'sections',
+        favourites: [AssetETH, assetUSDT],
+        rest: [assetUSDC, assetAvaxEth, AssetBETH, AssetARB, AssetAETH, AssetBTC]
+      })
+    })
+
+    it('keeps search rank ahead of a favourite', () => {
+      const arranged = arrangeAssetsForMenu(poolOrder, 'eth', ExtendedAssetType.All, [assetUSDT])
+      expect(arranged.kind).toBe('flat')
+      if (arranged.kind !== 'flat') return
+      expect(arranged.assets[0]).toEqual(AssetETH)
+      expect(arranged.assets.indexOf(AssetETH)).toBeLessThan(arranged.assets.indexOf(assetUSDT))
+    })
+
+    it('lists only favourites, in star order, on the Favourites filter', () => {
+      expect(arrangeAssetsForMenu(poolOrder, '', ExtendedAssetType.Favorite, [assetUSDT, AssetBTC])).toEqual({
+        kind: 'flat',
+        assets: [assetUSDT, AssetBTC]
+      })
+    })
+
+    it('pins only the favourites that pass the Native filter', () => {
+      const arranged = arrangeAssetsForMenu([assetUSDT, AssetETH, AssetBTC], '', ExtendedAssetType.Native, [
+        assetUSDT,
+        AssetBTC
+      ])
+      expect(arranged).toEqual({
+        kind: 'sections',
+        favourites: [AssetBTC],
+        rest: [AssetETH]
+      })
+    })
+
+    it('keeps secured USDT separate from token USDT', () => {
+      const arranged = arrangeAssetsForMenu([assetUSDT, assetSecuredUSDT], '', ExtendedAssetType.All, [assetUSDT])
+      expect(arranged).toEqual({
+        kind: 'sections',
+        favourites: [assetUSDT],
+        rest: [assetSecuredUSDT]
+      })
+    })
+
+    it('drops a favourite that is not in this menu', () => {
+      expect(arrangeAssetsForMenu([AssetETH], '', ExtendedAssetType.All, [AssetBTC])).toEqual({
+        kind: 'flat',
+        assets: [AssetETH]
+      })
     })
   })
 })
