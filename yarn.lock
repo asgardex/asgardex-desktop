@@ -7216,7 +7216,7 @@ __metadata:
     "@types/lodash": "npm:^4"
     "@types/node": "npm:^22.14"
     "@types/qrcode": "npm:^1.4.2"
-    "@types/react": "npm:^18.0.15"
+    "@types/react": "npm:^19.3.0"
     "@types/react-dom": "npm:^18.0.6"
     "@types/redux-logger": "npm:^3"
     "@typescript-eslint/eslint-plugin": "npm:^8.70.0"
@@ -7302,7 +7302,7 @@ __metadata:
     prettier-plugin-tailwindcss: "npm:^0.8.0"
     process: "npm:^0.11.10"
     qrcode: "npm:^1.5.3"
-    react: "npm:^18.2.0"
+    react: "npm:^19.3.0"
     react-dom: "npm:^18.2.0"
     react-hook-form: "npm:^7.34.0"
     react-intl: "npm:^6.0.4"
@@ -14520,6 +14520,13 @@ __metadata:
   dependencies:
     loose-envify: "npm:^1.1.0"
   checksum: 10/261137d3f3993eaa2368a83110466fc0e558bc2c7f7ae7ca52d94f03aac945f45146bd85e5f481044db1758a1dbb57879e2fcdd33924e2dde1bdc550ce73f7bf
+  languageName: node
+  linkType: hard
+
+"react@npm:^19.3.0":
+  version: 19.3.0
+  resolution: "react@npm:19.3.0"
+  checksum: 10/e98669f09750c41abb1bf020af67cc847e018c91a8c5413d3f40ddd737e3daef6e419bcd1521b113fda73fd667ae82d5f0e9d9e3ff462faeb82059c09e7f04b1
   languageName: node
   linkType: hard
 
