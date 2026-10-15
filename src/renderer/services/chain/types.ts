@@ -209,6 +209,8 @@ export type SwapFeesParams = {
   readonly inboundProtocol?: Chain
   /** UTXO chains. Set for Chainflip / OneClick: a plain transfer, paid without node `gas_rate`. */
   readonly plainTransfer?: boolean
+  /** UTXO chains. Set when the swap is a MAX sweep (`transferMax`): all UTXOs, no change output. */
+  readonly sendMax?: boolean
 }
 
 export type SwapFeesHandler = (p: SwapFeesParams) => SwapFeesLD

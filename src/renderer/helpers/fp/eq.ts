@@ -155,7 +155,8 @@ export const eqSwapFeesParams = Eq.struct<SwapFeesParams>({
   outAsset: eqAsset,
   sender: { equals: (a, b) => (a ?? '') === (b ?? '') },
   inboundProtocol: { equals: (a, b) => (a ?? '') === (b ?? '') },
-  plainTransfer: { equals: (a, b) => !!a === !!b }
+  plainTransfer: { equals: (a, b) => !!a === !!b },
+  sendMax: { equals: (a, b) => !!a === !!b }
 })
 
 export const eqApproveParams = Eq.struct<ApproveParams>({

@@ -117,6 +117,7 @@ const getInboundAddresses$ = (chain: Chain, inboundProtocol?: Chain): InboundAdd
  * Size comes from the sender's UTXO count (`utxosRD`, one `getUTXOs` call next to the fee scan). While that
  * count loads the result stays pending; if it fails the size is derived from `feesWithRates` instead.
  * `plainTransfer` (Chainflip / OneClick) sends without node `gas_rate`, so no inbound data is used.
+ * `sendMax` prices a MAX sweep (`transferMax`: every UTXO, no change output), so the estimate matches it exactly.
  */
 const utxoInboundFee$ = ({
   asset,
@@ -125,7 +126,8 @@ const utxoInboundFee$ = ({
   inboundAddressesRD,
   feesWithRatesRD,
   utxosRD,
-  plainTransfer
+  plainTransfer,
+  sendMax
 }: {
   asset: AnyAsset
   chain: Chain
@@ -134,6 +136,7 @@ const utxoInboundFee$ = ({
   feesWithRatesRD: RD.RemoteData<Error, FeesWithRates>
   utxosRD: RD.RemoteData<Error, UTXO[]>
   plainTransfer?: boolean
+  sendMax?: boolean
 }): Rx.Observable<RD.RemoteData<Error, { asset: AnyAsset; amount: BaseAmount }>> => {
   if (!RD.isSuccess(feesWithRatesRD)) return Rx.of(RD.failure(new Error(`Failed to load ${chain} fees`)))
   if (RD.isPending(utxosRD)) return Rx.of(RD.pending)
@@ -148,7 +151,8 @@ const utxoInboundFee$ = ({
             ? O.none
             : getChainFeeData(inboundAddressesRD.value, chain),
         utxoCount: RD.isSuccess(utxosRD) ? utxosRD.value.length : undefined,
-        hasMemo: memo.length > 0
+        hasMemo: memo.length > 0,
+        sendMax
       })
     })
   )
@@ -193,7 +197,8 @@ export const poolInboundFee$ = (
   memo: string,
   sender?: string,
   inboundProtocol?: Chain,
-  plainTransfer?: boolean
+  plainTransfer?: boolean,
+  sendMax?: boolean
 ): PoolFeeLD => {
   if (isSynthAsset(asset)) {
     return FP.pipe(
@@ -263,7 +268,8 @@ export const poolInboundFee$ = (
             inboundAddressesRD,
             feesWithRatesRD,
             utxosRD,
-            plainTransfer
+            plainTransfer,
+            sendMax
           })
         ),
         RxOp.catchError(() => {
@@ -599,7 +605,8 @@ export const poolInboundFee$ = (
             inboundAddressesRD,
             feesWithRatesRD,
             utxosRD,
-            plainTransfer
+            plainTransfer,
+            sendMax
           })
         ),
         RxOp.catchError(() => {
@@ -656,7 +663,8 @@ export const poolInboundFee$ = (
             inboundAddressesRD,
             feesWithRatesRD,
             utxosRD,
-            plainTransfer
+            plainTransfer,
+            sendMax
           })
         ),
         RxOp.catchError(() => {

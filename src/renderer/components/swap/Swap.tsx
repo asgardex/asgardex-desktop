@@ -1133,9 +1133,11 @@ export const Swap = ({
       outAsset: targetAsset,
       sender: sourceWalletAddress || undefined,
       inboundProtocol: feeProtocol === 'Thorchain' ? THORChain : feeProtocol === 'Mayachain' ? MAYAChain : undefined,
-      plainTransfer: feeProtocol === 'Chainflip' || feeProtocol === 'OneClick' ? true : undefined
+      plainTransfer: feeProtocol === 'Chainflip' || feeProtocol === 'OneClick' ? true : undefined,
+      // Same condition `useSwapExecution` uses to send via `transferMax`
+      sendMax: isSourceMaxSweep && isSendMax ? true : undefined
     }),
-    [feeProtocol, sourceAsset, sourceWalletAddress, swapMemo, targetAsset]
+    [feeProtocol, isSendMax, isSourceMaxSweep, sourceAsset, sourceWalletAddress, swapMemo, targetAsset]
   )
 
   const reloadFeesHandler = useCallback(() => {
@@ -1821,6 +1823,15 @@ export const Swap = ({
     prevFeeProtocol.current = feeProtocol
     reloadFees(swapFeeParams)
   }, [reloadFees, feeProtocol, swapFeeParams])
+
+  // Re-estimate when MAX is toggled: a sweep spends every UTXO without a change output.
+  const feeSendMax = !!swapFeeParams.sendMax
+  const prevFeeSendMax = useRef(feeSendMax)
+  useEffect(() => {
+    if (prevFeeSendMax.current === feeSendMax) return
+    prevFeeSendMax.current = feeSendMax
+    reloadFees(swapFeeParams)
+  }, [reloadFees, feeSendMax, swapFeeParams])
 
   // Track successful swap transactions
   useEffect(() => {
