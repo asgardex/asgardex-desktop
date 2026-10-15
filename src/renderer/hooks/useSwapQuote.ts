@@ -17,7 +17,11 @@ import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
 import { quoteNeedsRouterApproval } from '../helpers/evmApprovalHelper'
 import { logger } from '../helpers/logger'
-import { filterQuotableProtocols } from '../helpers/protocolTradingHalt'
+import {
+  dropMayachainForBtcTaproot,
+  filterQuotableProtocols,
+  isBtcTaprootAddress
+} from '../helpers/protocolTradingHalt'
 import { getCurrentNetworkState } from '../services/app/service'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useThorchainMimirHalt } from './useMimirHalt'
@@ -101,10 +105,21 @@ export const useSwapQuote = ({
     [haltedChainsThor, mimirHaltThor, haltedChainsMaya, mimirHaltMaya]
   )
 
+  const mayaBlockedByTaproot = isBtcTaprootAddress(sourceWalletAddress) || isBtcTaprootAddress(destinationAddress)
+
   const quotableProtocols: Protocol[] = useMemo(
-    () => filterQuotableProtocols(protocols, sourceAsset, targetAsset, haltState),
-    [protocols, sourceAsset, targetAsset, haltState]
+    () =>
+      dropMayachainForBtcTaproot(
+        filterQuotableProtocols(protocols, sourceAsset, targetAsset, haltState),
+        sourceWalletAddress,
+        destinationAddress
+      ),
+    [protocols, sourceAsset, targetAsset, haltState, sourceWalletAddress, destinationAddress]
   )
+
+  // Read at response time so an in-flight quote cannot put Maya back after the address changed.
+  const taprootAddressRef = useRef({ source: sourceWalletAddress, destination: destinationAddress })
+  taprootAddressRef.current = { source: sourceWalletAddress, destination: destinationAddress }
 
   // Halt-filtered protocol set + boost/network — not fetchQuote identity.
   const quoteRefreshKey = useMemo(
@@ -126,6 +141,12 @@ export const useSwapQuote = ({
   useEffect(() => {
     preferredProtocolRef.current = null
   }, [sourceAsset, targetAsset])
+
+  // A Taproot sender or recipient must not stay stuck on a Maya quote from the previous address.
+  useEffect(() => {
+    if (!mayaBlockedByTaproot) return
+    if (preferredProtocolRef.current === 'Mayachain') preferredProtocolRef.current = null
+  }, [mayaBlockedByTaproot])
 
   const fetchQuote = useCallback(
     async (amount: BaseAmount) => {
@@ -217,13 +238,19 @@ export const useSwapQuote = ({
         // Discard stale response if a newer request was fired
         if (currentRequestId !== requestIdRef.current) return
 
-        const allQuotes: ExtendedQuoteSwap[] = result.map(
-          (quote) =>
-            ({
-              ...quote,
-              isBoostQuote: quote.protocol === 'Chainflip' && isBoostEnabled
-            }) as ExtendedQuoteSwap
-        )
+        const taprootNow = taprootAddressRef.current
+        const blockMaya = isBtcTaprootAddress(taprootNow.source) || isBtcTaprootAddress(taprootNow.destination)
+        if (blockMaya && preferredProtocolRef.current === 'Mayachain') preferredProtocolRef.current = null
+
+        const allQuotes: ExtendedQuoteSwap[] = result
+          .map(
+            (quote) =>
+              ({
+                ...quote,
+                isBoostQuote: quote.protocol === 'Chainflip' && isBoostEnabled
+              }) as ExtendedQuoteSwap
+          )
+          .filter((quote) => !(blockMaya && quote.protocol === 'Mayachain'))
 
         // Prefer real canSwap quotes. If none, keep THOR/MAYA quotes blocked only by
         // missing router allowance so Swap can select them and run an on-chain
@@ -308,6 +335,8 @@ export const useSwapQuote = ({
   )
 
   const selectQuote = useCallback((quote: ExtendedQuoteSwap) => {
+    const { source, destination } = taprootAddressRef.current
+    if (quote.protocol === 'Mayachain' && (isBtcTaprootAddress(source) || isBtcTaprootAddress(destination))) return
     preferredProtocolRef.current = quote.protocol
     setSelectedQuote(O.some(quote))
   }, [])
@@ -320,49 +349,70 @@ export const useSwapQuote = ({
     setExpiry(new Date())
   }, [])
 
+  // Hide Maya on this render. The stored quote can still be Maya until the next response lands.
+  const visibleQuotes = useMemo(
+    () =>
+      mayaBlockedByTaproot
+        ? FP.pipe(
+            quotes,
+            O.map((list) => list.filter((quote) => quote.protocol !== 'Mayachain'))
+          )
+        : quotes,
+    [mayaBlockedByTaproot, quotes]
+  )
+
+  const visibleSelected = useMemo(() => {
+    if (!mayaBlockedByTaproot) return selectedQuote
+    if (O.isSome(selectedQuote) && selectedQuote.value.protocol !== 'Mayachain') return selectedQuote
+    if (O.isNone(visibleQuotes)) return O.none
+    const viable = sortQuotesByOutput(visibleQuotes.value.filter((quote) => quote.canSwap))
+    const picked = pickSelectedQuote(viable, [], null)
+    return picked ? O.some(picked) : O.none
+  }, [mayaBlockedByTaproot, selectedQuote, visibleQuotes])
+
   // Derived values from selected quote
   const canSwap: boolean = useMemo(
     () =>
       FP.pipe(
-        selectedQuote,
+        visibleSelected,
         O.fold(
           () => false,
           (txDetails) => txDetails.canSwap
         )
       ),
-    [selectedQuote]
+    [visibleSelected]
   )
 
   const slippage: number = useMemo(
     () =>
       FP.pipe(
-        selectedQuote,
+        visibleSelected,
         O.fold(
           () => 0,
           (txDetails) => txDetails.slipBasisPoints / 100
         )
       ),
-    [selectedQuote]
+    [visibleSelected]
   )
 
   const expectedAmount: CryptoAmount = useMemo(
     () =>
       FP.pipe(
-        selectedQuote,
+        visibleSelected,
         O.fold(
           () => new CryptoAmount(baseAmount(0), targetAsset),
           (txDetails) => txDetails.expectedAmount
         )
       ),
-    [selectedQuote, targetAsset]
+    [visibleSelected, targetAsset]
   )
 
   // Re-fetch when assets change (if amount > 0 and affiliateBps is known)
   // This is driven from Swap.tsx via the fetchQuote call in its own useEffect
 
   return {
-    quotes,
-    selectedQuote,
+    quotes: visibleQuotes,
+    selectedQuote: visibleSelected,
     quoteError,
     isFetching,
     fetchQuote,

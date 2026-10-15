@@ -2,6 +2,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { useIntl } from 'react-intl'
 
 import { isLedgerWallet } from '../../../../shared/utils/guard'
+import { distinctChainId } from '../../../helpers/assetHelper'
 import { WalletBalance } from '../../../services/wallet/types'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { Size as IconSize } from '../../uielements/assets/assetIcon/AssetIcon.types'
@@ -18,6 +19,7 @@ export const AccountSelector = (props: Props): JSX.Element => {
   const { selectedWallet, size = 'large', network } = props
 
   const intl = useIntl()
+  const chainId = distinctChainId(selectedWallet.asset)
 
   return (
     <div className="py-4">
@@ -32,9 +34,11 @@ export const AccountSelector = (props: Props): JSX.Element => {
               <WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</WalletTypeLabel>
             )}
           </div>
-          <Label color="light" size="large" textTransform="uppercase">
-            {selectedWallet.asset.chain}
-          </Label>
+          {chainId && (
+            <Label color="light" size="large" textTransform="uppercase">
+              {chainId}
+            </Label>
+          )}
         </div>
       </div>
     </div>

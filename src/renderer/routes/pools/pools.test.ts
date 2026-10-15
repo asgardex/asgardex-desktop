@@ -1,5 +1,6 @@
 import { WalletType } from '../../../shared/wallet/types'
 import { base, pending, active, deposit, swap, detail } from './index'
+import { sourceHdModeFromQuery } from './swap'
 
 describe('Pools routes', () => {
   describe('base route', () => {
@@ -123,6 +124,69 @@ describe('Pools routes', () => {
           targetWalletType: WalletType.Keystore
         })
       ).toEqual('/pools/swap')
+    })
+    it('names the taproot wallet on a BTC swap', () => {
+      expect(
+        swap.path({
+          source: 'BTC.BTC',
+          sourceWalletType: WalletType.Keystore,
+          target: 'ETH.ETH',
+          targetWalletType: WalletType.Keystore,
+          sourceHdMode: 'p2tr'
+        })
+      ).toEqual('/pools/swap/BTC.BTC/keystore/ETH.ETH/keystore?sourceHdMode=p2tr')
+    })
+    it('keeps the taproot wallet when a recipient is set', () => {
+      expect(
+        swap.path({
+          source: 'BTC.BTC',
+          sourceWalletType: WalletType.Keystore,
+          target: 'ETH.ETH',
+          targetWalletType: WalletType.Keystore,
+          recipient: '0xabc',
+          sourceHdMode: 'p2tr'
+        })
+      ).toEqual('/pools/swap/BTC.BTC/keystore/ETH.ETH/keystore/0xabc?sourceHdMode=p2tr')
+    })
+    it('leaves native segwit on the plain BTC path', () => {
+      expect(
+        swap.path({
+          source: 'BTC.BTC',
+          sourceWalletType: WalletType.Keystore,
+          target: 'ETH.ETH',
+          targetWalletType: WalletType.Keystore,
+          sourceHdMode: 'p2wpkh'
+        })
+      ).toEqual('/pools/swap/BTC.BTC/keystore/ETH.ETH/keystore')
+    })
+    it('reads a taproot source only for BTC', () => {
+      expect(sourceHdModeFromQuery('BTC', 'p2tr')).toEqual('p2tr')
+      expect(sourceHdModeFromQuery('BTC', 'p2wpkh')).toBeUndefined()
+      expect(sourceHdModeFromQuery('ETH', 'p2tr')).toBeUndefined()
+      expect(sourceHdModeFromQuery('BTC', null)).toBeUndefined()
+    })
+    it('names a taproot destination', () => {
+      expect(
+        swap.path({
+          source: 'ETH.ETH',
+          sourceWalletType: WalletType.Keystore,
+          target: 'BTC.BTC',
+          targetWalletType: WalletType.Keystore,
+          targetHdMode: 'p2tr'
+        })
+      ).toEqual('/pools/swap/ETH.ETH/keystore/BTC.BTC/keystore?targetHdMode=p2tr')
+    })
+    it('keeps both taproot wallets in the query', () => {
+      expect(
+        swap.path({
+          source: 'BTC.BTC',
+          sourceWalletType: WalletType.Keystore,
+          target: 'BTC.BTC',
+          targetWalletType: WalletType.Keystore,
+          sourceHdMode: 'p2tr',
+          targetHdMode: 'p2tr'
+        })
+      ).toEqual('/pools/swap/BTC.BTC/keystore/BTC.BTC/keystore?sourceHdMode=p2tr&targetHdMode=p2tr')
     })
   })
 

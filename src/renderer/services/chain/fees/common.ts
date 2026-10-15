@@ -169,7 +169,7 @@ export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
 /**
  * Fees for pool inbound txs (swap/deposit/withdraw/earn)
  */
-export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
+export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string): PoolFeeLD => {
   if (isSynthAsset(asset)) {
     return FP.pipe(
       MAYA.fees$(),
@@ -538,16 +538,21 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         RxOp.catchError((error) => Rx.of(RD.failure(error))),
         RxOp.startWith(RD.pending)
       )
-    case BTCChain:
-      // Use gas_rate from inbound addresses with FeesWithRates ratio
+    case BTCChain: {
+      // Use gas_rate from inbound addresses with FeesWithRates ratio.
+      // A Taproot swap spends bc1p… UTXOs, so the estimate has to scan that address.
+      // With no sender, fall back to the Native SegWit wallet.
+      const btcSender$: Rx.Observable<O.Option<string>> = sender
+        ? Rx.of(O.some(sender))
+        : BTC.address$.pipe(RxOp.map(O.map((walletAddress) => walletAddress.address)))
       return FP.pipe(
         Rx.combineLatest([
           getInboundAddresses$(BTCChain),
-          BTC.address$.pipe(
+          btcSender$.pipe(
             RxOp.switchMap(
               O.fold(
                 () => Rx.of(RD.initial),
-                (address) => BTC.feesWithRates$(address.address, memo)
+                (address) => BTC.feesWithRates$(address, memo)
               )
             )
           )
@@ -577,13 +582,13 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         }),
         RxOp.catchError(() => {
           return FP.pipe(
-            BTC.address$.pipe(
+            btcSender$.pipe(
               RxOp.switchMap(
                 O.fold(
                   () => Rx.of(RD.failure(new Error('No address available'))),
                   (address) =>
                     FP.pipe(
-                      BTC.feesWithRates$(address.address, memo),
+                      BTC.feesWithRates$(address, memo),
                       liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
                     )
                 )
@@ -593,6 +598,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         }),
         RxOp.startWith(RD.pending)
       )
+    }
     case BCHChain:
       // Use gas_rate from inbound addresses with FeesWithRates ratio
       return FP.pipe(

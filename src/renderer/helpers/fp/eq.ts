@@ -152,7 +152,8 @@ export const eqOPoolAddresses = O.getEq(eqPoolAddresses)
 export const eqSwapFeesParams = Eq.struct<SwapFeesParams>({
   inAsset: eqAsset,
   memo: eqString,
-  outAsset: eqAsset
+  outAsset: eqAsset,
+  sender: { equals: (a, b) => (a ?? '') === (b ?? '') }
 })
 
 export const eqApproveParams = Eq.struct<ApproveParams>({

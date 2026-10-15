@@ -6,7 +6,7 @@ import { IntlShape } from 'react-intl'
 import { DEFAULT_EVM_HD_MODE } from '../../shared/evm/types'
 import { optionFromNullableString } from '../../shared/utils/fp'
 import { isLedgerWallet, isWalletType } from '../../shared/utils/guard'
-import { WalletAddress, WalletType } from '../../shared/wallet/types'
+import { HDMode, WalletAddress, WalletType } from '../../shared/wallet/types'
 import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
 import { TradeAccount } from '../services/thorchain/types'
@@ -45,11 +45,18 @@ export const getWalletBalanceByAsset = (
 export const getWalletBalanceByAssetAndWalletType = ({
   oWalletBalances,
   asset,
-  walletType
+  walletType,
+  hdMode
 }: {
   oWalletBalances: O.Option<NonEmptyWalletBalances>
   asset: AnyAsset
   walletType: WalletType
+  /**
+   * When set, only the balance for that derivation matches. BTC Native SegWit
+   * and Taproot share an asset and a wallet type, so the first hit is SegWit
+   * unless the caller asks for `p2tr`.
+   */
+  hdMode?: HDMode
 }): O.Option<WalletBalance> =>
   FP.pipe(
     oWalletBalances,
@@ -57,8 +64,10 @@ export const getWalletBalanceByAssetAndWalletType = ({
       FP.pipe(
         walletBalances,
         A.findFirst(
-          ({ asset: assetInList, walletType: balanceWalletType }) =>
-            eqAsset.equals(assetInList, asset) && eqWalletType.equals(walletType, balanceWalletType)
+          ({ asset: assetInList, walletType: balanceWalletType, hdMode: balanceHdMode }) =>
+            eqAsset.equals(assetInList, asset) &&
+            eqWalletType.equals(walletType, balanceWalletType) &&
+            (hdMode === undefined || balanceHdMode === hdMode)
         )
       )
     )

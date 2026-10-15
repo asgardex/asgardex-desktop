@@ -6,6 +6,7 @@ import { assetFromString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
+import { assetChainTicker } from '../../../helpers/assetHelper'
 import { truncateMiddle } from '../../../helpers/stringHelper'
 import { formatSwapTime } from '../../../helpers/timeHelper'
 import { OneClickTrackedTransaction } from '../../../services/oneclick/transactionTracking'
@@ -35,14 +36,14 @@ export const OneClickTransactionItem = ({
     const asset = assetFromString(transaction.fromAsset)
     if (!asset) return transaction.fromAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.ticker}`
+    return assetChainTicker(asset)
   }, [transaction.fromAsset, isMini])
 
   const toAsset = useMemo(() => {
     const asset = assetFromString(transaction.toAsset)
     if (!asset) return transaction.toAsset
     if (isMini) return asset.ticker
-    return `${asset.chain}.${asset.ticker}`
+    return assetChainTicker(asset)
   }, [transaction.toAsset, isMini])
 
   useEffect(() => {

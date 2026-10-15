@@ -42,6 +42,8 @@ import { usePricePoolMaya } from './usePricePoolMaya'
 type UseSwapFeesParams = {
   sourceAsset: AnyAsset
   targetAsset: AnyAsset
+  /** Spender address. BTC inbound fees scan this wallet's UTXOs. */
+  sourceAddress?: string
   fees$: SwapFeesHandler
   destinationAddress: O.Option<Address>
   streaming: { interval: number; quantity: number }
@@ -77,6 +79,7 @@ type UseSwapFeesResult = {
 export const useSwapFees = ({
   sourceAsset,
   targetAsset,
+  sourceAddress,
   fees$,
   destinationAddress,
   streaming,
@@ -134,7 +137,8 @@ export const useSwapFees = ({
       fees$({
         inAsset: sourceAsset,
         memo: swapMemo,
-        outAsset: targetAsset
+        outAsset: targetAsset,
+        sender: sourceAddress || undefined
       }),
       RxOp.map((chainFees) => {
         if (RD.isSuccess(chainFees)) {

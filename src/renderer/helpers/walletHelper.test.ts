@@ -25,6 +25,7 @@ import {
   getLtcAmountFromBalances,
   getWalletAddressFromNullableString,
   getWalletBalanceByAsset,
+  getWalletBalanceByAssetAndWalletType,
   getWalletByAddress,
   getWalletIndexFromNullableString,
   getWalletTypeFromNullableString,
@@ -162,6 +163,41 @@ describe('walletHelper', () => {
     it('returns empty array if no asset is available', () => {
       const result = filterWalletBalancesByAssets([RUNE_WB, DOGE_WB], [AssetLTC])
       expect(eqWalletBalances.equals(result, [])).toBeTruthy()
+    })
+  })
+
+  describe('getWalletBalanceByAssetAndWalletType', () => {
+    const btcSegwit = mockWalletBalance({
+      asset: ASSETS_MAINNET.BTC,
+      walletAddress: 'bc1q-segwit',
+      hdMode: 'p2wpkh',
+      amount: assetToBase(assetAmount(1))
+    })
+    const btcTaproot = mockWalletBalance({
+      asset: ASSETS_MAINNET.BTC,
+      walletAddress: 'bc1p-taproot',
+      hdMode: 'p2tr',
+      amount: assetToBase(assetAmount(2))
+    })
+    const balances = NEA.fromArray([btcSegwit, btcTaproot])
+
+    it('returns the first BTC balance when no derivation is requested', () => {
+      const result = getWalletBalanceByAssetAndWalletType({
+        oWalletBalances: balances,
+        asset: ASSETS_MAINNET.BTC,
+        walletType: WalletType.Keystore
+      })
+      expect(O.toNullable(result)?.walletAddress).toEqual('bc1q-segwit')
+    })
+
+    it('returns the taproot balance when hdMode is p2tr', () => {
+      const result = getWalletBalanceByAssetAndWalletType({
+        oWalletBalances: balances,
+        asset: ASSETS_MAINNET.BTC,
+        walletType: WalletType.Keystore,
+        hdMode: 'p2tr'
+      })
+      expect(O.toNullable(result)?.walletAddress).toEqual('bc1p-taproot')
     })
   })
 

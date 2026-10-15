@@ -41,6 +41,7 @@ import { useChainflipContext } from '../../../contexts/ChainflipContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import {
+  assetChainQualifier,
   isBtcAsset,
   isBtcSecuredAsset,
   isCacaoAsset,
@@ -401,7 +402,8 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
                 source,
                 target,
                 sourceWalletType: walletType,
-                targetWalletType: DEFAULT_WALLET_TYPE
+                targetWalletType: DEFAULT_WALLET_TYPE,
+                sourceHdMode: hdMode
               })
             )
           ),
@@ -518,6 +520,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         header: intl.formatMessage({ id: 'common.pool' }),
         cell: ({ row }) => {
           const { asset } = row.original
+          const chainId = assetChainQualifier(asset)
           return (
             <div className="flex items-center space-x-4 pl-4">
               <AssetIcon asset={asset} size="normal" network={network} />
@@ -525,9 +528,9 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
                 <Label className="!text-16 !leading-[18px]" textTransform="uppercase" weight="bold">
                   {asset.ticker}
                 </Label>
-                {!isSynthAsset(asset) && !isSecuredAsset(asset) && (
+                {chainId && (
                   <Label color="input" textTransform="uppercase" weight="bold">
-                    {asset.chain}
+                    {chainId}
                   </Label>
                 )}
                 {radixTradeDisabled(asset.chain) && <RadixDelistedNotice />}

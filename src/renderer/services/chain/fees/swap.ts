@@ -78,12 +78,12 @@ const swapFees$: SwapFeesHandler = (initialParams) => {
   return Rx.concat(Rx.of(O.none as O.Option<SwapFeesParams>), updateSwapFeesParams$.pipe(RxOp.skip(1))).pipe(
     RxOp.debounceTime(300),
     RxOp.switchMap((oReloadParams) => {
-      const { inAsset, memo, outAsset } = FP.pipe(
+      const { inAsset, memo, outAsset, sender } = FP.pipe(
         oReloadParams,
         O.getOrElse(() => initialParams)
       )
       return liveData.sequenceS({
-        inFee: poolInboundFee$(inAsset, memo),
+        inFee: poolInboundFee$(inAsset, memo, sender),
         outFee: poolOutboundFee$(outAsset)
       })
     })

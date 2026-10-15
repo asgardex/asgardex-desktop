@@ -18,6 +18,8 @@ import {
   BaseAmount,
   bn,
   Chain,
+  isSecuredAsset,
+  isSynthAsset,
   SecuredAsset,
   TokenAsset
 } from '@xchainjs/xchain-util'
@@ -555,6 +557,26 @@ export const isPricePoolAsset = (asset: AnyAsset): asset is PricePoolAsset =>
 // How should this work for synths tobefixed
 export const isChainAsset = (asset: AnyAsset): boolean =>
   isSupportedChain(asset.chain) && eqAsset.equals(asset, getChainAsset(asset.chain))
+
+/**
+ * Chain id to print with a ticker. Undefined when it repeats the ticker, as with BTC and ETH.
+ * RUNE on THOR and tokens such as USDT on ETH still return the chain id.
+ */
+export const distinctChainId = (asset: AnyAsset): string | undefined =>
+  asset.chain.toUpperCase() === asset.ticker.toUpperCase() ? undefined : asset.chain
+
+/**
+ * Chain id for a label that already shows a synth or secured pill.
+ * Those types keep the pill and drop the chain line.
+ */
+export const assetChainQualifier = (asset: AnyAsset): string | undefined =>
+  isSynthAsset(asset) || isSecuredAsset(asset) ? undefined : distinctChainId(asset)
+
+/** Compact name for a progress row. "BTC" when the chain repeats the ticker, otherwise "ETH.USDT". */
+export const assetChainTicker = (asset: AnyAsset): string => {
+  const chain = distinctChainId(asset)
+  return chain ? `${chain}.${asset.ticker}` : asset.ticker
+}
 
 export const isUSDAsset = ({ ticker }: AnyAsset): boolean =>
   ticker.includes('USD') || ticker.includes('UST') || ticker.includes('DAI') || ticker.includes('usdt')

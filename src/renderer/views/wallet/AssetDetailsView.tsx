@@ -144,9 +144,10 @@ export const AssetDetailsView = (): JSX.Element => {
     oSelectedAsset,
     O.fold(
       () => <Spin />,
-      ({ asset, walletAddress, walletType, price }) => (
+      ({ asset, walletAddress, walletType, hdMode, price }) => (
         <AssetDetails
           walletType={walletType}
+          hdMode={hdMode}
           txsPageRD={txsRD}
           balances={walletBalances}
           asset={asset}

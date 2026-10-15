@@ -20,6 +20,8 @@ type Props = {
   shadowless?: boolean
   disabled?: boolean
   network: Network
+  /** Shown beside the selected ticker, such as "BTC · Taproot". Menu rows stay unlabeled. */
+  badge?: string
 }
 
 export const AssetSelect = (props: Props): JSX.Element => {
@@ -32,7 +34,8 @@ export const AssetSelect = (props: Props): JSX.Element => {
     showAssetName = true,
     disabled = false,
     shadowless = false,
-    network
+    network,
+    badge
   } = props
 
   const [openMenu, setOpenMenu] = useState<boolean>(false)
@@ -72,7 +75,7 @@ export const AssetSelect = (props: Props): JSX.Element => {
         )}
         disabled={disableButton}
         onClick={buttonClickHandler}>
-        <AssetData noTicker={!showAssetName} asset={asset} network={network} />
+        <AssetData noTicker={!showAssetName} asset={asset} network={network} badge={badge} />
 
         <ChevronDownIcon
           className={clsx(

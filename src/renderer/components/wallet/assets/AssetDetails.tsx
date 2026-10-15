@@ -28,7 +28,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { chainToString, isChainOfMaya, isChainOfThor, radixTradeDisabled } from '../../../../shared/utils/chain'
 import { AssetRuneNative, THORChain, AssetCacao, MAYAChain, AssetBTC } from '../../../../shared/utils/chainIds'
-import { WalletType } from '../../../../shared/wallet/types'
+import { HDMode, WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useChainflipContext } from '../../../contexts/ChainflipContext'
 import * as AssetHelper from '../../../helpers/assetHelper'
@@ -61,6 +61,7 @@ export type Props = {
   reloadBalancesHandler?: FP.Lazy<void>
   loadTxsHandler?: LoadTxsHandler
   walletAddress: Address
+  hdMode: HDMode
   disableSend: boolean
   network: Network
   haltedChainsThor: Chain[]
@@ -79,6 +80,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
     openExplorerTxUrl,
     openExplorerAddressUrl,
     walletAddress,
+    hdMode,
     disableSend,
     network,
     haltedChainsThor,
@@ -137,10 +139,11 @@ export const AssetDetails = (props: Props): JSX.Element => {
       source: assetToString(asset),
       target: assetToString(AssetHelper.isRuneNativeAsset(asset) ? AssetBTC : AssetRuneNative),
       sourceWalletType: walletType,
-      targetWalletType: DEFAULT_WALLET_TYPE
+      targetWalletType: DEFAULT_WALLET_TYPE,
+      sourceHdMode: hdMode
     })
     navigate(path)
-  }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, navigate, setProtocol])
+  }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, hdMode, navigate, setProtocol])
 
   const walletActionChartClick = useCallback(() => {
     const chartAsset = getChainAsset(chain)

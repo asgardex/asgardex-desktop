@@ -66,3 +66,25 @@ export const filterQuotableProtocols = (
   haltState: ProtocolTradingHaltState
 ): Protocol[] =>
   protocols.filter((protocol) => !isProtocolTradingHaltedForAssets(protocol, sourceAsset, targetAsset, haltState))
+
+/**
+ * BTC Taproot (bech32m). Mainnet is bc1p, testnet tb1p, regtest bcrt1p.
+ * Compared case-insensitively because a pasted address may be upper case.
+ */
+export const isBtcTaprootAddress = (address: string | undefined | null): boolean => {
+  const normalized = (address ?? '').trim().toLowerCase()
+  return normalized.startsWith('bc1p') || normalized.startsWith('tb1p') || normalized.startsWith('bcrt1p')
+}
+
+/**
+ * MAYAChain loses funds sent to or from a BTC Taproot address.
+ * THORChain, Chainflip, and NEAR Intents still quote that route.
+ */
+export const dropMayachainForBtcTaproot = (
+  protocols: Protocol[],
+  sourceAddress: string,
+  destinationAddress: string
+): Protocol[] => {
+  if (!isBtcTaprootAddress(sourceAddress) && !isBtcTaprootAddress(destinationAddress)) return protocols
+  return protocols.filter((protocol) => protocol !== 'Mayachain')
+}

@@ -103,6 +103,7 @@ import { UIFeesRD } from '../uielements/fees'
 import { CopyLabel } from '../uielements/label/CopyLabel'
 import { Spin } from '../uielements/spin'
 import { Tooltip } from '../uielements/tooltip'
+import { BtcReceiveWalletChoice } from './components/BtcReceiveWalletChoice'
 import { ErrorLabel } from './components/ErrorLabel'
 import { RecipientAddressSection } from './components/RecipientAddressSection'
 import { useSwapConfirmationModals } from './components/SwapConfirmationModals'
@@ -138,6 +139,8 @@ export const Swap = ({
   isApprovedERC20Token$,
   sourceKeystoreAddress: oInitialSourceKeystoreAddress,
   sourceLedgerAddress: oSourceLedgerAddress,
+  sourceHdMode,
+  targetHdMode,
   targetKeystoreAddress: oTargetKeystoreAddress,
   targetLedgerAddress: oTargetLedgerAddress,
   recipientAddress: oRecipientAddress,
@@ -221,6 +224,16 @@ export const Swap = ({
     [useSourceVultisigFromHook, initialSourceWalletType]
   )
 
+  const receiveWalletType = FP.pipe(
+    oTargetWalletType,
+    O.getOrElse(() => appWalletService.getCurrentWalletType())
+  )
+  // Vultisig has no Taproot address. Standalone Ledger already picks the derivation on the recipient card.
+  const canChooseBtcReceiveWallet =
+    targetChain === BTCChain &&
+    !isVultisigWallet(receiveWalletType) &&
+    !(appWalletState && isStandaloneLedgerMode(appWalletState))
+
   const { isChainflipSupportedAssetSync, transactionTrackingService: chainflipTransactionTrackingService } =
     useChainflipContext()
   const {
@@ -266,16 +279,6 @@ export const Swap = ({
   const prevSourceAsset = useRef<O.Option<AnyAsset>>(O.none)
   const prevTargetAsset = useRef<O.Option<AnyAsset>>(O.none)
 
-  const sourceWalletAddress = useMemo(() => {
-    return FP.pipe(
-      oSourceWalletAddress,
-      O.fold(
-        () => '',
-        (sourceAddress) => sourceAddress
-      )
-    )
-  }, [oSourceWalletAddress])
-
   /**
    * All balances based on available assets to swap
    */
@@ -319,7 +322,8 @@ export const Swap = ({
     const result = getWalletBalanceByAssetAndWalletType({
       oWalletBalances,
       asset: sourceAsset,
-      walletType: sourceWalletType
+      walletType: sourceWalletType,
+      hdMode: sourceHdMode
     })
     logger.debug('[Swap] sourceAssetDecimal (from prop):', sourceAssetDecimal)
     logger.debug('[Swap] sourceWalletType:', sourceWalletType)
@@ -338,7 +342,22 @@ export const Swap = ({
       )
     )
     return result
-  }, [sourceAsset, allBalances, sourceWalletType, sourceAssetDecimal])
+  }, [sourceAsset, allBalances, sourceWalletType, sourceHdMode, sourceAssetDecimal])
+
+  // Quotes and refunds use this address. For Taproot, prefer the selected balance
+  // so a late address stream cannot fall back to the Native SegWit wallet.
+  const sourceWalletAddress = useMemo(() => {
+    const fromStream = FP.pipe(
+      oSourceWalletAddress,
+      O.getOrElse(() => '')
+    )
+    if (sourceHdMode !== 'p2tr') return fromStream
+    return FP.pipe(
+      oSourceAssetWB,
+      O.map(({ walletAddress }) => walletAddress),
+      O.getOrElse(() => fromStream)
+    )
+  }, [oSourceAssetWB, oSourceWalletAddress, sourceHdMode])
 
   const sourceBalanceLoading = useMemo(
     () => walletBalancesLoading && O.isNone(oSourceAssetWB),
@@ -372,12 +391,13 @@ export const Swap = ({
         getWalletBalanceByAssetAndWalletType({
           oWalletBalances,
           asset: sourceChainAsset,
-          walletType: sourceWalletType
+          walletType: sourceWalletType,
+          hdMode: sourceChainAsset.chain === BTCChain ? sourceHdMode : undefined
         }),
         O.map(({ amount }) => amount),
         O.getOrElse(() => baseAmount(0, sourceAssetDecimal))
       ),
-    [oWalletBalances, sourceAssetDecimal, sourceChainAsset, sourceWalletType]
+    [oWalletBalances, sourceAssetDecimal, sourceChainAsset, sourceWalletType, sourceHdMode]
   )
 
   const initialAmountToSwap = useMemo(() => baseAmount(0, sourceAssetAmountNative.decimal), [sourceAssetAmountNative])
@@ -472,6 +492,7 @@ export const Swap = ({
   } = useSwapFees({
     sourceAsset,
     targetAsset,
+    sourceAddress: sourceWalletAddress,
     fees$,
     destinationAddress: effectiveRecipientAddress,
     streaming: { interval: streamingInterval, quantity: streamingQuantity },
@@ -1090,13 +1111,19 @@ export const Swap = ({
     onApprovalConfirmed: () => fetchSwap(amountToSwapRef.current)
   })
 
-  const reloadFeesHandler = useCallback(() => {
-    reloadFees({
+  const swapFeeParams = useMemo(
+    () => ({
       inAsset: sourceAsset,
       memo: swapMemo,
-      outAsset: targetAsset
-    })
-  }, [reloadFees, sourceAsset, swapMemo, targetAsset])
+      outAsset: targetAsset,
+      sender: sourceWalletAddress || undefined
+    }),
+    [sourceAsset, sourceWalletAddress, swapMemo, targetAsset]
+  )
+
+  const reloadFeesHandler = useCallback(() => {
+    reloadFees(swapFeeParams)
+  }, [reloadFees, swapFeeParams])
 
   const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
 
@@ -1154,10 +1181,12 @@ export const Swap = ({
       setAmountToSwap(initialAmountToSwap)
       onChangeAsset({
         source: asset,
+        // Picking an asset from the menu selects the asset, not a BTC derivation.
         sourceWalletType: appWalletService.getCurrentWalletType(),
         target: targetAsset,
         targetWalletType: oTargetWalletType,
-        recipientAddress: effectiveRecipientAddress
+        recipientAddress: effectiveRecipientAddress,
+        targetHdMode
       })
     },
     [
@@ -1168,7 +1197,8 @@ export const Swap = ({
       onChangeAsset,
       resetApproval,
       setAmountToSwap,
-      targetAsset
+      targetAsset,
+      targetHdMode
     ]
   )
 
@@ -1181,12 +1211,13 @@ export const Swap = ({
         sourceWalletType,
         target: asset,
         targetWalletType: O.some(appWalletService.getCurrentWalletType()),
-        recipientAddress: O.none
+        recipientAddress: O.none,
+        sourceHdMode
       })
       await delay(100)
       resetApproval()
     },
-    [appWalletService, onChangeAsset, resetApproval, sourceAsset, sourceWalletType]
+    [appWalletService, onChangeAsset, resetApproval, sourceAsset, sourceHdMode, sourceWalletType]
   )
 
   const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
@@ -1744,11 +1775,7 @@ export const Swap = ({
 
   useEffect(() => {
     if (O.isSome(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
-      reloadFees({
-        inAsset: sourceAsset,
-        memo: swapMemo,
-        outAsset: targetAsset
-      })
+      reloadFees(swapFeeParams)
       resetApproval()
       setIsSendMax(false)
     }
@@ -1756,7 +1783,19 @@ export const Swap = ({
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
       prevTargetAsset.current = O.some(targetAsset)
     }
-  }, [reloadFees, resetApproval, resetSwapState, sourceAsset, targetAsset, swapMemo])
+  }, [reloadFees, resetApproval, resetSwapState, sourceAsset, targetAsset, swapFeeParams])
+
+  // The fee subscription is created once. Re-estimate when the spender address
+  // arrives or changes, so a Taproot swap scans bc1p… UTXOs instead of SegWit.
+  const prevFeeSender = useRef(sourceWalletAddress)
+  useEffect(() => {
+    if (!sourceWalletAddress || prevFeeSender.current === sourceWalletAddress) {
+      prevFeeSender.current = sourceWalletAddress
+      return
+    }
+    prevFeeSender.current = sourceWalletAddress
+    reloadFees(swapFeeParams)
+  }, [reloadFees, sourceWalletAddress, swapFeeParams])
 
   // Track successful swap transactions
   useEffect(() => {
@@ -1837,8 +1876,11 @@ export const Swap = ({
     onChangeAsset({
       source: targetAsset,
       sourceWalletType: walletType,
+      // The BTC derivation travels with the asset it belongs to.
+      sourceHdMode: targetChain === BTCChain && targetHdMode === 'p2tr' ? 'p2tr' : undefined,
       target: sourceAsset,
       targetWalletType: O.some(sourceWalletType),
+      targetHdMode: sourceChain === BTCChain && sourceHdMode === 'p2tr' ? 'p2tr' : undefined,
       recipientAddress: oSourceWalletAddress
     })
   }, [
@@ -1850,8 +1892,12 @@ export const Swap = ({
     resetQuote,
     setAmountToSwap,
     sourceAsset,
+    sourceChain,
+    sourceHdMode,
     sourceWalletType,
-    targetAsset
+    targetAsset,
+    targetChain,
+    targetHdMode
   ])
 
   const disableSubmit: boolean = useMemo(
@@ -1916,10 +1962,27 @@ export const Swap = ({
         target: targetAsset,
         sourceWalletType,
         targetWalletType: getTargetWalletTypeByAddress(address),
-        recipientAddress: O.some(address)
+        recipientAddress: O.some(address),
+        sourceHdMode
       })
     },
-    [getTargetWalletTypeByAddress, onChangeAsset, sourceAsset, targetAsset, sourceWalletType]
+    [getTargetWalletTypeByAddress, onChangeAsset, sourceAsset, sourceHdMode, targetAsset, sourceWalletType]
+  )
+
+  const chooseBtcReceiveWallet = useCallback(
+    (taproot: boolean) => {
+      onChangeAsset({
+        source: sourceAsset,
+        sourceWalletType,
+        target: targetAsset,
+        targetWalletType: oTargetWalletType,
+        // Drop any typed address so the page fills the chosen BTC wallet.
+        recipientAddress: O.none,
+        sourceHdMode,
+        targetHdMode: taproot ? 'p2tr' : undefined
+      })
+    },
+    [oTargetWalletType, onChangeAsset, sourceAsset, sourceHdMode, sourceWalletType, targetAsset]
   )
 
   const onChangeEditableRecipientAddress = useCallback(
@@ -1938,7 +2001,9 @@ export const Swap = ({
         target: targetAsset,
         sourceWalletType: useLedger ? WalletType.Ledger : appWalletService.getCurrentWalletType(),
         targetWalletType: oTargetWalletType,
-        recipientAddress: effectiveRecipientAddress
+        recipientAddress: effectiveRecipientAddress,
+        sourceHdMode,
+        targetHdMode
       })
     },
     [
@@ -1949,7 +2014,9 @@ export const Swap = ({
       appWalletService,
       setAmountToSwap,
       sourceAsset,
-      targetAsset
+      sourceHdMode,
+      targetAsset,
+      targetHdMode
     ]
   )
 
@@ -1960,7 +2027,9 @@ export const Swap = ({
         target: targetAsset,
         sourceWalletType,
         targetWalletType: O.some(useLedger ? WalletType.Ledger : appWalletService.getCurrentWalletType()),
-        recipientAddress: useLedger ? oTargetLedgerAddress : oTargetKeystoreAddress
+        recipientAddress: useLedger ? oTargetLedgerAddress : oTargetKeystoreAddress,
+        sourceHdMode,
+        targetHdMode
       })
     },
     [
@@ -1968,8 +2037,10 @@ export const Swap = ({
       oTargetKeystoreAddress,
       onChangeAsset,
       sourceAsset,
+      sourceHdMode,
       sourceWalletType,
       targetAsset,
+      targetHdMode,
       appWalletService
     ]
   )
@@ -2088,6 +2159,7 @@ export const Swap = ({
           hasLedger={hasSourceAssetLedger}
           useLedger={useSourceAssetLedger}
           useLedgerHandler={onClickUseSourceAssetLedger}
+          assetBadge={sourceHdMode === 'p2tr' ? intl.formatMessage({ id: 'common.taproot' }) : undefined}
         />
         <div className="relative mt-1 flex flex-col">
           <AssetInput
@@ -2105,6 +2177,12 @@ export const Swap = ({
             useLedger={useTargetAssetLedger}
             useLedgerHandler={onClickUseTargetAssetLedger}
             hasLedger={hasTargetAssetLedger}
+            assetBadge={targetHdMode === 'p2tr' ? intl.formatMessage({ id: 'common.taproot' }) : undefined}
+            headerExtra={
+              canChooseBtcReceiveWallet ? (
+                <BtcReceiveWalletChoice taproot={targetHdMode === 'p2tr'} onSelect={chooseBtcReceiveWallet} />
+              ) : undefined
+            }
           />
           <div className="absolute -top-[32px] left-[calc(50%-30px)] flex flex-col justify-center">
             <div className="w-60px h-60px">

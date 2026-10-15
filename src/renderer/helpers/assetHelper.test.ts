@@ -21,6 +21,9 @@ import { EVMZeroAddress } from '../services/evm/const'
 import {
   isBchAsset,
   isBtcAsset,
+  assetChainQualifier,
+  assetChainTicker,
+  distinctChainId,
   isChainAsset,
   isEthAsset,
   isLtcAsset,
@@ -240,6 +243,42 @@ describe('helpers/assetHelper', () => {
     })
     it('BSC.USDC', () => {
       expect(isChainAsset(AssetUSDCBSC)).toBeFalsy()
+    })
+  })
+
+  describe('distinctChainId', () => {
+    it('hides a chain id that repeats the ticker', () => {
+      expect(distinctChainId(AssetBTC)).toBeUndefined()
+      expect(distinctChainId(AssetETH)).toBeUndefined()
+    })
+    it('keeps a chain id that differs from the ticker', () => {
+      expect(distinctChainId(AssetRuneNative)).toEqual(AssetRuneNative.chain)
+      expect(distinctChainId(AssetUSDCBSC)).toEqual(AssetUSDCBSC.chain)
+    })
+  })
+
+  describe('assetChainQualifier', () => {
+    it('drops the chain for synth and secured assets', () => {
+      expect(assetChainQualifier({ ...AssetBTC, type: AssetType.SYNTH })).toBeUndefined()
+      expect(
+        assetChainQualifier({ chain: ETHChain, symbol: 'USDT-0x', ticker: 'USDT', type: AssetType.SYNTH })
+      ).toBeUndefined()
+      expect(
+        assetChainQualifier({ chain: ETHChain, symbol: 'USDT-0x', ticker: 'USDT', type: AssetType.SECURED })
+      ).toBeUndefined()
+    })
+    it('keeps the chain for a token', () => {
+      expect(assetChainQualifier(AssetUSDCBSC)).toEqual('BSC')
+    })
+  })
+
+  describe('assetChainTicker', () => {
+    it('collapses a repeated chain id', () => {
+      expect(assetChainTicker(AssetBTC)).toEqual('BTC')
+    })
+    it('keeps chain and ticker when they differ', () => {
+      expect(assetChainTicker(AssetRuneNative)).toEqual('THOR.RUNE')
+      expect(assetChainTicker(AssetUSDCBSC)).toEqual('BSC.USDC')
     })
   })
 
