@@ -5,6 +5,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
+import { FeesWithRates } from '@xchainjs/xchain-client'
 
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -26,6 +27,7 @@ import {
   isSecuredAsset,
   isSynthAsset
 } from '@xchainjs/xchain-util'
+import type { UTXO } from '@xchainjs/xchain-utxo-providers'
 import { function as FP, option as O, array as A } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -70,6 +72,7 @@ import * as THOR from '../../thorchain'
 import { inboundAddressesShared$ as thorInboundAddresses$ } from '../../thorchain'
 import { InboundAddress as ThorInboundAddress, InboundAddressesLD } from '../../thorchain/types'
 import * as TRON from '../../tron'
+import { utxosByChain$ } from '../../utxo/coinControl'
 import { FeesWithRatesLD } from '../../utxo/types'
 import { getDecimal } from '../decimal'
 import * as BTC from '../lazyBitcoin'
@@ -77,7 +80,7 @@ import * as DASH from '../lazyDash'
 import * as XRD from '../lazyRadix'
 import * as ZEC from '../lazyZcash'
 import { PoolFeeLD } from '../types'
-import { getChainNodeProtocol, NodeProtocol } from './nodeapi'
+import { estimateUtxoInboundFee, getChainFeeData, getInboundNodeProtocol, NodeProtocol } from './nodeapi'
 
 const {
   pools: { outboundAssetFeeByChain$ }
@@ -101,38 +104,54 @@ const getInboundAddress = (inboundAddresses: ThorInboundAddress[], chain: Chain)
 }
 
 /**
- * Get inbound addresses observable based on chain protocol
+ * Get inbound addresses observable for the protocol an inbound tx goes to.
+ * Falls back to the chain's home protocol when `inboundProtocol` is not known.
  */
-const getInboundAddresses$ = (chain: Chain): InboundAddressesLD => {
-  const protocol = getChainNodeProtocol(chain)
+const getInboundAddresses$ = (chain: Chain, inboundProtocol?: Chain): InboundAddressesLD => {
+  const protocol = getInboundNodeProtocol(chain, inboundProtocol)
   return (protocol === NodeProtocol.THORCHAIN ? thorInboundAddresses$ : mayaInboundAddresses$) as InboundAddressesLD
 }
 
 /**
- * Extrapolate fee from gas_rate using FeesWithRates relationship
- * Uses the ratio between known rate and fee to calculate fee for given gas_rate
+ * Inbound fee of a UTXO chain, priced as the send will pay it (see `utxoFeeRate$`, `estimateUtxoInboundFee`).
+ * Size comes from the sender's UTXO count (`utxosRD`, one `getUTXOs` call next to the fee scan). While that
+ * count loads the result stays pending; if it fails the size is derived from `feesWithRates` instead.
+ * `plainTransfer` (Chainflip / OneClick) sends without node `gas_rate`, so no inbound data is used.
  */
-const extrapolateFeeFromGasRate = (
-  gasRate: number,
-  feesWithRates: {
-    rates: { fast: number; fastest: number; average: number }
-    fees: { fast: BaseAmount; fastest: BaseAmount; average: BaseAmount }
-  }
-): BaseAmount => {
-  // Use 'fast' rate as reference since it's commonly used
-  const referenceRate = feesWithRates.rates.fast
-  const referenceFee = feesWithRates.fees.fast
-
-  if (referenceRate <= 0) {
-    // Fallback to the reference fee if rate is invalid
-    return referenceFee
-  }
-
-  // Calculate fee using the ratio: gasRate / referenceRate * referenceFee
-  const scaleFactor = gasRate / referenceRate
-  const calculatedFeeAmount = referenceFee.amount().multipliedBy(scaleFactor)
-
-  return baseAmount(calculatedFeeAmount, referenceFee.decimal)
+const utxoInboundFee$ = ({
+  asset,
+  chain,
+  memo,
+  inboundAddressesRD,
+  feesWithRatesRD,
+  utxosRD,
+  plainTransfer
+}: {
+  asset: AnyAsset
+  chain: Chain
+  memo: string
+  inboundAddressesRD: RD.RemoteData<Error, ThorInboundAddress[]>
+  feesWithRatesRD: RD.RemoteData<Error, FeesWithRates>
+  utxosRD: RD.RemoteData<Error, UTXO[]>
+  plainTransfer?: boolean
+}): Rx.Observable<RD.RemoteData<Error, { asset: AnyAsset; amount: BaseAmount }>> => {
+  if (!RD.isSuccess(feesWithRatesRD)) return Rx.of(RD.failure(new Error(`Failed to load ${chain} fees`)))
+  if (RD.isPending(utxosRD)) return Rx.of(RD.pending)
+  return Rx.of(
+    RD.success({
+      asset,
+      amount: estimateUtxoInboundFee({
+        chain,
+        feesWithRates: feesWithRatesRD.value,
+        oFeeData:
+          plainTransfer || !RD.isSuccess(inboundAddressesRD)
+            ? O.none
+            : getChainFeeData(inboundAddressesRD.value, chain),
+        utxoCount: RD.isSuccess(utxosRD) ? utxosRD.value.length : undefined,
+        hasMemo: memo.length > 0
+      })
+    })
+  )
 }
 
 /**
@@ -169,7 +188,13 @@ export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
 /**
  * Fees for pool inbound txs (swap/deposit/withdraw/earn)
  */
-export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string): PoolFeeLD => {
+export const poolInboundFee$ = (
+  asset: AnyAsset,
+  memo: string,
+  sender?: string,
+  inboundProtocol?: Chain,
+  plainTransfer?: boolean
+): PoolFeeLD => {
   if (isSynthAsset(asset)) {
     return FP.pipe(
       MAYA.fees$(),
@@ -208,10 +233,11 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
       )
 
     case LTCChain:
-      // Use gas_rate from inbound addresses with FeesWithRates ratio
+      // Priced like the send: vault gas_rate (floored by the provider rate) x size of the keystore address' UTXOs.
+      // TODO: scans the keystore address, not `sender` (Ledger / Vultisig).
       return FP.pipe(
         Rx.combineLatest([
-          getInboundAddresses$(LTCChain),
+          getInboundAddresses$(LTCChain, inboundProtocol),
           LTC.address$.pipe(
             RxOp.switchMap(
               O.fold(
@@ -219,31 +245,27 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
                 (address) => LTC.feesWithRates$(address.address, memo)
               )
             )
-          )
-        ]),
-        RxOp.switchMap(([inboundAddressesRD, feesWithRatesRD]) => {
-          if (RD.isSuccess(inboundAddressesRD) && RD.isSuccess(feesWithRatesRD)) {
-            const oChainFeeData = FP.pipe(
-              inboundAddressesRD.value,
-              A.findFirst((item) => item.chain === LTCChain),
-              O.chain((data) => (data.gas_rate ? O.some({ gas_rate: Number(data.gas_rate) }) : O.none))
-            )
-
-            return FP.pipe(
-              oChainFeeData,
+          ),
+          LTC.address$.pipe(
+            RxOp.switchMap(
               O.fold(
-                () => Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast })),
-                (feeData) => {
-                  const extrapolatedFee = extrapolateFeeFromGasRate(feeData.gas_rate, feesWithRatesRD.value)
-                  return Rx.of(RD.success({ asset, amount: extrapolatedFee }))
-                }
+                () => Rx.of(RD.initial),
+                (address) => utxosByChain$(LTCChain, address.address)
               )
             )
-          }
-          return RD.isSuccess(feesWithRatesRD)
-            ? Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast }))
-            : Rx.of(RD.failure(new Error('Failed to load LTC fees')))
-        }),
+          )
+        ]),
+        RxOp.switchMap(([inboundAddressesRD, feesWithRatesRD, utxosRD]) =>
+          utxoInboundFee$({
+            asset,
+            chain: LTCChain,
+            memo,
+            inboundAddressesRD,
+            feesWithRatesRD,
+            utxosRD,
+            plainTransfer
+          })
+        ),
         RxOp.catchError(() => {
           return FP.pipe(
             LTC.address$.pipe(
@@ -253,7 +275,11 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
                   (address) =>
                     FP.pipe(
                       LTC.feesWithRates$(address.address, memo),
-                      liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                      liveData.map((fees) => ({
+                        asset,
+                        // same rule as the send's fallback: provider rate (clamped, ceiled), no node gas_rate
+                        amount: estimateUtxoInboundFee({ chain: LTCChain, feesWithRates: fees, oFeeData: O.none })
+                      }))
                     )
                 )
               )
@@ -539,7 +565,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
         RxOp.startWith(RD.pending)
       )
     case BTCChain: {
-      // Use gas_rate from inbound addresses with FeesWithRates ratio.
+      // Priced like the send: vault gas_rate (floored by the provider rate) x size of the sender's UTXOs.
       // A Taproot swap spends bc1p… UTXOs, so the estimate has to scan that address.
       // With no sender, fall back to the Native SegWit wallet.
       const btcSender$: Rx.Observable<O.Option<string>> = sender
@@ -547,7 +573,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
         : BTC.address$.pipe(RxOp.map(O.map((walletAddress) => walletAddress.address)))
       return FP.pipe(
         Rx.combineLatest([
-          getInboundAddresses$(BTCChain),
+          getInboundAddresses$(BTCChain, inboundProtocol),
           btcSender$.pipe(
             RxOp.switchMap(
               O.fold(
@@ -555,31 +581,27 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
                 (address) => BTC.feesWithRates$(address, memo)
               )
             )
-          )
-        ]),
-        RxOp.switchMap(([inboundAddressesRD, feesWithRatesRD]) => {
-          if (RD.isSuccess(inboundAddressesRD) && RD.isSuccess(feesWithRatesRD)) {
-            const oChainFeeData = FP.pipe(
-              inboundAddressesRD.value,
-              A.findFirst((item) => item.chain === BTCChain),
-              O.chain((data) => (data.gas_rate ? O.some({ gas_rate: Number(data.gas_rate) }) : O.none))
-            )
-
-            return FP.pipe(
-              oChainFeeData,
+          ),
+          btcSender$.pipe(
+            RxOp.switchMap(
               O.fold(
-                () => Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast })),
-                (feeData) => {
-                  const extrapolatedFee = extrapolateFeeFromGasRate(feeData.gas_rate, feesWithRatesRD.value)
-                  return Rx.of(RD.success({ asset, amount: extrapolatedFee }))
-                }
+                () => Rx.of(RD.initial),
+                (address) => utxosByChain$(BTCChain, address)
               )
             )
-          }
-          return RD.isSuccess(feesWithRatesRD)
-            ? Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast }))
-            : Rx.of(RD.failure(new Error('Failed to load BTC fees')))
-        }),
+          )
+        ]),
+        RxOp.switchMap(([inboundAddressesRD, feesWithRatesRD, utxosRD]) =>
+          utxoInboundFee$({
+            asset,
+            chain: BTCChain,
+            memo,
+            inboundAddressesRD,
+            feesWithRatesRD,
+            utxosRD,
+            plainTransfer
+          })
+        ),
         RxOp.catchError(() => {
           return FP.pipe(
             btcSender$.pipe(
@@ -589,7 +611,11 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
                   (address) =>
                     FP.pipe(
                       BTC.feesWithRates$(address, memo),
-                      liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                      liveData.map((fees) => ({
+                        asset,
+                        // same rule as the send's fallback: provider rate (clamped, ceiled), no node gas_rate
+                        amount: estimateUtxoInboundFee({ chain: BTCChain, feesWithRates: fees, oFeeData: O.none })
+                      }))
                     )
                 )
               )
@@ -600,10 +626,11 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
       )
     }
     case BCHChain:
-      // Use gas_rate from inbound addresses with FeesWithRates ratio
+      // Priced like the send: vault gas_rate (floored by the provider rate) x size of the keystore address' UTXOs.
+      // TODO: scans the keystore address, not `sender` (Ledger / Vultisig).
       return FP.pipe(
         Rx.combineLatest([
-          getInboundAddresses$(BCHChain),
+          getInboundAddresses$(BCHChain, inboundProtocol),
           BCH.address$.pipe(
             RxOp.switchMap(
               O.fold(
@@ -611,31 +638,27 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
                 (address) => BCH.feesWithRates$(address.address, memo)
               )
             )
-          )
-        ]),
-        RxOp.switchMap(([inboundAddressesRD, feesWithRatesRD]) => {
-          if (RD.isSuccess(inboundAddressesRD) && RD.isSuccess(feesWithRatesRD)) {
-            const oChainFeeData = FP.pipe(
-              inboundAddressesRD.value,
-              A.findFirst((item) => item.chain === BCHChain),
-              O.chain((data) => (data.gas_rate ? O.some({ gas_rate: Number(data.gas_rate) }) : O.none))
-            )
-
-            return FP.pipe(
-              oChainFeeData,
+          ),
+          BCH.address$.pipe(
+            RxOp.switchMap(
               O.fold(
-                () => Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast })),
-                (feeData) => {
-                  const extrapolatedFee = extrapolateFeeFromGasRate(feeData.gas_rate, feesWithRatesRD.value)
-                  return Rx.of(RD.success({ asset, amount: extrapolatedFee }))
-                }
+                () => Rx.of(RD.initial),
+                (address) => utxosByChain$(BCHChain, address.address)
               )
             )
-          }
-          return RD.isSuccess(feesWithRatesRD)
-            ? Rx.of(RD.success({ asset, amount: feesWithRatesRD.value.fees.fast }))
-            : Rx.of(RD.failure(new Error('Failed to load BCH fees')))
-        }),
+          )
+        ]),
+        RxOp.switchMap(([inboundAddressesRD, feesWithRatesRD, utxosRD]) =>
+          utxoInboundFee$({
+            asset,
+            chain: BCHChain,
+            memo,
+            inboundAddressesRD,
+            feesWithRatesRD,
+            utxosRD,
+            plainTransfer
+          })
+        ),
         RxOp.catchError(() => {
           return FP.pipe(
             BCH.address$.pipe(
@@ -645,7 +668,11 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
                   (address) =>
                     FP.pipe(
                       BCH.feesWithRates$(address.address, memo),
-                      liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                      liveData.map((fees) => ({
+                        asset,
+                        // same rule as the send's fallback: provider rate (clamped, ceiled), no node gas_rate
+                        amount: estimateUtxoInboundFee({ chain: BCHChain, feesWithRates: fees, oFeeData: O.none })
+                      }))
                     )
                 )
               )

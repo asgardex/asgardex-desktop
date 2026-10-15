@@ -202,6 +202,13 @@ export type SwapFeesParams = {
   readonly outAsset: AnyAsset
   /** Spender address. BTC fee estimation scans this address's UTXOs. */
   readonly sender?: string
+  /**
+   * UTXO chains. Protocol (THORChain / MAYAChain) whose vault receives the swap, so the estimate
+   * uses the same `gas_rate` the send pays. Unset: the chain's home protocol.
+   */
+  readonly inboundProtocol?: Chain
+  /** UTXO chains. Set for Chainflip / OneClick: a plain transfer, paid without node `gas_rate`. */
+  readonly plainTransfer?: boolean
 }
 
 export type SwapFeesHandler = (p: SwapFeesParams) => SwapFeesLD
