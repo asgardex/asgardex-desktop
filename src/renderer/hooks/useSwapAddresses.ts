@@ -8,11 +8,12 @@ import { useObservableState } from 'observable-hooks'
 import { lastValueFrom } from 'rxjs'
 
 import { ASGARDEX_TO_SDK_CHAIN } from '../../shared/api/mpcTypes'
-import { AssetRuneNative, AssetCacao } from '../../shared/utils/chainIds'
+import { AssetRuneNative } from '../../shared/utils/chainIds'
 import { isLedgerWallet } from '../../shared/utils/guard'
 import { HDMode, WalletType } from '../../shared/wallet/types'
 import { useWalletContext } from '../contexts/WalletContext'
 import { logger } from '../helpers/logger'
+import { settlementChainAsset } from '../helpers/tradeAssetHelper'
 import { isStandaloneLedgerMode, isVultisigMode } from '../services/wallet/types'
 
 type UseSwapAddressesParams = {
@@ -25,6 +26,8 @@ type UseSwapAddressesParams = {
   recipientAddress: O.Option<Address>
   initialSourceWalletType: WalletType
   initialTargetWalletType: O.Option<WalletType>
+  /** Protocol that holds a trade-asset balance. Ignored for L1, synth, and secured assets. */
+  dexProtocol?: Chain
 }
 
 type UseSwapAddressesResult = {
@@ -65,23 +68,14 @@ export const useSwapAddresses = ({
   targetLedgerAddress: _oTargetLedgerAddress,
   recipientAddress: oRecipientAddress,
   initialSourceWalletType,
-  initialTargetWalletType: oInitialTargetWalletType
+  initialTargetWalletType: oInitialTargetWalletType,
+  dexProtocol
 }: UseSwapAddressesParams): UseSwapAddressesResult => {
   const { appWalletService } = useWalletContext()
   const appWalletState = useObservableState(appWalletService.appWalletState$)
 
-  const { chain: sourceChain } =
-    sourceAsset.type === AssetType.SYNTH
-      ? AssetCacao
-      : sourceAsset.type === AssetType.SECURED
-        ? AssetRuneNative
-        : sourceAsset
-  const { chain: targetChain } =
-    targetAsset.type === AssetType.SYNTH
-      ? AssetCacao
-      : targetAsset.type === AssetType.SECURED
-        ? AssetRuneNative
-        : targetAsset
+  const { chain: sourceChain } = settlementChainAsset(sourceAsset, dexProtocol ?? AssetRuneNative.chain)
+  const { chain: targetChain } = settlementChainAsset(targetAsset, dexProtocol ?? AssetRuneNative.chain)
 
   // State for standalone ledger target address
   const [standaloneLedgerTargetAddress, setStandaloneLedgerTargetAddress] = useState<O.Option<Address>>(O.none)
@@ -98,18 +92,19 @@ export const useSwapAddresses = ({
 
   const lockedWallet = useObservableState(appWalletService.isLocked$, true)
 
-  // Set default HD mode based on target chain
+  // Set default HD mode based on target chain. Trade assets settle on THOR or MAYA.
+  const hdChain = targetAsset.type === AssetType.TRADE ? targetChain : targetAsset.chain
   useEffect(() => {
-    if (targetAsset.chain === 'BTC') {
+    if (hdChain === 'BTC') {
       setTargetHDMode('p2wpkh')
-    } else if (['LTC', 'BCH', 'DASH', 'DOGE'].includes(targetAsset.chain)) {
+    } else if (['LTC', 'BCH', 'DASH', 'DOGE'].includes(hdChain)) {
       setTargetHDMode('default')
-    } else if (['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(targetAsset.chain)) {
+    } else if (['ETH', 'BSC', 'AVAX', 'ARB', 'BASE'].includes(hdChain)) {
       setTargetHDMode('ledgerlive')
     } else {
       setTargetHDMode('default')
     }
-  }, [targetAsset.chain])
+  }, [hdChain])
 
   // Update target wallet type when initial changes
   useEffect(() => {
@@ -182,9 +177,10 @@ export const useSwapAddresses = ({
   // Auto-select chain for standalone ledger
   useEffect(() => {
     if (appWalletState && isStandaloneLedgerMode(appWalletState)) {
-      const isChainConnected = appWalletState.connectedChain === sourceAsset.chain
+      const ledgerChain = sourceAsset.type === AssetType.TRADE ? sourceChain : sourceAsset.chain
+      const isChainConnected = appWalletState.connectedChain === ledgerChain
       if (!isChainConnected) {
-        appWalletService.standaloneLedgerService.setSelectedChain(sourceAsset.chain)
+        appWalletService.standaloneLedgerService.setSelectedChain(ledgerChain)
       }
     }
   }, [
@@ -193,6 +189,8 @@ export const useSwapAddresses = ({
     oInitialSourceKeystoreAddress,
     sourceAddress,
     sourceAsset.chain,
+    sourceAsset.type,
+    sourceChain,
     appWalletState,
     appWalletService.standaloneLedgerService
   ])

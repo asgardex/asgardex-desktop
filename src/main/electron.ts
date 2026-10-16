@@ -44,7 +44,9 @@ export const PORT = import.meta.env.VITE_PORT || 3000
 
 export const APP_ROOT = join(__dirname, '..', '..')
 
-const BASE_URL_DEV = `http://localhost:${PORT}`
+// Use IPv4 explicitly. `localhost` resolves to ::1 first, and macOS drops the
+// small IPv6 response from the dev server, so the window times out blank.
+const BASE_URL_DEV = `http://127.0.0.1:${PORT}`
 const BASE_URL_PROD = `file://${join(__dirname, '../renderer/index.html')}`
 // use dev server for hot reload or file in production
 export const BASE_URL = IS_DEV ? BASE_URL_DEV : BASE_URL_PROD

@@ -446,6 +446,9 @@ export const TradeAssetsTableCollapsable = ({
             )
           )
         )
+        actions.push(
+          createAction('pools.chart', () => navigate(poolsRoutes.detail.path({ asset: assetToString(asset) })))
+        )
       }
       if (targetAsset && hasActivePool) {
         actions.push(

@@ -16,17 +16,6 @@ type ApiGetDepthHistory$ = (params: ApiGetDepthHistoryParams) => DepthHistoryLD
 
 // ── LocalStorage helpers ──────────────────────────────────────────────
 
-const loadLevels = (assetKey: string): PriceLevel[] => {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_KEY}:${assetKey}`)
-    if (!raw) return []
-    const parsed = JSON.parse(raw) as PriceLevel[]
-    return parsed.map((p) => ({ ...p, amountSymbol: p.amountSymbol ?? '', targetAssetKey: p.targetAssetKey ?? '' }))
-  } catch {
-    return []
-  }
-}
-
 const persistLevels = (assetKey: string, levels: PriceLevel[]) => {
   try {
     const active = levels.filter((l) => l.status !== 'completed' && l.status !== 'failed')
@@ -40,15 +29,18 @@ const persistLevels = (assetKey: string, levels: PriceLevel[]) => {
   }
 }
 
-const loadAllAssetKeys = (): string[] => {
-  const keys: string[] = []
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (key?.startsWith(`${STORAGE_KEY}:`)) {
-      keys.push(key.replace(`${STORAGE_KEY}:`, ''))
+/** Drop every saved level. A limit order does not survive closing the app. */
+const clearPersistedPriceLevels = () => {
+  try {
+    const keys: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith(`${STORAGE_KEY}:`)) keys.push(key)
     }
+    for (const key of keys) localStorage.removeItem(key)
+  } catch {
+    // ignore
   }
-  return keys
 }
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -86,12 +78,10 @@ export type PriceLevelService = {
 export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$): PriceLevelService => {
   const subscriptions: Rx.Subscription[] = []
 
-  // Load all persisted levels on init
+  // Saved levels belong to the previous process. Closing the app cancels them,
+  // so a new session starts with an empty book and does not fire a leftover order.
+  clearPersistedPriceLevels()
   const initialLevels: PriceLevelMap = {}
-  for (const assetKey of loadAllAssetKeys()) {
-    const levels = loadLevels(assetKey)
-    if (levels.length > 0) initialLevels[assetKey] = levels
-  }
 
   const { get$: levels$, get: getLevelsMap, set: setLevelsMap } = observableState<PriceLevelMap>(initialLevels)
 

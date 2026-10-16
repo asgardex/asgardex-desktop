@@ -146,10 +146,10 @@ export const AssetDetails = (props: Props): JSX.Element => {
   }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, hdMode, navigate, setProtocol])
 
   const walletActionChartClick = useCallback(() => {
-    const chartAsset = getChainAsset(chain)
+    const chartAsset = asset.type === AssetType.TRADE ? asset : getChainAsset(chain)
     const path = poolsRoutes.detail.path({ asset: assetToString(chartAsset) })
     navigate(path)
-  }, [chain, navigate])
+  }, [asset, chain, navigate])
 
   const walletActionManageClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
@@ -248,16 +248,13 @@ export const AssetDetails = (props: Props): JSX.Element => {
                 disabled={disableSwap}
               />
             )}
-            {!xrdTradeDisabled &&
-              asset.type !== AssetType.SYNTH &&
-              asset.type !== AssetType.SECURED &&
-              asset.type !== AssetType.TRADE && (
-                <ActionIconButton
-                  icon={<ChartBarIcon className="h-6 w-6" />}
-                  text={intl.formatMessage({ id: 'pools.chart' })}
-                  onClick={walletActionChartClick}
-                />
-              )}
+            {!xrdTradeDisabled && asset.type !== AssetType.SYNTH && asset.type !== AssetType.SECURED && (
+              <ActionIconButton
+                icon={<ChartBarIcon className="h-6 w-6" />}
+                text={intl.formatMessage({ id: 'pools.chart' })}
+                onClick={walletActionChartClick}
+              />
+            )}
             {!xrdTradeDisabled && asset.type !== AssetType.SYNTH && (
               <ActionIconButton
                 icon={<ChartPieIcon className="h-6 w-6" />}

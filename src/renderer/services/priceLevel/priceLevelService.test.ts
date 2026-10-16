@@ -89,6 +89,18 @@ describe('priceLevelService', () => {
 
       svc.dispose()
     })
+
+    it('drops levels saved by a previous session', () => {
+      const first = createPriceLevelService(mockDepthApi(100))
+      first.addLevel('ETH.ETH', mkLevel({ id: 'l1', price: 50, type: 'buy' }))
+      expect(storage.has('asgardex:priceLevels:ETH.ETH')).toBe(true)
+      first.dispose()
+
+      const second = createPriceLevelService(mockDepthApi(100))
+      expect(second.getLevels('ETH.ETH')).toEqual([])
+      expect(storage.has('asgardex:priceLevels:ETH.ETH')).toBe(false)
+      second.dispose()
+    })
   })
 
   describe('non-completing observable (real-world scenario)', () => {

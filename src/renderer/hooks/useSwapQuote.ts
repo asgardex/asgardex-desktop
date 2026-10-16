@@ -2,17 +2,28 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
-import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount, isSecuredAsset } from '@xchainjs/xchain-util'
+import {
+  AnyAsset,
+  BaseAmount,
+  baseAmount,
+  Chain,
+  CryptoAmount,
+  isSecuredAsset,
+  isTradeAsset
+} from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
+import { ASGARDEX_ADDRESS, getAsgardexThorname } from '../../shared/const'
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
 import { useChainflipContext } from '../contexts/ChainflipContext'
+import { useMayachainQueryContext } from '../contexts/MayachainQueryContext'
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { useOneClickContext } from '../contexts/OneClickContext'
+import { useThorchainQueryContext } from '../contexts/ThorchainQueryContext'
 import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
 import { quoteNeedsRouterApproval } from '../helpers/evmApprovalHelper'
@@ -22,6 +33,7 @@ import {
   filterQuotableProtocols,
   isBtcTaprootAddress
 } from '../helpers/protocolTradingHalt'
+import { dexTradeQuoteToAggregator, thorTradeQuoteToAggregator } from '../helpers/tradeQuote'
 import { getCurrentNetworkState } from '../services/app/service'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useThorchainMimirHalt } from './useMimirHalt'
@@ -38,6 +50,11 @@ type UseSwapQuoteParams = {
   streaming: { enabled: boolean; interval: number; quantity: number }
   slipTolerance: number
   affiliateBps: O.Option<boolean>
+  /**
+   * When set, only these protocols are quoted. Trade settlement passes the app protocol
+   * so a Maya trade balance is not spent against a THORChain quote. Omitted for L1 swaps.
+   */
+  protocolFilter?: readonly Protocol[]
 }
 
 type UseSwapQuoteResult = {
@@ -69,10 +86,13 @@ export const useSwapQuote = ({
   quoteOnly,
   streaming,
   slipTolerance,
-  affiliateBps
+  affiliateBps,
+  protocolFilter
 }: UseSwapQuoteParams): UseSwapQuoteResult => {
   const { estimateSwap, protocols, isBoostEnabled } = useAggregator()
   const network = getCurrentNetworkState()
+  const { mayachainQuery } = useMayachainQueryContext()
+  const { thorchainQuery } = useThorchainQueryContext()
   const { isOneClickSupportedAsset } = useOneClickContext()
   const { isChainflipSupportedAssetSync } = useChainflipContext()
   const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
@@ -107,15 +127,15 @@ export const useSwapQuote = ({
 
   const mayaBlockedByTaproot = isBtcTaprootAddress(sourceWalletAddress) || isBtcTaprootAddress(destinationAddress)
 
-  const quotableProtocols: Protocol[] = useMemo(
-    () =>
-      dropMayachainForBtcTaproot(
-        filterQuotableProtocols(protocols, sourceAsset, targetAsset, haltState),
-        sourceWalletAddress,
-        destinationAddress
-      ),
-    [protocols, sourceAsset, targetAsset, haltState, sourceWalletAddress, destinationAddress]
-  )
+  const quotableProtocols: Protocol[] = useMemo(() => {
+    const halted = dropMayachainForBtcTaproot(
+      filterQuotableProtocols(protocols, sourceAsset, targetAsset, haltState),
+      sourceWalletAddress,
+      destinationAddress
+    )
+    if (!protocolFilter?.length) return halted
+    return halted.filter((protocol) => protocolFilter.includes(protocol))
+  }, [protocols, sourceAsset, targetAsset, haltState, sourceWalletAddress, destinationAddress, protocolFilter])
 
   // Read at response time so an in-flight quote cannot put Maya back after the address changed.
   const taprootAddressRef = useRef({ source: sourceWalletAddress, destination: destinationAddress })
@@ -233,7 +253,41 @@ export const useSwapQuote = ({
           toleranceBps: undefined
         }
 
-        const result = await estimateSwap({ ...swapParams, enableBoost: isBoostEnabled }, applyBps, quotableProtocols)
+        // Trade assets quote the node directly, the same call TradeSwap uses.
+        // The aggregator uppercases the contract (`USDC-0XA0B…`) and then runs an
+        // ERC-20 router approval against `ETH~USDC`, which throws
+        // "Can not estimate swap" before a quote exists.
+        const quotingTrade = isTradeAsset(sourceAsset) || isTradeAsset(targetAsset)
+        const dexTradeProtocol =
+          quotingTrade && quotableProtocols.length === 1 && quotableProtocols[0] === 'Mayachain'
+            ? 'Mayachain'
+            : quotingTrade && quotableProtocols.length === 1 && quotableProtocols[0] === 'Thorchain'
+              ? 'Thorchain'
+              : null
+        const tradeQuoteParams = {
+          fromAsset: sourceAsset,
+          destinationAsset: targetAsset,
+          amount: new CryptoAmount(amountInteger, sourceAsset),
+          destinationAddress: quoteOnly || !destinationAddress ? undefined : destinationAddress,
+          streamingInterval: streaming.interval,
+          streamingQuantity: streaming.quantity,
+          toleranceBps: slipTolerance * 100,
+          affiliateAddress: sourceWalletAddress === ASGARDEX_ADDRESS ? undefined : getAsgardexThorname(network),
+          affiliateBps: 0
+        }
+
+        const allQuotes: ExtendedQuoteSwap[] =
+          dexTradeProtocol === 'Mayachain'
+            ? [dexTradeQuoteToAggregator(await mayachainQuery.quoteSwap(tradeQuoteParams))]
+            : dexTradeProtocol === 'Thorchain'
+              ? [thorTradeQuoteToAggregator(await thorchainQuery.quoteSwap(tradeQuoteParams))]
+              : (await estimateSwap({ ...swapParams, enableBoost: isBoostEnabled }, applyBps, quotableProtocols)).map(
+                  (quote) =>
+                    ({
+                      ...quote,
+                      isBoostQuote: quote.protocol === 'Chainflip' && isBoostEnabled
+                    }) as ExtendedQuoteSwap
+                )
 
         // Discard stale response if a newer request was fired
         if (currentRequestId !== requestIdRef.current) return
@@ -241,22 +295,15 @@ export const useSwapQuote = ({
         const taprootNow = taprootAddressRef.current
         const blockMaya = isBtcTaprootAddress(taprootNow.source) || isBtcTaprootAddress(taprootNow.destination)
         if (blockMaya && preferredProtocolRef.current === 'Mayachain') preferredProtocolRef.current = null
-
-        const allQuotes: ExtendedQuoteSwap[] = result
-          .map(
-            (quote) =>
-              ({
-                ...quote,
-                isBoostQuote: quote.protocol === 'Chainflip' && isBoostEnabled
-              }) as ExtendedQuoteSwap
-          )
-          .filter((quote) => !(blockMaya && quote.protocol === 'Mayachain'))
+        const quotesForSelection = blockMaya
+          ? allQuotes.filter((quote) => quote.protocol !== 'Mayachain')
+          : allQuotes
 
         // Prefer real canSwap quotes. If none, keep THOR/MAYA quotes blocked only by
         // missing router allowance so Swap can select them and run an on-chain
         // isApproved check (approval is not inferred from these error strings).
-        const viableQuotes = allQuotes.filter((quote) => quote.canSwap)
-        const approvalBlockedQuotes = allQuotes.filter(
+        const viableQuotes = quotesForSelection.filter((quote) => quote.canSwap)
+        const approvalBlockedQuotes = quotesForSelection.filter(
           (quote) =>
             !quote.canSwap &&
             (quote.protocol === 'Thorchain' || quote.protocol === 'Mayachain') &&
@@ -267,7 +314,7 @@ export const useSwapQuote = ({
         const sortedApprovalBlocked = sortQuotesByOutput(approvalBlockedQuotes)
         const nextSelected = pickSelectedQuote(sortedQuotes, sortedApprovalBlocked, preferredProtocolRef.current)
 
-        setQuotes(O.some(allQuotes))
+        setQuotes(O.some(quotesForSelection))
         // Reset the UI expiry window only when a new quote response lands — not when the
         // user merely switches the selected protocol in the existing result set.
         setExpiry(new Date(Date.now() + 15 * 60 * 1000))
@@ -282,7 +329,7 @@ export const useSwapQuote = ({
         } else {
           preferredProtocolRef.current = null
           setSelectedQuote(O.none)
-          const protocolErrors = allQuotes.flatMap((quote) =>
+          const protocolErrors = quotesForSelection.flatMap((quote) =>
             quote.errors.filter((err) => err.length > 0).map((err) => `${quote.protocol}: ${err}`)
           )
           setQuoteError(
@@ -291,8 +338,8 @@ export const useSwapQuote = ({
         }
 
         logger.info(
-          `Swap quotes fetched: ${allQuotes.length} routes`,
-          allQuotes.map((q) => q.protocol)
+          `Swap quotes fetched: ${quotesForSelection.length} routes`,
+          quotesForSelection.map((q) => q.protocol)
         )
       } catch (err) {
         // Discard stale error if a newer request was fired
@@ -330,7 +377,10 @@ export const useSwapQuote = ({
       slipTolerance,
       isBoostEnabled,
       isOneClickSupportedAsset,
-      isChainflipSupportedAssetSync
+      isChainflipSupportedAssetSync,
+      mayachainQuery,
+      thorchainQuery,
+      network
     ]
   )
 
@@ -342,10 +392,13 @@ export const useSwapQuote = ({
   }, [])
 
   const resetQuote = useCallback(() => {
+    // Ignore a response already in flight so a direction change cannot apply the old side.
+    requestIdRef.current += 1
     preferredProtocolRef.current = null
     setQuotes(O.none)
     setSelectedQuote(O.none)
     setQuoteError(O.none)
+    setIsFetching(false)
     setExpiry(new Date())
   }, [])
 
