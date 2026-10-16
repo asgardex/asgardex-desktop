@@ -130,3 +130,13 @@ export const arrangeAssetsForMenu = (
     rest: pool.filter((asset) => !isFavouriteAsset(favouritesInView, asset))
   }
 }
+
+/**
+ * Hint only when the saved list is empty.
+ * Saved stars missing from this picker use the usual empty result.
+ */
+export const showNoFavouritesHint = (
+  activeFilter: ExtendedAssetType,
+  search: string,
+  favourites: AnyAsset[]
+): boolean => activeFilter === ExtendedAssetType.Favorite && !search.trim() && favourites.length === 0

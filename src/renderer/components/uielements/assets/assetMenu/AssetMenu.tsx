@@ -14,7 +14,7 @@ import { emptyString } from '../../../../helpers/stringHelper'
 import { BaseButton, FilterButton } from '../../button'
 import { InputSearch } from '../../input'
 import { AssetData } from '../assetData'
-import { arrangeAssetsForMenu, ExtendedAssetType, filterButtons } from './AssetMenu.helper'
+import { arrangeAssetsForMenu, ExtendedAssetType, filterButtons, showNoFavouritesHint } from './AssetMenu.helper'
 
 export type Props = {
   asset: AnyAsset
@@ -147,7 +147,7 @@ export const AssetMenu = (props: Props): JSX.Element => {
 
   const renderAssets = (() => {
     if (arrangement.kind === 'flat' && arrangement.assets.length === 0) {
-      const favouriteEmpty = activeFilter === ExtendedAssetType.Favorite && !searchValue.trim()
+      const favouriteEmpty = showNoFavouritesHint(activeFilter, searchValue, favourites)
       return renderEmpty(favouriteEmpty)
     }
 

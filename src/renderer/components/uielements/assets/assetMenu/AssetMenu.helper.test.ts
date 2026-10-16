@@ -12,7 +12,8 @@ import {
   assetMatchesSearch,
   ExtendedAssetType,
   filterAndSortAssetsForMenu,
-  getAssetSearchRank
+  getAssetSearchRank,
+  showNoFavouritesHint
 } from './AssetMenu.helper'
 
 const assetUSDT = assetFromStringEx('ETH.USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7')
@@ -148,6 +149,22 @@ describe('AssetMenu.helper', () => {
         kind: 'flat',
         assets: [AssetETH]
       })
+    })
+  })
+
+  describe('showNoFavouritesHint', () => {
+    it('shows the hint only when the saved list is empty', () => {
+      expect(showNoFavouritesHint(ExtendedAssetType.Favorite, '', [])).toBe(true)
+      expect(showNoFavouritesHint(ExtendedAssetType.Favorite, '  ', [])).toBe(true)
+    })
+
+    it('uses the usual empty result when saved favourites are missing from this picker', () => {
+      expect(showNoFavouritesHint(ExtendedAssetType.Favorite, '', [AssetBTC])).toBe(false)
+    })
+
+    it('stays off while searching or on another filter', () => {
+      expect(showNoFavouritesHint(ExtendedAssetType.Favorite, 'btc', [])).toBe(false)
+      expect(showNoFavouritesHint(ExtendedAssetType.All, '', [])).toBe(false)
     })
   })
 })
