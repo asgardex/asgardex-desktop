@@ -15,6 +15,7 @@ import {
 } from 'lightweight-charts'
 
 import { calculateSMA, calculateEMA, calculateBollingerBands } from '../../../helpers/indicatorHelper'
+import { chartPriceFormat } from '../../../views/pools/detail/pairChart'
 import type { IndicatorConfig, OHLCVData, PriceLevel } from '../../../views/pools/detail/types'
 
 type Props = {
@@ -128,6 +129,8 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
       color: d.close >= d.open ? `${BULLISH_COLOR}30` : `${BEARISH_COLOR}30`
     }))
 
+    const last = data[data.length - 1]?.close ?? 0
+    candleSeriesRef.current.applyOptions({ priceFormat: chartPriceFormat(last) })
     candleSeriesRef.current.setData(candleData)
     volumeSeriesRef.current.setData(volumeData)
     chartRef.current?.timeScale().fitContent()
@@ -145,11 +148,13 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
 
     const closes = data.map((d) => d.close)
     const times = data.map((d) => d.time as UTCTimestamp)
+    const priceFormat = chartPriceFormat(data[data.length - 1]?.close ?? 0)
 
     const addLineSeries = (values: (number | null)[], color: string, lineWidth: 1 | 2 = 2) => {
       const series = chart.addSeries(LineSeries, {
         color,
         lineWidth,
+        priceFormat,
         priceLineVisible: false,
         lastValueVisible: false,
         crosshairMarkerVisible: false

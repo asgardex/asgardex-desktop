@@ -1,5 +1,5 @@
 export { TradingChart } from './TradingChart'
 export { CandleTimeframeSelector } from './CandleTimeframeSelector'
 export { ChartDateRangeSelector } from './ChartDateRangeSelector'
-export { SpreadLabel } from './SpreadLabel'
+export { SpreadLabel, formatChartUsd } from './SpreadLabel'
 export { IndicatorToolbar } from './IndicatorToolbar'

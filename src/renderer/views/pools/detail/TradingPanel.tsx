@@ -5,22 +5,27 @@ import { Network } from '@xchainjs/xchain-client'
 
 import {
   AnyAsset,
-  AssetType,
+  BaseAmount,
   assetToBase,
   assetAmount,
   assetToString,
   baseAmount,
-  isTokenAsset
+  isTokenAsset,
+  isTradeAsset
 } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState, useSubscription } from 'observable-hooks'
+import * as Rx from 'rxjs'
+import * as RxOp from 'rxjs/operators'
 
 import { ASGARDEX_AFFILIATE_FEE_MIN } from '../../../../shared/const'
-import { AssetRuneNative, AssetCacao } from '../../../../shared/utils/chainIds'
+import { AssetRuneNative, AssetCacao, MAYAChain, THORChain } from '../../../../shared/utils/chainIds'
 import { isVultisigWallet } from '../../../../shared/utils/guard'
+import { WalletType } from '../../../../shared/wallet/types'
 import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
+import { TradeDepositModal } from '../../../components/modal/tradeDeposit'
 import { useSwapConfirmationModals } from '../../../components/swap/components/SwapConfirmationModals'
-import { ModalState } from '../../../components/swap/Swap.types'
+import { ModalState, type ExtendedQuoteSwap } from '../../../components/swap/Swap.types'
 import { SwapTxModal } from '../../../components/swap/SwapTxModal'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useAppContext } from '../../../contexts/AppContext'
@@ -34,13 +39,22 @@ import { useOneClickContext } from '../../../contexts/OneClickContext'
 import { usePriceLevelContext } from '../../../contexts/PriceLevelContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
-import { isUSDAsset } from '../../../helpers/assetHelper'
+import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { resolveChainflipChannelId } from '../../../helpers/chainflipSwapHelper'
 import { addChainflipSwapToTrackerFromQuote } from '../../../helpers/chainflipTransactionTracker'
+import { quoteNeedsRouterApproval } from '../../../helpers/evmApprovalHelper'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
 import { createScopedLogger } from '../../../helpers/logger'
 import { addOneClickSwapToTrackerFromQuote } from '../../../helpers/oneClickTransactionTracker'
+import {
+  orderSwapAssets,
+  preferredCounter,
+  sameMarketAsset,
+  settlementChainAsset,
+  supportsTradeSettlement,
+  toTradeAsset
+} from '../../../helpers/tradeAssetHelper'
 import { addSwapToTracker } from '../../../helpers/transactionTracker'
 import { useERC20Approval } from '../../../hooks/useERC20Approval'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
@@ -49,22 +63,36 @@ import { useSwapAddresses } from '../../../hooks/useSwapAddresses'
 import { useSwapExecution } from '../../../hooks/useSwapExecution'
 import { useSwapFees } from '../../../hooks/useSwapFees'
 import { useSwapQuote } from '../../../hooks/useSwapQuote'
+import { useTradeDepositAddresses } from '../../../hooks/useTradeDepositAddresses'
 import { getDecimal } from '../../../services/chain/decimal'
 import type { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMidgard/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../../services/midgard/mayaMidgard/utils'
 import { PoolsState, PoolDetails } from '../../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../../services/midgard/thorMidgard/utils'
 import type { PriceLevel } from '../../../services/priceLevel/types'
-import { isStandaloneLedgerMode, isVultisigMode, isVultisigVaultPasswordRequired } from '../../../services/wallet/types'
-import type { VaultType } from '../../../services/wallet/types'
+import type { TradeAccount } from '../../../services/thorchain/types'
+import {
+  getWalletTypeFromState,
+  isStandaloneLedgerMode,
+  isVultisigMode,
+  isVultisigVaultPasswordRequired,
+  type ChainBalance,
+  type WalletBalance,
+  type VaultType
+} from '../../../services/wallet/types'
 import { hasImportedKeystore } from '../../../services/wallet/util'
-import { TradingPanelBar, type TradeMode } from './TradingPanelBar'
-import { TradingPanelOrderSection } from './TradingPanelOrderSection'
+import { useApp } from '../../../store/app/hooks'
+import { formatLimitInput, limitTriggerUsd, type ChartUnit } from './limitPrice'
+import { balanceCovers, formatSwapAmount } from './swapAmountDisplay'
+import { newlyCompletedDestinationChains, toTrackerRows } from './trackerBalance'
+import { TradingPanelBar, type OrderType, type QuotedSide, type Settlement, type TradeMode } from './TradingPanelBar'
 import { TradingPanelPriceLevels } from './TradingPanelPriceLevels'
+import { TradingPanelSwaps } from './TradingPanelSwaps'
+import { usePairSwaps } from './usePairSwaps'
 
 export type TradingPanelHandle = {
-  /** Called when the user clicks a price on the chart — creates a limit order at that price */
-  addPriceLevelAtPrice: (price: number) => void
+  /** Chart click fills the limit price and selects Limit. It does not place the order. */
+  setLimitPriceFromChart: (price: number) => void
 }
 
 type Props = {
@@ -72,18 +100,87 @@ type Props = {
   network: Network
   tradeMode: TradeMode
   setTradeMode: (mode: TradeMode) => void
+  initialSettlement?: Settlement
   handleRef?: React.MutableRefObject<TradingPanelHandle | null>
+  onCounterAssetChange?: (asset: AnyAsset | null) => void
+  /** Units of the on-screen chart. A pair chart is counter per 1 chart asset. */
+  chartUnit: ChartUnit
+  /** Last chart close, in chart units. Zero until the series has loaded. */
+  chartPrice: number
 }
 
 const logger = createScopedLogger('TradingPanel')
 
-export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, handleRef }: Props) => {
+const poolAssetsOf = (rd: RD.RemoteData<Error, PoolsState>): AnyAsset[] =>
+  FP.pipe(
+    rd,
+    RD.fold(
+      () => [],
+      () => [],
+      () => [],
+      (state) => state.poolAssets ?? []
+    )
+  )
+
+type DexEndpoint = { address: string; walletType: ChainBalance['walletType'] }
+
+// Active wallet rows for one dex chain. Keystore mode can list a ledger row beside the keystore row.
+const dexEndpoints = (balances: ChainBalance[], chain: string): DexEndpoint[] => {
+  const seen = new Set<string>()
+  const endpoints: DexEndpoint[] = []
+  for (const balance of balances) {
+    if (balance.chain !== chain || O.isNone(balance.walletAddress)) continue
+    const key = `${balance.walletType}:${balance.walletAddress.value}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    endpoints.push({ address: balance.walletAddress.value, walletType: balance.walletType })
+  }
+  return endpoints
+}
+
+const mergeTradeAccounts$ = (
+  endpoints: DexEndpoint[],
+  load: (address: string, walletType: DexEndpoint['walletType']) => Rx.Observable<RD.RemoteData<Error, TradeAccount[]>>
+): Rx.Observable<RD.RemoteData<Error, TradeAccount[]>> => {
+  if (endpoints.length === 0) return Rx.of(RD.initial)
+  return Rx.combineLatest(endpoints.map((endpoint) => load(endpoint.address, endpoint.walletType))).pipe(
+    RxOp.map((results) => {
+      for (const result of results) {
+        if (RD.isFailure(result)) return result
+      }
+      if (results.every(RD.isSuccess)) {
+        return RD.success(results.flatMap((result) => (RD.isSuccess(result) ? result.value : [])))
+      }
+      return RD.pending
+    })
+  )
+}
+
+const hasPositiveUnits = (accounts: TradeAccount[]) => accounts.some((account) => account.units.gt(0))
+
+const walletAddressValue = (walletAddress: O.Option<{ address: string }>): string | undefined =>
+  O.isSome(walletAddress) ? walletAddress.value.address : undefined
+
+export const TradingPanel = ({
+  poolAsset,
+  network,
+  tradeMode,
+  setTradeMode,
+  initialSettlement = 'wallet',
+  handleRef,
+  onCounterAssetChange,
+  chartUnit,
+  chartPrice
+}: Props) => {
   // ── Contexts ──────────────────────────────────────────────────────────
   const { streamingSlipTolerance$ } = useAppContext()
   const slipTolerance = useObservableState(streamingSlipTolerance$, 5)
+  const { protocol } = useApp()
+  const [settlement, setSettlement] = useState<Settlement>(initialSettlement)
 
   const {
     chainBalances$,
+    reloadBalancesByChain,
     keystoreService: { keystoreState$, validatePassword$ },
     appWalletService
   } = useWalletContext()
@@ -97,10 +194,112 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   const chainBalances = useObservableState(chainBalances$, [])
 
   const { swap$, swapCF$, swapOneClick$, swapFees$ } = useChainContext()
-  const { transactionTrackingService } = useThorchainContext()
-  const { transactionTrackingService: mayaTransactionTrackingService } = useMayachainContext()
+  const { transactionTrackingService, getTradeAccount$, reloadTradeAccount } = useThorchainContext()
+  const {
+    transactionTrackingService: mayaTransactionTrackingService,
+    getTradeAccount$: getTradeAccountMaya$,
+    reloadTradeAccount: reloadTradeAccountMaya
+  } = useMayachainContext()
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
   const { transactionTrackingService: oneClickTransactionTrackingService } = useOneClickContext()
+
+  // When a tracked swap flips to complete, reload only the chain that received it.
+  // Rows that are already complete on first sight are left alone.
+  const trackerWatching = useRef(new Set<string>())
+  const trackerReloaded = useRef(new Set<string>())
+  const latestTrackedRows = useRef<{ id: string; isComplete: boolean; toAsset: string }[]>([])
+  const appWalletStateRef = useRef(appWalletState)
+  appWalletStateRef.current = appWalletState
+  const reloadCompletedDestinations = useCallback(
+    (rows: { id: string; isComplete: boolean; toAsset: string }[]) => {
+      const state = appWalletStateRef.current
+      if (!state) {
+        for (const row of rows) {
+          if (!row.isComplete) trackerWatching.current.add(row.id)
+        }
+        return
+      }
+      const walletType = getWalletTypeFromState(state)
+      const chains = newlyCompletedDestinationChains(rows, trackerWatching.current, trackerReloaded.current)
+      for (const chain of chains) {
+        reloadBalancesByChain(chain, walletType)()
+      }
+    },
+    [reloadBalancesByChain]
+  )
+  const trackedCompletions$ = useMemo(
+    () =>
+      Rx.merge(
+        transactionTrackingService.getTransactions$.pipe(RxOp.map(toTrackerRows)),
+        mayaTransactionTrackingService.getTransactions$.pipe(RxOp.map(toTrackerRows)),
+        chainflipTransactionTrackingService.getTransactions$.pipe(RxOp.map(toTrackerRows)),
+        oneClickTransactionTrackingService.getTransactions$.pipe(RxOp.map(toTrackerRows))
+      ),
+    [
+      transactionTrackingService,
+      mayaTransactionTrackingService,
+      chainflipTransactionTrackingService,
+      oneClickTransactionTrackingService
+    ]
+  )
+  useSubscription(trackedCompletions$, (rows) => {
+    latestTrackedRows.current = rows
+    reloadCompletedDestinations(rows)
+  })
+  useEffect(() => {
+    reloadCompletedDestinations(latestTrackedRows.current)
+  }, [appWalletState, reloadCompletedDestinations])
+
+  // Both dex trade accounts, independent of the Wallet | Trade toggle.
+  const thorEndpoints = dexEndpoints(chainBalances, THORChain)
+  const mayaEndpoints = dexEndpoints(chainBalances, MAYAChain)
+  const thorEndpointKey = thorEndpoints.map((endpoint) => `${endpoint.walletType}:${endpoint.address}`).join('|')
+  const mayaEndpointKey = mayaEndpoints.map((endpoint) => `${endpoint.walletType}:${endpoint.address}`).join('|')
+  const tradeAccountProbe$ = useMemo(
+    () =>
+      Rx.combineLatest([
+        mergeTradeAccounts$(thorEndpoints, getTradeAccount$),
+        mergeTradeAccounts$(mayaEndpoints, getTradeAccountMaya$)
+      ]),
+    // Endpoint objects are rebuilt on every balance tick. The keys change only when an address or wallet type does.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [thorEndpointKey, mayaEndpointKey, getTradeAccount$, getTradeAccountMaya$]
+  )
+  const [thorTradeAccountsRD, mayaTradeAccountsRD] = useObservableState(tradeAccountProbe$, [
+    RD.initial,
+    RD.initial
+  ] as [RD.RemoteData<Error, TradeAccount[]>, RD.RemoteData<Error, TradeAccount[]>])
+  const vultisigWallet = !!appWalletState && isVultisigMode(appWalletState)
+  // Trade deposit signing is keystore or ledger. Vultisig has no trade-deposit flow yet.
+  const offerTradeDeposit =
+    hasWallet &&
+    !vultisigWallet &&
+    RD.isSuccess(thorTradeAccountsRD) &&
+    RD.isSuccess(mayaTradeAccountsRD) &&
+    !hasPositiveUnits(thorTradeAccountsRD.value) &&
+    !hasPositiveUnits(mayaTradeAccountsRD.value)
+  const [showTradeDeposit, setShowTradeDeposit] = useState(false)
+  const { protocolAddress: thorKeystoreProtocolAddress } = useTradeDepositAddresses({
+    protocol: THORChain,
+    walletType: WalletType.Keystore
+  })
+  const { protocolAddress: thorLedgerProtocolAddress } = useTradeDepositAddresses({
+    protocol: THORChain,
+    walletType: WalletType.Ledger
+  })
+  const { protocolAddress: mayaKeystoreProtocolAddress } = useTradeDepositAddresses({
+    protocol: MAYAChain,
+    walletType: WalletType.Keystore
+  })
+  const { protocolAddress: mayaLedgerProtocolAddress } = useTradeDepositAddresses({
+    protocol: MAYAChain,
+    walletType: WalletType.Ledger
+  })
+  const closeTradeDeposit = useCallback(() => {
+    setShowTradeDeposit(false)
+    reloadTradeAccount()
+    reloadTradeAccountMaya()
+  }, [reloadTradeAccount, reloadTradeAccountMaya])
 
   const {
     service: {
@@ -155,77 +354,230 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   )
 
   // ── Available assets & target ─────────────────────────────────────────
-  const availableAssets = useMemo(
-    () =>
-      FP.pipe(
-        poolsRD,
-        RD.fold(
-          () => [] as AnyAsset[],
-          () => [] as AnyAsset[],
-          () => [] as AnyAsset[],
-          (state: PoolsState) => {
-            const filtered = state.poolAssets.filter((a) => !eqAsset.equals(a, poolAsset))
-            const stablecoins = filtered.filter(isUSDAsset).sort((a, b) => a.ticker.localeCompare(b.ticker))
-            const others = filtered.filter((a) => !isUSDAsset(a)).sort((a, b) => a.ticker.localeCompare(b.ticker))
-            return [...stablecoins, ...others]
-          }
-        )
-      ),
-    [poolsRD, poolAsset]
+  const tradeSettlementEnabled = supportsTradeSettlement(poolAsset, protocol)
+  const dexNative = protocol === MAYAChain ? AssetCacao : AssetRuneNative
+  const pricedPool = useMemo(
+    () => (settlement === 'trade' ? toTradeAsset(poolAsset, protocol) : poolAsset),
+    [settlement, poolAsset, protocol]
   )
 
-  const defaultTarget = useMemo(() => {
-    const stable = availableAssets.find(isUSDAsset)
-    return stable ?? availableAssets[0] ?? null
-  }, [availableAssets])
+  useEffect(() => {
+    if (settlement === 'trade' && !tradeSettlementEnabled) setSettlement('wallet')
+  }, [settlement, tradeSettlementEnabled])
+
+  const availableAssets = useMemo(() => {
+    if (settlement !== 'trade')
+      return orderSwapAssets(poolAssetsOf(poolsRD as RD.RemoteData<Error, PoolsState>), poolAsset)
+    const listed =
+      protocol === MAYAChain
+        ? poolAssetsOf(mayaPoolsRD as RD.RemoteData<Error, PoolsState>)
+        : poolAssetsOf(poolsRD as RD.RemoteData<Error, PoolsState>)
+    const traded = listed.map((asset) => toTradeAsset(asset, protocol))
+    const withDexNative = traded.some((asset) => eqAsset.equals(asset, dexNative)) ? traded : [...traded, dexNative]
+    return orderSwapAssets(withDexNative, pricedPool)
+  }, [settlement, poolsRD, mayaPoolsRD, poolAsset, protocol, dexNative, pricedPool])
+
+  const defaultTarget = useMemo(() => preferredCounter(availableAssets), [availableAssets])
 
   const [selectedTarget, setSelectedTarget] = useState<AnyAsset | null>(defaultTarget)
   useEffect(() => {
     setSelectedTarget((current) => {
-      // Preserve user's selection if it's still in the pool list
       if (current) {
-        const matched = availableAssets.find((asset) => eqAsset.equals(asset, current))
-        if (matched) return matched
+        const matched =
+          availableAssets.find((asset) => eqAsset.equals(asset, current)) ??
+          availableAssets.find((asset) => sameMarketAsset(asset, current))
+        if (matched) return eqAsset.equals(matched, current) ? current : matched
       }
       return defaultTarget
     })
   }, [availableAssets, defaultTarget])
 
+  const resolvedTarget = useMemo(() => {
+    if (!selectedTarget) return defaultTarget
+    return (
+      availableAssets.find((asset) => eqAsset.equals(asset, selectedTarget)) ??
+      availableAssets.find((asset) => sameMarketAsset(asset, selectedTarget)) ??
+      defaultTarget
+    )
+  }, [availableAssets, selectedTarget, defaultTarget])
+
+  useEffect(() => {
+    onCounterAssetChange?.(resolvedTarget)
+  }, [onCounterAssetChange, resolvedTarget])
+
   // ── Local state ───────────────────────────────────────────────────────
+  // Size is always the chart asset. amountStr is that size while selling, and the
+  // counter cost while a buy quote is loaded. The pay field shows amountStr in buy mode.
+  const [orderType, setOrderType] = useState<OrderType>('market')
+  const [limitPriceStr, setLimitPriceStr] = useState('')
+  const limitTouchedRef = useRef(false)
+  const ignoreChartPriceRef = useRef<number | null>(null)
+  const chartScopeRef = useRef<string | null>(null)
+  const [sizeStr, setSizeStrState] = useState('')
+  const sizeStrRef = useRef('')
   const [amountStr, setAmountStr] = useState('')
-  const [orderSectionOpen, setOrderSectionOpen] = useState(false)
   const [sourceDecimal, setSourceDecimal] = useState(8)
+  const [sourceDecimalAsset, setSourceDecimalAsset] = useState<AnyAsset | null>(null)
+  const [sellQuote, setSellQuote] = useState<O.Option<ExtendedQuoteSwap>>(O.none)
+  const [sellQuoteSize, setSellQuoteSize] = useState('')
+  const [swapHistoryTick, setSwapHistoryTick] = useState(0)
+  const fetchAmountRef = useRef('')
+  const acceptedSellRef = useRef<ExtendedQuoteSwap | null>(null)
 
-  // Derive source/target based on trade mode
-  const sourceAsset = tradeMode === 'sell' ? poolAsset : selectedTarget
-  const targetAsset = tradeMode === 'sell' ? selectedTarget : poolAsset
+  const setSizeStr = useCallback(
+    (next: string) => {
+      sizeStrRef.current = next
+      setSizeStrState(next)
+      if (tradeMode !== 'sell') setTradeMode('sell')
+      setAmountStr(next)
+    },
+    [tradeMode, setTradeMode]
+  )
 
-  // Resolve source chain (for EVM context)
+  const setPayAmount = useCallback(
+    (next: string) => {
+      if (tradeMode === 'buy') {
+        setAmountStr(next)
+        return
+      }
+      setSizeStr(next)
+    },
+    [tradeMode, setSizeStr]
+  )
+
+  const setLimitPriceInput = useCallback((next: string) => {
+    limitTouchedRef.current = true
+    ignoreChartPriceRef.current = null
+    setLimitPriceStr(next)
+  }, [])
+
+  const setLimitPriceFromChart = useCallback((price: number) => {
+    if (!Number.isFinite(price) || price <= 0) return
+    limitTouchedRef.current = true
+    ignoreChartPriceRef.current = null
+    setOrderType('limit')
+    setLimitPriceStr(formatLimitInput(price))
+  }, [])
+
+  const counterKey = resolvedTarget ? assetToString(resolvedTarget) : ''
+  // A new pair changes what the typed price means. Clear it until that pair's chart price arrives.
+  useEffect(() => {
+    const scope = `${chartUnit}:${counterKey}`
+    if (chartScopeRef.current === null) {
+      chartScopeRef.current = scope
+      return
+    }
+    if (chartScopeRef.current === scope) return
+    chartScopeRef.current = scope
+    limitTouchedRef.current = false
+    ignoreChartPriceRef.current = chartPrice > 0 ? chartPrice : null
+    setLimitPriceStr('')
+  }, [chartUnit, counterKey, chartPrice])
+
+  useEffect(() => {
+    if (orderType !== 'limit') return
+    if (limitTouchedRef.current) return
+    if (limitPriceStr !== '') return
+    if (!(chartPrice > 0)) return
+    if (ignoreChartPriceRef.current !== null && chartPrice === ignoreChartPriceRef.current) return
+    ignoreChartPriceRef.current = null
+    setLimitPriceStr(formatLimitInput(chartPrice))
+  }, [orderType, chartPrice, limitPriceStr])
+
+  // Derive source/target based on trade mode. Trade settlement uses trade-typed assets.
+  const sourceAsset = tradeMode === 'sell' ? pricedPool : resolvedTarget
+  const targetAsset = tradeMode === 'sell' ? resolvedTarget : pricedPool
+
   const sourceChain = useMemo(() => {
     if (!sourceAsset) return 'ETH'
-    if (sourceAsset.type === AssetType.SYNTH) return AssetCacao.chain
-    if (sourceAsset.type === AssetType.SECURED) return AssetRuneNative.chain
-    return sourceAsset.chain
-  }, [sourceAsset])
+    return settlementChainAsset(sourceAsset, protocol).chain
+  }, [sourceAsset, protocol])
 
-  // EVM context for approval
+  // EVM context for approval. Trade assets are not ERC-20 spends; non-EVM falls back to ETH.
   const { approveERC20Token$, isApprovedERC20Token$ } = useEvmContext(sourceChain)
 
-  // Source asset balance (what the user is spending — follows tradeMode)
-  const assetBalance = useMemo(() => {
-    if (!sourceAsset) return O.none
+  const dexRecord = chainBalances.find((cb) => cb.chain === dexNative.chain)
+  const dexAddressValue = dexRecord && O.isSome(dexRecord.walletAddress) ? dexRecord.walletAddress.value : ''
+  const dexWalletType = dexRecord?.walletType
+
+  const tradeAccounts$ = useMemo(() => {
+    if (settlement !== 'trade' || !dexAddressValue || dexWalletType === undefined) {
+      return Rx.of(RD.initial as RD.RemoteData<Error, TradeAccount[]>)
+    }
+    return protocol === MAYAChain
+      ? getTradeAccountMaya$(dexAddressValue, dexWalletType)
+      : getTradeAccount$(dexAddressValue, dexWalletType)
+  }, [settlement, dexAddressValue, dexWalletType, protocol, getTradeAccountMaya$, getTradeAccount$])
+
+  const tradeAccountsRD = useObservableState(tradeAccounts$, RD.initial)
+
+  const tradeAccountAmount = useCallback(
+    (asset: AnyAsset): O.Option<BaseAmount> => {
+      if (!RD.isSuccess(tradeAccountsRD)) return O.none
+      const found = tradeAccountsRD.value.find((account) => eqAsset.equals(account.asset, asset))
+      return O.some(found ? found.units : baseAmount(0, THORCHAIN_DECIMAL))
+    },
+    [tradeAccountsRD]
+  )
+
+  // Balance the ticket can spend for an asset on the selected settlement.
+  // Trade-asset counters (ETH~USDC) are trade-account units. A missing account is zero,
+  // so Buy is not offered when that trade balance cannot pay the cost.
+  const settlementAmount = useCallback(
+    (asset: AnyAsset): O.Option<BaseAmount> => {
+      if (settlement === 'trade' && isTradeAsset(asset)) return tradeAccountAmount(asset)
+      const chain = settlementChainAsset(asset, protocol).chain
+      let sawPending = false
+      let sawLoaded = false
+      for (const cb of chainBalances) {
+        if (cb.chain !== chain) continue
+        if (RD.isInitial(cb.balances) || RD.isPending(cb.balances)) {
+          sawPending = true
+          continue
+        }
+        if (!RD.isSuccess(cb.balances)) continue
+        sawLoaded = true
+        const found = cb.balances.value.find((b) => eqAsset.equals(b.asset, asset))
+        if (found) return O.some(found.amount)
+      }
+      if (sawPending || !sawLoaded) return O.none
+      return O.some(baseAmount(0))
+    },
+    [settlement, protocol, tradeAccountAmount, chainBalances]
+  )
+
+  // Balance of the chart asset. The size slider uses this, including while a buy quote is loaded.
+  const sizeBalance = useMemo(() => {
+    if (settlement === 'trade' && isTradeAsset(pricedPool)) return tradeAccountAmount(pricedPool)
     for (const cb of chainBalances) {
-      if (cb.chain !== sourceChain) continue
+      if (cb.chain !== pricedPool.chain) continue
       if (!RD.isSuccess(cb.balances)) continue
-      const found = cb.balances.value.find((b) => eqAsset.equals(b.asset, sourceAsset))
+      const found = cb.balances.value.find((b) => eqAsset.equals(b.asset, pricedPool))
       if (found) return O.some(found.amount)
     }
     return O.none
-  }, [chainBalances, sourceAsset, sourceChain])
+  }, [settlement, pricedPool, tradeAccountAmount, chainBalances])
 
-  // Source wallet balance (WalletBalance object)
-  const sourceWalletBalance = useMemo(() => {
+  // Source wallet balance (WalletBalance object). Trade swaps are signed by the dex wallet.
+  const sourceWalletBalance = useMemo((): O.Option<WalletBalance> => {
     if (!sourceAsset) return O.none
+    if (settlement === 'trade' && isTradeAsset(sourceAsset)) {
+      if (!dexRecord || O.isNone(dexRecord.walletAddress)) return O.none
+      const loaded = RD.isSuccess(dexRecord.balances) ? dexRecord.balances.value[0] : undefined
+      const units = FP.pipe(
+        tradeAccountAmount(sourceAsset),
+        O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL))
+      )
+      return O.some({
+        asset: sourceAsset,
+        amount: units,
+        walletAddress: dexRecord.walletAddress.value,
+        walletType: dexRecord.walletType,
+        walletAccount: loaded?.walletAccount ?? 0,
+        walletIndex: loaded?.walletIndex ?? 0,
+        hdMode: loaded?.hdMode ?? dexRecord.hdMode
+      })
+    }
     for (const cb of chainBalances) {
       if (cb.chain !== sourceChain) continue
       if (!RD.isSuccess(cb.balances)) continue
@@ -233,7 +585,7 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
       if (found) return O.some(found)
     }
     return O.none
-  }, [chainBalances, sourceAsset, sourceChain])
+  }, [settlement, sourceAsset, dexRecord, tradeAccountAmount, chainBalances, sourceChain])
 
   // Source chain native balance (for gas estimation)
   const sourceChainBalance = useMemo(() => {
@@ -260,9 +612,16 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   // Resolve decimal for source asset (with stale guard for rapid changes)
   useEffect(() => {
     if (!sourceAsset) return
+    if (isTradeAsset(sourceAsset)) {
+      setSourceDecimal(THORCHAIN_DECIMAL)
+      setSourceDecimalAsset(sourceAsset)
+      return
+    }
     let stale = false
     getDecimal(sourceAsset, poolDetailsThor).then((d) => {
-      if (!stale) setSourceDecimal(d)
+      if (stale) return
+      setSourceDecimal(d)
+      setSourceDecimalAsset(sourceAsset)
     })
     return () => {
       stale = true
@@ -298,34 +657,21 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
 
   const targetKeystoreAddress = useMemo(() => {
     if (!targetAsset) return O.none
-    const targetChain =
-      targetAsset.type === AssetType.SYNTH
-        ? AssetCacao.chain
-        : targetAsset.type === AssetType.SECURED
-          ? AssetRuneNative.chain
-          : targetAsset.chain
+    const targetChain = settlementChainAsset(targetAsset, protocol).chain
     const cb = chainBalances.find((c) => c.chain === targetChain)
     if (!cb) return O.none
     return cb.walletAddress
-  }, [chainBalances, targetAsset])
+  }, [chainBalances, targetAsset, protocol])
 
   // ── Hook 1: Streaming params ──────────────────────────────────────────
-  const {
-    streamingInterval,
-    streamingQuantity,
-    isStreaming,
-    activeMode,
-    setMode: setStreamingMode,
-    setInterval: setStreamingIntervalValue,
-    setQuantity: setStreamingQuantity
-  } = useStreamingParams()
+  const { streamingInterval, streamingQuantity, isStreaming } = useStreamingParams()
 
   // ── Hook 2: Swap addresses (simplified — no custom recipient, no standalone ledger target) ──
   // Stable refs to avoid re-render loops inside useSwapAddresses
   const oNone = useMemo(() => O.none, [])
   const oDefaultWalletType = useMemo(() => O.some(DEFAULT_WALLET_TYPE), [])
-  const safeSourceAsset = sourceAsset ?? poolAsset
-  const safeTargetAsset = targetAsset ?? poolAsset
+  const safeSourceAsset = sourceAsset ?? pricedPool
+  const safeTargetAsset = targetAsset ?? pricedPool
 
   const {
     sourceAddress: oSourceWalletAddress,
@@ -344,7 +690,8 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     targetLedgerAddress: oNone,
     recipientAddress: targetKeystoreAddress,
     initialSourceWalletType: DEFAULT_WALLET_TYPE,
-    initialTargetWalletType: oDefaultWalletType
+    initialTargetWalletType: oDefaultWalletType,
+    dexProtocol: protocol
   })
 
   // ── Hook 3: Swap fees ─────────────────────────────────────────────────
@@ -397,8 +744,25 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     [affiliateBpsValue]
   )
 
+  // Watched orders trigger off the THORChain pool price, so the button uses that same figure.
+  const poolUsdPrice = useMemo(() => {
+    const price = FP.pipe(
+      getPoolDetail(poolDetailsThor, poolAsset),
+      O.chain((detail) => O.fromNullable(detail.assetPriceUSD)),
+      O.map(Number),
+      O.getOrElse(() => 0)
+    )
+    return Number.isFinite(price) && price > 0 ? price : 0
+  }, [poolDetailsThor, poolAsset])
+
+  // Trade settlement quotes only the protocol that holds the trade account.
+  const protocolFilter = useMemo(
+    () => (settlement === 'trade' ? ([protocol === MAYAChain ? 'Mayachain' : 'Thorchain'] as const) : undefined),
+    [settlement, protocol]
+  )
+
   // ── Hook 4: Swap quote ────────────────────────────────────────────────
-  const { selectedQuote, quoteError, isFetching, fetchQuote, resetQuote } = useSwapQuote({
+  const { quotes, selectedQuote, quoteError, isFetching, fetchQuote, selectQuote, resetQuote } = useSwapQuote({
     sourceAsset: safeSourceAsset,
     targetAsset: safeTargetAsset,
     sourceAssetDecimal: sourceDecimal,
@@ -410,8 +774,64 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     quoteOnly,
     streaming: { enabled: isStreaming, interval: streamingInterval, quantity: streamingQuantity },
     slipTolerance,
-    affiliateBps
+    affiliateBps,
+    protocolFilter
   })
+
+  const quoteChoices = useMemo(
+    () =>
+      O.isNone(quotes) ? [] : quotes.value.filter((quote) => quote.canSwap || quoteNeedsRouterApproval(quote.errors)),
+    [quotes]
+  )
+
+  // The sell quote stays on screen while Buy prices the reverse swap from its output.
+  // A quote is only kept when it was fetched for the size still in the field.
+  useEffect(() => {
+    const size = parseFloat(sizeStr)
+    if (!size || size <= 0) {
+      acceptedSellRef.current = null
+      setSellQuote(O.none)
+      setSellQuoteSize('')
+      return
+    }
+    if (tradeMode !== 'sell' || isFetching || O.isNone(selectedQuote) || !resolvedTarget) return
+    if (sizeStr !== fetchAmountRef.current) return
+    if (acceptedSellRef.current === selectedQuote.value) return
+    if (!sameMarketAsset(selectedQuote.value.expectedAmount.asset, resolvedTarget)) return
+    if (!sourceAsset || !sourceDecimalAsset || !eqAsset.equals(sourceDecimalAsset, sourceAsset)) return
+    acceptedSellRef.current = selectedQuote.value
+    setSellQuote(selectedQuote)
+    setSellQuoteSize(sizeStr)
+  }, [sizeStr, tradeMode, isFetching, selectedQuote, resolvedTarget, sourceAsset, sourceDecimalAsset])
+
+  const sizedSellQuote = sellQuoteSize === sizeStr ? sellQuote : O.none
+
+  const quotedSide: QuotedSide = useMemo(() => {
+    if (isFetching || O.isNone(selectedQuote) || !selectedQuote.value.canSwap) return null
+    if (!sourceAsset || !sourceDecimalAsset || !eqAsset.equals(sourceDecimalAsset, sourceAsset)) return null
+    if (amountStr !== fetchAmountRef.current) return null
+    const expected = selectedQuote.value.expectedAmount.asset
+    if (tradeMode === 'buy' && sameMarketAsset(expected, pricedPool)) return 'buy'
+    if (
+      tradeMode === 'sell' &&
+      sellQuoteSize === sizeStr &&
+      resolvedTarget &&
+      sameMarketAsset(expected, resolvedTarget)
+    )
+      return 'sell'
+    return null
+  }, [
+    isFetching,
+    selectedQuote,
+    sourceAsset,
+    sourceDecimalAsset,
+    amountStr,
+    tradeMode,
+    pricedPool,
+    resolvedTarget,
+    sellQuoteSize,
+    sizeStr
+  ])
 
   // ── Hook 5: Swap execution ────────────────────────────────────────────
   const {
@@ -575,21 +995,32 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   // ── Explorer URL for tx modal ─────────────────────────────────────────
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(sourceChain))
 
-  // ── Auto-fetch quote when order section is open and inputs change ───
+  // ── Auto-fetch quote while an amount is entered ─────────────────────
   // Debounced: amount changes wait 600ms, other changes fire immediately.
   // Skipped while confirming or while SwapTxModal is showing an in-flight swap.
   const quoteFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevAmountRef = useRef(amountStr)
+  const hadAmountRef = useRef(false)
 
   useEffect(() => {
-    if (!orderSectionOpen) return
+    if (!hasWallet) return
     if (pauseQuoteRefresh) return
+
+    const numAmount = parseFloat(amountStr)
+    if (!numAmount || numAmount <= 0) {
+      if (quoteFetchTimerRef.current) clearTimeout(quoteFetchTimerRef.current)
+      if (hadAmountRef.current) {
+        hadAmountRef.current = false
+        resetQuote()
+      }
+      return
+    }
+    hadAmountRef.current = true
     if (affiliateBpsValue === 'none') return // fees not ready yet
 
     const doFetch = () => {
-      const numAmount = parseFloat(amountStr)
-      if (!numAmount || numAmount <= 0) return
-      const amt = assetToBase(assetAmount(numAmount, sourceDecimal))
+      fetchAmountRef.current = amountStr
+      const amt = assetToBase(assetAmount(parseFloat(amountStr), sourceDecimal))
       void fetchQuote(amt)
     }
 
@@ -610,34 +1041,89 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     }
     // Use affiliateBpsValue (primitive) instead of affiliateBps (object) to avoid re-render loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderSectionOpen, pauseQuoteRefresh, amountStr, tradeMode, selectedTarget, sourceDecimal, affiliateBpsValue])
+  }, [
+    hasWallet,
+    pauseQuoteRefresh,
+    amountStr,
+    tradeMode,
+    resolvedTarget,
+    settlement,
+    protocol,
+    sourceDecimal,
+    affiliateBpsValue
+  ])
 
   // ── Actions ───────────────────────────────────────────────────────────
-  const handleTrade = useCallback(
-    (mode: TradeMode) => {
-      if (!hasWallet || !selectedTarget) return
-      setTradeMode(mode)
+  const handleSelectTarget = useCallback(
+    (asset: AnyAsset) => {
       resetQuote()
-      setOrderSectionOpen(true)
-      // Quote fetch is handled by the useEffect above after re-render
+      setSellQuote(O.none)
+      setSelectedTarget(asset)
+      if (tradeMode !== 'sell') {
+        setTradeMode('sell')
+        setAmountStr(sizeStrRef.current)
+      }
     },
-    [hasWallet, selectedTarget, setTradeMode, resetQuote]
+    [resetQuote, tradeMode, setTradeMode]
   )
 
-  const handleCloseOrderSection = useCallback(() => {
-    setOrderSectionOpen(false)
-    resetQuote()
-  }, [resetQuote])
+  // Buy spends the counter. On Trade settlement that is the counter's trade account.
+  const buySpendBalance = useMemo(
+    () => (resolvedTarget ? settlementAmount(resolvedTarget) : O.none),
+    [resolvedTarget, settlementAmount]
+  )
+  const buyCost = useMemo((): BaseAmount | null => {
+    if (quotedSide === 'buy') return amountToSwap.amount().gt(0) ? amountToSwap : null
+    if (O.isSome(sizedSellQuote)) return sizedSellQuote.value.expectedAmount.baseAmount
+    return null
+  }, [quotedSide, amountToSwap, sizedSellQuote])
+  const buyCoversCost = O.isSome(buySpendBalance) && buyCost !== null && balanceCovers(buySpendBalance.value, buyCost)
+  const buyShort =
+    O.isSome(buySpendBalance) &&
+    (!buySpendBalance.value.amount().gt(0) || (buyCost !== null && !balanceCovers(buySpendBalance.value, buyCost)))
 
-  const handleConfirm = useCallback(() => {
-    onSubmit()
-  }, [onSubmit])
+  // Flip pay and receive immediately. It does not submit.
+  // A ready sell quote becomes the amount to spend. Otherwise the buy field stays empty,
+  // so the chart size is not quoted as counter units.
+  const handleFlip = useCallback(() => {
+    if (tradeMode === 'buy') {
+      resetQuote()
+      setTradeMode('sell')
+      setAmountStr(sizeStrRef.current)
+      return
+    }
+    const cost =
+      O.isSome(sizedSellQuote) && sizedSellQuote.value.canSwap
+        ? formatSwapAmount(sizedSellQuote.value.expectedAmount.baseAmount)
+        : ''
+    resetQuote()
+    if (!cost || cost === '0') {
+      acceptedSellRef.current = null
+      setSellQuote(O.none)
+      setSellQuoteSize('')
+      setAmountStr('')
+    } else {
+      setAmountStr(cost)
+    }
+    setTradeMode('buy')
+  }, [tradeMode, resetQuote, setTradeMode, sizedSellQuote])
 
   // ── Price levels (limit orders) ─────────────────────────────────────
   const assetKey = assetToString(poolAsset)
 
   // Track swap completion → update price level status if we were executing one
   const swapTxRD = swapState.swapTx
+  const reloadedSwapRef = useRef('')
+  useEffect(() => {
+    if (!RD.isSuccess(swapTxRD)) return
+    const txHash = FP.pipe(
+      RD.toOption(swapTxRD),
+      O.getOrElse(() => '')
+    )
+    if (!txHash || reloadedSwapRef.current === txHash) return
+    reloadedSwapRef.current = txHash
+    setSwapHistoryTick((tick) => tick + 1)
+  }, [swapTxRD])
   useEffect(() => {
     if (!executingLevelRef.current) return
     const levelId = executingLevelRef.current
@@ -736,9 +1222,12 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     resetSwapState()
     resetQuote()
     resetApproval()
+    sizeStrRef.current = ''
+    setSizeStrState('')
     setAmountStr('')
-    setOrderSectionOpen(false)
-  }, [resetSwapState, resetQuote, resetApproval])
+    setSellQuote(O.none)
+    if (tradeMode !== 'sell') setTradeMode('sell')
+  }, [resetSwapState, resetQuote, resetApproval, tradeMode, setTradeMode])
   const levelsMap = useObservableState(priceLevelService.levels$, {})
   const priceLevels: PriceLevel[] = levelsMap[assetKey] ?? []
 
@@ -760,10 +1249,10 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
   // Keystore wallets: password modal shown at creation time, cached for auto-execution.
   // Hardware wallets: order created immediately, device prompt shown on trigger.
   const addPriceLevelWithAuth = useCallback(
-    (price: number) => {
+    (price: number, side: TradeMode = 'sell', amountOverride?: number) => {
       if (!hasWallet || !selectedTarget) return
-      const numAmount = parseFloat(amountStr)
-      if (!numAmount || numAmount <= 0) return
+      const numAmount = amountOverride ?? parseFloat(sizeStr)
+      if (!numAmount || numAmount <= 0 || !Number.isFinite(price) || price <= 0) return
 
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
@@ -771,9 +1260,9 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
         priceLevelService.addLevel(assetKey, {
           id,
           price,
-          type: tradeMode,
+          type: side,
           amount: numAmount,
-          amountSymbol: poolAsset.ticker,
+          amountSymbol: side === 'sell' ? poolAsset.ticker : selectedTarget.ticker,
           targetAssetKey: assetToString(selectedTarget),
           status: 'pending'
         })
@@ -791,18 +1280,50 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
         setShowOrderPasswordModal(true)
       }
     },
-    [
-      hasWallet,
-      selectedTarget,
-      amountStr,
-      tradeMode,
-      poolAsset,
-      assetKey,
-      priceLevelService,
-      useSourceLedger,
-      useSourceVultisig
-    ]
+    [hasWallet, selectedTarget, sizeStr, poolAsset, assetKey, priceLevelService, useSourceLedger, useSourceVultisig]
   )
+
+  const limitUsd = useMemo(
+    () => limitTriggerUsd(Number(limitPriceStr), chartUnit, poolUsdPrice, chartPrice),
+    [limitPriceStr, chartUnit, poolUsdPrice, chartPrice]
+  )
+
+  // Limit: park a buy or sell at the entered price. The price watcher submits it.
+  const placeLimitOrder = useCallback(
+    (side: TradeMode) => {
+      if (limitUsd === null) return
+      if (side === 'sell') {
+        addPriceLevelWithAuth(limitUsd, 'sell')
+        return
+      }
+      if (!buyCoversCost) return
+      const cost =
+        quotedSide === 'buy'
+          ? Number(amountStr)
+          : O.isSome(sizedSellQuote)
+            ? Number(formatSwapAmount(sizedSellQuote.value.expectedAmount.baseAmount))
+            : 0
+      if (!cost) return
+      addPriceLevelWithAuth(limitUsd, 'buy', cost)
+    },
+    [limitUsd, addPriceLevelWithAuth, buyCoversCost, quotedSide, amountStr, sizedSellQuote]
+  )
+
+  const hasSize = !!parseFloat(sizeStr) && parseFloat(sizeStr) > 0
+  // The pay field is the amount. A buy is sized in the counter, so it does not
+  // need a chart-asset size. The button submits only the quote on screen.
+  const canMarketSwap = tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : quotedSide === 'sell'
+  const canPlaceLimit =
+    limitUsd !== null && !!selectedTarget && (tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : hasSize)
+  const canTrade = orderType === 'limit' ? canPlaceLimit : canMarketSwap
+
+  const handleTrade = useCallback(() => {
+    if (orderType === 'limit') {
+      placeLimitOrder(tradeMode)
+      return
+    }
+    if (tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : quotedSide === 'sell') onSubmit()
+  }, [orderType, placeLimitOrder, tradeMode, quotedSide, buyCoversCost, onSubmit])
 
   // Password modal state for limit order pre-authorization
   const [showOrderPasswordModal, setShowOrderPasswordModal] = useState(false)
@@ -821,12 +1342,12 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     setPendingOrderAction(null)
   }, [])
 
-  // Expose handle to parent (PoolDetailView wires this to chart click)
+  // Chart click fills the limit field. The trade button places the order.
   useEffect(() => {
     if (handleRef) {
-      handleRef.current = { addPriceLevelAtPrice: addPriceLevelWithAuth }
+      handleRef.current = { setLimitPriceFromChart }
     }
-  }, [handleRef, addPriceLevelWithAuth])
+  }, [handleRef, setLimitPriceFromChart])
 
   // Track which level is currently being executed (to prevent double-fire)
   const executingLevelRef = useRef<string | null>(null)
@@ -851,7 +1372,11 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     // from firing with a previous manual trade's quote before the fresh one arrives
     resetQuote()
 
-    // Restore the trade state from the limit order
+    // Restore the trade state from the limit order. Sell orders size the chart asset.
+    if (level.type === 'sell') {
+      sizeStrRef.current = String(level.amount)
+      setSizeStrState(String(level.amount))
+    }
     setAmountStr(String(level.amount))
     setTradeMode(level.type)
 
@@ -860,7 +1385,6 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
       setSelectedTarget(resolvedTarget)
     }
 
-    setOrderSectionOpen(true)
     autoSubmitPendingRef.current = true
   })
 
@@ -942,46 +1466,86 @@ export const TradingPanel = ({ poolAsset, network, tradeMode, setTradeMode, hand
     [targetAsset, safeSourceAsset]
   )
 
+  const swapAddresses = useMemo(() => {
+    const seen = new Set<string>()
+    const list: string[] = []
+    for (const balance of chainBalances) {
+      if (O.isNone(balance.walletAddress)) continue
+      const address = balance.walletAddress.value
+      if (!address || seen.has(address)) continue
+      seen.add(address)
+      list.push(address)
+    }
+    list.sort()
+    return list
+  }, [chainBalances])
+
+  const pairSwaps = usePairSwaps({
+    protocol,
+    poolAsset,
+    counter: resolvedTarget,
+    addresses: swapAddresses,
+    reloadToken: swapHistoryTick
+  })
+
   return (
     <>
       <TradingPanelBar
-        sourceAsset={safeSourceAsset}
-        sourceDecimal={sourceDecimal}
+        poolAsset={pricedPool}
         network={network}
         hasWallet={hasWallet}
+        settlement={settlement}
+        onDepositTrade={settlement === 'trade' && offerTradeDeposit ? () => setShowTradeDeposit(true) : undefined}
         tradeMode={tradeMode}
-        assetBalance={assetBalance}
-        amountStr={amountStr}
-        setAmountStr={setAmountStr}
+        assetBalance={sizeBalance}
+        buyBalance={buySpendBalance}
+        buyShort={buyShort}
+        amountStr={tradeMode === 'buy' ? amountStr : sizeStr}
+        setAmountStr={setPayAmount}
         selectedTarget={selectedTarget}
-        setSelectedTarget={setSelectedTarget}
+        setSelectedTarget={handleSelectTarget}
         availableAssets={availableAssets}
-        onTrade={handleTrade}
-      />
-
-      <TradingPanelOrderSection
-        visible={orderSectionOpen}
-        tradeMode={tradeMode}
-        targetAsset={targetAsset}
-        amountStr={amountStr}
-        selectedQuote={selectedQuote}
+        sellQuote={sizedSellQuote}
+        activeQuote={selectedQuote}
+        quotedSide={quotedSide}
         quoteError={quoteError}
         isFetching={isFetching}
-        activeMode={activeMode}
-        streamingInterval={streamingInterval}
-        streamingQuantity={streamingQuantity}
-        onModeChange={setStreamingMode}
-        onIntervalChange={setStreamingIntervalValue}
-        onQuantityChange={setStreamingQuantity}
+        canTrade={canTrade}
         isApprovedState={isApprovedState}
         needsApproval={needsApproval}
         awaitingConfirmation={awaitingConfirmation}
         onApprove={onApprove}
-        onConfirm={handleConfirm}
-        onClose={handleCloseOrderSection}
+        onTrade={handleTrade}
+        onFlip={handleFlip}
+        quotes={quoteChoices}
+        onSelectQuote={selectQuote}
+        orderType={orderType}
+        setOrderType={setOrderType}
+        chartUnit={chartUnit}
+        chartPrice={chartPrice}
+        limitPriceStr={limitPriceStr}
+        setLimitPriceStr={setLimitPriceInput}
+        limitUsd={limitUsd}
       />
 
       <TradingPanelPriceLevels levels={priceLevels} onRemove={handleRemoveLevel} />
+
+      {hasWallet && <TradingPanelSwaps poolTicker={poolAsset.ticker} rows={pairSwaps.rows} phase={pairSwaps.phase} />}
+
+      {(offerTradeDeposit || showTradeDeposit) && (
+        <TradeDepositModal
+          visible={showTradeDeposit}
+          chainBalances={chainBalances}
+          initialProtocol={protocol === MAYAChain ? MAYAChain : THORChain}
+          thorKeystoreProtocolAddress={walletAddressValue(thorKeystoreProtocolAddress)}
+          thorLedgerProtocolAddress={walletAddressValue(thorLedgerProtocolAddress)}
+          mayaKeystoreProtocolAddress={walletAddressValue(mayaKeystoreProtocolAddress)}
+          mayaLedgerProtocolAddress={walletAddressValue(mayaLedgerProtocolAddress)}
+          network={network}
+          validatePassword$={validatePassword$}
+          onClose={closeTradeDeposit}
+        />
+      )}
 
       {/* Wallet confirmation modals (password/ledger/vultisig) for manual swaps */}
       {renderModals}

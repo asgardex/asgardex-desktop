@@ -30,7 +30,7 @@ import {
 } from '../helpers/chainflipSwapHelper'
 import { sequenceTOption } from '../helpers/fpHelpers'
 import { createScopedLogger } from '../helpers/logger'
-import { applyStreamingToMemo, updateMemo } from '../helpers/memoHelper'
+import { applyStreamingToMemo, updateMemo, updateMemoWithFullAsset } from '../helpers/memoHelper'
 import { isBtcTaprootAddress } from '../helpers/protocolTradingHalt'
 import { INITIAL_SWAP_STATE } from '../services/chain/const'
 import {
@@ -198,7 +198,14 @@ export const useSwapExecution = ({
           poolAddress,
           asset: sourceAsset,
           amount: amountToSwapAdjusted,
-          memo: applyStreamingToMemo(updateMemo(quoteSwap.memo, network), streamingInterval, streamingQuantity),
+          memo: applyStreamingToMemo(
+            updateMemo(
+              isTradeAsset(targetAsset) ? updateMemoWithFullAsset(quoteSwap.memo, targetAsset) : quoteSwap.memo,
+              network
+            ),
+            streamingInterval,
+            streamingQuantity
+          ),
           walletType,
           sender: finalWalletAddress,
           walletAccount: finalWalletAccount,
@@ -216,6 +223,7 @@ export const useSwapExecution = ({
     selectedQuote,
     amountToSwap,
     sourceAsset,
+    targetAsset,
     network,
     sourceChainBalance,
     swapFees.inFee.amount,
