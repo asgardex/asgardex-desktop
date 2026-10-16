@@ -1,31 +1,33 @@
 import React, { useCallback, useState, useMemo, useRef } from 'react'
 
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
-import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArchiveBoxXMarkIcon, CheckIcon, StarIcon as StarOutlineIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
 import { Network } from '@xchainjs/xchain-client'
-import { AnyAsset, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString, isSecuredAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import { function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { getChainAsset } from '../../../../helpers/chainHelper'
+import { assetChainTicker } from '../../../../helpers/assetHelper'
 import { eqAsset } from '../../../../helpers/fp/eq'
 import { emptyString } from '../../../../helpers/stringHelper'
 import { BaseButton, FilterButton } from '../../button'
 import { InputSearch } from '../../input'
 import { AssetData } from '../assetData'
-import { AssetIcon } from '../assetIcon/AssetIcon'
-import { ExtendedAssetType, filterAndSortAssetsForMenu, filterButtons } from './AssetMenu.helper'
+import { arrangeAssetsForMenu, ExtendedAssetType, filterButtons, showNoFavouritesHint } from './AssetMenu.helper'
 
 export type Props = {
   asset: AnyAsset
   assets: AnyAsset[]
   onSelect: (_: AnyAsset) => void
   open: boolean
-  onClose: FP.Lazy<void>
+  onClose: () => void
   className?: string
   headline?: string
   network: Network
+  /** Starred assets, in the order they were added. */
+  favourites?: AnyAsset[]
+  onToggleFavourite?: (asset: AnyAsset) => void
 }
 
 export { ExtendedAssetType, filterButtons } from './AssetMenu.helper'
@@ -39,7 +41,9 @@ export const AssetMenu = (props: Props): JSX.Element => {
     headline = emptyString,
     network,
     onClose,
-    className = ''
+    className = '',
+    favourites = [],
+    onToggleFavourite = () => {}
   } = props
 
   const [searchValue, setSearchValue] = useState<string>(emptyString)
@@ -52,56 +56,122 @@ export const AssetMenu = (props: Props): JSX.Element => {
   const intl = useIntl()
 
   const handleChangeAsset = useCallback(
-    async (asset: AnyAsset) => {
-      onSelect(asset)
+    (next: AnyAsset) => {
+      onSelect(next)
       clearSearchValue()
     },
     [clearSearchValue, onSelect]
   )
 
-  const filteredAssets = useMemo(
-    () => filterAndSortAssetsForMenu(assets, searchValue, activeFilter),
-    [activeFilter, assets, searchValue]
+  const arrangement = useMemo(
+    () => arrangeAssetsForMenu(assets, searchValue, activeFilter, favourites),
+    [activeFilter, assets, favourites, searchValue]
   )
 
-  const renderAssets = useMemo(
-    () =>
-      FP.pipe(
-        filteredAssets,
-        NEA.fromArray,
-        O.fold(
-          () => (
-            <div className="flex h-full w-[calc(100%-32px)] flex-col items-center justify-center rounded-lg border border-solid border-gray0 p-1 px-20px py-50px dark:border-gray0d">
-              <ArchiveBoxXMarkIcon className="h-[75px] w-[75px] text-gray0 dark:text-gray0d" />
-              <h2 className="mb-10px text-[14px] text-gray1 uppercase dark:text-gray1d">
-                {intl.formatMessage({ id: 'common.noResult' })}
-              </h2>
-            </div>
-          ),
-          (assets) => (
-            <div className="w-[calc(100%-32px)] overflow-y-auto rounded-lg border border-solid border-gray0 p-1 dark:border-gray0d">
-              {FP.pipe(
-                assets,
-                NEA.map((assetInList) => {
-                  const selected = eqAsset.equals(asset, assetInList)
-                  return (
-                    <BaseButton
-                      className="w-full !justify-between rounded-lg !pr-20px hover:bg-gray0 dark:hover:bg-gray0d"
-                      key={assetToString(assetInList)}
-                      onClick={() => handleChangeAsset(assetInList)}
-                      disabled={selected}>
-                      <AssetData asset={assetInList} network={network} />
-                      {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
-                    </BaseButton>
-                  )
-                })
-              )}
-            </div>
-          )
-        )
-      ),
-    [asset, filteredAssets, handleChangeAsset, intl, network]
+  const visibleAssets = useMemo(
+    () => (arrangement.kind === 'flat' ? arrangement.assets : [...arrangement.favourites, ...arrangement.rest]),
+    [arrangement]
   )
+
+  const favouriteName = useCallback(
+    (assetInList: AnyAsset) => {
+      const name = assetChainTicker(assetInList)
+      return isSecuredAsset(assetInList) ? `${name} ${intl.formatMessage({ id: 'common.asset.secured' })}` : name
+    },
+    [intl]
+  )
+
+  const renderRow = (assetInList: AnyAsset) => {
+    const selected = eqAsset.equals(asset, assetInList)
+    const isFavourite = favourites.some((favourite) => eqAsset.equals(favourite, assetInList))
+
+    return (
+      <div
+        key={assetToString(assetInList)}
+        className="flex w-full items-center rounded-lg pr-3 hover:bg-gray0 dark:hover:bg-gray0d">
+        <BaseButton
+          className={clsx(
+            '!h-8 !w-8 shrink-0 !p-0',
+            isFavourite ? 'text-turquoise' : 'text-gray1 hover:text-turquoise dark:text-gray1d'
+          )}
+          aria-pressed={isFavourite}
+          aria-label={intl.formatMessage(
+            { id: isFavourite ? 'common.asset.removeFavourite' : 'common.asset.addFavourite' },
+            { asset: favouriteName(assetInList) }
+          )}
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            onToggleFavourite(assetInList)
+          }}>
+          {isFavourite ? (
+            <StarSolidIcon className="h-[18px] w-[18px]" />
+          ) : (
+            <StarOutlineIcon className="h-[18px] w-[18px]" />
+          )}
+        </BaseButton>
+        <BaseButton
+          className="min-w-0 flex-1 !justify-between rounded-lg !pr-2"
+          onClick={() => handleChangeAsset(assetInList)}
+          disabled={selected}>
+          <AssetData asset={assetInList} network={network} />
+          {selected && <CheckIcon className="h-20px w-20px shrink-0 text-turquoise" />}
+        </BaseButton>
+      </div>
+    )
+  }
+
+  const renderSection = (title: string, rows: AnyAsset[]) => (
+    <div>
+      <div className="flex items-baseline gap-2 px-2 pt-2 text-base text-text2 dark:text-text2d">
+        {title}
+        <span className="text-[13px] text-gray1 dark:text-gray1d">{rows.length}</span>
+      </div>
+      {rows.map(renderRow)}
+    </div>
+  )
+
+  const renderEmpty = (favouriteEmpty: boolean) => (
+    <div className="flex h-full w-[calc(100%-32px)] flex-col items-center justify-center rounded-lg border border-solid border-gray0 px-20px py-50px dark:border-gray0d">
+      <ArchiveBoxXMarkIcon className="h-[75px] w-[75px] text-gray0 dark:text-gray0d" />
+      <h2 className="mb-10px text-[14px] text-gray1 uppercase dark:text-gray1d">
+        {intl.formatMessage({ id: favouriteEmpty ? 'common.asset.noFavourites' : 'common.noResult' })}
+      </h2>
+      {favouriteEmpty && (
+        <p className="mb-0 text-center text-[13px] text-gray1 normal-case dark:text-gray1d">
+          {intl.formatMessage({ id: 'common.asset.noFavouritesHint' })}
+        </p>
+      )}
+    </div>
+  )
+
+  const renderAssets = (() => {
+    if (arrangement.kind === 'flat' && arrangement.assets.length === 0) {
+      const favouriteEmpty = showNoFavouritesHint(activeFilter, searchValue, favourites)
+      return renderEmpty(favouriteEmpty)
+    }
+
+    const body =
+      arrangement.kind === 'sections' ? (
+        <>
+          {renderSection(intl.formatMessage({ id: 'common.asset.favourites' }), arrangement.favourites)}
+          {arrangement.rest.length > 0 && (
+            <>
+              <div className="mx-2 my-1.5 h-px bg-gray0 dark:bg-gray0d" />
+              {renderSection(intl.formatMessage({ id: 'common.asset.allAssets' }), arrangement.rest)}
+            </>
+          )}
+        </>
+      ) : (
+        arrangement.assets.map(renderRow)
+      )
+
+    return (
+      <div className="w-[calc(100%-32px)] overflow-y-auto rounded-lg border border-solid border-gray0 p-1 dark:border-gray0d">
+        {body}
+      </div>
+    )
+  })()
 
   const searchHandler = useCallback(({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = target
@@ -109,60 +179,16 @@ export const AssetMenu = (props: Props): JSX.Element => {
   }, [])
 
   const onEnterHandler = useCallback(() => {
-    if (filteredAssets.length === 1) {
-      // select first asset
-      handleChangeAsset(filteredAssets[0])
+    if (visibleAssets.length === 1) {
+      handleChangeAsset(visibleAssets[0])
     }
-  }, [filteredAssets, handleChangeAsset])
-
-  const handleChainSelect = useCallback(
-    (chain: Chain) => {
-      const asset = getChainAsset(chain)
-      handleChangeAsset(asset)
-    },
-    [handleChangeAsset]
-  )
+  }, [handleChangeAsset, visibleAssets])
 
   const onCloseMenu = useCallback(() => {
     clearSearchValue()
     setActiveFilter(ExtendedAssetType.All)
     onClose()
   }, [clearSearchValue, onClose])
-
-  const chainFilter = useMemo(() => {
-    const uniqueChains = assets.reduce((acc, asset) => {
-      // Only add the chain if the asset is not synthetic || trade
-      if (asset.type !== AssetType.SYNTH && asset.type !== AssetType.TRADE) {
-        acc.add(asset.chain)
-      }
-      return acc
-    }, new Set<Chain>())
-
-    // Render unique chains as clickable icons in a horizontal row
-    return (
-      <div className="flex w-full flex-col px-4 pb-4">
-        <h6 className="text-base font-normal text-text2 dark:text-text2d">
-          {intl.formatMessage({ id: 'common.asset.quickSelect' })}
-        </h6>
-        <div className="flex flex-row space-x-2 overflow-x-scroll pb-2">
-          {Array.from(uniqueChains).map((chain) => (
-            <div key={chain} onClick={() => handleChainSelect(chain)} className="cursor-pointer">
-              <div
-                className={clsx(
-                  'flex flex-col items-center',
-                  'space-y-2 px-4 py-2',
-                  'rounded-lg border border-solid border-bg2 dark:border-bg2d',
-                  'hover:bg-bg2 dark:hover:bg-bg2d'
-                )}>
-                <AssetIcon asset={getChainAsset(chain)} network={network} />
-                <span className="text-text2 dark:text-text2d">{chain}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }, [assets, handleChainSelect, network, intl])
 
   // Ref to `InputSearch` - needed for initial focus in dialog
   // @see https://headlessui.com/react/dialog#managing-initial-focus
@@ -196,7 +222,6 @@ export const AssetMenu = (props: Props): JSX.Element => {
             </BaseButton>
           </div>
           <div className="my-4 h-[2px] w-full bg-gray1 dark:bg-gray0d" />
-          {asset.type !== AssetType.TRADE || (assets.some((a) => a.type !== AssetType.TRADE) && chainFilter)}
           <div className="w-full px-4">
             <InputSearch
               ref={inputSearchRef}
@@ -209,10 +234,10 @@ export const AssetMenu = (props: Props): JSX.Element => {
               placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
             />
           </div>
-          <div className="my-2 flex w-full px-4">
-            {filterButtons.map(({ type, text }) => (
+          <div className="my-2 flex w-full flex-wrap px-4">
+            {filterButtons.map(({ type, label }) => (
               <FilterButton key={type} active={activeFilter === type} onClick={() => setActiveFilter(type)}>
-                {text}
+                {intl.formatMessage({ id: label })}
               </FilterButton>
             ))}
           </div>

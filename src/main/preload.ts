@@ -90,6 +90,7 @@ contextBridge.exposeInMainWorld('apiChainStorage', getFileStoreApi('userChains')
 contextBridge.exposeInMainWorld('apiAddressStorage', getFileStoreApi('userAddresses'))
 contextBridge.exposeInMainWorld('apiAssetStorage', getFileStoreApi('userAssets'))
 contextBridge.exposeInMainWorld('apiPoolsStorage', getFileStoreApi('pools'))
+contextBridge.exposeInMainWorld('apiAssetFavouritesStorage', getFileStoreApi('assetFavourites'))
 
 //
 // api for update

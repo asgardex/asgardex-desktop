@@ -11,7 +11,7 @@ import { Locale } from '../i18n/types'
 import { EnabledChain } from '../utils/chain'
 import { AssetRuneNative, THORChain, AssetCacao, CACAO_DECIMAL, MAYAChain } from '../utils/chainIds'
 import { HDMode, KeystoreHDSettingsRecord, WalletAddress, WalletType } from '../wallet/types'
-import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
+import { AssetFavouritesStorageEncoded, IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 
 export type Dex = {
   chain: Chain
@@ -96,6 +96,7 @@ export type StoreFilesContent = Readonly<{
   userNodes: UserNodesStorage
   userBondProviders: UserBondProvidersStorage
   pools: PoolsStorageEncoded
+  assetFavourites: AssetFavouritesStorageEncoded
 }>
 
 export type StoreFileName = keyof StoreFilesContent
@@ -260,6 +261,7 @@ declare global {
     apiAddressStorage: ApiFileStoreService<StoreFileData<'userAddresses'>>
     apiAssetStorage: ApiFileStoreService<StoreFileData<'userAssets'>>
     apiPoolsStorage: ApiFileStoreService<StoreFileData<'pools'>>
+    apiAssetFavouritesStorage: ApiFileStoreService<StoreFileData<'assetFavourites'>>
     apiAppUpdate: ApiAppUpdate
   }
 }

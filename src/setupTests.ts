@@ -66,6 +66,7 @@ global.window.apiChainStorage = { ...mockApi.apiChainStorage }
 global.window.apiAddressStorage = { ...mockApi.apiAddressStorage }
 global.window.apiAssetStorage = { ...mockApi.apiAssetStorage }
 global.window.apiPoolsStorage = { ...mockApi.apiPoolsStorage }
+global.window.apiAssetFavouritesStorage = { ...mockApi.apiAssetFavouritesStorage }
 
 /**
  * Definition of custom matchers

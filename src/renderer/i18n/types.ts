@@ -175,8 +175,14 @@ export type CommonMessageKey =
   | 'common.asset.base'
   | 'common.asset.native'
   | 'common.asset.change'
-  | 'common.asset.quickSelect'
   | 'common.asset.chooseAsset'
+  | 'common.asset.favourites'
+  | 'common.asset.allAssets'
+  | 'common.asset.secured'
+  | 'common.asset.noFavourites'
+  | 'common.asset.noFavouritesHint'
+  | 'common.asset.addFavourite'
+  | 'common.asset.removeFavourite'
   | 'common.noResult'
   | 'common.rate'
   | 'common.tx.type.swap'
@@ -728,10 +734,7 @@ type BondsMessageKey =
 export type BondsMessages = { [key in BondsMessageKey]: string }
 
 type PoolSharesMessageKey =
-  | 'poolshares.ownership'
-  | 'poolshares.both.info'
-  | 'poolshares.single.info'
-  | 'poolshares.single.notsupported'
+  'poolshares.ownership' | 'poolshares.both.info' | 'poolshares.single.info' | 'poolshares.single.notsupported'
 
 export type PoolSharesMessage = { [key in PoolSharesMessageKey]: string }
 
