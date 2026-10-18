@@ -2,7 +2,8 @@ import * as RD from '@devexperts/remote-data-ts'
 import {
   RunebondIntegratorsApiClient,
   createIntegratorsClient,
-  ChurnPoint as ApiChurnPoint
+  ChurnPoint as ApiChurnPoint,
+  LastChurnPayment as ApiLastChurnPayment
 } from '@runebond/integrators-client'
 import { Address, baseAmount, bn } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -15,10 +16,15 @@ import { triggerStream } from '../../helpers/stateHelper'
 import {
   BondPayout,
   ChurnPoint,
+  LastChurnPayout,
   NodeHistory,
   NodeHistoryLD,
   NodeProviderRewards,
   NodeProviderRewardsLD,
+  NodeProviders,
+  NodeProvidersLD,
+  OperatorRewards,
+  OperatorRewardsLD,
   ProviderRewards,
   ProviderRewardsLD
 } from './types'
@@ -52,6 +58,16 @@ const toChurnPoint = ({ blockNumber, timestamp, amount }: ApiChurnPoint): ChurnP
   date: new Date(timestamp),
   amount: toBase(amount)
 })
+
+const toLastChurnPayout = (payment: ApiLastChurnPayment | null): LastChurnPayout | null =>
+  payment
+    ? {
+        blockNumber: payment.blockNumber,
+        timestamp: payment.timestamp,
+        date: new Date(payment.timestamp),
+        amount: toBase(payment.amount)
+      }
+    : null
 
 const mergeSeries = (series: ChurnPoint[][]): ChurnPoint[] => {
   const byBlock = new Map<number, ChurnPoint>()
@@ -242,8 +258,71 @@ const nodeHistory$ = (nodeAddress: Address, providerAddresses: Address[]): NodeH
         )
       )
 
-      return { apySeries, bondSeries, earningsSeries }
+      const nodeEarningsSeries: ChurnPoint[] = nodeHistory.points
+        .map(({ blockNumber, timestamp, earnings }) => ({
+          churnHeight: blockNumber,
+          date: new Date(timestamp),
+          amount: toBase(earnings)
+        }))
+        .slice(-HISTORY_CHURNS)
+
+      return { apySeries, bondSeries, earningsSeries, nodeEarningsSeries }
     })
   )
 
-export { providerRewards$, nodeProviderRewards$, nodeHistory$, reloadRewards }
+const operatorRewards$ = (address: Address): OperatorRewardsLD =>
+  cached(`operatorRewards|${address}`, () =>
+    liveRequest(async (client): Promise<OperatorRewards> => {
+      const result = await client.nodeOperators.getOperatorRewards(address, PAYOUTS_LIMIT, 0, HISTORY_CHURNS)
+      return {
+        address: result.address,
+        totals: {
+          totalPaid: toBase(result.totals.totalPaid),
+          churnCount: result.totals.churnCount,
+          lastChurn: toLastChurnPayout(result.totals.lastChurn)
+        },
+        series: result.series
+          .map(toChurnPoint)
+          .sort((a, b) => a.churnHeight - b.churnHeight)
+          .slice(-HISTORY_CHURNS),
+        byNode: result.byNode.map(({ nodeAddress, totalPaid, churnsPaid, lastPayout }) => ({
+          nodeAddress,
+          totalPaid: toBase(totalPaid),
+          churnsPaid,
+          lastPayout: toLastChurnPayout(lastPayout)
+        })),
+        payouts: result.payouts.map(({ blockNumber, timestamp, nodeAddress, commissionAmount, commissionBps }) => ({
+          blockNumber,
+          timestamp,
+          date: new Date(timestamp),
+          nodeAddress,
+          commissionAmount: toBase(commissionAmount),
+          commissionBps
+        })),
+        payoutsTotal: result.pagination.total
+      }
+    })
+  )
+
+const nodeProviders$ = (nodeAddress: Address): NodeProvidersLD =>
+  cached(`nodeProviders|${nodeAddress}`, () =>
+    liveRequest(async (client): Promise<NodeProviders> => {
+      const result = await client.nodes.getNodeProviders(nodeAddress, HISTORY_CHURNS)
+      return {
+        nodeAddress: result.nodeAddress,
+        blockNumber: result.blockNumber,
+        timestamp: result.timestamp,
+        date: new Date(result.timestamp),
+        providers: result.providers.map((provider) => ({
+          providerAddress: provider.providerAddress,
+          bondAmount: toBase(provider.bondAmount),
+          firstSeenBlockNumber: provider.firstSeenBlockNumber,
+          churnsBonded: provider.churnsBonded,
+          churnsSinceFirstSeen: provider.churnsSinceFirstSeen,
+          lastPayout: toLastChurnPayout(provider.lastPayout)
+        }))
+      }
+    })
+  )
+
+export { providerRewards$, nodeProviderRewards$, nodeHistory$, operatorRewards$, nodeProviders$, reloadRewards }

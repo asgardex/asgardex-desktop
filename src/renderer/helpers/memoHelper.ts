@@ -54,6 +54,10 @@ const assetToMemoString = ({ chain, symbol, type }: AnyAsset) => {
 export const getBondMemo = (thorAddress: string, providerAddress?: string, nodeFee?: number) =>
   mkMemo(['BOND', thorAddress, providerAddress, nodeFee])
 
+export const getOperatorFeeMemo = (nodeAddress: string, feeBps: number) => mkMemo(['BOND', nodeAddress, '', feeBps])
+
+export const getMaintenanceMemo = (nodeAddress: string) => mkMemo(['MAINT', nodeAddress])
+
 /**
  * Memo to claim Tcy
  *

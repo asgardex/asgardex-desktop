@@ -23,7 +23,8 @@ import {
   TradeAccountResponse,
   TCYClaimersApi,
   TCYStakersApi,
-  TCYStaker
+  TCYStaker,
+  VersionResponse
 } from '@xchainjs/xchain-thornode'
 import {
   Address,
@@ -80,7 +81,8 @@ import {
   TcyStakeLD,
   TcyStake,
   TcyClaim,
-  ApiTcyClaimResponse
+  ApiTcyClaimResponse,
+  ThorchainVersionLD
 } from './types'
 
 const height: number | undefined = undefined
@@ -337,7 +339,19 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             bond_providers,
             signer_membership,
             node_operator_address,
-            pub_key_set
+            pub_key_set,
+            status_since,
+            active_block_height,
+            requested_to_leave,
+            forced_to_leave,
+            leave_height,
+            slash_points,
+            version,
+            ip_address,
+            maintenance,
+            preflight_status,
+            observe_chains,
+            missing_blocks
           }) => ({
             address: node_address,
             pubKeySet: pub_key_set,
@@ -345,6 +359,24 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             award: baseAmount(current_award, THORCHAIN_DECIMAL),
             nodeOperatorAddress: node_operator_address,
             status: status as NodeStatusEnum,
+            statusSince: status_since ?? 0,
+            activeBlockHeight: active_block_height ?? 0,
+            requestedToLeave: requested_to_leave ?? false,
+            forcedToLeave: forced_to_leave ?? false,
+            leaveHeight: leave_height ?? 0,
+            slashPoints: slash_points ?? 0,
+            version: version ?? '',
+            ipAddress: ip_address ?? '',
+            maintenance: maintenance ?? false,
+            preflightStatus: {
+              status: preflight_status?.status ?? '',
+              reason: preflight_status?.reason ?? '',
+              code: preflight_status?.code ?? 0
+            },
+            observeChains: Array.isArray(observe_chains)
+              ? observe_chains.map(({ chain, height }) => ({ chain, height: height ?? 0 }))
+              : [],
+            missingBlocks: missing_blocks ?? 0,
             bondProviders: {
               nodeOperatorFee: baseAmount(bond_providers.node_operator_fee, THORCHAIN_DECIMAL),
               providers: Array.isArray(bond_providers.providers)
@@ -360,6 +392,20 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       )
     ),
     RxOp.startWith(RD.initial),
+    RxOp.shareReplay(1)
+  )
+
+  const thorchainVersion$: ThorchainVersionLD = FP.pipe(
+    requestThornodeApi$((basePath) =>
+      new NetworkApi(getThornodeAPIConfiguration(basePath))
+        .version()
+        .then((response: AxiosResponse<VersionResponse>) => response.data)
+    ),
+    liveData.map(({ current, next, next_since_height }) => ({
+      current: current ?? '',
+      next: next ?? '',
+      nextSinceHeight: next_since_height ?? 0
+    })),
     RxOp.shareReplay(1)
   )
 
@@ -691,6 +737,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     reloadThornodeUrl,
     getNodeInfos$,
     reloadNodeInfos,
+    thorchainVersion$,
     reloadThorchainConstants,
     thorchainConstantsState$,
     thorchainLastblockState$,

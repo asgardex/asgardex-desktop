@@ -49,6 +49,60 @@ export type NodeHistory = {
   apySeries: NodeApyPoint[]
   bondSeries: NodeBondPoint[]
   earningsSeries: ChurnPoint[]
+  nodeEarningsSeries: ChurnPoint[]
+}
+
+export type LastChurnPayout = {
+  blockNumber: number
+  timestamp: string
+  date: Date
+  amount: BaseAmount
+}
+
+export type OperatorNodeRewards = {
+  nodeAddress: Address
+  totalPaid: BaseAmount
+  churnsPaid: number
+  lastPayout: LastChurnPayout | null
+}
+
+export type OperatorPayout = {
+  blockNumber: number
+  timestamp: string
+  date: Date
+  nodeAddress: Address
+  commissionAmount: BaseAmount
+  commissionBps: number
+}
+
+export type OperatorRewards = {
+  address: Address
+  totals: {
+    totalPaid: BaseAmount
+    churnCount: number
+    lastChurn: LastChurnPayout | null
+  }
+  series: ChurnPoint[]
+  byNode: OperatorNodeRewards[]
+  payouts: OperatorPayout[]
+  payoutsTotal: number
+}
+
+export type NodeProvider = {
+  providerAddress: Address
+  bondAmount: BaseAmount
+  firstSeenBlockNumber: number
+  churnsBonded: number
+  churnsSinceFirstSeen: number
+  lastPayout: LastChurnPayout | null
+}
+
+export type NodeProviders = {
+  nodeAddress: Address
+  blockNumber: number
+  timestamp: string
+  date: Date
+  providers: NodeProvider[]
 }
 
 export type ProviderRewardsRD = RD.RemoteData<Error, ProviderRewards>
@@ -59,3 +113,9 @@ export type NodeProviderRewardsLD = LiveData<Error, NodeProviderRewards[]>
 
 export type NodeHistoryRD = RD.RemoteData<Error, NodeHistory>
 export type NodeHistoryLD = LiveData<Error, NodeHistory>
+
+export type OperatorRewardsRD = RD.RemoteData<Error, OperatorRewards>
+export type OperatorRewardsLD = LiveData<Error, OperatorRewards>
+
+export type NodeProvidersRD = RD.RemoteData<Error, NodeProviders>
+export type NodeProvidersLD = LiveData<Error, NodeProviders>

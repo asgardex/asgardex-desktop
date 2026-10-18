@@ -2,8 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowLeftIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
-
-import { BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
+import { Address, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -18,18 +17,33 @@ import {
   BondSplit,
   NodeApyCard,
   NodeEarningsCard,
+  NodeLeaveCard,
+  NodeMaintenanceCard,
+  NodeOperatorAction,
+  NodeOperatorActionModal,
+  NodeOperatorEarningsCard,
   NoThorAddressCard,
   addressExplorerUrl,
   formatApy,
+  canRemoveProvider,
   formatOperatorFee,
   formatRuneAmount,
+  isBondActionLocked,
+  isLeaveLocked,
+  isNodeLeaving,
   isUnbondLocked,
   nodeExplorerUrl
 } from '../../../components/Bonds/provider'
-import { NodeStatusTag } from '../../../components/Bonds/provider/NodeStatusTag'
+import { ChurnOutlookCard } from '../../../components/Bonds/provider/ChurnOutlookCard'
+import { ChurnTimeline } from '../../../components/Bonds/provider/ChurnTimeline'
+import { CycleSoFarCard } from '../../../components/Bonds/provider/CycleSoFarCard'
+import { NodeHealthStrip } from '../../../components/Bonds/provider/NodeHealthStrip'
+import { NodeNetworkCards } from '../../../components/Bonds/provider/NodeNetworkCards'
+import { MaintenanceTag, NodeStatusTag } from '../../../components/Bonds/provider/NodeStatusTag'
+import { OperatorFeesCard } from '../../../components/Bonds/provider/OperatorFeesCard'
 import { ErrorView } from '../../../components/shared/error'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
-import { BaseButton, FlatButton } from '../../../components/uielements/button'
+import { BaseButton, BorderButton, FlatButton } from '../../../components/uielements/button'
 import { WalletTypeLabel } from '../../../components/uielements/common'
 import { CopyLabel } from '../../../components/uielements/label'
 import { Spin } from '../../../components/uielements/spin'
@@ -40,19 +54,22 @@ import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { hiddenString } from '../../../helpers/stringHelper'
-import { useMimirConstants } from '../../../hooks/useMimirConstants'
+import { useChurnConstants } from '../../../hooks/useChurnConstants'
 import { useNextChurn } from '../../../hooks/useNextChurn'
+import { useNodeNetworkContext } from '../../../hooks/useNodeNetworkContext'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
-import { useNodeHistory } from '../../../hooks/useRunebondRewards'
+import { useReloadUntil } from '../../../hooks/useReloadUntil'
+import { useNodeHistory, useNodeProviders } from '../../../hooks/useRunebondRewards'
+import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as bondsRoutes from '../../../routes/bonds'
 import { FeeRD } from '../../../services/chain/types'
-import { NodeInfo } from '../../../services/thorchain/types'
+import { NodeInfo, NodeStatusEnum } from '../../../services/thorchain/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
-import { BondProviderPosition } from '../types'
+import { BondProviderPosition, BondWalletInfo } from '../types'
 import { useBondProviderData } from './useBondProviderData'
 
-const MIMIR_KEYS = ['MAXBONDPROVIDERS']
+const NO_ADDRESSES: Address[] = []
 
 type NodeDetail = {
   node: NodeInfo
@@ -114,19 +131,23 @@ export const BondNodeDetailView = (): JSX.Element => {
     [oViewedPosition]
   )
   const nodeHistoryRD = useNodeHistory(
-    isOperatorView || O.isNone(oViewedPosition) ? undefined : nodeAddress,
-    historyAddresses
+    isOperatorView || O.isSome(oViewedPosition) ? nodeAddress : undefined,
+    isOperatorView ? NO_ADDRESSES : historyAddresses
   )
+  const nodeProvidersRD = useNodeProviders(isOperatorView ? nodeAddress : undefined)
 
-  const { interact$, fees$, getNodeInfos$ } = useThorchainContext()
+  const { interact$, fees$, getNodeInfos$, reloadNodeInfos } = useThorchainContext()
   const {
     keystoreService: { validatePassword$ }
   } = useWalletContext()
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
+  const { validateAddress } = useValidateAddress(THORChain)
   const nextChurn = useNextChurn()
-  const { MAXBONDPROVIDERS: maxBondProviders } = useMimirConstants(MIMIR_KEYS)
+  const networkCtx = useNodeNetworkContext()
+  const { maxBondProviders } = useChurnConstants()
 
   const nodeInfosRD = useObservableState(getNodeInfos$, RD.initial)
+  const reloadUntil = useReloadUntil(nodeInfosRD, reload, reloadNodeInfos)
 
   const [feeRD] = useObservableState<FeeRD>(
     () =>
@@ -138,6 +159,7 @@ export const BondNodeDetailView = (): JSX.Element => {
   )
 
   const [modalType, setModalType] = useState<BondActionType | null>(null)
+  const [operatorAction, setOperatorAction] = useState<NodeOperatorAction | null>(null)
   const [hoveredChurn, setHoveredChurn] = useState<number | null>(null)
 
   const goBack = useCallback(() => navigate(bondsRoutes.basePathWithTab(backTab)), [backTab, navigate])
@@ -156,11 +178,24 @@ export const BondNodeDetailView = (): JSX.Element => {
     [nodeAddress, nodeInfosRD, positionsRD]
   )
 
-  const closeModal = useCallback(() => setModalType(null), [])
-  const finishModal = useCallback(() => {
+  const closeModal = useCallback(() => {
     setModalType(null)
+    setOperatorAction(null)
+  }, [])
+  const finishModal = useCallback(() => {
+    closeModal()
     reload()
-  }, [reload])
+  }, [closeModal, reload])
+  const finishOperatorAction = useCallback(
+    (settled: (node: NodeInfo) => boolean) => {
+      closeModal()
+      reloadUntil((nodes) => {
+        const fresh = nodes.find((item) => item.address === nodeAddress)
+        return fresh !== undefined && settled(fresh)
+      })
+    },
+    [closeModal, nodeAddress, reloadUntil]
+  )
 
   const nodeApyLabel: O.Option<string> = useMemo(
     () =>
@@ -193,11 +228,23 @@ export const BondNodeDetailView = (): JSX.Element => {
         : '0%'
 
     const providers = [...node.bondProviders.providers].sort((a, b) => (b.bond.gt(a.bond) ? 1 : -1))
+    const slotsFull = providers.length >= maxBondProviders
 
-    const slotsLabel =
-      Number.isFinite(maxBondProviders) && maxBondProviders > 0
-        ? intl.formatMessage({ id: 'bonds.provider.detail.slots' }, { count: providers.length, max: maxBondProviders })
-        : intl.formatMessage({ id: 'bonds.provider.detail.providersCount' }, { count: providers.length })
+    const slotsLabel = intl.formatMessage(
+      { id: isOperatorView ? 'bonds.operator.detail.slots' : 'bonds.provider.detail.slots' },
+      { count: providers.length, max: maxBondProviders }
+    )
+
+    const oOperatorSigner: O.Option<BondWalletInfo> = isOperatorView
+      ? O.fromNullable(
+          walletInfos.find(({ address }) => address.toLowerCase() === node.nodeOperatorAddress.toLowerCase())
+        )
+      : O.none
+    const canOperate = O.isSome(oOperatorSigner)
+    const leaving = isNodeLeaving(node)
+    const leaveLocked = isLeaveLocked(node)
+    const leaveLabelId = node.status === NodeStatusEnum.Active ? 'bonds.operator.leave' : 'bonds.operator.leave.retire'
+    const bondLocked = isBondActionLocked(node)
 
     const providerName = (address: string) => {
       if (!isMine(address)) return truncateAddress(address, THORChain, network)
@@ -225,7 +272,8 @@ export const BondNodeDetailView = (): JSX.Element => {
               </span>
               <CopyLabel textToCopy={node.address} iconClassName="!h-4 !w-4" />
               {renderExplorerLink(nodeExplorerUrl(node.address))}
-              <NodeStatusTag status={node.status} />
+              {node.maintenance && <MaintenanceTag />}
+              <NodeStatusTag status={node.status} leaving={leaving} />
             </div>
             <div className="mt-1 flex items-center gap-1.5 font-main text-[13px] text-gray2 dark:text-gray2d">
               <span>{intl.formatMessage({ id: 'bonds.provider.detail.operator' })}</span>
@@ -233,7 +281,11 @@ export const BondNodeDetailView = (): JSX.Element => {
               {renderExplorerLink(addressExplorerUrl(node.nodeOperatorAddress))}
               {isMine(node.nodeOperatorAddress) && (
                 <>
-                  <span>{` · ${intl.formatMessage({ id: 'bonds.provider.detail.youOperate' })}`}</span>
+                  <span>
+                    {` · ${intl.formatMessage({
+                      id: isOperatorView ? 'bonds.operator.detail.walletSigns' : 'bonds.provider.detail.youOperate'
+                    })}`}
+                  </span>
                   {hasMultipleWalletTypes &&
                     FP.pipe(
                       O.fromNullable(walletTypeByAddress.get(node.nodeOperatorAddress.toLowerCase())),
@@ -247,6 +299,9 @@ export const BondNodeDetailView = (): JSX.Element => {
                       )
                     )}
                 </>
+              )}
+              {isOperatorView && !canOperate && (
+                <span>{` · ${intl.formatMessage({ id: 'bonds.operator.detail.monitoredOnly' })}`}</span>
               )}
             </div>
             <div className="mt-3 flex items-center gap-3">
@@ -277,6 +332,51 @@ export const BondNodeDetailView = (): JSX.Element => {
                 )}
             </div>
           </div>
+          {isOperatorView && canOperate && (
+            <div className="flex flex-wrap items-center justify-end gap-3 self-center">
+              {leaveLocked ? (
+                <Tooltip
+                  size="big"
+                  title={intl.formatMessage({
+                    id: bondLocked ? 'bonds.operator.readyLocked' : 'bonds.operator.leave.alreadyRequested'
+                  })}>
+                  <BorderButton size="large" color="error" disabled>
+                    {intl.formatMessage({ id: leaveLabelId })}
+                  </BorderButton>
+                </Tooltip>
+              ) : (
+                <BorderButton size="large" color="error" onClick={() => setOperatorAction({ type: 'leave' })}>
+                  {intl.formatMessage({ id: leaveLabelId })}
+                </BorderButton>
+              )}
+              {bondLocked ? (
+                <Tooltip size="big" title={intl.formatMessage({ id: 'bonds.operator.readyLocked' })}>
+                  <BorderButton size="large" color="neutral" disabled>
+                    {intl.formatMessage({ id: 'bonds.operator.changeFee' })}
+                  </BorderButton>
+                </Tooltip>
+              ) : (
+                <BorderButton size="large" color="neutral" onClick={() => setOperatorAction({ type: 'changeFee' })}>
+                  {intl.formatMessage({ id: 'bonds.operator.changeFee' })}
+                </BorderButton>
+              )}
+              {slotsFull || bondLocked ? (
+                <Tooltip
+                  size="big"
+                  title={intl.formatMessage({
+                    id: bondLocked ? 'bonds.operator.readyLocked' : 'bonds.operator.noFreeSlots'
+                  })}>
+                  <FlatButton size="large" disabled>
+                    {intl.formatMessage({ id: 'bonds.operator.addProvider' })}
+                  </FlatButton>
+                </Tooltip>
+              ) : (
+                <FlatButton size="large" onClick={() => setOperatorAction({ type: 'addProvider' })}>
+                  {intl.formatMessage({ id: 'bonds.operator.addProvider' })}
+                </FlatButton>
+              )}
+            </div>
+          )}
           {!isOperatorView && O.isSome(oViewedPosition) && (
             <div className="flex items-center justify-end gap-3 self-center">
               {unbondLocked ? (
@@ -296,6 +396,7 @@ export const BondNodeDetailView = (): JSX.Element => {
             </div>
           )}
         </div>
+        <NodeHealthStrip node={node} ctx={networkCtx} />
 
         {isOperatorView ? (
           <div className="mt-6 grid w-full grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -306,6 +407,12 @@ export const BondNodeDetailView = (): JSX.Element => {
               nodeBond={node.bond}
               slotsLabel={slotsLabel}
               isMine={isMine}
+              onAdd={
+                canOperate && !slotsFull && !bondLocked ? () => setOperatorAction({ type: 'addProvider' }) : undefined
+              }
+              onRemove={canOperate ? (provider) => setOperatorAction({ type: 'removeProvider', provider }) : undefined}
+              canRemove={(provider) => canRemoveProvider(node, provider)}
+              providerMeta={RD.toUndefined(nodeProvidersRD)}
             />
             <BondSplit
               network={network}
@@ -317,26 +424,90 @@ export const BondNodeDetailView = (): JSX.Element => {
             />
           </div>
         ) : (
+          <BondSplit
+            network={network}
+            isPrivate={isPrivate}
+            providers={providers}
+            nodeBond={node.bond}
+            providerName={providerName}
+            layout="row"
+          />
+        )}
+
+        <div className="mt-6 grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
+          <ChurnOutlookCard node={node} ctx={networkCtx} nextChurn={nextChurn} isPrivate={isPrivate} />
+          <CycleSoFarCard network={network} node={node} nextChurn={nextChurn} isPrivate={isPrivate} />
+        </div>
+
+        <ChurnTimeline className="mt-6" historyRD={nodeHistoryRD} isPrivate={isPrivate} />
+
+        {isOperatorView ? (
           <>
             <div className="mt-6 grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
               <NodeApyCard historyRD={nodeHistoryRD} apyLabel={nodeApyLabel} />
-              <NodeEarningsCard
-                historyRD={nodeHistoryRD}
-                isPrivate={isPrivate}
-                activeIndex={hoveredChurn}
-                onActiveIndexChange={setHoveredChurn}
-              />
+              <NodeOperatorEarningsCard historyRD={nodeHistoryRD} isPrivate={isPrivate} />
+              {canOperate && (
+                <OperatorFeesCard
+                  className="xl:col-span-2"
+                  operatorAddress={node.nodeOperatorAddress}
+                  nodeAddress={node.address}
+                  historyRD={nodeHistoryRD}
+                  isPrivate={isPrivate}
+                />
+              )}
             </div>
-            <BondSplit
-              network={network}
-              isPrivate={isPrivate}
-              providers={providers}
-              nodeBond={node.bond}
-              providerName={providerName}
-              layout="row"
-            />
+            {canOperate && (
+              <div className="mt-6 grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
+                <NodeMaintenanceCard node={node} onToggle={() => setOperatorAction({ type: 'maintenance' })} />
+                <NodeLeaveCard
+                  network={network}
+                  isPrivate={isPrivate}
+                  node={node}
+                  onLeave={() => setOperatorAction({ type: 'leave' })}
+                />
+              </div>
+            )}
           </>
+        ) : (
+          <div className="mt-6 grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
+            <NodeApyCard historyRD={nodeHistoryRD} apyLabel={nodeApyLabel} />
+            <NodeEarningsCard
+              historyRD={nodeHistoryRD}
+              isPrivate={isPrivate}
+              activeIndex={hoveredChurn}
+              onActiveIndexChange={setHoveredChurn}
+            />
+          </div>
         )}
+
+        <NodeNetworkCards node={node} ctx={networkCtx} />
+
+        {operatorAction &&
+          FP.pipe(
+            oOperatorSigner,
+            O.fold(
+              () => null,
+              (signer) => (
+                <NodeOperatorActionModal
+                  action={operatorAction}
+                  network={network}
+                  node={node}
+                  signer={signer}
+                  walletBalance={balanceByAddress(signer.address)}
+                  maxBondProviders={maxBondProviders}
+                  nextChurn={nextChurn}
+                  fee={feeRD}
+                  interact$={interact$}
+                  validatePassword$={validatePassword$}
+                  validateAddress={validateAddress}
+                  openExplorerTxUrl={openExplorerTxUrl}
+                  getExplorerTxUrl={getExplorerTxUrl}
+                  onClose={closeModal}
+                  onFinish={finishOperatorAction}
+                />
+              )
+            )
+          )}
 
         {modalType &&
           FP.pipe(

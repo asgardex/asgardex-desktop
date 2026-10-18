@@ -1,6 +1,6 @@
-import { BaseAmount, baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
+import { BaseAmount, assetAmount, assetToBase, baseAmount, baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
 
-import { NodeStatusEnum } from '../../../services/thorchain/types'
+import { NodeInfo, NodeStatusEnum, Providers } from '../../../services/thorchain/types'
 
 const RUNE_DECIMALS = 8
 
@@ -45,6 +45,34 @@ export const formatApy = (apy: number): string => `${(apy * 100).toFixed(1)}%`
 export const formatOperatorFee = (fee: BaseAmount, locale: string): string =>
   new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(fee.amount().div(100).toNumber())
 
+export const MAX_FEE_BPS = 10000
+
+export const OPERATOR_BOND_ACTION_AMOUNT: BaseAmount = assetToBase(assetAmount(0.01, RUNE_DECIMALS))
+
+export const operatorFeeBps = (fee: BaseAmount): number => fee.amount().toNumber()
+
+export const formatBpsAsPercent = (bps: number, locale: string): string =>
+  `${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(bps / 100)}%`
+
+export const isNodeLeaving = ({ requestedToLeave, forcedToLeave }: NodeInfo): boolean =>
+  requestedToLeave || forcedToLeave
+
+export const operatorBond = (node: NodeInfo): BaseAmount =>
+  node.bondProviders.providers
+    .filter(({ bondAddress }) => bondAddress.toLowerCase() === node.nodeOperatorAddress.toLowerCase())
+    .reduce((acc, { bond }) => acc.plus(bond), baseAmount(0, RUNE_DECIMALS))
+
+export const canRemoveProvider = (node: NodeInfo, { bondAddress, bond }: Providers): boolean => {
+  if (bondAddress.toLowerCase() === node.nodeOperatorAddress.toLowerCase()) return false
+  if (bond.lte(0)) return true
+  return node.status !== NodeStatusEnum.Active && node.status !== NodeStatusEnum.Ready
+}
+
+export const isBondActionLocked = (node: NodeInfo): boolean => node.status === NodeStatusEnum.Ready
+
+export const isLeaveLocked = (node: NodeInfo): boolean =>
+  node.status === NodeStatusEnum.Ready || (node.status === NodeStatusEnum.Active && isNodeLeaving(node))
+
 const THORCHAIN_EXPLORER_URL = 'https://thorchain.net'
 
 export const nodeExplorerUrl = (nodeAddress: string): string => `${THORCHAIN_EXPLORER_URL}/node/${nodeAddress}`
@@ -53,3 +81,11 @@ export const addressExplorerUrl = (address: string): string => `${THORCHAIN_EXPL
 
 export const isUnbondLocked = (status: NodeStatusEnum, signMembership: string[]): boolean =>
   status === NodeStatusEnum.Active || (signMembership ?? []).length > 0
+
+const PREFLIGHT_BOND_PATTERN = /minimum bond requirement: (\d+)\/(\d+)/
+
+export const formatPreflightReason = (reason: string): string =>
+  reason.replace(PREFLIGHT_BOND_PATTERN, (_, bond: string, minBond: string) => {
+    const rune = (value: string) => `ᚱ${formatRuneAmount(baseAmount(value, RUNE_DECIMALS))}`
+    return `minimum bond requirement: ${rune(bond)} / ${rune(minBond)}`
+  })

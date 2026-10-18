@@ -1,35 +1,29 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-
-import { BaseAmount, assetAmount, assetToBase, baseToAsset, bn, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { BaseAmount, assetAmount, assetToBase, baseToAsset, bn } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../../../shared/mock/amount'
-import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { THORChain } from '../../../../shared/utils/chainIds'
-import { isKeystoreWallet, isLedgerWallet } from '../../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getBondMemo, getUnbondMemo } from '../../../helpers/memoHelper'
 import { NextChurn } from '../../../hooks/useNextChurn'
-import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
-import { INITIAL_INTERACT_STATE } from '../../../services/thorchain/const'
-import { InteractState, InteractStateHandler } from '../../../services/thorchain/types'
+import { InteractStateHandler } from '../../../services/thorchain/types'
 import { ValidatePasswordHandler } from '../../../services/wallet/types'
 import { BondProviderPosition } from '../../../views/bonds/types'
-import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
-import { UnifiedTxModal, extractTxHash, getTxTimerValue, txHashRDToBoolean } from '../../modal/tx'
 import { BaseButton, FlatButton } from '../../uielements/button'
 import { InputBigNumber } from '../../uielements/input'
 import { Modal } from '../../uielements/modal'
 import { formatDuration, formatRuneAmount } from './helpers'
+import { MemoPreview } from './MemoPreview'
+import { useBondTxFlow } from './useBondTxFlow'
 
 export type BondActionType = 'bond' | 'unbond'
 
@@ -68,18 +62,24 @@ export const BondActionModal = ({
   const { signer } = position
 
   const [amountInput, setAmountInput] = useState<BigNumber>(bn(0))
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false)
-  const [sendTxStartTime, setSendTxStartTime] = useState(0)
 
   const {
-    state: interactState,
-    reset: resetInteractState,
-    subscribe: subscribeInteractState
-  } = useSubscriptionState<InteractState>(INITIAL_INTERACT_STATE)
-
-  const isLoading = useMemo(() => RD.isPending(interactState.txRD), [interactState.txRD])
-
-  const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
+    isLoading,
+    oFee,
+    footerLabel,
+    feeError: feeErrorOf,
+    startSigning,
+    modals
+  } = useBondTxFlow({
+    network,
+    signer,
+    fee: feeRD,
+    interact$,
+    validatePassword$,
+    openExplorerTxUrl,
+    getExplorerTxUrl,
+    onFinish
+  })
 
   const maxAmount: BaseAmount = useMemo(() => {
     if (!isBond) return position.myBond
@@ -102,28 +102,7 @@ export const BondActionModal = ({
 
   const feeReady = O.isSome(oFee)
 
-  const feeError: string | null = useMemo(
-    () =>
-      FP.pipe(
-        oFee,
-        O.filter((fee) => walletBalance.lt(fee)),
-        O.fold(
-          () => null,
-          () =>
-            intl.formatMessage(
-              { id: 'wallet.errors.fee.notCovered' },
-              {
-                balance: formatAssetAmountCurrency({
-                  amount: baseToAsset(walletBalance),
-                  asset: AssetRuneNative,
-                  trimZeros: true
-                })
-              }
-            )
-        )
-      ),
-    [intl, oFee, walletBalance]
-  )
+  const feeError = feeErrorOf(walletBalance)
 
   const amountError: string | null = useMemo(() => {
     if (!feeReady || amountInput.isZero()) return null
@@ -144,117 +123,6 @@ export const BondActionModal = ({
   )
 
   const submitDisabled = isLoading || !feeReady || feeError !== null || amountInput.isZero() || amountError !== null
-
-  const submitTx = useCallback(() => {
-    setSendTxStartTime(Date.now())
-    subscribeInteractState(
-      interact$({
-        walletType: signer.walletType,
-        walletAccount: signer.walletAccount,
-        walletIndex: signer.walletIndex,
-        hdMode: signer.hdMode,
-        amount: isBond ? amountToSend : ZERO_BASE_AMOUNT,
-        memo,
-        asset: AssetRuneNative
-      })
-    )
-  }, [amountToSend, interact$, isBond, memo, signer, subscribeInteractState])
-
-  const renderConfirmationModal = useMemo(() => {
-    const onSuccessHandler = () => {
-      setShowConfirmationModal(false)
-      submitTx()
-    }
-    const onCloseHandler = () => {
-      setShowConfirmationModal(false)
-    }
-
-    if (isKeystoreWallet(signer.walletType)) {
-      return (
-        <WalletPasswordConfirmationModal
-          onSuccess={onSuccessHandler}
-          onClose={onCloseHandler}
-          validatePassword$={validatePassword$}
-        />
-      )
-    }
-
-    if (isLedgerWallet(signer.walletType)) {
-      return (
-        <LedgerConfirmationModal
-          network={network}
-          onSuccess={onSuccessHandler}
-          onClose={onCloseHandler}
-          visible={showConfirmationModal}
-          chain={THORChain}
-          description2={intl.formatMessage({ id: 'ledger.sign' })}
-          addresses={O.none}
-        />
-      )
-    }
-    return <></>
-  }, [intl, network, showConfirmationModal, signer.walletType, submitTx, validatePassword$])
-
-  const renderTxModal = useMemo(() => {
-    const { txRD } = interactState
-
-    if (RD.isInitial(txRD)) return <></>
-
-    const closeHandler = () => {
-      resetInteractState()
-      onFinish()
-    }
-
-    return (
-      <UnifiedTxModal
-        title={intl.formatMessage({ id: 'common.tx.sending' })}
-        onClose={closeHandler}
-        onFinish={closeHandler}
-        startTime={sendTxStartTime}
-        txRD={txHashRDToBoolean(txRD)}
-        timerValue={getTxTimerValue(txRD)}
-        txConfig={{ type: 'interact', asset: { asset: AssetRuneNative, amount: amountToSend } }}
-        txHash={extractTxHash(txRD)}
-        getExplorerTxUrl={getExplorerTxUrl}
-        openExplorerTxUrl={openExplorerTxUrl}
-        network={network}
-      />
-    )
-  }, [
-    amountToSend,
-    getExplorerTxUrl,
-    interactState,
-    intl,
-    network,
-    onFinish,
-    openExplorerTxUrl,
-    resetInteractState,
-    sendTxStartTime
-  ])
-
-  const feeLabel = useMemo(
-    () =>
-      FP.pipe(
-        feeRD,
-        RD.fold(
-          () => '—',
-          () => '—',
-          () => '—',
-          (fee) =>
-            formatAssetAmountCurrency({
-              amount: baseToAsset(fee),
-              asset: AssetRuneNative,
-              decimal: 4,
-              trimZeros: true
-            })
-        )
-      ),
-    [feeRD]
-  )
-
-  const footerLabel = isKeystoreWallet(signer.walletType)
-    ? intl.formatMessage({ id: 'bonds.provider.modal.signedLocally' }, { fee: feeLabel })
-    : `${intl.formatMessage({ id: 'common.fee' })}: ${feeLabel}`
 
   const subtitle = truncateAddress(position.nodeAddress, THORChain, network)
 
@@ -324,8 +192,13 @@ export const BondActionModal = ({
                       nextChurn,
                       O.fold(
                         () => '—',
-                        ({ msLeft }) =>
-                          intl.formatMessage({ id: 'bonds.provider.modal.nextChurn' }, { time: formatDuration(msLeft) })
+                        (churn) =>
+                          churn.halted
+                            ? intl.formatMessage({ id: 'bonds.churn.whenResumes' })
+                            : intl.formatMessage(
+                                { id: 'bonds.provider.modal.nextChurn' },
+                                { time: formatDuration(churn.msLeft) }
+                              )
                       )
                     )
                   : intl.formatMessage({ id: 'bonds.provider.modal.immediately' })}
@@ -333,31 +206,20 @@ export const BondActionModal = ({
             </div>
           </div>
 
-          <div className="mt-4 flex flex-col rounded-lg border border-solid border-gray1 dark:border-gray0d">
-            <div className="flex items-center justify-between border-b border-solid border-gray1 px-4 py-2 dark:border-gray0d">
-              <span className="font-main-semi-bold text-[11px] tracking-[2px] text-gray2 uppercase dark:text-gray2d">
-                {intl.formatMessage({ id: 'bonds.provider.modal.memo' })}
-              </span>
-              <span className="font-main text-[12px] text-gray2 dark:text-gray2d">
-                {intl.formatMessage({ id: 'bonds.provider.modal.thorchainTx' })}
-              </span>
-            </div>
-            <span className="px-4 py-3 font-mono text-[13px] break-all text-text0 dark:text-text0d">{memo}</span>
-          </div>
+          <MemoPreview memo={memo} />
 
           <FlatButton
             className="mt-6 w-full"
             size="large"
             loading={isLoading}
             disabled={submitDisabled}
-            onClick={() => setShowConfirmationModal(true)}>
+            onClick={() => startSigning({ memo, amount: isBond ? amountToSend : ZERO_BASE_AMOUNT })}>
             {intl.formatMessage({ id: isBond ? 'bonds.provider.modal.signSend' : 'bonds.provider.modal.signUnbond' })}
           </FlatButton>
           <span className="mt-3 text-center font-main text-[13px] text-gray2 dark:text-gray2d">{footerLabel}</span>
         </div>
       </Modal>
-      {showConfirmationModal && renderConfirmationModal}
-      {renderTxModal}
+      {modals}
     </>
   )
 }

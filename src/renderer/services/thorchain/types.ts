@@ -139,8 +139,31 @@ export type NodeInfo = {
   bond: BaseAmount
   award: BaseAmount
   status: NodeStatusEnum
+  statusSince: number
+  activeBlockHeight: number
   bondProviders: BondProviders
   signMembership: string[]
+  requestedToLeave: boolean
+  forcedToLeave: boolean
+  leaveHeight: number
+  slashPoints: number
+  version: string
+  ipAddress: string
+  maintenance: boolean
+  preflightStatus: NodePreflightStatus
+  observeChains: NodeObservedChain[]
+  missingBlocks: number
+}
+
+export type NodeObservedChain = {
+  chain: string
+  height: number
+}
+
+export type NodePreflightStatus = {
+  status: string
+  reason: string
+  code: number
 }
 
 export type NodeInfoLD = LiveData<Error, NodeInfo>
@@ -149,6 +172,14 @@ export type NodeInfoRD = RD.RemoteData<Error, NodeInfo>
 export type NodeInfos = NodeInfo[]
 export type NodeInfosLD = LiveData<Error, NodeInfos>
 export type NodeInfosRD = RD.RemoteData<Error, NodeInfos>
+
+export type ThorchainVersion = {
+  current: string
+  next: string
+  nextSinceHeight: number
+}
+export type ThorchainVersionLD = LiveData<Error, ThorchainVersion>
+export type ThorchainVersionRD = RD.RemoteData<Error, ThorchainVersion>
 
 export type ThornodeApiUrlLD = LiveData<Error, string>
 export type ThornodeApiUrlRD = RD.RemoteData<Error, string>
