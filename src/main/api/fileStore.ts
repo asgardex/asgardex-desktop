@@ -42,9 +42,9 @@ const getFilePath = (fileStoreName: StoreFileName, version: string) =>
   buildJsonFilePath(STORAGE_DIR, fileStoreName, version)
 
 /**
- * @returns
- * 1. in case it's impossible to read from file will return Promise.resolve(defaultValue)
- * 2. in case content was read returns Promise.resolve(fileContent)
+ * A missing file is created from `defaultValue`.
+ * A file that cannot be parsed rejects. Returning the default made a failed
+ * read look like an empty store, and the next save replaced the file.
  */
 export const getFileContent = async <T extends StorageVersion>(name: StoreFileName, defaultValue: T): Promise<T> => {
   const path = getFilePath(name, defaultValue.version)
@@ -65,9 +65,8 @@ export const getFileContent = async <T extends StorageVersion>(name: StoreFileNa
       await fs.writeJSON(path, migrated)
     }
     return migrated
-  } catch {
-    // Resolve with default value in case of any error
-    return defaultValue
+  } catch (error) {
+    throw error instanceof Error ? error : new Error(`Could not read ${name}`)
   }
 }
 /**

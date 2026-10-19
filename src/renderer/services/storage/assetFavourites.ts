@@ -82,7 +82,12 @@ const updateStorage = (favourites: AssetFavouritesLists) => {
 }
 
 let hydrated = false
+let loading = false
+let retryTimer: ReturnType<typeof setTimeout> | undefined
+let retriesUsed = 0
 const pendingChanges: FavouriteChange[] = []
+/** Backoff after a rejected read or a payload that does not decode. */
+const RETRY_MS = [400, 1200, 3000]
 
 const finishHydration = (stored: AssetFavouritesLists) => {
   const changes = pendingChanges.splice(0, pendingChanges.length)
@@ -90,23 +95,56 @@ const finishHydration = (stored: AssetFavouritesLists) => {
   // Ready before publish, and the snapshot is queued first. A subscriber that toggles
   // inside set() then appends a newer save instead of being left in the pending list.
   hydrated = true
+  retriesUsed = 0
   if (changes.length > 0) updateStorage(merged)
   setFavourites(merged)
 }
 
-window.apiAssetFavouritesStorage.get().then(
-  (result) => {
-    FP.pipe(
-      result,
-      assetFavouritesStorageIO.decode,
-      E.fold(
-        () => finishHydration(favouritesByNetwork()),
-        ({ favourites }) => finishHydration(favourites)
+const stopRetry = () => {
+  if (retryTimer === undefined) return
+  clearTimeout(retryTimer)
+  retryTimer = undefined
+}
+
+/**
+ * Leave a failed read unhydrated. Saving the in-memory empty lists would replace
+ * every network's favourites. Try again, then wait for the next star.
+ */
+const scheduleRetry = () => {
+  if (hydrated || loading || retryTimer !== undefined) return
+  const delay = RETRY_MS[retriesUsed]
+  if (delay === undefined) return
+  retriesUsed += 1
+  retryTimer = setTimeout(() => {
+    retryTimer = undefined
+    readFavourites()
+  }, delay)
+}
+
+const readFavourites = () => {
+  if (hydrated || loading) return
+  stopRetry()
+  loading = true
+  window.apiAssetFavouritesStorage.get().then(
+    (result) => {
+      loading = false
+      FP.pipe(
+        result,
+        assetFavouritesStorageIO.decode,
+        E.fold(
+          () => scheduleRetry(),
+          ({ favourites }) => finishHydration(favourites)
+        )
       )
-    )
-  },
-  () => finishHydration(favouritesByNetwork())
-)
+    },
+    () => {
+      loading = false
+      scheduleRetry()
+    }
+  )
+}
+
+readFavourites()
 
 const favourites$: Rx.Observable<AnyAsset[]> = FP.pipe(
   Rx.combineLatest([network$, favouritesByNetwork$]),
@@ -125,6 +163,11 @@ const toggleFavourite = (asset: AnyAsset) => {
   setFavourites(updated)
   if (!hydrated) {
     pendingChanges.push({ network, asset, added })
+    // A click after the backoff is exhausted is another chance to read the file.
+    if (!loading && retryTimer === undefined) {
+      retriesUsed = 0
+      readFavourites()
+    }
     return
   }
   updateStorage(updated)

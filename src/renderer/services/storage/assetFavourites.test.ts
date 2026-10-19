@@ -97,6 +97,8 @@ describe('asset favourites storage', () => {
   const original = { ...window.apiAssetFavouritesStorage }
 
   afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
     window.apiAssetFavouritesStorage = { ...original }
     vi.resetModules()
   })
@@ -164,14 +166,13 @@ describe('asset favourites storage', () => {
     sub.unsubscribe()
   })
 
-  it('saves a star made before a failed load', async () => {
-    let rejectGet: (reason: Error) => void = () => {}
-    const getPromise = new Promise<AssetFavouritesStorageEncoded>((_, reject) => {
-      rejectGet = reject
-    })
+  it('does not save a star made before a failed load', async () => {
+    vi.useFakeTimers()
+    let fail = true
     const saves: Partial<AssetFavouritesStorageEncoded>[] = []
     install({
-      get: () => getPromise,
+      get: () =>
+        fail ? Promise.reject(new Error('disk')) : Promise.resolve(stored({ ...emptyLists, mainnet: [AssetBTC] })),
       save: (data) => {
         saves.push(data)
         return Promise.resolve(stored(emptyLists))
@@ -183,14 +184,41 @@ describe('asset favourites storage', () => {
     const sub = favourites$.subscribe((assets) => seen.push(assets.map(assetToString)))
 
     toggleFavourite(AssetETH)
-    rejectGet(new Error('disk'))
-    await vi.waitUntil(() => saves.length === 1)
-
+    await vi.advanceTimersByTimeAsync(0)
+    expect(saves).toEqual([])
     expect(seen.at(-1)).toEqual([assetToString(AssetETH)])
-    expect(saves[0]).toEqual({
-      favourites: assetFavouritesListsIO.encode({ ...emptyLists, mainnet: [AssetETH] })
-    })
+
+    fail = false
+    await vi.advanceTimersByTimeAsync(400)
+    expect(saves).toEqual([
+      {
+        favourites: assetFavouritesListsIO.encode({ ...emptyLists, mainnet: [AssetBTC, AssetETH] })
+      }
+    ])
+    expect(seen.at(-1)).toEqual([assetToString(AssetBTC), assetToString(AssetETH)])
     sub.unsubscribe()
+  })
+
+  it('does not save when the stored payload cannot be decoded', async () => {
+    const saves: Partial<AssetFavouritesStorageEncoded>[] = []
+    install({
+      get: () =>
+        Promise.resolve({
+          version: '1',
+          favourites: { mainnet: [{ bad: true }] }
+        } as AssetFavouritesStorageEncoded),
+      save: (data) => {
+        saves.push(data)
+        return Promise.resolve(stored(emptyLists))
+      }
+    })
+
+    const { toggleFavourite } = await import('./assetFavourites')
+    await Promise.resolve()
+    toggleFavourite(AssetETH)
+    await Promise.resolve()
+
+    expect(saves).toEqual([])
   })
 
   it('does not save when the load arrives with no clicks', async () => {
