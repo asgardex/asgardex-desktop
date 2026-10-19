@@ -295,9 +295,7 @@ export const useSwapQuote = ({
         const taprootNow = taprootAddressRef.current
         const blockMaya = isBtcTaprootAddress(taprootNow.source) || isBtcTaprootAddress(taprootNow.destination)
         if (blockMaya && preferredProtocolRef.current === 'Mayachain') preferredProtocolRef.current = null
-        const quotesForSelection = blockMaya
-          ? allQuotes.filter((quote) => quote.protocol !== 'Mayachain')
-          : allQuotes
+        const quotesForSelection = blockMaya ? allQuotes.filter((quote) => quote.protocol !== 'Mayachain') : allQuotes
 
         // Prefer real canSwap quotes. If none, keep THOR/MAYA quotes blocked only by
         // missing router allowance so Swap can select them and run an on-chain
