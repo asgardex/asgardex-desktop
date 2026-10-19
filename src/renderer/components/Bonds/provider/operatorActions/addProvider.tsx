@@ -1,7 +1,6 @@
 import { getBondMemo } from '../../../../helpers/memoHelper'
-import { NodeInfo } from '../../../../services/thorchain/types'
 import { Input } from '../../../uielements/input'
-import { OPERATOR_BOND_ACTION_AMOUNT, formatBpsAsPercent } from '../helpers'
+import { OPERATOR_BOND_ACTION_AMOUNT, formatBpsAsPercent, hasBondProvider } from '../helpers'
 import { AttachedRow, SummaryRow } from './SummaryRow'
 import {
   OperatorActionContext,
@@ -15,14 +14,11 @@ const amount = OPERATOR_BOND_ACTION_AMOUNT
 
 const inputProviderAddress = ({ provider }: OperatorActionInput): string => provider.trim()
 
-const isListed = (node: NodeInfo, address: string): boolean =>
-  node.bondProviders.providers.some(({ bondAddress }) => bondAddress.toLowerCase() === address.toLowerCase())
-
 const providerError = (ctx: OperatorActionContext, address: string): string | null => {
   const { intl, node, validateAddress } = ctx
   if (address === '') return null
   if (!validateAddress(address)) return intl.formatMessage({ id: 'wallet.errors.address.invalid' })
-  if (isListed(node, address)) return intl.formatMessage({ id: 'bonds.operator.addProvider.alreadyListed' })
+  if (hasBondProvider(node, address)) return intl.formatMessage({ id: 'bonds.operator.addProvider.alreadyListed' })
   return null
 }
 
@@ -69,10 +65,6 @@ const AddProviderSummary = ({ ctx: { intl, node, maxBondProviders } }: OperatorA
             : '—'
         }
       />
-      <SummaryRow
-        label={intl.formatMessage({ id: 'bonds.operator.addProvider.mustBond' })}
-        value={intl.formatMessage({ id: 'bonds.operator.addProvider.mustBondValue' })}
-      />
       <AttachedRow intl={intl} amount={amount} />
     </>
   )
@@ -98,7 +90,7 @@ export const addProviderSpec: OperatorActionSpec = {
     const error = providerError(ctx, address)
     return { error, complete: address !== '' && error === null }
   },
-  settled: (_ctx, input, fresh) => isListed(fresh, inputProviderAddress(input)),
+  settled: (_ctx, input, fresh) => hasBondProvider(fresh, inputProviderAddress(input)),
   Field: AddProviderField,
   Summary: AddProviderSummary
 }

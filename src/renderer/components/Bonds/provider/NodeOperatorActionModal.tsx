@@ -64,7 +64,10 @@ export const NodeOperatorActionModal = ({
   )
   const { amount, Field, Summary } = spec
 
-  const [input, setInput] = useState<OperatorActionInput>(() => ({ fee: bn(ctx.currentFeeBps).div(100), provider: '' }))
+  const [input, setInput] = useState<OperatorActionInput>(() => ({
+    fee: bn(ctx.currentFeeBps).div(100),
+    provider: ''
+  }))
   const onInputChange = useCallback(
     (update: Partial<OperatorActionInput>) => setInput((prev) => ({ ...prev, ...update })),
     []

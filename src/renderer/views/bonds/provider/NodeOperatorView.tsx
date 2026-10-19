@@ -4,7 +4,8 @@ import * as RD from '@devexperts/remote-data-ts'
 import { PlusIcon } from '@heroicons/react/24/outline'
 
 import { Address } from '@xchainjs/xchain-util'
-import { function as FP, option as O } from 'fp-ts'
+import clsx from 'clsx'
+import { array as A, boolean as B, function as FP, option as O, ord as Ord } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -15,17 +16,20 @@ import {
   AddNodeModal,
   NodeOperatorActionModal,
   OperatorNodeCard,
-  SegmentedTabs,
   formatRuneAmount,
   isBondActionLocked
 } from '../../../components/Bonds/provider'
+import { OperatorDashboardTitleRow } from '../../../components/Bonds/provider/OperatorDashboardTitleRow'
 import { OperatorFeesTile } from '../../../components/Bonds/provider/OperatorFeesTile'
 import { groupNodesByOperator } from '../../../components/Bonds/provider/OperatorGroupsTable'
+import { RunebondRequestsTile } from '../../../components/Bonds/provider/RunebondRequestsLinks'
+import { RunebondVaultNotices } from '../../../components/Bonds/provider/RunebondVaultNotice'
 import { ErrorView } from '../../../components/shared/error'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
-import { BorderButton, FlatButton, RefreshButton } from '../../../components/uielements/button'
+import { FlatButton } from '../../../components/uielements/button'
 import { Spin } from '../../../components/uielements/spin'
 import { ZERO_BASE_AMOUNT } from '../../../const'
+import { useChainContext } from '../../../contexts/ChainContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useUserNodesContext } from '../../../contexts/UserNodesContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -39,6 +43,7 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { operatorAddressesOf } from '../../../hooks/useOperatorFees'
 import { OperatorNodeInfo, useOperatorNodes } from '../../../hooks/useOperatorNodes'
 import { useReloadUntil } from '../../../hooks/useReloadUntil'
+import { useOperatorWhitelistRequests } from '../../../hooks/useRunebondListing'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as bondsRoutes from '../../../routes/bonds'
 import { FeeRD } from '../../../services/chain/types'
@@ -53,6 +58,11 @@ enum NodesViewMode {
   ByOperator = 'byOperator'
 }
 
+const ordOperatedFirst: Ord.Ord<OperatorNodeInfo> = FP.pipe(
+  B.Ord,
+  Ord.contramap(({ isOperator }: OperatorNodeInfo) => !isOperator)
+)
+
 export const NodeOperatorView = (): JSX.Element => {
   const intl = useIntl()
   const navigate = useNavigate()
@@ -60,6 +70,7 @@ export const NodeOperatorView = (): JSX.Element => {
   const { isPrivate } = useApp()
 
   const { getNodeInfos$, reloadNodeInfos, interact$, fees$ } = useThorchainContext()
+  const { transfer$ } = useChainContext()
   const { userNodes$, addNodeAddress, removeNodeByAddress } = useUserNodesContext()
   const {
     keystoreService: { validatePassword$ }
@@ -105,6 +116,8 @@ export const NodeOperatorView = (): JSX.Element => {
       ),
     [nodesRD]
   )
+  const whitelistRequestsRD = useOperatorWhitelistRequests(operatorAddresses)
+  const hasPendingRequests = RD.isSuccess(whitelistRequestsRD) && whitelistRequestsRD.value.counts.pending > 0
 
   const [allNodesRD] = useObservableState(() => getNodeInfos$, RD.initial)
   const oNodeAddresses: O.Option<Address[]> = useMemo(
@@ -180,6 +193,22 @@ export const NodeOperatorView = (): JSX.Element => {
     [allNodesRD, nodesRD, positionsRD]
   )
 
+  const loadedNodesCount = FP.pipe(
+    nodesRD,
+    RD.fold(
+      () => 0,
+      () => 0,
+      () => 0,
+      (nodes) => nodes.length
+    )
+  )
+  const titleRowLabel =
+    loadedNodesCount === 0
+      ? intl.formatMessage({ id: 'bonds.operator.titleNodes' })
+      : viewMode === NodesViewMode.ByNode
+        ? intl.formatMessage({ id: 'bonds.byOperator.titleCards' }, { count: loadedNodesCount })
+        : intl.formatMessage({ id: 'bonds.byOperator.titleTable' }, { count: operatorGroups.length })
+
   const renderStats = useCallback(
     (nodes: OperatorNodeInfo[]) => {
       const operated = nodes.filter(({ isOperator }) => isOperator)
@@ -205,7 +234,7 @@ export const NodeOperatorView = (): JSX.Element => {
               {isPrivate ? hiddenString : formatRuneAmount(bondUnderManagement)}
             </span>
           </div>
-          <span className="mt-2 font-main text-[14px] text-gray2 dark:text-gray2d">
+          <span className="mt-2 font-main text-[15px] text-gray2 dark:text-gray2d">
             {intl.formatMessage(
               { id: 'bonds.operator.nodesAndProviders' },
               { nodes: operated.length, providers: providersCount }
@@ -236,8 +265,14 @@ export const NodeOperatorView = (): JSX.Element => {
   )
 
   return (
-    <div className="flex w-full flex-col">
-      <div className="flex w-full flex-col gap-6 rounded-lg border border-solid border-gray0 bg-bg0 p-6 lg:flex-row lg:items-start lg:justify-between dark:border-gray0d dark:bg-bg0d">
+    <div className="@container flex w-full flex-col">
+      <div
+        className={clsx(
+          'flex w-full flex-col gap-10 rounded-lg border border-solid border-gray0 bg-bg0 p-8 lg:flex-row lg:items-end dark:border-gray0d dark:bg-bg0d',
+          hasPendingRequests
+            ? 'lg:flex-wrap lg:justify-between lg:gap-y-6 @min-[1150px]:flex-nowrap @min-[1150px]:items-center'
+            : 'lg:gap-x-16'
+        )}>
         {FP.pipe(
           nodesRD,
           RD.fold(
@@ -255,16 +290,51 @@ export const NodeOperatorView = (): JSX.Element => {
             onViewHistory={() => navigate(bondsRoutes.operatorFees.path())}
           />
         )}
-        <div className="flex flex-col gap-3 lg:items-end lg:justify-between lg:self-stretch">
-          <BorderButton size="normal" onClick={openAddNode}>
-            <PlusIcon className="mr-1 h-[16px] w-[16px] text-inherit" />
-            {intl.formatMessage({ id: 'bonds.node.add' })}
-          </BorderButton>
-          <RefreshButton className="self-end" onClick={reload} disabled={RD.isPending(nodesRD)} />
-        </div>
+        <RunebondRequestsTile
+          requestsRD={whitelistRequestsRD}
+          onOpen={() => navigate(bondsRoutes.runebondRequests.path())}
+        />
       </div>
 
-      <div className="mt-6 w-full">
+      <RunebondVaultNotices
+        network={network}
+        operatorAddresses={operatorAddresses}
+        walletInfos={walletInfos}
+        balanceByAddress={balanceByAddress}
+        fee={feeRD}
+        transfer$={transfer$}
+        validatePassword$={validatePassword$}
+        openExplorerTxUrl={openExplorerTxUrl}
+        getExplorerTxUrl={getExplorerTxUrl}
+      />
+
+      <OperatorDashboardTitleRow
+        className="mt-6"
+        title={titleRowLabel}
+        refreshing={RD.isPending(nodesRD)}
+        onRefresh={reload}
+        onAddNode={openAddNode}
+        toggle={
+          loadedNodesCount > 0
+            ? {
+                options: [
+                  {
+                    label: intl.formatMessage({ id: 'bonds.byOperator.tab.byNode' }),
+                    value: NodesViewMode.ByNode
+                  },
+                  {
+                    label: intl.formatMessage({ id: 'bonds.byOperator.tab.byOperator' }),
+                    value: NodesViewMode.ByOperator
+                  }
+                ],
+                value: viewMode,
+                onChange: setViewMode
+              }
+            : undefined
+        }
+      />
+
+      <div className="mt-4 w-full">
         {FP.pipe(
           nodesRD,
           RD.fold(
@@ -292,56 +362,33 @@ export const NodeOperatorView = (): JSX.Element => {
                 )
               }
               return (
-                <>
-                  <div className="flex w-full flex-wrap items-center justify-between gap-4">
-                    <span className="font-main-semi-bold text-[12px] tracking-[2px] text-gray2 uppercase dark:text-gray2d">
-                      {viewMode === NodesViewMode.ByNode
-                        ? intl.formatMessage({ id: 'bonds.byOperator.titleCards' }, { count: nodes.length })
-                        : intl.formatMessage({ id: 'bonds.byOperator.titleTable' }, { count: operatorGroups.length })}
-                    </span>
-                    <SegmentedTabs
-                      options={[
-                        {
-                          label: intl.formatMessage({ id: 'bonds.byOperator.tab.byNode' }),
-                          value: NodesViewMode.ByNode
-                        },
-                        {
-                          label: intl.formatMessage({ id: 'bonds.byOperator.tab.byOperator' }),
-                          value: NodesViewMode.ByOperator
-                        }
-                      ]}
-                      value={viewMode}
-                      onChange={setViewMode}
+                <div className="w-full">
+                  {viewMode === NodesViewMode.ByNode ? (
+                    <div className="grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
+                      {A.sortBy([ordOperatedFirst])(nodes).map((node) => (
+                        <OperatorNodeCard
+                          key={node.address}
+                          network={network}
+                          isPrivate={isPrivate}
+                          node={node}
+                          networkCtx={networkCtx}
+                          operatorWalletType={operatorWalletType(node.nodeOperatorAddress)}
+                          onChangeFee={isBondActionLocked(node) ? undefined : setFeeNodeAddress}
+                          onRemoveMonitored={onRemoveMonitored}
+                          onOpenDetail={onOpenDetail}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <OperatorNodesByOperator
+                      groups={operatorGroups}
+                      network={network}
+                      isPrivate={isPrivate}
+                      networkCtx={networkCtx}
+                      onOpenDetail={onOpenDetail}
                     />
-                  </div>
-                  <div className="mt-4 w-full">
-                    {viewMode === NodesViewMode.ByNode ? (
-                      <div className="grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
-                        {nodes.map((node) => (
-                          <OperatorNodeCard
-                            key={node.address}
-                            network={network}
-                            isPrivate={isPrivate}
-                            node={node}
-                            networkCtx={networkCtx}
-                            operatorWalletType={operatorWalletType(node.nodeOperatorAddress)}
-                            onChangeFee={isBondActionLocked(node) ? undefined : setFeeNodeAddress}
-                            onRemoveMonitored={onRemoveMonitored}
-                            onOpenDetail={onOpenDetail}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <OperatorNodesByOperator
-                        groups={operatorGroups}
-                        network={network}
-                        isPrivate={isPrivate}
-                        networkCtx={networkCtx}
-                        onOpenDetail={onOpenDetail}
-                      />
-                    )}
-                  </div>
-                </>
+                  )}
+                </div>
               )
             }
           )

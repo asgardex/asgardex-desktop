@@ -56,6 +56,26 @@ export const getBondMemo = (thorAddress: string, providerAddress?: string, nodeF
 
 export const getOperatorFeeMemo = (nodeAddress: string, feeBps: number) => mkMemo(['BOND', nodeAddress, '', feeBps])
 
+export const getRunebondListMemo = (
+  nodeAddress: string,
+  minBond: BaseAmount,
+  targetTotalBond: BaseAmount,
+  feeBps: number
+) =>
+  mkMemo([
+    'TB',
+    'V2',
+    'LIST',
+    nodeAddress,
+    minBond.amount().toFixed(0),
+    targetTotalBond.amount().toFixed(0),
+    Math.round(feeBps)
+  ])
+
+export const getRunebondDelistMemo = (nodeAddress: string) => mkMemo(['TB', 'DELIST', nodeAddress])
+
+export const getRunebondVaultTopupMemo = (operatorAddress: string) => mkMemo(['TB', 'FFV', operatorAddress])
+
 export const getMaintenanceMemo = (nodeAddress: string) => mkMemo(['MAINT', nodeAddress])
 
 /**

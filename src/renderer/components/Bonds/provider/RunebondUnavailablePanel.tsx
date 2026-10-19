@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
-export const RunebondUnavailablePanel = ({ className }: { className?: string }) => {
+export const RunebondUnavailablePanel = ({ className, message }: { className?: string; message?: string }) => {
   const intl = useIntl()
 
   return (
@@ -11,7 +11,7 @@ export const RunebondUnavailablePanel = ({ className }: { className?: string }) 
         className
       )}>
       <span className="text-center font-main text-[14px] text-gray2 dark:text-gray2d">
-        {intl.formatMessage({ id: 'bonds.provider.data.unavailable' })}
+        {message ?? intl.formatMessage({ id: 'bonds.provider.data.unavailable' })}
       </span>
     </div>
   )

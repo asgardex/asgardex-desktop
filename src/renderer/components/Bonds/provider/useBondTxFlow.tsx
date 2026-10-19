@@ -5,111 +5,129 @@ import { Network } from '@xchainjs/xchain-client'
 import { BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
+import * as Rx from 'rxjs'
+import * as RxOp from 'rxjs/operators'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { THORChain } from '../../../../shared/utils/chainIds'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
-import { FeeRD } from '../../../services/chain/types'
+import { FeeRD, SendTxStateHandler } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
-import { INITIAL_INTERACT_STATE } from '../../../services/thorchain/const'
-import { InteractState, InteractStateHandler } from '../../../services/thorchain/types'
-import { ValidatePasswordHandler } from '../../../services/wallet/types'
+import { RUNEBOND_LISTING_ADDRESS, RUNEBOND_LISTING_MIN_AMOUNT } from '../../../services/runebond'
+import { InteractStateHandler } from '../../../services/thorchain/types'
+import { TxHashRD, ValidatePasswordHandler } from '../../../services/wallet/types'
 import { BondWalletInfo } from '../../../views/bonds/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { UnifiedTxModal, extractTxHash, getTxTimerValue, txHashRDToBoolean } from '../../modal/tx'
+import { formatRuneAmount } from './helpers'
 
-export type BondTxFlowParams = {
+type TxFlowCommonParams = {
   network: Network
   signer: BondWalletInfo
   fee: FeeRD
-  interact$: InteractStateHandler
   validatePassword$: ValidatePasswordHandler
   openExplorerTxUrl: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   onFinish: () => void
 }
 
-export type BondTxFlow = {
+export type BondTxFlowParams = TxFlowCommonParams & {
+  interact$: InteractStateHandler
+}
+
+export type RunebondTxFlowParams = TxFlowCommonParams & {
+  transfer$: SendTxStateHandler
+}
+
+export type BondTxRequest = { memo: string; amount: BaseAmount }
+
+export type RunebondTxRequest = BondTxRequest
+
+export type BondTxFlow<R extends BondTxRequest = BondTxRequest> = {
   isLoading: boolean
   oFee: O.Option<BaseAmount>
   feeLabel: string
   footerLabel: string
-  feeError: (walletBalance: BaseAmount) => string | null
-  startSigning: (params: { memo: string; amount: BaseAmount }) => void
+  feeError: (walletBalance: BaseAmount, amount?: BaseAmount) => string | null
+  startSigning: (params: R) => void
   modals: JSX.Element
 }
 
-export const useBondTxFlow = ({
+export type RunebondTxFlow = BondTxFlow<RunebondTxRequest>
+
+type TxFlowParams<R extends BondTxRequest> = TxFlowCommonParams & {
+  txType: 'interact' | 'send'
+  requiredAmount: BaseAmount
+  finishOnFailure: boolean
+  submit: (request: R) => Rx.Observable<TxHashRD>
+}
+
+const useTxFlow = <R extends BondTxRequest>({
   network,
   signer,
   fee: feeRD,
-  interact$,
   validatePassword$,
   openExplorerTxUrl,
   getExplorerTxUrl,
-  onFinish
-}: BondTxFlowParams): BondTxFlow => {
+  onFinish,
+  txType,
+  requiredAmount,
+  finishOnFailure,
+  submit
+}: TxFlowParams<R>): BondTxFlow<R> => {
   const intl = useIntl()
 
-  const [pending, setPending] = useState<{ memo: string; amount: BaseAmount } | null>(null)
+  const [pending, setPending] = useState<R | null>(null)
   const [submittedAmount, setSubmittedAmount] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
   const [sendTxStartTime, setSendTxStartTime] = useState(0)
 
-  const {
-    state: interactState,
-    reset: resetInteractState,
-    subscribe: subscribeInteractState
-  } = useSubscriptionState<InteractState>(INITIAL_INTERACT_STATE)
+  const { state: txRD, reset: resetTxState, subscribe: subscribeTxState } = useSubscriptionState<TxHashRD>(RD.initial)
 
-  const isLoading = useMemo(() => RD.isPending(interactState.txRD), [interactState.txRD])
+  const isLoading = useMemo(() => RD.isPending(txRD), [txRD])
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
   const feeError = useCallback(
-    (walletBalance: BaseAmount): string | null =>
+    (walletBalance: BaseAmount, amount: BaseAmount = requiredAmount): string | null =>
       FP.pipe(
         oFee,
-        O.filter((fee) => walletBalance.lt(fee)),
+        O.map((fee) => fee.plus(amount)),
+        O.filter((required) => walletBalance.lt(required)),
         O.fold(
           () => null,
-          () =>
-            intl.formatMessage(
-              { id: 'wallet.errors.fee.notCovered' },
-              {
-                balance: formatAssetAmountCurrency({
-                  amount: baseToAsset(walletBalance),
-                  asset: AssetRuneNative,
-                  trimZeros: true
-                })
-              }
-            )
+          (required) =>
+            amount.gt(0)
+              ? intl.formatMessage(
+                  { id: 'bonds.operator.modal.insufficientBalance' },
+                  { required: formatRuneAmount(required), balance: formatRuneAmount(walletBalance) }
+                )
+              : intl.formatMessage(
+                  { id: 'wallet.errors.fee.notCovered' },
+                  {
+                    balance: formatAssetAmountCurrency({
+                      amount: baseToAsset(walletBalance),
+                      asset: AssetRuneNative,
+                      trimZeros: true
+                    })
+                  }
+                )
         )
       ),
-    [intl, oFee]
+    [intl, oFee, requiredAmount]
   )
 
   const submitTx = useCallback(
-    ({ memo, amount }: { memo: string; amount: BaseAmount }) => {
+    (request: R) => {
       setSendTxStartTime(Date.now())
-      setSubmittedAmount(amount)
-      subscribeInteractState(
-        interact$({
-          walletType: signer.walletType,
-          walletAccount: signer.walletAccount,
-          walletIndex: signer.walletIndex,
-          hdMode: signer.hdMode,
-          amount,
-          memo,
-          asset: AssetRuneNative
-        })
-      )
+      setSubmittedAmount(request.amount)
+      subscribeTxState(submit(request))
     },
-    [interact$, signer, subscribeInteractState]
+    [submit, subscribeTxState]
   )
 
-  const startSigning = useCallback((params: { memo: string; amount: BaseAmount }) => setPending(params), [])
+  const startSigning = useCallback((params: R) => setPending(params), [])
 
   const confirmationModal = useMemo(() => {
     if (!pending) return null
@@ -147,12 +165,11 @@ export const useBondTxFlow = ({
   }, [intl, network, pending, signer.walletType, submitTx, validatePassword$])
 
   const txModal = useMemo(() => {
-    const { txRD } = interactState
     if (RD.isInitial(txRD)) return null
 
     const closeHandler = () => {
-      resetInteractState()
-      onFinish()
+      resetTxState()
+      if (finishOnFailure || !RD.isFailure(txRD)) onFinish()
     }
 
     return (
@@ -163,7 +180,7 @@ export const useBondTxFlow = ({
         startTime={sendTxStartTime}
         txRD={txHashRDToBoolean(txRD)}
         timerValue={getTxTimerValue(txRD)}
-        txConfig={{ type: 'interact', asset: { asset: AssetRuneNative, amount: submittedAmount } }}
+        txConfig={{ type: txType, asset: { asset: AssetRuneNative, amount: submittedAmount } }}
         txHash={extractTxHash(txRD)}
         getExplorerTxUrl={getExplorerTxUrl}
         openExplorerTxUrl={openExplorerTxUrl}
@@ -171,15 +188,17 @@ export const useBondTxFlow = ({
       />
     )
   }, [
+    finishOnFailure,
     getExplorerTxUrl,
-    interactState,
     intl,
     network,
     onFinish,
     openExplorerTxUrl,
-    resetInteractState,
+    resetTxState,
     sendTxStartTime,
-    submittedAmount
+    submittedAmount,
+    txRD,
+    txType
   ])
 
   const feeLabel = useMemo(
@@ -220,4 +239,48 @@ export const useBondTxFlow = ({
       </>
     )
   }
+}
+
+export const useBondTxFlow = ({ interact$, ...params }: BondTxFlowParams): BondTxFlow => {
+  const { signer } = params
+  const submit = useCallback(
+    ({ memo, amount }: BondTxRequest): Rx.Observable<TxHashRD> =>
+      interact$({
+        walletType: signer.walletType,
+        walletAccount: signer.walletAccount,
+        walletIndex: signer.walletIndex,
+        hdMode: signer.hdMode,
+        amount,
+        memo,
+        asset: AssetRuneNative
+      }).pipe(RxOp.map(({ txRD }) => txRD)),
+    [interact$, signer]
+  )
+  return useTxFlow({ ...params, txType: 'interact', requiredAmount: ZERO_BASE_AMOUNT, finishOnFailure: true, submit })
+}
+
+export const useRunebondTxFlow = ({ transfer$, ...params }: RunebondTxFlowParams): RunebondTxFlow => {
+  const { signer } = params
+  const submit = useCallback(
+    ({ memo, amount }: RunebondTxRequest): Rx.Observable<TxHashRD> =>
+      transfer$({
+        walletType: signer.walletType,
+        walletAccount: signer.walletAccount,
+        walletIndex: signer.walletIndex,
+        hdMode: signer.hdMode,
+        sender: signer.address,
+        recipient: RUNEBOND_LISTING_ADDRESS,
+        amount,
+        memo,
+        asset: AssetRuneNative
+      }).pipe(RxOp.map(({ status }) => status)),
+    [signer, transfer$]
+  )
+  return useTxFlow({
+    ...params,
+    txType: 'send',
+    requiredAmount: RUNEBOND_LISTING_MIN_AMOUNT,
+    finishOnFailure: false,
+    submit
+  })
 }

@@ -66,14 +66,12 @@ const ChangeFeeSummary = ({ ctx, input }: OperatorActionSummaryProps) => {
         label={intl.formatMessage({ id: 'bonds.operator.changeFee.effective' })}
         value={intl.formatMessage({ id: 'bonds.operator.changeFee.effectiveValue' })}
       />
-      <SummaryRow
-        label={intl.formatMessage({ id: 'bonds.operator.changeFee.paidOut' })}
-        value={
-          isActive
-            ? intl.formatMessage({ id: 'bonds.operator.changeFee.paidOutValue' }, { churn: nextChurnLabel })
-            : intl.formatMessage({ id: 'bonds.operator.changeFee.paidOutStandby' })
-        }
-      />
+      {isActive && (
+        <SummaryRow
+          label={intl.formatMessage({ id: 'bonds.operator.changeFee.paidOut' })}
+          value={intl.formatMessage({ id: 'bonds.operator.changeFee.paidOutValue' }, { churn: nextChurnLabel })}
+        />
+      )}
       <SummaryRow
         label={intl.formatMessage({ id: 'bonds.operator.changeFee.othersAffected' })}
         value={intl.formatMessage({ id: 'bonds.operator.changeFee.othersAffectedValue' }, { count: otherProviders })}

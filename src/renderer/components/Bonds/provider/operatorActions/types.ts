@@ -5,6 +5,7 @@ import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { IntlShape } from 'react-intl'
 
+import { WhitelistRequest } from '../../../../services/runebond'
 import { NodeInfo, Providers } from '../../../../services/thorchain/types'
 
 export type NodeOperatorAction =
@@ -13,6 +14,7 @@ export type NodeOperatorAction =
   | { type: 'addProvider' }
   | { type: 'removeProvider'; provider: Providers }
   | { type: 'maintenance' }
+  | { type: 'approveRequest'; request: WhitelistRequest }
 
 export type NodeOperatorActionType = NodeOperatorAction['type']
 

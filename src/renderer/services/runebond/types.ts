@@ -105,6 +105,85 @@ export type NodeProviders = {
   providers: NodeProvider[]
 }
 
+export type NodeDelistReason = 'operator' | 'vault_depleted' | 'removed'
+
+export type NodeListingDetails = {
+  operatorAddress: Address
+  minBond: BaseAmount
+  targetTotalBond: BaseAmount | null
+  feeBps: number
+  name: string | null
+  description: string | null
+  listedAt: string
+  listedDate: Date
+  listedHeight: number
+  txId: string
+  delisted: boolean
+  delistedTxId: string | null
+  delistReason: NodeDelistReason | null
+}
+
+export type NodeListing = {
+  nodeAddress: Address
+  listed: boolean
+  listing: NodeListingDetails | null
+}
+
+export type WhitelistRequestStatus = 'pending' | 'approved' | 'bonded' | 'rejected'
+
+export type WhitelistRequest = {
+  id: number
+  nodeAddress: Address
+  providerAddress: Address
+  intendedBond: BaseAmount
+  realBond: BaseAmount
+  status: WhitelistRequestStatus
+  requestedAt: string
+  requestedDate: Date
+  height: number
+  txId: string
+}
+
+export type WhitelistRequestCounts = {
+  pending: number
+  approved: number
+  bonded: number
+  rejected: number
+}
+
+export type NodeWhitelistRequests = {
+  nodeAddress: Address
+  counts: WhitelistRequestCounts
+  requests: WhitelistRequest[]
+  total: number
+}
+
+export type OperatorNodeWhitelistRequests = {
+  nodeAddress: Address
+  pending: number
+}
+
+export type OperatorWhitelistRequests = {
+  address: Address
+  counts: WhitelistRequestCounts
+  nodes: OperatorNodeWhitelistRequests[]
+  requests: WhitelistRequest[]
+  total: number
+}
+
+export type FinderFeeVaultLevel = 'ok' | 'warning' | 'critical' | 'depleted'
+
+export type OperatorFinderFeeVault = {
+  address: Address
+  known: boolean
+  balance: BaseAmount
+  depleted: boolean
+  level: FinderFeeVaultLevel
+  listedNodes: number
+  delistedByVault: number
+  lastUpdatedAt: string | null
+}
+
 export type ProviderRewardsRD = RD.RemoteData<Error, ProviderRewards>
 export type ProviderRewardsLD = LiveData<Error, ProviderRewards>
 
@@ -119,3 +198,15 @@ export type OperatorRewardsLD = LiveData<Error, OperatorRewards>
 
 export type NodeProvidersRD = RD.RemoteData<Error, NodeProviders>
 export type NodeProvidersLD = LiveData<Error, NodeProviders>
+
+export type NodeListingRD = RD.RemoteData<Error, NodeListing>
+export type NodeListingLD = LiveData<Error, NodeListing>
+
+export type NodeWhitelistRequestsRD = RD.RemoteData<Error, NodeWhitelistRequests>
+export type NodeWhitelistRequestsLD = LiveData<Error, NodeWhitelistRequests>
+
+export type OperatorWhitelistRequestsRD = RD.RemoteData<Error, OperatorWhitelistRequests>
+export type OperatorWhitelistRequestsLD = LiveData<Error, OperatorWhitelistRequests>
+
+export type OperatorFinderFeeVaultRD = RD.RemoteData<Error, OperatorFinderFeeVault>
+export type OperatorFinderFeeVaultLD = LiveData<Error, OperatorFinderFeeVault>
