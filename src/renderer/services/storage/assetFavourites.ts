@@ -1,4 +1,3 @@
-import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import { function as FP, array as A, either as E } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -15,136 +14,53 @@ const DEFAULT_FAVOURITES: AssetFavouritesLists = {
   mainnet: []
 }
 
-const {
-  get$: favouritesByNetwork$,
-  get: favouritesByNetwork,
-  set: setFavourites
-} = observableState<AssetFavouritesLists>(DEFAULT_FAVOURITES)
-
-export type FavouriteChange = {
-  network: Network
-  asset: AnyAsset
-  /** True when this click added the asset. */
-  added: boolean
-}
-
-/**
- * Add appends once. Remove drops a match. Repeating either leaves the list as it is.
- */
-export const applyFavouriteChange = (favourites: AnyAsset[], asset: AnyAsset, added: boolean): AnyAsset[] => {
-  const exists = A.elem(eqAsset)(asset)(favourites)
-  if (added) return exists ? favourites : [...favourites, asset]
-  return exists ? favourites.filter((item) => !eqAsset.equals(item, asset)) : favourites
-}
-
-/** Replay clicks that happened before the file loaded onto the stored lists. */
-export const applyFavouriteChanges = (
-  lists: AssetFavouritesLists,
-  changes: readonly FavouriteChange[]
-): AssetFavouritesLists =>
-  changes.reduce(
-    (acc, change) => ({
-      ...acc,
-      [change.network]: applyFavouriteChange(acc[change.network], change.asset, change.added)
-    }),
-    lists
-  )
+const { get$: favouritesByNetwork$, set: setFavourites } = observableState<AssetFavouritesLists>(DEFAULT_FAVOURITES)
 
 /**
  * Append a new favourite. Remove an existing one and leave the others in place.
  * The first asset starred stays first.
  */
-export const toggleAssetInFavourites = (favourites: AnyAsset[], asset: AnyAsset): AnyAsset[] =>
-  applyFavouriteChange(favourites, asset, !A.elem(eqAsset)(asset)(favourites))
-
-/**
- * Run each save after the previous one settles, so an older write cannot finish last.
- * A failed save does not block the next one.
- */
-export const createSaveQueue = () => {
-  let pending: Promise<void> = Promise.resolve()
-  return (save: () => Promise<unknown>): void => {
-    pending = pending
-      .catch(() => undefined)
-      .then(save)
-      .then(
-        () => undefined,
-        () => undefined
-      )
-  }
+export const toggleAssetInFavourites = (favourites: AnyAsset[], asset: AnyAsset): AnyAsset[] => {
+  const exists = A.elem(eqAsset)(asset)(favourites)
+  return exists ? favourites.filter((item) => !eqAsset.equals(item, asset)) : [...favourites, asset]
 }
 
-const enqueueSave = createSaveQueue()
+/** Null until a read succeeds. A failed read is not a list we are allowed to save. */
+let known: AssetFavouritesLists | null = null
+let saveInFlight = false
 
-const updateStorage = (favourites: AssetFavouritesLists) => {
-  const encoded = assetFavouritesListsIO.encode(favourites)
-  enqueueSave(() => window.apiAssetFavouritesStorage.save({ favourites: encoded }))
-}
-
-let hydrated = false
-let loading = false
-let retryTimer: ReturnType<typeof setTimeout> | undefined
-let retriesUsed = 0
-const pendingChanges: FavouriteChange[] = []
-/** Backoff after a rejected read or a payload that does not decode. */
-const RETRY_MS = [400, 1200, 3000]
-
-const finishHydration = (stored: AssetFavouritesLists) => {
-  const changes = pendingChanges.splice(0, pendingChanges.length)
-  const merged = applyFavouriteChanges(stored, changes)
-  // Ready before publish, and the snapshot is queued first. A subscriber that toggles
-  // inside set() then appends a newer save instead of being left in the pending list.
-  hydrated = true
-  retriesUsed = 0
-  if (changes.length > 0) updateStorage(merged)
-  setFavourites(merged)
-}
-
-const stopRetry = () => {
-  if (retryTimer === undefined) return
-  clearTimeout(retryTimer)
-  retryTimer = undefined
-}
-
-/**
- * Leave a failed read unhydrated. Saving the in-memory empty lists would replace
- * every network's favourites. Try again, then wait for the next star.
- */
-const scheduleRetry = () => {
-  if (hydrated || loading || retryTimer !== undefined) return
-  const delay = RETRY_MS[retriesUsed]
-  if (delay === undefined) return
-  retriesUsed += 1
-  retryTimer = setTimeout(() => {
-    retryTimer = undefined
-    readFavourites()
-  }, delay)
-}
-
-const readFavourites = () => {
-  if (hydrated || loading) return
-  stopRetry()
-  loading = true
-  window.apiAssetFavouritesStorage.get().then(
-    (result) => {
-      loading = false
-      FP.pipe(
-        result,
-        assetFavouritesStorageIO.decode,
-        E.fold(
-          () => scheduleRetry(),
-          ({ favourites }) => finishHydration(favourites)
-        )
-      )
+const saveKnown = () => {
+  if (known === null || saveInFlight) return
+  saveInFlight = true
+  const snapshot = known
+  window.apiAssetFavouritesStorage.save({ favourites: assetFavouritesListsIO.encode(snapshot) }).then(
+    () => {
+      saveInFlight = false
+      if (known !== snapshot) saveKnown()
     },
     () => {
-      loading = false
-      scheduleRetry()
+      saveInFlight = false
+      if (known !== snapshot) saveKnown()
     }
   )
 }
 
-readFavourites()
+window.apiAssetFavouritesStorage.get().then(
+  (result) => {
+    FP.pipe(
+      result,
+      assetFavouritesStorageIO.decode,
+      E.fold(
+        () => undefined,
+        ({ favourites }) => {
+          known = favourites
+          setFavourites(favourites)
+        }
+      )
+    )
+  },
+  () => undefined
+)
 
 const favourites$: Rx.Observable<AnyAsset[]> = FP.pipe(
   Rx.combineLatest([network$, favouritesByNetwork$]),
@@ -153,24 +69,14 @@ const favourites$: Rx.Observable<AnyAsset[]> = FP.pipe(
 )
 
 const toggleFavourite = (asset: AnyAsset) => {
+  if (known === null) return
   const network = getCurrentNetworkState()
-  const current = favouritesByNetwork()
-  const added = !A.elem(eqAsset)(asset)(current[network])
-  const updated: AssetFavouritesLists = {
-    ...current,
-    [network]: applyFavouriteChange(current[network], asset, added)
+  known = {
+    ...known,
+    [network]: toggleAssetInFavourites(known[network], asset)
   }
-  setFavourites(updated)
-  if (!hydrated) {
-    pendingChanges.push({ network, asset, added })
-    // A click after the backoff is exhausted is another chance to read the file.
-    if (!loading && retryTimer === undefined) {
-      retriesUsed = 0
-      readFavourites()
-    }
-    return
-  }
-  updateStorage(updated)
+  setFavourites(known)
+  saveKnown()
 }
 
 export { favourites$, toggleFavourite }

@@ -25,7 +25,7 @@ export const getDerivationPaths = (walletAccount: number, network: Network): Roo
 }
 
 export const getDefaultClientUrls = async (): Promise<Record<Network, string[]>> => {
-  const storage = await getFileContent('common', DEFAULT_STORAGES.common).catch(() => DEFAULT_STORAGES.common)
+  const storage = await getFileContent('common', DEFAULT_STORAGES.common)
   const rpcUrls = storage.mayanodeRpc ?? DEFAULT_MAYANODE_RPC_URLS
   return {
     [Network.Testnet]: [rpcUrls.testnet || DEFAULT_MAYANODE_RPC_URLS.testnet],

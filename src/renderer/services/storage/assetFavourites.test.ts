@@ -1,17 +1,11 @@
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBSC } from '@xchainjs/xchain-bsc'
-import { Network } from '@xchainjs/xchain-client'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { assetToString } from '@xchainjs/xchain-util'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { assetFavouritesListsIO, assetFavouritesStorageIO, AssetFavouritesStorageEncoded } from '../../../shared/api/io'
-import {
-  applyFavouriteChanges,
-  createSaveQueue,
-  toggleAssetInFavourites,
-  type FavouriteChange
-} from './assetFavourites'
+import { toggleAssetInFavourites } from './assetFavourites'
 
 const emptyLists = { testnet: [], stagenet: [], mainnet: [] }
 
@@ -32,73 +26,10 @@ describe('toggleAssetInFavourites', () => {
   })
 })
 
-describe('applyFavouriteChanges', () => {
-  const base = { ...emptyLists, mainnet: [AssetBTC], testnet: [AssetETH] }
-
-  it('appends a star onto the stored list', () => {
-    const changes: FavouriteChange[] = [{ network: Network.Mainnet, asset: AssetETH, added: true }]
-    expect(applyFavouriteChanges(base, changes).mainnet).toEqual([AssetBTC, AssetETH])
-    expect(applyFavouriteChanges(base, changes).testnet).toEqual([AssetETH])
-  })
-
-  it('keeps a stored star when the click only repeated an add', () => {
-    const changes: FavouriteChange[] = [{ network: Network.Mainnet, asset: AssetBTC, added: true }]
-    expect(applyFavouriteChanges(base, changes).mainnet).toEqual([AssetBTC])
-  })
-
-  it('applies an add and a later remove in order', () => {
-    const changes: FavouriteChange[] = [
-      { network: Network.Mainnet, asset: AssetETH, added: true },
-      { network: Network.Mainnet, asset: AssetETH, added: false }
-    ]
-    expect(applyFavouriteChanges(base, changes).mainnet).toEqual([AssetBTC])
-  })
-})
-
-describe('createSaveQueue', () => {
-  it('runs the next save only after the previous one settles', async () => {
-    const enqueue = createSaveQueue()
-    const order: string[] = []
-    let releaseFirst: () => void = () => {}
-    const gate = new Promise<void>((resolve) => {
-      releaseFirst = resolve
-    })
-
-    enqueue(async () => {
-      order.push('a-start')
-      await gate
-      order.push('a-end')
-    })
-    enqueue(async () => {
-      order.push('b')
-    })
-
-    await vi.waitUntil(() => order.includes('a-start'))
-    expect(order).toEqual(['a-start'])
-
-    releaseFirst()
-    await vi.waitUntil(() => order.at(-1) === 'b')
-    expect(order).toEqual(['a-start', 'a-end', 'b'])
-  })
-
-  it('runs the next save when the previous one fails', async () => {
-    const enqueue = createSaveQueue()
-    const order: string[] = []
-    enqueue(() => Promise.reject(new Error('disk')))
-    enqueue(async () => {
-      order.push('b')
-    })
-    await vi.waitUntil(() => order.length === 1)
-    expect(order).toEqual(['b'])
-  })
-})
-
 describe('asset favourites storage', () => {
   const original = { ...window.apiAssetFavouritesStorage }
 
   afterEach(() => {
-    vi.clearAllTimers()
-    vi.useRealTimers()
     window.apiAssetFavouritesStorage = { ...original }
     vi.resetModules()
   })
@@ -108,7 +39,26 @@ describe('asset favourites storage', () => {
     vi.resetModules()
   }
 
-  it('replays a star made before load onto the stored lists', async () => {
+  it('shows the stored list and does not write it back', async () => {
+    const saves: Partial<AssetFavouritesStorageEncoded>[] = []
+    install({
+      get: () => Promise.resolve(stored({ ...emptyLists, mainnet: [AssetBTC] })),
+      save: (data) => {
+        saves.push(data)
+        return Promise.resolve(stored(emptyLists))
+      }
+    })
+
+    const { favourites$ } = await import('./assetFavourites')
+    const seen: string[][] = []
+    const sub = favourites$.subscribe((assets) => seen.push(assets.map(assetToString)))
+    await vi.waitUntil(() => seen.at(-1)?.[0] === assetToString(AssetBTC))
+
+    expect(saves).toEqual([])
+    sub.unsubscribe()
+  })
+
+  it('ignores a star until the list has loaded', async () => {
     let resolveGet: (value: AssetFavouritesStorageEncoded) => void = () => {}
     const getPromise = new Promise<AssetFavouritesStorageEncoded>((resolve) => {
       resolveGet = resolve
@@ -128,51 +78,18 @@ describe('asset favourites storage', () => {
 
     toggleFavourite(AssetBSC)
     expect(saves).toEqual([])
-    expect(seen.at(-1)).toEqual([assetToString(AssetBSC)])
+    expect(seen.at(-1)).toEqual([])
 
-    resolveGet(stored({ ...emptyLists, mainnet: [AssetBTC], testnet: [AssetETH] }))
-    await vi.waitUntil(() => saves.length === 1)
-
-    expect(seen.at(-1)).toEqual([assetToString(AssetBTC), assetToString(AssetBSC)])
-    expect(saves[0]).toEqual({
-      favourites: assetFavouritesListsIO.encode({
-        ...emptyLists,
-        mainnet: [AssetBTC, AssetBSC],
-        testnet: [AssetETH]
-      })
-    })
+    resolveGet(stored({ ...emptyLists, mainnet: [AssetBTC] }))
+    await vi.waitUntil(() => seen.at(-1)?.[0] === assetToString(AssetBTC))
+    expect(saves).toEqual([])
     sub.unsubscribe()
   })
 
-  it('does not remove a stored star that was starred again before load', async () => {
-    let resolveGet: (value: AssetFavouritesStorageEncoded) => void = () => {}
-    const getPromise = new Promise<AssetFavouritesStorageEncoded>((resolve) => {
-      resolveGet = resolve
-    })
-    install({
-      get: () => getPromise,
-      save: (data) => Promise.resolve({ ...stored(emptyLists), ...data })
-    })
-
-    const { toggleFavourite, favourites$ } = await import('./assetFavourites')
-    const seen: string[][] = []
-    const sub = favourites$.subscribe((assets) => seen.push(assets.map(assetToString)))
-
-    toggleFavourite(AssetBTC)
-    resolveGet(stored({ ...emptyLists, mainnet: [AssetBTC, AssetETH] }))
-    await vi.waitUntil(() => seen.at(-1)?.length === 2)
-
-    expect(seen.at(-1)).toEqual([assetToString(AssetBTC), assetToString(AssetETH)])
-    sub.unsubscribe()
-  })
-
-  it('does not save a star made before a failed load', async () => {
-    vi.useFakeTimers()
-    let fail = true
+  it('saves the list after a star', async () => {
     const saves: Partial<AssetFavouritesStorageEncoded>[] = []
     install({
-      get: () =>
-        fail ? Promise.reject(new Error('disk')) : Promise.resolve(stored({ ...emptyLists, mainnet: [AssetBTC] })),
+      get: () => Promise.resolve(stored({ ...emptyLists, mainnet: [AssetBTC] })),
       save: (data) => {
         saves.push(data)
         return Promise.resolve(stored(emptyLists))
@@ -182,20 +99,35 @@ describe('asset favourites storage', () => {
     const { toggleFavourite, favourites$ } = await import('./assetFavourites')
     const seen: string[][] = []
     const sub = favourites$.subscribe((assets) => seen.push(assets.map(assetToString)))
+    await vi.waitUntil(() => seen.at(-1)?.[0] === assetToString(AssetBTC))
 
     toggleFavourite(AssetETH)
-    await vi.advanceTimersByTimeAsync(0)
-    expect(saves).toEqual([])
-    expect(seen.at(-1)).toEqual([assetToString(AssetETH)])
+    await vi.waitUntil(() => saves.length === 1)
+    expect(saves[0]).toEqual({
+      favourites: assetFavouritesListsIO.encode({ ...emptyLists, mainnet: [AssetBTC, AssetETH] })
+    })
+    sub.unsubscribe()
+  })
 
-    fail = false
-    await vi.advanceTimersByTimeAsync(400)
-    expect(saves).toEqual([
-      {
-        favourites: assetFavouritesListsIO.encode({ ...emptyLists, mainnet: [AssetBTC, AssetETH] })
+  it('does not save when the read fails', async () => {
+    const saves: Partial<AssetFavouritesStorageEncoded>[] = []
+    install({
+      get: () => Promise.reject(new Error('disk')),
+      save: (data) => {
+        saves.push(data)
+        return Promise.resolve(stored(emptyLists))
       }
-    ])
-    expect(seen.at(-1)).toEqual([assetToString(AssetBTC), assetToString(AssetETH)])
+    })
+
+    const { toggleFavourite, favourites$ } = await import('./assetFavourites')
+    const seen: string[][] = []
+    const sub = favourites$.subscribe((assets) => seen.push(assets.map(assetToString)))
+    await Promise.resolve()
+    toggleFavourite(AssetETH)
+    await Promise.resolve()
+
+    expect(saves).toEqual([])
+    expect(seen.at(-1)).toEqual([])
     sub.unsubscribe()
   })
 
@@ -221,26 +153,7 @@ describe('asset favourites storage', () => {
     expect(saves).toEqual([])
   })
 
-  it('does not save when the load arrives with no clicks', async () => {
-    const saves: Partial<AssetFavouritesStorageEncoded>[] = []
-    install({
-      get: () => Promise.resolve(stored({ ...emptyLists, mainnet: [AssetBTC] })),
-      save: (data) => {
-        saves.push(data)
-        return Promise.resolve(stored(emptyLists))
-      }
-    })
-
-    const { favourites$ } = await import('./assetFavourites')
-    const seen: string[][] = []
-    const sub = favourites$.subscribe((assets) => seen.push(assets.map(assetToString)))
-    await vi.waitUntil(() => seen.at(-1)?.[0] === assetToString(AssetBTC))
-
-    expect(saves).toEqual([])
-    sub.unsubscribe()
-  })
-
-  it('writes a later toggle only after the earlier save finishes', async () => {
+  it('writes the latest list after an in-flight save finishes', async () => {
     let releaseFirst: () => void = () => {}
     const gate = new Promise<void>((resolve) => {
       releaseFirst = resolve
@@ -260,7 +173,11 @@ describe('asset favourites storage', () => {
       }
     })
 
-    const { toggleFavourite } = await import('./assetFavourites')
+    const { toggleFavourite, favourites$ } = await import('./assetFavourites')
+    const seen: string[][] = []
+    const sub = favourites$.subscribe((assets) => seen.push(assets.map(assetToString)))
+    await vi.waitUntil(() => seen.length > 0)
+
     toggleFavourite(AssetETH)
     toggleFavourite(AssetBTC)
 
@@ -270,5 +187,6 @@ describe('asset favourites storage', () => {
     releaseFirst()
     await vi.waitUntil(() => writes.length === 2)
     expect(writes).toEqual([[assetToString(AssetETH)], [assetToString(AssetETH), assetToString(AssetBTC)]])
+    sub.unsubscribe()
   })
 })

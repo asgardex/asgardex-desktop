@@ -25,7 +25,7 @@ export const getDerivationPaths = (walletAccount: number, network: Network): Roo
 }
 
 export const getDefaultClientUrls = async (): Promise<Record<Network, string[]>> => {
-  const storage = await getFileContent('common', DEFAULT_STORAGES.common).catch(() => DEFAULT_STORAGES.common)
+  const storage = await getFileContent('common', DEFAULT_STORAGES.common)
   const rpcUrls = storage.thornodeRpc ?? DEFAULT_THORNODE_RPC_URLS
   return {
     [Network.Testnet]: getThornodeRpcClientUrls(rpcUrls.testnet || '', Network.Testnet),
