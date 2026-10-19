@@ -28,6 +28,13 @@ export const rewards: Route<void> = {
   }
 }
 
+export const operatorFees: Route<void> = {
+  template: `${base.template}/operator-fees`,
+  path() {
+    return this.template
+  }
+}
+
 export enum BondsTab {
   BondProvider = 'bondProvider',
   NodeOperator = 'nodeOperator'

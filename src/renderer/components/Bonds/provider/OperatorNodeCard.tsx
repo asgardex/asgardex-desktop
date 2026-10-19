@@ -3,6 +3,7 @@ import { Network } from '@xchainjs/xchain-client'
 
 import { Address } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
+import { option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
@@ -13,18 +14,23 @@ import { hiddenString } from '../../../helpers/stringHelper'
 import { OperatorNodeInfo } from '../../../hooks/useOperatorNodes'
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
-import { BaseButton } from '../../uielements/button'
+import { BaseButton, BorderButton, FlatButton } from '../../uielements/button'
 import { WalletTypeLabel } from '../../uielements/common'
 import { CopyLabel } from '../../uielements/label'
 import { Tooltip } from '../../uielements/tooltip'
-import { formatOperatorFee, formatRuneAmount } from './helpers'
-import { NodeStatusTag } from './NodeStatusTag'
+import { formatOperatorFee, formatRuneAmount, isNodeLeaving } from './helpers'
+import { NodeHealthTag } from './NodeHealthTag'
+import { NodeNetworkContext } from './nodeNetwork'
+import { MaintenanceTag, NodeStatusTag } from './NodeStatusTag'
+import { VersionChip } from './VersionChip'
 
 type Props = {
   network: Network
   isPrivate: boolean
   node: OperatorNodeInfo
+  networkCtx: O.Option<NodeNetworkContext>
   operatorWalletType?: WalletType
+  onChangeFee?: (nodeAddress: Address) => void
   onRemoveMonitored: (nodeAddress: Address) => void
   onOpenDetail: (nodeAddress: Address) => void
 }
@@ -33,13 +39,15 @@ export const OperatorNodeCard = ({
   network,
   isPrivate,
   node,
+  networkCtx,
   operatorWalletType,
+  onChangeFee,
   onRemoveMonitored,
   onOpenDetail
 }: Props) => {
   const intl = useIntl()
 
-  const feePercent = formatOperatorFee(node.bondProviders.nodeOperatorFee, intl.locale)
+  const feeLabel = formatOperatorFee(node.bondProviders.nodeOperatorFee, intl.locale)
 
   const openDetail = () => onOpenDetail(node.address)
 
@@ -55,7 +63,7 @@ export const OperatorNodeCard = ({
         }
       }}
       className={clsx(
-        'group flex cursor-pointer flex-col rounded-lg border border-solid border-gray0 bg-bg0 p-6 dark:border-gray0d dark:bg-bg0d',
+        'group flex h-full cursor-pointer flex-col rounded-lg border border-solid border-gray0 bg-bg0 p-6 dark:border-gray0d dark:bg-bg0d',
         'transition-colors hover:border-turquoise focus-visible:border-turquoise focus-visible:outline-none dark:hover:border-turquoise dark:focus-visible:border-turquoise'
       )}>
       <div className="flex items-center justify-between gap-3">
@@ -73,9 +81,12 @@ export const OperatorNodeCard = ({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <NodeStatusTag status={node.status} />
+          <VersionChip node={node} ctx={networkCtx} />
+          <NodeHealthTag node={node} ctx={networkCtx} />
+          {node.maintenance && <MaintenanceTag />}
+          <NodeStatusTag status={node.status} leaving={isNodeLeaving(node)} />
           {node.isMonitored && !node.isOperator && (
-            <Tooltip title={intl.formatMessage({ id: 'bonds.operator.removeMonitored' })}>
+            <Tooltip size="big" title={intl.formatMessage({ id: 'bonds.operator.removeMonitored' })}>
               <BaseButton
                 className="!p-0 text-gray2 hover:text-error0 dark:text-gray2d"
                 onClick={(event) => {
@@ -98,9 +109,20 @@ export const OperatorNodeCard = ({
       <span className="mt-2 font-main text-[14px] text-gray2 dark:text-gray2d">
         {intl.formatMessage(
           { id: 'bonds.operator.nodeSummary' },
-          { count: node.bondProviders.providers.length, fee: feePercent }
+          { count: node.bondProviders.providers.length, fee: feeLabel }
         )}
       </span>
+
+      <div className="mt-auto flex items-center gap-3 pt-5" onClick={(event) => event.stopPropagation()}>
+        <FlatButton size="normal" className="flex-1" onClick={openDetail}>
+          {intl.formatMessage({ id: 'bonds.operator.openNode' })}
+        </FlatButton>
+        {node.isOperator && onChangeFee && (
+          <BorderButton size="normal" color="neutral" className="flex-1" onClick={() => onChangeFee(node.address)}>
+            {intl.formatMessage({ id: 'bonds.operator.changeFee' })}
+          </BorderButton>
+        )}
+      </div>
     </div>
   )
 }

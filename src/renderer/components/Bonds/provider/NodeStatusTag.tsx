@@ -20,8 +20,27 @@ const statusMessageId = (status: NodeStatusEnum) => {
   }
 }
 
-export const NodeStatusTag = ({ status, className }: { status: NodeStatusEnum; className?: string }) => {
+type Props = {
+  status: NodeStatusEnum
+  leaving?: boolean
+  className?: string
+}
+
+export const NodeStatusTag = ({ status, leaving = false, className }: Props) => {
   const intl = useIntl()
+
+  if (leaving) {
+    return (
+      <span
+        className={clsx(
+          'font-main-semi-bold text-[12px] tracking-[1px] text-gray2 uppercase dark:text-gray2d',
+          className
+        )}>
+        {intl.formatMessage({ id: 'bonds.status.leaving' })}
+      </span>
+    )
+  }
+
   return (
     <span
       className={clsx(
@@ -33,6 +52,19 @@ export const NodeStatusTag = ({ status, className }: { status: NodeStatusEnum; c
         className
       )}>
       {intl.formatMessage({ id: statusMessageId(status) })}
+    </span>
+  )
+}
+
+export const MaintenanceTag = ({ className }: { className?: string }) => {
+  const intl = useIntl()
+  return (
+    <span
+      className={clsx(
+        'rounded-sm bg-warning0/15 px-1.5 py-[1px] font-main-semi-bold text-[10px] tracking-[1px] text-warning0 uppercase dark:bg-warning0d/15 dark:text-warning0d',
+        className
+      )}>
+      {intl.formatMessage({ id: 'bonds.operator.maintenance.tag' })}
     </span>
   )
 }
