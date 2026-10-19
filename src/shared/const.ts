@@ -2,7 +2,7 @@ import { Network } from '@xchainjs/xchain-client'
 
 import pkg from '../../package.json'
 import { DEFAULT_USER_ASSETS } from '../renderer/const'
-import { PoolsStorageEncoded } from './api/io'
+import { AssetFavouritesStorageEncoded, PoolsStorageEncoded } from './api/io'
 import {
   StoreFilesContent,
   UserAssetStorage,
@@ -134,6 +134,17 @@ const POOLS_STORAGE_DEFAULT: PoolsStorageEncoded = {
   }
 }
 
+const ASSET_FAVOURITES_STORAGE_VERSION = '1'
+
+const ASSET_FAVOURITES_STORAGE_DEFAULT: AssetFavouritesStorageEncoded = {
+  version: ASSET_FAVOURITES_STORAGE_VERSION,
+  favourites: {
+    mainnet: [],
+    stagenet: [],
+    testnet: []
+  }
+}
+
 // Default gas multiplier (1x = normal gas price)
 export const DEFAULT_EVM_GAS_MULTIPLIER = 1 as const
 
@@ -180,5 +191,6 @@ export const DEFAULT_STORAGES: StoreFilesContent = {
   userAssets: ASSETS_STORAGE_DEFAULT,
   userNodes: USER_NODES_STORAGE_DEFAULT,
   userBondProviders: USER_BOND_PROVIDERS_STORAGE_DEFAULT,
-  pools: POOLS_STORAGE_DEFAULT
+  pools: POOLS_STORAGE_DEFAULT,
+  assetFavourites: ASSET_FAVOURITES_STORAGE_DEFAULT
 }

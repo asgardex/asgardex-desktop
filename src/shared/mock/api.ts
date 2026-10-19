@@ -1,6 +1,6 @@
 import { either as E } from 'fp-ts'
 
-import { PoolsStorageEncoded } from '../api/io'
+import { AssetFavouritesStorageEncoded, PoolsStorageEncoded } from '../api/io'
 import {
   ApiExport,
   ApiLang,
@@ -174,6 +174,22 @@ export const apiPoolsStorage: ApiFileStoreService<PoolsStorageEncoded> = {
   save: (_: Partial<CommonStorage>) => Promise.resolve(poolsStorageData),
   remove: () => Promise.resolve(console.log('mock remove pools storage data')),
   get: () => Promise.resolve(poolsStorageData),
+  exists: () => Promise.resolve(true)
+}
+
+const assetFavouritesStorageData: AssetFavouritesStorageEncoded = {
+  favourites: {
+    mainnet: [],
+    stagenet: [],
+    testnet: []
+  },
+  version: '1'
+}
+
+export const apiAssetFavouritesStorage: ApiFileStoreService<AssetFavouritesStorageEncoded> = {
+  save: (_: Partial<CommonStorage>) => Promise.resolve(assetFavouritesStorageData),
+  remove: () => Promise.resolve(console.log('mock remove asset favourites storage data')),
+  get: () => Promise.resolve(assetFavouritesStorageData),
   exists: () => Promise.resolve(true)
 }
 
