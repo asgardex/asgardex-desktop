@@ -75,6 +75,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.settlingFrom': 'Расчёт из',
   'pools.chart.tradingPanel.tradeAccount': 'Торговый счёт',
   'pools.chart.tradingPanel.tradeAccount.hint': 'Списывается с торгового счёта',
+  'pools.chart.tradingPanel.affiliateFree': 'Свопы торговых активов без партнёрской комиссии',
   'pools.chart.tradingPanel.sideBuy': 'Купить {amount} {asset}',
   'pools.chart.tradingPanel.sideSell': 'Продать {amount} {asset}',
   'pools.chart.tradingPanel.rate': '1 {asset} = {rate} {target}',

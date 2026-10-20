@@ -309,6 +309,9 @@ export const TradingPanelBar = ({
           <span className="font-main text-11 text-gray-500">
             {intl.formatMessage({ id: 'pools.chart.tradingPanel.tradeAccount.hint' })}
           </span>
+          <span className="font-main text-11 text-turquoise">
+            {intl.formatMessage({ id: 'pools.chart.tradingPanel.affiliateFree' })}
+          </span>
         </div>
       )}
       {onDepositTrade && (

@@ -75,6 +75,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.settlingFrom': 'निपटान खाता',
   'pools.chart.tradingPanel.tradeAccount': 'ट्रेड खाता',
   'pools.chart.tradingPanel.tradeAccount.hint': 'ट्रेड खाते से भुगतान होता है',
+  'pools.chart.tradingPanel.affiliateFree': 'ट्रेड एसेट स्वैप पर कोई सहबद्ध शुल्क नहीं है',
   'pools.chart.tradingPanel.sideBuy': '{amount} {asset} खरीदें',
   'pools.chart.tradingPanel.sideSell': '{amount} {asset} बेचें',
   'pools.chart.tradingPanel.rate': '1 {asset} = {rate} {target}',

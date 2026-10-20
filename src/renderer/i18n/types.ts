@@ -407,6 +407,7 @@ type PoolsMessageKey =
   | 'pools.chart.tradingPanel.settlingFrom'
   | 'pools.chart.tradingPanel.tradeAccount'
   | 'pools.chart.tradingPanel.tradeAccount.hint'
+  | 'pools.chart.tradingPanel.affiliateFree'
   | 'pools.chart.tradingPanel.sideBuy'
   | 'pools.chart.tradingPanel.sideSell'
   | 'pools.chart.tradingPanel.rate'

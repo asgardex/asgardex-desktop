@@ -75,6 +75,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.settlingFrom': '정산 계좌',
   'pools.chart.tradingPanel.tradeAccount': '트레이드 계정',
   'pools.chart.tradingPanel.tradeAccount.hint': '트레이드 계정에서 결제합니다',
+  'pools.chart.tradingPanel.affiliateFree': '트레이드 자산 스왑은 제휴 수수료가 없습니다',
   'pools.chart.tradingPanel.sideBuy': '{asset} {amount} 매수',
   'pools.chart.tradingPanel.sideSell': '{asset} {amount} 매도',
   'pools.chart.tradingPanel.rate': '1 {asset} = {rate} {target}',

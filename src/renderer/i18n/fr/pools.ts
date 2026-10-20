@@ -75,6 +75,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.settlingFrom': 'Règlement depuis',
   'pools.chart.tradingPanel.tradeAccount': 'Compte de trading',
   'pools.chart.tradingPanel.tradeAccount.hint': 'Utilise le compte de trading',
+  'pools.chart.tradingPanel.affiliateFree': "Les swaps d'actifs de trading sont sans frais d'affiliation",
   'pools.chart.tradingPanel.sideBuy': 'Acheter {amount} {asset}',
   'pools.chart.tradingPanel.sideSell': 'Vendre {amount} {asset}',
   'pools.chart.tradingPanel.rate': '1 {asset} = {rate} {target}',

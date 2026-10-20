@@ -75,6 +75,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.settlingFrom': 'Liquidar desde',
   'pools.chart.tradingPanel.tradeAccount': 'Cuenta de trading',
   'pools.chart.tradingPanel.tradeAccount.hint': 'Usa la cuenta de trading',
+  'pools.chart.tradingPanel.affiliateFree': 'Los swaps de trade assets no tienen comisión de afiliado',
   'pools.chart.tradingPanel.sideBuy': 'Comprar {amount} {asset}',
   'pools.chart.tradingPanel.sideSell': 'Vender {amount} {asset}',
   'pools.chart.tradingPanel.rate': '1 {asset} = {rate} {target}',
