@@ -9,6 +9,7 @@ export type TrackerLedger = 'thor' | 'maya' | 'l1'
 export type TrackerRow = {
   id: string
   isComplete: boolean
+  fromAsset: string
   toAsset: string
   ledger: TrackerLedger
 }
@@ -18,10 +19,12 @@ export type DestinationRefresh = { kind: 'chain'; chain: Chain } | { kind: 'thor
 
 /** Tracker rows from one protocol stream. Failure and pending yield no rows. */
 export const toTrackerRows = (
-  rd: RD.RemoteData<unknown, ReadonlyArray<{ id: string; isComplete: boolean; toAsset: string }>>,
+  rd: RD.RemoteData<unknown, ReadonlyArray<{ id: string; isComplete: boolean; fromAsset: string; toAsset: string }>>,
   ledger: TrackerLedger
 ): TrackerRow[] =>
-  RD.isSuccess(rd) ? rd.value.map(({ id, isComplete, toAsset }) => ({ id, isComplete, toAsset, ledger })) : []
+  RD.isSuccess(rd)
+    ? rd.value.map(({ id, isComplete, fromAsset, toAsset }) => ({ id, isComplete, fromAsset, toAsset, ledger }))
+    : []
 
 /**
  * Refreshes for rows this session saw incomplete and that are now complete.
@@ -29,7 +32,10 @@ export const toTrackerRows = (
  * trade account is handled once.
  *
  * Trade-asset strings (`ETH~USDC`) put the L1 in `chain`, but the units live
- * on the THORChain or MAYAChain trade account.
+ * on the THORChain or MAYAChain trade account. The received asset is always
+ * refreshed. A spent trade asset is refreshed too, so selling one for an L1
+ * does not leave that trade account stale. Both legs of a trade-to-trade
+ * swap share one account, and that account is fetched once.
  */
 export const newlyCompletedDestinationRefreshes = (
   rows: TrackerRow[],
@@ -44,6 +50,22 @@ export const newlyCompletedDestinationRefreshes = (
     seen.add(key)
     refreshes.push(refresh)
   }
+  const pushAsset = (assetString: string, ledger: TrackerLedger, spentTradeOnly: boolean) => {
+    const asset = assetFromString(assetString)
+    if (!asset) return
+    const trade = isTradeAsset(asset)
+    if (spentTradeOnly && !trade) return
+    if (trade && ledger === 'thor') {
+      push({ kind: 'thorTrade' })
+      return
+    }
+    if (trade && ledger === 'maya') {
+      push({ kind: 'mayaTrade' })
+      return
+    }
+    if (spentTradeOnly || !isSupportedChain(asset.chain)) return
+    push({ kind: 'chain', chain: asset.chain })
+  }
   for (const row of rows) {
     if (reloaded.has(row.id)) continue
     if (!row.isComplete) {
@@ -53,18 +75,8 @@ export const newlyCompletedDestinationRefreshes = (
     if (!watching.has(row.id)) continue
     watching.delete(row.id)
     reloaded.add(row.id)
-    const asset = assetFromString(row.toAsset)
-    if (!asset) continue
-    if (isTradeAsset(asset) && row.ledger === 'thor') {
-      push({ kind: 'thorTrade' })
-      continue
-    }
-    if (isTradeAsset(asset) && row.ledger === 'maya') {
-      push({ kind: 'mayaTrade' })
-      continue
-    }
-    if (!isSupportedChain(asset.chain)) continue
-    push({ kind: 'chain', chain: asset.chain })
+    pushAsset(row.toAsset, row.ledger, false)
+    pushAsset(row.fromAsset, row.ledger, true)
   }
   return refreshes
 }

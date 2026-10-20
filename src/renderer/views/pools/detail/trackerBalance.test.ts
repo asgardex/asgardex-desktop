@@ -2,9 +2,16 @@ import { describe, expect, it } from 'vitest'
 
 import { newlyCompletedDestinationRefreshes, type TrackerLedger, type TrackerRow } from './trackerBalance'
 
-const row = (id: string, isComplete: boolean, toAsset: string, ledger: TrackerLedger = 'thor'): TrackerRow => ({
+const row = (
+  id: string,
+  isComplete: boolean,
+  toAsset: string,
+  ledger: TrackerLedger = 'thor',
+  fromAsset = 'BTC.BTC'
+): TrackerRow => ({
   id,
   isComplete,
+  fromAsset,
   toAsset,
   ledger
 })
@@ -98,5 +105,41 @@ describe('newlyCompletedDestinationRefreshes', () => {
     expect(newlyCompletedDestinationRefreshes([row('a', true, 'ETH.ETH', 'l1')], watching, reloaded)).toEqual([
       { kind: 'chain', chain: 'ETH' }
     ])
+  })
+
+  it('reloads the spent THORChain trade account when a trade asset is sold for an L1', () => {
+    const watching = new Set<string>(['a'])
+    const reloaded = new Set<string>()
+    expect(
+      newlyCompletedDestinationRefreshes(
+        [row('a', true, 'LTC.LTC', 'thor', 'ETH~USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48')],
+        watching,
+        reloaded
+      )
+    ).toEqual([{ kind: 'chain', chain: 'LTC' }, { kind: 'thorTrade' }])
+  })
+
+  it('reloads the spent MAYAChain trade account when a trade asset is sold for an L1', () => {
+    const watching = new Set<string>(['a'])
+    const reloaded = new Set<string>()
+    expect(
+      newlyCompletedDestinationRefreshes([row('a', true, 'BTC.BTC', 'maya', 'ETH~ETH')], watching, reloaded)
+    ).toEqual([{ kind: 'chain', chain: 'BTC' }, { kind: 'mayaTrade' }])
+  })
+
+  it('fetches the trade account once when both legs are trade assets', () => {
+    const watching = new Set<string>(['a'])
+    const reloaded = new Set<string>()
+    expect(
+      newlyCompletedDestinationRefreshes([row('a', true, 'BTC~BTC', 'thor', 'ETH~USDC')], watching, reloaded)
+    ).toEqual([{ kind: 'thorTrade' }])
+  })
+
+  it('leaves a spent L1 chain alone when the received asset is a trade asset', () => {
+    const watching = new Set<string>(['a'])
+    const reloaded = new Set<string>()
+    expect(
+      newlyCompletedDestinationRefreshes([row('a', true, 'ETH~USDC', 'thor', 'LTC.LTC')], watching, reloaded)
+    ).toEqual([{ kind: 'thorTrade' }])
   })
 })

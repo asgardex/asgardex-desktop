@@ -84,8 +84,8 @@ import { hasImportedKeystore } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
 import { formatLimitInput, limitTriggerUsd, type ChartUnit } from './limitPrice'
 import { assetAmountCovers, balanceCovers, formatSwapAmount } from './swapAmountDisplay'
-import { offerTradeDepositFor } from './tradeDepositOffer'
 import { newlyCompletedDestinationRefreshes, toTrackerRows, type TrackerRow } from './trackerBalance'
+import { offerTradeDepositFor } from './tradeDepositOffer'
 import { TradingPanelBar, type OrderType, type QuotedSide, type Settlement, type TradeMode } from './TradingPanelBar'
 import { TradingPanelPriceLevels } from './TradingPanelPriceLevels'
 import { TradingPanelSwaps } from './TradingPanelSwaps'
@@ -202,9 +202,10 @@ export const TradingPanel = ({
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
   const { transactionTrackingService: oneClickTransactionTrackingService } = useOneClickContext()
 
-  // When a tracked swap flips to complete, reload only what received it.
-  // Trade assets settle on the THOR or MAYA trade account. The L1 in `ETH~USDC`
-  // is not that balance. Rows already complete on first sight are left alone.
+  // When a tracked swap flips to complete, reload what received it and, when
+  // the spent asset is a trade asset, that trade account too. Trade assets
+  // settle on the THOR or MAYA trade account. The L1 in `ETH~USDC` is not that
+  // balance. Rows already complete on first sight are left alone.
   const trackerWatching = useRef(new Set<string>())
   const trackerReloaded = useRef(new Set<string>())
   const latestTrackedRows = useRef<TrackerRow[]>([])
