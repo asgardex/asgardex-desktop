@@ -131,7 +131,6 @@ export const PoolDetailView = () => {
   const priceLevelService = usePriceLevelContext()
   const assetKey = poolAsset ? assetToString(poolAsset) : ''
   const levelsMap = useObservableState(priceLevelService.levels$, {})
-  const priceLevels: PriceLevel[] = assetKey ? (levelsMap[assetKey] ?? []) : []
   const {
     service: {
       pools: { poolsState$ }
@@ -150,14 +149,13 @@ export const PoolDetailView = () => {
     return Number.isFinite(price) && price > 0 ? price : 0
   }, [poolAsset, poolsRD])
   const chartPrice = headline?.last ?? 0
-  const chartLevels = useMemo(
-    () =>
-      priceLevels.flatMap((level) => {
-        const price = levelPriceOnChart(level.price, poolUsd, chartPrice)
-        return price === null ? [] : [{ ...level, price }]
-      }),
-    [priceLevels, poolUsd, chartPrice]
-  )
+  const chartLevels = useMemo(() => {
+    const priceLevels: PriceLevel[] = assetKey ? (levelsMap[assetKey] ?? []) : []
+    return priceLevels.flatMap((level) => {
+      const price = levelPriceOnChart(level.price, poolUsd, chartPrice)
+      return price === null ? [] : [{ ...level, price }]
+    })
+  }, [assetKey, chartPrice, levelsMap, poolUsd])
 
   // TradingPanel exposes setLimitPriceFromChart via this ref.
   // A chart click fills the limit price. Buy or Sell places the order.
