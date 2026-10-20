@@ -6,6 +6,7 @@ import { AnyAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 
 import { emptyString } from '../../../../helpers/stringHelper'
+import { useAssetFavourites } from '../../../../hooks/useAssetFavourites'
 import { BaseButton } from '../../button'
 import { AssetData } from '../assetData'
 import { AssetMenu } from '../assetMenu'
@@ -39,6 +40,7 @@ export const AssetSelect = (props: Props): JSX.Element => {
   } = props
 
   const [openMenu, setOpenMenu] = useState<boolean>(false)
+  const { favourites, toggleFavourite } = useAssetFavourites()
 
   const buttonClickHandler = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -65,6 +67,8 @@ export const AssetSelect = (props: Props): JSX.Element => {
         onClose={() => setOpenMenu(false)}
         headline={dialogHeadline}
         network={network}
+        favourites={favourites}
+        onToggleFavourite={toggleFavourite}
       />
       <BaseButton
         className={clsx(

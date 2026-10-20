@@ -2,9 +2,10 @@ import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
-import { ArrowsUpDownIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, ChevronDownIcon, StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline'
+import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
 import { Network } from '@xchainjs/xchain-client'
-import { AnyAsset, BaseAmount, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, assetToString, isSecuredAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -12,11 +13,16 @@ import { useIntl } from 'react-intl'
 import { ProviderIcon } from '../../../components/swap/ProviderIcon'
 import type { ExtendedQuoteSwap } from '../../../components/swap/Swap.types'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
+import {
+  arrangeAssetsForMenu,
+  ExtendedAssetType
+} from '../../../components/uielements/assets/assetMenu/AssetMenu.helper'
 import { Spin } from '../../../components/uielements/spin'
-import { distinctChainId, isUSDAsset } from '../../../helpers/assetHelper'
+import { assetChainTicker, distinctChainId, isUSDAsset } from '../../../helpers/assetHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
 import { protocolMapping } from '../../../helpers/protocolHelper'
 import { shortQuoteError } from '../../../helpers/tradeQuote'
+import { useAssetFavourites } from '../../../hooks/useAssetFavourites'
 import { IsApprovedRD } from '../../../services/evm/types'
 import { limitVsMarket, type ChartUnit } from './limitPrice'
 import { chartPricePrecision, formatChartAmount } from './pairChart'
@@ -555,6 +561,61 @@ const AssetControl = ({
   availableAssets: AnyAsset[]
 }) => {
   const intl = useIntl()
+  const { favourites, toggleFavourite } = useAssetFavourites()
+  const arranged = useMemo(
+    () => arrangeAssetsForMenu(availableAssets, '', ExtendedAssetType.All, favourites),
+    [availableAssets, favourites]
+  )
+
+  const renderOption = (option: AnyAsset) => {
+    const isSelected = !!selectedTarget && eqAsset.equals(option, selectedTarget)
+    const isFavourite = favourites.some((favourite) => eqAsset.equals(favourite, option))
+    const chainId = distinctChainId(option)
+    const name = assetChainTicker(option)
+    const favouriteName = isSecuredAsset(option)
+      ? `${name} ${intl.formatMessage({ id: 'common.asset.secured' })}`
+      : name
+    return (
+      <ListboxOption
+        key={assetToString(option)}
+        value={option}
+        className={({ active }) =>
+          clsx('flex cursor-pointer items-center gap-2 px-2 py-2', active && 'bg-white/10', isSelected && 'bg-white/5')
+        }>
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-pressed={isFavourite}
+          aria-label={intl.formatMessage(
+            { id: isFavourite ? 'common.asset.removeFavourite' : 'common.asset.addFavourite' },
+            { asset: favouriteName }
+          )}
+          className={clsx(
+            'flex h-5 w-5 shrink-0 items-center justify-center',
+            isFavourite ? 'text-turquoise' : 'text-gray-500 hover:text-turquoise'
+          )}
+          onMouseDown={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+          }}
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            toggleFavourite(option)
+          }}>
+          {isFavourite ? <StarSolidIcon className="h-3.5 w-3.5" /> : <StarOutlineIcon className="h-3.5 w-3.5" />}
+        </button>
+        <AssetIcon asset={option} size="xsmall" network={network} className="pointer-events-none !h-5 !w-5 shrink-0" />
+        <span className="text-12 min-w-0 truncate font-main text-white">{option.ticker}</span>
+        {chainId && <span className="shrink-0 font-main text-11 text-gray-500">{chainId}</span>}
+        {isUSDAsset(option) && (
+          <span className="ml-auto shrink-0 rounded bg-turquoise/20 px-1.5 py-0.5 font-main text-[9px] font-semibold text-turquoise">
+            USD
+          </span>
+        )}
+      </ListboxOption>
+    )
+  }
 
   if (interactive && selectedTarget && availableAssets.length > 0) {
     return (
@@ -576,32 +637,23 @@ const AssetControl = ({
               </>
             )}
           </ListboxButton>
-          <ListboxOptions className="absolute right-0 z-50 mt-1 max-h-[240px] w-[220px] overflow-y-auto rounded-lg border border-white/10 bg-[#1e222d] shadow-xl focus:outline-hidden">
-            {availableAssets.map((option) => {
-              const isSelected = eqAsset.equals(option, selectedTarget)
-              const chainId = distinctChainId(option)
-              return (
-                <ListboxOption
-                  key={assetToString(option)}
-                  value={option}
-                  className={({ active }) =>
-                    clsx(
-                      'flex cursor-pointer items-center gap-2 px-3 py-2',
-                      active && 'bg-white/10',
-                      isSelected && 'bg-white/5'
-                    )
-                  }>
-                  <AssetIcon asset={option} size="xsmall" network={network} className="pointer-events-none !h-5 !w-5" />
-                  <span className="text-12 font-main text-white">{option.ticker}</span>
-                  {chainId && <span className="font-main text-11 text-gray-500">{chainId}</span>}
-                  {isUSDAsset(option) && (
-                    <span className="ml-auto rounded bg-turquoise/20 px-1.5 py-0.5 font-main text-[9px] font-semibold text-turquoise">
-                      USD
-                    </span>
-                  )}
-                </ListboxOption>
-              )
-            })}
+          <ListboxOptions className="absolute right-0 z-50 mt-1 max-h-[240px] w-[260px] overflow-y-auto rounded-lg border border-white/10 bg-[#1e222d] shadow-xl focus:outline-hidden">
+            {arranged.kind === 'sections' ? (
+              <>
+                <div className="px-2 pt-2 pb-1 font-main text-[10px] tracking-wide text-gray-500 uppercase">
+                  {intl.formatMessage({ id: 'common.asset.favourites' })}
+                </div>
+                {arranged.favourites.map(renderOption)}
+                {arranged.rest.length > 0 && (
+                  <>
+                    <div className="mx-2 my-1 h-px bg-white/10" />
+                    {arranged.rest.map(renderOption)}
+                  </>
+                )}
+              </>
+            ) : (
+              arranged.assets.map(renderOption)
+            )}
           </ListboxOptions>
         </div>
       </Listbox>

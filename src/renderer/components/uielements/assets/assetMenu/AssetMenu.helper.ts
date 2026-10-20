@@ -1,5 +1,8 @@
 import { AnyAsset, assetToString, AssetType } from '@xchainjs/xchain-util'
 
+import { eqAsset } from '../../../../helpers/fp/eq'
+import { CommonMessageKey } from '../../../../i18n/types'
+
 export enum ExtendedAssetType {
   All = 'all',
   Favorite = 'favorite',
@@ -7,19 +10,11 @@ export enum ExtendedAssetType {
   Secured = AssetType.SECURED
 }
 
-export const filterButtons = [
-  {
-    text: 'All',
-    type: ExtendedAssetType.All
-  },
-  {
-    text: 'Native',
-    type: ExtendedAssetType.Native
-  },
-  {
-    text: 'Secured',
-    type: ExtendedAssetType.Secured
-  }
+export const filterButtons: { type: ExtendedAssetType; label: CommonMessageKey }[] = [
+  { type: ExtendedAssetType.All, label: 'common.all' },
+  { type: ExtendedAssetType.Native, label: 'common.asset.native' },
+  { type: ExtendedAssetType.Secured, label: 'common.asset.secured' },
+  { type: ExtendedAssetType.Favorite, label: 'common.asset.favourites' }
 ]
 
 /**
@@ -88,3 +83,60 @@ export const filterAndSortAssetsForMenu = (
     .sort((a, b) => a.rank - b.rank || a.index - b.index)
     .map(({ asset }) => asset)
 }
+
+export type AssetMenuArrangement =
+  { kind: 'flat'; assets: AnyAsset[] } | { kind: 'sections'; favourites: AnyAsset[]; rest: AnyAsset[] }
+
+const isFavouriteAsset = (favourites: AnyAsset[], asset: AnyAsset): boolean =>
+  favourites.some((favourite) => eqAsset.equals(favourite, asset))
+
+/**
+ * Empty search pins favourites, in the order they were starred, above the rest.
+ * A search keeps the usual rank, so typing "eth" still puts native ETH first.
+ * The Favourite filter shows only starred assets, still in star order when the search is empty.
+ */
+export const arrangeAssetsForMenu = (
+  assets: AnyAsset[],
+  search: string,
+  activeFilter: ExtendedAssetType,
+  favourites: AnyAsset[]
+): AssetMenuArrangement => {
+  const typeFilter = activeFilter === ExtendedAssetType.Favorite ? ExtendedAssetType.All : activeFilter
+  const pool = assets.filter(
+    (asset) =>
+      assetMatchesTypeFilter(asset, typeFilter) &&
+      (activeFilter !== ExtendedAssetType.Favorite || isFavouriteAsset(favourites, asset))
+  )
+
+  const query = search.trim()
+  if (query) {
+    return { kind: 'flat', assets: filterAndSortAssetsForMenu(pool, query, ExtendedAssetType.All) }
+  }
+
+  const favouritesInView = favourites
+    .map((favourite) => pool.find((asset) => eqAsset.equals(asset, favourite)))
+    .filter((asset): asset is AnyAsset => asset !== undefined)
+
+  if (activeFilter === ExtendedAssetType.Favorite || favouritesInView.length === 0) {
+    return {
+      kind: 'flat',
+      assets: activeFilter === ExtendedAssetType.Favorite ? favouritesInView : pool
+    }
+  }
+
+  return {
+    kind: 'sections',
+    favourites: favouritesInView,
+    rest: pool.filter((asset) => !isFavouriteAsset(favouritesInView, asset))
+  }
+}
+
+/**
+ * Hint only when the saved list is empty.
+ * Saved stars missing from this picker use the usual empty result.
+ */
+export const showNoFavouritesHint = (
+  activeFilter: ExtendedAssetType,
+  search: string,
+  favourites: AnyAsset[]
+): boolean => activeFilter === ExtendedAssetType.Favorite && !search.trim() && favourites.length === 0
