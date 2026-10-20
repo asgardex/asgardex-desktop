@@ -18,6 +18,12 @@ export const balanceCovers = (balance: BaseAmount, cost: BaseAmount): boolean =>
   return baseToAsset(balance).amount().gte(baseToAsset(cost).amount())
 }
 
+/** True when `balance` can pay a typed asset amount such as the sell size. */
+export const assetAmountCovers = (balance: BaseAmount, amount: number): boolean => {
+  if (!Number.isFinite(amount) || amount <= 0) return false
+  return baseToAsset(balance).amount().gte(amount)
+}
+
 /** Counter received per 1 unit of the sized asset. Null when either side is empty. */
 export const pairRate = (sizeText: string, output: BaseAmount): string | null => {
   const size = new BigNumber(sizeText)

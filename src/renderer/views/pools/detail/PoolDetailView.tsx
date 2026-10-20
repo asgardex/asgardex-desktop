@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, AssetType, assetFromString, assetToString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import { function as FP } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
@@ -22,6 +22,7 @@ import {
 import { Label } from '../../../components/uielements/label'
 import { Spin } from '../../../components/uielements/spin'
 import { useAppContext } from '../../../contexts/AppContext'
+import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { usePriceLevelContext } from '../../../contexts/PriceLevelContext'
 import { isUSDAsset } from '../../../helpers/assetHelper'
 import { toPoolAsset } from '../../../helpers/tradeAssetHelper'
@@ -30,8 +31,10 @@ import { useChainflipPrice } from '../../../hooks/useChainflipPrice'
 import { useOHLCVData } from '../../../hooks/useOHLCVData'
 import { usePriceSpread } from '../../../hooks/usePriceSpread'
 import { DEFAULT_NETWORK } from '../../../services/const'
+import { getPoolDetail } from '../../../services/midgard/thorMidgard/utils'
 import type { PriceLevel } from '../../../services/priceLevel/types'
 import { chartHeadline } from './chartHeadline'
+import { levelPriceOnChart } from './limitPrice'
 import { formatChartAmount, ratioCandles } from './pairChart'
 import { TradingPanel, type TradingPanelHandle } from './TradingPanel'
 import type { TradeMode } from './TradingPanelBar'
@@ -129,6 +132,32 @@ export const PoolDetailView = () => {
   const assetKey = poolAsset ? assetToString(poolAsset) : ''
   const levelsMap = useObservableState(priceLevelService.levels$, {})
   const priceLevels: PriceLevel[] = assetKey ? (levelsMap[assetKey] ?? []) : []
+  const {
+    service: {
+      pools: { poolsState$ }
+    }
+  } = useMidgardContext()
+  const poolsRD = useObservableState(poolsState$, RD.pending)
+  // Orders are stored as THORChain USD. Pair charts need that price scaled onto the counter axis.
+  const poolUsd = useMemo(() => {
+    if (!poolAsset || !RD.isSuccess(poolsRD)) return 0
+    const price = FP.pipe(
+      getPoolDetail(poolsRD.value.poolDetails, poolAsset),
+      O.chain((detail) => O.fromNullable(detail.assetPriceUSD)),
+      O.map(Number),
+      O.getOrElse(() => 0)
+    )
+    return Number.isFinite(price) && price > 0 ? price : 0
+  }, [poolAsset, poolsRD])
+  const chartPrice = headline?.last ?? 0
+  const chartLevels = useMemo(
+    () =>
+      priceLevels.flatMap((level) => {
+        const price = levelPriceOnChart(level.price, poolUsd, chartPrice)
+        return price === null ? [] : [{ ...level, price }]
+      }),
+    [priceLevels, poolUsd, chartPrice]
+  )
 
   // TradingPanel exposes setLimitPriceFromChart via this ref.
   // A chart click fills the limit price. Buy or Sell places the order.
@@ -250,7 +279,7 @@ export const PoolDetailView = () => {
                   <TradingChart
                     data={data}
                     indicators={indicators}
-                    priceLevels={chartUnit === 'pair' ? [] : priceLevels}
+                    priceLevels={chartLevels}
                     onPriceClick={handlePriceClick}
                   />
                 )

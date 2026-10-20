@@ -1,7 +1,13 @@
 import { baseAmount } from '@xchainjs/xchain-util'
 import { describe, expect, it } from 'vitest'
 
-import { balanceCovers, formatSwapAmount, pairRate, swapAmountFromPercent } from './swapAmountDisplay'
+import {
+  assetAmountCovers,
+  balanceCovers,
+  formatSwapAmount,
+  pairRate,
+  swapAmountFromPercent
+} from './swapAmountDisplay'
 
 describe('swapAmountDisplay', () => {
   const ethBalance = baseAmount('28575133772992115', 18)
@@ -32,6 +38,15 @@ describe('swapAmountDisplay', () => {
     expect(balanceCovers(baseAmount(10_000_000, 6), baseAmount(950_000_000, 8))).toBe(true)
     expect(balanceCovers(baseAmount(10_000_000, 6), baseAmount(1_050_000_000, 8))).toBe(false)
     expect(balanceCovers(baseAmount(1, 8), baseAmount(0, 8))).toBe(false)
+  })
+
+  it('covers a typed sell size from the chart-asset balance', () => {
+    expect(assetAmountCovers(baseAmount(150_000_000, 8), 1.5)).toBe(true)
+    expect(assetAmountCovers(baseAmount(150_000_000, 8), 1.50000001)).toBe(false)
+    expect(assetAmountCovers(baseAmount(0, 8), 1)).toBe(false)
+    expect(assetAmountCovers(baseAmount(1, 8), 0)).toBe(false)
+    expect(assetAmountCovers(ethBalance, 0.02857513)).toBe(true)
+    expect(assetAmountCovers(ethBalance, 0.02857514)).toBe(false)
   })
 
   it('quotes counter received per 1 unit of the sized asset', () => {

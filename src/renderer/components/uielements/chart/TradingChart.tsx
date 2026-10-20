@@ -8,6 +8,7 @@ import {
   LineSeries,
   LineStyle,
   ColorType,
+  type AutoscaleInfo,
   type IChartApi,
   type IPriceLine,
   type ISeriesApi,
@@ -15,6 +16,7 @@ import {
 } from 'lightweight-charts'
 
 import { calculateSMA, calculateEMA, calculateBollingerBands } from '../../../helpers/indicatorHelper'
+import { priceRangeWithLevels } from '../../../views/pools/detail/limitPrice'
 import { chartPriceFormat } from '../../../views/pools/detail/pairChart'
 import type { IndicatorConfig, OHLCVData, PriceLevel } from '../../../views/pools/detail/types'
 
@@ -198,6 +200,19 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
 
     const currentIds = new Set(priceLevels.map((l) => l.id))
     const existingMap = priceLevelRefs.current
+
+    // Candle autoscaling ignores price lines, so a resting order below the range never appears.
+    series.applyOptions({
+      autoscaleInfoProvider: (original: () => AutoscaleInfo | null): AutoscaleInfo | null => {
+        const info = original()
+        const range = priceRangeWithLevels(
+          info?.priceRange ?? null,
+          priceLevels.map((level) => level.price)
+        )
+        if (!info || !range || range === info.priceRange) return info
+        return { ...info, priceRange: range }
+      }
+    })
 
     // Remove lines no longer present
     for (const [id, line] of existingMap) {

@@ -4,22 +4,55 @@ export type ChartUnit = 'usd' | 'pair'
 
 /**
  * USD trigger for the price watcher.
- * A dollar chart click is already USD. A pair click is counter units per chart asset,
- * scaled by the live chart ratio and the THORChain pool USD price.
+ * The typed price and the chart close share a unit. The trigger is that ratio
+ * times the THORChain pool USD price, so a click on the chart close stores the
+ * current pool price even when Binance and the pool differ.
  */
-export const limitTriggerUsd = (
-  limitPrice: number,
-  chartUnit: ChartUnit,
-  poolUsd: number,
-  chartPrice: number
-): number | null => {
+export const limitTriggerUsd = (limitPrice: number, poolUsd: number, chartPrice: number): number | null => {
   if (!Number.isFinite(limitPrice) || limitPrice <= 0) return null
-  if (chartUnit === 'usd') return limitPrice
   if (!Number.isFinite(poolUsd) || poolUsd <= 0) return null
   if (!Number.isFinite(chartPrice) || chartPrice <= 0) return null
   const usd = (limitPrice / chartPrice) * poolUsd
   if (!Number.isFinite(usd) || usd <= 0) return null
   return usd
+}
+
+/**
+ * Chart-unit price of a stored THORChain USD trigger.
+ * Inverse of limitTriggerUsd, so the line sits where the order was entered.
+ */
+export const levelPriceOnChart = (usd: number, poolUsd: number, chartPrice: number): number | null => {
+  if (!Number.isFinite(usd) || usd <= 0) return null
+  if (!Number.isFinite(poolUsd) || poolUsd <= 0) return null
+  if (!Number.isFinite(chartPrice) || chartPrice <= 0) return null
+  const onChart = (usd / poolUsd) * chartPrice
+  if (!Number.isFinite(onChart) || onChart <= 0) return null
+  return onChart
+}
+
+export type PriceRange = { minValue: number; maxValue: number }
+
+/** Keep an order line on screen when it sits outside the visible candles. */
+export const priceRangeWithLevels = (range: PriceRange | null, levels: readonly number[]): PriceRange | null => {
+  if (!range) return null
+  let min = range.minValue
+  let max = range.maxValue
+  let outside = false
+  for (const price of levels) {
+    if (!Number.isFinite(price)) continue
+    if (price < min) {
+      min = price
+      outside = true
+    }
+    if (price > max) {
+      max = price
+      outside = true
+    }
+  }
+  if (!outside) return range
+  const span = max - min
+  const pad = span > 0 ? span * 0.08 : Math.abs(min) * 0.08 || 1
+  return { minValue: min - pad, maxValue: max + pad }
 }
 
 export type LimitVsMarket = {

@@ -48,6 +48,8 @@ type Props = {
   buyBalance: O.Option<BaseAmount>
   /** That balance is known and cannot pay the quoted buy. */
   buyShort: boolean
+  /** The chart-asset balance is known and cannot pay the sell size. */
+  sellShort: boolean
   amountStr: string
   setAmountStr: (v: string) => void
   selectedTarget: AnyAsset | null
@@ -96,6 +98,7 @@ export const TradingPanelBar = ({
   assetBalance,
   buyBalance,
   buyShort,
+  sellShort,
   amountStr,
   setAmountStr,
   selectedTarget,
@@ -351,7 +354,8 @@ export const TradingPanelBar = ({
             />
           )}
           <div className="flex items-center justify-between gap-2">
-            <span className={clsx('font-main text-11', buying && buyShort ? 'text-error0' : 'text-gray-500')}>
+            <span
+              className={clsx('font-main text-11', (buying ? buyShort : sellShort) ? 'text-error0' : 'text-gray-500')}>
               {payAvailable}
             </span>
             {O.isSome(payBalance) && <span className="font-main text-11 text-gray-400">{sliderPercent}%</span>}

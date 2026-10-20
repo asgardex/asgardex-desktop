@@ -83,8 +83,9 @@ import {
 import { hasImportedKeystore } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
 import { formatLimitInput, limitTriggerUsd, type ChartUnit } from './limitPrice'
-import { balanceCovers, formatSwapAmount } from './swapAmountDisplay'
-import { newlyCompletedDestinationChains, toTrackerRows } from './trackerBalance'
+import { assetAmountCovers, balanceCovers, formatSwapAmount } from './swapAmountDisplay'
+import { offerTradeDepositFor } from './tradeDepositOffer'
+import { newlyCompletedDestinationRefreshes, toTrackerRows, type TrackerRow } from './trackerBalance'
 import { TradingPanelBar, type OrderType, type QuotedSide, type Settlement, type TradeMode } from './TradingPanelBar'
 import { TradingPanelPriceLevels } from './TradingPanelPriceLevels'
 import { TradingPanelSwaps } from './TradingPanelSwaps'
@@ -156,8 +157,6 @@ const mergeTradeAccounts$ = (
   )
 }
 
-const hasPositiveUnits = (accounts: TradeAccount[]) => accounts.some((account) => account.units.gt(0))
-
 const walletAddressValue = (walletAddress: O.Option<{ address: string }>): string | undefined =>
   O.isSome(walletAddress) ? walletAddress.value.address : undefined
 
@@ -203,15 +202,16 @@ export const TradingPanel = ({
   const { transactionTrackingService: chainflipTransactionTrackingService } = useChainflipContext()
   const { transactionTrackingService: oneClickTransactionTrackingService } = useOneClickContext()
 
-  // When a tracked swap flips to complete, reload only the chain that received it.
-  // Rows that are already complete on first sight are left alone.
+  // When a tracked swap flips to complete, reload only what received it.
+  // Trade assets settle on the THOR or MAYA trade account. The L1 in `ETH~USDC`
+  // is not that balance. Rows already complete on first sight are left alone.
   const trackerWatching = useRef(new Set<string>())
   const trackerReloaded = useRef(new Set<string>())
-  const latestTrackedRows = useRef<{ id: string; isComplete: boolean; toAsset: string }[]>([])
+  const latestTrackedRows = useRef<TrackerRow[]>([])
   const appWalletStateRef = useRef(appWalletState)
   appWalletStateRef.current = appWalletState
   const reloadCompletedDestinations = useCallback(
-    (rows: { id: string; isComplete: boolean; toAsset: string }[]) => {
+    (rows: TrackerRow[]) => {
       const state = appWalletStateRef.current
       if (!state) {
         for (const row of rows) {
@@ -220,20 +220,26 @@ export const TradingPanel = ({
         return
       }
       const walletType = getWalletTypeFromState(state)
-      const chains = newlyCompletedDestinationChains(rows, trackerWatching.current, trackerReloaded.current)
-      for (const chain of chains) {
-        reloadBalancesByChain(chain, walletType)()
+      const refreshes = newlyCompletedDestinationRefreshes(rows, trackerWatching.current, trackerReloaded.current)
+      for (const refresh of refreshes) {
+        if (refresh.kind === 'thorTrade') {
+          reloadTradeAccount()
+        } else if (refresh.kind === 'mayaTrade') {
+          reloadTradeAccountMaya()
+        } else {
+          reloadBalancesByChain(refresh.chain, walletType)()
+        }
       }
     },
-    [reloadBalancesByChain]
+    [reloadBalancesByChain, reloadTradeAccount, reloadTradeAccountMaya]
   )
   const trackedCompletions$ = useMemo(
     () =>
       Rx.merge(
-        transactionTrackingService.getTransactions$.pipe(RxOp.map(toTrackerRows)),
-        mayaTransactionTrackingService.getTransactions$.pipe(RxOp.map(toTrackerRows)),
-        chainflipTransactionTrackingService.getTransactions$.pipe(RxOp.map(toTrackerRows)),
-        oneClickTransactionTrackingService.getTransactions$.pipe(RxOp.map(toTrackerRows))
+        transactionTrackingService.getTransactions$.pipe(RxOp.map((rd) => toTrackerRows(rd, 'thor'))),
+        mayaTransactionTrackingService.getTransactions$.pipe(RxOp.map((rd) => toTrackerRows(rd, 'maya'))),
+        chainflipTransactionTrackingService.getTransactions$.pipe(RxOp.map((rd) => toTrackerRows(rd, 'l1'))),
+        oneClickTransactionTrackingService.getTransactions$.pipe(RxOp.map((rd) => toTrackerRows(rd, 'l1')))
       ),
     [
       transactionTrackingService,
@@ -271,13 +277,9 @@ export const TradingPanel = ({
   ] as [RD.RemoteData<Error, TradeAccount[]>, RD.RemoteData<Error, TradeAccount[]>])
   const vultisigWallet = !!appWalletState && isVultisigMode(appWalletState)
   // Trade deposit signing is keystore or ledger. Vultisig has no trade-deposit flow yet.
-  const offerTradeDeposit =
-    hasWallet &&
-    !vultisigWallet &&
-    RD.isSuccess(thorTradeAccountsRD) &&
-    RD.isSuccess(mayaTradeAccountsRD) &&
-    !hasPositiveUnits(thorTradeAccountsRD.value) &&
-    !hasPositiveUnits(mayaTradeAccountsRD.value)
+  const chartTradeRd = protocol === MAYAChain ? mayaTradeAccountsRD : thorTradeAccountsRD
+  const otherTradeRd = protocol === MAYAChain ? thorTradeAccountsRD : mayaTradeAccountsRD
+  const offerTradeDeposit = hasWallet && !vultisigWallet && offerTradeDepositFor(chartTradeRd, otherTradeRd)
   const [showTradeDeposit, setShowTradeDeposit] = useState(false)
   const { protocolAddress: thorKeystoreProtocolAddress } = useTradeDepositAddresses({
     protocol: THORChain,
@@ -1081,6 +1083,9 @@ export const TradingPanel = ({
   const buyShort =
     O.isSome(buySpendBalance) &&
     (!buySpendBalance.value.amount().gt(0) || (buyCost !== null && !balanceCovers(buySpendBalance.value, buyCost)))
+  const sellSize = parseFloat(sizeStr)
+  const sellCovers = O.isSome(sizeBalance) && assetAmountCovers(sizeBalance.value, sellSize)
+  const sellShort = O.isSome(sizeBalance) && (!sizeBalance.value.amount().gt(0) || (sellSize > 0 && !sellCovers))
 
   // Flip pay and receive immediately. It does not submit.
   // A ready sell quote becomes the amount to spend. Otherwise the buy field stays empty,
@@ -1284,8 +1289,8 @@ export const TradingPanel = ({
   )
 
   const limitUsd = useMemo(
-    () => limitTriggerUsd(Number(limitPriceStr), chartUnit, poolUsdPrice, chartPrice),
-    [limitPriceStr, chartUnit, poolUsdPrice, chartPrice]
+    () => limitTriggerUsd(Number(limitPriceStr), poolUsdPrice, chartPrice),
+    [limitPriceStr, poolUsdPrice, chartPrice]
   )
 
   // Limit: park a buy or sell at the entered price. The price watcher submits it.
@@ -1293,6 +1298,7 @@ export const TradingPanel = ({
     (side: TradeMode) => {
       if (limitUsd === null) return
       if (side === 'sell') {
+        if (!sellCovers) return
         addPriceLevelWithAuth(limitUsd, 'sell')
         return
       }
@@ -1306,15 +1312,18 @@ export const TradingPanel = ({
       if (!cost) return
       addPriceLevelWithAuth(limitUsd, 'buy', cost)
     },
-    [limitUsd, addPriceLevelWithAuth, buyCoversCost, quotedSide, amountStr, sizedSellQuote]
+    [limitUsd, addPriceLevelWithAuth, buyCoversCost, sellCovers, quotedSide, amountStr, sizedSellQuote]
   )
 
   const hasSize = !!parseFloat(sizeStr) && parseFloat(sizeStr) > 0
   // The pay field is the amount. A buy is sized in the counter, so it does not
   // need a chart-asset size. The button submits only the quote on screen.
-  const canMarketSwap = tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : quotedSide === 'sell'
+  const canMarketSwap =
+    tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : quotedSide === 'sell' && sellCovers
   const canPlaceLimit =
-    limitUsd !== null && !!selectedTarget && (tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : hasSize)
+    limitUsd !== null &&
+    !!selectedTarget &&
+    (tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : hasSize && sellCovers)
   const canTrade = orderType === 'limit' ? canPlaceLimit : canMarketSwap
 
   const handleTrade = useCallback(() => {
@@ -1322,8 +1331,8 @@ export const TradingPanel = ({
       placeLimitOrder(tradeMode)
       return
     }
-    if (tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : quotedSide === 'sell') onSubmit()
-  }, [orderType, placeLimitOrder, tradeMode, quotedSide, buyCoversCost, onSubmit])
+    if (tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : quotedSide === 'sell' && sellCovers) onSubmit()
+  }, [orderType, placeLimitOrder, tradeMode, quotedSide, buyCoversCost, sellCovers, onSubmit])
 
   // Password modal state for limit order pre-authorization
   const [showOrderPasswordModal, setShowOrderPasswordModal] = useState(false)
@@ -1399,13 +1408,17 @@ export const TradingPanel = ({
       return
     }
 
+    const payKnown = tradeMode === 'buy' ? O.isSome(buySpendBalance) : O.isSome(sizeBalance)
+    if (!payKnown) return
+
     autoSubmitPendingRef.current = false
 
-    if (!selectedQuote.value.canSwap) {
+    const payCovers = tradeMode === 'buy' ? buyCoversCost : sellCovers
+    if (!selectedQuote.value.canSwap || !payCovers) {
       if (executingLevelRef.current) {
         priceLevelService.updateLevel(assetKey, executingLevelRef.current, {
           status: 'failed',
-          error: 'No valid swap route'
+          error: selectedQuote.value.canSwap ? 'Balance too low' : 'No valid swap route'
         })
         executingLevelRef.current = null
       }
@@ -1453,7 +1466,12 @@ export const TradingPanel = ({
     oSwapParams,
     oCFSwapParams,
     submitSwapTx,
-    submitCFTx
+    submitCFTx,
+    tradeMode,
+    buySpendBalance,
+    sizeBalance,
+    buyCoversCost,
+    sellCovers
   ])
 
   // Extra content for tx modal
@@ -1500,6 +1518,7 @@ export const TradingPanel = ({
         assetBalance={sizeBalance}
         buyBalance={buySpendBalance}
         buyShort={buyShort}
+        sellShort={sellShort}
         amountStr={tradeMode === 'buy' ? amountStr : sizeStr}
         setAmountStr={setPayAmount}
         selectedTarget={selectedTarget}

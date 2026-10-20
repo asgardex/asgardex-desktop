@@ -1,7 +1,7 @@
 import { assetFromString, baseAmount, AssetType } from '@xchainjs/xchain-util'
 import { describe, expect, it } from 'vitest'
 
-import { rowsForPair, type PairSwapAction, type PairSwapTracked } from './pairSwaps'
+import { pairSwapDirection, rowsForPair, type PairSwapAction, type PairSwapTracked } from './pairSwaps'
 
 const rune = assetFromString('THOR.RUNE')!
 const usdc = assetFromString('ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')!
@@ -9,6 +9,22 @@ const btc = assetFromString('BTC.BTC')!
 const tradeUsdc = { ...usdc, type: AssetType.TRADE }
 
 const action = (partial: PairSwapAction): PairSwapAction => partial
+
+describe('pairSwapDirection', () => {
+  it('shows a sell as chart asset into the counter', () => {
+    expect(pairSwapDirection('sell', '25.55 RUNE', '16.29 USDC')).toEqual({
+      spent: '25.55 RUNE',
+      received: '16.29 USDC'
+    })
+  })
+
+  it('shows a buy as counter into the chart asset', () => {
+    expect(pairSwapDirection('buy', '15 RUNE', '10 USDC')).toEqual({
+      spent: '10 USDC',
+      received: '15 RUNE'
+    })
+  })
+})
 
 describe('rowsForPair', () => {
   const sell: PairSwapAction = action({

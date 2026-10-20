@@ -1,26 +1,58 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatLimitInput, limitTriggerUsd, limitVsMarket } from './limitPrice'
+import { formatLimitInput, levelPriceOnChart, limitTriggerUsd, limitVsMarket, priceRangeWithLevels } from './limitPrice'
 
 describe('limitTriggerUsd', () => {
-  it('stores a dollar chart click as the USD trigger', () => {
-    expect(limitTriggerUsd(123.45, 'usd', 100, 2)).toBe(123.45)
+  it('stores the pool price when the typed dollar price is the chart close', () => {
+    // Binance close is 3000 and the pool is 2940. A click on the close fills at the pool.
+    expect(limitTriggerUsd(3000, 2940, 3000)).toBe(2940)
   })
 
-  it('rejects a non-positive dollar price', () => {
-    expect(limitTriggerUsd(0, 'usd', 100, 2)).toBeNull()
-    expect(limitTriggerUsd(Number.NaN, 'usd', 100, 2)).toBeNull()
-  })
-
-  it('scales a pair click by the live ratio and the pool USD price', () => {
+  it('keeps the same distance from the pool that the typed price has from the chart', () => {
+    // 10% under a 3000 chart close is 10% under a 2940 pool.
+    expect(limitTriggerUsd(2700, 2940, 3000)).toBeCloseTo(2646)
     // Chart shows 4 counter per base, pool is $100. A click at 2 is half, so $50.
-    expect(limitTriggerUsd(2, 'pair', 100, 4)).toBe(50)
+    expect(limitTriggerUsd(2, 100, 4)).toBe(50)
   })
 
-  it('rejects a pair click when the pool or chart price is missing', () => {
-    expect(limitTriggerUsd(2, 'pair', 0, 4)).toBeNull()
-    expect(limitTriggerUsd(2, 'pair', 100, 0)).toBeNull()
-    expect(limitTriggerUsd(2, 'pair', Number.NaN, 4)).toBeNull()
+  it('rejects a non-positive price or a missing scale', () => {
+    expect(limitTriggerUsd(0, 100, 2)).toBeNull()
+    expect(limitTriggerUsd(Number.NaN, 100, 2)).toBeNull()
+    expect(limitTriggerUsd(2, 0, 4)).toBeNull()
+    expect(limitTriggerUsd(2, 100, 0)).toBeNull()
+    expect(limitTriggerUsd(2, Number.NaN, 4)).toBeNull()
+  })
+})
+
+describe('levelPriceOnChart', () => {
+  it('puts a pool trigger back on the chart where it was entered', () => {
+    expect(levelPriceOnChart(2940, 2940, 3000)).toBe(3000)
+    expect(levelPriceOnChart(2646, 2940, 3000)).toBeCloseTo(2700)
+    expect(levelPriceOnChart(50, 100, 4)).toBe(2)
+    expect(limitTriggerUsd(levelPriceOnChart(50, 100, 4) ?? 0, 100, 4)).toBe(50)
+  })
+
+  it('draws nothing until both scales are known', () => {
+    expect(levelPriceOnChart(50, 0, 4)).toBeNull()
+    expect(levelPriceOnChart(50, 100, 0)).toBeNull()
+    expect(levelPriceOnChart(0, 100, 4)).toBeNull()
+  })
+})
+
+describe('priceRangeWithLevels', () => {
+  it('leaves the candle range alone when every order is inside it', () => {
+    const range = { minValue: 0.23, maxValue: 0.32 }
+    expect(priceRangeWithLevels(range, [0.24, 0.3])).toBe(range)
+  })
+
+  it('expands the scale so an order below the candles stays visible', () => {
+    const next = priceRangeWithLevels({ minValue: 0.23, maxValue: 0.32 }, [0.083])
+    expect(next?.minValue).toBeLessThan(0.083)
+    expect(next?.maxValue).toBeGreaterThan(0.32)
+  })
+
+  it('returns no range without candles', () => {
+    expect(priceRangeWithLevels(null, [0.083])).toBeNull()
   })
 })
 

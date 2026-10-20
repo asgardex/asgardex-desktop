@@ -43,6 +43,14 @@ export type PairSwapTracked = {
 
 const MAX_ROWS = 20
 
+/** Spent asset, then received asset. A buy receives the chart asset, so the counter was spent. */
+export const pairSwapDirection = (
+  side: PairSwapSide,
+  sizeText: string,
+  counterText: string
+): { spent: string; received: string } =>
+  side === 'buy' ? { spent: counterText, received: sizeText } : { spent: sizeText, received: counterText }
+
 const matches = (asset: AnyAsset, target: AnyAsset): boolean => sameMarketAsset(asset, target)
 
 const firstAmount = (legs: PairSwapLeg[], target: AnyAsset): BaseAmount | null => {
