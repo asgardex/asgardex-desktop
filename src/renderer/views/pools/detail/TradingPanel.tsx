@@ -1475,14 +1475,25 @@ export const TradingPanel = ({
     sellCovers
   ])
 
-  // Extra content for tx modal
+  // Extra content for tx modal. The destination is the quote's expected output.
+  // Hold the last positive figure while the swap is in flight so a cleared quote does not show 0.
   const swapTxSource = useMemo(
     () => ({ asset: safeSourceAsset, amount: amountToSwap }),
     [safeSourceAsset, amountToSwap]
   )
+  const receiveAmountRef = useRef<BaseAmount | null>(null)
+  const quotedReceive =
+    O.isSome(selectedQuote) && selectedQuote.value.expectedAmount.baseAmount.amount().gt(0)
+      ? selectedQuote.value.expectedAmount.baseAmount
+      : null
+  if (quotedReceive) receiveAmountRef.current = quotedReceive
+  else if (!isSwapTxInFlight) receiveAmountRef.current = null
   const swapTxTarget = useMemo(
-    () => ({ asset: targetAsset || safeSourceAsset, amount: baseAmount(0) }),
-    [targetAsset, safeSourceAsset]
+    () => ({
+      asset: targetAsset || safeSourceAsset,
+      amount: quotedReceive ?? (isSwapTxInFlight ? receiveAmountRef.current : null) ?? baseAmount(0)
+    }),
+    [targetAsset, safeSourceAsset, quotedReceive, isSwapTxInFlight]
   )
 
   const swapAddresses = useMemo(() => {
@@ -1506,6 +1517,24 @@ export const TradingPanel = ({
     addresses: swapAddresses,
     reloadToken: swapHistoryTick
   })
+
+  const swapProgress = RD.isInitial(swapState.swapTx) ? null : (
+    <SwapTxModal
+      inline
+      side={tradeMode}
+      swapState={swapState}
+      swapStartTime={swapStartTime}
+      sourceChain={sourceChain}
+      source={swapTxSource}
+      target={swapTxTarget}
+      oQuoteProtocol={selectedQuote}
+      depositChannelId={O.fromNullable(lastCFChannelRef.current?.depositChannelId)}
+      goToTransaction={openExplorerTxUrl}
+      getExplorerTxUrl={getExplorerTxUrl}
+      onCloseTxModal={onCloseTxModal}
+      onFinishTxModal={onFinishTxModal}
+    />
+  )
 
   return (
     <>
@@ -1550,7 +1579,15 @@ export const TradingPanel = ({
 
       <TradingPanelPriceLevels levels={priceLevels} onRemove={handleRemoveLevel} />
 
-      {hasWallet && <TradingPanelSwaps poolTicker={poolAsset.ticker} rows={pairSwaps.rows} phase={pairSwaps.phase} />}
+      {hasWallet && (
+        <TradingPanelSwaps
+          poolTicker={poolAsset.ticker}
+          rows={pairSwaps.rows}
+          phase={pairSwaps.phase}
+          progress={swapProgress}
+        />
+      )}
+      {!hasWallet && swapProgress && <div className="border-t border-white/10 px-4 py-3">{swapProgress}</div>}
 
       {(offerTradeDeposit || showTradeDeposit) && (
         <TradeDepositModal
@@ -1578,21 +1615,6 @@ export const TradingPanel = ({
           validatePassword$={validatePassword$}
         />
       )}
-
-      {/* Swap progress modal */}
-      <SwapTxModal
-        swapState={swapState}
-        swapStartTime={swapStartTime}
-        sourceChain={sourceChain}
-        source={swapTxSource}
-        target={swapTxTarget}
-        oQuoteProtocol={selectedQuote}
-        depositChannelId={O.fromNullable(lastCFChannelRef.current?.depositChannelId)}
-        goToTransaction={openExplorerTxUrl}
-        getExplorerTxUrl={getExplorerTxUrl}
-        onCloseTxModal={onCloseTxModal}
-        onFinishTxModal={onFinishTxModal}
-      />
     </>
   )
 }

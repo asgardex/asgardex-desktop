@@ -12,6 +12,7 @@ import { SwapTxState } from '../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../services/clients'
 import { UnifiedTxModal, getTxTimerValue, TxConfig } from '../modal/tx'
 import type { AssetData } from '../modal/tx/extra/Common.types'
+import { SwapTxInline } from './SwapTxInline'
 
 export type SwapTxModalProps = {
   swapState: SwapTxState
@@ -26,6 +27,10 @@ export type SwapTxModalProps = {
   getExplorerTxUrl: GetExplorerTxUrl
   onCloseTxModal: () => void
   onFinishTxModal: () => void
+  /** Render inside the chart panel instead of a dialog. The swap page leaves this off. */
+  inline?: boolean
+  /** Buy or sell on the chart ticket. Shown on the inline receipt. */
+  side?: 'buy' | 'sell'
 }
 
 export const SwapTxModal = ({
@@ -39,7 +44,9 @@ export const SwapTxModal = ({
   goToTransaction,
   getExplorerTxUrl,
   onCloseTxModal,
-  onFinishTxModal
+  onFinishTxModal,
+  inline = false,
+  side
 }: SwapTxModalProps) => {
   const intl = useIntl()
   const { network } = useNetwork()
@@ -122,8 +129,27 @@ export const SwapTxModal = ({
     [source, target, protocol, channelId]
   )
 
-  // don't render TxModal in initial state
-  if (RD.isInitial(swapTx)) return <></>
+  // don't render the receipt in initial state
+  if (RD.isInitial(swapTx)) return null
+
+  if (inline) {
+    return (
+      <SwapTxInline
+        swapTx={swapTx}
+        source={source}
+        target={target}
+        protocol={protocol}
+        channelId={channelId}
+        txHash={oTxHash}
+        network={network}
+        side={side}
+        isOpeningChannel={isOpeningChainflipChannel}
+        goToTransaction={goToTransaction}
+        onClose={onCloseTxModal}
+        onFinish={onFinishTxModal}
+      />
+    )
+  }
 
   return (
     <UnifiedTxModal
