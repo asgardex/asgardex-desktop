@@ -67,6 +67,11 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.triggered': 'ट्रिगर हुआ',
   'pools.chart.tradingPanel.priceLevel.completed': 'पूर्ण',
   'pools.chart.tradingPanel.priceLevel.failed': 'विफल',
+  'pools.chart.tradingPanel.priceLevel.paused': 'रुका हुआ',
+  'pools.chart.tradingPanel.priceLevel.priceMoved': 'कीमत आपकी लिमिट से आगे निकल गई',
+  'pools.chart.tradingPanel.priceLevel.balanceLow': 'बैलेंस कम है',
+  'pools.chart.tradingPanel.priceLevel.noRoute': 'कोई मान्य स्वैप मार्ग नहीं है',
+  'pools.chart.tradingPanel.priceLevel.timedOut': 'कोट समय पर नहीं आया',
   'pools.chart.tradingPanel.approve': 'अनुमोदन',
   'pools.chart.tradingPanel.size': 'आकार',
   'pools.chart.tradingPanel.available': '{amount} उपलब्ध',
@@ -85,7 +90,9 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.limit': 'लिमिट',
   'pools.chart.tradingPanel.market': 'मार्केट',
   'pools.chart.tradingPanel.limit.hint':
-    '{price} पर खरीद या बिक्री का ऑर्डर लगता है। ऐप पूल कीमत देखता है और कीमत पार होने पर स्वैप करता है। ऑर्डर तभी खुला रहता है जब Asgardex खुला हो। ऐप बंद करने पर ऑर्डर रद्द हो जाता है।',
+    '{price} पर खरीद या बिक्री का ऑर्डर लगता है। ऐप पूल कीमत देखता है और कीमत पार होने पर स्वैप करता है। ऑर्डर तभी खुला रहता है जब यह चार्ट खुला हो। चार्ट छोड़ने पर ऑर्डर रुकता है, और ऐप बंद करने पर रद्द हो जाता है।',
+  'pools.chart.tradingPanel.limit.triggered':
+    'आपका लिमिट ऑर्डर ट्रिगर हो गया। लाइव कोट पर स्वैप करने के लिए पुष्टि करें।',
   'pools.chart.tradingPanel.market.hint': 'मौजूदा कीमत पर अभी स्वैप होता है।',
   'pools.chart.tradingPanel.placeOrder': 'ऑर्डर लगाएँ',
   'pools.chart.tradingPanel.swapNow': 'अभी स्वैप करें',

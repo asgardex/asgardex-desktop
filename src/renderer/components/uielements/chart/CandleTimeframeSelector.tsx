@@ -10,7 +10,7 @@ type Props = {
 }
 
 export const CandleTimeframeSelector = ({ selected, onChange }: Props) => (
-  <div className="flex gap-1">
+  <div className="flex flex-wrap gap-1">
     {TIMEFRAMES.map((tf) => (
       <button
         key={tf}

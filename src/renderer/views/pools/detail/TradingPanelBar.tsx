@@ -21,9 +21,11 @@ import { Spin } from '../../../components/uielements/spin'
 import { assetChainTicker, distinctChainId, isUSDAsset } from '../../../helpers/assetHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
 import { protocolMapping } from '../../../helpers/protocolHelper'
+import { hiddenString } from '../../../helpers/stringHelper'
 import { shortQuoteError } from '../../../helpers/tradeQuote'
 import { useAssetFavourites } from '../../../hooks/useAssetFavourites'
 import { IsApprovedRD } from '../../../services/evm/types'
+import { useApp } from '../../../store/app/hooks'
 import { limitVsMarket, type ChartUnit } from './limitPrice'
 import { chartPricePrecision, formatChartAmount } from './pairChart'
 import { formatSwapAmount, pairRate, swapAmountFromPercent } from './swapAmountDisplay'
@@ -134,6 +136,7 @@ export const TradingPanelBar = ({
   limitUsd
 }: Props) => {
   const intl = useIntl()
+  const { isPrivate } = useApp()
 
   const buying = tradeMode === 'buy'
   const payBalance = buying ? buyBalance : assetBalance
@@ -234,21 +237,24 @@ export const TradingPanelBar = ({
   const receiveBalanceText = O.isSome(receiveBalance)
     ? intl.formatMessage(
         { id: 'pools.chart.tradingPanel.available' },
-        { amount: formatSwapAmount(receiveBalance.value) }
+        { amount: isPrivate ? hiddenString : formatSwapAmount(receiveBalance.value) }
       )
     : ''
   const payAvailable = intl.formatMessage(
     { id: 'pools.chart.tradingPanel.available' },
     {
-      amount: FP.pipe(
-        payBalance,
-        O.fold(
-          () => '0',
-          (amount) => formatSwapAmount(amount)
-        )
-      )
+      amount: isPrivate
+        ? hiddenString
+        : FP.pipe(
+            payBalance,
+            O.fold(
+              () => '0',
+              (amount) => formatSwapAmount(amount)
+            )
+          )
     }
   )
+  const receiveDisplay = isPrivate ? hiddenString : receiveText
 
   return (
     <div className="flex flex-col gap-3 border-t border-white/10 bg-white/[0.03] px-4 py-3">
@@ -367,7 +373,9 @@ export const TradingPanelBar = ({
               className={clsx('font-main text-11', (buying ? buyShort : sellShort) ? 'text-error0' : 'text-gray-500')}>
               {payAvailable}
             </span>
-            {O.isSome(payBalance) && <span className="font-main text-11 text-gray-400">{sliderPercent}%</span>}
+            {O.isSome(payBalance) && (
+              <span className="font-main text-11 text-gray-400">{isPrivate ? hiddenString : `${sliderPercent}%`}</span>
+            )}
           </div>
         </div>
 
@@ -398,7 +406,7 @@ export const TradingPanelBar = ({
             />
           </div>
           <span className={clsx('truncate font-main text-18 text-white', isFetching && 'opacity-60')}>
-            {receiveText}
+            {receiveDisplay}
           </span>
           {receiveBalanceText && (
             <span className={clsx('truncate font-main text-11', !buying && buyShort ? 'text-error0' : 'text-gray-500')}>

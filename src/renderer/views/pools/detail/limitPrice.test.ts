@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatLimitInput, levelPriceOnChart, limitTriggerUsd, limitVsMarket, priceRangeWithLevels } from './limitPrice'
+import {
+  chartLevelPrice,
+  formatLimitInput,
+  levelPriceOnChart,
+  limitTriggerUsd,
+  limitVsMarket,
+  priceRangeWithLevels
+} from './limitPrice'
 
 describe('limitTriggerUsd', () => {
   it('stores the pool price when the typed dollar price is the chart close', () => {
@@ -36,6 +43,38 @@ describe('levelPriceOnChart', () => {
     expect(levelPriceOnChart(50, 0, 4)).toBeNull()
     expect(levelPriceOnChart(50, 100, 0)).toBeNull()
     expect(levelPriceOnChart(0, 100, 4)).toBeNull()
+  })
+})
+
+describe('chartLevelPrice', () => {
+  it('draws a pair level on the entered ratio', () => {
+    expect(
+      chartLevelPrice({ levelPrice: 0.025, unit: 'pair', chartUnit: 'pair', poolUsd: 2500, chartPrice: 0.024 })
+    ).toBe(0.025)
+  })
+
+  it('turns a pair level into USD with the counter pool price', () => {
+    expect(
+      chartLevelPrice({
+        levelPrice: 0.025,
+        unit: 'pair',
+        chartUnit: 'usd',
+        poolUsd: 2500,
+        chartPrice: 3000,
+        counterUsd: 100000
+      })
+    ).toBe(2500)
+  })
+
+  it('omits a pair level on a USD chart until the counter price is known', () => {
+    expect(
+      chartLevelPrice({ levelPrice: 0.025, unit: 'pair', chartUnit: 'usd', poolUsd: 2500, chartPrice: 3000 })
+    ).toBeNull()
+  })
+
+  it('keeps a USD level on the chart scale', () => {
+    expect(chartLevelPrice({ levelPrice: 2940, chartUnit: 'usd', poolUsd: 2940, chartPrice: 3000 })).toBe(3000)
+    expect(chartLevelPrice({ levelPrice: 50, unit: 'usd', chartUnit: 'pair', poolUsd: 100, chartPrice: 4 })).toBe(2)
   })
 })
 

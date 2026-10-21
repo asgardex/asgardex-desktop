@@ -7,6 +7,7 @@ import * as RxOp from 'rxjs/operators'
 import { observableState } from '../../helpers/stateHelper'
 import { GetDepthHistoryIntervalEnum } from '../midgard/midgardTypes'
 import type { ApiGetDepthHistoryParams, DepthHistoryLD } from '../midgard/midgardTypes'
+import { assetsToPoll, nextCrossings } from './crossings'
 import type { PriceLevel } from './types'
 
 const POLL_INTERVAL_MS = 30_000
@@ -69,6 +70,13 @@ export type PriceLevelService = {
   removeLevel: (assetKey: string, levelId: string) => void
   /** Update a level's properties */
   updateLevel: (assetKey: string, levelId: string, updates: Partial<Omit<PriceLevel, 'id'>>) => void
+  /**
+   * Pause this asset's pending levels when its chart unmounts, or resume them when it mounts.
+   * Resume forgets the last cross so the next poll can first-seen trigger.
+   */
+  setWatching: (assetKey: string, watching: boolean) => void
+  /** Forget a level's last cross so the next poll is a first-seen check. */
+  rearmLevel: (levelId: string) => void
   /** Dispose all subscriptions */
   dispose: () => void
 }
@@ -90,8 +98,10 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
   // Observable prices per asset (THORChain pool price)
   const { get$: prices$, get: getPricesMap, set: setPricesMap } = observableState<Record<string, number>>({})
 
-  // Previous price per asset for crossing detection
-  const prevPrices: Record<string, number> = {}
+  // Previous comparable price per level. Pair and USD levels on one asset do not share an edge.
+  let prevByLevel: Record<string, number> = {}
+  // Levels that already have a comparable price. Resume and rearm delete ids so the next poll is first-seen.
+  let seenLevels = new Set<string>()
 
   // ── Public methods ──────────────────────────────────────────────────
 
@@ -126,6 +136,41 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
     )
   }
 
+  const forgetLevel = (levelId: string) => {
+    seenLevels.delete(levelId)
+    if (prevByLevel[levelId] === undefined) return
+    const next = { ...prevByLevel }
+    delete next[levelId]
+    prevByLevel = next
+  }
+
+  const rearmLevel = (levelId: string) => {
+    forgetLevel(levelId)
+  }
+
+  const setWatching = (assetKey: string, watching: boolean) => {
+    const levels = getLevels(assetKey)
+    if (watching) {
+      let changed = false
+      const next = levels.map((level) => {
+        if (level.status !== 'paused') return level
+        changed = true
+        forgetLevel(level.id)
+        return { ...level, status: 'pending' as const, error: undefined }
+      })
+      if (changed) setLevelsForAsset(assetKey, next)
+      return
+    }
+    let changed = false
+    const next = levels.map((level) => {
+      if (level.status !== 'pending') return level
+      changed = true
+      forgetLevel(level.id)
+      return { ...level, status: 'paused' as const }
+    })
+    if (changed) setLevelsForAsset(assetKey, next)
+  }
+
   // ── Polling logic ───────────────────────────────────────────────────
 
   const fetchPrice = (poolAsset: AnyAsset): Rx.Observable<number> =>
@@ -148,49 +193,21 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
       RxOp.take(1)
     )
 
-  // Track which levels have had their first price check (to detect immediate fills)
-  const seenLevels = new Set<string>()
-
-  const checkCrossings = (assetKey: string, price: number) => {
-    const prevPrice = prevPrices[assetKey]
-
-    const levels = getLevels(assetKey).filter((l) => l.status === 'pending')
-    for (const level of levels) {
-      const firstSeen = !seenLevels.has(level.id)
-      if (firstSeen) seenLevels.add(level.id)
-
-      let triggered = false
-
-      if (firstSeen) {
-        // On first price check for this level, trigger immediately if price
-        // already satisfies the condition (e.g. buy placed above current price)
-        triggered = level.type === 'buy' ? price <= level.price : price >= level.price
-      } else if (prevPrice !== undefined) {
-        // On subsequent checks, detect crossing through the level
-        triggered =
-          level.type === 'buy'
-            ? prevPrice > level.price && price <= level.price
-            : prevPrice < level.price && price >= level.price
-      }
-
-      if (triggered) {
-        crossings$$.next({ levelId: level.id, assetKey, level, currentPrice: price })
-      }
-    }
-
-    prevPrices[assetKey] = price
-    setPricesMap({ ...getPricesMap(), [assetKey]: price })
+  const publishPrice = (assetKey: string, price: number) => {
+    const prices = { ...getPricesMap(), [assetKey]: price }
+    setPricesMap(prices)
+    const result = nextCrossings(getLevelsMap(), prices, { seen: seenLevels, prev: prevByLevel })
+    seenLevels = new Set(result.state.seen)
+    prevByLevel = result.state.prev
+    for (const hit of result.hits) crossings$$.next(hit)
   }
 
   // In-flight guard to prevent overlapping fetches per asset
   const inFlight = new Map<string, boolean>()
 
-  // Poll all assets that have pending levels
+  // Poll every pool a pending level needs, including a pair order's counter.
   const poll = () => {
-    const map = getLevelsMap()
-    for (const [assetKey, levels] of Object.entries(map)) {
-      const hasPending = levels.some((l) => l.status === 'pending')
-      if (!hasPending) continue
+    for (const assetKey of assetsToPoll(getLevelsMap())) {
       if (inFlight.get(assetKey)) continue
 
       const poolAsset = assetFromString(assetKey)
@@ -199,7 +216,7 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
       inFlight.set(assetKey, true)
       const sub = fetchPrice(poolAsset).subscribe({
         next: (price) => {
-          checkCrossings(assetKey, price)
+          publishPrice(assetKey, price)
         },
         complete: () => {
           inFlight.set(assetKey, false)
@@ -237,6 +254,8 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
     addLevel,
     removeLevel,
     updateLevel,
+    setWatching,
+    rearmLevel,
     dispose
   }
 }

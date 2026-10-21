@@ -529,6 +529,53 @@ describe('priceLevelService', () => {
     })
   })
 
+  describe('pause and resume', () => {
+    it('does not fill a paused level, and the next poll after resume is a first-seen check', () => {
+      const priceSubjects: Rx.Subject<number>[] = []
+
+      const api = () => {
+        const subj = new Rx.ReplaySubject<number>(1)
+        priceSubjects.push(subj)
+        return subj.pipe(
+          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
+        )
+      }
+
+      vi.useFakeTimers()
+
+      const svc = createPriceLevelService(api)
+      svc.addLevel('ETH.ETH', mkLevel({ id: 'buy1', price: 100, type: 'buy' }))
+
+      const events: PriceLevelEvent[] = []
+      svc.crossings$.subscribe((e) => events.push(e))
+
+      vi.advanceTimersByTime(30_000)
+      priceSubjects[priceSubjects.length - 1].next(110)
+      priceSubjects[priceSubjects.length - 1].complete()
+      expect(events).toHaveLength(0)
+
+      svc.setWatching('ETH.ETH', false)
+      expect(svc.getLevels('ETH.ETH')[0].status).toBe('paused')
+
+      vi.advanceTimersByTime(30_000)
+      expect(events).toHaveLength(0)
+
+      svc.setWatching('ETH.ETH', true)
+      expect(svc.getLevels('ETH.ETH')[0].status).toBe('pending')
+
+      vi.advanceTimersByTime(30_000)
+      priceSubjects[priceSubjects.length - 1].next(90)
+      priceSubjects[priceSubjects.length - 1].complete()
+
+      expect(events).toHaveLength(1)
+      expect(events[0].levelId).toBe('buy1')
+      expect(events[0].currentPrice).toBe(90)
+
+      svc.dispose()
+      vi.useRealTimers()
+    })
+  })
+
   describe('dispose', () => {
     it('stops polling and completes crossings$', () => {
       vi.useFakeTimers()

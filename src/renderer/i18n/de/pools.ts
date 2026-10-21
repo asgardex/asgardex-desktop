@@ -67,6 +67,11 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.triggered': 'Ausgelöst',
   'pools.chart.tradingPanel.priceLevel.completed': 'Ausgeführt',
   'pools.chart.tradingPanel.priceLevel.failed': 'Fehlgeschlagen',
+  'pools.chart.tradingPanel.priceLevel.paused': 'Pausiert',
+  'pools.chart.tradingPanel.priceLevel.priceMoved': 'Der Preis hat dein Limit verlassen',
+  'pools.chart.tradingPanel.priceLevel.balanceLow': 'Guthaben zu niedrig',
+  'pools.chart.tradingPanel.priceLevel.noRoute': 'Keine gültige Swap-Route',
+  'pools.chart.tradingPanel.priceLevel.timedOut': 'Das Angebot kam nicht rechtzeitig an',
   'pools.chart.tradingPanel.approve': 'Genehmigen',
   'pools.chart.tradingPanel.size': 'Größe',
   'pools.chart.tradingPanel.available': '{amount} verfügbar',
@@ -85,7 +90,9 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.limit': 'Limit',
   'pools.chart.tradingPanel.market': 'Market',
   'pools.chart.tradingPanel.limit.hint':
-    'Platziert einen Kauf oder Verkauf bei {price}. Die App beobachtet den Poolpreis und tauscht, sobald er gekreuzt wird. Die Order gilt nur, solange Asgardex geöffnet ist. Schließen der App bricht sie ab.',
+    'Platziert einen Kauf oder Verkauf bei {price}. Die App beobachtet den Poolpreis und tauscht, sobald er gekreuzt wird. Die Order gilt nur, solange dieser Chart geöffnet ist. Verlassen des Charts pausiert sie, und Schließen der App bricht sie ab.',
+  'pools.chart.tradingPanel.limit.triggered':
+    'Dein Limit-Order wurde ausgelöst. Bestätige, um zum Live-Kurs zu tauschen.',
   'pools.chart.tradingPanel.market.hint': 'Tauscht jetzt zum aktuellen Preis.',
   'pools.chart.tradingPanel.placeOrder': 'Order platzieren',
   'pools.chart.tradingPanel.swapNow': 'Jetzt tauschen',

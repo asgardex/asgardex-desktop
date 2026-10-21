@@ -4,6 +4,8 @@ import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { Spin } from '../../../components/uielements/spin'
+import { hiddenString } from '../../../helpers/stringHelper'
+import { useApp } from '../../../store/app/hooks'
 import { pairSwapDirection, type PairSwapRow } from './pairSwaps'
 import type { PairSwapPhase } from './usePairSwaps'
 
@@ -23,6 +25,7 @@ const statusKey = (status: PairSwapRow['status']) => {
 
 export const TradingPanelSwaps = ({ poolTicker, rows, phase, progress = null }: Props) => {
   const intl = useIntl()
+  const { isPrivate } = useApp()
   const progressRef = useRef<HTMLDivElement>(null)
   const wasShowingProgress = useRef(false)
   const showingProgress = progress != null
@@ -70,8 +73,12 @@ export const TradingPanelSwaps = ({ poolTicker, rows, phase, progress = null }: 
         <div className="flex flex-col">
           {rows.map((row) => {
             const sideLabel = intl.formatMessage({ id: row.side === 'buy' ? 'common.buy' : 'common.sell' })
-            const sizeText = row.size ? `${row.size} ${poolTicker}` : poolTicker
-            const counterText = row.counter ? `${row.counter} ${row.counterTicker}` : row.counterTicker
+            const sizeText = isPrivate ? hiddenString : row.size ? `${row.size} ${poolTicker}` : poolTicker
+            const counterText = isPrivate
+              ? hiddenString
+              : row.counter
+                ? `${row.counter} ${row.counterTicker}`
+                : row.counterTicker
             const { spent, received } = pairSwapDirection(row.side, sizeText, counterText)
             const when = intl.formatDate(row.at, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
             return (

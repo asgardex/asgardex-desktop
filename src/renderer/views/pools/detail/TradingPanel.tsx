@@ -6,15 +6,18 @@ import { Network } from '@xchainjs/xchain-client'
 import {
   AnyAsset,
   BaseAmount,
+  assetFromString,
   assetToBase,
   assetAmount,
   assetToString,
   baseAmount,
+  baseToAsset,
   isTokenAsset,
   isTradeAsset
 } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState, useSubscription } from 'observable-hooks'
+import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -22,7 +25,6 @@ import { ASGARDEX_AFFILIATE_FEE_MIN } from '../../../../shared/const'
 import { AssetRuneNative, AssetCacao, MAYAChain, THORChain } from '../../../../shared/utils/chainIds'
 import { isVultisigWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
-import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
 import { TradeDepositModal } from '../../../components/modal/tradeDeposit'
 import { useSwapConfirmationModals } from '../../../components/swap/components/SwapConfirmationModals'
 import { ModalState, type ExtendedQuoteSwap } from '../../../components/swap/Swap.types'
@@ -45,7 +47,6 @@ import { addChainflipSwapToTrackerFromQuote } from '../../../helpers/chainflipTr
 import { quoteNeedsRouterApproval } from '../../../helpers/evmApprovalHelper'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
-import { createScopedLogger } from '../../../helpers/logger'
 import { addOneClickSwapToTrackerFromQuote } from '../../../helpers/oneClickTransactionTracker'
 import {
   orderSwapAssets,
@@ -53,6 +54,7 @@ import {
   sameMarketAsset,
   settlementChainAsset,
   supportsTradeSettlement,
+  toPoolAsset,
   toTradeAsset
 } from '../../../helpers/tradeAssetHelper'
 import { addSwapToTracker } from '../../../helpers/transactionTracker'
@@ -69,7 +71,7 @@ import type { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/m
 import { getPoolDetail as getPoolDetailMaya } from '../../../services/midgard/mayaMidgard/utils'
 import { PoolsState, PoolDetails } from '../../../services/midgard/midgardTypes'
 import { getPoolDetail } from '../../../services/midgard/thorMidgard/utils'
-import type { PriceLevel } from '../../../services/priceLevel/types'
+import type { PriceLevel, PriceLevelEvent } from '../../../services/priceLevel'
 import type { TradeAccount } from '../../../services/thorchain/types'
 import {
   getWalletTypeFromState,
@@ -82,6 +84,18 @@ import {
 } from '../../../services/wallet/types'
 import { hasImportedKeystore } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
+import {
+  LIMIT_ERROR_BALANCE_LOW,
+  LIMIT_ERROR_NO_ROUTE,
+  LIMIT_ERROR_PRICE_MOVED,
+  LIMIT_ERROR_TIMED_OUT,
+  LIMIT_FILL_WAIT_MS,
+  enqueueLimitEvent,
+  limitPayCheck,
+  limitTriggerAction,
+  quoteFillsLimit,
+  settleLimitQueue
+} from './limitFill'
 import { formatLimitInput, limitTriggerUsd, type ChartUnit } from './limitPrice'
 import { assetAmountCovers, balanceCovers, formatSwapAmount } from './swapAmountDisplay'
 import { newlyCompletedDestinationRefreshes, toTrackerRows, type TrackerRow } from './trackerBalance'
@@ -109,8 +123,6 @@ type Props = {
   /** Last chart close, in chart units. Zero until the series has loaded. */
   chartPrice: number
 }
-
-const logger = createScopedLogger('TradingPanel')
 
 const poolAssetsOf = (rd: RD.RemoteData<Error, PoolsState>): AnyAsset[] =>
   FP.pipe(
@@ -963,6 +975,24 @@ export const TradingPanel = ({
 
   const getActiveVaultId = useCallback(() => appWalletService.getActiveVaultId(), [appWalletService])
 
+  const intl = useIntl()
+  const [limitConfirmNote, setLimitConfirmNote] = useState(false)
+  const [limitWaitGen, setLimitWaitGen] = useState(0)
+  const executingLevelRef = useRef<string | null>(null)
+  const activeLevelRef = useRef<PriceLevel | null>(null)
+  const autoSubmitPendingRef = useRef(false)
+  const limitConfirmRef = useRef(false)
+  const queuedCrossingsRef = useRef<PriceLevelEvent[]>([])
+  const limitWaitGenRef = useRef(0)
+  const swapInitialRef = useRef(true)
+  // Quote already on screen when a level starts. The fill waits for a different one.
+  const ignoredQuoteRef = useRef<O.Option<ExtendedQuoteSwap> | null>(null)
+  const limitApiRef = useRef({
+    start: (_event: PriceLevelEvent) => {},
+    finish: (_status: 'failed' | 'pending', _error?: string) => {},
+    dismiss: () => {}
+  })
+
   const { showPasswordModal, showLedgerModal, showVultisigModal, onSubmit, onApprove, renderModals } =
     useSwapConfirmationModals({
       useSourceAssetLedger: useSourceLedger,
@@ -985,7 +1015,11 @@ export const TradingPanel = ({
       approveState: RD.initial,
       swapState,
       getActiveVaultId,
-      resetSwapState
+      resetSwapState,
+      swapDescription: limitConfirmNote
+        ? intl.formatMessage({ id: 'pools.chart.tradingPanel.limit.triggered' })
+        : undefined,
+      onSwapDismiss: () => limitApiRef.current.dismiss()
     })
 
   const isConfirmModalOpen =
@@ -1117,8 +1151,30 @@ export const TradingPanel = ({
   // ── Price levels (limit orders) ─────────────────────────────────────
   const assetKey = assetToString(poolAsset)
 
+  // Pending orders live only while this chart is mounted. Pause instead of deleting:
+  // React Strict Mode runs this cleanup once on mount in dev.
+  useEffect(() => {
+    priceLevelService.setWatching(assetKey, true)
+    return () => {
+      if (swapInitialRef.current) {
+        for (const level of priceLevelService.getLevels(assetKey)) {
+          if (level.status === 'executing' || level.status === 'triggered' || level.status === 'confirming') {
+            priceLevelService.updateLevel(assetKey, level.id, { status: 'pending' })
+          }
+        }
+      }
+      priceLevelService.setWatching(assetKey, false)
+      queuedCrossingsRef.current = []
+      executingLevelRef.current = null
+      activeLevelRef.current = null
+      autoSubmitPendingRef.current = false
+      limitConfirmRef.current = false
+    }
+  }, [priceLevelService, assetKey])
+
   // Track swap completion → update price level status if we were executing one
   const swapTxRD = swapState.swapTx
+  swapInitialRef.current = RD.isInitial(swapTxRD)
   const reloadedSwapRef = useRef('')
   useEffect(() => {
     if (!RD.isSuccess(swapTxRD)) return
@@ -1144,12 +1200,24 @@ export const TradingPanel = ({
         txHash: txHash || undefined
       })
       executingLevelRef.current = null
+      activeLevelRef.current = null
+      autoSubmitPendingRef.current = false
+      limitConfirmRef.current = false
+      const settled = settleLimitQueue(queuedCrossingsRef.current)
+      queuedCrossingsRef.current = settled.waiting
+      if (settled.next) limitApiRef.current.start(settled.next)
     } else if (RD.isFailure(swapTxRD)) {
       priceLevelService.updateLevel(assetKey, levelId, {
         status: 'failed',
         error: swapTxRD.error.msg ?? 'Swap failed'
       })
       executingLevelRef.current = null
+      activeLevelRef.current = null
+      autoSubmitPendingRef.current = false
+      limitConfirmRef.current = false
+      const settled = settleLimitQueue(queuedCrossingsRef.current)
+      queuedCrossingsRef.current = settled.waiting
+      if (settled.next) limitApiRef.current.start(settled.next)
     }
   }, [swapTxRD, priceLevelService, assetKey])
 
@@ -1240,67 +1308,47 @@ export const TradingPanel = ({
   const handleRemoveLevel = useCallback(
     (levelId: string) => {
       priceLevelService.removeLevel(assetKey, levelId)
-      orderPasswordCache.current.delete(levelId)
     },
     [priceLevelService, assetKey]
   )
 
-  // ── Limit order password cache ──────────────────────────────────────
-  // For keystore wallets: password is validated at order creation time and cached
-  // in memory (per order ID). On crossing, we bypass the modal and submit directly.
-  // For Ledger/Vultisig: the hardware prompt is unavoidable, so we fall back to onSubmit().
-  const orderPasswordCache = useRef<Map<string, boolean>>(new Map())
-
-  // Create a limit order with pre-authorization.
-  // Keystore wallets: password modal shown at creation time, cached for auto-execution.
-  // Hardware wallets: order created immediately, device prompt shown on trigger.
-  const addPriceLevelWithAuth = useCallback(
+  // Placement does not sign. Every wallet confirms when the level actually triggers.
+  const addPriceLevel = useCallback(
     (price: number, side: TradeMode = 'sell', amountOverride?: number) => {
       if (!hasWallet || !selectedTarget) return
       const numAmount = amountOverride ?? parseFloat(sizeStr)
       if (!numAmount || numAmount <= 0 || !Number.isFinite(price) || price <= 0) return
 
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-
-      const doCreateOrder = (preAuthorized: boolean) => {
-        priceLevelService.addLevel(assetKey, {
-          id,
-          price,
-          type: side,
-          amount: numAmount,
-          amountSymbol: side === 'sell' ? poolAsset.ticker : selectedTarget.ticker,
-          targetAssetKey: assetToString(selectedTarget),
-          status: 'pending'
-        })
-        if (preAuthorized) {
-          orderPasswordCache.current.set(id, true)
-        }
-      }
-
-      if (useSourceLedger || useSourceVultisig) {
-        // Hardware wallets can't pre-authorize — create order, prompt on trigger
-        doCreateOrder(false)
-      } else {
-        // Keystore: show password prompt, create order only on success
-        setPendingOrderAction(() => doCreateOrder)
-        setShowOrderPasswordModal(true)
-      }
+      priceLevelService.addLevel(assetKey, {
+        id,
+        price,
+        unit: chartUnit === 'pair' ? 'pair' : 'usd',
+        counterAssetKey: assetToString(toPoolAsset(selectedTarget)),
+        type: side,
+        amount: numAmount,
+        amountSymbol: side === 'sell' ? poolAsset.ticker : selectedTarget.ticker,
+        targetAssetKey: assetToString(selectedTarget),
+        status: 'pending'
+      })
     },
-    [hasWallet, selectedTarget, sizeStr, poolAsset, assetKey, priceLevelService, useSourceLedger, useSourceVultisig]
+    [hasWallet, selectedTarget, sizeStr, poolAsset, assetKey, priceLevelService, chartUnit]
   )
 
-  const limitUsd = useMemo(
-    () => limitTriggerUsd(Number(limitPriceStr), poolUsdPrice, chartPrice),
-    [limitPriceStr, poolUsdPrice, chartPrice]
-  )
+  // USD charts store the THORChain pool price. Pair charts store the typed ratio.
+  const storedLimit = useMemo(() => {
+    const typed = Number(limitPriceStr)
+    if (chartUnit === 'pair') return Number.isFinite(typed) && typed > 0 ? typed : null
+    return limitTriggerUsd(typed, poolUsdPrice, chartPrice)
+  }, [chartUnit, limitPriceStr, poolUsdPrice, chartPrice])
 
   // Limit: park a buy or sell at the entered price. The price watcher submits it.
   const placeLimitOrder = useCallback(
     (side: TradeMode) => {
-      if (limitUsd === null) return
+      if (storedLimit === null) return
       if (side === 'sell') {
         if (!sellCovers) return
-        addPriceLevelWithAuth(limitUsd, 'sell')
+        addPriceLevel(storedLimit, 'sell')
         return
       }
       if (!buyCoversCost) return
@@ -1311,9 +1359,9 @@ export const TradingPanel = ({
             ? Number(formatSwapAmount(sizedSellQuote.value.expectedAmount.baseAmount))
             : 0
       if (!cost) return
-      addPriceLevelWithAuth(limitUsd, 'buy', cost)
+      addPriceLevel(storedLimit, 'buy', cost)
     },
-    [limitUsd, addPriceLevelWithAuth, buyCoversCost, sellCovers, quotedSide, amountStr, sizedSellQuote]
+    [storedLimit, addPriceLevel, buyCoversCost, sellCovers, quotedSide, amountStr, sizedSellQuote]
   )
 
   const hasSize = !!parseFloat(sizeStr) && parseFloat(sizeStr) > 0
@@ -1322,7 +1370,7 @@ export const TradingPanel = ({
   const canMarketSwap =
     tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : quotedSide === 'sell' && sellCovers
   const canPlaceLimit =
-    limitUsd !== null &&
+    storedLimit !== null &&
     !!selectedTarget &&
     (tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : hasSize && sellCovers)
   const canTrade = orderType === 'limit' ? canPlaceLimit : canMarketSwap
@@ -1335,23 +1383,6 @@ export const TradingPanel = ({
     if (tradeMode === 'buy' ? quotedSide === 'buy' && buyCoversCost : quotedSide === 'sell' && sellCovers) onSubmit()
   }, [orderType, placeLimitOrder, tradeMode, quotedSide, buyCoversCost, sellCovers, onSubmit])
 
-  // Password modal state for limit order pre-authorization
-  const [showOrderPasswordModal, setShowOrderPasswordModal] = useState(false)
-  const [pendingOrderAction, setPendingOrderAction] = useState<((preAuth: boolean) => void) | null>(null)
-
-  const handleOrderPasswordSuccess = useCallback(() => {
-    setShowOrderPasswordModal(false)
-    if (pendingOrderAction) {
-      pendingOrderAction(true) // pre-authorized
-      setPendingOrderAction(null)
-    }
-  }, [pendingOrderAction])
-
-  const handleOrderPasswordClose = useCallback(() => {
-    setShowOrderPasswordModal(false)
-    setPendingOrderAction(null)
-  }, [])
-
   // Chart click fills the limit field. The trade button places the order.
   useEffect(() => {
     if (handleRef) {
@@ -1359,120 +1390,157 @@ export const TradingPanel = ({
     }
   }, [handleRef, setLimitPriceFromChart])
 
-  // Track which level is currently being executed (to prevent double-fire)
-  const executingLevelRef = useRef<string | null>(null)
-  // Flag: when true, auto-submit after the next successful quote fetch
-  const autoSubmitPendingRef = useRef(false)
+  const poolPrices = useObservableState(priceLevelService.prices$, {})
 
-  // Subscribe to crossing events — restore trade state and flag for auto-execution.
-  // Skip if already executing a level (queue is single-slot; next poll will re-trigger).
+  limitApiRef.current = {
+    start: (event) => {
+      const level = event.level
+      executingLevelRef.current = event.levelId
+      activeLevelRef.current = level
+      priceLevelService.updateLevel(assetKey, event.levelId, { status: 'executing' })
+      // Drop a stale quote so this effect cannot confirm the previous trade.
+      ignoredQuoteRef.current = O.isSome(selectedQuote) ? selectedQuote : null
+      resetQuote()
+      if (level.type === 'sell') {
+        sizeStrRef.current = String(level.amount)
+        setSizeStrState(String(level.amount))
+      }
+      setAmountStr(String(level.amount))
+      setTradeMode(level.type)
+      const target = availableAssets.find((asset) => assetToString(asset) === level.targetAssetKey)
+      if (target) setSelectedTarget(target)
+      autoSubmitPendingRef.current = true
+      limitConfirmRef.current = false
+      limitWaitGenRef.current += 1
+      setLimitWaitGen(limitWaitGenRef.current)
+    },
+    finish: (status, error) => {
+      const levelId = executingLevelRef.current
+      if (!levelId) return
+      if (status === 'failed') {
+        priceLevelService.updateLevel(assetKey, levelId, { status: 'failed', error })
+      } else {
+        priceLevelService.updateLevel(assetKey, levelId, { status: 'pending', error: undefined })
+        priceLevelService.rearmLevel(levelId)
+      }
+      executingLevelRef.current = null
+      activeLevelRef.current = null
+      autoSubmitPendingRef.current = false
+      limitConfirmRef.current = false
+      ignoredQuoteRef.current = null
+      setLimitConfirmNote(false)
+      limitWaitGenRef.current += 1
+      const settled = settleLimitQueue(queuedCrossingsRef.current)
+      queuedCrossingsRef.current = settled.waiting
+      if (settled.next) limitApiRef.current.start(settled.next)
+    },
+    dismiss: () => {
+      if (!limitConfirmRef.current) return
+      limitApiRef.current.finish('pending')
+    }
+  }
+
+  // A second crossing waits. The watcher does not repeat an edge, so dropping it loses the fill.
   useSubscription(priceLevelService.crossings$, (event) => {
     if (event.assetKey !== assetKey) return
-    if (executingLevelRef.current) return
-
-    const level = event.level
-    if (level.amount <= 0 || !level.targetAssetKey) return
-
-    executingLevelRef.current = event.levelId
-
-    // Mark as executing
-    priceLevelService.updateLevel(assetKey, event.levelId, { status: 'executing' })
-
-    // Clear any stale quote before restoring trade state — prevents auto-submit
-    // from firing with a previous manual trade's quote before the fresh one arrives
-    resetQuote()
-
-    // Restore the trade state from the limit order. Sell orders size the chart asset.
-    if (level.type === 'sell') {
-      sizeStrRef.current = String(level.amount)
-      setSizeStrState(String(level.amount))
-    }
-    setAmountStr(String(level.amount))
-    setTradeMode(level.type)
-
-    const resolvedTarget = availableAssets.find((a) => assetToString(a) === level.targetAssetKey)
-    if (resolvedTarget) {
-      setSelectedTarget(resolvedTarget)
-    }
-
-    autoSubmitPendingRef.current = true
+    if (event.level.amount <= 0 || !event.level.targetAssetKey) return
+    const decision = enqueueLimitEvent(executingLevelRef.current, queuedCrossingsRef.current, event)
+    queuedCrossingsRef.current = decision.waiting
+    if (decision.start) limitApiRef.current.start(decision.start)
   })
 
-  // Auto-submit when a quote arrives and autoSubmitPending is set
+  useEffect(() => {
+    if (limitWaitGen === 0) return
+    const generation = limitWaitGen
+    const timer = setTimeout(() => {
+      if (limitWaitGenRef.current !== generation) return
+      if (!autoSubmitPendingRef.current || !executingLevelRef.current) return
+      limitApiRef.current.finish('failed', LIMIT_ERROR_TIMED_OUT)
+    }, LIMIT_FILL_WAIT_MS)
+    return () => clearTimeout(timer)
+  }, [limitWaitGen])
+
+  // Quote, approval, and balance can take a moment. A comparable quote that is worse than the
+  // limit fails the order. A quote we cannot compare yet keeps waiting until the timeout.
   useEffect(() => {
     if (!autoSubmitPendingRef.current) return
+    // The quote from the render that started this level is the previous trade.
+    if (ignoredQuoteRef.current && selectedQuote === ignoredQuoteRef.current) return
+    ignoredQuoteRef.current = null
     if (O.isNone(selectedQuote)) return
     if (isFetching) return
+    if (needsApproval && (!RD.isSuccess(isApprovedState) || isApprovedState.value === false)) return
 
-    // For ERC20 tokens: wait until approval is confirmed before submitting
-    if (needsApproval && (!RD.isSuccess(isApprovedState) || isApprovedState.value === false)) {
+    const level = activeLevelRef.current
+    if (!level || !executingLevelRef.current) {
+      autoSubmitPendingRef.current = false
       return
     }
 
-    const payKnown = tradeMode === 'buy' ? O.isSome(buySpendBalance) : O.isSome(sizeBalance)
-    if (!payKnown) return
+    const payBalance = level.type === 'buy' ? buySpendBalance : settlementAmount(pricedPool)
+    const covers = O.isSome(payBalance) && assetAmountCovers(payBalance.value, level.amount)
+    const pay = limitPayCheck(O.isSome(payBalance), covers, selectedQuote.value.canSwap)
+    if (pay === 'wait') return
+    if (pay === 'balance') {
+      limitApiRef.current.finish('failed', LIMIT_ERROR_BALANCE_LOW)
+      return
+    }
+    if (pay === 'route') {
+      limitApiRef.current.finish('failed', LIMIT_ERROR_NO_ROUTE)
+      return
+    }
+
+    const output = baseToAsset(selectedQuote.value.expectedAmount.baseAmount).amount().toNumber()
+    let counterUsd: number | undefined
+    const counterKey = level.counterAssetKey
+    if (counterKey) {
+      const polled = poolPrices[counterKey]
+      if (typeof polled === 'number' && Number.isFinite(polled) && polled > 0) counterUsd = polled
+      else {
+        const counterAsset = assetFromString(counterKey)
+        const fromPool = counterAsset
+          ? FP.pipe(
+              getPoolDetail(poolDetailsThor, counterAsset),
+              O.chain((detail) => O.fromNullable(detail.assetPriceUSD)),
+              O.map(Number),
+              O.getOrElse(() => 0)
+            )
+          : 0
+        if (Number.isFinite(fromPool) && fromPool > 0) counterUsd = fromPool
+      }
+    }
+    const action = limitTriggerAction(
+      quoteFillsLimit({
+        side: level.type,
+        unit: level.unit === 'pair' ? 'pair' : 'usd',
+        limit: level.price,
+        chartAmount: level.type === 'sell' ? level.amount : output,
+        counterAmount: level.type === 'sell' ? output : level.amount,
+        counterUsd
+      })
+    )
+    if (action === 'wait') return
+    if (action === 'fail') {
+      limitApiRef.current.finish('failed', LIMIT_ERROR_PRICE_MOVED)
+      return
+    }
 
     autoSubmitPendingRef.current = false
-
-    const payCovers = tradeMode === 'buy' ? buyCoversCost : sellCovers
-    if (!selectedQuote.value.canSwap || !payCovers) {
-      if (executingLevelRef.current) {
-        priceLevelService.updateLevel(assetKey, executingLevelRef.current, {
-          status: 'failed',
-          error: selectedQuote.value.canSwap ? 'Balance too low' : 'No valid swap route'
-        })
-        executingLevelRef.current = null
-      }
-      return
-    }
-
-    const levelId = executingLevelRef.current
-    const isPreAuthorized = levelId ? orderPasswordCache.current.has(levelId) : false
-
-    if (isPreAuthorized) {
-      // Pre-authorized keystore order: bypass password modal, submit directly
-      void (async () => {
-        try {
-          if (O.isSome(oSwapParams)) {
-            submitSwapTx()
-          } else if (O.isSome(oCFSwapParams)) {
-            await submitCFTx()
-          }
-        } catch (error) {
-          logger.error('Pre-authorized swap submit failed', error)
-          // Channel open can fail before swapCF$ emits — mark the limit order failed now.
-          if (levelId) {
-            priceLevelService.updateLevel(assetKey, levelId, {
-              status: 'failed',
-              error: error instanceof Error ? error.message : 'Swap submission failed'
-            })
-            executingLevelRef.current = null
-          }
-        } finally {
-          if (levelId) orderPasswordCache.current.delete(levelId)
-        }
-      })()
-    } else {
-      // Hardware wallet or non-pre-authorized: show confirmation modal
-      onSubmit()
-    }
+    limitWaitGenRef.current += 1
+    limitConfirmRef.current = true
+    setLimitConfirmNote(true)
+    onSubmit()
   }, [
     selectedQuote,
     isFetching,
     needsApproval,
     isApprovedState,
     onSubmit,
-    priceLevelService,
-    assetKey,
-    oSwapParams,
-    oCFSwapParams,
-    submitSwapTx,
-    submitCFTx,
-    tradeMode,
     buySpendBalance,
-    sizeBalance,
-    buyCoversCost,
-    sellCovers
+    settlementAmount,
+    pricedPool,
+    poolPrices,
+    poolDetailsThor
   ])
 
   // Extra content for tx modal. The destination is the quote's expected output.
@@ -1574,7 +1642,7 @@ export const TradingPanel = ({
         chartPrice={chartPrice}
         limitPriceStr={limitPriceStr}
         setLimitPriceStr={setLimitPriceInput}
-        limitUsd={limitUsd}
+        limitUsd={storedLimit}
       />
 
       <TradingPanelPriceLevels levels={priceLevels} onRemove={handleRemoveLevel} />
@@ -1604,17 +1672,8 @@ export const TradingPanel = ({
         />
       )}
 
-      {/* Wallet confirmation modals (password/ledger/vultisig) for manual swaps */}
+      {/* Wallet confirmation modals (password/ledger/vultisig) */}
       {renderModals}
-
-      {/* Password modal for limit order pre-authorization */}
-      {showOrderPasswordModal && (
-        <WalletPasswordConfirmationModal
-          onSuccess={handleOrderPasswordSuccess}
-          onClose={handleOrderPasswordClose}
-          validatePassword$={validatePassword$}
-        />
-      )}
     </>
   )
 }

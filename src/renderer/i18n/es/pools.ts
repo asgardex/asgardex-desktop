@@ -67,6 +67,11 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.triggered': 'Activado',
   'pools.chart.tradingPanel.priceLevel.completed': 'Ejecutado',
   'pools.chart.tradingPanel.priceLevel.failed': 'Fallido',
+  'pools.chart.tradingPanel.priceLevel.paused': 'En pausa',
+  'pools.chart.tradingPanel.priceLevel.priceMoved': 'El precio se movió fuera de tu límite',
+  'pools.chart.tradingPanel.priceLevel.balanceLow': 'Saldo insuficiente',
+  'pools.chart.tradingPanel.priceLevel.noRoute': 'No hay una ruta de swap válida',
+  'pools.chart.tradingPanel.priceLevel.timedOut': 'La cotización no llegó a tiempo',
   'pools.chart.tradingPanel.approve': 'Aprobar',
   'pools.chart.tradingPanel.size': 'Tamaño',
   'pools.chart.tradingPanel.available': '{amount} disponible',
@@ -85,7 +90,9 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.limit': 'Límite',
   'pools.chart.tradingPanel.market': 'Mercado',
   'pools.chart.tradingPanel.limit.hint':
-    'Crea una compra o una venta en {price}. La app vigila el precio del pool y cambia cuando lo cruza. La orden solo sigue abierta mientras Asgardex esté abierto. Cerrar la app la cancela.',
+    'Crea una compra o una venta en {price}. La app vigila el precio del pool y cambia cuando lo cruza. La orden solo sigue abierta mientras este gráfico está abierto. Salir del gráfico la pausa, y cerrar la app la cancela.',
+  'pools.chart.tradingPanel.limit.triggered':
+    'Tu orden límite se activó. Confirma para cambiar a la cotización en vivo.',
   'pools.chart.tradingPanel.market.hint': 'Intercambia ahora al precio actual.',
   'pools.chart.tradingPanel.placeOrder': 'Colocar orden',
   'pools.chart.tradingPanel.swapNow': 'Cambiar ahora',

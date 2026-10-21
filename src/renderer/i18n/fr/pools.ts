@@ -67,6 +67,11 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.triggered': 'Déclenché',
   'pools.chart.tradingPanel.priceLevel.completed': 'Exécuté',
   'pools.chart.tradingPanel.priceLevel.failed': 'Échoué',
+  'pools.chart.tradingPanel.priceLevel.paused': 'En pause',
+  'pools.chart.tradingPanel.priceLevel.priceMoved': 'Le prix a dépassé votre limite',
+  'pools.chart.tradingPanel.priceLevel.balanceLow': 'Solde insuffisant',
+  'pools.chart.tradingPanel.priceLevel.noRoute': "Aucune route d'échange valide",
+  'pools.chart.tradingPanel.priceLevel.timedOut': "Le devis n'est pas arrivé à temps",
   'pools.chart.tradingPanel.approve': 'Approuver',
   'pools.chart.tradingPanel.size': 'Taille',
   'pools.chart.tradingPanel.available': '{amount} disponible',
@@ -85,7 +90,9 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.limit': 'Limite',
   'pools.chart.tradingPanel.market': 'Marché',
   'pools.chart.tradingPanel.limit.hint':
-    "Place un achat ou une vente à {price}. L'application surveille le prix du pool et échange lorsqu'il est franchi. L'ordre ne reste ouvert que tant qu'Asgardex est ouvert. Fermer l'application l'annule.",
+    "Place un achat ou une vente à {price}. L'application surveille le prix du pool et échange lorsqu'il est franchi. L'ordre ne reste ouvert que tant que ce graphique est ouvert. Quitter le graphique le met en pause, et fermer l'application l'annule.",
+  'pools.chart.tradingPanel.limit.triggered':
+    "Votre ordre limite s'est déclenché. Confirmez pour échanger au cours actuel.",
   'pools.chart.tradingPanel.market.hint': 'Échange maintenant au prix actuel.',
   'pools.chart.tradingPanel.placeOrder': "Placer l'ordre",
   'pools.chart.tradingPanel.swapNow': 'Échanger maintenant',

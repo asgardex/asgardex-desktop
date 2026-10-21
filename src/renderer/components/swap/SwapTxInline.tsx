@@ -10,8 +10,10 @@ import { useIntl } from 'react-intl'
 
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { protocolMapping } from '../../helpers/protocolHelper'
+import { hiddenString } from '../../helpers/stringHelper'
 import type { OpenExplorerTxUrl } from '../../services/clients'
 import type { TxHashRD } from '../../services/wallet/types'
+import { useApp } from '../../store/app/hooks'
 import type { AssetData } from '../modal/tx/extra/Common.types'
 import { openTrackedSwap, swapTrackVisible } from '../modal/tx/trackSwap'
 import { CopyLabel } from '../uielements/label'
@@ -59,6 +61,7 @@ export const SwapTxInline = ({
   onFinish
 }: Props) => {
   const intl = useIntl()
+  const { isPrivate } = useApp()
   const settled = RD.isSuccess(swapTx) || RD.isFailure(swapTx)
   const hasHash = O.isSome(txHash)
   const tradeAssetSwap = isTradeAsset(source.asset) && isTradeAsset(target.asset)
@@ -116,10 +119,10 @@ export const SwapTxInline = ({
         )}
         <div className="min-w-0 flex-1">
           <p className="m-0 truncate font-main text-11 text-white">
-            {amountText(source.amount)} {source.asset.ticker}
+            {isPrivate ? hiddenString : amountText(source.amount)} {source.asset.ticker}
             <span className="text-gray-500">
               {' '}
-              → {amountText(target.amount)} {target.asset.ticker}
+              → {isPrivate ? hiddenString : amountText(target.amount)} {target.asset.ticker}
             </span>
           </p>
           {(detail || hasHash) && (

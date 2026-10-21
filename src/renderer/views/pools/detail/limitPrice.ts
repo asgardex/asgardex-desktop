@@ -30,6 +30,40 @@ export const levelPriceOnChart = (usd: number, poolUsd: number, chartPrice: numb
   return onChart
 }
 
+export type ChartLevelPrice = {
+  levelPrice: number
+  /** Missing means a THORChain USD trigger. */
+  unit?: 'usd' | 'pair'
+  chartUnit: ChartUnit
+  poolUsd: number
+  chartPrice: number
+  /** Pool USD of the pair counter. Pair levels on a USD chart need it. */
+  counterUsd?: number
+}
+
+/**
+ * On-chart price of a stored level.
+ * A pair level on a pair chart is the entered ratio. A USD level is scaled with levelPriceOnChart.
+ * A pair level on a USD chart is the ratio times the counter's pool USD.
+ */
+export const chartLevelPrice = ({
+  levelPrice,
+  unit,
+  chartUnit,
+  poolUsd,
+  chartPrice,
+  counterUsd
+}: ChartLevelPrice): number | null => {
+  if (unit === 'pair') {
+    if (chartUnit === 'pair') return Number.isFinite(levelPrice) && levelPrice > 0 ? levelPrice : null
+    if (counterUsd === undefined || !Number.isFinite(counterUsd) || counterUsd <= 0) return null
+    const usd = levelPrice * counterUsd
+    if (!Number.isFinite(usd) || usd <= 0) return null
+    return usd
+  }
+  return levelPriceOnChart(levelPrice, poolUsd, chartPrice)
+}
+
 export type PriceRange = { minValue: number; maxValue: number }
 
 /** Keep an order line on screen when it sits outside the visible candles. */

@@ -67,6 +67,11 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.triggered': '트리거됨',
   'pools.chart.tradingPanel.priceLevel.completed': '체결됨',
   'pools.chart.tradingPanel.priceLevel.failed': '실패',
+  'pools.chart.tradingPanel.priceLevel.paused': '일시정지',
+  'pools.chart.tradingPanel.priceLevel.priceMoved': '가격이 지정가를 벗어났습니다',
+  'pools.chart.tradingPanel.priceLevel.balanceLow': '잔액이 부족합니다',
+  'pools.chart.tradingPanel.priceLevel.noRoute': '유효한 스왑 경로가 없습니다',
+  'pools.chart.tradingPanel.priceLevel.timedOut': '견적이 제때 도착하지 않았습니다',
   'pools.chart.tradingPanel.approve': '승인',
   'pools.chart.tradingPanel.size': '수량',
   'pools.chart.tradingPanel.available': '{amount} 사용 가능',
@@ -85,7 +90,9 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.limit': '리밋',
   'pools.chart.tradingPanel.market': '마켓',
   'pools.chart.tradingPanel.limit.hint':
-    '{price}에 매수 또는 매도를 넣습니다. 앱이 풀 가격을 지켜보다가 그 가격을 넘으면 스왑합니다. 주문은 Asgardex가 열려 있는 동안에만 유지됩니다. 앱을 닫으면 주문이 취소됩니다.',
+    '{price}에 매수 또는 매도를 넣습니다. 앱이 풀 가격을 지켜보다가 그 가격을 넘으면 스왑합니다. 주문은 이 차트가 열려 있는 동안에만 유지됩니다. 차트를 나가면 주문이 일시정지되고, 앱을 닫으면 취소됩니다.',
+  'pools.chart.tradingPanel.limit.triggered':
+    '지정가 주문이 체결 조건에 도달했습니다. 현재 견적으로 교환하려면 확인하세요.',
   'pools.chart.tradingPanel.market.hint': '현재 가격으로 바로 교환합니다.',
   'pools.chart.tradingPanel.placeOrder': '주문 넣기',
   'pools.chart.tradingPanel.swapNow': '지금 교환',

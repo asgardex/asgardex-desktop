@@ -2,7 +2,10 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
+import { hiddenString } from '../../../helpers/stringHelper'
 import type { PriceLevel } from '../../../services/priceLevel/types'
+import { useApp } from '../../../store/app/hooks'
+import { isLimitErrorId } from './limitFill'
 
 type Props = {
   levels: PriceLevel[]
@@ -15,7 +18,8 @@ const STATUS_KEY: Record<PriceLevel['status'], string> = {
   confirming: 'pools.chart.tradingPanel.priceLevel.triggered',
   executing: 'pools.chart.tradingPanel.priceLevel.triggered',
   completed: 'pools.chart.tradingPanel.priceLevel.completed',
-  failed: 'pools.chart.tradingPanel.priceLevel.failed'
+  failed: 'pools.chart.tradingPanel.priceLevel.failed',
+  paused: 'pools.chart.tradingPanel.priceLevel.paused'
 }
 
 const STATUS_STYLE: Record<PriceLevel['status'], string> = {
@@ -24,7 +28,8 @@ const STATUS_STYLE: Record<PriceLevel['status'], string> = {
   confirming: 'bg-yellow-500/20 text-yellow-400',
   executing: 'bg-yellow-500/20 text-yellow-400',
   completed: 'bg-turquoise/20 text-turquoise',
-  failed: 'bg-error0/20 text-error0'
+  failed: 'bg-error0/20 text-error0',
+  paused: 'bg-gray-500/20 text-gray-400'
 }
 
 /** Extract a readable ticker from an asset key like "ETH.USDC-0xA0b8..." → "USDC" */
@@ -35,6 +40,7 @@ const tickerFromAssetKey = (key: string): string => {
 
 export const TradingPanelPriceLevels = ({ levels, onRemove }: Props) => {
   const intl = useIntl()
+  const { isPrivate } = useApp()
 
   if (levels.length === 0) return null
 
@@ -66,14 +72,21 @@ export const TradingPanelPriceLevels = ({ levels, onRemove }: Props) => {
             </span>
 
             {/* Order details */}
-            <div className="flex flex-col">
+            <div className="flex min-w-0 flex-col">
               <span className="font-main text-11 text-white">
-                {level.amount} {level.amountSymbol}
+                {isPrivate ? hiddenString : `${level.amount} ${level.amountSymbol}`}
                 {level.targetAssetKey && (
                   <span className="text-gray-500"> &rarr; {tickerFromAssetKey(level.targetAssetKey)}</span>
                 )}
               </span>
-              <span className="text-10 font-main text-gray-500">@ {level.price.toLocaleString()}</span>
+              <span className="text-10 font-main text-gray-500">
+                @ {isPrivate ? hiddenString : level.price.toLocaleString()}
+              </span>
+              {level.status === 'failed' && level.error && (
+                <span className="text-10 font-main text-error0">
+                  {isLimitErrorId(level.error) ? intl.formatMessage({ id: level.error }) : level.error}
+                </span>
+              )}
             </div>
 
             {/* Status badge */}
@@ -91,7 +104,7 @@ export const TradingPanelPriceLevels = ({ levels, onRemove }: Props) => {
             )}
 
             {/* Remove */}
-            {(level.status === 'pending' || level.status === 'triggered') && (
+            {(level.status === 'pending' || level.status === 'paused' || level.status === 'triggered') && (
               <button
                 onClick={() => onRemove(level.id)}
                 className="rounded p-0.5 text-gray-600 transition-colors hover:bg-white/10 hover:text-white"

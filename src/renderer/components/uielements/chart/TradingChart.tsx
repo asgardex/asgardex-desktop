@@ -16,6 +16,7 @@ import {
 } from 'lightweight-charts'
 
 import { calculateSMA, calculateEMA, calculateBollingerBands } from '../../../helpers/indicatorHelper'
+import { useApp } from '../../../store/app/hooks'
 import { priceRangeWithLevels } from '../../../views/pools/detail/limitPrice'
 import { chartPriceFormat } from '../../../views/pools/detail/pairChart'
 import type { IndicatorConfig, OHLCVData, PriceLevel } from '../../../views/pools/detail/types'
@@ -35,6 +36,7 @@ const BUY_COLOR = '#22c55e'
 const SELL_COLOR = '#ef4444'
 
 export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceClick }: Props) => {
+  const { isPrivate } = useApp()
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
@@ -233,7 +235,7 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
       const lineWidth = isActive ? 2 : 1
 
       const typeLabel = level.type === 'buy' ? 'Buy' : 'Sell'
-      const title = level.amount ? `${typeLabel} ${level.amountSymbol}${level.amount}` : typeLabel
+      const title = !isPrivate && level.amount ? `${typeLabel} ${level.amountSymbol}${level.amount}` : typeLabel
 
       const existing = existingMap.get(level.id)
       if (existing) {
@@ -251,7 +253,7 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
         existingMap.set(level.id, line)
       }
     }
-  }, [priceLevels])
+  }, [isPrivate, priceLevels])
 
   return <div ref={containerRef} className="h-[500px] w-full rounded-lg" />
 }

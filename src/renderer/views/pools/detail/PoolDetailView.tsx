@@ -34,7 +34,7 @@ import { DEFAULT_NETWORK } from '../../../services/const'
 import { getPoolDetail } from '../../../services/midgard/thorMidgard/utils'
 import type { PriceLevel } from '../../../services/priceLevel/types'
 import { chartHeadline } from './chartHeadline'
-import { levelPriceOnChart } from './limitPrice'
+import { chartLevelPrice } from './limitPrice'
 import { formatChartAmount, ratioCandles } from './pairChart'
 import { TradingPanel, type TradingPanelHandle } from './TradingPanel'
 import type { TradeMode } from './TradingPanelBar'
@@ -137,7 +137,7 @@ export const PoolDetailView = () => {
     }
   } = useMidgardContext()
   const poolsRD = useObservableState(poolsState$, RD.pending)
-  // Orders are stored as THORChain USD. Pair charts need that price scaled onto the counter axis.
+  // USD orders are stored as THORChain pool USD. Pair orders store the entered ratio.
   const poolUsd = useMemo(() => {
     if (!poolAsset || !RD.isSuccess(poolsRD)) return 0
     const price = FP.pipe(
@@ -151,11 +151,30 @@ export const PoolDetailView = () => {
   const chartPrice = headline?.last ?? 0
   const chartLevels = useMemo(() => {
     const priceLevels: PriceLevel[] = assetKey ? (levelsMap[assetKey] ?? []) : []
+    const counterUsd = (key: string | undefined): number => {
+      if (!key || !RD.isSuccess(poolsRD)) return 0
+      const asset = assetFromString(key)
+      if (!asset) return 0
+      const price = FP.pipe(
+        getPoolDetail(poolsRD.value.poolDetails, asset),
+        O.chain((detail) => O.fromNullable(detail.assetPriceUSD)),
+        O.map(Number),
+        O.getOrElse(() => 0)
+      )
+      return Number.isFinite(price) && price > 0 ? price : 0
+    }
     return priceLevels.flatMap((level) => {
-      const price = levelPriceOnChart(level.price, poolUsd, chartPrice)
+      const price = chartLevelPrice({
+        levelPrice: level.price,
+        unit: level.unit,
+        chartUnit,
+        poolUsd,
+        chartPrice,
+        counterUsd: counterUsd(level.counterAssetKey)
+      })
       return price === null ? [] : [{ ...level, price }]
     })
-  }, [assetKey, chartPrice, levelsMap, poolUsd])
+  }, [assetKey, chartPrice, chartUnit, levelsMap, poolUsd, poolsRD])
 
   // TradingPanel exposes setLimitPriceFromChart via this ref.
   // A chart click fills the limit price. Buy or Sell places the order.
@@ -217,7 +236,7 @@ export const PoolDetailView = () => {
       </div>
 
       {/* Chart + Trading panel — side by side on wide screens */}
-      <div className="flex flex-col gap-3 rounded-lg bg-[#131722] lg:flex-row">
+      <div className="flex flex-col gap-3 rounded-lg bg-[#131722] xl:flex-row">
         {/* Chart column */}
         <div className="flex min-w-0 flex-1 flex-col gap-3 p-4">
           {/* Controls */}
@@ -286,7 +305,7 @@ export const PoolDetailView = () => {
         </div>
 
         {/* Trading panel column — fixed width on wide screens */}
-        <div className="flex min-h-0 flex-col border-t border-white/10 lg:w-[380px] lg:border-t-0 lg:border-l">
+        <div className="flex min-h-0 flex-col border-t border-white/10 xl:w-[380px] xl:shrink-0 xl:border-t-0 xl:border-l">
           <TradingPanel
             key={routeAsset}
             poolAsset={poolAsset}

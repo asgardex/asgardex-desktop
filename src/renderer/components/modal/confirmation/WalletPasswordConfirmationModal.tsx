@@ -21,6 +21,7 @@ type PasswordModalProps = {
   onOk?: FP.Lazy<void>
   onCancel?: FP.Lazy<void>
   isSuccess?: boolean
+  description?: string
 }
 
 const PasswordModal = (props: PasswordModalProps) => {
@@ -31,7 +32,8 @@ const PasswordModal = (props: PasswordModalProps) => {
     onConfirm = FP.constVoid,
     onOk = FP.constVoid,
     onCancel = FP.constVoid,
-    isSuccess
+    isSuccess,
+    description
   } = props
 
   const intl = useIntl()
@@ -89,6 +91,11 @@ const PasswordModal = (props: PasswordModalProps) => {
             <Label className="mb-1" size="normal" color="gray">
               {intl.formatMessage({ id: 'wallet.password.confirmation.description' })}
             </Label>
+            {description && (
+              <Label className="mb-1" size="normal" color="gray">
+                {description}
+              </Label>
+            )}
 
             <InputPassword
               // typevalue="normal"
@@ -135,9 +142,11 @@ type Props = {
   onSuccess: FP.Lazy<void>
   onClose: FP.Lazy<void>
   validatePassword$: (_: string) => ValidatePasswordLD
+  /** Extra line under the password prompt. Market swaps leave this unset. */
+  description?: string
 }
 
-export const WalletPasswordConfirmationModal = ({ onSuccess, onClose, validatePassword$ }: Props) => {
+export const WalletPasswordConfirmationModal = ({ onSuccess, onClose, validatePassword$, description }: Props) => {
   const [passwordToValidate, setPasswordToValidate] = useState('')
 
   const passwordValidationResult$ = useMemo(
@@ -185,5 +194,5 @@ export const WalletPasswordConfirmationModal = ({ onSuccess, onClose, validatePa
     )
   }, [passwordValidationRD, setPasswordToValidate, closePrivateModal, onPasswordValidationSucceed])
 
-  return <PasswordModal {...confirmProps} />
+  return <PasswordModal {...confirmProps} description={description} />
 }

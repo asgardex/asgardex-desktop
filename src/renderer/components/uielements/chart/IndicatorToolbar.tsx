@@ -48,7 +48,7 @@ export const IndicatorToolbar = ({ indicators, onChange }: Props) => {
   )
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1">
       {indicators.map((ind, i) => (
         <div key={ind.type} className="flex items-center">
           <button
