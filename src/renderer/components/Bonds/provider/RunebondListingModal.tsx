@@ -220,6 +220,7 @@ export const RunebondListingModal = ({
     validatePassword$,
     openExplorerTxUrl,
     getExplorerTxUrl,
+    onClose,
     onFinish: finish
   })
 

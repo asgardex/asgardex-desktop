@@ -167,8 +167,6 @@ const bonds: BondsMessages = {
   'bonds.operator.changeFee.youKeepValue': '{percent} каждой награды',
   'bonds.operator.changeFee.effective': 'Вступает в силу',
   'bonds.operator.changeFee.effectiveValue': 'сразу',
-  'bonds.operator.changeFee.paidOut': 'Выплата',
-  'bonds.operator.changeFee.paidOutValue': '{churn} · оценка, после завершения churn',
   'bonds.operator.changeFee.othersAffected': 'Других провайдеров затронуто',
   'bonds.operator.changeFee.othersAffectedValue': '{count}',
   'bonds.operator.changeFee.sign': 'Подписать и обновить комиссию',

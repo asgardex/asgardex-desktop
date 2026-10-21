@@ -30,6 +30,7 @@ type TxFlowCommonParams = {
   validatePassword$: ValidatePasswordHandler
   openExplorerTxUrl: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
+  onClose: () => void
   onFinish: () => void
 }
 
@@ -71,6 +72,7 @@ const useTxFlow = <R extends BondTxRequest>({
   validatePassword$,
   openExplorerTxUrl,
   getExplorerTxUrl,
+  onClose,
   onFinish,
   txType,
   requiredAmount,
@@ -169,7 +171,8 @@ const useTxFlow = <R extends BondTxRequest>({
 
     const closeHandler = () => {
       resetTxState()
-      if (finishOnFailure || !RD.isFailure(txRD)) onFinish()
+      if (RD.isSuccess(txRD) || (RD.isFailure(txRD) && finishOnFailure)) onFinish()
+      else if (!RD.isFailure(txRD)) onClose()
     }
 
     return (
@@ -192,6 +195,7 @@ const useTxFlow = <R extends BondTxRequest>({
     getExplorerTxUrl,
     intl,
     network,
+    onClose,
     onFinish,
     openExplorerTxUrl,
     resetTxState,

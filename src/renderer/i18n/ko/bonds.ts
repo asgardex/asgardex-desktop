@@ -168,8 +168,6 @@ const bonds: BondsMessages = {
   'bonds.operator.changeFee.youKeepValue': '매 보상의 {percent}',
   'bonds.operator.changeFee.effective': '적용',
   'bonds.operator.changeFee.effectiveValue': '즉시',
-  'bonds.operator.changeFee.paidOut': '지급',
-  'bonds.operator.changeFee.paidOutValue': '{churn} · 추정치, churn 완료 후',
   'bonds.operator.changeFee.othersAffected': '영향받는 다른 제공자',
   'bonds.operator.changeFee.othersAffectedValue': '{count}명',
   'bonds.operator.changeFee.sign': '서명 및 수수료 변경',

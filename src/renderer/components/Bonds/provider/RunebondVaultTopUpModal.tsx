@@ -161,6 +161,7 @@ const RunebondVaultTopUpForm = ({
     validatePassword$,
     openExplorerTxUrl,
     getExplorerTxUrl,
+    onClose,
     onFinish: finish
   })
 

@@ -774,8 +774,6 @@ type BondsMessageKey =
   | 'bonds.operator.changeFee.youKeepValue'
   | 'bonds.operator.changeFee.effective'
   | 'bonds.operator.changeFee.effectiveValue'
-  | 'bonds.operator.changeFee.paidOut'
-  | 'bonds.operator.changeFee.paidOutValue'
   | 'bonds.operator.changeFee.othersAffected'
   | 'bonds.operator.changeFee.othersAffectedValue'
   | 'bonds.operator.changeFee.sign'

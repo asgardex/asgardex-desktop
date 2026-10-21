@@ -168,8 +168,6 @@ const bonds: BondsMessages = {
   'bonds.operator.changeFee.youKeepValue': 'हर पुरस्कार का {percent}',
   'bonds.operator.changeFee.effective': 'प्रभावी',
   'bonds.operator.changeFee.effectiveValue': 'तुरंत',
-  'bonds.operator.changeFee.paidOut': 'भुगतान',
-  'bonds.operator.changeFee.paidOutValue': '{churn} · अनुमान, churn पूरा होने के बाद',
   'bonds.operator.changeFee.othersAffected': 'अन्य प्रभावित प्रदाता',
   'bonds.operator.changeFee.othersAffectedValue': '{count}',
   'bonds.operator.changeFee.sign': 'हस्ताक्षर करें और शुल्क बदलें',

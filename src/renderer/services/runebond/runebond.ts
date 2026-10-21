@@ -3,6 +3,7 @@ import {
   ApiError,
   RunebondIntegratorsApiClient,
   createIntegratorsClient,
+  WhitelistRequestStatus as ApiWhitelistRequestStatus,
   ChurnPoint as ApiChurnPoint,
   LastChurnPayment as ApiLastChurnPayment,
   WhitelistRequestCounts as ApiWhitelistRequestCounts,
@@ -411,7 +412,12 @@ const nodeListing$ = (nodeAddress: Address): NodeListingLD =>
 const nodeWhitelistRequests$ = (nodeAddress: Address): NodeWhitelistRequestsLD =>
   cached(`nodeWhitelistRequests|${nodeAddress}`, () =>
     liveRequest(async (client): Promise<NodeWhitelistRequests> => {
-      const result = await client.nodes.getNodeWhitelistRequests(nodeAddress, undefined, WHITELIST_REQUESTS_LIMIT, 0)
+      const result = await client.nodes.getNodeWhitelistRequests(
+        nodeAddress,
+        ApiWhitelistRequestStatus.PENDING,
+        WHITELIST_REQUESTS_LIMIT,
+        0
+      )
       return {
         nodeAddress: result.nodeAddress,
         counts: toWhitelistRequestCounts(result.counts),
@@ -426,7 +432,7 @@ const operatorWhitelistRequests$ = (address: Address): OperatorWhitelistRequests
     liveRequest(async (client): Promise<OperatorWhitelistRequests> => {
       const result = await client.nodeOperators.getOperatorWhitelistRequests(
         address,
-        undefined,
+        ApiWhitelistRequestStatus.PENDING,
         WHITELIST_REQUESTS_LIMIT,
         0
       )

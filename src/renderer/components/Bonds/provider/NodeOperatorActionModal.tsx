@@ -84,6 +84,7 @@ export const NodeOperatorActionModal = ({
     validatePassword$,
     openExplorerTxUrl,
     getExplorerTxUrl,
+    onClose,
     onFinish: finish
   })
 

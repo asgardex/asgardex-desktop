@@ -165,8 +165,6 @@ const bonds: BondsMessages = {
   'bonds.operator.changeFee.youKeepValue': '{percent} of every award',
   'bonds.operator.changeFee.effective': 'Effective',
   'bonds.operator.changeFee.effectiveValue': 'immediately',
-  'bonds.operator.changeFee.paidOut': 'Paid out',
-  'bonds.operator.changeFee.paidOutValue': '{churn} · estimate, after the churn completes',
   'bonds.operator.changeFee.othersAffected': 'Other providers affected',
   'bonds.operator.changeFee.othersAffectedValue': '{count}',
   'bonds.operator.changeFee.sign': 'Sign & update fee',
