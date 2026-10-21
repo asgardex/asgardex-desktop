@@ -78,6 +78,7 @@ export const BondActionModal = ({
     validatePassword$,
     openExplorerTxUrl,
     getExplorerTxUrl,
+    onClose,
     onFinish
   })
 

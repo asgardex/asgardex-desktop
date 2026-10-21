@@ -41,6 +41,10 @@ import { NodeHealthStrip } from '../../../components/Bonds/provider/NodeHealthSt
 import { NodeNetworkCards } from '../../../components/Bonds/provider/NodeNetworkCards'
 import { MaintenanceTag, NodeStatusTag } from '../../../components/Bonds/provider/NodeStatusTag'
 import { OperatorFeesCard } from '../../../components/Bonds/provider/OperatorFeesCard'
+import { RunebondListingCard } from '../../../components/Bonds/provider/RunebondListingCard'
+import { NodeRunebondRequestsLink } from '../../../components/Bonds/provider/RunebondRequestsLinks'
+import { RunebondNodeModal, useRunebondNodeState } from '../../../components/Bonds/provider/useRunebondNodeState'
+import { VersionChip } from '../../../components/Bonds/provider/VersionChip'
 import { ErrorView } from '../../../components/shared/error'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { BaseButton, BorderButton, FlatButton } from '../../../components/uielements/button'
@@ -49,6 +53,7 @@ import { CopyLabel } from '../../../components/uielements/label'
 import { Spin } from '../../../components/uielements/spin'
 import { Tooltip } from '../../../components/uielements/tooltip'
 import { ZERO_BASE_AMOUNT } from '../../../const'
+import { useChainContext } from '../../../contexts/ChainContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
@@ -74,6 +79,9 @@ const NO_ADDRESSES: Address[] = []
 type NodeDetail = {
   node: NodeInfo
 }
+
+type NodeDetailModal =
+  { kind: 'bond'; type: BondActionType } | { kind: 'operator'; action: NodeOperatorAction } | RunebondNodeModal
 
 export const BondNodeDetailView = (): JSX.Element => {
   const intl = useIntl()
@@ -135,6 +143,7 @@ export const BondNodeDetailView = (): JSX.Element => {
     isOperatorView ? NO_ADDRESSES : historyAddresses
   )
   const nodeProvidersRD = useNodeProviders(isOperatorView ? nodeAddress : undefined)
+  const { transfer$ } = useChainContext()
 
   const { interact$, fees$, getNodeInfos$, reloadNodeInfos } = useThorchainContext()
   const {
@@ -149,6 +158,15 @@ export const BondNodeDetailView = (): JSX.Element => {
   const nodeInfosRD = useObservableState(getNodeInfos$, RD.initial)
   const reloadUntil = useReloadUntil(nodeInfosRD, reload, reloadNodeInfos)
 
+  const oNode: O.Option<NodeInfo> = useMemo(
+    () =>
+      FP.pipe(
+        RD.toOption(nodeInfosRD),
+        O.chain((nodes) => O.fromNullable(nodes.find((node) => node.address === nodeAddress)))
+      ),
+    [nodeAddress, nodeInfosRD]
+  )
+
   const [feeRD] = useObservableState<FeeRD>(
     () =>
       FP.pipe(
@@ -158,8 +176,7 @@ export const BondNodeDetailView = (): JSX.Element => {
     RD.initial
   )
 
-  const [modalType, setModalType] = useState<BondActionType | null>(null)
-  const [operatorAction, setOperatorAction] = useState<NodeOperatorAction | null>(null)
+  const [modal, setModal] = useState<NodeDetailModal | null>(null)
   const [hoveredChurn, setHoveredChurn] = useState<number | null>(null)
 
   const goBack = useCallback(() => navigate(bondsRoutes.basePathWithTab(backTab)), [backTab, navigate])
@@ -178,10 +195,23 @@ export const BondNodeDetailView = (): JSX.Element => {
     [nodeAddress, nodeInfosRD, positionsRD]
   )
 
-  const closeModal = useCallback(() => {
-    setModalType(null)
-    setOperatorAction(null)
-  }, [])
+  const runebond = useRunebondNodeState({
+    nodeAddress,
+    isOperatorView,
+    oNode,
+    walletInfos,
+    balanceByAddress,
+    network,
+    isPrivate,
+    fee: feeRD,
+    transfer$,
+    validatePassword$,
+    openExplorerTxUrl,
+    getExplorerTxUrl,
+    setModal
+  })
+
+  const closeModal = useCallback(() => setModal(null), [])
   const finishModal = useCallback(() => {
     closeModal()
     reload()
@@ -235,12 +265,9 @@ export const BondNodeDetailView = (): JSX.Element => {
       { count: providers.length, max: maxBondProviders }
     )
 
-    const oOperatorSigner: O.Option<BondWalletInfo> = isOperatorView
-      ? O.fromNullable(
-          walletInfos.find(({ address }) => address.toLowerCase() === node.nodeOperatorAddress.toLowerCase())
-        )
-      : O.none
+    const oOperatorSigner: O.Option<BondWalletInfo> = isOperatorView ? runebond.oOwnOperatorWallet : O.none
     const canOperate = O.isSome(oOperatorSigner)
+    const openOperatorAction = (action: NodeOperatorAction) => setModal({ kind: 'operator', action })
     const leaving = isNodeLeaving(node)
     const leaveLocked = isLeaveLocked(node)
     const leaveLabelId = node.status === NodeStatusEnum.Active ? 'bonds.operator.leave' : 'bonds.operator.leave.retire'
@@ -274,6 +301,7 @@ export const BondNodeDetailView = (): JSX.Element => {
               {renderExplorerLink(nodeExplorerUrl(node.address))}
               {node.maintenance && <MaintenanceTag />}
               <NodeStatusTag status={node.status} leaving={leaving} />
+              {isOperatorView && <VersionChip node={node} ctx={networkCtx} />}
             </div>
             <div className="mt-1 flex items-center gap-1.5 font-main text-[13px] text-gray2 dark:text-gray2d">
               <span>{intl.formatMessage({ id: 'bonds.provider.detail.operator' })}</span>
@@ -331,6 +359,13 @@ export const BondNodeDetailView = (): JSX.Element => {
                   )
                 )}
             </div>
+            {isOperatorView && canOperate && (
+              <NodeRunebondRequestsLink
+                className="mt-[10px]"
+                nodeAddress={node.address}
+                onOpen={(address) => navigate(bondsRoutes.runebondRequests.path({ node: address }))}
+              />
+            )}
           </div>
           {isOperatorView && canOperate && (
             <div className="flex flex-wrap items-center justify-end gap-3 self-center">
@@ -345,7 +380,7 @@ export const BondNodeDetailView = (): JSX.Element => {
                   </BorderButton>
                 </Tooltip>
               ) : (
-                <BorderButton size="large" color="error" onClick={() => setOperatorAction({ type: 'leave' })}>
+                <BorderButton size="large" color="error" onClick={() => openOperatorAction({ type: 'leave' })}>
                   {intl.formatMessage({ id: leaveLabelId })}
                 </BorderButton>
               )}
@@ -356,7 +391,7 @@ export const BondNodeDetailView = (): JSX.Element => {
                   </BorderButton>
                 </Tooltip>
               ) : (
-                <BorderButton size="large" color="neutral" onClick={() => setOperatorAction({ type: 'changeFee' })}>
+                <BorderButton size="large" color="neutral" onClick={() => openOperatorAction({ type: 'changeFee' })}>
                   {intl.formatMessage({ id: 'bonds.operator.changeFee' })}
                 </BorderButton>
               )}
@@ -371,7 +406,7 @@ export const BondNodeDetailView = (): JSX.Element => {
                   </FlatButton>
                 </Tooltip>
               ) : (
-                <FlatButton size="large" onClick={() => setOperatorAction({ type: 'addProvider' })}>
+                <FlatButton size="large" onClick={() => openOperatorAction({ type: 'addProvider' })}>
                   {intl.formatMessage({ id: 'bonds.operator.addProvider' })}
                 </FlatButton>
               )}
@@ -386,11 +421,11 @@ export const BondNodeDetailView = (): JSX.Element => {
                   </FlatButton>
                 </Tooltip>
               ) : (
-                <FlatButton size="large" color="neutral" onClick={() => setModalType('unbond')}>
+                <FlatButton size="large" color="neutral" onClick={() => setModal({ kind: 'bond', type: 'unbond' })}>
                   {intl.formatMessage({ id: 'bonds.provider.unbond' })}
                 </FlatButton>
               )}
-              <FlatButton size="large" onClick={() => setModalType('bond')}>
+              <FlatButton size="large" onClick={() => setModal({ kind: 'bond', type: 'bond' })}>
                 {intl.formatMessage({ id: 'bonds.provider.bondMore' })}
               </FlatButton>
             </div>
@@ -408,9 +443,9 @@ export const BondNodeDetailView = (): JSX.Element => {
               slotsLabel={slotsLabel}
               isMine={isMine}
               onAdd={
-                canOperate && !slotsFull && !bondLocked ? () => setOperatorAction({ type: 'addProvider' }) : undefined
+                canOperate && !slotsFull && !bondLocked ? () => openOperatorAction({ type: 'addProvider' }) : undefined
               }
-              onRemove={canOperate ? (provider) => setOperatorAction({ type: 'removeProvider', provider }) : undefined}
+              onRemove={canOperate ? (provider) => openOperatorAction({ type: 'removeProvider', provider }) : undefined}
               canRemove={(provider) => canRemoveProvider(node, provider)}
               providerMeta={RD.toUndefined(nodeProvidersRD)}
             />
@@ -421,6 +456,12 @@ export const BondNodeDetailView = (): JSX.Element => {
               nodeBond={node.bond}
               providerName={providerName}
               layout="card"
+            />
+            <RunebondListingCard
+              {...runebond.listingCard}
+              className="xl:col-span-2"
+              operatorAddress={node.nodeOperatorAddress}
+              canOperate={canOperate}
             />
           </div>
         ) : (
@@ -458,12 +499,12 @@ export const BondNodeDetailView = (): JSX.Element => {
             </div>
             {canOperate && (
               <div className="mt-6 grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
-                <NodeMaintenanceCard node={node} onToggle={() => setOperatorAction({ type: 'maintenance' })} />
+                <NodeMaintenanceCard node={node} onToggle={() => openOperatorAction({ type: 'maintenance' })} />
                 <NodeLeaveCard
                   network={network}
                   isPrivate={isPrivate}
                   node={node}
-                  onLeave={() => setOperatorAction({ type: 'leave' })}
+                  onLeave={() => openOperatorAction({ type: 'leave' })}
                 />
               </div>
             )}
@@ -482,14 +523,14 @@ export const BondNodeDetailView = (): JSX.Element => {
 
         <NodeNetworkCards node={node} ctx={networkCtx} />
 
-        {operatorAction &&
+        {modal?.kind === 'operator' &&
           FP.pipe(
             oOperatorSigner,
             O.fold(
               () => null,
               (signer) => (
                 <NodeOperatorActionModal
-                  action={operatorAction}
+                  action={modal.action}
                   network={network}
                   node={node}
                   signer={signer}
@@ -509,14 +550,27 @@ export const BondNodeDetailView = (): JSX.Element => {
             )
           )}
 
-        {modalType &&
+        {modal?.kind === 'listing' &&
+          FP.pipe(
+            oOperatorSigner,
+            O.fold(
+              () => null,
+              (signer) => runebond.renderListingModal(node, signer, modal.action)
+            )
+          )}
+
+        {modal?.kind === 'vaultTopUp' && runebond.renderVaultTopUpModal()}
+
+        {modal?.kind === 'onBehalfTopUp' && runebond.renderOnBehalfTopUpModal(node.nodeOperatorAddress)}
+
+        {modal?.kind === 'bond' &&
           FP.pipe(
             oViewedPosition,
             O.fold(
               () => null,
               (position) => (
                 <BondActionModal
-                  type={modalType}
+                  type={modal.type}
                   network={network}
                   position={position}
                   walletBalance={balanceByAddress(position.signer.address)}

@@ -49,7 +49,7 @@ const ChangeFeeField = ({ ctx: { intl }, input, error, disabled, onChange }: Ope
 )
 
 const ChangeFeeSummary = ({ ctx, input }: OperatorActionSummaryProps) => {
-  const { intl, node, isActive, nextChurnLabel } = ctx
+  const { intl, node } = ctx
   const otherProviders = node.bondProviders.providers.filter(
     ({ bondAddress }) => bondAddress.toLowerCase() !== node.nodeOperatorAddress.toLowerCase()
   ).length
@@ -65,14 +65,6 @@ const ChangeFeeSummary = ({ ctx, input }: OperatorActionSummaryProps) => {
       <SummaryRow
         label={intl.formatMessage({ id: 'bonds.operator.changeFee.effective' })}
         value={intl.formatMessage({ id: 'bonds.operator.changeFee.effectiveValue' })}
-      />
-      <SummaryRow
-        label={intl.formatMessage({ id: 'bonds.operator.changeFee.paidOut' })}
-        value={
-          isActive
-            ? intl.formatMessage({ id: 'bonds.operator.changeFee.paidOutValue' }, { churn: nextChurnLabel })
-            : intl.formatMessage({ id: 'bonds.operator.changeFee.paidOutStandby' })
-        }
       />
       <SummaryRow
         label={intl.formatMessage({ id: 'bonds.operator.changeFee.othersAffected' })}

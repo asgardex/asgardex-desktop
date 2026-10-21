@@ -42,10 +42,6 @@ const LeaveSummary = ({ ctx: { intl, node, isActive, nextChurnLabel } }: Operato
         label={intl.formatMessage({ id: 'bonds.operator.leave.otherProviders' })}
         value={intl.formatMessage({ id: 'bonds.operator.leave.otherProvidersValue' }, { count: otherProviders })}
       />
-      <SummaryRow
-        label={intl.formatMessage({ id: 'bonds.operator.leave.justChurned' })}
-        value={intl.formatMessage({ id: 'bonds.operator.leave.justChurnedValue' })}
-      />
     </>
   )
 }

@@ -2,10 +2,12 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { ZERO_BASE_AMOUNT } from '../../../const'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { nodesPaidAtChurn, operatorFeesWindow, useOperatorFees } from '../../../hooks/useOperatorFees'
 import { OperatorRewards } from '../../../services/runebond'
@@ -20,11 +22,28 @@ type Props = {
   isPrivate: boolean
   operatorAddresses: Address[]
   onViewHistory: () => void
+  className?: string
 }
 
-export const OperatorFeesTile = ({ network, isPrivate, operatorAddresses, onViewHistory }: Props) => {
+export const OperatorFeesTile = ({ network, isPrivate, operatorAddresses, onViewHistory, className }: Props) => {
   const intl = useIntl()
   const feesRD = useOperatorFees(operatorAddresses)
+
+  const renderHeader = (showHistory: boolean) => (
+    <div className="flex items-center gap-[10px]">
+      <span className="font-main-semi-bold text-[12px] tracking-[2px] text-gray2 uppercase dark:text-gray2d">
+        {intl.formatMessage({ id: 'bonds.operatorFees.tile.title' })}
+      </span>
+      {showHistory && (
+        <BaseButton
+          className="group !p-0 font-main-semi-bold text-[12px] tracking-[1px] whitespace-nowrap text-turquoise uppercase"
+          onClick={onViewHistory}>
+          {intl.formatMessage({ id: 'bonds.operatorFees.tile.history' })}
+          <ArrowRightIcon className="ml-1 h-[14px] w-[14px] text-inherit transition-transform group-hover:translate-x-[2px]" />
+        </BaseButton>
+      )}
+    </div>
+  )
 
   const renderValue = (value: string, subtitle: string) => (
     <>
@@ -37,44 +56,39 @@ export const OperatorFeesTile = ({ network, isPrivate, operatorAddresses, onView
   )
 
   const renderSuccess = (fees: OperatorRewards) => {
-    const feesWindow = operatorFeesWindow(fees)
-    const last = feesWindow.lastChurn
+    const last = operatorFeesWindow(fees).lastChurn
     const subtitle =
       last !== null
         ? intl.formatMessage(
-            { id: 'bonds.operatorFees.tile.lastChurn' },
-            {
-              amount: isPrivate ? hiddenString : formatRuneAmount(last.amount),
-              nodes: nodesPaidAtChurn(fees, last.churnHeight)
-            }
+            { id: 'bonds.operatorFees.tile.paidLastChurn' },
+            { nodes: nodesPaidAtChurn(fees, last.churnHeight) }
           )
         : intl.formatMessage({
             id: fees.totals.lastChurn === null ? 'bonds.operatorFees.tile.noneYet' : 'bonds.operatorFees.page.noPayouts'
           })
     return (
       <>
-        {renderValue(isPrivate ? hiddenString : formatRuneAmount(feesWindow.total), subtitle)}
-        <BaseButton
-          className="group mt-3 !p-0 font-main-semi-bold text-[12px] tracking-[1px] text-turquoise uppercase"
-          onClick={onViewHistory}>
-          {intl.formatMessage({ id: 'bonds.operatorFees.tile.viewHistory' })}
-          <ArrowRightIcon className="ml-1 h-[14px] w-[14px] text-inherit transition-transform group-hover:translate-x-[2px]" />
-        </BaseButton>
+        {renderHeader(true)}
+        {renderValue(isPrivate ? hiddenString : formatRuneAmount(last?.amount ?? ZERO_BASE_AMOUNT), subtitle)}
       </>
     )
   }
 
+  const renderPlaceholder = (subtitle: string) => (
+    <>
+      {renderHeader(false)}
+      {renderValue('—', subtitle)}
+    </>
+  )
+
   return (
-    <div className="flex flex-col">
-      <span className="font-main-semi-bold text-[12px] tracking-[2px] text-gray2 uppercase dark:text-gray2d">
-        {intl.formatMessage({ id: 'bonds.operatorFees.tile.title' }, { count: OPERATOR_FEES_CHURNS })}
-      </span>
+    <div className={clsx('flex flex-col', className)}>
       {FP.pipe(
         feesRD,
         RD.fold(
-          () => renderValue('—', ''),
-          () => renderValue('—', ''),
-          () => renderValue('—', intl.formatMessage({ id: 'bonds.operatorFees.unavailable' })),
+          () => renderPlaceholder(''),
+          () => renderPlaceholder(''),
+          () => renderPlaceholder(intl.formatMessage({ id: 'bonds.operatorFees.unavailable' })),
           renderSuccess
         )
       )}

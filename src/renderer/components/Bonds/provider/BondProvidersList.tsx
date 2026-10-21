@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 
@@ -27,6 +29,7 @@ type Props = {
   onRemove?: (provider: Providers) => void
   canRemove?: (provider: Providers) => boolean
   providerMeta?: NodeProviders
+  headerExtra?: ReactNode
 }
 
 export const BondProvidersList = ({
@@ -39,7 +42,8 @@ export const BondProvidersList = ({
   onAdd,
   onRemove,
   canRemove = () => true,
-  providerMeta
+  providerMeta,
+  headerExtra
 }: Props) => {
   const intl = useIntl()
 
@@ -67,6 +71,7 @@ export const BondProvidersList = ({
               { bonded, idle: providers.length - bonded }
             )}
           </span>
+          {headerExtra}
         </div>
         {onAdd && (
           <BorderButton size="normal" onClick={onAdd}>

@@ -9,6 +9,7 @@ import { NextChurn } from '../../../../hooks/useNextChurn'
 import { NodeInfo, NodeStatusEnum } from '../../../../services/thorchain/types'
 import { formatDuration, operatorFeeBps } from '../helpers'
 import { addProviderSpec } from './addProvider'
+import { approveRequestSpec } from './approveRequest'
 import { changeFeeSpec } from './changeFee'
 import { leaveSpec } from './leave'
 import { maintenanceSpec } from './maintenance'
@@ -30,6 +31,8 @@ export const operatorActionSpec = (action: NodeOperatorAction): OperatorActionSp
       return removeProviderSpec(action.provider)
     case 'maintenance':
       return maintenanceSpec
+    case 'approveRequest':
+      return approveRequestSpec(action.request)
   }
 }
 

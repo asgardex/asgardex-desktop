@@ -72,17 +72,19 @@ export const BondsView = (): JSX.Element => {
               )
           )
         )}
-        <div className="flex items-center gap-3">
-          <span className="font-main text-[14px] text-gray2 dark:text-gray2d">
-            {intl.formatMessage({ id: 'bonds.provider.findNodeHint' })}
-          </span>
-          <BaseButton
-            className="group !p-0 font-main-semi-bold text-[14px] text-turquoise uppercase"
-            onClick={openRunebond}>
-            runebond.com
-            <ArrowTopRightOnSquareIcon className="ml-1 h-[16px] w-[16px] text-inherit" />
-          </BaseButton>
-        </div>
+        {tab === BondsTab.BondProvider && (
+          <div className="flex items-center gap-3">
+            <span className="font-main text-[14px] text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'bonds.provider.findNodeHint' })}
+            </span>
+            <BaseButton
+              className="group !p-0 font-main-semi-bold text-[14px] text-turquoise uppercase"
+              onClick={openRunebond}>
+              runebond.com
+              <ArrowTopRightOnSquareIcon className="ml-1 h-[16px] w-[16px] text-inherit" />
+            </BaseButton>
+          </div>
+        )}
       </div>
       {tab === BondsTab.BondProvider ? <BondProviderDashboardView /> : <NodeOperatorView />}
     </div>

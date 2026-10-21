@@ -1,5 +1,7 @@
 import { BaseAmount, assetAmount, assetToBase, baseAmount, baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 
+import { OperatorFinderFeeVault } from '../../../services/runebond/types'
 import { NodeInfo, NodeStatusEnum, Providers } from '../../../services/thorchain/types'
 
 const RUNE_DECIMALS = 8
@@ -14,6 +16,8 @@ export const formatRuneAmount = (amount: BaseAmount, decimal?: number): string =
   })()
   return formatAssetAmount({ amount: assetAmount, decimal: maxDecimals, trimZeros: true })
 }
+
+export const runeToBaseAmount = (value: BigNumber): BaseAmount => assetToBase(assetAmount(value, RUNE_DECIMALS))
 
 export const formatDuration = (ms: number): string => {
   const totalMinutes = Math.max(Math.floor(ms / 60000), 0)
@@ -62,6 +66,9 @@ export const operatorBond = (node: NodeInfo): BaseAmount =>
     .filter(({ bondAddress }) => bondAddress.toLowerCase() === node.nodeOperatorAddress.toLowerCase())
     .reduce((acc, { bond }) => acc.plus(bond), baseAmount(0, RUNE_DECIMALS))
 
+export const hasBondProvider = (node: NodeInfo, address: string): boolean =>
+  node.bondProviders.providers.some(({ bondAddress }) => bondAddress.toLowerCase() === address.toLowerCase())
+
 export const canRemoveProvider = (node: NodeInfo, { bondAddress, bond }: Providers): boolean => {
   if (bondAddress.toLowerCase() === node.nodeOperatorAddress.toLowerCase()) return false
   if (bond.lte(0)) return true
@@ -89,3 +96,13 @@ export const formatPreflightReason = (reason: string): string =>
     const rune = (value: string) => `ᚱ${formatRuneAmount(baseAmount(value, RUNE_DECIMALS))}`
     return `minimum bond requirement: ${rune(bond)} / ${rune(minBond)}`
   })
+
+export type KnownFinderFeeVault = OperatorFinderFeeVault & { known: true }
+
+export const isKnownVault = (vault?: OperatorFinderFeeVault): vault is KnownFinderFeeVault =>
+  vault !== undefined && vault.known === true
+
+export const canTopUpVault = (vault?: OperatorFinderFeeVault): vault is KnownFinderFeeVault => isKnownVault(vault)
+
+export const isVaultDepleted = (vault?: OperatorFinderFeeVault): vault is KnownFinderFeeVault =>
+  isKnownVault(vault) && vault.depleted
