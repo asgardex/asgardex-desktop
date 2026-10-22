@@ -28,6 +28,22 @@ export const rewards: Route<void> = {
   }
 }
 
+export const operatorFees: Route<void> = {
+  template: `${base.template}/operator-fees`,
+  path() {
+    return this.template
+  }
+}
+
+export type RunebondRequestsParams = { node?: string }
+
+export const runebondRequests: Route<RunebondRequestsParams | void> = {
+  template: `${base.template}/runebond-requests`,
+  path(params) {
+    return params && params.node ? `${this.template}?node=${params.node}` : this.template
+  }
+}
+
 export enum BondsTab {
   BondProvider = 'bondProvider',
   NodeOperator = 'nodeOperator'

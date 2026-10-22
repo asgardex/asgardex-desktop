@@ -12,7 +12,8 @@ type TooltipProps = {
   placement?: Placement
 }
 
-const base = 'z-50 px-2 py-1 text-xs text-white bg-bg0d/80 rounded-md shadow-lg whitespace-normal break-words relative'
+const base =
+  'z-50 px-2 py-1 text-xs text-white bg-bg0d/80 rounded-md shadow-lg whitespace-pre-line break-words relative'
 
 const arrowBase = 'absolute w-0 h-0 border-transparent'
 const arrowPlacements: Record<Placement, string> = {
@@ -94,7 +95,7 @@ export const Tooltip = ({ title, size = 'small', children, placement = 'top' }: 
               maxWidth: coords?.width ? coords.width : size === 'small' ? '20rem' : '30rem' // fallback to a safe max
             }}>
             <Label color="white" size={size} textTransform={size === 'small' ? 'uppercase' : 'none'}>
-              {title}
+              <span className="whitespace-pre-line">{title}</span>
             </Label>
             <span className={clsx(arrowBase, arrowPlacements[placement])} />
           </div>,

@@ -5,6 +5,7 @@ import clsx from 'clsx'
 export type ChurnBar = {
   value: number
   label?: ReactNode
+  unknown?: boolean
 }
 
 type Props = {
@@ -39,13 +40,22 @@ export const ChurnBars = ({ bars, highlightLast = true, activeIndex, onActiveInd
             className="relative flex h-full flex-1 items-end"
             onMouseEnter={() => setActive(index)}
             onMouseLeave={() => setActive(null)}>
-            <div
-              style={{ height: `${height}%` }}
-              className={clsx(
-                'w-full rounded-t-sm transition-colors',
-                isActive ? 'bg-turquoise' : isLast && highlightLast ? 'bg-turquoise/70' : 'bg-turquoise/25'
-              )}
-            />
+            {bar.unknown ? (
+              <div
+                className={clsx(
+                  'h-full w-full rounded-t-sm border border-b-0 border-dashed transition-colors',
+                  isActive ? 'border-gray2 dark:border-gray2d' : 'border-gray0 dark:border-gray0d'
+                )}
+              />
+            ) : (
+              <div
+                style={{ height: `${height}%` }}
+                className={clsx(
+                  'w-full rounded-t-sm transition-colors',
+                  isActive ? 'bg-turquoise' : isLast && highlightLast ? 'bg-turquoise/70' : 'bg-turquoise/25'
+                )}
+              />
+            )}
             {bar.label && isActive && (
               <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 rounded-md bg-bg0d/90 px-2 py-1 text-xs whitespace-nowrap text-white shadow-lg">
                 {bar.label}

@@ -51,30 +51,40 @@ export const BondsView = (): JSX.Element => {
           nextChurn,
           O.fold(
             () => null,
-            ({ msLeft }) => (
-              <div className="flex items-center gap-2">
-                <span className="h-[8px] w-[8px] animate-pulse rounded-full bg-turquoise" />
-                <span className="font-main-semi-bold text-[12px] tracking-[2px] text-gray2 uppercase dark:text-gray2d">
-                  {intl.formatMessage({ id: 'bonds.provider.nextChurn' })}
-                </span>
-                <span className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">
-                  {formatCountdown(msLeft)}
-                </span>
-              </div>
-            )
+            (churn) =>
+              churn.halted ? (
+                <div className="flex items-center gap-2">
+                  <span className="h-[8px] w-[8px] rounded-full bg-warning0 dark:bg-warning0d" />
+                  <span className="font-main-semi-bold text-[12px] tracking-[2px] text-warning0 uppercase dark:text-warning0d">
+                    {intl.formatMessage({ id: 'bonds.churn.halted' })}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="h-[8px] w-[8px] animate-pulse rounded-full bg-turquoise" />
+                  <span className="font-main-semi-bold text-[12px] tracking-[2px] text-gray2 uppercase dark:text-gray2d">
+                    {intl.formatMessage({ id: 'bonds.provider.nextChurn' })}
+                  </span>
+                  <span className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">
+                    {formatCountdown(churn.msLeft)}
+                  </span>
+                </div>
+              )
           )
         )}
-        <div className="flex items-center gap-3">
-          <span className="font-main text-[14px] text-gray2 dark:text-gray2d">
-            {intl.formatMessage({ id: 'bonds.provider.findNodeHint' })}
-          </span>
-          <BaseButton
-            className="group !p-0 font-main-semi-bold text-[14px] text-turquoise uppercase"
-            onClick={openRunebond}>
-            runebond.com
-            <ArrowTopRightOnSquareIcon className="ml-1 h-[16px] w-[16px] text-inherit" />
-          </BaseButton>
-        </div>
+        {tab === BondsTab.BondProvider && (
+          <div className="flex items-center gap-3">
+            <span className="font-main text-[14px] text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'bonds.provider.findNodeHint' })}
+            </span>
+            <BaseButton
+              className="group !p-0 font-main-semi-bold text-[14px] text-turquoise uppercase"
+              onClick={openRunebond}>
+              runebond.com
+              <ArrowTopRightOnSquareIcon className="ml-1 h-[16px] w-[16px] text-inherit" />
+            </BaseButton>
+          </div>
+        )}
       </div>
       {tab === BondsTab.BondProvider ? <BondProviderDashboardView /> : <NodeOperatorView />}
     </div>

@@ -12,6 +12,8 @@ import { BondsLayout } from './bonds/BondsLayout'
 import { BondsView } from './bonds/BondsView'
 import { BondNodeDetailView } from './bonds/provider/BondNodeDetailView'
 import { BondRewardsView } from './bonds/provider/BondRewardsView'
+import { OperatorFeesView } from './bonds/provider/OperatorFeesView'
+import { RunebondRequestsView } from './bonds/provider/RunebondRequestsView'
 import { DepositView } from './deposit/DepositView'
 import { HistoryView } from './history/HistoryView'
 import { NoContentView } from './NoContentView'
@@ -71,6 +73,8 @@ export const ViewRoutes = (): JSX.Element => {
         <Route index element={<BondsView />} />
         <Route path={bondsRoutes.node.template} element={<BondNodeDetailView />} />
         <Route path={bondsRoutes.rewards.template} element={<BondRewardsView />} />
+        <Route path={bondsRoutes.operatorFees.template} element={<OperatorFeesView />} />
+        <Route path={bondsRoutes.runebondRequests.template} element={<RunebondRequestsView />} />
       </Route>
       {/* portfolio routes */}
       <Route

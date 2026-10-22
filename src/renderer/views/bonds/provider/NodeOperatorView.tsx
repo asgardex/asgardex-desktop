@@ -4,28 +4,64 @@ import * as RD from '@devexperts/remote-data-ts'
 import { PlusIcon } from '@heroicons/react/24/outline'
 
 import { Address } from '@xchainjs/xchain-util'
-import { function as FP, option as O } from 'fp-ts'
+import clsx from 'clsx'
+import { array as A, boolean as B, function as FP, option as O, ord as Ord } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { THORChain } from '../../../../shared/utils/chainIds'
-import { AddNodeModal, OperatorNodeCard, formatRuneAmount } from '../../../components/Bonds/provider'
+import {
+  AddNodeModal,
+  NodeOperatorActionModal,
+  OperatorNodeCard,
+  formatRuneAmount,
+  isBondActionLocked
+} from '../../../components/Bonds/provider'
+import { OperatorDashboardTitleRow } from '../../../components/Bonds/provider/OperatorDashboardTitleRow'
+import { OperatorFeesTile } from '../../../components/Bonds/provider/OperatorFeesTile'
+import { groupNodesByOperator } from '../../../components/Bonds/provider/OperatorGroupsTable'
+import { RunebondRequestsTile } from '../../../components/Bonds/provider/RunebondRequestsLinks'
+import { RunebondVaultNotices } from '../../../components/Bonds/provider/RunebondVaultNotice'
 import { ErrorView } from '../../../components/shared/error'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
-import { BorderButton, FlatButton, RefreshButton } from '../../../components/uielements/button'
+import { FlatButton } from '../../../components/uielements/button'
 import { Spin } from '../../../components/uielements/spin'
 import { ZERO_BASE_AMOUNT } from '../../../const'
+import { useChainContext } from '../../../contexts/ChainContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useUserNodesContext } from '../../../contexts/UserNodesContext'
+import { useWalletContext } from '../../../contexts/WalletContext'
+import { liveData } from '../../../helpers/rx/liveData'
 import { hiddenString } from '../../../helpers/stringHelper'
+import { useChurnConstants } from '../../../hooks/useChurnConstants'
 import { useNetwork } from '../../../hooks/useNetwork'
+import { useNextChurn } from '../../../hooks/useNextChurn'
+import { useNodeNetworkContext } from '../../../hooks/useNodeNetworkContext'
+import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
+import { operatorAddressesOf } from '../../../hooks/useOperatorFees'
 import { OperatorNodeInfo, useOperatorNodes } from '../../../hooks/useOperatorNodes'
+import { useReloadUntil } from '../../../hooks/useReloadUntil'
+import { useOperatorWhitelistRequests } from '../../../hooks/useRunebondListing'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as bondsRoutes from '../../../routes/bonds'
+import { FeeRD } from '../../../services/chain/types'
+import { NodeInfo } from '../../../services/thorchain/types'
 import { useApp } from '../../../store/app/hooks'
+import { BondProviderPosition } from '../types'
+import { OperatorNodesByOperator } from './OperatorNodesByOperator'
 import { useBondProviderData } from './useBondProviderData'
+
+enum NodesViewMode {
+  ByNode = 'byNode',
+  ByOperator = 'byOperator'
+}
+
+const ordOperatedFirst: Ord.Ord<OperatorNodeInfo> = FP.pipe(
+  B.Ord,
+  Ord.contramap(({ isOperator }: OperatorNodeInfo) => !isOperator)
+)
 
 export const NodeOperatorView = (): JSX.Element => {
   const intl = useIntl()
@@ -33,12 +69,31 @@ export const NodeOperatorView = (): JSX.Element => {
   const { network } = useNetwork()
   const { isPrivate } = useApp()
 
-  const { getNodeInfos$, reloadNodeInfos } = useThorchainContext()
+  const { getNodeInfos$, reloadNodeInfos, interact$, fees$ } = useThorchainContext()
+  const { transfer$ } = useChainContext()
   const { userNodes$, addNodeAddress, removeNodeByAddress } = useUserNodesContext()
+  const {
+    keystoreService: { validatePassword$ }
+  } = useWalletContext()
   const { validateAddress } = useValidateAddress(THORChain)
-  const { walletInfos, hasMultipleWalletTypes, reload } = useBondProviderData()
+  const { walletInfos, hasMultipleWalletTypes, balanceByAddress, positionsRD, reload } = useBondProviderData()
+  const networkCtx = useNodeNetworkContext()
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
+  const nextChurn = useNextChurn()
+  const { maxBondProviders } = useChurnConstants()
+
+  const [feeRD] = useObservableState<FeeRD>(
+    () =>
+      FP.pipe(
+        fees$(),
+        liveData.map((fees) => fees.fast)
+      ),
+    RD.initial
+  )
 
   const [showAddNode, setShowAddNode] = useState(false)
+  const [feeNodeAddress, setFeeNodeAddress] = useState<Address | null>(null)
+  const [viewMode, setViewMode] = useState(NodesViewMode.ByNode)
 
   const walletAddresses = useMemo(() => walletInfos.map(({ address }) => address), [walletInfos])
 
@@ -52,6 +107,17 @@ export const NodeOperatorView = (): JSX.Element => {
 
   const nodesRD = useOperatorNodes({ walletAddresses, userNodes$, getNodeInfos$ })
   const monitoredNodes = useObservableState<Address[]>(userNodes$, [])
+  const operatorAddresses = useMemo(
+    () =>
+      FP.pipe(
+        nodesRD,
+        RD.map(operatorAddressesOf),
+        RD.getOrElse<Error, Address[]>(() => [])
+      ),
+    [nodesRD]
+  )
+  const whitelistRequestsRD = useOperatorWhitelistRequests(operatorAddresses)
+  const hasPendingRequests = RD.isSuccess(whitelistRequestsRD) && whitelistRequestsRD.value.counts.pending > 0
 
   const [allNodesRD] = useObservableState(() => getNodeInfos$, RD.initial)
   const oNodeAddresses: O.Option<Address[]> = useMemo(
@@ -76,17 +142,86 @@ export const NodeOperatorView = (): JSX.Element => {
     [network, removeNodeByAddress]
   )
 
+  const closeFeeModal = useCallback(() => setFeeNodeAddress(null), [])
+  const reloadUntil = useReloadUntil(nodesRD, reload, reloadNodeInfos)
+  const finishFeeModal = useCallback(
+    (settled: (node: NodeInfo) => boolean) => {
+      const target = feeNodeAddress
+      setFeeNodeAddress(null)
+      reloadUntil((nodes) => {
+        const fresh = nodes.find(({ address }) => address === target)
+        return fresh !== undefined && settled(fresh)
+      })
+    },
+    [feeNodeAddress, reloadUntil]
+  )
+
+  const oFeeTarget = useMemo(
+    () =>
+      FP.pipe(
+        nodesRD,
+        RD.toOption,
+        O.chain((nodes) => O.fromNullable(nodes.find(({ address }) => address === feeNodeAddress))),
+        O.chain((node) =>
+          FP.pipe(
+            O.fromNullable(
+              walletInfos.find(({ address }) => address.toLowerCase() === node.nodeOperatorAddress.toLowerCase())
+            ),
+            O.map((signer) => ({ node, signer }))
+          )
+        )
+      ),
+    [feeNodeAddress, nodesRD, walletInfos]
+  )
+
   const onOpenDetail = useCallback(
-    (nodeAddress: Address) =>
-      navigate(bondsRoutes.node.path({ nodeAddress }), { state: { tab: bondsRoutes.BondsTab.NodeOperator } }),
+    (nodeAddress: Address, signer?: Address) =>
+      navigate(bondsRoutes.node.path({ nodeAddress }), { state: { tab: bondsRoutes.BondsTab.NodeOperator, signer } }),
     [navigate]
   )
+
+  const operatorGroups = useMemo(
+    () =>
+      groupNodesByOperator({
+        nodes: RD.toNullable(allNodesRD) ?? [],
+        operatorNodes: RD.toNullable(nodesRD) ?? [],
+        positions: FP.pipe(
+          positionsRD,
+          RD.getOrElse<Error, BondProviderPosition[]>(() => [])
+        )
+      }),
+    [allNodesRD, nodesRD, positionsRD]
+  )
+
+  const loadedNodesCount = FP.pipe(
+    nodesRD,
+    RD.fold(
+      () => 0,
+      () => 0,
+      () => 0,
+      (nodes) => nodes.length
+    )
+  )
+  const titleRowLabel =
+    loadedNodesCount === 0
+      ? intl.formatMessage({ id: 'bonds.operator.titleNodes' })
+      : viewMode === NodesViewMode.ByNode
+        ? intl.formatMessage({ id: 'bonds.byOperator.titleCards' }, { count: loadedNodesCount })
+        : intl.formatMessage({ id: 'bonds.byOperator.titleTable' }, { count: operatorGroups.length })
 
   const renderStats = useCallback(
     (nodes: OperatorNodeInfo[]) => {
       const operated = nodes.filter(({ isOperator }) => isOperator)
       const bondUnderManagement = operated.reduce((acc, { bond }) => acc.plus(bond), ZERO_BASE_AMOUNT)
       const providersCount = operated.reduce((acc, node) => acc + node.bondProviders.providers.length, 0)
+      const ownBond = operated.reduce(
+        (acc, node) =>
+          node.bondProviders.providers
+            .filter(({ bondAddress }) => bondAddress.toLowerCase() === node.nodeOperatorAddress.toLowerCase())
+            .reduce((sum, { bond }) => sum.plus(bond), acc),
+        ZERO_BASE_AMOUNT
+      )
+      const fromProviders = bondUnderManagement.minus(ownBond)
 
       return (
         <div className="flex flex-col">
@@ -99,12 +234,30 @@ export const NodeOperatorView = (): JSX.Element => {
               {isPrivate ? hiddenString : formatRuneAmount(bondUnderManagement)}
             </span>
           </div>
-          <span className="mt-2 font-main text-[14px] text-gray2 dark:text-gray2d">
+          <span className="mt-2 font-main text-[15px] text-gray2 dark:text-gray2d">
             {intl.formatMessage(
               { id: 'bonds.operator.nodesAndProviders' },
               { nodes: operated.length, providers: providersCount }
             )}
           </span>
+          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 font-main text-[14px]">
+            <span className="flex items-center gap-1.5">
+              <span className="font-main-semi-bold text-[10px] tracking-[1.5px] text-gray2 uppercase dark:text-gray2d">
+                {intl.formatMessage({ id: 'bonds.operator.ownBond' })}
+              </span>
+              <span className="text-text0 dark:text-text0d">
+                ᚱ{isPrivate ? hiddenString : formatRuneAmount(ownBond)}
+              </span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="font-main-semi-bold text-[10px] tracking-[1.5px] text-gray2 uppercase dark:text-gray2d">
+                {intl.formatMessage({ id: 'bonds.operator.fromProviders' })}
+              </span>
+              <span className="text-gray2 dark:text-gray2d">
+                ᚱ{isPrivate ? hiddenString : formatRuneAmount(fromProviders)}
+              </span>
+            </span>
+          </div>
         </div>
       )
     },
@@ -112,8 +265,14 @@ export const NodeOperatorView = (): JSX.Element => {
   )
 
   return (
-    <div className="flex w-full flex-col">
-      <div className="flex w-full flex-col gap-6 rounded-lg border border-solid border-gray0 bg-bg0 p-6 lg:flex-row lg:items-start lg:justify-between dark:border-gray0d dark:bg-bg0d">
+    <div className="@container flex w-full flex-col">
+      <div
+        className={clsx(
+          'flex w-full flex-col gap-10 rounded-lg border border-solid border-gray0 bg-bg0 p-8 lg:flex-row lg:items-end dark:border-gray0d dark:bg-bg0d',
+          hasPendingRequests
+            ? 'lg:flex-wrap lg:justify-between lg:gap-y-6 @min-[1150px]:flex-nowrap @min-[1150px]:items-center'
+            : 'lg:gap-x-16'
+        )}>
         {FP.pipe(
           nodesRD,
           RD.fold(
@@ -123,16 +282,59 @@ export const NodeOperatorView = (): JSX.Element => {
             renderStats
           )
         )}
-        <div className="flex flex-col gap-3 lg:items-end lg:justify-between lg:self-stretch">
-          <BorderButton size="normal" onClick={openAddNode}>
-            <PlusIcon className="mr-1 h-[16px] w-[16px] text-inherit" />
-            {intl.formatMessage({ id: 'bonds.node.add' })}
-          </BorderButton>
-          <RefreshButton className="self-end" onClick={reload} disabled={RD.isPending(nodesRD)} />
-        </div>
+        {operatorAddresses.length > 0 && (
+          <OperatorFeesTile
+            network={network}
+            isPrivate={isPrivate}
+            operatorAddresses={operatorAddresses}
+            onViewHistory={() => navigate(bondsRoutes.operatorFees.path())}
+          />
+        )}
+        <RunebondRequestsTile
+          requestsRD={whitelistRequestsRD}
+          onOpen={() => navigate(bondsRoutes.runebondRequests.path())}
+        />
       </div>
 
-      <div className="mt-6 w-full">
+      <RunebondVaultNotices
+        network={network}
+        operatorAddresses={operatorAddresses}
+        walletInfos={walletInfos}
+        balanceByAddress={balanceByAddress}
+        fee={feeRD}
+        transfer$={transfer$}
+        validatePassword$={validatePassword$}
+        openExplorerTxUrl={openExplorerTxUrl}
+        getExplorerTxUrl={getExplorerTxUrl}
+      />
+
+      <OperatorDashboardTitleRow
+        className="mt-6"
+        title={titleRowLabel}
+        refreshing={RD.isPending(nodesRD)}
+        onRefresh={reload}
+        onAddNode={openAddNode}
+        toggle={
+          loadedNodesCount > 0
+            ? {
+                options: [
+                  {
+                    label: intl.formatMessage({ id: 'bonds.byOperator.tab.byNode' }),
+                    value: NodesViewMode.ByNode
+                  },
+                  {
+                    label: intl.formatMessage({ id: 'bonds.byOperator.tab.byOperator' }),
+                    value: NodesViewMode.ByOperator
+                  }
+                ],
+                value: viewMode,
+                onChange: setViewMode
+              }
+            : undefined
+        }
+      />
+
+      <div className="mt-4 w-full">
         {FP.pipe(
           nodesRD,
           RD.fold(
@@ -160,24 +362,64 @@ export const NodeOperatorView = (): JSX.Element => {
                 )
               }
               return (
-                <div className="grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
-                  {nodes.map((node) => (
-                    <OperatorNodeCard
-                      key={node.address}
+                <div className="w-full">
+                  {viewMode === NodesViewMode.ByNode ? (
+                    <div className="grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
+                      {A.sortBy([ordOperatedFirst])(nodes).map((node) => (
+                        <OperatorNodeCard
+                          key={node.address}
+                          network={network}
+                          isPrivate={isPrivate}
+                          node={node}
+                          networkCtx={networkCtx}
+                          operatorWalletType={operatorWalletType(node.nodeOperatorAddress)}
+                          onChangeFee={isBondActionLocked(node) ? undefined : setFeeNodeAddress}
+                          onRemoveMonitored={onRemoveMonitored}
+                          onOpenDetail={onOpenDetail}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <OperatorNodesByOperator
+                      groups={operatorGroups}
                       network={network}
                       isPrivate={isPrivate}
-                      node={node}
-                      operatorWalletType={operatorWalletType(node.nodeOperatorAddress)}
-                      onRemoveMonitored={onRemoveMonitored}
+                      networkCtx={networkCtx}
                       onOpenDetail={onOpenDetail}
                     />
-                  ))}
+                  )}
                 </div>
               )
             }
           )
         )}
       </div>
+
+      {FP.pipe(
+        oFeeTarget,
+        O.fold(
+          () => null,
+          ({ node, signer }) => (
+            <NodeOperatorActionModal
+              action={{ type: 'changeFee' }}
+              network={network}
+              node={node}
+              signer={signer}
+              walletBalance={balanceByAddress(signer.address)}
+              maxBondProviders={maxBondProviders}
+              nextChurn={nextChurn}
+              fee={feeRD}
+              interact$={interact$}
+              validatePassword$={validatePassword$}
+              validateAddress={validateAddress}
+              openExplorerTxUrl={openExplorerTxUrl}
+              getExplorerTxUrl={getExplorerTxUrl}
+              onClose={closeFeeModal}
+              onFinish={finishFeeModal}
+            />
+          )
+        )
+      )}
 
       {showAddNode && (
         <AddNodeModal

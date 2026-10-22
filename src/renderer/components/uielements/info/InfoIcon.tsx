@@ -16,10 +16,11 @@ export type Props = {
   tooltip: string
   color?: Color
   className?: string
+  tooltipSize?: 'small' | 'big'
 }
 
-export const InfoIcon = ({ tooltip, color = 'primary', className = '' }: Props) => (
-  <Tooltip title={tooltip}>
+export const InfoIcon = ({ tooltip, color = 'primary', className = '', tooltipSize = 'small' }: Props) => (
+  <Tooltip size={tooltipSize} title={tooltip}>
     <InformationCircleIcon className={clsx(iconColor[color], 'h-4 w-4', className)} />
   </Tooltip>
 )

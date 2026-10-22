@@ -86,7 +86,7 @@ export const TxActions = ({
           <button
             type="button"
             onClick={handleViewExplorer}
-            className="flex items-center gap-1 font-main text-xs text-text2 transition-colors hover:text-turquoise dark:text-text2d dark:hover:text-turquoise">
+            className="flex cursor-pointer items-center gap-1 font-main text-xs text-text2 transition-colors hover:text-turquoise dark:text-text2d dark:hover:text-turquoise">
             <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />
             {intl.formatMessage({ id: 'common.viewTransaction' })}
           </button>

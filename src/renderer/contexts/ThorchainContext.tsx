@@ -20,6 +20,7 @@ import {
   interact$,
   getNodeInfos$,
   reloadNodeInfos,
+  thorchainVersion$,
   explorerUrl$,
   mimir$,
   reloadMimir,
@@ -67,6 +68,7 @@ type ThorchainContextValue = {
   getNodeInfos$: typeof getNodeInfos$
   explorerUrl$: typeof explorerUrl$
   reloadNodeInfos: typeof reloadNodeInfos
+  thorchainVersion$: typeof thorchainVersion$
   mimir$: typeof mimir$
   reloadMimir: typeof reloadMimir
   inboundAddressesShared$: typeof inboundAddressesShared$
@@ -113,6 +115,7 @@ const initialContext: ThorchainContextValue = {
   getNodeInfos$,
   explorerUrl$,
   reloadNodeInfos,
+  thorchainVersion$,
   mimir$,
   reloadMimir,
   inboundAddressesShared$,
