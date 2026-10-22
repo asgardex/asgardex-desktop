@@ -6,11 +6,37 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
-# Unreleased
+# 1.47.0 (2026-10-22)
+
+PRs merged to `develop` since tag `v1.46.1`.
+
+## Add
+
+- feat(pools): market and limit trading on the pool chart, for L1 and trade-asset pairs: a swap ticket beside the chart, limit-price lines drawn on the candles, and a list of this wallet's recent swaps for the pair with the swap receipt at the top [#1247](https://github.com/asgardex/asgardex-desktop/pull/1247)
+- feat(pools): limit orders fetch a fresh quote when triggered and open the wallet confirmation (never auto-signed); a quote worse than the limit fails the order, identical duplicate orders are blocked, and failed or filled orders can be removed [#1247](https://github.com/asgardex/asgardex-desktop/pull/1247)
+- feat(pools): the limit trigger price comes from THORNode every 6 seconds and is shown in the panel with its last check time and update interval [#1247](https://github.com/asgardex/asgardex-desktop/pull/1247)
+- feat(pools): pin favourite assets in the trading asset dropdown, sharing the swap menu favourites; trade-asset swaps are noted as affiliate free [#1247](https://github.com/asgardex/asgardex-desktop/pull/1247)
+- Bond provider refactor, block II: bonds section [#1249](https://github.com/asgardex/asgardex-desktop/pull/1249)
+- Bond provider refactor, block III: RUNEBond integration (list, update and delist a node, finder-fee vault top-up, approve whitelist requests) [#1255](https://github.com/asgardex/asgardex-desktop/pull/1255)
+- feat(ui): pin favourite assets at the top of the asset menu, saved per network [#1246](https://github.com/asgardex/asgardex-desktop/pull/1246)
 
 ## Update/Fixes
 
-- MayaChain delisted Radix. Swaps and liquidity for XRD are unavailable. Send on the Radix network still works, and the Radix client loads only when XRD is enabled or a Radix screen is opened. [#1225](https://github.com/asgardex/asgardex-desktop/issues/1225)
+- fix(bonds): the bond and RUNEBond tx windows cannot be closed while a send is pending; a RUNEBond target bond must be greater than the minimum [#1256](https://github.com/asgardex/asgardex-desktop/pull/1256)
+- MayaChain delisted Radix. Swaps and liquidity for XRD are unavailable. Send on the Radix network still works, and the Radix client loads only when XRD is enabled or a Radix screen is opened. [#1225](https://github.com/asgardex/asgardex-desktop/issues/1225) [#1228](https://github.com/asgardex/asgardex-desktop/pull/1228) [#1233](https://github.com/asgardex/asgardex-desktop/pull/1233) [#1234](https://github.com/asgardex/asgardex-desktop/pull/1234) [#1235](https://github.com/asgardex/asgardex-desktop/pull/1235)
+- fix: keep BTC Taproot swaps on the Taproot wallet; MAYAChain is left out of Taproot quotes [#1243](https://github.com/asgardex/asgardex-desktop/pull/1243)
+- fix(ui): label Ledger mode and badge Vultisig in the header [#1244](https://github.com/asgardex/asgardex-desktop/pull/1244)
+- fix: floor the UTXO inbound fee at the destination protocol's `gas_rate` [#1230](https://github.com/asgardex/asgardex-desktop/pull/1230)
+- fix(tron): pass the swap into the inbound fee quote, so a native TRX swap is no longer priced as a TRC20 transfer [#1232](https://github.com/asgardex/asgardex-desktop/pull/1232)
+- perf: keep swap and pool screens stable while data reloads; block a stale trade quote and drop held data on network change [#1237](https://github.com/asgardex/asgardex-desktop/pull/1237)
+- perf: keep heavy chain clients and the swap aggregator off startup [#1227](https://github.com/asgardex/asgardex-desktop/pull/1227)
+
+## Chores
+
+- chore(deps): bump `@xchainjs/*` for the delisted-chain release (THORChain query 4.0.0, MAYAChain query 3.0.0, Maya AMM 5.0.0) [#1242](https://github.com/asgardex/asgardex-desktop/pull/1242)
+- chore(deps): bump `@xchainjs/xchain-aggregator` to 3.2.3 to align on `@xchainjs/xchain-tron` 3.0.12 [#1236](https://github.com/asgardex/asgardex-desktop/pull/1236)
+- chore(deps): stub the unused `@polkadot/api` from the Vultisig SDK [#1226](https://github.com/asgardex/asgardex-desktop/pull/1226)
+- test(swap): always try ADA in the pre-fix sendMax counterexample, fixing a flaky CI test [#1257](https://github.com/asgardex/asgardex-desktop/pull/1257)
 
 # 1.46.1 (2026-10-09)
 
