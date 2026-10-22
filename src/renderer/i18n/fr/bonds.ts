@@ -447,7 +447,7 @@ const bonds: BondsMessages = {
   'bonds.runebond.listing.modal.feeMismatch':
     "Les fournisseurs verront {fee} ici, mais le nœud applique {nodeFee} on-chain. Mettez à jour les frais du nœud pour qu'ils correspondent.",
   'bonds.runebond.listing.modal.minError': 'Saisissez un bond minimum supérieur à 0',
-  'bonds.runebond.listing.modal.targetError': 'Le bond total visé doit être au moins égal au bond minimum',
+  'bonds.runebond.listing.modal.targetError': 'Le bond total visé doit être supérieur au bond minimum',
   'bonds.runebond.listing.modal.feeError': 'Saisissez une valeur entre 0% et 100%',
   'bonds.runebond.listing.modal.sent': 'Envoyé à RUNEBond',
   'bonds.runebond.listing.modal.signList': 'Signer et lister le nœud',
