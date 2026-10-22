@@ -48,6 +48,10 @@ type SwapConfirmationModalsProps = {
   swapState: SwapTxState
   getActiveVaultId: () => string | undefined
   resetSwapState?: () => void
+  /** Shown on the confirm step when a chart limit order is the thing being signed. */
+  swapDescription?: string
+  /** User closed the confirm step without accepting it. */
+  onSwapDismiss?: () => void
 }
 
 type SwapConfirmationModalsResult = {
@@ -84,16 +88,30 @@ export const useSwapConfirmationModals = ({
   approveState,
   swapState,
   getActiveVaultId,
-  resetSwapState
+  resetSwapState,
+  swapDescription,
+  onSwapDismiss
 }: SwapConfirmationModalsProps): SwapConfirmationModalsResult => {
   const intl = useIntl()
 
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
   const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
   const [showVultisigModal, setShowVultisigModal] = useState(ModalState.None)
+  // Ledger's OK button calls onSuccess and then onClose. A limit cancel must not
+  // treat that accepted close as a dismiss, or the order would arm again after signing.
+  const confirmAcceptedRef = useRef(false)
+
+  const dismissSwap = useCallback(() => {
+    if (confirmAcceptedRef.current) {
+      confirmAcceptedRef.current = false
+      return
+    }
+    onSwapDismiss?.()
+  }, [onSwapDismiss])
 
   // Dispatch to the correct modal based on wallet type
   const onSubmit = useCallback(() => {
+    confirmAcceptedRef.current = false
     if (useSourceAssetLedger) {
       setShowLedgerModal(ModalState.Swap)
     } else if (useSourceAssetVultisig) {
@@ -104,6 +122,7 @@ export const useSwapConfirmationModals = ({
   }, [useSourceAssetLedger, useSourceAssetVultisig])
 
   const onApprove = useCallback(() => {
+    confirmAcceptedRef.current = false
     if (useSourceAssetLedger) {
       setShowLedgerModal(ModalState.Approve)
     } else if (useSourceAssetVultisig) {
@@ -118,6 +137,7 @@ export const useSwapConfirmationModals = ({
     const onSuccess = () => {
       // Close immediately so Chainflip channel-open / broadcast wait lives in SwapTxModal,
       // not in a blank gap after password confirm.
+      confirmAcceptedRef.current = true
       const mode = showPasswordModal
       setShowPasswordModal(ModalState.None)
       void (async () => {
@@ -136,7 +156,10 @@ export const useSwapConfirmationModals = ({
         }
       })()
     }
-    const onClose = () => setShowPasswordModal(ModalState.None)
+    const onClose = () => {
+      setShowPasswordModal(ModalState.None)
+      dismissSwap()
+    }
     const render = showPasswordModal === ModalState.Swap || showPasswordModal === ModalState.Approve
     return (
       render && (
@@ -144,6 +167,7 @@ export const useSwapConfirmationModals = ({
           onSuccess={onSuccess}
           onClose={onClose}
           validatePassword$={validatePassword$}
+          description={showPasswordModal === ModalState.Swap ? swapDescription : undefined}
         />
       )
     )
@@ -155,15 +179,21 @@ export const useSwapConfirmationModals = ({
     submitApproveTx,
     submitCFTx,
     submitOneClickTx,
+    dismissSwap,
     submitSwapTx,
+    swapDescription,
     validatePassword$
   ])
 
   // ─── Ledger Modal ─────────────────────────────────────────────────────────
   const renderLedgerConfirmationModal = useMemo(() => {
     const visible = showLedgerModal === ModalState.Swap || showLedgerModal === ModalState.Approve
-    const onClose = () => setShowLedgerModal(ModalState.None)
+    const onClose = () => {
+      setShowLedgerModal(ModalState.None)
+      dismissSwap()
+    }
     const onSuccess = () => {
+      confirmAcceptedRef.current = true
       const mode = showLedgerModal
       setShowLedgerModal(ModalState.None)
       void (async () => {
@@ -187,7 +217,9 @@ export const useSwapConfirmationModals = ({
     const description1 = isEvmChainToken(sourceAsset)
       ? `${txtNeedsConnected} ${intl.formatMessage({ id: 'ledger.blindsign' }, { chain: chainAsString })}`
       : txtNeedsConnected
-    const description2 = intl.formatMessage({ id: 'ledger.sign' })
+    const signText = intl.formatMessage({ id: 'ledger.sign' })
+    const description2 =
+      showLedgerModal === ModalState.Swap && swapDescription ? `${signText} ${swapDescription}` : signText
 
     return (
       <LedgerConfirmationModal
@@ -221,13 +253,16 @@ export const useSwapConfirmationModals = ({
     submitSwapTx,
     submitCFTx,
     submitOneClickTx,
+    dismissSwap,
     submitApproveTx,
+    swapDescription,
     useSourceAssetLedger
   ])
 
   // ─── Vultisig Modal ───────────────────────────────────────────────────────
   const onVultisigSuccess = useCallback(() => {
     logger.info('onVultisigSuccess', { vaultType })
+    confirmAcceptedRef.current = true
     const mode = showVultisigModal
     // FastVault: close confirm modal immediately; SecureVault stays open for QR / device signing.
     // Either way, Chainflip channel-open pending state is published by submitCFTx into swapState.
@@ -279,7 +314,11 @@ export const useSwapConfirmationModals = ({
       vaultType={vaultType}
       isEncrypted={isVaultEncrypted}
       onSuccess={onVultisigSuccess}
-      onClose={() => setShowVultisigModal(ModalState.None)}
+      onClose={() => {
+        setShowVultisigModal(ModalState.None)
+        dismissSwap()
+      }}
+      description={showVultisigModal === ModalState.Swap ? swapDescription : undefined}
       onCancel={() => resetSwapState?.()}
       validatePassword$={validatePasswordForVultisig}
       txState={showVultisigModal === ModalState.Approve ? approveState : swapState.swapTx}

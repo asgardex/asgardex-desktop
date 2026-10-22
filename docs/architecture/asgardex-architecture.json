@@ -97,7 +97,7 @@
       "label": "File Store API",
       "layer": "main-api",
       "path": "src/main/api/fileStore.ts",
-      "tooltip": "Persisted JSON stores: common, userNodes, userBondProviders, userChains, userAddresses, userAssets, pools, ledgers.",
+      "tooltip": "Persisted JSON stores: common, userNodes, userBondProviders, userChains, userAddresses, userAssets, pools, assetFavourites, ledgers.",
       "tags": ["storage"]
     },
     {
@@ -122,7 +122,7 @@
       "label": "window.api* Bridge",
       "layer": "ipc",
       "path": "src/main/preload.ts",
-      "tooltip": "Renderer-facing IPC surface: apiKeystore, apiHDWallet, apiMpc, apiCommonStorage, apiAppUpdate, apiUrl, apiExport, chain/asset/pools storages. Serialize BigInt with String().",
+      "tooltip": "Renderer-facing IPC surface: apiKeystore, apiHDWallet, apiMpc, apiCommonStorage, apiAppUpdate, apiUrl, apiExport, chain/asset/pools/assetFavourites storages. Serialize BigInt with String().",
       "tags": ["ipc"]
     },
 

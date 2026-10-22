@@ -1,31 +1,36 @@
 import * as RD from '@devexperts/remote-data-ts'
+import type { Pool } from '@xchainjs/xchain-thornode'
 import { type AnyAsset, assetFromString } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { LiveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
-import { GetDepthHistoryIntervalEnum } from '../midgard/midgardTypes'
-import type { ApiGetDepthHistoryParams, DepthHistoryLD } from '../midgard/midgardTypes'
+import { FETCH_TIMEOUT_MS, POLL_INTERVAL_MS, RUNE_ASSET_KEY, RUNE_REFERENCE_POOL } from './const'
+import { assetsToPoll, nextCrossings } from './crossings'
 import type { PriceLevel } from './types'
 
-const POLL_INTERVAL_MS = 30_000
 const STORAGE_KEY = 'asgardex:priceLevels'
 
-type ApiGetDepthHistory$ = (params: ApiGetDepthHistoryParams) => DepthHistoryLD
+type ApiGetPool$ = (asset: AnyAsset) => LiveData<Error, Pool>
+
+/** THORNode `asset_tor_price` is the USD (TOR) price of the asset in 1e8 base units. */
+export const poolToUsdPrice = ({ asset_tor_price }: Pool): number | null => {
+  const price = Number(asset_tor_price) / 10 ** THORCHAIN_DECIMAL
+  return Number.isFinite(price) && price > 0 ? price : null
+}
+
+/** RUNE USD from any pool: the asset's USD price times the pool's asset per RUNE. */
+export const poolToRuneUsdPrice = (pool: Pool): number | null => {
+  const assetUsd = poolToUsdPrice(pool)
+  const assetPerRune = Number(pool.balance_asset) / Number(pool.balance_rune)
+  if (assetUsd === null || !Number.isFinite(assetPerRune) || assetPerRune <= 0) return null
+  return assetUsd * assetPerRune
+}
 
 // ── LocalStorage helpers ──────────────────────────────────────────────
-
-const loadLevels = (assetKey: string): PriceLevel[] => {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_KEY}:${assetKey}`)
-    if (!raw) return []
-    const parsed = JSON.parse(raw) as PriceLevel[]
-    return parsed.map((p) => ({ ...p, amountSymbol: p.amountSymbol ?? '', targetAssetKey: p.targetAssetKey ?? '' }))
-  } catch {
-    return []
-  }
-}
 
 const persistLevels = (assetKey: string, levels: PriceLevel[]) => {
   try {
@@ -40,15 +45,18 @@ const persistLevels = (assetKey: string, levels: PriceLevel[]) => {
   }
 }
 
-const loadAllAssetKeys = (): string[] => {
-  const keys: string[] = []
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (key?.startsWith(`${STORAGE_KEY}:`)) {
-      keys.push(key.replace(`${STORAGE_KEY}:`, ''))
+/** Drop every saved level. A limit order does not survive closing the app. */
+const clearPersistedPriceLevels = () => {
+  try {
+    const keys: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith(`${STORAGE_KEY}:`)) keys.push(key)
     }
+    for (const key of keys) localStorage.removeItem(key)
+  } catch {
+    // ignore
   }
-  return keys
 }
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -77,21 +85,26 @@ export type PriceLevelService = {
   removeLevel: (assetKey: string, levelId: string) => void
   /** Update a level's properties */
   updateLevel: (assetKey: string, levelId: string, updates: Partial<Omit<PriceLevel, 'id'>>) => void
+  /**
+   * Pause this asset's pending levels when its chart unmounts, or resume them when it mounts.
+   * Resume forgets the last cross so the next poll can first-seen trigger.
+   */
+  setWatching: (assetKey: string, watching: boolean) => void
+  /** Forget a level's last cross so the next poll is a first-seen check. */
+  rearmLevel: (levelId: string) => void
   /** Dispose all subscriptions */
   dispose: () => void
 }
 
 // ── Service factory ───────────────────────────────────────────────────
 
-export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$): PriceLevelService => {
+export const createPriceLevelService = (apiGetPool$: ApiGetPool$): PriceLevelService => {
   const subscriptions: Rx.Subscription[] = []
 
-  // Load all persisted levels on init
+  // Saved levels belong to the previous process. Closing the app cancels them,
+  // so a new session starts with an empty book and does not fire a leftover order.
+  clearPersistedPriceLevels()
   const initialLevels: PriceLevelMap = {}
-  for (const assetKey of loadAllAssetKeys()) {
-    const levels = loadLevels(assetKey)
-    if (levels.length > 0) initialLevels[assetKey] = levels
-  }
 
   const { get$: levels$, get: getLevelsMap, set: setLevelsMap } = observableState<PriceLevelMap>(initialLevels)
 
@@ -100,8 +113,10 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
   // Observable prices per asset (THORChain pool price)
   const { get$: prices$, get: getPricesMap, set: setPricesMap } = observableState<Record<string, number>>({})
 
-  // Previous price per asset for crossing detection
-  const prevPrices: Record<string, number> = {}
+  // Previous comparable price per level. Pair and USD levels on one asset do not share an edge.
+  let prevByLevel: Record<string, number> = {}
+  // Levels that already have a comparable price. Resume and rearm delete ids so the next poll is first-seen.
+  let seenLevels = new Set<string>()
 
   // ── Public methods ──────────────────────────────────────────────────
 
@@ -136,80 +151,91 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
     )
   }
 
+  const forgetLevel = (levelId: string) => {
+    seenLevels.delete(levelId)
+    if (prevByLevel[levelId] === undefined) return
+    const next = { ...prevByLevel }
+    delete next[levelId]
+    prevByLevel = next
+  }
+
+  const rearmLevel = (levelId: string) => {
+    forgetLevel(levelId)
+  }
+
+  const setWatching = (assetKey: string, watching: boolean) => {
+    const levels = getLevels(assetKey)
+    if (watching) {
+      let changed = false
+      const next = levels.map((level) => {
+        if (level.status !== 'paused') return level
+        changed = true
+        forgetLevel(level.id)
+        return { ...level, status: 'pending' as const, error: undefined }
+      })
+      if (changed) setLevelsForAsset(assetKey, next)
+      return
+    }
+    let changed = false
+    const next = levels.map((level) => {
+      if (level.status !== 'pending') return level
+      changed = true
+      forgetLevel(level.id)
+      return { ...level, status: 'paused' as const }
+    })
+    if (changed) setLevelsForAsset(assetKey, next)
+  }
+
   // ── Polling logic ───────────────────────────────────────────────────
 
-  const fetchPrice = (poolAsset: AnyAsset): Rx.Observable<number> =>
+  const fetchPoolPrice = (poolAsset: AnyAsset, toPrice: (pool: Pool) => number | null): Rx.Observable<number | null> =>
     FP.pipe(
-      apiGetDepthHistory$({ poolAsset, interval: GetDepthHistoryIntervalEnum.Hour, count: 1 }),
-      RxOp.map((rd) =>
-        FP.pipe(
-          rd,
-          RD.map((history) => {
-            const latest = history.intervals[history.intervals.length - 1]
-            return latest ? parseFloat(latest.assetPriceUSD) : null
-          })
-        )
-      ),
-      RxOp.map((rd) => (RD.isSuccess(rd) ? rd.value : null)),
-      // apiGetDepthHistory$ is backed by a BehaviorSubject that never completes.
-      // Filter out pending/initial/failure (null) and take the first real price,
-      // so the observable completes and the inFlight guard resets for the next poll.
-      RxOp.filter((price): price is number => price !== null),
-      RxOp.take(1)
+      apiGetPool$(poolAsset),
+      RxOp.filter((rd) => RD.isSuccess(rd) || RD.isFailure(rd)),
+      RxOp.take(1),
+      RxOp.map((rd) => (RD.isSuccess(rd) ? toPrice(rd.value) : null))
     )
 
-  // Track which levels have had their first price check (to detect immediate fills)
-  const seenLevels = new Set<string>()
+  const runeReferencePool = assetFromString(RUNE_REFERENCE_POOL)
 
-  const checkCrossings = (assetKey: string, price: number) => {
-    const prevPrice = prevPrices[assetKey]
+  // The streams never complete. Take the first settled result so the observable completes
+  // and the inFlight guard resets for the next poll.
+  const fetchPrice = (assetKey: string, poolAsset: AnyAsset): Rx.Observable<number> =>
+    FP.pipe(
+      assetKey === RUNE_ASSET_KEY
+        ? runeReferencePool
+          ? fetchPoolPrice(runeReferencePool, poolToRuneUsdPrice)
+          : Rx.EMPTY
+        : fetchPoolPrice(poolAsset, poolToUsdPrice),
+      // A hung request errors out; poll() resets inFlight and the next poll retries.
+      RxOp.timeout(FETCH_TIMEOUT_MS),
+      RxOp.filter((price): price is number => price !== null)
+    )
 
-    const levels = getLevels(assetKey).filter((l) => l.status === 'pending')
-    for (const level of levels) {
-      const firstSeen = !seenLevels.has(level.id)
-      if (firstSeen) seenLevels.add(level.id)
-
-      let triggered = false
-
-      if (firstSeen) {
-        // On first price check for this level, trigger immediately if price
-        // already satisfies the condition (e.g. buy placed above current price)
-        triggered = level.type === 'buy' ? price <= level.price : price >= level.price
-      } else if (prevPrice !== undefined) {
-        // On subsequent checks, detect crossing through the level
-        triggered =
-          level.type === 'buy'
-            ? prevPrice > level.price && price <= level.price
-            : prevPrice < level.price && price >= level.price
-      }
-
-      if (triggered) {
-        crossings$$.next({ levelId: level.id, assetKey, level, currentPrice: price })
-      }
-    }
-
-    prevPrices[assetKey] = price
-    setPricesMap({ ...getPricesMap(), [assetKey]: price })
+  const publishPrice = (assetKey: string, price: number) => {
+    const prices = { ...getPricesMap(), [assetKey]: price }
+    setPricesMap(prices)
+    const result = nextCrossings(getLevelsMap(), prices, { seen: seenLevels, prev: prevByLevel })
+    seenLevels = new Set(result.state.seen)
+    prevByLevel = result.state.prev
+    for (const hit of result.hits) crossings$$.next(hit)
   }
 
   // In-flight guard to prevent overlapping fetches per asset
   const inFlight = new Map<string, boolean>()
 
-  // Poll all assets that have pending levels
+  // Poll every pool a pending level needs, including a pair order's counter.
   const poll = () => {
-    const map = getLevelsMap()
-    for (const [assetKey, levels] of Object.entries(map)) {
-      const hasPending = levels.some((l) => l.status === 'pending')
-      if (!hasPending) continue
+    for (const assetKey of assetsToPoll(getLevelsMap())) {
       if (inFlight.get(assetKey)) continue
 
       const poolAsset = assetFromString(assetKey)
       if (!poolAsset) continue
 
       inFlight.set(assetKey, true)
-      const sub = fetchPrice(poolAsset).subscribe({
+      const sub = fetchPrice(assetKey, poolAsset).subscribe({
         next: (price) => {
-          checkCrossings(assetKey, price)
+          publishPrice(assetKey, price)
         },
         complete: () => {
           inFlight.set(assetKey, false)
@@ -247,6 +273,8 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
     addLevel,
     removeLevel,
     updateLevel,
+    setWatching,
+    rearmLevel,
     dispose
   }
 }

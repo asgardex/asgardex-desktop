@@ -6,11 +6,10 @@ import { TxHash } from '@xchainjs/xchain-client'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { sequenceTOption } from '../../../../helpers/fpHelpers'
-import { logger } from '../../../../helpers/logger'
 import { OpenExplorerTxUrl } from '../../../../services/clients'
 import { ApiError } from '../../../../services/wallet/types'
 import { CopyLabel } from '../../../uielements/label'
+import { openTrackedSwap } from '../trackSwap'
 
 type Props = {
   txRD: RD.RemoteData<ApiError, boolean>
@@ -48,41 +47,7 @@ export const TxActions = ({
   }, [txHash, openExplorerTxUrl])
 
   const handleTrack = useCallback(() => {
-    FP.pipe(
-      sequenceTOption(protocol, txHash),
-      O.fold(
-        () => undefined,
-        ([protocolValue, hash]) => {
-          let url: string | undefined
-          switch (protocolValue) {
-            case 'Thorchain':
-              url = `https://track.thorchain.org/${hash}?logo=asgardex.png&network=${network || 'default'}`
-              break
-            case 'Mayachain':
-              url = `https://www.xscanner.org/tx/${hash}`
-              break
-            case 'Chainflip':
-              return FP.pipe(
-                channelId,
-                O.fold(
-                  () => {
-                    logger.warn('Channel ID required for Chainflip tracking')
-                    return undefined
-                  },
-                  (id) => {
-                    window.apiUrl.openExternal(`https://scan.chainflip.io/channels/${id}`)
-                    return undefined
-                  }
-                )
-              )
-            default:
-              return undefined
-          }
-          if (url) window.apiUrl.openExternal(url)
-          return undefined
-        }
-      )
-    )
+    openTrackedSwap(protocol, txHash, channelId, network)
   }, [protocol, txHash, network, channelId])
 
   const txHashStr = FP.pipe(

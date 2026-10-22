@@ -10,7 +10,7 @@ type Props = {
 }
 
 export const ChartDateRangeSelector = ({ selected, onChange }: Props) => (
-  <div className="flex gap-1">
+  <div className="flex flex-wrap gap-1">
     {RANGES.map((range) => (
       <button
         key={range}

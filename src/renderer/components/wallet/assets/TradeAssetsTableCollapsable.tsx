@@ -41,7 +41,6 @@ import {
   getDeepestPool as getDeepestPoolM
 } from '../../../helpers/poolHelperMaya'
 import { hiddenString } from '../../../helpers/stringHelper'
-import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import * as poolsRoutes from '../../../routes/pools'
@@ -73,6 +72,8 @@ export type TradeWalletBalance = Balance & {
   protocol: Chain
 }
 export type TradeWalletBalances = TradeWalletBalance[]
+
+const loadingColumns: ColumnDef<TradeWalletBalance, FixmeType>[] = [{ header: '', cell: () => null }]
 
 type Props = {
   chainBalances: Rx.Observable<ChainBalances>
@@ -113,7 +114,6 @@ export const TradeAssetsTableCollapsable = ({
 }: Props) => {
   const intl = useIntl()
   const navigate = useNavigate()
-  const isXLargeView = useBreakpoint()?.xl ?? false
   const { setProtocol } = useApp()
 
   const { tradeWithdraw$ } = useChainContext()
@@ -446,6 +446,9 @@ export const TradeAssetsTableCollapsable = ({
             )
           )
         )
+        actions.push(
+          createAction('pools.chart', () => navigate(poolsRoutes.detail.path({ asset: assetToString(asset) })))
+        )
       }
       if (targetAsset && hasActivePool) {
         actions.push(
@@ -473,95 +476,63 @@ export const TradeAssetsTableCollapsable = ({
       }
 
       return (
-        <div className="flex justify-center">
-          <ActionButton size="normal" actions={actions} />
+        <div className="flex w-max shrink-0 justify-end">
+          <ActionButton className="!w-auto" size="normal" actions={actions} />
         </div>
       )
     },
     [poolsDataMaya, poolsData, poolDetailsMaya, poolDetails, intl, setProtocol, navigate, network, assetToAddress]
   )
 
-  const columns: ColumnDef<TradeWalletBalance, FixmeType>[] = useMemo(
-    () => [
-      {
-        accessorKey: 'asset',
-        header: '',
-        cell: ({ row }) => {
-          const { asset, protocol } = row.original
-          return (
-            <div className="mx-2 flex items-center space-x-2">
-              <AssetIcon asset={asset} size="normal" network={network} />
-              <div className="flex flex-col">
-                <Label className="!text-16 !leading-[18px]" textTransform="uppercase" weight="bold">
-                  {asset.ticker}
-                </Label>
-                <Label color="primary" weight="bold">
-                  {protocol}
-                </Label>
-              </div>
-            </div>
-          )
-        }
-      },
-      {
-        accessorKey: 'balance',
-        header: '',
-        cell: ({ row }) => {
-          const { asset, amount, protocol } = row.original
-          const assetAmount = baseToAsset(amount)
-          // For very small amounts, use more decimal places to avoid scientific notation
-          const getDecimalPlaces = (amount: AssetAmount) => {
-            const num = amount.amount().toNumber()
-            if (num === 0) return 0
-            if (num < 0.000001) return 8 // Show 8 decimals for very small amounts
-            if (num < 0.001) return 6 // Show 6 decimals for small amounts
-            return 3 // Default 3 decimals
-          }
-          const balance = formatAssetAmountCurrency({
-            amount: assetAmount,
-            asset,
-            decimal: getDecimalPlaces(assetAmount),
-            trimZeros: true
-          })
-          const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
-            if (O.isSome(priceOption)) {
-              return formatAssetAmountCurrency({
-                amount: baseToAsset(priceOption.value),
-                asset: pricePoolAsset,
-                decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
-              })
-            }
-            return null
-          }
-          const priceOption =
-            protocol === MAYAChain
-              ? getPoolPriceValueMaya({
-                  balance: { asset, amount },
-                  poolDetails: poolDetailsMaya,
-                  pricePool: pricePoolMaya
-                })
-              : getPoolPriceValue({
-                  balance: { asset, amount },
-                  poolDetails,
-                  pricePool
-                })
-          const price = formatPrice(priceOption, protocol === MAYAChain ? pricePoolMaya.asset : pricePool.asset)
-          return (
-            <div className="flex flex-col items-end justify-center font-main">
-              <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
-              <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
-            </div>
-          )
-        }
-      },
-      {
-        accessorKey: 'actions',
-        header: '',
-        cell: ({ row }) => renderActionColumn(row.original),
-        size: isXLargeView ? 120 : 250
+  const renderBalance = useCallback(
+    (row: TradeWalletBalance) => {
+      const { asset, amount, protocol } = row
+      const assetAmount = baseToAsset(amount)
+      // For very small amounts, use more decimal places to avoid scientific notation
+      const getDecimalPlaces = (amount: AssetAmount) => {
+        const num = amount.amount().toNumber()
+        if (num === 0) return 0
+        if (num < 0.000001) return 8 // Show 8 decimals for very small amounts
+        if (num < 0.001) return 6 // Show 6 decimals for small amounts
+        return 3 // Default 3 decimals
       }
-    ],
-    [hidePrivateData, isXLargeView, network, poolDetails, poolDetailsMaya, pricePool, pricePoolMaya, renderActionColumn]
+      const balance = formatAssetAmountCurrency({
+        amount: assetAmount,
+        asset,
+        decimal: getDecimalPlaces(assetAmount),
+        trimZeros: true
+      })
+      const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
+        if (O.isSome(priceOption)) {
+          return formatAssetAmountCurrency({
+            amount: baseToAsset(priceOption.value),
+            asset: pricePoolAsset,
+            decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
+          })
+        }
+        return null
+      }
+      const priceOption =
+        protocol === MAYAChain
+          ? getPoolPriceValueMaya({
+              balance: { asset, amount },
+              poolDetails: poolDetailsMaya,
+              pricePool: pricePoolMaya
+            })
+          : getPoolPriceValue({
+              balance: { asset, amount },
+              poolDetails,
+              pricePool
+            })
+      const price = formatPrice(priceOption, protocol === MAYAChain ? pricePoolMaya.asset : pricePool.asset)
+      return (
+        <div className="flex shrink-0 flex-col items-end justify-center font-main whitespace-nowrap">
+          <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
+          <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
+        </div>
+      )
+    },
+    [hidePrivateData, poolDetails, poolDetailsMaya, pricePool, pricePoolMaya]
   )
 
   const renderAssetsTable = useCallback(
@@ -571,17 +542,46 @@ export const TradeAssetsTableCollapsable = ({
         const weightB = CHAIN_WEIGHTS_THOR[b.asset.chain as EnabledChain] ?? Infinity
         return weightA - weightB
       })
+      const showRows = !loading && !isRefreshing && sortedTableData.length > 0
+      if (!showRows) {
+        return (
+          <Table
+            columns={loadingColumns}
+            data={sortedTableData}
+            hideHeader
+            hideVerticalBorder
+            loading={loading || isRefreshing}
+          />
+        )
+      }
+
       return (
-        <Table
-          columns={columns}
-          data={sortedTableData}
-          hideHeader
-          hideVerticalBorder
-          loading={loading || isRefreshing}
-        />
+        <div className="overflow-x-auto rounded-b-lg">
+          <div className="w-max min-w-full">
+            {sortedTableData.map((row) => (
+              <div
+                className="flex h-16 w-full items-center gap-3 border-t border-solid border-gray0/40 bg-bg1 px-2 hover:bg-bg-hover dark:border-gray0d/40 dark:bg-bg1d"
+                key={`${row.protocol}.${row.walletType}.${row.walletAddress}.${assetToString(row.asset)}`}>
+                <div className="mx-2 flex min-w-0 flex-1 items-center space-x-2">
+                  <AssetIcon asset={row.asset} size="normal" network={network} />
+                  <div className="flex min-w-0 flex-col">
+                    <Label className="!text-16 !leading-[18px]" textTransform="uppercase" weight="bold">
+                      {row.asset.ticker}
+                    </Label>
+                    <Label color="primary" weight="bold">
+                      {row.protocol}
+                    </Label>
+                  </div>
+                </div>
+                {renderBalance(row)}
+                {renderActionColumn(row)}
+              </div>
+            ))}
+          </div>
+        </div>
       )
     },
-    [columns, isRefreshing]
+    [isRefreshing, network, renderActionColumn, renderBalance]
   )
 
   const renderGroupedBalances = useCallback(

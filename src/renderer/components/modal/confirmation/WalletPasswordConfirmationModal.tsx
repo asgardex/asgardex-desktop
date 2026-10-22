@@ -21,6 +21,7 @@ type PasswordModalProps = {
   onOk?: FP.Lazy<void>
   onCancel?: FP.Lazy<void>
   isSuccess?: boolean
+  description?: string
 }
 
 const PasswordModal = (props: PasswordModalProps) => {
@@ -31,7 +32,8 @@ const PasswordModal = (props: PasswordModalProps) => {
     onConfirm = FP.constVoid,
     onOk = FP.constVoid,
     onCancel = FP.constVoid,
-    isSuccess
+    isSuccess,
+    description
   } = props
 
   const intl = useIntl()
@@ -70,7 +72,7 @@ const PasswordModal = (props: PasswordModalProps) => {
     // its `onOkHandler` does not support different `onOk` callbacks, but will always close the modal
 
     <Dialog as="div" className="relative z-50" transition open={visible} onClose={onCancel}>
-      <DialogBackdrop className="fixed inset-0 bg-bg0/40 dark:bg-bg0d/40" />
+      <DialogBackdrop className="fixed inset-0 bg-bg0/10 dark:bg-bg0d/10" />
       {/* container to center the panel — offset for sidebar on desktop */}
       <div className="fixed inset-0 flex items-center justify-center p-4 lg:pl-[240px]">
         {/* dialog panel animated  */}
@@ -89,6 +91,11 @@ const PasswordModal = (props: PasswordModalProps) => {
             <Label className="mb-1" size="normal" color="gray">
               {intl.formatMessage({ id: 'wallet.password.confirmation.description' })}
             </Label>
+            {description && (
+              <Label className="mb-1" size="normal" color="gray">
+                {description}
+              </Label>
+            )}
 
             <InputPassword
               // typevalue="normal"
@@ -135,9 +142,11 @@ type Props = {
   onSuccess: FP.Lazy<void>
   onClose: FP.Lazy<void>
   validatePassword$: (_: string) => ValidatePasswordLD
+  /** Extra line under the password prompt. Market swaps leave this unset. */
+  description?: string
 }
 
-export const WalletPasswordConfirmationModal = ({ onSuccess, onClose, validatePassword$ }: Props) => {
+export const WalletPasswordConfirmationModal = ({ onSuccess, onClose, validatePassword$, description }: Props) => {
   const [passwordToValidate, setPasswordToValidate] = useState('')
 
   const passwordValidationResult$ = useMemo(
@@ -185,5 +194,5 @@ export const WalletPasswordConfirmationModal = ({ onSuccess, onClose, validatePa
     )
   }, [passwordValidationRD, setPasswordToValidate, closePrivateModal, onPasswordValidationSucceed])
 
-  return <PasswordModal {...confirmProps} />
+  return <PasswordModal {...confirmProps} description={description} />
 }

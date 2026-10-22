@@ -17,7 +17,7 @@ import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import { THORChain, AssetCacao, AssetBTC } from '../../../../shared/utils/chainIds'
+import { THORChain, MAYAChain, AssetCacao, AssetBTC } from '../../../../shared/utils/chainIds'
 
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
@@ -40,6 +40,7 @@ import { Button, BaseButton } from '../../uielements/button'
 import { Label } from '../../uielements/label'
 import { HeadlessModal as Modal } from '../../uielements/modal'
 import { ProtocolSwitch } from '../../uielements/protocolSwitch'
+import { ProtocolsLp } from '../../uielements/protocolSwitch/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../confirmation'
 import { UnifiedTxModal, getDepositTimerValue } from '../tx'
 
@@ -97,7 +98,10 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
   const [selectedAsset, setSelectedAsset] = useState<O.Option<AnyAsset>>(O.none)
   const [amount, setAmount] = useState('')
   const [selectedWalletType, setSelectedWalletType] = useState<WalletType>(WalletType.Keystore)
-  const [selectedProtocol, setSelectedProtocol] = useState<string>(initialProtocol)
+  // Chainflip has no trade accounts. Anything other than MAYA starts on THORChain.
+  const [selectedProtocol, setSelectedProtocol] = useState<string>(
+    initialProtocol === MAYAChain ? MAYAChain : THORChain
+  )
 
   // Modal states for transaction flow
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
@@ -770,7 +774,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
               {currentProtocol === THORChain ? 'THORChain' : 'MAYAChain'}
             </Label>
             <div className="flex items-center">
-              <ProtocolSwitch protocol={selectedProtocol} setProtocol={handleProtocolChange} />
+              <ProtocolSwitch protocol={selectedProtocol} setProtocol={handleProtocolChange} protocols={ProtocolsLp} />
             </div>
           </div>
 

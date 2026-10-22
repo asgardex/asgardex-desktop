@@ -32,6 +32,8 @@ type Props = {
   onSuccess: FP.Lazy<void>
   onClose: FP.Lazy<void>
   onCancel?: FP.Lazy<void>
+  /** Extra line on a limit-order confirm. Market swaps leave this unset. */
+  description?: string
   validatePassword$: (password: string) => Promise<boolean>
   txState: RD.RemoteData<ApiError, TxHash>
   getActiveVaultId: () => string | undefined
@@ -41,6 +43,7 @@ export const VultisigConfirmationModal = ({
   visible,
   onClose,
   onCancel,
+  description,
   onSuccess,
   chain,
   network,
@@ -308,6 +311,11 @@ export const VultisigConfirmationModal = ({
           <Label align="center" color="gray">
             {intl.formatMessage({ id: 'wallet.vultisig.confirm.enterPassword' })}
           </Label>
+          {description && (
+            <Label align="center" color="gray">
+              {description}
+            </Label>
+          )}
           <InputPassword
             className="w-full"
             size="large"
@@ -382,6 +390,11 @@ export const VultisigConfirmationModal = ({
         <Label align="center" size="big">
           {intl.formatMessage({ id: 'wallet.vultisig.confirm.signing' })}
         </Label>
+        {description && (
+          <Label align="center" color="gray">
+            {description}
+          </Label>
+        )}
       </div>
     )
   }

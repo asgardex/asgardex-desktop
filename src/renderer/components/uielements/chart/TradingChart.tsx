@@ -8,6 +8,7 @@ import {
   LineSeries,
   LineStyle,
   ColorType,
+  type AutoscaleInfo,
   type IChartApi,
   type IPriceLine,
   type ISeriesApi,
@@ -15,6 +16,9 @@ import {
 } from 'lightweight-charts'
 
 import { calculateSMA, calculateEMA, calculateBollingerBands } from '../../../helpers/indicatorHelper'
+import { useApp } from '../../../store/app/hooks'
+import { priceRangeWithLevels } from '../../../views/pools/detail/limitPrice'
+import { chartPriceFormat } from '../../../views/pools/detail/pairChart'
 import type { IndicatorConfig, OHLCVData, PriceLevel } from '../../../views/pools/detail/types'
 
 type Props = {
@@ -32,6 +36,7 @@ const BUY_COLOR = '#22c55e'
 const SELL_COLOR = '#ef4444'
 
 export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceClick }: Props) => {
+  const { isPrivate } = useApp()
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
@@ -128,6 +133,8 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
       color: d.close >= d.open ? `${BULLISH_COLOR}30` : `${BEARISH_COLOR}30`
     }))
 
+    const last = data[data.length - 1]?.close ?? 0
+    candleSeriesRef.current.applyOptions({ priceFormat: chartPriceFormat(last) })
     candleSeriesRef.current.setData(candleData)
     volumeSeriesRef.current.setData(volumeData)
     chartRef.current?.timeScale().fitContent()
@@ -145,11 +152,13 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
 
     const closes = data.map((d) => d.close)
     const times = data.map((d) => d.time as UTCTimestamp)
+    const priceFormat = chartPriceFormat(data[data.length - 1]?.close ?? 0)
 
     const addLineSeries = (values: (number | null)[], color: string, lineWidth: 1 | 2 = 2) => {
       const series = chart.addSeries(LineSeries, {
         color,
         lineWidth,
+        priceFormat,
         priceLineVisible: false,
         lastValueVisible: false,
         crosshairMarkerVisible: false
@@ -194,6 +203,19 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
     const currentIds = new Set(priceLevels.map((l) => l.id))
     const existingMap = priceLevelRefs.current
 
+    // Candle autoscaling ignores price lines, so a resting order below the range never appears.
+    series.applyOptions({
+      autoscaleInfoProvider: (original: () => AutoscaleInfo | null): AutoscaleInfo | null => {
+        const info = original()
+        const range = priceRangeWithLevels(
+          info?.priceRange ?? null,
+          priceLevels.map((level) => level.price)
+        )
+        if (!info || !range || range === info.priceRange) return info
+        return { ...info, priceRange: range }
+      }
+    })
+
     // Remove lines no longer present
     for (const [id, line] of existingMap) {
       if (!currentIds.has(id)) {
@@ -213,7 +235,7 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
       const lineWidth = isActive ? 2 : 1
 
       const typeLabel = level.type === 'buy' ? 'Buy' : 'Sell'
-      const title = level.amount ? `${typeLabel} ${level.amountSymbol}${level.amount}` : typeLabel
+      const title = !isPrivate && level.amount ? `${typeLabel} ${level.amountSymbol}${level.amount}` : typeLabel
 
       const existing = existingMap.get(level.id)
       if (existing) {
@@ -231,7 +253,7 @@ export const TradingChart = ({ data, indicators = [], priceLevels = [], onPriceC
         existingMap.set(level.id, line)
       }
     }
-  }, [priceLevels])
+  }, [isPrivate, priceLevels])
 
   return <div ref={containerRef} className="h-[500px] w-full rounded-lg" />
 }

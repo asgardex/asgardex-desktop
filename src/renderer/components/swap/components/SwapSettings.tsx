@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
+import clsx from 'clsx'
+
 import { useIntl } from 'react-intl'
 
 import type { StreamingMode } from '../../../hooks/useStreamingParams'
@@ -16,6 +18,8 @@ type Props = {
   onQuantityChange: (value: number) => void
   maxStreamingQuantity?: number
   supportRapid?: boolean
+  className?: string
+  headerClassName?: string
 }
 
 const MODE_LABEL_KEYS: Record<StreamingMode, string> = {
@@ -38,7 +42,9 @@ export const SwapSettings = ({
   onIntervalChange,
   onQuantityChange,
   maxStreamingQuantity,
-  supportRapid = true
+  supportRapid = true,
+  className,
+  headerClassName
 }: Props) => {
   const intl = useIntl()
 
@@ -100,9 +106,10 @@ export const SwapSettings = ({
 
   return (
     <Collapse
+      className={className}
       header={
         <div className="flex flex-row items-center justify-between">
-          <span className="m-0 font-main text-[14px] text-text2 dark:text-text2d">
+          <span className={clsx('m-0 font-main text-[14px] text-text2 dark:text-text2d', headerClassName)}>
             {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} ({modeLabel})
           </span>
         </div>
