@@ -126,7 +126,7 @@ export const SwapTxInline = ({
             </span>
           </p>
           {(detail || hasHash) && (
-            <p className="m-0 mt-0.5 flex min-w-0 items-center gap-1.5 font-main text-[10px] text-gray-500">
+            <div className="m-0 mt-0.5 flex min-w-0 items-center gap-1.5 font-main text-[10px] text-gray-500">
               {protocolName && !isOpeningChannel && !errorMsg && (
                 <ProviderIcon
                   protocol={FP.pipe(
@@ -145,7 +145,7 @@ export const SwapTxInline = ({
                   iconClassName="!h-3 !w-3"
                 />
               )}
-            </p>
+            </div>
           )}
         </div>
         <span
