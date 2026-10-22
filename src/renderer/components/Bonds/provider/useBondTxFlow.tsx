@@ -170,6 +170,8 @@ const useTxFlow = <R extends BondTxRequest>({
     if (RD.isInitial(txRD)) return null
 
     const closeHandler = () => {
+      // Closing mid-send would let a reopened form send again
+      if (RD.isPending(txRD)) return
       resetTxState()
       if (RD.isSuccess(txRD) || (RD.isFailure(txRD) && finishOnFailure)) onFinish()
       else if (!RD.isFailure(txRD)) onClose()

@@ -445,7 +445,7 @@ const bonds: BondsMessages = {
   'bonds.runebond.listing.modal.feeMismatch':
     'प्रदाताओं को यहां {fee} दिखेगा, लेकिन नोड ऑन-चेन {nodeFee} लेता है। मेल खाने के लिए नोड शुल्क अपडेट करें।',
   'bonds.runebond.listing.modal.minError': '0 से अधिक न्यूनतम बॉन्ड दर्ज करें',
-  'bonds.runebond.listing.modal.targetError': 'लक्षित कुल बॉन्ड कम से कम न्यूनतम बॉन्ड जितना होना चाहिए',
+  'bonds.runebond.listing.modal.targetError': 'लक्षित कुल बॉन्ड न्यूनतम बॉन्ड से अधिक होना चाहिए',
   'bonds.runebond.listing.modal.feeError': '0% और 100% के बीच मान दर्ज करें',
   'bonds.runebond.listing.modal.sent': 'RUNEBond को भेजा गया',
   'bonds.runebond.listing.modal.signList': 'साइन करें और नोड सूचीबद्ध करें',

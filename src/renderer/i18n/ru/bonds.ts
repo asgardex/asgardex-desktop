@@ -443,7 +443,7 @@ const bonds: BondsMessages = {
   'bonds.runebond.listing.modal.feeMismatch':
     'Провайдеры увидят здесь {fee}, но нода берёт {nodeFee} в сети. Обновите комиссию ноды, чтобы они совпадали.',
   'bonds.runebond.listing.modal.minError': 'Введите минимальный бонд больше 0',
-  'bonds.runebond.listing.modal.targetError': 'Целевой общий бонд должен быть не меньше минимального',
+  'bonds.runebond.listing.modal.targetError': 'Целевой общий бонд должен быть больше минимального',
   'bonds.runebond.listing.modal.feeError': 'Введите значение от 0% до 100%',
   'bonds.runebond.listing.modal.sent': 'Отправляется в RUNEBond',
   'bonds.runebond.listing.modal.signList': 'Подписать и разместить ноду',

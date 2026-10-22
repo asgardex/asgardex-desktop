@@ -445,7 +445,7 @@ const bonds: BondsMessages = {
   'bonds.runebond.listing.modal.feeMismatch':
     'Provider sehen hier {fee}, aber der Node berechnet on-chain {nodeFee}. Passe die Node-Gebühr an.',
   'bonds.runebond.listing.modal.minError': 'Gib einen Mindest-Bond über 0 ein',
-  'bonds.runebond.listing.modal.targetError': 'Der Ziel-Gesamtbond muss mindestens dem Mindest-Bond entsprechen',
+  'bonds.runebond.listing.modal.targetError': 'Der Ziel-Gesamtbond muss größer als der Mindest-Bond sein',
   'bonds.runebond.listing.modal.feeError': 'Gib einen Wert zwischen 0% und 100% ein',
   'bonds.runebond.listing.modal.sent': 'An RUNEBond gesendet',
   'bonds.runebond.listing.modal.signList': 'Signieren & Node listen',

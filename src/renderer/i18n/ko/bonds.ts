@@ -439,7 +439,7 @@ const bonds: BondsMessages = {
   'bonds.runebond.listing.modal.feeMismatch':
     '제공자에게는 여기서 {fee}로 표시되지만, 노드는 온체인에서 {nodeFee}를 적용합니다. 노드 수수료를 맞게 업데이트하세요.',
   'bonds.runebond.listing.modal.minError': '0보다 큰 최소 본드를 입력하세요',
-  'bonds.runebond.listing.modal.targetError': '목표 총 본드는 최소 본드 이상이어야 합니다',
+  'bonds.runebond.listing.modal.targetError': '목표 총 본드는 최소 본드보다 커야 합니다',
   'bonds.runebond.listing.modal.feeError': '0%에서 100% 사이의 값을 입력하세요',
   'bonds.runebond.listing.modal.sent': 'RUNEBond로 전송',
   'bonds.runebond.listing.modal.signList': '서명 후 노드 등록',

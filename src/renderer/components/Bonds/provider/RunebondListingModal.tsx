@@ -179,7 +179,7 @@ export const RunebondListingModal = ({
 
   const minError = terms.minBond.lte(0) ? intl.formatMessage({ id: 'bonds.runebond.listing.modal.minError' }) : null
   const targetError =
-    terms.targetTotalBond.lte(0) || terms.targetTotalBond.lt(terms.minBond)
+    terms.targetTotalBond.lte(0) || terms.targetTotalBond.lte(terms.minBond)
       ? intl.formatMessage({ id: 'bonds.runebond.listing.modal.targetError' })
       : null
   const feeRangeError = isFeeInRange(terms.feeBps)
