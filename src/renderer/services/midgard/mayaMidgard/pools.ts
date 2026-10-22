@@ -647,15 +647,14 @@ const createPoolsService = ({
       liveData.chain((oAddresses) =>
         eqOPoolAddresses.equals(oAddresses, O.some(poolAddress))
           ? Rx.of(RD.success(true))
-          : // TODO (@veado) Add i18n
-            Rx.of(
+          : Rx.of(
               RD.failure(
                 Error(
-                  `Pool address ${poolAddress.address} ${FP.pipe(
-                    poolAddress.router,
-                    O.map((poolAddress) => `and/or router address ${poolAddress} are not available`),
-                    O.getOrElse(() => 'is not available')
-                  )}`
+                  `Pool address ${poolAddress.address} is not the current ${chain} inbound${FP.pipe(
+                    oAddresses,
+                    O.map(({ address }) => ` (${address})`),
+                    O.getOrElse(() => '')
+                  )}. Refresh and try again.`
                 )
               )
             )

@@ -894,10 +894,12 @@ export const TradingPanel = ({
         return FP.pipe(
           oPoolAddr,
           O.chain((poolAddr) => {
-            const spenderAddress = FP.pipe(
-              poolAddr.router,
-              O.getOrElse(() => poolAddr.address)
-            )
+            const spenderAddress = quote.router
+              ? quote.router
+              : FP.pipe(
+                  poolAddr.router,
+                  O.getOrElse(() => poolAddr.address)
+                )
             return O.some({
               network,
               contractAddress: sourceAsset.symbol.split('-')[1] ?? '',

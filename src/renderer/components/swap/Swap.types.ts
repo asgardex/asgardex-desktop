@@ -33,6 +33,8 @@ export enum RateDirection {
 
 export type ExtendedQuoteSwap = QuoteSwap & {
   isBoostQuote?: boolean
+  /** THOR/Maya router from the quote. Absent on aggregator quotes, which drop it. */
+  router?: string
 }
 
 export type SwapProps = {

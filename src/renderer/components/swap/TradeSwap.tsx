@@ -63,6 +63,7 @@ import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { liveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
 import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
+import { poolAddressForQuote } from '../../helpers/tradeQuote'
 import {
   filterWalletBalancesByAssets,
   getWalletBalanceByAssetAndWalletType,
@@ -1074,7 +1075,16 @@ export const TradeSwap = ({
       }
     }
 
-    const oPoolAddress: O.Option<PoolAddress> = getPoolAddress(protocol)
+    const quotedInbound =
+      protocol === THORChain && O.isSome(oQuote)
+        ? { toAddress: oQuote.value.toAddress, router: oQuote.value.txEstimate.router }
+        : protocol === MAYAChain && O.isSome(oQuoteMaya)
+          ? { toAddress: oQuoteMaya.value.toAddress, router: oQuoteMaya.value.router }
+          : undefined
+    const oPoolAddress: O.Option<PoolAddress> = FP.pipe(
+      getPoolAddress(protocol),
+      O.map((poolAddress) => (quotedInbound ? poolAddressForQuote(poolAddress, quotedInbound) : poolAddress))
+    )
 
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB),

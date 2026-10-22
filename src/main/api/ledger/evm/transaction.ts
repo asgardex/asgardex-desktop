@@ -80,12 +80,13 @@ export const evmSend = async ({
     // maxFee is set here, not by xchain — it skips it when baseFee is 0 (BSC).
     const transferFees = evmTransferFees(gasPrices, feeOption, latestBlock?.baseFeePerGas)
 
+    // xchain-evm 2.1.3 rejects a memo on an ERC-20 transfer. Native sends still carry one.
     const txHash = await ledgerClient.transfer({
       walletIndex,
       asset: asset as Asset | TokenAsset,
       recipient,
       amount,
-      memo,
+      ...(isEVMTokenAsset(asset as TokenAsset) ? {} : { memo }),
       ...transferFees
     })
 
