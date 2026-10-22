@@ -55,11 +55,11 @@ export const useMayachainClientUrl = (): {
         if (ping) return RD.success(url)
 
         return RD.failure(
-          Error(intl.formatMessage({ id: 'setting.mayanode.node.error.unhealthy' }, { endpoint: '/ping' }))
+          Error(intl.formatMessage({ id: 'settings.mayanode.node.error.unhealthy' }, { endpoint: '/ping' }))
         )
       }),
       RxOp.catchError((_: Error) =>
-        Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'setting.mayanode.node.error.url' })}`)))
+        Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'settings.mayanode.node.error.url' })}`)))
       )
     )
 
@@ -81,12 +81,12 @@ export const useMayachainClientUrl = (): {
           return RD.success(url)
 
         return RD.failure(
-          Error(intl.formatMessage({ id: 'setting.mayanode.rpc.error.unhealthy' }, { endpoint: '/health' }))
+          Error(intl.formatMessage({ id: 'settings.mayanode.rpc.error.unhealthy' }, { endpoint: '/health' }))
         )
       }),
 
       RxOp.catchError((_: Error) =>
-        Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'setting.mayanode.rpc.error.url' })}`)))
+        Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'settings.mayanode.rpc.error.url' })}`)))
       )
     )
 

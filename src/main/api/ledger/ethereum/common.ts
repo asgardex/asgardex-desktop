@@ -7,9 +7,13 @@ export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
 export const ETHAddress = '0x0000000000000000000000000000000000000000'
 
-export const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
+export const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum.publicnode.com', 'homestead', {
+  staticNetwork: true
+})
 const network = EthersNetwork.from('sepolia')
-export const ETH_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com', network)
+export const ETH_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com', network, {
+  staticNetwork: true
+})
 
 // Helper function to create ethProviders
 export const createEthProviders = (apiKey: string | undefined) => {

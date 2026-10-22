@@ -120,7 +120,7 @@ export default defineConfig(async ({ mode }) => {
         port: 3000,
         host: true,
         watch: {
-          ignored: ['**/.trunk/**']
+          ignored: ['**/.trunk/**', '**/docs/**', '**/logs/**']
         }
       }
     }

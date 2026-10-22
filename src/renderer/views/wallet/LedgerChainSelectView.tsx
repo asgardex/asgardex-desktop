@@ -234,7 +234,7 @@ export const LedgerChainSelectView: React.FC = () => {
                       { id: 'ledger.needsconnected' },
                       { chain: standaloneLedgerState.detectionProgress.currentChain }
                     )
-                  : intl.formatMessage({ id: 'ledger.connect.instructions' })}
+                  : intl.formatMessage({ id: 'ledger.connect.instruction' })}
               </p>
               <p className="text-12 text-text2 opacity-75 dark:text-text2d">
                 Make sure to open the {standaloneLedgerState.detectionProgress?.currentChain || 'required'} app on your

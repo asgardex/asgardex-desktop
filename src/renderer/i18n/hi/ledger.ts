@@ -15,6 +15,7 @@ const ledger: LedgerMessages = {
   'ledger.error.getaddressfailed': 'Ledger से पता जोड़ने में विफल',
   'ledger.error.signfailed': 'Ledger का उपयोग करके लेन-देन हस्ताक्षरित करने में विफल',
   'ledger.error.sendfailed': 'Ledger का उपयोग करके लेन-देन भेजने में विफल',
+  'ledger.error.deposit': 'Ledger का उपयोग करके डिपॉज़िट लेन-देन भेजने में विफल',
   'ledger.error.invalidpubkey': 'Ledger का उपयोग करने के लिए अवैध पब्लिक की।',
   'ledger.error.invaliddata': 'अवैध डेटा।',
   'ledger.error.invalidresponse': 'Ledger का उपयोग करके लेन-देन भेजने के बाद अवैध प्रतिक्रिया।',

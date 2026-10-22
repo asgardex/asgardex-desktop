@@ -1119,6 +1119,7 @@ type LedgerMessageKey =
   | 'ledger.error.getaddressfailed'
   | 'ledger.error.signfailed'
   | 'ledger.error.sendfailed'
+  | 'ledger.error.deposit'
   | 'ledger.error.invalidpubkey'
   | 'ledger.error.invaliddata'
   | 'ledger.error.rejected'

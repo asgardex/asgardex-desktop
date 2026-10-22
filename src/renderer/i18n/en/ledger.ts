@@ -15,6 +15,7 @@ const ledger: LedgerMessages = {
   'ledger.error.getaddressfailed': 'Getting address from Ledger failed',
   'ledger.error.signfailed': 'Signing transaction by Ledger failed',
   'ledger.error.sendfailed': 'Sending transaction by Ledger failed',
+  'ledger.error.deposit': 'Sending deposit transaction by Ledger failed',
   'ledger.error.invalidpubkey': 'Invalid public key for using Ledger.',
   'ledger.error.invaliddata': 'Invalid data.',
   'ledger.error.invalidresponse': 'Invalid response after sending transaction using Ledger.',

@@ -19,8 +19,16 @@ export const DEFAULT_BSC_RPC_URLS: ApiUrls = {
 
 // =====JSON-RPC Providers=====
 // Define providers for BSC mainnet and testnet
-const BSC_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://bsc-dataseed.binance.org/`)
-const BSC_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://data-seed-prebsc-1-s1.binance.org:8545/`)
+const BSC_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(
+  'https://bsc-dataseed.binance.org/',
+  { name: 'bnb', chainId: 56 },
+  { staticNetwork: true }
+)
+const BSC_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(
+  'https://data-seed-prebsc-1-s1.binance.org:8545/',
+  { name: 'bnbt', chainId: 97 },
+  { staticNetwork: true }
+)
 
 const ethersJSProviders = {
   [Network.Mainnet]: BSC_MAINNET_ETHERS_PROVIDER,
@@ -128,7 +136,11 @@ export const createBscParams = (rpcUrl: string, net: Network): EVMClientParams =
   const isTestnet = net === Network.Testnet
   const chainId = isTestnet ? 97 : 56
 
-  const customProvider = new JsonRpcProvider(rpcUrl)
+  const customProvider = new JsonRpcProvider(
+    rpcUrl,
+    { name: isTestnet ? 'bnbt' : 'bnb', chainId },
+    { staticNetwork: true }
+  )
 
   const customProviders = {
     [Network.Mainnet]: net === Network.Mainnet ? customProvider : BSC_MAINNET_ETHERS_PROVIDER,

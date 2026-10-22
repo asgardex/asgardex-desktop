@@ -21,9 +21,13 @@ export const DEFAULT_ETH_RPC_URLS: ApiUrls = {
 
 // =====JSON-RPC Providers=====
 // Define providers for ETH mainnet and testnet
-const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum.publicnode.com', 'homestead')
+const ETH_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum.publicnode.com', 'homestead', {
+  staticNetwork: true
+})
 const network = EthersNetwork.from('sepolia')
-const ETH_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com', network)
+const ETH_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com', network, {
+  staticNetwork: true
+})
 
 const ethersJSProviders = {
   [Network.Mainnet]: ETH_MAINNET_ETHERS_PROVIDER,
@@ -136,7 +140,7 @@ export const createEthParams = (rpcUrl: string, net: Network): EVMClientParams =
   const ethersNetwork = isTestnet ? EthersNetwork.from('sepolia') : 'homestead'
   const chainId = isTestnet ? 11155111 : 1
 
-  const customProvider = new JsonRpcProvider(rpcUrl, ethersNetwork)
+  const customProvider = new JsonRpcProvider(rpcUrl, ethersNetwork, { staticNetwork: true })
 
   const customProviders = {
     [Network.Mainnet]: net === Network.Mainnet ? customProvider : ETH_MAINNET_ETHERS_PROVIDER,
