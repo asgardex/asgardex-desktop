@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { hiddenString } from '../../../helpers/stringHelper'
+import { POLL_INTERVAL_MS } from '../../../services/priceLevel'
 import type { PriceLevel } from '../../../services/priceLevel/types'
 import { useApp } from '../../../store/app/hooks'
 import { isLimitErrorId } from './limitFill'
@@ -10,7 +11,13 @@ import { isLimitErrorId } from './limitFill'
 type Props = {
   levels: PriceLevel[]
   onRemove: (levelId: string) => void
+  // Latest price the order watcher compared against, and when it was read.
+  watcherPrice?: number
+  watcherCheckedAt?: number
 }
+
+// Finished or waiting orders can be removed. An order mid-swap cannot.
+const isRemovable = (status: PriceLevel['status']): boolean => status !== 'executing' && status !== 'confirming'
 
 const STATUS_KEY: Record<PriceLevel['status'], string> = {
   pending: 'pools.chart.tradingPanel.priceLevel.pending',
@@ -38,7 +45,7 @@ const tickerFromAssetKey = (key: string): string => {
   return symbol.split('-')[0]
 }
 
-export const TradingPanelPriceLevels = ({ levels, onRemove }: Props) => {
+export const TradingPanelPriceLevels = ({ levels, onRemove, watcherPrice, watcherCheckedAt }: Props) => {
   const intl = useIntl()
   const { isPrivate } = useApp()
 
@@ -52,6 +59,18 @@ export const TradingPanelPriceLevels = ({ levels, onRemove }: Props) => {
         </span>
         <span className="text-10 font-main text-gray-600">{levels.length}</span>
       </div>
+      {watcherPrice !== undefined && watcherCheckedAt !== undefined && (
+        <div className="text-10 mb-2 font-main text-gray-500">
+          {intl.formatMessage(
+            { id: 'pools.chart.tradingPanel.priceLevel.watcher' },
+            {
+              price: isPrivate ? hiddenString : watcherPrice.toLocaleString(undefined, { maximumFractionDigits: 2 }),
+              time: new Date(watcherCheckedAt).toLocaleTimeString(),
+              seconds: POLL_INTERVAL_MS / 1000
+            }
+          )}
+        </div>
+      )}
       <div className="flex flex-col gap-1.5">
         {levels.map((level) => (
           <div
@@ -104,7 +123,7 @@ export const TradingPanelPriceLevels = ({ levels, onRemove }: Props) => {
             )}
 
             {/* Remove */}
-            {(level.status === 'pending' || level.status === 'paused' || level.status === 'triggered') && (
+            {isRemovable(level.status) && (
               <button
                 onClick={() => onRemove(level.id)}
                 className="rounded p-0.5 text-gray-600 transition-colors hover:bg-white/10 hover:text-white"

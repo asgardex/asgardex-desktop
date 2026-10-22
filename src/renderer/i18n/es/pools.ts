@@ -72,6 +72,8 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': 'Saldo insuficiente',
   'pools.chart.tradingPanel.priceLevel.noRoute': 'No hay una ruta de swap válida',
   'pools.chart.tradingPanel.priceLevel.timedOut': 'La cotización no llegó a tiempo',
+  'pools.chart.tradingPanel.priceLevel.watcher':
+    'Precio de activación ${price} (THORChain), revisado {time}. Se actualiza cada {seconds} s.',
   'pools.chart.tradingPanel.approve': 'Aprobar',
   'pools.chart.tradingPanel.size': 'Tamaño',
   'pools.chart.tradingPanel.available': '{amount} disponible',
@@ -88,11 +90,12 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.empty': 'No hay swaps para este par',
   'pools.chart.tradingPanel.swaps.error': 'No se han podido cargar los swaps',
   'pools.chart.tradingPanel.limit': 'Límite',
+  'pools.chart.tradingPanel.limit.beta': 'Beta',
+  'pools.chart.tradingPanel.limit.betaNote': 'Las órdenes límite están en beta. La app vigila el precio mientras está abierta y, cuando se alcanza tu precio, te pide confirmar un swap de mercado. El swap usa tu ajuste de deslizamiento, así que puede ejecutarse por debajo de tu límite.',
   'pools.chart.tradingPanel.market': 'Mercado',
   'pools.chart.tradingPanel.limit.hint':
     'Crea una compra o una venta en {price}. La app vigila el precio del pool y cambia cuando lo cruza. La orden solo sigue abierta mientras este gráfico está abierto. Salir del gráfico la pausa, y cerrar la app la cancela.',
-  'pools.chart.tradingPanel.limit.triggered':
-    'Tu orden límite se activó. Confirma para cambiar a la cotización en vivo.',
+  'pools.chart.tradingPanel.limit.triggered': 'Orden límite activada: {side, select, buy {compra con} other {venta de}} {amount} {symbol} a {price} {unit}, pagada desde tu {source, select, trade {cuenta de trading} other {billetera}}. Confirma para hacer el swap con la cotización actual.',
   'pools.chart.tradingPanel.market.hint': 'Intercambia ahora al precio actual.',
   'pools.chart.tradingPanel.placeOrder': 'Colocar orden',
   'pools.chart.tradingPanel.swapNow': 'Cambiar ahora',

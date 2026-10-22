@@ -1016,9 +1016,21 @@ export const TradingPanel = ({
       swapState,
       getActiveVaultId,
       resetSwapState,
-      swapDescription: limitConfirmNote
-        ? intl.formatMessage({ id: 'pools.chart.tradingPanel.limit.triggered' })
-        : undefined,
+      swapDescription:
+        limitConfirmNote && activeLevelRef.current
+          ? intl.formatMessage(
+              { id: 'pools.chart.tradingPanel.limit.triggered' },
+              {
+                side: activeLevelRef.current.type,
+                amount: activeLevelRef.current.amount,
+                symbol: activeLevelRef.current.amountSymbol,
+                price: formatLimitInput(activeLevelRef.current.price),
+                unit: activeLevelRef.current.unit === 'pair' ? (selectedTarget?.ticker ?? '') : 'USD',
+                // The balance this swap actually spends, which is the panel's current settlement.
+                source: settlement
+              }
+            )
+          : undefined,
       onSwapDismiss: () => limitApiRef.current.dismiss()
     })
 
@@ -1037,6 +1049,7 @@ export const TradingPanel = ({
   // Skipped while confirming or while SwapTxModal is showing an in-flight swap.
   const quoteFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevAmountRef = useRef(amountStr)
+  const prevLimitWaitGenRef = useRef(limitWaitGen)
   const hadAmountRef = useRef(false)
 
   useEffect(() => {
@@ -1061,8 +1074,11 @@ export const TradingPanel = ({
       void fetchQuote(amt)
     }
 
-    // If only amount changed, debounce to avoid fetching on every keystroke
-    const amountChanged = prevAmountRef.current !== amountStr
+    // If only amount changed, debounce to avoid fetching on every keystroke.
+    // A started limit level always fetches at once: its inputs may equal the ticket's.
+    const levelStarted = prevLimitWaitGenRef.current !== limitWaitGen
+    prevLimitWaitGenRef.current = limitWaitGen
+    const amountChanged = !levelStarted && prevAmountRef.current !== amountStr
     prevAmountRef.current = amountStr
 
     if (quoteFetchTimerRef.current) clearTimeout(quoteFetchTimerRef.current)
@@ -1087,7 +1103,8 @@ export const TradingPanel = ({
     settlement,
     protocol,
     sourceDecimal,
-    affiliateBpsValue
+    affiliateBpsValue,
+    limitWaitGen
   ])
 
   // ── Actions ───────────────────────────────────────────────────────────
@@ -1307,6 +1324,8 @@ export const TradingPanel = ({
 
   const handleRemoveLevel = useCallback(
     (levelId: string) => {
+      // A queued crossing of this level must not start an order the user deleted.
+      queuedCrossingsRef.current = queuedCrossingsRef.current.filter((event) => event.levelId !== levelId)
       priceLevelService.removeLevel(assetKey, levelId)
     },
     [priceLevelService, assetKey]
@@ -1319,6 +1338,21 @@ export const TradingPanel = ({
       const numAmount = amountOverride ?? parseFloat(sizeStr)
       if (!numAmount || numAmount <= 0 || !Number.isFinite(price) || price <= 0) return
 
+      const targetAssetKey = assetToString(selectedTarget)
+      const isOpen = (status: PriceLevel['status']) => status !== 'completed' && status !== 'failed'
+      // A double click must not park the same order twice.
+      const isDuplicate = priceLevelService
+        .getLevels(assetKey)
+        .some(
+          (level) =>
+            isOpen(level.status) &&
+            level.type === side &&
+            level.price === price &&
+            level.amount === numAmount &&
+            level.targetAssetKey === targetAssetKey
+        )
+      if (isDuplicate) return
+
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
       priceLevelService.addLevel(assetKey, {
         id,
@@ -1328,7 +1362,7 @@ export const TradingPanel = ({
         type: side,
         amount: numAmount,
         amountSymbol: side === 'sell' ? poolAsset.ticker : selectedTarget.ticker,
-        targetAssetKey: assetToString(selectedTarget),
+        targetAssetKey,
         status: 'pending'
       })
     },
@@ -1391,9 +1425,22 @@ export const TradingPanel = ({
   }, [handleRef, setLimitPriceFromChart])
 
   const poolPrices = useObservableState(priceLevelService.prices$, {})
+  // The watcher publishes a fresh map on every poll, so each emission is a check.
+  const [watcherCheckedAt, setWatcherCheckedAt] = useState<number | undefined>(undefined)
+  useEffect(() => {
+    if (poolPrices[assetKey] !== undefined) setWatcherCheckedAt(Date.now())
+  }, [poolPrices, assetKey])
 
   limitApiRef.current = {
     start: (event) => {
+      // A queued event can outlive its level: skip it and move on to the next one.
+      const current = priceLevelService.getLevels(assetKey).find((l) => l.id === event.levelId)
+      if (!current || (current.status !== 'pending' && current.status !== 'triggered')) {
+        const settled = settleLimitQueue(queuedCrossingsRef.current)
+        queuedCrossingsRef.current = settled.waiting
+        if (settled.next) limitApiRef.current.start(settled.next)
+        return
+      }
       const level = event.level
       executingLevelRef.current = event.levelId
       activeLevelRef.current = level
@@ -1645,7 +1692,12 @@ export const TradingPanel = ({
         limitUsd={storedLimit}
       />
 
-      <TradingPanelPriceLevels levels={priceLevels} onRemove={handleRemoveLevel} />
+      <TradingPanelPriceLevels
+        levels={priceLevels}
+        onRemove={handleRemoveLevel}
+        watcherPrice={poolPrices[assetKey]}
+        watcherCheckedAt={watcherCheckedAt}
+      />
 
       {hasWallet && (
         <TradingPanelSwaps

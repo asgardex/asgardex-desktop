@@ -1,22 +1,20 @@
 import * as RD from '@devexperts/remote-data-ts'
-import type { DepthHistory, DepthHistoryItem } from '@xchainjs/xchain-midgard'
+import type { Pool } from '@xchainjs/xchain-thornode'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { FETCH_TIMEOUT_MS, POLL_INTERVAL_MS } from './const'
 import type { PriceLevelEvent } from './priceLevelService'
-import { createPriceLevelService } from './priceLevelService'
+import { createPriceLevelService, poolToRuneUsdPrice, poolToUsdPrice } from './priceLevelService'
 import type { PriceLevel } from './types'
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-/** Build a mock apiGetDepthHistory$ that emits a given USD price */
-const mockDepthApi = (priceUSD: number) => {
-  const item: Partial<DepthHistoryItem> = { assetPriceUSD: String(priceUSD) }
-  const history: Partial<DepthHistory> = {
-    intervals: [item as DepthHistoryItem]
-  }
-  return () => Rx.of(RD.success(history as DepthHistory))
-}
+/** THORNode pool with `asset_tor_price` (USD in 1e8 base units) */
+const poolWithUsd = (priceUSD: number): Pool => ({ asset_tor_price: String(Math.round(priceUSD * 1e8)) }) as Pool
+
+/** Build a mock apiGetThorchainPool$ that emits a given USD price */
+const mockDepthApi = (priceUSD: number) => () => Rx.of(RD.success(poolWithUsd(priceUSD)))
 
 /** Build a level helper */
 const mkLevel = (overrides: Partial<PriceLevel> & { id: string; price: number; type: 'buy' | 'sell' }): PriceLevel => ({
@@ -49,6 +47,17 @@ afterEach(() => {
 })
 
 // ── Tests ────────────────────────────────────────────────────────────
+
+describe('poolToUsdPrice', () => {
+  it('converts asset_tor_price from 1e8 base units to USD', () => {
+    expect(poolToUsdPrice({ asset_tor_price: '8358522046778' } as Pool)).toBeCloseTo(83585.22046778, 6)
+  })
+
+  it('returns null for a missing or zero price', () => {
+    expect(poolToUsdPrice({ asset_tor_price: '0' } as Pool)).toBeNull()
+    expect(poolToUsdPrice({} as Pool)).toBeNull()
+  })
+})
 
 describe('priceLevelService', () => {
   describe('CRUD operations', () => {
@@ -104,14 +113,14 @@ describe('priceLevelService', () => {
   })
 
   describe('non-completing observable (real-world scenario)', () => {
-    it('polls repeatedly even when apiGetDepthHistory$ never completes', () => {
+    it('polls repeatedly even when apiGetPool$ never completes', () => {
       // This simulates the real Midgard API: emits RD.pending then RD.success,
       // but the observable never completes (backed by a BehaviorSubject).
       // The fix: fetchPrice uses filter+take(1) to auto-complete.
-      const priceSubjects: Rx.BehaviorSubject<RD.RemoteData<Error, DepthHistory>>[] = []
+      const priceSubjects: Rx.BehaviorSubject<RD.RemoteData<Error, Pool>>[] = []
 
       const api = () => {
-        const subj = new Rx.BehaviorSubject<RD.RemoteData<Error, DepthHistory>>(RD.pending)
+        const subj = new Rx.BehaviorSubject<RD.RemoteData<Error, Pool>>(RD.pending)
         priceSubjects.push(subj)
         return subj.asObservable() // never completes (like real Midgard)
       }
@@ -125,17 +134,17 @@ describe('priceLevelService', () => {
       svc.crossings$.subscribe((e) => events.push(e))
 
       // First poll
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       const first = priceSubjects[priceSubjects.length - 1]
       // Emit success (simulating Midgard response) — filter+take(1) will complete it
-      first.next(RD.success({ intervals: [{ assetPriceUSD: '110' }] } as unknown as DepthHistory))
+      first.next(RD.success(poolWithUsd(110)))
       expect(events).toHaveLength(0) // First price just sets prevPrice
 
       // Second poll — should NOT be blocked by inFlight since take(1) completed the first
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       expect(priceSubjects.length).toBeGreaterThanOrEqual(2) // new subject was created
       const second = priceSubjects[priceSubjects.length - 1]
-      second.next(RD.success({ intervals: [{ assetPriceUSD: '95' }] } as unknown as DepthHistory))
+      second.next(RD.success(poolWithUsd(95)))
 
       expect(events).toHaveLength(1)
       expect(events[0].levelId).toBe('buy1')
@@ -157,9 +166,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -172,7 +179,7 @@ describe('priceLevelService', () => {
 
       // Initial poll happened at creation (no levels yet, so nothing fetched)
       // Advance to first poll with the level
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       expect(priceSubjects.length).toBeGreaterThanOrEqual(1)
 
       // Emit first price: 110 (above buy level) — sets prevPrice, no crossing
@@ -182,7 +189,7 @@ describe('priceLevelService', () => {
       expect(events).toHaveLength(0)
 
       // Next poll
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       const secondSubj = priceSubjects[priceSubjects.length - 1]
       // Emit second price: 95 (below buy level of 100) — crossing!
       secondSubj.next(95)
@@ -203,9 +210,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -217,14 +222,14 @@ describe('priceLevelService', () => {
       svc.crossings$.subscribe((e) => events.push(e))
 
       // First poll
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       const first = priceSubjects[priceSubjects.length - 1]
       first.next(48000) // below sell level
       first.complete()
       expect(events).toHaveLength(0)
 
       // Second poll
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       const second = priceSubjects[priceSubjects.length - 1]
       second.next(51000) // above sell level of 50000 — crossing!
       second.complete()
@@ -244,9 +249,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -258,12 +261,12 @@ describe('priceLevelService', () => {
       svc.crossings$.subscribe((e) => events.push(e))
 
       // First poll: price 110
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(110)
       priceSubjects[priceSubjects.length - 1].complete()
 
       // Second poll: price 105 (still above 100, no crossing)
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(105)
       priceSubjects[priceSubjects.length - 1].complete()
 
@@ -279,9 +282,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -296,12 +297,12 @@ describe('priceLevelService', () => {
       svc.crossings$.subscribe((e) => events.push(e))
 
       // First poll: 110
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(110)
       priceSubjects[priceSubjects.length - 1].complete()
 
       // Second poll: 95 — crosses 100 (completed) but not 50 (pending)
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(95)
       priceSubjects[priceSubjects.length - 1].complete()
 
@@ -319,9 +320,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -333,12 +332,12 @@ describe('priceLevelService', () => {
       svc.crossings$.subscribe((e) => events.push(e))
 
       // First poll: 110
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(110)
       priceSubjects[priceSubjects.length - 1].complete()
 
       // Second poll: exactly 100 — price <= level.price, should trigger
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(100)
       priceSubjects[priceSubjects.length - 1].complete()
 
@@ -355,9 +354,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -370,7 +367,7 @@ describe('priceLevelService', () => {
         latestPrices = p
       })
 
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(2500)
       priceSubjects[priceSubjects.length - 1].complete()
 
@@ -386,9 +383,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -401,7 +396,7 @@ describe('priceLevelService', () => {
       svc.crossings$.subscribe((e) => events.push(e))
 
       // First poll — both assets fetched (2 subjects created)
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       // ETH price 2500, BTC price 55000
       const initialSubjects = priceSubjects.slice(-2)
       initialSubjects[0].next(2500)
@@ -411,7 +406,7 @@ describe('priceLevelService', () => {
       expect(events).toHaveLength(0)
 
       // Second poll
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       const secondSubjects = priceSubjects.slice(-2)
       // ETH drops to 1900 (crosses 2000 buy) — trigger
       secondSubjects[0].next(1900)
@@ -438,9 +433,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -453,7 +446,7 @@ describe('priceLevelService', () => {
       svc.crossings$.subscribe((e) => events.push(e))
 
       // First poll — price is 95 which is already below buy level of 100
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(95)
       priceSubjects[priceSubjects.length - 1].complete()
 
@@ -472,9 +465,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -486,7 +477,7 @@ describe('priceLevelService', () => {
       svc.crossings$.subscribe((e) => events.push(e))
 
       // First poll — price is 110 which is already above sell level of 100
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(110)
       priceSubjects[priceSubjects.length - 1].complete()
 
@@ -504,9 +495,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -518,7 +507,7 @@ describe('priceLevelService', () => {
       svc.crossings$.subscribe((e) => events.push(e))
 
       // First poll — price 110 is above buy level 100, should NOT trigger
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(110)
       priceSubjects[priceSubjects.length - 1].complete()
 
@@ -536,9 +525,7 @@ describe('priceLevelService', () => {
       const api = () => {
         const subj = new Rx.ReplaySubject<number>(1)
         priceSubjects.push(subj)
-        return subj.pipe(
-          RxOp.map((p) => RD.success({ intervals: [{ assetPriceUSD: String(p) }] } as unknown as DepthHistory))
-        )
+        return subj.pipe(RxOp.map((p) => RD.success(poolWithUsd(p))))
       }
 
       vi.useFakeTimers()
@@ -549,7 +536,7 @@ describe('priceLevelService', () => {
       const events: PriceLevelEvent[] = []
       svc.crossings$.subscribe((e) => events.push(e))
 
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(110)
       priceSubjects[priceSubjects.length - 1].complete()
       expect(events).toHaveLength(0)
@@ -557,13 +544,13 @@ describe('priceLevelService', () => {
       svc.setWatching('ETH.ETH', false)
       expect(svc.getLevels('ETH.ETH')[0].status).toBe('paused')
 
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       expect(events).toHaveLength(0)
 
       svc.setWatching('ETH.ETH', true)
       expect(svc.getLevels('ETH.ETH')[0].status).toBe('pending')
 
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
       priceSubjects[priceSubjects.length - 1].next(90)
       priceSubjects[priceSubjects.length - 1].complete()
 
@@ -593,5 +580,130 @@ describe('priceLevelService', () => {
 
       vi.useRealTimers()
     })
+  })
+})
+
+describe('fetch failures', () => {
+  const stubStorage = () => {
+    vi.stubGlobal('localStorage', {
+      getItem: () => null,
+      setItem: () => undefined,
+      removeItem: () => undefined,
+      key: () => null,
+      length: 0
+    })
+  }
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('publishes nothing for a failed fetch and fetches again on the next poll', () => {
+    stubStorage()
+    vi.useFakeTimers()
+    const api = vi.fn(() => Rx.of(RD.failure<Error, Pool>(Error('boom'))))
+    const svc = createPriceLevelService(api)
+    const prices: Record<string, number>[] = []
+    svc.prices$.subscribe((p) => prices.push(p))
+    svc.addLevel('ETH.ETH', mkLevel({ id: 'l1', price: 100, type: 'buy' }))
+
+    vi.advanceTimersByTime(POLL_INTERVAL_MS)
+    expect(api).toHaveBeenCalledTimes(1)
+    vi.advanceTimersByTime(POLL_INTERVAL_MS)
+    expect(api).toHaveBeenCalledTimes(2)
+    expect(prices.every((p) => p['ETH.ETH'] === undefined)).toBe(true)
+    svc.dispose()
+  })
+
+  it('times out a fetch that never emits and fetches again on the next poll', () => {
+    stubStorage()
+    vi.useFakeTimers()
+    const api = vi.fn(() => Rx.NEVER)
+    const svc = createPriceLevelService(api)
+    const prices: Record<string, number>[] = []
+    svc.prices$.subscribe((p) => prices.push(p))
+    svc.addLevel('ETH.ETH', mkLevel({ id: 'l1', price: 100, type: 'buy' }))
+
+    vi.advanceTimersByTime(POLL_INTERVAL_MS)
+    expect(api).toHaveBeenCalledTimes(1)
+    // Still in flight: the next poll is skipped
+    vi.advanceTimersByTime(POLL_INTERVAL_MS)
+    expect(api).toHaveBeenCalledTimes(1)
+    // Timeout fires, then the following poll retries
+    vi.advanceTimersByTime(FETCH_TIMEOUT_MS)
+    vi.advanceTimersByTime(POLL_INTERVAL_MS)
+    expect(api.mock.calls.length).toBeGreaterThanOrEqual(2)
+    expect(prices.every((p) => p['ETH.ETH'] === undefined)).toBe(true)
+    svc.dispose()
+  })
+})
+
+describe('RUNE counter price', () => {
+  // BTC at $84,000 in TOR, 100 BTC against 12,474,000 RUNE: 1 RUNE = 84,000 / 124,740 ≈ $0.6734
+  const btcPool = (overrides: Partial<Pool> = {}) =>
+    ({
+      asset: 'BTC.BTC',
+      asset_tor_price: '8400000000000',
+      balance_asset: '10000000000',
+      balance_rune: '1247400000000000',
+      ...overrides
+    }) as Pool
+
+  it('derives RUNE USD from a pool price and its balances', () => {
+    expect(poolToRuneUsdPrice(btcPool())).toBeCloseTo(84000 / 124740, 6)
+    expect(poolToRuneUsdPrice(btcPool({ asset_tor_price: '0' }))).toBeNull()
+    expect(poolToRuneUsdPrice(btcPool({ balance_rune: '0' }))).toBeNull()
+  })
+
+  it('prices THOR.RUNE from the BTC pool', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: () => null,
+      setItem: () => undefined,
+      removeItem: () => undefined,
+      key: () => null,
+      length: 0
+    })
+    vi.useFakeTimers()
+    try {
+      const pool = vi.fn((asset: { chain: string }) =>
+        Rx.of(asset.chain === 'BTC' ? RD.success(btcPool()) : RD.failure<Error, Pool>(Error('no pool')))
+      )
+      const svc = createPriceLevelService(pool)
+      let latest: Record<string, number> = {}
+      svc.prices$.subscribe((p) => (latest = p))
+      svc.addLevel('THOR.RUNE', mkLevel({ id: 'r1', price: 1, type: 'buy' }))
+
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
+      expect(pool).toHaveBeenCalledWith(expect.objectContaining({ chain: 'BTC', symbol: 'BTC' }))
+      expect(latest['THOR.RUNE']).toBeCloseTo(84000 / 124740, 6)
+      svc.dispose()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('publishes nothing when the reference pool request fails', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: () => null,
+      setItem: () => undefined,
+      removeItem: () => undefined,
+      key: () => null,
+      length: 0
+    })
+    vi.useFakeTimers()
+    try {
+      const pool = vi.fn(() => Rx.of(RD.failure<Error, Pool>(Error('boom'))))
+      const svc = createPriceLevelService(pool)
+      let latest: Record<string, number> = {}
+      svc.prices$.subscribe((p) => (latest = p))
+      svc.addLevel('THOR.RUNE', mkLevel({ id: 'r1', price: 1, type: 'buy' }))
+
+      vi.advanceTimersByTime(POLL_INTERVAL_MS)
+      expect(pool).toHaveBeenCalled()
+      expect(latest['THOR.RUNE']).toBeUndefined()
+      svc.dispose()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

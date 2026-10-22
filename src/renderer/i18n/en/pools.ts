@@ -72,6 +72,8 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': 'Balance too low',
   'pools.chart.tradingPanel.priceLevel.noRoute': 'No valid swap route',
   'pools.chart.tradingPanel.priceLevel.timedOut': 'The quote did not arrive in time',
+  'pools.chart.tradingPanel.priceLevel.watcher':
+    'Trigger price ${price} (THORChain), checked {time}. Updates every {seconds}s.',
   'pools.chart.tradingPanel.approve': 'Approve',
   'pools.chart.tradingPanel.size': 'Size',
   'pools.chart.tradingPanel.available': '{amount} available',
@@ -88,10 +90,12 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.empty': 'No swaps for this pair',
   'pools.chart.tradingPanel.swaps.error': 'Could not load swaps',
   'pools.chart.tradingPanel.limit': 'Limit',
+  'pools.chart.tradingPanel.limit.beta': 'Beta',
+  'pools.chart.tradingPanel.limit.betaNote': 'Limit orders are in beta. The app watches the price while it is open and, when your price is reached, asks you to confirm a market swap. The swap uses your slippage setting, so it can fill below your limit.',
   'pools.chart.tradingPanel.market': 'Market',
   'pools.chart.tradingPanel.limit.hint':
     'Places a buy or sell at {price}. The app watches the pool price and swaps when it crosses. The order stays open only while this chart is open. Leaving the chart pauses it, and closing the app cancels it.',
-  'pools.chart.tradingPanel.limit.triggered': 'Your limit order triggered. Confirm to swap at the live quote.',
+  'pools.chart.tradingPanel.limit.triggered': 'Limit order triggered: {side, select, buy {buy with} other {sell}} {amount} {symbol} at {price} {unit}, paid from your {source, select, trade {trade account} other {wallet}}. Confirm to swap at the live quote.',
   'pools.chart.tradingPanel.market.hint': 'Swaps now at the current price.',
   'pools.chart.tradingPanel.placeOrder': 'Place order',
   'pools.chart.tradingPanel.swapNow': 'Swap now',

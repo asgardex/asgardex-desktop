@@ -755,6 +755,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     reloadRunePoolProvider,
     getTxStatus$,
     reloadTxStatus,
+    apiGetThorchainPool$,
     getThorchainPool$,
     reloadThorchainPool,
     getTradeAccount$,

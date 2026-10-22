@@ -72,6 +72,8 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': 'बैलेंस कम है',
   'pools.chart.tradingPanel.priceLevel.noRoute': 'कोई मान्य स्वैप मार्ग नहीं है',
   'pools.chart.tradingPanel.priceLevel.timedOut': 'कोट समय पर नहीं आया',
+  'pools.chart.tradingPanel.priceLevel.watcher':
+    'ट्रिगर मूल्य ${price} (THORChain), {time} पर जाँचा गया। हर {seconds} सेकंड में अपडेट होता है।',
   'pools.chart.tradingPanel.approve': 'अनुमोदन',
   'pools.chart.tradingPanel.size': 'आकार',
   'pools.chart.tradingPanel.available': '{amount} उपलब्ध',
@@ -88,11 +90,12 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.empty': 'इस जोड़ी के लिए कोई स्वैप नहीं',
   'pools.chart.tradingPanel.swaps.error': 'स्वैप लोड नहीं हो सके',
   'pools.chart.tradingPanel.limit': 'लिमिट',
+  'pools.chart.tradingPanel.limit.beta': 'बीटा',
+  'pools.chart.tradingPanel.limit.betaNote': 'लिमिट ऑर्डर बीटा में हैं। ऐप खुले रहने तक कीमत पर नज़र रखता है और आपकी कीमत आने पर मार्केट स्वैप की पुष्टि करने को कहता है। स्वैप आपकी स्लिपेज सेटिंग का उपयोग करता है, इसलिए यह आपकी लिमिट से नीचे भर सकता है।',
   'pools.chart.tradingPanel.market': 'मार्केट',
   'pools.chart.tradingPanel.limit.hint':
     '{price} पर खरीद या बिक्री का ऑर्डर लगता है। ऐप पूल कीमत देखता है और कीमत पार होने पर स्वैप करता है। ऑर्डर तभी खुला रहता है जब यह चार्ट खुला हो। चार्ट छोड़ने पर ऑर्डर रुकता है, और ऐप बंद करने पर रद्द हो जाता है।',
-  'pools.chart.tradingPanel.limit.triggered':
-    'आपका लिमिट ऑर्डर ट्रिगर हो गया। लाइव कोट पर स्वैप करने के लिए पुष्टि करें।',
+  'pools.chart.tradingPanel.limit.triggered': 'लिमिट ऑर्डर ट्रिगर हुआ: {price} {unit} पर {amount} {symbol} {side, select, buy {से खरीद} other {बिक्री}}, भुगतान आपके {source, select, trade {ट्रेड अकाउंट} other {वॉलेट}} से। मौजूदा कोट पर स्वैप करने के लिए पुष्टि करें।',
   'pools.chart.tradingPanel.market.hint': 'मौजूदा कीमत पर अभी स्वैप होता है।',
   'pools.chart.tradingPanel.placeOrder': 'ऑर्डर लगाएँ',
   'pools.chart.tradingPanel.swapNow': 'अभी स्वैप करें',

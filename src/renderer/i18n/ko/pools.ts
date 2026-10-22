@@ -72,6 +72,8 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': '잔액이 부족합니다',
   'pools.chart.tradingPanel.priceLevel.noRoute': '유효한 스왑 경로가 없습니다',
   'pools.chart.tradingPanel.priceLevel.timedOut': '견적이 제때 도착하지 않았습니다',
+  'pools.chart.tradingPanel.priceLevel.watcher':
+    '트리거 가격 ${price} (THORChain), {time} 확인. {seconds}초마다 업데이트됩니다.',
   'pools.chart.tradingPanel.approve': '승인',
   'pools.chart.tradingPanel.size': '수량',
   'pools.chart.tradingPanel.available': '{amount} 사용 가능',
@@ -88,11 +90,12 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.empty': '이 페어의 스왑이 없습니다',
   'pools.chart.tradingPanel.swaps.error': '스왑을 불러오지 못했습니다',
   'pools.chart.tradingPanel.limit': '리밋',
+  'pools.chart.tradingPanel.limit.beta': '베타',
+  'pools.chart.tradingPanel.limit.betaNote': '지정가 주문은 베타입니다. 앱이 열려 있는 동안 가격을 확인하고, 지정한 가격에 도달하면 시장가 스왑 확인을 요청합니다. 스왑은 슬리피지 설정을 사용하므로 지정가보다 낮게 체결될 수 있습니다.',
   'pools.chart.tradingPanel.market': '마켓',
   'pools.chart.tradingPanel.limit.hint':
     '{price}에 매수 또는 매도를 넣습니다. 앱이 풀 가격을 지켜보다가 그 가격을 넘으면 스왑합니다. 주문은 이 차트가 열려 있는 동안에만 유지됩니다. 차트를 나가면 주문이 일시정지되고, 앱을 닫으면 취소됩니다.',
-  'pools.chart.tradingPanel.limit.triggered':
-    '지정가 주문이 체결 조건에 도달했습니다. 현재 견적으로 교환하려면 확인하세요.',
+  'pools.chart.tradingPanel.limit.triggered': '지정가 주문 실행: {price} {unit}에 {amount} {symbol} {side, select, buy {로 매수} other {매도}}, {source, select, trade {트레이드 계정} other {지갑}}에서 지불. 현재 견적으로 스왑하려면 확인하세요.',
   'pools.chart.tradingPanel.market.hint': '현재 가격으로 바로 교환합니다.',
   'pools.chart.tradingPanel.placeOrder': '주문 넣기',
   'pools.chart.tradingPanel.swapNow': '지금 교환',

@@ -1,19 +1,34 @@
 import * as RD from '@devexperts/remote-data-ts'
+import type { Pool } from '@xchainjs/xchain-thornode'
 import { type AnyAsset, assetFromString } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { LiveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
-import { GetDepthHistoryIntervalEnum } from '../midgard/midgardTypes'
-import type { ApiGetDepthHistoryParams, DepthHistoryLD } from '../midgard/midgardTypes'
+import { FETCH_TIMEOUT_MS, POLL_INTERVAL_MS, RUNE_ASSET_KEY, RUNE_REFERENCE_POOL } from './const'
 import { assetsToPoll, nextCrossings } from './crossings'
 import type { PriceLevel } from './types'
 
-const POLL_INTERVAL_MS = 30_000
 const STORAGE_KEY = 'asgardex:priceLevels'
 
-type ApiGetDepthHistory$ = (params: ApiGetDepthHistoryParams) => DepthHistoryLD
+type ApiGetPool$ = (asset: AnyAsset) => LiveData<Error, Pool>
+
+/** THORNode `asset_tor_price` is the USD (TOR) price of the asset in 1e8 base units. */
+export const poolToUsdPrice = ({ asset_tor_price }: Pool): number | null => {
+  const price = Number(asset_tor_price) / 10 ** THORCHAIN_DECIMAL
+  return Number.isFinite(price) && price > 0 ? price : null
+}
+
+/** RUNE USD from any pool: the asset's USD price times the pool's asset per RUNE. */
+export const poolToRuneUsdPrice = (pool: Pool): number | null => {
+  const assetUsd = poolToUsdPrice(pool)
+  const assetPerRune = Number(pool.balance_asset) / Number(pool.balance_rune)
+  if (assetUsd === null || !Number.isFinite(assetPerRune) || assetPerRune <= 0) return null
+  return assetUsd * assetPerRune
+}
 
 // ── LocalStorage helpers ──────────────────────────────────────────────
 
@@ -83,7 +98,7 @@ export type PriceLevelService = {
 
 // ── Service factory ───────────────────────────────────────────────────
 
-export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$): PriceLevelService => {
+export const createPriceLevelService = (apiGetPool$: ApiGetPool$): PriceLevelService => {
   const subscriptions: Rx.Subscription[] = []
 
   // Saved levels belong to the previous process. Closing the app cancels them,
@@ -173,24 +188,28 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
 
   // ── Polling logic ───────────────────────────────────────────────────
 
-  const fetchPrice = (poolAsset: AnyAsset): Rx.Observable<number> =>
+  const fetchPoolPrice = (poolAsset: AnyAsset, toPrice: (pool: Pool) => number | null): Rx.Observable<number | null> =>
     FP.pipe(
-      apiGetDepthHistory$({ poolAsset, interval: GetDepthHistoryIntervalEnum.Hour, count: 1 }),
-      RxOp.map((rd) =>
-        FP.pipe(
-          rd,
-          RD.map((history) => {
-            const latest = history.intervals[history.intervals.length - 1]
-            return latest ? parseFloat(latest.assetPriceUSD) : null
-          })
-        )
-      ),
-      RxOp.map((rd) => (RD.isSuccess(rd) ? rd.value : null)),
-      // apiGetDepthHistory$ is backed by a BehaviorSubject that never completes.
-      // Filter out pending/initial/failure (null) and take the first real price,
-      // so the observable completes and the inFlight guard resets for the next poll.
-      RxOp.filter((price): price is number => price !== null),
-      RxOp.take(1)
+      apiGetPool$(poolAsset),
+      RxOp.filter((rd) => RD.isSuccess(rd) || RD.isFailure(rd)),
+      RxOp.take(1),
+      RxOp.map((rd) => (RD.isSuccess(rd) ? toPrice(rd.value) : null))
+    )
+
+  const runeReferencePool = assetFromString(RUNE_REFERENCE_POOL)
+
+  // The streams never complete. Take the first settled result so the observable completes
+  // and the inFlight guard resets for the next poll.
+  const fetchPrice = (assetKey: string, poolAsset: AnyAsset): Rx.Observable<number> =>
+    FP.pipe(
+      assetKey === RUNE_ASSET_KEY
+        ? runeReferencePool
+          ? fetchPoolPrice(runeReferencePool, poolToRuneUsdPrice)
+          : Rx.EMPTY
+        : fetchPoolPrice(poolAsset, poolToUsdPrice),
+      // A hung request errors out; poll() resets inFlight and the next poll retries.
+      RxOp.timeout(FETCH_TIMEOUT_MS),
+      RxOp.filter((price): price is number => price !== null)
     )
 
   const publishPrice = (assetKey: string, price: number) => {
@@ -214,7 +233,7 @@ export const createPriceLevelService = (apiGetDepthHistory$: ApiGetDepthHistory$
       if (!poolAsset) continue
 
       inFlight.set(assetKey, true)
-      const sub = fetchPrice(poolAsset).subscribe({
+      const sub = fetchPrice(assetKey, poolAsset).subscribe({
         next: (price) => {
           publishPrice(assetKey, price)
         },

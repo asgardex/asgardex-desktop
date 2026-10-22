@@ -233,13 +233,6 @@ export const TradingPanelBar = ({
   const payAsset = buying ? counter : poolAsset
   const receiveAsset = buying ? poolAsset : counter
   const receiveText = buying ? (buyReceive ?? '—') : (sellExpected ?? '—')
-  const receiveBalance = buying ? assetBalance : buyBalance
-  const receiveBalanceText = O.isSome(receiveBalance)
-    ? intl.formatMessage(
-        { id: 'pools.chart.tradingPanel.available' },
-        { amount: isPrivate ? hiddenString : formatSwapAmount(receiveBalance.value) }
-      )
-    : ''
   const payAvailable = intl.formatMessage(
     { id: 'pools.chart.tradingPanel.available' },
     {
@@ -271,6 +264,11 @@ export const TradingPanelBar = ({
             {intl.formatMessage({
               id: type === 'limit' ? 'pools.chart.tradingPanel.limit' : 'pools.chart.tradingPanel.market'
             })}
+            {type === 'limit' && (
+              <span className="ml-1.5 rounded bg-yellow-500/20 px-1 py-0.5 align-middle text-[9px] font-bold text-yellow-400 uppercase">
+                {intl.formatMessage({ id: 'pools.chart.tradingPanel.limit.beta' })}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -281,6 +279,11 @@ export const TradingPanelBar = ({
             : intl.formatMessage({ id: 'pools.chart.tradingPanel.market.noPrice' })
           : intl.formatMessage({ id: 'pools.chart.tradingPanel.market.hint' })}
       </p>
+      {limitMode && (
+        <p className="m-0 rounded-lg bg-yellow-500/10 px-3 py-2 font-main text-11 leading-4 text-yellow-400">
+          {intl.formatMessage({ id: 'pools.chart.tradingPanel.limit.betaNote' })}
+        </p>
+      )}
       {limitMode && (
         <div className="flex flex-col gap-1 rounded-lg bg-white/5 px-3 py-2.5">
           <span className="font-main text-11 text-gray-400">{intl.formatMessage({ id: 'common.price' })}</span>
@@ -408,11 +411,6 @@ export const TradingPanelBar = ({
           <span className={clsx('truncate font-main text-18 text-white', isFetching && 'opacity-60')}>
             {receiveDisplay}
           </span>
-          {receiveBalanceText && (
-            <span className={clsx('truncate font-main text-11', !buying && buyShort ? 'text-error0' : 'text-gray-500')}>
-              {receiveBalanceText}
-            </span>
-          )}
         </div>
       </div>
 
