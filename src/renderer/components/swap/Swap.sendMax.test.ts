@@ -27,6 +27,7 @@
 import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import * as fc from 'fast-check'
 import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { ADAChain } from '../../../shared/utils/chainIds'
 import { isMaxSweepAsset, isUtxoAssetChain, sendMaxFromPercent } from '../../helpers/assetHelper'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -84,7 +85,9 @@ describe('sendMaxFromPercent covers exactly the chains that isMaxSweepAsset cove
           const preFix = isUtxoAssetChain(asset) ? true : undefined
           // Post-fix behaviour: must match sendMaxFromPercent
           return preFix === sendMaxFromPercent(asset, 100)
-        })
+        }),
+        // Always try ADA: 100 random draws from all chains can miss it
+        { examples: [[ADAChain]] }
       )
     }).toThrow() // fast-check throws because ADA breaks the equality
   })
