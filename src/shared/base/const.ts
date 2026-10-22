@@ -18,8 +18,16 @@ export const DEFAULT_BASE_RPC_URLS: ApiUrls = {
 
 // =====JSON-RPC Providers=====
 // Define providers for BASE mainnet and testnet
-const BASE_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://1rpc.io/base')
-const BASE_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://base-sepolia-rpc.publicnode.com')
+const BASE_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(
+  'https://1rpc.io/base',
+  { name: 'base', chainId: 8453 },
+  { staticNetwork: true }
+)
+const BASE_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(
+  'https://base-sepolia-rpc.publicnode.com',
+  { name: 'base-sepolia', chainId: 84532 },
+  { staticNetwork: true }
+)
 
 const ethersJSProviders = {
   [Network.Mainnet]: BASE_MAINNET_ETHERS_PROVIDER,
@@ -133,7 +141,11 @@ export const createBaseParams = (rpcUrl: string, net: Network): EVMClientParams 
   const isTestnet = net === Network.Testnet
   const chainId = isTestnet ? 84532 : 8453
 
-  const customProvider = new JsonRpcProvider(rpcUrl)
+  const customProvider = new JsonRpcProvider(
+    rpcUrl,
+    { name: isTestnet ? 'base-sepolia' : 'base', chainId },
+    { staticNetwork: true }
+  )
 
   const customProviders = {
     [Network.Mainnet]: net === Network.Mainnet ? customProvider : BASE_MAINNET_ETHERS_PROVIDER,

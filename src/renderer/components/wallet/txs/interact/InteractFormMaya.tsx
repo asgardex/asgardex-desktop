@@ -748,7 +748,7 @@ export const InteractFormMaya = (props: Props) => {
         () => (
           <div className="py-4">
             <div className="font-main text-[12px] text-gray1 dark:text-gray1d">
-              {intl.formatMessage({ id: 'common.initial' })}
+              {intl.formatMessage({ id: 'common.loading' })}
             </div>
           </div>
         ),

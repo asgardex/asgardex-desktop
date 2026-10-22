@@ -19,14 +19,16 @@ export const DEFAULT_AVAX_RPC_URLS: ApiUrls = {
 
 // =====JSON-RPC Providers=====
 // Define providers for AVAX mainnet and testnet
-const AVALANCHE_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://api.avax.network/ext/bc/C/rpc`, {
-  name: 'avalanche',
-  chainId: 43114
-})
-const AVALANCHE_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://api.avax-test.network/ext/bc/C/rpc`, {
-  name: 'fuji',
-  chainId: 43113
-})
+const AVALANCHE_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(
+  `https://api.avax.network/ext/bc/C/rpc`,
+  { name: 'avalanche', chainId: 43114 },
+  { staticNetwork: true }
+)
+const AVALANCHE_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(
+  `https://api.avax-test.network/ext/bc/C/rpc`,
+  { name: 'fuji', chainId: 43113 },
+  { staticNetwork: true }
+)
 
 const ethersJSProviders = {
   [Network.Mainnet]: AVALANCHE_MAINNET_ETHERS_PROVIDER,
@@ -157,7 +159,7 @@ export const createAvaxParams = (rpcUrl: string, net: Network): EVMClientParams 
   const chainId = isTestnet ? 43113 : 43114
   const networkName = isTestnet ? 'fuji' : 'avalanche'
 
-  const customProvider = new JsonRpcProvider(rpcUrl, { name: networkName, chainId })
+  const customProvider = new JsonRpcProvider(rpcUrl, { name: networkName, chainId }, { staticNetwork: true })
 
   const customProviders = {
     [Network.Mainnet]: net === Network.Mainnet ? customProvider : AVALANCHE_MAINNET_ETHERS_PROVIDER,

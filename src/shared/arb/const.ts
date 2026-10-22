@@ -19,8 +19,16 @@ export const DEFAULT_ARB_RPC_URLS: ApiUrls = {
 
 // =====JSON-RPC Providers=====
 // Define providers for ARB mainnet and testnet
-const ARBITRUM_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider('https://arb1.arbitrum.io/rpc')
-const ARBITRUM_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider('https://sepolia-rollup.arbitrum.io/rpc')
+const ARBITRUM_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(
+  'https://arb1.arbitrum.io/rpc',
+  { name: 'arbitrum', chainId: 42161 },
+  { staticNetwork: true }
+)
+const ARBITRUM_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(
+  'https://sepolia-rollup.arbitrum.io/rpc',
+  { name: 'arbitrum-sepolia', chainId: 421614 },
+  { staticNetwork: true }
+)
 
 const ethersJSProviders = {
   [Network.Mainnet]: ARBITRUM_MAINNET_ETHERS_PROVIDER,
@@ -130,7 +138,11 @@ export const createArbParams = (rpcUrl: string, net: Network): EVMClientParams =
   const isTestnet = net === Network.Testnet
   const chainId = isTestnet ? 421614 : 42161
 
-  const customProvider = new JsonRpcProvider(rpcUrl)
+  const customProvider = new JsonRpcProvider(
+    rpcUrl,
+    { name: isTestnet ? 'arbitrum-sepolia' : 'arbitrum', chainId },
+    { staticNetwork: true }
+  )
 
   const customProviders = {
     [Network.Mainnet]: net === Network.Mainnet ? customProvider : ARBITRUM_MAINNET_ETHERS_PROVIDER,

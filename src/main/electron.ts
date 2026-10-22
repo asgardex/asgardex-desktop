@@ -62,6 +62,10 @@ const initLogger = () => {
     return path.join(app.getPath('userData'), 'logs', safeFileName)
   }
 
+  // Explicit levels: keep prod logs lean (no debug in the file), console quiet
+  log.transports.file.level = IS_DEV ? 'debug' : 'info'
+  log.transports.console.level = IS_DEV ? 'debug' : 'warn'
+
   // Clear dev log on startup so each session starts clean
   if (IS_DEV) {
     const devLogPath = path.join(APP_ROOT, 'logs', 'main.log')
@@ -282,8 +286,6 @@ const init = async () => {
   initIPC()
 }
 
-try {
-  init()
-} catch (error) {
+init().catch((error) => {
   log.error(`Unable to initial Electron app: ${error}`)
-}
+})

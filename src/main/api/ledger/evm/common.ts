@@ -101,18 +101,18 @@ export const resolveEvmProvider = (
 
   if (config.chain === ETHChain) {
     const ethNetworkName = isTestnet ? 'sepolia' : 'homestead'
-    if (evmRpcUrl) return new JsonRpcProvider(evmRpcUrl, ethNetworkName)
-    // ETH deposit defaults to EtherscanProvider; send defaults to llamarpc
+    if (evmRpcUrl) return new JsonRpcProvider(evmRpcUrl, ethNetworkName, { staticNetwork: true })
+    // ETH deposit defaults to EtherscanProvider; send defaults to publicnode
     if (options?.forDeposit) return new EtherscanProvider(ethNetworkName, options.apiKey)
-    // llamarpc is mainnet-only; fall back to static testnet provider
+    // publicnode mainnet URL is mainnet-only; fall back to static testnet provider
     if (isTestnet) return ETH_TESTNET_ETHERS_PROVIDER
-    return new JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
+    return new JsonRpcProvider('https://ethereum.publicnode.com', 'homestead', { staticNetwork: true })
   }
 
   if (evmRpcUrl) {
     const chainId = isTestnet ? config.chainIds.testnet : config.chainIds.mainnet
     const networkName = isTestnet ? config.networkNames.testnet : config.networkNames.mainnet
-    return new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId })
+    return new JsonRpcProvider(evmRpcUrl, { name: networkName, chainId }, { staticNetwork: true })
   }
 
   return config.defaultParams.providers[network] as JsonRpcProvider

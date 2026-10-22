@@ -55,14 +55,14 @@ export const useThorchainClientUrl = (): {
         requestThornodeApiBases(bases, async (basePath) => {
           const result = await new HealthApi(getThornodeAPIConfiguration(basePath)).ping()
           if (!result.data.ping) {
-            throw new Error(intl.formatMessage({ id: 'setting.thornode.node.error.unhealthy' }, { endpoint: '/ping' }))
+            throw new Error(intl.formatMessage({ id: 'settings.thornode.node.error.unhealthy' }, { endpoint: '/ping' }))
           }
           return basePath
         })
       ),
       RxOp.map(() => RD.success(url)),
       RxOp.catchError((_: Error) =>
-        Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'setting.thornode.node.error.url' })}`)))
+        Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'settings.thornode.node.error.url' })}`)))
       )
     )
   }
@@ -87,12 +87,12 @@ export const useThorchainClientUrl = (): {
           return RD.success(url)
 
         return RD.failure(
-          Error(intl.formatMessage({ id: 'setting.thornode.rpc.error.unhealthy' }, { endpoint: '/health' }))
+          Error(intl.formatMessage({ id: 'settings.thornode.rpc.error.unhealthy' }, { endpoint: '/health' }))
         )
       }),
 
       RxOp.catchError((_: Error) =>
-        Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'setting.thornode.rpc.error.url' })}`)))
+        Rx.of(RD.failure(Error(`${intl.formatMessage({ id: 'settings.thornode.rpc.error.url' })}`)))
       )
     )
   }
