@@ -63,6 +63,10 @@ type Props = {
   selectedTarget: AnyAsset | null
   setSelectedTarget: (v: AnyAsset) => void
   availableAssets: AnyAsset[]
+  /** Assets the chart leg can become, including the asset on screen. */
+  chartChoices: AnyAsset[]
+  /** Opens that asset's chart and keeps the other leg of the pair. */
+  onSelectChartAsset: (asset: AnyAsset) => void
   sellQuote: O.Option<ExtendedQuoteSwap>
   /** Quote for the side currently loaded. A buy quote's expected asset is the chart asset. */
   activeQuote: O.Option<ExtendedQuoteSwap>
@@ -112,6 +116,8 @@ export const TradingPanelBar = ({
   selectedTarget,
   setSelectedTarget,
   availableAssets,
+  chartChoices,
+  onSelectChartAsset,
   sellQuote,
   activeQuote,
   quotedSide,
@@ -342,11 +348,9 @@ export const TradingPanelBar = ({
             </span>
             <AssetControl
               asset={payAsset}
-              interactive={buying}
+              choices={buying ? availableAssets : chartChoices}
+              onChange={buying ? setSelectedTarget : onSelectChartAsset}
               network={network}
-              selectedTarget={selectedTarget}
-              setSelectedTarget={setSelectedTarget}
-              availableAssets={availableAssets}
             />
           </div>
           <input
@@ -401,11 +405,9 @@ export const TradingPanelBar = ({
             </span>
             <AssetControl
               asset={receiveAsset}
-              interactive={!buying}
+              choices={buying ? chartChoices : availableAssets}
+              onChange={buying ? onSelectChartAsset : setSelectedTarget}
               network={network}
-              selectedTarget={selectedTarget}
-              setSelectedTarget={setSelectedTarget}
-              availableAssets={availableAssets}
             />
           </div>
           <span className={clsx('truncate font-main text-18 text-white', isFetching && 'opacity-60')}>
@@ -556,28 +558,28 @@ const QuoteSelect = ({
 
 const AssetControl = ({
   asset,
-  interactive,
-  network,
-  selectedTarget,
-  setSelectedTarget,
-  availableAssets
+  choices,
+  onChange,
+  network
 }: {
   asset: AnyAsset | null
-  interactive: boolean
+  choices: AnyAsset[]
+  onChange: (asset: AnyAsset) => void
   network: Network
-  selectedTarget: AnyAsset | null
-  setSelectedTarget: (asset: AnyAsset) => void
-  availableAssets: AnyAsset[]
 }) => {
   const intl = useIntl()
   const { favourites, toggleFavourite } = useAssetFavourites()
   const arranged = useMemo(
-    () => arrangeAssetsForMenu(availableAssets, '', ExtendedAssetType.All, favourites),
-    [availableAssets, favourites]
+    () => arrangeAssetsForMenu(choices, '', ExtendedAssetType.All, favourites),
+    [choices, favourites]
+  )
+  const selected = useMemo(
+    () => (asset ? (choices.find((choice) => eqAsset.equals(choice, asset)) ?? asset) : null),
+    [asset, choices]
   )
 
   const renderOption = (option: AnyAsset) => {
-    const isSelected = !!selectedTarget && eqAsset.equals(option, selectedTarget)
+    const isSelected = !!selected && eqAsset.equals(option, selected)
     const isFavourite = favourites.some((favourite) => eqAsset.equals(favourite, option))
     const chainId = distinctChainId(option)
     const name = assetChainTicker(option)
@@ -626,20 +628,15 @@ const AssetControl = ({
     )
   }
 
-  if (interactive && selectedTarget && availableAssets.length > 0) {
+  if (selected && choices.length > 1) {
     return (
-      <Listbox value={selectedTarget} onChange={setSelectedTarget}>
+      <Listbox value={selected} onChange={onChange} by={(a, b) => !!a && !!b && eqAsset.equals(a, b)}>
         <div className="relative">
           <ListboxButton className="text-12 flex cursor-pointer items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 font-main text-white transition-colors hover:bg-white/15">
             {({ open }) => (
               <>
-                <AssetIcon
-                  asset={selectedTarget}
-                  size="xsmall"
-                  network={network}
-                  className="pointer-events-none !h-5 !w-5"
-                />
-                <span className="font-semibold">{selectedTarget.ticker}</span>
+                <AssetIcon asset={selected} size="xsmall" network={network} className="pointer-events-none !h-5 !w-5" />
+                <span className="font-semibold">{selected.ticker}</span>
                 <ChevronDownIcon
                   className={clsx('h-3.5 w-3.5 text-gray-400 transition-transform', { 'rotate-180': open })}
                 />

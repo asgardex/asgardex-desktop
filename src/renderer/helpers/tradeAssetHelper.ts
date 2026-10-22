@@ -40,13 +40,16 @@ export const supportsTradeSettlement = (asset: AnyAsset, protocol: Chain): boole
   return protocol === MAYAChain ? isChainOfMaya(chain) : isChainOfThor(chain)
 }
 
-/** Stablecoins first, then the rest, both alphabetical. `exclude` is the asset being traded. */
-export const orderSwapAssets = (assets: AnyAsset[], exclude: AnyAsset): AnyAsset[] => {
-  const filtered = assets.filter((asset) => !eqAsset.equals(asset, exclude))
-  const stablecoins = filtered.filter(isUSDAsset).sort((a, b) => a.ticker.localeCompare(b.ticker))
-  const others = filtered.filter((asset) => !isUSDAsset(asset)).sort((a, b) => a.ticker.localeCompare(b.ticker))
+/** Stablecoins first, then the rest, both alphabetical. */
+export const menuAssets = (assets: AnyAsset[]): AnyAsset[] => {
+  const stablecoins = assets.filter(isUSDAsset).sort((a, b) => a.ticker.localeCompare(b.ticker))
+  const others = assets.filter((asset) => !isUSDAsset(asset)).sort((a, b) => a.ticker.localeCompare(b.ticker))
   return [...stablecoins, ...others]
 }
+
+/** Stablecoins first, then the rest, both alphabetical. `exclude` is the asset being traded. */
+export const orderSwapAssets = (assets: AnyAsset[], exclude: AnyAsset): AnyAsset[] =>
+  menuAssets(assets.filter((asset) => !eqAsset.equals(asset, exclude)))
 
 export const sameMarketAsset = (a: AnyAsset, b: AnyAsset): boolean =>
   a.chain === b.chain && a.symbol.toUpperCase() === b.symbol.toUpperCase()

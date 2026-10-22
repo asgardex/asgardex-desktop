@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 
 import { AssetCacao, AssetRuneNative, MAYAChain, THORChain } from '../../shared/utils/chainIds'
 import {
+  menuAssets,
+  orderSwapAssets,
   preferredCounter,
   settlementChainAsset,
   supportsTradeSettlement,
@@ -42,6 +44,14 @@ describe('tradeAssetHelper', () => {
     expect(settlementChainAsset({ ...eth, type: AssetType.TRADE }, THORChain)).toBe(AssetRuneNative)
     expect(settlementChainAsset({ ...eth, type: AssetType.TRADE }, MAYAChain)).toBe(AssetCacao)
     expect(settlementChainAsset(eth, THORChain)).toEqual(eth)
+  })
+
+  it('lists stablecoins before other assets and drops the excluded one', () => {
+    const btc = { chain: 'BTC' as const, symbol: 'BTC', ticker: 'BTC', type: AssetType.NATIVE }
+    const avax = { chain: 'AVAX' as const, symbol: 'AVAX', ticker: 'AVAX', type: AssetType.NATIVE }
+    const usdt = { chain: 'AVAX' as const, symbol: 'USDT-0x', ticker: 'USDT', type: AssetType.TOKEN }
+    expect(menuAssets([avax, btc, usdt]).map((asset) => asset.ticker)).toEqual(['USDT', 'AVAX', 'BTC'])
+    expect(orderSwapAssets([avax, btc, usdt], avax).map((asset) => asset.ticker)).toEqual(['USDT', 'BTC'])
   })
 
   it('opens the counter on ETH USDC, then any USDC, then BTC', () => {
