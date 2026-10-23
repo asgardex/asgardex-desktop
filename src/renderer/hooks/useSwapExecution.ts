@@ -32,6 +32,7 @@ import { sequenceTOption } from '../helpers/fpHelpers'
 import { createScopedLogger } from '../helpers/logger'
 import { applyStreamingToMemo, updateMemo, updateMemoWithFullAsset } from '../helpers/memoHelper'
 import { isBtcTaprootAddress } from '../helpers/protocolTradingHalt'
+import { poolAddressForQuote } from '../helpers/tradeQuote'
 import { INITIAL_SWAP_STATE } from '../services/chain/const'
 import {
   SwapTxParams,
@@ -131,19 +132,21 @@ export const useSwapExecution = ({
 
   // Build swap params (THORChain / Maya)
   const swapParams: O.Option<SwapTxParams> = useMemo(() => {
+    // The quote's inbound_address is the vault to pay. The cached pool address can
+    // still name the previous Asgard vault for a few minutes after a rotation.
     const oPoolAddress: O.Option<PoolAddress> = FP.pipe(
       selectedQuote,
       O.chain((quoteSwap) => {
-        switch (quoteSwap.protocol) {
-          case 'Thorchain':
-            return poolAddressThor
-          case 'Mayachain':
-            return poolAddressMaya
-          case 'Chainflip':
-            return O.none
-          default:
-            return O.none
-        }
+        const cached =
+          quoteSwap.protocol === 'Thorchain'
+            ? poolAddressThor
+            : quoteSwap.protocol === 'Mayachain'
+              ? poolAddressMaya
+              : O.none
+        return FP.pipe(
+          cached,
+          O.map((poolAddress) => poolAddressForQuote(poolAddress, quoteSwap))
+        )
       })
     )
 

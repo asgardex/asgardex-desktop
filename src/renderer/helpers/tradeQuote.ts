@@ -2,14 +2,24 @@ import type { QuoteSwap as AggregatorQuoteSwap } from '@xchainjs/xchain-aggregat
 import type { QuoteSwap as DexQuoteSwap } from '@xchainjs/xchain-mayachain-query'
 import type { TxDetails } from '@xchainjs/xchain-thorchain-query'
 
+import { optionFromNullableString } from '../../shared/utils/fp'
+import type { PoolAddress } from '../services/midgard/midgardTypes'
+
+/** Vault and router from a THOR or Maya quote. `router` omitted means the quote did not carry one. */
+export type QuoteInbound = {
+  toAddress: string
+  router?: string
+}
+
 /**
  * MAYAChain's aggregator client reports every trade asset as unsupported.
  * The mayanode quote is the same shape the aggregator would return, plus the protocol tag
  * execution already switches on.
  */
-export const dexTradeQuoteToAggregator = (quote: DexQuoteSwap): AggregatorQuoteSwap => ({
+export const dexTradeQuoteToAggregator = (quote: DexQuoteSwap): AggregatorQuoteSwap & QuoteInbound => ({
   protocol: 'Mayachain',
   toAddress: quote.toAddress,
+  router: quote.router,
   memo: quote.memo,
   expectedAmount: quote.expectedAmount,
   dustThreshold: quote.dustThreshold,
@@ -44,9 +54,10 @@ export const shortQuoteError = (message: string): string => {
   return `${stripped.slice(0, 177)}...`
 }
 
-export const thorTradeQuoteToAggregator = (quote: TxDetails): AggregatorQuoteSwap => ({
+export const thorTradeQuoteToAggregator = (quote: TxDetails): AggregatorQuoteSwap & QuoteInbound => ({
   protocol: 'Thorchain',
   toAddress: quote.toAddress,
+  router: quote.txEstimate.router,
   memo: quote.memo,
   expectedAmount: quote.txEstimate.netOutput,
   dustThreshold: quote.dustThreshold,
@@ -62,3 +73,18 @@ export const thorTradeQuoteToAggregator = (quote: TxDetails): AggregatorQuoteSwa
   errors: quote.txEstimate.errors,
   warning: quote.txEstimate.warning
 })
+
+/**
+ * Pay the quote's inbound vault. The cached pool address still supplies chain, protocol,
+ * and halt state. Aggregator quotes omit the router, so an absent router keeps the cached one.
+ * An empty router means this chain has none.
+ */
+export const poolAddressForQuote = (cached: PoolAddress, quote: QuoteInbound): PoolAddress => {
+  const inbound = quote.toAddress.trim()
+  if (!inbound) return cached
+  return {
+    ...cached,
+    address: inbound,
+    router: quote.router === undefined ? cached.router : optionFromNullableString(quote.router)
+  }
+}

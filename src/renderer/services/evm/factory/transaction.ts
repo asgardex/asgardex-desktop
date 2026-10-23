@@ -601,13 +601,14 @@ export const createEvmTransactionService = (
             })
           }
 
-          // Token (and other non-native) path: estimate once, pin gas, leave amount alone
+          // Token path: estimate once, pin gas, leave amount alone.
+          // xchain-evm 2.1.3 throws if an ERC-20 transfer includes a memo. The
+          // transfer calldata cannot carry one, so it is not forwarded.
           const gasLimit = await estimateGasLimitFor(amount)
           return client.transfer({
             asset: params.asset as CompatibleAsset,
             amount,
             recipient: params.recipient,
-            memo: params.memo,
             ...transferFees,
             gasLimit,
             walletIndex: params.walletIndex

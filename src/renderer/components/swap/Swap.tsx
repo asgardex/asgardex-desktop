@@ -1056,7 +1056,7 @@ export const Swap = ({
     return FP.pipe(
       oQuoteProtocol,
       O.chain((protocol) => {
-        const oRouterAddress: O.Option<Address> =
+        const cachedRouter =
           protocol.protocol === 'Thorchain'
             ? FP.pipe(
                 oPoolAddressThor,
@@ -1068,6 +1068,8 @@ export const Swap = ({
                   O.chain(({ router }) => router)
                 )
               : O.none
+        // Prefer the router on the quote. Aggregator quotes omit it, so fall back to the cache.
+        const oRouterAddress: O.Option<Address> = protocol.router ? O.some(protocol.router) : cachedRouter
 
         const oTokenAddress = getEVMTokenAddressForChain(sourceChain, sourceAsset as TokenAsset)
 

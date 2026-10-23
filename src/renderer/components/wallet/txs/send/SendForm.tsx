@@ -38,7 +38,7 @@ import { useWalletContext } from '../../../../contexts/WalletContext'
 import { useXrpContext } from '../../../../contexts/XrpContext'
 import { isUSDAsset, isUtxoAssetChain } from '../../../../helpers/assetHelper'
 import { getChainAsset, getChainFeeBounds } from '../../../../helpers/chainHelper'
-import { isEvmChain, isEvmChainAsset } from '../../../../helpers/evmHelper'
+import { isEvmChain, isEvmChainAsset, isEvmChainToken } from '../../../../helpers/evmHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { createScopedLogger } from '../../../../helpers/logger'
 
@@ -196,6 +196,8 @@ export const SendForm = (props: Props): JSX.Element => {
 
   // Chain type detection using effective chain
   const isEVMChain = isEvmChain(effectiveChain)
+  // xchain-evm 2.1.3 rejects a memo on an ERC-20 transfer. Native sends still carry one.
+  const evmTokenSend = isEVMChain && isEvmChainToken(asset)
   const isUTXOChain = isUtxoAssetChain({ ...asset, chain: effectiveChain })
   const isAdaChain = effectiveChain === ADAChain
   // Chains that support MAX-sweep (transferMax) — UTXO clients plus Cardano (eUTXO via xchain-cardano>=1.2.0)
@@ -241,6 +243,13 @@ export const SendForm = (props: Props): JSX.Element => {
   const [warningMessage, setWarningMessage] = useState<string>('')
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const [currentMemo, setCurrentMemo] = useState<string>('')
+
+  // A memo typed on a native asset must not follow a switch to a token send.
+  useEffect(() => {
+    if (!evmTokenSend) return
+    setCurrentMemo('')
+    setValue('memo', '')
+  }, [evmTokenSend, setValue])
   const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
@@ -1129,7 +1138,7 @@ export const SendForm = (props: Props): JSX.Element => {
         asset,
         amount,
         feeOption: isEVMChain ? selectedFeeOption : selectedFeeOptionKey,
-        memo: currentMemo,
+        memo: evmTokenSend ? '' : currentMemo,
         destinationTag: watch('destinationTag'),
         sendMax: isMaxSweepChain ? isSendMax : undefined,
         selectedUtxos: ccSelectedUtxos,
@@ -1138,6 +1147,7 @@ export const SendForm = (props: Props): JSX.Element => {
     )
   }, [
     isEVMChain,
+    evmTokenSend,
     isUTXOChain,
     isMaxSweepChain,
     isSendMax,
@@ -1441,7 +1451,7 @@ export const SendForm = (props: Props): JSX.Element => {
   const renderMemo = () => {
     // Hide memo field for XRP when destination tag is required to avoid confusion
     if (isXrpChain && destinationTagRequired) return null
-    // Show memo field for UTXO, COSMOS chains, or EVM chains
+    // Show memo field for UTXO and Cosmos chains. Native EVM memos render in the pool section.
     if (isUTXOChain || isCOSMOSChain || isEVMChain) {
       return (
         <>
@@ -1705,8 +1715,8 @@ export const SendForm = (props: Props): JSX.Element => {
             </div>
           )}
 
-          {/* Memo field for UTXO, COSMOS chains, and EVM tokens (non-chain assets) */}
-          {(!isEVMChain || (isEVMChain && !isEvmChainAsset(asset))) && renderMemo()}
+          {/* Memo for UTXO and Cosmos. ERC-20 transfers cannot carry one. */}
+          {!isEVMChain && renderMemo()}
 
           <FlatButton
             className="mt-40px w-full min-w-[200px]"
