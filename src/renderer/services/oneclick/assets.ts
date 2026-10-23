@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { AssetBETH, BASEChain } from '@xchainjs/xchain-base'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
@@ -11,6 +12,7 @@ import { NEARAsset, NEARChain } from '@xchainjs/xchain-near'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { SUIChain } from '@xchainjs/xchain-sui'
+import { AssetTRX, TRONChain } from '@xchainjs/xchain-tron'
 import {
   AnyAsset,
   Asset,
@@ -28,7 +30,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ASGARDEX_ONECLICK_API_KEY } from '../../../shared/const'
-import { BTCChain, DASHChain } from '../../../shared/utils/chainIds'
+import { AssetZEC, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
 import { createScopedLogger } from '../../helpers/logger'
 
 const logger = createScopedLogger('oneclick')
@@ -61,7 +63,10 @@ const ONECLICK_TO_XCHAIN: Record<string, Chain> = {
   xrp: XRPChain,
   cardano: ADAChain,
   sui: SUIChain,
-  near: NEARChain
+  near: NEARChain,
+  base: BASEChain,
+  tron: TRONChain,
+  zec: ZECChain
 }
 
 /** 1Click lists native NEAR as wNEAR (wrap.near), not a contract-less native entry. */
@@ -70,6 +75,16 @@ const isOneClickNativeNearToken = (token: OneClickToken): boolean =>
   (token.contractAddress === 'wrap.near' ||
     token.assetId === 'nep141:wrap.near' ||
     token.symbol.toUpperCase() === 'WNEAR')
+
+/** 1Click gas assets use the chain ticker. The wallet uses the canonical native asset. */
+const oneClickNativeGasAsset = (token: OneClickToken): Asset | null => {
+  if (token.contractAddress) return null
+  const symbol = token.symbol.toUpperCase()
+  if (token.blockchain === 'base' && symbol === 'ETH') return AssetBETH
+  if (token.blockchain === 'tron' && symbol === 'TRX') return AssetTRX
+  if (token.blockchain === 'zec' && symbol === 'ZEC') return AssetZEC
+  return null
+}
 
 /**
  * Chain-level OneClick support, used as a fallback while the token list hasn't
@@ -96,10 +111,12 @@ const tokensCache = new CachedValue<OneClickToken[]>(() => fetchTokens(), 24 * 6
 // `TICKER-CONTRACT` for tokens, plain ticker for natives.
 // Native NEAR is special-cased to NEARAsset so wallet balances / swap UI match
 // aggregator ≥3.1.0 (which maps NEAR.NEAR ↔ wrap.near).
-const oneClickTokenToXAsset = (token: OneClickToken): Asset | TokenAsset | null => {
+export const oneClickTokenToXAsset = (token: OneClickToken): Asset | TokenAsset | null => {
   const chain = ONECLICK_TO_XCHAIN[token.blockchain]
   if (!chain) return null
   if (isOneClickNativeNearToken(token)) return NEARAsset
+  const nativeGas = oneClickNativeGasAsset(token)
+  if (nativeGas) return nativeGas
   return {
     chain,
     symbol: token.contractAddress ? `${token.symbol}-${token.contractAddress}` : token.symbol,

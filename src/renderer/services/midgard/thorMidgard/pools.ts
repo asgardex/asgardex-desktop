@@ -10,7 +10,7 @@ import { isSupportedChain } from '../../../../shared/utils/chain'
 import { DEFAULT_GET_POOLS_PERIOD, ONE_BN, PRICE_POOLS_WHITELIST } from '../../../const'
 import { validAssetForETH, isPricePoolAsset, midgardAssetFromString } from '../../../helpers/assetHelper'
 import { isEthChain } from '../../../helpers/chainHelper'
-import { eqAsset, eqOAsset, eqOPoolAddresses, eqHaltedChain } from '../../../helpers/fp/eq'
+import { eqAsset, eqOAsset, eqHaltedChain } from '../../../helpers/fp/eq'
 import { sequenceTOption } from '../../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import { preserveSuccessUntil } from '../../../helpers/rx/preserveSuccess'
@@ -64,6 +64,7 @@ import {
   PricePool,
   PausedChainsLD
 } from '../midgardTypes'
+import { poolInboundMismatch } from '../poolInbound'
 import {
   getPoolAddressesByChain,
   getPoolAssetDetail,
@@ -628,21 +629,10 @@ const createPoolsService = ({
         )
       ),
       liveData.map((addresses) => getPoolAddressesByChain(addresses, chain)),
-      liveData.chain((oAddresses) =>
-        eqOPoolAddresses.equals(oAddresses, O.some(poolAddress))
-          ? Rx.of(RD.success(true))
-          : Rx.of(
-              RD.failure(
-                Error(
-                  `Pool address ${poolAddress.address} is not the current ${chain} inbound${FP.pipe(
-                    oAddresses,
-                    O.map(({ address }) => ` (${address})`),
-                    O.getOrElse(() => '')
-                  )}. Refresh and try again.`
-                )
-              )
-            )
-      ),
+      liveData.chain((oAddresses) => {
+        const mismatch = poolInboundMismatch(poolAddress, oAddresses, chain)
+        return mismatch ? Rx.of(RD.failure(Error(mismatch))) : Rx.of(RD.success(true))
+      }),
       liveData.mapLeft((error) => ({
         errorId: ErrorId.VALIDATE_POOL,
         msg: error?.message ?? error.toString()
