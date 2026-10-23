@@ -18,6 +18,7 @@ import {
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState, useSubscription } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { useNavigate } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -49,6 +50,7 @@ import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
 import { addOneClickSwapToTrackerFromQuote } from '../../../helpers/oneClickTransactionTracker'
 import {
+  menuAssets,
   orderSwapAssets,
   preferredCounter,
   sameMarketAsset,
@@ -66,6 +68,7 @@ import { useSwapExecution } from '../../../hooks/useSwapExecution'
 import { useSwapFees } from '../../../hooks/useSwapFees'
 import { useSwapQuote } from '../../../hooks/useSwapQuote'
 import { useTradeDepositAddresses } from '../../../hooks/useTradeDepositAddresses'
+import * as poolsRoutes from '../../../routes/pools'
 import { getDecimal } from '../../../services/chain/decimal'
 import type { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMidgard/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../../services/midgard/mayaMidgard/utils'
@@ -84,6 +87,7 @@ import {
 } from '../../../services/wallet/types'
 import { hasImportedKeystore } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
+import { chartRouteAsset, counterAfterChartChange } from './chartTicket'
 import {
   LIMIT_ERROR_BALANCE_LOW,
   LIMIT_ERROR_NO_ROUTE,
@@ -122,6 +126,8 @@ type Props = {
   chartUnit: ChartUnit
   /** Last chart close, in chart units. Zero until the series has loaded. */
   chartPrice: number
+  /** Counter to restore after the chart asset changes. Null opens the preferred counter. */
+  initialCounter?: AnyAsset | null
 }
 
 const poolAssetsOf = (rd: RD.RemoteData<Error, PoolsState>): AnyAsset[] =>
@@ -181,8 +187,10 @@ export const TradingPanel = ({
   handleRef,
   onCounterAssetChange,
   chartUnit,
-  chartPrice
+  chartPrice,
+  initialCounter = null
 }: Props) => {
+  const navigate = useNavigate()
   // ── Contexts ──────────────────────────────────────────────────────────
   const { streamingSlipTolerance$ } = useAppContext()
   const slipTolerance = useObservableState(streamingSlipTolerance$, 5)
@@ -380,32 +388,39 @@ export const TradingPanel = ({
     if (settlement === 'trade' && !tradeSettlementEnabled) setSettlement('wallet')
   }, [settlement, tradeSettlementEnabled])
 
-  const availableAssets = useMemo(() => {
-    if (settlement !== 'trade')
-      return orderSwapAssets(poolAssetsOf(poolsRD as RD.RemoteData<Error, PoolsState>), poolAsset)
+  const listedAssets = useMemo(() => {
+    if (settlement !== 'trade') return poolAssetsOf(poolsRD as RD.RemoteData<Error, PoolsState>)
     const listed =
       protocol === MAYAChain
         ? poolAssetsOf(mayaPoolsRD as RD.RemoteData<Error, PoolsState>)
         : poolAssetsOf(poolsRD as RD.RemoteData<Error, PoolsState>)
     const traded = listed.map((asset) => toTradeAsset(asset, protocol))
-    const withDexNative = traded.some((asset) => eqAsset.equals(asset, dexNative)) ? traded : [...traded, dexNative]
-    return orderSwapAssets(withDexNative, pricedPool)
-  }, [settlement, poolsRD, mayaPoolsRD, poolAsset, protocol, dexNative, pricedPool])
+    return traded.some((asset) => eqAsset.equals(asset, dexNative)) ? traded : [...traded, dexNative]
+  }, [settlement, poolsRD, mayaPoolsRD, protocol, dexNative])
+
+  const availableAssets = useMemo(() => orderSwapAssets(listedAssets, pricedPool), [listedAssets, pricedPool])
+
+  const chartChoices = useMemo(() => {
+    const rest = listedAssets.filter((asset) => !sameMarketAsset(asset, pricedPool))
+    return menuAssets([pricedPool, ...rest])
+  }, [listedAssets, pricedPool])
 
   const defaultTarget = useMemo(() => preferredCounter(availableAssets), [availableAssets])
 
-  const [selectedTarget, setSelectedTarget] = useState<AnyAsset | null>(defaultTarget)
+  const [selectedTarget, setSelectedTarget] = useState<AnyAsset | null>(initialCounter ?? defaultTarget)
   useEffect(() => {
+    if (availableAssets.length === 0) return
     setSelectedTarget((current) => {
-      if (current) {
+      const pick = current ?? initialCounter
+      if (pick) {
         const matched =
-          availableAssets.find((asset) => eqAsset.equals(asset, current)) ??
-          availableAssets.find((asset) => sameMarketAsset(asset, current))
-        if (matched) return eqAsset.equals(matched, current) ? current : matched
+          availableAssets.find((asset) => eqAsset.equals(asset, pick)) ??
+          availableAssets.find((asset) => sameMarketAsset(asset, pick))
+        if (matched) return current && eqAsset.equals(matched, current) ? current : matched
       }
       return defaultTarget
     })
-  }, [availableAssets, defaultTarget])
+  }, [availableAssets, defaultTarget, initialCounter])
 
   const resolvedTarget = useMemo(() => {
     if (!selectedTarget) return defaultTarget
@@ -1110,17 +1125,37 @@ export const TradingPanel = ({
   ])
 
   // ── Actions ───────────────────────────────────────────────────────────
+  // The counter leg stays on this chart. Changing it does not flip buy and sell:
+  // a buy is spending that counter, and flipping here made the receive side locked.
   const handleSelectTarget = useCallback(
     (asset: AnyAsset) => {
+      if (resolvedTarget && (eqAsset.equals(asset, resolvedTarget) || sameMarketAsset(asset, resolvedTarget))) return
       resetQuote()
+      acceptedSellRef.current = null
       setSellQuote(O.none)
+      setSellQuoteSize('')
       setSelectedTarget(asset)
-      if (tradeMode !== 'sell') {
-        setTradeMode('sell')
-        setAmountStr(sizeStrRef.current)
-      }
+      if (tradeMode === 'buy') setAmountStr('')
     },
-    [resetQuote, tradeMode, setTradeMode]
+    [resetQuote, resolvedTarget, tradeMode]
+  )
+
+  // The chart leg is the asset this page prices. Picking another one opens that chart
+  // and keeps the other leg, so USDT spent to buy AVAX can buy BTC instead.
+  const handleSelectChart = useCallback(
+    (asset: AnyAsset) => {
+      if (sameMarketAsset(toPoolAsset(asset), poolAsset)) return
+      const counter = counterAfterChartChange(asset, poolAsset, resolvedTarget)
+      const next = chartRouteAsset(asset, settlement, protocol)
+      navigate(poolsRoutes.detail.path({ asset: assetToString(next) }), {
+        state: {
+          tradeMode,
+          settlement,
+          counter: counter ? assetToString(counter) : undefined
+        }
+      })
+    },
+    [navigate, poolAsset, protocol, resolvedTarget, settlement, tradeMode]
   )
 
   // Buy spends the counter. On Trade settlement that is the counter's trade account.
@@ -1671,6 +1706,8 @@ export const TradingPanel = ({
         selectedTarget={selectedTarget}
         setSelectedTarget={handleSelectTarget}
         availableAssets={availableAssets}
+        chartChoices={chartChoices}
+        onSelectChartAsset={handleSelectChart}
         sellQuote={sizedSellQuote}
         activeQuote={selectedQuote}
         quotedSide={quotedSide}

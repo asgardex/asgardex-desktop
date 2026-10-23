@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -7,7 +7,7 @@ import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { BackLinkButton } from '../../../components/uielements/button'
@@ -34,6 +34,7 @@ import { DEFAULT_NETWORK } from '../../../services/const'
 import { getPoolDetail } from '../../../services/midgard/thorMidgard/utils'
 import type { PriceLevel } from '../../../services/priceLevel/types'
 import { chartHeadline } from './chartHeadline'
+import { readChartTicketState } from './chartTicket'
 import { chartLevelPrice } from './limitPrice'
 import { formatChartAmount, ratioCandles } from './pairChart'
 import { TradingPanel, type TradingPanelHandle } from './TradingPanel'
@@ -51,17 +52,24 @@ export const PoolDetailView = () => {
   const intl = useIntl()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
+  const location = useLocation()
+  const ticket = useMemo(() => readChartTicketState(location.state), [location.state])
   const routeParsed = useMemo(() => (routeAsset ? assetFromString(routeAsset) : null), [routeAsset])
   // `ETH~ETH` is the same pool as `ETH.ETH`. The ticket opens in trade settlement.
   const poolAsset = useMemo(() => (routeParsed ? toPoolAsset(routeParsed) : null), [routeParsed])
-  const initialSettlement = routeParsed?.type === AssetType.TRADE ? 'trade' : 'wallet'
+  const initialSettlement = ticket?.settlement ?? (routeParsed?.type === AssetType.TRADE ? 'trade' : 'wallet')
+  const initialCounter = useMemo(() => (ticket?.counter ? assetFromString(ticket.counter) : null), [ticket?.counter])
 
   const [timeframe, setTimeframe] = useState<CandleTimeframe>('4H')
   const [dateRange, setDateRange] = useState<ChartDateRange>('30d')
   const [indicators, setIndicators] = useState<IndicatorConfig[]>(DEFAULT_INDICATORS)
-  // The ticket sizes the chart asset, so the live quote starts as a sell of that size.
-  const [tradeMode, setTradeMode] = useState<TradeMode>('sell')
+  // A fresh chart sells the chart asset. Changing the chart asset keeps the side already selected.
+  const [tradeMode, setTradeMode] = useState<TradeMode>(ticket?.tradeMode === 'buy' ? 'buy' : 'sell')
   const [counterAsset, setCounterAsset] = useState<AnyAsset | null>(null)
+
+  useEffect(() => {
+    setTradeMode(ticket?.tradeMode === 'buy' ? 'buy' : 'sell')
+  }, [routeAsset, ticket?.tradeMode])
 
   const midgardDataRD = useOHLCVData({ poolAsset, timeframe, dateRange })
   const { dataRD: binanceDataRD, hasBinance } = useBinanceOHLCV({ poolAsset, timeframe, dateRange })
@@ -317,6 +325,7 @@ export const PoolDetailView = () => {
             onCounterAssetChange={setCounterAsset}
             chartUnit={chartUnit}
             chartPrice={headline?.last ?? 0}
+            initialCounter={initialCounter}
           />
         </div>
       </div>
