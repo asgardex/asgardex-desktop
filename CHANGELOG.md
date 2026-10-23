@@ -6,7 +6,7 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
-# 1.47.0 (2026-10-22)
+# 1.47.0 (2026-10-23)
 
 PRs merged to `develop` since tag `v1.46.1`.
 
@@ -16,12 +16,17 @@ PRs merged to `develop` since tag `v1.46.1`.
 - feat(pools): limit orders fetch a fresh quote when triggered and open the wallet confirmation (never auto-signed); a quote worse than the limit fails the order, identical duplicate orders are blocked, and failed or filled orders can be removed [#1247](https://github.com/asgardex/asgardex-desktop/pull/1247)
 - feat(pools): the limit trigger price comes from THORNode every 6 seconds and is shown in the panel with its last check time and update interval [#1247](https://github.com/asgardex/asgardex-desktop/pull/1247)
 - feat(pools): pin favourite assets in the trading asset dropdown, sharing the swap menu favourites; trade-asset swaps are noted as affiliate free [#1247](https://github.com/asgardex/asgardex-desktop/pull/1247)
+- feat(pools): picking the chart asset in the ticket opens that pool and keeps the other side of the pair [#1260](https://github.com/asgardex/asgardex-desktop/pull/1260)
 - Bond provider refactor, block II: bonds section [#1249](https://github.com/asgardex/asgardex-desktop/pull/1249)
 - Bond provider refactor, block III: RUNEBond integration (list, update and delist a node, finder-fee vault top-up, approve whitelist requests) [#1255](https://github.com/asgardex/asgardex-desktop/pull/1255)
 - feat(ui): pin favourite assets at the top of the asset menu, saved per network [#1246](https://github.com/asgardex/asgardex-desktop/pull/1246)
 
 ## Update/Fixes
 
+- fix: OneClick lists Base, Tron, and Zcash in the swap picker, using the wallet's native gas asset (ETH on Base, TRX, ZEC) [#1262](https://github.com/asgardex/asgardex-desktop/pull/1262)
+- fix: a THOR or MAYA inbound check names the vault or the router that does not match the published address [#1262](https://github.com/asgardex/asgardex-desktop/pull/1262)
+- fix(evm): ERC-20 wallet sends drop the memo, which `xchain-evm` 2.1.3 rejects; THOR and MAYA swaps pay the quote inbound address and confirm that vault is still the published one [#1261](https://github.com/asgardex/asgardex-desktop/pull/1261)
+- fix: quiet production main-process logs, send Ledger ETH through `ethereum.publicnode.com`, and add the missing Ledger deposit error text [#1259](https://github.com/asgardex/asgardex-desktop/pull/1259)
 - fix(bonds): the bond and RUNEBond tx windows cannot be closed while a send is pending; a RUNEBond target bond must be greater than the minimum [#1256](https://github.com/asgardex/asgardex-desktop/pull/1256)
 - MayaChain delisted Radix. Swaps and liquidity for XRD are unavailable. Send on the Radix network still works, and the Radix client loads only when XRD is enabled or a Radix screen is opened. [#1225](https://github.com/asgardex/asgardex-desktop/issues/1225) [#1228](https://github.com/asgardex/asgardex-desktop/pull/1228) [#1233](https://github.com/asgardex/asgardex-desktop/pull/1233) [#1234](https://github.com/asgardex/asgardex-desktop/pull/1234) [#1235](https://github.com/asgardex/asgardex-desktop/pull/1235)
 - fix: keep BTC Taproot swaps on the Taproot wallet; MAYAChain is left out of Taproot quotes [#1243](https://github.com/asgardex/asgardex-desktop/pull/1243)
@@ -33,6 +38,7 @@ PRs merged to `develop` since tag `v1.46.1`.
 
 ## Chores
 
+- chore(deps): bump `@xchainjs/*` to the 2026-10-22 releases (`xchain-aggregator` 3.2.5, `xchain-evm` 2.1.3, THORChain query 4.0.1, MAYAChain query 3.0.1) [#1261](https://github.com/asgardex/asgardex-desktop/pull/1261)
 - chore(deps): bump `@xchainjs/*` for the delisted-chain release (THORChain query 4.0.0, MAYAChain query 3.0.0, Maya AMM 5.0.0) [#1242](https://github.com/asgardex/asgardex-desktop/pull/1242)
 - chore(deps): bump `@xchainjs/xchain-aggregator` to 3.2.3 to align on `@xchainjs/xchain-tron` 3.0.12 [#1236](https://github.com/asgardex/asgardex-desktop/pull/1236)
 - chore(deps): stub the unused `@polkadot/api` from the Vultisig SDK [#1226](https://github.com/asgardex/asgardex-desktop/pull/1226)
