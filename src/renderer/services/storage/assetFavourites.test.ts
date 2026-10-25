@@ -164,7 +164,7 @@ describe('asset favourites storage', () => {
     sub.unsubscribe()
   })
 
-  it('saves a star made before a failed load', async () => {
+  it('keeps a star made before a failed load for this session but does not save it', async () => {
     let rejectGet: (reason: Error) => void = () => {}
     const getPromise = new Promise<AssetFavouritesStorageEncoded>((_, reject) => {
       rejectGet = reject
@@ -177,6 +177,7 @@ describe('asset favourites storage', () => {
         return Promise.resolve(stored(emptyLists))
       }
     })
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const { toggleFavourite, favourites$ } = await import('./assetFavourites')
     const seen: string[][] = []
@@ -184,11 +185,70 @@ describe('asset favourites storage', () => {
 
     toggleFavourite(AssetETH)
     rejectGet(new Error('disk'))
-    await vi.waitUntil(() => saves.length === 1)
+    await vi.waitUntil(() => warn.mock.calls.length > 0)
+
+    toggleFavourite(AssetBTC)
+    // Let any queued save run before checking.
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(seen.at(-1)).toEqual([assetToString(AssetETH), assetToString(AssetBTC)])
+    expect(saves).toEqual([])
+    sub.unsubscribe()
+    warn.mockRestore()
+  })
+
+  it('does not overwrite the file when the stored favourites fail to decode', async () => {
+    const saves: Partial<AssetFavouritesStorageEncoded>[] = []
+    // Valid JSON, wrong shape: one entry is not an asset string and stagenet is missing.
+    const undecodable = {
+      version: '1',
+      favourites: { mainnet: ['BTC.BTC', 42], testnet: [] }
+    } as unknown as AssetFavouritesStorageEncoded
+    install({
+      get: () => Promise.resolve(undecodable),
+      save: (data) => {
+        saves.push(data)
+        return Promise.resolve(stored(emptyLists))
+      }
+    })
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const { toggleFavourite, favourites$ } = await import('./assetFavourites')
+    const seen: string[][] = []
+    const sub = favourites$.subscribe((assets) => seen.push(assets.map(assetToString)))
+    await vi.waitUntil(() => warn.mock.calls.length > 0)
+
+    toggleFavourite(AssetETH)
+    await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(seen.at(-1)).toEqual([assetToString(AssetETH)])
+    expect(saves).toEqual([])
+    sub.unsubscribe()
+    warn.mockRestore()
+  })
+
+  it('saves a star made after a successful load', async () => {
+    const saves: Partial<AssetFavouritesStorageEncoded>[] = []
+    install({
+      get: () => Promise.resolve(stored({ ...emptyLists, testnet: [AssetBTC] })),
+      save: (data) => {
+        saves.push(data)
+        return Promise.resolve(stored(emptyLists))
+      }
+    })
+
+    const { toggleFavourite, favourites$ } = await import('./assetFavourites')
+    const seen: string[][] = []
+    const sub = favourites$.subscribe((assets) => seen.push(assets.map(assetToString)))
+    await vi.waitUntil(() => seen.length > 0)
+    // Wait for the stored lists to land before starring.
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    toggleFavourite(AssetETH)
+    await vi.waitUntil(() => saves.length === 1)
+
     expect(saves[0]).toEqual({
-      favourites: assetFavouritesListsIO.encode({ ...emptyLists, mainnet: [AssetETH] })
+      favourites: assetFavouritesListsIO.encode({ ...emptyLists, mainnet: [AssetETH], testnet: [AssetBTC] })
     })
     sub.unsubscribe()
   })

@@ -6,6 +6,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { assetFavouritesListsIO, assetFavouritesStorageIO, AssetFavouritesLists } from '../../../shared/api/io'
 import { eqAsset } from '../../helpers/fp/eq'
+import { logger } from '../../helpers/logger'
 import { observableState } from '../../helpers/stateHelper'
 import { getCurrentNetworkState, network$ } from '../app/service'
 
@@ -82,16 +83,28 @@ const updateStorage = (favourites: AssetFavouritesLists) => {
 }
 
 let hydrated = false
+/**
+ * True only after the stored file was read and decoded. If the read fails, the stars
+ * still work for this session but are never written. Saving would replace the lists of
+ * every network with what is in memory and wipe the user's file.
+ */
+let canSave = false
 const pendingChanges: FavouriteChange[] = []
 
-const finishHydration = (stored: AssetFavouritesLists) => {
+const finishHydration = (stored: AssetFavouritesLists, loaded: boolean) => {
   const changes = pendingChanges.splice(0, pendingChanges.length)
   const merged = applyFavouriteChanges(stored, changes)
   // Ready before publish, and the snapshot is queued first. A subscriber that toggles
   // inside set() then appends a newer save instead of being left in the pending list.
   hydrated = true
-  if (changes.length > 0) updateStorage(merged)
+  canSave = loaded
+  if (canSave && changes.length > 0) updateStorage(merged)
   setFavourites(merged)
+}
+
+const failHydration = (reason: string) => {
+  logger.warn(`Asset favourites could not be loaded (${reason}). Stars will not be saved this session.`)
+  finishHydration(favouritesByNetwork(), false)
 }
 
 window.apiAssetFavouritesStorage.get().then(
@@ -100,12 +113,12 @@ window.apiAssetFavouritesStorage.get().then(
       result,
       assetFavouritesStorageIO.decode,
       E.fold(
-        () => finishHydration(favouritesByNetwork()),
-        ({ favourites }) => finishHydration(favourites)
+        () => failHydration('decode failed'),
+        ({ favourites }) => finishHydration(favourites, true)
       )
     )
   },
-  () => finishHydration(favouritesByNetwork())
+  () => failHydration('read failed')
 )
 
 const favourites$: Rx.Observable<AnyAsset[]> = FP.pipe(
@@ -127,7 +140,7 @@ const toggleFavourite = (asset: AnyAsset) => {
     pendingChanges.push({ network, asset, added })
     return
   }
-  updateStorage(updated)
+  if (canSave) updateStorage(updated)
 }
 
 export { favourites$, toggleFavourite }
