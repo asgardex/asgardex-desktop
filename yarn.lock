@@ -7357,7 +7357,7 @@ __metadata:
     electron-debug: "npm:^3.2.0"
     electron-devtools-installer: "npm:^3.2.0"
     electron-log: "npm:^5.4.4"
-    electron-updater: "npm:6.8.9"
+    electron-updater: "npm:6.8.10"
     electron-vite: "npm:^5.0.0"
     electron-window-state: "npm:^5.0.3"
     eslint: "npm:^9.39.4"
@@ -9382,9 +9382,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-updater@npm:6.8.9":
-  version: 6.8.9
-  resolution: "electron-updater@npm:6.8.9"
+"electron-updater@npm:6.8.10":
+  version: 6.8.10
+  resolution: "electron-updater@npm:6.8.10"
   dependencies:
     builder-util-runtime: "npm:9.7.0"
     fs-extra: "npm:^10.1.0"
@@ -9394,7 +9394,7 @@ __metadata:
     lodash.isequal: "npm:^4.5.0"
     semver: "npm:~7.7.3"
     tiny-typed-emitter: "npm:^2.1.0"
-  checksum: 10/656b7a276e2f2df48736de3df55b817f40f8252f10d94d594c98a880287ab495718d2db67f8ee3a84ea178e90283f1e0c0d2a199b3f282bafd020cff1bd67999
+  checksum: 10/3e0613548d3c404fbd5abbe1a91fd6650a035db6ae4610132ce7d5cfae1b6eff5d861ac53d8632d12bb7ca4e46be1c995a8a5d5eadf996580ac751c0a617c862
   languageName: node
   linkType: hard
 
