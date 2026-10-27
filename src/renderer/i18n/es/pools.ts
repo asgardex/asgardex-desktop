@@ -72,6 +72,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': 'Saldo insuficiente',
   'pools.chart.tradingPanel.priceLevel.noRoute': 'No hay una ruta de swap válida',
   'pools.chart.tradingPanel.priceLevel.timedOut': 'La cotización no llegó a tiempo',
+  'pools.chart.tradingPanel.priceLevel.cancelled': 'Cancelada en la confirmación',
   'pools.chart.tradingPanel.priceLevel.watcher':
     'Precio de activación ${price} (THORChain), revisado {time}. Se actualiza cada {seconds} s.',
   'pools.chart.tradingPanel.approve': 'Aprobar',

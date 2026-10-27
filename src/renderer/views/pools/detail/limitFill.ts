@@ -4,12 +4,14 @@ export const LIMIT_ERROR_PRICE_MOVED = 'pools.chart.tradingPanel.priceLevel.pric
 export const LIMIT_ERROR_BALANCE_LOW = 'pools.chart.tradingPanel.priceLevel.balanceLow'
 export const LIMIT_ERROR_NO_ROUTE = 'pools.chart.tradingPanel.priceLevel.noRoute'
 export const LIMIT_ERROR_TIMED_OUT = 'pools.chart.tradingPanel.priceLevel.timedOut'
+export const LIMIT_ERROR_CANCELLED = 'pools.chart.tradingPanel.priceLevel.cancelled'
 
 export const LIMIT_ERROR_IDS = [
   LIMIT_ERROR_PRICE_MOVED,
   LIMIT_ERROR_BALANCE_LOW,
   LIMIT_ERROR_NO_ROUTE,
-  LIMIT_ERROR_TIMED_OUT
+  LIMIT_ERROR_TIMED_OUT,
+  LIMIT_ERROR_CANCELLED
 ] as const
 
 export type LimitErrorId = (typeof LIMIT_ERROR_IDS)[number]

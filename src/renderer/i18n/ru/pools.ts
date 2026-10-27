@@ -72,6 +72,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': 'Недостаточный баланс',
   'pools.chart.tradingPanel.priceLevel.noRoute': 'Нет подходящего маршрута обмена',
   'pools.chart.tradingPanel.priceLevel.timedOut': 'Котировка не пришла вовремя',
+  'pools.chart.tradingPanel.priceLevel.cancelled': 'Отменено при подтверждении',
   'pools.chart.tradingPanel.priceLevel.watcher':
     'Цена срабатывания ${price} (THORChain), проверено в {time}. Обновляется каждые {seconds} с.',
   'pools.chart.tradingPanel.approve': 'Одобрить',

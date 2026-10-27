@@ -404,6 +404,7 @@ type PoolsMessageKey =
   | 'pools.chart.tradingPanel.priceLevel.balanceLow'
   | 'pools.chart.tradingPanel.priceLevel.noRoute'
   | 'pools.chart.tradingPanel.priceLevel.timedOut'
+  | 'pools.chart.tradingPanel.priceLevel.cancelled'
   | 'pools.chart.tradingPanel.priceLevel.watcher'
   | 'pools.chart.tradingPanel.approve'
   | 'pools.chart.tradingPanel.size'

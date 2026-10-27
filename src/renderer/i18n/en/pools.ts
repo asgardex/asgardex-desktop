@@ -72,6 +72,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': 'Balance too low',
   'pools.chart.tradingPanel.priceLevel.noRoute': 'No valid swap route',
   'pools.chart.tradingPanel.priceLevel.timedOut': 'The quote did not arrive in time',
+  'pools.chart.tradingPanel.priceLevel.cancelled': 'Cancelled at the confirm',
   'pools.chart.tradingPanel.priceLevel.watcher':
     'Trigger price ${price} (THORChain), checked {time}. Updates every {seconds}s.',
   'pools.chart.tradingPanel.approve': 'Approve',

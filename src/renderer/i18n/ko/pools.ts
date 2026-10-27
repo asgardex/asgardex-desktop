@@ -72,6 +72,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': '잔액이 부족합니다',
   'pools.chart.tradingPanel.priceLevel.noRoute': '유효한 스왑 경로가 없습니다',
   'pools.chart.tradingPanel.priceLevel.timedOut': '견적이 제때 도착하지 않았습니다',
+  'pools.chart.tradingPanel.priceLevel.cancelled': '확인 단계에서 취소됨',
   'pools.chart.tradingPanel.priceLevel.watcher':
     '트리거 가격 ${price} (THORChain), {time} 확인. {seconds}초마다 업데이트됩니다.',
   'pools.chart.tradingPanel.approve': '승인',

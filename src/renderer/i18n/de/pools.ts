@@ -72,6 +72,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': 'Guthaben zu niedrig',
   'pools.chart.tradingPanel.priceLevel.noRoute': 'Keine gültige Swap-Route',
   'pools.chart.tradingPanel.priceLevel.timedOut': 'Das Angebot kam nicht rechtzeitig an',
+  'pools.chart.tradingPanel.priceLevel.cancelled': 'Bei der Bestätigung abgebrochen',
   'pools.chart.tradingPanel.priceLevel.watcher':
     'Auslösepreis ${price} (THORChain), geprüft {time}. Aktualisierung alle {seconds} s.',
   'pools.chart.tradingPanel.approve': 'Genehmigen',

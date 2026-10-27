@@ -72,6 +72,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': 'Solde insuffisant',
   'pools.chart.tradingPanel.priceLevel.noRoute': "Aucune route d'échange valide",
   'pools.chart.tradingPanel.priceLevel.timedOut': "Le devis n'est pas arrivé à temps",
+  'pools.chart.tradingPanel.priceLevel.cancelled': 'Annulé à la confirmation',
   'pools.chart.tradingPanel.priceLevel.watcher':
     'Prix de déclenchement ${price} (THORChain), vérifié à {time}. Mis à jour toutes les {seconds} s.',
   'pools.chart.tradingPanel.approve': 'Approuver',

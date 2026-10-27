@@ -72,6 +72,7 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.priceLevel.balanceLow': 'बैलेंस कम है',
   'pools.chart.tradingPanel.priceLevel.noRoute': 'कोई मान्य स्वैप मार्ग नहीं है',
   'pools.chart.tradingPanel.priceLevel.timedOut': 'कोट समय पर नहीं आया',
+  'pools.chart.tradingPanel.priceLevel.cancelled': 'पुष्टि पर रद्द किया गया',
   'pools.chart.tradingPanel.priceLevel.watcher':
     'ट्रिगर मूल्य ${price} (THORChain), {time} पर जाँचा गया। हर {seconds} सेकंड में अपडेट होता है।',
   'pools.chart.tradingPanel.approve': 'अनुमोदन',

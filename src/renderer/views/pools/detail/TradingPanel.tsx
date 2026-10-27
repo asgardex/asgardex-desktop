@@ -49,6 +49,7 @@ import { quoteNeedsRouterApproval } from '../../../helpers/evmApprovalHelper'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
 import { addOneClickSwapToTrackerFromQuote } from '../../../helpers/oneClickTransactionTracker'
+import { hiddenString } from '../../../helpers/stringHelper'
 import {
   menuAssets,
   orderSwapAssets,
@@ -90,6 +91,7 @@ import { useApp } from '../../../store/app/hooks'
 import { chartRouteAsset, counterAfterChartChange } from './chartTicket'
 import {
   LIMIT_ERROR_BALANCE_LOW,
+  LIMIT_ERROR_CANCELLED,
   LIMIT_ERROR_NO_ROUTE,
   LIMIT_ERROR_PRICE_MOVED,
   LIMIT_ERROR_TIMED_OUT,
@@ -194,7 +196,7 @@ export const TradingPanel = ({
   // ── Contexts ──────────────────────────────────────────────────────────
   const { streamingSlipTolerance$ } = useAppContext()
   const slipTolerance = useObservableState(streamingSlipTolerance$, 5)
-  const { protocol } = useApp()
+  const { protocol, isPrivate } = useApp()
   const [settlement, setSettlement] = useState<Settlement>(initialSettlement)
 
   const {
@@ -1039,9 +1041,9 @@ export const TradingPanel = ({
               { id: 'pools.chart.tradingPanel.limit.triggered' },
               {
                 side: activeLevelRef.current.type,
-                amount: activeLevelRef.current.amount,
+                amount: isPrivate ? hiddenString : activeLevelRef.current.amount,
                 symbol: activeLevelRef.current.amountSymbol,
-                price: formatLimitInput(activeLevelRef.current.price),
+                price: isPrivate ? hiddenString : formatLimitInput(activeLevelRef.current.price),
                 unit: activeLevelRef.current.unit === 'pair' ? (selectedTarget?.ticker ?? '') : 'USD',
                 // The balance this swap actually spends, which is the panel's current settlement.
                 source: settlement
@@ -1520,7 +1522,7 @@ export const TradingPanel = ({
     },
     dismiss: () => {
       if (!limitConfirmRef.current) return
-      limitApiRef.current.finish('pending')
+      limitApiRef.current.finish('failed', LIMIT_ERROR_CANCELLED)
     }
   }
 
