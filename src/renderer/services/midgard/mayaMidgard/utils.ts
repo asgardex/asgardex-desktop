@@ -42,7 +42,6 @@ import {
   BTCChain,
   DASH_DECIMAL,
   DASHChain,
-  RadixChain,
   ZEC_DECIMAL,
   ZECChain
 } from '../../../../shared/utils/chainIds'
@@ -283,7 +282,6 @@ export const getOutboundAssetFeeByChain = (
         case LTCChain:
         case XRPChain:
         case TRONChain:
-        case RadixChain:
           return O.none
         case BTCChain:
           return O.some({

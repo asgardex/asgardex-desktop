@@ -26,13 +26,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
-import {
-  chainToString,
-  EnabledChain,
-  isChainOfMaya,
-  isChainOfThor,
-  radixTradeDisabled
-} from '../../../../shared/utils/chain'
+import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isTCYAsset, THORChain, AssetCacao, MAYAChain, AssetBTC } from '../../../../shared/utils/chainIds'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
@@ -90,7 +84,6 @@ import { WalletTypeLabel, AssetSynthLabel, AssetSecuredLabel } from '../../uiele
 import { InfoIcon } from '../../uielements/info'
 import { CopyLabel, Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
-import { RadixDelistedNotice } from '../radix/RadixDelistedNotice'
 
 export type AssetAction = 'send' | 'deposit'
 
@@ -314,9 +307,6 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
             (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
             (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
             price
-        } else if (radixTradeDisabled(asset.chain)) {
-          // MayaChain delisted XRD, so the row prices from CoinGecko.
-          price = (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) || price
         } else {
           // Handle pending pool details
           const priceOptionFromPendingPoolDetails = getPoolPriceValue({
@@ -454,13 +444,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         pushSwapAction(`${asset.chain}/${asset.symbol}`, assetToString(AssetCacao))
       }
 
-      if (
-        !isSynthAsset(asset) &&
-        !isCacaoAsset(asset) &&
-        !isRuneNativeAsset(asset) &&
-        !isSecuredAsset(asset) &&
-        !radixTradeDisabled(asset.chain)
-      ) {
+      if (!isSynthAsset(asset) && !isCacaoAsset(asset) && !isRuneNativeAsset(asset) && !isSecuredAsset(asset)) {
         pushSwapAction(assetToString(asset), assetToString(defaultSwapTargetAsset))
       }
       if (isSecuredAsset(asset)) {
@@ -472,7 +456,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         pushSwapAction(assetToString(asset), securedTarget)
       }
 
-      if (hasActivePool && !isStandaloneLedger && !radixTradeDisabled(asset.chain)) {
+      if (hasActivePool && !isStandaloneLedger) {
         actions.push(
           createAction('common.add', () => {
             setProtocol(isChainOfThor(asset.chain) && !isRuneNativeAsset(asset) ? THORChain : MAYAChain)
@@ -533,7 +517,6 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
                     {chainId}
                   </Label>
                 )}
-                {radixTradeDisabled(asset.chain) && <RadixDelistedNotice />}
                 {isSynthAsset(asset) && (
                   <AssetSynthLabel className="mt-0.5 px-1 text-[10px] leading-[12px]">synth</AssetSynthLabel>
                 )}
@@ -705,15 +688,13 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
                 }}>
                 <QrCodeIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />
               </IconButton>
-              {!radixTradeDisabled(chain) && (
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate(poolsRoutes.detail.path({ asset: assetToString(getChainAsset(chain)) }))
-                  }}>
-                  <ChartBarIcon className="ease h-5 w-5 text-text0 dark:text-text0d" />
-                </IconButton>
-              )}
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation()
+                  navigate(poolsRoutes.detail.path({ asset: assetToString(getChainAsset(chain)) }))
+                }}>
+                <ChartBarIcon className="ease h-5 w-5 text-text0 dark:text-text0d" />
+              </IconButton>
             </div>
           </div>
         </div>

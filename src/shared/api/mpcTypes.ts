@@ -167,7 +167,6 @@ export const ASGARDEX_TO_SDK_CHAIN: Record<string, string> = {
   ZEC: 'Zcash',
   ADA: 'Cardano',
   TRON: 'Tron'
-  // XRD (Radix) is not supported by ASGARDEX and will not be added.
 }
 
 export const SDK_TO_ASGARDEX_CHAIN: Record<string, string> = Object.entries(ASGARDEX_TO_SDK_CHAIN).reduce(

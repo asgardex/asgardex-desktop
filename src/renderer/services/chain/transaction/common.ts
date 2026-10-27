@@ -29,7 +29,6 @@ import {
   GAIAChain,
   BTCChain,
   DASHChain,
-  RadixChain,
   ZECChain
 } from '../../../../shared/utils/chainIds'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
@@ -56,7 +55,6 @@ import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
 import { utxoFeeRate$ } from '../fees/nodeapi'
 import * as BTC from '../lazyBitcoin'
 import * as DASH from '../lazyDash'
-import * as XRD from '../lazyRadix'
 import * as ZEC from '../lazyZcash'
 import { SendPoolTxParams, SendTxParams } from '../types'
 
@@ -175,8 +173,6 @@ export const sendTx$ = ({
       return MAYA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case ADAChain:
       return ADA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode, sendMax })
-    case RadixChain:
-      return XRD.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case XRPChain:
       return XRP.sendTx({
         walletType,
@@ -471,18 +467,6 @@ export const sendPoolTx$ = ({
         hdMode,
         feeOption
       })
-    case RadixChain:
-      return XRD.sendPoolTx$({
-        walletType,
-        router,
-        recipient,
-        asset,
-        amount,
-        memo,
-        walletAccount,
-        walletIndex,
-        hdMode
-      })
 
     case THORChain:
       return protocol === THORChain
@@ -566,8 +550,6 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
       return DASH.txStatus$(txHash, O.none)
     case ADAChain:
       return ADA.txStatus$(txHash, O.none)
-    case RadixChain:
-      return XRD.txStatus$(txHash, O.none)
     case XRPChain:
       return XRP.txStatus$(txHash, O.none)
     case SOLChain:

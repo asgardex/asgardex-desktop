@@ -28,15 +28,7 @@ import * as RxOp from 'rxjs/operators'
 import { LedgerErrorId } from '../../../shared/api/types'
 import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../../shared/evm/types'
 import { isSupportedChain } from '../../../shared/utils/chain'
-import {
-  THORChain,
-  MAYAChain,
-  GAIAChain,
-  BTCChain,
-  DASHChain,
-  RadixChain,
-  ZECChain
-} from '../../../shared/utils/chainIds'
+import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
 import { HDMode } from '../../../shared/wallet/types'
 import { WalletSettings } from '../../components/settings'
 import { useAdaContext } from '../../contexts/AdaContext'
@@ -59,7 +51,6 @@ import { useSuiContext } from '../../contexts/SuiContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useTronContext } from '../../contexts/TronContext'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { useXrdContext } from '../../contexts/XrdContext'
 import { useXrpContext } from '../../contexts/XrpContext'
 import { useZcashContext } from '../../contexts/ZcashContext'
 import {
@@ -77,7 +68,6 @@ import {
   isBscChain,
   isMayaChain,
   isDashChain,
-  isXrdChain,
   isSolChain,
   isTronChain,
   isAdaChain,
@@ -124,7 +114,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const { addressUI$: mayaAddressUI$ } = useMayachainContext()
   const { addressUI$: dashAddressUI$ } = useDashContext()
   const { addressUI$: adaAddressUI$ } = useAdaContext()
-  const { addressUI$: xrdAddressUI$ } = useXrdContext()
   const { addressUI$: solAddressUI$ } = useSolContext()
   const { addressUI$: tronAddressUI$ } = useTronContext()
   const { addressUI$: zecAddressUI$ } = useZcashContext()
@@ -180,12 +169,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     address: oAdaLedgerWalletAddress,
     removeAddress: removeLedgerAdaAddress
   } = useLedger(ADAChain, keystoreId)
-  const {
-    addAddress: addLedgerXrdAddress,
-    verifyAddress: verifyLedgerXrdAddress,
-    address: oXrdLedgerWalletAddress,
-    removeAddress: removeLedgerXrdAddress
-  } = useLedger(RadixChain, keystoreId)
 
   const {
     addAddress: addLedgerZecAddress,
@@ -302,7 +285,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     if (isMayaChain(chain)) return addLedgerMayaAddress(walletAccount, walletIndex, hdMode)
     if (isDashChain(chain)) return addLedgerDashAddress(walletAccount, walletIndex, hdMode)
     if (isAdaChain(chain)) return addLedgerAdaAddress(walletAccount, walletIndex, hdMode)
-    if (isXrdChain(chain)) return addLedgerXrdAddress(walletAccount, walletIndex, hdMode)
     if (isZecChain(chain)) return addLedgerZecAddress(walletAccount, walletIndex, hdMode)
     if (isSolChain(chain)) return addLedgerSolAddress(walletAccount, walletIndex, hdMode)
     if (isTronChain(chain)) return addLedgerTronAddress(walletAccount, walletIndex, hdMode)
@@ -343,7 +325,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     if (isMayaChain(chain)) return verifyLedgerMayaAddress(walletAccount, walletIndex, hdMode)
     if (isDashChain(chain)) return verifyLedgerDashAddress(walletAccount, walletIndex, hdMode)
     if (isAdaChain(chain)) return verifyLedgerAdaAddress(walletAccount, walletIndex, hdMode)
-    if (isXrdChain(chain)) return verifyLedgerXrdAddress(walletAccount, walletIndex, hdMode)
     if (isZecChain(chain)) return verifyLedgerZecAddress(walletAccount, walletIndex, hdMode)
     if (isSolChain(chain)) return verifyLedgerSolAddress(walletAccount, walletIndex, hdMode)
     if (isTronChain(chain)) return verifyLedgerTronAddress(walletAccount, walletIndex, hdMode)
@@ -366,7 +347,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     if (isMayaChain(chain)) return removeLedgerMayaAddress()
     if (isDashChain(chain)) return removeLedgerDashAddress()
     if (isAdaChain(chain)) return removeLedgerAdaAddress()
-    if (isXrdChain(chain)) return removeLedgerXrdAddress()
     if (isZecChain(chain)) return removeLedgerZecAddress()
     if (isSolChain(chain)) return removeLedgerSolAddress()
     if (isTronChain(chain)) return removeLedgerTronAddress()
@@ -391,7 +371,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const oMayaClient = useObservableState(clientByChain$(MAYAChain), O.none)
   const oDashClient = useObservableState(clientByChain$(DASHChain), O.none)
   const oAdaClient = useObservableState(clientByChain$(ADAChain), O.none)
-  const oXrdClient = useObservableState(clientByChain$(RadixChain), O.none)
   const oSolClient = useObservableState(clientByChain$(SOLChain), O.none)
   const oTronClient = useObservableState(clientByChain$(TRONChain), O.none)
   const oZecClient = useObservableState(clientByChain$(ZECChain), O.none)
@@ -451,9 +430,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
         break
       case ADAChain:
         FP.pipe(oAdaClient, O.map(openExplorerAddressUrl))
-        break
-      case RadixChain:
-        FP.pipe(oXrdClient, O.map(openExplorerAddressUrl))
         break
       case SOLChain:
         FP.pipe(oSolClient, O.map(openExplorerAddressUrl))
@@ -565,11 +541,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
       ledgerAddress: oAdaLedgerWalletAddress,
       chain: ADAChain
     })
-    const xrdWalletAccount$ = walletAccount$({
-      addressUI$: xrdAddressUI$,
-      ledgerAddress: oXrdLedgerWalletAddress,
-      chain: RadixChain
-    })
     const zecWalletAccount$ = walletAccount$({
       addressUI$: zecAddressUI$,
       ledgerAddress: oZecLedgerWalletAddress,
@@ -607,7 +578,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
           MAYA: [mayaWalletAccount$],
           DASH: [dashWalletAccount$],
           ADA: [adaWalletAccount$],
-          XRD: [xrdWalletAccount$],
           SOL: [solWalletAccount$],
           TRON: [tronWalletAccount$],
           BASE: [baseWalletAccount$],
@@ -655,8 +625,6 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     oDashLedgerWalletAddress,
     adaAddressUI$,
     oAdaLedgerWalletAddress,
-    xrdAddressUI$,
-    oXrdLedgerWalletAddress,
     zecAddressUI$,
     oZecLedgerWalletAddress,
     xrpAddressUI$,

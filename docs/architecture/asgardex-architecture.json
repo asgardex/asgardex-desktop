@@ -236,7 +236,7 @@
       "label": "Per-Chain Contexts",
       "layer": "context",
       "path": "src/renderer/contexts/*Context.tsx",
-      "tooltip": "BTC, ETH, AVAX, BSC, ARB, BASE, LTC, BCH, DOGE, DASH, ADA, SOL, TRON, XRD, ZEC, XRP, SUI, COSMOS providers wrapping chain services.",
+      "tooltip": "BTC, ETH, AVAX, BSC, ARB, BASE, LTC, BCH, DOGE, DASH, ADA, SOL, TRON, ZEC, XRP, SUI, COSMOS providers wrapping chain services.",
       "tags": ["chain"]
     },
 
@@ -334,7 +334,7 @@
       "label": "Per-Chain Services",
       "layer": "chain-infra",
       "path": "src/renderer/services/{bitcoin,ethereum,thorchain,...}/",
-      "tooltip": "One service folder per chain: common (client$), balances, fees, transaction. EVM chains share factory under services/evm/. Supported: THOR, MAYA, BTC, BCH, LTC, DOGE, DASH, ETH, AVAX, BSC, ARB, BASE, GAIA, ADA, SOL, TRON, XRP, XRD, ZEC, SUI.",
+      "tooltip": "One service folder per chain: common (client$), balances, fees, transaction. EVM chains share factory under services/evm/. Supported: THOR, MAYA, BTC, BCH, LTC, DOGE, DASH, ETH, AVAX, BSC, ARB, BASE, GAIA, ADA, SOL, TRON, XRP, ZEC, SUI.",
       "tags": ["chain", "xchainjs"]
     },
     {

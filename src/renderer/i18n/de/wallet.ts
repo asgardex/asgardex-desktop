@@ -38,8 +38,6 @@ const wallet: WalletMessages = {
     'Es ist bereits eine Freigabe gesetzt. Eine Änderung kann zuerst eine Reset-Transaktion erfordern (bei manchen Token zwei Signaturen).',
   'wallet.column.name': 'Name',
   'wallet.column.ticker': 'Ticker',
-  'wallet.radix.delisted.title': 'Nur senden',
-  'wallet.radix.delisted.detail': 'Nicht auf Maya',
   'wallet.action.send': 'Senden',
   'wallet.action.receive': 'Empfangen',
   'wallet.action.receive.title': 'Empfangen {asset}',

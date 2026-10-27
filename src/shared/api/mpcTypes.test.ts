@@ -4,9 +4,8 @@ import { ASGARDEX_TO_SDK_CHAIN, SDK_TO_ASGARDEX_CHAIN, MpcIPCMessages } from './
 
 describe('shared/api/mpcTypes', () => {
   describe('ASGARDEX_TO_SDK_CHAIN', () => {
-    it.skip('contains 20 chain mappings', () => {
-      // XRD/Radix temporarily removed from ASGARDEX_TO_SDK_CHAIN — re-enable when Radix is re-added
-      expect(Object.keys(ASGARDEX_TO_SDK_CHAIN)).toHaveLength(20)
+    it('contains 18 chain mappings', () => {
+      expect(Object.keys(ASGARDEX_TO_SDK_CHAIN)).toHaveLength(18)
     })
 
     it('has no duplicate SDK chain values', () => {
@@ -85,11 +84,6 @@ describe('shared/api/mpcTypes', () => {
 
     it('maps TRON to Tron', () => {
       expect(ASGARDEX_TO_SDK_CHAIN['TRON']).toBe('Tron')
-    })
-
-    it.skip('maps XRD to Radix', () => {
-      // XRD/Radix temporarily removed from ASGARDEX_TO_SDK_CHAIN — re-enable when Radix is re-added
-      expect(ASGARDEX_TO_SDK_CHAIN['XRD']).toBe('Radix')
     })
   })
 

@@ -23,15 +23,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
-import {
-  THORChain,
-  MAYAChain,
-  GAIAChain,
-  BTCChain,
-  DASHChain,
-  RadixChain,
-  ZECChain
-} from '../../../shared/utils/chainIds'
+import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
 import { observableState } from '../../helpers/stateHelper'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
@@ -41,7 +33,6 @@ import * as BSC from '../bsc'
 import * as ADA from '../cardano'
 import * as BTC from '../chain/lazyBitcoin'
 import * as DASH from '../chain/lazyDash'
-import * as XRD from '../chain/lazyRadix'
 import * as ZEC from '../chain/lazyZcash'
 import * as C from '../clients'
 import { ExplorerUrl$, TxsPageLD, LoadTxsParams } from '../clients'
@@ -138,8 +129,6 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return ADA.txs$({ asset: O.none, walletAddress, walletIndex })
               case GAIAChain:
                 return COSMOS.txs$({ asset: O.some(asset), walletAddress, walletIndex })
-              case RadixChain:
-                return XRD.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               case SOLChain:
                 return SOL.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               case TRONChain:

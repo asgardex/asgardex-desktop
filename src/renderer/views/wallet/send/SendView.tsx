@@ -9,11 +9,10 @@ import { useIntl } from 'react-intl'
 import { scheduled, asapScheduler } from 'rxjs'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
-import { isChainOfMaya, isSupportedChain, radixTradeDisabled } from '../../../../shared/utils/chain'
+import { isChainOfMaya, isSupportedChain } from '../../../../shared/utils/chain'
 import { THORChain, MAYAChain } from '../../../../shared/utils/chainIds'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { Spin } from '../../../components/uielements/spin'
-import { RadixDelistedNotice } from '../../../components/wallet/radix/RadixDelistedNotice'
 import { SendForm } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEvmContext } from '../../../contexts/EvmContext'
@@ -287,21 +286,14 @@ export const SendView = (): JSX.Element => {
       }
 
       return (
-        <>
-          {radixTradeDisabled(asset.asset.chain) && (
-            <div className="mb-4">
-              <RadixDelistedNotice />
-            </div>
-          )}
-          <UnifiedSendView
-            asset={asset}
-            trustedAddresses={trustedAddresses}
-            emptyBalance={DEFAULT_WALLET_BALANCE}
-            poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
-            oPoolAddress={oPoolAddress}
-            oPoolAddressMaya={oPoolAddressMaya}
-          />
-        </>
+        <UnifiedSendView
+          asset={asset}
+          trustedAddresses={trustedAddresses}
+          emptyBalance={DEFAULT_WALLET_BALANCE}
+          poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
+          oPoolAddress={oPoolAddress}
+          oPoolAddressMaya={oPoolAddressMaya}
+        />
       )
     },
     [poolsStateThorRD, poolsStateMayaRD, intl, trustedAddresses, oPoolAddress, oPoolAddressMaya]

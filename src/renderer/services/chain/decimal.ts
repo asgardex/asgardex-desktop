@@ -29,7 +29,6 @@ import {
   COSMOS_DECIMAL,
   BTC_DECIMAL,
   DASH_DECIMAL,
-  XRD_DECIMAL,
   ZEC_DECIMAL
 } from '../../../shared/utils/chainIds'
 import { isMayaAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
@@ -57,7 +56,6 @@ const CHAIN_DECIMAL_MAP = new Map([
   ['DOGE', DOGE_DECIMAL],
   ['LTC', LTC_DECIMAL],
   ['GAIA', COSMOS_DECIMAL],
-  ['XRD', XRD_DECIMAL],
   ['BTC', BTC_DECIMAL],
   ['BCH', BCH_DECIMAL],
   ['SOL', SOL_DECIMALS],

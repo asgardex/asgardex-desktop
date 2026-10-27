@@ -23,7 +23,6 @@ import {
   AssetDASH,
   AssetDOGE,
   AssetLTC,
-  AssetXRD,
   AssetZEC
 } from './chainIds'
 
@@ -45,7 +44,6 @@ export {
   AssetBETH,
   ADAAsset,
   AssetAETH,
-  AssetXRD,
   SOLAsset,
   AssetTRX,
   AssetZEC

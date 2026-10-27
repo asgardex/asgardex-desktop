@@ -22,15 +22,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
-import {
-  THORChain,
-  MAYAChain,
-  GAIAChain,
-  BTCChain,
-  DASHChain,
-  RadixChain,
-  ZECChain
-} from '../../../shared/utils/chainIds'
+import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { eqBalancesRD } from '../../helpers/fp/eq'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
@@ -44,7 +36,6 @@ import * as BSC from '../bsc'
 import * as ADA from '../cardano'
 import * as BTC from '../chain/lazyBitcoin'
 import * as DASH from '../chain/lazyDash'
-import * as XRD from '../chain/lazyRadix'
 import * as ZEC from '../chain/lazyZcash'
 import { WalletBalancesLD, WalletBalancesRD } from '../clients'
 import * as COSMOS from '../cosmos'
@@ -159,7 +150,6 @@ export const createBalancesService = ({
         if (enabledChainsSet.has(GAIAChain)) reloadFunctions.push(() => COSMOS.reloadBalances(walletType))
         if (enabledChainsSet.has(ADAChain)) reloadFunctions.push(() => ADA.reloadBalances(walletType))
         if (enabledChainsSet.has(XRPChain)) reloadFunctions.push(() => XRP.reloadBalances(walletType))
-        if (enabledChainsSet.has(RadixChain)) reloadFunctions.push(() => XRD.reloadBalances(walletType))
         if (enabledChainsSet.has(SOLChain)) reloadFunctions.push(() => SOL.reloadBalances())
         if (enabledChainsSet.has(TRONChain)) reloadFunctions.push(() => TRON.reloadBalances(walletType))
         if (enabledChainsSet.has(ZECChain)) reloadFunctions.push(() => ZEC.reloadBalances(walletType))
@@ -185,7 +175,6 @@ export const createBalancesService = ({
     [LTCChain]: LTC.reloadBalances,
     [DOGEChain]: DOGE.reloadBalances,
     [GAIAChain]: COSMOS.reloadBalances,
-    [RadixChain]: XRD.reloadBalances,
     [SOLChain]: SOL.reloadBalances,
     [BASEChain]: BASE.reloadBalances,
     [ADAChain]: ADA.reloadBalances,
@@ -363,13 +352,6 @@ export const createBalancesService = ({
             resetReloadBalances: () => COSMOS.resetReloadBalances(walletType),
             balances$: COSMOS.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: COSMOS.reloadBalances$
-          }
-        case RadixChain:
-          return {
-            reloadBalances: () => XRD.reloadBalances(walletType),
-            resetReloadBalances: () => XRD.resetReloadBalances(walletType),
-            balances$: XRD.balances$({ walletType, walletAccount, walletIndex, hdMode }),
-            reloadBalances$: XRD.reloadBalances$
           }
         case SOLChain:
           return {
@@ -1053,30 +1035,12 @@ export const createBalancesService = ({
   })
 
   /**
-   * Transforms Radix balances into `ChainBalance`
-   */
-  const xrdChainBalance$: ChainBalance$ = createChainBalance$({
-    chain: RadixChain,
-    addressUI$: XRD.addressUI$,
-    walletBalanceType: 'all'
-  })
-
-  /**
    * Cosmos Ledger balances
    */
   const cosmosLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
     chain: GAIAChain,
     walletBalanceType: 'all',
     getBalanceByAddress$: COSMOS.getBalanceByAddress$
-  })
-
-  /**
-   * Radix Ledger balances
-   */
-  const xrdLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
-    chain: RadixChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: XRD.getBalanceByAddress$
   })
 
   /**
@@ -1215,7 +1179,7 @@ export const createBalancesService = ({
 
   // ============================================
   // Vultisig Balance Observables
-  // Supported chains: BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL, ZEC, ADA, XRD, TRON
+  // Supported chains: BTC, ETH, THOR, MAYA, BSC, AVAX, GAIA, DOGE, LTC, BCH, ARB, BASE, DASH, XRP, SOL, ZEC, ADA, TRON
   // ============================================
 
   /**
@@ -1430,7 +1394,6 @@ export const createBalancesService = ({
     DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],
     GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$],
     ADA: [adaChainBalance$, adaLedgerChainBalance$],
-    XRD: [xrdChainBalance$, xrdLedgerChainBalance$],
     SOL: [solChainBalance$, solLedgerChainBalance$],
     TRON: [tronChainBalance$, tronLedgerChainBalance$],
     BASE: [baseChainBalance$, baseLedgerChainBalance$],
@@ -1461,7 +1424,6 @@ export const createBalancesService = ({
     DOGE: [dogeLedgerChainBalance$],
     GAIA: [cosmosLedgerChainBalance$],
     ADA: [adaLedgerChainBalance$],
-    XRD: [xrdLedgerChainBalance$],
     SOL: [solLedgerChainBalance$],
     TRON: [tronLedgerChainBalance$],
     BASE: [baseLedgerChainBalance$],

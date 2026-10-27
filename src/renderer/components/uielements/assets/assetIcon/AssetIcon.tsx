@@ -36,7 +36,6 @@ import {
   isRujiAsset,
   isMayaAsset,
   isDashAsset,
-  isXrdAsset,
   isZecAsset,
   iconUrlInARBERC20Whitelist,
   isAethAsset,
@@ -81,7 +80,6 @@ import {
   usdpIcon,
   dashIcon,
   adaIcon,
-  xrdIcon,
   solIcon,
   baseIcon,
   tcyIcon,
@@ -199,10 +197,6 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     // ADA
     if (isAdaAsset(asset)) {
       return adaIcon
-    }
-    // XRD
-    if (isXrdAsset(asset)) {
-      return xrdIcon
     }
     // Sol
     if (isSolAsset(asset)) {

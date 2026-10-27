@@ -1,7 +1,7 @@
 /**
  * Generic Vultisig SEND handler using SDK native pipeline
  *
- * Used by chains that don't fit UTXO or Cosmos patterns (TRON, ADA, XRD, etc.)
+ * Used by chains that don't fit UTXO or Cosmos patterns (TRON, ADA, etc.)
  * Uses SDK native pipeline: prepareSendTx → extractMessageHashes → sign → broadcastTx
  */
 import * as RD from '@devexperts/remote-data-ts'
@@ -28,7 +28,7 @@ type GenericSendParams = {
 /**
  * Creates a Vultisig send handler for any chain using the SDK native pipeline.
  *
- * @param chainName - Chain identifier (e.g., 'TRON', 'ADA', 'XRD')
+ * @param chainName - Chain identifier (e.g., 'TRON', 'ADA')
  * @param errorId - Error ID to use on failure (default: ErrorId.SEND_TX)
  * @param resolveId - Optional resolver for token identifier (contract address, denom, etc.)
  */

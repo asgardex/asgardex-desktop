@@ -44,7 +44,6 @@ import {
   AssetAETH,
   AssetDASH,
   SOLAsset,
-  AssetXRD,
   AssetZEC,
   AssetTRX
 } from '../../shared/utils/asset'
@@ -200,11 +199,6 @@ export const isDogeAsset = (asset: AnyAsset): boolean =>
  */
 export const isAdaAsset = (asset: AnyAsset): boolean =>
   asset.chain === ADAAsset.chain && asset.symbol.toUpperCase() === ADAAsset.symbol.toUpperCase()
-/**
- * Checks whether an asset is a Radix asset
- */
-export const isXrdAsset = (asset: AnyAsset): boolean =>
-  asset.chain === AssetXRD.chain && asset.symbol.toUpperCase() === AssetXRD.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a Ripple asset

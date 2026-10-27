@@ -15,7 +15,6 @@ import {
   LTCChain,
   MAYAChain,
   NEARChain,
-  RADIXChain,
   SOLChain,
   SUIChain,
   THORChain,
@@ -37,7 +36,6 @@ const CHAIN_STRINGS: Record<Chain, string> = {
   [BSCChain]: 'BNB Chain (BSC)',
   [MAYAChain]: 'MAYAChain',
   [DASHChain]: 'Dash',
-  [RADIXChain]: 'Radix',
   [SOLChain]: 'Solana',
   [BASEChain]: 'Base',
   [ADAChain]: 'Cardano',
@@ -61,7 +59,6 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [BSCChain]: CHAIN_STRINGS[BSCChain],
   [MAYAChain]: CHAIN_STRINGS[MAYAChain],
   [DASHChain]: CHAIN_STRINGS[DASHChain],
-  [RADIXChain]: CHAIN_STRINGS[RADIXChain],
   [SOLChain]: CHAIN_STRINGS[SOLChain],
   [BASEChain]: CHAIN_STRINGS[BASEChain],
   [ADAChain]: CHAIN_STRINGS[ADAChain],
@@ -85,12 +82,9 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
-  // XRD stays a wallet chain. MayaChain delisted it (no pool, no inbound).
   MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'ZEC', 'ADA'],
   // ZEC is dual-routable (THOR + MAYA). NEAR is wallet/OneClick-only (exclude from THOR).
-  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter(
-    (chain) => !['DASH', 'MAYA', 'ARB', 'XRD', 'ADA', 'NEAR'].includes(chain)
-  )
+  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'MAYA', 'ARB', 'ADA', 'NEAR'].includes(chain))
 }
 
 // Function to retrieve chains for a specific DEX
@@ -109,9 +103,6 @@ export const isChainOfThor = (chain: Chain): boolean => {
   const thorChains = DEX_CHAINS[THORChain] // Retrieve THOR's chains from the mapping
   return thorChains.includes(chain)
 }
-
-/** MayaChain delisted Radix. Native send stays; swap and liquidity do not. */
-export const radixTradeDisabled = (chain: Chain): boolean => chain === RADIXChain
 
 /**
  * Convert chain to string.
@@ -181,10 +172,6 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   ARB: {
     blockReward: 0,
     avgBlockTimeInSecs: 3
-  },
-  XRD: {
-    blockReward: 0,
-    avgBlockTimeInSecs: 10
   },
   SOL: {
     blockReward: 0,

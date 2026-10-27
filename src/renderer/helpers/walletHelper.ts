@@ -12,7 +12,7 @@ import { WalletBalances } from '../services/clients'
 import { TradeAccount } from '../services/thorchain/types'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
 import { isLtcAsset, isRuneNativeAsset, isMayaAsset } from './assetHelper'
-import { isAdaChain, isBchChain, isDashChain, isDogeChain, isLtcChain, isXrdChain } from './chainHelper'
+import { isAdaChain, isBchChain, isDashChain, isDogeChain, isLtcChain } from './chainHelper'
 import { eqAddress, eqAsset, eqChain, eqWalletType } from './fp/eq'
 
 /**
@@ -222,7 +222,6 @@ export const isEnabledLedger = (chain: Chain, network: Network) => {
   // No DASH support on `testnet`
   if (isDashChain(chain) && network === Network.Testnet) return false
   // Disable for these chains
-  if (isXrdChain(chain)) return false
   if (isAdaChain(chain)) return false
   return true
 }
