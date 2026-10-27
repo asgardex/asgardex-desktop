@@ -4,7 +4,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { UserChainStorage } from '../../../shared/api/types'
 import { CHAINS_STORAGE_DEFAULT } from '../../../shared/const'
-import { EnabledChain } from '../../../shared/utils/chain'
+import { EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
 import { eqString } from '../../helpers/fp/eq'
 import { observableState } from '../../helpers/stateHelper'
 import { StoragePartialState, StorageState } from './types'
@@ -25,11 +25,29 @@ const modifyStorage = (oPartialData: StoragePartialState<UserChainStorage>) => {
   )
 }
 
-// Run at the start of application
+/** Chain ids this build still understands. Disk can contain retired ones such as XRD. */
+const supportedChains = (chains: readonly string[]): EnabledChain[] => chains.filter(isSupportedChain)
+
+const publishChains = (storage: UserChainStorage) => {
+  setStorageState(O.some({ ...storage, chains: supportedChains(storage.chains) }))
+  setUserChainsLoaded(true)
+}
+
+// Run at the start of application.
+// The chain file stays on storage version 3, so an upgraded install still has its old list.
+// Drop retired ids before the list is published, and write that list back once.
 window.apiChainStorage.get().then(
   (result) => {
-    setStorageState(O.some(result))
-    setUserChainsLoaded(true)
+    const chains = supportedChains(result.chains)
+    if (chains.length === result.chains.length) {
+      publishChains(result)
+      return
+    }
+
+    window.apiChainStorage.save({ chains }).then(
+      (saved) => publishChains(saved),
+      () => publishChains({ ...result, chains })
+    )
   },
   (_) => {
     setStorageState(O.none /* any error while parsing JSON file*/)
@@ -42,18 +60,24 @@ const userChains$: Rx.Observable<EnabledChain[]> = FP.pipe(
   RxOp.map(([storageState]) =>
     FP.pipe(
       storageState,
-      O.map((chains) => chains.chains),
+      O.map((storage) => supportedChains(storage.chains)),
       O.getOrElse((): EnabledChain[] => [])
     )
   ),
   RxOp.shareReplay(1)
 )
 
-const addChain = (chain: string) => {
-  const savedChains: UserChainStorage = FP.pipe(
+const savedChainStorage = (): UserChainStorage =>
+  FP.pipe(
     getStorageState(),
+    O.map((storage) => ({ ...storage, chains: supportedChains(storage.chains) })),
     O.getOrElse(() => CHAINS_STORAGE_DEFAULT)
   )
+
+const addChain = (chain: string) => {
+  if (!isSupportedChain(chain)) return
+
+  const savedChains = savedChainStorage()
 
   FP.pipe(savedChains.chains, A.elem(eqString)(chain), (isChainExistsInSavedArray) => {
     if (!isChainExistsInSavedArray) {
@@ -63,10 +87,7 @@ const addChain = (chain: string) => {
 }
 
 const removeChain = (chain: string) => {
-  const savedChains: UserChainStorage = FP.pipe(
-    getStorageState(),
-    O.getOrElse(() => CHAINS_STORAGE_DEFAULT)
-  )
+  const savedChains = savedChainStorage()
 
   FP.pipe(savedChains.chains, A.elem(eqString)(chain), (isChainExistsInSavedArray) => {
     // to avoid re-writing and re-firing to the initial stream

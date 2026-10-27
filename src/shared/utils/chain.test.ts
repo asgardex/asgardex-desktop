@@ -9,7 +9,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 
-import { chainToString, isChainOfMaya, isChainOfThor, isSupportedChain } from './chain'
+import { chainToString, isChainOfMaya, isSupportedChain } from './chain'
 import { GAIAChain, MAYAChain, THORChain } from './chainIds'
 
 describe('chain', () => {
