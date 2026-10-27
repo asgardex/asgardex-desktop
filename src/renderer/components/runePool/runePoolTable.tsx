@@ -1,5 +1,4 @@
 import { useMemo, useCallback } from 'react'
-import { ColumnDef } from '@tanstack/react-table'
 
 import { baseToAsset, formatAssetAmountCurrency, baseAmount, formatBN } from '@xchainjs/xchain-util'
 import { option as O, nonEmptyArray as NEA } from 'fp-ts'
@@ -15,9 +14,8 @@ import { getWalletBalanceByAssetAndWalletType } from '../../helpers/walletHelper
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import * as walletRoutes from '../../routes/wallet'
 import { setSelectedAsset } from '../../services/wallet'
-import { FixmeType } from '../../types/asgardex'
 import { ParentProps } from '../../views/wallet/ProtocolPoolView'
-import { Table } from '../table'
+import { AppColumnDef, Table } from '../table'
 import { AssetData } from '../uielements/assets/assetData'
 import { ManageButton } from '../uielements/button/ManageButton'
 import { Label } from '../uielements/label'
@@ -72,7 +70,7 @@ export const ProtocolPoolTable = ({ assetDetails, allBalances }: ParentProps): J
     [navigate, allBalances]
   )
 
-  const columns: ColumnDef<RPRow, FixmeType>[] = useMemo(
+  const columns: AppColumnDef<RPRow>[] = useMemo(
     () => [
       {
         header: intl.formatMessage({ id: 'common.asset' }),
@@ -128,7 +126,7 @@ export const ProtocolPoolTable = ({ assetDetails, allBalances }: ParentProps): J
               enableSorting: false,
               size: 120
             }
-          ] as ColumnDef<RPRow, FixmeType>[])
+          ] as AppColumnDef<RPRow>[])
         : []),
       ...(isXLargeScreen
         ? ([
@@ -143,7 +141,7 @@ export const ProtocolPoolTable = ({ assetDetails, allBalances }: ParentProps): J
               enableSorting: false,
               size: 100
             }
-          ] as ColumnDef<RPRow, FixmeType>[])
+          ] as AppColumnDef<RPRow>[])
         : []),
       {
         header: () => (

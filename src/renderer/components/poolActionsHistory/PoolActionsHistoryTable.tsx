@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
-import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -11,9 +10,8 @@ import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { OpenExplorerTxUrl } from '../../services/clients'
 import { ActionsPage, Action, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
 import { ApiError } from '../../services/wallet/types'
-import { FixmeType } from '../../types/asgardex'
 import { ErrorView } from '../shared/error'
-import { Table } from '../table'
+import { AppColumnDef, Table } from '../table'
 import { Button } from '../uielements/button'
 import { Label } from '../uielements/label'
 import { Pagination } from '../uielements/pagination'
@@ -46,7 +44,7 @@ export const PoolActionsHistoryTable = ({
 
   const isDesktopView = useBreakpoint()?.lg ?? false
 
-  const columns: ColumnDef<Action, FixmeType>[] = useMemo(
+  const columns: AppColumnDef<Action>[] = useMemo(
     () => [
       {
         accessorKey: 'txType',

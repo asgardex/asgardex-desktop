@@ -2,7 +2,6 @@ import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
-import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
@@ -19,7 +18,7 @@ import { THORChain } from '../../../shared/utils/chainIds'
 
 import { AssetsFilter } from '../../components/AssetsFilter'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
-import { Table } from '../../components/table'
+import { AppColumnDef, Table } from '../../components/table'
 import { AssetData } from '../../components/uielements/assets/assetData'
 import { ManageButton, TextButton } from '../../components/uielements/button'
 import { Label } from '../../components/uielements/label'
@@ -49,7 +48,6 @@ import { PendingPoolsState as PendingPoolsStateMaya } from '../../services/midga
 import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
 import { LastblockItems as ThorLastblockItems } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
-import { FixmeType } from '../../types/asgardex'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import {
   filterTableData,
@@ -174,7 +172,7 @@ export const PendingPools = (): JSX.Element => {
     [isThorProtocol, lastblockRD, oNewPoolCycle]
   )
 
-  const columns: ColumnDef<PoolTableRowData, FixmeType>[] = useMemo(
+  const columns: AppColumnDef<PoolTableRowData>[] = useMemo(
     () => [
       {
         accessorKey: 'watched',
@@ -188,7 +186,7 @@ export const PendingPools = (): JSX.Element => {
           })
         },
         size: 50,
-        sortingFn: 'basic'
+        sortFn: 'basic'
       },
       {
         accessorKey: 'asset',
@@ -198,7 +196,7 @@ export const PendingPools = (): JSX.Element => {
             <AssetData asset={row.original.asset} network={network} />
           </div>
         ),
-        sortingFn: (rowA, rowB) => rowA.original.asset.symbol.localeCompare(rowB.original.asset.symbol)
+        sortFn: (rowA, rowB) => rowA.original.asset.symbol.localeCompare(rowB.original.asset.symbol)
       },
       {
         accessorKey: 'poolPrice',
@@ -212,7 +210,7 @@ export const PendingPools = (): JSX.Element => {
             })}
           </Label>
         ),
-        sortingFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.poolPrice, rowB.original.poolPrice)
+        sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.poolPrice, rowB.original.poolPrice)
       },
       ...(isXLargeView
         ? ([
@@ -240,15 +238,15 @@ export const PendingPools = (): JSX.Element => {
                   </div>
                 )
               },
-              sortingFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
+              sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
             },
             {
               accessorKey: 'blocks',
               header: intl.formatMessage({ id: 'pools.blocksleft' }),
               cell: ({ row }) => renderBlockLeftColumn(row.original),
-              sortingFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
+              sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
             }
-          ] as ColumnDef<PoolTableRowData, FixmeType>[])
+          ] as AppColumnDef<PoolTableRowData>[])
         : []),
       {
         accessorKey: 'actions',
