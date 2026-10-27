@@ -26,7 +26,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { chainToString, isChainOfMaya, isChainOfThor, radixTradeDisabled } from '../../../../shared/utils/chain'
+import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { AssetRuneNative, THORChain, AssetCacao, MAYAChain, AssetBTC } from '../../../../shared/utils/chainIds'
 import { HDMode, WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
@@ -47,7 +47,6 @@ import { BackLinkButton, FlatButton, RefreshButton, TextButton } from '../../uie
 import { ActionIconButton } from '../../uielements/button/ActionIconButton'
 import { Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal'
-import { RadixDelistedNotice } from '../radix/RadixDelistedNotice'
 import { InteractType } from '../txs/interact/Interact.types'
 import { TxsTable } from '../txs/table'
 
@@ -115,7 +114,6 @@ export const AssetDetails = (props: Props): JSX.Element => {
     [chainflipAssetsRD]
   )
   const isSupportedByChainflip = isChainflipSupportedAsset(asset, chainflipAssets)
-  const xrdTradeDisabled = radixTradeDisabled(asset.chain)
   const disableSwap = !isResumedOnThor && !isResumedOnMaya && !isSupportedByChainflip
   const disableAdd = !isResumedOnThor && !isResumedOnMaya
 
@@ -225,7 +223,6 @@ export const AssetDetails = (props: Props): JSX.Element => {
           price={price}
           network={network}
         />
-        {xrdTradeDisabled && <RadixDelistedNotice />}
 
         <div className="w-full">
           <div className="flex flex-col items-center justify-center space-y-1 space-x-0 sm:flex-row sm:space-y-0 sm:space-x-2">
@@ -240,22 +237,20 @@ export const AssetDetails = (props: Props): JSX.Element => {
               text={intl.formatMessage({ id: 'wallet.action.receive' })}
               onClick={() => setShowQRModal(true)}
             />
-            {!xrdTradeDisabled && (
-              <ActionIconButton
-                icon={<ArrowsRightLeftIcon className="h-6 w-6" />}
-                text={intl.formatMessage({ id: 'common.swap' })}
-                onClick={walletActionSwapClick}
-                disabled={disableSwap}
-              />
-            )}
-            {!xrdTradeDisabled && asset.type !== AssetType.SYNTH && asset.type !== AssetType.SECURED && (
+            <ActionIconButton
+              icon={<ArrowsRightLeftIcon className="h-6 w-6" />}
+              text={intl.formatMessage({ id: 'common.swap' })}
+              onClick={walletActionSwapClick}
+              disabled={disableSwap}
+            />
+            {asset.type !== AssetType.SYNTH && asset.type !== AssetType.SECURED && (
               <ActionIconButton
                 icon={<ChartBarIcon className="h-6 w-6" />}
                 text={intl.formatMessage({ id: 'pools.chart' })}
                 onClick={walletActionChartClick}
               />
             )}
-            {!xrdTradeDisabled && asset.type !== AssetType.SYNTH && (
+            {asset.type !== AssetType.SYNTH && (
               <ActionIconButton
                 icon={<ChartPieIcon className="h-6 w-6" />}
                 text={intl.formatMessage({ id: 'common.manage' })}

@@ -123,10 +123,6 @@ export const convertNodeGasRate = (chain: Chain, gasRate: number, gasRateUnits?:
       // Solana returns in lamports (smallest unit)
       return gasRate
 
-    case 'XRD':
-      // Radix returns in smallest unit
-      return gasRate
-
     default:
       logger.warn(`Unknown chain ${chain} with gas_rate_units: ${gasRateUnits}`)
       return gasRate

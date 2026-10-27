@@ -51,8 +51,6 @@ const EXTERNALS_WHITELIST = [
   'midgard.mayachain.com',
   'asgardex.com',
   'arbiscan.io',
-  'mainnet.radixdlt.com',
-  'dashboard.radixdlt.com',
   'explorer.solana.com',
   'adastat.net',
   'tronscan.org',

@@ -28,7 +28,6 @@ import {
   DASHChain,
   DOGEChain,
   LTCChain,
-  RadixChain,
   ZECChain
 } from '../../shared/utils/chainIds'
 import { LedgerAddresses } from '../services/wallet/types'
@@ -56,7 +55,6 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [LTCChain]: (network: Network) => (network === Network.Testnet ? 'tltc1' : 'ltc1').length,
   [DASHChain]: (network: Network) => (network === Network.Testnet ? 'y' : 'X').length,
   [BCHChain]: () => getBCHPrefix().length,
-  [RadixChain]: () => 'account_'.length,
   [SOLChain]: () => 0,
   [ADAChain]: () => 'addr'.length,
   [ZECChain]: (network: Network) => (network === Network.Testnet ? 'tm' : 't1').length,

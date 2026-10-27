@@ -41,15 +41,7 @@ import { KeystoreId, TrustedAddress, TrustedAddresses } from '../../../shared/ap
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
-import {
-  THORChain,
-  MAYAChain,
-  GAIAChain,
-  BTCChain,
-  DASHChain,
-  RadixChain,
-  ZECChain
-} from '../../../shared/utils/chainIds'
+import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
 import {
   getChainDerivationPath,
   getChainDerivationOptions,
@@ -226,7 +218,6 @@ const initialMap = {
   [MAYAChain]: 0,
   [DASHChain]: 0,
   [ARBChain]: 0,
-  [RadixChain]: 0,
   [SOLChain]: 0,
   [ADAChain]: 0,
   [ZECChain]: 0,

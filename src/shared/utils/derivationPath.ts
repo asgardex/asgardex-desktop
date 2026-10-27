@@ -17,17 +17,7 @@ import { getDerivationPath as getEvmDerivationPath } from '../evm/ledger'
 import { EvmHDMode } from '../evm/types'
 import { UtxoHDMode } from '../utxo/types'
 import { HDMode, KeystoreChainHDSettings } from '../wallet/types'
-import {
-  THORChain,
-  MAYAChain,
-  GAIAChain,
-  BTCChain,
-  DASHChain,
-  DOGEChain,
-  LTCChain,
-  RadixChain,
-  ZECChain
-} from './chainIds'
+import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, DOGEChain, LTCChain, ZECChain } from './chainIds'
 
 export type ChainDerivationInfo = {
   path: string
@@ -141,11 +131,6 @@ export const getChainDerivationPath = (
       return {
         path: `m/44'/501'/${account}'/0/${index}`,
         description: `Solana (m/44'/501'/${account}'/0/${index})`
-      }
-    case RadixChain:
-      return {
-        path: `m/44'/1022'/${account}'/0/${index}`,
-        description: `Radix (m/44'/1022'/${account}'/0/${index})`
       }
     case ZECChain:
       return {

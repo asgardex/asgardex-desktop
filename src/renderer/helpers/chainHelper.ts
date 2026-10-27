@@ -28,8 +28,6 @@ import {
   AssetDASH,
   DASHChain,
   UPPER_FEE_BOUNDDASH,
-  AssetXRD,
-  RadixChain,
   AssetZEC,
   ZECChain,
   UPPER_FEE_BOUNDZEC,
@@ -56,7 +54,6 @@ const chainAssets: Record<Chain, Asset> = {
   DOGE: AssetDOGE,
   DASH: AssetDASH,
   ARB: AssetAETH,
-  XRD: AssetXRD,
   SOL: SOLAsset,
   BASE: AssetBETH,
   ADA: ADAAsset,
@@ -177,10 +174,6 @@ export const isDogeChain = (chain: Chain): boolean => eqChain.equals(chain, DOGE
  * Check whether chain is ADA chain
  */
 export const isAdaChain = (chain: Chain): boolean => eqChain.equals(chain, ADAChain)
-/**
- * Check whether chain is Radix chain
- */
-export const isXrdChain = (chain: Chain): boolean => eqChain.equals(chain, RadixChain)
 
 /**
  * Check whether chain is Cosmos (GAIA) chain
@@ -238,8 +231,6 @@ export const getChain = (chain: string): Chain => {
       return MAYAChain
     case 'DASH':
       return DASHChain
-    case 'XRD':
-      return RadixChain
     case 'SOL':
       return SOLChain
     case 'BASE':

@@ -38,8 +38,6 @@ const wallet: WalletMessages = {
     'Une autorisation est déjà définie. La modifier peut nécessiter d’abord une transaction de réinitialisation (deux signatures pour certains jetons).',
   'wallet.column.name': 'Nom',
   'wallet.column.ticker': 'Ticker',
-  'wallet.radix.delisted.title': 'Envoi seulement',
-  'wallet.radix.delisted.detail': 'Plus sur Maya',
   'wallet.action.send': 'Envoyer',
   'wallet.action.receive': 'Recevoir',
   'wallet.action.receive.title': 'Recevoir du {asset}',

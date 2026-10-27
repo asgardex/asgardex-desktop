@@ -21,7 +21,6 @@ import {
   DASHChain,
   DOGEChain,
   LTCChain,
-  RadixChain,
   ZECChain
 } from '../../../shared/utils/chainIds'
 
@@ -54,7 +53,6 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [LTCChain]: 'all',
   [THORChain]: 'all',
   [MAYAChain]: 'all',
-  [RadixChain]: 'all',
   [SOLChain]: 'all',
   [TRONChain]: 'all',
   [BASEChain]: 'all',

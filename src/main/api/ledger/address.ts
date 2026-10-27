@@ -20,7 +20,6 @@ import {
   GAIAChain,
   LTCChain,
   MAYAChain,
-  RadixChain,
   SOLChain,
   THORChain,
   TRONChain,
@@ -142,7 +141,7 @@ const chainAddressFunctions: Record<
   }
 }
 
-const unsupportedChains: Chain[] = [RadixChain, ZECChain, 'ADA']
+const unsupportedChains: Chain[] = [ZECChain, 'ADA']
 
 export const getAddress = async ({
   chain,

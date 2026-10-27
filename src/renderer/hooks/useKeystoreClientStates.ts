@@ -17,7 +17,6 @@ import { useEthereumContext } from '../contexts/EthereumContext'
 import { useLitecoinContext } from '../contexts/LitecoinContext'
 import { useMayachainContext } from '../contexts/MayachainContext'
 import { useThorchainContext } from '../contexts/ThorchainContext'
-import { useXrdContext } from '../contexts/XrdContext'
 import { liveData } from '../helpers/rx/liveData'
 
 export type KeystoreClientStates = RD.RemoteData<Error, boolean>
@@ -34,7 +33,6 @@ export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates 
   const { clientState$: bscClientState$ } = useBscContext()
   const { clientState$: avaxClientState$ } = useAvaxContext()
   const { clientState$: baseClientState$ } = useBaseContext()
-  const { clientState$: xrdClientState$ } = useXrdContext()
   const { clientState$: adaClientState$ } = useAdaContext()
   const { clientState$: dashClientState$ } = useDashContext()
   const { clientState$: arbClientState$ } = useArbContext()
@@ -56,7 +54,6 @@ export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates 
           avax: avaxClientState$,
           arb: arbClientState$,
           dash: dashClientState$,
-          xrd: xrdClientState$,
           base: baseClientState$,
           ada: adaClientState$
         }),

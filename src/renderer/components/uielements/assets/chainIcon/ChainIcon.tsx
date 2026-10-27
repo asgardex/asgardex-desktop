@@ -18,7 +18,6 @@ import {
   LTCChain,
   MAYAChain,
   NEARChain,
-  RadixChain,
   SOLChain,
   SUIChain,
   THORChain,
@@ -43,7 +42,6 @@ import {
   cacaoIcon,
   dashIcon,
   adaIcon,
-  xrdIcon,
   solIcon,
   baseIcon,
   xrpIcon,
@@ -100,8 +98,6 @@ const chainIconMap = (chain: string): string => {
       return runeIcon
     case MAYAChain:
       return cacaoIcon
-    case RadixChain:
-      return xrdIcon
     case SUIChain:
       return suiIcon
     case NEARChain:

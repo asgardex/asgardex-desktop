@@ -478,8 +478,6 @@ type WalletMessageKey =
   | 'wallet.approvals.existingAllowanceNote'
   | 'wallet.column.name'
   | 'wallet.column.ticker'
-  | 'wallet.radix.delisted.title'
-  | 'wallet.radix.delisted.detail'
   | 'wallet.action.send'
   | 'wallet.action.receive'
   | 'wallet.action.receive.title'

@@ -7248,7 +7248,6 @@ __metadata:
     "@xchainjs/xchain-mayanode": "npm:1.2.5"
     "@xchainjs/xchain-midgard": "npm:1.1.5"
     "@xchainjs/xchain-near": "npm:0.3.2"
-    "@xchainjs/xchain-radix": "npm:2.0.20"
     "@xchainjs/xchain-ripple": "npm:1.0.21"
     "@xchainjs/xchain-solana": "npm:1.1.11"
     "@xchainjs/xchain-sui": "npm:0.2.3"

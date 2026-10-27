@@ -20,15 +20,7 @@ import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
-import {
-  THORChain,
-  MAYAChain,
-  GAIAChain,
-  BTCChain,
-  DASHChain,
-  RadixChain,
-  ZECChain
-} from '../../../shared/utils/chainIds'
+import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BASE from '../base'
@@ -50,7 +42,6 @@ import * as TRON from '../tron'
 import { client$ } from './client'
 import * as BTC from './lazyBitcoin'
 import * as DASH from './lazyDash'
-import * as XRD from './lazyRadix'
 import * as ZEC from './lazyZcash'
 
 /**
@@ -86,8 +77,6 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return LTC.address$
     case DOGEChain:
       return DOGE.address$
-    case RadixChain:
-      return XRD.address$
     case SOLChain:
       return SOL.address$
     case ZECChain:

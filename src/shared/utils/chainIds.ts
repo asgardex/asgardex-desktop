@@ -2,8 +2,8 @@ import { AnyAsset, Asset, AssetType, TokenAsset, assetAmount, assetToBase, asset
 
 /**
  * Chain id strings copied locally.
- * `@xchainjs/xchain-*` publishes one entry, so importing `BTCChain` or `RadixChain`
- * also evaluates the client (Radix wasm, tiny-secp256k1 asm.js). These values are stable.
+ * `@xchainjs/xchain-*` publishes one entry, so importing `BTCChain`
+ * also evaluates the client (tiny-secp256k1 asm.js). These values are stable.
  */
 export const ARBChain = 'ARB'
 export const AVAXChain = 'AVAX'
@@ -19,9 +19,6 @@ export const ETHChain = 'ETH'
 export const LTCChain = 'LTC'
 export const MAYAChain = 'MAYA'
 export const NEARChain = 'NEAR'
-export const RadixChain = 'XRD'
-/** Same string as `RadixChain`. `chain.ts` uses this name as the map key. */
-export const RADIXChain = RadixChain
 export const XRPChain = 'XRP'
 export const SOLChain = 'SOL'
 export const SUIChain = 'SUI'
@@ -31,7 +28,6 @@ export const ZECChain = 'ZEC'
 
 export const BTC_DECIMAL = 8
 export const DASH_DECIMAL = 8
-export const XRD_DECIMAL = 18
 export const ZEC_DECIMAL = 8
 export const RUNE_DECIMAL = 8
 export const CACAO_DECIMAL = 10
@@ -59,13 +55,6 @@ export const AssetDASH: Asset = {
   chain: DASHChain,
   symbol: 'DASH',
   ticker: 'DASH',
-  type: AssetType.NATIVE
-}
-
-export const AssetXRD: Asset = {
-  chain: RadixChain,
-  symbol: 'XRD',
-  ticker: 'XRD',
   type: AssetType.NATIVE
 }
 

@@ -21,15 +21,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
-import {
-  THORChain,
-  MAYAChain,
-  GAIAChain,
-  BTCChain,
-  DASHChain,
-  RadixChain,
-  ZECChain
-} from '../../../shared/utils/chainIds'
+import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BASE from '../base'
@@ -51,7 +43,6 @@ import * as THOR from '../thorchain'
 import * as TRON from '../tron'
 import * as BTC from './lazyBitcoin'
 import * as DASH from './lazyDash'
-import * as XRD from './lazyRadix'
 import * as ZEC from './lazyZcash'
 import type { Chain$ } from './types'
 
@@ -85,8 +76,6 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return DOGE.client$
     case GAIAChain:
       return COSMOS.client$
-    case RadixChain:
-      return XRD.client$
     case SOLChain:
       return SOL.client$
     case ZECChain:
@@ -143,8 +132,6 @@ export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ 
       return DOGE.client$
     case GAIAChain:
       return COSMOS.client$
-    case RadixChain:
-      return XRD.client$
     case SOLChain:
       return SOL.client$
     case ZECChain:

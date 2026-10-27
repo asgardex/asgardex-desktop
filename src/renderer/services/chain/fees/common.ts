@@ -40,7 +40,6 @@ import {
   GAIAChain,
   BTCChain,
   DASHChain,
-  RadixChain,
   ZECChain
 } from '../../../../shared/utils/chainIds'
 import { isCacaoAsset, isRujiAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
@@ -74,7 +73,6 @@ import { FeesWithRatesLD } from '../../utxo/types'
 import { getDecimal } from '../decimal'
 import * as BTC from '../lazyBitcoin'
 import * as DASH from '../lazyDash'
-import * as XRD from '../lazyRadix'
 import * as ZEC from '../lazyZcash'
 import { PoolFeeLD } from '../types'
 import { getChainNodeProtocol, NodeProtocol } from './nodeapi'
@@ -694,11 +692,6 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string, sender?: string):
         XRP.fees$(),
         liveData.map((fees) => ({ asset, amount: fees.fast }))
       )
-    case RadixChain:
-      return FP.pipe(
-        XRD.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
-      )
     case DASHChain:
       return FP.pipe(
         DASH.address$.pipe(
@@ -855,7 +848,7 @@ export const evmFees$ = (params: {
 
 /**
  * Centralized fee estimation for standalone ledger mode support
- * Supports multiple chain types: Cosmos (THOR, GAIA), and others (ADA, XRP, Radix, SOL)
+ * Supports multiple chain types: Cosmos (THOR, GAIA), and others (ADA, XRP, SOL)
  */
 export const standaloneLedgerFees$ = (params: { chain: Chain; amount: BaseAmount; recipient: Address }): FeesLD => {
   const { chain, amount, recipient } = params
@@ -871,8 +864,6 @@ export const standaloneLedgerFees$ = (params: { chain: Chain; amount: BaseAmount
       return ADA.fees$()
     case XRPChain:
       return XRP.fees$()
-    case RadixChain:
-      return XRD.fees$()
     case SOLChain:
       return SOL.fees$({ amount, recipient })
     case TRONChain:
@@ -904,9 +895,6 @@ export const reloadStandaloneLedgerFees = (chain: Chain): void => {
       break
     case XRPChain:
       XRP.reloadFees()
-      break
-    case RadixChain:
-      XRD.reloadFees()
       break
     case SOLChain:
       SOL.reloadFees({ amount: baseAmount(1), recipient: ZERO_ADDRESS })

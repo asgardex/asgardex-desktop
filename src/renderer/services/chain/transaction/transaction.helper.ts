@@ -28,8 +28,6 @@ import {
   BTCChain,
   DASHChain,
   DASH_DECIMAL,
-  RadixChain,
-  XRD_DECIMAL,
   ZEC_DECIMAL,
   ZECChain
 } from '../../../../shared/utils/chainIds'
@@ -77,8 +75,6 @@ export const smallestAmountToSend = (chain: Chain, _network: Network): BaseAmoun
     case LTCChain:
       // 10001 satoshi
       return baseAmount(10001, LTC_DECIMAL)
-    case RadixChain:
-      return baseAmount(100000000000000000, XRD_DECIMAL)
     case SOLChain:
       return baseAmount(1, SOL_DECIMALS)
     case TRONChain:
