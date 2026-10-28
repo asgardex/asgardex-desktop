@@ -4,7 +4,7 @@ import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
-import { catchError, startWith, map, shareReplay, debounceTime } from 'rxjs/operators'
+import { catchError, startWith, map, debounceTime } from 'rxjs/operators'
 
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { liveData } from '../../helpers/rx/liveData'
@@ -105,6 +105,26 @@ const loadBalances$ = <C extends XChainClientOverride>({
     )
   )
 
+/**
+ * Like `shareReplay(1)`, but it unsubscribes from its source once nobody listens anymore.
+ *
+ * With plain `shareReplay(1)` an instance stays subscribed to `trigger$` and `client$` forever.
+ * A new instance is created for every new address (e.g. each wallet unlock),
+ * so after N unlocks one reload sent N identical balance requests (MAYA: HTTP 429).
+ *
+ * The reset is delayed by one macrotask: a reload (`getChainBalance$` in `wallet/balances`)
+ * unsubscribes and subscribes again in the same turn. It needs the replayed value to keep the
+ * last Success on screen while loading (`preserveSuccess`). `shareReplay({ refCount: true })` would
+ * reset right away and show Pending on every reload.
+ */
+const shareBalances = <T>(): Rx.MonoTypeOperatorFunction<T> =>
+  RxOp.share<T>({
+    connector: () => new Rx.ReplaySubject<T>(1),
+    resetOnError: true,
+    resetOnComplete: false,
+    resetOnRefCountZero: () => Rx.timer(0)
+  })
+
 type Balances$ = ({
   walletType,
   client$,
@@ -174,7 +194,7 @@ export const balances$: Balances$ = ({
         RxOp.startWith(RD.pending)
       )
     ),
-    shareReplay(1) // Prevent duplicate balance requests for the same parameters
+    shareBalances() // Prevent duplicate balance requests for the same parameters
   )
 
 type BalancesByAddress$ = ({
@@ -247,5 +267,5 @@ export const balancesByAddress$: BalancesByAddress$ =
           RxOp.startWith(RD.pending)
         )
       ),
-      shareReplay(1)
+      shareBalances()
     )
