@@ -204,7 +204,7 @@ let isEmptyClientListError: (msg: string) => boolean
 let ui: { unsubscribe: () => void } | undefined
 
 beforeEach(async () => {
-  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] })
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance'] })
   vi.resetModules()
   hits.length = 0
   states = []

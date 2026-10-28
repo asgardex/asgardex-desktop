@@ -40,7 +40,7 @@ export const isEmptyClientListError = (msg: string): boolean =>
 type RebuildState = {
   status: 'ok' | 'stuck' | 'rebuilding'
   client: O.Option<Client>
-  // Time of the last rebuild (`rebuilding` only)
+  // Time of the last rebuild (`performance.now()`, monotonic; `rebuilding` only)
   since: number
 }
 
@@ -67,14 +67,7 @@ const trackClient = (oClient: O.Option<Client>) =>
     return { status: 'ok', client: oClient, since: 0 }
   })
 
-// Results seen by `trackBalances` already. A new subscriber gets the last result replayed (`shareBalances`),
-// e.g. an old Success while rebuilding. Only a new result tells something about the current client.
-const trackedResults = new WeakSet<WalletBalancesRD>()
-
 const trackBalances = RxOp.tap<WalletBalancesRD>((balancesRD) => {
-  if (!RD.isFailure(balancesRD) && !RD.isSuccess(balancesRD)) return
-  if (trackedResults.has(balancesRD)) return
-  trackedResults.add(balancesRD)
   if (RD.isFailure(balancesRD))
     setRebuildState((state) => ({ ...state, status: isEmptyClientListError(balancesRD.error.msg) ? 'stuck' : 'ok' }))
   if (RD.isSuccess(balancesRD)) setRebuildState((state) => ({ ...state, status: 'ok' }))
@@ -93,7 +86,7 @@ const resetReloadBalances = () => {
 
 const reloadBalances = () => {
   const { status, since } = getRebuildState()
-  const now = Date.now()
+  const now = performance.now()
   if (status === 'rebuilding') {
     // The new client loads balances by itself, another load would send a second request.
     if (now - since < REBUILD_TIMEOUT_MS) return
