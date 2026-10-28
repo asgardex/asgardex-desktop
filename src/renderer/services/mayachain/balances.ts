@@ -1,5 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Client } from '@xchainjs/xchain-mayachain'
+import { option as O } from 'fp-ts'
 import * as RxOp from 'rxjs/operators'
+
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
@@ -17,14 +20,64 @@ import { client$, readOnlyClient$, rebuildClient } from './common'
 export const isEmptyClientListError = (msg: string): boolean =>
   msg.startsWith('No clients available') && !msg.includes('Last error')
 
-// Set by a failed balance load with an empty client list, cleared by a successful one.
-// Not rebuilt right away: a rebuild while the RPC still answers `429` would fail again,
-// so it waits for the next manual reload (Refresh).
-let clientNeedsRebuild = false
+/**
+ * Whether the MAYA client used for balances needs to be built again:
+ *
+ * - `ok`: Refresh reloads balances.
+ * - `stuck`: the last load failed with an empty client list. The next Refresh builds a new client.
+ *   Not rebuilt right away: a rebuild while the RPC still answers `429` would fail again,
+ *   so it waits for the next manual reload (Refresh). Can't loop.
+ * - `rebuilding`: a new client is on its way and loads balances by itself once it's there.
+ *   Another Refresh meanwhile is ignored, it would send a second request (up to `REBUILD_TIMEOUT_MS`).
+ *
+ * `client` is the client the state belongs to. Any other client (unlock, lock, wallet / network / url change)
+ * starts with `ok`, so a flag left from a previous client never causes a needless rebuild.
+ *
+ * Keystore (`balances$`) and Ledger / Vultisig (`getBalanceByAddress$`) loads share this state on purpose:
+ * both load with the same client (`balancesClient$`), so a stuck client is stuck for both,
+ * and `rebuildClient` builds the keystore and the read-only client again at once.
+ */
+type RebuildState = {
+  status: 'ok' | 'stuck' | 'rebuilding'
+  client: O.Option<Client>
+  // Time of the last rebuild (`rebuilding` only)
+  since: number
+}
 
-const trackClientState = RxOp.tap<WalletBalancesRD>((balancesRD) => {
-  if (RD.isFailure(balancesRD) && isEmptyClientListError(balancesRD.error.msg)) clientNeedsRebuild = true
-  if (RD.isSuccess(balancesRD)) clientNeedsRebuild = false
+const { get: getRebuildState, set: setRebuildState } = observableState<RebuildState>({
+  status: 'ok',
+  client: O.none,
+  since: 0
+})
+
+// A rebuild normally loads balances within a few seconds (chain id, connect, balances).
+// After that time a Refresh reloads as usual, even if the rebuild hasn't loaded anything
+// (e.g. a request hangs, or no balances are subscribed right now). So Refresh can't stay dead.
+const REBUILD_TIMEOUT_MS = 10_000
+
+const isSameClient = (a: O.Option<Client>, b: O.Option<Client>): boolean =>
+  O.getEq<Client>({ equals: (x, y) => x === y }).equals(a, b)
+
+const trackClient = (oClient: O.Option<Client>) =>
+  setRebuildState((state) => {
+    if (isSameClient(state.client, oClient)) return state
+    // A rebuild without a client (chain id request failed, or wallet locked meanwhile): next Refresh tries again.
+    if (state.status === 'rebuilding')
+      return { ...state, status: O.isSome(oClient) ? 'rebuilding' : 'stuck', client: oClient }
+    return { status: 'ok', client: oClient, since: 0 }
+  })
+
+// Results seen by `trackBalances` already. A new subscriber gets the last result replayed (`shareBalances`),
+// e.g. an old Success while rebuilding. Only a new result tells something about the current client.
+const trackedResults = new WeakSet<WalletBalancesRD>()
+
+const trackBalances = RxOp.tap<WalletBalancesRD>((balancesRD) => {
+  if (!RD.isFailure(balancesRD) && !RD.isSuccess(balancesRD)) return
+  if (trackedResults.has(balancesRD)) return
+  trackedResults.add(balancesRD)
+  if (RD.isFailure(balancesRD))
+    setRebuildState((state) => ({ ...state, status: isEmptyClientListError(balancesRD.error.msg) ? 'stuck' : 'ok' }))
+  if (RD.isSuccess(balancesRD)) setRebuildState((state) => ({ ...state, status: 'ok' }))
 })
 
 /**
@@ -39,8 +92,16 @@ const resetReloadBalances = () => {
 }
 
 const reloadBalances = () => {
-  if (clientNeedsRebuild) {
-    clientNeedsRebuild = false
+  const { status, since } = getRebuildState()
+  const now = Date.now()
+  if (status === 'rebuilding') {
+    // The new client loads balances by itself, another load would send a second request.
+    if (now - since < REBUILD_TIMEOUT_MS) return
+    // Client is built again already: reload it. If it's stuck again, its failure says so.
+    setRebuildState((state) => ({ ...state, status: 'ok' }))
+  }
+  if (status === 'stuck') {
+    setRebuildState((state) => ({ ...state, status: 'rebuilding', since: now }))
     // Reloading the stuck client would fail again without sending any request.
     // A new client connects again, and balances load once it's there.
     // No reload trigger here: it would load a second time with the new client.
@@ -55,6 +116,9 @@ const reloadBalances = () => {
  */
 const enhancedClient$ = createEnhancedClient$(client$, readOnlyClient$.pipe(RxOp.map(RD.toOption)))
 
+// Client for balances: same as `enhancedClient$`, it tracks client changes for `RebuildState` once per change
+const balancesClient$ = enhancedClient$.pipe(RxOp.tap(trackClient), RxOp.shareReplay({ bufferSize: 1, refCount: true }))
+
 // State of balances loaded by Client
 const balances$ = ({
   walletType,
@@ -68,21 +132,21 @@ const balances$ = ({
   hdMode: HDMode
 }): C.WalletBalancesLD =>
   C.balances$({
-    client$: enhancedClient$,
+    client$: balancesClient$,
     trigger$: reloadBalances$,
     walletType,
     walletAccount,
     walletIndex,
     hdMode,
     walletBalanceType: 'all'
-  }).pipe(trackClientState)
+  }).pipe(trackBalances)
 
 // State of balances loaded by Client and Address
 const balanceByAddress$ = C.balancesByAddress$({
-  client$: enhancedClient$,
+  client$: balancesClient$,
   trigger$: reloadBalances$,
   walletBalanceType: 'all'
 })
-const getBalanceByAddress$: typeof balanceByAddress$ = (params) => balanceByAddress$(params).pipe(trackClientState)
+const getBalanceByAddress$: typeof balanceByAddress$ = (params) => balanceByAddress$(params).pipe(trackBalances)
 
 export { balances$, getBalanceByAddress$, reloadBalances, reloadBalances$, resetReloadBalances, enhancedClient$ }
