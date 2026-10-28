@@ -79,7 +79,11 @@ export const Table = <T extends RowData>({
             sorting
           },
           onExpandedChange: setExpanded,
-          getRowId
+          getRowId,
+          // Detail rows are rendered by the caller, not as table sub-rows.
+          // v9 will not expand a row unless it can expand, and the default
+          // is "has sub-rows", so the chevron's toggleExpanded would no-op.
+          getRowCanExpand: () => true
         }
       : {
           state: {
