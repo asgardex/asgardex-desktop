@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, ChartBarIcon } from '@heroicons/react/24/outline'
-import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 import { assetToString } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -15,7 +14,7 @@ import { useNavigate } from 'react-router-dom'
 import { AssetBTC } from '../../../shared/utils/asset'
 import BoostIcon from '../../assets/svg/boost.svg'
 import { AssetsFilter } from '../../components/AssetsFilter'
-import { Table } from '../../components/table'
+import { AppColumnDef, Table } from '../../components/table'
 import { AssetData } from '../../components/uielements/assets/assetData'
 import { TextButton } from '../../components/uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
@@ -32,7 +31,6 @@ import * as poolsRoutes from '../../routes/pools'
 import { ChainflipAssetRowData } from '../../services/chainflip/poolData.types'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
-import { FixmeType } from '../../types/asgardex'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
 
@@ -83,7 +81,7 @@ export const ChainflipAssets = (): JSX.Element => {
     [navigate]
   )
 
-  const columns: ColumnDef<ChainflipAssetRow, FixmeType>[] = useMemo(
+  const columns: AppColumnDef<ChainflipAssetRow>[] = useMemo(
     () => [
       {
         accessorKey: 'watched',
@@ -97,7 +95,7 @@ export const ChainflipAssets = (): JSX.Element => {
           })
         },
         size: 50,
-        sortingFn: 'basic'
+        sortFn: 'basic'
       },
       {
         accessorKey: 'asset',
@@ -107,7 +105,7 @@ export const ChainflipAssets = (): JSX.Element => {
             <AssetData asset={row.original.asset} network={network} />
           </div>
         ),
-        sortingFn: (a, b) => a.original.asset.symbol.localeCompare(b.original.asset.symbol)
+        sortFn: (a, b) => a.original.asset.symbol.localeCompare(b.original.asset.symbol)
       },
       {
         accessorKey: 'chain',
@@ -117,7 +115,7 @@ export const ChainflipAssets = (): JSX.Element => {
             {row.original.chain}
           </Label>
         ),
-        sortingFn: (a, b) => a.original.chain.localeCompare(b.original.chain)
+        sortFn: (a, b) => a.original.chain.localeCompare(b.original.chain)
       },
       {
         accessorKey: 'priceUSD',
@@ -127,7 +125,7 @@ export const ChainflipAssets = (): JSX.Element => {
             {formatUsd(row.original.priceUSD)}
           </Label>
         ),
-        sortingFn: (a, b) => (a.original.priceUSD ?? 0) - (b.original.priceUSD ?? 0)
+        sortFn: (a, b) => (a.original.priceUSD ?? 0) - (b.original.priceUSD ?? 0)
       },
       ...(isLargeScreen
         ? ([
@@ -148,7 +146,7 @@ export const ChainflipAssets = (): JSX.Element => {
               ),
               enableSorting: false
             }
-          ] as ColumnDef<ChainflipAssetRow, FixmeType>[])
+          ] as AppColumnDef<ChainflipAssetRow>[])
         : []),
       {
         accessorKey: 'actions',

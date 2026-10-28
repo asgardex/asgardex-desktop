@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
-import { ColumnDef } from '@tanstack/react-table'
 import { Balance, Network } from '@xchainjs/xchain-client'
 
 import { PoolDetails as PoolDetailsMaya } from '@xchainjs/xchain-mayamidgard'
@@ -51,10 +50,9 @@ import { MimirHaltRD, TradeAccount } from '../../../services/thorchain/types'
 import { ChainBalances, SelectedWalletAsset } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
-import { FixmeType } from '../../../types/asgardex'
 import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { UnifiedTxModal, getDepositTimerValue } from '../../modal/tx'
-import { Table } from '../../table'
+import { AppColumnDef, Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
@@ -73,7 +71,7 @@ export type TradeWalletBalance = Balance & {
 }
 export type TradeWalletBalances = TradeWalletBalance[]
 
-const loadingColumns: ColumnDef<TradeWalletBalance, FixmeType>[] = [{ header: '', cell: () => null }]
+const loadingColumns: AppColumnDef<TradeWalletBalance>[] = [{ header: '', cell: () => null }]
 
 type Props = {
   chainBalances: Rx.Observable<ChainBalances>
