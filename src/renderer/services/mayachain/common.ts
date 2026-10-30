@@ -23,6 +23,12 @@ import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 // `TriggerStream` to reload ClientUrl
 const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
 
+// `TriggerStream` to build new MAYA clients (keystore + read-only) with the same urls.
+// xchainjs caches the list of connected RPC clients for the lifetime of a `Client`.
+// If connecting fails once (e.g. RPC answers `429`), that list stays empty
+// and the client can't load anything again. A new `Client` connects again.
+const { stream$: rebuildClient$, trigger: rebuildClient } = triggerStream()
+
 /**
  * Stream of ClientUrl (from storage)
  */
@@ -75,7 +81,7 @@ const hdSettings$ = keystoreChainHDSettings$(MAYAChain)
  * A `MayachainClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$, hdSettings$]),
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$, hdSettings$, rebuildClient$]),
   RxOp.switchMap(([keystore, network, clientUrl, hdSettings]): ClientState$ =>
     FP.pipe(
       // request chain id from node whenever network or keystore state have been changed
@@ -123,7 +129,7 @@ const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareRepl
  * Read-only client stream for standalone ledger mode
  */
 const readOnlyClient$: ClientState$ = FP.pipe(
-  Rx.combineLatest([clientNetwork$, clientUrl$]),
+  Rx.combineLatest([clientNetwork$, clientUrl$, rebuildClient$]),
   RxOp.switchMap(([network, clientUrl]): ClientState$ =>
     FP.pipe(
       // request chain id from node whenever network changes
@@ -187,6 +193,7 @@ export {
   readOnlyClient$,
   clientUrl$,
   reloadClientUrl,
+  rebuildClient,
   setMayanodeRpcUrl,
   setMayanodeApiUrl,
   address$,
