@@ -13,6 +13,7 @@ import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { NEARChain } from '@xchainjs/xchain-near'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { SUIChain } from '@xchainjs/xchain-sui'
 
 import { TRONChain } from '@xchainjs/xchain-tron'
 import {
@@ -44,6 +45,7 @@ import {
 } from '../../../../shared/utils/chainIds'
 import { isCacaoAsset, isRujiAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
+import { logger } from '../../../helpers/logger'
 import { liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
@@ -65,6 +67,8 @@ import { ZERO_ADDRESS as NEAR_ZERO_ADDRESS } from '../../near/fees'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
 import { ZERO_ADDRESS } from '../../solana/fees'
+import * as SUI from '../../sui'
+import { ZERO_ADDRESS as SUI_ZERO_ADDRESS } from '../../sui/fees'
 import * as THOR from '../../thorchain'
 import { inboundAddressesShared$ as thorInboundAddresses$ } from '../../thorchain'
 import { InboundAddress as ThorInboundAddress, InboundAddressesLD } from '../../thorchain/types'
@@ -870,9 +874,11 @@ export const standaloneLedgerFees$ = (params: { chain: Chain; amount: BaseAmount
       return TRON.fees$()
     case NEARChain:
       return NEAR.fees$({ amount: baseAmount(1), recipient: NEAR_ZERO_ADDRESS })
+    case SUIChain:
+      return SUI.fees$({ amount: baseAmount(1), recipient: SUI_ZERO_ADDRESS })
     default:
-      // Fallback to THOR for unknown chains
-      return THOR.fees$()
+      // No silent fallback: another chain's fees (e.g. RUNE) would be shown as this chain's fee
+      return Rx.of(RD.failure(new Error(`Fees are not supported for chain ${chain}`)))
   }
 }
 
@@ -905,8 +911,11 @@ export const reloadStandaloneLedgerFees = (chain: Chain): void => {
     case NEARChain:
       NEAR.reloadFees({ amount: baseAmount(1), recipient: NEAR_ZERO_ADDRESS })
       break
+    case SUIChain:
+      SUI.reloadFees({ amount: baseAmount(1), recipient: SUI_ZERO_ADDRESS })
+      break
     default:
-      // Fallback to THOR for unknown chains
-      THOR.reloadFees(true)
+      // No fallback to THOR: reloading RUNE fees would not refresh this chain's fee
+      logger.warn(`reloadStandaloneLedgerFees: fees are not supported for chain ${chain}`)
   }
 }
