@@ -2,7 +2,10 @@ import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
 import { BTCChain, THORChain } from '../../shared/utils/chainIds'
 import { disableAllActions } from '../helpers/poolHelper'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
+import { Mimir } from '../services/thorchain/types'
 import { isProtocolGloballyHalted } from '../views/app/AppHaltedChains.helpers'
+import lastblock20261101 from './__fixtures__/thornode-mainnet-2026-11-01T033930Z/lastblock.json'
+import mimir20261101 from './__fixtures__/thornode-mainnet-2026-11-01T033930Z/mimir.json'
 import { getMimirStatus, getThorchainMimirHalt } from './useMimirHalt'
 
 describe('hooks/useMimirHalt', () => {
@@ -16,14 +19,17 @@ describe('hooks/useMimirHalt', () => {
     it('mimir = 99, blockheight = 100', () => {
       expect(getMimirStatus(99, 100)).toBeTruthy()
     })
-    it('mimir = 100, blockheight = 100', () => {
-      expect(getMimirStatus(100, 100)).toBeFalsy()
+    it('mimir = 100, blockheight = 100 (halt height reached: active, THORNode `value <= height`)', () => {
+      expect(getMimirStatus(100, 100)).toBeTruthy()
     })
     it('mimir = 101, blockheight = 100', () => {
       expect(getMimirStatus(101, 100)).toBeFalsy()
     })
     it('mimir = 10, blockheight = 0', () => {
       expect(getMimirStatus(10, 0)).toBeFalsy()
+    })
+    it('mimir = -1 (unset), blockheight = 100', () => {
+      expect(getMimirStatus(-1, 100)).toBeFalsy()
     })
     it('mimir = undefined + blockheight = undefined', () => {
       expect(getMimirStatus(undefined, undefined)).toBeFalsy()
@@ -151,6 +157,76 @@ describe('hooks/useMimirHalt', () => {
       expect(result.HALTTHORCHAIN).toBe(false)
       expect(result.haltGlobalTrading).toBe(false)
       expect(result.pauseGlobalLp).toBe(false)
+    })
+  })
+
+  describe('getThorchainMimirHalt: live mainnet fixture (1 Nov 2026, height 28483475)', () => {
+    // Raw THORNode /thorchain/mimir and /thorchain/lastblock responses, see __fixtures__/.../README.md
+    const mimir: Mimir = mimir20261101
+    const lastHeight = lastblock20261101.find(({ thorchain }) => thorchain > 0)?.thorchain ?? 0
+    const chains = [
+      'AVAX',
+      'BASE',
+      'BCH',
+      'BSC',
+      'BTC',
+      'DOGE',
+      'ETH',
+      'GAIA',
+      'LTC',
+      'SOL',
+      'TRON',
+      'XRP',
+      'ZEC',
+      'THOR'
+    ]
+    const chainHalted = ['BCH', 'BSC', 'BTC', 'DOGE', 'ETH', 'GAIA', 'LTC', 'TRON', 'ZEC']
+    const tradingHalted = [...chainHalted, 'BASE', 'SOL']
+
+    it('reads the fixture height', () => {
+      expect(lastHeight).toBe(28483475)
+    })
+
+    it('flags exactly the 9 halted chains (HALT{CHAIN}CHAIN = 1)', () => {
+      const result = getThorchainMimirHalt({ mimir, lastHeight, chains })
+      chains
+        .filter((c) => c !== 'THOR')
+        .forEach((c) =>
+          expect([c, result[`HALT${c}CHAIN` as keyof typeof result]]).toEqual([c, chainHalted.includes(c)])
+        )
+    })
+
+    it('flags trading halts on 11 chains, incl. TRON by a passed block height (HALTTRONTRADING = 28476980)', () => {
+      const result = getThorchainMimirHalt({ mimir, lastHeight, chains })
+      chains
+        .filter((c) => c !== 'THOR')
+        .forEach((c) =>
+          expect([c, result[`HALT${c}TRADING` as keyof typeof result]]).toEqual([c, tradingHalted.includes(c)])
+        )
+    })
+
+    it('THORChain itself, global trading and global LP are not halted', () => {
+      const result = getThorchainMimirHalt({ mimir, lastHeight, chains })
+      expect(result.HALTTHORCHAIN).toBe(false)
+      expect(result.haltGlobalTrading).toBe(false)
+      expect(result.pauseGlobalLp).toBe(false)
+    })
+
+    it('a halt height equal to the current height is active, one block later is scheduled', () => {
+      const at = getThorchainMimirHalt({
+        mimir: { ...mimir, HALTXRPCHAIN: lastHeight, HALTXRPTRADING: lastHeight },
+        lastHeight,
+        chains
+      })
+      expect(at.HALTXRPCHAIN).toBe(true)
+      expect(at.HALTXRPTRADING).toBe(true)
+      const next = getThorchainMimirHalt({
+        mimir: { ...mimir, HALTXRPCHAIN: lastHeight + 1, HALTXRPTRADING: lastHeight + 1 },
+        lastHeight,
+        chains
+      })
+      expect(next.HALTXRPCHAIN).toBe(false)
+      expect(next.HALTXRPTRADING).toBe(false)
     })
   })
 })
