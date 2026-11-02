@@ -8,7 +8,9 @@ import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { createEnhancedClient$ } from '../clients/enhancedClient'
 import { WalletBalancesRD } from '../clients/types'
-import { client$, readOnlyClient$, rebuildClient } from './common'
+import { appWalletService } from '../wallet/appWallet'
+import { isStandaloneLedgerMode, isVultisigMode } from '../wallet/types'
+import { checkFailed$, client$, readOnlyClient$, rebuildClient } from './common'
 
 /**
  * xchainjs caches the connected RPC clients for the lifetime of a `Client`. If the first connect fails
@@ -20,7 +22,7 @@ export const isEmptyClientListError = (msg: string): boolean =>
 
 /**
  * Rebuild state of the MAYA balances client (shared by keystore and Ledger/Vultisig loads).
- * ok: Refresh reloads · stuck: next Refresh builds a new client (never automatic, so it can't loop)
+ * ok: Refresh reloads · stuck (connect or node check failed): next Refresh builds a new client (never automatic)
  * rebuilding: Refresh ignored for up to `REBUILD_TIMEOUT_MS`. Another `client` starts with ok.
  */
 type RebuildState = {
@@ -44,11 +46,21 @@ const isSameClient = (a: O.Option<Client>, b: O.Option<Client>): boolean =>
 const trackClient = (oClient: O.Option<Client>) =>
   setRebuildState((state) => {
     if (isSameClient(state.client, oClient)) return state
-    // A rebuild without a client (node check failed, or wallet locked): next Refresh tries again
+    // A rebuild without a client (wallet locked): next Refresh tries again
     if (state.status === 'rebuilding')
       return { ...state, status: O.isSome(oClient) ? 'rebuilding' : 'stuck', client: oClient }
     return { status: 'ok', client: oClient, since: 0 }
   })
+
+// A node check of the client used for balances failed (unlock, network change, rebuild): next Refresh tries again.
+// The read-only client is used in Ledger / Vultisig mode only (as in `enhancedClient$`).
+checkFailed$.subscribe(({ readOnly, kept }) => {
+  let standalone = false
+  appWalletService.appWalletState$.pipe(RxOp.take(1)).subscribe((appWalletState) => {
+    standalone = isStandaloneLedgerMode(appWalletState) || isVultisigMode(appWalletState)
+  })
+  if (readOnly === standalone) setRebuildState((state) => ({ ...state, status: 'stuck', client: kept }))
+})
 
 const trackBalances = RxOp.tap<WalletBalancesRD>((balancesRD) => {
   if (RD.isFailure(balancesRD))

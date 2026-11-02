@@ -173,6 +173,23 @@ vi.mock('../wallet/keystore', async (importOriginal) => {
     }
   }
 })
+// App wallet mode: the real one (keystore), or Vultisig if `aw.vultisig$` is true
+const aw = vi.hoisted(() => ({ vultisig$: undefined as unknown as BehaviorSubject<boolean> }))
+vi.mock('../wallet/appWallet', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('../wallet/appWallet')>()
+  const { defer, of } = await import('rxjs')
+  const { switchMap } = await import('rxjs/operators')
+  const vultisigState = { mode: 'standalone-vultisig' }
+  return {
+    ...orig,
+    appWalletService: {
+      ...orig.appWalletService,
+      appWalletState$: defer(() =>
+        aw.vultisig$.pipe(switchMap((v) => (v ? of(vultisigState) : orig.appWalletService.appWalletState$)))
+      )
+    }
+  }
+})
 vi.mock('../storage/userChains', async () => {
   const { BehaviorSubject } = await import('rxjs')
   return {
@@ -216,6 +233,7 @@ beforeEach(async () => {
   nodeInfo500 = false
   latency = 0
   ks.subject = new BehaviorSubject<unknown>(O.none)
+  aw.vultisig$ = new BehaviorSubject(false)
   W = await import('../wallet')
   ;({ isEmptyClientListError } = await import('./balances'))
   reload = () => W.reloadBalancesByChain(MAYAChain, WalletType.Keystore)()
@@ -402,9 +420,11 @@ describe('services/mayachain/balances', () => {
     step = 'G failed rebuild'
     reload()
     await advance(1500)
-    expect(requestsIn(step, isRestNodeInfo)).toBe(1)
-    // Known limit: without a client there is no MAYA address, so MAYA is not shown (no error) until the next Refresh
-    expect(lastState().tag).toBe('NotShown')
+    // keystore check + the read-only client's own one (a failure is not shared)
+    expect(requestsIn(step, isRestNodeInfo)).toBe(2)
+    // the stuck client is kept: MAYA stays on screen with its error
+    expect(lastState().tag).toBe('RemoteFailure')
+    expect(isEmptyClientListError(lastState().msg ?? '')).toBe(true)
 
     nodeInfo500 = false
     step = 'G retry'
@@ -452,5 +472,102 @@ describe('services/mayachain/balances', () => {
     expect(requestsIn(step, isConnect)).toBe(0)
     expect(requestsIn(step, isBalancesQuery)).toBe(1)
     expect(lastState().tag).toBe('RemoteSuccess')
+  })
+
+  it('an unlock whose node check fails is retried by the next Refresh', async () => {
+    nodeInfo500 = true
+    step = 'H unlock, node check fails'
+    unlock(3900, generateMnemonic())
+    await advance(1500)
+    expect(requestsIn(step, isRestNodeInfo)).toBe(1)
+    expect(lastState().tag).toBe('NotShown') // no client, no address (first build, nothing to keep)
+
+    nodeInfo500 = false
+    step = 'H retry'
+    reload()
+    await advance(1500)
+    // before: no request at all, MAYA missing until the wallet is locked and unlocked again
+    // keystore client + first build of the read-only client (subscribed with the first balances load)
+    expect(requestsIn(step, isRestNodeInfo)).toBe(2)
+    expect(requestsIn(step, isBalancesQuery)).toBe(1)
+    expect(lastState().tag).toBe('RemoteSuccess')
+  })
+
+  describe('Vultisig (read-only client)', () => {
+    type VState = { step: string; tag: string; msg?: string }
+    let vstates: VState[] = []
+    let sub: { unsubscribe: () => void } | undefined
+    const vlast = () => vstates[vstates.length - 1]
+    let M: typeof import('./balances')
+
+    const start = async () => {
+      M = await import('./balances')
+      const { Client } = await import('@xchainjs/xchain-mayachain')
+      const address = await new Client({ phrase: generateMnemonic() }).getAddressAsync(0)
+      aw.vultisig$.next(true)
+      sub = M.getBalanceByAddress$({
+        address,
+        walletType: WalletType.Vultisig,
+        walletAccount: 0,
+        walletIndex: 0,
+        hdMode: 'default'
+      }).subscribe((rd) =>
+        vstates.push({ step, tag: rd._tag, msg: rd._tag === 'RemoteFailure' ? String(rd.error.msg) : undefined })
+      )
+    }
+    beforeEach(() => {
+      vstates = []
+    })
+    afterEach(() => sub?.unsubscribe())
+
+    it('a failed read-only node check is retried by the next Refresh', async () => {
+      nodeInfo500 = true
+      step = 'V1 start, node check fails'
+      await start()
+      await advance(1500)
+      expect(requestsIn(step, isRestNodeInfo)).toBeGreaterThanOrEqual(1)
+      expect(requestsIn(step, isBalancesQuery)).toBe(0)
+      expect(vlast().tag).toBe('RemoteInitial') // no client
+
+      nodeInfo500 = false
+      step = 'V1 retry'
+      M.reloadBalances()
+      await advance(1500)
+      // before: Refresh did not check again, balances missing until network / url change or restart
+      expect(requestsIn(step, isRestNodeInfo)).toBe(1)
+      expect(requestsIn(step, isBalancesQuery)).toBe(1)
+      expect(vlast().tag).toBe('RemoteSuccess')
+    })
+
+    it('a stuck read-only client (429) is rebuilt by Refresh, a failed rebuild keeps its error', async () => {
+      rpc429 = true
+      step = 'V2 start under 429'
+      await start()
+      await advance(1500)
+      expect(isEmptyClientListError(vlast().msg ?? '')).toBe(true)
+
+      rpc429 = false
+      nodeInfo500 = true
+      step = 'V2 failed rebuild'
+      M.reloadBalances()
+      await advance(1500)
+      expect(requestsIn(step, isRestNodeInfo)).toBe(1)
+      expect(vlast().tag).toBe('RemoteFailure') // error stays
+      expect(isEmptyClientListError(vlast().msg ?? '')).toBe(true)
+
+      nodeInfo500 = false
+      step = 'V2 retry'
+      M.reloadBalances()
+      await advance(1500)
+      expect(requestsIn(step, isRestNodeInfo)).toBe(1)
+      expect(requestsIn(step, isBalancesQuery)).toBe(1)
+      expect(vlast().tag).toBe('RemoteSuccess')
+
+      step = 'V2 reload'
+      M.reloadBalances()
+      await advance(900)
+      expect(requestsIn(step, isRestNodeInfo)).toBe(0)
+      expect(requestsIn(step, isBalancesQuery)).toBe(1)
+    })
   })
 })
