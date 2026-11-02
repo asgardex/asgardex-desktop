@@ -29,6 +29,18 @@ const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
 // and the client can't load anything again. A new `Client` connects again.
 const { stream$: rebuildClient$, trigger: rebuildClient } = triggerStream()
 
+// `clientState$` and `readOnlyClient$` check the node at the same time (unlock, rebuild): one request for both
+const chainIdRequests = new Map<string, Promise<string>>()
+const getChainIdShared = (url: string): Promise<string> => {
+  const pending = chainIdRequests.get(url)
+  if (pending) return pending
+  const request = getChainId(url)
+  chainIdRequests.set(url, request)
+  // Shared within the same turn only: a later check never reuses an old (maybe hanging) request
+  setTimeout(() => chainIdRequests.delete(url), 0)
+  return request
+}
+
 /**
  * Stream of ClientUrl (from storage)
  */
@@ -85,7 +97,7 @@ const clientState$: ClientState$ = FP.pipe(
   RxOp.switchMap(([keystore, network, clientUrl, hdSettings]): ClientState$ =>
     FP.pipe(
       // request chain id from node whenever network or keystore state have been changed
-      Rx.from(getChainId(clientUrl[network].node)),
+      Rx.from(getChainIdShared(clientUrl[network].node)),
       RxOp.switchMap(() =>
         Rx.of(
           FP.pipe(
@@ -133,7 +145,7 @@ const readOnlyClient$: ClientState$ = FP.pipe(
   RxOp.switchMap(([network, clientUrl]): ClientState$ =>
     FP.pipe(
       // request chain id from node whenever network changes
-      Rx.from(getChainId(clientUrl[network].node)),
+      Rx.from(getChainIdShared(clientUrl[network].node)),
       RxOp.switchMap(() =>
         Rx.of(
           (() => {

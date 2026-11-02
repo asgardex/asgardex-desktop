@@ -369,7 +369,7 @@ describe('services/mayachain/balances', () => {
     step = 'F rebuild'
     reload()
     await advance(1000)
-    expect(requestsIn(step, isRestNodeInfo)).toBe(2) // chain id: keystore + read-only client
+    expect(requestsIn(step, isRestNodeInfo)).toBe(1) // chain id: one request for keystore + read-only client
     step = 'F reload during rebuild'
     reload()
     await advance(5000)
@@ -382,7 +382,7 @@ describe('services/mayachain/balances', () => {
     expect(isEmptyClientListError(lastState().msg ?? '')).toBe(true)
     reload() // ... so the next Refresh builds a new client again
     await advance(1000)
-    expect(requestsIn(step, isRestNodeInfo)).toBe(2)
+    expect(requestsIn(step, isRestNodeInfo)).toBe(1)
   })
 
   it('a stuck flag of a locked wallet does not rebuild on Refresh', async () => {
