@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network as ClientNetwork, Network } from '@xchainjs/xchain-client'
-import { Client, getChainId } from '@xchainjs/xchain-mayachain'
+import { Client } from '@xchainjs/xchain-mayachain'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -18,10 +18,50 @@ import { getStorageState, modifyStorage, mayanodeApi$, mayanodeRpc$ } from '../s
 import { keystoreService } from '../wallet/keystore'
 import { keystoreChainHDSettings$ } from '../wallet/keystoreHDSettings'
 import { getPhrase } from '../wallet/util'
+import { getChainIdShared } from './chainId'
 import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 
 // `TriggerStream` to reload ClientUrl
 const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
+
+// `TriggerStream` to build new MAYA clients (keystore + read-only) with the same urls.
+// A `Client` whose first connect failed (e.g. `429`) never connects again, a new one does.
+const { stream$: rebuildClient$, trigger: rebuildClient } = triggerStream()
+
+// A node check of a client build failed. `kept`: the last client, kept by a failed rebuild (its balance error
+// stays on screen), or none. The balance service marks the client stuck, so the next Refresh builds again.
+type CheckFailed = { readOnly: boolean; kept: O.Option<Client> }
+const checkFailed$$ = new Rx.Subject<CheckFailed>()
+const checkFailed$: Rx.Observable<CheckFailed> = checkFailed$$.asObservable()
+
+/**
+ * Builds a client by `build$`, again on every `rebuildClient` trigger (same inputs).
+ * `build$` checks the node first. If that fails, a rebuild keeps the last client, a first build fails.
+ */
+const buildOnRebuild = ({
+  build$,
+  failure,
+  readOnly
+}: {
+  build$: () => ClientState$
+  failure: (error: unknown) => ClientState
+  readOnly: boolean
+}): ClientState$ => {
+  let last: O.Option<Client> = O.none
+  return rebuildClient$.pipe(
+    RxOp.switchMap(() =>
+      build$().pipe(
+        RxOp.tap((state) => {
+          last = RD.isSuccess(state) ? O.some(state.value) : O.none
+        }),
+        RxOp.catchError((error) => {
+          checkFailed$$.next({ readOnly, kept: last })
+          return O.isSome(last) ? Rx.EMPTY : Rx.of(failure(error))
+        })
+      )
+    )
+  )
+}
 
 /**
  * Stream of ClientUrl (from storage)
@@ -78,38 +118,38 @@ const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, clientUrl$, hdSettings$]),
   RxOp.switchMap(([keystore, network, clientUrl, hdSettings]): ClientState$ =>
     FP.pipe(
-      // request chain id from node whenever network or keystore state have been changed
-      Rx.from(getChainId(clientUrl[network].node)),
-      RxOp.switchMap(() =>
-        Rx.of(
-          FP.pipe(
-            getPhrase(keystore),
-            O.map<string, ClientState>((phrase) => {
-              try {
-                const { rootDerivationPaths } = getKeystoreDerivation(MAYAChain, hdSettings)
-                const getDefaultClientUrls = (): Record<Network, string[]> => ({
-                  [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
-                  [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
-                  [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+      getPhrase(keystore),
+      O.fold(
+        // No phrase (locked wallet): `initial`, no node check
+        (): ClientState$ => Rx.of(RD.initial),
+        (phrase) =>
+          buildOnRebuild({
+            readOnly: false,
+            build$: () =>
+              // request chain id from node whenever network or keystore state have been changed
+              Rx.from(getChainIdShared(clientUrl[network].node)).pipe(
+                RxOp.map((): ClientState => {
+                  try {
+                    const { rootDerivationPaths } = getKeystoreDerivation(MAYAChain, hdSettings)
+                    const getDefaultClientUrls = (): Record<Network, string[]> => ({
+                      [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
+                      [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
+                      [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+                    })
+                    const client = new Client({
+                      clientUrls: getDefaultClientUrls(),
+                      rootDerivationPaths,
+                      network,
+                      phrase
+                    })
+                    return RD.success(client)
+                  } catch (error) {
+                    return RD.failure<Error>(isError(error) ? error : new Error('Failed to create MAYA client'))
+                  }
                 })
-                const client = new Client({
-                  clientUrls: getDefaultClientUrls(),
-                  rootDerivationPaths,
-                  network,
-                  phrase
-                })
-                return RD.success(client)
-              } catch (error) {
-                return RD.failure<Error>(isError(error) ? error : new Error('Failed to create MAYA client'))
-              }
-            }),
-            // Set back to `initial` if no phrase is available (locked wallet)
-            O.getOrElse<ClientState>(() => RD.initial)
-          )
-        )
-      ),
-      RxOp.catchError((error) =>
-        Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Failed to get MAYA chain id')))
+              ),
+            failure: (error) => RD.failure<Error>(isError(error) ? error : new Error('Failed to get MAYA chain id'))
+          })
       )
     )
   ),
@@ -125,12 +165,12 @@ const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareRepl
 const readOnlyClient$: ClientState$ = FP.pipe(
   Rx.combineLatest([clientNetwork$, clientUrl$]),
   RxOp.switchMap(([network, clientUrl]): ClientState$ =>
-    FP.pipe(
-      // request chain id from node whenever network changes
-      Rx.from(getChainId(clientUrl[network].node)),
-      RxOp.switchMap(() =>
-        Rx.of(
-          (() => {
+    buildOnRebuild({
+      readOnly: true,
+      build$: () =>
+        // request chain id from node whenever network changes
+        Rx.from(getChainIdShared(clientUrl[network].node)).pipe(
+          RxOp.map((): ClientState => {
             const getDefaultClientUrls = (): Record<Network, string[]> => {
               return {
                 [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
@@ -149,11 +189,10 @@ const readOnlyClient$: ClientState$ = FP.pipe(
             } catch (error) {
               return RD.failure<Error>(isError(error) ? error : new Error('Failed to create read-only MAYA client'))
             }
-          })()
-        )
-      ),
-      RxOp.catchError((error) => Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))))
-    )
+          })
+        ),
+      failure: (error) => RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+    })
   ),
   RxOp.startWith(RD.initial),
   RxOp.shareReplay(1)
@@ -187,6 +226,8 @@ export {
   readOnlyClient$,
   clientUrl$,
   reloadClientUrl,
+  rebuildClient,
+  checkFailed$,
   setMayanodeRpcUrl,
   setMayanodeApiUrl,
   address$,

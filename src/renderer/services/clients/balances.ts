@@ -4,7 +4,7 @@ import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
-import { catchError, startWith, map, shareReplay, debounceTime } from 'rxjs/operators'
+import { catchError, startWith, map, debounceTime } from 'rxjs/operators'
 
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { liveData } from '../../helpers/rx/liveData'
@@ -105,6 +105,19 @@ const loadBalances$ = <C extends XChainClientOverride>({
     )
   )
 
+/**
+ * `shareReplay(1)` that unsubscribes from its source one tick after the last subscriber leaves.
+ * Plain `shareReplay(1)` kept every instance (one per unlocked address) subscribed, so one reload sent N requests.
+ * The tick keeps the last Success for a reload, which unsubscribes and subscribes again in the same turn.
+ */
+const shareBalances = <T>(): Rx.MonoTypeOperatorFunction<T> =>
+  RxOp.share<T>({
+    connector: () => new Rx.ReplaySubject<T>(1),
+    resetOnError: true,
+    resetOnComplete: false,
+    resetOnRefCountZero: () => Rx.timer(0)
+  })
+
 type Balances$ = ({
   walletType,
   client$,
@@ -174,7 +187,7 @@ export const balances$: Balances$ = ({
         RxOp.startWith(RD.pending)
       )
     ),
-    shareReplay(1) // Prevent duplicate balance requests for the same parameters
+    shareBalances() // Prevent duplicate balance requests for the same parameters
   )
 
 type BalancesByAddress$ = ({
@@ -207,7 +220,9 @@ export const balancesByAddress$: BalancesByAddress$ =
     network$.pipe(
       RxOp.switchMap(() =>
         Rx.combineLatest([trigger$.pipe(RxOp.debounceTime(300)), client$]).pipe(
-          RxOp.mergeMap(([_, oClient]) => {
+          // `switchMap` (as `balances$`): a reload or a new client drops the previous load, so a late result of it
+          // can't overwrite the newer one, and its (never completing) user assets stream stops reloading too
+          RxOp.switchMap(([_, oClient]) => {
             return FP.pipe(
               oClient,
               O.fold(
@@ -247,5 +262,5 @@ export const balancesByAddress$: BalancesByAddress$ =
           RxOp.startWith(RD.pending)
         )
       ),
-      shareReplay(1)
+      shareBalances()
     )
