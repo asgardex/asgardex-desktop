@@ -45,16 +45,22 @@ describe('hooks/useMimirHalt', () => {
       expect(result.HALTETHCHAIN).toBe(false)
     })
 
-    it('detects lower-case chain halt keys', () => {
-      const result = getThorchainMimirHalt({ mimir: { haltethchain: 1 }, lastHeight: 100, chains })
-      expect(result.HALTETHCHAIN).toBe(true)
+    it('reads mimir keys exactly as THORNode sends them (upper-case); other casing is ignored', () => {
+      const result = getThorchainMimirHalt({
+        mimir: { haltethchain: 1, HaltBtcChain: 1, halttrading: 1, pauselp: 1 },
+        lastHeight: 100,
+        chains
+      })
+      expect(result.HALTETHCHAIN).toBe(false)
       expect(result.HALTBTCCHAIN).toBe(false)
+      expect(result.haltGlobalTrading).toBe(false)
+      expect(result.pauseGlobalLp).toBe(false)
     })
 
-    it('detects mixed-case chain halt keys', () => {
-      const result = getThorchainMimirHalt({ mimir: { HALTBTCChain: 1, HaltEthChain: 1 }, lastHeight: 100, chains })
-      expect(result.HALTBTCCHAIN).toBe(true)
-      expect(result.HALTETHCHAIN).toBe(true)
+    it('every key in the raw THORNode mimir snapshot is upper-case', () => {
+      const keys = Object.keys(mimir20261101)
+      expect(keys.length).toBeGreaterThan(0)
+      expect(keys.filter((key) => key !== key.toUpperCase())).toEqual([])
     })
 
     it('chain halt: height already passed -> halted, height in the future or 0 -> not halted', () => {
@@ -90,9 +96,9 @@ describe('hooks/useMimirHalt', () => {
       )
     })
 
-    it('per-chain trading and LP pause flags (any case)', () => {
+    it('per-chain trading and LP pause flags', () => {
       const result = getThorchainMimirHalt({
-        mimir: { HALTBTCTRADING: 1, pauselpeth: 1, 'PauseLpDeposit-btc-btc': 1 },
+        mimir: { HALTBTCTRADING: 1, PAUSELPETH: 1, 'PAUSELPDEPOSIT-BTC-BTC': 1 },
         lastHeight: 100,
         chains
       })
@@ -104,9 +110,9 @@ describe('hooks/useMimirHalt', () => {
       expect(result['PAUSELPDEPOSIT-ETH-ETH']).toBe(false)
     })
 
-    it('global HALTTRADING and PAUSELP flags (any case)', () => {
+    it('global HALTTRADING and PAUSELP flags', () => {
       expect(getThorchainMimirHalt({ mimir: { HALTTRADING: 1 }, lastHeight: 100, chains }).haltGlobalTrading).toBe(true)
-      expect(getThorchainMimirHalt({ mimir: { pauselp: 1 }, lastHeight: 100, chains }).pauseGlobalLp).toBe(true)
+      expect(getThorchainMimirHalt({ mimir: { PAUSELP: 1 }, lastHeight: 100, chains }).pauseGlobalLp).toBe(true)
       const none = getThorchainMimirHalt({ mimir: {}, lastHeight: 100, chains })
       expect(none.haltGlobalTrading).toBe(false)
       expect(none.pauseGlobalLp).toBe(false)

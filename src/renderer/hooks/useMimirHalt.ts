@@ -34,11 +34,12 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
   // Height not reached yet -> scheduled, no action
   return false
 }
+
 /**
- * Mimir keys from THORNode are upper case (`HALTTHORCHAIN`, `HALTBTCCHAIN`, `HALTBTCTRADING`,
- * `PAUSELPBTC`, `HALTTRADING`, `PAUSELP`, ...). Lookups are case-insensitive so a key that
- * arrives in another case is still found, and the result always uses the upper-case keys
- * `MimirHalt` (and `poolHelper`, `AppHaltedChains`) read.
+ * Maps THORNode mimir to the `MimirHalt` flags the app reads (`poolHelper`, `AppHaltedChains`).
+ * THORNode returns mimir keys upper case (`HALTTHORCHAIN`, `HALTBTCCHAIN`, `HALTBTCTRADING`,
+ * `PAUSELPBTC`, `HALTTRADING`, `PAUSELP`, ...), so keys are read exactly as sent, the same as
+ * `getMayachainMimirHalt` does for MAYANode.
  */
 export const getThorchainMimirHalt = ({
   mimir,
@@ -49,11 +50,7 @@ export const getThorchainMimirHalt = ({
   lastHeight?: number
   chains: string[]
 }): MimirHalt => {
-  const mimirUpper: Mimir = Object.entries(mimir).reduce<Mimir>((acc, [key, value]) => {
-    acc[key.toUpperCase()] = value
-    return acc
-  }, {})
-  const status = (key: string) => getMimirStatus(mimirUpper[key.toUpperCase()], lastHeight)
+  const status = (key: string) => getMimirStatus(mimir[key], lastHeight)
 
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
