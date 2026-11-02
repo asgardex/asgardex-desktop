@@ -1,11 +1,13 @@
+// Fixture: __fixtures__/thornode-mainnet-chains-halted-lp-paused (THORNode mainnet mimir + lastblock, height 28483475).
+// Captured 2026-11-01 03:39:30 UTC (14:09:30 ACDT) from gateway.liquify.com/chain/thorchain_api/thorchain.
 import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
 import { BTCChain, THORChain } from '../../shared/utils/chainIds'
 import { disableAllActions } from '../helpers/poolHelper'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
 import { Mimir } from '../services/thorchain/types'
 import { isProtocolGloballyHalted } from '../views/app/AppHaltedChains.helpers'
-import lastblock20261101 from './__fixtures__/thornode-mainnet-2026-11-01T033930Z/lastblock.json'
-import mimir20261101 from './__fixtures__/thornode-mainnet-2026-11-01T033930Z/mimir.json'
+import thorLastblock from './__fixtures__/thornode-mainnet-chains-halted-lp-paused/lastblock.json'
+import thorMimir from './__fixtures__/thornode-mainnet-chains-halted-lp-paused/mimir.json'
 import { getMimirStatus, getThorchainMimirHalt } from './useMimirHalt'
 
 describe('hooks/useMimirHalt', () => {
@@ -58,7 +60,7 @@ describe('hooks/useMimirHalt', () => {
     })
 
     it('every key in the raw THORNode mimir snapshot is upper-case', () => {
-      const keys = Object.keys(mimir20261101)
+      const keys = Object.keys(thorMimir)
       expect(keys.length).toBeGreaterThan(0)
       expect(keys.filter((key) => key !== key.toUpperCase())).toEqual([])
     })
@@ -169,8 +171,8 @@ describe('hooks/useMimirHalt', () => {
 
   describe('getThorchainMimirHalt: live mainnet fixture (1 Nov 2026, height 28483475)', () => {
     // Raw THORNode /thorchain/mimir and /thorchain/lastblock responses, see __fixtures__/.../README.md
-    const mimir: Mimir = mimir20261101
-    const lastHeight = lastblock20261101.find(({ thorchain }) => thorchain > 0)?.thorchain ?? 0
+    const mimir: Mimir = thorMimir
+    const lastHeight = thorLastblock.find(({ thorchain }) => thorchain > 0)?.thorchain ?? 0
     const chains = [
       'AVAX',
       'BASE',

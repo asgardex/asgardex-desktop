@@ -1,10 +1,12 @@
+// Fixture: __fixtures__/mayanode-mainnet-btc-eth-zec-trading-halted (MAYANode mainnet mimir + lastblock, height 19095919).
+// Captured 2026-11-02 05:14:58 UTC (15:44:58 ACDT) from mayanode.mayachain.info/mayachain.
 import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
 import { BTCChain, MAYAChain } from '../../shared/utils/chainIds'
 import { disableAllActions } from '../helpers/poolHelperMaya'
 import { DEFAULT_MIMIR_HALT } from '../services/mayachain/const'
 import { Mimir } from '../services/mayachain/types'
-import lastblock20261102 from './__fixtures__/mayanode-mainnet-2026-11-02T051458Z/lastblock.json'
-import mimir20261102 from './__fixtures__/mayanode-mainnet-2026-11-02T051458Z/mimir.json'
+import mayaLastblock from './__fixtures__/mayanode-mainnet-btc-eth-zec-trading-halted/lastblock.json'
+import mayaMimir from './__fixtures__/mayanode-mainnet-btc-eth-zec-trading-halted/mimir.json'
 import { getMayachainMimirHalt, getMimirStatus } from './useMimirHaltMaya'
 
 describe('hooks/useMimirHaltMaya', () => {
@@ -80,8 +82,8 @@ describe('hooks/useMimirHaltMaya', () => {
 
   describe('getMayachainMimirHalt: live mainnet fixture (2 Nov 2026, height 19095919)', () => {
     // Raw MAYANode /mayachain/mimir and /mayachain/lastblock responses, see __fixtures__/.../README.md
-    const mimir: Mimir = mimir20261102
-    const lastHeight = lastblock20261102.find(({ mayachain }) => mayachain > 0)?.mayachain ?? 0
+    const mimir: Mimir = mayaMimir
+    const lastHeight = mayaLastblock.find(({ mayachain }) => mayachain > 0)?.mayachain ?? 0
     const chains = ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'ZEC', 'ADA']
 
     it('reads the fixture height', () => {
@@ -89,7 +91,7 @@ describe('hooks/useMimirHaltMaya', () => {
     })
 
     it('every key in the raw MAYANode mimir snapshot is upper-case', () => {
-      const keys = Object.keys(mimir20261102)
+      const keys = Object.keys(mayaMimir)
       expect(keys.length).toBeGreaterThan(0)
       expect(keys.filter((key) => key !== key.toUpperCase())).toEqual([])
     })
