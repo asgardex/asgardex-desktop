@@ -15,6 +15,8 @@ type Hit = { host: string; what: string; step: string }
 const hits: Hit[] = []
 let step = 'import'
 let rpc429 = false
+// REST node check (`node_info`, chain id) answers 500
+let nodeInfo500 = false
 // response time of the stubbed network (ms)
 let latency = 0
 
@@ -123,8 +125,9 @@ class FakeXHR {
     const u = new URL(this.url)
     hits.push({ host: u.host, what: 'GET ' + u.pathname, step })
     setTimeout(() => {
-      this.status = 200
-      this.statusText = 'OK'
+      const fail = nodeInfo500 && u.pathname.endsWith('node_info')
+      this.status = fail ? 500 : 200
+      this.statusText = fail ? 'Internal Server Error' : 'OK'
       this.responseText = JSON.stringify(
         u.pathname.endsWith('node_info') ? { default_node_info: { network: 'mayachain-mainnet-v1' } } : {}
       )
@@ -210,22 +213,24 @@ beforeEach(async () => {
   states = []
   step = 'import'
   rpc429 = false
+  nodeInfo500 = false
   latency = 0
   ks.subject = new BehaviorSubject<unknown>(O.none)
   W = await import('../wallet')
   ;({ isEmptyClientListError } = await import('./balances'))
   reload = () => W.reloadBalancesByChain(MAYAChain, WalletType.Keystore)()
-  ui = W.chainBalances$.subscribe((chainBalances) =>
-    chainBalances
-      .filter((c) => c.chain === MAYAChain)
-      .forEach(({ balances }) =>
-        states.push({
-          step,
-          tag: balances._tag,
-          msg: balances._tag === 'RemoteFailure' ? String(balances.error.msg) : undefined
-        })
-      )
-  )
+  ui = W.chainBalances$.subscribe((chainBalances) => {
+    const maya = chainBalances.filter((c) => c.chain === MAYAChain)
+    // `chainBalances$` drops `initial` balances: MAYA is not shown at all
+    if (maya.length === 0) states.push({ step, tag: 'NotShown' })
+    maya.forEach(({ balances }) =>
+      states.push({
+        step,
+        tag: balances._tag,
+        msg: balances._tag === 'RemoteFailure' ? String(balances.error.msg) : undefined
+      })
+    )
+  })
 })
 
 afterEach(async () => {
@@ -383,6 +388,31 @@ describe('services/mayachain/balances', () => {
     reload() // ... so the next Refresh builds a new client again
     await advance(1000)
     expect(requestsIn(step, isRestNodeInfo)).toBe(1)
+  })
+
+  it('a failed rebuild (node check fails) is retried by the next Refresh', async () => {
+    rpc429 = true
+    step = 'G unlock under 429'
+    unlock(3800, generateMnemonic())
+    await advance(1500)
+    expect(isEmptyClientListError(lastState().msg ?? '')).toBe(true)
+
+    rpc429 = false
+    nodeInfo500 = true // node check of the rebuild fails: no client
+    step = 'G failed rebuild'
+    reload()
+    await advance(1500)
+    expect(requestsIn(step, isRestNodeInfo)).toBe(1)
+    // Known limit: without a client there is no MAYA address, so MAYA is not shown (no error) until the next Refresh
+    expect(lastState().tag).toBe('NotShown')
+
+    nodeInfo500 = false
+    step = 'G retry'
+    reload()
+    await advance(1500)
+    expect(requestsIn(step, isRestNodeInfo)).toBe(1)
+    expect(requestsIn(step, isBalancesQuery)).toBe(1)
+    expect(lastState().tag).toBe('RemoteSuccess')
   })
 
   it('a stuck flag of a locked wallet does not rebuild on Refresh', async () => {
