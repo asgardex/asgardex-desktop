@@ -117,6 +117,7 @@ describe('hooks/useMimirHalt', () => {
       expect(none.haltGlobalTrading).toBe(false)
       expect(none.pauseGlobalLp).toBe(false)
     })
+
     it('returns the same keys as DEFAULT_MIMIR_HALT (the keys the app reads)', () => {
       const result = getThorchainMimirHalt({ mimir: {}, lastHeight: 100, chains: Object.keys(DEFAULT_ENABLED_CHAINS) })
       expect(Object.keys(result).sort()).toEqual(Object.keys(DEFAULT_MIMIR_HALT).sort())
