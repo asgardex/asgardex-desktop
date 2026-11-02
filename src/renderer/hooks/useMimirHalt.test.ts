@@ -3,7 +3,7 @@
 import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
 import { BTCChain, THORChain } from '../../shared/utils/chainIds'
 import { disableAllActions } from '../helpers/poolHelper'
-import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
+import { DEFAULT_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
 import { Mimir } from '../services/thorchain/types'
 import { isProtocolGloballyHalted } from '../views/app/AppHaltedChains.helpers'
 import thorLastblock from './__fixtures__/thornode-mainnet-chains-halted-lp-paused/lastblock.json'
@@ -120,6 +120,17 @@ describe('hooks/useMimirHalt', () => {
       expect(none.pauseGlobalLp).toBe(false)
     })
 
+    it('PAUSELPDEPOSIT is active for any value > 0, a height above the current block too (THORNode IsPoolDepositPaused)', () => {
+      const result = getThorchainMimirHalt({
+        mimir: { 'PAUSELPDEPOSIT-BTC-BTC': 1100, 'PAUSELPDEPOSIT-ETH-ETH': 0, 'PAUSELPDEPOSIT-BSC-BNB': -1 },
+        lastHeight: 100,
+        chains: ['BTC', 'ETH', 'BSC']
+      })
+      expect(result['PAUSELPDEPOSIT-BTC-BTC']).toBe(true)
+      expect(result['PAUSELPDEPOSIT-ETH-ETH']).toBe(false)
+      expect(result['PAUSELPDEPOSIT-BSC-BNB']).toBe(false)
+    })
+
     it('returns the same keys as DEFAULT_MIMIR_HALT (the keys the app reads)', () => {
       const result = getThorchainMimirHalt({ mimir: {}, lastHeight: 100, chains: Object.keys(DEFAULT_ENABLED_CHAINS) })
       expect(Object.keys(result).sort()).toEqual(Object.keys(DEFAULT_MIMIR_HALT).sort())
@@ -211,6 +222,21 @@ describe('hooks/useMimirHalt', () => {
         .filter((c) => c !== 'THOR')
         .forEach((c) =>
           expect([c, result[`HALT${c}TRADING` as keyof typeof result]]).toEqual([c, tradingHalted.includes(c)])
+        )
+    })
+
+    it('flags the gas-pool deposit pauses by asset symbol, incl. PAUSELPDEPOSIT-BSC-BNB and -GAIA-ATOM = 1', () => {
+      const result = getThorchainMimirHalt({ mimir, lastHeight, chains })
+      expect(result['PAUSELPDEPOSIT-BSC-BNB']).toBe(true)
+      expect(result['PAUSELPDEPOSIT-GAIA-ATOM']).toBe(true)
+      const depositPaused = ['AVAX', 'BCH', 'BSC', 'BTC', 'DOGE', 'ETH', 'GAIA', 'LTC']
+      chains
+        .filter((c) => c !== 'THOR')
+        .forEach((c) =>
+          expect([c, result[getPoolDepositPauseMimirKey(c) as keyof typeof result]]).toEqual([
+            c,
+            depositPaused.includes(c)
+          ])
         )
     })
 

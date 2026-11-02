@@ -11,6 +11,7 @@ import { THORChain } from '../../shared/utils/chainIds'
 import { PoolDetails as PoolDetailsMaya } from '../services/midgard/mayaMidgard/types'
 import { PoolAddress, PoolData, PoolDetails, PricePool } from '../services/midgard/midgardTypes'
 import { getPoolDetail, toPoolData } from '../services/midgard/thorMidgard/utils'
+import { getPoolDepositPauseMimirKey } from '../services/thorchain/const'
 import { MimirHalt } from '../services/thorchain/types'
 import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
 import { getPoolTableRowData, getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../views/pools/Pools.utils'
@@ -303,7 +304,7 @@ export const disablePoolActions = ({
 
   // 2. Dynamic check for the specific chain LP pause status
   const pauseLpKey = `PAUSELP${chain}` as keyof MimirHalt
-  const haltDepositKey = `PAUSELPDEPOSIT-${chain}-${chain}` as keyof MimirHalt
+  const haltDepositKey = getPoolDepositPauseMimirKey(chain) as keyof MimirHalt
   if (mimirHalt[pauseLpKey]) return true
   if (mimirHalt[haltDepositKey]) return true
 

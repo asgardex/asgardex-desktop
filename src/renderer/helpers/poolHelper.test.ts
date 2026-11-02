@@ -22,6 +22,7 @@ import {
   disableAllActions,
   disablePoolActions,
   disableTradingActions,
+  disableWithdrawActions,
   getDeepestPool,
   getPoolPriceValue,
   getPoolTableRowsData
@@ -399,6 +400,16 @@ describe('helpers/poolHelper/', () => {
   })
 
   describe('disablePoolActions', () => {
+    it.each([
+      [BSCChain, 'PAUSELPDEPOSIT-BSC-BNB'],
+      [GAIAChain, 'PAUSELPDEPOSIT-GAIA-ATOM']
+    ])('true for %s with only the gas-pool deposit pause %s set', (chain, key) => {
+      const mimirHalt = { ...DEFAULT_MIMIR_HALT, [key]: true }
+      expect(disablePoolActions({ chain, haltedChains: [], mimirHalt })).toBe(true)
+      // deposit pause never blocks withdraw
+      expect(disableWithdrawActions({ chain, haltedChains: [], mimirHalt })).toBe(false)
+    })
+
     it('true if trading is halted for this chain', () => {
       const result = disablePoolActions({
         chain: BTCChain,

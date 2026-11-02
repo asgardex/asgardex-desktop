@@ -14,6 +14,7 @@ import { NewsTicker } from '../../components/uielements/newsTicker'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { unionChains } from '../../helpers/fp/array'
 import * as poolsRoutes from '../../routes/pools'
+import { getPoolDepositPauseMimirKey } from '../../services/thorchain/const'
 import { MimirHalt } from '../../services/thorchain/types'
 import { getSwapAlternativeLabels, isProtocolGloballyHalted, ResolvedProtocolData } from './AppHaltedChains.helpers'
 
@@ -137,7 +138,7 @@ const buildGlobalHaltMessage = (
   )
 }
 
-const buildPerProtocolMessages = (
+export const buildPerProtocolMessages = (
   { protocol, inboundHaltedChains, mimirHalt }: ResolvedProtocolData,
   { isSwapPage, isPoolPage, isDepositPage, selectedChains }: PageContext,
   intl: IntlShape
@@ -156,7 +157,7 @@ const buildPerProtocolMessages = (
       haltedChain: mimirHalt[`HALT${chain}CHAIN`] || false,
       haltedTrading: mimirHalt[`HALT${chain}TRADING`] || false,
       pausedLP: mimirHalt[`PAUSELP${chain}`] || false,
-      pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`] || false
+      pausedLPDeposit: mimirHalt[getPoolDepositPauseMimirKey(chain) as keyof MimirHalt] || false
     }))
 
   // A full chain halt strictly implies a trading halt — keep these in one variable

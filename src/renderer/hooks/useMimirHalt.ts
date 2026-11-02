@@ -9,7 +9,7 @@ import * as RxOp from 'rxjs/operators'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
 import { userChains$ } from '../services/storage/userChains'
-import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
+import { DEFAULT_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
 import {
   MimirHaltRD,
   MimirHalt,
@@ -54,7 +54,7 @@ export const getThorchainMimirHalt = ({
 
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
-    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`, `PAUSELPDEPOSIT-${c}-${c}`]
+    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`, getPoolDepositPauseMimirKey(c)]
     keys.forEach((key) => {
       acc[key] = status(key)
     })
