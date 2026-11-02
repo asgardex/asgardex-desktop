@@ -2,7 +2,6 @@ import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, ChartBarIcon } from '@heroicons/react/24/outline'
-import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 
 import { AnyAsset, assetToString, baseToAsset, bn, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
@@ -17,7 +16,7 @@ import { THORChain } from '../../../shared/utils/chainIds'
 import { WalletType } from '../../../shared/wallet/types'
 import { AssetsFilter } from '../../components/AssetsFilter'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
-import { Table } from '../../components/table'
+import { AppColumnDef, Table } from '../../components/table'
 import { AssetData } from '../../components/uielements/assets/assetData'
 import { TextButton } from '../../components/uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
@@ -47,7 +46,6 @@ import { PoolsState as MayaPoolState } from '../../services/midgard/mayaMidgard/
 import { GetPoolsPeriodEnum, PoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
 import { hasImportedKeystore } from '../../services/wallet/util'
 import { useApp } from '../../store/app/hooks'
-import { FixmeType } from '../../types/asgardex'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
@@ -194,7 +192,7 @@ export const ActivePools = (): JSX.Element => {
     [protocol, hasKeystore, intl, navigate]
   )
 
-  const columns: ColumnDef<PoolTableRowData, FixmeType>[] = useMemo(
+  const columns: AppColumnDef<PoolTableRowData>[] = useMemo(
     () => [
       {
         accessorKey: 'watched',
@@ -208,7 +206,7 @@ export const ActivePools = (): JSX.Element => {
           })
         },
         size: 50,
-        sortingFn: 'basic'
+        sortFn: 'basic'
       },
       {
         accessorKey: 'asset',
@@ -218,7 +216,7 @@ export const ActivePools = (): JSX.Element => {
             <AssetData asset={row.original.asset} network={network} />
           </div>
         ),
-        sortingFn: (rowA, rowB) => rowA.original.asset.symbol.localeCompare(rowB.original.asset.symbol)
+        sortFn: (rowA, rowB) => rowA.original.asset.symbol.localeCompare(rowB.original.asset.symbol)
       },
       {
         accessorKey: 'poolPrice',
@@ -232,7 +230,7 @@ export const ActivePools = (): JSX.Element => {
             })}
           </Label>
         ),
-        sortingFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.poolPrice, rowB.original.poolPrice)
+        sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.poolPrice, rowB.original.poolPrice)
       },
       ...(isXLargeScreen
         ? ([
@@ -260,7 +258,7 @@ export const ActivePools = (): JSX.Element => {
                   </div>
                 )
               },
-              sortingFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
+              sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
             },
             {
               accessorKey: 'volume',
@@ -288,9 +286,9 @@ export const ActivePools = (): JSX.Element => {
                   </Label>
                 )
               },
-              sortingFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.volumePrice, rowB.original.volumePrice)
+              sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.volumePrice, rowB.original.volumePrice)
             }
-          ] as ColumnDef<PoolTableRowData, FixmeType>[])
+          ] as AppColumnDef<PoolTableRowData>[])
         : []),
       ...(isLargeScreen
         ? ([
@@ -315,7 +313,7 @@ export const ActivePools = (): JSX.Element => {
                 )
               }
             }
-          ] as ColumnDef<PoolTableRowData, FixmeType>[])
+          ] as AppColumnDef<PoolTableRowData>[])
         : []),
       {
         accessorKey: 'actions',

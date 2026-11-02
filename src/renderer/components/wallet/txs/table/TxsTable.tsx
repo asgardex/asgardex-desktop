@@ -3,7 +3,6 @@ import { memo, useMemo, useCallback, useRef } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { ArrowsRightLeftIcon } from '@heroicons/react/24/solid'
-import { ColumnDef } from '@tanstack/react-table'
 import { Network, Tx, TxsPage } from '@xchainjs/xchain-client'
 import { Address, baseToAsset, Chain, formatAssetAmount } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
@@ -13,10 +12,9 @@ import { TxsPageRD } from '../../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../../services/const'
 import { RESERVE_MODULE_ADDRESS } from '../../../../services/thorchain/const'
 import { ApiError } from '../../../../services/wallet/types'
-import { FixmeType } from '../../../../types/asgardex'
 import { CustomFormattedDate } from '../../../poolActionsHistory/PoolActionsHistory.helper'
 import { ErrorView } from '../../../shared/error'
-import { Table } from '../../../table'
+import { AppColumnDef, Table } from '../../../table'
 import { AddressEllipsis } from '../../../uielements/addressEllipsis'
 import { ReloadButton } from '../../../uielements/button'
 import { Label } from '../../../uielements/label'
@@ -133,7 +131,7 @@ export const TxsTable = memo(function TxsTable(props: Props): JSX.Element {
     [clickTxLinkHandler]
   )
 
-  const columns: ColumnDef<Tx, FixmeType>[] = useMemo(
+  const columns: AppColumnDef<Tx>[] = useMemo(
     () => [
       {
         accessorKey: 'txType',

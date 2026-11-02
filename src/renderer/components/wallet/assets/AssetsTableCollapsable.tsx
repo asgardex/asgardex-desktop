@@ -2,7 +2,6 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, ChartBarIcon, QrCodeIcon } from '@heroicons/react/24/outline'
-import { ColumnDef } from '@tanstack/react-table'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
 
@@ -71,10 +70,9 @@ import {
 } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
-import { FixmeType } from '../../../types/asgardex'
 import { GECKO_MAP } from '../../../types/generated/geckoMap'
 import { ErrorView } from '../../shared/error/'
-import { Table } from '../../table'
+import { AppColumnDef, Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { ChainIcon } from '../../uielements/assets/chainIcon/ChainIcon'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
@@ -497,7 +495,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
     ]
   )
 
-  const columns: ColumnDef<WalletBalance, FixmeType>[] = useMemo(
+  const columns: AppColumnDef<WalletBalance>[] = useMemo(
     () => [
       {
         accessorKey: 'asset',

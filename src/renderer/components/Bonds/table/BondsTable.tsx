@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { TvIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
-import { ColumnDef, ExpandedState } from '@tanstack/react-table'
+import { ExpandedState } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 
 import { Address, assetToString, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
@@ -24,10 +24,9 @@ import {
   Providers as MayaProviders
 } from '../../../services/mayachain/types'
 import { NodeInfo as ThorNodeInfo, NodeInfos as ThorNodeInfos, Providers } from '../../../services/thorchain/types'
-import { FixmeType } from '../../../types/asgardex'
 import { WalletAddressInfo } from '../../../views/bonds/types'
 import { ConfirmationModal } from '../../modal/confirmation'
-import { Table } from '../../table'
+import { AppColumnDef, Table } from '../../table'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton, TextButton } from '../../uielements/button'
 import { ExternalLinkIcon } from '../../uielements/common'
@@ -84,7 +83,7 @@ export const BondsTable = memo(function BondsTable({
     [walletAddresses]
   )
 
-  const baseColumns: ColumnDef<ThorNodeInfo | MayaNodeInfo, FixmeType>[] = useMemo(
+  const baseColumns: AppColumnDef<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
     () => [
       {
         accessorKey: 'watch',
@@ -145,7 +144,7 @@ export const BondsTable = memo(function BondsTable({
     [addWatchlist, goToNode, intl, network]
   )
 
-  const thorColumns: ColumnDef<ThorNodeInfo | MayaNodeInfo, FixmeType>[] = useMemo(
+  const thorColumns: AppColumnDef<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
     () => [
       ...baseColumns,
       {
@@ -166,7 +165,7 @@ export const BondsTable = memo(function BondsTable({
     [baseColumns, intl]
   )
 
-  const mayaColumns: ColumnDef<ThorNodeInfo | MayaNodeInfo, FixmeType>[] = useMemo(
+  const mayaColumns: AppColumnDef<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
     () => [
       ...baseColumns,
       {

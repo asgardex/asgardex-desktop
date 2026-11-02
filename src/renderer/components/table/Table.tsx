@@ -2,15 +2,20 @@ import { Fragment, useState } from 'react'
 import { SignalIcon } from '@heroicons/react/24/outline'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import {
-  ColumnDef,
-  ExpandedState,
+  type ColumnDef,
+  type ExpandedState,
+  type OnChangeFn,
+  type RowData,
+  type SortingState,
+  columnSizingFeature,
+  createExpandedRowModel,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  getSortedRowModel,
-  OnChangeFn,
-  SortingState,
-  useReactTable
+  rowExpandingFeature,
+  rowSortingFeature,
+  sortFn_basic,
+  tableFeatures,
+  useTable
 } from '@tanstack/react-table'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
@@ -18,7 +23,20 @@ import { useIntl } from 'react-intl'
 import { FixmeType } from '../../types/asgardex'
 import { Label } from '../uielements/label'
 
-type TableProps<T extends object> = {
+// Every table in the app sorts, and some expand rows or set a column size.
+// Register those features once so column defs share one type.
+export const appTableFeatures = tableFeatures({
+  rowSortingFeature,
+  rowExpandingFeature,
+  columnSizingFeature,
+  sortedRowModel: createSortedRowModel(),
+  expandedRowModel: createExpandedRowModel(),
+  sortFns: { basic: sortFn_basic }
+})
+
+export type AppColumnDef<TData extends RowData> = ColumnDef<typeof appTableFeatures, TData, FixmeType>
+
+type TableProps<T extends RowData> = {
   loading?: boolean
   hideHeader?: boolean
   hideVerticalBorder?: boolean
@@ -28,11 +46,11 @@ type TableProps<T extends object> = {
   getRowId?: (row: T, index: number) => string
   renderSubRow?: (row: T) => React.ReactNode
   data: T[]
-  columns: ColumnDef<T, FixmeType>[]
+  columns: AppColumnDef<T>[]
   onClickRow?: (row: T) => void
 }
 
-export const Table = <T extends object>({
+export const Table = <T extends RowData>({
   data,
   columns,
   expandable = false,
@@ -49,11 +67,10 @@ export const Table = <T extends object>({
   const [sorting, setSorting] = useState<SortingState>([])
   const intl = useIntl()
 
-  const table = useReactTable({
+  const table = useTable({
+    features: appTableFeatures,
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
     ...(expandable
       ? {
@@ -63,7 +80,10 @@ export const Table = <T extends object>({
           },
           onExpandedChange: setExpanded,
           getRowId,
-          getExpandedRowModel: getExpandedRowModel()
+          // Detail rows are rendered by the caller, not as table sub-rows.
+          // v9 will not expand a row unless it can expand, and the default
+          // is "has sub-rows", so the chevron's toggleExpanded would no-op.
+          getRowCanExpand: () => true
         }
       : {
           state: {
@@ -158,7 +178,7 @@ export const Table = <T extends object>({
                   e.stopPropagation()
                   if (onClickRow) onClickRow(row.original)
                 }}>
-                {row.getVisibleCells().map((cell) => (
+                {row.getAllCells().map((cell) => (
                   <td
                     key={cell.id}
                     className={clsx(

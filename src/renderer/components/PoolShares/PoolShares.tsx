@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 
 import { ArrowUpIcon } from '@heroicons/react/24/outline'
-import { ColumnDef } from '@tanstack/react-table'
 import { Network } from '@xchainjs/xchain-client'
 
 import { AnyAsset, baseAmount, baseToAsset, Chain, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
@@ -15,8 +14,7 @@ import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { MimirHalt as MayaMimirHalt } from '../../services/mayachain/types'
 import { MimirHalt } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
-import { FixmeType } from '../../types/asgardex'
-import { Table } from '../table'
+import { AppColumnDef, Table } from '../table'
 import { AssetData } from '../uielements/assets/assetData'
 import { Button, ManageButton } from '../uielements/button'
 import { Label } from '../uielements/label'
@@ -42,7 +40,7 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
   const isDesktopView = useBreakpoint()?.lg ?? false
   const isXLargeScreen = useBreakpoint()?.xl ?? false
 
-  const columns: ColumnDef<PoolShareTableRowData, FixmeType>[] = useMemo(
+  const columns: AppColumnDef<PoolShareTableRowData>[] = useMemo(
     () => [
       {
         accessorKey: 'asset',
@@ -112,7 +110,7 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
               size: 100,
               enableSorting: false
             }
-          ] as ColumnDef<PoolShareTableRowData, FixmeType>[])
+          ] as AppColumnDef<PoolShareTableRowData>[])
         : []),
       {
         accessorKey: 'value',
