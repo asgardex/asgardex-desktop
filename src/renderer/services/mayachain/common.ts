@@ -24,19 +24,17 @@ import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 const { stream$: reloadClientUrl$, trigger: reloadClientUrl } = triggerStream()
 
 // `TriggerStream` to build new MAYA clients (keystore + read-only) with the same urls.
-// xchainjs caches the list of connected RPC clients for the lifetime of a `Client`.
-// If connecting fails once (e.g. RPC answers `429`), that list stays empty
-// and the client can't load anything again. A new `Client` connects again.
+// A `Client` whose first connect failed (e.g. `429`) never connects again, a new one does.
 const { stream$: rebuildClient$, trigger: rebuildClient } = triggerStream()
 
-// `clientState$` and `readOnlyClient$` check the node at the same time (unlock, rebuild): one request for both
+// One node check for `clientState$` + `readOnlyClient$` (unlock, rebuild). Shared within the same turn only,
+// so a later check never reuses an old (maybe hanging) request.
 const chainIdRequests = new Map<string, Promise<string>>()
 const getChainIdShared = (url: string): Promise<string> => {
   const pending = chainIdRequests.get(url)
   if (pending) return pending
   const request = getChainId(url)
   chainIdRequests.set(url, request)
-  // Shared within the same turn only: a later check never reuses an old (maybe hanging) request
   setTimeout(() => chainIdRequests.delete(url), 0)
   return request
 }

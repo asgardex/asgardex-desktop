@@ -106,16 +106,9 @@ const loadBalances$ = <C extends XChainClientOverride>({
   )
 
 /**
- * Like `shareReplay(1)`, but it unsubscribes from its source once nobody listens anymore.
- *
- * With plain `shareReplay(1)` an instance stays subscribed to `trigger$` and `client$` forever.
- * A new instance is created for every new address (e.g. each wallet unlock),
- * so after N unlocks one reload sent N identical balance requests (MAYA: HTTP 429).
- *
- * The reset is delayed by one macrotask: a reload (`getChainBalance$` in `wallet/balances`)
- * unsubscribes and subscribes again in the same turn. It needs the replayed value to keep the
- * last Success on screen while loading (`preserveSuccess`). `shareReplay({ refCount: true })` would
- * reset right away and show Pending on every reload.
+ * `shareReplay(1)` that unsubscribes from its source one tick after the last subscriber leaves.
+ * Plain `shareReplay(1)` kept every instance (one per unlocked address) subscribed, so one reload sent N requests.
+ * The tick keeps the last Success for a reload, which unsubscribes and subscribes again in the same turn.
  */
 const shareBalances = <T>(): Rx.MonoTypeOperatorFunction<T> =>
   RxOp.share<T>({
