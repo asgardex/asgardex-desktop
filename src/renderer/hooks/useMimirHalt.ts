@@ -34,22 +34,50 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
   return false
 }
 /**
+ * Mimir keys from THORNode are upper case (`HALTTHORCHAIN`, `HALTBTCCHAIN`, `HALTBTCTRADING`,
+ * `PAUSELPBTC`, `HALTTRADING`, `PAUSELP`, ...). Lookups are case-insensitive so a key that
+ * arrives in another case is still found, and the result always uses the upper-case keys
+ * `MimirHalt` (and `poolHelper`, `AppHaltedChains`) read.
+ */
+export const getThorchainMimirHalt = ({
+  mimir,
+  lastHeight,
+  chains
+}: {
+  mimir: Mimir
+  lastHeight?: number
+  chains: string[]
+}): MimirHalt => {
+  const mimirUpper: Mimir = Object.entries(mimir).reduce<Mimir>((acc, [key, value]) => {
+    acc[key.toUpperCase()] = value
+    return acc
+  }, {})
+  const status = (key: string) => getMimirStatus(mimirUpper[key.toUpperCase()], lastHeight)
+
+  const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
+    const c = chain.toUpperCase()
+    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`, `PAUSELPDEPOSIT-${c}-${c}`]
+    keys.forEach((key) => {
+      acc[key] = status(key)
+    })
+    return acc
+  }, {})
+  // THORChain's own halt is global for THORChain routes; detect it even if THOR is not in `chains`
+  flags.HALTTHORCHAIN = status('HALTTHORCHAIN')
+
+  const haltTradingGlobal: MimirHaltTradingGlobal = { haltGlobalTrading: status('HALTTRADING') }
+  const pauseLpGlobal: MimirHaltLpGlobal = { pauseGlobalLp: status('PAUSELP') }
+
+  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal } as MimirHalt
+}
+
+/**
  * Hook to get halt status defined by `Mimir`
  *
  * Note: Same rule as we have for services - Use this hook in top level *views only (but in child components)
  */
 export const useThorchainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt } => {
   const { mimir$, thorchainLastblockState$ } = useThorchainContext()
-
-  const createMimirGroup = (keys: string[], mimir: Mimir, lastHeight?: number) => {
-    return keys.reduce(
-      (acc, key) => {
-        acc[key] = getMimirStatus(mimir[key], lastHeight)
-        return acc
-      },
-      {} as Record<string, boolean>
-    )
-  }
 
   const mimirHaltSource$ = useMemo((): Rx.Observable<MimirHaltRD> => {
     if (!enabled) return Rx.EMPTY
@@ -61,31 +89,7 @@ export const useThorchainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
           RD.map(([mimir, lastblockItems]) => {
             const lastHeight = getLastHeightThorchain(lastblockItems as LastblockItems)
 
-            const haltChainKeys = enabledChains.map((chain) => `HALT${chain}Chain`)
-            const haltTradingKeys = enabledChains.map((chain) => `HALT${chain}TRADING`)
-            const pauseLPKeys = enabledChains.map((chain) => `PAUSELP${chain}`)
-            const pauseLPDepositKeys = enabledChains.map((chain) => `PAUSELPDEPOSIT-${chain}-${chain}`)
-            const haltChain = createMimirGroup(haltChainKeys, mimir, lastHeight)
-            const haltTrading = createMimirGroup(haltTradingKeys, mimir, lastHeight)
-            const pauseLP = createMimirGroup(pauseLPKeys, mimir, lastHeight)
-            const pauseLPDeposit = createMimirGroup(pauseLPDepositKeys, mimir, lastHeight)
-
-            const haltTradingGlobal: MimirHaltTradingGlobal = {
-              haltGlobalTrading: getMimirStatus(mimir.HALTTRADING, lastHeight)
-            }
-
-            const pauseLpGlobal: MimirHaltLpGlobal = {
-              pauseGlobalLp: getMimirStatus(mimir.PAUSELP, lastHeight)
-            }
-
-            return {
-              ...haltChain,
-              ...haltTrading,
-              ...pauseLP,
-              ...pauseLPDeposit,
-              ...haltTradingGlobal,
-              ...pauseLpGlobal
-            } as MimirHalt
+            return getThorchainMimirHalt({ mimir, lastHeight, chains: enabledChains })
           })
         )
       ),
