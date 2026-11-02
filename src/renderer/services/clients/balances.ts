@@ -220,7 +220,9 @@ export const balancesByAddress$: BalancesByAddress$ =
     network$.pipe(
       RxOp.switchMap(() =>
         Rx.combineLatest([trigger$.pipe(RxOp.debounceTime(300)), client$]).pipe(
-          RxOp.mergeMap(([_, oClient]) => {
+          // `switchMap` (as `balances$`): a reload or a new client drops the previous load, so a late result of it
+          // can't overwrite the newer one, and its (never completing) user assets stream stops reloading too
+          RxOp.switchMap(([_, oClient]) => {
             return FP.pipe(
               oClient,
               O.fold(
