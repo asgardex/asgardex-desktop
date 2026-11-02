@@ -24,6 +24,9 @@ describe('hooks/useMimirHaltMaya', () => {
     it('mimir = 101, blockheight = 100', () => {
       expect(getMimirStatus(101, 100)).toBeFalsy()
     })
+    it('mimir = -1 (unset), blockheight = 100', () => {
+      expect(getMimirStatus(-1, 100)).toBeFalsy()
+    })
     it('mimir = undefined + blockheight = undefined', () => {
       expect(getMimirStatus(undefined, undefined)).toBeFalsy()
     })

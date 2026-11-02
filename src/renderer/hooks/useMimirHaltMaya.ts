@@ -24,13 +24,15 @@ import { useObservableLayoutState } from './useObservableLayoutState'
  * Helper to check Mimir status by given Mimir value and last height
  */
 export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
-  // no mimir -> no action
-  if (mimir === 0) return false
+  // no mimir (0, or unset / negative) -> no action
+  if (mimir <= 0) return false
   // 1 -> halt | pause
   if (mimir === 1) return true
-  // compare to current block height
+  // A block height: active after that block.
+  // Same rule as MAYANode (`value > 0 && value < height`, x/mayachain/keeper/v1/keeper_halt.go).
+  // Note: THORNode uses `value <= height` (see useMimirHalt.ts).
   if (mimir < lastHeight) return true
-  // No action for other cases
+  // Height not passed yet -> scheduled, no action
   return false
 }
 
