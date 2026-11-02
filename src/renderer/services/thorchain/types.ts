@@ -199,7 +199,8 @@ export type MimirHaltTrading = Record<`HALT${EnabledChain}TRADING`, boolean>
 
 export type MimirPauseLP = Record<`PAUSELP${EnabledChain}`, boolean>
 
-export type MimirPauseLPDeposit = Record<`PAUSELPDEPOSIT-${EnabledChain}-${EnabledChain}`, boolean>
+// Gas-asset pool deposit pause: chain + gas-asset symbol (`PAUSELPDEPOSIT-BSC-BNB`), see `getPoolDepositPauseMimirKey`
+export type MimirPauseLPDeposit = Record<`PAUSELPDEPOSIT-${EnabledChain}-${string}`, boolean>
 
 export type MimirHaltTradingGlobal = {
   haltGlobalTrading: boolean

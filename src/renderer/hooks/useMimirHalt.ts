@@ -54,10 +54,13 @@ export const getThorchainMimirHalt = ({
 
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
-    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`, getPoolDepositPauseMimirKey(c)]
+    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`]
     keys.forEach((key) => {
       acc[key] = status(key)
     })
+    // THORNode IsPoolDepositPaused is `value > 0`, no height check (keeper_halt.go:129-135)
+    const depositKey = getPoolDepositPauseMimirKey(c)
+    acc[depositKey] = (mimir[depositKey] ?? 0) > 0
     return acc
   }, {})
   // THORChain's own halt is global for THORChain routes; detect it even if THOR is not in `chains`

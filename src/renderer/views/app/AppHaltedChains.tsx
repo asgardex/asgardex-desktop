@@ -198,17 +198,25 @@ export const buildPerProtocolMessages = (
       .filter(({ pausedLPDeposit }) => pausedLPDeposit)
       .map(({ chain }) => chain)
 
-    if (pausedLPs.length > 0) {
-      messages.push(intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') }))
-    } else if (mimirHalt.PAUSELP) {
-      messages.push(intl.formatMessage({ id: 'halt.chain.pauseall' }))
-    } else if (pausedLPsDeposits.length > 0) {
-      messages.push(
-        intl.formatMessage(
-          { id: 'halt.chain.pauseDeposits' },
-          { chains: pausedLPsDeposits.join(', '), protocol: chainToString(protocol) }
+    // Global LP pause covers every chain of this protocol, so per-chain LP lines would only repeat it
+    if (mimirHalt.pauseGlobalLp) {
+      if (isProtocolRelevant(protocol, selectedChains)) {
+        messages.push(intl.formatMessage({ id: 'halt.chain.pauseall' }))
+      }
+    } else {
+      if (pausedLPs.length > 0) {
+        messages.push(intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') }))
+      }
+      // A per-chain LP pause already covers deposits for that chain
+      const depositOnlyPaused = pausedLPsDeposits.filter((chain) => !pausedLPs.includes(chain))
+      if (depositOnlyPaused.length > 0) {
+        messages.push(
+          intl.formatMessage(
+            { id: 'halt.chain.pauseDeposits' },
+            { chains: depositOnlyPaused.join(', '), protocol: chainToString(protocol) }
+          )
         )
-      )
+      }
     }
   }
 

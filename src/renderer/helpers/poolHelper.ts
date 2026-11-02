@@ -288,7 +288,7 @@ export const disableTradingActions = ({
  * | PAUSELP (global)                  | NO  | YES      | YES  |
  * | PAUSELP{chain}                    | NO  | YES      | YES  |
  * | HALT{chain}                       | NO  | NO       | NO   |
- * | PAUSELPDEPOSIT-{chain}-{chain}    | NO  | YES      | NO   |
+ * | PAUSELPDEPOSIT-{chain}-{symbol}   | NO  | YES      | NO   |
  */
 export const disablePoolActions = ({
   chain,
@@ -320,7 +320,7 @@ export const disablePoolActions = ({
  * | PAUSELP (global)                  | NO  | YES      | YES  |
  * | PAUSELP{chain}                    | NO  | YES      | YES  |
  * | HALT{chain}                       | NO  | NO       | NO   |
- * | PAUSELPDEPOSIT-{chain}-{chain}    | NO  | YES      | NO   |
+ * | PAUSELPDEPOSIT-{chain}-{symbol}   | NO  | YES      | NO   |
  */
 export const disableWithdrawActions = ({
   chain,

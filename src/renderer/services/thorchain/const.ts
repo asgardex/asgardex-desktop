@@ -3,7 +3,8 @@ import { Network } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
 
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
-import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { DEFAULT_ENABLED_CHAINS, isSupportedChain } from '../../../shared/utils/chain'
+import { getChainAsset } from '../../helpers/chainHelper'
 import { ClientUrl, InteractState, MimirHalt } from './types'
 
 export const INITIAL_INTERACT_STATE: InteractState = {
@@ -16,7 +17,10 @@ export const INITIAL_INTERACT_STATE: InteractState = {
  * Mimir key THORNode uses to pause LP deposits into a chain's gas-asset pool
  * (`PauseLPDeposit-<asset.MimirString()>`, x/thorchain/keeper/v1/keeper_halt.go IsPoolDepositPaused).
  */
-export const getPoolDepositPauseMimirKey = (chain: Chain): string => `PAUSELPDEPOSIT-${chain}-${chain}`
+export const getPoolDepositPauseMimirKey = (chain: Chain): string => {
+  const symbol = isSupportedChain(chain) ? getChainAsset(chain).symbol : chain
+  return `PAUSELPDEPOSIT-${chain.toUpperCase()}-${symbol.toUpperCase()}`
+}
 
 export const createDefaultMimirHalt = (): MimirHalt => {
   return Object.keys(DEFAULT_ENABLED_CHAINS).reduce(
