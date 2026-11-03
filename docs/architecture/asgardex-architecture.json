@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "ASGARDEX Desktop",
-    "version": "1.45.0",
+    "version": "1.47.0",
     "description": "Cross-chain DeFi wallet (Electron + React + TypeScript) for THORChain, MAYAChain, Chainflip, and OneClick across 17+ blockchains. Supports Keystore, Ledger, and Vultisig MPC wallet modes.",
     "repository": "https://github.com/asgardex/asgardex-desktop",
     "generatedFor": "AI agents and architecture tooling",
@@ -483,6 +483,22 @@
       "tooltip": "CRITICAL: getSwapMemo/updateMemo build affiliate segment (dx + bps). Do not use SDK swap path or affiliate revenue is silently dropped.",
       "tags": ["swap", "affiliate", "critical"]
     },
+    {
+      "id": "hook-mimir-halt-thor",
+      "label": "useThorchainMimirHalt",
+      "layer": "hooks",
+      "path": "src/renderer/hooks/useMimirHalt.ts",
+      "tooltip": "Combines THORNode mimir$ and last block with userChains$ into MimirHalt (chain halt, trading pause, LP pause flags). Used by AppView halt banners, swap, deposit, wallet views and useSwapQuote.",
+      "tags": ["halt", "mimir", "thorchain"]
+    },
+    {
+      "id": "hook-mimir-halt-maya",
+      "label": "useMayachainMimirHalt",
+      "layer": "hooks",
+      "path": "src/renderer/hooks/useMimirHaltMaya.ts",
+      "tooltip": "Combines MAYANode mimir$ and last block with userChains$ into MimirHalt for MAYA chains. Used by AppView halt banners, deposit, wallet views and useSwapQuote.",
+      "tags": ["halt", "mimir", "mayachain"]
+    },
 
     {
       "id": "view-swap",
@@ -553,8 +569,32 @@
       "label": "Shared UI Components",
       "layer": "ui-feature",
       "path": "src/renderer/components/",
-      "tooltip": "Header, sidebar, uielements, settings, pool tables, assets filters — Tailwind + Headless UI.",
+      "tooltip": "Header, uielements, pool tables, assets filters — Tailwind + Headless UI. Sidebar and settings have their own nodes (ui-sidebar, view-settings).",
       "tags": ["ui"]
+    },
+    {
+      "id": "view-settings",
+      "label": "Settings Views",
+      "layer": "ui-feature",
+      "path": "src/renderer/views/app/{AppSettings,AppGeneralSettingsView,AppDexSettingsView,AppExpertModeView}.tsx + components/settings/",
+      "tooltip": "/settings route (AppSettings tabs): General (network, language, version, update check via window.apiAppUpdate), Wallet (WalletSettingsAuth from views/wallet), DEX (aggregator protocol toggles, slip tolerance), Expert Mode (Midgard, THORNode, MAYANode and EVM RPC URLs).",
+      "tags": ["settings", "ui"]
+    },
+    {
+      "id": "ui-halt-banners",
+      "label": "Halt Banners (AppHaltedChains)",
+      "layer": "ui-feature",
+      "path": "src/renderer/views/app/{AppHaltedChains.tsx,AppHaltedChains.helpers.ts}",
+      "tooltip": "Rendered by AppView above the routes: THOR/MAYA chain halt, trading pause, LP pause and global protocol halt warnings in a NewsTicker. Fed mimirHaltRD from useThorchainMimirHalt / useMayachainMimirHalt. Strings in i18n/*/halt.ts.",
+      "tags": ["halt", "mimir", "ui"]
+    },
+    {
+      "id": "ui-sidebar",
+      "label": "Sidebar Navigation",
+      "layer": "ui-feature",
+      "path": "src/renderer/components/sidebar/",
+      "tooltip": "Desktop-only nav rendered by AppView: Wallet, Swap, Bonds, Portfolio, Pools, Transaction, Settings links, network/commit info, and TransactionSlideshow (THOR, MAYA, Chainflip and OneClick tx tracking).",
+      "tags": ["navigation", "ui"]
     },
 
     {
@@ -795,7 +835,79 @@
       "kind": "uses"
     },
     { "id": "e119", "source": "redux-store", "target": "svc-aggregator", "label": "aggregator slice", "kind": "uses" },
-    { "id": "e120", "source": "ctx-chain-clients", "target": "svc-chain-services", "label": "exposes", "kind": "uses" }
+    { "id": "e120", "source": "ctx-chain-clients", "target": "svc-chain-services", "label": "exposes", "kind": "uses" },
+    { "id": "e121", "source": "view-routes", "target": "view-settings", "label": "route", "kind": "routing" },
+    { "id": "e122", "source": "view-settings", "target": "view-wallet", "label": "Wallet tab", "kind": "uses" },
+    { "id": "e123", "source": "view-settings", "target": "svc-app", "label": "network/slip", "kind": "uses" },
+    {
+      "id": "e124",
+      "source": "view-settings",
+      "target": "svc-aggregator",
+      "label": "protocol toggles",
+      "kind": "uses"
+    },
+    { "id": "e125", "source": "view-settings", "target": "svc-midgard-thor", "label": "Midgard URL", "kind": "uses" },
+    { "id": "e126", "source": "view-settings", "target": "svc-midgard-maya", "label": "Midgard URL", "kind": "uses" },
+    { "id": "e127", "source": "view-settings", "target": "svc-thorchain", "label": "THORNode URLs", "kind": "uses" },
+    { "id": "e128", "source": "view-settings", "target": "svc-mayachain", "label": "MAYANode URLs", "kind": "uses" },
+    { "id": "e129", "source": "view-settings", "target": "window-api", "label": "apiAppUpdate", "kind": "ipc" },
+    { "id": "e130", "source": "app-tsx", "target": "ui-halt-banners", "label": "AppView renders", "kind": "uses" },
+    {
+      "id": "e131",
+      "source": "ui-halt-banners",
+      "target": "hook-mimir-halt-thor",
+      "label": "mimirHaltRD",
+      "kind": "uses"
+    },
+    {
+      "id": "e132",
+      "source": "ui-halt-banners",
+      "target": "hook-mimir-halt-maya",
+      "label": "mimirHaltRD",
+      "kind": "uses"
+    },
+    { "id": "e133", "source": "hook-mimir-halt-thor", "target": "svc-thorchain", "label": "mimir$", "kind": "uses" },
+    { "id": "e134", "source": "hook-mimir-halt-thor", "target": "svc-storage", "label": "userChains$", "kind": "uses" },
+    { "id": "e135", "source": "hook-mimir-halt-maya", "target": "svc-mayachain", "label": "mimir$", "kind": "uses" },
+    { "id": "e136", "source": "hook-mimir-halt-maya", "target": "svc-storage", "label": "userChains$", "kind": "uses" },
+    { "id": "e137", "source": "view-swap", "target": "hook-mimir-halt-thor", "label": "halt checks", "kind": "uses" },
+    {
+      "id": "e138",
+      "source": "view-deposit",
+      "target": "hook-mimir-halt-thor",
+      "label": "halt checks",
+      "kind": "uses"
+    },
+    {
+      "id": "e139",
+      "source": "view-deposit",
+      "target": "hook-mimir-halt-maya",
+      "label": "halt checks",
+      "kind": "uses"
+    },
+    { "id": "e140", "source": "view-wallet", "target": "hook-mimir-halt-thor", "label": "halt checks", "kind": "uses" },
+    { "id": "e141", "source": "view-wallet", "target": "hook-mimir-halt-maya", "label": "halt checks", "kind": "uses" },
+    {
+      "id": "e142",
+      "source": "hook-swap-quote",
+      "target": "hook-mimir-halt-thor",
+      "label": "halt validation",
+      "kind": "uses"
+    },
+    {
+      "id": "e143",
+      "source": "hook-swap-quote",
+      "target": "hook-mimir-halt-maya",
+      "label": "halt validation",
+      "kind": "uses"
+    },
+    { "id": "e144", "source": "app-tsx", "target": "ui-sidebar", "label": "AppView renders", "kind": "uses" },
+    { "id": "e145", "source": "ui-sidebar", "target": "view-routes", "label": "nav links", "kind": "routing" },
+    { "id": "e146", "source": "ui-sidebar", "target": "svc-thorchain", "label": "tx tracking", "kind": "uses" },
+    { "id": "e147", "source": "ui-sidebar", "target": "svc-mayachain", "label": "tx tracking", "kind": "uses" },
+    { "id": "e148", "source": "ui-sidebar", "target": "svc-chainflip", "label": "tx tracking", "kind": "uses" },
+    { "id": "e149", "source": "ui-sidebar", "target": "svc-oneclick", "label": "tx tracking", "kind": "uses" },
+    { "id": "e150", "source": "ui-sidebar", "target": "svc-app-wallet", "label": "wallet type", "kind": "uses" }
   ],
   "flows": [
     {

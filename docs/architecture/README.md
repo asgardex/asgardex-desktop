@@ -32,8 +32,8 @@ Or open that file in any modern browser. Use:
 
 ## Graph stats
 
-- **71** nodes across 11 layers  
-- **98** edges  
+- **76** nodes across 11 layers  
+- **128** edges  
 - **16** flows (136 steps)  
 
 ## Layers (top → bottom)
