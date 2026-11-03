@@ -1,6 +1,7 @@
 import { createIntl } from 'react-intl'
 import { describe, expect, it } from 'vitest'
 
+import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { MAYAChain, THORChain } from '../../../shared/utils/chainIds'
 import thorMimir from '../../hooks/__fixtures__/thornode-mainnet-chains-halted-lp-paused/mimir.json'
 import { getThorchainMimirHalt } from '../../hooks/useMimirHalt'
@@ -73,6 +74,36 @@ describe('views/app/AppHaltedChains buildPerProtocolMessages (LP banner)', () =>
     expect(buildPerProtocolMessages(thor(mimirHalt), deposit, intl)).toEqual([pauseDeposits('BSC')])
     const gaia: PageContext = { ...deposit, selectedChains: ['GAIA'] }
     expect(buildPerProtocolMessages(thor(mimirHalt), gaia, intl)).toEqual([pauseDeposits('GAIA')])
+  })
+
+  it('does not repeat fully halted chains in the LP lines on the pool page (mimir fixture)', () => {
+    const mimirHalt = getThorchainMimirHalt({
+      mimir: thorMimir,
+      lastHeight: 28483475,
+      chains: Object.keys(DEFAULT_ENABLED_CHAINS)
+    })
+    const messages = buildPerProtocolMessages(thor(mimirHalt), poolPage, intl)
+    expect(messages).toEqual([
+      intl.formatMessage(
+        { id: 'halt.chains' },
+        { chains: 'BCH, BTC, GAIA, DOGE, ETH, LTC, BSC, ZEC, TRON', protocol: THORChain }
+      ),
+      pauseDeposits('AVAX')
+    ])
+  })
+
+  it('drops a chain from the per-chain LP pause line when its chain is halted (pool page)', () => {
+    const data = thor({ HALTETHCHAIN: true, PAUSELPETH: true, PAUSELPBSC: true })
+    expect(buildPerProtocolMessages(data, poolPage, intl)).toEqual([
+      intl.formatMessage({ id: 'halt.chain' }, { chain: 'ETH', dex: THORChain }),
+      pause('BSC')
+    ])
+  })
+
+  it('keeps the deposit-pause line unfiltered on the deposit page, where no chain-halt line is shown', () => {
+    const deposit: PageContext = { isSwapPage: false, isPoolPage: false, isDepositPage: true, selectedChains: ['BSC'] }
+    const data = thor({ HALTBSCCHAIN: true, 'PAUSELPDEPOSIT-BSC-BNB': true })
+    expect(buildPerProtocolMessages(data, deposit, intl)).toEqual([pauseDeposits('BSC')])
   })
 
   it('shows the all-chains LP text when LP is paused globally (pauseGlobalLp)', () => {
