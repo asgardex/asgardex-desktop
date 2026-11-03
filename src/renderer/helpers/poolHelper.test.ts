@@ -12,7 +12,16 @@ import { function as FP, option as O } from 'fp-ts'
 
 import { PoolsWatchList } from '../../shared/api/io'
 import { ASSETS_MAINNET } from '../../shared/mock/assets'
-import { AssetRuneNative, AssetBSC } from '../../shared/utils/asset'
+import {
+  AssetATOM,
+  AssetBCH,
+  AssetBSC,
+  AssetBTC,
+  AssetDOGE,
+  AssetETH,
+  AssetLTC,
+  AssetRuneNative
+} from '../../shared/utils/asset'
 import { GAIAChain } from '../../shared/utils/chainIds'
 import { AssetUSDTBSC } from '../const'
 import { GetPoolsStatusEnum, PoolData, PoolDetails, PricePool } from '../services/midgard/midgardTypes'
@@ -401,18 +410,25 @@ describe('helpers/poolHelper/', () => {
 
   describe('disablePoolActions', () => {
     it.each([
-      [BSCChain, 'PAUSELPDEPOSIT-BSC-BNB'],
-      [GAIAChain, 'PAUSELPDEPOSIT-GAIA-ATOM']
-    ])('true for %s with only the gas-pool deposit pause %s set', (chain, key) => {
+      [AssetBSC, 'PAUSELPDEPOSIT-BSC-BNB'],
+      [AssetATOM, 'PAUSELPDEPOSIT-GAIA-ATOM']
+    ])('true for %s with only the gas-pool deposit pause %s set', (asset, key) => {
       const mimirHalt = { ...DEFAULT_MIMIR_HALT, [key]: true }
-      expect(disablePoolActions({ chain, haltedChains: [], mimirHalt })).toBe(true)
+      expect(disablePoolActions({ asset, haltedChains: [], mimirHalt })).toBe(true)
       // deposit pause never blocks withdraw
-      expect(disableWithdrawActions({ chain, haltedChains: [], mimirHalt })).toBe(false)
+      expect(disableWithdrawActions({ chain: asset.chain, haltedChains: [], mimirHalt })).toBe(false)
+    })
+
+    it('gas-pool deposit pause blocks only that pool, not other pools of the chain', () => {
+      const mimirHalt = { ...DEFAULT_MIMIR_HALT, 'PAUSELPDEPOSIT-BSC-BNB': true }
+      // THORNode scopes PAUSELPDEPOSIT-<CHAIN>-<SYMBOL> to one pool
+      expect(disablePoolActions({ asset: AssetUSDTBSC, haltedChains: [], mimirHalt })).toBe(false)
+      expect(disablePoolActions({ asset: AssetBSC, haltedChains: [], mimirHalt })).toBe(true)
     })
 
     it('true if trading is halted for this chain', () => {
       const result = disablePoolActions({
-        chain: BTCChain,
+        asset: AssetBTC,
         haltedChains: [ETHChain, BTCChain],
         mimirHalt: { ...DEFAULT_MIMIR_HALT }
       })
@@ -421,7 +437,7 @@ describe('helpers/poolHelper/', () => {
 
     it('true if LP is paused', () => {
       const result = disablePoolActions({
-        chain: BTCChain,
+        asset: AssetBTC,
         haltedChains: [ETHChain, BTCChain],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, pauseGlobalLp: true }
       })
@@ -429,7 +445,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if BTC chain is not in halted list, but paused', () => {
       const result = disablePoolActions({
-        chain: BTCChain,
+        asset: AssetBTC,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, PAUSELPBTC: true }
       })
@@ -437,7 +453,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if BTC chain is not in halted list, but LP paused', () => {
       const result = disablePoolActions({
-        chain: BTCChain,
+        asset: AssetBTC,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, pauseGlobalLp: true }
       })
@@ -445,7 +461,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if BTC chain is not in halted list, but paused', () => {
       const result = disablePoolActions({
-        chain: BTCChain,
+        asset: AssetBTC,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, PAUSELPBTC: true }
       })
@@ -453,7 +469,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if BTC chain is not in halted list, but LP paused', () => {
       const result = disablePoolActions({
-        chain: BTCChain,
+        asset: AssetBTC,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, pauseGlobalLp: true }
       })
@@ -461,7 +477,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if BCH chain is not in halted list, but paused', () => {
       const result = disablePoolActions({
-        chain: BCHChain,
+        asset: AssetBCH,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, PAUSELPBCH: true }
       })
@@ -469,7 +485,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if BCH chain is not in halted list, but LP paused', () => {
       const result = disablePoolActions({
-        chain: BCHChain,
+        asset: AssetBCH,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, pauseGlobalLp: true }
       })
@@ -477,7 +493,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if ETH chain is not in halted list, but paused', () => {
       const result = disablePoolActions({
-        chain: ETHChain,
+        asset: AssetETH,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, PAUSELPETH: true }
       })
@@ -485,7 +501,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if ETH chain is not in halted list, but LP paused', () => {
       const result = disablePoolActions({
-        chain: ETHChain,
+        asset: AssetETH,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, pauseGlobalLp: true }
       })
@@ -493,7 +509,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if LTC chain is not in halted list, but paused', () => {
       const result = disablePoolActions({
-        chain: LTCChain,
+        asset: AssetLTC,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, PAUSELPLTC: true }
       })
@@ -501,7 +517,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if LTC chain is not in halted list, but LP paused', () => {
       const result = disablePoolActions({
-        chain: LTCChain,
+        asset: AssetLTC,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, pauseGlobalLp: true }
       })
@@ -509,7 +525,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if DOGE chain is not in halted list, but paused', () => {
       const result = disablePoolActions({
-        chain: DOGEChain,
+        asset: AssetDOGE,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, PAUSELPDOGE: true }
       })
@@ -517,7 +533,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if DOGE chain is not in halted list, but LP paused', () => {
       const result = disablePoolActions({
-        chain: DOGEChain,
+        asset: AssetDOGE,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, pauseGlobalLp: true }
       })
@@ -525,7 +541,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if Cosmos chain is not in halted list, but paused', () => {
       const result = disablePoolActions({
-        chain: GAIAChain,
+        asset: AssetATOM,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, PAUSELPGAIA: true }
       })
@@ -533,7 +549,7 @@ describe('helpers/poolHelper/', () => {
     })
     it('true if Cosmos chain is not in halted list, but LP paused', () => {
       const result = disablePoolActions({
-        chain: GAIAChain,
+        asset: AssetATOM,
         haltedChains: [],
         mimirHalt: { ...DEFAULT_MIMIR_HALT, pauseGlobalLp: true }
       })

@@ -320,7 +320,7 @@ export const SymDepositView = (props: Props) => {
         const disableDepositAction =
           halt.disableAllActions({ chain, haltedChains, mimirHalt }) ||
           halt.disableTradingActions({ chain, haltedChains, mimirHalt }) ||
-          halt.disablePoolActions({ chain, haltedChains, mimirHalt })
+          halt.disablePoolActions({ chain, asset, haltedChains, mimirHalt })
 
         return (
           <SymDeposit
