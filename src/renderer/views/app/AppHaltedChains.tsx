@@ -193,10 +193,19 @@ export const buildPerProtocolMessages = (
   }
 
   if (isPoolPage || isDepositPage) {
-    const pausedLPs = haltedChainsState.filter(({ pausedLP }) => pausedLP).map(({ chain }) => chain)
+    // A full chain halt already blocks LP adds and removes. Where the chain-halt line is
+    // shown (pool page), do not repeat those chains in the LP lines. The deposit page shows
+    // no chain-halt line, so it keeps the LP lines unfiltered.
+    const shownHaltedChains: Chain[] = isSwapPage || isPoolPage ? fullyHaltedChains : []
+    const isNotShownHalted = (chain: Chain): boolean => !shownHaltedChains.includes(chain)
+    const pausedLPs = haltedChainsState
+      .filter(({ pausedLP }) => pausedLP)
+      .map(({ chain }) => chain)
+      .filter(isNotShownHalted)
     const pausedLPsDeposits = haltedChainsState
       .filter(({ pausedLPDeposit }) => pausedLPDeposit)
       .map(({ chain }) => chain)
+      .filter(isNotShownHalted)
 
     // Global LP pause covers every chain of this protocol, so per-chain LP lines would only repeat it
     if (mimirHalt.pauseGlobalLp) {
