@@ -259,7 +259,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
       }
       // Add a specific check for sol.usdc
       if (isSolChain(asset.chain) && asset.ticker === AssetSOLUSDC.ticker) {
-        return 'https://storage.googleapis.com/token-list-swapkit/images/sol.usdc-epjfwdd5aufqssqem2qn1xzybapc8g4weggkzwytdt1v.png'
+        return 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/assets/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png'
       }
       // Since we've already checked AVAX.AVAX before,
       // we know any asset is ERC20 here - no need to run expensive `isAvaxTokenAsset`
