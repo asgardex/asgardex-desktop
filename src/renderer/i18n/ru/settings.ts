@@ -129,7 +129,19 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'Конечная точка RPC не отвечает. Проверьте подключение или попробуйте другой URL.',
   'settings.ledgerMode.lockWalletWarning': 'Сначала заблокируйте кошелек, чтобы войти в режим Ledger',
   'settings.wallet.whitelist': 'Белый список',
-  'settings.wallet.customToken': 'Пользовательский токен'
+  'settings.wallet.customToken': 'Пользовательский токен',
+  'monero.settings.watchOnly':
+    'Monero работает только в режиме просмотра: доступны баланс и история. Отправка пока не поддерживается.',
+  'monero.settings.daemon': 'URL узла (необязательно)',
+  'monero.settings.lws': 'URL сервера лёгкого кошелька (необязательно)',
+  'monero.settings.lws.warning':
+    'Конфиденциальность: сервер лёгкого кошелька получает ваш приватный ключ просмотра и видит все входящие платежи. Оставьте пустым, чтобы сканировать локально через узел (по умолчанию).',
+  'monero.settings.restoreHeight': 'Высота восстановления (необязательно)',
+  'monero.settings.restoreHeight.hint':
+    'Высота блока, на которой был создан кошелёк. Пусто = высота первого использования. Без сервера лёгкого кошелька сканирование ограничено примерно 5 000 блоков (~1 неделя).',
+  'monero.settings.invalidUrl': 'Неверный URL. Используйте https:// (http:// только для локальных узлов).',
+  'monero.settings.invalidHeight': 'Неверная высота блока. Используйте целое число.',
+  'monero.send.watchOnly': 'Отправка Monero (XMR) пока не поддерживается (только просмотр).'
 }
 
 export default settings

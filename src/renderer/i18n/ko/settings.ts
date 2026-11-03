@@ -130,7 +130,18 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'RPC 엔드포인트가 응답하지 않습니다. 연결을 확인하거나 다른 URL을 시도하세요.',
   'settings.ledgerMode.lockWalletWarning': 'Ledger 모드로 진입하려면 먼저 지갑을 잠금하세요',
   'settings.wallet.whitelist': '화이트리스트',
-  'settings.wallet.customToken': '사용자 정의 토큰'
+  'settings.wallet.customToken': '사용자 정의 토큰',
+  'monero.settings.watchOnly': 'Monero는 조회 전용입니다. 잔액과 내역을 볼 수 있으며 전송은 아직 지원되지 않습니다.',
+  'monero.settings.daemon': '노드 URL (선택 사항)',
+  'monero.settings.lws': '라이트 월렛 서버 URL (선택 사항)',
+  'monero.settings.lws.warning':
+    '개인정보 보호: 라이트 월렛 서버는 개인 뷰 키를 받아 모든 수신 결제를 볼 수 있습니다. 노드를 통해 로컬에서 스캔하려면 비워 두세요(기본값).',
+  'monero.settings.restoreHeight': '복원 높이 (선택 사항)',
+  'monero.settings.restoreHeight.hint':
+    '지갑이 생성된 블록 높이입니다. 비어 있으면 처음 사용한 높이입니다. 라이트 월렛 서버가 없으면 스캔은 약 5,000블록(약 1주일)으로 제한됩니다.',
+  'monero.settings.invalidUrl': '잘못된 URL입니다. https://를 사용하세요(http://는 로컬 노드에만 허용).',
+  'monero.settings.invalidHeight': '잘못된 블록 높이입니다. 정수를 입력하세요.',
+  'monero.send.watchOnly': 'Monero(XMR) 전송은 아직 지원되지 않습니다(조회 전용).'
 }
 
 export default settings

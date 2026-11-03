@@ -41,7 +41,15 @@ import { KeystoreId, TrustedAddress, TrustedAddresses } from '../../../shared/ap
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
-import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  ZECChain,
+  XMRChain
+} from '../../../shared/utils/chainIds'
 import {
   getChainDerivationPath,
   getChainDerivationOptions,
@@ -99,6 +107,7 @@ import { WalletSelector } from '../uielements/wallet'
 import { EditableWalletName } from '../uielements/wallet/EditableWalletName'
 import { AutoComplete } from './AutoComplete'
 import { KeystoreHDSettingsPanel } from './KeystoreHDSettingsPanel'
+import { MoneroSettingsConnected } from './MoneroSettingsPanel'
 import { WalletIndexInput } from './WalletIndexInput'
 import { WhitelistModal } from './WhitelistModal'
 
@@ -224,7 +233,8 @@ const initialMap = {
   [XRPChain]: 0,
   [TRONChain]: 0,
   [SUIChain]: 0,
-  [NEARChain]: 0
+  [NEARChain]: 0,
+  [XMRChain]: 0
 }
 
 export const WalletSettings = (props: Props): JSX.Element => {
@@ -1003,6 +1013,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
               chain === DOGEChain ||
               chain === DASHChain ||
               chain === ZECChain) && <KeystoreHDSettingsPanel chain={chain} network={network} />}
+          {/* Monero (watch-only): node / light-wallet server / restore height */}
+          {!isVultisig && type === WalletType.Keystore && chain === XMRChain && <MoneroSettingsConnected />}
           {!isVultisig && oLedger && isEnabledLedger(chain, network) && isSupportedChain(chain)
             ? renderLedgerAddress(chain, oLedger, `${chain}-${type}-${address}`)
             : !isVultisig && renderLedgerNotSupported}

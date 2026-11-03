@@ -25,6 +25,7 @@ import solIcon from '../../assets/svg/asset-sol.svg?url'
 import suiIcon from '../../assets/svg/asset-sui.svg?url'
 import tcyIcon from '../../assets/svg/asset-tcy.svg?url'
 import tronIcon from '../../assets/svg/asset-tron.svg?url'
+import xmrIcon from '../../assets/svg/asset-xmr.svg?url'
 import CurrencyIcon from '../../assets/svg/currency-icon.svg?react'
 import AttentionIcon from '../../assets/svg/icon-attention.svg?react'
 import DownIcon from '../../assets/svg/icon-down.svg?react'
@@ -71,5 +72,6 @@ export {
   tronIcon,
   suiIcon,
   nearIcon,
+  xmrIcon,
   zecIcon
 }

@@ -135,7 +135,19 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'RPC endpoint is not responding. Check your connection or try a different URL.',
   'settings.ledgerMode.lockWalletWarning': 'Lock wallet first to enter Ledger mode',
   'settings.wallet.whitelist': 'Whitelist',
-  'settings.wallet.customToken': 'Custom token'
+  'settings.wallet.customToken': 'Custom token',
+  'monero.settings.watchOnly':
+    'Monero is watch-only: you can see your balance and history. Sending is not supported yet.',
+  'monero.settings.daemon': 'Node URL (optional)',
+  'monero.settings.lws': 'Light-wallet server URL (optional)',
+  'monero.settings.lws.warning':
+    'Privacy: a light-wallet server receives your private view key and can see all incoming payments. Leave empty to scan locally via the node (default).',
+  'monero.settings.restoreHeight': 'Restore height (optional)',
+  'monero.settings.restoreHeight.hint':
+    'Block height at which the wallet was created. Empty = height of first use. Without a light-wallet server, scanning is limited to about 5,000 blocks (~1 week).',
+  'monero.settings.invalidUrl': 'Invalid URL. Use https:// (http:// is only accepted for local nodes).',
+  'monero.settings.invalidHeight': 'Invalid block height. Use a whole number.',
+  'monero.send.watchOnly': 'Sending Monero (XMR) is not supported yet (watch-only).'
 }
 
 export default settings

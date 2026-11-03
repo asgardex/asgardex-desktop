@@ -129,7 +129,19 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'RPC एंडपॉइंट प्रतिक्रिया नहीं दे रहा है। अपना कनेक्शन जांचें या कोई अलग URL आज़माएं।',
   'settings.ledgerMode.lockWalletWarning': 'Ledger मोड में प्रवेश करने के लिए पहले वॉलेट लॉक करें',
   'settings.wallet.whitelist': 'व्हाइटलिस्ट',
-  'settings.wallet.customToken': 'कस्टम टोकन'
+  'settings.wallet.customToken': 'कस्टम टोकन',
+  'monero.settings.watchOnly':
+    'Monero केवल देखने के लिए है: आप अपना बैलेंस और इतिहास देख सकते हैं। भेजना अभी समर्थित नहीं है।',
+  'monero.settings.daemon': 'नोड URL (वैकल्पिक)',
+  'monero.settings.lws': 'लाइट-वॉलेट सर्वर URL (वैकल्पिक)',
+  'monero.settings.lws.warning':
+    'गोपनीयता: लाइट-वॉलेट सर्वर को आपकी निजी व्यू की मिलती है और वह सभी आने वाले भुगतान देख सकता है। नोड के माध्यम से स्थानीय रूप से स्कैन करने के लिए खाली छोड़ें (डिफ़ॉल्ट)।',
+  'monero.settings.restoreHeight': 'रीस्टोर ऊँचाई (वैकल्पिक)',
+  'monero.settings.restoreHeight.hint':
+    'वह ब्लॉक ऊँचाई जिस पर वॉलेट बनाया गया था। खाली = पहले उपयोग की ऊँचाई। लाइट-वॉलेट सर्वर के बिना स्कैनिंग लगभग 5,000 ब्लॉक (~1 सप्ताह) तक सीमित है।',
+  'monero.settings.invalidUrl': 'अमान्य URL। https:// का उपयोग करें (http:// केवल स्थानीय नोड के लिए)।',
+  'monero.settings.invalidHeight': 'अमान्य ब्लॉक ऊँचाई। पूर्णांक का उपयोग करें।',
+  'monero.send.watchOnly': 'Monero (XMR) भेजना अभी समर्थित नहीं है (केवल देखने के लिए)।'
 }
 
 export default settings

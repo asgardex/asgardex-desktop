@@ -133,7 +133,19 @@ const settings: SettingMessages = {
     'RPC-Endpunkt antwortet nicht. Überprüfe deine Verbindung oder versuche eine andere URL.',
   'settings.ledgerMode.lockWalletWarning': 'Wallet zuerst sperren, um in den Ledger-Modus zu wechseln',
   'settings.wallet.whitelist': 'Whitelist',
-  'settings.wallet.customToken': 'Benutzerdefinierter Token'
+  'settings.wallet.customToken': 'Benutzerdefinierter Token',
+  'monero.settings.watchOnly':
+    'Monero ist schreibgeschützt: Guthaben und Verlauf sind sichtbar. Senden wird noch nicht unterstützt.',
+  'monero.settings.daemon': 'Node-URL (optional)',
+  'monero.settings.lws': 'Light-Wallet-Server-URL (optional)',
+  'monero.settings.lws.warning':
+    'Datenschutz: Ein Light-Wallet-Server erhält deinen privaten View-Key und sieht alle eingehenden Zahlungen. Leer lassen, um lokal über die Node zu scannen (Standard).',
+  'monero.settings.restoreHeight': 'Wiederherstellungshöhe (optional)',
+  'monero.settings.restoreHeight.hint':
+    'Blockhöhe, bei der die Wallet erstellt wurde. Leer = Höhe der ersten Nutzung. Ohne Light-Wallet-Server ist das Scannen auf etwa 5.000 Blöcke (~1 Woche) begrenzt.',
+  'monero.settings.invalidUrl': 'Ungültige URL. Verwende https:// (http:// nur für lokale Nodes).',
+  'monero.settings.invalidHeight': 'Ungültige Blockhöhe. Verwende eine ganze Zahl.',
+  'monero.send.watchOnly': 'Das Senden von Monero (XMR) wird noch nicht unterstützt (schreibgeschützt).'
 }
 
 export default settings

@@ -9,7 +9,7 @@ import { useIntl } from 'react-intl'
 import { scheduled, asapScheduler } from 'rxjs'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
-import { isChainOfMaya, isSupportedChain } from '../../../../shared/utils/chain'
+import { isChainOfMaya, isSupportedChain, isWatchOnlyChain } from '../../../../shared/utils/chain'
 import { THORChain, MAYAChain } from '../../../../shared/utils/chainIds'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { Spin } from '../../../components/uielements/spin'
@@ -272,6 +272,10 @@ export const SendView = (): JSX.Element => {
             )}
           </h1>
         )
+      }
+      // Watch-only chains (XMR): never show the send form, even when the route is opened directly
+      if (isWatchOnlyChain(chain)) {
+        return <h1>{intl.formatMessage({ id: 'monero.send.watchOnly' })}</h1>
       }
       const poolDetailsThor = RD.toNullable(poolsStateThorRD)?.poolDetails ?? []
       const poolDetailsMaya = RD.toNullable(poolsStateMayaRD)?.poolDetails ?? []

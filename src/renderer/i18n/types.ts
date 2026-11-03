@@ -1379,6 +1379,15 @@ type SettingMessageKey =
   | 'settings.ledgerMode.lockWalletWarning'
   | 'settings.wallet.whitelist'
   | 'settings.wallet.customToken'
+  | 'monero.settings.watchOnly'
+  | 'monero.settings.daemon'
+  | 'monero.settings.lws'
+  | 'monero.settings.lws.warning'
+  | 'monero.settings.restoreHeight'
+  | 'monero.settings.restoreHeight.hint'
+  | 'monero.settings.invalidUrl'
+  | 'monero.settings.invalidHeight'
+  | 'monero.send.watchOnly'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 

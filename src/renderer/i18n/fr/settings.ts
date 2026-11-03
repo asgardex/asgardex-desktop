@@ -130,7 +130,19 @@ const settings: SettingMessages = {
     "Le point d'accès RPC ne répond pas. Vérifiez votre connexion ou essayez une autre URL.",
   'settings.ledgerMode.lockWalletWarning': "Verrouillez d'abord le portefeuille pour entrer en mode Ledger",
   'settings.wallet.whitelist': 'Liste blanche',
-  'settings.wallet.customToken': 'Token personnalisé'
+  'settings.wallet.customToken': 'Token personnalisé',
+  'monero.settings.watchOnly':
+    "Monero est en lecture seule : vous pouvez voir votre solde et votre historique. L'envoi n'est pas encore pris en charge.",
+  'monero.settings.daemon': 'URL du nœud (facultatif)',
+  'monero.settings.lws': 'URL du serveur de portefeuille léger (facultatif)',
+  'monero.settings.lws.warning':
+    'Confidentialité : un serveur de portefeuille léger reçoit votre clé de vue privée et peut voir tous les paiements entrants. Laissez vide pour analyser localement via le nœud (par défaut).',
+  'monero.settings.restoreHeight': 'Hauteur de restauration (facultatif)',
+  'monero.settings.restoreHeight.hint':
+    "Hauteur de bloc à laquelle le portefeuille a été créé. Vide = hauteur de la première utilisation. Sans serveur de portefeuille léger, l'analyse est limitée à environ 5 000 blocs (~1 semaine).",
+  'monero.settings.invalidUrl': 'URL invalide. Utilisez https:// (http:// uniquement pour les nœuds locaux).',
+  'monero.settings.invalidHeight': 'Hauteur de bloc invalide. Utilisez un nombre entier.',
+  'monero.send.watchOnly': "L'envoi de Monero (XMR) n'est pas encore pris en charge (lecture seule)."
 }
 
 export default settings

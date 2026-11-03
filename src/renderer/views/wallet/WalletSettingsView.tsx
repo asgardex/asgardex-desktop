@@ -28,7 +28,15 @@ import * as RxOp from 'rxjs/operators'
 import { LedgerErrorId } from '../../../shared/api/types'
 import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../../shared/evm/types'
 import { isSupportedChain } from '../../../shared/utils/chain'
-import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  ZECChain,
+  XMRChain
+} from '../../../shared/utils/chainIds'
 import { HDMode } from '../../../shared/wallet/types'
 import { WalletSettings } from '../../components/settings'
 import { useAdaContext } from '../../contexts/AdaContext'
@@ -45,6 +53,7 @@ import { useDogeContext } from '../../contexts/DogeContext'
 import { useEthereumContext } from '../../contexts/EthereumContext'
 import { useLitecoinContext } from '../../contexts/LitecoinContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
+import { useMoneroContext } from '../../contexts/MoneroContext'
 import { useNearContext } from '../../contexts/NearContext'
 import { useSolContext } from '../../contexts/SolContext'
 import { useSuiContext } from '../../contexts/SuiContext'
@@ -120,6 +129,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const { addressUI$: xrpAddressUI$ } = useXrpContext()
   const { addressUI$: suiAddressUI$ } = useSuiContext()
   const { addressUI$: nearAddressUI$ } = useNearContext()
+  const { addressUI$: xmrAddressUI$ } = useMoneroContext()
 
   const evmHDMode: EvmHDMode = useObservableState(evmHDMode$, DEFAULT_EVM_HD_MODE)
 
@@ -377,6 +387,7 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
   const oXrpClient = useObservableState(clientByChain$(XRPChain), O.none)
   const oSuiClient = useObservableState(clientByChain$(SUIChain), O.none)
   const oNearClient = useObservableState(clientByChain$(NEARChain), O.none)
+  const oXmrClient = useObservableState(clientByChain$(XMRChain), O.none)
 
   const clickAddressLinkHandler = (chain: Chain, address: Address) => {
     const openExplorerAddressUrl = (client: XChainClient) => {
@@ -448,6 +459,9 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
         break
       case NEARChain:
         FP.pipe(oNearClient, O.map(openExplorerAddressUrl))
+        break
+      case XMRChain:
+        FP.pipe(oXmrClient, O.map(openExplorerAddressUrl))
         break
     }
   }
@@ -561,6 +575,11 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
       ledgerAddress: O.none,
       chain: NEARChain
     })
+    const xmrWalletAccount$ = walletAccount$({
+      addressUI$: xmrAddressUI$,
+      ledgerAddress: O.none,
+      chain: XMRChain
+    })
     return FP.pipe(
       // combineLatest is for the future additional walletAccounts
       Rx.combineLatest(
@@ -584,7 +603,8 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
           ZEC: [zecWalletAccount$],
           XRP: [xrpWalletAccount$],
           SUI: [suiWalletAccount$],
-          NEAR: [nearWalletAccount$]
+          NEAR: [nearWalletAccount$],
+          XMR: [xmrWalletAccount$]
         })
       ),
       RxOp.map(A.filter(O.isSome)),
@@ -630,7 +650,8 @@ export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => 
     xrpAddressUI$,
     oXrpLedgerWalletAddress,
     suiAddressUI$,
-    nearAddressUI$
+    nearAddressUI$,
+    xmrAddressUI$
   ])
 
   const walletAccounts = useObservableState(walletAccounts$, O.none)

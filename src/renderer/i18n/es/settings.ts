@@ -130,7 +130,19 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'El endpoint RPC no responde. Verifica tu conexión o prueba con otra URL.',
   'settings.ledgerMode.lockWalletWarning': 'Bloquea la cartera primero para entrar en el modo Ledger',
   'settings.wallet.whitelist': 'Lista blanca',
-  'settings.wallet.customToken': 'Token personalizado'
+  'settings.wallet.customToken': 'Token personalizado',
+  'monero.settings.watchOnly':
+    'Monero es de solo lectura: puedes ver tu saldo y el historial. El envío aún no es compatible.',
+  'monero.settings.daemon': 'URL del nodo (opcional)',
+  'monero.settings.lws': 'URL del servidor de monedero ligero (opcional)',
+  'monero.settings.lws.warning':
+    'Privacidad: un servidor de monedero ligero recibe tu clave de visualización privada y puede ver todos los pagos entrantes. Déjalo vacío para escanear localmente mediante el nodo (predeterminado).',
+  'monero.settings.restoreHeight': 'Altura de restauración (opcional)',
+  'monero.settings.restoreHeight.hint':
+    'Altura de bloque en la que se creó el monedero. Vacío = altura del primer uso. Sin servidor de monedero ligero, el escaneo se limita a unos 5.000 bloques (~1 semana).',
+  'monero.settings.invalidUrl': 'URL no válida. Usa https:// (http:// solo para nodos locales).',
+  'monero.settings.invalidHeight': 'Altura de bloque no válida. Usa un número entero.',
+  'monero.send.watchOnly': 'El envío de Monero (XMR) aún no es compatible (solo lectura).'
 }
 
 export default settings
