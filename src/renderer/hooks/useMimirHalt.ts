@@ -61,6 +61,12 @@ export const getThorchainMimirHalt = ({
     // THORNode IsPoolDepositPaused is `value > 0`, no height check (keeper_halt.go:129-135)
     const depositKey = getPoolDepositPauseMimirKey(c)
     acc[depositKey] = (mimir[depositKey] ?? 0) > 0
+    // Token pools have their own key (`PAUSELPDEPOSIT-AVAX-USDT-0X…`), same `value > 0` rule
+    Object.keys(mimir)
+      .filter((key) => key.startsWith(`PAUSELPDEPOSIT-${c}-`) && mimir[key] > 0)
+      .forEach((key) => {
+        acc[key] = true
+      })
     return acc
   }, {})
   // THORChain's own halt is global for THORChain routes; detect it even if THOR is not in `chains`
