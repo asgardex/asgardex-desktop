@@ -10,6 +10,7 @@ import { useIntl } from 'react-intl'
 import { AssetRuneNative, THORChain, AssetCacao } from '../../../shared/utils/chainIds'
 
 import { IncentivePendulumRD } from '../../hooks/useIncentivePendulum'
+import { useLastSuccessRD } from '../../hooks/useLastSuccess'
 import { Label } from '../uielements/label'
 import { Tooltip } from '../uielements/tooltip'
 
@@ -18,15 +19,23 @@ export type Props = {
   protocol: Chain
 }
 
+// Same box for loading, error and success state (icon is 20px high) to avoid layout shifts
+const WRAPPER_CLASS = 'flex min-h-5 w-full items-center justify-center pb-1'
+
 export const IncentivePendulum = (props: Props): JSX.Element => {
-  const { incentivePendulum: incentivePendulumRD, protocol } = props
+  const { incentivePendulum: incentivePendulumPropRD, protocol } = props
+  // Keep the last value while reloading, to avoid flicker and layout shifts.
+  // Note: Use `key={protocol}` in parent to not keep values of another protocol
+  const incentivePendulumRD = useLastSuccessRD(incentivePendulumPropRD)
 
   const intl = useIntl()
 
   const loading = (
-    <div className="flex w-full items-center justify-center px-2 pb-1 font-main text-xs text-text2 uppercase dark:text-text2d">
-      {intl.formatMessage({ id: 'pools.incentivependulum.info' }, { percentage: '...' })}
-      <ScaleIcon className="ml-1" width={16} height={16} />
+    <div className={clsx(WRAPPER_CLASS, 'px-2')}>
+      <Label color="gray" size="small" textTransform="uppercase">
+        {intl.formatMessage({ id: 'pools.incentivependulum.info' }, { percentage: '...' })}
+      </Label>
+      <ScaleIcon className="ml-1 text-gray0 dark:text-gray0d" width={20} height={20} />
     </div>
   )
 
@@ -38,7 +47,8 @@ export const IncentivePendulum = (props: Props): JSX.Element => {
       () => loading,
       () => loading,
       (_) => (
-        <div className="w-full px-2 pb-1 text-center font-main text-xs text-text2 uppercase dark:text-text2d">
+        <div
+          className={clsx(WRAPPER_CLASS, 'px-2 text-center font-main text-xs text-text2 uppercase dark:text-text2d')}>
           {intl.formatMessage({ id: 'pools.incentivependulum.error' })}
         </div>
       ),
@@ -74,7 +84,7 @@ export const IncentivePendulum = (props: Props): JSX.Element => {
         )
 
         return (
-          <div className="flex w-full items-center justify-center pb-1">
+          <div className={WRAPPER_CLASS}>
             <Tooltip title={tooltip}>
               <div className="flex items-center justify-center">
                 <Label color="gray" size="small" textTransform="uppercase">

@@ -95,6 +95,10 @@ export type PoolsService = {
   poolsPeriod$: Rx.Observable<GetPoolsPeriodEnum>
   poolsState$: LiveData<Error, PoolsState>
   pendingPoolsState$: LiveData<Error, PendingPoolsState>
+  /** `true` while the request of (enabled) pools is in flight, also for a reload that keeps the last state */
+  poolsLoading$: Rx.Observable<boolean>
+  /** `true` while the request of pending pools is in flight */
+  pendingPoolsLoading$: Rx.Observable<boolean>
   allPoolDetails$: LiveData<Error, PoolDetails>
   setSelectedPricePoolAsset: (asset: PricePoolAsset) => void
   selectedPricePoolAsset$: Rx.Observable<SelectedPricePoolAsset>

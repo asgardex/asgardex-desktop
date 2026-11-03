@@ -19,6 +19,7 @@ import { validAssetForETH, isPricePoolAsset, midgardAssetFromString } from '../.
 import { isEthChain } from '../../../helpers/chainHelper'
 import { eqAsset, eqOAsset, eqHaltedChain } from '../../../helpers/fp/eq'
 import { sequenceTOption } from '../../../helpers/fpHelpers'
+import { isPending$ } from '../../../helpers/rx/isPending'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import { preserveSuccessUntil } from '../../../helpers/rx/preserveSuccess'
 import { observableState, triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
@@ -192,6 +193,9 @@ const createPoolsService = ({
    */
   const apiGetPoolsEnabled$: PoolDetailsLD = apiGetPools$({ status: GetPoolsStatusEnum.Available }, reloadPools$)
 
+  // Request state of enabled pools, `true` while loading (not affected by `preserveSuccessUntil`)
+  const poolsLoading$ = isPending$(apiGetPoolsEnabled$)
+
   // `TriggerStream` to reload data of pending pools
   const { stream$: reloadPendingPools$, trigger: reloadPendingPools } = triggerStream()
 
@@ -199,6 +203,9 @@ const createPoolsService = ({
    * Data of pending `Pools` from Midgard
    */
   const apiGetPoolsPending$: PoolDetailsLD = apiGetPools$({ status: GetPoolsStatusEnum.Staged }, reloadPendingPools$)
+
+  // Request state of pending pools, `true` while loading (not affected by `preserveSuccessUntil`)
+  const pendingPoolsLoading$ = isPending$(apiGetPoolsPending$)
 
   // `TriggerStream` to reload data of all pools
   const { stream$: reloadAllPools$, trigger: reloadAllPools } = triggerStream()
@@ -894,6 +901,8 @@ const createPoolsService = ({
     poolsPeriod$,
     poolsState$,
     pendingPoolsState$,
+    poolsLoading$,
+    pendingPoolsLoading$,
     allPoolDetails$,
     setSelectedPricePoolAsset,
     selectedPricePoolAsset$,

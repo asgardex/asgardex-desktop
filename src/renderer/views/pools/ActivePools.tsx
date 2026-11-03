@@ -40,7 +40,6 @@ import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import { useProtocolLimitMaya } from '../../hooks/useProtocolLimitMaya'
-import { useRefreshing } from '../../hooks/useRefreshing'
 import * as poolsRoutes from '../../routes/pools'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { PoolsState as MayaPoolState } from '../../services/midgard/mayaMidgard/types'
@@ -62,13 +61,14 @@ export const ActivePools = (): JSX.Element => {
   } = useWalletContext()
   const {
     service: {
-      pools: { poolsState$, reloadPools, poolsPeriod$, setPoolsPeriod }
+      pools: { poolsState$, poolsLoading$, reloadPools, poolsPeriod$, setPoolsPeriod }
     }
   } = useMidgardContext()
   const {
     service: {
       pools: {
         poolsState$: mayaPoolsState$,
+        poolsLoading$: mayaPoolsLoading$,
         reloadPools: reloadMayaPools,
         poolsPeriod$: poolsPeriodMaya$,
         setPoolsPeriod: setPoolsPeriodMaya
@@ -105,10 +105,11 @@ export const ActivePools = (): JSX.Element => {
   // store previous data of pools to render these while reloading
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
-  const { refreshing, startRefreshing } = useRefreshing(poolsRD)
+  // The pools state keeps the last Success while reloading, so it can't tell about a running reload.
+  // Use the state of the request instead to show a refresh while rows stay on screen.
+  const refreshing = useObservableLayoutState(isThorProtocol ? poolsLoading$ : mayaPoolsLoading$, false)
 
   const refreshHandler = useCallback(() => {
-    startRefreshing()
     if (protocol === THORChain) {
       reloadPools()
     } else {
@@ -116,7 +117,7 @@ export const ActivePools = (): JSX.Element => {
     }
 
     reloadLimit()
-  }, [protocol, reloadLimit, reloadPools, reloadMayaPools, startRefreshing])
+  }, [protocol, reloadLimit, reloadPools, reloadMayaPools])
 
   const pricePoolThor = usePricePool(isThorProtocol)
   const pricePoolMaya = usePricePoolMaya(!isThorProtocol)
@@ -368,8 +369,8 @@ export const ActivePools = (): JSX.Element => {
             setFilter={setPoolFilter}
             poolFilters={DEFAULT_POOL_FILTERS}
           />
-          <ProtocolLimit limit={limitRD} protocol={protocol} />
-          <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
+          <ProtocolLimit key={protocol} limit={limitRD} protocol={protocol} />
+          <IncentivePendulum key={protocol} incentivePendulum={incentivePendulumRD} protocol={protocol} />
           <Table columns={columns} data={dataSource} loading={loading} />
         </>
       )
