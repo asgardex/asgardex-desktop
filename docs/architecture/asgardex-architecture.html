@@ -687,7 +687,7 @@
           <div class="logo">AX</div>
           <div>
             <h1>ASGARDEX Desktop Architecture</h1>
-            <p>v1.45.0 · Electron · React · RxJS · 17+ chains</p>
+            <p>v1.47.0 · Electron · React · RxJS · 17+ chains</p>
           </div>
         </div>
         <div class="toolbar">
@@ -993,6 +993,14 @@
             tooltip: 'Persisted ledger address refs for keystore+ledger hybrid accounts.',
             tags: ['ledger']
           },
+          {
+            id: 'svc-wallet-tx',
+            label: 'Wallet Transaction Helpers',
+            layer: 'wallet',
+            path: 'src/renderer/services/wallet/transaction.ts',
+            tooltip: 'Wallet-level tx history and status helpers.',
+            tags: ['wallet']
+          },
 
           {
             id: 'svc-enhanced-client',
@@ -1117,6 +1125,14 @@
             tags: ['storage']
           },
           {
+            id: 'svc-price-level',
+            label: 'Price Level Service',
+            layer: 'protocol',
+            path: 'src/renderer/services/priceLevel/',
+            tooltip: 'Price alerts / level monitoring.',
+            tags: ['prices']
+          },
+          {
             id: 'svc-app',
             label: 'App Service',
             layer: 'protocol',
@@ -1173,6 +1189,22 @@
             tooltip:
               'CRITICAL: builds affiliate segment (dx + bps). Do not use SDK swap path or affiliate revenue is dropped.',
             tags: ['critical']
+          },
+          {
+            id: 'hook-mimir-halt-thor',
+            label: 'useMimirHalt (THOR)',
+            layer: 'hooks',
+            path: 'src/renderer/hooks/useMimirHalt.ts',
+            tooltip: 'THOR mimir → MimirHalt flags for banners, swap, deposit, wallet.',
+            tags: ['halt']
+          },
+          {
+            id: 'hook-mimir-halt-maya',
+            label: 'useMimirHalt (MAYA)',
+            layer: 'hooks',
+            path: 'src/renderer/hooks/useMimirHaltMaya.ts',
+            tooltip: 'MAYA mimir → MimirHalt flags for banners, deposit, wallet.',
+            tags: ['halt']
           },
 
           {
@@ -1244,8 +1276,32 @@
             label: 'Shared UI',
             layer: 'ui-feature',
             path: 'src/renderer/components/',
-            tooltip: 'Header, sidebar, uielements — Tailwind + Headless UI.',
+            tooltip: 'Header, uielements — Tailwind + Headless UI. Sidebar + settings have own nodes.',
             tags: ['ui']
+          },
+          {
+            id: 'view-settings',
+            label: 'Settings',
+            layer: 'ui-feature',
+            path: 'src/renderer/views/app/{AppSettings,AppGeneralSettingsView,AppDexSettingsView,AppExpertModeView}.tsx + components/settings/',
+            tooltip: '/settings tabs: General, Wallet, DEX, Expert Mode (node/RPC URLs).',
+            tags: ['settings']
+          },
+          {
+            id: 'ui-halt-banners',
+            label: 'Halt Banners',
+            layer: 'ui-feature',
+            path: 'src/renderer/views/app/{AppHaltedChains.tsx,AppHaltedChains.helpers.ts}',
+            tooltip: 'AppView halt / pause warnings from mimir (THOR + MAYA).',
+            tags: ['halt']
+          },
+          {
+            id: 'ui-sidebar',
+            label: 'Sidebar',
+            layer: 'ui-feature',
+            path: 'src/renderer/components/sidebar/',
+            tooltip: 'Desktop nav links + tx tracking slideshow.',
+            tags: ['navigation']
           },
 
           {
@@ -1404,7 +1460,37 @@
           { id: 'e117', source: 'svc-chain-orchestrator', target: 'svc-midgard-thor', label: 'validate' },
           { id: 'e118', source: 'svc-chain-orchestrator', target: 'svc-midgard-maya', label: 'validate' },
           { id: 'e119', source: 'redux-store', target: 'svc-aggregator', label: 'slice' },
-          { id: 'e120', source: 'ctx-chain-clients', target: 'svc-chain-services', label: 'exposes' }
+          { id: 'e120', source: 'ctx-chain-clients', target: 'svc-chain-services', label: 'exposes' },
+          { id: 'e121', source: 'view-routes', target: 'view-settings', label: 'route' },
+          { id: 'e122', source: 'view-settings', target: 'view-wallet', label: 'Wallet tab' },
+          { id: 'e123', source: 'view-settings', target: 'svc-app', label: 'network/slip' },
+          { id: 'e124', source: 'view-settings', target: 'svc-aggregator', label: 'protocol toggles' },
+          { id: 'e125', source: 'view-settings', target: 'svc-midgard-thor', label: 'Midgard URL' },
+          { id: 'e126', source: 'view-settings', target: 'svc-midgard-maya', label: 'Midgard URL' },
+          { id: 'e127', source: 'view-settings', target: 'svc-thorchain', label: 'THORNode URLs' },
+          { id: 'e128', source: 'view-settings', target: 'svc-mayachain', label: 'MAYANode URLs' },
+          { id: 'e129', source: 'view-settings', target: 'window-api', label: 'apiAppUpdate' },
+          { id: 'e130', source: 'app-tsx', target: 'ui-halt-banners', label: 'AppView renders' },
+          { id: 'e131', source: 'ui-halt-banners', target: 'hook-mimir-halt-thor', label: 'mimirHaltRD' },
+          { id: 'e132', source: 'ui-halt-banners', target: 'hook-mimir-halt-maya', label: 'mimirHaltRD' },
+          { id: 'e133', source: 'hook-mimir-halt-thor', target: 'svc-thorchain', label: 'mimir$' },
+          { id: 'e134', source: 'hook-mimir-halt-thor', target: 'svc-storage', label: 'userChains$' },
+          { id: 'e135', source: 'hook-mimir-halt-maya', target: 'svc-mayachain', label: 'mimir$' },
+          { id: 'e136', source: 'hook-mimir-halt-maya', target: 'svc-storage', label: 'userChains$' },
+          { id: 'e137', source: 'view-swap', target: 'hook-mimir-halt-thor', label: 'halt checks' },
+          { id: 'e138', source: 'view-deposit', target: 'hook-mimir-halt-thor', label: 'halt checks' },
+          { id: 'e139', source: 'view-deposit', target: 'hook-mimir-halt-maya', label: 'halt checks' },
+          { id: 'e140', source: 'view-wallet', target: 'hook-mimir-halt-thor', label: 'halt checks' },
+          { id: 'e141', source: 'view-wallet', target: 'hook-mimir-halt-maya', label: 'halt checks' },
+          { id: 'e142', source: 'hook-swap-quote', target: 'hook-mimir-halt-thor', label: 'halt validation' },
+          { id: 'e143', source: 'hook-swap-quote', target: 'hook-mimir-halt-maya', label: 'halt validation' },
+          { id: 'e144', source: 'app-tsx', target: 'ui-sidebar', label: 'AppView renders' },
+          { id: 'e145', source: 'ui-sidebar', target: 'view-routes', label: 'nav links' },
+          { id: 'e146', source: 'ui-sidebar', target: 'svc-thorchain', label: 'tx tracking' },
+          { id: 'e147', source: 'ui-sidebar', target: 'svc-mayachain', label: 'tx tracking' },
+          { id: 'e148', source: 'ui-sidebar', target: 'svc-chainflip', label: 'tx tracking' },
+          { id: 'e149', source: 'ui-sidebar', target: 'svc-oneclick', label: 'tx tracking' },
+          { id: 'e150', source: 'ui-sidebar', target: 'svc-app-wallet', label: 'wallet type' }
         ],
 
         flows: [
