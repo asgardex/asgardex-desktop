@@ -90,6 +90,7 @@ import {
   nearIcon,
   zecIcon
 } from '../../../icons'
+import { SOL_USDC_ICON_URL } from './AssetIcon.const'
 import { sizes, borders, fontSizes } from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
 
@@ -259,7 +260,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
       }
       // Add a specific check for sol.usdc
       if (isSolChain(asset.chain) && asset.ticker === AssetSOLUSDC.ticker) {
-        return 'https://storage.googleapis.com/token-list-swapkit/images/sol.usdc-epjfwdd5aufqssqem2qn1xzybapc8g4weggkzwytdt1v.png'
+        return SOL_USDC_ICON_URL
       }
       // Since we've already checked AVAX.AVAX before,
       // we know any asset is ERC20 here - no need to run expensive `isAvaxTokenAsset`
