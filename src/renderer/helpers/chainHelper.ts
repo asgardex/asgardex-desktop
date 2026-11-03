@@ -36,7 +36,9 @@ import {
   UPPER_FEE_BOUNDDOGE,
   AssetLTC,
   LTCChain,
-  UPPER_FEE_BOUNDLTC
+  UPPER_FEE_BOUNDLTC,
+  AssetXMR,
+  XMRChain
 } from '../../shared/utils/chainIds'
 import { eqChain } from './fp/eq'
 
@@ -61,7 +63,8 @@ const chainAssets: Record<Chain, Asset> = {
   ZEC: AssetZEC,
   XRP: AssetXRP,
   SUI: SUIAsset,
-  NEAR: NEARAsset
+  NEAR: NEARAsset,
+  XMR: AssetXMR
 }
 
 export const getChainAsset = (chain: Chain): Asset => {
@@ -189,6 +192,8 @@ export const isSuiChain = (chain: Chain): boolean => eqChain.equals(chain.toUppe
 
 export const isNearChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), NEARChain)
 
+export const isXmrChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), XMRChain)
+
 /** NEP-141 FT on NEAR (not native NEAR.NEAR). */
 export const isNearChainToken = (asset: AnyAsset): boolean => isNearChain(asset.chain) && isTokenAsset(asset)
 
@@ -247,6 +252,8 @@ export const getChain = (chain: string): Chain => {
       return SUIChain
     case 'NEAR':
       return NEARChain
+    case 'XMR':
+      return XMRChain
     default:
       throw Error('Unknown chain')
   }

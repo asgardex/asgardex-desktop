@@ -29,7 +29,8 @@ import {
   COSMOS_DECIMAL,
   BTC_DECIMAL,
   DASH_DECIMAL,
-  ZEC_DECIMAL
+  ZEC_DECIMAL,
+  XMR_DECIMAL
 } from '../../../shared/utils/chainIds'
 import { isMayaAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { findOneClickToken } from '../oneclick/assets'
@@ -64,7 +65,8 @@ const CHAIN_DECIMAL_MAP = new Map([
   ['ZEC', ZEC_DECIMAL],
   ['ADA', ADA_DECIMALS],
   ['SUI', SUI_DECIMALS],
-  ['NEAR', NEAR_DECIMALS]
+  ['NEAR', NEAR_DECIMALS],
+  ['XMR', XMR_DECIMAL]
 ])
 
 /**

@@ -19,6 +19,7 @@ import {
   SUIChain,
   THORChain,
   TRONChain,
+  XMRChain,
   XRPChain,
   ZECChain
 } from './chainIds'
@@ -43,7 +44,8 @@ const CHAIN_STRINGS: Record<Chain, string> = {
   [XRPChain]: 'Ripple',
   [TRONChain]: 'Tron',
   [SUIChain]: 'Sui',
-  [NEARChain]: 'NEAR'
+  [NEARChain]: 'NEAR',
+  [XMRChain]: 'Monero'
 }
 
 export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
@@ -66,7 +68,8 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [XRPChain]: CHAIN_STRINGS[XRPChain],
   [TRONChain]: CHAIN_STRINGS[TRONChain],
   [SUIChain]: CHAIN_STRINGS[SUIChain],
-  [NEARChain]: CHAIN_STRINGS[NEARChain]
+  [NEARChain]: CHAIN_STRINGS[NEARChain],
+  [XMRChain]: CHAIN_STRINGS[XMRChain]
 }
 
 export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
@@ -84,8 +87,19 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
   MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'ZEC', 'ADA'],
   // ZEC is dual-routable (THOR + MAYA). NEAR is wallet/OneClick-only (exclude from THOR).
-  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'MAYA', 'ARB', 'ADA', 'NEAR'].includes(chain))
+  // XMR is watch-only (no pools on THORChain/MAYAChain yet) — excluded from THOR, not listed for MAYA.
+  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter(
+    (chain) => !['DASH', 'MAYA', 'ARB', 'ADA', 'NEAR', 'XMR'].includes(chain)
+  )
 }
+
+/**
+ * Chains that can only be viewed (balances / history / receive address), never sent from.
+ * XMR: `@xchainjs/xchain-monero` can only send via a local `monero-wallet-rpc`.
+ */
+const WATCH_ONLY_CHAINS: ReadonlyArray<Chain> = [XMRChain]
+
+export const isWatchOnlyChain = (chain: Chain): boolean => WATCH_ONLY_CHAINS.includes(chain.toUpperCase())
 
 // Function to retrieve chains for a specific DEX
 export const getChainsForDex = (dexName: string): ReadonlyArray<Chain> => {
@@ -204,5 +218,10 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   NEAR: {
     blockReward: 0,
     avgBlockTimeInSecs: 1
+  },
+  XMR: {
+    // Tail emission: 0.6 XMR per block
+    blockReward: 0.6,
+    avgBlockTimeInSecs: 120
   }
 }

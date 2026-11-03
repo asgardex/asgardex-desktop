@@ -28,6 +28,7 @@ import {
   DASHChain,
   DOGEChain,
   LTCChain,
+  XMRChain,
   ZECChain
 } from '../../shared/utils/chainIds'
 import { LedgerAddresses } from '../services/wallet/types'
@@ -61,7 +62,9 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [XRPChain]: () => 'r'.length,
   [TRONChain]: () => 'T'.length,
   [SUIChain]: () => '0x'.length,
-  [NEARChain]: () => 0
+  [NEARChain]: () => 0,
+  // Standard (4…) / subaddress (8…) on mainnet; 5… / 7… on stagenet — first char is enough
+  [XMRChain]: () => 'X'.length
 }
 
 export const getAddressPrefixLength = (chain: Chain, network: Network): number => {
