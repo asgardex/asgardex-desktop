@@ -28,8 +28,10 @@ It talks to THORChain, MAYAChain and other protocols through `@xchainjs/*` clien
 | `yarn test`        | Vitest (`vite.test.config.ts`)                                                                                           |
 | `yarn check:trunk` | Trunk lint/format checks, as run in CI                                                                                   |
 
-Test files (`*.test.ts`, `*.test.tsx`) are excluded from both tsconfigs and Vitest strips types,
-so type errors in tests are not caught by any check. Typecheck them by hand when you change them.
+`tsconfig.json` excludes all test files (`*.test.ts`, `*.test.tsx`). `tsconfig.main.json` excludes
+only `src/shared/**/*.test.ts`, so tests under `src/main/` and any `src/shared/**/*.test.tsx` would be
+typechecked by the build (none exist today). Vitest strips types, so type errors in renderer and
+shared `*.test.ts` files are not caught by any check. Typecheck them by hand when you change them.
 
 ## House patterns
 
