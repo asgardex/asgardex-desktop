@@ -3390,7 +3390,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:^1.9.2, @noble/curves@npm:^1.9.7":
+"@noble/curves@npm:^1.8.1, @noble/curves@npm:^1.9.2, @noble/curves@npm:^1.9.7":
   version: 1.9.7
   resolution: "@noble/curves@npm:1.9.7"
   dependencies:
@@ -6535,6 +6535,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-monero@npm:0.2.9":
+  version: 0.2.9
+  resolution: "@xchainjs/xchain-monero@npm:0.2.9"
+  dependencies:
+    "@noble/curves": "npm:^1.8.1"
+    "@noble/hashes": "npm:^1.7.1"
+    "@xchainjs/xchain-client": "npm:2.0.18"
+    "@xchainjs/xchain-crypto": "npm:1.0.8"
+    "@xchainjs/xchain-util": "npm:2.0.7"
+    micro-key-producer: "npm:^0.7.6"
+  checksum: 10/ca78662309a7c2ef44334ccfe41561d5de305fb2399793695d3724d0214664da25fe1aff678a1ea2f31c4837ee4e869c9cd0b2298f63e3f6bd454d8152ef4500
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-near@npm:0.3.3":
   version: 0.3.3
   resolution: "@xchainjs/xchain-near@npm:0.3.3"
@@ -7295,6 +7309,7 @@ __metadata:
     "@xchainjs/xchain-mayamidgard": "npm:1.1.5"
     "@xchainjs/xchain-mayanode": "npm:1.2.5"
     "@xchainjs/xchain-midgard": "npm:1.1.5"
+    "@xchainjs/xchain-monero": "npm:0.2.9"
     "@xchainjs/xchain-near": "npm:0.3.3"
     "@xchainjs/xchain-ripple": "npm:1.0.22"
     "@xchainjs/xchain-solana": "npm:1.1.12"
