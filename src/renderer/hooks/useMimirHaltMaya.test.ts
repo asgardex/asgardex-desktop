@@ -22,12 +22,17 @@ const mockMayachainContext = vi.hoisted(() => ({ value: {} as Record<string, unk
 vi.mock('../contexts/MayachainContext', () => ({
   useMayachainContext: () => mockMayachainContext.value
 }))
+// Scheduled halt one block above the fixture capture height (19095919). MAYANode activates a halt
+// only once `value < height`, so it is scheduled at the halt height and active one block later.
+const HALT_HEIGHT = 19095920
+const lastblockAt = (mayachain: number) =>
+  RD.success([{ chain: 'BTC', last_observed_in: 97412, last_signed_out: 19093802, mayachain }])
+// BehaviorSubject (not Rx.of) so the test can emit a later lastblock height after the first render.
+const mockLastblock = vi.hoisted(() => ({ subject: undefined as unknown as Rx.BehaviorSubject<unknown> }))
+mockLastblock.subject = new Rx.BehaviorSubject<unknown>(lastblockAt(HALT_HEIGHT))
 mockMayachainContext.value = {
-  mimir$: Rx.of(RD.success({ HALTMAYACHAIN: 1 })),
-  // realistic MAYANode height (from the fixture capture); HALTMAYACHAIN: 1 is active at any height
-  mayachainLastblockState$: Rx.of(
-    RD.success([{ chain: 'BTC', last_observed_in: 97412, last_signed_out: 19093802, mayachain: 19095919 }])
-  )
+  mimir$: Rx.of(RD.success({ HALTMAYACHAIN: HALT_HEIGHT })),
+  mayachainLastblockState$: mockLastblock.subject
 }
 vi.mock('../services/storage/userChains', () => ({ userChains$: Rx.of(['BTC', 'MAYA']) }))
 
@@ -143,7 +148,7 @@ describe('hooks/useMimirHaltMaya', () => {
   })
 
   describe('useMayachainMimirHalt', () => {
-    it('publishes mimirHalt.HALTMAYACHAIN === true for successful mimir$ + lastblock with HALTMAYACHAIN: 1', () => {
+    it('re-publishes mimirHalt when lastblock moves past a scheduled HALTMAYACHAIN height', () => {
       let result: ReturnType<typeof useMayachainMimirHalt> | undefined
       const Probe = () => {
         result = useMayachainMimirHalt()
@@ -152,6 +157,11 @@ describe('hooks/useMimirHaltMaya', () => {
       ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
       const root = createRoot(document.createElement('div'))
       act(() => root.render(createElement(Probe)))
+      // lastblock at the halt height: scheduled, not active yet
+      expect(RD.isSuccess(result!.mimirHaltRD)).toBe(true)
+      expect(result?.mimirHalt.HALTMAYACHAIN).toBe(false)
+      // a later lastblock height: the halt is now active and the hook publishes it
+      act(() => mockLastblock.subject.next(lastblockAt(HALT_HEIGHT + 1)))
       expect(result?.mimirHalt.HALTMAYACHAIN).toBe(true)
       act(() => root.unmount())
     })
