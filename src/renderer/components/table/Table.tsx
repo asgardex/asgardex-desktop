@@ -93,99 +93,84 @@ export const Table = <T extends RowData>({
   })
 
   const rows = table.getRowModel().rows
-  const hasRows = rows.length > 0
-  // Initial load: nothing to show yet, so render the spinner row
-  const showLoadingRow = loading && !hasRows
-  // Reload: keep the rows we already have on screen and signal the refresh instead
-  const isRefreshing = loading && hasRows
 
   return (
-    // The wrapper is only the positioning context of the progress bar, so the bar can
-    // overlay the table (absolute, no layout space) instead of pushing header and rows down.
-    <div className="relative w-full">
-      {isRefreshing && (
-        <div
-          data-testid="table-refreshing"
-          className="pointer-events-none absolute inset-x-0 top-0 z-10 h-0.5 animate-pulse bg-turquoise"
-        />
+    <table className="w-full table-fixed">
+      {!hideHeader && (
+        <thead>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th
+                  key={header.id}
+                  className="h-16 border border-solid border-gray0/40 bg-bg1 dark:border-gray0d/40 dark:bg-bg1d"
+                  style={header.getSize() ? { width: header.getSize(), maxWidth: header.getSize() } : undefined}
+                  onClick={header.column.getToggleSortingHandler()}>
+                  {header.isPlaceholder ? null : (
+                    <div
+                      className={clsx(
+                        'flex cursor-pointer items-center justify-center space-x-2 px-2',
+                        header.column.columnDef.meta
+                      )}>
+                      {header.column.columnDef.header && (
+                        <Label color="gray" textTransform="uppercase">
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </Label>
+                      )}
+                      {header.column.getCanSort() && (
+                        <div className="flex flex-col">
+                          <ChevronUpIcon
+                            className={clsx(
+                              'h-3 w-3',
+                              header.column.getIsSorted() === 'asc' ? 'text-turquoise' : 'text-gray1 dark:text-gray1d'
+                            )}
+                          />
+                          <ChevronDownIcon
+                            className={clsx(
+                              'h-3 w-3',
+                              header.column.getIsSorted() === 'desc' ? 'text-turquoise' : 'text-gray1 dark:text-gray1d'
+                            )}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
       )}
-      <table className="w-full table-fixed" aria-busy={loading}>
-        {!hideHeader && (
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="h-16 border border-solid border-gray0/40 bg-bg1 dark:border-gray0d/40 dark:bg-bg1d"
-                    style={header.getSize() ? { width: header.getSize(), maxWidth: header.getSize() } : undefined}
-                    onClick={header.column.getToggleSortingHandler()}>
-                    {header.isPlaceholder ? null : (
-                      <div
-                        className={clsx(
-                          'flex cursor-pointer items-center justify-center space-x-2 px-2',
-                          header.column.columnDef.meta
-                        )}>
-                        {header.column.columnDef.header && (
-                          <Label color="gray" textTransform="uppercase">
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                          </Label>
-                        )}
-                        {header.column.getCanSort() && (
-                          <div className="flex flex-col">
-                            <ChevronUpIcon
-                              className={clsx(
-                                'h-3 w-3',
-                                header.column.getIsSorted() === 'asc' ? 'text-turquoise' : 'text-gray1 dark:text-gray1d'
-                              )}
-                            />
-                            <ChevronDownIcon
-                              className={clsx(
-                                'h-3 w-3',
-                                header.column.getIsSorted() === 'desc'
-                                  ? 'text-turquoise'
-                                  : 'text-gray1 dark:text-gray1d'
-                              )}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
+      <tbody>
+        {loading && (
+          <tr>
+            <td
+              className="border border-solid border-gray0/40 dark:border-gray0d/40"
+              colSpan={table.getAllLeafColumns().length}>
+              <div className="flex min-h-28 w-full items-center justify-center space-x-2 bg-bg1 dark:bg-bg1d">
+                <SignalIcon className="h-6 w-6 animate-spin text-turquoise" />
+                <Label className="!w-auto" textTransform="uppercase">
+                  {intl.formatMessage({ id: 'common.loading' })}
+                </Label>
+              </div>
+            </td>
+          </tr>
         )}
-        <tbody className={clsx('transition-opacity', isRefreshing && 'opacity-50')}>
-          {showLoadingRow && (
-            <tr>
-              <td
-                className="border border-solid border-gray0/40 dark:border-gray0d/40"
-                colSpan={table.getAllLeafColumns().length}>
-                <div className="flex min-h-28 w-full items-center justify-center space-x-2 bg-bg1 dark:bg-bg1d">
-                  <SignalIcon className="h-6 w-6 animate-spin text-turquoise" />
-                  <Label className="!w-auto" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.loading' })}
-                  </Label>
-                </div>
-              </td>
-            </tr>
-          )}
-          {!loading && !hasRows && (
-            <tr>
-              <td
-                className="border border-solid border-gray0/40 dark:border-gray0d/40"
-                colSpan={table.getAllLeafColumns().length || 1}>
-                <div className="flex min-h-28 w-full items-center justify-center bg-bg1 dark:bg-bg1d">
-                  <Label className="!w-auto" textTransform="uppercase">
-                    {intl.formatMessage({ id: 'common.noData' })}
-                  </Label>
-                </div>
-              </td>
-            </tr>
-          )}
-          {rows.map((row) => (
+        {!loading && rows.length === 0 && (
+          <tr>
+            <td
+              className="border border-solid border-gray0/40 dark:border-gray0d/40"
+              colSpan={table.getAllLeafColumns().length || 1}>
+              <div className="flex min-h-28 w-full items-center justify-center bg-bg1 dark:bg-bg1d">
+                <Label className="!w-auto" textTransform="uppercase">
+                  {intl.formatMessage({ id: 'common.noData' })}
+                </Label>
+              </div>
+            </td>
+          </tr>
+        )}
+        {!loading &&
+          rows.map((row) => (
             <Fragment key={row.id}>
               <tr
                 className="group cursor-pointer hover:bg-bg-hover"
@@ -216,8 +201,7 @@ export const Table = <T extends RowData>({
               )}
             </Fragment>
           ))}
-        </tbody>
-      </table>
-    </div>
+      </tbody>
+    </table>
   )
 }

@@ -1,11 +1,10 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import { ChartBarIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 
 import { AnyAsset, assetToString, baseToAsset, bn, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
-import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -18,7 +17,6 @@ import { AssetsFilter } from '../../components/AssetsFilter'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { AppColumnDef, Table } from '../../components/table'
 import { AssetData } from '../../components/uielements/assets/assetData'
-import { TextButton } from '../../components/uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
 import { Label } from '../../components/uielements/label'
 import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
@@ -322,16 +320,13 @@ export const ActivePools = (): JSX.Element => {
         : []),
       {
         accessorKey: 'actions',
-        header: () => (
-          <div className="flex items-center justify-center">
-            <TextButton size={isDesktopView ? 'normal' : 'large'} onClick={refreshHandler}>
-              <div className="flex items-center">
-                <ArrowPathIcon className={clsx('h-4 w-4', { 'mr-2': isDesktopView })} />
-                {isDesktopView && intl.formatMessage({ id: 'common.refresh' })}
-              </div>
-            </TextButton>
-          </div>
-        ),
+        header: () =>
+          Shared.renderRefreshHeader({
+            onClick: refreshHandler,
+            refreshing,
+            isDesktopView,
+            label: intl.formatMessage({ id: 'common.refresh' })
+          }),
         cell: ({ row }) => {
           const { asset } = row.original
           return renderBtnPoolsColumn(asset)
@@ -350,6 +345,7 @@ export const ActivePools = (): JSX.Element => {
       protocol,
       addPoolToWatchlist,
       refreshHandler,
+      refreshing,
       removePoolFromWatchlist,
       renderBtnPoolsColumn,
       setPoolsPeriod,
@@ -401,7 +397,7 @@ export const ActivePools = (): JSX.Element => {
               network
             })
             previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData, refreshing)
+            return renderPoolsTable(poolViewData)
           } else {
             const { poolDetails } = poolsState as MayaPoolState // Cast to the correct type)
             const poolViewData = PoolHelpersMaya.getPoolTableRowsData({
@@ -411,7 +407,7 @@ export const ActivePools = (): JSX.Element => {
               network
             })
             previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData, refreshing)
+            return renderPoolsTable(poolViewData)
           }
         }
       )(poolsRD)}

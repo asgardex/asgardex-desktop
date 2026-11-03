@@ -1,13 +1,11 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 
 import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
-import clsx from 'clsx'
 import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -20,7 +18,7 @@ import { AssetsFilter } from '../../components/AssetsFilter'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { AppColumnDef, Table } from '../../components/table'
 import { AssetData } from '../../components/uielements/assets/assetData'
-import { ManageButton, TextButton } from '../../components/uielements/button'
+import { ManageButton } from '../../components/uielements/button'
 import { Label } from '../../components/uielements/label'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
@@ -258,16 +256,13 @@ export const PendingPools = (): JSX.Element => {
         : []),
       {
         accessorKey: 'actions',
-        header: () => (
-          <div className="flex items-center justify-center">
-            <TextButton size={isDesktopView ? 'normal' : 'large'} onClick={refreshHandler}>
-              <div className="flex items-center">
-                <ArrowPathIcon className={clsx('h-4 w-4', { 'mr-2': isDesktopView })} />
-                {isDesktopView && intl.formatMessage({ id: 'common.refresh' })}
-              </div>
-            </TextButton>
-          </div>
-        ),
+        header: () =>
+          Shared.renderRefreshHeader({
+            onClick: refreshHandler,
+            refreshing,
+            isDesktopView,
+            label: intl.formatMessage({ id: 'common.refresh' })
+          }),
         cell: ({ row }) => {
           return renderBtnPoolsColumn('', row.original)
         },
@@ -282,6 +277,7 @@ export const PendingPools = (): JSX.Element => {
       network,
       pricePool.asset,
       refreshHandler,
+      refreshing,
       removePoolFromWatchlist,
       renderBlockLeftColumn,
       renderBtnPoolsColumn
@@ -333,7 +329,7 @@ export const PendingPools = (): JSX.Element => {
               network
             })
             previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData, refreshing)
+            return renderPoolsTable(poolViewData)
           } else {
             // filter out empty pools
             const poolDetailsFiltered = A.filter<PoolDetailMaya>(P.not(isEmptyPool))(poolDetails)
@@ -344,7 +340,7 @@ export const PendingPools = (): JSX.Element => {
               network
             })
             previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData, refreshing)
+            return renderPoolsTable(poolViewData)
           }
         }
       )(poolsRD)}
