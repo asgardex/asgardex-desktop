@@ -56,14 +56,53 @@
 
   <content_rating type="oars-1.1" />
 
-  <releases>
-    <release version="1.45.3" date="2026-08-27" />
-    <release version="1.45.2" date="2026-08-13" />
-    <release version="1.45.1" date="2026-08-07" />
-  </releases>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Pools overview with swap and add-liquidity actions</caption>
+      <image type="source">https://www.asgardex.com/pools-home.png</image>
+    </screenshot>
+  </screenshots>
 
-  <!--
-    Add <screenshots> with HTTPS image URLs before Flathub submission
-    (required for a good store listing). Prefer asgardex.com or GitHub raw.
-  -->
+  <releases>
+    <release version="1.45.3" date="2026-08-27">
+      <url type="details">https://github.com/asgardex/asgardex-desktop/releases/tag/v1.45.3</url>
+      <description>
+        <p>OneClick fee accuracy, Midgard-resilient quotes, and safer Chainflip/THOR deposit flows.</p>
+        <ul>
+          <li>Swap: show the OneClick affiliate from the aggregator's echoed appFees (no more false "free"); swap details tuned per protocol for Chainflip and OneClick; outbound fee uses the quote's destination asset and USD value; swap routes no longer all freeze when THOR Midgard is down.</li>
+          <li>Swap: stop lastblock polls from re-firing quotes every 60 seconds.</li>
+          <li>Chainflip submit UX (channel-open in the transaction modal), asset search ranks native ETH first, smarter halt banners, and quotes pause while you confirm.</li>
+          <li>THORChain/MAYAChain: never auto-retry keystore MsgDeposit broadcasts.</li>
+          <li>Swap: restore the ERC20 Approve button when a quote is blocked by approval.</li>
+          <li>EVM: EIP-1559 tip and base-fee headroom for THOR/MAYA pool deposit transactions.</li>
+          <li>Swap: skip quote requests for trading-halted THOR/MAYA routes.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.45.2" date="2026-08-13">
+      <url type="details">https://github.com/asgardex/asgardex-desktop/releases/tag/v1.45.2</url>
+      <description>
+        <p>Fixes Solana broadcast fees, reduces THORChain API load, and advances Flatpak packaging toward Flathub.</p>
+        <ul>
+          <li>Solana: floor the priority fee so OneClick token swaps can broadcast.</li>
+          <li>THORChain: cut load from swap tx/stages polling (block-time floor, no pending double-fire, incomplete max-age).</li>
+          <li>Flatpak: rename the app id to com.asgardex.Asgardex, harden host keystore/Vultisig migration, and pin the Windows NSIS guid.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.45.1" date="2026-08-07">
+      <url type="details">https://github.com/asgardex/asgardex-desktop/releases/tag/v1.45.1</url>
+      <description>
+        <p>The Kujira client is no longer supported. New feature: keystore HD recovery with Find my funds (EVM, THOR/MAYA, UTXO), using a simple scan or custom paths.</p>
+        <ul>
+          <li>Keystore: HD "Find my funds" for EVM, THOR/MAYA, and UTXO chains.</li>
+          <li>EVM: re-clamp a native Max send at broadcast so fee re-quotes cannot overshoot the balance (Max no longer fails with dust insufficient-funds).</li>
+          <li>Security: update keyv to 5.6.0 (supply-chain mitigation).</li>
+          <li>Source UTXO inbound fee rates from the node gas_rate.</li>
+          <li>Swap: show the routing protocol in the chart panel and track OneClick (NEAR Intents) swaps.</li>
+          <li>Remove the native Kujira (KUJI) chain client, which is no longer listed on THOR/MAYA pools.</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
 </component>
