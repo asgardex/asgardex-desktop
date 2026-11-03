@@ -93,9 +93,20 @@ export const Table = <T extends RowData>({
   })
 
   const rows = table.getRowModel().rows
+  const hasRows = rows.length > 0
+  // Initial load: nothing to show yet, so render the spinner row
+  const showLoadingRow = loading && !hasRows
+  // Reload: keep the rows we already have on screen and signal the refresh instead
+  const isRefreshing = loading && hasRows
 
   return (
-    <table className="w-full table-fixed">
+    <table className="w-full table-fixed" aria-busy={loading}>
+      {isRefreshing && (
+        // Zero-height caption, so the progress bar overlays the table without shifting the layout
+        <caption className="relative h-0 p-0" data-testid="table-refreshing">
+          <span className="absolute inset-x-0 top-0 h-0.5 animate-pulse bg-turquoise" />
+        </caption>
+      )}
       {!hideHeader && (
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -141,8 +152,8 @@ export const Table = <T extends RowData>({
           ))}
         </thead>
       )}
-      <tbody>
-        {loading && (
+      <tbody className={clsx('transition-opacity', isRefreshing && 'opacity-60')}>
+        {showLoadingRow && (
           <tr>
             <td
               className="border border-solid border-gray0/40 dark:border-gray0d/40"
@@ -156,7 +167,7 @@ export const Table = <T extends RowData>({
             </td>
           </tr>
         )}
-        {!loading && rows.length === 0 && (
+        {!loading && !hasRows && (
           <tr>
             <td
               className="border border-solid border-gray0/40 dark:border-gray0d/40"
@@ -169,38 +180,37 @@ export const Table = <T extends RowData>({
             </td>
           </tr>
         )}
-        {!loading &&
-          rows.map((row) => (
-            <Fragment key={row.id}>
-              <tr
-                className="group cursor-pointer hover:bg-bg-hover"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (onClickRow) onClickRow(row.original)
-                }}>
-                {row.getAllCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className={clsx(
-                      hideVerticalBorder ? 'border-x-0 border-y' : 'border',
-                      'h-16 border-solid border-gray0/40 bg-bg1 px-2 text-center uppercase dark:border-gray0d/40 dark:bg-bg1d',
-                      'group-last:first:rounded-bl-lg group-last:last:rounded-br-lg'
-                      // ' group-last:border-b-0'
-                    )}
-                    style={cell.column.getSize() ? { width: cell.column.getSize() } : undefined}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+        {rows.map((row) => (
+          <Fragment key={row.id}>
+            <tr
+              className="group cursor-pointer hover:bg-bg-hover"
+              onClick={(e) => {
+                e.stopPropagation()
+                if (onClickRow) onClickRow(row.original)
+              }}>
+              {row.getAllCells().map((cell) => (
+                <td
+                  key={cell.id}
+                  className={clsx(
+                    hideVerticalBorder ? 'border-x-0 border-y' : 'border',
+                    'h-16 border-solid border-gray0/40 bg-bg1 px-2 text-center uppercase dark:border-gray0d/40 dark:bg-bg1d',
+                    'group-last:first:rounded-bl-lg group-last:last:rounded-br-lg'
+                    // ' group-last:border-b-0'
+                  )}
+                  style={cell.column.getSize() ? { width: cell.column.getSize() } : undefined}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+            {row.getIsExpanded() && renderSubRow && (
+              <tr>
+                <td className="border border-solid border-gray0/40 dark:border-gray0d/40" colSpan={columns.length}>
+                  {renderSubRow(row.original)}
+                </td>
               </tr>
-              {row.getIsExpanded() && renderSubRow && (
-                <tr>
-                  <td className="border border-solid border-gray0/40 dark:border-gray0d/40" colSpan={columns.length}>
-                    {renderSubRow(row.original)}
-                  </td>
-                </tr>
-              )}
-            </Fragment>
-          ))}
+            )}
+          </Fragment>
+        ))}
       </tbody>
     </table>
   )
