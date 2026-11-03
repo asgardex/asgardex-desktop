@@ -142,6 +142,7 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
+    "@cosmjs/tendermint-rpc": "^0.39.0",
     "@electron/notarize": "^2.5.0",
     "@eslint/compat": "2.1.1",
     "@eslint/eslintrc": "^3.3.7",

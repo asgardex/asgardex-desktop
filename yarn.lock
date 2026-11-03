@@ -7242,6 +7242,7 @@ __metadata:
   dependencies:
     "@asgardex/asgardex-theme": "npm:^0.2.0"
     "@chainflip/sdk": "npm:2.3.1"
+    "@cosmjs/tendermint-rpc": "npm:^0.39.0"
     "@devexperts/remote-data-ts": "npm:^2.1.1"
     "@electron/notarize": "npm:^2.5.0"
     "@eslint/compat": "npm:2.1.1"
