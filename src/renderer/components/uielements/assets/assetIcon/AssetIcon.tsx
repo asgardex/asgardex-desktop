@@ -90,7 +90,6 @@ import {
   nearIcon,
   zecIcon
 } from '../../../icons'
-import { SOL_USDC_ICON_URL } from './AssetIcon.const'
 import { sizes, borders, fontSizes } from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
 
@@ -260,7 +259,7 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
       }
       // Add a specific check for sol.usdc
       if (isSolChain(asset.chain) && asset.ticker === AssetSOLUSDC.ticker) {
-        return SOL_USDC_ICON_URL
+        return 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/assets/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png'
       }
       // Since we've already checked AVAX.AVAX before,
       // we know any asset is ERC20 here - no need to run expensive `isAvaxTokenAsset`
