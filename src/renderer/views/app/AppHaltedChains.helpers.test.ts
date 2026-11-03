@@ -108,4 +108,14 @@ describe('AppHaltedChains.helpers', () => {
       expect(getSwapAlternativeLabels([thor, maya], ['BTC'])).toEqual([CHAINFLIP_LABEL])
     })
   })
+
+  describe('unknown mimir', () => {
+    it('a protocol with unknown halt status is never a swap alternative, nor listed as available', () => {
+      const thor = makeProtocol({ protocol: THORChain, mimirUnknown: true })
+      const maya = makeProtocol({ protocol: MAYAChain })
+      expect(isProtocolUsableAsSwapAlternative(thor)).toBe(false)
+      expect(isProtocolUsableAsSwapAlternative(maya)).toBe(true)
+      expect(getSwapAlternativeLabels([thor, maya])).toEqual([CHAINFLIP_LABEL, MAYAChain])
+    })
+  })
 })

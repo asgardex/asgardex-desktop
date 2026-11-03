@@ -159,7 +159,7 @@ export const AssetDetailsView = (): JSX.Element => {
           openExplorerTxUrl={openExplorerTxUrl}
           openExplorerAddressUrl={openExplorerAddressUrlHandler}
           walletAddress={walletAddress}
-          disableSend={isRuneNativeAsset(asset) && mimirHalt.HALTTHORTRADING}
+          disableSend={isRuneNativeAsset(asset) && (mimirHalt.HALTTHORTRADING || mimirHalt.haltStatusUnknown)}
           network={network}
           haltedChainsThor={haltedChainsThor}
           haltedChainsMaya={haltedChainsMaya}

@@ -8,13 +8,15 @@ import * as RxOp from 'rxjs/operators'
 
 import { useMayachainContext } from '../contexts/MayachainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
-import { DEFAULT_MIMIR_HALT } from '../services/mayachain/const'
+import { createMimirLookup } from '../helpers/mimirLookup'
+import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT } from '../services/mayachain/const'
 import {
   LastblockItems,
   Mimir,
   MimirHalt,
   MimirHaltLpGlobal,
   MimirHaltRD,
+  MimirHaltStatusUnknown,
   MimirHaltTradingGlobal
 } from '../services/mayachain/types'
 import { userChains$ } from '../services/storage/userChains'
@@ -38,8 +40,9 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
 
 /**
  * Maps MAYANode mimir to the `MimirHalt` flags the app reads (`poolHelperMaya`).
- * MAYANode returns mimir keys upper case, so keys are read exactly as sent, the same as
- * `getThorchainMimirHalt` does for THORNode.
+ * MAYANode returns mimir keys upper case. Keys are matched case-insensitively, a key in another casing
+ * still counts and logs a warning (see `createMimirLookup`), so it never reads as "no halt".
+ *
  */
 export const getMayachainMimirHalt = ({
   mimir,
@@ -50,7 +53,8 @@ export const getMayachainMimirHalt = ({
   lastHeight?: number
   chains: string[]
 }): MimirHalt => {
-  const status = (key: string) => getMimirStatus(mimir[key], lastHeight)
+  const lookup = createMimirLookup(mimir, 'MAYANode')
+  const status = (key: string) => lookup(key).some((value) => getMimirStatus(value, lastHeight))
 
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
@@ -65,8 +69,9 @@ export const getMayachainMimirHalt = ({
 
   const haltTradingGlobal: MimirHaltTradingGlobal = { haltGlobalTrading: status('HALTTRADING') }
   const pauseLpGlobal: MimirHaltLpGlobal = { pauseGlobalLp: status('PAUSELP') }
+  const known: MimirHaltStatusUnknown = { haltStatusUnknown: false }
 
-  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal } as MimirHalt
+  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal, ...known } as MimirHalt
 }
 
 export const useMayachainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt } => {
@@ -79,10 +84,12 @@ export const useMayachainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
       RxOp.map(([mimirRD, chainLastblockRD, enabledChains]) =>
         FP.pipe(
           sequenceTRD(mimirRD, chainLastblockRD),
-          RD.map(([mimir, lastblockItems]) => {
+          RD.chain(([mimir, lastblockItems]) => {
             const lastHeight = getLastHeightMaya(lastblockItems)
+            // Without a height, scheduled halts can't be told from future ones: halt status is unknown
+            if (lastHeight <= 0) return RD.failure<Error, MimirHalt>(Error('MAYAChain block height is unknown'))
 
-            return getMayachainMimirHalt({ mimir, lastHeight, chains: enabledChains })
+            return RD.success(getMayachainMimirHalt({ mimir, lastHeight, chains: enabledChains }))
           })
         )
       ),
@@ -104,14 +111,16 @@ export const useMayachainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
     )
   }
 
+  // Fail closed: unless the halt status is loaded (still loading or failed), it is unknown - never "no halt".
+  // A disabled hook opted out of the status and keeps the default.
   const mimirHalt = useMemo(
     () =>
       FP.pipe(
         mimirHaltRD,
         RD.toOption,
-        O.getOrElse<MimirHalt>(() => DEFAULT_MIMIR_HALT)
+        O.getOrElse<MimirHalt>(() => (enabled ? UNKNOWN_MIMIR_HALT : DEFAULT_MIMIR_HALT))
       ),
-    [mimirHaltRD]
+    [enabled, mimirHaltRD]
   )
 
   return { mimirHaltRD, mimirHalt }

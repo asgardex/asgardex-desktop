@@ -34,12 +34,23 @@ export const createDefaultMimirHalt = (): MimirHalt => {
     {
       HALTTHORCHAIN: false,
       haltGlobalTrading: false,
-      pauseGlobalLp: false
+      pauseGlobalLp: false,
+      haltStatusUnknown: false
     } as MimirHalt
   )
 }
 
 export const DEFAULT_MIMIR_HALT = createDefaultMimirHalt()
+
+/**
+ * Halt status that could not be loaded: every halt / pause flag is set, so all existing
+ * `disable*Actions` checks block swaps, deposits, withdrawals and RUNE sends (fail closed).
+ * `haltStatusUnknown` tells the UI that these flags are not real halts.
+ */
+export const createUnknownMimirHalt = (): MimirHalt =>
+  Object.fromEntries(Object.keys(DEFAULT_MIMIR_HALT).map((key) => [key, true])) as MimirHalt
+
+export const UNKNOWN_MIMIR_HALT = createUnknownMimirHalt()
 
 export const RESERVE_MODULE_ADDRESS = 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt'
 

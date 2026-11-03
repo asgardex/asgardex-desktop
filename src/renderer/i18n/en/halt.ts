@@ -11,6 +11,8 @@ const halt: HaltMessages = {
   'halt.chain.pauseall': 'Liquidity activities (add/remove) for all chains have been disabled temporarily.',
   'halt.chain.pauseDeposits':
     'Liquidity deposits (add) for {chains} chain(s) on {protocol} have been disabled temporarily.',
+  'halt.unknown':
+    'Halt status of {protocols} could not be loaded. Swaps, liquidity actions and RUNE sends are blocked until it loads.',
   'halt.swap.routeImpaired': 'Swap route may be impaired'
 }
 

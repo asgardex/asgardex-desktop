@@ -3,8 +3,11 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { assetFromStringEx } from '@xchainjs/xchain-util'
 import { describe, expect, it } from 'vitest'
 
-import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../services/mayachain/const'
-import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
+import {
+  DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA,
+  UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA
+} from '../services/mayachain/const'
+import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT } from '../services/thorchain/const'
 import {
   dropMayachainForBtcTaproot,
   filterQuotableProtocols,
@@ -135,5 +138,15 @@ describe('dropMayachainForBtcTaproot', () => {
     expect(
       dropMayachainForBtcTaproot([...protocols], 'bcrt1pqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq', '')
     ).toEqual(['Thorchain', 'Chainflip', 'OneClick'])
+  })
+
+  it('skips Thorchain and Mayachain while the halt status is unknown', () => {
+    const haltState = {
+      thor: { haltedChains: [] as string[], mimirHalt: UNKNOWN_MIMIR_HALT },
+      maya: { haltedChains: [] as string[], mimirHalt: UNKNOWN_MIMIR_HALT_MAYA }
+    }
+    expect(
+      filterQuotableProtocols(['Thorchain', 'Mayachain', 'Chainflip', 'OneClick'], ethUsdc, solNative, haltState)
+    ).toEqual(['Chainflip', 'OneClick'])
   })
 })

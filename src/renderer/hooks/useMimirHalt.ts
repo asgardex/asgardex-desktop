@@ -8,14 +8,16 @@ import * as RxOp from 'rxjs/operators'
 
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
+import { createMimirLookup } from '../helpers/mimirLookup'
 import { userChains$ } from '../services/storage/userChains'
-import { DEFAULT_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
+import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
 import {
   MimirHaltRD,
   MimirHalt,
   Mimir,
   MimirHaltTradingGlobal,
   MimirHaltLpGlobal,
+  MimirHaltStatusUnknown,
   LastblockItems
 } from '../services/thorchain/types'
 import { useObservableLayoutState } from './useObservableLayoutState'
@@ -38,8 +40,9 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
 /**
  * Maps THORNode mimir to the `MimirHalt` flags the app reads (`poolHelper`, `AppHaltedChains`).
  * THORNode returns mimir keys upper case (`HALTTHORCHAIN`, `HALTBTCCHAIN`, `HALTBTCTRADING`,
- * `PAUSELPBTC`, `HALTTRADING`, `PAUSELP`, ...), so keys are read exactly as sent, the same as
- * `getMayachainMimirHalt` does for MAYANode.
+ * `PAUSELPBTC`, `HALTTRADING`, `PAUSELP`, ...). Keys are matched case-insensitively, a key in another
+ * casing still counts and logs a warning (see `createMimirLookup`), so it never reads as "no halt".
+ *
  */
 export const getThorchainMimirHalt = ({
   mimir,
@@ -50,7 +53,8 @@ export const getThorchainMimirHalt = ({
   lastHeight?: number
   chains: string[]
 }): MimirHalt => {
-  const status = (key: string) => getMimirStatus(mimir[key], lastHeight)
+  const lookup = createMimirLookup(mimir, 'THORNode')
+  const status = (key: string) => lookup(key).some((value) => getMimirStatus(value, lastHeight))
 
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
@@ -74,8 +78,9 @@ export const getThorchainMimirHalt = ({
 
   const haltTradingGlobal: MimirHaltTradingGlobal = { haltGlobalTrading: status('HALTTRADING') }
   const pauseLpGlobal: MimirHaltLpGlobal = { pauseGlobalLp: status('PAUSELP') }
+  const known: MimirHaltStatusUnknown = { haltStatusUnknown: false }
 
-  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal } as MimirHalt
+  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal, ...known } as MimirHalt
 }
 
 /**
@@ -93,10 +98,12 @@ export const useThorchainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
       RxOp.map(([mimirRD, chainLastblockRD, enabledChains]) =>
         FP.pipe(
           sequenceTRD(mimirRD, chainLastblockRD),
-          RD.map(([mimir, lastblockItems]) => {
+          RD.chain(([mimir, lastblockItems]) => {
             const lastHeight = getLastHeightThorchain(lastblockItems as LastblockItems)
+            // Without a height, scheduled halts can't be told from future ones: halt status is unknown
+            if (lastHeight <= 0) return RD.failure<Error, MimirHalt>(Error('THORChain block height is unknown'))
 
-            return getThorchainMimirHalt({ mimir, lastHeight, chains: enabledChains })
+            return RD.success(getThorchainMimirHalt({ mimir, lastHeight, chains: enabledChains }))
           })
         )
       ),
@@ -118,14 +125,16 @@ export const useThorchainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
     )
   }
 
+  // Fail closed: unless the halt status is loaded (still loading or failed), it is unknown - never "no halt".
+  // A disabled hook opted out of the status and keeps the default.
   const mimirHalt = useMemo(
     () =>
       FP.pipe(
         mimirHaltRD,
         RD.toOption,
-        O.getOrElse<MimirHalt>(() => DEFAULT_MIMIR_HALT)
+        O.getOrElse<MimirHalt>(() => (enabled ? UNKNOWN_MIMIR_HALT : DEFAULT_MIMIR_HALT))
       ),
-    [mimirHaltRD]
+    [enabled, mimirHaltRD]
   )
 
   return { mimirHaltRD, mimirHalt }

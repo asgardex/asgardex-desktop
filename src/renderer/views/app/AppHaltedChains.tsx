@@ -47,10 +47,12 @@ export type PageContext = {
   selectedChains?: Chain[]
 }
 
+// Placeholder while there is no mimir. NOT "no halt": see `mimirUnknown`
 const EMPTY_MIMIR: MimirHalt = {
   HALTTHORCHAIN: false,
   haltGlobalTrading: false,
-  pauseGlobalLp: false
+  pauseGlobalLp: false,
+  haltStatusUnknown: false
 } as MimirHalt
 
 // Reverse the asset-string transform the swap route applies (handles synth + raw form)
@@ -271,7 +273,10 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
           protocol,
           inboundHaltedChains:
             RD.isSuccess(haltedChainsRD) || RD.isPending(haltedChainsRD) ? prev.inboundHaltedChains : [],
+          // EMPTY_MIMIR on failure only keeps the per-chain messages quiet - it is NOT "no halt":
+          // `mimirUnknown` raises the blocking "halt status unknown" message and hides the protocol as alternative
           mimirHalt: RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD) ? prev.mimirHalt : EMPTY_MIMIR,
+          mimirUnknown: RD.isFailure(mimirHaltRD),
           midgard: RD.isSuccess(midgardStatusRD) || RD.isPending(midgardStatusRD) ? prev.midgard : false
         }
       }
@@ -288,6 +293,21 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
         seen.add(msg)
         ordered.push(msg)
       }
+    }
+
+    // Halt status could not be loaded: swaps, deposits and withdrawals stay blocked (fail closed).
+    // Shown on every page, as RUNE sends are blocked as well. Always first, so it is not lost behind other messages.
+    const unknownProtocols = resolvedProtocols
+      .filter(({ mimirUnknown }) => mimirUnknown)
+      .filter(({ protocol }) => isProtocolRelevant(protocol, pageContext.selectedChains))
+      .map(({ protocol }) => protocol)
+    if (unknownProtocols.length > 0) {
+      push(
+        intl.formatMessage(
+          { id: 'halt.unknown' },
+          { protocols: intl.formatList(unknownProtocols, { type: 'conjunction' }) }
+        )
+      )
     }
 
     // One combined global-halt message (cross-protocol, with alternatives)
