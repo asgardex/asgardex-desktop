@@ -24,28 +24,53 @@ import { useObservableLayoutState } from './useObservableLayoutState'
  * Helper to check Mimir status by given Mimir value and last height
  */
 export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
-  // no mimir -> no action
-  if (mimir === 0) return false
+  // no mimir (0, or unset / negative) -> no action
+  if (mimir <= 0) return false
   // 1 -> halt | pause
   if (mimir === 1) return true
-  // compare to current block height
+  // A block height: active after that block.
+  // Same rule as MAYANode (`value > 0 && value < height`, x/mayachain/keeper/v1/keeper_halt.go).
+  // Note: THORNode uses `value <= height` (see useMimirHalt.ts).
   if (mimir < lastHeight) return true
-  // No action for other cases
+  // Height not passed yet -> scheduled, no action
   return false
+}
+
+/**
+ * Maps MAYANode mimir to the `MimirHalt` flags the app reads (`poolHelperMaya`).
+ * MAYANode returns mimir keys upper case, so keys are read exactly as sent, the same as
+ * `getThorchainMimirHalt` does for THORNode.
+ */
+export const getMayachainMimirHalt = ({
+  mimir,
+  lastHeight,
+  chains
+}: {
+  mimir: Mimir
+  lastHeight?: number
+  chains: string[]
+}): MimirHalt => {
+  const status = (key: string) => getMimirStatus(mimir[key], lastHeight)
+
+  const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
+    const c = chain.toUpperCase()
+    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`]
+    keys.forEach((key) => {
+      acc[key] = status(key)
+    })
+    return acc
+  }, {})
+  // MAYAChain's own halt is global for MAYAChain routes; detect it even if MAYA is not in `chains`
+  flags.HALTMAYACHAIN = status('HALTMAYACHAIN')
+
+  const haltTradingGlobal: MimirHaltTradingGlobal = { haltGlobalTrading: status('HALTTRADING') }
+  const pauseLpGlobal: MimirHaltLpGlobal = { pauseGlobalLp: status('PAUSELP') }
+
+  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal } as MimirHalt
 }
 
 export const useMayachainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt } => {
   const { mimir$, mayachainLastblockState$ } = useMayachainContext()
-
-  const createMimirGroup = (keys: string[], mimir: Mimir, lastHeight?: number) => {
-    return keys.reduce(
-      (acc, key) => {
-        acc[key] = getMimirStatus(mimir[key], lastHeight)
-        return acc
-      },
-      {} as Record<string, boolean>
-    )
-  }
 
   const mimirHaltSource$ = useMemo((): Rx.Observable<MimirHaltRD> => {
     if (!enabled) return Rx.EMPTY
@@ -57,23 +82,7 @@ export const useMayachainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
           RD.map(([mimir, lastblockItems]) => {
             const lastHeight = getLastHeightMaya(lastblockItems)
 
-            const haltChainKeys = enabledChains.map((chain) => `HALT${chain}CHAIN`)
-            const haltTradingKeys = enabledChains.map((chain) => `HALT${chain}TRADING`)
-            const pauseLPKeys = enabledChains.map((chain) => `PAUSELP${chain}`)
-
-            const haltChain = createMimirGroup(haltChainKeys, mimir, lastHeight)
-            const haltTrading = createMimirGroup(haltTradingKeys, mimir, lastHeight)
-            const pauseLP = createMimirGroup(pauseLPKeys, mimir, lastHeight)
-
-            const haltTradingGlobal: MimirHaltTradingGlobal = {
-              haltGlobalTrading: getMimirStatus(mimir.HALTTRADING, lastHeight)
-            }
-
-            const pauseLpGlobal: MimirHaltLpGlobal = {
-              pauseGlobalLp: getMimirStatus(mimir.PAUSELP, lastHeight)
-            }
-
-            return { ...haltChain, ...haltTrading, ...pauseLP, ...haltTradingGlobal, ...pauseLpGlobal } as MimirHalt
+            return getMayachainMimirHalt({ mimir, lastHeight, chains: enabledChains })
           })
         )
       ),

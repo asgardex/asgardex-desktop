@@ -1,0 +1,44 @@
+[
+  {
+    "chain": "ADA",
+    "last_observed_in": 14136531,
+    "last_signed_out": 19093802,
+    "mayachain": 19095919
+  },
+  {
+    "chain": "ARB",
+    "last_observed_in": 520437149,
+    "last_signed_out": 19093802,
+    "mayachain": 19095919
+  },
+  {
+    "chain": "BTC",
+    "last_observed_in": 974125,
+    "last_signed_out": 19093802,
+    "mayachain": 19095919
+  },
+  {
+    "chain": "DASH",
+    "last_observed_in": 2564847,
+    "last_signed_out": 19093802,
+    "mayachain": 19095919
+  },
+  {
+    "chain": "ETH",
+    "last_observed_in": 26315559,
+    "last_signed_out": 19093802,
+    "mayachain": 19095919
+  },
+  {
+    "chain": "THOR",
+    "last_observed_in": 28496441,
+    "last_signed_out": 19093802,
+    "mayachain": 19095919
+  },
+  {
+    "chain": "ZEC",
+    "last_observed_in": 3538940,
+    "last_signed_out": 19093802,
+    "mayachain": 19095919
+  }
+]

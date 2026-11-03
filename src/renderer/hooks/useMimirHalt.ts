@@ -24,20 +24,22 @@ import { useObservableLayoutState } from './useObservableLayoutState'
  * Helper to check Mimir status by given Mimir value and last height
  */
 export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
-  // no mimir -> no action
-  if (mimir === 0) return false
+  // no mimir (0, or unset / negative) -> no action
+  if (mimir <= 0) return false
   // 1 -> halt | pause
   if (mimir === 1) return true
-  // compare to current block height
-  if (mimir < lastHeight) return true
-  // No action for other cases
+  // A block height: active from that block on.
+  // Same rule as THORNode (`value > 0 && value <= height`, x/thorchain/keeper/v1/keeper_halt.go)
+  if (mimir <= lastHeight) return true
+  // Height not reached yet -> scheduled, no action
   return false
 }
+
 /**
- * Mimir keys from THORNode are upper case (`HALTTHORCHAIN`, `HALTBTCCHAIN`, `HALTBTCTRADING`,
- * `PAUSELPBTC`, `HALTTRADING`, `PAUSELP`, ...). Lookups are case-insensitive so a key that
- * arrives in another case is still found, and the result always uses the upper-case keys
- * `MimirHalt` (and `poolHelper`, `AppHaltedChains`) read.
+ * Maps THORNode mimir to the `MimirHalt` flags the app reads (`poolHelper`, `AppHaltedChains`).
+ * THORNode returns mimir keys upper case (`HALTTHORCHAIN`, `HALTBTCCHAIN`, `HALTBTCTRADING`,
+ * `PAUSELPBTC`, `HALTTRADING`, `PAUSELP`, ...), so keys are read exactly as sent, the same as
+ * `getMayachainMimirHalt` does for MAYANode.
  */
 export const getThorchainMimirHalt = ({
   mimir,
@@ -48,11 +50,7 @@ export const getThorchainMimirHalt = ({
   lastHeight?: number
   chains: string[]
 }): MimirHalt => {
-  const mimirUpper: Mimir = Object.entries(mimir).reduce<Mimir>((acc, [key, value]) => {
-    acc[key.toUpperCase()] = value
-    return acc
-  }, {})
-  const status = (key: string) => getMimirStatus(mimirUpper[key.toUpperCase()], lastHeight)
+  const status = (key: string) => getMimirStatus(mimir[key], lastHeight)
 
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
