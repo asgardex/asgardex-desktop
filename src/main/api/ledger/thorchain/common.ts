@@ -3,6 +3,8 @@ import { Network, RootDerivationPaths } from '@xchainjs/xchain-client'
 import { DEFAULT_STORAGES } from '../../../../shared/const'
 import { DEFAULT_THORNODE_RPC_URLS, getThornodeRpcClientUrls } from '../../../../shared/thorchain/const'
 import { getFileContent } from '../../fileStore'
+import { getLiquifyKeys } from '../../liquifyKeys'
+import { withLiquifyRpcHeaderKey } from './liquifyRpcEndpoints'
 
 // BIP44 compliant
 export const getDerivationPath = (walletAccount: number, network: Network): string => {
@@ -30,6 +32,11 @@ export const getDefaultClientUrls = async (): Promise<Record<Network, string[]>>
   return {
     [Network.Testnet]: getThornodeRpcClientUrls(rpcUrls.testnet || '', Network.Testnet),
     [Network.Stagenet]: getThornodeRpcClientUrls(rpcUrls.stagenet || '', Network.Stagenet),
-    [Network.Mainnet]: getThornodeRpcClientUrls(rpcUrls.mainnet || DEFAULT_THORNODE_RPC_URLS.mainnet, Network.Mainnet)
+    // Main-process fetch bypasses session.webRequest: pass cosmjs `{url, headers}` endpoints (see liquifyRpcEndpoints.ts)
+    [Network.Mainnet]: withLiquifyRpcHeaderKey(
+      getThornodeRpcClientUrls(rpcUrls.mainnet || DEFAULT_THORNODE_RPC_URLS.mainnet, Network.Mainnet),
+      Network.Mainnet,
+      getLiquifyKeys().thornodeRpc
+    )
   }
 }
