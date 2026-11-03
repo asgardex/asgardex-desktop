@@ -131,6 +131,34 @@ describe('main/api/liquifyAuth', () => {
       expect(getMidgardRootUrl(`${GW}/chain/thorchain_midgard/v2/pools`, NO_KEYS)).toBeNull()
       expect(getMidgardRootUrl(`${GW}/chain/thorchain_midgard/v2/pools`, { ...KEYS, midgard: '' })).toBeNull()
     })
+    it('never leaves https://gateway.liquify.com, whatever the path or query looks like', () => {
+      const nasty = [
+        '/chain/thorchain_midgard//evil.com/v2/pools',
+        '/chain/thorchain_midgard/@evil.com/v2/pools',
+        '/chain/thorchain_midgard/\\evil.com/v2/pools',
+        '/chain/thorchain_midgard/../../evil.com',
+        '/chain/thorchain_midgard/%2e%2e/%2e%2e/evil.com',
+        '/chain/thorchain_midgard/v2/pools?next=https://evil.com&u=//evil.com',
+        '/chain/thorchain_midgard/v2/pools?a=@evil.com#@evil.com',
+        '/chain/thorchain_midgard/https://evil.com/x',
+        '/chain/thorchain_midgard/:443/x',
+        '/chain/thorchain_midgard',
+        '/chain/thorchain_midgard/'
+      ]
+      for (const path of nasty) {
+        const rewritten = getMidgardRootUrl(`${GW}${path}`, KEYS)
+        if (rewritten === null) continue
+        const url = new URL(rewritten)
+        expect(url.protocol).toBe('https:')
+        expect(url.hostname).toBe('gateway.liquify.com')
+        expect(url.port).toBe('')
+        expect(url.username + url.password).toBe('')
+        expect(isLiquifyGatewayUrl(rewritten)).toBe(true)
+      }
+      // and URLs that are not on the gateway are never produced from other hosts
+      expect(getMidgardRootUrl('https://evil.com/chain/thorchain_midgard/v2/pools', KEYS)).toBeNull()
+      expect(getMidgardRootUrl('https://evil.com/?x=gateway.liquify.com/chain/thorchain_midgard/v2', KEYS)).toBeNull()
+    })
     it('does not rewrite other products, hosts or schemes', () => {
       expect(getMidgardRootUrl(`${GW}/chain/thorchain_api/thorchain/lastblock`, KEYS)).toBeNull()
       expect(getMidgardRootUrl(`${GW}/chain/thorchain_rpc/health`, KEYS)).toBeNull()

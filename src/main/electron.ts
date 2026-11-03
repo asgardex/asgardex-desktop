@@ -33,6 +33,7 @@ import {
 } from './api/ledger'
 import { registerLiquifyAuth } from './api/liquifyAuth'
 import { getLiquifyKeys } from './api/liquifyKeys'
+import { installLiquifySafeFetch } from './api/liquifySafeFetch'
 import { registerMpcIpcHandlers } from './api/mpc'
 import { disposeSDK } from './api/mpc/sdk'
 import { migrateHostDataIntoFlatpak } from './api/storageMigration'
@@ -281,7 +282,11 @@ const init = async () => {
   await migrateHostDataIntoFlatpak()
   // Add the Liquify `X-API-KEY` header (from VITE_LIQUIFY_* keys, read in main only) for gateway.liquify.com requests.
   // Must be registered before the first window issues requests. No-op without keys.
-  registerLiquifyAuth(session.defaultSession.webRequest, getLiquifyKeys(), log)
+  const liquifyKeys = getLiquifyKeys()
+  registerLiquifyAuth(session.defaultSession.webRequest, liquifyKeys, log)
+  // Ledger RPC in main sends the key via cosmjs `{url, headers}` using Node's global fetch: make sure
+  // the header cannot follow a redirect off gateway.liquify.com (see liquifySafeFetch.ts).
+  if (liquifyKeys.thornodeRpc) installLiquifySafeFetch()
   await initMainWindow()
   app.on('window-all-closed', allClosedHandler)
   app.on('activate', activateHandler)

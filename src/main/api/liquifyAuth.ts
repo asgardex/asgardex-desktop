@@ -99,7 +99,9 @@ export const getMidgardRootUrl = (url: string, keys: LiquifyKeys): string | null
   const parsed = parseGatewayUrl(url)
   if (!parsed || !hasPrefix(parsed.pathname, MIDGARD_CHAIN_PREFIX)) return null
   const rest = parsed.pathname.slice(MIDGARD_CHAIN_PREFIX.length) || '/'
-  return `https://${LIQUIFY_GATEWAY_HOST}${rest}${parsed.search}`
+  const rewritten = `https://${LIQUIFY_GATEWAY_HOST}${rest}${parsed.search}`
+  // Defensive: the rewrite must never leave the gateway (host + scheme), whatever the path / query looks like.
+  return isLiquifyGatewayUrl(rewritten) ? rewritten : null
 }
 
 /**
