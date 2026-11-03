@@ -140,6 +140,18 @@ describe('dropMayachainForBtcTaproot', () => {
     ).toEqual(['Thorchain', 'Chainflip', 'OneClick'])
   })
 
+  it('skips Thorchain for TCY pairs when HALTTCYTRADING is set, but not for other THOR pairs', () => {
+    const tcy = assetFromStringEx('THOR.TCY')
+    const haltState = {
+      ...baseHaltState,
+      thor: { haltedChains: [] as string[], mimirHalt: { ...DEFAULT_MIMIR_HALT, HALTTCYTRADING: true } }
+    }
+    expect(isProtocolTradingHaltedForAssets('Thorchain', tcy, solNative, haltState)).toBe(true)
+    expect(isProtocolTradingHaltedForAssets('Thorchain', solNative, tcy, haltState)).toBe(true)
+    expect(isProtocolTradingHaltedForAssets('Thorchain', ethUsdc, solNative, haltState)).toBe(false)
+    expect(isProtocolTradingHaltedForAssets('Thorchain', tcy, solNative, baseHaltState)).toBe(false)
+  })
+
   it('skips Thorchain and Mayachain while the halt status is unknown', () => {
     const haltState = {
       thor: { haltedChains: [] as string[], mimirHalt: UNKNOWN_MIMIR_HALT },

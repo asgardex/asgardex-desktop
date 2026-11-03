@@ -33,6 +33,7 @@ export const createDefaultMimirHalt = (): MimirHalt => {
     },
     {
       HALTTHORCHAIN: false,
+      HALTTCYTRADING: false,
       haltGlobalTrading: false,
       pauseGlobalLp: false,
       haltStatusUnknown: false

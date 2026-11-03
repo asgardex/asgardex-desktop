@@ -356,6 +356,68 @@ describe('hooks/useMimirHalt', () => {
     })
   })
 
+  describe('chain-global halts and TCY (THORNode IsChainHalted / IsTCYTradingHalted)', () => {
+    const chains = ['BTC', 'ETH', 'THOR']
+
+    it('SOLVENCYHALT{CHAIN}CHAIN halts that chain only', () => {
+      const result = getThorchainMimirHalt({ mimir: { SOLVENCYHALTBTCCHAIN: 99 }, lastHeight: 100, chains })
+      expect(result.HALTBTCCHAIN).toBe(true)
+      expect(result.HALTETHCHAIN).toBe(false)
+      expect(result.HALTTHORCHAIN).toBe(false)
+    })
+
+    it('SOLVENCYHALT: a scheduled height is not active yet', () => {
+      const result = getThorchainMimirHalt({ mimir: { SOLVENCYHALTBTCCHAIN: 101 }, lastHeight: 100, chains })
+      expect(result.HALTBTCCHAIN).toBe(false)
+    })
+
+    it('HALTCHAINGLOBAL halts every chain, THORChain included (also chains not in the list)', () => {
+      const mimirHalt = getThorchainMimirHalt({ mimir: { HALTCHAINGLOBAL: 1 }, lastHeight: 100, chains })
+      expect(mimirHalt.HALTBTCCHAIN).toBe(true)
+      expect(mimirHalt.HALTETHCHAIN).toBe(true)
+      expect(mimirHalt.HALTTHORCHAIN).toBe(true)
+      expect(disableAllActions({ chain: 'DOGE', haltedChains: [], mimirHalt })).toBe(true)
+      expect(isProtocolGloballyHalted({ protocol: THORChain, inboundHaltedChains: [], mimirHalt, midgard: true })).toBe(
+        true
+      )
+    })
+
+    it('HALTCHAINGLOBAL: a scheduled height is not active yet', () => {
+      const result = getThorchainMimirHalt({ mimir: { HALTCHAINGLOBAL: 101 }, lastHeight: 100, chains })
+      expect(result.HALTBTCCHAIN).toBe(false)
+      expect(result.HALTTHORCHAIN).toBe(false)
+    })
+
+    it('NODEPAUSECHAINGLOBAL pauses until its height: active up to and including it (THORNode `value >= height`)', () => {
+      const pause = (value: number) =>
+        getThorchainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: value }, lastHeight: 100, chains })
+      expect(pause(101).HALTBTCCHAIN).toBe(true)
+      expect(pause(100).HALTBTCCHAIN).toBe(true)
+      expect(pause(100).HALTTHORCHAIN).toBe(true)
+      expect(pause(99).HALTBTCCHAIN).toBe(false)
+      expect(pause(0).HALTBTCCHAIN).toBe(false)
+    })
+
+    it('NODEPAUSECHAINGLOBAL is not applied without a height', () => {
+      const result = getThorchainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: 100 }, chains })
+      expect(result.HALTBTCCHAIN).toBe(false)
+    })
+
+    it('HALTTCYTRADING', () => {
+      expect(getThorchainMimirHalt({ mimir: { HALTTCYTRADING: 1 }, lastHeight: 100, chains }).HALTTCYTRADING).toBe(true)
+      expect(getThorchainMimirHalt({ mimir: { HALTTCYTRADING: 101 }, lastHeight: 100, chains }).HALTTCYTRADING).toBe(
+        false
+      )
+      expect(getThorchainMimirHalt({ mimir: {}, lastHeight: 100, chains }).HALTTCYTRADING).toBe(false)
+    })
+
+    it('live fixture: no chain-global halt, expired nothing', () => {
+      const result = getThorchainMimirHalt({ mimir: thorMimir, lastHeight: 28483475, chains })
+      expect(result.HALTTHORCHAIN).toBe(false)
+      expect(result.HALTTCYTRADING).toBe(false)
+    })
+  })
+
   describe('DEFAULT / UNKNOWN_MIMIR_HALT', () => {
     it('unknown halt has every key of the default set, all true, and blocks all actions', () => {
       expect(Object.keys(UNKNOWN_MIMIR_HALT).sort()).toEqual(Object.keys(DEFAULT_MIMIR_HALT).sort())
@@ -440,6 +502,17 @@ describe('hooks/useMimirHalt', () => {
       const { get, unmount } = renderHook()
       expect(get().mimirHalt.haltStatusUnknown).toBe(false)
       expect(disableAllActions({ chain: BTCChain, haltedChains: [], mimirHalt: get().mimirHalt })).toBe(false)
+      unmount()
+    })
+
+    it('loaded mimir with HALTCHAINGLOBAL halts, and is known', () => {
+      mockThorchainContext.value = {
+        mimir$: Rx.of(RD.success({ HALTCHAINGLOBAL: 1 })),
+        thorchainLastblockState$: Rx.of(lastblock(100))
+      }
+      const { get, unmount } = renderHook()
+      expect(get().mimirHalt.haltStatusUnknown).toBe(false)
+      expect(get().mimirHalt.HALTTHORCHAIN).toBe(true)
       unmount()
     })
 

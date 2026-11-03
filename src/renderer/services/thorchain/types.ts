@@ -210,6 +210,11 @@ export type MimirHaltLpGlobal = {
   pauseGlobalLp: boolean
 }
 
+/** `HALTTCYTRADING`: TCY trading is halted (swaps and LP of TCY). THORChain only, so optional for MAYAChain's `MimirHalt` */
+export type MimirHaltTcy = {
+  HALTTCYTRADING?: boolean
+}
+
 /**
  * `true` if the halt status could not be loaded (mimir or lastblock request failed, or is still loading).
  * All other flags are `true` then as well (fail closed), so UI must not read them as real halts.
@@ -224,6 +229,7 @@ export type MimirHalt = MimirHaltChain &
   MimirPauseLPDeposit &
   MimirHaltTradingGlobal &
   MimirHaltLpGlobal &
+  MimirHaltTcy &
   MimirHaltStatusUnknown
 
 export type MimirHaltRD = RD.RemoteData<Error, MimirHalt>

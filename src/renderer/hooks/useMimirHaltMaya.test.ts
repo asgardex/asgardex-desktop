@@ -203,6 +203,44 @@ describe('hooks/useMimirHaltMaya', () => {
     })
   })
 
+  describe('chain-global halts (MAYANode IsChainHalted)', () => {
+    const chains = ['BTC', 'ETH', 'MAYA']
+
+    it('SOLVENCYHALT{CHAIN}CHAIN halts that chain only (MAYANode `value < height`)', () => {
+      const halted = getMayachainMimirHalt({ mimir: { SOLVENCYHALTBTCCHAIN: 99 }, lastHeight: 100, chains })
+      expect(halted.HALTBTCCHAIN).toBe(true)
+      expect(halted.HALTETHCHAIN).toBe(false)
+      expect(halted.HALTMAYACHAIN).toBe(false)
+      expect(
+        getMayachainMimirHalt({ mimir: { SOLVENCYHALTBTCCHAIN: 100 }, lastHeight: 100, chains }).HALTBTCCHAIN
+      ).toBe(false)
+    })
+
+    it('HALTCHAINGLOBAL halts every chain, MAYAChain included (also chains not in the list)', () => {
+      const mimirHalt = getMayachainMimirHalt({ mimir: { HALTCHAINGLOBAL: 1 }, lastHeight: 100, chains })
+      expect(mimirHalt.HALTBTCCHAIN).toBe(true)
+      expect(mimirHalt.HALTMAYACHAIN).toBe(true)
+      expect(disableAllActions({ chain: 'DOGE', haltedChains: [], mimirHalt })).toBe(true)
+    })
+
+    it('NODEPAUSECHAINGLOBAL pauses until its height, exclusive (MAYANode `value > height`)', () => {
+      const pause = (value: number) =>
+        getMayachainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: value }, lastHeight: 100, chains })
+      expect(pause(101).HALTBTCCHAIN).toBe(true)
+      expect(pause(101).HALTMAYACHAIN).toBe(true)
+      expect(pause(100).HALTBTCCHAIN).toBe(false)
+      expect(pause(0).HALTBTCCHAIN).toBe(false)
+      expect(getMayachainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: 100 }, chains }).HALTBTCCHAIN).toBe(false)
+    })
+
+    it('live fixture: an expired NODEPAUSECHAINGLOBAL (16576652) does not halt anything', () => {
+      expect(mayaMimir.NODEPAUSECHAINGLOBAL).toBe(16576652)
+      const result = getMayachainMimirHalt({ mimir: mayaMimir, lastHeight: 19095919, chains })
+      expect(result.HALTMAYACHAIN).toBe(false)
+      expect(result.HALTBTCCHAIN).toBe(false)
+    })
+  })
+
   describe('UNKNOWN_MIMIR_HALT', () => {
     it('has every key of the default set, all true, and blocks all actions', () => {
       expect(Object.keys(UNKNOWN_MIMIR_HALT).sort()).toEqual(Object.keys(DEFAULT_MIMIR_HALT).sort())

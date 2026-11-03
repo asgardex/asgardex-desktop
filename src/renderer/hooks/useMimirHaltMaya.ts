@@ -39,10 +39,20 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
 }
 
 /**
+ * `NodePauseChainGlobal` pauses all chains *until* a block height (not from it, as the other halts do).
+ * MAYANode: `value > height` (x/mayachain/keeper/v1/keeper_halt.go, `IsChainHalted`)
+ * Without a known height it cannot be told apart from an old, expired pause, so it is not applied.
+ */
+export const isNodePauseActive = (mimir = 0, lastHeight = 0) => mimir > 0 && lastHeight > 0 && mimir > lastHeight
+
+/**
  * Maps MAYANode mimir to the `MimirHalt` flags the app reads (`poolHelperMaya`).
  * MAYANode returns mimir keys upper case. Keys are matched case-insensitively, a key in another casing
  * still counts and logs a warning (see `createMimirLookup`), so it never reads as "no halt".
  *
+ * A chain counts as halted (`HALT{CHAIN}CHAIN`) if MAYANode halts it (`IsChainHalted`):
+ * `HALT{CHAIN}CHAIN`, `SOLVENCYHALT{CHAIN}CHAIN`, or a global `HALTCHAINGLOBAL` / `NODEPAUSECHAINGLOBAL`.
+ * The global ones halt every chain, MAYAChain included, so they also set `HALTMAYACHAIN`.
  */
 export const getMayachainMimirHalt = ({
   mimir,
@@ -56,16 +66,20 @@ export const getMayachainMimirHalt = ({
   const lookup = createMimirLookup(mimir, 'MAYANode')
   const status = (key: string) => lookup(key).some((value) => getMimirStatus(value, lastHeight))
 
+  const haltAllChains =
+    status('HALTCHAINGLOBAL') || lookup('NODEPAUSECHAINGLOBAL').some((value) => isNodePauseActive(value, lastHeight))
+
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
-    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`]
+    acc[`HALT${c}CHAIN`] = status(`HALT${c}CHAIN`) || status(`SOLVENCYHALT${c}CHAIN`) || haltAllChains
+    const keys = [`HALT${c}TRADING`, `PAUSELP${c}`]
     keys.forEach((key) => {
       acc[key] = status(key)
     })
     return acc
   }, {})
   // MAYAChain's own halt is global for MAYAChain routes; detect it even if MAYA is not in `chains`
-  flags.HALTMAYACHAIN = status('HALTMAYACHAIN')
+  flags.HALTMAYACHAIN = status('HALTMAYACHAIN') || status('SOLVENCYHALTMAYACHAIN') || haltAllChains
 
   const haltTradingGlobal: MimirHaltTradingGlobal = { haltGlobalTrading: status('HALTTRADING') }
   const pauseLpGlobal: MimirHaltLpGlobal = { pauseGlobalLp: status('PAUSELP') }

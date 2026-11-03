@@ -17,6 +17,7 @@ import {
   Mimir,
   MimirHaltTradingGlobal,
   MimirHaltLpGlobal,
+  MimirHaltTcy,
   MimirHaltStatusUnknown,
   LastblockItems
 } from '../services/thorchain/types'
@@ -38,11 +39,21 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
 }
 
 /**
+ * `NodePauseChainGlobal` pauses all chains *until* a block height (not from it, as the other halts do).
+ * THORNode: `value >= height` (x/thorchain/keeper/v1/keeper_halt.go, `IsChainHalted`)
+ * Without a known height it cannot be told apart from an old, expired pause, so it is not applied.
+ */
+export const isNodePauseActive = (mimir = 0, lastHeight = 0) => mimir > 0 && lastHeight > 0 && mimir >= lastHeight
+
+/**
  * Maps THORNode mimir to the `MimirHalt` flags the app reads (`poolHelper`, `AppHaltedChains`).
  * THORNode returns mimir keys upper case (`HALTTHORCHAIN`, `HALTBTCCHAIN`, `HALTBTCTRADING`,
  * `PAUSELPBTC`, `HALTTRADING`, `PAUSELP`, ...). Keys are matched case-insensitively, a key in another
  * casing still counts and logs a warning (see `createMimirLookup`), so it never reads as "no halt".
  *
+ * A chain counts as halted (`HALT{CHAIN}CHAIN`) if THORNode halts it (`IsChainHalted`):
+ * `HALT{CHAIN}CHAIN`, `SOLVENCYHALT{CHAIN}CHAIN`, or a global `HALTCHAINGLOBAL` / `NODEPAUSECHAINGLOBAL`.
+ * The global ones halt every chain, THORChain included, so they also set `HALTTHORCHAIN`.
  */
 export const getThorchainMimirHalt = ({
   mimir,
@@ -56,9 +67,13 @@ export const getThorchainMimirHalt = ({
   const lookup = createMimirLookup(mimir, 'THORNode')
   const status = (key: string) => lookup(key).some((value) => getMimirStatus(value, lastHeight))
 
+  const haltAllChains =
+    status('HALTCHAINGLOBAL') || lookup('NODEPAUSECHAINGLOBAL').some((value) => isNodePauseActive(value, lastHeight))
+
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
-    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`]
+    acc[`HALT${c}CHAIN`] = status(`HALT${c}CHAIN`) || status(`SOLVENCYHALT${c}CHAIN`) || haltAllChains
+    const keys = [`HALT${c}TRADING`, `PAUSELP${c}`]
     keys.forEach((key) => {
       acc[key] = status(key)
     })
@@ -74,13 +89,14 @@ export const getThorchainMimirHalt = ({
     return acc
   }, {})
   // THORChain's own halt is global for THORChain routes; detect it even if THOR is not in `chains`
-  flags.HALTTHORCHAIN = status('HALTTHORCHAIN')
+  flags.HALTTHORCHAIN = status('HALTTHORCHAIN') || status('SOLVENCYHALTTHORCHAIN') || haltAllChains
 
   const haltTradingGlobal: MimirHaltTradingGlobal = { haltGlobalTrading: status('HALTTRADING') }
   const pauseLpGlobal: MimirHaltLpGlobal = { pauseGlobalLp: status('PAUSELP') }
+  const haltTcy: MimirHaltTcy = { HALTTCYTRADING: status('HALTTCYTRADING') }
   const known: MimirHaltStatusUnknown = { haltStatusUnknown: false }
 
-  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal, ...known } as MimirHalt
+  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal, ...haltTcy, ...known } as MimirHalt
 }
 
 /**

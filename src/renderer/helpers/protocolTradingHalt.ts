@@ -1,6 +1,7 @@
 import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { AnyAsset, Chain } from '@xchainjs/xchain-util'
 
+import { THORChain } from '../../shared/utils/chainIds'
 import { MimirHalt as MimirHaltMaya } from '../services/mayachain/types'
 import { MimirHalt } from '../services/thorchain/types'
 import * as PoolHelpers from './poolHelper'
@@ -21,6 +22,9 @@ const isThorUnquotableForChain = (chain: Chain, haltedChains: Chain[], mimirHalt
   PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt }) ||
   PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
 
+/** TCY lives on THORChain and has its own trading halt (`HALTTCYTRADING`) */
+const isTcyAsset = (asset: AnyAsset): boolean => asset.chain === THORChain && asset.ticker === 'TCY'
+
 const isMayaUnquotableForChain = (chain: Chain, haltedChains: Chain[], mimirHalt: MimirHaltMaya): boolean =>
   PoolHelpersMaya.disableAllActions({ chain, haltedChains, mimirHalt }) ||
   PoolHelpersMaya.disableTradingActions({ chain, haltedChains, mimirHalt })
@@ -40,7 +44,8 @@ export const isProtocolTradingHaltedForAssets = (
     const { haltedChains, mimirHalt } = haltState.thor
     return (
       isThorUnquotableForChain(sourceAsset.chain, haltedChains, mimirHalt) ||
-      isThorUnquotableForChain(targetAsset.chain, haltedChains, mimirHalt)
+      isThorUnquotableForChain(targetAsset.chain, haltedChains, mimirHalt) ||
+      ((isTcyAsset(sourceAsset) || isTcyAsset(targetAsset)) && mimirHalt.HALTTCYTRADING === true)
     )
   }
 
