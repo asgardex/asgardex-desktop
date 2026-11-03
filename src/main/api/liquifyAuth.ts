@@ -12,7 +12,11 @@ import type { Session } from 'electron'
  * - Keys come from `VITE_LIQUIFY_*` env vars (see `liquifyKeys.ts`) and are read in the main process
  *   only. Nothing in the renderer / preload references them, so they are not compiled into those bundles.
  * - The key is still compiled into the *main* bundle and can be extracted from `app.asar` by a
- *   determined user. This hides it from the renderer bundle and DevTools only.
+ *   determined user. The header is added by the network layer, so it is NOT visible to renderer JS
+ *   and is not in the renderer bundle — but it is NOT hidden from DevTools / CDP (the Network panel
+ *   and the DevTools protocol show `X-API-KEY`). Treat the keys as extractable: use least-privilege,
+ *   rate-limited keys and ROTATE them — older releases carry the previous `VITE_LIQUIFY_*` keys in
+ *   their renderer bundles.
  * - Keys are never logged. Only product names (`midgard`, `thornodeApi`, ...) are.
  * - Only exact `https` + `gateway.liquify.com` (default port) is matched. Look-alike hosts, `http`,
  *   `midgard.thorchain.network` and any custom Expert Mode host never receive the key.
