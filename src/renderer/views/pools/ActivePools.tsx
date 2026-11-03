@@ -40,6 +40,7 @@ import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import { useProtocolLimitMaya } from '../../hooks/useProtocolLimitMaya'
+import { useRefreshing } from '../../hooks/useRefreshing'
 import * as poolsRoutes from '../../routes/pools'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { PoolsState as MayaPoolState } from '../../services/midgard/mayaMidgard/types'
@@ -104,7 +105,10 @@ export const ActivePools = (): JSX.Element => {
   // store previous data of pools to render these while reloading
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
+  const { refreshing, startRefreshing } = useRefreshing(poolsRD)
+
   const refreshHandler = useCallback(() => {
+    startRefreshing()
     if (protocol === THORChain) {
       reloadPools()
     } else {
@@ -112,7 +116,7 @@ export const ActivePools = (): JSX.Element => {
     }
 
     reloadLimit()
-  }, [protocol, reloadLimit, reloadPools, reloadMayaPools])
+  }, [protocol, reloadLimit, reloadPools, reloadMayaPools, startRefreshing])
 
   const pricePoolThor = usePricePool(isThorProtocol)
   const pricePoolMaya = usePricePoolMaya(!isThorProtocol)
@@ -396,7 +400,7 @@ export const ActivePools = (): JSX.Element => {
               network
             })
             previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData)
+            return renderPoolsTable(poolViewData, refreshing)
           } else {
             const { poolDetails } = poolsState as MayaPoolState // Cast to the correct type)
             const poolViewData = PoolHelpersMaya.getPoolTableRowsData({
@@ -406,7 +410,7 @@ export const ActivePools = (): JSX.Element => {
               network
             })
             previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData)
+            return renderPoolsTable(poolViewData, refreshing)
           }
         }
       )(poolsRD)}

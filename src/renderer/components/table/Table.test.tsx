@@ -49,7 +49,12 @@ describe('components/table/Table', () => {
     expect(html).not.toContain('No data')
     // refresh is signalled by progress bar, dimmed rows and aria-busy
     expect(html).toContain('table-refreshing')
-    expect(html).toContain('opacity-60')
+    expect(html).toContain('opacity-50')
+    // overlay bar must not take layout space: absolute, 2px, and no <caption>
+    expect(html).toMatch(
+      /<div[^>]*absolute[^>]*h-0\.5[^>]*data-testid="table-refreshing"|<div[^>]*data-testid="table-refreshing"[^>]*absolute/
+    )
+    expect(html).not.toContain('<caption')
     expect(html).toContain('aria-busy="true"')
   })
 

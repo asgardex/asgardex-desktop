@@ -42,6 +42,7 @@ import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import { useProtocolLimitMaya } from '../../hooks/useProtocolLimitMaya'
+import { useRefreshing } from '../../hooks/useRefreshing'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { LastblockItems as MayaLastblockItems } from '../../services/mayachain/types'
 import { PendingPoolsState as PendingPoolsStateMaya } from '../../services/midgard/mayaMidgard/types'
@@ -114,7 +115,10 @@ export const PendingPools = (): JSX.Element => {
 
   const oNewPoolCycle = useMemo(() => FP.pipe(poolCycle, RD.toOption), [poolCycle])
 
+  const { refreshing, startRefreshing } = useRefreshing(poolsRD)
+
   const refreshHandler = useCallback(() => {
+    startRefreshing()
     if (protocol === THORChain) {
       reloadPendingPools()
       reloadPoolCycle()
@@ -124,7 +128,15 @@ export const PendingPools = (): JSX.Element => {
     }
 
     reloadLimit()
-  }, [protocol, reloadLimit, reloadPendingPools, reloadPendingPoolsMaya, reloadPoolCycle, reloadPoolCycleMaya])
+  }, [
+    protocol,
+    reloadLimit,
+    reloadPendingPools,
+    reloadPendingPoolsMaya,
+    reloadPoolCycle,
+    reloadPoolCycleMaya,
+    startRefreshing
+  ])
 
   const pricePoolThor = usePricePool(isThorProtocol)
   const pricePoolMaya = usePricePoolMaya(!isThorProtocol)
@@ -325,7 +337,7 @@ export const PendingPools = (): JSX.Element => {
               network
             })
             previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData)
+            return renderPoolsTable(poolViewData, refreshing)
           } else {
             // filter out empty pools
             const poolDetailsFiltered = A.filter<PoolDetailMaya>(P.not(isEmptyPool))(poolDetails)
@@ -336,7 +348,7 @@ export const PendingPools = (): JSX.Element => {
               network
             })
             previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData)
+            return renderPoolsTable(poolViewData, refreshing)
           }
         }
       )(poolsRD)}
