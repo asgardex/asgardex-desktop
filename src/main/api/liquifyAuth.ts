@@ -9,8 +9,8 @@ import type { Session } from 'electron'
  * bundle, shown in Expert Mode or persisted in a store file.
  *
  * Security notes:
- * - Keys come from `MAIN_VITE_LIQUIFY_*` env vars (see `liquifyKeys.ts`). Vite never exposes
- *   `MAIN_VITE_*` to the renderer / preload bundles.
+ * - Keys come from `VITE_LIQUIFY_*` env vars (see `liquifyKeys.ts`) and are read in the main process
+ *   only. Nothing in the renderer / preload references them, so they are not compiled into those bundles.
  * - The key is still compiled into the *main* bundle and can be extracted from `app.asar` by a
  *   determined user. This hides it from the renderer bundle and DevTools only.
  * - Keys are never logged. Only product names (`midgard`, `thornodeApi`, ...) are.

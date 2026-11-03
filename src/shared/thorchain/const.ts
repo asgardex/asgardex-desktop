@@ -18,7 +18,7 @@ export const ASGARDEX_THORNODE_RPC = envOrDefault(import.meta.env.VITE_ASGARDEX_
 
 /**
  * Liquify portal keys are NOT part of renderer / shared code any more.
- * They are `MAIN_VITE_LIQUIFY_*` env vars read in the Electron main process only and sent as an
+ * They are `VITE_LIQUIFY_*` env vars read in the Electron main process only and sent as an
  * `X-API-KEY` header by `src/main/api/liquifyAuth.ts`. The renderer only ever sees public URLs.
  *
  * `isLiquifyAuthenticatedUrl` + the `mask*` helpers below remain so legacy persisted URLs of the

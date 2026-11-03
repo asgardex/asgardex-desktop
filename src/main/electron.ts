@@ -279,7 +279,7 @@ const init = async () => {
   // Import keystores + Vultisig vaults from host/legacy Flatpak on first sandbox
   // run, before the renderer or MPC SDK reads them. No-op outside Flatpak.
   await migrateHostDataIntoFlatpak()
-  // Add the Liquify `X-API-KEY` header (from MAIN_VITE_* keys) for gateway.liquify.com requests.
+  // Add the Liquify `X-API-KEY` header (from VITE_LIQUIFY_* keys, read in main only) for gateway.liquify.com requests.
   // Must be registered before the first window issues requests. No-op without keys.
   registerLiquifyAuth(session.defaultSession.webRequest, getLiquifyKeys(), log)
   await initMainWindow()
