@@ -29,7 +29,8 @@ import {
   GAIAChain,
   BTCChain,
   DASHChain,
-  ZECChain
+  ZECChain,
+  XMRChain
 } from '../../../../shared/utils/chainIds'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
 import { getAssetChain } from '../../../helpers/chainHelper'
@@ -45,6 +46,7 @@ import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
+import * as XMR from '../../monero'
 import * as NEAR from '../../near'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
@@ -378,6 +380,10 @@ export const sendTx$ = ({
     case NEARChain:
       return NEAR.sendTx({ walletType, sender, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
+    // XMR is watch-only: `XMR.sendTx` always fails with an explanatory error
+    case XMRChain:
+      return XMR.sendTx({ walletType, sender, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
+
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   }
@@ -562,6 +568,8 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
       return SUI.txStatus$(txHash, O.none)
     case NEARChain:
       return NEAR.txStatus$(txHash, O.none)
+    case XMRChain:
+      return XMR.txStatus$(txHash, O.none)
     default:
       return Rx.of(
         RD.failure({

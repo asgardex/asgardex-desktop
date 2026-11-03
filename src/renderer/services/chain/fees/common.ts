@@ -41,7 +41,8 @@ import {
   GAIAChain,
   BTCChain,
   DASHChain,
-  ZECChain
+  ZECChain,
+  XMRChain
 } from '../../../../shared/utils/chainIds'
 import { isCacaoAsset, isRujiAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
@@ -62,6 +63,7 @@ import * as MAYA from '../../mayachain'
 import { inboundAddressesShared$ as mayaInboundAddresses$ } from '../../mayachain'
 import { service as midgardMayaService } from '../../midgard/mayaMidgard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
+import * as MONERO from '../../monero'
 import * as NEAR from '../../near'
 import { ZERO_ADDRESS as NEAR_ZERO_ADDRESS } from '../../near/fees'
 import * as XRP from '../../ripple'
@@ -876,6 +878,9 @@ export const standaloneLedgerFees$ = (params: { chain: Chain; amount: BaseAmount
       return NEAR.fees$({ amount: baseAmount(1), recipient: NEAR_ZERO_ADDRESS })
     case SUIChain:
       return SUI.fees$({ amount: baseAmount(1), recipient: SUI_ZERO_ADDRESS })
+    case XMRChain:
+      // Watch-only: informational estimate only, nothing is ever sent
+      return MONERO.fees$()
     default:
       // No silent fallback: another chain's fees (e.g. RUNE) would be shown as this chain's fee
       return Rx.of(RD.failure(new Error(`Fees are not supported for chain ${chain}`)))
@@ -913,6 +918,9 @@ export const reloadStandaloneLedgerFees = (chain: Chain): void => {
       break
     case SUIChain:
       SUI.reloadFees({ amount: baseAmount(1), recipient: SUI_ZERO_ADDRESS })
+      break
+    case XMRChain:
+      MONERO.reloadFees()
       break
     default:
       // No fallback to THOR: reloading RUNE fees would not refresh this chain's fee

@@ -21,7 +21,15 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
-import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  ZECChain,
+  XMRChain
+} from '../../../shared/utils/chainIds'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BASE from '../base'
@@ -35,6 +43,7 @@ import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import { selectedPoolChain$ } from '../midgard/thorMidgard/common'
+import * as XMR from '../monero'
 import * as NEAR from '../near'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
@@ -90,6 +99,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return SUI.client$
     case NEARChain:
       return NEAR.client$
+    case XMRChain:
+      return XMR.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
@@ -146,6 +157,8 @@ export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ 
       return SUI.client$
     case NEARChain:
       return NEAR.client$
+    case XMRChain:
+      return XMR.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }

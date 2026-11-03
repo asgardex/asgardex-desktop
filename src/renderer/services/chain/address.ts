@@ -20,7 +20,15 @@ import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
-import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  ZECChain,
+  XMRChain
+} from '../../../shared/utils/chainIds'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BASE from '../base'
@@ -33,6 +41,7 @@ import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
+import * as XMR from '../monero'
 import * as NEAR from '../near'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
@@ -91,6 +100,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return SUI.address$
     case NEARChain:
       return NEAR.address$
+    case XMRChain:
+      return XMR.address$
     default:
       return Rx.of(O.none)
   }
