@@ -64,6 +64,63 @@
   </screenshots>
 
   <releases>
+    <release version="1.47.0" date="2026-10-23">
+      <url type="details">https://github.com/asgardex/asgardex-desktop/releases/tag/v1.47.0</url>
+      <description>
+        <p>Market and limit trading on the pool chart, RUNEBond listing tools, pinned favourites, and the MayaChain Radix delist.</p>
+        <ul>
+          <li>Pools: market and limit trading on the pool chart for L1 and trade-asset pairs, with a swap ticket beside the chart, limit-price lines drawn on the candles, and a list of this wallet's recent swaps for the pair with the swap receipt at the top.</li>
+          <li>Pools: limit orders fetch a fresh quote when triggered and open the wallet confirmation (never auto-signed); a quote worse than the limit fails the order, identical duplicate orders are blocked, and failed or filled orders can be removed.</li>
+          <li>Pools: the limit trigger price comes from THORNode every 6 seconds and is shown in the panel with its last check time and update interval.</li>
+          <li>Pools: pin favourite assets in the trading asset dropdown, sharing the swap menu favourites; trade-asset swaps are noted as affiliate free.</li>
+          <li>Pools: picking the chart asset in the ticket opens that pool and keeps the other side of the pair.</li>
+          <li>Bond provider refactor, block II: bonds section.</li>
+          <li>Bond provider refactor, block III: RUNEBond integration (list, update and delist a node, finder-fee vault top-up, approve whitelist requests).</li>
+          <li>UI: pin favourite assets at the top of the asset menu, saved per network.</li>
+          <li>OneClick lists Base, Tron, and Zcash in the swap picker, using the wallet's native gas asset (ETH on Base, TRX, ZEC).</li>
+          <li>A THOR or MAYA inbound check names the vault or the router that does not match the published address.</li>
+          <li>EVM: ERC-20 wallet sends drop the memo, which xchain-evm 2.1.3 rejects; THOR and MAYA swaps pay the quote inbound address and confirm that vault is still the published one.</li>
+          <li>Quiet production main-process logs, send Ledger ETH through ethereum.publicnode.com, and add the missing Ledger deposit error text.</li>
+          <li>Bonds: the bond and RUNEBond tx windows cannot be closed while a send is pending; a RUNEBond target bond must be greater than the minimum.</li>
+          <li>MayaChain delisted Radix. Swaps and liquidity for XRD are unavailable. Send on the Radix network still works, and the Radix client loads only when XRD is enabled or a Radix screen is opened.</li>
+          <li>Keep BTC Taproot swaps on the Taproot wallet; MAYAChain is left out of Taproot quotes.</li>
+          <li>UI: label Ledger mode and badge Vultisig in the header.</li>
+          <li>Floor the UTXO inbound fee at the destination protocol's gas_rate.</li>
+          <li>Tron: pass the swap into the inbound fee quote, so a native TRX swap is no longer priced as a TRC20 transfer.</li>
+          <li>Performance: keep swap and pool screens stable while data reloads; block a stale trade quote and drop held data on network change.</li>
+          <li>Performance: keep heavy chain clients and the swap aggregator off startup.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.46.1" date="2026-10-09">
+      <url type="details">https://github.com/asgardex/asgardex-desktop/releases/tag/v1.46.1</url>
+      <description>
+        <p>Fixes max ADA swaps, BSC sends with a zero base fee, fee-estimate swap memos, and max native RUNE deposits.</p>
+        <ul>
+          <li>Swap: a max ADA swap no longer spends the entire wallet balance.</li>
+          <li>EVM: set maxFeePerGas explicitly so BSC transactions build when the base fee is zero.</li>
+          <li>Swap: fee-estimate placeholder memos no longer write the slippage tolerance into the THORChain limit field.</li>
+          <li>Swap: a max native RUNE swap leaves the flat 0.02 RUNE ante on the account instead of subtracting a quoted inbound fee that can still be zero.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.46.0" date="2026-09-28">
+      <url type="details">https://github.com/asgardex/asgardex-desktop/releases/tag/v1.46.0</url>
+      <description>
+        <p>Added Near Client, added Zcash Thorchain support, UI improvements. New Bond Page / Bond provider tools.</p>
+        <ul>
+          <li>NEAR wallet client and Near Intents (OneClick) trading.</li>
+          <li>Enable THORChain routing for Zcash.</li>
+          <li>Swap: static decentralization score on quotes (THORChain 90, MAYAChain 73, Chainflip 58, NEAR Intents 25).</li>
+          <li>OneClick: request 60 bps so the partner share stays 30, and collect every OneClick affiliate fee in one ANY_INPUT pot instead of the per-chain address map.</li>
+          <li>Swap: allow ETH to NEAR via Near Intents.</li>
+          <li>UI: unlock error on the password field, stored-address confirmation, language names, logo gleam, single search border.</li>
+          <li>EVM: EIP-1559 tip and base-fee headroom for plain transfers.</li>
+          <li>Swap: stop synth sunset copy on an empty asset picker.</li>
+          <li>Bond provider refactor, block I.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.45.3" date="2026-08-27">
       <url type="details">https://github.com/asgardex/asgardex-desktop/releases/tag/v1.45.3</url>
       <description>
