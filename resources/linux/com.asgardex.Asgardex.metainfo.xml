@@ -59,7 +59,15 @@
   <screenshots>
     <screenshot type="default">
       <caption>Pools overview with swap and add-liquidity actions</caption>
-      <image type="source">https://www.asgardex.com/pools-home.png</image>
+      <image type="source" width="1920" height="1107">https://raw.githubusercontent.com/asgardex/asgardex-desktop/develop/resources/linux/screenshots/01-pools-overview.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Swapping BTC to RUNE</caption>
+      <image type="source" width="1920" height="1107">https://raw.githubusercontent.com/asgardex/asgardex-desktop/develop/resources/linux/screenshots/02-swap-btc-rune.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Wallet assets across chains</caption>
+      <image type="source" width="1920" height="1107">https://raw.githubusercontent.com/asgardex/asgardex-desktop/develop/resources/linux/screenshots/03-wallet-assets.png</image>
     </screenshot>
   </screenshots>
 
