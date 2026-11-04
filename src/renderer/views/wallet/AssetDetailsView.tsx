@@ -3,11 +3,12 @@ import { useCallback, useEffect, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
 
-import { AssetType } from '@xchainjs/xchain-util'
+import { AssetType, Chain } from '@xchainjs/xchain-util'
 import { function as FP, option as O, nonEmptyArray as NEA } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { THORChain } from '../../../shared/utils/chainIds'
 
 import { Spin } from '../../components/uielements/spin'
@@ -18,17 +19,19 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { isRuneNativeAsset } from '../../helpers/assetHelper'
 import { eqOSelectedWalletAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
+import { resolveHaltState } from '../../helpers/haltedChains'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { clientByAsset$ } from '../../services/chain/client'
 import { TxsPageRD } from '../../services/clients'
+import { UNKNOWN_MIMIR_HALT } from '../../services/thorchain/const'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 
 export const AssetDetailsView = (): JSX.Element => {
-  const { mimirHalt } = useThorchainMimirHalt()
+  const { mimirHalt: mimirHaltLoaded } = useThorchainMimirHalt()
   const {
     service: {
       pools: { haltedChains$: haltedChainsThor$ }
@@ -44,12 +47,19 @@ export const AssetDetailsView = (): JSX.Element => {
 
   const haltedChainsThorRD = useObservableState(haltedChainsThor$, RD.initial)
   const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
-  const haltedChainsThor = useMemo(() => {
-    return RD.isSuccess(haltedChainsThorRD) ? haltedChainsThorRD.value : []
-  }, [haltedChainsThorRD])
-  const haltedChainsMaya = useMemo(() => {
-    return RD.isSuccess(haltedChainsMayaRD) ? haltedChainsMayaRD.value : []
-  }, [haltedChainsMayaRD])
+  // A failed / unloaded `inbound_addresses` is "unknown", never "no halted chains":
+  // then every chain counts as halted for that protocol, and RUNE sends are blocked
+  const allChains = useMemo(() => Object.keys(DEFAULT_ENABLED_CHAINS) as Chain[], [])
+  const thorHalt = useMemo(
+    () => resolveHaltState(haltedChainsThorRD, mimirHaltLoaded, UNKNOWN_MIMIR_HALT),
+    [haltedChainsThorRD, mimirHaltLoaded]
+  )
+  const mimirHalt = thorHalt.mimirHalt
+  const haltedChainsThor = thorHalt.haltedChainsUnknown ? allChains : thorHalt.haltedChains
+  const haltedChainsMaya = useMemo(
+    () => (RD.isSuccess(haltedChainsMayaRD) ? haltedChainsMayaRD.value : allChains),
+    [allChains, haltedChainsMayaRD]
+  )
   const { getTxs$, balancesState$, loadTxs, reloadBalancesByChain, selectedAsset$, resetTxsPage } = useWalletContext()
 
   const oSelectedAsset = useObservableState(selectedAsset$, O.none)

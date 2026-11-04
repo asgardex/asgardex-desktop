@@ -12,7 +12,8 @@ import {
   dropMayachainForBtcTaproot,
   filterQuotableProtocols,
   isBtcTaprootAddress,
-  isProtocolTradingHaltedForAssets
+  isProtocolTradingHaltedForAssets,
+  isSwapDisabledForChains
 } from './protocolTradingHalt'
 
 const ethUsdc = assetFromStringEx('ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48')
@@ -160,5 +161,60 @@ describe('dropMayachainForBtcTaproot', () => {
     expect(
       filterQuotableProtocols(['Thorchain', 'Mayachain', 'Chainflip', 'OneClick'], ethUsdc, solNative, haltState)
     ).toEqual(['Chainflip', 'OneClick'])
+  })
+
+  describe('isSwapDisabledForChains', () => {
+    it('judges each protocol by its own halt state', () => {
+      const thorHalted = { ...DEFAULT_MIMIR_HALT, HALTTHORCHAIN: true }
+      expect(
+        isSwapDisabledForChains({ protocol: 'Thorchain', chains: [BTCChain], haltedChains: [], mimirHalt: thorHalted })
+      ).toBe(true)
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Mayachain',
+          chains: [BTCChain],
+          haltedChains: [],
+          mimirHalt: { ...DEFAULT_MIMIR_HALT_MAYA }
+        })
+      ).toBe(false)
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Mayachain',
+          chains: [BTCChain],
+          haltedChains: [],
+          mimirHalt: { ...DEFAULT_MIMIR_HALT_MAYA, HALTMAYACHAIN: true }
+        })
+      ).toBe(true)
+    })
+
+    it('checks every given chain, inbound halts included', () => {
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Thorchain',
+          chains: [BTCChain, ETHChain],
+          haltedChains: [ETHChain],
+          mimirHalt: { ...DEFAULT_MIMIR_HALT }
+        })
+      ).toBe(true)
+    })
+
+    it('unknown halt blocks both protocols', () => {
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Thorchain',
+          chains: [BTCChain],
+          haltedChains: [],
+          mimirHalt: UNKNOWN_MIMIR_HALT
+        })
+      ).toBe(true)
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Mayachain',
+          chains: [BTCChain],
+          haltedChains: [],
+          mimirHalt: UNKNOWN_MIMIR_HALT_MAYA
+        })
+      ).toBe(true)
+    })
   })
 })

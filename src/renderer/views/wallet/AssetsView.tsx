@@ -23,6 +23,7 @@ import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { resolveHaltState } from '../../helpers/haltedChains'
 import { logger } from '../../helpers/logger'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
@@ -32,7 +33,9 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolShares } from '../../hooks/usePoolShares'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
+import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA } from '../../services/mayachain/const'
 import { userChains$ } from '../../services/storage/userChains'
+import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_THOR } from '../../services/thorchain/const'
 import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
@@ -212,17 +215,18 @@ export const AssetsView = (): JSX.Element => {
     () => RD.toNullable(pendingPoolsMayaRD)?.poolDetails ?? [],
     [pendingPoolsMayaRD]
   )
-  const { mimirHaltRD, mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
-  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
+  const { mimirHaltRD, mimirHalt: mimirHaltThorLoaded } = useThorchainMimirHalt()
+  const { mimirHalt: mimirHaltMayaLoaded } = useMayachainMimirHalt()
   const haltedChainsThorRD = useObservableState(haltedChainsThor$, RD.initial)
   const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
-  const haltedChainsThor = useMemo(
-    () => (RD.isSuccess(haltedChainsThorRD) ? haltedChainsThorRD.value : []),
-    [haltedChainsThorRD]
+  // A failed / unloaded `inbound_addresses` is "unknown" (blocks the protocol), never "no halted chains"
+  const { haltedChains: haltedChainsThor, mimirHalt: mimirHaltThor } = useMemo(
+    () => resolveHaltState(haltedChainsThorRD, mimirHaltThorLoaded, UNKNOWN_MIMIR_HALT_THOR),
+    [haltedChainsThorRD, mimirHaltThorLoaded]
   )
-  const haltedChainsMaya = useMemo(
-    () => (RD.isSuccess(haltedChainsMayaRD) ? haltedChainsMayaRD.value : []),
-    [haltedChainsMayaRD]
+  const { haltedChains: haltedChainsMaya, mimirHalt: mimirHaltMaya } = useMemo(
+    () => resolveHaltState(haltedChainsMayaRD, mimirHaltMayaLoaded, UNKNOWN_MIMIR_HALT_MAYA),
+    [haltedChainsMayaRD, mimirHaltMayaLoaded]
   )
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])

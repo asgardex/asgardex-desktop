@@ -93,3 +93,26 @@ export const dropMayachainForBtcTaproot = (
   if (!isBtcTaprootAddress(sourceAddress) && !isBtcTaprootAddress(destinationAddress)) return protocols
   return protocols.filter((protocol) => protocol !== 'Mayachain')
 }
+
+/**
+ * True when a swap through `protocol` has to be disabled for one of `chains` (source / target chain).
+ * Each protocol is judged by its *own* halt state (`HALTTHORCHAIN` is THORChain's, `HALTMAYACHAIN` MAYAChain's):
+ * feeding THORChain's mimir to MAYAChain swaps hides MAYA halts and shows THOR halts on MAYA.
+ */
+export const isSwapDisabledForChains = ({
+  protocol,
+  chains,
+  haltedChains,
+  mimirHalt
+}: {
+  protocol: 'Thorchain' | 'Mayachain'
+  chains: Chain[]
+  haltedChains: Chain[]
+  /** Halt state of `protocol` */
+  mimirHalt: MimirHalt | MimirHaltMaya
+}): boolean =>
+  chains.some((chain) =>
+    protocol === 'Thorchain'
+      ? isThorUnquotableForChain(chain, haltedChains, mimirHalt as MimirHalt)
+      : isMayaUnquotableForChain(chain, haltedChains, mimirHalt as MimirHaltMaya)
+  )
