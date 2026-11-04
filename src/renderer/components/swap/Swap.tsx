@@ -1113,14 +1113,33 @@ export const Swap = ({
     onApprovalConfirmed: () => fetchSwap(amountToSwapRef.current)
   })
 
+  // UTXO inbound fees are priced at the rate the send pays, which depends on the quoted protocol:
+  // THORChain/MAYAChain pay their vault's `gas_rate`, Chainflip/OneClick send a plain transfer.
+  // Sticky on purpose: `oQuoteProtocol` is briefly none while a quote reloads, and falling back to
+  // "unknown" then would reload the fees, re-trigger the quote and loop.
+  const quotedProtocol = FP.pipe(
+    oQuoteProtocol,
+    O.map((quoteSwap) => quoteSwap.protocol),
+    O.toUndefined
+  )
+  const feeProtocolRef = useRef<string | undefined>(quotedProtocol)
+  // Intentional render-phase write: it must be visible to this same render, and it only ever keeps the last
+  // known value (sticky across the none-flicker), so a re-render or discarded render cannot make it wrong.
+  if (quotedProtocol) feeProtocolRef.current = quotedProtocol
+  const feeProtocol = feeProtocolRef.current
+
   const swapFeeParams = useMemo(
     () => ({
       inAsset: sourceAsset,
       memo: swapMemo,
       outAsset: targetAsset,
-      sender: sourceWalletAddress || undefined
+      sender: sourceWalletAddress || undefined,
+      inboundProtocol: feeProtocol === 'Thorchain' ? THORChain : feeProtocol === 'Mayachain' ? MAYAChain : undefined,
+      plainTransfer: feeProtocol === 'Chainflip' || feeProtocol === 'OneClick' ? true : undefined,
+      // Same condition `useSwapExecution` uses to send via `transferMax`
+      sendMax: isSourceMaxSweep && isSendMax ? true : undefined
     }),
-    [sourceAsset, sourceWalletAddress, swapMemo, targetAsset]
+    [feeProtocol, isSendMax, isSourceMaxSweep, sourceAsset, sourceWalletAddress, swapMemo, targetAsset]
   )
 
   const reloadFeesHandler = useCallback(() => {
@@ -1798,6 +1817,23 @@ export const Swap = ({
     prevFeeSender.current = sourceWalletAddress
     reloadFees(swapFeeParams)
   }, [reloadFees, sourceWalletAddress, swapFeeParams])
+
+  // Re-estimate when the quoted protocol changes: THOR and MAYA vaults publish different gas rates.
+  const prevFeeProtocol = useRef(feeProtocol)
+  useEffect(() => {
+    if (prevFeeProtocol.current === feeProtocol) return
+    prevFeeProtocol.current = feeProtocol
+    reloadFees(swapFeeParams)
+  }, [reloadFees, feeProtocol, swapFeeParams])
+
+  // Re-estimate when MAX is toggled: a sweep spends every UTXO without a change output.
+  const feeSendMax = !!swapFeeParams.sendMax
+  const prevFeeSendMax = useRef(feeSendMax)
+  useEffect(() => {
+    if (prevFeeSendMax.current === feeSendMax) return
+    prevFeeSendMax.current = feeSendMax
+    reloadFees(swapFeeParams)
+  }, [reloadFees, feeSendMax, swapFeeParams])
 
   // Track successful swap transactions
   useEffect(() => {
