@@ -48,6 +48,11 @@ describe('hooks/useMimirHaltMaya', () => {
     it('mimir = 1', () => {
       expect(getMimirStatus(1)).toBeTruthy()
     })
+    it('unknown height: only the plain 1 is active, a height is not compared', () => {
+      expect(getMimirStatus(1, 0)).toBe(true)
+      expect(getMimirStatus(10, 0)).toBe(false)
+      expect(getMimirStatus(0, 0)).toBe(false)
+    })
     it('mimir = 0', () => {
       expect(getMimirStatus(0)).toBeFalsy()
     })

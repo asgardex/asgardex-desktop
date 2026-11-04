@@ -9,6 +9,8 @@ import * as RxOp from 'rxjs/operators'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
 import { createMimirLookup } from '../helpers/mimirLookup'
+import { holdLastKnown } from '../helpers/rx/holdLastKnown'
+import { LASTBLOCK_HOLD, MIMIR_HOLD } from '../services/haltStatusHold'
 import { userChains$ } from '../services/storage/userChains'
 import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
 import {
@@ -29,6 +31,9 @@ import { useObservableLayoutState } from './useObservableLayoutState'
 export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
   // no mimir (0, or unset / negative) -> no action
   if (mimir <= 0) return false
+  // Unknown height: only the plain `1` is certain, a scheduled height can't be compared to it.
+  // (The hooks treat a missing height as "halt status unknown" before they get here.)
+  if (lastHeight <= 0) return mimir === 1
   // 1 -> halt | pause
   if (mimir === 1) return true
   // A block height: active from that block on.
@@ -110,7 +115,13 @@ export const useThorchainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
   const mimirHaltSource$ = useMemo((): Rx.Observable<MimirHaltRD> => {
     if (!enabled) return Rx.EMPTY
     return FP.pipe(
-      Rx.combineLatest([mimir$, thorchainLastblockState$, userChains$]),
+      // Inputs are only trusted while fresh (see `holdLastKnown`): old data or a node that stays down
+      // ends as a failure -> halt status unknown, never as a stale "no halt"
+      Rx.combineLatest([
+        mimir$.pipe(holdLastKnown<Mimir>(MIMIR_HOLD)),
+        thorchainLastblockState$.pipe(holdLastKnown<LastblockItems>(LASTBLOCK_HOLD)),
+        userChains$
+      ]),
       RxOp.map(([mimirRD, chainLastblockRD, enabledChains]) =>
         FP.pipe(
           sequenceTRD(mimirRD, chainLastblockRD),

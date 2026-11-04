@@ -2,19 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
-import {
-  AnyAsset,
-  BaseAmount,
-  baseAmount,
-  Chain,
-  CryptoAmount,
-  isSecuredAsset,
-  isTradeAsset
-} from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, baseAmount, CryptoAmount, isSecuredAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
-import * as RxOp from 'rxjs/operators'
 
 import { ASGARDEX_ADDRESS, getAsgardexThorname } from '../../shared/const'
 import type { ExtendedQuoteSwap } from '../components/swap/Swap.types'
@@ -27,6 +18,7 @@ import { useThorchainQueryContext } from '../contexts/ThorchainQueryContext'
 import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
 import { quoteNeedsRouterApproval } from '../helpers/evmApprovalHelper'
+import { resolveHaltState } from '../helpers/haltedChains'
 import { logger } from '../helpers/logger'
 import {
   dropMayachainForBtcTaproot,
@@ -35,6 +27,8 @@ import {
 } from '../helpers/protocolTradingHalt'
 import { dexTradeQuoteToAggregator, thorTradeQuoteToAggregator } from '../helpers/tradeQuote'
 import { getCurrentNetworkState } from '../services/app/service'
+import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA } from '../services/mayachain/const'
+import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_THOR } from '../services/thorchain/const'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useThorchainMimirHalt } from './useMimirHalt'
 import { useMayachainMimirHalt } from './useMimirHaltMaya'
@@ -108,21 +102,25 @@ export const useSwapQuote = ({
     }
   } = useMidgardMayaContext()
 
-  const [haltedChainsThor] = useObservableState(
-    () => FP.pipe(haltedChainsThor$, RxOp.map(RD.getOrElse((): Chain[] => []))),
-    [] as Chain[]
+  const haltedChainsThorRD = useObservableState(haltedChainsThor$, RD.initial)
+  const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
+
+  // A failed / unloaded `inbound_addresses` is "unknown" (blocks the protocol), never "no halted chains"
+  const thorHalt = useMemo(
+    () => resolveHaltState(haltedChainsThorRD, mimirHaltThor, UNKNOWN_MIMIR_HALT_THOR),
+    [haltedChainsThorRD, mimirHaltThor]
   )
-  const [haltedChainsMaya] = useObservableState(
-    () => FP.pipe(haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
-    [] as Chain[]
+  const mayaHalt = useMemo(
+    () => resolveHaltState(haltedChainsMayaRD, mimirHaltMaya, UNKNOWN_MIMIR_HALT_MAYA),
+    [haltedChainsMayaRD, mimirHaltMaya]
   )
 
   const haltState = useMemo(
     () => ({
-      thor: { haltedChains: haltedChainsThor, mimirHalt: mimirHaltThor },
-      maya: { haltedChains: haltedChainsMaya, mimirHalt: mimirHaltMaya }
+      thor: { haltedChains: thorHalt.haltedChains, mimirHalt: thorHalt.mimirHalt },
+      maya: { haltedChains: mayaHalt.haltedChains, mimirHalt: mayaHalt.mimirHalt }
     }),
-    [haltedChainsThor, mimirHaltThor, haltedChainsMaya, mimirHaltMaya]
+    [thorHalt, mayaHalt]
   )
 
   const mayaBlockedByTaproot = isBtcTaprootAddress(sourceWalletAddress) || isBtcTaprootAddress(destinationAddress)
