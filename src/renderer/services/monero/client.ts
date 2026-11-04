@@ -1,37 +1,184 @@
-import { Network } from '@xchainjs/xchain-client'
-import { Client, defaultXMRParams } from '@xchainjs/xchain-monero'
-import { option as O } from 'fp-ts'
+import { Network, TxType } from '@xchainjs/xchain-client'
+import { AssetXMR, Balance, Client, defaultXMRParams, Tx, TxsPage } from '@xchainjs/xchain-monero'
+import { Address, baseAmount } from '@xchainjs/xchain-util'
 
-import { buildXmrClientParams, resolveRestoreHeight, XmrConnectionConfig } from './config'
+import { getDaemonUrl, KeyValueStorage, XmrConnectionConfig } from './config'
+import { XmrViewKeys } from './derivation'
+import { lwsGetIncomingTxs, lwsGetTotalReceived, lwsLogin, LwsFetch, XMR_DECIMAL } from './lws'
+import { getConfirmedLws } from './lwsConfirmation'
+import { scanXmrWallet, ScanDeps, totalReceived } from './scanner'
 
-/**
- * Creates the Monero client from a keystore phrase (**watch-only usage**).
- *
- * The client is created twice on purpose: the first (restore height `0`) only derives the address locally,
- * so the first-use height can be remembered per address; the second one is the client which is returned.
- * If the height can't be resolved (no daemon reachable), restore height stays `0` and balance requests fail with
- * a clear error of the SDK ("Daemon scan range too large …") instead of scanning from genesis.
- */
-export const createXmrClient = async ({
-  phrase,
-  network,
-  config,
-  resolveHeight = resolveRestoreHeight
-}: {
-  phrase: string
-  network: Network
-  config: XmrConnectionConfig
-  resolveHeight?: typeof resolveRestoreHeight
-}): Promise<Client> => {
-  const baseParams = { ...defaultXMRParams, network, phrase }
-  const probe = new Client({ ...baseParams, ...buildXmrClientParams({ config, network, restoreHeight: 0 }) })
-  const address = probe.getAddress(0)
-  probe.purgeClient()
+export const XMR_SEND_DISABLED_MSG = 'Sending Monero (XMR) is not supported yet (receive-only wallet).'
 
-  const oHeight = await resolveHeight({ config, network, address })
-  const restoreHeight = O.getOrElse(() => 0)(oHeight)
-  return new Client({ ...baseParams, ...buildXmrClientParams({ config, network, restoreHeight }) })
+type Deps = {
+  storage?: KeyValueStorage
+  scanDeps?: ScanDeps
+  lwsFetch?: LwsFetch
 }
 
-/** Client without phrase: explorer URLs only (no address / balance) */
-export const createReadOnlyXmrClient = (network: Network): Client => new Client({ ...defaultXMRParams, network })
+const unsupported = (what: string) => (): never => {
+  throw new Error(`${what} is not supported (receive-only Monero wallet)`)
+}
+
+/**
+ * Receive-only Monero client for ASGARDEX.
+ *
+ * It extends the SDK `Client` for explorer URLs, address validation and fee estimates, but **never receives the
+ * keystore phrase**: the base client has no phrase, no `walletRpcUrls` and no `lwsUrls`. Address, balance and history
+ * come from view-only keys (`XmrViewKeys`: private view key + public spend key) via the local scanner or — only for a
+ * confirmed server — the LWS client. Everything which could spend (`transfer`, `broadcastTx`, `setPhrase`, wallet-rpc
+ * calls) is overridden to throw.
+ *
+ * Limitation: outgoing spends are invisible (no spend key), balance = total received.
+ */
+export class ViewOnlyXmrClient extends Client {
+  private readonly viewWallet: XmrViewKeys
+  private readonly viewConfig: XmrConnectionConfig
+  private readonly viewDeps: Deps
+  private lwsRegistered = false
+
+  constructor({
+    viewKeys,
+    network,
+    config,
+    deps = {}
+  }: {
+    viewKeys?: XmrViewKeys
+    network: Network
+    config: XmrConnectionConfig
+    deps?: Deps
+  }) {
+    const daemonUrls = {
+      ...(defaultXMRParams.daemonUrls as Record<Network, string[]>),
+      ...(config.daemonUrl ? { [network]: [config.daemonUrl] } : {})
+    } as Record<Network, string[]>
+    const none = { [Network.Mainnet]: [], [Network.Stagenet]: [], [Network.Testnet]: [] } as Record<Network, string[]>
+    super({ ...defaultXMRParams, network, daemonUrls, lwsUrls: none, walletRpcUrls: none })
+    if (viewKeys && viewKeys.network !== network) throw new Error('Monero view keys belong to another network')
+    this.viewWallet = viewKeys as XmrViewKeys
+    this.viewConfig = config
+    this.viewDeps = deps
+  }
+
+  private requireWallet(): XmrViewKeys {
+    if (!this.viewWallet) throw new Error('No Monero wallet available')
+    return this.viewWallet
+  }
+
+  getAddress(index = 0): string {
+    if (index !== 0) throw new Error('Only the primary Monero address (index 0) is supported')
+    return this.requireWallet().address
+  }
+
+  getAddressAsync(index = 0): Promise<string> {
+    return Promise.resolve().then(() => this.getAddress(index))
+  }
+
+  private assertOwnAddress(address: Address) {
+    if (address !== this.requireWallet().address) {
+      throw new Error('Balances and history are only available for the own Monero address')
+    }
+  }
+
+  /** LWS to use: only a configured server with a valid in-app confirmation for exactly this URL */
+  private confirmedLws() {
+    return getConfirmedLws(this.requireWallet(), this.viewConfig)
+  }
+
+  private async ensureLwsRegistered(lws: NonNullable<ReturnType<ViewOnlyXmrClient['confirmedLws']>>) {
+    if (this.lwsRegistered) return
+    await lwsLogin(lws, this.requireWallet(), this.viewDeps.lwsFetch)
+    this.lwsRegistered = true
+  }
+
+  private getStorage(): KeyValueStorage | undefined {
+    return this.viewDeps.storage ?? (typeof window !== 'undefined' ? window.localStorage : undefined)
+  }
+
+  private async scan() {
+    const wallet = this.requireWallet()
+    const daemonUrl = getDaemonUrl(this.viewConfig, this.getNetwork())
+    if (!daemonUrl) throw new Error('No Monero node configured')
+    return scanXmrWallet({
+      viewKeys: wallet,
+      daemonUrl,
+      restoreHeight: this.viewConfig.restoreHeight,
+      storage: this.getStorage(),
+      deps: this.viewDeps.scanDeps
+    })
+  }
+
+  async getBalance(address: Address): Promise<Balance[]> {
+    this.assertOwnAddress(address)
+    const lws = this.confirmedLws()
+    if (lws) {
+      await this.ensureLwsRegistered(lws)
+      const received = await lwsGetTotalReceived(lws, this.requireWallet(), this.viewDeps.lwsFetch)
+      return [{ asset: AssetXMR, amount: baseAmount(received.toString(), XMR_DECIMAL) }]
+    }
+    const state = await this.scan()
+    return [{ asset: AssetXMR, amount: baseAmount(totalReceived(state).toString(), XMR_DECIMAL) }]
+  }
+
+  async getTransactions(params?: { address?: string; offset?: number; limit?: number }): Promise<TxsPage> {
+    const address = params?.address ?? this.requireWallet().address
+    this.assertOwnAddress(address)
+    const offset = params?.offset ?? 0
+    const limit = params?.limit ?? 10
+
+    const lws = this.confirmedLws()
+    if (lws) {
+      await this.ensureLwsRegistered(lws)
+      const txs = await lwsGetIncomingTxs(lws, this.requireWallet(), this.viewDeps.lwsFetch)
+      return {
+        total: txs.length,
+        txs: txs.slice(offset, offset + limit).map((tx): Tx => ({
+          asset: AssetXMR,
+          date: tx.date,
+          type: TxType.Transfer,
+          hash: tx.hash,
+          from: [],
+          to: [{ to: address, amount: tx.amount }]
+        }))
+      }
+    }
+
+    const state = await this.scan()
+    const byTx = new Map<string, { amount: bigint; timestamp: number; height: number }>()
+    for (const o of state.outputs) {
+      const entry = byTx.get(o.txHash)
+      if (entry) entry.amount += o.amount
+      else byTx.set(o.txHash, { amount: o.amount, timestamp: o.timestamp, height: o.height })
+    }
+    const all = [...byTx.entries()].sort(([, a], [, b]) => b.height - a.height)
+    return {
+      total: all.length,
+      txs: all.slice(offset, offset + limit).map(([hash, e]): Tx => ({
+        asset: AssetXMR,
+        date: new Date(e.timestamp * 1000),
+        type: TxType.Transfer,
+        hash,
+        from: [],
+        to: [{ to: address, amount: baseAmount(e.amount.toString(), XMR_DECIMAL) }]
+      }))
+    }
+  }
+
+  // --- everything which could spend or needs a phrase is disabled ---
+  setPhrase(): string {
+    return unsupported('Setting a phrase')()
+  }
+  transfer(): Promise<string> {
+    return Promise.reject(new Error(XMR_SEND_DISABLED_MSG))
+  }
+  broadcastTx(): Promise<string> {
+    return Promise.reject(new Error(XMR_SEND_DISABLED_MSG))
+  }
+  getWalletBalanceDetail(): Promise<{ total: never; unlocked: never }> {
+    return Promise.reject(new Error('Wallet RPC is not supported (receive-only Monero wallet)'))
+  }
+}
+
+/** Client without any wallet: explorer URLs, address validation and fee estimates only */
+export const createReadOnlyXmrClient = (network: Network): ViewOnlyXmrClient =>
+  new ViewOnlyXmrClient({ network, config: { daemonUrl: '', lwsUrl: '', lwsConfirmation: null, restoreHeight: null } })

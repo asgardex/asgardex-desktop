@@ -1,5 +1,5 @@
 import { balances$, reloadBalances, reloadBalances$, resetReloadBalances, enhancedClient$ } from './balances'
-import { client$, clientState$, address$, addressUI$, explorerUrl$ } from './common'
+import { client$, clientState$, address$, addressUI$, explorerUrl$, pendingAck$, viewKeys$ } from './common'
 import { createFeesService } from './fees'
 import { createTransactionService } from './transaction'
 
@@ -12,6 +12,8 @@ export {
   explorerUrl$,
   client$,
   clientState$,
+  pendingAck$,
+  viewKeys$,
   balances$,
   reloadBalances,
   reloadBalances$,

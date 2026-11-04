@@ -1,6 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { function as FP, option as O } from 'fp-ts'
-import * as Rx from 'rxjs'
+import { function as FP } from 'fp-ts'
 import * as RxOp from 'rxjs/operators'
 
 import { XMRChain } from '../../../shared/utils/chainIds'
@@ -10,45 +9,38 @@ import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
-import { createReadOnlyXmrClient, createXmrClient } from './client'
+import { xmrAckVersion$ } from './ack'
+import { createReadOnlyXmrClient } from './client'
+import { createClientState$, createPendingAck$, createViewKeys$ } from './clientState'
 import { xmrConnectionConfig$ } from './config'
 import { Client$, ClientState, ClientState$ } from './types'
 
 /**
- * Stream to create an observable `XmrClient` depending on existing phrase in keystore
- *
- * Whenever a phrase has been added to keystore (or connection settings / network changed), a new client is created.
- * Whenever a phrase has been removed, `ClientState` is set to `initial`.
- *
- * The client is used for **watch-only** features (address, balances, history). Sending is not wired.
+ * View-only keys of the keystore wallet (derived locally; nothing leaves the device).
+ * The phrase is only read here, to derive them — it is never handed to a `Client`.
  */
-const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, xmrConnectionConfig$]),
-  RxOp.switchMap(([keystore, network, config]): ClientState$ =>
-    FP.pipe(
-      getPhrase(keystore),
-      O.fold(
-        (): ClientState$ => Rx.of(RD.initial),
-        (phrase): ClientState$ =>
-          Rx.from(createXmrClient({ phrase, network, config })).pipe(
-            RxOp.map((client): ClientState => RD.success(client)),
-            RxOp.catchError((error) => {
-              logger.error('Failed to create XMR client', error)
-              return Rx.of(RD.failure<Error>(isError(error) ? error : new Error('Unknown error')))
-            }),
-            RxOp.startWith<ClientState>(RD.pending)
-          )
-      )
-    )
-  ),
-  RxOp.startWith<ClientState>(RD.initial),
-  RxOp.shareReplay(1)
-)
+const viewKeys$ = createViewKeys$({
+  phrase$: keystoreService.keystoreState$.pipe(RxOp.map(getPhrase)),
+  network$: clientNetwork$
+})
+
+/** Wallet whose receive-only acknowledgement is still pending (drives the acknowledgement dialog) */
+const pendingAck$ = createPendingAck$({ viewKeys$, ackVersion$: xmrAckVersion$ })
+
+/**
+ * Receive-only client. Exists only after the user acknowledged the receive-only terms (so no address is exposed and
+ * no node is contacted before). Whenever the keystore, network or connection settings change, a new client is created.
+ */
+const clientState$: ClientState$ = createClientState$({
+  viewKeys$,
+  config$: xmrConnectionConfig$,
+  ackVersion$: xmrAckVersion$
+})
 
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
- * Client without phrase. Used for explorer URLs only (nothing wallet-related can be derived without a phrase).
+ * Client without wallet. Used for explorer URLs only.
  */
 const readOnlyClientState$: ClientState$ = FP.pipe(
   clientNetwork$,
@@ -67,12 +59,12 @@ const readOnlyClientState$: ClientState$ = FP.pipe(
 const readOnlyClient$: Client$ = readOnlyClientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
- * `Address`
+ * `Address` (O.none until the receive-only acknowledgement)
  */
 const address$: C.WalletAddress$ = C.address$(client$, XMRChain)
 
 /**
- * `Address`
+ * `Address` (O.none until the receive-only acknowledgement)
  */
 const addressUI$: C.WalletAddress$ = C.addressUI$(client$, XMRChain)
 
@@ -81,4 +73,4 @@ const addressUI$: C.WalletAddress$ = C.addressUI$(client$, XMRChain)
  */
 const explorerUrl$: C.ExplorerUrl$ = C.explorerUrl$(readOnlyClient$)
 
-export { client$, clientState$, readOnlyClient$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, readOnlyClient$, viewKeys$, pendingAck$, address$, addressUI$, explorerUrl$ }

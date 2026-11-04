@@ -1,73 +1,90 @@
 import { Network } from '@xchainjs/xchain-client'
-import { defaultXMRParams, XMRClientParams } from '@xchainjs/xchain-monero'
-import { option as O } from 'fp-ts'
+import { defaultXMRParams } from '@xchainjs/xchain-monero'
 
 import { observableState } from '../../helpers/stateHelper'
+import { LwsConfirmation } from './lwsConfirmation'
 
 /**
- * Connection settings for the (watch-only) Monero client.
+ * Connection settings for the (watch-only) Monero wallet.
  *
  * Privacy defaults
  * ----------------
- * - `lwsUrl` is empty by default: **no light-wallet server**. A Monero LWS needs the private
- *   *view key*, which lets the server see every incoming payment of the wallet. By default the view key
- *   never leaves the device — the client scans blocks of a public daemon locally instead.
- * - A custom LWS / daemon is opt-in (Wallet settings → Monero) and must be reachable via `https://`
- *   (plain `http://` is only accepted for localhost / private-network nodes).
+ * - `lwsUrl` is empty by default: **no light-wallet server**. A Monero LWS needs the private *view key*, which lets
+ *   the server see every incoming payment (and amount) of the wallet; registration is permanent. By default the view
+ *   key never leaves the device — blocks of a public daemon are scanned locally instead.
+ * - An LWS is opt-in AND needs an in-app confirmation bound to the exact URL (`lwsConfirmation`, see
+ *   `lwsConfirmation.ts`). A URL without a valid confirmation is never contacted.
+ * - Custom endpoints must be `https://`. Plain `http://` is accepted for loopback hosts only
+ *   (`localhost`, `127.0.0.0/8`, `::1`) — never for LAN ranges.
  */
 export type XmrConnectionConfig = {
   /** Monero daemon (`monerod`) RPC endpoint. Empty = use defaults of `@xchainjs/xchain-monero`. */
   daemonUrl: string
   /** MyMonero-compatible light-wallet server. Empty = disabled (view key stays local). */
   lwsUrl: string
-  /** Block height to start scanning from. `null` = auto (height at first use of an address, see `resolveRestoreHeight`). */
+  /** Proof that the user confirmed exactly `lwsUrl` in the app. `null` = not confirmed -> LWS is not used. */
+  lwsConfirmation: LwsConfirmation | null
+  /** Block height to start scanning from. `null` = auto (height at first use of an address, see `scanner.ts`). */
   restoreHeight: number | null
 }
 
 export const DEFAULT_XMR_CONNECTION_CONFIG: XmrConnectionConfig = {
   daemonUrl: '',
   lwsUrl: '',
+  lwsConfirmation: null,
   restoreHeight: null
 }
 
 export const XMR_CONNECTION_STORAGE_KEY = 'asgardex-xmr-connection'
-export const XMR_BIRTH_HEIGHT_STORAGE_KEY = 'asgardex-xmr-birth-height'
-
-/**
- * Blocks to step back from the tip when an address is used for the first time.
- * ~720 blocks ≈ 1 day (2 min / block) — covers clock skew / reorgs without exceeding the SDK's 5,000 block scan limit.
- */
-export const XMR_BIRTH_HEIGHT_MARGIN = 720
 
 /** Minimal `Storage` subset (`window.localStorage` compatible) */
 export type KeyValueStorage = Pick<Storage, 'getItem' | 'setItem'>
 
-const LOCAL_HOST =
-  /^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)$/
+/** `localhost`, `127.0.0.0/8` or `::1`. Expects a hostname as normalized by the WHATWG `URL` parser. */
+const isLoopbackHostname = (hostname: string): boolean =>
+  hostname === 'localhost' || hostname === '[::1]' || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname)
 
 /**
  * Validates a user supplied node endpoint.
- * Accepts `https://` URLs, and `http://` only for localhost / private-network hosts.
+ * Accepts `https://` URLs, and `http://` for loopback hosts only.
  * Rejects credentials in the URL, query strings and fragments.
+ *
+ * The check is done on the host *as parsed by `URL`* (so `localhost.evil.com`, `localhost@evil.com`,
+ * `localhost%2eevil.com`, `127.0.0.1.evil.com` etc. are not mistaken for loopback).
  */
 export const isValidXmrEndpoint = (value: string): boolean => {
   try {
     const url = new URL(value)
     if (url.username || url.password || url.search || url.hash) return false
-    if (url.protocol === 'https:') return true
-    return url.protocol === 'http:' && LOCAL_HOST.test(url.hostname)
+    if (url.protocol === 'https:') return url.hostname !== ''
+    return url.protocol === 'http:' && isLoopbackHostname(url.hostname)
   } catch {
     return false
   }
 }
 
-/** Removes trailing slashes (the SDK appends paths like `/json_rpc`) */
+/** Removes surrounding whitespace and trailing slashes (the SDK appends paths like `/json_rpc`) */
 export const normalizeXmrEndpoint = (value: string): string => value.trim().replace(/\/+$/, '')
+
+/**
+ * Safe-to-log form of an endpoint: `scheme://host[:port]` only. The path of an LWS URL can be a secret/token and
+ * must never be logged or shown in error messages.
+ */
+export const redactXmrEndpoint = (value: string): string => {
+  try {
+    const url = new URL(value)
+    return `${url.protocol}//${url.host}`
+  } catch {
+    return '<invalid url>'
+  }
+}
 
 const isHeight = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0
 
 /**
  * Sanitizes (possibly corrupted / tampered) persisted config. Invalid values fall back to the defaults.
+ * A stored confirmation is only kept if it is for exactly the stored `lwsUrl` (the MAC itself is verified later,
+ * with the wallet's keys, by `getConfirmedLws`).
  */
 export const sanitizeXmrConnectionConfig = (raw: unknown): XmrConnectionConfig => {
   const input = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>
@@ -76,9 +93,18 @@ export const sanitizeXmrConnectionConfig = (raw: unknown): XmrConnectionConfig =
     const normalized = normalizeXmrEndpoint(v)
     return normalized !== '' && isValidXmrEndpoint(normalized) ? normalized : ''
   }
+  const lwsUrl = endpoint(input.lwsUrl)
+  const conf = (
+    typeof input.lwsConfirmation === 'object' && input.lwsConfirmation !== null ? input.lwsConfirmation : {}
+  ) as Record<string, unknown>
+  const lwsConfirmation: LwsConfirmation | null =
+    lwsUrl !== '' && conf.url === lwsUrl && typeof conf.tag === 'string' && /^[0-9a-f]{64}$/.test(conf.tag)
+      ? { url: lwsUrl, tag: conf.tag }
+      : null
   return {
     daemonUrl: endpoint(input.daemonUrl),
-    lwsUrl: endpoint(input.lwsUrl),
+    lwsUrl,
+    lwsConfirmation,
     restoreHeight: isHeight(input.restoreHeight) ? input.restoreHeight : null
   }
 }
@@ -111,7 +137,11 @@ function getStorage(): KeyValueStorage | undefined {
 const { get$: xmrConnectionConfig$, set: setXmrConnectionConfigState } =
   observableState<XmrConnectionConfig>(loadXmrConnectionConfig())
 
-/** Persists + publishes new connection settings. The Monero client is re-created afterwards. */
+/**
+ * Persists + publishes new connection settings. The Monero client is re-created afterwards.
+ * A changed `lwsUrl` always drops the previous confirmation unless the given config carries one for the new URL
+ * (which only the confirmation flow creates).
+ */
 const updateXmrConnectionConfig = (config: XmrConnectionConfig): void => {
   const sanitized = sanitizeXmrConnectionConfig(config)
   saveXmrConnectionConfig(sanitized)
@@ -120,40 +150,7 @@ const updateXmrConnectionConfig = (config: XmrConnectionConfig): void => {
 
 export { xmrConnectionConfig$, updateXmrConnectionConfig }
 
-/**
- * Maps settings to `@xchainjs/xchain-monero` client params.
- *
- * - `walletRpcUrls` are **never** set: in-app sending is not supported (watch-only).
- * - Without a custom `lwsUrl` the LWS list stays empty -> the view key is never sent to a remote server.
- */
-export const buildXmrClientParams = ({
-  config,
-  network,
-  restoreHeight
-}: {
-  config: XmrConnectionConfig
-  network: Network
-  restoreHeight: number
-}): Pick<XMRClientParams, 'daemonUrls' | 'lwsUrls' | 'walletRpcUrls' | 'restoreHeight'> => {
-  const daemonUrls = {
-    ...(defaultXMRParams.daemonUrls as Record<Network, string[]>),
-    ...(config.daemonUrl ? { [network]: [config.daemonUrl] } : {})
-  } as Record<Network, string[]>
-  const lwsUrls = {
-    [Network.Mainnet]: [],
-    [Network.Stagenet]: [],
-    [Network.Testnet]: [],
-    ...(config.lwsUrl ? { [network]: [config.lwsUrl] } : {})
-  } as Record<Network, string[]>
-  const walletRpcUrls = {
-    [Network.Mainnet]: [],
-    [Network.Stagenet]: [],
-    [Network.Testnet]: []
-  } as Record<Network, string[]>
-  return { daemonUrls, lwsUrls, walletRpcUrls, restoreHeight }
-}
-
-/** Daemon endpoint used to look up the chain height */
+/** Daemon endpoint used for scanning / height lookups */
 export const getDaemonUrl = (config: XmrConnectionConfig, network: Network): string | undefined =>
   config.daemonUrl || (defaultXMRParams.daemonUrls as Record<Network, string[]>)[network]?.[0]
 
@@ -180,53 +177,4 @@ export const fetchDaemonHeight = async (
   const count = json?.result?.count
   if (!isHeight(count)) throw new Error('Invalid Monero daemon height')
   return count
-}
-
-const birthHeightKey = (network: Network, address: string) => `${XMR_BIRTH_HEIGHT_STORAGE_KEY}:${network}:${address}`
-
-/**
- * Resolves the height to start scanning from:
- * 1. explicit `restoreHeight` of settings
- * 2. height remembered for this address (first use)
- * 3. current daemon height minus a small margin — stored for next time
- *
- * Addresses derived by the client have never been used outside of it, so starting at the first-use height is safe
- * for fresh wallets. For wallets that already received funds earlier, set the restore height in the settings.
- */
-export const resolveRestoreHeight = async ({
-  config,
-  network,
-  address,
-  storage = getStorage(),
-  fetchHeight = fetchDaemonHeight
-}: {
-  config: XmrConnectionConfig
-  network: Network
-  address: string
-  storage?: KeyValueStorage
-  fetchHeight?: (daemonUrl: string) => Promise<number>
-}): Promise<O.Option<number>> => {
-  if (config.restoreHeight !== null) return O.some(config.restoreHeight)
-
-  const key = birthHeightKey(network, address)
-  const stored = storage?.getItem(key)
-  if (stored != null) {
-    const parsed = Number(stored)
-    if (isHeight(parsed)) return O.some(parsed)
-  }
-
-  const daemonUrl = getDaemonUrl(config, network)
-  if (!daemonUrl) return O.none
-  try {
-    const tip = await fetchHeight(daemonUrl)
-    const height = Math.max(0, tip - XMR_BIRTH_HEIGHT_MARGIN)
-    try {
-      storage?.setItem(key, String(height))
-    } catch {
-      // ignore
-    }
-    return O.some(height)
-  } catch {
-    return O.none
-  }
 }

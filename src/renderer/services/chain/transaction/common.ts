@@ -380,9 +380,7 @@ export const sendTx$ = ({
     case NEARChain:
       return NEAR.sendTx({ walletType, sender, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
-    // XMR is watch-only: `XMR.sendTx` always fails with an explanatory error
-    case XMRChain:
-      return XMR.sendTx({ walletType, sender, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
+    // XMR is receive-only: deliberately no case here, it falls through to the 'not supported' failure below
 
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)

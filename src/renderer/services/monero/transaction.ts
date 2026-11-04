@@ -4,9 +4,10 @@ import * as Rx from 'rxjs'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { TxHashLD, TxHashRD, ErrorId } from '../wallet/types'
+import { XMR_SEND_DISABLED_MSG } from './client'
 import { Client$, SendTxParams, TransactionService } from './types'
 
-export const XMR_SEND_DISABLED_MSG = 'Sending Monero (XMR) is not supported yet (watch-only wallet).'
+export { XMR_SEND_DISABLED_MSG }
 
 /**
  * Transaction service of XMR: **history / status only**.
