@@ -11,7 +11,7 @@ import * as RxAjax from 'rxjs/ajax'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeUrl } from '../../shared/api/types'
-import { getThornodeApiBaseUrls, requestThornodeApiBases, resolveThornodeRpcUrl } from '../../shared/thorchain/const'
+import { getThornodeApiBaseUrls, maskThornodeRpcUrl, requestThornodeApiBases } from '../../shared/thorchain/const'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { LiveData } from '../helpers/rx/liveData'
 import { DEFAULT_CLIENT_URL } from '../services/thorchain/const'
@@ -68,8 +68,8 @@ export const useThorchainClientUrl = (): {
   }
 
   const checkRpc$ = (url: string) => {
-    // Test the URL the client will actually use (mainnet Liquify key only when set)
-    const urlToCheck = resolveThornodeRpcUrl(url, network)
+    // Test the URL the client will actually use (never a keyed URL; main adds the key header)
+    const urlToCheck = maskThornodeRpcUrl(url)
     return FP.pipe(
       // Check `health` endpoint of THORNode RPC API
       // https://docs.tendermint.com/v0.34/rpc/#/Info/health

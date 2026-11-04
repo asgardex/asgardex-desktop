@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path, { join } from 'path'
 
-import { BrowserWindow, app, ipcMain, nativeImage } from 'electron'
+import { BrowserWindow, app, ipcMain, nativeImage, session } from 'electron'
 import electronDebug from 'electron-debug'
 import log from 'electron-log'
 import windowStateKeeper from 'electron-window-state'
@@ -31,6 +31,9 @@ import {
   getAddresses as getLedgerAddresses,
   saveAddresses as saveLedgerAddresses
 } from './api/ledger'
+import { registerLiquifyAuth } from './api/liquifyAuth'
+import { getLiquifyKeys } from './api/liquifyKeys'
+import { installLiquifySafeFetch } from './api/liquifySafeFetch'
 import { registerMpcIpcHandlers } from './api/mpc'
 import { disposeSDK } from './api/mpc/sdk'
 import { migrateHostDataIntoFlatpak } from './api/storageMigration'
@@ -277,6 +280,13 @@ const init = async () => {
   // Import keystores + Vultisig vaults from host/legacy Flatpak on first sandbox
   // run, before the renderer or MPC SDK reads them. No-op outside Flatpak.
   await migrateHostDataIntoFlatpak()
+  // Add the Liquify `X-API-KEY` header (from VITE_LIQUIFY_* keys, read in main only) for gateway.liquify.com requests.
+  // Must be registered before the first window issues requests. No-op without keys.
+  const liquifyKeys = getLiquifyKeys()
+  registerLiquifyAuth(session.defaultSession.webRequest, liquifyKeys, log)
+  // Ledger RPC in main sends the key via cosmjs `{url, headers}` using Node's global fetch: make sure
+  // the header cannot follow a redirect off gateway.liquify.com (see liquifySafeFetch.ts).
+  if (liquifyKeys.thornodeRpc) installLiquifySafeFetch()
   await initMainWindow()
   app.on('window-all-closed', allClosedHandler)
   app.on('activate', activateHandler)
