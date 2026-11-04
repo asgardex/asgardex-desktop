@@ -1,11 +1,10 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import { ChartBarIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 
 import { AnyAsset, assetToString, baseToAsset, bn, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
-import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -18,7 +17,6 @@ import { AssetsFilter } from '../../components/AssetsFilter'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { AppColumnDef, Table } from '../../components/table'
 import { AssetData } from '../../components/uielements/assets/assetData'
-import { TextButton } from '../../components/uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
 import { Label } from '../../components/uielements/label'
 import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
@@ -61,13 +59,14 @@ export const ActivePools = (): JSX.Element => {
   } = useWalletContext()
   const {
     service: {
-      pools: { poolsState$, reloadPools, poolsPeriod$, setPoolsPeriod }
+      pools: { poolsState$, poolsLoading$, reloadPools, poolsPeriod$, setPoolsPeriod }
     }
   } = useMidgardContext()
   const {
     service: {
       pools: {
         poolsState$: mayaPoolsState$,
+        poolsLoading$: mayaPoolsLoading$,
         reloadPools: reloadMayaPools,
         poolsPeriod$: poolsPeriodMaya$,
         setPoolsPeriod: setPoolsPeriodMaya
@@ -103,6 +102,10 @@ export const ActivePools = (): JSX.Element => {
 
   // store previous data of pools to render these while reloading
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
+
+  // The pools state keeps the last Success while reloading, so it can't tell about a running reload.
+  // Use the state of the request instead to show a refresh while rows stay on screen.
+  const refreshing = useObservableLayoutState(isThorProtocol ? poolsLoading$ : mayaPoolsLoading$, false)
 
   const refreshHandler = useCallback(() => {
     if (protocol === THORChain) {
@@ -317,16 +320,13 @@ export const ActivePools = (): JSX.Element => {
         : []),
       {
         accessorKey: 'actions',
-        header: () => (
-          <div className="flex items-center justify-center">
-            <TextButton size={isDesktopView ? 'normal' : 'large'} onClick={refreshHandler}>
-              <div className="flex items-center">
-                <ArrowPathIcon className={clsx('h-4 w-4', { 'mr-2': isDesktopView })} />
-                {isDesktopView && intl.formatMessage({ id: 'common.refresh' })}
-              </div>
-            </TextButton>
-          </div>
-        ),
+        header: () =>
+          Shared.renderRefreshHeader({
+            onClick: refreshHandler,
+            refreshing,
+            isDesktopView,
+            label: intl.formatMessage({ id: 'common.refresh' })
+          }),
         cell: ({ row }) => {
           const { asset } = row.original
           return renderBtnPoolsColumn(asset)
@@ -345,6 +345,7 @@ export const ActivePools = (): JSX.Element => {
       protocol,
       addPoolToWatchlist,
       refreshHandler,
+      refreshing,
       removePoolFromWatchlist,
       renderBtnPoolsColumn,
       setPoolsPeriod,
@@ -364,8 +365,8 @@ export const ActivePools = (): JSX.Element => {
             setFilter={setPoolFilter}
             poolFilters={DEFAULT_POOL_FILTERS}
           />
-          <ProtocolLimit limit={limitRD} protocol={protocol} />
-          <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
+          <ProtocolLimit key={protocol} limit={limitRD} protocol={protocol} />
+          <IncentivePendulum key={protocol} incentivePendulum={incentivePendulumRD} protocol={protocol} />
           <Table columns={columns} data={dataSource} loading={loading} />
         </>
       )

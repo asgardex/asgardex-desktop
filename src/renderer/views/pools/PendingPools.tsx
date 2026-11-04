@@ -1,13 +1,11 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 
 import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
-import clsx from 'clsx'
 import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -20,7 +18,7 @@ import { AssetsFilter } from '../../components/AssetsFilter'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { AppColumnDef, Table } from '../../components/table'
 import { AssetData } from '../../components/uielements/assets/assetData'
-import { ManageButton, TextButton } from '../../components/uielements/button'
+import { ManageButton } from '../../components/uielements/button'
 import { Label } from '../../components/uielements/label'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
@@ -65,12 +63,16 @@ export const PendingPools = (): JSX.Element => {
 
   const {
     service: {
-      pools: { pendingPoolsState$, reloadPendingPools }
+      pools: { pendingPoolsState$, pendingPoolsLoading$, reloadPendingPools }
     }
   } = useMidgardContext()
   const {
     service: {
-      pools: { pendingPoolsState$: pendingPoolStateMaya$, reloadPendingPools: reloadPendingPoolsMaya }
+      pools: {
+        pendingPoolsState$: pendingPoolStateMaya$,
+        pendingPoolsLoading$: pendingPoolsLoadingMaya$,
+        reloadPendingPools: reloadPendingPoolsMaya
+      }
     }
   } = useMidgardMayaContext()
 
@@ -113,6 +115,10 @@ export const PendingPools = (): JSX.Element => {
   const poolCycle = isThorProtocol ? poolCycleThor : poolCycleMaya
 
   const oNewPoolCycle = useMemo(() => FP.pipe(poolCycle, RD.toOption), [poolCycle])
+
+  // The pending pools state keeps the last Success while reloading, so it can't tell about a running reload.
+  // Use the state of the request instead to show a refresh while rows stay on screen.
+  const refreshing = useObservableLayoutState(isThorProtocol ? pendingPoolsLoading$ : pendingPoolsLoadingMaya$, false)
 
   const refreshHandler = useCallback(() => {
     if (protocol === THORChain) {
@@ -250,16 +256,13 @@ export const PendingPools = (): JSX.Element => {
         : []),
       {
         accessorKey: 'actions',
-        header: () => (
-          <div className="flex items-center justify-center">
-            <TextButton size={isDesktopView ? 'normal' : 'large'} onClick={refreshHandler}>
-              <div className="flex items-center">
-                <ArrowPathIcon className={clsx('h-4 w-4', { 'mr-2': isDesktopView })} />
-                {isDesktopView && intl.formatMessage({ id: 'common.refresh' })}
-              </div>
-            </TextButton>
-          </div>
-        ),
+        header: () =>
+          Shared.renderRefreshHeader({
+            onClick: refreshHandler,
+            refreshing,
+            isDesktopView,
+            label: intl.formatMessage({ id: 'common.refresh' })
+          }),
         cell: ({ row }) => {
           return renderBtnPoolsColumn('', row.original)
         },
@@ -274,6 +277,7 @@ export const PendingPools = (): JSX.Element => {
       network,
       pricePool.asset,
       refreshHandler,
+      refreshing,
       removePoolFromWatchlist,
       renderBlockLeftColumn,
       renderBtnPoolsColumn
@@ -292,8 +296,8 @@ export const PendingPools = (): JSX.Element => {
             activeFilter={poolFilter}
             poolFilters={DEFAULT_POOL_FILTERS}
           />
-          <ProtocolLimit limit={limitRD} protocol={protocol} />
-          <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
+          <ProtocolLimit key={protocol} limit={limitRD} protocol={protocol} />
+          <IncentivePendulum key={protocol} incentivePendulum={incentivePendulumRD} protocol={protocol} />
           <Table key={protocol} columns={columns} data={dataSource} loading={loading} />
         </>
       )

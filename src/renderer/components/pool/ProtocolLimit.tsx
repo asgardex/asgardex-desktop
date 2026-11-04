@@ -6,6 +6,7 @@ import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetCacao, AssetRuneNative, THORChain } from '../../../shared/utils/chainIds'
+import { useLastSuccessRD } from '../../hooks/useLastSuccess'
 import { LimitRD } from '../../hooks/useProtocolLimit'
 import { Alert } from '../uielements/alert'
 
@@ -14,7 +15,10 @@ type Props = {
   protocol: Chain
 }
 
-export const ProtocolLimit = ({ limit: limitRD, protocol }: Props) => {
+export const ProtocolLimit = ({ limit: limitPropRD, protocol }: Props) => {
+  // Keep the last value while reloading, otherwise the alert disappears and the page shifts.
+  // Note: Use `key={protocol}` in parent to not keep values of another protocol
+  const limitRD = useLastSuccessRD(limitPropRD)
   const intl = useIntl()
   const asset = protocol === THORChain ? AssetRuneNative : AssetCacao
 

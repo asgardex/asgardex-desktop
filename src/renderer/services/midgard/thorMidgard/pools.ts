@@ -176,6 +176,9 @@ const createPoolsService = ({
    */
   const apiGetPoolsEnabled$: PoolDetailsLD = apiGetPools$({ status: GetPoolsStatusEnum.Available }, reloadPools$)
 
+  // Request state of enabled pools, `true` while loading (not affected by `preserveSuccessUntil`)
+  const poolsLoading$ = apiGetPoolsEnabled$.pipe(RxOp.map(RD.isPending))
+
   // `TriggerStream` to reload data of pending pools
   const { stream$: reloadPendingPools$, trigger: reloadPendingPools } = triggerStream()
 
@@ -183,6 +186,9 @@ const createPoolsService = ({
    * Data of pending `Pools` from Midgard
    */
   const apiGetPoolsPending$: PoolDetailsLD = apiGetPools$({ status: GetPoolsStatusEnum.Staged }, reloadPendingPools$)
+
+  // Request state of pending pools, `true` while loading (not affected by `preserveSuccessUntil`)
+  const pendingPoolsLoading$ = apiGetPoolsPending$.pipe(RxOp.map(RD.isPending))
 
   // `TriggerStream` to reload data of all pools
   const { stream$: reloadAllPools$, trigger: reloadAllPools } = triggerStream()
@@ -878,6 +884,8 @@ const createPoolsService = ({
     poolsPeriod$,
     poolsState$,
     pendingPoolsState$,
+    poolsLoading$,
+    pendingPoolsLoading$,
     allPoolDetails$,
     setSelectedPricePoolAsset,
     selectedPricePoolAsset$,
