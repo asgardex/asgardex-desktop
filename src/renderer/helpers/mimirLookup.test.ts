@@ -1,7 +1,7 @@
 /* eslint-disable no-console -- tests assert the console.warn on a mimir key casing mismatch */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createMimirLookup, resetMimirCasingWarnings } from './mimirLookup'
+import { createMimirLookup, isHaltRelevantMimirKey, parseMimir, resetMimirCasingWarnings } from './mimirLookup'
 
 describe('helpers/mimirLookup', () => {
   beforeEach(() => {
@@ -47,5 +47,53 @@ describe('helpers/mimirLookup', () => {
   it('does not warn about keys that are never looked up', () => {
     createMimirLookup({ somethingElse: 1 }, 'THORNode')('HALTBTCCHAIN')
     expect(console.warn).not.toHaveBeenCalled()
+  })
+})
+
+describe('helpers/mimirLookup parseMimir', () => {
+  it('accepts numbers and integer strings', () => {
+    expect(parseMimir({ HALTBTCCHAIN: 1, PAUSELP: '12', OTHER: ' 3 ' })).toEqual({
+      HALTBTCCHAIN: 1,
+      PAUSELP: 12,
+      OTHER: 3
+    })
+  })
+
+  it.each([[''], [null], [false], ['abc'], [Number.NaN], [{}], ['1.5']])(
+    'rejects a malformed halt key value %p (status unknown, never "no halt")',
+    (raw) => {
+      expect(() => parseMimir({ HALTBTCCHAIN: raw })).toThrow('HALTBTCCHAIN')
+    }
+  )
+
+  it('checks halt keys case-insensitively', () => {
+    expect(() => parseMimir({ haltbtcchain: '' })).toThrow()
+  })
+
+  it('drops malformed values of unrelated keys', () => {
+    expect(parseMimir({ SOMETHINGELSE: 'x', HALTBTCCHAIN: 0 })).toEqual({ HALTBTCCHAIN: 0 })
+  })
+
+  it('throws for a non-object body', () => {
+    expect(() => parseMimir(null)).toThrow()
+    expect(() => parseMimir([1])).toThrow()
+    expect(() => parseMimir('x')).toThrow()
+  })
+
+  it('treats every halt key the app reads as relevant', () => {
+    ;[
+      'HALTBTCCHAIN',
+      'HALTBTCTRADING',
+      'HALTTHORCHAIN',
+      'HALTTCYTRADING',
+      'HALTTRADING',
+      'HALTCHAINGLOBAL',
+      'SOLVENCYHALTBTCCHAIN',
+      'NODEPAUSECHAINGLOBAL',
+      'PAUSELP',
+      'PAUSELPBTC',
+      'PAUSELPDEPOSIT-BTC-BTC'
+    ].forEach((key) => expect([key, isHaltRelevantMimirKey(key)]).toEqual([key, true]))
+    expect(isHaltRelevantMimirKey('MINIMUMBONDINRUNE')).toBe(false)
   })
 })

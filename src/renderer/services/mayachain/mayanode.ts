@@ -46,6 +46,8 @@ import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { logger } from '../../helpers/logger'
+import { parseMimir } from '../../helpers/mimirLookup'
+import { HALT_REQUEST_TIMEOUT_MS, withTimeout } from '../../helpers/requestTimeout'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { preserveSuccessUntil } from '../../helpers/rx/preserveSuccess'
 import { triggerStream } from '../../helpers/stateHelper'
@@ -208,7 +210,16 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     mayanodeUrl$,
     liveData.chain((basePath) =>
       FP.pipe(
-        Rx.from(new NetworkApi(getMayanodeAPIConfiguration(basePath)).lastblock()),
+        // Timeout: a node that never answers must end as a failure (halt status unknown), not stay pending
+        Rx.from(
+          withTimeout(
+            new NetworkApi(getMayanodeAPIConfiguration(basePath)).lastblock(undefined, {
+              timeout: HALT_REQUEST_TIMEOUT_MS
+            }),
+            HALT_REQUEST_TIMEOUT_MS,
+            'MAYANode lastblock request'
+          )
+        ),
         RxOp.map((response: AxiosResponse<LastBlockResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
         RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
       )
@@ -399,33 +410,30 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     mayanodeUrl$,
     liveData.chain((basePath) =>
       FP.pipe(
+        // Timeout: a node that never answers must end as a failure (halt status unknown), not stay pending
         Rx.from(
-          height !== undefined
-            ? new MimirApi(getMayanodeAPIConfiguration(basePath)).mimir(height)
-            : new MimirApi(getMayanodeAPIConfiguration(basePath)).mimir()
+          withTimeout(
+            height !== undefined
+              ? new MimirApi(getMayanodeAPIConfiguration(basePath)).mimir(height, { timeout: HALT_REQUEST_TIMEOUT_MS })
+              : new MimirApi(getMayanodeAPIConfiguration(basePath)).mimir(undefined, {
+                  timeout: HALT_REQUEST_TIMEOUT_MS
+                }),
+            HALT_REQUEST_TIMEOUT_MS,
+            'MAYANode mimir request'
+          )
         ),
-        RxOp.catchError((e) => Rx.of(RD.failure(Error(`Failed loading mimir: ${JSON.stringify(e)}`)))),
-        RxOp.map((response) => {
-          if ('data' in response) {
-            const responseData = response.data
-            if (responseData && typeof responseData === 'object') {
-              const result: Mimir = {}
-              for (const [key, value] of Object.entries(responseData)) {
-                const numberValue = Number(value)
-                if (!isNaN(numberValue)) {
-                  result[key] = numberValue
-                } else {
-                  return RD.failure(new Error(`Invalid value for key ${key}: ${value}`))
-                }
-              }
-              return RD.success(result as Mimir)
-            } else {
-              return RD.failure(new Error('Unexpected response format: responseData is not an object'))
-            }
-          } else {
-            return RD.failure(new Error('Response is not an AxiosResponse'))
+        RxOp.map((response): RD.RemoteData<Error, Mimir> => {
+          if (!('data' in response)) return RD.failure(new Error('Response is not an AxiosResponse'))
+          try {
+            // Strict: malformed halt keys fail the whole request, malformed unrelated keys are dropped
+            return RD.success(parseMimir(response.data) as Mimir)
+          } catch (e) {
+            return RD.failure(e instanceof Error ? e : new Error(String(e)))
           }
-        })
+        }),
+        RxOp.catchError((e) =>
+          Rx.of(RD.failure(Error(`Failed loading mimir: ${e instanceof Error ? e.message : JSON.stringify(e)}`)))
+        )
       )
     )
   )

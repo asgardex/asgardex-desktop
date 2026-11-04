@@ -40,3 +40,49 @@ export const createMimirLookup = (mimir: MimirValues, source: string) => {
     return entries.map(({ value }) => value)
   }
 }
+
+/**
+ * Keys of `/mimir` the app reads for halts (see `getThorchainMimirHalt` / `getMayachainMimirHalt`).
+ * Matched case-insensitively. Only these can make a mimir response invalid: a malformed value of any
+ * other key (there are hundreds) must not take the halt status down.
+ */
+const HALT_RELEVANT_MIMIR_KEY =
+  /^(HALT[A-Z0-9]+(CHAIN|TRADING)|HALTCHAINGLOBAL|HALTTRADING|SOLVENCYHALT[A-Z0-9]+CHAIN|NODEPAUSECHAINGLOBAL|PAUSELP[A-Z0-9]*|PAUSELPDEPOSIT-[A-Z0-9]+-[A-Z0-9]+)$/
+
+export const isHaltRelevantMimirKey = (key: string): boolean => HALT_RELEVANT_MIMIR_KEY.test(key.toUpperCase())
+
+/**
+ * Strict mimir value: a finite number, or a string holding an integer.
+ * `Number('')`, `Number(null)` and `Number(false)` are all `0` ("no halt"), so they are rejected here
+ * instead of being coerced.
+ */
+export const parseMimirValue = (value: unknown): number | undefined => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    return /^-?\d+$/.test(trimmed) ? Number(trimmed) : undefined
+  }
+  return undefined
+}
+
+/**
+ * Parses a `/mimir` response body.
+ * - Throws if it is not a plain object, or if a key the app reads for halts has a malformed value
+ *   (the halt status is then unknown, never "no halt").
+ * - Malformed values of other keys are dropped.
+ */
+export const parseMimir = (data: unknown): MimirValues => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('Unexpected response format: mimir is not an object')
+  }
+  const result: MimirValues = {}
+  for (const [key, raw] of Object.entries(data)) {
+    const value = parseMimirValue(raw)
+    if (value !== undefined) {
+      result[key] = value
+    } else if (isHaltRelevantMimirKey(key)) {
+      throw new Error(`Invalid value for mimir key ${key}: ${JSON.stringify(raw)}`)
+    }
+  }
+  return result
+}
