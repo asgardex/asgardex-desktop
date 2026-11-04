@@ -132,17 +132,41 @@ const settings: SettingMessages = {
   'settings.wallet.whitelist': 'Liste blanche',
   'settings.wallet.customToken': 'Token personnalisé',
   'monero.settings.watchOnly':
-    "Monero est en lecture seule : vous pouvez voir votre solde et votre historique. L'envoi n'est pas encore pris en charge.",
+    "Monero est en réception seule : vous voyez les paiements entrants et votre solde. L'envoi n'est pas encore pris en charge.",
   'monero.settings.daemon': 'URL du nœud (facultatif)',
   'monero.settings.lws': 'URL du serveur de portefeuille léger (facultatif)',
   'monero.settings.lws.warning':
-    'Confidentialité : un serveur de portefeuille léger reçoit votre clé de vue privée et peut voir tous les paiements entrants. Laissez vide pour analyser localement via le nœud (par défaut).',
+    "Confidentialité : un serveur de portefeuille léger reçoit votre clé de vue privée, voit tous les paiements entrants et leurs montants, et l'enregistrement est définitif (irréversible). Laissez vide pour analyser localement via le nœud (par défaut).",
   'monero.settings.restoreHeight': 'Hauteur de restauration (facultatif)',
   'monero.settings.restoreHeight.hint':
-    "Hauteur de bloc à laquelle le portefeuille a été créé. Vide = hauteur de la première utilisation. Sans serveur de portefeuille léger, l'analyse est limitée à environ 5 000 blocs (~1 semaine).",
-  'monero.settings.invalidUrl': 'URL invalide. Utilisez https:// (http:// uniquement pour les nœuds locaux).',
+    'Hauteur de bloc à laquelle le portefeuille a été utilisé pour la première fois. Vide = hauteur de la première utilisation. Sans serveur de portefeuille léger, une analyse couvre au plus 5 000 blocs (~1 semaine).',
+  'monero.settings.invalidUrl': 'URL invalide. Utilisez https:// (http:// uniquement pour localhost).',
   'monero.settings.invalidHeight': 'Hauteur de bloc invalide. Utilisez un nombre entier.',
-  'monero.send.watchOnly': "L'envoi de Monero (XMR) n'est pas encore pris en charge (lecture seule)."
+  'monero.send.watchOnly': "L'envoi de Monero (XMR) n'est pas encore pris en charge (réception seule).",
+  'monero.lws.confirm.title': 'Utiliser ce serveur de portefeuille léger ?',
+  'monero.lws.confirm.body':
+    "Ce serveur recevra votre clé de vue privée. Il pourra voir TOUS les paiements entrants et leurs montants, ainsi que votre adresse IP. L'enregistrement est définitif : il est impossible de désinscrire votre adresse. Ne continuez que si vous faites confiance à ce serveur.",
+  'monero.lws.confirm.ok': "S'enregistrer auprès du serveur",
+  'monero.lws.unconfirmed':
+    "Ce serveur de portefeuille léger n'est pas encore confirmé et n'est PAS utilisé. Confirmez-le pour l'activer.",
+  'monero.lws.confirm.button': 'Confirmer le serveur',
+  'monero.ack.title': 'Monero (XMR) est en réception seule',
+  'monero.ack.send':
+    "Vous ne pouvez pas encore envoyer de XMR depuis ASGARDEX. Le solde et l'historique n'affichent que les paiements entrants ; les dépenses effectuées ailleurs ne sont pas détectées.",
+  'monero.ack.restore':
+    "Les autres portefeuilles Monero ne restaureront pas ce portefeuille à partir de votre phrase secrète : les clés sont dérivées différemment d'une phrase Monero.",
+  'monero.ack.exit':
+    'Pour retirer des fonds, exportez les clés privées de dépense et de vue (Paramètres du portefeuille → Monero → Exporter les clés privées) et importez-les dans un portefeuille Monero avec « restaurer à partir des clés ».',
+  'monero.ack.confirm': "J'ai compris",
+  'monero.ack.cancel': 'Désactiver Monero',
+  'monero.export.button': 'Exporter les clés privées',
+  'monero.export.title': 'Clés privées Monero',
+  'monero.export.warning':
+    'Toute personne disposant de ces clés peut dépenser vos Monero. Ne les partagez jamais et ne les collez jamais sur des sites web.',
+  'monero.export.spendKey': 'Clé de dépense privée',
+  'monero.export.viewKey': 'Clé de vue privée',
+  'monero.scan.rangeTooLarge':
+    "La fenêtre d'analyse Monero est trop grande : {gap} blocs à analyser (limite : {limit}, environ 1 semaine). Définissez ci-dessus une hauteur de restauration plus récente ou utilisez un serveur de portefeuille léger."
 }
 
 export default settings

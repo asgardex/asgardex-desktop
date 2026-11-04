@@ -1388,6 +1388,23 @@ type SettingMessageKey =
   | 'monero.settings.invalidUrl'
   | 'monero.settings.invalidHeight'
   | 'monero.send.watchOnly'
+  | 'monero.lws.confirm.title'
+  | 'monero.lws.confirm.body'
+  | 'monero.lws.confirm.ok'
+  | 'monero.lws.unconfirmed'
+  | 'monero.lws.confirm.button'
+  | 'monero.ack.title'
+  | 'monero.ack.send'
+  | 'monero.ack.restore'
+  | 'monero.ack.exit'
+  | 'monero.ack.confirm'
+  | 'monero.ack.cancel'
+  | 'monero.export.button'
+  | 'monero.export.title'
+  | 'monero.export.warning'
+  | 'monero.export.spendKey'
+  | 'monero.export.viewKey'
+  | 'monero.scan.rangeTooLarge'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 

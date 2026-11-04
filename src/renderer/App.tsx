@@ -1,6 +1,7 @@
 import { Provider } from 'react-redux'
 import { HashRouter as Router } from 'react-router-dom'
 
+import { MoneroReceiveAckModal } from './components/settings/MoneroReceiveAckModal'
 import { AdaProvider } from './contexts/AdaContext'
 import { AppProvider } from './contexts/AppContext'
 import { ArbProvider } from './contexts/ArbContext'
@@ -79,6 +80,7 @@ export const App = (): JSX.Element => {
                                                                           <Router>
                                                                             <ThemeProvider>
                                                                               <AppView />
+                                                                              <MoneroReceiveAckModal />
                                                                             </ThemeProvider>
                                                                           </Router>
                                                                         </I18nProvider>

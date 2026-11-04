@@ -135,17 +135,41 @@ const settings: SettingMessages = {
   'settings.wallet.whitelist': 'Whitelist',
   'settings.wallet.customToken': 'Benutzerdefinierter Token',
   'monero.settings.watchOnly':
-    'Monero ist schreibgeschützt: Guthaben und Verlauf sind sichtbar. Senden wird noch nicht unterstützt.',
+    'Monero ist nur zum Empfangen: Eingehende Zahlungen und das Guthaben sind sichtbar. Senden wird noch nicht unterstützt.',
   'monero.settings.daemon': 'Node-URL (optional)',
   'monero.settings.lws': 'Light-Wallet-Server-URL (optional)',
   'monero.settings.lws.warning':
-    'Datenschutz: Ein Light-Wallet-Server erhält deinen privaten View-Key und sieht alle eingehenden Zahlungen. Leer lassen, um lokal über die Node zu scannen (Standard).',
+    'Datenschutz: Ein Light-Wallet-Server erhält deinen privaten View-Key, sieht alle eingehenden Zahlungen samt Beträgen, und die Registrierung ist dauerhaft (nicht rückgängig zu machen). Leer lassen, um lokal über die Node zu scannen (Standard).',
   'monero.settings.restoreHeight': 'Wiederherstellungshöhe (optional)',
   'monero.settings.restoreHeight.hint':
-    'Blockhöhe, bei der die Wallet erstellt wurde. Leer = Höhe der ersten Nutzung. Ohne Light-Wallet-Server ist das Scannen auf etwa 5.000 Blöcke (~1 Woche) begrenzt.',
-  'monero.settings.invalidUrl': 'Ungültige URL. Verwende https:// (http:// nur für lokale Nodes).',
+    'Blockhöhe, bei der die Wallet erstmals genutzt wurde. Leer = Höhe der ersten Nutzung. Ohne Light-Wallet-Server umfasst ein Scan höchstens 5.000 Blöcke (~1 Woche).',
+  'monero.settings.invalidUrl': 'Ungültige URL. Verwende https:// (http:// nur für localhost).',
   'monero.settings.invalidHeight': 'Ungültige Blockhöhe. Verwende eine ganze Zahl.',
-  'monero.send.watchOnly': 'Das Senden von Monero (XMR) wird noch nicht unterstützt (schreibgeschützt).'
+  'monero.send.watchOnly': 'Das Senden von Monero (XMR) wird noch nicht unterstützt (nur Empfangen).',
+  'monero.lws.confirm.title': 'Diesen Light-Wallet-Server verwenden?',
+  'monero.lws.confirm.body':
+    'Dieser Server erhält deinen privaten View-Key. Er sieht ALLE eingehenden Zahlungen samt Beträgen und deine IP-Adresse. Die Registrierung ist dauerhaft: Deine Adresse kann nicht wieder abgemeldet werden. Fahre nur fort, wenn du diesem Server vertraust.',
+  'monero.lws.confirm.ok': 'Beim Server registrieren',
+  'monero.lws.unconfirmed':
+    'Dieser Light-Wallet-Server ist noch nicht bestätigt und wird NICHT verwendet. Bestätige ihn, um ihn zu aktivieren.',
+  'monero.lws.confirm.button': 'Server bestätigen',
+  'monero.ack.title': 'Monero (XMR) ist nur zum Empfangen',
+  'monero.ack.send':
+    'Du kannst XMR in ASGARDEX noch nicht senden. Guthaben und Verlauf zeigen nur eingehende Zahlungen; anderswo getätigte Ausgaben werden nicht erkannt.',
+  'monero.ack.restore':
+    'Andere Monero-Wallets stellen diese Wallet nicht aus deiner Seed-Phrase wieder her: Die Schlüssel werden anders als bei einem Monero-Seed abgeleitet.',
+  'monero.ack.exit':
+    'Um Guthaben abzuziehen, exportiere den privaten Spend- und View-Key (Wallet-Einstellungen → Monero → Private Schlüssel exportieren) und importiere sie mit „Aus Schlüsseln wiederherstellen“ in eine Monero-Wallet.',
+  'monero.ack.confirm': 'Ich verstehe',
+  'monero.ack.cancel': 'Monero deaktivieren',
+  'monero.export.button': 'Private Schlüssel exportieren',
+  'monero.export.title': 'Private Monero-Schlüssel',
+  'monero.export.warning':
+    'Jeder mit diesen Schlüsseln kann dein Monero ausgeben. Gib sie niemals weiter und füge sie nie auf Webseiten ein.',
+  'monero.export.spendKey': 'Privater Spend-Key',
+  'monero.export.viewKey': 'Privater View-Key',
+  'monero.scan.rangeTooLarge':
+    'Das Monero-Scanfenster ist zu groß: {gap} Blöcke zu scannen (Limit: {limit}, etwa 1 Woche). Setze oben eine neuere Wiederherstellungshöhe oder nutze einen Light-Wallet-Server.'
 }
 
 export default settings

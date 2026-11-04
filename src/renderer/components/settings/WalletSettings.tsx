@@ -107,7 +107,7 @@ import { WalletSelector } from '../uielements/wallet'
 import { EditableWalletName } from '../uielements/wallet/EditableWalletName'
 import { AutoComplete } from './AutoComplete'
 import { KeystoreHDSettingsPanel } from './KeystoreHDSettingsPanel'
-import { MoneroSettingsConnected } from './MoneroSettingsPanel'
+import { MoneroSettingsConnected } from './MoneroSettingsConnected'
 import { WalletIndexInput } from './WalletIndexInput'
 import { WhitelistModal } from './WhitelistModal'
 
