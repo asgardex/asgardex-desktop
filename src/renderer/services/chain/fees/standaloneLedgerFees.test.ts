@@ -7,7 +7,7 @@ import { firstValueFrom, of } from 'rxjs'
 import { last } from 'rxjs/operators'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { DEFAULT_ENABLED_CHAINS } from '../../../../shared/utils/chain'
+import { SUPPORTED_CHAINS } from '../../../../shared/utils/chain'
 import { THORChain } from '../../../../shared/utils/chainIds'
 import { isUtxoAssetChain } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
@@ -91,7 +91,7 @@ vi.mock(import('../../tron'), async (importOriginal) => ({
 }))
 
 // Every enabled chain the Send view routes through standaloneLedgerFees$ (not UTXO, not EVM)
-const STANDALONE_FEE_CHAINS = (Object.keys(DEFAULT_ENABLED_CHAINS) as Chain[]).filter(
+const STANDALONE_FEE_CHAINS = (Object.keys(SUPPORTED_CHAINS) as Chain[]).filter(
   (chain) => !isUtxoAssetChain(getChainAsset(chain)) && !isEvmChain(chain)
 )
 

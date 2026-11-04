@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 import * as Rx from 'rxjs'
 import { vi } from 'vitest'
 
-import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
+import { SUPPORTED_CHAINS } from '../../shared/utils/chain'
 import { BTCChain, MAYAChain } from '../../shared/utils/chainIds'
 import { disableAllActions } from '../helpers/poolHelperMaya'
 import { DEFAULT_MIMIR_HALT } from '../services/mayachain/const'
@@ -102,7 +102,7 @@ describe('hooks/useMimirHaltMaya', () => {
     })
 
     it('returns the same keys as DEFAULT_MIMIR_HALT (the keys the app reads)', () => {
-      const result = getMayachainMimirHalt({ mimir: {}, lastHeight: 100, chains: Object.keys(DEFAULT_ENABLED_CHAINS) })
+      const result = getMayachainMimirHalt({ mimir: {}, lastHeight: 100, chains: Object.keys(SUPPORTED_CHAINS) })
       expect(Object.keys(result).sort()).toEqual(Object.keys(DEFAULT_MIMIR_HALT).sort())
     })
   })

@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
-import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { SUPPORTED_CHAINS } from '../../../shared/utils/chain'
 import { ClientUrl } from '../thorchain/types'
 import { InteractState, MimirHalt } from './types'
 
@@ -13,7 +13,7 @@ export const INITIAL_INTERACT_STATE: InteractState = {
 }
 
 const createDefaultMimirHalt = (): MimirHalt => {
-  return Object.keys(DEFAULT_ENABLED_CHAINS).reduce(
+  return Object.keys(SUPPORTED_CHAINS).reduce(
     (acc, chain) => {
       acc[`HALT${chain}CHAIN`] = false
       acc[`HALT${chain}TRADING`] = false

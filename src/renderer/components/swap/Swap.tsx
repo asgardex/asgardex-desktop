@@ -31,7 +31,7 @@ import * as RxOp from 'rxjs/operators'
 import { getAsgardexAffiliateFee } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
-import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
+import { SUPPORTED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
 import { AssetRuneNative, THORChain, AssetCacao, MAYAChain, BTCChain } from '../../../shared/utils/chainIds'
 import { isVultisigWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -268,7 +268,7 @@ export const Swap = ({
   }, [])
 
   useEffect(() => {
-    const defaultChains = Object.keys(DEFAULT_ENABLED_CHAINS) as EnabledChain[]
+    const defaultChains = Object.keys(SUPPORTED_CHAINS) as EnabledChain[]
     const disabled = defaultChains.filter((chain) => !enabledChains.has(chain))
     setDisabledChains(disabled)
   }, [enabledChains])

@@ -26,7 +26,7 @@
 
 import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import * as fc from 'fast-check'
-import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { SUPPORTED_CHAINS } from '../../../shared/utils/chain'
 import { ADAChain } from '../../../shared/utils/chainIds'
 import { isMaxSweepAsset, isUtxoAssetChain, sendMaxFromPercent } from '../../helpers/assetHelper'
 
@@ -43,8 +43,8 @@ const nativeAsset = (chain: string): AnyAsset => ({
 // ─── arbitraries ──────────────────────────────────────────────────────────────
 
 // Derived from the app's canonical chain registry — automatically covers any
-// chain added to DEFAULT_ENABLED_CHAINS in future without test changes.
-const ALL_CHAINS = Object.keys(DEFAULT_ENABLED_CHAINS)
+// chain added to SUPPORTED_CHAINS in future without test changes.
+const ALL_CHAINS = Object.keys(SUPPORTED_CHAINS)
 
 // Chains where isMaxSweepAsset is true — automatically tracks any future
 // addition to isMaxSweepAsset in assetHelper.ts.

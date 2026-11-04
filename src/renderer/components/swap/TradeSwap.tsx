@@ -37,7 +37,7 @@ import { useIntl } from 'react-intl'
 
 import { ASGARDEX_ADDRESS, getAsgardexThorname } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
-import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
+import { SUPPORTED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
 import { AssetRuneNative, THORChain, AssetCacao, MAYAChain } from '../../../shared/utils/chainIds'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -283,7 +283,7 @@ export const TradeSwap = ({
   }, [])
 
   useEffect(() => {
-    const defaultChains = Object.keys(DEFAULT_ENABLED_CHAINS) as EnabledChain[]
+    const defaultChains = Object.keys(SUPPORTED_CHAINS) as EnabledChain[]
     const disabled = defaultChains.filter((chain) => !enabledChains.has(chain))
     setDisabledChains(disabled)
   }, [enabledChains])

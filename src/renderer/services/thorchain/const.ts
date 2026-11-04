@@ -3,7 +3,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
 
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
-import { DEFAULT_ENABLED_CHAINS, isSupportedChain } from '../../../shared/utils/chain'
+import { SUPPORTED_CHAINS, isSupportedChain } from '../../../shared/utils/chain'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { ClientUrl, InteractState, MimirHalt } from './types'
 
@@ -23,7 +23,7 @@ export const getPoolDepositPauseMimirKey = (chain: Chain): string => {
 }
 
 export const createDefaultMimirHalt = (): MimirHalt => {
-  return Object.keys(DEFAULT_ENABLED_CHAINS).reduce(
+  return Object.keys(SUPPORTED_CHAINS).reduce(
     (acc, chain) => {
       acc[`HALT${chain}CHAIN`] = false
       acc[`HALT${chain}TRADING`] = false

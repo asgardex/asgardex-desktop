@@ -48,7 +48,11 @@ const CHAIN_STRINGS: Record<Chain, string> = {
   [XMRChain]: 'Monero'
 }
 
-export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
+/**
+ * All chains this build supports (registry): the user can enable each of them in the wallet.
+ * Not the same as the chains enabled by default, see `DEFAULT_ENABLED_CHAINS`.
+ */
+export const SUPPORTED_CHAINS: Record<Chain, string> = {
   [BCHChain]: CHAIN_STRINGS[BCHChain],
   [BTCChain]: CHAIN_STRINGS[BTCChain],
   [GAIAChain]: CHAIN_STRINGS[GAIAChain],
@@ -72,7 +76,18 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [XMRChain]: CHAIN_STRINGS[XMRChain]
 }
 
-export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
+/**
+ * Chains which are supported, but are **not** enabled by default: the user has to enable them explicitly.
+ * XMR: enabling it derives Monero keys and contacts a Monero node, so it is opt-in.
+ */
+export const OPT_IN_CHAINS: ReadonlyArray<Chain> = [XMRChain]
+
+/** Chains enabled by default for a new wallet (all supported chains except `OPT_IN_CHAINS`) */
+export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = Object.fromEntries(
+  Object.entries(SUPPORTED_CHAINS).filter(([chain]) => !OPT_IN_CHAINS.includes(chain))
+)
+
+export type EnabledChain = keyof typeof SUPPORTED_CHAINS
 
 // Function to get the enabled chains from storage, with a fallback to default chains
 
@@ -81,16 +96,14 @@ export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
 //  * whether `Chain` is `supported`
 //  */
 export const isSupportedChain = (u: string): u is EnabledChain =>
-  Object.keys(DEFAULT_ENABLED_CHAINS).includes(u as EnabledChain)
+  Object.keys(SUPPORTED_CHAINS).includes(u as EnabledChain)
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
   MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'ZEC', 'ADA'],
   // ZEC is dual-routable (THOR + MAYA). NEAR is wallet/OneClick-only (exclude from THOR).
   // XMR is watch-only (no pools on THORChain/MAYAChain yet) — excluded from THOR, not listed for MAYA.
-  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter(
-    (chain) => !['DASH', 'MAYA', 'ARB', 'ADA', 'NEAR', 'XMR'].includes(chain)
-  )
+  THOR: Object.keys(SUPPORTED_CHAINS).filter((chain) => !['DASH', 'MAYA', 'ARB', 'ADA', 'NEAR', 'XMR'].includes(chain))
 }
 
 /**

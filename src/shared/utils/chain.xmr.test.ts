@@ -5,9 +5,12 @@ import {
   XMRChain as SdkXMRChain
 } from '@xchainjs/xchain-monero'
 
+import { CHAINS_STORAGE_DEFAULT } from '../const'
 import {
   chainToString,
   DEFAULT_ENABLED_CHAINS,
+  OPT_IN_CHAINS,
+  SUPPORTED_CHAINS,
   DefaultChainAttributes,
   getChainsForDex,
   isChainOfMaya,
@@ -25,11 +28,30 @@ describe('XMR (watch-only chain)', () => {
     expect(XMR_DECIMAL).toBe(12)
   })
 
-  it('is enabled and named', () => {
+  it('is supported and named', () => {
     expect(isSupportedChain('XMR')).toBe(true)
-    expect(DEFAULT_ENABLED_CHAINS.XMR).toBe('Monero')
+    expect(SUPPORTED_CHAINS.XMR).toBe('Monero')
     expect(chainToString('XMR')).toBe('Monero')
     expect(DefaultChainAttributes.XMR).toBeDefined()
+  })
+
+  describe('opt-in', () => {
+    it('is not enabled by default (no key derivation / node access until the user enables it)', () => {
+      expect(OPT_IN_CHAINS).toContain('XMR')
+      expect(Object.keys(DEFAULT_ENABLED_CHAINS)).not.toContain('XMR')
+      expect(CHAINS_STORAGE_DEFAULT.chains).not.toContain('XMR')
+    })
+
+    it('can still be enabled by the user (it stays a supported chain)', () => {
+      expect(Object.keys(SUPPORTED_CHAINS)).toContain('XMR')
+      expect(isSupportedChain('XMR')).toBe(true)
+    })
+
+    it('every other supported chain stays enabled by default', () => {
+      const expected = Object.keys(SUPPORTED_CHAINS).filter((c) => c !== 'XMR')
+      expect(Object.keys(DEFAULT_ENABLED_CHAINS).sort()).toEqual(expected.sort())
+      expect([...CHAINS_STORAGE_DEFAULT.chains].sort()).toEqual(expected.sort())
+    })
   })
 
   it('is excluded from THOR and MAYA swap lists', () => {
@@ -46,7 +68,7 @@ describe('XMR (watch-only chain)', () => {
   it('isWatchOnlyChain', () => {
     expect(isWatchOnlyChain('XMR')).toBe(true)
     expect(isWatchOnlyChain('xmr')).toBe(true)
-    for (const chain of Object.keys(DEFAULT_ENABLED_CHAINS).filter((c) => c !== 'XMR')) {
+    for (const chain of Object.keys(SUPPORTED_CHAINS).filter((c) => c !== 'XMR')) {
       expect(isWatchOnlyChain(chain)).toBe(false)
     }
   })
