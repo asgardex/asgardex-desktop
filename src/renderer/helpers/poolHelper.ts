@@ -241,7 +241,7 @@ export const disableAllActions = ({
   haltedChains: Chain[]
   mimirHalt: MimirHalt
 }) => {
-  // Check `HALTTHORTRADING ` (provided by `mimir` endpoint) to disable all actions for all pools
+  // Check `HALTTHORCHAIN` (provided by `mimir` endpoint) to disable all actions for all pools
   if (mimirHalt.HALTTHORCHAIN) return true
 
   // Dynamic check for the specific chain halt status
@@ -268,7 +268,7 @@ export const disableTradingActions = ({
   haltedChains: Chain[]
   mimirHalt: MimirHalt
 }) => {
-  // 1. Check `haltTrading` (provided by `mimir` endpoint) to disable all actions for all pools
+  // 1. Check `haltTrading` (provided by `mimir` endpoint) to disable trading actions (`ADD`, `SWAP`) for all pools
   if (mimirHalt.haltGlobalTrading) return true
 
   // 2. Dynamic check for the specific chain trading halt status
@@ -284,10 +284,10 @@ export const disableTradingActions = ({
  *
  * |                                   | ADD | WITHDRAW | SWAP |
  * |--------------------------------- -|-----|----------|------|
- * | PAUSELP (global)                  | NO  | YES      | YES  |
- * | PAUSELP{chain}                    | NO  | YES      | YES  |
+ * | PAUSELP (global)                  | NO  | NO       | YES  |
+ * | PAUSELP{chain}                    | NO  | NO       | YES  |
  * | HALT{chain}                       | NO  | NO       | NO   |
- * | PAUSELPDEPOSIT-{chain}-{symbol}   | NO  | YES      | NO   |
+ * | PAUSELPDEPOSIT-{chain}-{symbol}   | NO  | YES      | YES  |
  */
 export const disablePoolActions = ({
   asset,
@@ -319,10 +319,10 @@ export const disablePoolActions = ({
  *
  * |                                   | ADD | WITHDRAW | SWAP |
  * |--------------------------------- -|-----|----------|------|
- * | PAUSELP (global)                  | NO  | YES      | YES  |
- * | PAUSELP{chain}                    | NO  | YES      | YES  |
+ * | PAUSELP (global)                  | NO  | NO       | YES  |
+ * | PAUSELP{chain}                    | NO  | NO       | YES  |
  * | HALT{chain}                       | NO  | NO       | NO   |
- * | PAUSELPDEPOSIT-{chain}-{symbol}   | NO  | YES      | NO   |
+ * | PAUSELPDEPOSIT-{chain}-{symbol}   | NO  | YES      | YES  |
  */
 export const disableWithdrawActions = ({
   chain,

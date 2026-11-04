@@ -583,11 +583,9 @@ describe('helpers/poolHelper/', () => {
   // Withdraw = Withdraw.tsx (THOR disableAllActions || disableWithdrawActions, for both protocols),
   // Swap = SwapView.tsx / protocolTradingHalt.ts (disableAllActions || disableTradingActions).
   // Expected values come from the doc tables above each helper: true = blocked, false = open.
-  // A string marks a cell where the doc table and the code disagree; it is not asserted
-  // (see feeds/flux-lp-halt-matrix-*.md): D1/D2 PAUSELP / PAUSELP{chain} withdraw, D3 PAUSELPDEPOSIT swap,
-  // D4 HALTMAYACHAIN withdraw.
+  // A string marks a cell that is not asserted: D4 HALTMAYACHAIN withdraw (see feeds/flux-lp-halt-matrix-*.md).
   describe('LP pause and halt codes: on/off matrix on the mimir fixtures', () => {
-    type Cell = boolean | 'D1' | 'D2' | 'D3' | 'D4'
+    type Cell = boolean | 'D4'
     type Cells = { add: Cell; withdraw: Cell; swap: Cell }
     type Actions = { add: boolean; withdraw: boolean; swap: boolean }
     type CodeExpect = { gas: Cells; token: Cells }
@@ -669,11 +667,11 @@ describe('helpers/poolHelper/', () => {
       const gasKey = 'PAUSELPDEPOSIT-AVAX-AVAX'
       const tokenKey = 'PAUSELPDEPOSIT-AVAX-USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E'
       const EXPECT: Record<string, CodeExpect> = {
-        // poolHelper.ts table rows PAUSELP (global) / PAUSELP{chain}: ADD NO, WITHDRAW YES, SWAP YES
-        PAUSELP: { gas: { add: true, withdraw: 'D1', swap: false }, token: { add: true, withdraw: 'D1', swap: false } },
+        // poolHelper.ts table rows PAUSELP (global) / PAUSELP{chain}: ADD NO, WITHDRAW NO, SWAP YES
+        PAUSELP: { gas: { add: true, withdraw: true, swap: false }, token: { add: true, withdraw: true, swap: false } },
         PAUSELPAVAX: {
-          gas: { add: true, withdraw: 'D2', swap: false },
-          token: { add: true, withdraw: 'D2', swap: false }
+          gas: { add: true, withdraw: true, swap: false },
+          token: { add: true, withdraw: true, swap: false }
         },
         // halt{chain}Chain: ADD NO, WITHDRAW NO, SWAP NO
         HALTAVAXCHAIN: { gas: ALL, token: ALL },
@@ -685,9 +683,9 @@ describe('helpers/poolHelper/', () => {
         HALTTRADING: { gas: TRADING, token: TRADING },
         // HALTTHORCHAIN, disableAllActions
         HALTTHORCHAIN: { gas: ALL, token: ALL },
-        // PAUSELPDEPOSIT-{chain}-{symbol}: ADD NO, WITHDRAW YES, SWAP NO; scoped to one pool
-        [gasKey]: { gas: { add: true, withdraw: false, swap: 'D3' }, token: OPEN },
-        [tokenKey]: { gas: OPEN, token: { add: true, withdraw: false, swap: 'D3' } }
+        // PAUSELPDEPOSIT-{chain}-{symbol}: ADD NO, WITHDRAW YES, SWAP YES; scoped to one pool
+        [gasKey]: { gas: { add: true, withdraw: false, swap: false }, token: OPEN },
+        [tokenKey]: { gas: OPEN, token: { add: true, withdraw: false, swap: false } }
       }
       const codes = Object.keys(EXPECT)
       const onInSnapshot = [gasKey]
@@ -752,6 +750,7 @@ describe('helpers/poolHelper/', () => {
         [INBOUND]: ALL,
         HALTARBTRADING: TRADING,
         HALTTRADING: TRADING,
+        // D4: withdraw not asserted here; Withdraw.tsx uses THOR helpers for MAYA, fixed on fix/maya-withdraw-halt
         HALTMAYACHAIN: { add: true, withdraw: 'D4', swap: true }
       }
       const codes = Object.keys(EXPECT)
