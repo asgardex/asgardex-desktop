@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { monotonicNow } from '../monotonicClock'
+import { createFailClosedClock } from '../monotonicClock'
 
 export type HoldLastKnownOptions = {
   /** A held Success older than this is dropped: the value is no longer trusted (-> Failure) */
@@ -13,7 +13,7 @@ export type HoldLastKnownOptions = {
   pendingTimeoutMs: number
   /** How often age and timeouts are re-checked while the source is silent */
   tickMs?: number
-  /** Clock in ms, monotonic by default (`performance.now()`), never the wall clock */
+  /** Clock in ms. Default: `createFailClosedClock` (max of monotonic and wall-clock elapsed) */
   now?: () => number
 }
 
@@ -83,14 +83,16 @@ const sameOutput = <A>(a: Input<A>, b: Input<A>): boolean => {
  */
 export const holdLastKnown =
   <A>(options: HoldLastKnownOptions) =>
-  (source: Rx.Observable<Input<A>>): Rx.Observable<Input<A>> => {
-    const now = options.now ?? monotonicNow
-    return Rx.merge(
-      source.pipe(RxOp.map((rd) => ({ rd }) as { rd?: Input<A> })),
-      Rx.interval(options.tickMs ?? 5000).pipe(RxOp.map((): { rd?: Input<A> } => ({})))
-    ).pipe(
-      RxOp.scan((state, { rd }) => (rd ? holdInput(state, rd, now()) : state), INITIAL_HOLD_STATE<A>()),
-      RxOp.map((state) => evaluateHold(state, now(), options)),
-      RxOp.distinctUntilChanged(sameOutput)
-    )
-  }
+  (source: Rx.Observable<Input<A>>): Rx.Observable<Input<A>> =>
+    // one clock per subscription
+    Rx.defer(() => {
+      const now = options.now ?? createFailClosedClock()
+      return Rx.merge(
+        source.pipe(RxOp.map((rd) => ({ rd }) as { rd?: Input<A> })),
+        Rx.interval(options.tickMs ?? 5000).pipe(RxOp.map((): { rd?: Input<A> } => ({})))
+      ).pipe(
+        RxOp.scan((state, { rd }) => (rd ? holdInput(state, rd, now()) : state), INITIAL_HOLD_STATE<A>()),
+        RxOp.map((state) => evaluateHold(state, now(), options)),
+        RxOp.distinctUntilChanged(sameOutput)
+      )
+    })

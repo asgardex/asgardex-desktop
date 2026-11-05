@@ -113,3 +113,25 @@ describe('helpers/rx/holdLastKnown operator clock', () => {
     }
   })
 })
+
+describe('helpers/rx/holdLastKnown default clock fails closed', () => {
+  it('a forward wall-clock jump (or uncounted sleep) makes a held value stale', () => {
+    vi.useFakeTimers()
+    try {
+      const source$ = new Rx.BehaviorSubject<RD.RemoteData<Error, number>>(RD.success(1))
+      const out: Array<RD.RemoteData<Error, number>> = []
+      const sub = source$
+        .pipe(holdLastKnown<number>({ maxAgeMs: 60 * 60 * 1000, maxFailures: 2, pendingTimeoutMs: 100, tickMs: 100 }))
+        .subscribe((v) => out.push(v))
+      vi.advanceTimersByTime(200)
+      expect(out[out.length - 1]).toEqual(RD.success(1))
+      // wall clock jumps 2h ahead, monotonic time does not
+      vi.setSystemTime(Date.now() + 2 * 60 * 60 * 1000)
+      vi.advanceTimersByTime(200)
+      expect(RD.isFailure(out[out.length - 1])).toBe(true)
+      sub.unsubscribe()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})

@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { monotonicNow } from '../monotonicClock'
+import { createFailClosedClock } from '../monotonicClock'
 
 export type HeightStallOptions<A> = {
   /** Block height of a loaded value (`<= 0`: no height) */
@@ -49,21 +49,25 @@ export const evaluateStall = <A>({ input, since }: StallState<A>, now: number, s
  * if it does not advance for `stallMs` the value turns into a Failure.
  */
 export const failIfHeightStalled =
-  <A>({ getHeight, stallMs, tickMs = 5000, now = monotonicNow }: HeightStallOptions<A>) =>
+  <A>({ getHeight, stallMs, tickMs = 5000, now: nowOption }: HeightStallOptions<A>) =>
   (source: Rx.Observable<Input<A>>): Rx.Observable<Input<A>> =>
-    Rx.merge(
-      source.pipe(RxOp.map((rd) => ({ rd }) as { rd?: Input<A> })),
-      Rx.interval(tickMs).pipe(RxOp.map((): { rd?: Input<A> } => ({})))
-    ).pipe(
-      RxOp.scan(
-        (state: StallState<A>, { rd }) => (rd ? stallInput(state, rd, now(), getHeight) : state),
-        INITIAL_STALL_STATE<A>()
-      ),
-      RxOp.map((state) => evaluateStall(state, now(), stallMs)),
-      RxOp.distinctUntilChanged(
-        (a, b) =>
-          a._tag === b._tag &&
-          (!RD.isSuccess(a) || !RD.isSuccess(b) || a.value === b.value) &&
-          (!RD.isFailure(a) || !RD.isFailure(b) || a.error.message === b.error.message)
+    // one clock per subscription
+    Rx.defer(() => {
+      const now = nowOption ?? createFailClosedClock()
+      return Rx.merge(
+        source.pipe(RxOp.map((rd) => ({ rd }) as { rd?: Input<A> })),
+        Rx.interval(tickMs).pipe(RxOp.map((): { rd?: Input<A> } => ({})))
+      ).pipe(
+        RxOp.scan(
+          (state: StallState<A>, { rd }) => (rd ? stallInput(state, rd, now(), getHeight) : state),
+          INITIAL_STALL_STATE<A>()
+        ),
+        RxOp.map((state) => evaluateStall(state, now(), stallMs)),
+        RxOp.distinctUntilChanged(
+          (a, b) =>
+            a._tag === b._tag &&
+            (!RD.isSuccess(a) || !RD.isSuccess(b) || a.value === b.value) &&
+            (!RD.isFailure(a) || !RD.isFailure(b) || a.error.message === b.error.message)
+        )
       )
-    )
+    })
