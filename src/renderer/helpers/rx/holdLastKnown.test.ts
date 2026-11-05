@@ -66,4 +66,30 @@ describe('helpers/rx/holdLastKnown', () => {
     ])
     expect(RD.isFailure(evaluateHold(s, 100, OPTS))).toBe(true)
   })
+
+  it('Failure x3 then Pending stays unknown: the old value does not come back (no flapping)', () => {
+    const s = feed([
+      [RD.success(1), 0],
+      [fail, 1],
+      [fail, 2],
+      [fail, 3]
+    ])
+    expect(RD.isFailure(evaluateHold(s, 4, OPTS))).toBe(true)
+    const reload = holdInput(s, RD.pending, 5)
+    expect(RD.isFailure(evaluateHold(reload, 6, OPTS))).toBe(true)
+    // still unknown while the reload stays pending
+    expect(RD.isFailure(evaluateHold(holdInput(reload, RD.pending, 7), 8, OPTS))).toBe(true)
+    // a real success recovers
+    expect(evaluateHold(holdInput(reload, RD.success(2), 9), 10, OPTS)).toEqual(RD.success(2))
+  })
+
+  it('Failure x2 then Pending still keeps the held value', () => {
+    const s = feed([
+      [RD.success(1), 0],
+      [fail, 1],
+      [fail, 2],
+      [RD.pending, 3]
+    ])
+    expect(evaluateHold(s, 4, OPTS)).toEqual(RD.success(1))
+  })
 })

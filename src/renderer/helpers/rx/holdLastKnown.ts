@@ -39,7 +39,7 @@ export const holdInput = <A>(state: HoldState<A>, input: Input<A>, now: number):
  * What to publish for a state at `now`:
  * - Success: published while it is younger than `maxAgeMs`, otherwise Failure("stale")
  * - Failure: the held Success is kept for up to `maxFailures` failures in a row
- * - Pending: the held Success is kept; with nothing held, Pending turns into Failure after `pendingTimeoutMs`
+ * - Pending: the held Success is kept unless more than `maxFailures` loads failed in a row; with nothing held, Pending turns into Failure after `pendingTimeoutMs`
  */
 export const evaluateHold = <A>(
   { last, failures, input, pendingSince }: HoldState<A>,
@@ -54,7 +54,9 @@ export const evaluateHold = <A>(
     return last && failures <= maxFailures ? RD.success(last.value) : input
   }
   if (RD.isPending(input)) {
-    if (last) return RD.success(last.value)
+    // A reload after too many failures must not bring the old value back (no flapping unknown <-> known)
+    if (last && failures <= maxFailures) return RD.success(last.value)
+    if (last) return RD.failure(new Error(`Last ${failures} loads failed`))
     if (pendingSince !== undefined && now - pendingSince >= pendingTimeoutMs) {
       return RD.failure(new Error(`Still loading after ${Math.round(pendingTimeoutMs / 1000)}s`))
     }

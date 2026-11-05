@@ -155,4 +155,19 @@ describe('views/app/AppHaltedChains + useThorchainMimirHalt: unknown banner for 
     advance(SECOND)
     expect(text()).not.toContain(BANNER)
   })
+
+  it('success, failure x3, then a pending reload: the banner stays, no flapping', () => {
+    mimir$.next(RD.success({}))
+    render()
+    for (const msg of ['a', 'b', 'c']) {
+      act(() => mimir$.next(RD.failure(Error(msg))))
+      advance(SECOND)
+    }
+    expect(text()).toContain(BANNER)
+    act(() => mimir$.next(RD.pending))
+    for (let i = 0; i < 6; i++) {
+      advance(5 * SECOND)
+      expect(text()).toContain(BANNER)
+    }
+  })
 })
