@@ -91,4 +91,18 @@ describe('views/app/AppHaltedChains: halt status unknown', () => {
     expect(text).not.toContain('could not be loaded')
     unmount()
   })
+
+  it('shows the banner when inbound_addresses failed (actions are blocked then too)', () => {
+    const failedInbound: HaltedProtocol = { ...known(THORChain), haltedChainsRD: RD.failure(Error('inbound down')) }
+    const { text, unmount } = render('/pools/swap', [failedInbound, known(MAYAChain)])
+    expect(text).toContain('Halt status of THOR could not be loaded')
+    unmount()
+  })
+
+  it('a pending inbound_addresses reload keeps quiet', () => {
+    const pendingInbound: HaltedProtocol = { ...known(THORChain), haltedChainsRD: RD.pending }
+    const { text, unmount } = render('/pools/swap', [pendingInbound, known(MAYAChain)])
+    expect(text).not.toContain('could not be loaded')
+    unmount()
+  })
 })

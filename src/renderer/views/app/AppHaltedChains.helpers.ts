@@ -12,7 +12,7 @@ export type ResolvedProtocolData = {
   mimirHalt: MimirHalt
   midgard: boolean
   /**
-   * Mimir (or lastblock) failed to load, so halts of this protocol are unknown.
+   * Mimir, lastblock or `inbound_addresses` failed to load, so halts of this protocol are unknown.
    * `mimirHalt` is empty then and must not be read as "no halt".
    */
   mimirUnknown?: boolean

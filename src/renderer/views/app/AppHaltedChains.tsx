@@ -276,7 +276,8 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
           // EMPTY_MIMIR on failure only keeps the per-chain messages quiet - it is NOT "no halt":
           // `mimirUnknown` raises the blocking "halt status unknown" message and hides the protocol as alternative
           mimirHalt: RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD) ? prev.mimirHalt : EMPTY_MIMIR,
-          mimirUnknown: RD.isFailure(mimirHaltRD),
+          // A failed `inbound_addresses` blocks actions as well (see `resolveHaltState`), so it is unknown too
+          mimirUnknown: RD.isFailure(mimirHaltRD) || RD.isFailure(haltedChainsRD),
           midgard: RD.isSuccess(midgardStatusRD) || RD.isPending(midgardStatusRD) ? prev.midgard : false
         }
       }
