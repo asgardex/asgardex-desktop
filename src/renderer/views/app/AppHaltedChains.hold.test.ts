@@ -170,4 +170,29 @@ describe('views/app/AppHaltedChains + useThorchainMimirHalt: unknown banner for 
       expect(text()).toContain(BANNER)
     }
   })
+
+  it('lastblock keeps answering with the same height (HTTP 200): banner after 5 min', () => {
+    mimir$.next(RD.success({}))
+    render()
+    for (let i = 0; i < 4; i++) {
+      advance(MINUTE)
+      act(() => {
+        mimir$.next(RD.success({ TICK: i }))
+        lastblock$.next(lastblock(100)) // same height, fresh response
+      })
+    }
+    expect(text()).not.toContain(BANNER)
+    for (let i = 4; i < 6; i++) {
+      advance(MINUTE)
+      act(() => {
+        mimir$.next(RD.success({ TICK: i }))
+        lastblock$.next(lastblock(100))
+      })
+    }
+    expect(text()).toContain(BANNER)
+    // the chain moves on again -> known
+    act(() => lastblock$.next(lastblock(101)))
+    advance(SECOND)
+    expect(text()).not.toContain(BANNER)
+  })
 })

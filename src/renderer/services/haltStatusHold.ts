@@ -22,3 +22,9 @@ export const LASTBLOCK_HOLD: HoldLastKnownOptions = {
   maxFailures: 2,
   pendingTimeoutMs: 15 * 1000
 }
+
+/**
+ * THORChain (~6s) and MAYAChain (~5s) produce ~50-60 blocks in 5 min. A `lastblock` height that has not
+ * advanced for that long means a stuck node or a cached response, not a live chain -> halt status unknown.
+ */
+export const LASTBLOCK_STALL_MS = 5 * MINUTE

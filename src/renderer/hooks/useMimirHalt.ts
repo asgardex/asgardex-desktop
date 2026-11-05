@@ -9,8 +9,9 @@ import * as RxOp from 'rxjs/operators'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
 import { createMimirLookup } from '../helpers/mimirLookup'
+import { failIfHeightStalled } from '../helpers/rx/failIfHeightStalled'
 import { holdLastKnown } from '../helpers/rx/holdLastKnown'
-import { LASTBLOCK_HOLD, MIMIR_HOLD } from '../services/haltStatusHold'
+import { LASTBLOCK_HOLD, LASTBLOCK_STALL_MS, MIMIR_HOLD } from '../services/haltStatusHold'
 import { userChains$ } from '../services/storage/userChains'
 import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
 import {
@@ -119,7 +120,14 @@ export const useThorchainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
       // ends as a failure -> halt status unknown, never as a stale "no halt"
       Rx.combineLatest([
         mimir$.pipe(holdLastKnown<Mimir>(MIMIR_HOLD)),
-        thorchainLastblockState$.pipe(holdLastKnown<LastblockItems>(LASTBLOCK_HOLD)),
+        thorchainLastblockState$.pipe(
+          holdLastKnown<LastblockItems>(LASTBLOCK_HOLD),
+          // HTTP 200 with a height that stopped advancing is not live data
+          failIfHeightStalled<LastblockItems>({
+            getHeight: (items) => Math.max(0, ...items.map(({ thorchain }) => thorchain ?? 0)),
+            stallMs: LASTBLOCK_STALL_MS
+          })
+        ),
         userChains$
       ]),
       RxOp.map(([mimirRD, chainLastblockRD, enabledChains]) =>
