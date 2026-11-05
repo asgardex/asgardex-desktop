@@ -131,7 +131,7 @@ const settings: SettingMessages = {
   'settings.wallet.whitelist': 'व्हाइटलिस्ट',
   'settings.wallet.customToken': 'कस्टम टोकन',
   'monero.settings.watchOnly':
-    'Monero केवल प्राप्त करने के लिए है: आप आने वाले भुगतान और अपना बैलेंस देख सकते हैं। भेजना अभी समर्थित नहीं है।',
+    'Monero केवल प्राप्त करने के लिए है: आप आने वाले भुगतान और कुल प्राप्त राशि देख सकते हैं (खर्च ट्रैक नहीं किए जाते)। भेजना अभी समर्थित नहीं है।',
   'monero.settings.daemon': 'नोड URL (वैकल्पिक)',
   'monero.settings.lws': 'लाइट-वॉलेट सर्वर URL (वैकल्पिक)',
   'monero.settings.lws.warning':
@@ -165,7 +165,9 @@ const settings: SettingMessages = {
   'monero.export.spendKey': 'निजी स्पेंड कुंजी',
   'monero.export.viewKey': 'निजी व्यू कुंजी',
   'monero.scan.rangeTooLarge':
-    'Monero स्कैन विंडो बहुत बड़ी है: {gap} ब्लॉक स्कैन करने हैं (सीमा: {limit}, लगभग 1 सप्ताह)। ऊपर अधिक हाल की रीस्टोर ऊँचाई सेट करें या लाइट-वॉलेट सर्वर का उपयोग करें।'
+    'Monero स्कैन विंडो बहुत बड़ी है: {gap} ब्लॉक स्कैन करने हैं (सीमा: {limit}, लगभग 1 सप्ताह)। Monero वॉलेट सेटिंग्स में अधिक हाल की रीस्टोर ऊँचाई सेट करें या लाइट-वॉलेट सर्वर का उपयोग करें।',
+  'monero.balance.received': 'प्राप्त (खर्च ट्रैक नहीं किए जाते)',
+  'monero.balance.lws': 'प्राप्त राशि घटाकर आपके लाइट-वॉलेट सर्वर द्वारा बताए गए खर्च (असत्यापित)'
 }
 
 export default settings

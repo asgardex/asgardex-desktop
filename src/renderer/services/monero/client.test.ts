@@ -1,5 +1,8 @@
 import { Network } from '@xchainjs/xchain-client'
 
+import { firstValueFrom } from 'rxjs'
+
+import { xmrBalanceSource$ } from './balanceSource'
 import { createReadOnlyXmrClient, ViewOnlyXmrClient, XMR_SEND_DISABLED_MSG } from './client'
 import { DEFAULT_XMR_CONNECTION_CONFIG, KeyValueStorage, XmrConnectionConfig } from './config'
 import { deriveXmrExportKeys, deriveXmrViewKeys } from './derivation'
@@ -23,12 +26,12 @@ const memoryStorage = (): KeyValueStorage => {
 const make = (config: XmrConnectionConfig = DEFAULT_XMR_CONNECTION_CONFIG, lwsFetch?: LwsFetch) =>
   new ViewOnlyXmrClient({ viewKeys, network: Network.Mainnet, config, deps: { storage: memoryStorage(), lwsFetch } })
 
-const lwsFetchMock = () =>
+const lwsFetchMock = (info: Record<string, string> = { total_received: '7000000000000', total_sent: '1' }) =>
   vi.fn(async (url: string, init: { body: string }) => {
     const path = url.slice(LWS_URL.length)
     const json =
       path === '/get_address_info'
-        ? { total_received: '7000000000000', total_sent: '1' }
+        ? info
         : path === '/get_address_txs'
           ? {
               transactions: [
@@ -171,7 +174,7 @@ describe('services/monero/client (ViewOnlyXmrClient)', () => {
       expect(lwsFetch).not.toHaveBeenCalled()
     })
 
-    it('confirmed URL: registers once, then uses total_received only', async () => {
+    it('confirmed URL: registers once, then uses the balance reported by the server', async () => {
       const lwsFetch = lwsFetchMock()
       const client = make(
         {
@@ -182,7 +185,9 @@ describe('services/monero/client (ViewOnlyXmrClient)', () => {
         lwsFetch
       )
       const [balance] = await client.getBalance(viewKeys.address)
-      expect(balance.amount.amount().toString()).toBe('7000000000000') // total_sent is ignored
+      // received minus the spends the server reports (unverifiable without the spend key -> source 'lws-reported')
+      expect(balance.amount.amount().toString()).toBe('6999999999999')
+      expect(await firstValueFrom(xmrBalanceSource$)).toBe('lws-reported')
       await client.getBalance(viewKeys.address)
       const paths = lwsFetch.mock.calls.map(([url]: [string]) => url.slice(LWS_URL.length))
       expect(paths.filter((p: string) => p === '/login')).toHaveLength(1)
@@ -194,6 +199,36 @@ describe('services/monero/client (ViewOnlyXmrClient)', () => {
         expect(init.body).not.toContain(exported.privateSpendKeyHex)
         expect(init.body).not.toContain('abandon')
       }
+    })
+  })
+
+  describe('balance source (what the number means)', () => {
+    const lwsConfig = (): XmrConnectionConfig => ({
+      ...DEFAULT_XMR_CONNECTION_CONFIG,
+      lwsUrl: LWS_URL,
+      lwsConfirmation: createLwsConfirmation(viewKeys, LWS_URL)
+    })
+
+    it('local scan: total received, spends not tracked', async () => {
+      const tx = buildPaymentTx({ viewKeys, publicViewKeyHex: exported.publicViewKeyHex, amount: AMOUNT })
+      vi.stubGlobal('fetch', createFakeDaemon({ tip: 3_000_000, txHeight: 2_999_900, tx }).fetch)
+      const lwsLess = make(DEFAULT_XMR_CONNECTION_CONFIG)
+      await lwsLess.getBalance(viewKeys.address)
+      expect(await firstValueFrom(xmrBalanceSource$)).toBe('received')
+    })
+
+    it('LWS that reports spends: they are subtracted, never below zero', async () => {
+      const client = make(lwsConfig(), lwsFetchMock({ total_received: '5', total_sent: '9' }))
+      const [balance] = await client.getBalance(viewKeys.address)
+      expect(balance.amount.amount().toString()).toBe('0')
+      expect(await firstValueFrom(xmrBalanceSource$)).toBe('lws-reported')
+    })
+
+    it('LWS that does not report spends: still just "received"', async () => {
+      const client = make(lwsConfig(), lwsFetchMock({ total_received: '5' }))
+      const [balance] = await client.getBalance(viewKeys.address)
+      expect(balance.amount.amount().toString()).toBe('5')
+      expect(await firstValueFrom(xmrBalanceSource$)).toBe('received')
     })
   })
 

@@ -2,9 +2,10 @@ import { Network, TxType } from '@xchainjs/xchain-client'
 import { AssetXMR, Balance, Client, defaultXMRParams, Tx, TxsPage } from '@xchainjs/xchain-monero'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
+import { setXmrBalanceSource } from './balanceSource'
 import { getDaemonUrl, KeyValueStorage, XmrConnectionConfig } from './config'
 import { XmrViewKeys } from './derivation'
-import { lwsGetIncomingTxs, lwsGetTotalReceived, lwsLogin, LwsFetch, XMR_DECIMAL } from './lws'
+import { lwsGetBalance, lwsGetIncomingTxs, lwsLogin, LwsFetch, XMR_DECIMAL } from './lws'
 import { getConfirmedLws } from './lwsConfirmation'
 import { scanXmrWallet, ScanDeps, totalReceived } from './scanner'
 
@@ -29,7 +30,9 @@ const unsupported = (what: string) => (): never => {
  * confirmed server — the LWS client. Everything which could spend (`transfer`, `broadcastTx`, `setPhrase`, wallet-rpc
  * calls) is overridden to throw.
  *
- * Limitation: outgoing spends are invisible (no spend key), balance = total received.
+ * Limitation: outgoing spends are invisible (no spend key): the balance is "total received" — unless a confirmed LWS
+ * reports spends, which are then subtracted (as reported by the server, not verifiable). `xmrBalanceSource$` tells the UI
+ * which of the two it shows.
  */
 export class ViewOnlyXmrClient extends Client {
   private readonly viewWallet: XmrViewKeys
@@ -113,10 +116,14 @@ export class ViewOnlyXmrClient extends Client {
     const lws = this.confirmedLws()
     if (lws) {
       await this.ensureLwsRegistered(lws)
-      const received = await lwsGetTotalReceived(lws, this.requireWallet(), this.viewDeps.lwsFetch)
-      return [{ asset: AssetXMR, amount: baseAmount(received.toString(), XMR_DECIMAL) }]
+      const { received, sent } = await lwsGetBalance(lws, this.requireWallet(), this.viewDeps.lwsFetch)
+      // Spends are only known from the server (not verifiable without the spend key); never below zero
+      const balance = sent === undefined ? received : received > sent ? received - sent : BigInt(0)
+      setXmrBalanceSource(sent === undefined ? 'received' : 'lws-reported')
+      return [{ asset: AssetXMR, amount: baseAmount(balance.toString(), XMR_DECIMAL) }]
     }
     const state = await this.scan()
+    setXmrBalanceSource('received')
     return [{ asset: AssetXMR, amount: baseAmount(totalReceived(state).toString(), XMR_DECIMAL) }]
   }
 

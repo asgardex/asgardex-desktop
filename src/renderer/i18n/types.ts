@@ -1405,6 +1405,8 @@ type SettingMessageKey =
   | 'monero.export.spendKey'
   | 'monero.export.viewKey'
   | 'monero.scan.rangeTooLarge'
+  | 'monero.balance.received'
+  | 'monero.balance.lws'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 

@@ -132,7 +132,7 @@ const settings: SettingMessages = {
   'settings.wallet.whitelist': '화이트리스트',
   'settings.wallet.customToken': '사용자 정의 토큰',
   'monero.settings.watchOnly':
-    'Monero는 수신 전용입니다. 수신 결제와 잔액을 볼 수 있으며 전송은 아직 지원되지 않습니다.',
+    'Monero는 수신 전용입니다. 수신 결제와 총 수신액을 볼 수 있으며(지출은 추적되지 않음) 전송은 아직 지원되지 않습니다.',
   'monero.settings.daemon': '노드 URL (선택 사항)',
   'monero.settings.lws': '라이트 월렛 서버 URL (선택 사항)',
   'monero.settings.lws.warning':
@@ -165,7 +165,9 @@ const settings: SettingMessages = {
   'monero.export.spendKey': '개인 스펜드 키',
   'monero.export.viewKey': '개인 뷰 키',
   'monero.scan.rangeTooLarge':
-    'Monero 스캔 범위가 너무 큽니다. 스캔할 블록이 {gap}개입니다(한도: {limit}, 약 1주일). 위에서 더 최근의 복원 높이를 설정하거나 라이트 월렛 서버를 사용하세요.'
+    'Monero 스캔 범위가 너무 큽니다. 스캔할 블록이 {gap}개입니다(한도: {limit}, 약 1주일). Monero 지갑 설정에서 더 최근의 복원 높이를 설정하거나 라이트 월렛 서버를 사용하세요.',
+  'monero.balance.received': '수신됨 (지출은 추적되지 않음)',
+  'monero.balance.lws': '수신액에서 라이트 월렛 서버가 보고한 지출을 뺀 값 (검증되지 않음)'
 }
 
 export default settings

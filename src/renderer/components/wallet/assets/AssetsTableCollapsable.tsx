@@ -88,6 +88,7 @@ import { WalletTypeLabel, AssetSynthLabel, AssetSecuredLabel } from '../../uiele
 import { InfoIcon } from '../../uielements/info'
 import { CopyLabel, Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
+import { XmrBalanceNote } from './XmrBalanceNote'
 
 export type AssetAction = 'send' | 'deposit'
 
@@ -548,6 +549,8 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
             <div className="flex flex-col items-end justify-center font-main">
               <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
               <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
+              {/* XMR: view-only keys can't see spends -> say what the number means */}
+              <XmrBalanceNote chain={row.original.asset.chain} />
             </div>
           )
         }

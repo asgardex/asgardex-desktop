@@ -135,7 +135,7 @@ const settings: SettingMessages = {
   'settings.wallet.whitelist': 'Whitelist',
   'settings.wallet.customToken': 'Benutzerdefinierter Token',
   'monero.settings.watchOnly':
-    'Monero ist nur zum Empfangen: Eingehende Zahlungen und das Guthaben sind sichtbar. Senden wird noch nicht unterstützt.',
+    'Monero ist nur zum Empfangen: Eingehende Zahlungen und die Summe der Eingänge sind sichtbar (Ausgaben werden nicht erfasst). Senden wird noch nicht unterstützt.',
   'monero.settings.daemon': 'Node-URL (optional)',
   'monero.settings.lws': 'Light-Wallet-Server-URL (optional)',
   'monero.settings.lws.warning':
@@ -169,7 +169,9 @@ const settings: SettingMessages = {
   'monero.export.spendKey': 'Privater Spend-Key',
   'monero.export.viewKey': 'Privater View-Key',
   'monero.scan.rangeTooLarge':
-    'Das Monero-Scanfenster ist zu groß: {gap} Blöcke zu scannen (Limit: {limit}, etwa 1 Woche). Setze oben eine neuere Wiederherstellungshöhe oder nutze einen Light-Wallet-Server.'
+    'Das Monero-Scanfenster ist zu groß: {gap} Blöcke zu scannen (Limit: {limit}, etwa 1 Woche). Setze in den Monero-Wallet-Einstellungen eine neuere Wiederherstellungshöhe oder nutze einen Light-Wallet-Server.',
+  'monero.balance.received': 'Empfangen (Ausgaben werden nicht erfasst)',
+  'monero.balance.lws': 'Empfangen abzüglich der vom Light-Wallet-Server gemeldeten Ausgaben (nicht überprüft)'
 }
 
 export default settings

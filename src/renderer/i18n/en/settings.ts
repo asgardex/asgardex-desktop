@@ -137,7 +137,7 @@ const settings: SettingMessages = {
   'settings.wallet.whitelist': 'Whitelist',
   'settings.wallet.customToken': 'Custom token',
   'monero.settings.watchOnly':
-    'Monero is receive-only: you can see incoming payments and your balance. Sending is not supported yet.',
+    'Monero is receive-only: you can see incoming payments and the total received (spends are not tracked). Sending is not supported yet.',
   'monero.settings.daemon': 'Node URL (optional)',
   'monero.settings.lws': 'Light-wallet server URL (optional)',
   'monero.settings.lws.warning':
@@ -170,7 +170,9 @@ const settings: SettingMessages = {
   'monero.export.spendKey': 'Private spend key',
   'monero.export.viewKey': 'Private view key',
   'monero.scan.rangeTooLarge':
-    'The Monero scan window is too large: {gap} blocks to scan (limit: {limit}, about 1 week). Set a more recent restore height above, or use a light-wallet server.'
+    'The Monero scan window is too large: {gap} blocks to scan (limit: {limit}, about 1 week). Set a more recent restore height in the Monero wallet settings, or use a light-wallet server.',
+  'monero.balance.received': 'Received (spends not tracked)',
+  'monero.balance.lws': 'Received minus spends reported by your light-wallet server (unverified)'
 }
 
 export default settings

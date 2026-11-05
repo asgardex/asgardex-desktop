@@ -50,41 +50,47 @@ export const createViewKeys$ = ({
 export const createPendingAck$ = ({
   viewKeys$,
   ackVersion$,
+  enabled$,
   isAcknowledged = isXmrReceiveAcknowledged
 }: {
   viewKeys$: Rx.Observable<O.Option<XmrViewKeys>>
   ackVersion$: Rx.Observable<number>
+  /** `true` while the user has enabled the (opt-in) XMR chain */
+  enabled$: Rx.Observable<boolean>
   isAcknowledged?: (network: Network, address: string) => boolean
 }): Rx.Observable<O.Option<XmrViewKeys>> =>
-  Rx.combineLatest([viewKeys$, ackVersion$]).pipe(
-    RxOp.map(([oKeys]) =>
+  Rx.combineLatest([viewKeys$, ackVersion$, enabled$]).pipe(
+    RxOp.map(([oKeys, _, enabled]) =>
       FP.pipe(
         oKeys,
-        O.filter((keys) => !isAcknowledged(keys.network, keys.address))
+        O.filter((keys) => enabled && !isAcknowledged(keys.network, keys.address))
       )
     )
   )
 
 /**
- * Client state. `initial` (no client, nothing is derived-and-exposed, no network access) until a wallet exists
- * AND the user acknowledged the receive-only terms. The client creation itself performs no network request.
+ * Client state. `initial` (no client, nothing is derived-and-exposed, no network access) until the user enabled XMR,
+ * a wallet exists AND the user acknowledged the receive-only terms. The client creation itself performs no network request.
  */
 export const createClientState$ = ({
   viewKeys$,
   config$,
   ackVersion$,
+  enabled$,
   isAcknowledged = isXmrReceiveAcknowledged
 }: {
   viewKeys$: Rx.Observable<O.Option<XmrViewKeys>>
   config$: Rx.Observable<XmrConnectionConfig>
   ackVersion$: Rx.Observable<number>
+  /** `true` while the user has enabled the (opt-in) XMR chain. Disabled -> no client, so no address, no node access. */
+  enabled$: Rx.Observable<boolean>
   isAcknowledged?: (network: Network, address: string) => boolean
 }): ClientState$ =>
-  Rx.combineLatest([viewKeys$, config$, ackVersion$]).pipe(
-    RxOp.map(([oKeys, config]): ClientState =>
+  Rx.combineLatest([viewKeys$, config$, ackVersion$, enabled$]).pipe(
+    RxOp.map(([oKeys, config, _, enabled]): ClientState =>
       FP.pipe(
         oKeys,
-        O.filter((keys) => isAcknowledged(keys.network, keys.address)),
+        O.filter((keys) => enabled && isAcknowledged(keys.network, keys.address)),
         O.fold(
           (): ClientState => RD.initial,
           (keys): ClientState => {

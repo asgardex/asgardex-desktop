@@ -1,7 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 
 import { bytesToHex, deriveXmrExportKeys, deriveXmrViewKeys } from './derivation'
-import { lwsGetIncomingTxs, lwsGetTotalReceived, lwsLogin, LwsFetch, XmrLwsError } from './lws'
+import { lwsGetIncomingTxs, lwsGetBalance, lwsLogin, LwsFetch, XmrLwsError } from './lws'
 import { createLwsConfirmation, getConfirmedLws } from './lwsConfirmation'
 
 const PHRASE = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
@@ -33,9 +33,28 @@ describe('services/monero/lws', () => {
     expect(init.body).not.toContain(PHRASE.split(' ')[0] + ' ' + PHRASE.split(' ')[1])
   })
 
-  it('balance = total_received only (spent outputs cannot be verified without the spend key)', async () => {
-    const fetchFn = ok({ total_received: '5000000000000', total_sent: '4000000000000' })
-    await expect(lwsGetTotalReceived(confirmed, viewKeys, fetchFn)).resolves.toBe(BigInt('5000000000000'))
+  describe('balance', () => {
+    it('reports received and the spends the server reports', async () => {
+      const fetchFn = ok({ total_received: '5000000000000', total_sent: '4000000000000' })
+      await expect(lwsGetBalance(confirmed, viewKeys, fetchFn)).resolves.toEqual({
+        received: BigInt('5000000000000'),
+        sent: BigInt('4000000000000')
+      })
+    })
+
+    it('sent is undefined when the server does not report spends', async () => {
+      const fetchFn = ok({ total_received: '5' })
+      await expect(lwsGetBalance(confirmed, viewKeys, fetchFn)).resolves.toEqual({
+        received: BigInt(5),
+        sent: undefined
+      })
+    })
+
+    it('rejects a malformed total_sent', async () => {
+      await expect(lwsGetBalance(confirmed, viewKeys, ok({ total_received: '5', total_sent: '-1' }))).rejects.toThrow(
+        XmrLwsError
+      )
+    })
   })
 
   it('incoming txs: confirmed only, newest first', async () => {
@@ -73,7 +92,7 @@ describe('services/monero/lws', () => {
         vi.spyOn(console, m).mockImplementation(() => {})
       )
       await lwsLogin(confirmed, viewKeys, ok({}))
-      await lwsGetTotalReceived(confirmed, viewKeys, ok({ total_received: '1' }))
+      await lwsGetBalance(confirmed, viewKeys, ok({ total_received: '1' }))
       await lwsGetIncomingTxs(confirmed, viewKeys, ok({ transactions: [] }))
       await lwsLogin(confirmed, viewKeys, vi.fn().mockRejectedValue(new Error('x'))).catch(() => undefined)
       for (const spy of spies) {
@@ -84,7 +103,7 @@ describe('services/monero/lws', () => {
   })
 
   it('rejects malformed amounts', async () => {
-    await expect(lwsGetTotalReceived(confirmed, viewKeys, ok({ total_received: '-1' }))).rejects.toThrow(XmrLwsError)
-    await expect(lwsGetTotalReceived(confirmed, viewKeys, ok({}))).rejects.toThrow(XmrLwsError)
+    await expect(lwsGetBalance(confirmed, viewKeys, ok({ total_received: '-1' }))).rejects.toThrow(XmrLwsError)
+    await expect(lwsGetBalance(confirmed, viewKeys, ok({}))).rejects.toThrow(XmrLwsError)
   })
 })

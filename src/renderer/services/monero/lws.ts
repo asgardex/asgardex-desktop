@@ -4,8 +4,9 @@
  * - Only ever talks to a `ConfirmedLws` (see `lwsConfirmation.ts`), so an unconfirmed URL can't be contacted.
  * - Sends the private **view key** (never the spend key — it is not available here) to the server.
  * - Never logs or reports the URL: its path may be a secret. Errors only carry a status code / generic text.
- * - Only incoming payments are used (balance = `total_received`): the server's `total_sent` can't be verified without
- *   the spend key (key images), so it is ignored. Outgoing spends are therefore not reflected.
+ * - Balance: `total_received`, minus `total_sent` **when the server reports it**. Without the spend key the app cannot
+ *   verify the server's spends (key images), so this is "as reported by the server" and the UI says so. Without a
+ *   reported `total_sent` the balance is only "received" (spends not tracked).
  */
 import { baseAmount } from '@xchainjs/xchain-util'
 
@@ -73,14 +74,26 @@ const toBigInt = (value: unknown): bigint => {
   return BigInt(value)
 }
 
-/** Total received (piconero) */
-export const lwsGetTotalReceived = async (
+export type LwsBalance = {
+  /** piconero */
+  received: bigint
+  /** piconero spent as reported by the server. `undefined` = the server did not report spends. Not verifiable here. */
+  sent: bigint | undefined
+}
+
+/** Received (and, if reported, sent) amounts of the address */
+export const lwsGetBalance = async (
   lws: ConfirmedLws,
   viewKeys: XmrViewKeys,
   fetchFn: LwsFetch = fetch as unknown as LwsFetch
-): Promise<bigint> => {
-  const info = (await post(lws, '/get_address_info', credentials(viewKeys), fetchFn)) as { total_received?: unknown }
-  return toBigInt(info?.total_received)
+): Promise<LwsBalance> => {
+  const info = (await post(lws, '/get_address_info', credentials(viewKeys), fetchFn)) as {
+    total_received?: unknown
+    total_sent?: unknown
+  }
+  const received = toBigInt(info?.total_received)
+  const sent = info?.total_sent === undefined || info.total_sent === null ? undefined : toBigInt(info.total_sent)
+  return { received, sent }
 }
 
 export type LwsIncomingTx = { hash: string; date: Date; amount: ReturnType<typeof baseAmount>; height: number }

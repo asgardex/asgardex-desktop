@@ -132,7 +132,7 @@ const settings: SettingMessages = {
   'settings.wallet.whitelist': 'Lista blanca',
   'settings.wallet.customToken': 'Token personalizado',
   'monero.settings.watchOnly':
-    'Monero es solo de recepción: puedes ver los pagos entrantes y tu saldo. El envío aún no es compatible.',
+    'Monero es solo de recepción: puedes ver los pagos entrantes y el total recibido (los gastos no se rastrean). El envío aún no es compatible.',
   'monero.settings.daemon': 'URL del nodo (opcional)',
   'monero.settings.lws': 'URL del servidor de monedero ligero (opcional)',
   'monero.settings.lws.warning':
@@ -166,7 +166,9 @@ const settings: SettingMessages = {
   'monero.export.spendKey': 'Clave de gasto privada',
   'monero.export.viewKey': 'Clave de visualización privada',
   'monero.scan.rangeTooLarge':
-    'La ventana de escaneo de Monero es demasiado grande: {gap} bloques por escanear (límite: {limit}, aproximadamente 1 semana). Define arriba una altura de restauración más reciente o usa un servidor de monedero ligero.'
+    'La ventana de escaneo de Monero es demasiado grande: {gap} bloques por escanear (límite: {limit}, aproximadamente 1 semana). Define en los ajustes del monedero de Monero una altura de restauración más reciente o usa un servidor de monedero ligero.',
+  'monero.balance.received': 'Recibido (gastos no rastreados)',
+  'monero.balance.lws': 'Recibido menos los gastos informados por tu servidor de monedero ligero (sin verificar)'
 }
 
 export default settings

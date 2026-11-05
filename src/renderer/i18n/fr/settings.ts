@@ -132,7 +132,7 @@ const settings: SettingMessages = {
   'settings.wallet.whitelist': 'Liste blanche',
   'settings.wallet.customToken': 'Token personnalisé',
   'monero.settings.watchOnly':
-    "Monero est en réception seule : vous voyez les paiements entrants et votre solde. L'envoi n'est pas encore pris en charge.",
+    "Monero est en réception seule : vous voyez les paiements entrants et le total reçu (les dépenses ne sont pas suivies). L'envoi n'est pas encore pris en charge.",
   'monero.settings.daemon': 'URL du nœud (facultatif)',
   'monero.settings.lws': 'URL du serveur de portefeuille léger (facultatif)',
   'monero.settings.lws.warning':
@@ -166,7 +166,9 @@ const settings: SettingMessages = {
   'monero.export.spendKey': 'Clé de dépense privée',
   'monero.export.viewKey': 'Clé de vue privée',
   'monero.scan.rangeTooLarge':
-    "La fenêtre d'analyse Monero est trop grande : {gap} blocs à analyser (limite : {limit}, environ 1 semaine). Définissez ci-dessus une hauteur de restauration plus récente ou utilisez un serveur de portefeuille léger."
+    "La fenêtre d'analyse Monero est trop grande : {gap} blocs à analyser (limite : {limit}, environ 1 semaine). Définissez dans les paramètres du portefeuille Monero une hauteur de restauration plus récente ou utilisez un serveur de portefeuille léger.",
+  'monero.balance.received': 'Reçu (dépenses non suivies)',
+  'monero.balance.lws': 'Reçu moins les dépenses signalées par votre serveur de portefeuille léger (non vérifié)'
 }
 
 export default settings

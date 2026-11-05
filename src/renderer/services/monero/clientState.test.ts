@@ -25,10 +25,11 @@ const latest = <A>(obs: Observable<A>): A => {
   return value as A
 }
 
-const setup = (phrase: O.Option<string> = O.some(PHRASE), acked = false) => {
+const setup = (phrase: O.Option<string> = O.some(PHRASE), acked = false, enabled = true) => {
   const phrase$ = new BehaviorSubject<O.Option<string>>(phrase)
   const network$ = new BehaviorSubject<Network>(Network.Mainnet)
   const ackVersion$ = new BehaviorSubject(0)
+  const enabled$ = new BehaviorSubject(enabled)
   const state = { acked }
   const isAcknowledged = () => state.acked
   const viewKeys$ = createViewKeys$({ phrase$, network$ })
@@ -36,10 +37,11 @@ const setup = (phrase: O.Option<string> = O.some(PHRASE), acked = false) => {
     viewKeys$,
     config$: new BehaviorSubject(DEFAULT_XMR_CONNECTION_CONFIG),
     ackVersion$,
+    enabled$,
     isAcknowledged
   })
-  const pendingAck$ = createPendingAck$({ viewKeys$, ackVersion$, isAcknowledged })
-  return { phrase$, network$, ackVersion$, state, viewKeys$, clientState$, pendingAck$ }
+  const pendingAck$ = createPendingAck$({ viewKeys$, ackVersion$, enabled$, isAcknowledged })
+  return { phrase$, network$, ackVersion$, enabled$, state, viewKeys$, clientState$, pendingAck$ }
 }
 
 describe('services/monero opt-in / receive-only acknowledgement', () => {
@@ -49,6 +51,31 @@ describe('services/monero opt-in / receive-only acknowledgement', () => {
     vi.stubGlobal('fetch', fetchSpy)
   })
   afterEach(() => vi.unstubAllGlobals())
+
+  describe('opt-in: XMR not enabled by the user', () => {
+    it('no client (no address, no balance, no node access) and no acknowledgement is asked, even with a wallet', async () => {
+      const s = setup(O.some(PHRASE), true, false)
+      expect(RD.isInitial(latest(s.clientState$))).toBe(true)
+      expect(latest(s.pendingAck$)).toEqual(O.none)
+      expect(fetchSpy).not.toHaveBeenCalled()
+    })
+
+    it('enabling XMR asks for the acknowledgement first; disabling it again removes the client', async () => {
+      const s = setup(O.some(PHRASE), false, false)
+      expect(latest(s.pendingAck$)).toEqual(O.none)
+      s.enabled$.next(true)
+      expect(O.isSome(latest(s.pendingAck$))).toBe(true)
+      expect(RD.isInitial(latest(s.clientState$))).toBe(true)
+
+      s.state.acked = true
+      s.ackVersion$.next(1)
+      expect(RD.isSuccess(latest(s.clientState$))).toBe(true)
+
+      s.enabled$.next(false)
+      expect(RD.isInitial(latest(s.clientState$))).toBe(true)
+      expect(fetchSpy).not.toHaveBeenCalled()
+    })
+  })
 
   describe('no network access before the user acts', () => {
     it('deriving keys, creating the client state and the pending-ack stream never call fetch', async () => {
