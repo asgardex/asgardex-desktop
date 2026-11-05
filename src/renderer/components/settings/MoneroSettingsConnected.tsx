@@ -1,8 +1,8 @@
 import { option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
-import { DEFAULT_XMR_CONNECTION_CONFIG, xmrConnectionConfig$ } from '../../services/monero/config'
 import { viewKeys$ } from '../../services/monero/common'
+import { DEFAULT_XMR_CONNECTION_CONFIG, xmrConnectionConfig$ } from '../../services/monero/config'
 import { isLwsConfirmationValid } from '../../services/monero/lwsConfirmation'
 import { xmrScanStatus$, XmrScanStatus } from '../../services/monero/scanner'
 import { confirmLwsForCurrentWallet, exportKeysOfCurrentWallet } from '../../services/monero/settingsActions'

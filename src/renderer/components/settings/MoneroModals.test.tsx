@@ -1,5 +1,5 @@
-import { act } from 'react-dom/test-utils'
 import { createRoot, Root } from 'react-dom/client'
+import { act } from 'react-dom/test-utils'
 import { IntlProvider } from 'react-intl'
 
 import en from '../../i18n/en'

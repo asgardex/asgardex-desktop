@@ -1,6 +1,4 @@
-import { ReactNode } from 'react'
-
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { CheckIcon, DocumentDuplicateIcon, XMarkIcon } from '@heroicons/react/24/outline'
