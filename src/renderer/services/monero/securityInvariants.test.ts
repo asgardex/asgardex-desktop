@@ -1,6 +1,3 @@
-import fs from 'fs'
-import path from 'path'
-
 import { Network } from '@xchainjs/xchain-client'
 
 import { ViewOnlyXmrClient } from './client'
@@ -15,18 +12,31 @@ import { scanStorageKey } from './scanner'
 const PHRASE = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 const LWS_URL = 'https://lws.example/secret-path'
 
-const SRC = path.resolve(__dirname, '../../..')
+// All production sources (tests excluded), as raw text. Keys look like `../../chain/x.ts` (relative to this file).
+const sources = import.meta.glob(['../../../**/*.{ts,tsx}', '!../../../**/*.test.{ts,tsx}', '!../../../**/*.d.ts'], {
+  query: '?raw',
+  import: 'default',
+  eager: true
+}) as Record<string, string>
 
-const listSources = (dir: string): string[] =>
-  fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) return listSources(full)
-    return /\.(ts|tsx)$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [full] : []
-  })
-
-const productionFiles = listSources(SRC)
-const read = (file: string) => fs.readFileSync(file, 'utf8')
-const rel = (file: string) => path.relative(SRC, file)
+const productionFiles = Object.keys(sources)
+const read = (file: string) => sources[file]
+/** Directory of this test, relative to `src/` */
+const HERE = ['renderer', 'services', 'monero']
+/** Path relative to `src/` (glob keys are relative to this file: `./a.ts`, `../b/c.ts`) */
+const rel = (file: string): string => {
+  const parts = [...HERE]
+  for (const segment of file.split('/')) {
+    if (segment === '..') parts.pop()
+    else if (segment !== '.') parts.push(segment)
+  }
+  return parts.join('/')
+}
+const sourceOf = (srcRelative: string) => {
+  const key = productionFiles.find((f) => rel(f) === srcRelative)
+  if (!key) throw new Error(`source not found: ${srcRelative}`)
+  return read(key)
+}
 
 describe('XMR security invariants (static)', () => {
   it('walletRpcUrls is only ever set to "none" (empty), in the view-only client', () => {
@@ -39,19 +49,19 @@ describe('XMR security invariants (static)', () => {
           .filter((l) => l.includes('walletRpcUrls'))
       }))
 
-    expect(hits.map((h) => h.file)).toEqual([path.join('renderer', 'services', 'monero', 'client.ts')])
+    expect(hits.map((h) => h.file)).toEqual(['renderer/services/monero/client.ts'])
     // the only assignment passes the empty endpoint map; everything else is a comment
     const code = hits[0].lines.filter((l) => !l.trim().startsWith('*') && !l.trim().startsWith('//'))
     expect(code).toHaveLength(1)
     expect(code[0]).toMatch(/walletRpcUrls:\s*none\b/)
     // `none` really is empty for every network
-    expect(read(path.join(SRC, 'renderer/services/monero/client.ts'))).toMatch(
+    expect(sourceOf('renderer/services/monero/client.ts')).toMatch(
       /const none = \{ \[Network\.Mainnet\]: \[\], \[Network\.Stagenet\]: \[\], \[Network\.Testnet\]: \[\] \}/
     )
   })
 
   it('sendTx$ has no XMR case (falls through to "not supported")', () => {
-    const source = read(path.join(SRC, 'renderer/services/chain/transaction/common.ts'))
+    const source = sourceOf('renderer/services/chain/transaction/common.ts')
     const start = source.indexOf('export const sendTx$')
     const rest = source.slice(start + 1)
     const end = rest.search(/\nexport const /)
@@ -63,7 +73,7 @@ describe('XMR security invariants (static)', () => {
   })
 
   it('no production code calls transfer / sendTx / setPhrase on the Monero client', () => {
-    const monero = productionFiles.filter((f) => rel(f).startsWith(path.join('renderer', 'services', 'monero')))
+    const monero = productionFiles.filter((f) => rel(f).startsWith('renderer/services/monero/'))
     for (const file of monero) {
       const code = read(file)
         .split('\n')
