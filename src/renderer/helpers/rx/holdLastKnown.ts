@@ -3,6 +3,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { createFailClosedClock } from '../monotonicClock'
+import { ResetKey, resetKeyTicks$ } from './resetKey'
 
 export type HoldLastKnownOptions = {
   /** A held Success older than this is dropped: the value is no longer trusted (-> Failure) */
@@ -15,6 +16,8 @@ export type HoldLastKnownOptions = {
   tickMs?: number
   /** Clock in ms. Default: `createFailClosedClock` (max of monotonic and wall-clock elapsed) */
   now?: () => number
+  /** Held values are dropped (back to Pending, timeout restarts) when this key changes, e.g. the network */
+  resetKey?: ResetKey
 }
 
 type Input<A> = RD.RemoteData<Error, A>
@@ -89,10 +92,20 @@ export const holdLastKnown =
       const now = options.now ?? createFailClosedClock()
       return Rx.merge(
         source.pipe(RxOp.map((rd) => ({ rd }) as { rd?: Input<A> })),
-        Rx.interval(options.tickMs ?? 5000).pipe(RxOp.map((): { rd?: Input<A> } => ({})))
+        Rx.interval(options.tickMs ?? 5000).pipe(RxOp.map((): { rd?: Input<A> } => ({}))),
+        resetKeyTicks$<{ rd?: Input<A> }>(options.resetKey)
       ).pipe(
-        RxOp.scan((state, { rd }) => (rd ? holdInput(state, rd, now()) : state), INITIAL_HOLD_STATE<A>()),
-        RxOp.map((state) => evaluateHold(state, now(), options)),
+        RxOp.scan(
+          ({ key, state }, { rd }) => {
+            const at = now()
+            const currentKey = options.resetKey?.get()
+            // key changed: forget everything of the previous key, Pending from now on (timeout restarts)
+            const base = currentKey === key ? state : holdInput(INITIAL_HOLD_STATE<A>(), RD.pending, at)
+            return { key: currentKey, state: rd ? holdInput(base, rd, at) : base }
+          },
+          { key: options.resetKey?.get(), state: INITIAL_HOLD_STATE<A>() }
+        ),
+        RxOp.map(({ state }) => evaluateHold(state, now(), options)),
         RxOp.distinctUntilChanged(sameOutput)
       )
     })

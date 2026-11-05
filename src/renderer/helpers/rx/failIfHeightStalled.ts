@@ -3,6 +3,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { createFailClosedClock } from '../monotonicClock'
+import { ResetKey, resetKeyTicks$ } from './resetKey'
 
 export type HeightStallOptions<A> = {
   /** Block height of a loaded value (`<= 0`: no height) */
@@ -12,6 +13,8 @@ export type HeightStallOptions<A> = {
   /** How often the stall is re-checked while the source is silent */
   tickMs?: number
   now?: () => number
+  /** Highest height and clock are dropped (back to Pending) when this key changes, e.g. the network */
+  resetKey?: ResetKey
 }
 
 type Input<A> = RD.RemoteData<Error, A>
@@ -49,20 +52,26 @@ export const evaluateStall = <A>({ input, since }: StallState<A>, now: number, s
  * if it does not advance for `stallMs` the value turns into a Failure.
  */
 export const failIfHeightStalled =
-  <A>({ getHeight, stallMs, tickMs = 5000, now: nowOption }: HeightStallOptions<A>) =>
+  <A>({ getHeight, stallMs, tickMs = 5000, now: nowOption, resetKey }: HeightStallOptions<A>) =>
   (source: Rx.Observable<Input<A>>): Rx.Observable<Input<A>> =>
     // one clock per subscription
     Rx.defer(() => {
       const now = nowOption ?? createFailClosedClock()
       return Rx.merge(
         source.pipe(RxOp.map((rd) => ({ rd }) as { rd?: Input<A> })),
-        Rx.interval(tickMs).pipe(RxOp.map((): { rd?: Input<A> } => ({})))
+        Rx.interval(tickMs).pipe(RxOp.map((): { rd?: Input<A> } => ({}))),
+        resetKeyTicks$<{ rd?: Input<A> }>(resetKey)
       ).pipe(
         RxOp.scan(
-          (state: StallState<A>, { rd }) => (rd ? stallInput(state, rd, now(), getHeight) : state),
-          INITIAL_STALL_STATE<A>()
+          ({ key, state }: { key: unknown; state: StallState<A> }, { rd }) => {
+            const currentKey = resetKey?.get()
+            // key changed: the max height of the previous key must not be compared with the new one
+            const base: StallState<A> = currentKey === key ? state : { input: RD.pending }
+            return { key: currentKey, state: rd ? stallInput(base, rd, now(), getHeight) : base }
+          },
+          { key: resetKey?.get(), state: INITIAL_STALL_STATE<A>() }
         ),
-        RxOp.map((state) => evaluateStall(state, now(), stallMs)),
+        RxOp.map(({ state }) => evaluateStall(state, now(), stallMs)),
         RxOp.distinctUntilChanged(
           (a, b) =>
             a._tag === b._tag &&

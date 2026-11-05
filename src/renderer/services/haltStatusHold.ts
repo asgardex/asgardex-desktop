@@ -1,6 +1,14 @@
 import { HoldLastKnownOptions } from '../helpers/rx/holdLastKnown'
+import { ResetKey } from '../helpers/rx/resetKey'
+import { getCurrentNetworkState, network$ } from './app/service'
 
 const MINUTE = 60 * 1000
+
+/**
+ * All held halt inputs are keyed by network: on a mainnet/stagenet switch nothing of the previous network
+ * (mimir, lastblock, max height, inbound_addresses) carries over, the status is Pending -> unknown after 15s.
+ */
+export const HALT_NETWORK_KEY: ResetKey = { get: getCurrentNetworkState, changes$: network$ }
 
 /**
  * How long halt inputs are trusted, tuned to their poll intervals
@@ -14,13 +22,15 @@ const MINUTE = 60 * 1000
 export const MIMIR_HOLD: HoldLastKnownOptions = {
   maxAgeMs: 15 * MINUTE,
   maxFailures: 2,
-  pendingTimeoutMs: 15 * 1000
+  pendingTimeoutMs: 15 * 1000,
+  resetKey: HALT_NETWORK_KEY
 }
 
 export const LASTBLOCK_HOLD: HoldLastKnownOptions = {
   maxAgeMs: 10 * MINUTE,
   maxFailures: 2,
-  pendingTimeoutMs: 15 * 1000
+  pendingTimeoutMs: 15 * 1000,
+  resetKey: HALT_NETWORK_KEY
 }
 
 /**
@@ -38,5 +48,6 @@ export const LASTBLOCK_STALL_MS = 5 * MINUTE
 export const INBOUND_HOLD: HoldLastKnownOptions = {
   maxAgeMs: Number.POSITIVE_INFINITY,
   maxFailures: 0,
-  pendingTimeoutMs: 15 * 1000
+  pendingTimeoutMs: 15 * 1000,
+  resetKey: HALT_NETWORK_KEY
 }

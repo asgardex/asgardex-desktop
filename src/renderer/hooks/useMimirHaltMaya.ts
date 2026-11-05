@@ -11,7 +11,7 @@ import { sequenceTRD } from '../helpers/fpHelpers'
 import { createMimirLookup } from '../helpers/mimirLookup'
 import { failIfHeightStalled } from '../helpers/rx/failIfHeightStalled'
 import { holdLastKnown } from '../helpers/rx/holdLastKnown'
-import { LASTBLOCK_HOLD, LASTBLOCK_STALL_MS, MIMIR_HOLD } from '../services/haltStatusHold'
+import { HALT_NETWORK_KEY, LASTBLOCK_HOLD, LASTBLOCK_STALL_MS, MIMIR_HOLD } from '../services/haltStatusHold'
 import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT } from '../services/mayachain/const'
 import {
   LastblockItems,
@@ -109,7 +109,8 @@ export const useMayachainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
           // HTTP 200 with a height that stopped advancing is not live data
           failIfHeightStalled<LastblockItems>({
             getHeight: (items) => Math.max(0, ...items.map(({ mayachain }) => mayachain ?? 0)),
-            stallMs: LASTBLOCK_STALL_MS
+            stallMs: LASTBLOCK_STALL_MS,
+            resetKey: HALT_NETWORK_KEY
           })
         ),
         userChains$
