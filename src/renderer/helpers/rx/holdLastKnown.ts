@@ -99,7 +99,10 @@ export const holdLastKnown =
           ({ key, state }, { rd }) => {
             const at = now()
             const currentKey = options.resetKey?.get()
-            // key changed: forget everything of the previous key, Pending from now on (timeout restarts)
+            // key changed: forget everything of the previous key, Pending from now on (timeout restarts).
+            // Relies on upstream (`preserveSuccessUntil(network$)`) emitting Pending first after a switch and then
+            // only values of the new network: a Success of the previous network replayed after the switch
+            // (e.g. by a `shareReplay` not keyed by network) would be taken as a value of the new one.
             const base = currentKey === key ? state : holdInput(INITIAL_HOLD_STATE<A>(), RD.pending, at)
             return { key: currentKey, state: rd ? holdInput(base, rd, at) : base }
           },

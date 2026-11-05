@@ -1,8 +1,9 @@
 // Halt inputs are keyed by network: nothing held for the previous network may be published after a switch.
 import * as RD from '@devexperts/remote-data-ts'
 import * as Rx from 'rxjs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
+import { INBOUND_HOLD } from '../../services/haltStatusHold'
 import { failIfHeightStalled } from './failIfHeightStalled'
 import { holdLastKnown } from './holdLastKnown'
 import { ResetKey } from './resetKey'
@@ -101,5 +102,60 @@ describe('helpers/rx network keyed hold', () => {
     expect(out.at(-1)).toEqual(RD.success(501))
     tick(4 * 60000) // 501 stuck > 5 min -> stalled
     expect(RD.isFailure(out.at(-1)!)).toBe(true)
+  })
+
+  it.each([
+    ['upstream before changes$', true],
+    ['changes$ before upstream', false]
+  ])('hook order hold -> stall: no stale height after a switch, %s', (_, upstreamFirst) => {
+    const op = (key: ResetKey, now: () => number) => (src: Rx.Observable<In<number>>) =>
+      src.pipe(
+        holdLastKnown<number>({
+          maxAgeMs: 10 * 60000,
+          maxFailures: 2,
+          pendingTimeoutMs: 15000,
+          now,
+          resetKey: key,
+          tickMs: 1e9
+        }),
+        failIfHeightStalled<number>({ getHeight: (h) => h, stallMs: 5 * 60000, now, resetKey: key, tickMs: 1e9 })
+      )
+    const { source$, out, switchNetwork, tick } = setup<number>(op)
+    source$.next(RD.success(20_000_000))
+    const before = out.length
+    if (upstreamFirst) switchNetwork('stagenet', RD.pending)
+    else {
+      switchNetwork('stagenet')
+      source$.next(RD.pending)
+    }
+    expect(out.slice(before).some(RD.isSuccess)).toBe(false)
+    tick(16000)
+    expect(RD.isFailure(out.at(-1)!)).toBe(true)
+    source$.next(RD.success(500))
+    expect(out.at(-1)).toEqual(RD.success(500))
+  })
+})
+
+describe('services/haltStatusHold INBOUND_HOLD', () => {
+  it('a held Success followed by Pending past the max age becomes unknown', () => {
+    let time = 0
+    const source$ = new Rx.Subject<In<string[]>>()
+    const out: In<string[]>[] = []
+    vi.useFakeTimers() // before subscribing: the re-check interval must run on fake timers
+    source$
+      .pipe(holdLastKnown<string[]>({ ...INBOUND_HOLD, resetKey: undefined, now: () => time, tickMs: 1000 }))
+      .subscribe((v) => out.push(v))
+    try {
+      source$.next(RD.success([]))
+      source$.next(RD.pending) // reload hangs
+      time = 14 * 60000
+      vi.advanceTimersByTime(1000)
+      expect(out.at(-1)).toEqual(RD.success([])) // still within the max age
+      time = 15 * 60000 + 1000
+      vi.advanceTimersByTime(1000)
+      expect(RD.isFailure(out.at(-1)!)).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

@@ -43,10 +43,11 @@ export const LASTBLOCK_STALL_MS = 5 * MINUTE
  * `inbound_addresses` (halted chains): a first load still pending after 15s is unknown (banner),
  * the same as mimir and lastblock. A failure is published right away (`maxFailures: 0`): a failed
  * list already counts as unknown (`resolveHaltState`), so it must not be hidden behind a held value.
- * No age limit here, freshness is up to the inbound polling.
+ * `maxAgeMs: 15 min` (3 missed polls every 5 min): a list that was not refreshed, e.g. because reloads keep
+ * hanging, is no longer trusted. The requests themselves time out after `HALT_REQUEST_TIMEOUT_MS`.
  */
 export const INBOUND_HOLD: HoldLastKnownOptions = {
-  maxAgeMs: Number.POSITIVE_INFINITY,
+  maxAgeMs: 15 * MINUTE,
   maxFailures: 0,
   pendingTimeoutMs: 15 * 1000,
   resetKey: HALT_NETWORK_KEY

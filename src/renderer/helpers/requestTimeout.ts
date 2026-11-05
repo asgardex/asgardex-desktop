@@ -1,4 +1,4 @@
-/** Max time for a node request that halt decisions depend on (`mimir`, `lastblock`) */
+/** Max time for a node request that halt decisions depend on (`mimir`, `lastblock`, `inbound_addresses`) */
 export const HALT_REQUEST_TIMEOUT_MS = 12 * 1000
 
 /**

@@ -65,7 +65,11 @@ export const failIfHeightStalled =
         RxOp.scan(
           ({ key, state }: { key: unknown; state: StallState<A> }, { rd }) => {
             const currentKey = resetKey?.get()
-            // key changed: the max height of the previous key must not be compared with the new one
+            // key changed: the max height of the previous key must not be compared with the new one.
+            // Order: the key is read synchronously, so it does not matter whether `changes$` or the upstream
+            // emission after a switch arrives first (subscription order of `network$`). It relies on the key
+            // (`getCurrentNetworkState`) being updated before `network$` notifies any subscriber, and on
+            // upstream not replaying a height of the previous network after the switch (see `holdLastKnown`).
             const base: StallState<A> = currentKey === key ? state : { input: RD.pending }
             return { key: currentKey, state: rd ? stallInput(base, rd, now(), getHeight) : base }
           },

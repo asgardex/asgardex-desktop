@@ -117,7 +117,16 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
       mayanodeUrl$,
       liveData.chain((basePath) =>
         FP.pipe(
-          Rx.from(new NetworkApi(getMayanodeAPIConfiguration(basePath)).inboundAddresses()),
+          // Timeout: a hung request must end as a failure (halt status unknown), not keep an old list trusted
+          Rx.from(
+            withTimeout(
+              new NetworkApi(getMayanodeAPIConfiguration(basePath)).inboundAddresses(undefined, {
+                timeout: HALT_REQUEST_TIMEOUT_MS
+              }),
+              HALT_REQUEST_TIMEOUT_MS,
+              'MAYANode inbound_addresses request'
+            )
+          ),
           RxOp.map((response: AxiosResponse<InboundAddressesResponse, InboundAddress>) => {
             const data: InboundAddresses = response.data.map((item) => ({
               chain: item.chain || '', // provide a default value if chain is undefined

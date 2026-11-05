@@ -140,7 +140,14 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   const loadInboundAddresses$ = (): InboundAddressesLD =>
     FP.pipe(
       requestThornodeApi$((basePath) =>
-        new NetworkApi(getThornodeAPIConfiguration(basePath)).inboundAddresses().then((response) => {
+        // Timeout: a hung request must end as a failure (halt status unknown), not keep an old list trusted
+        withTimeout(
+          new NetworkApi(getThornodeAPIConfiguration(basePath)).inboundAddresses(undefined, {
+            timeout: HALT_REQUEST_TIMEOUT_MS
+          }),
+          HALT_REQUEST_TIMEOUT_MS,
+          'THORNode inbound_addresses request'
+        ).then((response) => {
           const data: InboundAddresses = response.data.map((item) => ({
             chain: item.chain || '',
             address: item.address || '',
