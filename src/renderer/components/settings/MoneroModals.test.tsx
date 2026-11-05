@@ -7,8 +7,6 @@ import { cancelPendingClipboardClear, XMR_CLIPBOARD_CLEAR_MS } from '../../servi
 import type { XmrExportKeys } from '../../services/monero/derivation'
 import { MoneroKeysModal, MoneroLwsConfirmModal, XMR_KEYS_MODAL_TIMEOUT_MS } from './MoneroModals'
 
-;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
-
 const keys = { privateSpendKeyHex: 'aa'.repeat(32), privateViewKeyHex: 'bb'.repeat(32) } as unknown as XmrExportKeys
 
 describe('components/settings/MoneroModals', () => {
@@ -25,6 +23,7 @@ describe('components/settings/MoneroModals', () => {
     })
 
   beforeEach(() => {
+    ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
     vi.useFakeTimers()
     container = document.createElement('div')
     document.body.appendChild(container)
