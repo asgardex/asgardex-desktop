@@ -107,6 +107,24 @@ describe('services/monero/config', () => {
         'http://\u2460\u2467.0.0.1' // unicode digits
       ])('rejects %s', (url) => expect(isValidXmrEndpoint(url)).toBe(false))
 
+      it.each([
+        'http://127.0.0.1:80\\@evil.com', // WHATWG reads the host as 127.0.0.1, other parsers as evil.com
+        'http://127.0.0.1\\@evil.com',
+        'http://localhost:18081\\@evil.com',
+        'https://good.example\\@evil.com',
+        'https://good.example\\evil.com',
+        'http://127.0.0.1 @evil.com',
+        'https://good.example/pa th',
+        'https://good.example/\tx',
+        'https://good.example/\nx',
+        'https://good.example/\u00a0x',
+        'https://good.\u2003example',
+        'https://good.example/\u0000x',
+        'https://good.example/\u007fx'
+      ])('rejects backslashes, whitespace and control characters in the raw input: %j', (url) => {
+        expect(isValidXmrEndpoint(url)).toBe(false)
+      })
+
       it('the URL parser (not string matching) decides the host', () => {
         // WHATWG normalises these to loopback, so they are accepted for the right reason
         expect(isValidXmrEndpoint('http://127.1')).toBe(true) // -> 127.0.0.1
@@ -117,8 +135,43 @@ describe('services/monero/config', () => {
     })
   })
 
-  it('normalizeXmrEndpoint trims and removes trailing slashes', () => {
-    expect(normalizeXmrEndpoint('  https://a.b/// ')).toBe('https://a.b')
+  describe('normalizeXmrEndpoint (canonical form: new URL(x).href)', () => {
+    it('trims and removes trailing slashes', () => {
+      expect(normalizeXmrEndpoint('  https://a.b/// ')).toBe('https://a.b')
+    })
+
+    it('is the WHATWG href: lower-cased host, default port dropped, path kept', () => {
+      expect(normalizeXmrEndpoint('HTTPS://Node.Example:443/Some/Path/')).toBe('https://node.example/Some/Path')
+      expect(normalizeXmrEndpoint('http://LOCALHOST:18081')).toBe('http://localhost:18081')
+      expect(normalizeXmrEndpoint('http://127.1')).toBe('http://127.0.0.1')
+    })
+
+    it('is idempotent (what is stored is what was validated and confirmed)', () => {
+      for (const raw of ['HTTPS://Node.Example:443/x/', 'http://[0:0:0:0:0:0:0:1]:80', 'https://a.b']) {
+        const once = normalizeXmrEndpoint(raw)
+        expect(normalizeXmrEndpoint(once)).toBe(once)
+        expect(isValidXmrEndpoint(once)).toBe(true)
+      }
+    })
+
+    it('input with a backslash or inner whitespace stays invalid after normalizing', () => {
+      for (const raw of ['http://127.0.0.1:80\\@evil.com', ' https://a.b/c d ', 'https://a.b\\x']) {
+        expect(isValidXmrEndpoint(normalizeXmrEndpoint(raw))).toBe(false)
+      }
+    })
+
+    it('the stored value is the href: a stored raw value is canonicalised on load / save', () => {
+      const data: Record<string, string> = {}
+      const storage = { getItem: (k: string) => data[k] ?? null, setItem: (k: string, v: string) => void (data[k] = v) }
+      saveXmrConnectionConfig({ ...DEFAULT_XMR_CONNECTION_CONFIG, daemonUrl: 'HTTPS://Node.Example:443/' }, storage)
+      expect(JSON.parse(data[XMR_CONNECTION_STORAGE_KEY]).daemonUrl).toBe('https://node.example')
+    })
+
+    it('a tampered stored URL with a backslash is dropped', () => {
+      expect(
+        sanitizeXmrConnectionConfig({ daemonUrl: 'http://127.0.0.1:80\\@evil.com', lwsUrl: 'https://a.b\\@evil.com' })
+      ).toEqual(DEFAULT_XMR_CONNECTION_CONFIG)
+    })
   })
 
   describe('redactXmrEndpoint (never expose the path)', () => {
