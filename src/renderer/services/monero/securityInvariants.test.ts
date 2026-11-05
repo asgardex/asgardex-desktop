@@ -6,7 +6,7 @@ import { bytesToHex, deriveXmrExportKeys, deriveXmrViewKeys } from './derivation
 import { buildPaymentTx, createFakeDaemon } from './fakeDaemon.testHelper'
 import { LwsFetch } from './lws'
 import { createLwsConfirmation } from './lwsConfirmation'
-import { scanStorageKey } from './scanner'
+import { defaultScanDeps, mainnetTimeOfHeight, scanStorageKey } from './scanner'
 
 // BIP-39 test vector. NEVER use for funds.
 const PHRASE = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
@@ -38,6 +38,12 @@ const sourceOf = (srcRelative: string) => {
   return read(key)
 }
 
+/**
+ * NOTE: the static checks below are a tripwire for refactors, not the security control. They are source-text
+ * heuristics and can be fooled (aliases, dynamic property names, new files). The real controls are the runtime throws in
+ * `client.ts` (`transfer`, `broadcastTx`, `setPhrase`, ... throw; the client never receives a phrase) and the end to end
+ * tests further down, which run the real code and look at what is sent.
+ */
 describe('XMR security invariants (static)', () => {
   it('walletRpcUrls is only ever set to "none" (empty), in the view-only client', () => {
     const hits = productionFiles
@@ -58,6 +64,29 @@ describe('XMR security invariants (static)', () => {
     expect(sourceOf('renderer/services/monero/client.ts')).toMatch(
       /const none = \{ \[Network\.Mainnet\]: \[\], \[Network\.Stagenet\]: \[\], \[Network\.Testnet\]: \[\] \}/
     )
+  })
+
+  it('every fetch in the Monero services refuses redirects (redirect: "error")', () => {
+    const monero = productionFiles.filter((f) => rel(f).startsWith('renderer/services/monero/'))
+    let calls = 0
+    for (const file of monero) {
+      const text = read(file)
+      // `fetchFn(`, `fetch(` and `fetchTransactions` implementations: the call and its options object
+      for (const m of text.matchAll(/\b(?:fetchFn|fetch)\(\s*[`'"$\w]/g)) {
+        // the call text up to the matching closing parenthesis
+        let depth = 0
+        let end = m.index! + m[0].indexOf('(')
+        do {
+          if (text[end] === '(') depth += 1
+          if (text[end] === ')') depth -= 1
+          end += 1
+        } while (depth > 0 && end < text.length)
+        const call = text.slice(m.index, end)
+        calls += 1
+        expect(call, `${rel(file)}: ${call.slice(0, 60)}`).toContain("redirect: 'error'")
+      }
+    }
+    expect(calls).toBeGreaterThanOrEqual(3) // daemon height, get_transactions, LWS
   })
 
   it('sendTx$ has no XMR case (falls through to "not supported")', () => {
@@ -138,7 +167,12 @@ describe('XMR security invariants (end to end): no path sends the phrase or the 
 
     const storage = memoryStorage()
     const make = (config: XmrConnectionConfig) =>
-      new ViewOnlyXmrClient({ viewKeys, network: Network.Mainnet, config, deps: { storage, lwsFetch } })
+      new ViewOnlyXmrClient({
+        viewKeys,
+        network: Network.Mainnet,
+        config,
+        deps: { storage, lwsFetch, scanDeps: { ...defaultScanDeps, now: () => mainnetTimeOfHeight(3_000_000) } }
+      })
 
     // 1. local scan (default: no LWS)
     const local = make(DEFAULT_XMR_CONNECTION_CONFIG)

@@ -168,7 +168,14 @@ const settings: SettingMessages = {
   'monero.scan.rangeTooLarge':
     'La ventana de escaneo de Monero es demasiado grande: {gap} bloques por escanear (límite: {limit}, aproximadamente 1 semana). Define en los ajustes del monedero de Monero una altura de restauración más reciente o usa un servidor de monedero ligero.',
   'monero.balance.received': 'Recibido (gastos no rastreados)',
-  'monero.balance.lws': 'Recibido menos los gastos informados por tu servidor de monedero ligero (sin verificar)'
+  'monero.balance.lws': 'Recibido, según tu servidor de monedero ligero (sin verificar; los gastos no se registran)',
+  'monero.balance.serverSpends':
+    'Gastos informados por el servidor (sin verificar, pueden incluir señuelos): {amount} XMR',
+  'monero.balance.rejected':
+    '{count} salida(s) entrante(s) NO se contaron porque su importe no se pudo verificar (compromiso falsificado, no compatible o ausente).',
+  'monero.lws.confirm.host': 'Servidor: {host}',
+  'monero.export.autoClose':
+    'Esta ventana se cierra automáticamente tras 60 segundos. Lo que copies se borra del portapapeles tras 30 segundos.'
 }
 
 export default settings

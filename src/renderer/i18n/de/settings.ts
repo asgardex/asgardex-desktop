@@ -171,7 +171,13 @@ const settings: SettingMessages = {
   'monero.scan.rangeTooLarge':
     'Das Monero-Scanfenster ist zu groß: {gap} Blöcke zu scannen (Limit: {limit}, etwa 1 Woche). Setze in den Monero-Wallet-Einstellungen eine neuere Wiederherstellungshöhe oder nutze einen Light-Wallet-Server.',
   'monero.balance.received': 'Empfangen (Ausgaben werden nicht erfasst)',
-  'monero.balance.lws': 'Empfangen abzüglich der vom Light-Wallet-Server gemeldeten Ausgaben (nicht überprüft)'
+  'monero.balance.lws': 'Empfangen, laut deinem Light-Wallet-Server (nicht überprüft; Ausgaben werden nicht erfasst)',
+  'monero.balance.serverSpends': 'Vom Server gemeldete Ausgaben (nicht überprüft, kann Decoys enthalten): {amount} XMR',
+  'monero.balance.rejected':
+    '{count} eingehende Output(s) wurden NICHT gezählt, da ihr Betrag nicht überprüft werden konnte (gefälschte, nicht unterstützte oder fehlende Commitment).',
+  'monero.lws.confirm.host': 'Server: {host}',
+  'monero.export.autoClose':
+    'Dieses Fenster schließt sich nach 60 Sekunden automatisch. Alles, was du kopierst, wird nach 30 Sekunden aus der Zwischenablage entfernt.'
 }
 
 export default settings

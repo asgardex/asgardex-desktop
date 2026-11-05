@@ -2,13 +2,14 @@ import { Network } from '@xchainjs/xchain-client'
 
 import { firstValueFrom } from 'rxjs'
 
-import { xmrBalanceSource$ } from './balanceSource'
+import { xmrBalanceInfo$ } from './balanceSource'
 import { createReadOnlyXmrClient, ViewOnlyXmrClient, XMR_SEND_DISABLED_MSG } from './client'
 import { DEFAULT_XMR_CONNECTION_CONFIG, KeyValueStorage, XmrConnectionConfig } from './config'
 import { deriveXmrExportKeys, deriveXmrViewKeys } from './derivation'
 import { buildPaymentTx, createFakeDaemon } from './fakeDaemon.testHelper'
 import { LwsFetch } from './lws'
 import { createLwsConfirmation } from './lwsConfirmation'
+import { defaultScanDeps, mainnetTimeOfHeight } from './scanner'
 
 // BIP-39 test vector. NEVER use for funds.
 const PHRASE = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
@@ -24,7 +25,17 @@ const memoryStorage = (): KeyValueStorage => {
 }
 
 const make = (config: XmrConnectionConfig = DEFAULT_XMR_CONNECTION_CONFIG, lwsFetch?: LwsFetch) =>
-  new ViewOnlyXmrClient({ viewKeys, network: Network.Mainnet, config, deps: { storage: memoryStorage(), lwsFetch } })
+  new ViewOnlyXmrClient({
+    viewKeys,
+    network: Network.Mainnet,
+    config,
+    // the fake chain is at height ~3,000,000: the clock follows it (tip sanity check)
+    deps: {
+      storage: memoryStorage(),
+      lwsFetch,
+      scanDeps: { ...defaultScanDeps, now: () => mainnetTimeOfHeight(3_000_000) }
+    }
+  })
 
 const lwsFetchMock = (info: Record<string, string> = { total_received: '7000000000000', total_sent: '1' }) =>
   vi.fn(async (url: string, init: { body: string }) => {
@@ -185,9 +196,9 @@ describe('services/monero/client (ViewOnlyXmrClient)', () => {
         lwsFetch
       )
       const [balance] = await client.getBalance(viewKeys.address)
-      // received minus the spends the server reports (unverifiable without the spend key -> source 'lws-reported')
-      expect(balance.amount.amount().toString()).toBe('6999999999999')
-      expect(await firstValueFrom(xmrBalanceSource$)).toBe('lws-reported')
+      // received only: the spends the server reports (total_sent: 1) are NOT subtracted
+      expect(balance.amount.amount().toString()).toBe('7000000000000')
+      expect(await firstValueFrom(xmrBalanceInfo$)).toEqual({ source: 'lws', serverReportedSpent: BigInt(1) })
       await client.getBalance(viewKeys.address)
       const paths = lwsFetch.mock.calls.map(([url]: [string]) => url.slice(LWS_URL.length))
       expect(paths.filter((p: string) => p === '/login')).toHaveLength(1)
@@ -214,21 +225,22 @@ describe('services/monero/client (ViewOnlyXmrClient)', () => {
       vi.stubGlobal('fetch', createFakeDaemon({ tip: 3_000_000, txHeight: 2_999_900, tx }).fetch)
       const lwsLess = make(DEFAULT_XMR_CONNECTION_CONFIG)
       await lwsLess.getBalance(viewKeys.address)
-      expect(await firstValueFrom(xmrBalanceSource$)).toBe('received')
+      expect(await firstValueFrom(xmrBalanceInfo$)).toEqual({ source: 'local-scan' })
     })
 
-    it('LWS that reports spends: they are subtracted, never below zero', async () => {
+    it('LWS that reports more spends than received: the balance is still the received amount (spends are never subtracted)', async () => {
       const client = make(lwsConfig(), lwsFetchMock({ total_received: '5', total_sent: '9' }))
       const [balance] = await client.getBalance(viewKeys.address)
-      expect(balance.amount.amount().toString()).toBe('0')
-      expect(await firstValueFrom(xmrBalanceSource$)).toBe('lws-reported')
+      expect(balance.amount.amount().toString()).toBe('5')
+      // handed to the UI separately, unverified
+      expect(await firstValueFrom(xmrBalanceInfo$)).toEqual({ source: 'lws', serverReportedSpent: BigInt(9) })
     })
 
-    it('LWS that does not report spends: still just "received"', async () => {
+    it('LWS that does not report spends: just "received", no spends line', async () => {
       const client = make(lwsConfig(), lwsFetchMock({ total_received: '5' }))
       const [balance] = await client.getBalance(viewKeys.address)
       expect(balance.amount.amount().toString()).toBe('5')
-      expect(await firstValueFrom(xmrBalanceSource$)).toBe('received')
+      expect(await firstValueFrom(xmrBalanceInfo$)).toEqual({ source: 'lws', serverReportedSpent: undefined })
     })
   })
 

@@ -114,6 +114,15 @@ const WATCH_ONLY_CHAINS: ReadonlyArray<Chain> = [XMRChain]
 
 export const isWatchOnlyChain = (chain: Chain): boolean => WATCH_ONLY_CHAINS.includes(chain.toUpperCase())
 
+/**
+ * Chains whose balances are never added to portfolio / wallet totals.
+ * XMR: the amount is "received, spends not tracked" from view-only keys and a trusted node: it is not a balance and
+ * must not be summed into a number which looks like one.
+ */
+const EXCLUDED_FROM_TOTALS_CHAINS: ReadonlyArray<Chain> = [XMRChain]
+
+export const isExcludedFromTotals = (chain: Chain): boolean => EXCLUDED_FROM_TOTALS_CHAINS.includes(chain.toUpperCase())
+
 // Function to retrieve chains for a specific DEX
 export const getChainsForDex = (dexName: string): ReadonlyArray<Chain> => {
   return DEX_CHAINS[dexName]

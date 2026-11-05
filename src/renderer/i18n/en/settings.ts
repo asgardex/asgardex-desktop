@@ -172,7 +172,13 @@ const settings: SettingMessages = {
   'monero.scan.rangeTooLarge':
     'The Monero scan window is too large: {gap} blocks to scan (limit: {limit}, about 1 week). Set a more recent restore height in the Monero wallet settings, or use a light-wallet server.',
   'monero.balance.received': 'Received (spends not tracked)',
-  'monero.balance.lws': 'Received minus spends reported by your light-wallet server (unverified)'
+  'monero.balance.lws': 'Received, as reported by your light-wallet server (unverified; spends not tracked)',
+  'monero.balance.serverSpends': 'Server-reported spends (unverified, may include decoys): {amount} XMR',
+  'monero.balance.rejected':
+    '{count} incoming output(s) were NOT counted because their amount could not be verified (forged, unsupported or missing commitment).',
+  'monero.lws.confirm.host': 'Server: {host}',
+  'monero.export.autoClose':
+    'This window closes automatically after 60 seconds. Anything you copy is removed from the clipboard after 30 seconds.'
 }
 
 export default settings

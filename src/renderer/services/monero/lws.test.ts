@@ -33,20 +33,30 @@ describe('services/monero/lws', () => {
     expect(init.body).not.toContain(PHRASE.split(' ')[0] + ' ' + PHRASE.split(' ')[1])
   })
 
+  it('every request uses redirect: "error" (a server must not forward the view key to another host)', async () => {
+    const fetchFn = ok({ total_received: '1', transactions: [] })
+    await lwsLogin(confirmed, viewKeys, fetchFn)
+    await lwsGetBalance(confirmed, viewKeys, fetchFn)
+    await lwsGetIncomingTxs(confirmed, viewKeys, fetchFn)
+    const calls = vi.mocked(fetchFn).mock.calls
+    expect(calls).toHaveLength(3)
+    for (const [, init] of calls) expect(init.redirect).toBe('error')
+  })
+
   describe('balance', () => {
-    it('reports received and the spends the server reports', async () => {
+    it('reports received, and the spends the server claims separately (never subtracted)', async () => {
       const fetchFn = ok({ total_received: '5000000000000', total_sent: '4000000000000' })
       await expect(lwsGetBalance(confirmed, viewKeys, fetchFn)).resolves.toEqual({
         received: BigInt('5000000000000'),
-        sent: BigInt('4000000000000')
+        serverReportedSpent: BigInt('4000000000000')
       })
     })
 
-    it('sent is undefined when the server does not report spends', async () => {
+    it('serverReportedSpent is undefined when the server does not report spends', async () => {
       const fetchFn = ok({ total_received: '5' })
       await expect(lwsGetBalance(confirmed, viewKeys, fetchFn)).resolves.toEqual({
         received: BigInt(5),
-        sent: undefined
+        serverReportedSpent: undefined
       })
     })
 

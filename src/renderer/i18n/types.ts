@@ -1407,6 +1407,10 @@ type SettingMessageKey =
   | 'monero.scan.rangeTooLarge'
   | 'monero.balance.received'
   | 'monero.balance.lws'
+  | 'monero.balance.serverSpends'
+  | 'monero.balance.rejected'
+  | 'monero.lws.confirm.host'
+  | 'monero.export.autoClose'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 

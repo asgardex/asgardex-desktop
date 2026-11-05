@@ -1,13 +1,22 @@
 import { observableState } from '../../helpers/stateHelper'
 
 /**
- * Where the XMR balance shown in the UI comes from. View-only keys cannot see outgoing spends (key images need the
- * private spend key), so the UI has to say what the number means:
- * - `received`: total received by the own address; spends are not tracked (local scan, or an LWS without spends).
- * - `lws-reported`: received minus the spends reported by the confirmed light-wallet server (not verifiable here).
+ * What the XMR balance shown in the UI means. View-only keys cannot see outgoing spends (key images need the private
+ * spend key), so the balance is always "received" and the UI says so:
+ * - `local-scan`: received outputs found by the local scan, amounts verified against their commitments.
+ * - `lws`: received amount as reported by the confirmed light-wallet server (unverified).
+ *
+ * `serverReportedSpent` is what an LWS claims was spent. It is NEVER subtracted (the server cannot tell spends from
+ * decoys); the UI shows it on a separate, clearly labelled line.
  */
-export type XmrBalanceSource = 'received' | 'lws-reported'
+export type XmrBalanceSource = 'local-scan' | 'lws'
 
-const { get$: xmrBalanceSource$, set: setXmrBalanceSource } = observableState<XmrBalanceSource>('received')
+export type XmrBalanceInfo = {
+  source: XmrBalanceSource
+  /** piconero; only with `source: 'lws'` and when the server reported `total_sent` */
+  serverReportedSpent?: bigint
+}
 
-export { xmrBalanceSource$, setXmrBalanceSource }
+const { get$: xmrBalanceInfo$, set: setXmrBalanceInfo } = observableState<XmrBalanceInfo>({ source: 'local-scan' })
+
+export { xmrBalanceInfo$, setXmrBalanceInfo }

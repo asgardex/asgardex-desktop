@@ -16,6 +16,7 @@ import {
   isChainOfMaya,
   isChainOfThor,
   isSupportedChain,
+  isExcludedFromTotals,
   isWatchOnlyChain
 } from './chain'
 import { AssetXMR, XMRChain, XMR_DECIMAL } from './chainIds'
@@ -36,7 +37,7 @@ describe('XMR (watch-only chain)', () => {
   })
 
   describe('opt-in', () => {
-    it('is not enabled by default (no key derivation / node access until the user enables it)', () => {
+    it('is not enabled by default (no node access until the user enables it)', () => {
       expect(OPT_IN_CHAINS).toContain('XMR')
       expect(Object.keys(DEFAULT_ENABLED_CHAINS)).not.toContain('XMR')
       expect(CHAINS_STORAGE_DEFAULT.chains).not.toContain('XMR')
@@ -70,6 +71,14 @@ describe('XMR (watch-only chain)', () => {
     expect(isWatchOnlyChain('xmr')).toBe(true)
     for (const chain of Object.keys(SUPPORTED_CHAINS).filter((c) => c !== 'XMR')) {
       expect(isWatchOnlyChain(chain)).toBe(false)
+    }
+  })
+
+  it('isExcludedFromTotals: XMR is never part of portfolio totals', () => {
+    expect(isExcludedFromTotals('XMR')).toBe(true)
+    expect(isExcludedFromTotals('xmr')).toBe(true)
+    for (const chain of Object.keys(SUPPORTED_CHAINS).filter((c) => c !== 'XMR')) {
+      expect(isExcludedFromTotals(chain)).toBe(false)
     }
   })
 

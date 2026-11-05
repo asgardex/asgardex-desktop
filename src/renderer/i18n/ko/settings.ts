@@ -167,7 +167,12 @@ const settings: SettingMessages = {
   'monero.scan.rangeTooLarge':
     'Monero 스캔 범위가 너무 큽니다. 스캔할 블록이 {gap}개입니다(한도: {limit}, 약 1주일). Monero 지갑 설정에서 더 최근의 복원 높이를 설정하거나 라이트 월렛 서버를 사용하세요.',
   'monero.balance.received': '수신됨 (지출은 추적되지 않음)',
-  'monero.balance.lws': '수신액에서 라이트 월렛 서버가 보고한 지출을 뺀 값 (검증되지 않음)'
+  'monero.balance.lws': '라이트 월렛 서버가 보고한 수신액 (검증되지 않음, 지출은 추적되지 않음)',
+  'monero.balance.serverSpends': '서버가 보고한 지출 (검증되지 않음, 디코이가 포함될 수 있음): {amount} XMR',
+  'monero.balance.rejected':
+    '금액을 검증할 수 없어(위조, 미지원 또는 누락된 커밋먼트) 수신 출력 {count}개가 집계되지 않았습니다.',
+  'monero.lws.confirm.host': '서버: {host}',
+  'monero.export.autoClose': '이 창은 60초 후 자동으로 닫힙니다. 복사한 내용은 30초 후 클립보드에서 삭제됩니다.'
 }
 
 export default settings

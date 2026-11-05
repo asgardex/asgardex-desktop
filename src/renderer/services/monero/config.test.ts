@@ -241,6 +241,12 @@ describe('services/monero/config', () => {
       expect(JSON.parse(fetchFn.mock.calls[0][1].body).method).toBe('get_block_count')
     })
 
+    it('does not follow redirects', async () => {
+      const fetchFn = fetchWith(true, { result: { count: 5 } })
+      await fetchDaemonHeight('https://n', fetchFn)
+      expect(fetchFn.mock.calls[0][1].redirect).toBe('error')
+    })
+
     it('throws on HTTP error or malformed result', async () => {
       await expect(fetchDaemonHeight('https://n', fetchWith(false, {}))).rejects.toThrow()
       await expect(fetchDaemonHeight('https://n', fetchWith(true, { result: { count: 'x' } }))).rejects.toThrow()

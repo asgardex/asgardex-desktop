@@ -17,6 +17,21 @@
  *   (more recent restore height, or opt-in light-wallet server).
  * - `scanBlocks` swallows daemon errors (it only logs them). A failed chunk is detected via these log lines and
  *   treated as failure: the stored height is **not** advanced past blocks which could not be read.
+ *
+ * Amount verification
+ * -------------------
+ * `scanBlocks` decrypts amounts but never checks them against the output commitment. Every output it finds is
+ * verified in the app (`commitment.ts`, `verifyOutputs.ts`: `C == mask·G + amount·H`) before it is counted. Outputs which
+ * fail, have no commitment, or are not supported (coinbase / pre-RingCT) are kept as `rejected` (shown in the UI), never
+ * counted as 0.
+ *
+ * Start height and node trust
+ * ---------------------------
+ * The start height (derived from the node's tip on first use) is only persisted together with the first successfully
+ * scanned (and verified) chunk. The node's tip is sanity-checked before it is used: mainnet heights must be near the
+ * height expected from the time (`expectedMainnetHeight`), and a stored scan must not jump back or ahead faster than
+ * the chain can grow. A second daemon is not consulted (documented in MONERO.md).
+ * All daemon requests use `redirect: 'error'`.
  */
 import { Network } from '@xchainjs/xchain-client'
 import { scanBlocks } from '@xchainjs/xchain-monero'
@@ -24,6 +39,9 @@ import { scanBlocks } from '@xchainjs/xchain-monero'
 import { observableState } from '../../helpers/stateHelper'
 import { fetchDaemonHeight, KeyValueStorage } from './config'
 import { XmrViewKeys } from './derivation'
+import { verifyOwnedOutputs, UnverifiedXmrOutput, VerifiedXmrOutput, XmrRejectedOutput } from './verifyOutputs'
+
+export type { XmrRejectedOutput }
 
 export const XMR_MAX_SCAN_BLOCKS = 5000
 /** Blocks per persisted step */
@@ -33,8 +51,30 @@ export const XMR_REORG_OVERLAP_BLOCKS = 10
 /** Blocks to step back from the tip on first use (~1 day) */
 export const XMR_FIRST_USE_MARGIN = 720
 
-export const XMR_SCAN_STORAGE_PREFIX = 'asgardex-xmr-scan:v1'
+/** v2: cached outputs are amount-verified (v1 caches held unverified amounts and are ignored) */
+export const XMR_SCAN_STORAGE_PREFIX = 'asgardex-xmr-scan:v2'
 
+/** Mainnet RingCT v2 fork (2 minute blocks) as reference for the height plausibility check */
+const MAINNET_REF_HEIGHT = 1_009_827
+const MAINNET_REF_TIME_MS = Date.UTC(2016, 2, 22)
+const MAINNET_BLOCK_TIME_MS = 120_000
+/** The expected mainnet height may be off by this much (blocks are only 2 minutes on average) */
+const MAINNET_HEIGHT_TOLERANCE = 0.03
+/** A stored scan may go back this far (reorgs) when the node reports a lower tip */
+export const XMR_TIP_REORG_TOLERANCE = 100
+/** Faster-than-expected growth allowed since the last scan (factor) plus a constant (blocks) */
+const TIP_GROWTH_FACTOR = 2
+const TIP_GROWTH_SLACK = 2000
+
+/** Height mainnet is expected to have at `nowMs` (approximate) */
+export const expectedMainnetHeight = (nowMs: number): number =>
+  MAINNET_REF_HEIGHT + Math.floor((nowMs - MAINNET_REF_TIME_MS) / MAINNET_BLOCK_TIME_MS)
+
+/** Time at which mainnet is expected to have `height` (inverse of `expectedMainnetHeight`; for tests) */
+export const mainnetTimeOfHeight = (height: number): number =>
+  MAINNET_REF_TIME_MS + (height - MAINNET_REF_HEIGHT) * MAINNET_BLOCK_TIME_MS
+
+/** An output whose amount was verified against its commitment */
 export type XmrOwnedOutput = {
   txHash: string
   outputIndex: number
@@ -46,9 +86,23 @@ export type XmrOwnedOutput = {
 }
 
 type StoredOutput = Omit<XmrOwnedOutput, 'amount'> & { amount: string }
-type StoredScan = { startHeight: number; lastHeight: number; outputs: StoredOutput[] }
+type StoredScan = {
+  startHeight: number
+  lastHeight: number
+  outputs: StoredOutput[]
+  rejected?: XmrRejectedOutput[]
+  updatedAt?: number
+}
 
-export type XmrScanState = { startHeight: number; lastHeight: number; outputs: XmrOwnedOutput[] }
+export type XmrScanState = {
+  startHeight: number
+  lastHeight: number
+  outputs: XmrOwnedOutput[]
+  /** Outputs of this wallet which were NOT counted (failed verification / unsupported) */
+  rejected: XmrRejectedOutput[]
+  /** ms since epoch of the last successful scan step (for the tip plausibility check) */
+  updatedAt?: number
+}
 
 /** Raised when the gap to scan is bigger than `XMR_MAX_SCAN_BLOCKS` */
 export class XmrScanRangeError extends Error {
@@ -75,12 +129,79 @@ export type XmrScanStatus =
 const { get$: xmrScanStatus$, set: setXmrScanStatus } = observableState<XmrScanStatus>({ kind: 'idle' })
 export { xmrScanStatus$ }
 
+/** Outputs of the current wallet which were not counted (see `XmrScanState.rejected`) */
+const { get$: xmrRejectedCount$, set: setXmrRejectedCount } = observableState<number>(0)
+export { xmrRejectedCount$ }
+
 export type ScanDeps = {
   getTip: (daemonUrl: string) => Promise<number>
   scanBlocks: typeof scanBlocks
+  /** Checks the amounts of found outputs against their commitments */
+  verifyOutputs: (args: {
+    daemonUrl: string
+    viewKeys: XmrViewKeys
+    outputs: UnverifiedXmrOutput[]
+  }) => Promise<{ verified: VerifiedXmrOutput[]; rejected: XmrRejectedOutput[] }>
+  /** ms since epoch (for the tip plausibility check) */
+  now: () => number
 }
 
-const defaultDeps: ScanDeps = { getTip: fetchDaemonHeight, scanBlocks }
+export const defaultScanDeps: ScanDeps = {
+  getTip: fetchDaemonHeight,
+  scanBlocks,
+  verifyOutputs: verifyOwnedOutputs,
+  now: () => Date.now()
+}
+const defaultDeps = defaultScanDeps
+
+export class XmrImplausibleTipError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'XmrImplausibleTipError'
+  }
+}
+
+/** Start heights chosen in this session whose first scan did not succeed yet (never persisted before a success) */
+const pendingStarts = new Map<string, number>()
+
+/**
+ * Rejects tips a node could use to move the scan window somewhere useless (or to hide payments):
+ * - mainnet: must be within `MAINNET_HEIGHT_TOLERANCE` of the height expected from the time
+ * - with a stored scan: not further back than the reorg tolerance, and not further ahead than the chain can have grown
+ */
+const assertPlausibleTip = ({
+  network,
+  tip,
+  state,
+  nowMs
+}: {
+  network: Network
+  tip: number
+  state: XmrScanState | undefined
+  nowMs: number
+}) => {
+  if (!Number.isInteger(tip) || tip <= 0) throw new XmrImplausibleTipError('The Monero node reported an invalid height')
+  if (network === Network.Mainnet) {
+    const expected = expectedMainnetHeight(nowMs)
+    if (Math.abs(tip - expected) > expected * MAINNET_HEIGHT_TOLERANCE) {
+      throw new XmrImplausibleTipError(
+        'The Monero node reported an implausible block height. Try another node in the Monero wallet settings.'
+      )
+    }
+  }
+  if (state) {
+    const lastBlock = tip - 1
+    const elapsedBlocks = Math.max(0, nowMs - (state.updatedAt ?? nowMs)) / MAINNET_BLOCK_TIME_MS
+    if (
+      lastBlock < state.lastHeight - XMR_TIP_REORG_TOLERANCE ||
+      lastBlock > state.lastHeight + elapsedBlocks * TIP_GROWTH_FACTOR + TIP_GROWTH_SLACK
+    ) {
+      throw new XmrImplausibleTipError(
+        'The Monero node reported a block height which does not fit the last scan. Try another node in the Monero wallet settings.'
+      )
+    }
+  }
+}
 
 export const scanStorageKey = (network: Network, address: string) => `${XMR_SCAN_STORAGE_PREFIX}:${network}:${address}`
 
@@ -113,7 +234,25 @@ const parseStored = (raw: string | null): XmrScanState | undefined => {
         timestamp: o.timestamp
       })
     }
-    return { startHeight: parsed.startHeight, lastHeight: parsed.lastHeight, outputs }
+    const rejected: XmrRejectedOutput[] = []
+    for (const r of Array.isArray(parsed.rejected) ? parsed.rejected : []) {
+      if (
+        typeof r?.txHash !== 'string' ||
+        !isHeight(r.outputIndex) ||
+        !isHeight(r.height) ||
+        typeof r.reason !== 'string'
+      ) {
+        return undefined
+      }
+      rejected.push({ txHash: r.txHash, outputIndex: r.outputIndex, height: r.height, reason: r.reason })
+    }
+    return {
+      startHeight: parsed.startHeight,
+      lastHeight: parsed.lastHeight,
+      outputs,
+      rejected,
+      updatedAt: typeof parsed.updatedAt === 'number' ? parsed.updatedAt : undefined
+    }
   } catch {
     return undefined
   }
@@ -136,7 +275,9 @@ const saveScanState = (storage: KeyValueStorage | undefined, network: Network, a
     const stored: StoredScan = {
       startHeight: s.startHeight,
       lastHeight: s.lastHeight,
-      outputs: s.outputs.map((o) => ({ ...o, amount: o.amount.toString() }))
+      outputs: s.outputs.map((o) => ({ ...o, amount: o.amount.toString() })),
+      rejected: s.rejected,
+      updatedAt: s.updatedAt
     }
     storage?.setItem(scanStorageKey(network, address), JSON.stringify(stored))
   } catch {
@@ -151,9 +292,29 @@ let scanLock: Promise<unknown> = Promise.resolve()
 
 const SCANNER_LOG_PREFIX = '[XMR scanner]'
 
+/**
+ * Runs `fn` with a `fetch` which never follows redirects for requests to `daemonUrl` (the SDK scanner uses the global
+ * `fetch` and sets no `redirect` option). Other requests are passed through unchanged. Scans run one at a time.
+ */
+const withNoRedirects = async <A>(daemonUrl: string, fn: () => Promise<A>): Promise<A> => {
+  const original = globalThis.fetch
+  const guarded = ((input: RequestInfo | URL, init?: RequestInit) =>
+    original(
+      input,
+      typeof input === 'string' && input.startsWith(daemonUrl) ? { ...init, redirect: 'error' } : init
+    )) as typeof fetch
+  globalThis.fetch = guarded
+  try {
+    return await fn()
+  } finally {
+    globalThis.fetch = original
+  }
+}
+
 /* eslint-disable no-console -- scanBlocks of the SDK reports failures only via console.*; intercepted (not forwarded) on purpose */
 /**
  * Runs `scanBlocks` for a chunk and reports whether it logged read failures (`scanBlocks` swallows them).
+ * Found outputs are amount-verified before they are returned.
  */
 const scanChunk = async ({
   deps,
@@ -167,7 +328,7 @@ const scanChunk = async ({
   viewKeys: XmrViewKeys
   from: number
   to: number
-}): Promise<{ outputs: XmrOwnedOutput[]; failed: boolean }> => {
+}): Promise<{ verified: VerifiedXmrOutput[]; rejected: XmrRejectedOutput[]; failed: boolean }> => {
   let failed = false
   const origError = console.error
   const origWarn = console.warn
@@ -182,30 +343,29 @@ const scanChunk = async ({
     }
   console.error = hook(origError)
   console.warn = hook(origWarn)
+  let found: UnverifiedXmrOutput[]
   try {
     // Zero "spend key": view-only scanning (see header)
-    const result = await deps.scanBlocks(
-      daemonUrl,
-      viewKeys.privateViewKey,
-      viewKeys.publicSpendKey,
-      new Uint8Array(32),
-      from,
-      to
+    const result = await withNoRedirects(daemonUrl, () =>
+      deps.scanBlocks(daemonUrl, viewKeys.privateViewKey, viewKeys.publicSpendKey, new Uint8Array(32), from, to)
     )
-    return {
-      failed,
-      outputs: result.ownedOutputs.map((o) => ({
-        txHash: o.txHash,
-        outputIndex: o.outputIndex,
-        amount: o.amount,
-        height: o.height,
-        timestamp: o.timestamp
-      }))
-    }
+    found = result.ownedOutputs.map((o) => ({
+      txHash: o.txHash,
+      outputIndex: o.outputIndex,
+      amount: o.amount,
+      height: o.height,
+      timestamp: o.timestamp,
+      txPubKey: o.txPubKey
+    }))
   } finally {
     console.error = origError
     console.warn = origWarn
   }
+  if (failed) return { verified: [], rejected: [], failed }
+  const { verified, rejected } = await withNoRedirects(daemonUrl, () =>
+    deps.verifyOutputs({ daemonUrl, viewKeys, outputs: found })
+  )
+  return { verified, rejected, failed }
 }
 /* eslint-enable no-console */
 
@@ -232,14 +392,19 @@ export const scanXmrWallet = ({
     const tip = await deps.getTip(daemonUrl) // block count -> last block is `tip - 1`
     const lastBlock = tip - 1
 
-    let state = loadScanState(storage, network, address)
+    const stored = loadScanState(storage, network, address)
+    assertPlausibleTip({ network, tip, state: stored, nowMs: deps.now() })
+
+    let state = stored
     // A different explicit restore height than the one the stored state started with -> start over from it
     if (state && restoreHeight !== null && state.startHeight !== restoreHeight) state = undefined
+    const pendingKey = `${network}:${address}`
     if (!state) {
-      const startHeight = restoreHeight ?? Math.max(0, tip - XMR_FIRST_USE_MARGIN)
-      state = { startHeight, lastHeight: startHeight - 1, outputs: [] }
-      // Remember the start right away: a failed first scan must not move the window to a newer tip on retry
-      saveScanState(storage, network, address, state)
+      // Not persisted yet: only the first successfully scanned chunk stores it. Within this session a retry keeps
+      // the same start (a failed first attempt must not move the window to a newer tip).
+      const startHeight = restoreHeight ?? pendingStarts.get(pendingKey) ?? Math.max(0, tip - XMR_FIRST_USE_MARGIN)
+      pendingStarts.set(pendingKey, startHeight)
+      state = { startHeight, lastHeight: startHeight - 1, outputs: [], rejected: [] }
     }
 
     const firstUnscanned = state.lastHeight + 1
@@ -261,19 +426,30 @@ export const scanXmrWallet = ({
     let from = Math.max(current.startHeight, firstUnscanned - XMR_REORG_OVERLAP_BLOCKS)
     while (from <= lastBlock) {
       const to = Math.min(from + XMR_SCAN_CHUNK_BLOCKS - 1, lastBlock)
-      const { outputs, failed } = await scanChunk({ deps, daemonUrl, viewKeys, from, to })
+      const { verified, rejected, failed } = await scanChunk({ deps, daemonUrl, viewKeys, from, to })
       if (failed) {
         throw new Error('The Monero node did not return all requested blocks. Try again later or use another node.')
       }
       // drop what we knew about the re-scanned range, then add the fresh result (dedupe)
       const kept = current.outputs.filter((o) => o.height < from)
       const seen = new Set(kept.map(outputKey))
-      const fresh = outputs.filter((o) => !seen.has(outputKey(o)))
-      current = { startHeight: current.startHeight, lastHeight: to, outputs: [...kept, ...fresh] }
+      const fresh = verified.filter((o) => !seen.has(outputKey(o)))
+      const keptRejected = current.rejected.filter((o) => o.height < from)
+      const seenRejected = new Set(keptRejected.map(outputKey))
+      const freshRejected = rejected.filter((o) => !seenRejected.has(outputKey(o)))
+      current = {
+        startHeight: current.startHeight,
+        lastHeight: to,
+        outputs: [...kept, ...fresh],
+        rejected: [...keptRejected, ...freshRejected],
+        updatedAt: deps.now()
+      }
       saveScanState(storage, network, address, current)
+      pendingStarts.delete(pendingKey)
       from = to + 1
     }
     setXmrScanStatus({ kind: 'idle' })
+    setXmrRejectedCount(current.rejected.length)
     return current
   }
 

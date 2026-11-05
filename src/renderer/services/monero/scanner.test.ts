@@ -5,18 +5,23 @@ import { firstValueFrom } from 'rxjs'
 import { KeyValueStorage } from './config'
 import { deriveXmrViewKeys } from './derivation'
 import {
+  expectedMainnetHeight,
   loadScanState,
+  mainnetTimeOfHeight,
   scanStorageKey,
   scanXmrWallet,
   ScanDeps,
   totalReceived,
+  xmrRejectedCount$,
   xmrScanStatus$,
+  XmrImplausibleTipError,
   XmrScanRangeError,
   XMR_FIRST_USE_MARGIN,
   XMR_MAX_SCAN_BLOCKS,
   XMR_REORG_OVERLAP_BLOCKS,
   XMR_SCAN_CHUNK_BLOCKS
 } from './scanner'
+import { UnverifiedXmrOutput } from './verifyOutputs'
 
 const PHRASE = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 const viewKeys = deriveXmrViewKeys(PHRASE, Network.Mainnet)
@@ -43,7 +48,7 @@ const out = (txHash: string, height: number, amount = BigInt(1_000_000_000_000),
 })
 
 /** Fake `scanBlocks`: returns the `outputs` which lie in the requested range, records the ranges */
-const fakeDeps = (tip: number, outputs: Output[] = []) => {
+const fakeDeps = (tip: number, outputs: Output[] = [], rejectedTxs: Set<string> = new Set()) => {
   const ranges: Array<[number, number]> = []
   const spendKeys: Uint8Array[] = []
   const state = { tip }
@@ -67,7 +72,24 @@ const fakeDeps = (tip: number, outputs: Output[] = []) => {
           spentKeyImages: new Set<string>()
         }
       }
-    ) as unknown as ScanDeps['scanBlocks']
+    ) as unknown as ScanDeps['scanBlocks'],
+
+    // stand-in for the commitment check (covered in commitment.test.ts / scanner.integration.test.ts)
+    verifyOutputs: vi.fn(async ({ outputs: found }) => ({
+      verified: found
+        .filter((o: UnverifiedXmrOutput) => !rejectedTxs.has(o.txHash))
+        .map(({ txPubKey: _unused, ...o }: UnverifiedXmrOutput) => o),
+      rejected: found
+        .filter((o: UnverifiedXmrOutput) => rejectedTxs.has(o.txHash))
+        .map((o: UnverifiedXmrOutput) => ({
+          txHash: o.txHash,
+          outputIndex: o.outputIndex,
+          height: o.height,
+          reason: 'commitment-mismatch' as const
+        }))
+    })) as unknown as ScanDeps['verifyOutputs'],
+    // the "clock" follows the fake chain (2 minute blocks), so the tip is always plausible
+    now: () => mainnetTimeOfHeight(state.tip)
   }
   return { deps, ranges, spendKeys, state }
 }
@@ -251,6 +273,164 @@ describe('services/monero/scanner', () => {
       await run(memoryStorage(), fakeDeps(3_000_000).deps)
       expect(console.error).toBe(error)
       expect(console.warn).toBe(warn)
+    })
+  })
+
+  describe('amount verification (C1)', () => {
+    it('only verified outputs are counted; rejected ones are kept, listed and never counted as 0', async () => {
+      const storage = memoryStorage()
+      const outputs = [out('good', 2_999_900), out('forged', 2_999_910, BigInt(5_000_000_000_000))]
+      const { deps } = fakeDeps(3_000_000, outputs, new Set(['forged']))
+      const state = await run(storage, deps)
+      expect(state.outputs.map((o) => o.txHash)).toEqual(['good'])
+      expect(totalReceived(state)).toBe(BigInt(1_000_000_000_000))
+      expect(state.rejected).toEqual([
+        { txHash: 'forged', outputIndex: 0, height: 2_999_910, reason: 'commitment-mismatch' }
+      ])
+      expect(await firstValueFrom(xmrRejectedCount$)).toBe(1)
+      // persisted (and not re-added on the next, overlapping scan)
+      const again = await run(storage, fakeDeps(3_000_000, outputs, new Set(['forged'])).deps)
+      expect(again.rejected).toHaveLength(1)
+      expect(loadScanState(storage, Network.Mainnet, viewKeys.address)?.rejected).toHaveLength(1)
+    })
+
+    it('the verifier gets the node URL, the view keys and every found output', async () => {
+      const { deps } = fakeDeps(3_000_000, [out('tx1', 2_999_900)])
+      await run(memoryStorage(), deps)
+      expect(deps.verifyOutputs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          daemonUrl: DAEMON,
+          viewKeys,
+          outputs: [expect.objectContaining({ txHash: 'tx1', txPubKey: expect.any(Uint8Array) })]
+        })
+      )
+    })
+
+    it('a verification failure (node does not return the tx) fails the scan and stores nothing', async () => {
+      const storage = memoryStorage()
+      const { deps } = fakeDeps(3_000_000, [out('tx1', 2_999_900)])
+      deps.verifyOutputs = vi.fn(() => Promise.reject(new Error('no tx'))) as unknown as ScanDeps['verifyOutputs']
+      await expect(run(storage, deps)).rejects.toThrow('no tx')
+      expect(Object.keys(storage.data)).toEqual([])
+    })
+
+    it('scan caches written before verification existed (v1) are ignored', async () => {
+      const storage = memoryStorage()
+      storage.setItem(
+        `asgardex-xmr-scan:v1:${Network.Mainnet}:${viewKeys.address}`,
+        JSON.stringify({ startHeight: 1, lastHeight: 2, outputs: [] })
+      )
+      const { ranges, deps } = fakeDeps(3_000_000)
+      await run(storage, deps)
+      expect(ranges[0][0]).toBe(3_000_000 - XMR_FIRST_USE_MARGIN)
+    })
+  })
+
+  describe('start height is only persisted after a successful scan (M1)', () => {
+    it('a failed first scan stores nothing, and the retry keeps the same start (the window does not slide)', async () => {
+      const storage = memoryStorage()
+      const failing = fakeDeps(3_100_000)
+      failing.deps.scanBlocks = vi.fn(async () => {
+        console.error('[XMR scanner] getBlockHeadersRange failed for x: boom')
+        return { ownedOutputs: [], spentKeyImages: new Set<string>() }
+      }) as unknown as ScanDeps['scanBlocks']
+      await expect(run(storage, failing.deps)).rejects.toThrow()
+      expect(Object.keys(storage.data)).toEqual([])
+
+      const retry = fakeDeps(3_100_050)
+      const state = await run(storage, retry.deps)
+      expect(state.startHeight).toBe(3_100_000 - XMR_FIRST_USE_MARGIN)
+    })
+
+    it('the first successful chunk persists start and progress together', async () => {
+      const storage = memoryStorage()
+      const { deps } = fakeDeps(3_200_000)
+      await run(storage, deps)
+      const saved = loadScanState(storage, Network.Mainnet, viewKeys.address)!
+      expect(saved.startHeight).toBe(3_200_000 - XMR_FIRST_USE_MARGIN)
+      expect(saved.lastHeight).toBe(3_200_000 - 1)
+    })
+  })
+
+  describe('tip sanity check (M1)', () => {
+    it('mainnet: a tip far from the height expected from the time is refused before anything is scanned', async () => {
+      const storage = memoryStorage()
+      const { deps, ranges, state } = fakeDeps(3_000_000)
+      deps.now = () => mainnetTimeOfHeight(3_000_000)
+      state.tip = 3_000_000 + 200_000 // node claims the chain is far ahead
+      await expect(run(storage, deps)).rejects.toBeInstanceOf(XmrImplausibleTipError)
+      state.tip = 100_000 // ... or far behind
+      await expect(run(storage, deps)).rejects.toBeInstanceOf(XmrImplausibleTipError)
+      expect(ranges).toEqual([])
+      expect(Object.keys(storage.data)).toEqual([])
+    })
+
+    it('mainnet: the real clock accepts the real height range (expectedMainnetHeight is in the right ballpark)', () => {
+      // 2026-11-03: ~3.8M blocks on mainnet (checked against a public explorer when this was written)
+      const h = expectedMainnetHeight(Date.UTC(2026, 10, 3))
+      expect(h).toBeGreaterThan(3_700_000)
+      expect(h).toBeLessThan(3_900_000)
+    })
+
+    it('with a stored scan: a tip which jumps ahead faster than the chain can grow is refused', async () => {
+      const storage = memoryStorage()
+      const first = fakeDeps(3_000_000)
+      await run(storage, first.deps)
+      // only 100 blocks worth of time passed, but the node claims 20,000 new blocks
+      const next = fakeDeps(3_020_000)
+      next.deps.now = () => mainnetTimeOfHeight(3_000_100)
+      await expect(run(storage, next.deps)).rejects.toBeInstanceOf(XmrImplausibleTipError)
+      expect(loadScanState(storage, Network.Mainnet, viewKeys.address)?.lastHeight).toBe(3_000_000 - 1)
+    })
+
+    it('with a stored scan: a tip far below the last scanned height is refused (small reorgs are fine)', async () => {
+      const storage = memoryStorage()
+      await run(storage, fakeDeps(3_000_000).deps)
+      const small = fakeDeps(2_999_950)
+      small.deps.now = () => mainnetTimeOfHeight(3_000_000)
+      await expect(run(storage, small.deps)).resolves.toBeDefined()
+      const big = fakeDeps(2_990_000)
+      big.deps.now = () => mainnetTimeOfHeight(3_000_000)
+      await expect(run(storage, big.deps)).rejects.toBeInstanceOf(XmrImplausibleTipError)
+    })
+
+    it('stagenet / testnet: only the generic checks apply (no mainnet height expectation)', async () => {
+      const keys = deriveXmrViewKeys(PHRASE, Network.Stagenet)
+      const { deps } = fakeDeps(1_900_000)
+      deps.now = () => Date.UTC(2026, 10, 3)
+      const state = await scanXmrWallet({
+        viewKeys: keys,
+        daemonUrl: DAEMON,
+        restoreHeight: null,
+        storage: memoryStorage(),
+        deps
+      })
+      expect(state.lastHeight).toBe(1_900_000 - 1)
+    })
+  })
+
+  describe('redirects are an error (L1)', () => {
+    it('requests to the node made by the SDK scanner (global fetch) use redirect: "error"; other requests are untouched', async () => {
+      const seen: Array<{ url: string; redirect?: string }> = []
+      const original = globalThis.fetch
+      globalThis.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        seen.push({ url: String(input), redirect: init?.redirect })
+        return new Response('{}')
+      }) as unknown as typeof fetch
+      try {
+        const { deps } = fakeDeps(3_000_000)
+        deps.scanBlocks = vi.fn(async () => {
+          await fetch(`${DAEMON}/json_rpc`, { method: 'POST' })
+          await fetch('https://other.example/x')
+          return { ownedOutputs: [], spentKeyImages: new Set<string>() }
+        }) as unknown as ScanDeps['scanBlocks']
+        await run(memoryStorage(), deps)
+      } finally {
+        globalThis.fetch = original
+      }
+      expect(seen.find((r) => r.url === `${DAEMON}/json_rpc`)?.redirect).toBe('error')
+      expect(seen.find((r) => r.url === 'https://other.example/x')?.redirect).toBeUndefined()
+      expect(globalThis.fetch).toBe(original)
     })
   })
 

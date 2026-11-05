@@ -168,7 +168,14 @@ const settings: SettingMessages = {
   'monero.scan.rangeTooLarge':
     "La fenêtre d'analyse Monero est trop grande : {gap} blocs à analyser (limite : {limit}, environ 1 semaine). Définissez dans les paramètres du portefeuille Monero une hauteur de restauration plus récente ou utilisez un serveur de portefeuille léger.",
   'monero.balance.received': 'Reçu (dépenses non suivies)',
-  'monero.balance.lws': 'Reçu moins les dépenses signalées par votre serveur de portefeuille léger (non vérifié)'
+  'monero.balance.lws': 'Reçu, selon votre serveur de portefeuille léger (non vérifié ; dépenses non suivies)',
+  'monero.balance.serverSpends':
+    'Dépenses signalées par le serveur (non vérifiées, peuvent inclure des leurres) : {amount} XMR',
+  'monero.balance.rejected':
+    "{count} sortie(s) entrante(s) n'ont PAS été comptées car leur montant n'a pas pu être vérifié (engagement falsifié, non pris en charge ou manquant).",
+  'monero.lws.confirm.host': 'Serveur : {host}',
+  'monero.export.autoClose':
+    'Cette fenêtre se ferme automatiquement après 60 secondes. Tout ce que vous copiez est supprimé du presse-papiers après 30 secondes.'
 }
 
 export default settings

@@ -156,7 +156,7 @@ export const getDaemonUrl = (config: XmrConnectionConfig, network: Network): str
 
 type FetchLike = (
   input: string,
-  init?: { method: string; headers: Record<string, string>; body: string }
+  init?: { method: string; headers: Record<string, string>; body: string; redirect: 'error' }
 ) => Promise<{
   ok: boolean
   json: () => Promise<unknown>
@@ -170,7 +170,8 @@ export const fetchDaemonHeight = async (
   const response = await fetchFn(`${daemonUrl}/json_rpc`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: '0', method: 'get_block_count' })
+    body: JSON.stringify({ jsonrpc: '2.0', id: '0', method: 'get_block_count' }),
+    redirect: 'error'
   })
   if (!response.ok) throw new Error('Could not get Monero daemon height')
   const json = (await response.json()) as { result?: { count?: unknown } }

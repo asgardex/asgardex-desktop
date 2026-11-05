@@ -4,9 +4,10 @@
  * - Only ever talks to a `ConfirmedLws` (see `lwsConfirmation.ts`), so an unconfirmed URL can't be contacted.
  * - Sends the private **view key** (never the spend key — it is not available here) to the server.
  * - Never logs or reports the URL: its path may be a secret. Errors only carry a status code / generic text.
- * - Balance: `total_received`, minus `total_sent` **when the server reports it**. Without the spend key the app cannot
- *   verify the server's spends (key images), so this is "as reported by the server" and the UI says so. Without a
- *   reported `total_sent` the balance is only "received" (spends not tracked).
+ * - Balance: `total_received` only (as reported by the server, unverified). `total_sent` is NOT subtracted: without the
+ *   spend key the server cannot tell real spends from decoys (ring members), so its number may be far off. It is only
+ *   returned separately (`serverReportedSpent`) so the UI can show it on its own, clearly labelled and unverified.
+ * - All requests use `redirect: 'error'`: a server must not forward the view key to another host.
  */
 import { baseAmount } from '@xchainjs/xchain-util'
 
@@ -24,7 +25,7 @@ export class XmrLwsError extends Error {
 
 export type LwsFetch = (
   input: string,
-  init: { method: string; headers: Record<string, string>; body: string }
+  init: { method: string; headers: Record<string, string>; body: string; redirect: 'error' }
 ) => Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }>
 
 type LwsTx = {
@@ -41,7 +42,8 @@ const post = async (lws: ConfirmedLws, path: string, body: Record<string, unknow
     response = await fetchFn(`${lws.url}${path}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      redirect: 'error'
     })
   } catch {
     // The underlying error can contain the URL -> replaced by a generic one
@@ -77,11 +79,14 @@ const toBigInt = (value: unknown): bigint => {
 export type LwsBalance = {
   /** piconero */
   received: bigint
-  /** piconero spent as reported by the server. `undefined` = the server did not report spends. Not verifiable here. */
-  sent: bigint | undefined
+  /**
+   * piconero "spent" as reported by the server (`total_sent`); `undefined` = not reported. NOT verifiable here and
+   * may include decoys: must never be subtracted from `received`.
+   */
+  serverReportedSpent: bigint | undefined
 }
 
-/** Received (and, if reported, sent) amounts of the address */
+/** Received amount of the address, and the spends the server claims (shown separately, never subtracted) */
 export const lwsGetBalance = async (
   lws: ConfirmedLws,
   viewKeys: XmrViewKeys,
@@ -92,8 +97,9 @@ export const lwsGetBalance = async (
     total_sent?: unknown
   }
   const received = toBigInt(info?.total_received)
-  const sent = info?.total_sent === undefined || info.total_sent === null ? undefined : toBigInt(info.total_sent)
-  return { received, sent }
+  const serverReportedSpent =
+    info?.total_sent === undefined || info.total_sent === null ? undefined : toBigInt(info.total_sent)
+  return { received, serverReportedSpent }
 }
 
 export type LwsIncomingTx = { hash: string; date: Date; amount: ReturnType<typeof baseAmount>; height: number }
