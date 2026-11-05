@@ -69,7 +69,8 @@ export const createPendingAck$ = ({
   )
 
 /**
- * Client state. `initial` (no client, nothing is derived-and-exposed, no network access) until the user enabled XMR,
+ * Client state. `initial` (no client, no address exposed, no node access; the view keys themselves are derived locally while the
+ * wallet is unlocked, see `createViewKeys$`) until the user enabled XMR,
  * a wallet exists AND the user acknowledged the receive-only terms. The client creation itself performs no network request.
  */
 export const createClientState$ = ({
