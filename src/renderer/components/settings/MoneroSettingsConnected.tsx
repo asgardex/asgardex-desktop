@@ -1,6 +1,9 @@
+import { option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
 import { DEFAULT_XMR_CONNECTION_CONFIG, xmrConnectionConfig$ } from '../../services/monero/config'
+import { viewKeys$ } from '../../services/monero/common'
+import { isLwsConfirmationValid } from '../../services/monero/lwsConfirmation'
 import { xmrScanStatus$, XmrScanStatus } from '../../services/monero/scanner'
 import { confirmLwsForCurrentWallet, exportKeysOfCurrentWallet } from '../../services/monero/settingsActions'
 import { keystoreService } from '../../services/wallet/keystore'
@@ -16,5 +19,16 @@ const defaultActions: MoneroSettingsActions = {
 export const MoneroSettingsConnected = (): JSX.Element => {
   const config = useObservableState(xmrConnectionConfig$, DEFAULT_XMR_CONNECTION_CONFIG)
   const scanStatus = useObservableState(xmrScanStatus$, { kind: 'idle' } as XmrScanStatus)
-  return <MoneroSettingsPanel config={config} scanStatus={scanStatus} actions={defaultActions} />
+  const oViewKeys = useObservableState(viewKeys$, O.none)
+  // The stored confirmation counts only if it is valid for the CURRENT wallet
+  const lwsConfirmedForWallet =
+    O.isSome(oViewKeys) && isLwsConfirmationValid(oViewKeys.value, config.lwsUrl, config.lwsConfirmation)
+  return (
+    <MoneroSettingsPanel
+      config={config}
+      scanStatus={scanStatus}
+      lwsConfirmedForWallet={lwsConfirmedForWallet}
+      actions={defaultActions}
+    />
+  )
 }

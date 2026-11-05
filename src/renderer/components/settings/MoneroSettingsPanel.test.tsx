@@ -12,10 +12,16 @@ const actions: MoneroSettingsActions = {
   exportKeys: vi.fn()
 }
 
-const render = (scanStatus: XmrScanStatus, config = DEFAULT_XMR_CONNECTION_CONFIG) =>
+const render = (scanStatus: XmrScanStatus, config = DEFAULT_XMR_CONNECTION_CONFIG, lwsConfirmedForWallet?: boolean) =>
   renderToStaticMarkup(
     <IntlProvider locale="en" messages={en}>
-      <MoneroSettingsPanel config={config} scanStatus={scanStatus} actions={actions} onSave={() => undefined} />
+      <MoneroSettingsPanel
+        config={config}
+        scanStatus={scanStatus}
+        lwsConfirmedForWallet={lwsConfirmedForWallet}
+        actions={actions}
+        onSave={() => undefined}
+      />
     </IntlProvider>
   )
 
@@ -42,6 +48,24 @@ describe('components/settings/MoneroSettingsPanel', () => {
     const html = render({ kind: 'idle' }, { ...DEFAULT_XMR_CONNECTION_CONFIG, lwsUrl: 'https://lws.example' })
     expect(html).toContain('monero-lws-unconfirmed')
     expect(html).toContain('NOT used')
+  })
+
+  describe('the LWS confirmation belongs to one wallet (L4)', () => {
+    const config = {
+      ...DEFAULT_XMR_CONNECTION_CONFIG,
+      lwsUrl: 'https://lws.example',
+      lwsConfirmation: { url: 'https://lws.example', tag: 'ab'.repeat(32) }
+    }
+
+    it('a stored confirmation which is not valid for the current wallet is shown as NOT used', () => {
+      const html = render({ kind: 'idle' }, config, false)
+      expect(html).toContain('monero-lws-unconfirmed')
+      expect(html).toContain('NOT used')
+    })
+
+    it('a confirmation valid for the current wallet is not flagged', () => {
+      expect(render({ kind: 'idle' }, config, true)).not.toContain('monero-lws-unconfirmed')
+    })
   })
 
   describe('LWS confirmation text', () => {

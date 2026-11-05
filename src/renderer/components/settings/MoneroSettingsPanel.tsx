@@ -6,6 +6,7 @@ import { useIntl } from 'react-intl'
 import {
   isValidXmrEndpoint,
   normalizeXmrEndpoint,
+  redactXmrEndpoint,
   updateXmrConnectionConfig,
   XmrConnectionConfig
 } from '../../services/monero/config'
@@ -29,6 +30,11 @@ export type MoneroSettingsActions = {
 type Props = {
   config: XmrConnectionConfig
   scanStatus?: XmrScanStatus
+  /**
+   * `true` when the stored confirmation is valid for the current wallet (the confirmation is a MAC bound to wallet +
+   * network + URL, see `lwsConfirmation.ts`). Default: the stored confirmation names the saved URL.
+   */
+  lwsConfirmedForWallet?: boolean
   onSave?: (config: XmrConnectionConfig) => void
   actions: MoneroSettingsActions
 }
@@ -41,11 +47,18 @@ type Flow = 'none' | 'lws-confirm' | 'lws-password' | 'export-password'
  *
  * Empty fields = defaults. Especially: no light-wallet server by default — an LWS gets the private view key,
  * sees all incoming payments, and registration is permanent. A server is only used after the user confirmed
- * exactly that URL (dialog + keystore password); changing the URL requires a new confirmation.
+ * exactly that URL (dialog + keystore password); changing the URL requires a new confirmation. The confirmation is
+ * valid for the wallet (network + address) it was made with only: with another wallet the server is shown as
+ * unconfirmed (and not used) until confirmed again. There is one stored confirmation, so confirming for wallet B
+ * replaces the one of wallet A.
+ *
+ * The password check is a UI gate: it protects the buttons, not the data. Code running in the renderer with the
+ * unlocked keystore can derive keys and create a confirmation without it (see MONERO.md).
  */
 export const MoneroSettingsPanel = ({
   config,
   scanStatus = { kind: 'idle' },
+  lwsConfirmedForWallet,
   onSave = updateXmrConnectionConfig,
   actions
 }: Props): JSX.Element => {
@@ -72,7 +85,8 @@ export const MoneroSettingsPanel = ({
   const canSave = dirty && !daemonInvalid && !lwsInvalid && !heightInvalid
 
   /** A saved LWS URL which has no (valid) confirmation: it is NOT used until confirmed */
-  const lwsUnconfirmed = config.lwsUrl !== '' && config.lwsConfirmation?.url !== config.lwsUrl
+  const lwsUnconfirmed =
+    config.lwsUrl !== '' && !(lwsConfirmedForWallet ?? config.lwsConfirmation?.url === config.lwsUrl)
 
   const save = useCallback(() => {
     if (!canSave) return
@@ -183,7 +197,11 @@ export const MoneroSettingsPanel = ({
       </div>
 
       {flow === 'lws-confirm' && (
-        <MoneroLwsConfirmModal onConfirm={() => setFlow('lws-password')} onCancel={() => setFlow('none')} />
+        <MoneroLwsConfirmModal
+          host={redactXmrEndpoint(config.lwsUrl)}
+          onConfirm={() => setFlow('lws-password')}
+          onCancel={() => setFlow('none')}
+        />
       )}
       {flow === 'lws-password' && (
         <WalletPasswordConfirmationModal

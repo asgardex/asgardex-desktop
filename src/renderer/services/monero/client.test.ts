@@ -185,6 +185,23 @@ describe('services/monero/client (ViewOnlyXmrClient)', () => {
       expect(lwsFetch).not.toHaveBeenCalled()
     })
 
+    it('confirmation made with another wallet (same URL): never sends the view key (confirmations are per wallet)', async () => {
+      const lwsFetch = lwsFetchMock()
+      const tx = buildPaymentTx({ viewKeys, publicViewKeyHex: exported.publicViewKeyHex, amount: AMOUNT })
+      vi.stubGlobal('fetch', createFakeDaemon({ tip: 3_000_000, txHeight: 2_999_900, tx }).fetch)
+      const otherWallet = deriveXmrViewKeys(
+        'legal winner thank year wave sausage worth useful legal winner thank yellow',
+        Network.Mainnet
+      )
+      const config: XmrConnectionConfig = {
+        ...DEFAULT_XMR_CONNECTION_CONFIG,
+        lwsUrl: LWS_URL,
+        lwsConfirmation: createLwsConfirmation(otherWallet, LWS_URL)
+      }
+      await make(config, lwsFetch).getBalance(viewKeys.address)
+      expect(lwsFetch).not.toHaveBeenCalled()
+    })
+
     it('confirmed URL: registers once, then uses the balance reported by the server', async () => {
       const lwsFetch = lwsFetchMock()
       const client = make(

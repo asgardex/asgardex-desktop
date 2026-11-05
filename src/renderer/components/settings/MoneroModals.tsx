@@ -1,12 +1,16 @@
 import { ReactNode } from 'react'
 
+import { useCallback, useEffect, useRef, useState } from 'react'
+
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
+import { CheckIcon, DocumentDuplicateIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
+import { copySecretWithAutoClear } from '../../services/monero/clipboard'
 import type { XmrExportKeys } from '../../services/monero/derivation'
 import { BaseButton } from '../uielements/button'
-import { CopyLabel } from '../uielements/label/CopyLabel'
+import { useAutoClose } from './useAutoClose'
 
 const panelClass = clsx(
   'mx-auto flex flex-col items-center p-6',
@@ -46,8 +50,18 @@ const Modal = ({ title, children, onDismiss, buttons, testId }: ModalProps) => (
 
 /**
  * Light-wallet server confirmation: the server sees ALL incoming payments and amounts, registration is permanent.
+ * `host` is the redacted server (`scheme://host[:port]`, never the path: it can be a secret) so the user sees WHO
+ * gets the view key.
  */
-export const MoneroLwsConfirmModal = ({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) => {
+export const MoneroLwsConfirmModal = ({
+  host,
+  onConfirm,
+  onCancel
+}: {
+  host: string
+  onConfirm: () => void
+  onCancel: () => void
+}) => {
   const intl = useIntl()
   return (
     <Modal
@@ -64,20 +78,53 @@ export const MoneroLwsConfirmModal = ({ onConfirm, onCancel }: { onConfirm: () =
           </BaseButton>
         </>
       }>
+      <p className="font-mono break-all text-text0 dark:text-text0d" data-testid="monero-lws-confirm-host">
+        {intl.formatMessage({ id: 'monero.lws.confirm.host' }, { host })}
+      </p>
       <p>{intl.formatMessage({ id: 'monero.lws.confirm.body' })}</p>
     </Modal>
   )
 }
 
-/** Shows the exported private keys. They only live in this component's props until it is closed. */
+/** The keys modal closes by itself after this long */
+export const XMR_KEYS_MODAL_TIMEOUT_MS = 60_000
+
+/** Copy button for a key: the clipboard is cleared again after 30s (`copySecretWithAutoClear`) */
+const KeyCopyButton = ({ value }: { value: string }) => {
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const mounted = useRef(true)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
+  const copy = useCallback(() => {
+    copySecretWithAutoClear(value)
+      .then(() => mounted.current && setState('copied'))
+      .catch(() => mounted.current && setState('failed'))
+  }, [value])
+  const Icon = state === 'copied' ? CheckIcon : state === 'failed' ? XMarkIcon : DocumentDuplicateIcon
+  return (
+    <BaseButton className="p-0" onClick={copy} data-testid="monero-key-copy">
+      <Icon className="h-5 w-5 text-text2 hover:text-turquoise dark:text-text2d" />
+    </BaseButton>
+  )
+}
+
+/**
+ * Shows the exported private keys. They only live in this component's props until it is closed, which happens
+ * automatically after `XMR_KEYS_MODAL_TIMEOUT_MS`. Copied keys are removed from the clipboard after 30 seconds.
+ */
 export const MoneroKeysModal = ({ keys, onClose }: { keys: XmrExportKeys; onClose: () => void }) => {
   const intl = useIntl()
+  useAutoClose(onClose, XMR_KEYS_MODAL_TIMEOUT_MS)
   const row = (labelId: 'monero.export.spendKey' | 'monero.export.viewKey', value: string) => (
     <div>
       <div className="text-[12px] text-text2 uppercase dark:text-text2d">{intl.formatMessage({ id: labelId })}</div>
       <div className="flex items-center gap-2">
         <code className="font-mono text-[12px] break-all select-all">{value}</code>
-        <CopyLabel textToCopy={value} />
+        <KeyCopyButton value={value} />
       </div>
     </div>
   )
@@ -92,6 +139,9 @@ export const MoneroKeysModal = ({ keys, onClose }: { keys: XmrExportKeys; onClos
         </BaseButton>
       }>
       <p className="text-error0">{intl.formatMessage({ id: 'monero.export.warning' })}</p>
+      <p className="text-[12px] text-text2 dark:text-text2d" data-testid="monero-keys-autoclose">
+        {intl.formatMessage({ id: 'monero.export.autoClose' })}
+      </p>
       {row('monero.export.spendKey', keys.privateSpendKeyHex)}
       {row('monero.export.viewKey', keys.privateViewKeyHex)}
     </Modal>
