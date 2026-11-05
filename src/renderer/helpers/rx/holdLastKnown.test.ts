@@ -1,7 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { describe, expect, it } from 'vitest'
+import * as Rx from 'rxjs'
+import { describe, expect, it, vi } from 'vitest'
 
-import { evaluateHold, holdInput, HoldState, INITIAL_HOLD_STATE } from './holdLastKnown'
+import { evaluateHold, holdInput, holdLastKnown, HoldState, INITIAL_HOLD_STATE } from './holdLastKnown'
 
 const OPTS = { maxAgeMs: 1000, maxFailures: 2, pendingTimeoutMs: 100 }
 const fail = RD.failure(Error('down'))
@@ -91,5 +92,24 @@ describe('helpers/rx/holdLastKnown', () => {
       [RD.pending, 3]
     ])
     expect(evaluateHold(s, 4, OPTS)).toEqual(RD.success(1))
+  })
+})
+
+describe('helpers/rx/holdLastKnown operator clock', () => {
+  it('measures age with the monotonic clock: a wall-clock jump back does not keep a value fresh', () => {
+    vi.useFakeTimers()
+    try {
+      const source$ = new Rx.BehaviorSubject<RD.RemoteData<Error, number>>(RD.success(1))
+      const out: Array<RD.RemoteData<Error, number>> = []
+      const sub = source$.pipe(holdLastKnown<number>({ ...OPTS, tickMs: 100 })).subscribe((v) => out.push(v))
+      vi.advanceTimersByTime(500)
+      // wall clock jumps back 1h: must not matter
+      vi.setSystemTime(Date.now() - 60 * 60 * 1000)
+      vi.advanceTimersByTime(600)
+      expect(RD.isFailure(out[out.length - 1])).toBe(true)
+      sub.unsubscribe()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

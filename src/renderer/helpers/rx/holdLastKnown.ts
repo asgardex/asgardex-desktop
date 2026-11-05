@@ -2,6 +2,8 @@ import * as RD from '@devexperts/remote-data-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { monotonicNow } from '../monotonicClock'
+
 export type HoldLastKnownOptions = {
   /** A held Success older than this is dropped: the value is no longer trusted (-> Failure) */
   maxAgeMs: number
@@ -11,6 +13,7 @@ export type HoldLastKnownOptions = {
   pendingTimeoutMs: number
   /** How often age and timeouts are re-checked while the source is silent */
   tickMs?: number
+  /** Clock in ms, monotonic by default (`performance.now()`), never the wall clock */
   now?: () => number
 }
 
@@ -81,7 +84,7 @@ const sameOutput = <A>(a: Input<A>, b: Input<A>): boolean => {
 export const holdLastKnown =
   <A>(options: HoldLastKnownOptions) =>
   (source: Rx.Observable<Input<A>>): Rx.Observable<Input<A>> => {
-    const now = options.now ?? Date.now
+    const now = options.now ?? monotonicNow
     return Rx.merge(
       source.pipe(RxOp.map((rd) => ({ rd }) as { rd?: Input<A> })),
       Rx.interval(options.tickMs ?? 5000).pipe(RxOp.map((): { rd?: Input<A> } => ({})))
