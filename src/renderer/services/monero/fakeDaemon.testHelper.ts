@@ -99,7 +99,8 @@ export const createFakeDaemon = ({
   txHeight,
   txHash = 'ab'.repeat(32),
   tx,
-  omitTxBody = false
+  omitTxBody = false,
+  failRequest
 }: {
   tip: number
   txHeight: number
@@ -107,6 +108,8 @@ export const createFakeDaemon = ({
   tx: unknown
   /** the node serves the transaction to the SDK scanner (1st `get_transactions`) but withholds it afterwards */
   omitTxBody?: boolean
+  /** requests of this kind are rejected (network error): JSON-RPC method name, or `get_transactions` */
+  failRequest?: 'get_block_headers_range' | 'get_block' | 'get_transactions'
 }): FakeDaemon => {
   const state = { tip }
   let txCalls = 0
@@ -117,6 +120,9 @@ export const createFakeDaemon = ({
     const body = init?.body ?? ''
     log.push({ url, body, redirect: init?.redirect })
     const parsed = body ? JSON.parse(body) : {}
+    if (failRequest && (parsed.method === failRequest || url.endsWith(`/${failRequest}`))) {
+      return Promise.reject(new Error('fake daemon: request failed'))
+    }
     if (url.endsWith('/json_rpc')) {
       switch (parsed.method) {
         case 'get_block_count':
