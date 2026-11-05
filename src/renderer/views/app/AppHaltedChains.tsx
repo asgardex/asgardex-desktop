@@ -14,6 +14,7 @@ import { NewsTicker } from '../../components/uielements/newsTicker'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { unionChains } from '../../helpers/fp/array'
 import * as poolsRoutes from '../../routes/pools'
+import { getPoolDepositPauseMimirKey } from '../../services/thorchain/const'
 import { MimirHalt } from '../../services/thorchain/types'
 import { getSwapAlternativeLabels, isProtocolGloballyHalted, ResolvedProtocolData } from './AppHaltedChains.helpers'
 
@@ -137,7 +138,7 @@ const buildGlobalHaltMessage = (
   )
 }
 
-const buildPerProtocolMessages = (
+export const buildPerProtocolMessages = (
   { protocol, inboundHaltedChains, mimirHalt }: ResolvedProtocolData,
   { isSwapPage, isPoolPage, isDepositPage, selectedChains }: PageContext,
   intl: IntlShape
@@ -156,7 +157,7 @@ const buildPerProtocolMessages = (
       haltedChain: mimirHalt[`HALT${chain}CHAIN`] || false,
       haltedTrading: mimirHalt[`HALT${chain}TRADING`] || false,
       pausedLP: mimirHalt[`PAUSELP${chain}`] || false,
-      pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`] || false
+      pausedLPDeposit: mimirHalt[getPoolDepositPauseMimirKey(chain) as keyof MimirHalt] || false
     }))
 
   // A full chain halt strictly implies a trading halt — keep these in one variable
@@ -192,22 +193,36 @@ const buildPerProtocolMessages = (
   }
 
   if (isPoolPage || isDepositPage) {
-    const pausedLPs = haltedChainsState.filter(({ pausedLP }) => pausedLP).map(({ chain }) => chain)
+    // The pool page already names fully halted chains in the chain-halt message above,
+    // so leave them out of the LP lines there (same as the trading-only message).
+    const pausedLPs = haltedChainsState
+      .filter(({ pausedLP }) => pausedLP)
+      .map(({ chain }) => chain)
+      .filter((chain) => !isPoolPage || !fullyHaltedChains.includes(chain))
     const pausedLPsDeposits = haltedChainsState
       .filter(({ pausedLPDeposit }) => pausedLPDeposit)
       .map(({ chain }) => chain)
+      .filter((chain) => !isPoolPage || !fullyHaltedChains.includes(chain))
 
-    if (pausedLPs.length > 0) {
-      messages.push(intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') }))
-    } else if (mimirHalt.PAUSELP) {
-      messages.push(intl.formatMessage({ id: 'halt.chain.pauseall' }))
-    } else if (pausedLPsDeposits.length > 0) {
-      messages.push(
-        intl.formatMessage(
-          { id: 'halt.chain.pauseDeposits' },
-          { chains: pausedLPsDeposits.join(', '), protocol: chainToString(protocol) }
+    // Global LP pause covers every chain of this protocol, so per-chain LP lines would only repeat it
+    if (mimirHalt.pauseGlobalLp) {
+      if (isProtocolRelevant(protocol, selectedChains)) {
+        messages.push(intl.formatMessage({ id: 'halt.chain.pauseall' }))
+      }
+    } else {
+      if (pausedLPs.length > 0) {
+        messages.push(intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') }))
+      }
+      // A per-chain LP pause already covers deposits for that chain
+      const depositOnlyPaused = pausedLPsDeposits.filter((chain) => !pausedLPs.includes(chain))
+      if (depositOnlyPaused.length > 0) {
+        messages.push(
+          intl.formatMessage(
+            { id: 'halt.chain.pauseDeposits' },
+            { chains: depositOnlyPaused.join(', '), protocol: chainToString(protocol) }
+          )
         )
-      )
+      }
     }
   }
 

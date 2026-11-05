@@ -9,7 +9,7 @@ import * as RxOp from 'rxjs/operators'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
 import { userChains$ } from '../services/storage/userChains'
-import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
+import { DEFAULT_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
 import {
   MimirHaltRD,
   MimirHalt,
@@ -54,10 +54,19 @@ export const getThorchainMimirHalt = ({
 
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
-    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`, `PAUSELPDEPOSIT-${c}-${c}`]
+    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`]
     keys.forEach((key) => {
       acc[key] = status(key)
     })
+    // THORNode IsPoolDepositPaused is `value > 0`, no height check (keeper_halt.go:129-135)
+    const depositKey = getPoolDepositPauseMimirKey(c)
+    acc[depositKey] = (mimir[depositKey] ?? 0) > 0
+    // Token pools have their own key (`PAUSELPDEPOSIT-AVAX-USDT-0X…`), same `value > 0` rule
+    Object.keys(mimir)
+      .filter((key) => key.startsWith(`PAUSELPDEPOSIT-${c}-`) && mimir[key] > 0)
+      .forEach((key) => {
+        acc[key] = true
+      })
     return acc
   }, {})
   // THORChain's own halt is global for THORChain routes; detect it even if THOR is not in `chains`

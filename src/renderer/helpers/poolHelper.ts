@@ -1,6 +1,6 @@
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
+import { AnyAsset, bnOrZero, assetFromString, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { array as A, function as FP, option as O, ord as Ord } from 'fp-ts'
 
@@ -241,7 +241,7 @@ export const disableAllActions = ({
   haltedChains: Chain[]
   mimirHalt: MimirHalt
 }) => {
-  // Check `HALTTHORTRADING ` (provided by `mimir` endpoint) to disable all actions for all pools
+  // Check `HALTTHORCHAIN` (provided by `mimir` endpoint) to disable all actions for all pools
   if (mimirHalt.HALTTHORCHAIN) return true
 
   // Dynamic check for the specific chain halt status
@@ -268,7 +268,7 @@ export const disableTradingActions = ({
   haltedChains: Chain[]
   mimirHalt: MimirHalt
 }) => {
-  // 1. Check `haltTrading` (provided by `mimir` endpoint) to disable all actions for all pools
+  // 1. Check `haltTrading` (provided by `mimir` endpoint) to disable trading actions (`ADD`, `SWAP`) for all pools
   if (mimirHalt.haltGlobalTrading) return true
 
   // 2. Dynamic check for the specific chain trading halt status
@@ -284,26 +284,29 @@ export const disableTradingActions = ({
  *
  * |                                   | ADD | WITHDRAW | SWAP |
  * |--------------------------------- -|-----|----------|------|
- * | PAUSELP (global)                  | NO  | YES      | YES  |
- * | PAUSELP{chain}                    | NO  | YES      | YES  |
+ * | PAUSELP (global)                  | NO  | NO       | YES  |
+ * | PAUSELP{chain}                    | NO  | NO       | YES  |
  * | HALT{chain}                       | NO  | NO       | NO   |
- * | PAUSELPDEPOSIT-{chain}-{chain}    | NO  | YES      | NO   |
+ * | PAUSELPDEPOSIT-{chain}-{symbol}   | NO  | YES      | YES  |
  */
 export const disablePoolActions = ({
-  chain,
+  asset,
   haltedChains,
   mimirHalt
 }: {
-  chain: Chain
+  asset: AnyAsset
   haltedChains: Chain[]
   mimirHalt: MimirHalt
 }) => {
+  const { chain } = asset
   // Check all `pauseLp{chain}` values (provided by `mimir` endpoint) to disable pool actions
   if (mimirHalt.pauseGlobalLp) return true
 
   // 2. Dynamic check for the specific chain LP pause status
   const pauseLpKey = `PAUSELP${chain}` as keyof MimirHalt
-  const haltDepositKey = `PAUSELPDEPOSIT-${chain}-${chain}` as keyof MimirHalt
+  // Deposit pause is per pool: THORNode `PauseLPDeposit-<asset.MimirString()>` = `<CHAIN>-<SYMBOL>`
+  // (common/asset.go), so `PAUSELPDEPOSIT-BSC-BNB` pauses BSC.BNB only, not BSC.USDT
+  const haltDepositKey = `PAUSELPDEPOSIT-${chain}-${asset.symbol}`.toUpperCase() as keyof MimirHalt
   if (mimirHalt[pauseLpKey]) return true
   if (mimirHalt[haltDepositKey]) return true
 
@@ -316,10 +319,10 @@ export const disablePoolActions = ({
  *
  * |                                   | ADD | WITHDRAW | SWAP |
  * |--------------------------------- -|-----|----------|------|
- * | PAUSELP (global)                  | NO  | YES      | YES  |
- * | PAUSELP{chain}                    | NO  | YES      | YES  |
+ * | PAUSELP (global)                  | NO  | NO       | YES  |
+ * | PAUSELP{chain}                    | NO  | NO       | YES  |
  * | HALT{chain}                       | NO  | NO       | NO   |
- * | PAUSELPDEPOSIT-{chain}-{chain}    | NO  | YES      | NO   |
+ * | PAUSELPDEPOSIT-{chain}-{symbol}   | NO  | YES      | YES  |
  */
 export const disableWithdrawActions = ({
   chain,

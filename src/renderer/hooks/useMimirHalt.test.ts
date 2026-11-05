@@ -1,9 +1,13 @@
 // Fixture: __fixtures__/thornode-mainnet-chains-halted-lp-paused (THORNode mainnet mimir + lastblock, height 28483475).
 // Captured 2026-11-01 03:39:30 UTC (14:09:30 ACDT) from gateway.liquify.com/chain/thorchain_api/thorchain.
+import { AnyAsset, assetFromStringEx } from '@xchainjs/xchain-util'
+
+import { AssetAVAX } from '../../shared/utils/asset'
 import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
-import { BTCChain, THORChain } from '../../shared/utils/chainIds'
-import { disableAllActions } from '../helpers/poolHelper'
-import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
+import { AVAXChain, BTCChain, THORChain } from '../../shared/utils/chainIds'
+import { AssetUSDCAVAX } from '../const'
+import { disableAllActions, disablePoolActions } from '../helpers/poolHelper'
+import { DEFAULT_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
 import { Mimir } from '../services/thorchain/types'
 import { isProtocolGloballyHalted } from '../views/app/AppHaltedChains.helpers'
 import thorLastblock from './__fixtures__/thornode-mainnet-chains-halted-lp-paused/lastblock.json'
@@ -120,6 +124,37 @@ describe('hooks/useMimirHalt', () => {
       expect(none.pauseGlobalLp).toBe(false)
     })
 
+    it('PAUSELPDEPOSIT is active for any value > 0, a height above the current block too (THORNode IsPoolDepositPaused)', () => {
+      const result = getThorchainMimirHalt({
+        mimir: { 'PAUSELPDEPOSIT-BTC-BTC': 1100, 'PAUSELPDEPOSIT-ETH-ETH': 0, 'PAUSELPDEPOSIT-BSC-BNB': -1 },
+        lastHeight: 100,
+        chains: ['BTC', 'ETH', 'BSC']
+      })
+      expect(result['PAUSELPDEPOSIT-BTC-BTC']).toBe(true)
+      expect(result['PAUSELPDEPOSIT-ETH-ETH']).toBe(false)
+      expect(result['PAUSELPDEPOSIT-BSC-BNB']).toBe(false)
+    })
+
+    it('carries token-pool PAUSELPDEPOSIT keys with value > 0 for the given chains only', () => {
+      const result = getThorchainMimirHalt({
+        mimir: {
+          'PAUSELPDEPOSIT-AVAX-USDT-0X9702230A8EA53601F5CD2DC00FDBC13D4DF4A8C7': 1,
+          'PAUSELPDEPOSIT-AVAX-USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E': 0,
+          'PAUSELPDEPOSIT-ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48': 1
+        },
+        lastHeight: 100,
+        chains: ['AVAX']
+      })
+      const keys = Object.keys(result).filter((key) => key.startsWith('PAUSELPDEPOSIT-'))
+      expect(keys.sort()).toEqual([
+        'PAUSELPDEPOSIT-AVAX-AVAX',
+        'PAUSELPDEPOSIT-AVAX-USDT-0X9702230A8EA53601F5CD2DC00FDBC13D4DF4A8C7'
+      ])
+      expect(result['PAUSELPDEPOSIT-AVAX-USDT-0X9702230A8EA53601F5CD2DC00FDBC13D4DF4A8C7' as keyof typeof result]).toBe(
+        true
+      )
+    })
+
     it('returns the same keys as DEFAULT_MIMIR_HALT (the keys the app reads)', () => {
       const result = getThorchainMimirHalt({ mimir: {}, lastHeight: 100, chains: Object.keys(DEFAULT_ENABLED_CHAINS) })
       expect(Object.keys(result).sort()).toEqual(Object.keys(DEFAULT_MIMIR_HALT).sort())
@@ -212,6 +247,33 @@ describe('hooks/useMimirHalt', () => {
         .forEach((c) =>
           expect([c, result[`HALT${c}TRADING` as keyof typeof result]]).toEqual([c, tradingHalted.includes(c)])
         )
+    })
+
+    it('flags the gas-pool deposit pauses by asset symbol, incl. PAUSELPDEPOSIT-BSC-BNB and -GAIA-ATOM = 1', () => {
+      const result = getThorchainMimirHalt({ mimir, lastHeight, chains })
+      expect(result['PAUSELPDEPOSIT-BSC-BNB']).toBe(true)
+      expect(result['PAUSELPDEPOSIT-GAIA-ATOM']).toBe(true)
+      const depositPaused = ['AVAX', 'BCH', 'BSC', 'BTC', 'DOGE', 'ETH', 'GAIA', 'LTC']
+      chains
+        .filter((c) => c !== 'THOR')
+        .forEach((c) =>
+          expect([c, result[getPoolDepositPauseMimirKey(c) as keyof typeof result]]).toEqual([
+            c,
+            depositPaused.includes(c)
+          ])
+        )
+    })
+
+    it('AVAX (chain not halted): each pool own deposit pause reaches disablePoolActions', () => {
+      const mimirHalt = getThorchainMimirHalt({ mimir, lastHeight, chains })
+      const depositDisabled = (asset: AnyAsset) => disablePoolActions({ asset, haltedChains: [], mimirHalt })
+      expect(disableAllActions({ chain: AVAXChain, haltedChains: [], mimirHalt })).toBe(false)
+      // PAUSELPDEPOSIT-AVAX-USDT-0X97… = 1
+      expect(depositDisabled(assetFromStringEx('AVAX.USDT-0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7'))).toBe(true)
+      // PAUSELPDEPOSIT-AVAX-USDC-0XB97… = 0
+      expect(depositDisabled(AssetUSDCAVAX)).toBe(false)
+      // PAUSELPDEPOSIT-AVAX-AVAX = 1
+      expect(depositDisabled(AssetAVAX)).toBe(true)
     })
 
     it('THORChain itself, global trading and global LP are not halted', () => {

@@ -253,7 +253,7 @@ export const disableAllActions = ({
   haltedChains: Chain[]
   mimirHalt: MimirHalt
 }) => {
-  // Check `HALTMAYATRADING` (provided by `mimir` endpoint) to disable all actions for all pools
+  // Check `HALTMAYACHAIN` (provided by `mimir` endpoint) to disable all actions for all pools
   if (mimirHalt.HALTMAYACHAIN) return true
 
   // Dynamic check for the specific chain halt status
