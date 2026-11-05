@@ -60,4 +60,47 @@ describe('helpers/rx/failIfHeightStalled', () => {
       vi.useRealTimers()
     }
   })
+
+  it('alternating heights (1000+i vs 900): only new highs count, a stuck high is a stall', () => {
+    const inputs: Array<[RD.RemoteData<Error, number>, number]> = []
+    for (let i = 0; i < 5; i++) {
+      inputs.push([RD.success(1000 + i), i * 100])
+      inputs.push([RD.success(900), i * 100 + 50])
+    }
+    const advancing = feed(inputs)
+    // last new high (1004) at t=400
+    expect(evaluateStall(advancing, 1399, STALL)).toEqual(RD.success(900))
+    const stuck = [500, 700, 900, 1100, 1300].reduce(
+      (state, at, i) => stallInput(state, RD.success(i % 2 ? 900 : 1004), at, getHeight),
+      advancing
+    )
+    expect(RD.isSuccess(evaluateStall(stuck, 1399, STALL))).toBe(true)
+    expect(RD.isFailure(evaluateStall(stuck, 1400, STALL))).toBe(true)
+  })
+
+  it('alternating 1000+i vs 900 while 1000+i keeps rising stays known', () => {
+    const inputs: Array<[RD.RemoteData<Error, number>, number]> = []
+    for (let i = 0; i < 30; i++) {
+      inputs.push([RD.success(i % 2 ? 900 : 1000 + i), i * 100])
+    }
+    expect(RD.isSuccess(evaluateStall(feed(inputs), 3000, STALL))).toBe(true)
+  })
+
+  it('a height that decreases by 1 each poll is a stall, not progress', () => {
+    const s = [0, 200, 400, 600, 800, 1000].reduce(
+      (state, at, i) => stallInput(state, RD.success(2000 - i), at, getHeight),
+      INITIAL_STALL_STATE<number>()
+    )
+    expect(RD.isSuccess(evaluateStall(s, 999, STALL))).toBe(true)
+    expect(RD.isFailure(evaluateStall(s, 1000, STALL))).toBe(true)
+  })
+
+  it('a higher height after a decrease is progress again', () => {
+    const s = feed([
+      [RD.success(10), 0],
+      [RD.success(9), 900],
+      [RD.success(11), 1200]
+    ])
+    expect(evaluateStall(s, 1500, STALL)).toEqual(RD.success(11))
+  })
 })

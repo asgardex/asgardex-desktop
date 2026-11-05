@@ -16,11 +16,12 @@ export type HeightStallOptions<A> = {
 
 type Input<A> = RD.RemoteData<Error, A>
 
+/** `height`: highest height seen, `since`: when it was first seen */
 export type StallState<A> = { input: Input<A>; height?: number; since?: number }
 
 export const INITIAL_STALL_STATE = <A>(): StallState<A> => ({ input: RD.initial })
 
-/** Records a new value: the clock restarts only when the height changes */
+/** Records a new value: the clock restarts only when the height is strictly higher than the highest seen */
 export const stallInput = <A>(
   state: StallState<A>,
   input: Input<A>,
@@ -29,10 +30,14 @@ export const stallInput = <A>(
 ): StallState<A> => {
   if (!RD.isSuccess(input)) return { ...state, input }
   const height = getHeight(input.value)
-  return height === state.height && state.since !== undefined ? { ...state, input } : { input, height, since: now }
+  // Only a new *highest* height is progress: a lower or repeated one (node behind, flapping between
+  // two nodes, a height going backwards) must not restart the stall clock
+  return state.height !== undefined && state.since !== undefined && height <= state.height
+    ? { ...state, input }
+    : { input, height, since: now }
 }
 
-/** A Success whose height has not changed for `stallMs` becomes a Failure (halt status unknown) */
+/** A Success whose highest height has not increased for `stallMs` becomes a Failure (halt status unknown) */
 export const evaluateStall = <A>({ input, since }: StallState<A>, now: number, stallMs: number): Input<A> =>
   RD.isSuccess(input) && since !== undefined && now - since >= stallMs
     ? RD.failure(new Error(`Block height has not advanced for ${Math.round(stallMs / 60000)} min`))
