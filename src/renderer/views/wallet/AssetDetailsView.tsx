@@ -19,7 +19,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { isRuneNativeAsset } from '../../helpers/assetHelper'
 import { eqOSelectedWalletAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
-import { resolveHaltState } from '../../helpers/haltedChains'
+import { isRuneSendDisabled, resolveHaltState } from '../../helpers/haltedChains'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
@@ -169,7 +169,7 @@ export const AssetDetailsView = (): JSX.Element => {
           openExplorerTxUrl={openExplorerTxUrl}
           openExplorerAddressUrl={openExplorerAddressUrlHandler}
           walletAddress={walletAddress}
-          disableSend={isRuneNativeAsset(asset) && (mimirHalt.HALTTHORTRADING || mimirHalt.haltStatusUnknown)}
+          disableSend={isRuneNativeAsset(asset) && isRuneSendDisabled(mimirHalt)}
           network={network}
           haltedChainsThor={haltedChainsThor}
           haltedChainsMaya={haltedChainsMaya}

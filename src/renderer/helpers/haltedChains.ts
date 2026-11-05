@@ -22,3 +22,15 @@ export const resolveHaltState = <M>(
   RD.isSuccess(haltedChainsRD)
     ? { haltedChains: haltedChainsRD.value, mimirHalt, haltedChainsUnknown: false }
     : { haltedChains: [], mimirHalt: unknownMimirHalt, haltedChainsUnknown: true }
+
+/**
+ * RUNE sends (`MsgSend`) are rejected by THORNode while `IsChainHalted(THORChain)` is true
+ * (`HALTTHORCHAIN`, `SOLVENCYHALTTHORCHAIN`, `HALTCHAINGLOBAL`, `NODEPAUSECHAINGLOBAL` - all folded
+ * into `HALTTHORCHAIN`), and are blocked while the halt status is unknown.
+ * `HALTTHORTRADING` is kept as before (trading halt on THORChain).
+ */
+export const isRuneSendDisabled = (mimirHalt: {
+  HALTTHORCHAIN?: boolean
+  HALTTHORTRADING?: boolean
+  haltStatusUnknown?: boolean
+}): boolean => !!(mimirHalt.HALTTHORCHAIN || mimirHalt.HALTTHORTRADING || mimirHalt.haltStatusUnknown)
