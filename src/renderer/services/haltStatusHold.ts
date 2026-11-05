@@ -28,3 +28,15 @@ export const LASTBLOCK_HOLD: HoldLastKnownOptions = {
  * advanced for that long means a stuck node or a cached response, not a live chain -> halt status unknown.
  */
 export const LASTBLOCK_STALL_MS = 5 * MINUTE
+
+/**
+ * `inbound_addresses` (halted chains): a first load still pending after 15s is unknown (banner),
+ * the same as mimir and lastblock. A failure is published right away (`maxFailures: 0`): a failed
+ * list already counts as unknown (`resolveHaltState`), so it must not be hidden behind a held value.
+ * No age limit here, freshness is up to the inbound polling.
+ */
+export const INBOUND_HOLD: HoldLastKnownOptions = {
+  maxAgeMs: Number.POSITIVE_INFINITY,
+  maxFailures: 0,
+  pendingTimeoutMs: 15 * 1000
+}
