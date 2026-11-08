@@ -1,5 +1,6 @@
 import { BaseAmount, assetAmount, assetToBase, baseAmount, baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
+import { option as O } from 'fp-ts'
 
 import { OperatorFinderFeeVault } from '../../../services/runebond/types'
 import { NodeInfo, NodeStatusEnum, Providers } from '../../../services/thorchain/types'
@@ -106,3 +107,40 @@ export const canTopUpVault = (vault?: OperatorFinderFeeVault): vault is KnownFin
 
 export const isVaultDepleted = (vault?: OperatorFinderFeeVault): vault is KnownFinderFeeVault =>
   isKnownVault(vault) && vault.depleted
+
+export const RUNEBOND_DEFAULT_TARGET_TOTAL_BOND: BaseAmount = assetToBase(assetAmount(1_000_000, RUNE_DECIMALS))
+
+export const runebondRoomLeft = (targetTotalBond: BaseAmount | null, nodeBond: BaseAmount): BaseAmount => {
+  const room = (targetTotalBond ?? RUNEBOND_DEFAULT_TARGET_TOTAL_BOND).minus(nodeBond)
+  return room.gt(0) ? room : baseAmount(0, RUNE_DECIMALS)
+}
+
+export type RunebondRequestBlock = 'yourNode' | 'notListed' | 'leftNetwork' | 'noRoom' | 'slotsFull'
+
+export const runebondRequestBlock = ({
+  isOperator,
+  listed,
+  leftNetwork,
+  roomLeft,
+  providersCount,
+  maxProviders
+}: {
+  isOperator: boolean
+  listed: boolean
+  leftNetwork: boolean
+  roomLeft: BaseAmount
+  providersCount: number
+  maxProviders: number
+}): O.Option<RunebondRequestBlock> => {
+  if (isOperator) return O.some('yourNode')
+  if (leftNetwork) return O.some('leftNetwork')
+  if (!listed) return O.some('notListed')
+  if (roomLeft.lte(0)) return O.some('noRoom')
+  if (providersCount >= maxProviders) return O.some('slotsFull')
+  return O.none
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+export const runebondDaysLeft = (expiresDate: Date, now: number = Date.now()): number =>
+  Math.max(0, Math.ceil((expiresDate.getTime() - now) / DAY_MS))

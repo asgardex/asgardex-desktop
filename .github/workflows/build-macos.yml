@@ -74,6 +74,7 @@ jobs:
           VITE_LIQUIFY_MIDGARD_API_KEY: ${{ secrets.VITE_LIQUIFY_MIDGARD_API_KEY }}
           VITE_RUNEBOND_INTEGRATORS_URL: ${{ secrets.VITE_RUNEBOND_INTEGRATORS_URL }}
           VITE_RUNEBOND_INTEGRATORS_API_KEY: ${{ secrets.VITE_RUNEBOND_INTEGRATORS_API_KEY }}
+          VITE_RUNEBOND_AFFILIATE_ADDRESS: ${{ secrets.VITE_RUNEBOND_AFFILIATE_ADDRESS }}
           OS_NAME: ${{ matrix.os-name }}
           OS_VERSION: ${{ matrix.os-version }}
           OS_VERSION_SUFFIX: '${{ matrix.os-version }}-${{ matrix.os-name }}'

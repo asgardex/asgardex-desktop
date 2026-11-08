@@ -21,6 +21,7 @@ import { canTopUpVault, formatBpsAsPercent, formatChurnDate, formatRuneAmount, i
 import { RunebondRefreshButton } from './RunebondRefreshButton'
 import { RunebondVaultOnBehalfDetails } from './RunebondVaultOnBehalfNotice'
 import { VAULT_LEVEL_TEXT_CLASS } from './RunebondVaultTopUpModal'
+import { StatusPill, StatusPillTone } from './StatusPill'
 
 const RUNEBOND_PRICING_DOCS_URL = 'https://runebond.com/docs/runebond-finder-fee-vault/'
 
@@ -39,23 +40,13 @@ const listingState = ({ listed, listing }: NodeListing, operatorAddress: Address
   return 'delisted'
 }
 
-type PillStyle = { pill: string; dot: string }
-
-const NEUTRAL_PILL: PillStyle = {
-  pill: 'bg-gray2/10 text-gray2 dark:bg-gray2d/15 dark:text-gray2d',
-  dot: 'bg-gray2 dark:bg-gray2d'
-}
-
-const PILL_CLASS: Record<ListingState, PillStyle> = {
-  listed: { pill: 'bg-turquoise/10 text-turquoise', dot: 'bg-turquoise' },
-  notListed: NEUTRAL_PILL,
-  delisted: NEUTRAL_PILL,
-  vaultDepleted: {
-    pill: 'bg-warning0/10 text-warning0 dark:bg-warning0d/10 dark:text-warning0d',
-    dot: 'bg-warning0 dark:bg-warning0d'
-  },
-  removed: NEUTRAL_PILL,
-  previousOperator: NEUTRAL_PILL
+const PILL_TONE: Record<ListingState, StatusPillTone> = {
+  listed: 'accent',
+  notListed: 'neutral',
+  delisted: 'neutral',
+  vaultDepleted: 'warning',
+  removed: 'neutral',
+  previousOperator: 'neutral'
 }
 
 type Props = {
@@ -120,21 +111,15 @@ export const RunebondListingCard = ({
 
   const renderTag = () => {
     if (state === null) return null
-    const { pill, dot } = PILL_CLASS[state]
     return (
-      <span
-        className={clsx(
-          'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-main-semi-bold text-[11px] leading-none tracking-[1px] whitespace-nowrap uppercase',
-          pill
-        )}>
-        <span className={clsx('h-1.5 w-1.5 shrink-0 rounded-full', dot)} />
+      <StatusPill tone={PILL_TONE[state]}>
         {intl.formatMessage({
           id:
             state === 'delisted' && !canOperate
               ? 'bonds.runebond.listing.state.delistedByOperator'
               : `bonds.runebond.listing.state.${state}`
         })}
-      </span>
+      </StatusPill>
     )
   }
 

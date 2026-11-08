@@ -7,7 +7,8 @@ import {
   ChurnPoint as ApiChurnPoint,
   LastChurnPayment as ApiLastChurnPayment,
   WhitelistRequestCounts as ApiWhitelistRequestCounts,
-  WhitelistRequestItem as ApiWhitelistRequestItem
+  WhitelistRequestItem as ApiWhitelistRequestItem,
+  ListedNode as ApiListedNode
 } from '@runebond/integrators-client'
 import { Address, BaseAmount, baseAmount, bn } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -19,6 +20,11 @@ import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { triggerStream } from '../../helpers/stateHelper'
 import {
   BondPayout,
+  ListedNode,
+  ListedNodesLD,
+  ProviderWhitelistRequests,
+  ProviderWhitelistRequestsLD,
+  SentWhitelistRequest,
   ChurnPoint,
   LastChurnPayout,
   NodeHistory,
@@ -49,12 +55,20 @@ export const RUNEBOND_LISTING_ADDRESS: Address = 'thor1xazgmh7sv0p393t9ntj6q9p52
 
 export const RUNEBOND_LISTING_MIN_AMOUNT: BaseAmount = baseAmount(10_000_000, THORCHAIN_DECIMAL)
 
+export const RUNEBOND_AFFILIATE_ADDRESS: O.Option<Address> = FP.pipe(
+  envOrDefault(import.meta.env.VITE_RUNEBOND_AFFILIATE_ADDRESS, '')
+    .trim()
+    .toLowerCase(),
+  O.fromPredicate((address) => address.startsWith('thor1'))
+)
+
 const INTEGRATORS_URL = envOrDefault(import.meta.env.VITE_RUNEBOND_INTEGRATORS_URL, '')
 const INTEGRATORS_API_KEY = envOrDefault(import.meta.env.VITE_RUNEBOND_INTEGRATORS_API_KEY, '')
 
 const HISTORY_CHURNS = 12
 const PAYOUTS_LIMIT = 500
 const WHITELIST_REQUESTS_LIMIT = 200
+const SENT_REQUEST_TTL_MS = 30 * 60 * 1000
 const DEFAULT_CHURN_INTERVAL_MS = 3 * 24 * 3600 * 1000
 const YEAR_MS = 365 * 24 * 3600 * 1000
 
@@ -68,6 +82,10 @@ const notConfiguredError = () => Error('RUNEBond data service is not configured'
 const { stream$: reloadRunebond$, trigger: reloadRunebond } = triggerStream()
 
 const reloadRewards = reloadRunebond
+
+const { stream$: reloadProviderRequestsOnly$, trigger: reloadProviderRequests } = triggerStream()
+
+const reloadProviderRequests$ = Rx.merge(reloadRunebond$, reloadProviderRequestsOnly$.pipe(RxOp.skip(1)))
 
 const CACHE_GRACE_MS = 60_000
 const REQUEST_TIMEOUT_MS = 20_000
@@ -100,7 +118,21 @@ const toWhitelistRequest = (item: ApiWhitelistRequestItem): WhitelistRequest => 
   requestedAt: item.requestedAt,
   requestedDate: new Date(item.requestedAt),
   height: item.height,
-  txId: item.txId
+  txId: item.txId,
+  expiresDate: item.expiresAt ? new Date(item.expiresAt) : null
+})
+
+const toListedNode = (node: ApiListedNode): ListedNode => ({
+  nodeAddress: node.nodeAddress,
+  operatorAddress: node.operatorAddress,
+  name: node.name,
+  description: node.description,
+  logoUrl: node.logoUrl,
+  profileUrl: node.profileUrl,
+  minBond: parseBaseAmount(node.minBond),
+  targetTotalBond: node.targetTotalBond !== null ? parseBaseAmount(node.targetTotalBond) : null,
+  feeBps: node.feeBps,
+  listedDate: new Date(node.listedAt)
 })
 
 const toWhitelistRequestCounts = ({
@@ -139,14 +171,15 @@ const cached = <T>(key: string, create: () => Rx.Observable<T>): Rx.Observable<T
 }
 
 const liveRequest = <T>(
-  request: (client: RunebondIntegratorsApiClient) => Promise<T>
+  request: (client: RunebondIntegratorsApiClient) => Promise<T>,
+  reload$: Rx.Observable<unknown> = reloadRunebond$
 ): Rx.Observable<RD.RemoteData<Error, T>> =>
   FP.pipe(
     oClient,
     O.fold(
       () => Rx.of(RD.failure<Error, T>(notConfiguredError())).pipe(RxOp.shareReplay(1)),
       (client) =>
-        reloadRunebond$.pipe(
+        reload$.pipe(
           RxOp.switchMap(() =>
             Rx.from(request(client)).pipe(
               RxOp.timeout(REQUEST_TIMEOUT_MS),
@@ -446,6 +479,49 @@ const operatorWhitelistRequests$ = (address: Address): OperatorWhitelistRequests
     })
   )
 
+const listedNodes$: ListedNodesLD = cached('listedNodes', () =>
+  liveRequest(async (client): Promise<ListedNode[]> => {
+    const result = await client.runebond.getListedNodes()
+    return result.nodes.map(toListedNode)
+  })
+)
+
+const providerWhitelistRequests$ = (address: Address): ProviderWhitelistRequestsLD =>
+  cached(`providerWhitelistRequests|${address}`, () =>
+    liveRequest(async (client): Promise<ProviderWhitelistRequests> => {
+      const result = await client.bondProviders.getProviderWhitelistRequests(
+        address,
+        ApiWhitelistRequestStatus.PENDING,
+        WHITELIST_REQUESTS_LIMIT,
+        0
+      )
+      return {
+        address: result.address,
+        counts: toWhitelistRequestCounts(result.counts),
+        requests: result.requests.map(toWhitelistRequest),
+        total: result.pagination.total
+      }
+    }, reloadProviderRequests$)
+  )
+
+const sentWhitelistRequestsState$ = new Rx.BehaviorSubject<SentWhitelistRequest[]>([])
+
+const isSentRequestFresh = ({ sentDate }: SentWhitelistRequest) => Date.now() - sentDate.getTime() < SENT_REQUEST_TTL_MS
+
+const sentWhitelistRequests$: Rx.Observable<SentWhitelistRequest[]> = Rx.combineLatest([
+  sentWhitelistRequestsState$,
+  Rx.interval(60_000).pipe(RxOp.startWith(0))
+]).pipe(RxOp.map(([requests]) => requests.filter(isSentRequestFresh)))
+
+const addSentWhitelistRequest = (request: SentWhitelistRequest) => {
+  const sameTarget = (other: SentWhitelistRequest) =>
+    other.nodeAddress === request.nodeAddress && other.providerAddress === request.providerAddress
+  sentWhitelistRequestsState$.next([
+    ...sentWhitelistRequestsState$.getValue().filter((other) => !sameTarget(other) && isSentRequestFresh(other)),
+    request
+  ])
+}
+
 const isNotFound = (error: unknown): boolean =>
   error instanceof ApiError
     ? error.status === 404
@@ -500,6 +576,11 @@ export {
   nodeWhitelistRequests$,
   operatorWhitelistRequests$,
   operatorFinderFeeVault$,
+  listedNodes$,
+  providerWhitelistRequests$,
+  sentWhitelistRequests$,
+  addSentWhitelistRequest,
+  reloadProviderRequests,
   reloadRunebond,
   reloadRewards
 }

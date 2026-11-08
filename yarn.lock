@@ -4133,10 +4133,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@runebond/integrators-client@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "@runebond/integrators-client@npm:0.3.0"
-  checksum: 10/fd5ee5bf605ba5c76f72292cdbc4fe6f4ec703ac3322ea22ca50137483f6474a9dc0bbc70d802c7e848b900d110aee3672c8c571ea08430d06b24c908601ee4c
+"@runebond/integrators-client@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@runebond/integrators-client@npm:0.4.0"
+  checksum: 10/fef4fe172d7b442ccf7764f56ee03551155491ebd82cd70370eb86ddf2833365c6533075611dfd2a57bc0e93e379c6ba1d5078943c358ab22949407758fdf1b4
   languageName: node
   linkType: hard
 
@@ -7255,7 +7255,7 @@ __metadata:
     "@reduxjs/toolkit": "npm:^2.12.0"
     "@rollup/plugin-inject": "npm:^5.0.5"
     "@rollup/plugin-typescript": "npm:^12.3.0"
-    "@runebond/integrators-client": "npm:^0.3.0"
+    "@runebond/integrators-client": "npm:^0.4.0"
     "@tailwindcss/postcss": "npm:^4.3.1"
     "@tanstack/react-table": "npm:^9.3.1"
     "@tsconfig/node16": "npm:^16.1.9"

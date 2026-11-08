@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Network } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -31,7 +31,7 @@ type TxFlowCommonParams = {
   openExplorerTxUrl: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   onClose: () => void
-  onFinish: () => void
+  onFinish: (txHash?: TxHash) => void
 }
 
 export type BondTxFlowParams = TxFlowCommonParams & {
@@ -173,7 +173,8 @@ const useTxFlow = <R extends BondTxRequest>({
       // Closing mid-send would let a reopened form send again
       if (RD.isPending(txRD)) return
       resetTxState()
-      if (RD.isSuccess(txRD) || (RD.isFailure(txRD) && finishOnFailure)) onFinish()
+      if (RD.isSuccess(txRD)) onFinish(txRD.value)
+      else if (RD.isFailure(txRD) && finishOnFailure) onFinish()
       else if (!RD.isFailure(txRD)) onClose()
     }
 

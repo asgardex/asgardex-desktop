@@ -1,6 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useSearchParams } from 'react-router-dom'
@@ -8,12 +7,10 @@ import { useSearchParams } from 'react-router-dom'
 import { WalletType } from '../../../shared/wallet/types'
 import { SegmentedTabs, formatCountdown } from '../../components/Bonds/provider'
 import { WarningView } from '../../components/shared/warning'
-import { BaseButton } from '../../components/uielements/button'
 import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { useNextChurn } from '../../hooks/useNextChurn'
 import { BondsTab, TAB_QUERY_PARAM, isBondsTab } from '../../routes/bonds'
-import { RUNEBOND_URL } from '../../services/runebond'
 import { useApp } from '../../store/app/hooks'
 import { LegacyBondsView } from './LegacyBondsView'
 import { BondProviderDashboardView } from './provider/BondProviderDashboardView'
@@ -28,7 +25,6 @@ export const BondsView = (): JSX.Element => {
   const initialTab = searchParams.get(TAB_QUERY_PARAM)
   const [tab, setTab] = useState<BondsTab>(isBondsTab(initialTab) ? initialTab : BondsTab.BondProvider)
 
-  const openRunebond = useCallback(() => window.apiUrl.openExternal(RUNEBOND_URL), [])
   const nextChurn = useNextChurn()
 
   if (protocol === Protocol.MAYAChain) return <LegacyBondsView />
@@ -71,19 +67,6 @@ export const BondsView = (): JSX.Element => {
                 </div>
               )
           )
-        )}
-        {tab === BondsTab.BondProvider && (
-          <div className="flex items-center gap-3">
-            <span className="font-main text-[14px] text-gray2 dark:text-gray2d">
-              {intl.formatMessage({ id: 'bonds.provider.findNodeHint' })}
-            </span>
-            <BaseButton
-              className="group !p-0 font-main-semi-bold text-[14px] text-turquoise uppercase"
-              onClick={openRunebond}>
-              runebond.com
-              <ArrowTopRightOnSquareIcon className="ml-1 h-[16px] w-[16px] text-inherit" />
-            </BaseButton>
-          </div>
         )}
       </div>
       {tab === BondsTab.BondProvider ? <BondProviderDashboardView /> : <NodeOperatorView />}

@@ -47,6 +47,8 @@ type TableProps<T extends RowData> = {
   renderSubRow?: (row: T) => React.ReactNode
   data: T[]
   columns: AppColumnDef<T>[]
+  sorting?: SortingState
+  onSortingChange?: OnChangeFn<SortingState>
   onClickRow?: (row: T) => void
 }
 
@@ -61,17 +63,19 @@ export const Table = <T extends RowData>({
   loading = false,
   hideHeader = false,
   hideVerticalBorder = false,
-
+  sorting: controlledSorting,
+  onSortingChange,
   onClickRow
 }: TableProps<T>) => {
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [internalSorting, setInternalSorting] = useState<SortingState>([])
+  const sorting = controlledSorting ?? internalSorting
   const intl = useIntl()
 
   const table = useTable({
     features: appTableFeatures,
     data,
     columns,
-    onSortingChange: setSorting,
+    onSortingChange: onSortingChange ?? setInternalSorting,
     ...(expandable
       ? {
           state: {

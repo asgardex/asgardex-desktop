@@ -1,6 +1,5 @@
 import { useIntl } from 'react-intl'
 
-import { RUNEBOND_URL } from '../../../services/runebond'
 import { BaseButton } from '../../uielements/button'
 
 const Step = ({ index, title, description }: { index: number; title: React.ReactNode; description: string }) => (
@@ -15,12 +14,12 @@ const Step = ({ index, title, description }: { index: number; title: React.React
   </div>
 )
 
-export const HowBondingWorks = () => {
+export const HowBondingWorks = ({ onFindNode }: { onFindNode: () => void }) => {
   const intl = useIntl()
 
-  const [step1Prefix, step1Suffix = ''] = intl
-    .formatMessage({ id: 'bonds.provider.empty.step1.title' })
-    .split('runebond.com')
+  const findNodeLabel = intl.formatMessage({ id: 'bonds.directory.title' })
+  const step1Title = intl.formatMessage({ id: 'bonds.provider.empty.step1.title' })
+  const linkIndex = step1Title.lastIndexOf(findNodeLabel)
 
   return (
     <div className="flex w-full flex-col rounded-lg border border-solid border-gray0 bg-bg0 p-6 dark:border-gray0d dark:bg-bg0d">
@@ -34,15 +33,20 @@ export const HowBondingWorks = () => {
         <Step
           index={1}
           title={
-            <>
-              {step1Prefix}
-              <BaseButton
-                className="!inline !p-0 font-main-semi-bold text-[16px] text-turquoise"
-                onClick={() => window.apiUrl.openExternal(RUNEBOND_URL)}>
-                runebond.com
-              </BaseButton>
-              {step1Suffix}
-            </>
+            linkIndex < 0 ? (
+              step1Title
+            ) : (
+              <>
+                {step1Title.slice(0, linkIndex)}
+                <BaseButton
+                  uppercase={false}
+                  className="!inline !p-0 font-main-semi-bold text-[16px] text-turquoise"
+                  onClick={onFindNode}>
+                  {findNodeLabel}
+                </BaseButton>
+                {step1Title.slice(linkIndex + findNodeLabel.length)}
+              </>
+            )
           }
           description={intl.formatMessage({ id: 'bonds.provider.empty.step1.desc' })}
         />

@@ -32,6 +32,7 @@ type Props = {
   network: Network
   position: BondProviderPosition
   walletBalance: BaseAmount
+  whitelisted?: boolean
   nextChurn: O.Option<NextChurn>
   fee: FeeRD
   interact$: InteractStateHandler
@@ -47,6 +48,7 @@ export const BondActionModal = ({
   network,
   position,
   walletBalance,
+  whitelisted = false,
   nextChurn,
   fee: feeRD,
   interact$,
@@ -125,7 +127,10 @@ export const BondActionModal = ({
 
   const submitDisabled = isLoading || !feeReady || feeError !== null || amountInput.isZero() || amountError !== null
 
-  const subtitle = truncateAddress(position.nodeAddress, THORChain, network)
+  const nodeLabel = truncateAddress(position.nodeAddress, THORChain, network)
+  const subtitle = whitelisted
+    ? `${nodeLabel} · ${intl.formatMessage({ id: 'bonds.provider.modal.whitelistedForYou' })}`
+    : nodeLabel
 
   return (
     <>
@@ -133,7 +138,9 @@ export const BondActionModal = ({
         containerClassName="lg:pl-[240px]"
         backdropClassName="bg-bg0/40 dark:bg-bg0d/40"
         visible
-        title={intl.formatMessage({ id: isBond ? 'bonds.provider.bondMore' : 'bonds.provider.unbond' })}
+        title={intl.formatMessage({
+          id: isBond ? (whitelisted ? 'bonds.provider.bondNow' : 'bonds.provider.bondMore') : 'bonds.provider.unbond'
+        })}
         onCancel={isLoading ? undefined : onClose}
         closable={!isLoading}
         footer={false}>

@@ -19,6 +19,7 @@ type Props = {
   freeToBond: BaseAmount
   paidLastChurn: RD.RemoteData<Error, BaseAmount>
   onHistoryClick: () => void
+  onFindNode: () => void
   onReload: () => void
   reloading: boolean
 }
@@ -31,6 +32,7 @@ export const BondProviderStats = ({
   freeToBond,
   paidLastChurn,
   onHistoryClick,
+  onFindNode,
   onReload,
   reloading
 }: Props) => {
@@ -69,9 +71,12 @@ export const BondProviderStats = ({
             {isPrivate ? hiddenString : formatRuneAmount(freeToBond)}
           </span>
         </div>
-        <span className="mt-2 font-main text-[14px] text-gray2 dark:text-gray2d">
-          {intl.formatMessage({ id: 'bonds.provider.idleInWallet' })}
-        </span>
+        <BaseButton
+          className="group mt-2 self-start !p-0 font-main-semi-bold text-[12px] tracking-[2px] text-turquoise uppercase"
+          onClick={onFindNode}>
+          {intl.formatMessage({ id: 'bonds.provider.empty.findNode' })}
+          <ArrowRightIcon className="ml-1 h-[14px] w-[14px] text-inherit transition-transform group-hover:translate-x-[2px]" />
+        </BaseButton>
       </div>
 
       <div className="flex flex-col items-start gap-4 lg:items-end lg:justify-between lg:self-stretch">

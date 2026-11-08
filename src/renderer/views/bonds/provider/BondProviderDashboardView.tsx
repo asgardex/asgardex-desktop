@@ -1,9 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 
-import { BaseAmount } from '@xchainjs/xchain-util'
+import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -20,6 +19,7 @@ import {
   NoThorAddressCard,
   formatRuneAmount
 } from '../../../components/Bonds/provider'
+import { PendingRequestsCard } from '../../../components/Bonds/provider/PendingRequestsCard'
 import { ErrorView } from '../../../components/shared/error'
 import { AssetIcon } from '../../../components/uielements/assets/assetIcon'
 import { FlatButton, RefreshButton } from '../../../components/uielements/button'
@@ -29,12 +29,13 @@ import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { liveData } from '../../../helpers/rx/liveData'
 import { hiddenString } from '../../../helpers/stringHelper'
+import { useLastSuccessRD } from '../../../hooks/useLastSuccess'
 import { useNextChurn } from '../../../hooks/useNextChurn'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
+import { useListedNodes, useMyWhitelistRequests } from '../../../hooks/useRunebondListing'
 import { useNodeProviderRewards, useProviderRewards } from '../../../hooks/useRunebondRewards'
 import * as bondsRoutes from '../../../routes/bonds'
 import { FeeRD } from '../../../services/chain/types'
-import { RUNEBOND_URL } from '../../../services/runebond'
 import { useApp } from '../../../store/app/hooks'
 import { BondProviderPosition } from '../types'
 import { useBondProviderData } from './useBondProviderData'
@@ -75,9 +76,26 @@ export const BondProviderDashboardView = (): JSX.Element => {
   )
 
   const providerAddresses = useMemo(() => walletInfos.map(({ address }) => address), [walletInfos])
+  const walletTypeOf = useCallback(
+    (address: Address) => walletInfos.find((info) => info.address.toLowerCase() === address.toLowerCase())?.walletType,
+    [walletInfos]
+  )
 
   const providerRewardsRD = useProviderRewards(providerAddresses)
   const nodeRewardsRD = useNodeProviderRewards(providerAddresses)
+
+  const { myRequests, loading: requestsLoading } = useMyWhitelistRequests(providerAddresses)
+  const listedNodesRD = useLastSuccessRD(useListedNodes())
+
+  const nodeName = useCallback(
+    (nodeAddress: Address): string | null =>
+      FP.pipe(
+        listedNodesRD,
+        RD.toNullable,
+        (listed) => listed?.find((listing) => listing.nodeAddress === nodeAddress)?.name ?? null
+      ),
+    [listedNodesRD]
+  )
 
   const paidLastChurnRD: RD.RemoteData<Error, BaseAmount> = useMemo(
     () =>
@@ -126,7 +144,22 @@ export const BondProviderDashboardView = (): JSX.Element => {
 
   const goToRewards = useCallback(() => navigate(bondsRoutes.rewards.path()), [navigate])
 
-  const openRunebond = useCallback(() => window.apiUrl.openExternal(RUNEBOND_URL), [])
+  const openFindNode = useCallback(() => navigate(bondsRoutes.findNode.path()), [navigate])
+  const openNode = useCallback((nodeAddress: Address) => navigate(bondsRoutes.node.path({ nodeAddress })), [navigate])
+
+  const renderPendingRequests = () =>
+    myRequests.length > 0 && (
+      <PendingRequestsCard
+        className="mt-6"
+        network={network}
+        isPrivate={isPrivate}
+        requests={myRequests}
+        loading={requestsLoading}
+        nodeName={nodeName}
+        walletTypeOf={hasMultipleWalletTypes ? walletTypeOf : undefined}
+        onOpenNode={openNode}
+      />
+    )
 
   const renderEmpty = (
     <div className="flex w-full flex-col">
@@ -147,15 +180,15 @@ export const BondProviderDashboardView = (): JSX.Element => {
           </span>
         </div>
         <div className="flex flex-col items-start gap-4 lg:items-end lg:justify-between lg:self-stretch">
-          <FlatButton size="large" onClick={openRunebond}>
+          <FlatButton size="large" onClick={openFindNode}>
             {intl.formatMessage({ id: 'bonds.provider.empty.findNode' })}
-            <ArrowTopRightOnSquareIcon className="ml-2 h-[16px] w-[16px] text-inherit" />
           </FlatButton>
           <RefreshButton onClick={reload} disabled={RD.isPending(positionsRD)} />
         </div>
       </div>
+      {renderPendingRequests()}
       <div className="mt-6 w-full">
-        <HowBondingWorks />
+        <HowBondingWorks onFindNode={openFindNode} />
       </div>
     </div>
   )
@@ -175,9 +208,11 @@ export const BondProviderDashboardView = (): JSX.Element => {
           freeToBond={freeToBond}
           paidLastChurn={paidLastChurnRD}
           onHistoryClick={goToRewards}
+          onFindNode={openFindNode}
           onReload={reload}
           reloading={RD.isPending(positionsRD)}
         />
+        {renderPendingRequests()}
         <div className="mt-6 grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
           {positions.map((position) => (
             <BondNodeCard
@@ -226,6 +261,7 @@ export const BondProviderDashboardView = (): JSX.Element => {
           network={network}
           position={modal.position}
           walletBalance={balanceByAddress(modal.position.signer.address)}
+          whitelisted={modal.type === 'bond' && modal.position.myBond.lte(0)}
           nextChurn={nextChurn}
           fee={feeRD}
           interact$={interact$}

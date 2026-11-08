@@ -43,26 +43,29 @@ export const BondNodeCard = ({
 }: Props) => {
   const intl = useIntl()
 
+  const notBonded = position.myBond.lte(0)
   const isActive = position.status === NodeStatusEnum.Active
   const unbondLocked = isUnbondLocked(position.status, position.signMembership)
 
-  const subtitle = isActive
-    ? FP.pipe(
-        lastPayout,
-        RD.toOption,
-        O.flatten,
-        O.fold(
-          () => intl.formatMessage({ id: 'bonds.provider.node.earning' }),
-          (amount) =>
-            intl.formatMessage(
-              { id: 'bonds.provider.node.paidLastChurn' },
-              { amount: isPrivate ? hiddenString : formatRuneAmount(amount) }
-            )
+  const subtitle = notBonded
+    ? undefined
+    : isActive
+      ? FP.pipe(
+          lastPayout,
+          RD.toOption,
+          O.flatten,
+          O.fold(
+            () => intl.formatMessage({ id: 'bonds.provider.node.earning' }),
+            (amount) =>
+              intl.formatMessage(
+                { id: 'bonds.provider.node.paidLastChurn' },
+                { amount: isPrivate ? hiddenString : formatRuneAmount(amount) }
+              )
+          )
         )
-      )
-    : intl.formatMessage({
-        id: unbondLocked ? 'bonds.provider.node.notEarningLocked' : 'bonds.provider.node.notEarning'
-      })
+      : intl.formatMessage({
+          id: unbondLocked ? 'bonds.provider.node.notEarningLocked' : 'bonds.provider.node.notEarning'
+        })
 
   const openDetail = () => onOpenDetail(position)
 
@@ -95,7 +98,13 @@ export const BondNodeCard = ({
             </WalletTypeLabel>
           )}
         </div>
-        <NodeStatusTag status={position.status} />
+        {notBonded ? (
+          <span className="font-main-semi-bold text-[12px] tracking-[1px] text-success uppercase">
+            {intl.formatMessage({ id: 'bonds.provider.node.whitelistedNotBonded' })}
+          </span>
+        ) : (
+          <NodeStatusTag status={position.status} />
+        )}
       </div>
       <div className="mt-4 flex items-center gap-3">
         <AssetIcon asset={AssetRuneNative} size="small" network={network} />
@@ -103,16 +112,18 @@ export const BondNodeCard = ({
           {isPrivate ? hiddenString : formatRuneAmount(position.myBond)}
         </span>
       </div>
-      <span className="mt-2 font-main text-[14px] text-gray2 dark:text-gray2d">{subtitle}</span>
+      {subtitle && <span className="mt-2 font-main text-[14px] text-gray2 dark:text-gray2d">{subtitle}</span>}
       <div className="flex-1" />
       <FlatButton
         className="mt-6 w-full"
         size="large"
         onClick={(event) => {
           event.stopPropagation()
-          unbondLocked ? onBondMore(position) : onUnbond(position)
+          notBonded || unbondLocked ? onBondMore(position) : onUnbond(position)
         }}>
-        {intl.formatMessage({ id: unbondLocked ? 'bonds.provider.bondMore' : 'bonds.provider.unbond' })}
+        {intl.formatMessage({
+          id: notBonded ? 'bonds.provider.bondNow' : unbondLocked ? 'bonds.provider.bondMore' : 'bonds.provider.unbond'
+        })}
       </FlatButton>
     </div>
   )
