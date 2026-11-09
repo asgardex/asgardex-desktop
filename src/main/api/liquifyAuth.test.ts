@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   getLiquifyProduct,
   getMidgardRootUrl,
+  getThornodeApiRootUrl,
   isLiquifyGatewayUrl,
   LiquifyKeys,
   LiquifyWebRequest,
@@ -220,12 +221,16 @@ describe('main/api/liquifyAuth', () => {
         'X-API-KEY': KEYS.midgard
       })
       expect(runRequest(`${GW}/chain/thorchain_midgard/v2/pools`)).toEqual({ redirectURL: `${GW}/v2/pools` })
-      expect(runRequest(`${GW}/chain/thorchain_api/thorchain/lastblock`)).toEqual({})
+      expect(runRequest(`${GW}/chain/thorchain_api/thorchain/lastblock`)).toEqual({
+        redirectURL: `${GW}/thorchain/lastblock`
+      })
+      expect(runHeaders(`${GW}/thorchain/lastblock`, {}).requestHeaders).toEqual({ 'X-API-KEY': KEYS.thornodeApi })
+      expect(runRequest(`${GW}/chain/thorchain_rpc/status`)).toEqual({})
     })
 
-    it('does not register the Midgard redirect without a Midgard key', () => {
+    it('does not register a root redirect with only an RPC key', () => {
       const { webRequest, onBeforeRequest, onBeforeSendHeaders } = createWebRequest()
-      expect(registerLiquifyAuth(webRequest, { ...NO_KEYS, thornodeApi: 'fake-api-key' })).toEqual(['thornodeApi'])
+      expect(registerLiquifyAuth(webRequest, { ...NO_KEYS, thornodeRpc: 'fake-rpc-key' })).toEqual(['thornodeRpc'])
       expect(onBeforeRequest).not.toHaveBeenCalled()
       expect(onBeforeSendHeaders).toHaveBeenCalledTimes(1)
     })
@@ -260,5 +265,23 @@ describe('main/api/liquifyAuth', () => {
       expect(result.requestHeaders).toEqual({ 'x-api-key': 'renderer-value' })
       expect(JSON.stringify(result)).not.toContain(KEYS.midgard)
     })
+  })
+})
+
+describe('getThornodeApiRootUrl', () => {
+  const GW = 'https://gateway.liquify.com'
+  const K = { midgard: '', thornodeApi: 'api-key', thornodeRpc: '' }
+  it('rewrites keyed /chain/thorchain_api to the gateway root', () => {
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/thorchain/lastblock`, K)).toBe(`${GW}/thorchain/lastblock`)
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/thorchain/mimir`, K)).toBe(`${GW}/thorchain/mimir`)
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/cosmos/bank/v1beta1/balances/x?a=1`, K)).toBe(
+      `${GW}/cosmos/bank/v1beta1/balances/x?a=1`
+    )
+  })
+  it('does nothing without a key, for other products or other hosts', () => {
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/thorchain/lastblock`, { ...K, thornodeApi: '' })).toBeNull()
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_rpc/status`, K)).toBeNull()
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_apix/thorchain/lastblock`, K)).toBeNull()
+    expect(getThornodeApiRootUrl('https://evil.com/chain/thorchain_api/thorchain/lastblock', K)).toBeNull()
   })
 })
