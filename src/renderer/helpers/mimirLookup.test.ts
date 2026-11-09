@@ -92,8 +92,20 @@ describe('helpers/mimirLookup parseMimir', () => {
       'NODEPAUSECHAINGLOBAL',
       'PAUSELP',
       'PAUSELPBTC',
-      'PAUSELPDEPOSIT-BTC-BTC'
+      'PAUSELPDEPOSIT-BTC-BTC',
+      // token-pool keys have more than two segments after PAUSELPDEPOSIT-
+      'PAUSELPDEPOSIT-ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48',
+      'pauselpdeposit-avax-usdt-0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7'
     ].forEach((key) => expect([key, isHaltRelevantMimirKey(key)]).toEqual([key, true]))
     expect(isHaltRelevantMimirKey('MINIMUMBONDINRUNE')).toBe(false)
+  })
+
+  it('throws for a malformed token-pool PAUSELPDEPOSIT value (pool must not read as not paused)', () => {
+    expect(() =>
+      parseMimir({
+        'PAUSELPDEPOSIT-ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48': 'not-a-number',
+        HALTBTCCHAIN: 0
+      })
+    ).toThrow(/PAUSELPDEPOSIT-ETH-USDC/)
   })
 })

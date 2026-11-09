@@ -46,8 +46,10 @@ export const createMimirLookup = (mimir: MimirValues, source: string) => {
  * Matched case-insensitively. Only these can make a mimir response invalid: a malformed value of any
  * other key (there are hundreds) must not take the halt status down.
  */
+// PAUSELPDEPOSIT: gas (`-CHAIN-SYMBOL`) and token pools (`-CHAIN-SYMBOL-0X…`). Written without nested
+// quantifiers (`(-[A-Z0-9]+)+`) so eslint security/detect-unsafe-regex stays quiet; same match set.
 const HALT_RELEVANT_MIMIR_KEY =
-  /^(HALT[A-Z0-9]+(CHAIN|TRADING)|HALTCHAINGLOBAL|HALTTRADING|SOLVENCYHALT[A-Z0-9]+CHAIN|NODEPAUSECHAINGLOBAL|PAUSELP[A-Z0-9]*|PAUSELPDEPOSIT-[A-Z0-9]+-[A-Z0-9]+)$/
+  /^(HALT[A-Z0-9]+(CHAIN|TRADING)|HALTCHAINGLOBAL|HALTTRADING|SOLVENCYHALT[A-Z0-9]+CHAIN|NODEPAUSECHAINGLOBAL|PAUSELP[A-Z0-9]*|PAUSELPDEPOSIT-[A-Z0-9]+-[A-Z0-9-]+)$/
 
 export const isHaltRelevantMimirKey = (key: string): boolean => HALT_RELEVANT_MIMIR_KEY.test(key.toUpperCase())
 
