@@ -45,7 +45,13 @@ The scheme is pinned by a known-answer test for the BIP-39 test phrase (`derivat
   confirmation tag is keyed from the view key (so it cannot be forged from storage alone), not from a password-derived
   key: the renderer does not keep the password after unlocking, so a password-bound tag is not feasible here.
 - The exported keys modal closes by itself after 60 seconds. If a key was copied, the clipboard is cleared again after
-  30 seconds (unless something else was copied meanwhile; `services/monero/clipboard.ts`).
+  30 seconds (unless something else was copied meanwhile; `services/monero/clipboard.ts`). The clear runs in Electron's
+  main process (`window.apiClipboard.clearIfMatches`, `src/main/api/clipboard.ts`), because Chromium rejects
+  `navigator.clipboard` while the app window is not focused. Only a SHA-256 of the copied key crosses IPC; main compares
+  it with the current clipboard (and the Linux PRIMARY selection) and clears only on a match, returning a boolean and
+  never logging. Fallbacks: `navigator.clipboard`, then a clear when the window regains focus (that last path clears
+  the clipboard but not the Linux PRIMARY selection). Clipboard history tools (Win+V, clipboard managers) keep their
+  own copies, which no clear can remove; the export dialog says so.
 
 ## Balance: "Received", not "Balance"
 
