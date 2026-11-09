@@ -3,12 +3,12 @@
 // Captured 2026-11-01 03:39:30 UTC (14:09:30 ACDT) from gateway.liquify.com/chain/thorchain_api/thorchain.
 import { act, createElement } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
-import { createRoot } from 'react-dom/client'
 import { AnyAsset, assetFromStringEx } from '@xchainjs/xchain-util'
+import { createRoot } from 'react-dom/client'
 import * as Rx from 'rxjs'
 import { afterEach, beforeEach, vi } from 'vitest'
 
-import { AssetAVAX } from '../../shared/utils/asset'
+import { AssetAVAX, AssetBTC } from '../../shared/utils/asset'
 import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
 import { AVAXChain, BTCChain, THORChain } from '../../shared/utils/chainIds'
 import { AssetUSDCAVAX } from '../const'
@@ -430,18 +430,24 @@ describe('hooks/useMimirHalt', () => {
       expect(DEFAULT_MIMIR_HALT.haltStatusUnknown).toBe(false)
       Object.keys(DEFAULT_ENABLED_CHAINS).forEach((chain) => {
         const args = { chain, haltedChains: [], mimirHalt: UNKNOWN_MIMIR_HALT }
+        // #1286: disablePoolActions takes the pool asset (PAUSELPDEPOSIT is per pool), not just the chain
+        const asset = { ...AssetBTC, chain } as AnyAsset
         expect([chain, disableAllActions(args)]).toEqual([chain, true])
         expect([chain, disableTradingActions(args)]).toEqual([chain, true])
-        expect([chain, disablePoolActions(args)]).toEqual([chain, true])
+        expect([chain, disablePoolActions({ asset, haltedChains: [], mimirHalt: UNKNOWN_MIMIR_HALT })]).toEqual([
+          chain,
+          true
+        ])
         expect([chain, disableWithdrawActions(args)]).toEqual([chain, true])
       })
     })
 
     it('unknown halt blocks a chain that is not in the default chain list', () => {
       const args = { chain: 'NOTACHAIN', haltedChains: [], mimirHalt: UNKNOWN_MIMIR_HALT }
+      const asset = { ...AssetBTC, chain: 'NOTACHAIN' } as AnyAsset
       expect(disableAllActions(args)).toBe(true)
       expect(disableTradingActions(args)).toBe(true)
-      expect(disablePoolActions(args)).toBe(true)
+      expect(disablePoolActions({ asset, haltedChains: [], mimirHalt: UNKNOWN_MIMIR_HALT })).toBe(true)
       expect(disableWithdrawActions(args)).toBe(true)
     })
   })
