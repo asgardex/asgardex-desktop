@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   getLiquifyProduct,
+  getLiquifyRootUrl,
   getMidgardRootUrl,
   getThornodeApiRootUrl,
   isLiquifyGatewayUrl,
@@ -283,5 +284,21 @@ describe('getThornodeApiRootUrl', () => {
     expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_rpc/status`, K)).toBeNull()
     expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_apix/thorchain/lastblock`, K)).toBeNull()
     expect(getThornodeApiRootUrl('https://evil.com/chain/thorchain_api/thorchain/lastblock', K)).toBeNull()
+  })
+  it('only rewrites /thorchain/... and /cosmos/... below /chain/thorchain_api', () => {
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/v2/pools`, K)).toBeNull()
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/v2/health`, K)).toBeNull()
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api`, K)).toBeNull()
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/`, K)).toBeNull()
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/thorchain`, K)).toBeNull()
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/thorchainx/lastblock`, K)).toBeNull()
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/status`, K)).toBeNull()
+    expect(getThornodeApiRootUrl(`${GW}/chain/thorchain_api/thorchain/`, K)).toBe(`${GW}/thorchain/`)
+  })
+  it('getLiquifyRootUrl leaves keyed /chain/thorchain_api/v2/... alone', () => {
+    const all = { midgard: 'm-key', thornodeApi: 'api-key', thornodeRpc: 'rpc-key' }
+    expect(getLiquifyRootUrl(`${GW}/chain/thorchain_api/v2/pools`, all)).toBeNull()
+    expect(getLiquifyRootUrl(`${GW}/chain/thorchain_midgard/v2/pools`, all)).toBe(`${GW}/v2/pools`)
+    expect(getLiquifyRootUrl(`${GW}/chain/thorchain_api/thorchain/mimir`, all)).toBe(`${GW}/thorchain/mimir`)
   })
 })

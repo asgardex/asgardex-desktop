@@ -91,6 +91,27 @@ export const getLiquifyProduct = (url: string): LiquifyProduct | null => {
 }
 
 /**
+ * Rewrites a keyed provider-style gateway URL (`https://gateway.liquify.com<prefix>/<rest>`) to the gateway
+ * ROOT (`https://gateway.liquify.com/<rest>`), keeping the query. Used for Midgard (`/chain/thorchain_midgard`)
+ * and THORNode REST (`/chain/thorchain_api`): with an `X-API-KEY` the gateway routes by key and does NOT strip
+ * the `/chain/...` prefix, so keyed requests must use the root form.
+ *
+ * `allowedRest`, when given, limits the rewrite to `<rest>` paths starting with one of those prefixes.
+ *
+ * Returns the rewritten URL or `null` when no rewrite applies (other host, other path, `<rest>` not allowed).
+ * The result is always an exact `https://gateway.liquify.com` URL.
+ */
+const toGatewayRootUrl = (url: string, prefix: string, allowedRest?: ReadonlyArray<string>): string | null => {
+  const parsed = parseGatewayUrl(url)
+  if (!parsed || !hasPrefix(parsed.pathname, prefix)) return null
+  const rest = parsed.pathname.slice(prefix.length) || '/'
+  if (allowedRest && !allowedRest.some((allowed) => rest.startsWith(allowed))) return null
+  const rewritten = `https://${LIQUIFY_GATEWAY_HOST}${rest}${parsed.search}`
+  // Defensive: the rewrite must never leave the gateway (host + scheme), whatever the path / query looks like.
+  return isLiquifyGatewayUrl(rewritten) ? rewritten : null
+}
+
+/**
  * Midgard routing when a Midgard key is configured.
  *
  * Without a key the keyless `/chain/thorchain_midgard/...` route is used (public, rate limited).
@@ -101,25 +122,21 @@ export const getLiquifyProduct = (url: string): LiquifyProduct | null => {
  *
  * Returns the rewritten URL or `null` when no rewrite applies (no key, other host, other path).
  */
-const toGatewayRootUrl = (url: string, prefix: string): string | null => {
-  const parsed = parseGatewayUrl(url)
-  if (!parsed || !hasPrefix(parsed.pathname, prefix)) return null
-  const rest = parsed.pathname.slice(prefix.length) || '/'
-  const rewritten = `https://${LIQUIFY_GATEWAY_HOST}${rest}${parsed.search}`
-  // Defensive: the rewrite must never leave the gateway (host + scheme), whatever the path / query looks like.
-  return isLiquifyGatewayUrl(rewritten) ? rewritten : null
-}
-
 export const getMidgardRootUrl = (url: string, keys: LiquifyKeys): string | null =>
   keys.midgard ? toGatewayRootUrl(url, MIDGARD_CHAIN_PREFIX) : null
+
+/** THORNode REST paths (below `/chain/thorchain_api`) that are rewritten to the gateway root. */
+const THORNODE_API_ROOT_PATHS = ['/thorchain/', '/cosmos/'] as const
 
 /**
  * Same as Midgard for THORNode REST: with a key the gateway does NOT strip `/chain/thorchain_api`, so the node
  * receives `/chain/thorchain_api/thorchain/...` and grpc-gateway answers 501 `{"code":12,"message":"Not Implemented"}`.
  * Keyed THORNode REST must use the gateway root (`/thorchain/...`, `/cosmos/...`), like the old `/api=<KEY>/...` URLs.
+ * Only `/thorchain/...` and `/cosmos/...` are rewritten (they map back to the THORNode API key at the root);
+ * anything else (e.g. `/chain/thorchain_api/v2/...`) is left alone so it cannot land on another product's root path.
  */
 export const getThornodeApiRootUrl = (url: string, keys: LiquifyKeys): string | null =>
-  keys.thornodeApi ? toGatewayRootUrl(url, THORNODE_API_CHAIN_PREFIX) : null
+  keys.thornodeApi ? toGatewayRootUrl(url, THORNODE_API_CHAIN_PREFIX, THORNODE_API_ROOT_PATHS) : null
 
 /**
  * Root rewrite for any keyed provider-style route, or `null`.
