@@ -121,7 +121,8 @@ export const MoneroKeysModal = ({ keys, onClose }: { keys: XmrExportKeys; onClos
     <div>
       <div className="text-[12px] text-text2 uppercase dark:text-text2d">{intl.formatMessage({ id: labelId })}</div>
       <div className="flex items-center gap-2">
-        <code className="font-mono text-[12px] break-all select-all">{value}</code>
+        {/* No `select-all`: one click would put the key into the Linux PRIMARY selection, which no timer clears. Use the copy button. */}
+        <code className="font-mono text-[12px] break-all">{value}</code>
         <KeyCopyButton value={value} />
       </div>
     </div>

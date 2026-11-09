@@ -61,6 +61,14 @@ describe('components/settings/MoneroModals', () => {
       expect(document.body.textContent).toContain('keep their own copies')
     })
 
+    it('the keys are not select-all (a click would put them into the Linux PRIMARY selection, never cleared)', () => {
+      render(<MoneroKeysModal keys={keys} onClose={vi.fn()} />)
+      const codes = Array.from(document.body.querySelectorAll('code'))
+      expect(codes.map((code) => code.textContent)).toEqual([keys.privateSpendKeyHex, keys.privateViewKeyHex])
+      codes.forEach((code) => expect(code.classList.contains('select-all')).toBe(false))
+      expect(document.body.querySelector('.select-all')).toBeNull()
+    })
+
     it('the copy button clears through Electron main (hash only) when the preload API exists', async () => {
       const state = { text: '' }
       vi.stubGlobal('navigator', {
