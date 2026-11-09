@@ -165,7 +165,7 @@ const settings: SettingMessages = {
   'monero.export.button': 'Private Schlüssel exportieren',
   'monero.export.title': 'Private Monero-Schlüssel',
   'monero.export.warning':
-    'Jeder mit diesen Schlüsseln kann dein Monero ausgeben. Gib sie niemals weiter und füge sie nie auf Webseiten ein.',
+    'Jeder mit diesen Schlüsseln kann dein Monero ausgeben. Gib sie niemals weiter und füge sie nie auf Webseiten ein. Zwischenablage-Verläufe (z. B. Win+V unter Windows, Clipboard-Manager) behalten eigene Kopien, die beim automatischen Leeren der Zwischenablage nicht entfernt werden.',
   'monero.export.spendKey': 'Privater Spend-Key',
   'monero.export.viewKey': 'Privater View-Key',
   'monero.scan.rangeTooLarge':

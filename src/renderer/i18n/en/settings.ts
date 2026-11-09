@@ -166,7 +166,7 @@ const settings: SettingMessages = {
   'monero.export.button': 'Export private keys',
   'monero.export.title': 'Monero private keys',
   'monero.export.warning':
-    'Anyone with these keys can spend your Monero. Never share them and never paste them into websites.',
+    'Anyone with these keys can spend your Monero. Never share them and never paste them into websites. Clipboard history tools (e.g. Win+V on Windows, clipboard managers) keep their own copies, which the automatic clipboard clear does not remove.',
   'monero.export.spendKey': 'Private spend key',
   'monero.export.viewKey': 'Private view key',
   'monero.scan.rangeTooLarge':

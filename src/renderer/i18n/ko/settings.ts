@@ -161,7 +161,7 @@ const settings: SettingMessages = {
   'monero.export.button': '개인 키 내보내기',
   'monero.export.title': 'Monero 개인 키',
   'monero.export.warning':
-    '이 키를 가진 사람은 누구나 Monero를 사용할 수 있습니다. 절대 공유하거나 웹사이트에 붙여넣지 마세요.',
+    '이 키를 가진 사람은 누구나 Monero를 사용할 수 있습니다. 절대 공유하거나 웹사이트에 붙여넣지 마세요. 클립보드 기록 도구(예: Windows의 Win+V, 클립보드 관리자)는 자체 사본을 보관하며, 자동 클립보드 지우기로는 삭제되지 않습니다.',
   'monero.export.spendKey': '개인 스펜드 키',
   'monero.export.viewKey': '개인 뷰 키',
   'monero.scan.rangeTooLarge':

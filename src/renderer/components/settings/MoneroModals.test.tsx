@@ -55,6 +55,46 @@ describe('components/settings/MoneroModals', () => {
       expect(document.body.querySelector('[data-testid="monero-keys-autoclose"]')?.textContent).toContain('30 seconds')
     })
 
+    it('warns that clipboard history tools keep their own copies', () => {
+      render(<MoneroKeysModal keys={keys} onClose={vi.fn()} />)
+      expect(document.body.textContent).toContain('Win+V')
+      expect(document.body.textContent).toContain('keep their own copies')
+    })
+
+    it('the copy button clears through Electron main (hash only) when the preload API exists', async () => {
+      const state = { text: '' }
+      vi.stubGlobal('navigator', {
+        clipboard: {
+          writeText: async (t: string) => void (state.text = t),
+          readText: async () => {
+            throw new Error('Document is not focused.')
+          }
+        }
+      })
+      const clearIfMatches = vi.fn(async () => {
+        state.text = ''
+        return true
+      })
+      window.apiClipboard = { clearIfMatches }
+      try {
+        render(<MoneroKeysModal keys={keys} onClose={vi.fn()} />)
+        const button = document.body.querySelector('[data-testid="monero-key-copy"]') as HTMLElement
+        await act(async () => {
+          button.click()
+        })
+        expect(state.text).toBe(keys.privateSpendKeyHex)
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(XMR_CLIPBOARD_CLEAR_MS)
+        })
+        expect(clearIfMatches).toHaveBeenCalledTimes(1)
+        expect(clearIfMatches.mock.calls[0][0]).toMatch(/^[0-9a-f]{64}$/)
+        expect(clearIfMatches.mock.calls[0][0]).not.toBe(keys.privateSpendKeyHex)
+        expect(state.text).toBe('')
+      } finally {
+        delete window.apiClipboard
+      }
+    })
+
     it('closes itself after about 60 seconds (not before)', () => {
       expect(XMR_KEYS_MODAL_TIMEOUT_MS).toBe(60_000)
       const onClose = vi.fn()

@@ -162,7 +162,7 @@ const settings: SettingMessages = {
   'monero.export.button': 'Exporter les clés privées',
   'monero.export.title': 'Clés privées Monero',
   'monero.export.warning':
-    'Toute personne disposant de ces clés peut dépenser vos Monero. Ne les partagez jamais et ne les collez jamais sur des sites web.',
+    "Toute personne disposant de ces clés peut dépenser vos Monero. Ne les partagez jamais et ne les collez jamais sur des sites web. Les historiques de presse-papiers (par ex. Win+V sous Windows, gestionnaires de presse-papiers) gardent leurs propres copies, que l'effacement automatique du presse-papiers ne supprime pas.",
   'monero.export.spendKey': 'Clé de dépense privée',
   'monero.export.viewKey': 'Clé de vue privée',
   'monero.scan.rangeTooLarge':

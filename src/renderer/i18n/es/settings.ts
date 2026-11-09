@@ -162,7 +162,7 @@ const settings: SettingMessages = {
   'monero.export.button': 'Exportar claves privadas',
   'monero.export.title': 'Claves privadas de Monero',
   'monero.export.warning':
-    'Cualquiera con estas claves puede gastar tus Monero. Nunca las compartas ni las pegues en sitios web.',
+    'Cualquiera con estas claves puede gastar tus Monero. Nunca las compartas ni las pegues en sitios web. Los historiales del portapapeles (p. ej., Win+V en Windows, gestores del portapapeles) guardan sus propias copias, que el borrado automático del portapapeles no elimina.',
   'monero.export.spendKey': 'Clave de gasto privada',
   'monero.export.viewKey': 'Clave de visualización privada',
   'monero.scan.rangeTooLarge':
