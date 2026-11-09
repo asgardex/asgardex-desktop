@@ -133,7 +133,51 @@ const settings: SettingMessages = {
     'RPC-Endpunkt antwortet nicht. Überprüfe deine Verbindung oder versuche eine andere URL.',
   'settings.ledgerMode.lockWalletWarning': 'Wallet zuerst sperren, um in den Ledger-Modus zu wechseln',
   'settings.wallet.whitelist': 'Whitelist',
-  'settings.wallet.customToken': 'Benutzerdefinierter Token'
+  'settings.wallet.customToken': 'Benutzerdefinierter Token',
+  'monero.settings.watchOnly':
+    'Monero ist nur zum Empfangen: Eingehende Zahlungen und die Summe der Eingänge sind sichtbar (Ausgaben werden nicht erfasst). Senden wird noch nicht unterstützt.',
+  'monero.settings.daemon': 'Node-URL (optional)',
+  'monero.settings.lws': 'Light-Wallet-Server-URL (optional)',
+  'monero.settings.lws.warning':
+    'Datenschutz: Ein Light-Wallet-Server erhält deinen privaten View-Key, sieht alle eingehenden Zahlungen samt Beträgen, und die Registrierung ist dauerhaft (nicht rückgängig zu machen). Leer lassen, um lokal über die Node zu scannen (Standard).',
+  'monero.settings.restoreHeight': 'Wiederherstellungshöhe (optional)',
+  'monero.settings.restoreHeight.hint':
+    'Blockhöhe, bei der die Wallet erstmals genutzt wurde. Leer = Höhe der ersten Nutzung. Ohne Light-Wallet-Server umfasst ein Scan höchstens 5.000 Blöcke (~1 Woche).',
+  'monero.settings.invalidUrl': 'Ungültige URL. Verwende https:// (http:// nur für localhost).',
+  'monero.settings.invalidHeight': 'Ungültige Blockhöhe. Verwende eine ganze Zahl.',
+  'monero.send.watchOnly': 'Das Senden von Monero (XMR) wird noch nicht unterstützt (nur Empfangen).',
+  'monero.lws.confirm.title': 'Diesen Light-Wallet-Server verwenden?',
+  'monero.lws.confirm.body':
+    'Dieser Server erhält deinen privaten View-Key. Er sieht ALLE eingehenden Zahlungen samt Beträgen und deine IP-Adresse. Die Registrierung ist dauerhaft: Deine Adresse kann nicht wieder abgemeldet werden. Fahre nur fort, wenn du diesem Server vertraust.',
+  'monero.lws.confirm.ok': 'Beim Server registrieren',
+  'monero.lws.unconfirmed':
+    'Dieser Light-Wallet-Server ist noch nicht bestätigt und wird NICHT verwendet. Bestätige ihn, um ihn zu aktivieren.',
+  'monero.lws.confirm.button': 'Server bestätigen',
+  'monero.ack.title': 'Monero (XMR) ist nur zum Empfangen',
+  'monero.ack.send':
+    'Du kannst XMR in ASGARDEX noch nicht senden. Guthaben und Verlauf zeigen nur eingehende Zahlungen; anderswo getätigte Ausgaben werden nicht erkannt.',
+  'monero.ack.restore':
+    'Andere Monero-Wallets stellen diese Wallet nicht aus deiner Seed-Phrase wieder her: Die Schlüssel werden anders als bei einem Monero-Seed abgeleitet.',
+  'monero.ack.exit':
+    'Um Guthaben abzuziehen, exportiere den privaten Spend- und View-Key (Wallet-Einstellungen → Monero → Private Schlüssel exportieren) und importiere sie mit „Aus Schlüsseln wiederherstellen“ in eine Monero-Wallet.',
+  'monero.ack.confirm': 'Ich verstehe',
+  'monero.ack.cancel': 'Monero deaktivieren',
+  'monero.export.button': 'Private Schlüssel exportieren',
+  'monero.export.title': 'Private Monero-Schlüssel',
+  'monero.export.warning':
+    'Jeder mit diesen Schlüsseln kann dein Monero ausgeben. Gib sie niemals weiter und füge sie nie auf Webseiten ein. Zwischenablage-Verläufe (z. B. Win+V unter Windows, Clipboard-Manager) behalten eigene Kopien, die beim automatischen Leeren der Zwischenablage nicht entfernt werden.',
+  'monero.export.spendKey': 'Privater Spend-Key',
+  'monero.export.viewKey': 'Privater View-Key',
+  'monero.scan.rangeTooLarge':
+    'Das Monero-Scanfenster ist zu groß: {gap} Blöcke zu scannen (Limit: {limit}, etwa 1 Woche). Setze in den Monero-Wallet-Einstellungen eine neuere Wiederherstellungshöhe oder nutze einen Light-Wallet-Server.',
+  'monero.balance.received': 'Empfangen (Ausgaben werden nicht erfasst)',
+  'monero.balance.lws': 'Empfangen, laut deinem Light-Wallet-Server (nicht überprüft; Ausgaben werden nicht erfasst)',
+  'monero.balance.serverSpends': 'Vom Server gemeldete Ausgaben (nicht überprüft, kann Decoys enthalten): {amount} XMR',
+  'monero.balance.rejected':
+    '{count} eingehende Output(s) wurden NICHT gezählt, da ihr Betrag nicht überprüft werden konnte (gefälschte, nicht unterstützte oder fehlende Commitment).',
+  'monero.lws.confirm.host': 'Server: {host}',
+  'monero.export.autoClose':
+    'Dieses Fenster schließt sich nach 60 Sekunden automatisch. Alles, was du kopierst, wird nach 30 Sekunden aus der Zwischenablage entfernt.'
 }
 
 export default settings

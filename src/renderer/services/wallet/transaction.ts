@@ -23,7 +23,15 @@ import * as RxOp from 'rxjs/operators'
 
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
-import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  ZECChain,
+  XMRChain
+} from '../../../shared/utils/chainIds'
 import { observableState } from '../../helpers/stateHelper'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
@@ -41,6 +49,7 @@ import * as COSMOS from '../cosmos'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
+import * as XMR from '../monero'
 import * as NEAR from '../near'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
@@ -141,6 +150,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return SUI.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               case NEARChain:
                 return NEAR.txs$({ asset: O.some(asset), walletAddress, walletIndex })
+              case XMRChain:
+                return XMR.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               default:
                 return Rx.of(
                   RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` })

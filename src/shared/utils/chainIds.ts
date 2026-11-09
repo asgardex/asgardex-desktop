@@ -19,6 +19,7 @@ export const ETHChain = 'ETH'
 export const LTCChain = 'LTC'
 export const MAYAChain = 'MAYA'
 export const NEARChain = 'NEAR'
+export const XMRChain = 'XMR'
 export const XRPChain = 'XRP'
 export const SOLChain = 'SOL'
 export const SUIChain = 'SUI'
@@ -29,6 +30,7 @@ export const ZECChain = 'ZEC'
 export const BTC_DECIMAL = 8
 export const DASH_DECIMAL = 8
 export const ZEC_DECIMAL = 8
+export const XMR_DECIMAL = 12
 export const RUNE_DECIMAL = 8
 export const CACAO_DECIMAL = 10
 export const MAYA_DECIMAL = 4
@@ -62,6 +64,13 @@ export const AssetZEC: Asset = {
   chain: ZECChain,
   symbol: 'ZEC',
   ticker: 'ZEC',
+  type: AssetType.NATIVE
+}
+
+export const AssetXMR: Asset = {
+  chain: XMRChain,
+  symbol: 'XMR',
+  ticker: 'XMR',
   type: AssetType.NATIVE
 }
 

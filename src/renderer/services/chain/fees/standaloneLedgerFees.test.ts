@@ -7,7 +7,7 @@ import { firstValueFrom, of } from 'rxjs'
 import { last } from 'rxjs/operators'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { DEFAULT_ENABLED_CHAINS } from '../../../../shared/utils/chain'
+import { SUPPORTED_CHAINS } from '../../../../shared/utils/chain'
 import { THORChain } from '../../../../shared/utils/chainIds'
 import { isUtxoAssetChain } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
@@ -16,6 +16,7 @@ import * as ADA from '../../cardano'
 import { FeesRD } from '../../clients'
 import * as COSMOS from '../../cosmos'
 import * as MAYA from '../../mayachain'
+import * as MONERO from '../../monero'
 import * as NEAR from '../../near'
 import * as XRP from '../../ripple'
 import * as SOL from '../../solana'
@@ -39,6 +40,11 @@ const NEAR_FEES = fees(1_000, 24)
 
 // Partial mocks: keep each module's real exports, stub only its fee functions
 vi.mock(import('../../sui'), async (importOriginal) => ({
+  ...(await importOriginal()),
+  fees$: vi.fn(),
+  reloadFees: vi.fn()
+}))
+vi.mock(import('../../monero'), async (importOriginal) => ({
   ...(await importOriginal()),
   fees$: vi.fn(),
   reloadFees: vi.fn()
@@ -85,7 +91,7 @@ vi.mock(import('../../tron'), async (importOriginal) => ({
 }))
 
 // Every enabled chain the Send view routes through standaloneLedgerFees$ (not UTXO, not EVM)
-const STANDALONE_FEE_CHAINS = (Object.keys(DEFAULT_ENABLED_CHAINS) as Chain[]).filter(
+const STANDALONE_FEE_CHAINS = (Object.keys(SUPPORTED_CHAINS) as Chain[]).filter(
   (chain) => !isUtxoAssetChain(getChainAsset(chain)) && !isEvmChain(chain)
 )
 
@@ -119,10 +125,12 @@ describe('standaloneLedgerFees$', () => {
 
   it('returns fees (no error) for every enabled chain that uses this path', async () => {
     const otherFees = of(RD.success(fees(1, 6)))
-    ;[MAYA, COSMOS, ADA, XRP, SOL, TRON].forEach((service) => vi.mocked(service.fees$).mockReturnValue(otherFees))
+    ;[MAYA, COSMOS, ADA, XRP, SOL, TRON, MONERO].forEach((service) =>
+      vi.mocked(service.fees$).mockReturnValue(otherFees)
+    )
 
     expect(STANDALONE_FEE_CHAINS).toEqual(
-      expect.arrayContaining(['THOR', 'MAYA', 'GAIA', 'ADA', 'XRP', 'SOL', 'TRON', 'NEAR', 'SUI'])
+      expect.arrayContaining(['THOR', 'MAYA', 'GAIA', 'ADA', 'XRP', 'SOL', 'TRON', 'NEAR', 'SUI', 'XMR'])
     )
     for (const chain of STANDALONE_FEE_CHAINS) {
       const result = await lastFees(chain)

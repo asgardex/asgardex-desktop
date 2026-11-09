@@ -49,6 +49,7 @@ import { Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal'
 import { InteractType } from '../txs/interact/Interact.types'
 import { TxsTable } from '../txs/table'
+import { XmrBalanceNote } from './XmrBalanceNote'
 
 export type Props = {
   walletType: WalletType
@@ -223,6 +224,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
           price={price}
           network={network}
         />
+        <XmrBalanceNote chain={asset.chain} />
 
         <div className="w-full">
           <div className="flex flex-col items-center justify-center space-y-1 space-x-0 sm:flex-row sm:space-y-0 sm:space-x-2">

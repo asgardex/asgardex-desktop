@@ -1,6 +1,7 @@
 import { Provider } from 'react-redux'
 import { HashRouter as Router } from 'react-router-dom'
 
+import { MoneroReceiveAckModal } from './components/settings/MoneroReceiveAckModal'
 import { AdaProvider } from './contexts/AdaContext'
 import { AppProvider } from './contexts/AppContext'
 import { ArbProvider } from './contexts/ArbContext'
@@ -21,6 +22,7 @@ import { MayachainProvider } from './contexts/MayachainContext'
 import { MayachainQueryProvider } from './contexts/MayachainQueryContext'
 import { MidgardProvider } from './contexts/MidgardContext'
 import { MayaMidgardProvider } from './contexts/MidgardMayaContext'
+import { MoneroProvider } from './contexts/MoneroContext'
 import { NearProvider } from './contexts/NearContext'
 import { OneClickProvider } from './contexts/OneClickContext'
 import { PriceLevelProvider } from './contexts/PriceLevelContext'
@@ -62,35 +64,38 @@ export const App = (): JSX.Element => {
                                           <DashProvider>
                                             <SuiProvider>
                                               <NearProvider>
-                                                <CosmosProvider>
-                                                  <MidgardProvider>
-                                                    <PriceLevelProvider>
-                                                      <ThorchainQueryProvider>
-                                                        <MayachainProvider>
-                                                          <MayachainQueryProvider>
-                                                            <MayaMidgardProvider>
-                                                              <UserNodesProvider>
-                                                                <UserBondProvidersProvider>
-                                                                  <ChainflipProvider>
-                                                                    <OneClickProvider>
-                                                                      <I18nProvider>
-                                                                        <Router>
-                                                                          <ThemeProvider>
-                                                                            <AppView />
-                                                                          </ThemeProvider>
-                                                                        </Router>
-                                                                      </I18nProvider>
-                                                                    </OneClickProvider>
-                                                                  </ChainflipProvider>
-                                                                </UserBondProvidersProvider>
-                                                              </UserNodesProvider>
-                                                            </MayaMidgardProvider>
-                                                          </MayachainQueryProvider>
-                                                        </MayachainProvider>
-                                                      </ThorchainQueryProvider>
-                                                    </PriceLevelProvider>
-                                                  </MidgardProvider>
-                                                </CosmosProvider>
+                                                <MoneroProvider>
+                                                  <CosmosProvider>
+                                                    <MidgardProvider>
+                                                      <PriceLevelProvider>
+                                                        <ThorchainQueryProvider>
+                                                          <MayachainProvider>
+                                                            <MayachainQueryProvider>
+                                                              <MayaMidgardProvider>
+                                                                <UserNodesProvider>
+                                                                  <UserBondProvidersProvider>
+                                                                    <ChainflipProvider>
+                                                                      <OneClickProvider>
+                                                                        <I18nProvider>
+                                                                          <Router>
+                                                                            <ThemeProvider>
+                                                                              <AppView />
+                                                                              <MoneroReceiveAckModal />
+                                                                            </ThemeProvider>
+                                                                          </Router>
+                                                                        </I18nProvider>
+                                                                      </OneClickProvider>
+                                                                    </ChainflipProvider>
+                                                                  </UserBondProvidersProvider>
+                                                                </UserNodesProvider>
+                                                              </MayaMidgardProvider>
+                                                            </MayachainQueryProvider>
+                                                          </MayachainProvider>
+                                                        </ThorchainQueryProvider>
+                                                      </PriceLevelProvider>
+                                                    </MidgardProvider>
+                                                  </CosmosProvider>
+                                                </MoneroProvider>
                                               </NearProvider>
                                             </SuiProvider>
                                           </DashProvider>

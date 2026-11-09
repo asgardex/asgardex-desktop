@@ -20,6 +20,7 @@ import type { IPCExportKeystoreParams, IPCLedgerAddressParams, StoreFileName } f
 import { DEFAULT_STORAGES } from '../shared/const'
 import type { Locale } from '../shared/i18n/types'
 import { registerAppCheckUpdatedHandler } from './api/appUpdate'
+import { clearClipboardIfMatches } from './api/clipboard'
 import { saveBalancesJson, saveCsv } from './api/export'
 import { getFileStoreService } from './api/fileStore'
 import { exportKeystore, initKeystoreWallets, loadKeystore, saveKeystoreWallets } from './api/keystore'
@@ -226,6 +227,10 @@ const initIPC = () => {
   ipcMain.handle(IPCMessages.INIT_KEYSTORE_WALLETS, async () => initKeystoreWallets())
   // Url
   ipcMain.handle(IPCMessages.OPEN_EXTERNAL_URL, async (_, url) => openExternal(url))
+  // Clipboard: the renderer sends a SHA-256 only, never the copied text
+  ipcMain.handle(IPCMessages.CLEAR_CLIPBOARD_IF_MATCHES, async (_, sha256Hex: unknown) =>
+    clearClipboardIfMatches(sha256Hex)
+  )
   // Ledger
   ipcMain.handle(IPCMessages.GET_LEDGER_ADDRESS, async (_, params: IPCLedgerAddressParams) => getLedgerAddress(params))
   ipcMain.handle(IPCMessages.VERIFY_LEDGER_ADDRESS, async (_, params: IPCLedgerAddressParams) =>

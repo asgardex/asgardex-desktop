@@ -1,6 +1,6 @@
 import { Chain } from '@xchainjs/xchain-util'
 
-import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { SUPPORTED_CHAINS } from '../../../shared/utils/chain'
 import { THORChain } from '../../../shared/utils/chainIds'
 import { MimirHalt } from '../../services/thorchain/types'
 
@@ -37,7 +37,7 @@ export const isProtocolUsableAsSwapAlternative = (data: ResolvedProtocolData, se
   if (isProtocolGloballyHalted(data)) return false
 
   const chains =
-    selectedChains && selectedChains.length > 0 ? selectedChains : (Object.keys(DEFAULT_ENABLED_CHAINS) as Chain[])
+    selectedChains && selectedChains.length > 0 ? selectedChains : (Object.keys(SUPPORTED_CHAINS) as Chain[])
 
   return chains.every((chain) => !isProtocolChainTradingHalted(data, chain))
 }

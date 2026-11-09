@@ -18,6 +18,7 @@ import {
   LTCChain,
   MAYAChain,
   NEARChain,
+  XMRChain,
   SOLChain,
   SUIChain,
   THORChain,
@@ -48,6 +49,7 @@ import {
   tronIcon,
   suiIcon,
   nearIcon,
+  xmrIcon,
   zecIcon
 } from '../../../icons'
 import { sizes, fontSizes } from './ChainIcon.styles'
@@ -102,6 +104,8 @@ const chainIconMap = (chain: string): string => {
       return suiIcon
     case NEARChain:
       return nearIcon
+    case XMRChain:
+      return xmrIcon
     default:
       return '' // return null if no chain matches
   }

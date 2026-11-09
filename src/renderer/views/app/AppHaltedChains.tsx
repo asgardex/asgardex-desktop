@@ -8,7 +8,7 @@ import { function as FP, array as A, option as O } from 'fp-ts'
 import { useIntl, IntlShape } from 'react-intl'
 import { matchPath, useLocation } from 'react-router-dom'
 
-import { chainToString, DEFAULT_ENABLED_CHAINS, isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
+import { chainToString, SUPPORTED_CHAINS, isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
 import { THORChain } from '../../../shared/utils/chainIds'
 import { NewsTicker } from '../../components/uielements/newsTicker'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
@@ -150,7 +150,7 @@ export const buildPerProtocolMessages = (
   // When the page tells us which chains the user has selected, restrict messages
   // to those chains so the user only sees halts that affect their current swap/deposit.
   const isRelevant = (chain: Chain): boolean => !selectedChains || selectedChains.includes(chain)
-  const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS)
+  const haltedChainsState: HaltedChainsState[] = Object.keys(SUPPORTED_CHAINS)
     .filter(isRelevant)
     .map((chain) => ({
       chain,

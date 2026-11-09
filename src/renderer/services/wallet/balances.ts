@@ -22,7 +22,15 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
-import { THORChain, MAYAChain, GAIAChain, BTCChain, DASHChain, ZECChain } from '../../../shared/utils/chainIds'
+import {
+  THORChain,
+  MAYAChain,
+  GAIAChain,
+  BTCChain,
+  DASHChain,
+  ZECChain,
+  XMRChain
+} from '../../../shared/utils/chainIds'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { eqBalancesRD } from '../../helpers/fp/eq'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
@@ -43,6 +51,7 @@ import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
+import * as XMR from '../monero'
 import * as NEAR from '../near'
 import * as XRP from '../ripple'
 import * as SOL from '../solana'
@@ -155,6 +164,7 @@ export const createBalancesService = ({
         if (enabledChainsSet.has(ZECChain)) reloadFunctions.push(() => ZEC.reloadBalances(walletType))
         if (enabledChainsSet.has(SUIChain)) reloadFunctions.push(() => SUI.reloadBalances())
         if (enabledChainsSet.has(NEARChain)) reloadFunctions.push(() => NEAR.reloadBalances())
+        if (enabledChainsSet.has(XMRChain)) reloadFunctions.push(() => XMR.reloadBalances())
 
         // Process in batches to limit concurrency
         processBatchedReloads(reloadFunctions)
@@ -182,7 +192,8 @@ export const createBalancesService = ({
     [ZECChain]: ZEC.reloadBalances,
     [XRPChain]: XRP.reloadBalances,
     [SUIChain]: SUI.reloadBalances,
-    [NEARChain]: NEAR.reloadBalances
+    [NEARChain]: NEAR.reloadBalances,
+    [XMRChain]: XMR.reloadBalances
   }
 
   const reloadBalancesByChain =
@@ -397,6 +408,13 @@ export const createBalancesService = ({
             resetReloadBalances: NEAR.resetReloadBalances,
             balances$: NEAR.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: NEAR.reloadBalances$
+          }
+        case XMRChain:
+          return {
+            reloadBalances: XMR.reloadBalances,
+            resetReloadBalances: XMR.resetReloadBalances,
+            balances$: XMR.balances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances$: XMR.reloadBalances$
           }
         default:
           return {
@@ -633,6 +651,15 @@ export const createBalancesService = ({
   const nearChainBalance$: ChainBalance$ = createChainBalance$({
     chain: NEARChain,
     addressUI$: NEAR.addressUI$,
+    walletBalanceType: 'all'
+  })
+
+  /**
+   * Transforms XMR balances into `ChainBalances` (watch-only)
+   */
+  const xmrChainBalance$: ChainBalance$ = createChainBalance$({
+    chain: XMRChain,
+    addressUI$: XMR.addressUI$,
     walletBalanceType: 'all'
   })
 
@@ -1400,7 +1427,8 @@ export const createBalancesService = ({
     ZEC: [zecChainBalance$, zecLedgerChainBalance$],
     XRP: [xrpChainBalance$, xrpLedgerChainBalance$],
     SUI: [suiChainBalance$, suiLedgerChainBalance$],
-    NEAR: [nearChainBalance$]
+    NEAR: [nearChainBalance$],
+    XMR: [xmrChainBalance$]
   }
 
   // Create ledger balance observables for filtering in standalone mode
@@ -1430,7 +1458,8 @@ export const createBalancesService = ({
     ZEC: [zecLedgerChainBalance$],
     XRP: [xrpLedgerChainBalance$],
     SUI: [suiLedgerChainBalance$],
-    NEAR: []
+    NEAR: [],
+    XMR: []
   }
 
   // Vultisig balance observables for standalone Vultisig mode

@@ -130,7 +130,49 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'RPC 엔드포인트가 응답하지 않습니다. 연결을 확인하거나 다른 URL을 시도하세요.',
   'settings.ledgerMode.lockWalletWarning': 'Ledger 모드로 진입하려면 먼저 지갑을 잠금하세요',
   'settings.wallet.whitelist': '화이트리스트',
-  'settings.wallet.customToken': '사용자 정의 토큰'
+  'settings.wallet.customToken': '사용자 정의 토큰',
+  'monero.settings.watchOnly':
+    'Monero는 수신 전용입니다. 수신 결제와 총 수신액을 볼 수 있으며(지출은 추적되지 않음) 전송은 아직 지원되지 않습니다.',
+  'monero.settings.daemon': '노드 URL (선택 사항)',
+  'monero.settings.lws': '라이트 월렛 서버 URL (선택 사항)',
+  'monero.settings.lws.warning':
+    '개인정보 보호: 라이트 월렛 서버는 개인 뷰 키를 받아 모든 수신 결제와 금액을 볼 수 있으며, 등록은 영구적입니다(취소할 수 없음). 노드를 통해 로컬에서 스캔하려면 비워 두세요(기본값).',
+  'monero.settings.restoreHeight': '복원 높이 (선택 사항)',
+  'monero.settings.restoreHeight.hint':
+    '지갑을 처음 사용한 블록 높이입니다. 비어 있으면 처음 사용한 높이입니다. 라이트 월렛 서버가 없으면 한 번의 스캔은 최대 5,000블록(약 1주일)입니다.',
+  'monero.settings.invalidUrl': '잘못된 URL입니다. https://를 사용하세요(http://는 localhost에만 허용).',
+  'monero.settings.invalidHeight': '잘못된 블록 높이입니다. 정수를 입력하세요.',
+  'monero.send.watchOnly': 'Monero(XMR) 전송은 아직 지원되지 않습니다(수신 전용).',
+  'monero.lws.confirm.title': '이 라이트 월렛 서버를 사용하시겠습니까?',
+  'monero.lws.confirm.body':
+    '이 서버는 개인 뷰 키를 받습니다. 모든 수신 결제와 금액, 그리고 IP 주소를 볼 수 있습니다. 등록은 영구적이며 주소 등록을 해제할 방법이 없습니다. 이 서버를 신뢰하는 경우에만 계속하세요.',
+  'monero.lws.confirm.ok': '서버에 등록',
+  'monero.lws.unconfirmed': '이 라이트 월렛 서버는 아직 확인되지 않았으며 사용되지 않습니다. 활성화하려면 확인하세요.',
+  'monero.lws.confirm.button': '서버 확인',
+  'monero.ack.title': 'Monero(XMR)는 수신 전용입니다',
+  'monero.ack.send':
+    'ASGARDEX에서는 아직 XMR을 보낼 수 없습니다. 잔액과 내역은 수신 결제만 표시하며, 다른 곳에서 사용한 금액은 감지되지 않습니다.',
+  'monero.ack.restore':
+    '다른 Monero 지갑은 시드 문구로 이 지갑을 복원할 수 없습니다. 키가 Monero 시드와 다르게 파생되기 때문입니다.',
+  'monero.ack.exit':
+    "자금을 옮기려면 개인 스펜드 키와 뷰 키를 내보내고(지갑 설정 → Monero → 개인 키 내보내기) Monero 지갑의 '키로 복원'으로 가져오세요.",
+  'monero.ack.confirm': '이해했습니다',
+  'monero.ack.cancel': 'Monero 비활성화',
+  'monero.export.button': '개인 키 내보내기',
+  'monero.export.title': 'Monero 개인 키',
+  'monero.export.warning':
+    '이 키를 가진 사람은 누구나 Monero를 사용할 수 있습니다. 절대 공유하거나 웹사이트에 붙여넣지 마세요. 클립보드 기록 도구(예: Windows의 Win+V, 클립보드 관리자)는 자체 사본을 보관하며, 자동 클립보드 지우기로는 삭제되지 않습니다.',
+  'monero.export.spendKey': '개인 스펜드 키',
+  'monero.export.viewKey': '개인 뷰 키',
+  'monero.scan.rangeTooLarge':
+    'Monero 스캔 범위가 너무 큽니다. 스캔할 블록이 {gap}개입니다(한도: {limit}, 약 1주일). Monero 지갑 설정에서 더 최근의 복원 높이를 설정하거나 라이트 월렛 서버를 사용하세요.',
+  'monero.balance.received': '수신됨 (지출은 추적되지 않음)',
+  'monero.balance.lws': '라이트 월렛 서버가 보고한 수신액 (검증되지 않음, 지출은 추적되지 않음)',
+  'monero.balance.serverSpends': '서버가 보고한 지출 (검증되지 않음, 디코이가 포함될 수 있음): {amount} XMR',
+  'monero.balance.rejected':
+    '금액을 검증할 수 없어(위조, 미지원 또는 누락된 커밋먼트) 수신 출력 {count}개가 집계되지 않았습니다.',
+  'monero.lws.confirm.host': '서버: {host}',
+  'monero.export.autoClose': '이 창은 60초 후 자동으로 닫힙니다. 복사한 내용은 30초 후 클립보드에서 삭제됩니다.'
 }
 
 export default settings

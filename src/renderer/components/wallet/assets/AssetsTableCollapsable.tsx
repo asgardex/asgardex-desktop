@@ -25,7 +25,13 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
-import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
+import {
+  chainToString,
+  EnabledChain,
+  isChainOfMaya,
+  isChainOfThor,
+  isWatchOnlyChain
+} from '../../../../shared/utils/chain'
 import { isTCYAsset, THORChain, AssetCacao, MAYAChain, AssetBTC } from '../../../../shared/utils/chainIds'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
@@ -82,6 +88,7 @@ import { WalletTypeLabel, AssetSynthLabel, AssetSecuredLabel } from '../../uiele
 import { InfoIcon } from '../../uielements/info'
 import { CopyLabel, Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
+import { XmrBalanceNote } from './XmrBalanceNote'
 
 export type AssetAction = 'send' | 'deposit'
 
@@ -348,9 +355,12 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         callback
       })
 
-      const actions: ActionButtonAction[] = [
-        createAction('wallet.action.send', () => assetHandler(walletAsset, 'send'))
-      ]
+      // Watch-only chains (XMR): no send, no swap — balances / history / receive only
+      const watchOnly = isWatchOnlyChain(asset.chain)
+
+      const actions: ActionButtonAction[] = watchOnly
+        ? []
+        : [createAction('wallet.action.send', () => assetHandler(walletAsset, 'send'))]
 
       // Swap-button visibility intentionally does NOT depend on Midgard pool data.
       // Midgard is analytics; the source of truth for routability is the THOR/MAYA
@@ -383,6 +393,7 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
       const swapActionTitle = hasViableRoute ? undefined : intl.formatMessage({ id: 'halt.swap.routeImpaired' })
 
       const pushSwapAction = (source: string, target: string) => {
+        if (watchOnly) return
         actions.push({
           ...createAction('common.swap', () =>
             navigate(
@@ -473,6 +484,8 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
         actions.push(createAction('wallet.action.deposit', () => assetHandler(walletAsset, 'deposit')))
       }
 
+      if (actions.length === 0) return <></>
+
       return (
         <div className="flex justify-center">
           <ActionButton size="normal" actions={actions} />
@@ -536,6 +549,8 @@ export const AssetsTableCollapsable = memo(function AssetsTableCollapsable(props
             <div className="flex flex-col items-end justify-center font-main">
               <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
               <div className="text-14 text-gray2 dark:text-gray2d">{hidePrivateData ? hiddenString : price}</div>
+              {/* XMR: view-only keys can't see spends -> say what the number means */}
+              <XmrBalanceNote chain={row.original.asset.chain} />
             </div>
           )
         }

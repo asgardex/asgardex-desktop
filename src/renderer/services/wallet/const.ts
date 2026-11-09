@@ -21,7 +21,8 @@ import {
   DASHChain,
   DOGEChain,
   LTCChain,
-  ZECChain
+  ZECChain,
+  XMRChain
 } from '../../../shared/utils/chainIds'
 
 import { LoadTxsParams } from '../clients'
@@ -60,7 +61,8 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [ZECChain]: 'all',
   [XRPChain]: 'all',
   [SUIChain]: 'all',
-  [NEARChain]: 'all'
+  [NEARChain]: 'all',
+  [XMRChain]: 'all'
 }
 
 export const INITIAL_LOAD_TXS_PROPS: LoadTxsParams = {

@@ -11,7 +11,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { BalanceExportData, BalanceExportEntry, BalanceExportToken, LPExportEntry } from '../../../shared/api/types'
-import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
+import { SUPPORTED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
 import { AssetTCY, THORChain, MAYAChain } from '../../../shared/utils/chainIds'
 import { RefreshButton, TextButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
@@ -81,7 +81,7 @@ export const AssetsView = (): JSX.Element => {
   }, [])
 
   useEffect(() => {
-    const defaultChains = Object.keys(DEFAULT_ENABLED_CHAINS) as EnabledChain[]
+    const defaultChains = Object.keys(SUPPORTED_CHAINS) as EnabledChain[]
     const disabled = defaultChains.filter((chain) => !enabledChains.has(chain))
     setDisabledChains(disabled)
   }, [enabledChains])

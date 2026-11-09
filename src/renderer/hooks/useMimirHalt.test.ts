@@ -3,7 +3,7 @@
 import { AnyAsset, assetFromStringEx } from '@xchainjs/xchain-util'
 
 import { AssetAVAX } from '../../shared/utils/asset'
-import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
+import { SUPPORTED_CHAINS } from '../../shared/utils/chain'
 import { AVAXChain, BTCChain, THORChain } from '../../shared/utils/chainIds'
 import { AssetUSDCAVAX } from '../const'
 import { disableAllActions, disablePoolActions } from '../helpers/poolHelper'
@@ -156,7 +156,7 @@ describe('hooks/useMimirHalt', () => {
     })
 
     it('returns the same keys as DEFAULT_MIMIR_HALT (the keys the app reads)', () => {
-      const result = getThorchainMimirHalt({ mimir: {}, lastHeight: 100, chains: Object.keys(DEFAULT_ENABLED_CHAINS) })
+      const result = getThorchainMimirHalt({ mimir: {}, lastHeight: 100, chains: Object.keys(SUPPORTED_CHAINS) })
       expect(Object.keys(result).sort()).toEqual(Object.keys(DEFAULT_MIMIR_HALT).sort())
     })
 

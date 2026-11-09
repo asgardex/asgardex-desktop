@@ -8,6 +8,7 @@ import { function as FP, option as O, nonEmptyArray as NEA } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { isWatchOnlyChain } from '../../../shared/utils/chain'
 import { THORChain } from '../../../shared/utils/chainIds'
 
 import { Spin } from '../../components/uielements/spin'
@@ -159,7 +160,7 @@ export const AssetDetailsView = (): JSX.Element => {
           openExplorerTxUrl={openExplorerTxUrl}
           openExplorerAddressUrl={openExplorerAddressUrlHandler}
           walletAddress={walletAddress}
-          disableSend={isRuneNativeAsset(asset) && mimirHalt.HALTTHORTRADING}
+          disableSend={(isRuneNativeAsset(asset) && mimirHalt.HALTTHORTRADING) || isWatchOnlyChain(asset.chain)}
           network={network}
           haltedChainsThor={haltedChainsThor}
           haltedChainsMaya={haltedChainsMaya}

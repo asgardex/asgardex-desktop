@@ -130,7 +130,52 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'El endpoint RPC no responde. Verifica tu conexión o prueba con otra URL.',
   'settings.ledgerMode.lockWalletWarning': 'Bloquea la cartera primero para entrar en el modo Ledger',
   'settings.wallet.whitelist': 'Lista blanca',
-  'settings.wallet.customToken': 'Token personalizado'
+  'settings.wallet.customToken': 'Token personalizado',
+  'monero.settings.watchOnly':
+    'Monero es solo de recepción: puedes ver los pagos entrantes y el total recibido (los gastos no se rastrean). El envío aún no es compatible.',
+  'monero.settings.daemon': 'URL del nodo (opcional)',
+  'monero.settings.lws': 'URL del servidor de monedero ligero (opcional)',
+  'monero.settings.lws.warning':
+    'Privacidad: un servidor de monedero ligero recibe tu clave de visualización privada, ve todos los pagos entrantes y sus importes, y el registro es permanente (no se puede deshacer). Déjalo vacío para escanear localmente mediante el nodo (predeterminado).',
+  'monero.settings.restoreHeight': 'Altura de restauración (opcional)',
+  'monero.settings.restoreHeight.hint':
+    'Altura de bloque en la que se usó el monedero por primera vez. Vacío = altura del primer uso. Sin servidor de monedero ligero, un escaneo abarca como máximo 5.000 bloques (~1 semana).',
+  'monero.settings.invalidUrl': 'URL no válida. Usa https:// (http:// solo para localhost).',
+  'monero.settings.invalidHeight': 'Altura de bloque no válida. Usa un número entero.',
+  'monero.send.watchOnly': 'El envío de Monero (XMR) aún no es compatible (solo recepción).',
+  'monero.lws.confirm.title': '¿Usar este servidor de monedero ligero?',
+  'monero.lws.confirm.body':
+    'Este servidor recibirá tu clave de visualización privada. Podrá ver TODOS los pagos entrantes y sus importes, y verá tu dirección IP. El registro es permanente: no hay forma de dar de baja tu dirección. Continúa solo si confías en este servidor.',
+  'monero.lws.confirm.ok': 'Registrarse en el servidor',
+  'monero.lws.unconfirmed':
+    'Este servidor de monedero ligero aún no está confirmado y NO se usa. Confírmalo para activarlo.',
+  'monero.lws.confirm.button': 'Confirmar servidor',
+  'monero.ack.title': 'Monero (XMR) es solo de recepción',
+  'monero.ack.send':
+    'Aún no puedes enviar XMR desde ASGARDEX. El saldo y el historial solo muestran pagos entrantes; los gastos realizados en otro lugar no se detectan.',
+  'monero.ack.restore':
+    'Otros monederos de Monero no restaurarán este monedero a partir de tu frase semilla: las claves se derivan de forma distinta a una semilla de Monero.',
+  'monero.ack.exit':
+    'Para sacar fondos, exporta las claves privadas de gasto y de visualización (Ajustes del monedero → Monero → Exportar claves privadas) e impórtalas en un monedero de Monero con «restaurar desde claves».',
+  'monero.ack.confirm': 'Lo entiendo',
+  'monero.ack.cancel': 'Desactivar Monero',
+  'monero.export.button': 'Exportar claves privadas',
+  'monero.export.title': 'Claves privadas de Monero',
+  'monero.export.warning':
+    'Cualquiera con estas claves puede gastar tus Monero. Nunca las compartas ni las pegues en sitios web. Los historiales del portapapeles (p. ej., Win+V en Windows, gestores del portapapeles) guardan sus propias copias, que el borrado automático del portapapeles no elimina.',
+  'monero.export.spendKey': 'Clave de gasto privada',
+  'monero.export.viewKey': 'Clave de visualización privada',
+  'monero.scan.rangeTooLarge':
+    'La ventana de escaneo de Monero es demasiado grande: {gap} bloques por escanear (límite: {limit}, aproximadamente 1 semana). Define en los ajustes del monedero de Monero una altura de restauración más reciente o usa un servidor de monedero ligero.',
+  'monero.balance.received': 'Recibido (gastos no rastreados)',
+  'monero.balance.lws': 'Recibido, según tu servidor de monedero ligero (sin verificar; los gastos no se registran)',
+  'monero.balance.serverSpends':
+    'Gastos informados por el servidor (sin verificar, pueden incluir señuelos): {amount} XMR',
+  'monero.balance.rejected':
+    '{count} salida(s) entrante(s) NO se contaron porque su importe no se pudo verificar (compromiso falsificado, no compatible o ausente).',
+  'monero.lws.confirm.host': 'Servidor: {host}',
+  'monero.export.autoClose':
+    'Esta ventana se cierra automáticamente tras 60 segundos. Lo que copies se borra del portapapeles tras 30 segundos.'
 }
 
 export default settings

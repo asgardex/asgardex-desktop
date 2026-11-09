@@ -22,6 +22,7 @@ import {
   SUIChain,
   THORChain,
   TRONChain,
+  XMRChain,
   XRPChain,
   ZECChain
 } from '../shared/utils/chainIds'
@@ -234,7 +235,8 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [XRPChain]: 18,
   [TRONChain]: 19,
   [SUIChain]: 20,
-  [NEARChain]: 21
+  [NEARChain]: 21,
+  [XMRChain]: 22
 }
 
 // Weight of currencies needed for pricing

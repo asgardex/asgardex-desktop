@@ -48,7 +48,7 @@ import {
   AssetTRX
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
-import { THORChain, CACAO_DECIMAL } from '../../shared/utils/chainIds'
+import { THORChain, CACAO_DECIMAL, AssetXMR } from '../../shared/utils/chainIds'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
 import { EVMZeroAddress } from '../services/evm/const'
 import { ARB_TOKEN_WHITELIST } from '../types/generated/mayachain/arberc20whitelist'
@@ -223,6 +223,9 @@ export const isSuiAsset = (asset: AnyAsset): boolean =>
 
 export const isNearAsset = (asset: AnyAsset): boolean =>
   asset.chain === NEARAsset.chain && asset.symbol.toUpperCase() === NEARAsset.symbol.toUpperCase()
+
+export const isXmrAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetXMR.chain && asset.symbol.toUpperCase() === AssetXMR.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a ATOM asset

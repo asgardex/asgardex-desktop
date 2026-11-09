@@ -135,7 +135,50 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'RPC endpoint is not responding. Check your connection or try a different URL.',
   'settings.ledgerMode.lockWalletWarning': 'Lock wallet first to enter Ledger mode',
   'settings.wallet.whitelist': 'Whitelist',
-  'settings.wallet.customToken': 'Custom token'
+  'settings.wallet.customToken': 'Custom token',
+  'monero.settings.watchOnly':
+    'Monero is receive-only: you can see incoming payments and the total received (spends are not tracked). Sending is not supported yet.',
+  'monero.settings.daemon': 'Node URL (optional)',
+  'monero.settings.lws': 'Light-wallet server URL (optional)',
+  'monero.settings.lws.warning':
+    'Privacy: a light-wallet server receives your private view key, sees all incoming payments and amounts, and registration is permanent (it cannot be undone). Leave empty to scan locally via the node (default).',
+  'monero.settings.restoreHeight': 'Restore height (optional)',
+  'monero.settings.restoreHeight.hint':
+    'Block height at which the wallet was first used. Empty = height of first use. Without a light-wallet server, a scan covers at most 5,000 blocks (~1 week).',
+  'monero.settings.invalidUrl': 'Invalid URL. Use https:// (http:// is only accepted for localhost).',
+  'monero.settings.invalidHeight': 'Invalid block height. Use a whole number.',
+  'monero.send.watchOnly': 'Sending Monero (XMR) is not supported yet (receive-only).',
+  'monero.lws.confirm.title': 'Use this light-wallet server?',
+  'monero.lws.confirm.body':
+    'This server will receive your private view key. It can see ALL incoming payments and their amounts, and it will see your IP address. Registration is permanent: there is no way to deregister your address. Only continue if you trust this server.',
+  'monero.lws.confirm.ok': 'Register with server',
+  'monero.lws.unconfirmed': 'This light-wallet server is not confirmed yet and is NOT used. Confirm it to enable it.',
+  'monero.lws.confirm.button': 'Confirm server',
+  'monero.ack.title': 'Monero (XMR) is receive-only',
+  'monero.ack.send':
+    'You cannot send XMR from ASGARDEX yet. Balance and history show incoming payments only; spends made elsewhere are not detected.',
+  'monero.ack.restore':
+    'Other Monero wallets will not restore this wallet from your seed phrase: the keys are derived differently from a Monero seed.',
+  'monero.ack.exit':
+    "To move funds out, export the private spend and view keys (Wallet settings → Monero → Export private keys) and import them into a Monero wallet with 'restore from keys'.",
+  'monero.ack.confirm': 'I understand',
+  'monero.ack.cancel': 'Disable Monero',
+  'monero.export.button': 'Export private keys',
+  'monero.export.title': 'Monero private keys',
+  'monero.export.warning':
+    'Anyone with these keys can spend your Monero. Never share them and never paste them into websites. Clipboard history tools (e.g. Win+V on Windows, clipboard managers) keep their own copies, which the automatic clipboard clear does not remove.',
+  'monero.export.spendKey': 'Private spend key',
+  'monero.export.viewKey': 'Private view key',
+  'monero.scan.rangeTooLarge':
+    'The Monero scan window is too large: {gap} blocks to scan (limit: {limit}, about 1 week). Set a more recent restore height in the Monero wallet settings, or use a light-wallet server.',
+  'monero.balance.received': 'Received (spends not tracked)',
+  'monero.balance.lws': 'Received, as reported by your light-wallet server (unverified; spends not tracked)',
+  'monero.balance.serverSpends': 'Server-reported spends (unverified, may include decoys): {amount} XMR',
+  'monero.balance.rejected':
+    '{count} incoming output(s) were NOT counted because their amount could not be verified (forged, unsupported or missing commitment).',
+  'monero.lws.confirm.host': 'Server: {host}',
+  'monero.export.autoClose':
+    'This window closes automatically after 60 seconds. Anything you copy is removed from the clipboard after 30 seconds.'
 }
 
 export default settings

@@ -19,6 +19,7 @@ import {
   SUIChain,
   THORChain,
   TRONChain,
+  XMRChain,
   XRPChain,
   ZECChain
 } from './chainIds'
@@ -43,10 +44,15 @@ const CHAIN_STRINGS: Record<Chain, string> = {
   [XRPChain]: 'Ripple',
   [TRONChain]: 'Tron',
   [SUIChain]: 'Sui',
-  [NEARChain]: 'NEAR'
+  [NEARChain]: 'NEAR',
+  [XMRChain]: 'Monero'
 }
 
-export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
+/**
+ * All chains this build supports (registry): the user can enable each of them in the wallet.
+ * Not the same as the chains enabled by default, see `DEFAULT_ENABLED_CHAINS`.
+ */
+export const SUPPORTED_CHAINS: Record<Chain, string> = {
   [BCHChain]: CHAIN_STRINGS[BCHChain],
   [BTCChain]: CHAIN_STRINGS[BTCChain],
   [GAIAChain]: CHAIN_STRINGS[GAIAChain],
@@ -66,10 +72,22 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [XRPChain]: CHAIN_STRINGS[XRPChain],
   [TRONChain]: CHAIN_STRINGS[TRONChain],
   [SUIChain]: CHAIN_STRINGS[SUIChain],
-  [NEARChain]: CHAIN_STRINGS[NEARChain]
+  [NEARChain]: CHAIN_STRINGS[NEARChain],
+  [XMRChain]: CHAIN_STRINGS[XMRChain]
 }
 
-export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
+/**
+ * Chains which are supported, but are **not** enabled by default: the user has to enable them explicitly.
+ * XMR: enabling it derives Monero keys and contacts a Monero node, so it is opt-in.
+ */
+export const OPT_IN_CHAINS: ReadonlyArray<Chain> = [XMRChain]
+
+/** Chains enabled by default for a new wallet (all supported chains except `OPT_IN_CHAINS`) */
+export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = Object.fromEntries(
+  Object.entries(SUPPORTED_CHAINS).filter(([chain]) => !OPT_IN_CHAINS.includes(chain))
+)
+
+export type EnabledChain = keyof typeof SUPPORTED_CHAINS
 
 // Function to get the enabled chains from storage, with a fallback to default chains
 
@@ -78,14 +96,32 @@ export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
 //  * whether `Chain` is `supported`
 //  */
 export const isSupportedChain = (u: string): u is EnabledChain =>
-  Object.keys(DEFAULT_ENABLED_CHAINS).includes(u as EnabledChain)
+  Object.keys(SUPPORTED_CHAINS).includes(u as EnabledChain)
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
   MAYA: ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'ZEC', 'ADA'],
   // ZEC is dual-routable (THOR + MAYA). NEAR is wallet/OneClick-only (exclude from THOR).
-  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'MAYA', 'ARB', 'ADA', 'NEAR'].includes(chain))
+  // XMR is watch-only (no pools on THORChain/MAYAChain yet) — excluded from THOR, not listed for MAYA.
+  THOR: Object.keys(SUPPORTED_CHAINS).filter((chain) => !['DASH', 'MAYA', 'ARB', 'ADA', 'NEAR', 'XMR'].includes(chain))
 }
+
+/**
+ * Chains that can only be viewed (balances / history / receive address), never sent from.
+ * XMR: `@xchainjs/xchain-monero` can only send via a local `monero-wallet-rpc`.
+ */
+const WATCH_ONLY_CHAINS: ReadonlyArray<Chain> = [XMRChain]
+
+export const isWatchOnlyChain = (chain: Chain): boolean => WATCH_ONLY_CHAINS.includes(chain.toUpperCase())
+
+/**
+ * Chains whose balances are never added to portfolio / wallet totals.
+ * XMR: the amount is "received, spends not tracked" from view-only keys and a trusted node: it is not a balance and
+ * must not be summed into a number which looks like one.
+ */
+const EXCLUDED_FROM_TOTALS_CHAINS: ReadonlyArray<Chain> = [XMRChain]
+
+export const isExcludedFromTotals = (chain: Chain): boolean => EXCLUDED_FROM_TOTALS_CHAINS.includes(chain.toUpperCase())
 
 // Function to retrieve chains for a specific DEX
 export const getChainsForDex = (dexName: string): ReadonlyArray<Chain> => {
@@ -204,5 +240,10 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   NEAR: {
     blockReward: 0,
     avgBlockTimeInSecs: 1
+  },
+  XMR: {
+    // Tail emission: 0.6 XMR per block
+    blockReward: 0.6,
+    avgBlockTimeInSecs: 120
   }
 }

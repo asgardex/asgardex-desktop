@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { ApiMpc, CreationProgressData, DeviceJoinedData, SignProgressData } from '../shared/api/mpcTypes'
 import { MpcIPCMessages } from '../shared/api/mpcTypes'
 import type {
+  ApiClipboard,
   ApiExport,
   ApiFileStoreService,
   ApiKeystore,
@@ -63,6 +64,14 @@ const apiUrl: ApiUrl = {
 }
 
 contextBridge.exposeInMainWorld('apiUrl', apiUrl)
+
+//
+// `apiClipboard` object
+//
+const apiClipboard: ApiClipboard = {
+  clearIfMatches: (sha256Hex: string) => ipcRenderer.invoke(IPCMessages.CLEAR_CLIPBOARD_IF_MATCHES, sha256Hex)
+}
+contextBridge.exposeInMainWorld('apiClipboard', apiClipboard)
 
 //
 // `apiHDWallet` object
