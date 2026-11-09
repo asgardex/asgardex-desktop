@@ -195,6 +195,43 @@ describe('hooks/useMimirHalt', () => {
       expect(result['PAUSELPDEPOSIT-BSC-BNB']).toBe(false)
     })
 
+    it('gas-pool PAUSELPDEPOSIT in another casing still pauses and reaches disablePoolActions', () => {
+      resetMimirCasingWarnings()
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const mimirHalt = getThorchainMimirHalt({
+        mimir: { 'PauseLpDeposit-Avax-Avax': 1 },
+        lastHeight: 100,
+        chains: ['AVAX']
+      })
+      expect(mimirHalt['PAUSELPDEPOSIT-AVAX-AVAX']).toBe(true)
+      expect(disablePoolActions({ asset: AssetAVAX, haltedChains: [], mimirHalt })).toBe(true)
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('"PauseLpDeposit-Avax-Avax"'))
+      warn.mockRestore()
+    })
+
+    it('token-pool PAUSELPDEPOSIT in another casing still pauses and reaches disablePoolActions', () => {
+      resetMimirCasingWarnings()
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const mimirHalt = getThorchainMimirHalt({
+        mimir: { 'pauselpdeposit-avax-usdt-0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': 1 },
+        lastHeight: 100,
+        chains: ['AVAX']
+      })
+      const upper = 'PAUSELPDEPOSIT-AVAX-USDT-0X9702230A8EA53601F5CD2DC00FDBC13D4DF4A8C7'
+      expect(mimirHalt[upper as keyof typeof mimirHalt]).toBe(true)
+      // stored under the upper-cased key, never the raw lower-case spelling
+      expect(Object.keys(mimirHalt).filter((k) => k.toUpperCase() === upper)).toEqual([upper])
+      expect(
+        disablePoolActions({
+          asset: assetFromStringEx('AVAX.USDT-0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7'),
+          haltedChains: [],
+          mimirHalt
+        })
+      ).toBe(true)
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('pauselpdeposit-avax-usdt'))
+      warn.mockRestore()
+    })
+
     it('carries token-pool PAUSELPDEPOSIT keys with value > 0 for the given chains only', () => {
       const result = getThorchainMimirHalt({
         mimir: {

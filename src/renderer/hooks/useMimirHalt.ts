@@ -83,12 +83,16 @@ export const getThorchainMimirHalt = ({
     keys.forEach((key) => {
       acc[key] = status(key)
     })
-    // THORNode IsPoolDepositPaused is `value > 0`, no height check (keeper_halt.go:129-135)
+    // THORNode IsPoolDepositPaused is `value > 0`, no height check (keeper_halt.go:129-135).
+    // Same case-insensitive lookup as the other halt keys (a PauseLPDeposit in another casing still pauses).
     const depositKey = getPoolDepositPauseMimirKey(c)
-    acc[depositKey] = (mimir[depositKey] ?? 0) > 0
-    // Token pools have their own key (`PAUSELPDEPOSIT-AVAX-USDT-0X…`), same `value > 0` rule
+    acc[depositKey] = lookup(depositKey).some((value) => value > 0)
+    // Token pools have their own key (`PAUSELPDEPOSIT-AVAX-USDT-0X…`), same `value > 0` rule.
+    // Match and store under the upper-cased key so `disablePoolActions` (which upper-cases) still hits,
+    // and go through `lookup` so a casing mismatch warns the same way as for HALT* keys.
     Object.keys(mimir)
-      .filter((key) => key.startsWith(`PAUSELPDEPOSIT-${c}-`) && mimir[key] > 0)
+      .map((key) => key.toUpperCase())
+      .filter((key) => key.startsWith(`PAUSELPDEPOSIT-${c}-`) && lookup(key).some((value) => value > 0))
       .forEach((key) => {
         acc[key] = true
       })
