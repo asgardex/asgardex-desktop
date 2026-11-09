@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
-import { array as A } from 'fp-ts'
+import { array as A, option as O } from 'fp-ts'
 import { useObservableEagerState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -26,7 +26,7 @@ import {
   operatorFinderFeeVault$,
   operatorWhitelistRequests$
 } from '../services/runebond'
-import { useLastSuccessRD } from './useLastSuccess'
+import { useLastSuccess } from './useLastSuccess'
 
 const NO_LISTING$ = Rx.of<NodeListingRD>(RD.initial)
 const NO_NODE_WHITELIST_REQUESTS$ = Rx.of<NodeWhitelistRequestsRD>(RD.initial)
@@ -97,14 +97,14 @@ export const useProviderWhitelistRequests = (addresses: Address[]): ProviderWhit
 
 export const useMyWhitelistRequests = (
   addresses: Address[]
-): { requestsRD: ProviderWhitelistRequestsRD; myRequests: MyWhitelistRequest[]; loading: boolean } => {
-  const liveRequestsRD = useProviderWhitelistRequests(addresses)
-  const requestsRD = useLastSuccessRD(liveRequestsRD)
+): { myRequests: MyWhitelistRequest[]; loading: boolean } => {
+  const requestsRD = useProviderWhitelistRequests(addresses)
+  const lastRequests = useLastSuccess(requestsRD)
   const sent = useObservableEagerState(sentWhitelistRequests$)
   const ownKey = addresses.map((address) => address.toLowerCase()).join('|')
   const myRequests = useMemo(() => {
     const own = new Set(ownKey.split('|'))
-    const indexed = RD.toNullable(requestsRD)
+    const indexed = O.toNullable(lastRequests)
     const sentRows: MyWhitelistRequest[] = sent
       .filter((request) => own.has(request.providerAddress.toLowerCase()))
       .filter((request) => !indexed || !isSentIndexed(request, indexed))
@@ -129,7 +129,7 @@ export const useMyWhitelistRequests = (
         expiresDate
       }))
     return [...sentRows, ...pendingRows].sort((a, b) => b.date.getTime() - a.date.getTime())
-  }, [ownKey, requestsRD, sent])
+  }, [ownKey, lastRequests, sent])
   const hasSent = myRequests.some(({ status }) => status === 'sent')
   useEffect(() => {
     if (!hasSent) return
@@ -137,7 +137,7 @@ export const useMyWhitelistRequests = (
     return () => window.clearInterval(timer)
   }, [hasSent])
 
-  return { requestsRD, myRequests, loading: RD.isPending(liveRequestsRD) }
+  return { myRequests, loading: RD.isPending(requestsRD) }
 }
 
 export const useNodeListing = (nodeAddress: Address | undefined): NodeListingRD =>

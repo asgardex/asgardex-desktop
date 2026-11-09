@@ -491,7 +491,7 @@ const providerWhitelistRequests$ = (address: Address): ProviderWhitelistRequests
     liveRequest(async (client): Promise<ProviderWhitelistRequests> => {
       const result = await client.bondProviders.getProviderWhitelistRequests(
         address,
-        ApiWhitelistRequestStatus.PENDING,
+        undefined,
         WHITELIST_REQUESTS_LIMIT,
         0
       )

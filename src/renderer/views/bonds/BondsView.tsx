@@ -4,33 +4,20 @@ import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useSearchParams } from 'react-router-dom'
 
-import { WalletType } from '../../../shared/wallet/types'
 import { SegmentedTabs, formatCountdown } from '../../components/Bonds/provider'
-import { WarningView } from '../../components/shared/warning'
-import { Protocol } from '../../components/uielements/protocolSwitch/types'
-import { useWalletContext } from '../../contexts/WalletContext'
 import { useNextChurn } from '../../hooks/useNextChurn'
 import { BondsTab, TAB_QUERY_PARAM, isBondsTab } from '../../routes/bonds'
-import { useApp } from '../../store/app/hooks'
-import { LegacyBondsView } from './LegacyBondsView'
 import { BondProviderDashboardView } from './provider/BondProviderDashboardView'
 import { NodeOperatorView } from './provider/NodeOperatorView'
 
 export const BondsView = (): JSX.Element => {
   const intl = useIntl()
-  const { protocol } = useApp()
-  const { appWalletService } = useWalletContext()
 
   const [searchParams] = useSearchParams()
   const initialTab = searchParams.get(TAB_QUERY_PARAM)
   const [tab, setTab] = useState<BondsTab>(isBondsTab(initialTab) ? initialTab : BondsTab.BondProvider)
 
   const nextChurn = useNextChurn()
-
-  if (protocol === Protocol.MAYAChain) return <LegacyBondsView />
-  if (appWalletService.getCurrentWalletType() === WalletType.Vultisig) {
-    return <WarningView subTitle={intl.formatMessage({ id: 'wallet.vultisig.notImplemented' })} />
-  }
 
   return (
     <div className="flex w-full flex-col">

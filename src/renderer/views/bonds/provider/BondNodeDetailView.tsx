@@ -283,7 +283,7 @@ export const BondNodeDetailView = (): JSX.Element => {
       RD.fold(
         () => true,
         () => true,
-        () => false,
+        () => true,
         (nodes) => !nodes.some((listed) => listed.nodeAddress === node.address)
       )
     )
