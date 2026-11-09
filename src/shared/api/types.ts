@@ -189,6 +189,18 @@ export type ApiUrl = {
   openExternal: (url: string) => Promise<void>
 }
 
+/**
+ * Clipboard access through Electron's main process (works while the window is not focused, unlike
+ * `navigator.clipboard`). The renderer never receives the clipboard contents.
+ */
+export type ApiClipboard = {
+  /**
+   * Clears the system clipboard only if it still holds the text whose SHA-256 (lowercase hex) is `sha256Hex`.
+   * Resolves `true` if it was cleared, `false` otherwise (something else was copied meanwhile, or invalid input).
+   */
+  clearIfMatches: (sha256Hex: string) => Promise<boolean>
+}
+
 export enum LedgerErrorId {
   NO_DEVICE = 'NO_DEVICE',
   ALREADY_IN_USE = 'ALREADY_IN_USE',
@@ -253,6 +265,8 @@ declare global {
     apiExport: ApiExport
     apiLang: ApiLang
     apiUrl: ApiUrl
+    /** Optional: the renderer falls back to `navigator.clipboard` when it is missing */
+    apiClipboard?: ApiClipboard
     apiHDWallet: ApiHDWallet
     apiCommonStorage: ApiFileStoreService<StoreFileData<'common'>>
     apiUserNodesStorage: ApiFileStoreService<StoreFileData<'userNodes'>>
