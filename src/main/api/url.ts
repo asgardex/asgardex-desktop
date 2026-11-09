@@ -62,10 +62,16 @@ const EXTERNALS_WHITELIST = [
   'www.runebond.com'
 ]
 
+const EXTERNALS_SUBDOMAIN_WHITELIST = ['runebond.com']
+
+const isWhitelisted = (hostname: string) =>
+  EXTERNALS_WHITELIST.includes(hostname) ||
+  EXTERNALS_SUBDOMAIN_WHITELIST.some((domain) => hostname.endsWith(`.${domain}`))
+
 export const openExternal = (target: string) => {
   try {
     const hostname = new URL(target)?.hostname ?? ''
-    if (EXTERNALS_WHITELIST.includes(hostname)) {
+    if (isWhitelisted(hostname)) {
       return shell.openExternal(target)
     }
     return Promise.reject(`URL ${target} has been blocked by ASGARDEX`)

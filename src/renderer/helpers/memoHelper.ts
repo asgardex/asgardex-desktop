@@ -74,6 +74,13 @@ export const getRunebondListMemo = (
 
 export const getRunebondDelistMemo = (nodeAddress: string) => mkMemo(['TB', 'DELIST', nodeAddress])
 
+export const getRunebondWhitelistRequestMemo = (
+  nodeAddress: string,
+  providerAddress: string,
+  intendedBond: BaseAmount,
+  affiliateAddress?: string
+) => mkMemo(['TB', 'WHT', nodeAddress, providerAddress, intendedBond.amount().toFixed(0), affiliateAddress])
+
 export const getRunebondVaultTopupMemo = (operatorAddress: string) => mkMemo(['TB', 'FFV', operatorAddress])
 
 export const getMaintenanceMemo = (nodeAddress: string) => mkMemo(['MAINT', nodeAddress])

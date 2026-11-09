@@ -10,6 +10,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { THORChain } from '../../../../shared/utils/chainIds'
+import RunebondLogo from '../../../assets/svg/runebond-isologo.svg'
 import {
   BondActionModal,
   BondActionType,
@@ -32,7 +33,8 @@ import {
   isLeaveLocked,
   isNodeLeaving,
   isUnbondLocked,
-  nodeExplorerUrl
+  nodeExplorerUrl,
+  runebondRoomLeft
 } from '../../../components/Bonds/provider'
 import { ChurnOutlookCard } from '../../../components/Bonds/provider/ChurnOutlookCard'
 import { ChurnTimeline } from '../../../components/Bonds/provider/ChurnTimeline'
@@ -42,7 +44,9 @@ import { NodeNetworkCards } from '../../../components/Bonds/provider/NodeNetwork
 import { MaintenanceTag, NodeStatusTag } from '../../../components/Bonds/provider/NodeStatusTag'
 import { OperatorFeesCard } from '../../../components/Bonds/provider/OperatorFeesCard'
 import { RunebondListingCard } from '../../../components/Bonds/provider/RunebondListingCard'
+import { RunebondProviderCard } from '../../../components/Bonds/provider/RunebondProviderCard'
 import { NodeRunebondRequestsLink } from '../../../components/Bonds/provider/RunebondRequestsLinks'
+import { RunebondRequestSlotModal } from '../../../components/Bonds/provider/RunebondRequestSlotModal'
 import { RunebondNodeModal, useRunebondNodeState } from '../../../components/Bonds/provider/useRunebondNodeState'
 import { VersionChip } from '../../../components/Bonds/provider/VersionChip'
 import { ErrorView } from '../../../components/shared/error'
@@ -60,10 +64,12 @@ import { truncateAddress } from '../../../helpers/addressHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { useChurnConstants } from '../../../hooks/useChurnConstants'
+import { useLastSuccess, useLastSuccessRD } from '../../../hooks/useLastSuccess'
 import { useNextChurn } from '../../../hooks/useNextChurn'
 import { useNodeNetworkContext } from '../../../hooks/useNodeNetworkContext'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useReloadUntil } from '../../../hooks/useReloadUntil'
+import { useListedNodes, useMyWhitelistRequests, useNodeListing } from '../../../hooks/useRunebondListing'
 import { useNodeHistory, useNodeProviders } from '../../../hooks/useRunebondRewards'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as bondsRoutes from '../../../routes/bonds'
@@ -81,7 +87,10 @@ type NodeDetail = {
 }
 
 type NodeDetailModal =
-  { kind: 'bond'; type: BondActionType } | { kind: 'operator'; action: NodeOperatorAction } | RunebondNodeModal
+  | { kind: 'bond'; type: BondActionType }
+  | { kind: 'operator'; action: NodeOperatorAction }
+  | { kind: 'requestSlot' }
+  | RunebondNodeModal
 
 export const BondNodeDetailView = (): JSX.Element => {
   const intl = useIntl()
@@ -132,17 +141,19 @@ export const BondNodeDetailView = (): JSX.Element => {
       FP.pipe(
         oViewedPosition,
         O.fold(
-          () => [],
+          () => NO_ADDRESSES,
           ({ signer }) => [signer.address]
         )
       ),
     [oViewedPosition]
   )
-  const nodeHistoryRD = useNodeHistory(
-    isOperatorView || O.isSome(oViewedPosition) ? nodeAddress : undefined,
-    isOperatorView ? NO_ADDRESSES : historyAddresses
-  )
+  const nodeHistoryRD = useNodeHistory(nodeAddress, isOperatorView ? NO_ADDRESSES : historyAddresses)
   const nodeProvidersRD = useNodeProviders(isOperatorView ? nodeAddress : undefined)
+  const providerListingRD = useNodeListing(isOperatorView ? undefined : nodeAddress)
+  const listedNodesRD = useLastSuccessRD(useListedNodes())
+  const { myRequests, loading: myRequestsLoading } = useMyWhitelistRequests(
+    isOperatorView ? NO_ADDRESSES : providerAddresses
+  )
   const { transfer$ } = useChainContext()
 
   const { interact$, fees$, getNodeInfos$, reloadNodeInfos } = useThorchainContext()
@@ -156,6 +167,7 @@ export const BondNodeDetailView = (): JSX.Element => {
   const { maxBondProviders } = useChurnConstants()
 
   const nodeInfosRD = useObservableState(getNodeInfos$, RD.initial)
+  const oProviderListing = useLastSuccess(providerListingRD, undefined, { resetOnFailure: true })
   const reloadUntil = useReloadUntil(nodeInfosRD, reload, reloadNodeInfos)
 
   const oNode: O.Option<NodeInfo> = useMemo(
@@ -252,6 +264,29 @@ export const BondNodeDetailView = (): JSX.Element => {
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
 
+    const searching = !isOperatorView && O.isNone(oViewedPosition)
+    const nodeLabel = truncateAddress(node.address, THORChain, network)
+    const nodeName = FP.pipe(
+      oProviderListing,
+      O.chain(({ listing }) => O.fromNullable(listing?.name)),
+      O.toNullable
+    )
+    const oProfileUrl: O.Option<string> = isOperatorView
+      ? O.none
+      : FP.pipe(
+          RD.toOption(listedNodesRD),
+          O.chain((nodes) => O.fromNullable(nodes.find((listed) => listed.nodeAddress === node.address))),
+          O.map(({ profileUrl }) => profileUrl)
+        )
+    const hiddenByRunebond = FP.pipe(
+      listedNodesRD,
+      RD.fold(
+        () => true,
+        () => true,
+        () => true,
+        (nodes) => !nodes.some((listed) => listed.nodeAddress === node.address)
+      )
+    )
     const percentOf = (amount: BaseAmount, decimals = 0) =>
       node.bond.gt(0)
         ? `${baseToAsset(amount).amount().div(baseToAsset(node.bond).amount()).times(100).toFixed(decimals)}%`
@@ -295,10 +330,24 @@ export const BondNodeDetailView = (): JSX.Element => {
           <div className="flex flex-col">
             <div className="flex items-center gap-3">
               <span className="font-main text-[16px] text-text0 dark:text-text0d">
-                {truncateAddress(node.address, THORChain, network)}
+                {searching && nodeName ? `${nodeName} · ${nodeLabel}` : nodeLabel}
               </span>
               <CopyLabel textToCopy={node.address} iconClassName="!h-4 !w-4" />
               {renderExplorerLink(nodeExplorerUrl(node.address))}
+              {FP.pipe(
+                oProfileUrl,
+                O.fold(
+                  () => null,
+                  (profileUrl) => (
+                    <BaseButton
+                      className="!p-0 opacity-70 hover:opacity-100"
+                      title={intl.formatMessage({ id: 'bonds.runebond.provider.profile' })}
+                      onClick={() => window.apiUrl.openExternal(profileUrl)}>
+                      <img src={RunebondLogo} alt="" className="h-4 w-4" />
+                    </BaseButton>
+                  )
+                )
+              )}
               {node.maintenance && <MaintenanceTag />}
               <NodeStatusTag status={node.status} leaving={leaving} />
               {isOperatorView && <VersionChip node={node} ctx={networkCtx} />}
@@ -332,33 +381,37 @@ export const BondNodeDetailView = (): JSX.Element => {
                 <span>{` · ${intl.formatMessage({ id: 'bonds.operator.detail.monitoredOnly' })}`}</span>
               )}
             </div>
-            <div className="mt-3 flex items-center gap-3">
-              <AssetIcon asset={AssetRuneNative} size="normal" network={network} />
-              <span className="font-main-bold text-[44px] leading-none text-text0 dark:text-text0d">
-                {isPrivate ? hiddenString : formatRuneAmount(isOperatorView ? node.bond : myBond)}
-              </span>
-            </div>
-            <div className="mt-2 flex items-center gap-2 font-main text-[14px] text-gray2 dark:text-gray2d">
-              {isOperatorView
-                ? `${slotsLabel} · ${intl.formatMessage(
-                    { id: 'bonds.operator.detail.fee' },
-                    { fee: formatOperatorFee(node.bondProviders.nodeOperatorFee, intl.locale) }
-                  )}`
-                : intl.formatMessage({ id: 'bonds.provider.detail.share' }, { percent: percentOf(myBond) })}
-              {!isOperatorView &&
-                hasMultipleWalletTypes &&
-                FP.pipe(
-                  oViewedPosition,
-                  O.fold(
-                    () => null,
-                    ({ signer }) => (
-                      <WalletTypeLabel className="text-[9px] leading-3">
-                        {walletTypeToI18n(signer.walletType, intl)}
-                      </WalletTypeLabel>
+            {!searching && (
+              <div className="mt-3 flex items-center gap-3">
+                <AssetIcon asset={AssetRuneNative} size="normal" network={network} />
+                <span className="font-main-bold text-[44px] leading-none text-text0 dark:text-text0d">
+                  {isPrivate ? hiddenString : formatRuneAmount(isOperatorView ? node.bond : myBond)}
+                </span>
+              </div>
+            )}
+            {!searching && (
+              <div className="mt-2 flex items-center gap-2 font-main text-[14px] text-gray2 dark:text-gray2d">
+                {isOperatorView
+                  ? `${slotsLabel} · ${intl.formatMessage(
+                      { id: 'bonds.operator.detail.fee' },
+                      { fee: formatOperatorFee(node.bondProviders.nodeOperatorFee, intl.locale) }
+                    )}`
+                  : intl.formatMessage({ id: 'bonds.provider.detail.share' }, { percent: percentOf(myBond) })}
+                {!isOperatorView &&
+                  hasMultipleWalletTypes &&
+                  FP.pipe(
+                    oViewedPosition,
+                    O.fold(
+                      () => null,
+                      ({ signer }) => (
+                        <WalletTypeLabel className="text-[9px] leading-3">
+                          {walletTypeToI18n(signer.walletType, intl)}
+                        </WalletTypeLabel>
+                      )
                     )
-                  )
-                )}
-            </div>
+                  )}
+              </div>
+            )}
             {isOperatorView && canOperate && (
               <NodeRunebondRequestsLink
                 className="mt-[10px]"
@@ -431,6 +484,21 @@ export const BondNodeDetailView = (): JSX.Element => {
             </div>
           )}
         </div>
+        {searching && (
+          <RunebondProviderCard
+            className="mt-6"
+            network={network}
+            isPrivate={isPrivate}
+            listingRD={providerListingRD}
+            hidden={hiddenByRunebond}
+            node={node}
+            maxProviders={maxBondProviders}
+            isOperator={isMine(node.nodeOperatorAddress)}
+            request={O.fromNullable(myRequests.find((request) => request.nodeAddress === node.address))}
+            refreshing={RD.isPending(providerListingRD) || myRequestsLoading}
+            onRequest={() => setModal({ kind: 'requestSlot' })}
+          />
+        )}
         <NodeHealthStrip node={node} ctx={networkCtx} />
 
         {isOperatorView ? (
@@ -512,12 +580,14 @@ export const BondNodeDetailView = (): JSX.Element => {
         ) : (
           <div className="mt-6 grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
             <NodeApyCard historyRD={nodeHistoryRD} apyLabel={nodeApyLabel} />
-            <NodeEarningsCard
-              historyRD={nodeHistoryRD}
-              isPrivate={isPrivate}
-              activeIndex={hoveredChurn}
-              onActiveIndexChange={setHoveredChurn}
-            />
+            {O.isSome(oViewedPosition) && (
+              <NodeEarningsCard
+                historyRD={nodeHistoryRD}
+                isPrivate={isPrivate}
+                activeIndex={hoveredChurn}
+                onActiveIndexChange={setHoveredChurn}
+              />
+            )}
           </div>
         )}
 
@@ -562,6 +632,34 @@ export const BondNodeDetailView = (): JSX.Element => {
         {modal?.kind === 'vaultTopUp' && runebond.renderVaultTopUpModal()}
 
         {modal?.kind === 'onBehalfTopUp' && runebond.renderOnBehalfTopUpModal(node.nodeOperatorAddress)}
+
+        {modal?.kind === 'requestSlot' &&
+          walletInfos.length > 0 &&
+          FP.pipe(
+            oProviderListing,
+            O.chain(({ listed, listing }) => (listed && !hiddenByRunebond ? O.fromNullable(listing) : O.none)),
+            O.fold(
+              () => null,
+              (details) => (
+                <RunebondRequestSlotModal
+                  network={network}
+                  node={node}
+                  name={details.name}
+                  minBond={details.minBond}
+                  roomLeft={runebondRoomLeft(details.targetTotalBond, node.bond)}
+                  walletInfos={walletInfos}
+                  balanceByAddress={balanceByAddress}
+                  fee={feeRD}
+                  transfer$={transfer$}
+                  validatePassword$={validatePassword$}
+                  openExplorerTxUrl={openExplorerTxUrl}
+                  getExplorerTxUrl={getExplorerTxUrl}
+                  onClose={closeModal}
+                  onFinish={closeModal}
+                />
+              )
+            )
+          )}
 
         {modal?.kind === 'bond' &&
           FP.pipe(

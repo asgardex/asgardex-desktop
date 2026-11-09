@@ -48,7 +48,7 @@ export const VAULT_LEVEL_TEXT_CLASS: Record<FinderFeeVaultLevel, string> = {
 
 export type RunebondVaultSettled = (vault: OperatorFinderFeeVault) => boolean
 
-const parseAmount = (text: string): BaseAmount | null => {
+export const parseAmount = (text: string): BaseAmount | null => {
   const value = unformatValue(text)
   if (value === '') return null
   const parsed = bn(value)

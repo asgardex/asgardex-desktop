@@ -35,6 +35,13 @@ export const operatorFees: Route<void> = {
   }
 }
 
+export const findNode: Route<void> = {
+  template: `${base.template}/find-node`,
+  path() {
+    return this.template
+  }
+}
+
 export type RunebondRequestsParams = { node?: string }
 
 export const runebondRequests: Route<RunebondRequestsParams | void> = {

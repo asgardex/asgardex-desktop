@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 
 import { NodeStatusEnum } from '../../../services/thorchain/types'
 
-const statusMessageId = (status: NodeStatusEnum) => {
+export const nodeStatusMessageId = (status: NodeStatusEnum) => {
   switch (status) {
     case NodeStatusEnum.Active:
       return 'bonds.status.active'
@@ -51,7 +51,7 @@ export const NodeStatusTag = ({ status, leaving = false, className }: Props) => 
         (status === NodeStatusEnum.Ready || status === NodeStatusEnum.Whitelisted) && 'text-gray2 dark:text-gray2d',
         className
       )}>
-      {intl.formatMessage({ id: statusMessageId(status) })}
+      {intl.formatMessage({ id: nodeStatusMessageId(status) })}
     </span>
   )
 }

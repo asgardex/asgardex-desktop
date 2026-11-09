@@ -142,6 +142,7 @@ export type WhitelistRequest = {
   requestedDate: Date
   height: number
   txId: string
+  expiresDate: Date | null
 }
 
 export type WhitelistRequestCounts = {
@@ -169,6 +170,34 @@ export type OperatorWhitelistRequests = {
   nodes: OperatorNodeWhitelistRequests[]
   requests: WhitelistRequest[]
   total: number
+}
+
+export type ProviderWhitelistRequests = {
+  address: Address
+  counts: WhitelistRequestCounts
+  requests: WhitelistRequest[]
+  total: number
+}
+
+export type ListedNode = {
+  nodeAddress: Address
+  operatorAddress: Address
+  name: string | null
+  description: string | null
+  logoUrl: string | null
+  profileUrl: string
+  minBond: BaseAmount
+  targetTotalBond: BaseAmount | null
+  feeBps: number
+  listedDate: Date
+}
+
+export type SentWhitelistRequest = {
+  txHash: string
+  nodeAddress: Address
+  providerAddress: Address
+  intendedBond: BaseAmount
+  sentDate: Date
 }
 
 export type FinderFeeVaultLevel = 'ok' | 'warning' | 'critical' | 'depleted'
@@ -210,3 +239,9 @@ export type OperatorWhitelistRequestsLD = LiveData<Error, OperatorWhitelistReque
 
 export type OperatorFinderFeeVaultRD = RD.RemoteData<Error, OperatorFinderFeeVault>
 export type OperatorFinderFeeVaultLD = LiveData<Error, OperatorFinderFeeVault>
+
+export type ProviderWhitelistRequestsRD = RD.RemoteData<Error, ProviderWhitelistRequests>
+export type ProviderWhitelistRequestsLD = LiveData<Error, ProviderWhitelistRequests>
+
+export type ListedNodesRD = RD.RemoteData<Error, ListedNode[]>
+export type ListedNodesLD = LiveData<Error, ListedNode[]>
