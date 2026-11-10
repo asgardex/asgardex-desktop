@@ -38,7 +38,6 @@ const pools: PoolsMessages = {
   'pools.available': 'Доступны',
   'pools.pooled': 'заполнено',
   'pools.limit.info': 'Лимит протокола достигнут! {pooled} внесено в пулы, {bonded} заложено в нодах',
-  'pools.incentivependulum.info': 'Маятник поощрения: {percentage}%',
   'pools.incentivependulum.tooltip': '{pooled} внесено в пулы, {bonded} заложено в нодах',
   'pools.incentivependulum.error': 'Ошибка при загрузке данных маятника поощрения',
   'pools.bondable': 'Бондируемо',

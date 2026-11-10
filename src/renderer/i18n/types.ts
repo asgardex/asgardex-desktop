@@ -370,7 +370,6 @@ type PoolsMessageKey =
   | 'pools.available'
   | 'pools.pooled'
   | 'pools.limit.info'
-  | 'pools.incentivependulum.info'
   | 'pools.incentivependulum.tooltip'
   | 'pools.incentivependulum.error'
   | 'pools.bondable'

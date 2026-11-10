@@ -38,7 +38,6 @@ const pools: PoolsMessages = {
   'pools.available': 'Disponible',
   'pools.pooled': 'puesta en común',
   'pools.limit.info': '¡Límite de protocolo alcanzado! {pooled} pooled en pools, {bonded} bonded en nodos',
-  'pools.incentivependulum.info': 'Péndulo de incentivos: {percentage}%',
   'pools.incentivependulum.tooltip': '{pooled} agrupados en fondos, {bonded} unido en nodos',
   'pools.incentivependulum.error': 'Error al cargar los datos del péndulo de incentivo',
   'pools.bondable': 'Vinculable',
