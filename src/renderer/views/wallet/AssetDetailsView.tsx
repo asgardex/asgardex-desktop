@@ -48,7 +48,7 @@ export const AssetDetailsView = (): JSX.Element => {
   const haltedChainsThorRD = useObservableState(haltedChainsThor$, RD.initial)
   const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
   // A failed / unloaded `inbound_addresses` is "unknown", never "no halted chains":
-  // then every chain counts as halted for that protocol, and RUNE sends are blocked
+  // then every chain counts as halted for liquidity actions of that protocol, and RUNE sends are blocked
   const allChains = useMemo(() => Object.keys(DEFAULT_ENABLED_CHAINS) as Chain[], [])
   const thorHalt = useMemo(
     () => resolveHaltState(haltedChainsThorRD, mimirHaltLoaded, UNKNOWN_MIMIR_HALT),
@@ -59,6 +59,12 @@ export const AssetDetailsView = (): JSX.Element => {
   const haltedChainsMaya = useMemo(
     () => (RD.isSuccess(haltedChainsMayaRD) ? haltedChainsMayaRD.value : allChains),
     [allChains, haltedChainsMayaRD]
+  )
+  // Swaps: an unknown `inbound_addresses` alone does not block them (the node quote decides), known halts do
+  const swapHaltedChainsThor = thorHalt.haltedChains
+  const swapHaltedChainsMaya = useMemo(
+    () => (RD.isSuccess(haltedChainsMayaRD) ? haltedChainsMayaRD.value : []),
+    [haltedChainsMayaRD]
   )
   const { getTxs$, balancesState$, loadTxs, reloadBalancesByChain, selectedAsset$, resetTxsPage } = useWalletContext()
 
@@ -173,6 +179,8 @@ export const AssetDetailsView = (): JSX.Element => {
           network={network}
           haltedChainsThor={haltedChainsThor}
           haltedChainsMaya={haltedChainsMaya}
+          swapHaltedChainsThor={swapHaltedChainsThor}
+          swapHaltedChainsMaya={swapHaltedChainsMaya}
           price={price}
         />
       )

@@ -23,7 +23,7 @@ import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { resolveHaltState } from '../../helpers/haltedChains'
+import { resolveSwapHaltState } from '../../helpers/haltedChains'
 import { logger } from '../../helpers/logger'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
@@ -33,9 +33,9 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolShares } from '../../hooks/usePoolShares'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA } from '../../services/mayachain/const'
+import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../../services/mayachain/const'
 import { userChains$ } from '../../services/storage/userChains'
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_THOR } from '../../services/thorchain/const'
+import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_THOR } from '../../services/thorchain/const'
 import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
@@ -219,13 +219,14 @@ export const AssetsView = (): JSX.Element => {
   const { mimirHalt: mimirHaltMayaLoaded } = useMayachainMimirHalt()
   const haltedChainsThorRD = useObservableState(haltedChainsThor$, RD.initial)
   const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
-  // A failed / unloaded `inbound_addresses` is "unknown" (blocks the protocol), never "no halted chains"
+  // Only used for the swap route hint ("impaired"): an unknown halt status alone does not mark the route,
+  // known halts do (see `resolveSwapHaltState`)
   const { haltedChains: haltedChainsThor, mimirHalt: mimirHaltThor } = useMemo(
-    () => resolveHaltState(haltedChainsThorRD, mimirHaltThorLoaded, UNKNOWN_MIMIR_HALT_THOR),
+    () => resolveSwapHaltState(haltedChainsThorRD, mimirHaltThorLoaded, DEFAULT_MIMIR_HALT_THOR),
     [haltedChainsThorRD, mimirHaltThorLoaded]
   )
   const { haltedChains: haltedChainsMaya, mimirHalt: mimirHaltMaya } = useMemo(
-    () => resolveHaltState(haltedChainsMayaRD, mimirHaltMayaLoaded, UNKNOWN_MIMIR_HALT_MAYA),
+    () => resolveSwapHaltState(haltedChainsMayaRD, mimirHaltMayaLoaded, DEFAULT_MIMIR_HALT_MAYA),
     [haltedChainsMayaRD, mimirHaltMayaLoaded]
   )
 

@@ -52,7 +52,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { assetInList, getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqChain, eqNetwork } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
-import { resolveHaltState } from '../../helpers/haltedChains'
+import { resolveSwapHaltState } from '../../helpers/haltedChains'
 import { logger } from '../../helpers/logger'
 import { isSwapDisabledForChains } from '../../helpers/protocolTradingHalt'
 import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } from '../../helpers/walletHelper'
@@ -76,13 +76,13 @@ import { addressTR$ } from '../../services/chain/lazyBitcoin'
 import { AssetWithDecimalRD } from '../../services/chain/types'
 import { cAssetToXAsset, cChainToXChain } from '../../services/chainflip/utils'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA } from '../../services/mayachain/const'
+import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../../services/mayachain/const'
 import {
   PendingPoolsState as MayaPendingPoolsState,
   PoolsState as MayaPoolsState
 } from '../../services/midgard/mayaMidgard/types'
 import { PendingPoolsState, PoolAssetDetail, PoolsState } from '../../services/midgard/midgardTypes'
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_THOR } from '../../services/thorchain/const'
+import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_THOR } from '../../services/thorchain/const'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
@@ -884,7 +884,7 @@ const SuccessTradeRouteView = ({
     () =>
       (protocol === THORChain ? haltedChains$ : haltedChainsMaya$).pipe(
         // Synchronous, so a protocol switch does not keep the other protocol's halted list
-        // (a stale Success would be taken as a known status of the new protocol by `resolveHaltState`)
+        // (a stale Success would be taken as a known halted list of the new protocol)
         RxOp.startWith(RD.initial as RD.RemoteData<Error, Chain[]>)
       ),
     [haltedChains$, haltedChainsMaya$, protocol]
@@ -893,12 +893,13 @@ const SuccessTradeRouteView = ({
   // Halt state of the *selected* protocol: THORChain's mimir must not decide MAYAChain swaps (and vice versa)
   const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
   const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
-  // A failed / unloaded `inbound_addresses` is "unknown" (blocks swaps), never "no halted chains"
+  // Unknown halt status alone does not disable the swap (the node quote decides);
+  // known halts (loaded mimir or loaded `inbound_addresses`) still do
   const { haltedChains, mimirHalt } = useMemo(
     () =>
       protocol === THORChain
-        ? resolveHaltState(haltedChainsRD, mimirHaltThor, UNKNOWN_MIMIR_HALT_THOR)
-        : resolveHaltState(haltedChainsRD, mimirHaltMaya, UNKNOWN_MIMIR_HALT_MAYA),
+        ? resolveSwapHaltState(haltedChainsRD, mimirHaltThor, DEFAULT_MIMIR_HALT_THOR)
+        : resolveSwapHaltState(haltedChainsRD, mimirHaltMaya, DEFAULT_MIMIR_HALT_MAYA),
     [haltedChainsRD, mimirHaltMaya, mimirHaltThor, protocol]
   )
   const { isPrivate } = useApp()

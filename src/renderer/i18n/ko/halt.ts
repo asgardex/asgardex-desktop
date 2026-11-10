@@ -12,9 +12,9 @@ const halt: HaltMessages = {
   'halt.chain.pauseall': '모든 체인의 유동성 활동(추가/제거)이 일시적으로 비활성화되었습니다.',
   'halt.chain.pauseDeposits': '{chains} 체인(들)에 대한 유동성 예치(추가)가 일시적으로 비활성화되었습니다.',
   'halt.unknown':
-    '{protocols}의 중단 상태를 불러오지 못했습니다. 불러올 때까지 스왑, 유동성 작업 및 RUNE 전송이 차단됩니다.',
+    '{protocols}의 중단 상태를 불러오지 못했습니다. 불러올 때까지 유동성 작업 및 RUNE 전송이 차단됩니다. 견적이 반환되면 스왑은 계속 가능합니다.',
   'halt.unknown.noRuneSends':
-    '{protocols}의 중단 상태를 불러오지 못했습니다. 불러올 때까지 스왑 및 유동성 작업이 차단됩니다.',
+    '{protocols}의 중단 상태를 불러오지 못했습니다. 불러올 때까지 유동성 작업이 차단됩니다. 견적이 반환되면 스왑은 계속 가능합니다.',
   'halt.swap.routeImpaired': '스왑 경로에 문제가 있을 수 있습니다'
 }
 

@@ -276,7 +276,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
           // EMPTY_MIMIR on failure only keeps the per-chain messages quiet - it is NOT "no halt":
           // `mimirUnknown` raises the blocking "halt status unknown" message and hides the protocol as alternative
           mimirHalt: RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD) ? prev.mimirHalt : EMPTY_MIMIR,
-          // A failed `inbound_addresses` blocks actions as well (see `resolveHaltState`), so it is unknown too
+          // A failed `inbound_addresses` blocks liquidity actions as well (see `resolveHaltState`), so it is unknown too
           mimirUnknown: RD.isFailure(mimirHaltRD) || RD.isFailure(haltedChainsRD),
           midgard: RD.isSuccess(midgardStatusRD) || RD.isPending(midgardStatusRD) ? prev.midgard : false
         }
@@ -296,7 +296,8 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
       }
     }
 
-    // Halt status could not be loaded: swaps, deposits and withdrawals stay blocked (fail closed).
+    // Halt status could not be loaded: deposits and withdrawals stay blocked (fail closed). Swaps are not blocked
+    // by an unknown status alone, the node quote decides (`resolveSwapHaltState`); known halts still block them.
     // Shown on every page, always first, so it is not lost behind other messages.
     // RUNE sends are blocked only by an unknown THORChain status (`isRuneSendDisabled` reads the THOR halt state),
     // so the RUNE wording is used only when THORChain is one of the unknown protocols.

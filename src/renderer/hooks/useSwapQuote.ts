@@ -18,7 +18,7 @@ import { useThorchainQueryContext } from '../contexts/ThorchainQueryContext'
 import { convertBaseAmountDecimal } from '../helpers/assetHelper'
 import { createProtocolErrorMessage, validateProtocolsForAssets } from '../helpers/assetProtocolHelper'
 import { quoteNeedsRouterApproval } from '../helpers/evmApprovalHelper'
-import { resolveHaltState } from '../helpers/haltedChains'
+import { resolveSwapHaltState } from '../helpers/haltedChains'
 import { logger } from '../helpers/logger'
 import {
   dropMayachainForBtcTaproot,
@@ -27,8 +27,8 @@ import {
 } from '../helpers/protocolTradingHalt'
 import { dexTradeQuoteToAggregator, thorTradeQuoteToAggregator } from '../helpers/tradeQuote'
 import { getCurrentNetworkState } from '../services/app/service'
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA } from '../services/mayachain/const'
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_THOR } from '../services/thorchain/const'
+import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../services/mayachain/const'
+import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_THOR } from '../services/thorchain/const'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useThorchainMimirHalt } from './useMimirHalt'
 import { useMayachainMimirHalt } from './useMimirHaltMaya'
@@ -105,13 +105,14 @@ export const useSwapQuote = ({
   const haltedChainsThorRD = useObservableState(haltedChainsThor$, RD.initial)
   const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
 
-  // A failed / unloaded `inbound_addresses` is "unknown" (blocks the protocol), never "no halted chains"
+  // Unknown halt status alone does not drop THOR / MAYA from the quote: the node quote decides.
+  // Known halts (loaded mimir or loaded `inbound_addresses`) still filter the protocol out.
   const thorHalt = useMemo(
-    () => resolveHaltState(haltedChainsThorRD, mimirHaltThor, UNKNOWN_MIMIR_HALT_THOR),
+    () => resolveSwapHaltState(haltedChainsThorRD, mimirHaltThor, DEFAULT_MIMIR_HALT_THOR),
     [haltedChainsThorRD, mimirHaltThor]
   )
   const mayaHalt = useMemo(
-    () => resolveHaltState(haltedChainsMayaRD, mimirHaltMaya, UNKNOWN_MIMIR_HALT_MAYA),
+    () => resolveSwapHaltState(haltedChainsMayaRD, mimirHaltMaya, DEFAULT_MIMIR_HALT_MAYA),
     [haltedChainsMayaRD, mimirHaltMaya]
   )
 

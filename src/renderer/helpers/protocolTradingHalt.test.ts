@@ -198,7 +198,7 @@ describe('dropMayachainForBtcTaproot', () => {
       ).toBe(true)
     })
 
-    it('unknown halt blocks both protocols', () => {
+    it('the synthetic UNKNOWN_MIMIR_HALT flags block both protocols (swap paths drop them via resolveSwapHaltState)', () => {
       expect(
         isSwapDisabledForChains({
           protocol: 'Thorchain',
