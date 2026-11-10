@@ -29,10 +29,10 @@ const row = (asset: AnyAsset, depth: number, overrides: Partial<PoolsTableRow> =
 })
 
 const BTC_ROW = row(ASSETS_MAINNET.BTC, 27_614_000, {
-  poolStatus: { kind: 'deposit', outboundDelayed: false }
+  poolStatus: { kind: 'deposit' }
 })
 const ETH_ROW = row(ASSETS_MAINNET.ETH, 8_090_000, { watched: true })
-const DOGE_ROW = row(ASSETS_MAINNET.DOGE, 1_780_000, { poolStatus: { kind: 'trading', outboundDelayed: false } })
+const DOGE_ROW = row(ASSETS_MAINNET.DOGE, 1_780_000, { poolStatus: { kind: 'trading' } })
 
 let root: Root
 let container: HTMLDivElement
@@ -131,6 +131,22 @@ describe('views/pools/PoolsTable', () => {
     expect(eth.querySelector('[data-testid="pool-status-chip"]')).toBeNull()
     act(() => button(eth, 'Add').click())
     expect(props.onAdd).toHaveBeenCalledWith(ASSETS_MAINNET.ETH)
+  })
+
+  it('unknown status (halt data not loaded): neutral chip, swap and add disabled with the reason', () => {
+    const props = render({ rows: [row(ASSETS_MAINNET.ETH, 1_000, { poolStatus: { kind: 'unknown' } })] })
+    const eth = rowOf('ETH')
+    const chip = eth.querySelector('[data-testid="pool-status-chip"]')
+    expect(chip?.getAttribute('data-status')).toBe('unknown')
+    expect(chip?.textContent).toBe('Status unknown')
+    expect(chip?.querySelector('.bg-warning0')).toBeNull()
+    expect(button(eth, 'Swap').getAttribute('aria-disabled')).toBe('true')
+    expect(button(eth, 'Add').getAttribute('aria-disabled')).toBe('true')
+    expect(button(eth, 'Swap').getAttribute('aria-label')).toContain('Halt status could not be loaded')
+    act(() => button(eth, 'Swap').click())
+    act(() => button(eth, 'Add').click())
+    expect(props.onSwap).not.toHaveBeenCalled()
+    expect(props.onAdd).not.toHaveBeenCalled()
   })
 
   it('toggles the watchlist', () => {

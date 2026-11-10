@@ -57,7 +57,7 @@ describe('views/pools/PoolsSummary', () => {
   it('sums liquidity and volume and counts limited pools', () => {
     const html = render({
       rows: [
-        row(ASSETS_MAINNET.BTC, 1_000_000, 4_000_000, { poolStatus: { kind: 'deposit', outboundDelayed: false } }),
+        row(ASSETS_MAINNET.BTC, 1_000_000, 4_000_000, { poolStatus: { kind: 'deposit' } }),
         row(ASSETS_MAINNET.ETH, 1_000_000, 1_000_000)
       ]
     })
@@ -71,6 +71,19 @@ describe('views/pools/PoolsSummary', () => {
 
   it('shows all pools operational without limits', () => {
     expect(render({ rows: [row(ASSETS_MAINNET.BTC, 1, 1)] })).toContain('All operational')
+  })
+
+  it('shows an unknown status while halt data is not loaded', () => {
+    const html = render({
+      rows: [
+        row(ASSETS_MAINNET.BTC, 1, 1, { poolStatus: { kind: 'unknown' } }),
+        row(ASSETS_MAINNET.ETH, 1, 1, { poolStatus: { kind: 'unknown' } })
+      ]
+    })
+    expect(html).toContain('Status unknown')
+    expect(html).toContain('Swap and Add are disabled until it loads')
+    expect(html).not.toContain('limited')
+    expect(html).not.toContain('All operational')
   })
 
   it('shows placeholders while loading without rows', () => {

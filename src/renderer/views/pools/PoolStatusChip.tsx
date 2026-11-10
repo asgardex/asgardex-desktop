@@ -5,6 +5,7 @@ import { Tooltip } from '../../components/uielements/tooltip'
 import { PoolStatus, PoolStatusKind } from '../../helpers/poolStatusHelper'
 
 const LABEL_IDS = {
+  unknown: 'pools.status.unknown',
   chain: 'pools.status.chain',
   trading: 'pools.status.trading',
   lp: 'pools.status.lp',
@@ -12,6 +13,7 @@ const LABEL_IDS = {
 } as const satisfies Record<PoolStatusKind, string>
 
 const INFO_IDS = {
+  unknown: 'pools.status.unknown.info',
   chain: 'pools.status.chain.info',
   trading: 'pools.status.trading.info',
   lp: 'pools.status.lp.info',
@@ -21,17 +23,14 @@ const INFO_IDS = {
 /** Short label (`Trading halted`) and explanation of a pool status */
 export const getPoolStatusMessages = (
   intl: IntlShape,
-  { kind, outboundDelayed }: PoolStatus,
+  { kind }: PoolStatus,
   chain: string
-): { label: string; info: string } => {
-  const info = intl.formatMessage({ id: INFO_IDS[kind] }, { chain })
-  return {
-    label: intl.formatMessage({ id: LABEL_IDS[kind] }),
-    info: outboundDelayed ? `${info}\n${intl.formatMessage({ id: 'pools.status.outboundDelayed' }, { chain })}` : info
-  }
-}
+): { label: string; info: string } => ({
+  label: intl.formatMessage({ id: LABEL_IDS[kind] }),
+  info: intl.formatMessage({ id: INFO_IDS[kind] }, { chain })
+})
 
-/** Chain or trading halts are highlighted (amber), LP or deposit pauses are neutral (grey) */
+/** Chain or trading halts are highlighted (amber); LP / deposit pauses and an unknown status are neutral (grey) */
 export const isHaltStatus = ({ kind }: PoolStatus): boolean => kind === 'chain' || kind === 'trading'
 
 type Props = {

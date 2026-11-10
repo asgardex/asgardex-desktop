@@ -1,13 +1,9 @@
-import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
 
 import { MAYAChain, THORChain } from '../../shared/utils/chainIds'
-import {
-  getPoolDepositPauseKey,
-  getPoolStatus,
-  isAddDisabled,
-  isSwapDisabled,
-  PoolStatusParams
-} from './poolStatusHelper'
+import { getThorchainMimirHalt } from '../hooks/useMimirHalt'
+import { getMayachainMimirHalt } from '../hooks/useMimirHaltMaya'
+import { getPoolStatus, isAddDisabled, isSwapDisabled, PoolHaltData } from './poolStatusHelper'
 
 const asset = (chain: string, symbol: string, ticker = symbol.split('-')[0]): AnyAsset => ({
   chain,
@@ -17,115 +13,121 @@ const asset = (chain: string, symbol: string, ticker = symbol.split('-')[0]): An
 })
 
 const BTC = asset('BTC', 'BTC')
+const SOL = asset('SOL', 'SOL')
 const USDC_ETH = asset('ETH', 'USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48')
 const USDT_ETH = asset('ETH', 'USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7')
 
-const params = (overrides: Partial<PoolStatusParams> = {}): PoolStatusParams => ({
-  asset: BTC,
+// Same path as `usePoolStatus`: raw mimir -> shared `getThorchainMimirHalt` / `getMayachainMimirHalt` -> MimirHalt
+const thor = (
+  { chain }: AnyAsset,
+  mimir: Record<string, number> = {},
+  {
+    lastHeight = 100,
+    haltedChains = [],
+    pausedLpChains = []
+  }: Partial<{ lastHeight: number; haltedChains: Chain[]; pausedLpChains: Chain[] }> = {}
+): PoolHaltData => ({
   protocol: THORChain,
-  mimir: {},
-  lastHeight: 100,
-  haltedChains: [],
-  pausedLpChains: [],
-  ...overrides
+  mimirHalt: getThorchainMimirHalt({ mimir, lastHeight, chains: [chain] }),
+  haltedChains,
+  pausedLpChains
+})
+const maya = (
+  { chain }: AnyAsset,
+  mimir: Record<string, number> = {},
+  {
+    lastHeight = 100,
+    haltedChains = [],
+    pausedLpChains = []
+  }: Partial<{ lastHeight: number; haltedChains: Chain[]; pausedLpChains: Chain[] }> = {}
+): PoolHaltData => ({
+  protocol: MAYAChain,
+  mimirHalt: getMayachainMimirHalt({ mimir, lastHeight, chains: [chain] }),
+  haltedChains,
+  pausedLpChains
 })
 
+const kindOf = (a: AnyAsset, data: PoolHaltData | undefined) => getPoolStatus(a, data)?.kind
+
 describe('helpers/poolStatusHelper', () => {
-  describe('getPoolDepositPauseKey', () => {
-    it('uses chain and symbol in upper case', () => {
-      expect(getPoolDepositPauseKey(asset('eth', 'usdc-0xa0b8'))).toBe('PAUSELPDEPOSIT-ETH-USDC-0XA0B8')
+  describe('getPoolStatus (THORChain)', () => {
+    it('no status without halts or pauses', () => {
+      expect(getPoolStatus(BTC, thor(BTC))).toBeUndefined()
+    })
+
+    it('unknown (fail closed) without halt data', () => {
+      expect(getPoolStatus(BTC, undefined)).toEqual({ kind: 'unknown' })
+    })
+
+    it('chain halt: HALT{CHAIN}CHAIN and HALTTHORCHAIN', () => {
+      expect(kindOf(BTC, thor(BTC, { HALTBTCCHAIN: 1 }))).toBe('chain')
+      expect(kindOf(BTC, thor(BTC, { HALTTHORCHAIN: 1 }))).toBe('chain')
+    })
+
+    it('trading halt: HALT{CHAIN}TRADING and HALTTRADING, before an inbound halt', () => {
+      expect(kindOf(SOL, thor(SOL, { HALTSOLTRADING: 1 }))).toBe('trading')
+      expect(kindOf(BTC, thor(BTC, { HALTTRADING: 1 }))).toBe('trading')
+      // `inbound_addresses` marks trading halted chains as `halted`, too
+      expect(kindOf(SOL, thor(SOL, { HALTSOLTRADING: 1 }, { haltedChains: ['SOL'] }))).toBe('trading')
+    })
+
+    it('inbound halt without mimir: chain', () => {
+      expect(kindOf(SOL, thor(SOL, {}, { haltedChains: ['SOL'] }))).toBe('chain')
+    })
+
+    it('chain halt wins over trading halt and pauses', () => {
+      expect(kindOf(BTC, thor(BTC, { HALTBTCCHAIN: 1, HALTBTCTRADING: 1, PAUSELPBTC: 1 }))).toBe('chain')
+    })
+
+    it('LP pause: PAUSELP{CHAIN}, PAUSELP and inbound chain_lp_actions_paused', () => {
+      expect(kindOf(BTC, thor(BTC, { PAUSELPBTC: 1 }))).toBe('lp')
+      expect(kindOf(BTC, thor(BTC, { PAUSELP: 1 }))).toBe('lp')
+      expect(kindOf(BTC, thor(BTC, {}, { pausedLpChains: ['BTC'] }))).toBe('lp')
+    })
+
+    it('deposit pause is per pool, not per chain', () => {
+      const mimir = { 'PAUSELPDEPOSIT-ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48': 1 }
+      expect(kindOf(USDC_ETH, thor(USDC_ETH, mimir))).toBe('deposit')
+      expect(kindOf(USDT_ETH, thor(USDT_ETH, mimir))).toBeUndefined()
+      expect(kindOf(BTC, thor(BTC, { 'PAUSELPDEPOSIT-BTC-BTC': 1 }))).toBe('deposit')
+    })
+
+    it('scheduled halts (height not reached) are ignored', () => {
+      expect(getPoolStatus(BTC, thor(BTC, { HALTBTCCHAIN: 101, HALTBTCTRADING: 200, PAUSELPBTC: 101 }))).toBeUndefined()
     })
   })
 
-  describe('getPoolStatus', () => {
-    it('returns undefined for an unlimited pool', () => {
-      expect(getPoolStatus(params())).toBeUndefined()
+  describe('getPoolStatus (MAYAChain)', () => {
+    it('uses MAYA keys and height rule (value < height)', () => {
+      expect(kindOf(BTC, maya(BTC, { HALTMAYACHAIN: 1 }))).toBe('chain')
+      expect(kindOf(BTC, maya(BTC, { HALTTHORCHAIN: 1 }))).toBeUndefined()
+      expect(kindOf(BTC, maya(BTC, { HALTBTCCHAIN: 100 }))).toBeUndefined()
+      expect(kindOf(BTC, maya(BTC, { HALTBTCCHAIN: 99 }))).toBe('chain')
     })
 
-    it('chain halt by mimir', () => {
-      expect(getPoolStatus(params({ mimir: { HALTBTCCHAIN: 1 } }))?.kind).toBe('chain')
-    })
-
-    it('global THORChain halt applies to all pools', () => {
-      expect(getPoolStatus(params({ asset: USDC_ETH, mimir: { HALTTHORCHAIN: 1 } }))?.kind).toBe('chain')
-    })
-
-    it('global MAYAChain halt applies to MAYAChain pools only', () => {
-      expect(getPoolStatus(params({ protocol: MAYAChain, mimir: { HALTMAYACHAIN: 1 } }))?.kind).toBe('chain')
-      expect(getPoolStatus(params({ protocol: THORChain, mimir: { HALTMAYACHAIN: 1 } }))).toBeUndefined()
-    })
-
-    it('trading halt by chain or global mimir', () => {
-      expect(getPoolStatus(params({ mimir: { HALTBTCTRADING: 1 } }))?.kind).toBe('trading')
-      expect(getPoolStatus(params({ mimir: { HALTTRADING: 1 } }))?.kind).toBe('trading')
-    })
-
-    it('a trading halt wins over `inbound_addresses.halted` (set by trading halts, too)', () => {
-      expect(getPoolStatus(params({ mimir: { HALTBTCTRADING: 1 }, haltedChains: ['BTC'] }))?.kind).toBe('trading')
-    })
-
-    it('`inbound_addresses.halted` without a mimir trading halt is a chain halt', () => {
-      expect(getPoolStatus(params({ haltedChains: ['BTC'] }))?.kind).toBe('chain')
-    })
-
-    it('LP pause by chain mimir, global mimir or `inbound_addresses`', () => {
-      expect(getPoolStatus(params({ mimir: { PAUSELPBTC: 1 } }))?.kind).toBe('lp')
-      expect(getPoolStatus(params({ mimir: { PAUSELP: 1 } }))?.kind).toBe('lp')
-      expect(getPoolStatus(params({ pausedLpChains: ['BTC'] }))?.kind).toBe('lp')
-    })
-
-    it('deposit pause applies to its own pool only', () => {
-      const mimir = { 'PAUSELPDEPOSIT-ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48': 1 }
-      expect(getPoolStatus(params({ asset: USDC_ETH, mimir }))?.kind).toBe('deposit')
-      expect(getPoolStatus(params({ asset: USDT_ETH, mimir }))).toBeUndefined()
-    })
-
-    it('deposit pause is active for any value > 0 (no height check)', () => {
-      expect(getPoolStatus(params({ mimir: { 'PAUSELPDEPOSIT-BTC-BTC': 1000 }, lastHeight: 1 }))?.kind).toBe('deposit')
-    })
-
-    it('most severe status wins', () => {
-      const mimir = { HALTBTCCHAIN: 1, HALTBTCTRADING: 1, PAUSELPBTC: 1, 'PAUSELPDEPOSIT-BTC-BTC': 1 }
-      expect(getPoolStatus(params({ mimir }))?.kind).toBe('chain')
-    })
-
-    it('mimir set as block height: THORNode activates at `value <= height`', () => {
-      expect(getPoolStatus(params({ mimir: { HALTBTCCHAIN: 100 }, lastHeight: 99 }))).toBeUndefined()
-      expect(getPoolStatus(params({ mimir: { HALTBTCCHAIN: 100 }, lastHeight: 100 }))?.kind).toBe('chain')
-    })
-
-    it('mimir set as block height: MAYANode activates at `value < height`', () => {
-      const maya = { protocol: MAYAChain, mimir: { HALTBTCCHAIN: 100 } }
-      expect(getPoolStatus(params({ ...maya, lastHeight: 100 }))).toBeUndefined()
-      expect(getPoolStatus(params({ ...maya, lastHeight: 101 }))?.kind).toBe('chain')
-    })
-
-    it('flags delayed outbound txs (`HALTSIGNING{CHAIN}`) of a limited pool', () => {
-      expect(getPoolStatus(params({ mimir: { 'PAUSELPDEPOSIT-BTC-BTC': 1, HALTSIGNINGBTC: 1 } }))).toEqual({
-        kind: 'deposit',
-        outboundDelayed: true
-      })
-      expect(getPoolStatus(params({ mimir: { 'PAUSELPDEPOSIT-BTC-BTC': 1 } }))?.outboundDelayed).toBe(false)
-    })
-
-    it('ignores a signing halt of an otherwise unlimited pool', () => {
-      expect(getPoolStatus(params({ mimir: { HALTSIGNINGBTC: 1 } }))).toBeUndefined()
+    it('LP pause and inbound halt', () => {
+      expect(kindOf(BTC, maya(BTC, { PAUSELPBTC: 1 }))).toBe('lp')
+      expect(kindOf(BTC, maya(BTC, {}, { haltedChains: ['BTC'] }))).toBe('chain')
+      expect(kindOf(BTC, maya(BTC, {}, { pausedLpChains: ['BTC'] }))).toBe('lp')
     })
   })
 
   describe('isSwapDisabled / isAddDisabled', () => {
-    it.each([
-      ['chain', true, true],
-      ['trading', true, true],
-      ['lp', false, true],
-      ['deposit', false, true]
-    ] as const)('%s: swap disabled %s, add disabled %s', (kind, swap, add) => {
-      const status = { kind, outboundDelayed: false }
-      expect(isSwapDisabled(status)).toBe(swap)
-      expect(isAddDisabled(status)).toBe(add)
+    it('chain, trading and unknown disable swap and add', () => {
+      for (const kind of ['chain', 'trading', 'unknown'] as const) {
+        expect(isSwapDisabled({ kind })).toBe(true)
+        expect(isAddDisabled({ kind })).toBe(true)
+      }
     })
 
-    it('enables all actions for an unlimited pool', () => {
+    it('lp and deposit pauses disable add only', () => {
+      for (const kind of ['lp', 'deposit'] as const) {
+        expect(isSwapDisabled({ kind })).toBe(false)
+        expect(isAddDisabled({ kind })).toBe(true)
+      }
+    })
+
+    it('no status: nothing disabled', () => {
       expect(isSwapDisabled(undefined)).toBe(false)
       expect(isAddDisabled(undefined)).toBe(false)
     })

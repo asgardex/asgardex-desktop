@@ -80,6 +80,8 @@ export const PoolsSummary = ({
     ? baseToAsset(volume).amount().div(liquidityValue).times(100).toFixed(1)
     : '0.0'
   const limitedCount = rows.filter(({ poolStatus }) => poolStatus !== undefined).length
+  // Halt data is per protocol: if one pool's status is unknown, all are
+  const statusUnknown = rows.some(({ poolStatus }) => poolStatus?.kind === 'unknown')
 
   const protocolAsset = protocol === THORChain ? AssetRuneNative : AssetCacao
 
@@ -145,11 +147,19 @@ export const PoolsSummary = ({
         value={
           !hasRows
             ? empty
-            : limitedCount > 0
-              ? intl.formatMessage({ id: 'pools.summary.limited' }, { count: limitedCount })
-              : intl.formatMessage({ id: 'pools.summary.operational' })
+            : statusUnknown
+              ? intl.formatMessage({ id: 'pools.status.unknown' })
+              : limitedCount > 0
+                ? intl.formatMessage({ id: 'pools.summary.limited' }, { count: limitedCount })
+                : intl.formatMessage({ id: 'pools.summary.operational' })
         }
-        hint={limitedCount > 0 ? intl.formatMessage({ id: 'pools.summary.limited.hint' }) : undefined}
+        hint={
+          statusUnknown
+            ? intl.formatMessage({ id: 'pools.summary.unknown.hint' })
+            : limitedCount > 0
+              ? intl.formatMessage({ id: 'pools.summary.limited.hint' })
+              : undefined
+        }
       />
     </div>
   )
