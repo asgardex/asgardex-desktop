@@ -79,6 +79,22 @@ describe('views/app/AppHaltedChains: halt status unknown', () => {
     unmount()
   })
 
+  it('RUNE send wording only when THORChain is unknown', () => {
+    const thor = render('/pools/swap', [failedMimir(THORChain), known(MAYAChain)])
+    expect(thor.text).toContain('RUNE sends are blocked')
+    thor.unmount()
+    const both = render('/pools', [failedMimir(THORChain), failedMimir(MAYAChain)])
+    expect(both.text).toContain('RUNE sends are blocked')
+    both.unmount()
+  })
+
+  it('MAYA-only unknown status: no RUNE send clause (RUNE sends read the THOR halt state only)', () => {
+    const { text, unmount } = render('/wallet/assets', [known(THORChain), failedMimir(MAYAChain)])
+    expect(text).toContain('Halt status of MAYA could not be loaded. Swaps and liquidity actions are blocked')
+    expect(text).not.toContain('RUNE')
+    unmount()
+  })
+
   it('shows nothing when everything loaded and nothing is halted', () => {
     const { text, unmount } = render('/pools/swap', [known(THORChain), known(MAYAChain)])
     expect(text).not.toContain('could not be loaded')

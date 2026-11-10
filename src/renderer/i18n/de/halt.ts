@@ -15,6 +15,8 @@ const halt: HaltMessages = {
     'Einlagen für Liquidität (Hinzufügen) für {chains} Kette(n) wurden vorübergehend deaktiviert.',
   'halt.unknown':
     'Der Halt-Status von {protocols} konnte nicht geladen werden. Tausch, Liquiditätsaktionen und RUNE-Senden sind gesperrt, bis er geladen ist.',
+  'halt.unknown.noRuneSends':
+    'Der Halt-Status von {protocols} konnte nicht geladen werden. Tausch und Liquiditätsaktionen sind gesperrt, bis er geladen ist.',
   'halt.swap.routeImpaired': 'Tausch-Route ist möglicherweise eingeschränkt'
 }
 

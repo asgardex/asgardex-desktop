@@ -1585,6 +1585,7 @@ type HaltMessageKey =
   | 'halt.chain.pauseall'
   | 'halt.chain.pauseDeposits'
   | 'halt.unknown'
+  | 'halt.unknown.noRuneSends'
   | 'halt.swap.routeImpaired'
 
 export type HaltMessages = { [key in HaltMessageKey]: string }

@@ -297,7 +297,9 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
     }
 
     // Halt status could not be loaded: swaps, deposits and withdrawals stay blocked (fail closed).
-    // Shown on every page, as RUNE sends are blocked as well. Always first, so it is not lost behind other messages.
+    // Shown on every page, always first, so it is not lost behind other messages.
+    // RUNE sends are blocked only by an unknown THORChain status (`isRuneSendDisabled` reads the THOR halt state),
+    // so the RUNE wording is used only when THORChain is one of the unknown protocols.
     const unknownProtocols = resolvedProtocols
       .filter(({ mimirUnknown }) => mimirUnknown)
       .filter(({ protocol }) => isProtocolRelevant(protocol, pageContext.selectedChains))
@@ -305,7 +307,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
     if (unknownProtocols.length > 0) {
       push(
         intl.formatMessage(
-          { id: 'halt.unknown' },
+          { id: unknownProtocols.includes(THORChain) ? 'halt.unknown' : 'halt.unknown.noRuneSends' },
           { protocols: intl.formatList(unknownProtocols, { type: 'conjunction' }) }
         )
       )
