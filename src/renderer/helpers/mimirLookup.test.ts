@@ -1,7 +1,13 @@
 /* eslint-disable no-console -- tests assert the console.warn on a mimir key casing mismatch */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createMimirLookup, isHaltRelevantMimirKey, parseMimir, resetMimirCasingWarnings } from './mimirLookup'
+import {
+  createMimirLookup,
+  isHaltRelevantMimirKey,
+  parseMimir,
+  parseMimirValue,
+  resetMimirCasingWarnings
+} from './mimirLookup'
 
 describe('helpers/mimirLookup', () => {
   beforeEach(() => {
@@ -65,6 +71,30 @@ describe('helpers/mimirLookup parseMimir', () => {
       expect(() => parseMimir({ HALTBTCCHAIN: raw })).toThrow('HALTBTCCHAIN')
     }
   )
+
+  it.each([[1.5], [-0.5], [0.1], [Number.MAX_SAFE_INTEGER + 1], [-(Number.MAX_SAFE_INTEGER + 1)], [Infinity]])(
+    'rejects a non-integer or unsafe number %p on a halt key, same as a bad string',
+    (raw) => {
+      expect(() => parseMimir({ HALTBTCCHAIN: raw })).toThrow('HALTBTCCHAIN')
+      expect(parseMimirValue(raw)).toBeUndefined()
+    }
+  )
+
+  it('rejects an integer string above Number.MAX_SAFE_INTEGER, same as the number', () => {
+    expect(() => parseMimir({ HALTBTCCHAIN: String(Number.MAX_SAFE_INTEGER + 2) })).toThrow('HALTBTCCHAIN')
+  })
+
+  it.each([[0], [1], [-1], [28483475], [Number.MAX_SAFE_INTEGER], [-Number.MAX_SAFE_INTEGER]])(
+    'still accepts the integer %p',
+    (raw) => {
+      expect(parseMimir({ HALTBTCCHAIN: raw })).toEqual({ HALTBTCCHAIN: raw })
+      expect(parseMimirValue(String(raw))).toBe(raw)
+    }
+  )
+
+  it('drops a non-integer number on an unrelated key instead of throwing', () => {
+    expect(parseMimir({ SOMEOTHERKEY: 1.5, HALTBTCCHAIN: 1 })).toEqual({ HALTBTCCHAIN: 1 })
+  })
 
   it('checks halt keys case-insensitively', () => {
     expect(() => parseMimir({ haltbtcchain: '' })).toThrow()

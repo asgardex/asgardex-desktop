@@ -54,15 +54,19 @@ const HALT_RELEVANT_MIMIR_KEY =
 export const isHaltRelevantMimirKey = (key: string): boolean => HALT_RELEVANT_MIMIR_KEY.test(key.toUpperCase())
 
 /**
- * Strict mimir value: a finite number, or a string holding an integer.
+ * Strict mimir value: a safe integer, as a number or as a string holding one.
+ * Mimir values are integers (block heights, flags), so a fractional number (`1.5`, `-0.5`) is as malformed as
+ * the string `'1.5'`, and an integer above `Number.MAX_SAFE_INTEGER` can't be compared reliably to a height.
  * `Number('')`, `Number(null)` and `Number(false)` are all `0` ("no halt"), so they are rejected here
  * instead of being coerced.
  */
 export const parseMimirValue = (value: unknown): number | undefined => {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined
+  if (typeof value === 'number') return Number.isSafeInteger(value) ? value : undefined
   if (typeof value === 'string') {
     const trimmed = value.trim()
-    return /^-?\d+$/.test(trimmed) ? Number(trimmed) : undefined
+    if (!/^-?\d+$/.test(trimmed)) return undefined
+    const parsed = Number(trimmed)
+    return Number.isSafeInteger(parsed) ? parsed : undefined
   }
   return undefined
 }
