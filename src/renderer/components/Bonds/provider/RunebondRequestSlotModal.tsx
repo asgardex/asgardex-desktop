@@ -15,6 +15,7 @@ import { truncateAddress } from '../../../helpers/addressHelper'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getRunebondWhitelistRequestMemo } from '../../../helpers/memoHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
+import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { FeeRD, SendTxStateHandler } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
 import {
@@ -96,11 +97,12 @@ export const RunebondRequestSlotModal = ({
 
   const intendedBond = amount !== null && amount.gt(0) ? amount : null
 
+  const { validateAddress } = useValidateAddress(THORChain)
   const memo = getRunebondWhitelistRequestMemo(
     node.address,
     signer.address,
     intendedBond ?? ZERO_BASE_AMOUNT,
-    O.toUndefined(RUNEBOND_AFFILIATE_ADDRESS)
+    FP.pipe(RUNEBOND_AFFILIATE_ADDRESS, O.filter(validateAddress), O.toUndefined)
   )
 
   const [signed, setSigned] = useState<{ providerAddress: Address; intendedBond: BaseAmount } | null>(null)

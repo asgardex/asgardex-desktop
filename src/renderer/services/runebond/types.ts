@@ -185,7 +185,7 @@ export type ListedNode = {
   name: string | null
   description: string | null
   logoUrl: string | null
-  profileUrl: string
+  profileUrl: string | null
   minBond: BaseAmount
   targetTotalBond: BaseAmount | null
   feeBps: number

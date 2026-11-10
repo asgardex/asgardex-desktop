@@ -68,10 +68,13 @@ const isWhitelisted = (hostname: string) =>
   EXTERNALS_WHITELIST.includes(hostname) ||
   EXTERNALS_SUBDOMAIN_WHITELIST.some((domain) => hostname.endsWith(`.${domain}`))
 
+const isSafeWebUrl = ({ protocol, username, password, port }: URL) =>
+  protocol === 'https:' && username === '' && password === '' && port === ''
+
 export const openExternal = (target: string) => {
   try {
-    const hostname = new URL(target)?.hostname ?? ''
-    if (isWhitelisted(hostname)) {
+    const url = new URL(target)
+    if (isSafeWebUrl(url) && isWhitelisted(url.hostname)) {
       return shell.openExternal(target)
     }
     return Promise.reject(`URL ${target} has been blocked by ASGARDEX`)
