@@ -59,6 +59,7 @@ import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } 
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useNetwork } from '../../hooks/useNetwork'
+import { useObservableLayoutState } from '../../hooks/useObservableLayoutState'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
@@ -879,7 +880,16 @@ const SuccessTradeRouteView = ({
   } = useWalletContext()
   const { reloadTxStatus, getTradeAccount$ } = useThorchainContext()
   const { getTradeAccount$: getTradeAccountMaya$ } = useMayachainContext()
-  const haltedChainsRD = useObservableState(protocol === THORChain ? haltedChains$ : haltedChainsMaya$, RD.initial)
+  const haltedChainsRD$ = useMemo(
+    () =>
+      (protocol === THORChain ? haltedChains$ : haltedChainsMaya$).pipe(
+        // Synchronous, so a protocol switch does not keep the other protocol's halted list
+        // (a stale Success would be taken as a known status of the new protocol by `resolveHaltState`)
+        RxOp.startWith(RD.initial as RD.RemoteData<Error, Chain[]>)
+      ),
+    [haltedChains$, haltedChainsMaya$, protocol]
+  )
+  const haltedChainsRD = useObservableLayoutState(haltedChainsRD$, RD.initial as RD.RemoteData<Error, Chain[]>)
   // Halt state of the *selected* protocol: THORChain's mimir must not decide MAYAChain swaps (and vice versa)
   const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
   const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
