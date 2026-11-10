@@ -8,13 +8,19 @@ import * as RxOp from 'rxjs/operators'
 
 import { useMayachainContext } from '../contexts/MayachainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
-import { DEFAULT_MIMIR_HALT } from '../services/mayachain/const'
+import { createMimirLookup } from '../helpers/mimirLookup'
+import { failIfHeightStalled } from '../helpers/rx/failIfHeightStalled'
+import { holdLastKnown } from '../helpers/rx/holdLastKnown'
+import { memoizeBySources } from '../helpers/rx/memoizeBySources'
+import { HALT_NETWORK_KEY, LASTBLOCK_HOLD, LASTBLOCK_STALL_MS, MIMIR_HOLD } from '../services/haltStatusHold'
+import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT } from '../services/mayachain/const'
 import {
   LastblockItems,
   Mimir,
   MimirHalt,
   MimirHaltLpGlobal,
   MimirHaltRD,
+  MimirHaltStatusUnknown,
   MimirHaltTradingGlobal
 } from '../services/mayachain/types'
 import { userChains$ } from '../services/storage/userChains'
@@ -26,6 +32,9 @@ import { useObservableLayoutState } from './useObservableLayoutState'
 export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
   // no mimir (0, or unset / negative) -> no action
   if (mimir <= 0) return false
+  // Unknown height: only the plain `1` is certain, a scheduled height can't be compared to it.
+  // (The hooks treat a missing height as "halt status unknown" before they get here.)
+  if (lastHeight <= 0) return mimir === 1
   // 1 -> halt | pause
   if (mimir === 1) return true
   // A block height: active after that block.
@@ -37,9 +46,20 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
 }
 
 /**
+ * `NodePauseChainGlobal` pauses all chains *until* a block height (not from it, as the other halts do).
+ * MAYANode: `value > height` (x/mayachain/keeper/v1/keeper_halt.go, `IsChainHalted`)
+ * Without a known height it cannot be told apart from an old, expired pause, so it is not applied.
+ */
+export const isNodePauseActive = (mimir = 0, lastHeight = 0) => mimir > 0 && lastHeight > 0 && mimir > lastHeight
+
+/**
  * Maps MAYANode mimir to the `MimirHalt` flags the app reads (`poolHelperMaya`).
- * MAYANode returns mimir keys upper case, so keys are read exactly as sent, the same as
- * `getThorchainMimirHalt` does for THORNode.
+ * MAYANode returns mimir keys upper case. Keys are matched case-insensitively, a key in another casing
+ * still counts and logs a warning (see `createMimirLookup`), so it never reads as "no halt".
+ *
+ * A chain counts as halted (`HALT{CHAIN}CHAIN`) if MAYANode halts it (`IsChainHalted`):
+ * `HALT{CHAIN}CHAIN`, `SOLVENCYHALT{CHAIN}CHAIN`, or a global `HALTCHAINGLOBAL` / `NODEPAUSECHAINGLOBAL`.
+ * The global ones halt every chain, MAYAChain included, so they also set `HALTMAYACHAIN`.
  */
 export const getMayachainMimirHalt = ({
   mimir,
@@ -50,39 +70,101 @@ export const getMayachainMimirHalt = ({
   lastHeight?: number
   chains: string[]
 }): MimirHalt => {
-  const status = (key: string) => getMimirStatus(mimir[key], lastHeight)
+  const lookup = createMimirLookup(mimir, 'MAYANode')
+  const status = (key: string) => lookup(key).some((value) => getMimirStatus(value, lastHeight))
+
+  const haltAllChains =
+    status('HALTCHAINGLOBAL') || lookup('NODEPAUSECHAINGLOBAL').some((value) => isNodePauseActive(value, lastHeight))
 
   const flags = chains.reduce<Record<string, boolean>>((acc, chain) => {
     const c = chain.toUpperCase()
-    const keys = [`HALT${c}CHAIN`, `HALT${c}TRADING`, `PAUSELP${c}`]
+    acc[`HALT${c}CHAIN`] = status(`HALT${c}CHAIN`) || status(`SOLVENCYHALT${c}CHAIN`) || haltAllChains
+    const keys = [`HALT${c}TRADING`, `PAUSELP${c}`]
     keys.forEach((key) => {
       acc[key] = status(key)
     })
     return acc
   }, {})
   // MAYAChain's own halt is global for MAYAChain routes; detect it even if MAYA is not in `chains`
-  flags.HALTMAYACHAIN = status('HALTMAYACHAIN')
+  flags.HALTMAYACHAIN = status('HALTMAYACHAIN') || status('SOLVENCYHALTMAYACHAIN') || haltAllChains
 
   const haltTradingGlobal: MimirHaltTradingGlobal = { haltGlobalTrading: status('HALTTRADING') }
   const pauseLpGlobal: MimirHaltLpGlobal = { pauseGlobalLp: status('PAUSELP') }
+  const known: MimirHaltStatusUnknown = { haltStatusUnknown: false }
 
-  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal } as MimirHalt
+  return { ...flags, ...haltTradingGlobal, ...pauseLpGlobal, ...known } as MimirHalt
 }
 
-export const useMayachainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt } => {
-  const { mimir$, mayachainLastblockState$ } = useMayachainContext()
+const getLastHeightMaya = (lastblockItems: LastblockItems) => {
+  return FP.pipe(
+    lastblockItems,
+    A.findFirst(({ mayachain }) => mayachain > 0),
+    O.map(({ mayachain }) => mayachain),
+    O.getOrElse(() => 0)
+  )
+}
 
-  const mimirHaltSource$ = useMemo((): Rx.Observable<MimirHaltRD> => {
-    if (!enabled) return Rx.EMPTY
-    return FP.pipe(
-      Rx.combineLatest([mimir$, mayachainLastblockState$, userChains$]),
+/** Shared halt streams of one service (see `getSharedMayachainMimirHalt$`) */
+export type SharedMimirHaltStreams = {
+  /** Full halt status: Success only with fresh mimir *and* a fresh, advancing block height */
+  mimirHaltRD$: Rx.Observable<MimirHaltRD>
+  /**
+   * Halts proven by fresh mimir alone, for swaps (an unknown status alone does not block them, known halts do).
+   * - mimir and height known: the full status
+   * - mimir known, height unknown (lastblock failed / pending / stalled): only halts that need no height,
+   *   i.e. value `1` (`getMimirStatus(value, 0)`); scheduled heights and `NODEPAUSECHAINGLOBAL` can't be proven
+   * - mimir unknown or stale (`holdLastKnown`): no proven halt
+   * `haltStatusUnknown` is `true` unless the full status is known. Never use it for LP actions or RUNE sends.
+   */
+  confirmedMimirHalt$: Rx.Observable<MimirHalt>
+}
+
+const UNKNOWN_NO_PROVEN_HALT: MimirHalt = { ...DEFAULT_MIMIR_HALT, haltStatusUnknown: true }
+
+/**
+ * MAYAChain halt status streams, shared by all consumers of the same service streams (see `memoizeBySources`).
+ * Inputs are only trusted while fresh (`holdLastKnown`, `failIfHeightStalled`); their state is keyed by network
+ * (`HALT_NETWORK_KEY`), so a network switch still resets it for every consumer. Both streams read the same
+ * held inputs (one freshness state).
+ */
+export const getSharedMayachainMimirHalt$ = memoizeBySources(
+  (
+    mimir$: Rx.Observable<RD.RemoteData<Error, Mimir>>,
+    lastblock$: Rx.Observable<RD.RemoteData<Error, LastblockItems>>
+  ): SharedMimirHaltStreams => {
+    // Inputs are only trusted while fresh (see `holdLastKnown`): old data or a node that stays down
+    // ends as a failure -> halt status unknown, never as a stale "no halt"
+    const inputs$ = FP.pipe(
+      Rx.combineLatest([
+        mimir$.pipe(holdLastKnown<Mimir>(MIMIR_HOLD)),
+        lastblock$.pipe(
+          holdLastKnown<LastblockItems>(LASTBLOCK_HOLD),
+          // HTTP 200 with a height that stopped advancing is not live data
+          failIfHeightStalled<LastblockItems>({
+            getHeight: (items) => Math.max(0, ...items.map(({ mayachain }) => mayachain ?? 0)),
+            stallMs: LASTBLOCK_STALL_MS,
+            resetKey: HALT_NETWORK_KEY
+          })
+        ),
+        userChains$
+      ]),
+      // One freshness state for all consumers and both streams, kept while the app runs (like `mimir$`):
+      // a consumer mounted later gets the current checked status, e.g. unknown after a stall, instead of
+      // starting a fresh hold / stall clock on a replayed old value.
+      RxOp.shareReplay(1)
+    )
+
+    const mimirHaltRD$ = FP.pipe(
+      inputs$,
       RxOp.map(([mimirRD, chainLastblockRD, enabledChains]) =>
         FP.pipe(
           sequenceTRD(mimirRD, chainLastblockRD),
-          RD.map(([mimir, lastblockItems]) => {
+          RD.chain(([mimir, lastblockItems]) => {
             const lastHeight = getLastHeightMaya(lastblockItems)
+            // Without a height, scheduled halts can't be told from future ones: halt status is unknown
+            if (lastHeight <= 0) return RD.failure<Error, MimirHalt>(Error('MAYAChain block height is unknown'))
 
-            return getMayachainMimirHalt({ mimir, lastHeight, chains: enabledChains })
+            return RD.success(getMayachainMimirHalt({ mimir, lastHeight, chains: enabledChains }))
           })
         )
       ),
@@ -91,28 +173,56 @@ export const useMayachainMimirHalt = (enabled = true): { mimirHaltRD: MimirHaltR
       RxOp.distinctUntilChanged(isEqual),
       RxOp.shareReplay(1)
     )
-  }, [enabled, mayachainLastblockState$, mimir$])
+
+    const confirmedMimirHalt$ = FP.pipe(
+      inputs$,
+      RxOp.map(([mimirRD, chainLastblockRD, enabledChains]): MimirHalt => {
+        if (!RD.isSuccess(mimirRD)) return UNKNOWN_NO_PROVEN_HALT
+        const lastHeight = RD.isSuccess(chainLastblockRD) ? getLastHeightMaya(chainLastblockRD.value) : 0
+        if (lastHeight > 0) return getMayachainMimirHalt({ mimir: mimirRD.value, lastHeight, chains: enabledChains })
+        // Height unknown: `lastHeight: 0` applies only value-1 halts (no height needed), see `getMimirStatus`
+        return {
+          ...getMayachainMimirHalt({ mimir: mimirRD.value, lastHeight: 0, chains: enabledChains }),
+          haltStatusUnknown: true
+        }
+      }),
+      RxOp.distinctUntilChanged(isEqual),
+      RxOp.shareReplay(1)
+    )
+
+    return { mimirHaltRD$, confirmedMimirHalt$ }
+  }
+)
+
+export const useMayachainMimirHalt = (
+  enabled = true
+): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt; confirmedMimirHalt: MimirHalt } => {
+  const { mimir$, mayachainLastblockState$ } = useMayachainContext()
+
+  const streams = useMemo(
+    () => (enabled ? getSharedMayachainMimirHalt$(mimir$, mayachainLastblockState$) : undefined),
+    [enabled, mimir$, mayachainLastblockState$]
+  )
+  const mimirHaltSource$ = useMemo((): Rx.Observable<MimirHaltRD> => streams?.mimirHaltRD$ ?? Rx.EMPTY, [streams])
+  const confirmedSource$ = useMemo((): Rx.Observable<MimirHalt> => streams?.confirmedMimirHalt$ ?? Rx.EMPTY, [streams])
 
   const mimirHaltRD = useObservableLayoutState(mimirHaltSource$, RD.initial)
+  const confirmed = useObservableLayoutState<MimirHalt | undefined>(confirmedSource$, undefined)
 
-  const getLastHeightMaya = (lastblockItems: LastblockItems) => {
-    return FP.pipe(
-      lastblockItems,
-      A.findFirst(({ mayachain }) => mayachain > 0),
-      O.map(({ mayachain }) => mayachain),
-      O.getOrElse(() => 0)
-    )
-  }
-
+  // Fail closed: unless the halt status is loaded (still loading or failed), it is unknown - never "no halt".
+  // A disabled hook opted out of the status and keeps the default.
   const mimirHalt = useMemo(
     () =>
       FP.pipe(
         mimirHaltRD,
         RD.toOption,
-        O.getOrElse<MimirHalt>(() => DEFAULT_MIMIR_HALT)
+        O.getOrElse<MimirHalt>(() => (enabled ? UNKNOWN_MIMIR_HALT : DEFAULT_MIMIR_HALT))
       ),
-    [mimirHaltRD]
+    [enabled, mimirHaltRD]
   )
 
-  return { mimirHaltRD, mimirHalt }
+  // Halts proven by mimir alone (for swaps), see `SharedMimirHaltStreams.confirmedMimirHalt$`
+  const confirmedMimirHalt = enabled ? (confirmed ?? UNKNOWN_NO_PROVEN_HALT) : DEFAULT_MIMIR_HALT
+
+  return { mimirHaltRD, mimirHalt, confirmedMimirHalt }
 }

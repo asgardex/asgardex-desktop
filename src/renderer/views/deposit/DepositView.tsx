@@ -24,13 +24,17 @@ import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { getAssetFromNullableString, isCacaoAsset, isRuneNativeAsset } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
+import { resolveHaltState } from '../../helpers/haltedChains'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
+import { useObservableLayoutState } from '../../hooks/useObservableLayoutState'
 import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
 import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
+import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA } from '../../services/mayachain/const'
 import { PoolDetailRD as PoolDetailMayaRD } from '../../services/midgard/mayaMidgard/types'
 import { PoolDetailRD, PoolSharesLD, PoolSharesRD } from '../../services/midgard/midgardTypes'
+import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_THOR } from '../../services/thorchain/const'
 import { useApp } from '../../store/app/hooks'
 import { SymDepositView } from './add/SymDepositView'
 import { ShareView } from './share/ShareView'
@@ -81,29 +85,47 @@ export const DepositView = () => {
 
   const selectedPoolAsset$ = protocol === THORChain ? selectedPoolAssetThor$ : selectedPoolAssetMaya$
 
-  const haltedChains$ = protocol === THORChain ? haltedChainsThor$ : haltedChainsMaya$
-  const pauseLpChains$ = protocol === THORChain ? pausedLpChainsThor$ : pausedLpChainsMaya$
+  const haltedChainsRD$ = useMemo(
+    () =>
+      (protocol === THORChain ? haltedChainsThor$ : haltedChainsMaya$).pipe(
+        // Synchronous, so a protocol switch does not keep the other protocol's halted list
+        // (a stale Success would be taken as a known status of the new protocol by `resolveHaltState`)
+        RxOp.startWith(RD.initial as RD.RemoteData<Error, Chain[]>)
+      ),
+    [haltedChainsMaya$, haltedChainsThor$, protocol]
+  )
+  // Rebuilt per protocol (not a factory closed over the protocol at mount), and reset on a switch
+  const pausedLpChains$ = useMemo(
+    () =>
+      FP.pipe(
+        protocol === THORChain ? pausedLpChainsThor$ : pausedLpChainsMaya$,
+        RxOp.map(RD.getOrElse((): Chain[] => [])),
+        RxOp.startWith([] as Chain[])
+      ),
+    [pausedLpChainsMaya$, pausedLpChainsThor$, protocol]
+  )
 
   const shares$ = protocol === THORChain ? sharesThor$ : sharesMaya$
 
-  const [unavailableChains] = useObservableState(
-    () =>
-      FP.pipe(
-        Rx.combineLatest([haltedChains$, pauseLpChains$]),
-        RxOp.map(([haltedRD, pausedRD]) => {
-          const halted = RD.getOrElse((): Chain[] => [])(haltedRD)
-          const paused = RD.getOrElse((): Chain[] => [])(pausedRD)
-          // Union the two arrays and remove duplicates
-          return [...new Set([...halted, ...paused])]
-        })
-      ),
-    []
-  )
+  const haltedChainsRD = useObservableLayoutState(haltedChainsRD$, RD.initial as RD.RemoteData<Error, Chain[]>)
+  const pausedLpChains = useObservableLayoutState(pausedLpChains$, [] as Chain[])
   // MimirHalt is per-DEX: THORChain mimir has HALTTHORCHAIN-style flags, MAYA has HALTMAYACHAIN.
   // We must feed the helpers the active protocol's mimir, else a THOR-only halt blocks MAYA actions.
   const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
   const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
-  const mimirHalt = protocol === THORChain ? mimirHaltThor : mimirHaltMaya
+  // A failed / unloaded `inbound_addresses` is "unknown" (blocks deposits), never "no halted chains"
+  const { haltedChains, mimirHalt } = useMemo(
+    () =>
+      protocol === THORChain
+        ? resolveHaltState(haltedChainsRD, mimirHaltThor, UNKNOWN_MIMIR_HALT_THOR)
+        : resolveHaltState(haltedChainsRD, mimirHaltMaya, UNKNOWN_MIMIR_HALT_MAYA),
+    [haltedChainsRD, mimirHaltMaya, mimirHaltThor, protocol]
+  )
+  // Union of halted and LP-paused chains, without duplicates
+  const unavailableChains = useMemo(
+    () => [...new Set([...haltedChains, ...pausedLpChains])],
+    [haltedChains, pausedLpChains]
+  )
   const { keystoreService, reloadBalancesByChain } = useWalletContext()
 
   const { assetWithDecimal$ } = useChainContext()

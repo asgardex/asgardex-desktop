@@ -52,11 +52,14 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { assetInList, getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqChain, eqNetwork } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
+import { resolveSwapHaltState } from '../../helpers/haltedChains'
 import { logger } from '../../helpers/logger'
-import * as PoolHelpers from '../../helpers/poolHelper'
+import { isSwapDisabledForChains } from '../../helpers/protocolTradingHalt'
 import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } from '../../helpers/walletHelper'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
+import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useNetwork } from '../../hooks/useNetwork'
+import { useObservableLayoutState } from '../../hooks/useObservableLayoutState'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
@@ -875,12 +878,29 @@ const SuccessTradeRouteView = ({
   } = useWalletContext()
   const { reloadTxStatus, getTradeAccount$ } = useThorchainContext()
   const { getTradeAccount$: getTradeAccountMaya$ } = useMayachainContext()
-  const [haltedChains] = useObservableState(
+  const haltedChainsRD$ = useMemo(
     () =>
-      FP.pipe(protocol === THORChain ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
-    []
+      (protocol === THORChain ? haltedChains$ : haltedChainsMaya$).pipe(
+        // Synchronous, so a protocol switch does not keep the other protocol's halted list
+        // (a stale Success would be taken as a known halted list of the new protocol)
+        RxOp.startWith(RD.initial as RD.RemoteData<Error, Chain[]>)
+      ),
+    [haltedChains$, haltedChainsMaya$, protocol]
   )
-  const { mimirHalt } = useThorchainMimirHalt()
+  const haltedChainsRD = useObservableLayoutState(haltedChainsRD$, RD.initial as RD.RemoteData<Error, Chain[]>)
+  // Halt state of the *selected* protocol: THORChain's mimir must not decide MAYAChain swaps (and vice versa)
+  // Halts proven by mimir (also while the block height is unknown), no synthetic "unknown" flags
+  const { confirmedMimirHalt: mimirHaltThor } = useThorchainMimirHalt()
+  const { confirmedMimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
+  // Unknown halt status alone does not disable the swap (the node quote decides);
+  // known halts (loaded mimir or loaded `inbound_addresses`) still do
+  const { haltedChains, mimirHalt } = useMemo(
+    () =>
+      protocol === THORChain
+        ? resolveSwapHaltState(haltedChainsRD, mimirHaltThor)
+        : resolveSwapHaltState(haltedChainsRD, mimirHaltMaya),
+    [haltedChainsRD, mimirHaltMaya, mimirHaltThor, protocol]
+  )
   const { isPrivate } = useApp()
   const { thorchainQuery } = useThorchainQueryContext()
   const { mayachainQuery } = useMayachainQueryContext()
@@ -1256,20 +1276,13 @@ const SuccessTradeRouteView = ({
                   updatedAssetDetails,
                   A.map(({ asset }) => asset)
                 )
-                const disableAllPoolActions = (chain: Chain) =>
-                  PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
-
-                const disableTradingPoolActions = (chain: Chain) =>
-                  PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
-
-                const checkDisableSwapAction = () => {
-                  return (
-                    disableAllPoolActions(sourceAsset.asset.chain) ||
-                    disableTradingPoolActions(sourceAsset.asset.chain) ||
-                    disableAllPoolActions(targetAsset.asset.chain) ||
-                    disableTradingPoolActions(targetAsset.asset.chain)
-                  )
-                }
+                const checkDisableSwapAction = () =>
+                  isSwapDisabledForChains({
+                    protocol: protocol === THORChain ? 'Thorchain' : 'Mayachain',
+                    chains: [sourceAsset.asset.chain, targetAsset.asset.chain],
+                    haltedChains,
+                    mimirHalt
+                  })
 
                 return (
                   <TradeSwap
@@ -1409,20 +1422,13 @@ const SuccessTradeRouteView = ({
                   assetDetails,
                   A.map(({ asset }) => asset)
                 )
-                const disableAllPoolActions = (chain: Chain) =>
-                  PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
-
-                const disableTradingPoolActions = (chain: Chain) =>
-                  PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
-
-                const checkDisableSwapAction = () => {
-                  return (
-                    disableAllPoolActions(sourceAsset.asset.chain) ||
-                    disableTradingPoolActions(sourceAsset.asset.chain) ||
-                    disableAllPoolActions(targetAsset.asset.chain) ||
-                    disableTradingPoolActions(targetAsset.asset.chain)
-                  )
-                }
+                const checkDisableSwapAction = () =>
+                  isSwapDisabledForChains({
+                    protocol: protocol === THORChain ? 'Thorchain' : 'Mayachain',
+                    chains: [sourceAsset.asset.chain, targetAsset.asset.chain],
+                    haltedChains,
+                    mimirHalt
+                  })
 
                 return (
                   <TradeSwap

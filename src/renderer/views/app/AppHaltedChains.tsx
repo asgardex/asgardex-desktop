@@ -21,6 +21,11 @@ import { getSwapAlternativeLabels, isProtocolGloballyHalted, ResolvedProtocolDat
 export type HaltedProtocol = {
   haltedChainsRD: RD.RemoteData<Error, Chain[]>
   mimirHaltRD: RD.RemoteData<Error, MimirHalt>
+  /**
+   * Halts proven by fresh mimir alone (hook `confirmedMimirHalt`), shown while `mimirHaltRD` failed, e.g. because
+   * the block height is unknown: a confirmed `HALTTRADING` / `HALT{CHAIN}CHAIN` must not be hidden behind "unknown".
+   */
+  confirmedMimirHalt?: MimirHalt
   protocol: Chain
   midgardStatusRD: RD.RemoteData<Error, boolean>
 }
@@ -47,10 +52,12 @@ export type PageContext = {
   selectedChains?: Chain[]
 }
 
+// Placeholder while there is no mimir. NOT "no halt": see `mimirUnknown`
 const EMPTY_MIMIR: MimirHalt = {
   HALTTHORCHAIN: false,
   haltGlobalTrading: false,
-  pauseGlobalLp: false
+  pauseGlobalLp: false,
+  haltStatusUnknown: false
 } as MimirHalt
 
 // Reverse the asset-string transform the swap route applies (handles synth + raw form)
@@ -251,7 +258,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
   const { resolvedProtocols, hasAnyData } = useMemo(() => {
     let hasData = false
     const resolved: ResolvedProtocolData[] = protocols.map(
-      ({ protocol, haltedChainsRD, mimirHaltRD, midgardStatusRD }) => {
+      ({ protocol, haltedChainsRD, mimirHaltRD, confirmedMimirHalt, midgardStatusRD }) => {
         if (!RD.isInitial(haltedChainsRD) || !RD.isInitial(mimirHaltRD) || !RD.isInitial(midgardStatusRD)) {
           hasData = true
         }
@@ -271,7 +278,15 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
           protocol,
           inboundHaltedChains:
             RD.isSuccess(haltedChainsRD) || RD.isPending(haltedChainsRD) ? prev.inboundHaltedChains : [],
-          mimirHalt: RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD) ? prev.mimirHalt : EMPTY_MIMIR,
+          // On failure only the halts proven by mimir alone are shown (`confirmedMimirHalt`, e.g. while the height is
+          // unknown), or none (EMPTY_MIMIR) - that is NOT "no halt": `mimirUnknown` raises the "halt status unknown"
+          // message and hides the protocol as alternative
+          mimirHalt:
+            RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD)
+              ? prev.mimirHalt
+              : { ...(confirmedMimirHalt ?? EMPTY_MIMIR), haltStatusUnknown: false },
+          // A failed `inbound_addresses` blocks liquidity actions as well (see `resolveHaltState`), so it is unknown too
+          mimirUnknown: RD.isFailure(mimirHaltRD) || RD.isFailure(haltedChainsRD),
           midgard: RD.isSuccess(midgardStatusRD) || RD.isPending(midgardStatusRD) ? prev.midgard : false
         }
       }
@@ -288,6 +303,24 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
         seen.add(msg)
         ordered.push(msg)
       }
+    }
+
+    // Halt status could not be loaded: deposits and withdrawals stay blocked (fail closed). Swaps are not blocked
+    // by an unknown status alone, the node quote decides (`resolveSwapHaltState`); known halts still block them.
+    // Shown on every page, always first, so it is not lost behind other messages.
+    // RUNE sends are blocked only by an unknown THORChain status (`isRuneSendDisabled` reads the THOR halt state),
+    // so the RUNE wording is used only when THORChain is one of the unknown protocols.
+    const unknownProtocols = resolvedProtocols
+      .filter(({ mimirUnknown }) => mimirUnknown)
+      .filter(({ protocol }) => isProtocolRelevant(protocol, pageContext.selectedChains))
+      .map(({ protocol }) => protocol)
+    if (unknownProtocols.length > 0) {
+      push(
+        intl.formatMessage(
+          { id: unknownProtocols.includes(THORChain) ? 'halt.unknown' : 'halt.unknown.noRuneSends' },
+          { protocols: intl.formatList(unknownProtocols, { type: 'conjunction' }) }
+        )
+      )
     }
 
     // One combined global-halt message (cross-protocol, with alternatives)

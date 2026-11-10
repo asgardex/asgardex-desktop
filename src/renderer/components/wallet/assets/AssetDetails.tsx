@@ -63,8 +63,15 @@ export type Props = {
   hdMode: HDMode
   disableSend: boolean
   network: Network
+  /** Halted chains for liquidity actions (an unknown halt status counts as every chain halted) */
   haltedChainsThor: Chain[]
   haltedChainsMaya: Chain[]
+  /**
+   * Halted chains for swaps: known halts only, an unknown halt status alone does not block a swap
+   * (the node quote decides). Defaults to `haltedChainsThor` / `haltedChainsMaya`.
+   */
+  swapHaltedChainsThor?: Chain[]
+  swapHaltedChainsMaya?: Chain[]
   price?: string
 }
 
@@ -84,6 +91,8 @@ export const AssetDetails = (props: Props): JSX.Element => {
     network,
     haltedChainsThor,
     haltedChainsMaya,
+    swapHaltedChainsThor = haltedChainsThor,
+    swapHaltedChainsMaya = haltedChainsMaya,
     price
   } = props
   const [currentPage, setCurrentPage] = useState(1)
@@ -98,6 +107,8 @@ export const AssetDetails = (props: Props): JSX.Element => {
 
   const isResumedOnThor = isChainOfThor(chain) && !haltedChainsThor.includes(chain)
   const isResumedOnMaya = isChainOfMaya(chain) && !haltedChainsMaya.includes(chain)
+  const isSwappableOnThor = isChainOfThor(chain) && !swapHaltedChainsThor.includes(chain)
+  const isSwappableOnMaya = isChainOfMaya(chain) && !swapHaltedChainsMaya.includes(chain)
   // Chainflip is an independent route: keep swap enabled for its supported assets
   // even when THOR + MAYA are halted/down, so the user can still reach the swap view.
   // Asset-level check so unsupported ERC20/SPL tokens on supported chains don't
@@ -114,7 +125,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
     [chainflipAssetsRD]
   )
   const isSupportedByChainflip = isChainflipSupportedAsset(asset, chainflipAssets)
-  const disableSwap = !isResumedOnThor && !isResumedOnMaya && !isSupportedByChainflip
+  const disableSwap = !isSwappableOnThor && !isSwappableOnMaya && !isSupportedByChainflip
   const disableAdd = !isResumedOnThor && !isResumedOnMaya
 
   // If the chain is not halted, perform the action
@@ -125,7 +136,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
 
   const walletActionSwapClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
-    const currentChainSupported = protocol === MAYAChain ? isResumedOnMaya : isResumedOnThor
+    const currentChainSupported = protocol === MAYAChain ? isSwappableOnMaya : isSwappableOnThor
 
     // If the current DEX doesn't support the asset's chain, switch DEXes
     if (!currentChainSupported) {
@@ -141,7 +152,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
       sourceHdMode: hdMode
     })
     navigate(path)
-  }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, hdMode, navigate, setProtocol])
+  }, [protocol, isSwappableOnMaya, isSwappableOnThor, asset, walletType, hdMode, navigate, setProtocol])
 
   const walletActionChartClick = useCallback(() => {
     const chartAsset = asset.type === AssetType.TRADE ? asset : getChainAsset(chain)

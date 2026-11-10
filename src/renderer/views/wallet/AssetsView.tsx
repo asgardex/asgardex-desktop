@@ -23,6 +23,7 @@ import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { resolveSwapHaltState } from '../../helpers/haltedChains'
 import { logger } from '../../helpers/logger'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
@@ -212,17 +213,19 @@ export const AssetsView = (): JSX.Element => {
     () => RD.toNullable(pendingPoolsMayaRD)?.poolDetails ?? [],
     [pendingPoolsMayaRD]
   )
-  const { mimirHaltRD, mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
-  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
+  const { mimirHaltRD, confirmedMimirHalt: mimirHaltThorConfirmed } = useThorchainMimirHalt()
+  const { confirmedMimirHalt: mimirHaltMayaConfirmed } = useMayachainMimirHalt()
   const haltedChainsThorRD = useObservableState(haltedChainsThor$, RD.initial)
   const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
-  const haltedChainsThor = useMemo(
-    () => (RD.isSuccess(haltedChainsThorRD) ? haltedChainsThorRD.value : []),
-    [haltedChainsThorRD]
+  // Only used for the swap route hint ("impaired"): an unknown halt status alone does not mark the route,
+  // known halts do (see `resolveSwapHaltState`)
+  const { haltedChains: haltedChainsThor, mimirHalt: mimirHaltThor } = useMemo(
+    () => resolveSwapHaltState(haltedChainsThorRD, mimirHaltThorConfirmed),
+    [haltedChainsThorRD, mimirHaltThorConfirmed]
   )
-  const haltedChainsMaya = useMemo(
-    () => (RD.isSuccess(haltedChainsMayaRD) ? haltedChainsMayaRD.value : []),
-    [haltedChainsMayaRD]
+  const { haltedChains: haltedChainsMaya, mimirHalt: mimirHaltMaya } = useMemo(
+    () => resolveSwapHaltState(haltedChainsMayaRD, mimirHaltMayaConfirmed),
+    [haltedChainsMayaRD, mimirHaltMayaConfirmed]
   )
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])

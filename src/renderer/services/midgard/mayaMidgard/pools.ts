@@ -19,6 +19,7 @@ import { validAssetForETH, isPricePoolAsset, midgardAssetFromString } from '../.
 import { isEthChain } from '../../../helpers/chainHelper'
 import { eqAsset, eqOAsset, eqHaltedChain } from '../../../helpers/fp/eq'
 import { sequenceTOption } from '../../../helpers/fpHelpers'
+import { holdLastKnown } from '../../../helpers/rx/holdLastKnown'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import { preserveSuccessUntil } from '../../../helpers/rx/preserveSuccess'
 import { observableState, triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
@@ -26,6 +27,7 @@ import { roundUnixTimestampToMinutes } from '../../../helpers/timeHelper'
 import { PricePoolAsset } from '../../../views/pools/Pools.types'
 import { network$ } from '../../app/service'
 import { PoolFeeLD } from '../../chain/types'
+import { INBOUND_HOLD } from '../../haltStatusHold'
 import { InboundAddresses, InboundAddressesLD } from '../../mayachain/types'
 import { ErrorId } from '../../wallet/types'
 import {
@@ -547,7 +549,12 @@ const createPoolsService = ({
 
   const haltedChains$: HaltedChainsLD = FP.pipe(
     inboundAddressesShared$,
-    liveData.map(A.filterMap((inboundAddress) => (inboundAddress.halted ? O.some(inboundAddress.chain) : O.none)))
+    liveData.map(A.filterMap((inboundAddress) => (inboundAddress.halted ? O.some(inboundAddress.chain) : O.none))),
+    // A first load that stays pending ends as a failure after 15s -> halt status unknown (banner)
+    holdLastKnown<Chain[]>(INBOUND_HOLD),
+    // One freshness state for all consumers (banner, Deposit, Swap, ...), kept while the app runs: a consumer
+    // mounted later gets the current checked status instead of a new hold on a replayed old list
+    RxOp.shareReplay(1)
   )
 
   const pausedLPChains$: PausedChainsLD = FP.pipe(

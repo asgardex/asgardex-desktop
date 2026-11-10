@@ -14,6 +14,10 @@ const halt: HaltMessages = {
     'Se han desactivado temporalmente las actividades de liquidez (añadir/eliminar) para todas las cadenas.',
   'halt.chain.pauseDeposits':
     'Los depósitos de liquidez (agregar) para la(s) cadena(s) {chains} han sido desactivados temporalmente.',
+  'halt.unknown':
+    'No se pudo cargar el estado de detención de {protocols}. Las acciones de liquidez y los envíos de RUNE están bloqueados hasta que se cargue. Los intercambios siguen disponibles si se devuelve una cotización.',
+  'halt.unknown.noRuneSends':
+    'No se pudo cargar el estado de detención de {protocols}. Las acciones de liquidez están bloqueadas hasta que se cargue. Los intercambios siguen disponibles si se devuelve una cotización.',
   'halt.swap.routeImpaired': 'La ruta de intercambio puede estar afectada'
 }
 

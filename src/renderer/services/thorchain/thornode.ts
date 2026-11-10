@@ -49,6 +49,8 @@ import { Protocol } from '../../components/uielements/protocolSwitch/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
+import { parseMimir } from '../../helpers/mimirLookup'
+import { HALT_REQUEST_TIMEOUT_MS, withTimeout } from '../../helpers/requestTimeout'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { preserveSuccessUntil } from '../../helpers/rx/preserveSuccess'
 import { triggerStream } from '../../helpers/stateHelper'
@@ -138,7 +140,14 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   const loadInboundAddresses$ = (): InboundAddressesLD =>
     FP.pipe(
       requestThornodeApi$((basePath) =>
-        new NetworkApi(getThornodeAPIConfiguration(basePath)).inboundAddresses().then((response) => {
+        // Timeout: a hung request must end as a failure (halt status unknown), not keep an old list trusted
+        withTimeout(
+          new NetworkApi(getThornodeAPIConfiguration(basePath)).inboundAddresses(undefined, {
+            timeout: HALT_REQUEST_TIMEOUT_MS
+          }),
+          HALT_REQUEST_TIMEOUT_MS,
+          'THORNode inbound_addresses request'
+        ).then((response) => {
           const data: InboundAddresses = response.data.map((item) => ({
             chain: item.chain || '',
             address: item.address || '',
@@ -213,9 +222,14 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
    * Api call to `lastblock` endpoint
    */
   const apiGetThorchainLastblock$ = requestThornodeApi$((basePath) =>
-    new NetworkApi(getThornodeAPIConfiguration(basePath))
-      .lastblock()
-      .then((response: AxiosResponse<LastBlockResponse>) => response.data)
+    // Timeout: a node that never answers must end as a failure (halt status unknown), not stay pending
+    withTimeout(
+      new NetworkApi(getThornodeAPIConfiguration(basePath))
+        .lastblock(undefined, { timeout: HALT_REQUEST_TIMEOUT_MS })
+        .then((response: AxiosResponse<LastBlockResponse>) => response.data),
+      HALT_REQUEST_TIMEOUT_MS,
+      'THORNode lastblock request'
+    )
   )
   const { stream$: reloadTxStatus$, trigger: reloadTxStatus } = triggerStream()
 
@@ -509,28 +523,23 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
 
   const apiGetMimir$: MimirLD = FP.pipe(
-    requestThornodeApi$(async (basePath) => {
-      const response =
-        height !== undefined
-          ? await new MimirApi(getThornodeAPIConfiguration(basePath)).mimir(height)
-          : await new MimirApi(getThornodeAPIConfiguration(basePath)).mimir()
-      if (!('data' in response)) {
-        throw new Error('Response is not an AxiosResponse')
-      }
-      const responseData = response.data
-      if (!responseData || typeof responseData !== 'object') {
-        throw new Error('Unexpected response format: responseData is not an object')
-      }
-      const result: Mimir = {}
-      for (const [key, value] of Object.entries(responseData)) {
-        const numberValue = Number(value)
-        if (isNaN(numberValue)) {
-          throw new Error(`Invalid value for key ${key}: ${value}`)
-        }
-        result[key] = numberValue
-      }
-      return result as Mimir
-    }),
+    requestThornodeApi$((basePath) =>
+      // Timeout: a node that never answers must end as a failure (halt status unknown), not stay pending
+      withTimeout(
+        (height !== undefined
+          ? new MimirApi(getThornodeAPIConfiguration(basePath)).mimir(height, { timeout: HALT_REQUEST_TIMEOUT_MS })
+          : new MimirApi(getThornodeAPIConfiguration(basePath)).mimir(undefined, { timeout: HALT_REQUEST_TIMEOUT_MS })
+        ).then((response) => {
+          if (!('data' in response)) {
+            throw new Error('Response is not an AxiosResponse')
+          }
+          // Strict: malformed halt keys fail the whole request, malformed unrelated keys are dropped
+          return parseMimir(response.data) as Mimir
+        }),
+        HALT_REQUEST_TIMEOUT_MS,
+        'THORNode mimir request'
+      )
+    ),
     RxOp.map((rd) => (RD.isFailure(rd) ? RD.failure(Error(`Failed loading mimir: ${JSON.stringify(rd.error)}`)) : rd))
   )
 

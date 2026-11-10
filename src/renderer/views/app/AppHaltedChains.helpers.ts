@@ -11,6 +11,11 @@ export type ResolvedProtocolData = {
   inboundHaltedChains: Chain[]
   mimirHalt: MimirHalt
   midgard: boolean
+  /**
+   * Mimir, lastblock or `inbound_addresses` failed to load, so halts of this protocol are unknown.
+   * `mimirHalt` is empty then and must not be read as "no halt".
+   */
+  mimirUnknown?: boolean
 }
 
 export const isProtocolGloballyHalted = ({ protocol, mimirHalt }: ResolvedProtocolData): boolean =>
@@ -34,6 +39,8 @@ export const isProtocolChainTradingHalted = (
  * next to "Maya trading halted for BTC, ETH, …".
  */
 export const isProtocolUsableAsSwapAlternative = (data: ResolvedProtocolData, selectedChains?: Chain[]): boolean => {
+  // Unknown halt status: never advertise the protocol as available
+  if (data.mimirUnknown) return false
   if (isProtocolGloballyHalted(data)) return false
 
   const chains =

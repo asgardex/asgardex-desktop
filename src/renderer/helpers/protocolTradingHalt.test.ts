@@ -3,13 +3,17 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { assetFromStringEx } from '@xchainjs/xchain-util'
 import { describe, expect, it } from 'vitest'
 
-import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../services/mayachain/const'
-import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
+import {
+  DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA,
+  UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA
+} from '../services/mayachain/const'
+import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT } from '../services/thorchain/const'
 import {
   dropMayachainForBtcTaproot,
   filterQuotableProtocols,
   isBtcTaprootAddress,
-  isProtocolTradingHaltedForAssets
+  isProtocolTradingHaltedForAssets,
+  isSwapDisabledForChains
 } from './protocolTradingHalt'
 
 const ethUsdc = assetFromStringEx('ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48')
@@ -135,5 +139,82 @@ describe('dropMayachainForBtcTaproot', () => {
     expect(
       dropMayachainForBtcTaproot([...protocols], 'bcrt1pqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq', '')
     ).toEqual(['Thorchain', 'Chainflip', 'OneClick'])
+  })
+
+  it('skips Thorchain for TCY pairs when HALTTCYTRADING is set, but not for other THOR pairs', () => {
+    const tcy = assetFromStringEx('THOR.TCY')
+    const haltState = {
+      ...baseHaltState,
+      thor: { haltedChains: [] as string[], mimirHalt: { ...DEFAULT_MIMIR_HALT, HALTTCYTRADING: true } }
+    }
+    expect(isProtocolTradingHaltedForAssets('Thorchain', tcy, solNative, haltState)).toBe(true)
+    expect(isProtocolTradingHaltedForAssets('Thorchain', solNative, tcy, haltState)).toBe(true)
+    expect(isProtocolTradingHaltedForAssets('Thorchain', ethUsdc, solNative, haltState)).toBe(false)
+    expect(isProtocolTradingHaltedForAssets('Thorchain', tcy, solNative, baseHaltState)).toBe(false)
+  })
+
+  it('skips Thorchain and Mayachain while the halt status is unknown', () => {
+    const haltState = {
+      thor: { haltedChains: [] as string[], mimirHalt: UNKNOWN_MIMIR_HALT },
+      maya: { haltedChains: [] as string[], mimirHalt: UNKNOWN_MIMIR_HALT_MAYA }
+    }
+    expect(
+      filterQuotableProtocols(['Thorchain', 'Mayachain', 'Chainflip', 'OneClick'], ethUsdc, solNative, haltState)
+    ).toEqual(['Chainflip', 'OneClick'])
+  })
+
+  describe('isSwapDisabledForChains', () => {
+    it('judges each protocol by its own halt state', () => {
+      const thorHalted = { ...DEFAULT_MIMIR_HALT, HALTTHORCHAIN: true }
+      expect(
+        isSwapDisabledForChains({ protocol: 'Thorchain', chains: [BTCChain], haltedChains: [], mimirHalt: thorHalted })
+      ).toBe(true)
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Mayachain',
+          chains: [BTCChain],
+          haltedChains: [],
+          mimirHalt: { ...DEFAULT_MIMIR_HALT_MAYA }
+        })
+      ).toBe(false)
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Mayachain',
+          chains: [BTCChain],
+          haltedChains: [],
+          mimirHalt: { ...DEFAULT_MIMIR_HALT_MAYA, HALTMAYACHAIN: true }
+        })
+      ).toBe(true)
+    })
+
+    it('checks every given chain, inbound halts included', () => {
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Thorchain',
+          chains: [BTCChain, ETHChain],
+          haltedChains: [ETHChain],
+          mimirHalt: { ...DEFAULT_MIMIR_HALT }
+        })
+      ).toBe(true)
+    })
+
+    it('the synthetic UNKNOWN_MIMIR_HALT flags block both protocols (swap paths drop them via resolveSwapHaltState)', () => {
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Thorchain',
+          chains: [BTCChain],
+          haltedChains: [],
+          mimirHalt: UNKNOWN_MIMIR_HALT
+        })
+      ).toBe(true)
+      expect(
+        isSwapDisabledForChains({
+          protocol: 'Mayachain',
+          chains: [BTCChain],
+          haltedChains: [],
+          mimirHalt: UNKNOWN_MIMIR_HALT_MAYA
+        })
+      ).toBe(true)
+    })
   })
 })

@@ -23,12 +23,24 @@ const createDefaultMimirHalt = (): MimirHalt => {
     {
       HALTMAYACHAIN: false,
       haltGlobalTrading: false,
-      pauseGlobalLp: false
+      pauseGlobalLp: false,
+      haltStatusUnknown: false
     } as MimirHalt
   )
 }
 
 export const DEFAULT_MIMIR_HALT = createDefaultMimirHalt()
+
+/**
+ * Halt status that could not be loaded: every halt / pause flag is set, so the `disable*Actions` checks
+ * block deposits and withdrawals (fail closed).
+ * `haltStatusUnknown` tells the UI that these flags are not real halts. Swaps and swap quotes drop them
+ * (`resolveSwapHaltState`): an unknown status alone does not block a swap, the node quote decides.
+ */
+export const createUnknownMimirHalt = (): MimirHalt =>
+  Object.fromEntries(Object.keys(DEFAULT_MIMIR_HALT).map((key) => [key, true])) as MimirHalt
+
+export const UNKNOWN_MIMIR_HALT = createUnknownMimirHalt()
 
 export const DEFAULT_CLIENT_URL: ClientUrl = {
   [Network.Testnet]: {

@@ -1,23 +1,49 @@
+/* eslint-disable no-console -- tests assert the console.warn on a mimir key casing mismatch */
 // Fixture: __fixtures__/thornode-mainnet-chains-halted-lp-paused (THORNode mainnet mimir + lastblock, height 28483475).
 // Captured 2026-11-01 03:39:30 UTC (14:09:30 ACDT) from gateway.liquify.com/chain/thorchain_api/thorchain.
+import { act, createElement } from 'react'
+import * as RD from '@devexperts/remote-data-ts'
 import { AnyAsset, assetFromStringEx } from '@xchainjs/xchain-util'
+import { createRoot } from 'react-dom/client'
+import * as Rx from 'rxjs'
+import { afterEach, beforeEach, vi } from 'vitest'
 
-import { AssetAVAX } from '../../shared/utils/asset'
+import { AssetAVAX, AssetBTC } from '../../shared/utils/asset'
 import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
 import { AVAXChain, BTCChain, THORChain } from '../../shared/utils/chainIds'
 import { AssetUSDCAVAX } from '../const'
-import { disableAllActions, disablePoolActions } from '../helpers/poolHelper'
-import { DEFAULT_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
+import { isRuneSendDisabled, resolveHaltState, resolveSwapHaltState } from '../helpers/haltedChains'
+import { resetMimirCasingWarnings } from '../helpers/mimirLookup'
+import {
+  disableAllActions,
+  disablePoolActions,
+  disableTradingActions,
+  disableWithdrawActions
+} from '../helpers/poolHelper'
+import { filterQuotableProtocols, isSwapDisabledForChains } from '../helpers/protocolTradingHalt'
+import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
 import { Mimir } from '../services/thorchain/types'
 import { isProtocolGloballyHalted } from '../views/app/AppHaltedChains.helpers'
 import thorLastblock from './__fixtures__/thornode-mainnet-chains-halted-lp-paused/lastblock.json'
 import thorMimir from './__fixtures__/thornode-mainnet-chains-halted-lp-paused/mimir.json'
-import { getMimirStatus, getThorchainMimirHalt } from './useMimirHalt'
+import { getMimirStatus, getThorchainMimirHalt, useThorchainMimirHalt } from './useMimirHalt'
+
+// Streams of the THORChain services context and stored user chains, set per test
+const mockThorchainContext = vi.hoisted(() => ({ value: {} as Record<string, unknown> }))
+vi.mock('../contexts/ThorchainContext', () => ({
+  useThorchainContext: () => mockThorchainContext.value
+}))
+vi.mock('../services/storage/userChains', () => ({ userChains$: Rx.of(['BTC', 'THOR']) }))
 
 describe('hooks/useMimirHalt', () => {
   describe('getMimirStatus', () => {
     it('mimir = 1', () => {
       expect(getMimirStatus(1)).toBeTruthy()
+    })
+    it('unknown height: only the plain 1 is active, a height is not compared', () => {
+      expect(getMimirStatus(1, 0)).toBe(true)
+      expect(getMimirStatus(10, 0)).toBe(false)
+      expect(getMimirStatus(0, 0)).toBe(false)
     })
     it('mimir = 0', () => {
       expect(getMimirStatus(0)).toBeFalsy()
@@ -51,16 +77,52 @@ describe('hooks/useMimirHalt', () => {
       expect(result.HALTETHCHAIN).toBe(false)
     })
 
-    it('reads mimir keys exactly as THORNode sends them (upper-case); other casing is ignored', () => {
-      const result = getThorchainMimirHalt({
-        mimir: { haltethchain: 1, HaltBtcChain: 1, halttrading: 1, pauselp: 1 },
-        lastHeight: 100,
-        chains
+    describe('key casing (never fails open)', () => {
+      beforeEach(() => {
+        resetMimirCasingWarnings()
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
       })
-      expect(result.HALTETHCHAIN).toBe(false)
-      expect(result.HALTBTCCHAIN).toBe(false)
-      expect(result.haltGlobalTrading).toBe(false)
-      expect(result.pauseGlobalLp).toBe(false)
+      afterEach(() => vi.restoreAllMocks())
+
+      it('matches keys case-insensitively: a halt in another casing still halts', () => {
+        const result = getThorchainMimirHalt({
+          mimir: { haltethchain: 1, HaltBtcChain: 1, halttrading: 1, pauselp: 1, HaltSolTrading: 1 },
+          lastHeight: 100,
+          chains: [...chains, 'SOL']
+        })
+        expect(result.HALTETHCHAIN).toBe(true)
+        expect(result.HALTBTCCHAIN).toBe(true)
+        expect(result.haltGlobalTrading).toBe(true)
+        expect(result.pauseGlobalLp).toBe(true)
+        expect(result.HALTSOLTRADING).toBe(true)
+      })
+
+      it('a mismatched key reaches the helpers that block actions', () => {
+        const mimirHalt = getThorchainMimirHalt({ mimir: { haltthorchain: 1 }, lastHeight: 100, chains })
+        expect(disableAllActions({ chain: BTCChain, haltedChains: [], mimirHalt })).toBe(true)
+      })
+
+      it('warns about a casing mismatch (once per key), not about exact keys', () => {
+        getThorchainMimirHalt({ mimir: { HaltBtcChain: 1, HALTETHCHAIN: 1 }, lastHeight: 100, chains })
+        getThorchainMimirHalt({ mimir: { HaltBtcChain: 1, HALTETHCHAIN: 1 }, lastHeight: 101, chains })
+        expect(console.warn).toHaveBeenCalledTimes(1)
+        expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"HaltBtcChain"'))
+        expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"HALTBTCCHAIN"'))
+      })
+
+      it('does not warn for keys the app does not read', () => {
+        getThorchainMimirHalt({ mimir: { SomeOtherKey: 1, HALTBTCCHAIN: 0 }, lastHeight: 100, chains })
+        expect(console.warn).not.toHaveBeenCalled()
+      })
+
+      it('same key in two casings: the halting one wins', () => {
+        const result = getThorchainMimirHalt({
+          mimir: { HALTBTCCHAIN: 0, haltbtcchain: 1 },
+          lastHeight: 100,
+          chains
+        })
+        expect(result.HALTBTCCHAIN).toBe(true)
+      })
     })
 
     it('every key in the raw THORNode mimir snapshot is upper-case', () => {
@@ -133,6 +195,43 @@ describe('hooks/useMimirHalt', () => {
       expect(result['PAUSELPDEPOSIT-BTC-BTC']).toBe(true)
       expect(result['PAUSELPDEPOSIT-ETH-ETH']).toBe(false)
       expect(result['PAUSELPDEPOSIT-BSC-BNB']).toBe(false)
+    })
+
+    it('gas-pool PAUSELPDEPOSIT in another casing still pauses and reaches disablePoolActions', () => {
+      resetMimirCasingWarnings()
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const mimirHalt = getThorchainMimirHalt({
+        mimir: { 'PauseLpDeposit-Avax-Avax': 1 },
+        lastHeight: 100,
+        chains: ['AVAX']
+      })
+      expect(mimirHalt['PAUSELPDEPOSIT-AVAX-AVAX']).toBe(true)
+      expect(disablePoolActions({ asset: AssetAVAX, haltedChains: [], mimirHalt })).toBe(true)
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('"PauseLpDeposit-Avax-Avax"'))
+      warn.mockRestore()
+    })
+
+    it('token-pool PAUSELPDEPOSIT in another casing still pauses and reaches disablePoolActions', () => {
+      resetMimirCasingWarnings()
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const mimirHalt = getThorchainMimirHalt({
+        mimir: { 'pauselpdeposit-avax-usdt-0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': 1 },
+        lastHeight: 100,
+        chains: ['AVAX']
+      })
+      const upper = 'PAUSELPDEPOSIT-AVAX-USDT-0X9702230A8EA53601F5CD2DC00FDBC13D4DF4A8C7'
+      expect(mimirHalt[upper as keyof typeof mimirHalt]).toBe(true)
+      // stored under the upper-cased key, never the raw lower-case spelling
+      expect(Object.keys(mimirHalt).filter((k) => k.toUpperCase() === upper)).toEqual([upper])
+      expect(
+        disablePoolActions({
+          asset: assetFromStringEx('AVAX.USDT-0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7'),
+          haltedChains: [],
+          mimirHalt
+        })
+      ).toBe(true)
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('pauselpdeposit-avax-usdt'))
+      warn.mockRestore()
     })
 
     it('carries token-pool PAUSELPDEPOSIT keys with value > 0 for the given chains only', () => {
@@ -298,6 +397,397 @@ describe('hooks/useMimirHalt', () => {
       })
       expect(next.HALTXRPCHAIN).toBe(false)
       expect(next.HALTXRPTRADING).toBe(false)
+    })
+  })
+
+  describe('chain-global halts and TCY (THORNode IsChainHalted / IsTCYTradingHalted)', () => {
+    const chains = ['BTC', 'ETH', 'THOR']
+
+    it('SOLVENCYHALT{CHAIN}CHAIN halts that chain only', () => {
+      const result = getThorchainMimirHalt({ mimir: { SOLVENCYHALTBTCCHAIN: 99 }, lastHeight: 100, chains })
+      expect(result.HALTBTCCHAIN).toBe(true)
+      expect(result.HALTETHCHAIN).toBe(false)
+      expect(result.HALTTHORCHAIN).toBe(false)
+    })
+
+    it('SOLVENCYHALT: a scheduled height is not active yet', () => {
+      const result = getThorchainMimirHalt({ mimir: { SOLVENCYHALTBTCCHAIN: 101 }, lastHeight: 100, chains })
+      expect(result.HALTBTCCHAIN).toBe(false)
+    })
+
+    it('HALTCHAINGLOBAL halts every chain, THORChain included (also chains not in the list)', () => {
+      const mimirHalt = getThorchainMimirHalt({ mimir: { HALTCHAINGLOBAL: 1 }, lastHeight: 100, chains })
+      expect(mimirHalt.HALTBTCCHAIN).toBe(true)
+      expect(mimirHalt.HALTETHCHAIN).toBe(true)
+      expect(mimirHalt.HALTTHORCHAIN).toBe(true)
+      expect(disableAllActions({ chain: 'DOGE', haltedChains: [], mimirHalt })).toBe(true)
+      expect(isProtocolGloballyHalted({ protocol: THORChain, inboundHaltedChains: [], mimirHalt, midgard: true })).toBe(
+        true
+      )
+    })
+
+    it('HALTCHAINGLOBAL: a scheduled height is not active yet', () => {
+      const result = getThorchainMimirHalt({ mimir: { HALTCHAINGLOBAL: 101 }, lastHeight: 100, chains })
+      expect(result.HALTBTCCHAIN).toBe(false)
+      expect(result.HALTTHORCHAIN).toBe(false)
+    })
+
+    it('NODEPAUSECHAINGLOBAL pauses until its height: active up to and including it (THORNode `value >= height`)', () => {
+      const pause = (value: number) =>
+        getThorchainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: value }, lastHeight: 100, chains })
+      expect(pause(101).HALTBTCCHAIN).toBe(true)
+      expect(pause(100).HALTBTCCHAIN).toBe(true)
+      expect(pause(100).HALTTHORCHAIN).toBe(true)
+      expect(pause(99).HALTBTCCHAIN).toBe(false)
+      expect(pause(0).HALTBTCCHAIN).toBe(false)
+    })
+
+    it('NODEPAUSECHAINGLOBAL is not applied without a height', () => {
+      const result = getThorchainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: 100 }, chains })
+      expect(result.HALTBTCCHAIN).toBe(false)
+    })
+
+    it('HALTTCYTRADING', () => {
+      expect(getThorchainMimirHalt({ mimir: { HALTTCYTRADING: 1 }, lastHeight: 100, chains }).HALTTCYTRADING).toBe(true)
+      expect(getThorchainMimirHalt({ mimir: { HALTTCYTRADING: 101 }, lastHeight: 100, chains }).HALTTCYTRADING).toBe(
+        false
+      )
+      expect(getThorchainMimirHalt({ mimir: {}, lastHeight: 100, chains }).HALTTCYTRADING).toBe(false)
+    })
+
+    it('live fixture: no chain-global halt, expired nothing', () => {
+      const result = getThorchainMimirHalt({ mimir: thorMimir, lastHeight: 28483475, chains })
+      expect(result.HALTTHORCHAIN).toBe(false)
+      expect(result.HALTTCYTRADING).toBe(false)
+    })
+  })
+
+  describe('DEFAULT / UNKNOWN_MIMIR_HALT', () => {
+    it('unknown halt has every key of the default set, all true, and blocks all actions', () => {
+      expect(Object.keys(UNKNOWN_MIMIR_HALT).sort()).toEqual(Object.keys(DEFAULT_MIMIR_HALT).sort())
+      expect(Object.values(UNKNOWN_MIMIR_HALT).every((v) => v === true)).toBe(true)
+      expect(DEFAULT_MIMIR_HALT.haltStatusUnknown).toBe(false)
+      Object.keys(DEFAULT_ENABLED_CHAINS).forEach((chain) => {
+        const args = { chain, haltedChains: [], mimirHalt: UNKNOWN_MIMIR_HALT }
+        // #1286: disablePoolActions takes the pool asset (PAUSELPDEPOSIT is per pool), not just the chain
+        const asset = { ...AssetBTC, chain } as AnyAsset
+        expect([chain, disableAllActions(args)]).toEqual([chain, true])
+        expect([chain, disableTradingActions(args)]).toEqual([chain, true])
+        expect([chain, disablePoolActions({ asset, haltedChains: [], mimirHalt: UNKNOWN_MIMIR_HALT })]).toEqual([
+          chain,
+          true
+        ])
+        expect([chain, disableWithdrawActions(args)]).toEqual([chain, true])
+      })
+    })
+
+    it('unknown halt blocks a chain that is not in the default chain list', () => {
+      const args = { chain: 'NOTACHAIN', haltedChains: [], mimirHalt: UNKNOWN_MIMIR_HALT }
+      const asset = { ...AssetBTC, chain: 'NOTACHAIN' } as AnyAsset
+      expect(disableAllActions(args)).toBe(true)
+      expect(disableTradingActions(args)).toBe(true)
+      expect(disablePoolActions({ asset, haltedChains: [], mimirHalt: UNKNOWN_MIMIR_HALT })).toBe(true)
+      expect(disableWithdrawActions(args)).toBe(true)
+    })
+  })
+
+  describe('useThorchainMimirHalt: halt status unknown (fail closed)', () => {
+    const renderHook = (enabled = true) => {
+      let result: ReturnType<typeof useThorchainMimirHalt> | undefined
+      const Probe = () => {
+        result = useThorchainMimirHalt(enabled)
+        return null
+      }
+      ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+      const root = createRoot(document.createElement('div'))
+      act(() => root.render(createElement(Probe)))
+      const unmount = () => act(() => root.unmount())
+      return { get: () => result as NonNullable<typeof result>, unmount }
+    }
+    const lastblock = (thorchain: number) => RD.success([{ chain: 'BTC', thorchain }])
+
+    it('mimir request failed -> unknown halt, never "no halt"', () => {
+      mockThorchainContext.value = {
+        mimir$: Rx.of(RD.failure(Error('mimir down'))),
+        thorchainLastblockState$: Rx.of(lastblock(100))
+      }
+      const { get, unmount } = renderHook()
+      expect(RD.isFailure(get().mimirHaltRD)).toBe(true)
+      expect(get().mimirHalt).toBe(UNKNOWN_MIMIR_HALT)
+      expect(get().mimirHalt.haltStatusUnknown).toBe(true)
+      expect(disableAllActions({ chain: BTCChain, haltedChains: [], mimirHalt: get().mimirHalt })).toBe(true)
+      expect(disableTradingActions({ chain: BTCChain, haltedChains: [], mimirHalt: get().mimirHalt })).toBe(true)
+      unmount()
+    })
+
+    it('lastblock request failed -> unknown halt', () => {
+      mockThorchainContext.value = {
+        mimir$: Rx.of(RD.success({})),
+        thorchainLastblockState$: Rx.of(RD.failure(Error('lastblock down')))
+      }
+      const { get, unmount } = renderHook()
+      expect(get().mimirHalt.haltStatusUnknown).toBe(true)
+      unmount()
+    })
+
+    it('lastblock without a THORChain height -> unknown halt', () => {
+      mockThorchainContext.value = {
+        mimir$: Rx.of(RD.success({})),
+        thorchainLastblockState$: Rx.of(lastblock(0))
+      }
+      const { get, unmount } = renderHook()
+      expect(get().mimirHalt.haltStatusUnknown).toBe(true)
+      unmount()
+    })
+
+    it('still loading (no value yet) -> unknown halt', () => {
+      mockThorchainContext.value = { mimir$: Rx.of(RD.pending), thorchainLastblockState$: Rx.of(lastblock(100)) }
+      const { get, unmount } = renderHook()
+      expect(get().mimirHalt.haltStatusUnknown).toBe(true)
+      unmount()
+    })
+
+    it('loaded mimir with no halts -> known, nothing blocked', () => {
+      mockThorchainContext.value = { mimir$: Rx.of(RD.success({})), thorchainLastblockState$: Rx.of(lastblock(100)) }
+      const { get, unmount } = renderHook()
+      expect(get().mimirHalt.haltStatusUnknown).toBe(false)
+      expect(disableAllActions({ chain: BTCChain, haltedChains: [], mimirHalt: get().mimirHalt })).toBe(false)
+      unmount()
+    })
+
+    it('loaded mimir with HALTCHAINGLOBAL halts, and is known', () => {
+      mockThorchainContext.value = {
+        mimir$: Rx.of(RD.success({ HALTCHAINGLOBAL: 1 })),
+        thorchainLastblockState$: Rx.of(lastblock(100))
+      }
+      const { get, unmount } = renderHook()
+      expect(get().mimirHalt.haltStatusUnknown).toBe(false)
+      expect(get().mimirHalt.HALTTHORCHAIN).toBe(true)
+      unmount()
+    })
+
+    it('disabled hook keeps the default (it opted out of the halt status)', () => {
+      mockThorchainContext.value = { mimir$: Rx.of(RD.pending), thorchainLastblockState$: Rx.of(lastblock(100)) }
+      const { get, unmount } = renderHook(false)
+      expect(get().mimirHalt).toBe(DEFAULT_MIMIR_HALT)
+      unmount()
+    })
+  })
+
+  describe('useThorchainMimirHalt: one freshness state for all consumers', () => {
+    const MINUTE = 60 * 1000
+    const mount = () => {
+      let result: ReturnType<typeof useThorchainMimirHalt> | undefined
+      const Probe = () => {
+        result = useThorchainMimirHalt()
+        return null
+      }
+      ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+      const root = createRoot(document.createElement('div'))
+      act(() => root.render(createElement(Probe)))
+      return { get: () => result as NonNullable<typeof result>, unmount: () => act(() => root.unmount()) }
+    }
+    const original = mockThorchainContext.value
+    let mimir$: Rx.BehaviorSubject<RD.RemoteData<Error, Mimir>>
+    beforeEach(() => {
+      vi.useFakeTimers()
+      mimir$ = new Rx.BehaviorSubject<RD.RemoteData<Error, Mimir>>(RD.success({}))
+      mockThorchainContext.value = {
+        mimir$,
+        // HTTP 200 with a height that never advances (stuck node / cached response)
+        thorchainLastblockState$: new Rx.BehaviorSubject(RD.success([{ chain: 'BTC', thorchain: 100 }]))
+      }
+    })
+    afterEach(() => {
+      mockThorchainContext.value = original
+      vi.useRealTimers()
+    })
+    const advance = (ms: number) =>
+      act(() => {
+        vi.advanceTimersByTime(ms)
+      })
+
+    it('a consumer mounted after a stall also reports unknown (no fresh hold / stall clock)', () => {
+      const first = mount()
+      expect(first.get().mimirHalt.haltStatusUnknown).toBe(false)
+      // height stalled for 5 min (+ one 5s re-check)
+      advance(5 * MINUTE + 5000)
+      expect(first.get().mimirHalt.haltStatusUnknown).toBe(true)
+
+      const second = mount()
+      expect(RD.isFailure(second.get().mimirHaltRD)).toBe(true)
+      expect(second.get().mimirHalt).toBe(UNKNOWN_MIMIR_HALT)
+      expect(disableAllActions({ chain: BTCChain, haltedChains: [], mimirHalt: second.get().mimirHalt })).toBe(true)
+      // and it does not turn "known" while the old height keeps being replayed
+      advance(MINUTE)
+      expect(second.get().mimirHalt.haltStatusUnknown).toBe(true)
+      first.unmount()
+      second.unmount()
+    })
+
+    it('remounting after every consumer unmounted keeps the stalled state (still unknown)', () => {
+      const first = mount()
+      advance(5 * MINUTE + 5000)
+      expect(first.get().mimirHalt.haltStatusUnknown).toBe(true)
+      first.unmount()
+
+      const again = mount()
+      expect(again.get().mimirHalt.haltStatusUnknown).toBe(true)
+      again.unmount()
+    })
+
+    it('consumers share the age of the held mimir: a later consumer does not restart the 15 min', () => {
+      const first = mount()
+      // mimir is never refreshed; keep the height advancing so only mimir age decides
+      const lastblock$ = mockThorchainContext.value.thorchainLastblockState$ as Rx.BehaviorSubject<unknown>
+      for (let m = 1; m <= 14; m++) {
+        advance(MINUTE)
+        act(() => lastblock$.next(RD.success([{ chain: 'BTC', thorchain: 100 + m }])))
+      }
+      const second = mount()
+      expect(second.get().mimirHalt.haltStatusUnknown).toBe(false)
+      advance(MINUTE + 5000)
+      act(() => lastblock$.next(RD.success([{ chain: 'BTC', thorchain: 200 }])))
+      expect(first.get().mimirHalt.haltStatusUnknown).toBe(true)
+      expect(second.get().mimirHalt.haltStatusUnknown).toBe(true)
+      first.unmount()
+      second.unmount()
+    })
+  })
+
+  describe('useThorchainMimirHalt: halts proven by mimir while the block height is unknown (real streams)', () => {
+    const MINUTE = 60 * 1000
+    const BTC = assetFromStringEx('BTC.BTC')
+    const ETH = assetFromStringEx('ETH.ETH')
+    const mount = () => {
+      let result: ReturnType<typeof useThorchainMimirHalt> | undefined
+      const Probe = () => {
+        result = useThorchainMimirHalt()
+        return null
+      }
+      ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+      const root = createRoot(document.createElement('div'))
+      act(() => root.render(createElement(Probe)))
+      return { get: () => result as NonNullable<typeof result>, unmount: () => act(() => root.unmount()) }
+    }
+    const original = mockThorchainContext.value
+    let mimir$: Rx.BehaviorSubject<RD.RemoteData<Error, Mimir>>
+    let lastblock$: Rx.BehaviorSubject<RD.RemoteData<Error, unknown>>
+    const setup = (mimir: Mimir, lastblock: RD.RemoteData<Error, unknown>) => {
+      mimir$ = new Rx.BehaviorSubject<RD.RemoteData<Error, Mimir>>(RD.success(mimir))
+      lastblock$ = new Rx.BehaviorSubject(lastblock)
+      mockThorchainContext.value = { mimir$, thorchainLastblockState$: lastblock$ }
+    }
+    const block = (height: number) => RD.success([{ chain: 'BTC', thorchain: height }])
+    const advance = (ms: number) =>
+      act(() => {
+        vi.advanceTimersByTime(ms)
+      })
+    /** What the swap paths see with inbound_addresses Success([]) */
+    const swap = (r: ReturnType<typeof useThorchainMimirHalt>) =>
+      resolveSwapHaltState(RD.success([]), r.confirmedMimirHalt)
+    const quotable = (r: ReturnType<typeof useThorchainMimirHalt>) =>
+      filterQuotableProtocols(['Thorchain', 'Chainflip'], BTC, ETH, {
+        thor: swap(r),
+        maya: { haltedChains: [], mimirHalt: {} as never }
+      } as never)
+    const expectLpAndRuneBlocked = (r: ReturnType<typeof useThorchainMimirHalt>) => {
+      const lp = resolveHaltState(RD.success([]), r.mimirHalt, UNKNOWN_MIMIR_HALT)
+      const { haltedChains, mimirHalt } = lp
+      expect(mimirHalt.haltStatusUnknown).toBe(true)
+      expect(disablePoolActions({ asset: assetFromStringEx('BTC.BTC'), haltedChains, mimirHalt })).toBe(true)
+      expect(disableWithdrawActions({ chain: BTCChain, haltedChains, mimirHalt })).toBe(true)
+      expect(isRuneSendDisabled(lp.mimirHalt)).toBe(true)
+    }
+
+    beforeEach(() => vi.useFakeTimers())
+    afterEach(() => {
+      mockThorchainContext.value = original
+      vi.useRealTimers()
+    })
+
+    const lastblockDown = RD.failure(Error('lastblock down'))
+
+    it.each([['HALTTRADING'], ['HALTCHAINGLOBAL'], ['HALTBTCCHAIN'], ['HALTBTCTRADING'], ['HALTTHORCHAIN']])(
+      '%s = 1 + lastblock Failure: status unknown (LP blocked), but the halt is confirmed for swaps',
+      (key) => {
+        setup({ [key]: 1 }, lastblockDown)
+        const { get, unmount } = mount()
+        expect(RD.isFailure(get().mimirHaltRD)).toBe(true)
+        expect(get().mimirHalt).toBe(UNKNOWN_MIMIR_HALT)
+        expectLpAndRuneBlocked(get())
+        expect(get().confirmedMimirHalt.haltStatusUnknown).toBe(true)
+        expect(quotable(get())).toEqual(['Chainflip'])
+        expect(isSwapDisabledForChains({ protocol: 'Thorchain', chains: [BTCChain], ...swap(get()) })).toBe(true)
+        unmount()
+      }
+    )
+
+    it.each([['HALTTRADING'], ['HALTCHAINGLOBAL'], ['HALTBTCCHAIN'], ['HALTBTCTRADING']])(
+      '%s = 1 + lastblock height stalled for 5 min: unknown, the halt stays confirmed for swaps',
+      (key) => {
+        setup({ [key]: 1 }, block(100))
+        const { get, unmount } = mount()
+        // known while the height is fresh
+        expect(get().mimirHalt.haltStatusUnknown).toBe(false)
+        expect(quotable(get())).toEqual(['Chainflip'])
+        advance(5 * MINUTE + 5000)
+        expect(RD.isFailure(get().mimirHaltRD)).toBe(true)
+        expectLpAndRuneBlocked(get())
+        expect(quotable(get())).toEqual(['Chainflip'])
+        unmount()
+      }
+    )
+
+    it('no halt in mimir + lastblock Failure: unknown (LP blocked) but swaps are not blocked', () => {
+      setup({}, lastblockDown)
+      const { get, unmount } = mount()
+      expectLpAndRuneBlocked(get())
+      expect(quotable(get())).toEqual(['Thorchain', 'Chainflip'])
+      unmount()
+    })
+
+    it('a scheduled height halt cannot be proven without a height (not confirmed, the node quote decides)', () => {
+      setup({ HALTBTCCHAIN: 50 }, lastblockDown)
+      const { get, unmount } = mount()
+      expectLpAndRuneBlocked(get())
+      expect(get().confirmedMimirHalt.HALTBTCCHAIN).toBe(false)
+      unmount()
+    })
+
+    it('stale mimir is not treated as confirmed: no refresh for 15 min -> no proven halt', () => {
+      setup({ HALTTRADING: 1 }, lastblockDown)
+      const { get, unmount } = mount()
+      expect(quotable(get())).toEqual(['Chainflip'])
+      advance(15 * MINUTE + 5000)
+      expect(get().confirmedMimirHalt.haltGlobalTrading).toBe(false)
+      expect(quotable(get())).toEqual(['Thorchain', 'Chainflip'])
+      expectLpAndRuneBlocked(get())
+      unmount()
+    })
+
+    it('a failed mimir reload keeps the held halt (1-2 failures), the 3rd drops it', () => {
+      setup({ HALTTRADING: 1 }, lastblockDown)
+      const { get, unmount } = mount()
+      act(() => mimir$.next(RD.failure(Error('mimir down'))))
+      act(() => mimir$.next(RD.failure(Error('mimir down'))))
+      expect(quotable(get())).toEqual(['Chainflip'])
+      act(() => mimir$.next(RD.failure(Error('mimir down'))))
+      expect(quotable(get())).toEqual(['Thorchain', 'Chainflip'])
+      unmount()
+    })
+
+    it('disabled hook: confirmed is the default (it opted out)', () => {
+      setup({ HALTTRADING: 1 }, lastblockDown)
+      let result: ReturnType<typeof useThorchainMimirHalt> | undefined
+      const Probe = () => {
+        result = useThorchainMimirHalt(false)
+        return null
+      }
+      const root = createRoot(document.createElement('div'))
+      act(() => root.render(createElement(Probe)))
+      expect(result?.confirmedMimirHalt).toBe(DEFAULT_MIMIR_HALT)
+      act(() => root.unmount())
     })
   })
 })
