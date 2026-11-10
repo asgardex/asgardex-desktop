@@ -49,7 +49,7 @@ const HIDE_BELOW_860 = 'hidden @min-[860px]:table-cell'
 const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-turquoise'
 
 const HEAD_CELL =
-  'sticky top-0 z-10 whitespace-nowrap bg-bg1/95 px-3 py-2.5 font-main text-[11px] font-normal uppercase tracking-wider text-gray2 backdrop-blur-sm dark:bg-bg1d/95 dark:text-gray2d'
+  'whitespace-nowrap px-3 py-2.5 font-main text-[11px] font-normal uppercase tracking-wider text-gray2 dark:text-gray2d'
 
 const SKELETON_ROWS = 8
 
@@ -265,7 +265,9 @@ export const PoolsTable = ({
       <table
         className="w-full border-collapse font-main text-[13px] tabular-nums"
         data-testid={`pools-table-${variant}`}>
-        <thead>
+        {/* Sticky on <thead> (not <th>): Chrome lets rows paint through sticky cells of collapsed-border tables.
+            The negative offset matches the app's scroll container padding (p-4 / lg:py-8) so the header pins flush to its top edge. */}
+        <thead className="sticky -top-4 z-10 bg-bg1 lg:-top-8 dark:bg-bg1d">
           <tr className="border-b border-gray0/70 dark:border-gray0d">
             <th scope="col" className={clsx(HEAD_CELL, 'w-10')}>
               <span className="sr-only">{intl.formatMessage({ id: 'pools.watchlist' })}</span>
