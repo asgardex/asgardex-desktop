@@ -571,4 +571,85 @@ describe('hooks/useMimirHalt', () => {
       unmount()
     })
   })
+
+  describe('useThorchainMimirHalt: one freshness state for all consumers', () => {
+    const MINUTE = 60 * 1000
+    const mount = () => {
+      let result: ReturnType<typeof useThorchainMimirHalt> | undefined
+      const Probe = () => {
+        result = useThorchainMimirHalt()
+        return null
+      }
+      ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+      const root = createRoot(document.createElement('div'))
+      act(() => root.render(createElement(Probe)))
+      return { get: () => result as NonNullable<typeof result>, unmount: () => act(() => root.unmount()) }
+    }
+    const original = mockThorchainContext.value
+    let mimir$: Rx.BehaviorSubject<RD.RemoteData<Error, Mimir>>
+    beforeEach(() => {
+      vi.useFakeTimers()
+      mimir$ = new Rx.BehaviorSubject<RD.RemoteData<Error, Mimir>>(RD.success({}))
+      mockThorchainContext.value = {
+        mimir$,
+        // HTTP 200 with a height that never advances (stuck node / cached response)
+        thorchainLastblockState$: new Rx.BehaviorSubject(RD.success([{ chain: 'BTC', thorchain: 100 }]))
+      }
+    })
+    afterEach(() => {
+      mockThorchainContext.value = original
+      vi.useRealTimers()
+    })
+    const advance = (ms: number) =>
+      act(() => {
+        vi.advanceTimersByTime(ms)
+      })
+
+    it('a consumer mounted after a stall also reports unknown (no fresh hold / stall clock)', () => {
+      const first = mount()
+      expect(first.get().mimirHalt.haltStatusUnknown).toBe(false)
+      // height stalled for 5 min (+ one 5s re-check)
+      advance(5 * MINUTE + 5000)
+      expect(first.get().mimirHalt.haltStatusUnknown).toBe(true)
+
+      const second = mount()
+      expect(RD.isFailure(second.get().mimirHaltRD)).toBe(true)
+      expect(second.get().mimirHalt).toBe(UNKNOWN_MIMIR_HALT)
+      expect(disableAllActions({ chain: BTCChain, haltedChains: [], mimirHalt: second.get().mimirHalt })).toBe(true)
+      // and it does not turn "known" while the old height keeps being replayed
+      advance(MINUTE)
+      expect(second.get().mimirHalt.haltStatusUnknown).toBe(true)
+      first.unmount()
+      second.unmount()
+    })
+
+    it('remounting after every consumer unmounted keeps the stalled state (still unknown)', () => {
+      const first = mount()
+      advance(5 * MINUTE + 5000)
+      expect(first.get().mimirHalt.haltStatusUnknown).toBe(true)
+      first.unmount()
+
+      const again = mount()
+      expect(again.get().mimirHalt.haltStatusUnknown).toBe(true)
+      again.unmount()
+    })
+
+    it('consumers share the age of the held mimir: a later consumer does not restart the 15 min', () => {
+      const first = mount()
+      // mimir is never refreshed; keep the height advancing so only mimir age decides
+      const lastblock$ = mockThorchainContext.value.thorchainLastblockState$ as Rx.BehaviorSubject<unknown>
+      for (let m = 1; m <= 14; m++) {
+        advance(MINUTE)
+        act(() => lastblock$.next(RD.success([{ chain: 'BTC', thorchain: 100 + m }])))
+      }
+      const second = mount()
+      expect(second.get().mimirHalt.haltStatusUnknown).toBe(false)
+      advance(MINUTE + 5000)
+      act(() => lastblock$.next(RD.success([{ chain: 'BTC', thorchain: 200 }])))
+      expect(first.get().mimirHalt.haltStatusUnknown).toBe(true)
+      expect(second.get().mimirHalt.haltStatusUnknown).toBe(true)
+      first.unmount()
+      second.unmount()
+    })
+  })
 })

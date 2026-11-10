@@ -535,7 +535,10 @@ const createPoolsService = ({
     inboundAddressesShared$,
     liveData.map(A.filterMap((inboundAddress) => (inboundAddress.halted ? O.some(inboundAddress.chain) : O.none))),
     // A first load that stays pending ends as a failure after 15s -> halt status unknown (banner)
-    holdLastKnown<Chain[]>(INBOUND_HOLD)
+    holdLastKnown<Chain[]>(INBOUND_HOLD),
+    // One freshness state for all consumers (banner, Deposit, Swap, ...), kept while the app runs: a consumer
+    // mounted later gets the current checked status instead of a new hold on a replayed old list
+    RxOp.shareReplay(1)
   )
 
   const pausedLPChains$: PausedChainsLD = FP.pipe(
