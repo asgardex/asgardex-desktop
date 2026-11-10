@@ -43,15 +43,15 @@ export const isRuneSendDisabled = (mimirHalt: {
  * the THORNode / MAYANode quote (a swap needs a valid quote). Liquidity actions and RUNE sends stay blocked
  * while the status is unknown (`resolveHaltState`, `isRuneSendDisabled`).
  *
- * Only the synthetic flags of an unknown status are dropped, every *known* signal is kept:
- * - mimir loaded, `inbound_addresses` unknown -> the loaded mimir halts still apply, no halted chains from inbound
- * - `inbound_addresses` loaded, mimir unknown -> the loaded halted chains still apply, no mimir halts
+ * Every *known* signal still blocks:
+ * - `confirmedMimirHalt` (from `useThorchainMimirHalt` / `useMayachainMimirHalt`) carries the halts proven by
+ *   fresh mimir, also while the block height is unknown (value-1 halts), and no synthetic "unknown" flags
+ * - a loaded `inbound_addresses` list keeps its halted chains; an unknown list adds none
  */
-export const resolveSwapHaltState = <M extends { haltStatusUnknown?: boolean }>(
+export const resolveSwapHaltState = <M>(
   haltedChainsRD: RD.RemoteData<Error, Chain[]>,
-  mimirHalt: M,
-  defaultMimirHalt: M
+  confirmedMimirHalt: M
 ): { haltedChains: Chain[]; mimirHalt: M } => ({
   haltedChains: RD.isSuccess(haltedChainsRD) ? haltedChainsRD.value : [],
-  mimirHalt: mimirHalt.haltStatusUnknown ? defaultMimirHalt : mimirHalt
+  mimirHalt: confirmedMimirHalt
 })

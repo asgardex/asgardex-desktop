@@ -1,5 +1,6 @@
-// useSwapQuote quote path: an unknown halt status alone must not drop THOR / MAYA from the quote request
-// (the node quote decides), a known halt still does.
+// useSwapQuote quote path, with the real halt hooks and real held / stall-checked streams:
+// an unknown halt status alone must not drop THOR / MAYA from the quote request (the node quote decides),
+// a halt proven by fresh mimir still does - also while lastblock failed or its height stalled.
 import { act, createElement } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { assetFromStringEx, baseAmount, Chain } from '@xchainjs/xchain-util'
@@ -8,16 +9,12 @@ import { createRoot } from 'react-dom/client'
 import * as Rx from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA } from '../services/mayachain/const'
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_THOR } from '../services/thorchain/const'
-import { getThorchainMimirHalt } from './useMimirHalt'
-import { getMayachainMimirHalt } from './useMimirHaltMaya'
 import { useSwapQuote } from './useSwapQuote'
 
 const mocks = vi.hoisted(() => ({
   estimateSwap: vi.fn(),
-  thorMimir: {} as unknown,
-  mayaMimir: {} as unknown,
+  thor: {} as Record<string, unknown>,
+  maya: {} as Record<string, unknown>,
   thorInbound$: undefined as unknown,
   mayaInbound$: undefined as unknown
 }))
@@ -43,18 +40,13 @@ vi.mock('../contexts/MidgardContext', () => ({
 vi.mock('../contexts/MidgardMayaContext', () => ({
   useMidgardMayaContext: () => ({ service: { pools: { haltedChains$: mocks.mayaInbound$ } } })
 }))
-vi.mock('./useMimirHalt', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
-  useThorchainMimirHalt: () => ({ mimirHalt: mocks.thorMimir })
-}))
-vi.mock('./useMimirHaltMaya', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
-  useMayachainMimirHalt: () => ({ mimirHalt: mocks.mayaMimir })
-}))
+vi.mock('../contexts/ThorchainContext', () => ({ useThorchainContext: () => mocks.thor }))
+vi.mock('../contexts/MayachainContext', () => ({ useMayachainContext: () => mocks.maya }))
+vi.mock('../services/storage/userChains', () => ({ userChains$: Rx.of(['BTC', 'ETH', 'THOR', 'MAYA']) }))
 
+const MINUTE = 60 * 1000
 const BTC = assetFromStringEx('BTC.BTC')
 const ETH = assetFromStringEx('ETH.ETH')
-const failed = RD.failure(Error('inbound_addresses down')) as RD.RemoteData<Error, Chain[]>
 
 const renderQuoteHook = () => {
   let result: ReturnType<typeof useSwapQuote> | undefined
@@ -86,39 +78,99 @@ const quotedProtocols = async (get: () => ReturnType<typeof useSwapQuote>) => {
   return mocks.estimateSwap.mock.calls[0][2] as string[]
 }
 
-describe('hooks/useSwapQuote: halt status and the quote request', () => {
+type Lastblock = RD.RemoteData<Error, unknown>
+const thorLastblock = (h: number): Lastblock => RD.success([{ chain: 'BTC', thorchain: h }])
+const mayaLastblock = (h: number): Lastblock => RD.success([{ chain: 'BTC', mayachain: h }])
+const lastblockDown: Lastblock = RD.failure(Error('lastblock down'))
+
+/** Fresh service streams per test (the halt streams are shared per stream pair) */
+const setStreams = ({
+  thorMimir = RD.success({}),
+  mayaMimir = RD.success({}),
+  thorBlock = thorLastblock(100),
+  mayaBlock = mayaLastblock(100),
+  thorInbound = RD.success([]),
+  mayaInbound = RD.success([])
+}: {
+  thorMimir?: RD.RemoteData<Error, Record<string, number>>
+  mayaMimir?: RD.RemoteData<Error, Record<string, number>>
+  thorBlock?: Lastblock
+  mayaBlock?: Lastblock
+  thorInbound?: RD.RemoteData<Error, Chain[]>
+  mayaInbound?: RD.RemoteData<Error, Chain[]>
+}) => {
+  mocks.thor = {
+    mimir$: new Rx.BehaviorSubject(thorMimir),
+    thorchainLastblockState$: new Rx.BehaviorSubject(thorBlock)
+  }
+  mocks.maya = {
+    mimir$: new Rx.BehaviorSubject(mayaMimir),
+    mayachainLastblockState$: new Rx.BehaviorSubject(mayaBlock)
+  }
+  mocks.thorInbound$ = new Rx.BehaviorSubject(thorInbound)
+  mocks.mayaInbound$ = new Rx.BehaviorSubject(mayaInbound)
+}
+
+describe('hooks/useSwapQuote: halt status and the quote request (real halt hooks)', () => {
   beforeEach(() => {
+    vi.useFakeTimers()
     mocks.estimateSwap.mockReset()
     mocks.estimateSwap.mockResolvedValue([])
   })
-  afterEach(() => vi.restoreAllMocks())
+  afterEach(() => vi.useRealTimers())
 
   it('mimir and inbound_addresses unknown (THOR and MAYA): both are still quoted', async () => {
-    mocks.thorMimir = UNKNOWN_MIMIR_HALT_THOR
-    mocks.mayaMimir = UNKNOWN_MIMIR_HALT_MAYA
-    mocks.thorInbound$ = Rx.of(failed)
-    mocks.mayaInbound$ = Rx.of(RD.pending)
+    setStreams({
+      thorMimir: RD.failure(Error('mimir down')),
+      mayaMimir: RD.failure(Error('mimir down')),
+      thorInbound: RD.failure(Error('inbound down')),
+      mayaInbound: RD.pending
+    })
     const { get, unmount } = renderQuoteHook()
     expect(get().quoteRefreshKey).toContain('Thorchain,Mayachain,Chainflip')
     expect(await quotedProtocols(get)).toEqual(['Thorchain', 'Mayachain', 'Chainflip'])
     unmount()
   })
 
-  it('a known THOR trading halt next to an unknown inbound list still drops THOR', async () => {
-    mocks.thorMimir = getThorchainMimirHalt({ mimir: { HALTBTCTRADING: 1 }, lastHeight: 100, chains: ['BTC', 'ETH'] })
-    mocks.mayaMimir = UNKNOWN_MIMIR_HALT_MAYA
-    mocks.thorInbound$ = Rx.of(failed)
-    mocks.mayaInbound$ = Rx.of(failed)
+  it('mimir without halts + lastblock down: both are still quoted (unknown alone does not block)', async () => {
+    setStreams({ thorBlock: lastblockDown, mayaBlock: lastblockDown })
     const { get, unmount } = renderQuoteHook()
+    expect(await quotedProtocols(get)).toEqual(['Thorchain', 'Mayachain', 'Chainflip'])
+    unmount()
+  })
+
+  it.each([['HALTTRADING'], ['HALTBTCCHAIN'], ['HALTBTCTRADING'], ['HALTCHAINGLOBAL']])(
+    'THOR mimir %s = 1 + lastblock Failure + inbound Success([]): THOR is not quoted',
+    async (key) => {
+      setStreams({ thorMimir: RD.success({ [key]: 1 }), thorBlock: lastblockDown })
+      const { get, unmount } = renderQuoteHook()
+      expect(await quotedProtocols(get)).toEqual(['Mayachain', 'Chainflip'])
+      unmount()
+    }
+  )
+
+  it.each([['HALTTRADING'], ['HALTETHCHAIN'], ['HALTBTCTRADING'], ['HALTCHAINGLOBAL']])(
+    'MAYA mimir %s = 1 + lastblock Failure + inbound Success([]): MAYA is not quoted',
+    async (key) => {
+      setStreams({ mayaMimir: RD.success({ [key]: 1 }), mayaBlock: lastblockDown })
+      const { get, unmount } = renderQuoteHook()
+      expect(await quotedProtocols(get)).toEqual(['Thorchain', 'Chainflip'])
+      unmount()
+    }
+  )
+
+  it('THOR HALTTRADING = 1 + lastblock height stalled for 5 min: THOR is still not quoted', async () => {
+    setStreams({ thorMimir: RD.success({ HALTTRADING: 1 }) })
+    const { get, unmount } = renderQuoteHook()
+    act(() => {
+      vi.advanceTimersByTime(5 * MINUTE + 5000)
+    })
     expect(await quotedProtocols(get)).toEqual(['Mayachain', 'Chainflip'])
     unmount()
   })
 
   it('a known halted chain in inbound_addresses next to an unknown mimir still drops that protocol', async () => {
-    mocks.thorMimir = UNKNOWN_MIMIR_HALT_THOR
-    mocks.mayaMimir = getMayachainMimirHalt({ mimir: {}, lastHeight: 100, chains: ['BTC', 'ETH'] })
-    mocks.thorInbound$ = Rx.of(RD.success(['ETH']))
-    mocks.mayaInbound$ = Rx.of(RD.success([]))
+    setStreams({ thorMimir: RD.failure(Error('mimir down')), thorInbound: RD.success(['ETH']) })
     const { get, unmount } = renderQuoteHook()
     expect(await quotedProtocols(get)).toEqual(['Mayachain', 'Chainflip'])
     unmount()

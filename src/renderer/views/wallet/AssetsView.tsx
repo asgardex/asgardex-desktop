@@ -33,9 +33,7 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolShares } from '../../hooks/usePoolShares'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
-import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../../services/mayachain/const'
 import { userChains$ } from '../../services/storage/userChains'
-import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_THOR } from '../../services/thorchain/const'
 import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
@@ -215,19 +213,19 @@ export const AssetsView = (): JSX.Element => {
     () => RD.toNullable(pendingPoolsMayaRD)?.poolDetails ?? [],
     [pendingPoolsMayaRD]
   )
-  const { mimirHaltRD, mimirHalt: mimirHaltThorLoaded } = useThorchainMimirHalt()
-  const { mimirHalt: mimirHaltMayaLoaded } = useMayachainMimirHalt()
+  const { mimirHaltRD, confirmedMimirHalt: mimirHaltThorConfirmed } = useThorchainMimirHalt()
+  const { confirmedMimirHalt: mimirHaltMayaConfirmed } = useMayachainMimirHalt()
   const haltedChainsThorRD = useObservableState(haltedChainsThor$, RD.initial)
   const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
   // Only used for the swap route hint ("impaired"): an unknown halt status alone does not mark the route,
   // known halts do (see `resolveSwapHaltState`)
   const { haltedChains: haltedChainsThor, mimirHalt: mimirHaltThor } = useMemo(
-    () => resolveSwapHaltState(haltedChainsThorRD, mimirHaltThorLoaded, DEFAULT_MIMIR_HALT_THOR),
-    [haltedChainsThorRD, mimirHaltThorLoaded]
+    () => resolveSwapHaltState(haltedChainsThorRD, mimirHaltThorConfirmed),
+    [haltedChainsThorRD, mimirHaltThorConfirmed]
   )
   const { haltedChains: haltedChainsMaya, mimirHalt: mimirHaltMaya } = useMemo(
-    () => resolveSwapHaltState(haltedChainsMayaRD, mimirHaltMayaLoaded, DEFAULT_MIMIR_HALT_MAYA),
-    [haltedChainsMayaRD, mimirHaltMayaLoaded]
+    () => resolveSwapHaltState(haltedChainsMayaRD, mimirHaltMayaConfirmed),
+    [haltedChainsMayaRD, mimirHaltMayaConfirmed]
   )
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])

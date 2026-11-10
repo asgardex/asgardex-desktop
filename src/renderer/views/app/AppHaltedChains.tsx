@@ -21,6 +21,11 @@ import { getSwapAlternativeLabels, isProtocolGloballyHalted, ResolvedProtocolDat
 export type HaltedProtocol = {
   haltedChainsRD: RD.RemoteData<Error, Chain[]>
   mimirHaltRD: RD.RemoteData<Error, MimirHalt>
+  /**
+   * Halts proven by fresh mimir alone (hook `confirmedMimirHalt`), shown while `mimirHaltRD` failed, e.g. because
+   * the block height is unknown: a confirmed `HALTTRADING` / `HALT{CHAIN}CHAIN` must not be hidden behind "unknown".
+   */
+  confirmedMimirHalt?: MimirHalt
   protocol: Chain
   midgardStatusRD: RD.RemoteData<Error, boolean>
 }
@@ -253,7 +258,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
   const { resolvedProtocols, hasAnyData } = useMemo(() => {
     let hasData = false
     const resolved: ResolvedProtocolData[] = protocols.map(
-      ({ protocol, haltedChainsRD, mimirHaltRD, midgardStatusRD }) => {
+      ({ protocol, haltedChainsRD, mimirHaltRD, confirmedMimirHalt, midgardStatusRD }) => {
         if (!RD.isInitial(haltedChainsRD) || !RD.isInitial(mimirHaltRD) || !RD.isInitial(midgardStatusRD)) {
           hasData = true
         }
@@ -273,9 +278,13 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
           protocol,
           inboundHaltedChains:
             RD.isSuccess(haltedChainsRD) || RD.isPending(haltedChainsRD) ? prev.inboundHaltedChains : [],
-          // EMPTY_MIMIR on failure only keeps the per-chain messages quiet - it is NOT "no halt":
-          // `mimirUnknown` raises the blocking "halt status unknown" message and hides the protocol as alternative
-          mimirHalt: RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD) ? prev.mimirHalt : EMPTY_MIMIR,
+          // On failure only the halts proven by mimir alone are shown (`confirmedMimirHalt`, e.g. while the height is
+          // unknown), or none (EMPTY_MIMIR) - that is NOT "no halt": `mimirUnknown` raises the "halt status unknown"
+          // message and hides the protocol as alternative
+          mimirHalt:
+            RD.isSuccess(mimirHaltRD) || RD.isPending(mimirHaltRD)
+              ? prev.mimirHalt
+              : { ...(confirmedMimirHalt ?? EMPTY_MIMIR), haltStatusUnknown: false },
           // A failed `inbound_addresses` blocks liquidity actions as well (see `resolveHaltState`), so it is unknown too
           mimirUnknown: RD.isFailure(mimirHaltRD) || RD.isFailure(haltedChainsRD),
           midgard: RD.isSuccess(midgardStatusRD) || RD.isPending(midgardStatusRD) ? prev.midgard : false

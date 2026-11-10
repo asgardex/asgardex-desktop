@@ -34,19 +34,23 @@ const thorKnown = (mimir: Record<string, number>) =>
 const mayaKnown = (mimir: Record<string, number>) =>
   getMayachainMimirHalt({ mimir, lastHeight: 100, chains: [BTCChain, ETHChain, 'MAYA'] })
 
+// `confirmedMimirHalt` of the hooks while mimir is unknown / stale: no proven halt, status unknown
+const NO_PROVEN_HALT = { ...DEFAULT_MIMIR_HALT, haltStatusUnknown: true }
+const NO_PROVEN_HALT_MAYA = { ...DEFAULT_MIMIR_HALT_MAYA, haltStatusUnknown: true }
+
 const swapState = (
   thor: { inbound: RD.RemoteData<Error, Chain[]>; mimir: typeof DEFAULT_MIMIR_HALT },
   maya: { inbound: RD.RemoteData<Error, Chain[]>; mimir: typeof DEFAULT_MIMIR_HALT_MAYA }
 ) => ({
-  thor: resolveSwapHaltState(thor.inbound, thor.mimir, DEFAULT_MIMIR_HALT),
-  maya: resolveSwapHaltState(maya.inbound, maya.mimir, DEFAULT_MIMIR_HALT_MAYA)
+  thor: resolveSwapHaltState(thor.inbound, thor.mimir),
+  maya: resolveSwapHaltState(maya.inbound, maya.mimir)
 })
 
 describe('swap halt policy: unknown status alone does not block swaps', () => {
   it.each(unknownInbound)(
     'mimir unknown + inbound %s: THOR and MAYA stay quotable, the swap is not disabled',
     (_, inbound) => {
-      const state = swapState({ inbound, mimir: UNKNOWN_MIMIR_HALT }, { inbound, mimir: UNKNOWN_MIMIR_HALT_MAYA })
+      const state = swapState({ inbound, mimir: NO_PROVEN_HALT }, { inbound, mimir: NO_PROVEN_HALT_MAYA })
       expect(filterQuotableProtocols([...ALL], BTC, ETH, state)).toEqual([...ALL])
       expect(isSwapDisabledForChains({ protocol: 'Thorchain', chains: [BTCChain, ETHChain], ...state.thor })).toBe(
         false
@@ -69,7 +73,7 @@ describe('swap halt policy: known halts still block, next to an unknown signal',
     (key) => {
       const state = swapState(
         { inbound: failed, mimir: thorKnown({ [key]: 1 }) },
-        { inbound: failed, mimir: UNKNOWN_MIMIR_HALT_MAYA }
+        { inbound: failed, mimir: NO_PROVEN_HALT_MAYA }
       )
       expect(filterQuotableProtocols([...ALL], BTC, ETH, state)).toEqual(['Mayachain', 'Chainflip', 'OneClick'])
       expect(isSwapDisabledForChains({ protocol: 'Thorchain', chains: [BTCChain, ETHChain], ...state.thor })).toBe(true)
@@ -80,7 +84,7 @@ describe('swap halt policy: known halts still block, next to an unknown signal',
     'MAYA mimir %s loaded + inbound unknown: MAYA dropped from the quote, swap disabled',
     (key) => {
       const state = swapState(
-        { inbound: RD.pending, mimir: UNKNOWN_MIMIR_HALT },
+        { inbound: RD.pending, mimir: NO_PROVEN_HALT },
         { inbound: RD.pending, mimir: mayaKnown({ [key]: 1 }) }
       )
       expect(filterQuotableProtocols([...ALL], BTC, ETH, state)).toEqual(['Thorchain', 'Chainflip', 'OneClick'])
@@ -90,8 +94,8 @@ describe('swap halt policy: known halts still block, next to an unknown signal',
 
   it('inbound loaded with a halted chain + mimir unknown: that protocol is dropped / disabled', () => {
     const state = swapState(
-      { inbound: loaded([ETHChain]), mimir: UNKNOWN_MIMIR_HALT },
-      { inbound: loaded([BTCChain]), mimir: UNKNOWN_MIMIR_HALT_MAYA }
+      { inbound: loaded([ETHChain]), mimir: NO_PROVEN_HALT },
+      { inbound: loaded([BTCChain]), mimir: NO_PROVEN_HALT_MAYA }
     )
     expect(filterQuotableProtocols([...ALL], BTC, ETH, state)).toEqual(['Chainflip', 'OneClick'])
     expect(isSwapDisabledForChains({ protocol: 'Thorchain', chains: [BTCChain, ETHChain], ...state.thor })).toBe(true)
@@ -138,18 +142,20 @@ describe('liquidity actions and RUNE sends stay blocked while the halt status is
 })
 
 describe('helpers/haltedChains resolveSwapHaltState', () => {
-  it('keeps a loaded halted list and a known mimir as they are', () => {
+  it('keeps a loaded halted list and the confirmed mimir as they are', () => {
     const mimir = thorKnown({ HALTETHTRADING: 1 })
-    expect(resolveSwapHaltState(loaded([BTCChain]), mimir, DEFAULT_MIMIR_HALT)).toEqual({
-      haltedChains: [BTCChain],
-      mimirHalt: mimir
-    })
+    expect(resolveSwapHaltState(loaded([BTCChain]), mimir)).toEqual({ haltedChains: [BTCChain], mimirHalt: mimir })
   })
 
-  it('drops only the synthetic flags of an unknown status', () => {
-    expect(resolveSwapHaltState(failed, UNKNOWN_MIMIR_HALT, DEFAULT_MIMIR_HALT)).toEqual({
-      haltedChains: [],
-      mimirHalt: DEFAULT_MIMIR_HALT
-    })
+  it('an unknown inbound list adds no halted chain', () => {
+    expect(resolveSwapHaltState(failed, NO_PROVEN_HALT)).toEqual({ haltedChains: [], mimirHalt: NO_PROVEN_HALT })
+  })
+
+  it('fails closed if given the synthetic UNKNOWN_MIMIR_HALT by mistake (it is not dropped here)', () => {
+    const state = swapState(
+      { inbound: failed, mimir: UNKNOWN_MIMIR_HALT },
+      { inbound: failed, mimir: NO_PROVEN_HALT_MAYA }
+    )
+    expect(filterQuotableProtocols(['Thorchain'], BTC, ETH, state)).toEqual([])
   })
 })

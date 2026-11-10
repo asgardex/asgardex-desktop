@@ -110,6 +110,32 @@ describe('views/app/AppHaltedChains: halt status unknown', () => {
     })
   })
 
+  it('does not hide a halt proven by mimir while the status is unknown (e.g. block height down)', () => {
+    const failedWithConfirmed = (confirmed: Partial<MimirHalt>): HaltedProtocol => ({
+      ...failedMimir(THORChain),
+      confirmedMimirHalt: { ...knownMimir, ...confirmed, haltStatusUnknown: true } as MimirHalt
+    })
+    const trading = render('/pools/swap', [failedWithConfirmed({ haltGlobalTrading: true }), known(MAYAChain)])
+    expect(trading.text).toContain('Halt status of THOR could not be loaded')
+    expect(trading.text).toContain('Trading on THOR is halted temporarily')
+    trading.unmount()
+
+    const chain = render('/pools', [
+      failedWithConfirmed({ HALTBTCCHAIN: true } as Partial<MimirHalt>),
+      known(MAYAChain)
+    ])
+    expect(chain.text).toContain('Halt status of THOR could not be loaded')
+    expect(chain.text).toMatch(/BTC chain on THOR has been halted/)
+    chain.unmount()
+  })
+
+  it('without a confirmed halt, a failed status shows only the unknown message', () => {
+    const { text, unmount } = render('/pools', [failedMimir(THORChain), known(MAYAChain)])
+    expect(text).not.toContain('is halted temporarily')
+    expect(text).not.toContain('has been halted')
+    unmount()
+  })
+
   it('shows nothing when everything loaded and nothing is halted', () => {
     const { text, unmount } = render('/pools/swap', [known(THORChain), known(MAYAChain)])
     expect(text).not.toContain('could not be loaded')

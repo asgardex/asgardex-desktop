@@ -27,8 +27,6 @@ import {
 } from '../helpers/protocolTradingHalt'
 import { dexTradeQuoteToAggregator, thorTradeQuoteToAggregator } from '../helpers/tradeQuote'
 import { getCurrentNetworkState } from '../services/app/service'
-import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../services/mayachain/const'
-import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_THOR } from '../services/thorchain/const'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useThorchainMimirHalt } from './useMimirHalt'
 import { useMayachainMimirHalt } from './useMimirHaltMaya'
@@ -89,8 +87,9 @@ export const useSwapQuote = ({
   const { thorchainQuery } = useThorchainQueryContext()
   const { isOneClickSupportedAsset } = useOneClickContext()
   const { isChainflipSupportedAssetSync } = useChainflipContext()
-  const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
-  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
+  // Halts proven by mimir (also while the block height is unknown), no synthetic "unknown" flags
+  const { confirmedMimirHalt: mimirHaltThor } = useThorchainMimirHalt()
+  const { confirmedMimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
   const {
     service: {
       pools: { haltedChains$: haltedChainsThor$ }
@@ -108,11 +107,11 @@ export const useSwapQuote = ({
   // Unknown halt status alone does not drop THOR / MAYA from the quote: the node quote decides.
   // Known halts (loaded mimir or loaded `inbound_addresses`) still filter the protocol out.
   const thorHalt = useMemo(
-    () => resolveSwapHaltState(haltedChainsThorRD, mimirHaltThor, DEFAULT_MIMIR_HALT_THOR),
+    () => resolveSwapHaltState(haltedChainsThorRD, mimirHaltThor),
     [haltedChainsThorRD, mimirHaltThor]
   )
   const mayaHalt = useMemo(
-    () => resolveSwapHaltState(haltedChainsMayaRD, mimirHaltMaya, DEFAULT_MIMIR_HALT_MAYA),
+    () => resolveSwapHaltState(haltedChainsMayaRD, mimirHaltMaya),
     [haltedChainsMayaRD, mimirHaltMaya]
   )
 

@@ -101,8 +101,8 @@ export const AppView = (): JSX.Element => {
   const { walletsPersistentRD, reload: reloadPersistentWallets } = useKeystoreWallets()
   const { ledgerAddressesPersistentRD, reloadPersistentLedgerAddresses } = useLedgerAddresses()
 
-  const { mimirHaltRD: mimirHaltThorRD } = useThorchainMimirHalt()
-  const { mimirHaltRD: mimirHaltMayaRD } = useMayachainMimirHalt()
+  const { mimirHaltRD: mimirHaltThorRD, confirmedMimirHalt: confirmedMimirHaltThor } = useThorchainMimirHalt()
+  const { mimirHaltRD: mimirHaltMayaRD, confirmedMimirHalt: confirmedMimirHaltMaya } = useMayachainMimirHalt()
 
   // Transaction tracking services
   const { transactionTrackingService: thorchainTransactionTrackingService } = useThorchainContext()
@@ -182,12 +182,14 @@ export const AppView = (): JSX.Element => {
                       protocol: THORChain,
                       haltedChainsRD: haltedChainsThorRD,
                       mimirHaltRD: mimirHaltThorRD,
+                      confirmedMimirHalt: confirmedMimirHaltThor,
                       midgardStatusRD: midgardStatusRD
                     },
                     {
                       protocol: MayaChain,
                       haltedChainsRD: haltedChainsMayaRD,
                       mimirHaltRD: mimirHaltMayaRD,
+                      confirmedMimirHalt: confirmedMimirHaltMaya,
                       midgardStatusRD: midgardMayaStatusRD
                     }
                   ]}

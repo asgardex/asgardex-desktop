@@ -3,12 +3,14 @@
 // Captured 2026-11-02 05:14:58 UTC (15:44:58 ACDT) from mayanode.mayachain.info/mayachain.
 import { act, createElement } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
+import { assetFromStringEx } from '@xchainjs/xchain-util'
 import { createRoot } from 'react-dom/client'
 import * as Rx from 'rxjs'
 import { afterEach, beforeEach, vi } from 'vitest'
 
 import { DEFAULT_ENABLED_CHAINS } from '../../shared/utils/chain'
 import { BTCChain, MAYAChain } from '../../shared/utils/chainIds'
+import { resolveHaltState, resolveSwapHaltState } from '../helpers/haltedChains'
 import { resetMimirCasingWarnings } from '../helpers/mimirLookup'
 import {
   disableAllActions,
@@ -16,6 +18,7 @@ import {
   disableTradingActions,
   disableWithdrawActions
 } from '../helpers/poolHelperMaya'
+import { filterQuotableProtocols, isSwapDisabledForChains } from '../helpers/protocolTradingHalt'
 import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT } from '../services/mayachain/const'
 import { Mimir } from '../services/mayachain/types'
 import mayaLastblock from './__fixtures__/mayanode-mainnet-btc-eth-zec-trading-halted/lastblock.json'
@@ -410,6 +413,141 @@ describe('hooks/useMimirHaltMaya', () => {
       expect(second.get().mimirHalt.haltStatusUnknown).toBe(true)
       first.unmount()
       second.unmount()
+    })
+  })
+
+  describe('useMayachainMimirHalt: halts proven by mimir while the block height is unknown (real streams)', () => {
+    const MINUTE = 60 * 1000
+    const BTC = assetFromStringEx('BTC.BTC')
+    const ETH = assetFromStringEx('ETH.ETH')
+    const mount = () => {
+      let result: ReturnType<typeof useMayachainMimirHalt> | undefined
+      const Probe = () => {
+        result = useMayachainMimirHalt()
+        return null
+      }
+      ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+      const root = createRoot(document.createElement('div'))
+      act(() => root.render(createElement(Probe)))
+      return { get: () => result as NonNullable<typeof result>, unmount: () => act(() => root.unmount()) }
+    }
+    const original = mockMayachainContext.value
+    let mimir$: Rx.BehaviorSubject<RD.RemoteData<Error, Mimir>>
+    let lastblock$: Rx.BehaviorSubject<RD.RemoteData<Error, unknown>>
+    const setup = (mimir: Mimir, lastblock: RD.RemoteData<Error, unknown>) => {
+      mimir$ = new Rx.BehaviorSubject<RD.RemoteData<Error, Mimir>>(RD.success(mimir))
+      lastblock$ = new Rx.BehaviorSubject(lastblock)
+      mockMayachainContext.value = { mimir$, mayachainLastblockState$: lastblock$ }
+    }
+    const block = (height: number) => RD.success([{ chain: 'BTC', mayachain: height }])
+    const advance = (ms: number) =>
+      act(() => {
+        vi.advanceTimersByTime(ms)
+      })
+    /** What the swap paths see with inbound_addresses Success([]) */
+    const swap = (r: ReturnType<typeof useMayachainMimirHalt>) =>
+      resolveSwapHaltState(RD.success([]), r.confirmedMimirHalt)
+    const quotable = (r: ReturnType<typeof useMayachainMimirHalt>) =>
+      filterQuotableProtocols(['Mayachain', 'Chainflip'], BTC, ETH, {
+        thor: { haltedChains: [], mimirHalt: {} as never },
+        maya: swap(r)
+      } as never)
+    const expectLpAndRuneBlocked = (r: ReturnType<typeof useMayachainMimirHalt>) => {
+      const lp = resolveHaltState(RD.success([]), r.mimirHalt, UNKNOWN_MIMIR_HALT)
+      const { haltedChains, mimirHalt } = lp
+      expect(mimirHalt.haltStatusUnknown).toBe(true)
+      expect(disablePoolActions({ chain: BTCChain, haltedChains, mimirHalt })).toBe(true)
+      expect(disableWithdrawActions({ chain: BTCChain, haltedChains, mimirHalt })).toBe(true)
+    }
+
+    beforeEach(() => vi.useFakeTimers())
+    afterEach(() => {
+      mockMayachainContext.value = original
+      vi.useRealTimers()
+    })
+
+    const lastblockDown = RD.failure(Error('lastblock down'))
+
+    it.each([['HALTTRADING'], ['HALTCHAINGLOBAL'], ['HALTBTCCHAIN'], ['HALTBTCTRADING'], ['HALTMAYACHAIN']])(
+      '%s = 1 + lastblock Failure: status unknown (LP blocked), but the halt is confirmed for swaps',
+      (key) => {
+        setup({ [key]: 1 }, lastblockDown)
+        const { get, unmount } = mount()
+        expect(RD.isFailure(get().mimirHaltRD)).toBe(true)
+        expect(get().mimirHalt).toBe(UNKNOWN_MIMIR_HALT)
+        expectLpAndRuneBlocked(get())
+        expect(get().confirmedMimirHalt.haltStatusUnknown).toBe(true)
+        expect(quotable(get())).toEqual(['Chainflip'])
+        expect(isSwapDisabledForChains({ protocol: 'Mayachain', chains: [BTCChain], ...swap(get()) })).toBe(true)
+        unmount()
+      }
+    )
+
+    it.each([['HALTTRADING'], ['HALTCHAINGLOBAL'], ['HALTBTCCHAIN'], ['HALTBTCTRADING']])(
+      '%s = 1 + lastblock height stalled for 5 min: unknown, the halt stays confirmed for swaps',
+      (key) => {
+        setup({ [key]: 1 }, block(100))
+        const { get, unmount } = mount()
+        // known while the height is fresh
+        expect(get().mimirHalt.haltStatusUnknown).toBe(false)
+        expect(quotable(get())).toEqual(['Chainflip'])
+        advance(5 * MINUTE + 5000)
+        expect(RD.isFailure(get().mimirHaltRD)).toBe(true)
+        expectLpAndRuneBlocked(get())
+        expect(quotable(get())).toEqual(['Chainflip'])
+        unmount()
+      }
+    )
+
+    it('no halt in mimir + lastblock Failure: unknown (LP blocked) but swaps are not blocked', () => {
+      setup({}, lastblockDown)
+      const { get, unmount } = mount()
+      expectLpAndRuneBlocked(get())
+      expect(quotable(get())).toEqual(['Mayachain', 'Chainflip'])
+      unmount()
+    })
+
+    it('a scheduled height halt cannot be proven without a height (not confirmed, the node quote decides)', () => {
+      setup({ HALTBTCCHAIN: 50 }, lastblockDown)
+      const { get, unmount } = mount()
+      expectLpAndRuneBlocked(get())
+      expect(get().confirmedMimirHalt.HALTBTCCHAIN).toBe(false)
+      unmount()
+    })
+
+    it('stale mimir is not treated as confirmed: no refresh for 15 min -> no proven halt', () => {
+      setup({ HALTTRADING: 1 }, lastblockDown)
+      const { get, unmount } = mount()
+      expect(quotable(get())).toEqual(['Chainflip'])
+      advance(15 * MINUTE + 5000)
+      expect(get().confirmedMimirHalt.haltGlobalTrading).toBe(false)
+      expect(quotable(get())).toEqual(['Mayachain', 'Chainflip'])
+      expectLpAndRuneBlocked(get())
+      unmount()
+    })
+
+    it('a failed mimir reload keeps the held halt (1-2 failures), the 3rd drops it', () => {
+      setup({ HALTTRADING: 1 }, lastblockDown)
+      const { get, unmount } = mount()
+      act(() => mimir$.next(RD.failure(Error('mimir down'))))
+      act(() => mimir$.next(RD.failure(Error('mimir down'))))
+      expect(quotable(get())).toEqual(['Chainflip'])
+      act(() => mimir$.next(RD.failure(Error('mimir down'))))
+      expect(quotable(get())).toEqual(['Mayachain', 'Chainflip'])
+      unmount()
+    })
+
+    it('disabled hook: confirmed is the default (it opted out)', () => {
+      setup({ HALTTRADING: 1 }, lastblockDown)
+      let result: ReturnType<typeof useMayachainMimirHalt> | undefined
+      const Probe = () => {
+        result = useMayachainMimirHalt(false)
+        return null
+      }
+      const root = createRoot(document.createElement('div'))
+      act(() => root.render(createElement(Probe)))
+      expect(result?.confirmedMimirHalt).toBe(DEFAULT_MIMIR_HALT)
+      act(() => root.unmount())
     })
   })
 })

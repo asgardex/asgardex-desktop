@@ -76,13 +76,11 @@ import { addressTR$ } from '../../services/chain/lazyBitcoin'
 import { AssetWithDecimalRD } from '../../services/chain/types'
 import { cAssetToXAsset, cChainToXChain } from '../../services/chainflip/utils'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
-import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA } from '../../services/mayachain/const'
 import {
   PendingPoolsState as MayaPendingPoolsState,
   PoolsState as MayaPoolsState
 } from '../../services/midgard/mayaMidgard/types'
 import { PendingPoolsState, PoolAssetDetail, PoolsState } from '../../services/midgard/midgardTypes'
-import { DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_THOR } from '../../services/thorchain/const'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
@@ -891,15 +889,16 @@ const SuccessTradeRouteView = ({
   )
   const haltedChainsRD = useObservableLayoutState(haltedChainsRD$, RD.initial as RD.RemoteData<Error, Chain[]>)
   // Halt state of the *selected* protocol: THORChain's mimir must not decide MAYAChain swaps (and vice versa)
-  const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
-  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
+  // Halts proven by mimir (also while the block height is unknown), no synthetic "unknown" flags
+  const { confirmedMimirHalt: mimirHaltThor } = useThorchainMimirHalt()
+  const { confirmedMimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
   // Unknown halt status alone does not disable the swap (the node quote decides);
   // known halts (loaded mimir or loaded `inbound_addresses`) still do
   const { haltedChains, mimirHalt } = useMemo(
     () =>
       protocol === THORChain
-        ? resolveSwapHaltState(haltedChainsRD, mimirHaltThor, DEFAULT_MIMIR_HALT_THOR)
-        : resolveSwapHaltState(haltedChainsRD, mimirHaltMaya, DEFAULT_MIMIR_HALT_MAYA),
+        ? resolveSwapHaltState(haltedChainsRD, mimirHaltThor)
+        : resolveSwapHaltState(haltedChainsRD, mimirHaltMaya),
     [haltedChainsRD, mimirHaltMaya, mimirHaltThor, protocol]
   )
   const { isPrivate } = useApp()
