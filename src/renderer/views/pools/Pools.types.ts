@@ -25,3 +25,7 @@ export type PoolTableRowData = {
 }
 
 export type PoolTableRowsData = PoolTableRowData[]
+
+export type PoolsSortKey = 'asset' | 'poolPrice' | 'depthPrice' | 'volumePrice' | 'apy'
+export type PoolsSort = { key: PoolsSortKey; direction: 'asc' | 'desc' }
+export const DEFAULT_POOLS_SORT: PoolsSort = { key: 'depthPrice', direction: 'desc' }
