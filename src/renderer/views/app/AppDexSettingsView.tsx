@@ -1,44 +1,20 @@
 import { useCallback } from 'react'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import type { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
-import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { SettingsSection } from '../../components/settings/SettingsSection'
+import { SettingsSelect } from '../../components/settings/SettingsSelect'
 import { ProviderIcon } from '../../components/swap/ProviderIcon'
 import { SLIP_TOLERANCE_KEY } from '../../components/swap/SelectableSlipTolerance'
 import { SwitchButton } from '../../components/uielements/button/SwitchButton'
-import { Dropdown } from '../../components/uielements/dropdown'
-import { Label } from '../../components/uielements/label'
 import { useAppContext } from '../../contexts/AppContext'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
 import { useAggregator } from '../../store/aggregator/hooks'
 import { isSlipTolerance, SlipTolerance } from '../../types/asgardex'
 
-type SectionProps = {
-  title: string
-  subtitle: string
-  children?: React.ReactNode
-  className?: string
-}
-
 const AllProtocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip', 'OneClick']
-
-const Section = ({ title, subtitle, className, children }: SectionProps) => (
-  <div
-    className={clsx(
-      'flex w-full items-start justify-between px-4 py-6',
-      'border-b border-solid border-gray0 last:border-none dark:border-gray0d',
-      className
-    )}>
-    <div className="flex flex-col">
-      <h2 className="mb-5px font-main text-[16px] text-text2 uppercase dark:text-text2d">{title}</h2>
-      <span className="font-main text-gray1 dark:text-gray1d">{subtitle}</span>
-    </div>
-    <div className="flex flex-col">{children}</div>
-  </div>
-)
 
 export const AppDexSettingsView = (): JSX.Element => {
   const { protocols, setAggProtocol } = useAggregator()
@@ -70,18 +46,8 @@ export const AppDexSettingsView = (): JSX.Element => {
   const slipMenu = useCallback((onClick: (slip: SlipTolerance) => void, isStreaming: boolean) => {
     const slipToleranceOptions: SlipTolerance[] = isStreaming ? [1, 3, 5, 10, 15, 20] : [0.5, 1, 3, 5, 10, 15, 20]
     return slipToleranceOptions.map((slip) => (
-      <div key={slip} className="flex min-w-[102px] items-center space-x-4 px-2 py-1" onClick={() => onClick(slip)}>
-        <div className="flex flex-col">
-          <Label
-            className="pr-5 tracking-tight"
-            color="normal"
-            size="big"
-            weight="bold"
-            textTransform="uppercase"
-            nowrap>
-            {slip} %
-          </Label>
-        </div>
+      <div key={slip} className="flex min-w-[102px] items-center px-2 py-1" onClick={() => onClick(slip)}>
+        <span className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">{slip} %</span>
       </div>
     ))
   }, [])
@@ -94,8 +60,8 @@ export const AppDexSettingsView = (): JSX.Element => {
   )
 
   return (
-    <div>
-      <Section
+    <div className="flex flex-col gap-3">
+      <SettingsSection
         title={intl.formatMessage({ id: 'settings.protocols.title' })}
         subtitle={intl.formatMessage({ id: 'settings.protocols.subtitle' })}>
         <div className="flex w-full flex-col gap-2">
@@ -103,7 +69,7 @@ export const AppDexSettingsView = (): JSX.Element => {
             <div key={protocol} className="flex items-center justify-between">
               <div className="mr-4 flex items-center gap-2">
                 <ProviderIcon className="h-8 w-8" protocol={protocol} />
-                <span className="text-text2 dark:text-text2d">{protocol}</span>
+                <span className="font-main text-[14px] text-text0 dark:text-text0d">{protocol}</span>
               </div>
               <SwitchButton
                 active={protocols.includes(protocol)}
@@ -112,41 +78,30 @@ export const AppDexSettingsView = (): JSX.Element => {
             </div>
           ))}
         </div>
-      </Section>
-      <div
-        className={clsx(
-          'flex w-full flex-col px-4 py-6',
-          'border-b border-solid border-gray0 last:border-none dark:border-gray0d'
-        )}>
-        <div className="flex flex-col">
-          <h2 className="mb-5px font-main text-[16px] text-text2 uppercase dark:text-text2d">Slippage Tolerance</h2>
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between">
-            <span className="font-main text-gray1 dark:text-gray1d">Streaming Swaps</span>
-            <Dropdown
-              trigger={
-                <div className="flex min-w-[120px] items-center justify-between rounded-md border border-solid border-gray0 px-2 py-1 dark:border-gray0d">
-                  <Label>{streamingSlipTolerance} %</Label>
-                  <ChevronDownIcon className="h-4 w-4 text-turquoise" />
-                </div>
-              }
+      </SettingsSection>
+      <SettingsSection title={intl.formatMessage({ id: 'settings.slippage.title' })}>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-main text-[13px] text-gray1 dark:text-gray1d">
+              {intl.formatMessage({ id: 'settings.slippage.streaming' })}
+            </span>
+            <SettingsSelect
+              value={`${streamingSlipTolerance} %`}
+              triggerClassName="min-w-[120px]"
               options={slipMenu((slip) => {
                 changeStreamingSlipTolerance(slip)
                 localStorage.setItem(`${SLIP_TOLERANCE_KEY}_STREAMING`, slip.toString())
               }, true)}
             />
           </div>
-          <div className="flex items-center justify-between">
-            <span className="font-main text-gray1 dark:text-gray1d">Trade Swaps</span>
-            <Dropdown
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-main text-[13px] text-gray1 dark:text-gray1d">
+              {intl.formatMessage({ id: 'settings.slippage.trade' })}
+            </span>
+            <SettingsSelect
+              value={`${tradeSlipTolerance} %`}
+              triggerClassName="min-w-[120px]"
               anchor={{ to: 'bottom', gap: 4, padding: 8 }}
-              trigger={
-                <div className="flex min-w-[120px] items-center justify-between rounded-md border border-solid border-gray0 px-2 py-1 dark:border-gray0d">
-                  <Label>{tradeSlipTolerance} %</Label>
-                  <ChevronDownIcon className="h-4 w-4 text-turquoise" />
-                </div>
-              }
               options={slipMenu((slip) => {
                 changeTradeSlipTolerance(slip)
                 localStorage.setItem(`${SLIP_TOLERANCE_KEY}_TRADE`, slip.toString())
@@ -154,7 +109,7 @@ export const AppDexSettingsView = (): JSX.Element => {
             />
           </div>
         </div>
-      </div>
+      </SettingsSection>
     </div>
   )
 }

@@ -130,7 +130,19 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'El endpoint RPC no responde. Verifica tu conexión o prueba con otra URL.',
   'settings.ledgerMode.lockWalletWarning': 'Bloquea la cartera primero para entrar en el modo Ledger',
   'settings.wallet.whitelist': 'Lista blanca',
-  'settings.wallet.customToken': 'Token personalizado'
+  'settings.wallet.customToken': 'Token personalizado',
+  'settings.tab.dex': 'DEX',
+  'settings.tab.expert': 'Modo experto',
+  'settings.ledgerMode.enter': 'Entrar en modo Ledger',
+  'settings.ledgerMode.exit': 'Salir del modo Ledger',
+  'settings.ledgerMode.lockToEnter': 'Bloquea la billetera para entrar en modo Ledger',
+  'settings.slippage.title': 'Tolerancia de deslizamiento',
+  'settings.slippage.streaming': 'Swaps en streaming',
+  'settings.slippage.trade': 'Swaps de trade',
+  'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
+  'settings.wallet.unlock.or': 'o',
+  'settings.wallet.unlock.vultisig': 'Desbloquear bóveda Vultisig',
+  'settings.wallet.noAddresses': 'No hay direcciones disponibles',
 }
 
 export default settings

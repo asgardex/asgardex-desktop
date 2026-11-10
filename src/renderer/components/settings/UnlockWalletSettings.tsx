@@ -60,7 +60,7 @@ export const UnlockWalletSettings = ({ keystoreState, unlockHandler }: Props): J
   }, [navigate, isUnlocked])
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 bg-bg0 px-40px py-30px dark:bg-bg0d">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-xl bg-bg0 px-8 py-10 dark:bg-bg0d">
       {/* Keystore unlock / add */}
       <FlatButton className="min-w-[200px] px-30px" onClick={handleKeystoreUnlockClick}>
         {!hasKeystore
@@ -72,21 +72,21 @@ export const UnlockWalletSettings = ({ keystoreState, unlockHandler }: Props): J
       {hasVultisigVaults && (
         <>
           <div className="flex items-center gap-2 text-text2 dark:text-text2d">
-            <span className="text-sm">or</span>
+            <span className="font-main text-[13px]">{intl.formatMessage({ id: 'settings.wallet.unlock.or' })}</span>
           </div>
           <BorderButton
             size="normal"
             onClick={handleVultisigUnlockClick}
             className="flex min-w-[200px] items-center gap-2">
             <ShieldCheckIcon className="h-5 w-5" />
-            Unlock Vultisig Vault
+            {intl.formatMessage({ id: 'settings.wallet.unlock.vultisig' })}
           </BorderButton>
         </>
       )}
 
       {/* Ledger mode */}
       <div className="flex items-center gap-2 text-text2 dark:text-text2d">
-        <span className="text-sm">or</span>
+        <span className="font-main text-[13px]">{intl.formatMessage({ id: 'settings.wallet.unlock.or' })}</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <BorderButton
@@ -94,9 +94,13 @@ export const UnlockWalletSettings = ({ keystoreState, unlockHandler }: Props): J
           onClick={handleLedgerModeClick}
           disabled={isUnlocked}
           className={`flex min-w-[200px] items-center gap-2 ${isUnlocked ? 'cursor-not-allowed opacity-50' : ''}`}
-          title={isUnlocked ? 'Lock wallet to enter Ledger mode' : 'Enter Ledger Mode'}>
+          title={
+            isUnlocked
+              ? intl.formatMessage({ id: 'settings.ledgerMode.lockToEnter' })
+              : intl.formatMessage({ id: 'settings.ledgerMode.enter' })
+          }>
           <CpuChipIcon className="h-5 w-5" />
-          Enter Ledger Mode
+          {intl.formatMessage({ id: 'settings.ledgerMode.enter' })}
         </BorderButton>
         {isUnlocked && (
           <span className="text-xs text-warning0 dark:text-warning0d">

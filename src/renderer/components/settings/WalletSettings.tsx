@@ -10,7 +10,8 @@ import {
   QrCodeIcon,
   ArrowUpRightIcon,
   PlusCircleIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
@@ -91,7 +92,7 @@ import { SwitchButton } from '../uielements/button/SwitchButton'
 import { WalletTypeLabel } from '../uielements/common'
 import { Dropdown } from '../uielements/dropdown'
 import { InfoIcon } from '../uielements/info'
-import { Input, InputSearch } from '../uielements/input'
+import { Input } from '../uielements/input'
 import { Label } from '../uielements/label'
 import { Modal } from '../uielements/modal'
 import { Tooltip } from '../uielements/tooltip'
@@ -134,19 +135,19 @@ const ActionButton = ({
   onClick: () => void
 }) => {
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
       className={clsx(
-        'flex min-w-[128px] cursor-pointer flex-col items-center',
-        'space-y-2 px-4 py-2',
-        'rounded-lg border border-solid border-gray1 dark:border-gray1d',
-        'text-text2 dark:text-text2d',
-        'hover:bg-bg2 dark:hover:bg-bg2d',
+        'flex min-w-[112px] cursor-pointer flex-col items-center gap-2 rounded-xl border border-gray0/70 bg-bg1 px-3 py-2.5',
+        'font-main text-[13px] text-text2 dark:border-gray0d dark:bg-bg1d dark:text-text2d',
+        'hover:text-text0 dark:hover:text-text0d',
+        'focus-visible:ring-2 focus-visible:ring-turquoise focus-visible:outline-none',
         className
-      )}
-      onClick={onClick}>
+      )}>
       {icon}
       <span>{text}</span>
-    </div>
+    </button>
   )
 }
 
@@ -338,7 +339,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
     () => (
       <div className="mt-10px w-full">
         <WalletTypeLabel className="ml-10 inline-block">{walletTypeToI18n(WalletType.Ledger, intl)}</WalletTypeLabel>
-        <div className="ml-40px flex items-center pt-5px text-[12px] text-text2 uppercase dark:text-text2d">
+        <div className="ml-8 flex items-center pt-1 font-main text-[12px] text-text2 dark:text-text2d">
           <ExclamationTriangleIcon className="mr-2" width={24} height={24} />
           {intl.formatMessage({ id: 'common.notsupported.fornetwork' }, { network })}
         </div>
@@ -421,7 +422,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
             empty,
             empty,
             (error) => (
-              <p className="pt-10px font-main text-[12px] text-error0 uppercase">
+              <p className="pt-2 font-main text-[12px] text-error0 dark:text-error0d">
                 {ledgerErrorIdToI18n(error.errorId, intl)}
               </p>
             ),
@@ -448,7 +449,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 </Button>
 
                 <>
-                  <div className="ml-2 text-[12px] text-text2 uppercase dark:text-text2d">
+                  <div className="ml-2 font-main text-[11px] tracking-wider text-gray2 uppercase dark:text-gray2d">
                     {intl.formatMessage({ id: 'settings.wallet.account' })}
                   </div>
                   <WalletIndexInput
@@ -462,7 +463,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   />
                   <InfoIcon tooltip={intl.formatMessage({ id: 'settings.wallet.account.info' })} />
 
-                  <div className="ml-2 text-[12px] text-text2 uppercase dark:text-text2d">
+                  <div className="ml-2 font-main text-[11px] tracking-wider text-gray2 uppercase dark:text-gray2d">
                     {intl.formatMessage({ id: 'settings.wallet.index' })}
                   </div>
                   <WalletIndexInput
@@ -482,7 +483,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   <div className="ml-2">
                     <Dropdown
                       trigger={
-                        <Label className="rounded-lg border border-solid border-bg2 p-2 dark:border-bg2d">
+                        <Label className="rounded-lg border border-gray0 p-2 focus-within:ring-2 focus-within:ring-turquoise dark:border-gray0d">
                           {getChainDerivationOptions(chain, selectedAccountIndex, selectedWalletIndex, network)[
                             selectedDerivationIndex
                           ]?.description || 'Default'}
@@ -516,7 +517,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                   onChange={onChangeEvmDerivationMode}
                   value={evmHDMode}>
                   <Radio value="ledgerlive" key="ledgerlive">
-                    <Label className="mt-10px flex items-center lg:mt-0" textTransform="uppercase">
+                    <Label className="mt-10px flex items-center lg:mt-0">
                       {intl.formatMessage({ id: 'common.ledgerlive' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
@@ -529,7 +530,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                     </Label>
                   </Radio>
                   <Radio value="legacy" key="legacy">
-                    <Label className="mt-10px flex items-center lg:mt-0" textTransform="uppercase">
+                    <Label className="mt-10px flex items-center lg:mt-0">
                       {intl.formatMessage({ id: 'common.legacy' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
@@ -540,7 +541,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                     </Label>
                   </Radio>
                   <Radio value="metamask" key="metamask">
-                    <Label className="mt-10px flex items-center lg:mt-0" textTransform="uppercase">
+                    <Label className="mt-10px flex items-center lg:mt-0">
                       {intl.formatMessage({ id: 'common.metamask' })}
                       <InfoIcon
                         tooltip={intl.formatMessage(
@@ -620,15 +621,15 @@ export const WalletSettings = (props: Props): JSX.Element => {
           <>
             <div className="flex w-full space-x-4">
               <>
-                <div className="text-[12px] text-text2 uppercase dark:text-text2d">
+                <div className="font-main text-[11px] tracking-wider text-gray2 uppercase dark:text-gray2d">
                   <div>{intl.formatMessage({ id: 'settings.wallet.account' })}</div>
                 </div>
-                <div className="text-[12px] text-text2 uppercase dark:text-text2d">{walletAccount}</div>
+                <div className="font-main text-[13px] text-text0 dark:text-text0d">{walletAccount}</div>
               </>
-              <div className="text-[12px] text-text2 uppercase dark:text-text2d">
+              <div className="font-main text-[11px] tracking-wider text-gray2 uppercase dark:text-gray2d">
                 {intl.formatMessage({ id: 'settings.wallet.index' })}
               </div>
-              <div className="text-[12px] text-text2 uppercase dark:text-text2d">{walletIndex}</div>
+              <div className="font-main text-[13px] text-text0 dark:text-text0d">{walletIndex}</div>
               {/* Show derivation path for all chains */}
               <div className="text-[12px] text-text2 dark:text-text2d">
                 {isEvmChain(chain)
@@ -645,14 +646,14 @@ export const WalletSettings = (props: Props): JSX.Element => {
       return (
         <>
           <div className="flex-row">
-            <WalletTypeLabel className="mt-10px ml-40px inline-block">
+            <WalletTypeLabel className="mt-2 ml-2 inline-block">
               {walletTypeToI18n(WalletType.Ledger, intl)}
             </WalletTypeLabel>
-            <div className="mt-10px ml-40px inline-block">
+            <div className="mt-2 ml-2 inline-block">
               {O.isSome(oAddress) ? renderAccount(oAddress.value) : <span></span>}
             </div>
           </div>
-          <div className="my-0 w-full overflow-hidden px-40px">
+          <div className="my-0 w-full overflow-hidden px-2">
             {FP.pipe(oAddress, O.fold(renderAddAddress, renderAddress))}
           </div>
         </>
@@ -680,8 +681,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     (chain: Chain, address: string, type: WalletType) => {
       return (
         <>
-          <WalletTypeLabel className="ml-10 inline-block">{walletTypeToI18n(type, intl)}</WalletTypeLabel>
-          <div className="my-0 w-full overflow-hidden px-40px">
+          <WalletTypeLabel className="ml-2 inline-block">{walletTypeToI18n(type, intl)}</WalletTypeLabel>
+          <div className="my-0 w-full overflow-hidden px-2">
             <div className="flex w-full items-center gap-x-1">
               <AddressEllipsis
                 address={address}
@@ -880,8 +881,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     const nameInvalid = missing && !newAddress.name?.trim()
     const inputClass = (invalid: boolean) =>
       clsx(
-        'h-[38px] border border-solid bg-bg0 dark:bg-bg0d',
-        invalid ? '!border-error0 dark:!border-error0d' : 'border-bg2 dark:border-bg2d'
+        'h-[38px] rounded-lg border border-solid bg-bg0 focus:border-turquoise focus:outline-none dark:bg-bg0d',
+        invalid ? '!border-error0 dark:!border-error0d' : 'border-gray0 dark:border-gray0d'
       )
 
     return (
@@ -978,12 +979,10 @@ export const WalletSettings = (props: Props): JSX.Element => {
       // key and the per-row ledger form state must be unique per address, not per chain.
       <div
         key={`${chain}-${type}-${address}`}
-        className="flex flex-col border-b border-solid border-b-gray0 p-4 dark:border-b-gray0d">
+        className="flex flex-col gap-2 rounded-xl border border-gray0/70 bg-bg1 px-4 py-3 dark:border-gray0d dark:bg-bg1d">
         <div className="flex w-full items-center justify-start">
           <ChainIcon chain={chain} size="small" />
-          <Label className="p-0 pl-[10px] text-xl leading-[25px] tracking-[2px]" textTransform="uppercase">
-            {chainToString(chain)}
-          </Label>
+          <span className="p-0 pl-2.5 font-main-semi-bold text-text0 dark:text-text0d">{chainToString(chain)}</span>
         </div>
         <div className="mt-10px w-full">
           {renderWalletAddress(chain, address, type)}
@@ -1008,7 +1007,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
             : !isVultisig && renderLedgerNotSupported}
         </div>
         {isSupportedChain(chain) && (
-          <div className="mt-10px flex w-full items-center px-40px">
+          <div className="mt-2 flex w-full items-center px-2">
             <SwitchButton
               active={enabledChains.includes(chain as EnabledChain)}
               onChange={() => toggleChain(chain as EnabledChain)}
@@ -1021,10 +1020,12 @@ export const WalletSettings = (props: Props): JSX.Element => {
           </div>
         )}
         {/* Trusted Addresses */}
-        <div className="mt-10px w-full px-40px">
+        <div className="mt-2 w-full px-2">
           {trustedAddresses?.addresses.some((addr) => addr.chain === chain) && (
             <div className="text-text0 dark:text-text0d">
-              <h4 className="text-text0 dark:text-text0d">{intl.formatMessage({ id: 'common.savedAddresses' })}</h4>
+              <h4 className="font-main-semi-bold text-text0 dark:text-text0d">
+                {intl.formatMessage({ id: 'common.savedAddresses' })}
+              </h4>
               {renderTrustedAddresses(chain)}
             </div>
           )}
@@ -1052,7 +1053,11 @@ export const WalletSettings = (props: Props): JSX.Element => {
       if (!vultisigState) return <></>
       const entries = Object.entries(vultisigState.addresses)
       if (entries.length === 0) {
-        return <div className="py-4 text-center text-text2 dark:text-text2d">No addresses available</div>
+        return (
+          <div className="py-4 text-center font-main text-[13px] text-text2 dark:text-text2d">
+            {intl.formatMessage({ id: 'settings.wallet.noAddresses' })}
+          </div>
+        )
       }
 
       const filteredEntries = entries.filter(([sdkChain]) => {
@@ -1067,7 +1072,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
       })
 
       return (
-        <div className="flex flex-col" key="wallet-accounts">
+        <div className="flex flex-col gap-3" key="wallet-accounts">
           {filteredEntries.map(([sdkChain, address]) => {
             const chain = SDK_TO_ASGARDEX_CHAIN[sdkChain]
             if (!chain) return null
@@ -1081,7 +1086,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
     return FP.pipe(
       oFilteredWalletAccounts,
       O.map((walletAccounts) => (
-        <div className="flex flex-col" key="wallet-accounts">
+        <div className="flex flex-col gap-3" key="wallet-accounts">
           {walletAccounts.map(({ chain, accounts: { keystore, ledger: oLedger } }) =>
             renderChainRow(chain, keystore.address, WalletType.Keystore, oLedger)
           )}
@@ -1089,7 +1094,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
       )),
       O.getOrElse(() => <></>)
     )
-  }, [isVultisig, vultisigState, accountFilter, oFilteredWalletAccounts, renderChainRow])
+  }, [isVultisig, vultisigState, accountFilter, oFilteredWalletAccounts, renderChainRow, intl])
 
   const { state: changeWalletState, subscribe: subscribeChangeWalletState } =
     useSubscriptionState<ChangeKeystoreWalletRD>(RD.initial)
@@ -1131,7 +1136,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
           () => <></>,
           () => <></>,
           (error) => (
-            <p className="px-5px font-main text-14 text-error0 uppercase dark:text-error0d">
+            <p className="px-1 font-main text-[14px] text-error0 dark:text-error0d">
               {intl.formatMessage({ id: 'wallet.change.error' })} {error.message || error.toString()}
             </p>
           ),
@@ -1173,7 +1178,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
           () => <></>,
           () => <></>,
           (error) => (
-            <p className="text-center font-main text-[14px] text-error0 uppercase">
+            <p className="text-center font-main text-[14px] text-error0 dark:text-error0d">
               {intl.formatMessage({ id: 'wallet.name.error.rename' })} {error?.message ?? error.toString()}
             </p>
           ),
@@ -1184,7 +1189,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
   )
 
   return (
-    <div className="bg-bg0 py-6 dark:bg-bg0d">
+    <div className="bg-bg0 dark:bg-bg0d">
       {showPasswordModal && (
         <WalletPasswordConfirmationModal
           validatePassword$={validatePassword$}
@@ -1211,9 +1216,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
       {renderQRCodeModal}
 
       {!isVultisig && renderVerifyAddressModal(ledgerAddressToVerify)}
-      <div className="w-full px-4">
+      <div className="w-full">
         <div className="flex flex-row items-center justify-between">
-          <h1 className="font-main text-16 text-text0 uppercase dark:text-text0d">
+          <h1 className="font-main-semi-bold text-text0 dark:text-text0d">
             {intl.formatMessage({ id: 'settings.wallet.management' })}
           </h1>
           <div className="flex flex-row items-center space-x-2">
@@ -1266,31 +1271,35 @@ export const WalletSettings = (props: Props): JSX.Element => {
           />
         </div>
       </div>
-      <div key="accounts" className="mt-4 w-full border-t border-solid border-bg2 dark:border-bg2d">
-        <Label className="pt-5 pl-5 text-center text-base md:text-left" textTransform="uppercase">
+      <div key="accounts" className="mt-6 w-full">
+        <h2 className="font-main-semi-bold text-text0 dark:text-text0d">
           {intl.formatMessage({ id: 'settings.accounts.title' })}
-        </Label>
-        <div className="mt-30px flex justify-center md:ml-4 md:justify-start">
-          <InputSearch
-            placeholder={intl.formatMessage({ id: 'common.search' }).toUpperCase()}
-            size="large"
-            onChange={filterAccounts}
-          />
+        </h2>
+        <div className="mt-3 flex justify-center md:justify-start">
+          <label className="relative flex items-center">
+            <span className="sr-only">{intl.formatMessage({ id: 'common.search' })}</span>
+            <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 h-4 w-4 text-gray1" aria-hidden />
+            <input
+              type="search"
+              onChange={filterAccounts}
+              placeholder={intl.formatMessage({ id: 'common.search' })}
+              className={clsx(
+                'h-8 w-48 rounded-lg border border-gray0 bg-bg0 pr-2 pl-8 font-main text-[13px] text-text0 placeholder:text-gray1',
+                'focus:border-turquoise focus:outline-none dark:border-gray0d dark:bg-bg0d dark:text-text0d'
+              )}
+            />
+          </label>
         </div>
-        <div className="mt-10px border-b border-solid border-bg2 px-4 dark:border-bg2d">{renderAddAddressForm()}</div>
-        <div className="flex items-center justify-center">
-          <Label className="pt-5 pl-5 text-center text-base md:text-left" textTransform="uppercase">
+        <div className="mt-3">{renderAddAddressForm()}</div>
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <h2 className="font-main-semi-bold text-text0 dark:text-text0d">
             {intl.formatMessage({ id: 'common.chainManagement' })}
-          </Label>
-          <FlatButton
-            size="normal"
-            color="primary"
-            className="mt-5 mr-5 w-[160px]"
-            onClick={() => setIsWhitelistModalOpen(true)}>
+          </h2>
+          <FlatButton size="normal" color="primary" className="w-[160px]" onClick={() => setIsWhitelistModalOpen(true)}>
             {intl.formatMessage({ id: 'common.importTokens' })}
           </FlatButton>
         </div>
-        {renderAccounts}
+        <div className="mt-3 flex flex-col gap-3">{renderAccounts}</div>
       </div>
       {isWhitelistModalOpen && (
         <WhitelistModal open={isWhitelistModalOpen} onClose={() => setIsWhitelistModalOpen(false)} />

@@ -130,7 +130,19 @@ const settings: SettingMessages = {
     "Le point d'accès RPC ne répond pas. Vérifiez votre connexion ou essayez une autre URL.",
   'settings.ledgerMode.lockWalletWarning': "Verrouillez d'abord le portefeuille pour entrer en mode Ledger",
   'settings.wallet.whitelist': 'Liste blanche',
-  'settings.wallet.customToken': 'Token personnalisé'
+  'settings.wallet.customToken': 'Token personnalisé',
+  'settings.tab.dex': 'DEX',
+  'settings.tab.expert': 'Mode expert',
+  'settings.ledgerMode.enter': 'Activer le mode Ledger',
+  'settings.ledgerMode.exit': 'Quitter le mode Ledger',
+  'settings.ledgerMode.lockToEnter': 'Verrouillez le portefeuille pour activer le mode Ledger',
+  'settings.slippage.title': 'Tolérance de slippage',
+  'settings.slippage.streaming': 'Swaps en streaming',
+  'settings.slippage.trade': 'Swaps trade',
+  'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
+  'settings.wallet.unlock.or': 'ou',
+  'settings.wallet.unlock.vultisig': 'Déverrouiller le coffre Vultisig',
+  'settings.wallet.noAddresses': 'Aucune adresse disponible',
 }
 
 export default settings

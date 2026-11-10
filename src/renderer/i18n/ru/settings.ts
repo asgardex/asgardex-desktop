@@ -129,7 +129,19 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'Конечная точка RPC не отвечает. Проверьте подключение или попробуйте другой URL.',
   'settings.ledgerMode.lockWalletWarning': 'Сначала заблокируйте кошелек, чтобы войти в режим Ledger',
   'settings.wallet.whitelist': 'Белый список',
-  'settings.wallet.customToken': 'Пользовательский токен'
+  'settings.wallet.customToken': 'Пользовательский токен',
+  'settings.tab.dex': 'DEX',
+  'settings.tab.expert': 'Режим эксперта',
+  'settings.ledgerMode.enter': 'Войти в режим Ledger',
+  'settings.ledgerMode.exit': 'Выйти из режима Ledger',
+  'settings.ledgerMode.lockToEnter': 'Заблокируйте кошелёк, чтобы войти в режим Ledger',
+  'settings.slippage.title': 'Допустимое проскальзывание',
+  'settings.slippage.streaming': 'Потоковые свопы',
+  'settings.slippage.trade': 'Торговые свопы',
+  'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
+  'settings.wallet.unlock.or': 'или',
+  'settings.wallet.unlock.vultisig': 'Разблокировать хранилище Vultisig',
+  'settings.wallet.noAddresses': 'Адреса недоступны',
 }
 
 export default settings
