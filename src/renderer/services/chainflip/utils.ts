@@ -9,6 +9,23 @@ import {
   TokenAsset as XTokenAsset
 } from '@xchainjs/xchain-util'
 
+import { BSCChain } from '../../../shared/utils/chainIds'
+
+// Warn once per chain. Chainflip can add a chain before this map does; throwing here
+// runs inside render (wallet asset table, swap view) and blanks the window.
+const warnedChains = new Set<string>()
+
+/** Test helper: forget which unmapped chains have been logged */
+export const resetUnsupportedChainWarnings = () => warnedChains.clear()
+
+const warnUnsupportedChain = (chain: string) => {
+  if (warnedChains.has(chain)) return
+  warnedChains.add(chain)
+  // `console.warn` on purpose, not `helpers/logger`: the logger is silent outside dev builds.
+  // eslint-disable-next-line no-console
+  console.warn(`[ASGARDEX][Chainflip] chain "${chain}" is not mapped to an xchainjs chain and was skipped`)
+}
+
 export const cChainToXChain = (chain: CChain): XChain | null => {
   switch (chain) {
     case 'Bitcoin':
@@ -21,10 +38,15 @@ export const cChainToXChain = (chain: CChain): XChain | null => {
       return 'SOL'
     case 'Tron':
       return TRONChain
+    case 'Bsc':
+      return BSCChain
     case 'Assethub':
       return null // Assethub is not supported in XChainJS, return null instead of throwing
     default:
-      throw Error('Unsupported chain in XChainJS')
+      // Never throw here: the asset list comes from the live Chainflip API and
+      // callers run inside React render (useMemo), so throwing blanks the wallet.
+      warnUnsupportedChain(chain)
+      return null
   }
 }
 
@@ -40,6 +62,8 @@ export const xChainToCChain = (chain: XChain): CChain => {
       return Chains.Solana
     case TRONChain:
       return Chains.Tron
+    case BSCChain:
+      return Chains.Bsc
     default:
       throw Error('Unsupported chain in Chainflip')
   }
