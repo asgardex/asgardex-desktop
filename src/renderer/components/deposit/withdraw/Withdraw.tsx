@@ -24,8 +24,8 @@ import { WalletAddress } from '../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { getTwoSigfigAssetAmount, to1e8BaseAmount } from '../../../helpers/assetHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
+import { isWithdrawDisabled } from '../../../helpers/haltedChains'
 import { getWithdrawMemo } from '../../../helpers/memoHelper'
-import * as PoolHelpers from '../../../helpers/poolHelper'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { INITIAL_WITHDRAW_STATE } from '../../../services/chain/const'
 import { getZeroWithdrawFees } from '../../../services/chain/fees'
@@ -55,6 +55,7 @@ import { Tooltip } from '../../uielements/tooltip'
 import * as Helper from './Withdraw.helper'
 
 export type Props = {
+  protocol: Chain
   asset: AssetWithDecimal
   assetWalletAddress: WalletAddress
   /** Rune price (base amount) */
@@ -94,6 +95,7 @@ export type Props = {
  *
  * */
 export const Withdraw = ({
+  protocol,
   asset: assetWD,
   assetWalletAddress,
   dexPrice,
@@ -112,7 +114,6 @@ export const Withdraw = ({
   fees$,
   network,
   poolsData,
-  haltedChains,
   mimirHalt
 }: Props) => {
   const intl = useIntl()
@@ -132,12 +133,11 @@ export const Withdraw = ({
   } = dexWalletAddress
   const { type: assetWalletType, address: assetAddress } = assetWalletAddress
 
-  // Disable withdraw in case all or withdraw actions are disabled
-  const disableWithdrawAction = useMemo(() => {
-    const disableAll = PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
-    const disableWithdraw = PoolHelpers.disableWithdrawActions({ chain, haltedChains, mimirHalt })
-    return disableAll || disableWithdraw
-  }, [chain, haltedChains, mimirHalt])
+  // Withdrawals block only on proven chain halts or LP pauses.
+  const disableWithdrawAction = useMemo(
+    () => isWithdrawDisabled({ chain, protocol, confirmedMimirHalt: mimirHalt }),
+    [chain, protocol, mimirHalt]
+  )
 
   const [withdrawPercent, setWithdrawPercent] = useState(disabled ? 0 : 50)
 

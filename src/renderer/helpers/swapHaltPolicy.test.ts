@@ -1,18 +1,19 @@
-// Policy (X, 10 Nov 2026): an *unknown* halt status alone does not block swaps or quote requests, the node
-// quote decides. Known halts still block swaps. Liquidity actions and RUNE sends stay blocked while unknown.
+// Unknown status alone does not block swaps or withdrawals; proven halts still apply.
+// Deposits and RUNE sends remain fail-closed while their status is unknown.
 import * as RD from '@devexperts/remote-data-ts'
 import { assetFromStringEx, Chain } from '@xchainjs/xchain-util'
+import * as Rx from 'rxjs'
 import { describe, expect, it } from 'vitest'
 
 import { BTCChain, ETHChain } from '../../shared/utils/chainIds'
-import { getThorchainMimirHalt } from '../hooks/useMimirHalt'
-import { getMayachainMimirHalt } from '../hooks/useMimirHaltMaya'
+import { getSharedThorchainMimirHalt$, getThorchainMimirHalt } from '../hooks/useMimirHalt'
+import { getSharedMayachainMimirHalt$, getMayachainMimirHalt } from '../hooks/useMimirHaltMaya'
 import {
   DEFAULT_MIMIR_HALT as DEFAULT_MIMIR_HALT_MAYA,
   UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA
 } from '../services/mayachain/const'
 import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT } from '../services/thorchain/const'
-import { isRuneSendDisabled, resolveHaltState, resolveSwapHaltState } from './haltedChains'
+import { isRuneSendDisabled, isWithdrawDisabled, resolveHaltState, resolveSwapHaltState } from './haltedChains'
 import * as PoolHelpers from './poolHelper'
 import * as PoolHelpersMaya from './poolHelperMaya'
 import { filterQuotableProtocols, isSwapDisabledForChains } from './protocolTradingHalt'
@@ -112,32 +113,48 @@ describe('swap halt policy: known halts still block, next to an unknown signal',
   })
 })
 
-describe('liquidity actions and RUNE sends stay blocked while the halt status is unknown', () => {
-  it.each(unknownInbound)('THOR inbound %s: deposits, withdrawals and RUNE sends blocked', (_, inbound) => {
+const withdrawalHalts = (mimirRD: RD.RemoteData<Error, Record<string, number>>) => ({
+  thor: getSharedThorchainMimirHalt$(
+    Rx.of(mimirRD),
+    Rx.of(RD.success([{ chain: BTCChain, thorchain: 100, last_observed_in: 100, last_signed_out: 100 }]))
+  ).withdrawMimirHalt$,
+  maya: getSharedMayachainMimirHalt$(
+    Rx.of(mimirRD),
+    Rx.of(RD.success([{ chain: BTCChain, mayachain: 100, last_observed_in: 100, last_signed_out: 100 }]))
+  ).withdrawMimirHalt$
+})
+
+describe('unknown status blocks deposits and RUNE sends, not withdrawals', () => {
+  it.each(unknownInbound)('THOR inbound %s: withdraw remains allowed', async (_, inbound) => {
     const { haltedChains, mimirHalt } = resolveHaltState(inbound, thorKnown({}), UNKNOWN_MIMIR_HALT)
     expect(PoolHelpers.disablePoolActions({ asset: BTC, haltedChains, mimirHalt })).toBe(true)
-    expect(PoolHelpers.disableWithdrawActions({ chain: BTCChain, haltedChains, mimirHalt })).toBe(true)
     expect(PoolHelpers.disableAllActions({ chain: BTCChain, haltedChains, mimirHalt })).toBe(true)
     expect(isRuneSendDisabled(mimirHalt)).toBe(true)
+    const confirmedMimirHalt = await Rx.firstValueFrom(withdrawalHalts(RD.success({})).thor)
+    expect(isWithdrawDisabled({ chain: BTCChain, protocol: 'THOR', confirmedMimirHalt })).toBe(false)
   })
 
-  it('THOR mimir unknown (inbound loaded): deposits, withdrawals and RUNE sends blocked', () => {
+  it('THOR mimir unknown: withdraw remains allowed while deposits and RUNE sends block', async () => {
     const { haltedChains, mimirHalt } = resolveHaltState(loaded([]), UNKNOWN_MIMIR_HALT, UNKNOWN_MIMIR_HALT)
     expect(PoolHelpers.disablePoolActions({ asset: BTC, haltedChains, mimirHalt })).toBe(true)
-    expect(PoolHelpers.disableWithdrawActions({ chain: BTCChain, haltedChains, mimirHalt })).toBe(true)
     expect(isRuneSendDisabled(mimirHalt)).toBe(true)
+    const confirmedMimirHalt = await Rx.firstValueFrom(withdrawalHalts(RD.failure(Error('mimir down'))).thor)
+    expect(isWithdrawDisabled({ chain: BTCChain, protocol: 'THOR', confirmedMimirHalt })).toBe(false)
   })
 
-  it.each(unknownInbound)('MAYA inbound %s: deposits and withdrawals blocked', (_, inbound) => {
+  it.each(unknownInbound)('MAYA inbound %s: deposits block but withdraw remains allowed', async (_, inbound) => {
     const { haltedChains, mimirHalt } = resolveHaltState(inbound, mayaKnown({}), UNKNOWN_MIMIR_HALT_MAYA)
     expect(PoolHelpersMaya.disablePoolActions({ chain: BTCChain, haltedChains, mimirHalt })).toBe(true)
-    expect(PoolHelpersMaya.disableWithdrawActions({ chain: BTCChain, haltedChains, mimirHalt })).toBe(true)
+    const confirmedMimirHalt = await Rx.firstValueFrom(withdrawalHalts(RD.success({})).maya)
+    expect(isWithdrawDisabled({ chain: BTCChain, protocol: 'MAYA', confirmedMimirHalt })).toBe(false)
   })
 
-  it('known state, nothing halted: liquidity and RUNE sends allowed (no over-blocking)', () => {
+  it('known state, nothing halted: deposits, withdrawals and RUNE sends allowed', async () => {
     const { haltedChains, mimirHalt } = resolveHaltState(loaded([]), thorKnown({}), UNKNOWN_MIMIR_HALT)
     expect(PoolHelpers.disablePoolActions({ asset: BTC, haltedChains, mimirHalt })).toBe(false)
     expect(isRuneSendDisabled(mimirHalt)).toBe(false)
+    const confirmedMimirHalt = await Rx.firstValueFrom(withdrawalHalts(RD.success({})).thor)
+    expect(isWithdrawDisabled({ chain: BTCChain, protocol: 'THOR', confirmedMimirHalt })).toBe(false)
   })
 })
 

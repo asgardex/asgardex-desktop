@@ -27,6 +27,8 @@ import { getAssetPoolPrice } from '../../../helpers/poolHelper'
 import { getMayaPoolDepthDecimal } from '../../../helpers/poolHelperMaya'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
 import { liveData } from '../../../helpers/rx/liveData'
+import { useThorchainMimirHalt } from '../../../hooks/useMimirHalt'
+import { useMayachainMimirHalt } from '../../../hooks/useMimirHaltMaya'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { DEFAULT_NETWORK } from '../../../services/const'
 import { PoolShare, PoolsDataMap } from '../../../services/midgard/midgardTypes'
@@ -41,10 +43,13 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
     poolShare: poolShareRD,
     poolDetail: poolDetailRD,
     haltedChains,
-    mimirHalt,
     assetWalletAddress,
     dexWalletAddress
   } = props
+  // Withdrawals need proven mimir halts, not the synthetic fail-closed deposit state.
+  const { withdrawMimirHalt: thorHalt } = useThorchainMimirHalt(protocol === THORChain)
+  const { withdrawMimirHalt: mayaHalt } = useMayachainMimirHalt(protocol !== THORChain)
+  const mimirHalt = protocol === THORChain ? thorHalt : mayaHalt
   const { decimal: assetDecimal } = assetWD
   const {
     service: {
@@ -142,6 +147,7 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
   const renderEmptyForm = useCallback(() => {
     return (
       <Withdraw
+        protocol={protocol}
         haltedChains={haltedChains}
         mimirHalt={mimirHalt}
         fees$={symWithdrawFee$}
@@ -165,6 +171,7 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
       />
     )
   }, [
+    protocol,
     haltedChains,
     mimirHalt,
     symWithdrawFee$,
@@ -198,6 +205,7 @@ export const WithdrawDepositView = (props: Props): JSX.Element => {
     }) => {
       return (
         <Withdraw
+          protocol={protocol}
           haltedChains={haltedChains}
           mimirHalt={mimirHalt}
           assetPrice={assetPrice}
