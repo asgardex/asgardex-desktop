@@ -11,72 +11,69 @@ import { useMidgardContext } from '../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { getPoolStatus, PoolHaltData, PoolStatus } from '../helpers/poolStatusHelper'
-import { getThorchainMimirHalt } from './useMimirHalt'
-import { getMayachainMimirHalt } from './useMimirHaltMaya'
+import { getSharedThorchainMimirHalt$, getThorchainMimirHalt } from './useMimirHalt'
+import { getMayachainMimirHalt, getSharedMayachainMimirHalt$ } from './useMimirHaltMaya'
 import { useObservableLayoutState } from './useObservableLayoutState'
 
-/**
- * Halt data older than this is stale (mimir reloads every 5 min, last block every 60 s),
- * so a hung reload cannot keep an old "all operational" state forever.
- */
-export const POOL_HALT_DATA_STALE_MS = 15 * 60 * 1000
+type Mimir = Record<string, number>
 
 export type PoolHaltSource = {
-  mimir: Record<string, number>
+  mimir: Mimir
   lastHeight: number
   haltedChains: Chain[]
   pausedLpChains: Chain[]
 }
 
-type Timed<T> = { rd: RD.RemoteData<Error, T>; updatedAt: number }
-
 /**
- * Halt source data of a protocol, or `undefined` (= status unknown, fail closed) if mimir, last block
- * or inbound addresses are loading, failed, or mimir / last block have not been refreshed for `staleMs`.
+ * Halt source data of a protocol, or `undefined` (= status unknown, fail closed).
+ *
+ * Whether the halt status is known comes from the shared halt hooks (`getSharedThorchainMimirHalt$` /
+ * `getSharedMayachainMimirHalt$`, the streams behind `useThorchainMimirHalt` / `useMayachainMimirHalt`):
+ * their `mimirHaltRD` is Success with `haltStatusUnknown: false` only while mimir and a fresh, advancing block
+ * height are known (`holdLastKnown`, `failIfHeightStalled`, network reset). Pools reuse that one shared freshness
+ * state instead of a local loading / stale check.
+ * `inbound_addresses` (halted chains) and paused LP chains must be loaded, too (see `resolveHaltState`).
+ *
+ * `mimir` / `lastHeight` are the last loaded raw values, the ones the shared status was built from. They are only
+ * used while the shared status is known, to map `MimirHalt` for each pool chain (the shared status only has flags
+ * of the chains enabled by the user).
  */
 export const getPoolHaltSource = ({
+  haltStatus,
   mimir,
   lastHeight,
   haltedChains,
-  pausedLpChains,
-  now,
-  staleMs = POOL_HALT_DATA_STALE_MS
+  pausedLpChains
 }: {
-  mimir: Timed<Record<string, number>>
-  lastHeight: Timed<number>
+  haltStatus: RD.RemoteData<Error, { haltStatusUnknown: boolean }>
+  mimir: Mimir | undefined
+  lastHeight: number
   haltedChains: RD.RemoteData<Error, Chain[]>
   pausedLpChains: RD.RemoteData<Error, Chain[]>
-  now: number
-  staleMs?: number
 }): PoolHaltSource | undefined => {
-  if (!RD.isSuccess(mimir.rd) || !RD.isSuccess(lastHeight.rd)) return undefined
+  if (!RD.isSuccess(haltStatus) || haltStatus.value.haltStatusUnknown) return undefined
   if (!RD.isSuccess(haltedChains) || !RD.isSuccess(pausedLpChains)) return undefined
   // Without a height, mimir values set as block height cannot be evaluated
-  if (lastHeight.rd.value <= 0) return undefined
-  if (now - mimir.updatedAt > staleMs || now - lastHeight.updatedAt > staleMs) return undefined
-  return {
-    mimir: mimir.rd.value,
-    lastHeight: lastHeight.rd.value,
-    haltedChains: haltedChains.value,
-    pausedLpChains: pausedLpChains.value
-  }
+  if (!mimir || lastHeight <= 0) return undefined
+  return { mimir, lastHeight, haltedChains: haltedChains.value, pausedLpChains: pausedLpChains.value }
 }
 
-const withUpdatedAt = <T>(source$: Rx.Observable<RD.RemoteData<Error, T>>): Rx.Observable<Timed<T>> =>
-  source$.pipe(RxOp.map((rd) => ({ rd, updatedAt: Date.now() })))
+/** Last loaded value of a stream (`undefined` until the first Success) */
+const lastSuccess = <T>(source$: Rx.Observable<RD.RemoteData<Error, T>>): Rx.Observable<T | undefined> =>
+  source$.pipe(
+    RxOp.scan<RD.RemoteData<Error, T>, T | undefined>((last, rd) => (RD.isSuccess(rd) ? rd.value : last), undefined),
+    RxOp.startWith<T | undefined>(undefined)
+  )
 
 /**
  * Status of pools of THORChain or MAYAChain, based on the shared halt logic
- * (`getThorchainMimirHalt` / `getMayachainMimirHalt` + `poolHelper(Maya)`).
+ * (`useMimirHalt` / `useMimirHaltMaya` + `poolHelper(Maya)`).
  * `MimirHalt` is mapped for the chain of each pool, not only for chains enabled by the user,
  * since pool lists show pools of all chains.
- * While halt data is loading, failed or stale, every pool has the `unknown` status (Swap and Add disabled).
- * TODO: use `haltStatusUnknown` and the shared halt flags of halt-fail-closed once that branch merges.
+ * While the shared halt status is unknown (`haltStatusUnknown`: loading, failed, stale or stalled) or inbound data
+ * is not loaded, every pool has the `unknown` status (Swap and Add disabled).
  */
-export const usePoolStatus = (
-  protocol: Chain,
-  staleCheckIntervalMs = 30 * 1000
-): ((asset: AnyAsset) => PoolStatus | undefined) => {
+export const usePoolStatus = (protocol: Chain): ((asset: AnyAsset) => PoolStatus | undefined) => {
   const isThor = protocol === THORChain
   const { mimir$: mimirThor$, thorchainLastblockState$ } = useThorchainContext()
   const { mimir$: mimirMaya$, mayachainLastblockState$ } = useMayachainContext()
@@ -92,24 +89,27 @@ export const usePoolStatus = (
   } = useMidgardMayaContext()
 
   const source$ = useMemo((): Rx.Observable<PoolHaltSource | undefined> => {
-    const lastHeight$: Rx.Observable<RD.RemoteData<Error, number>> = isThor
-      ? thorchainLastblockState$.pipe(
-          RxOp.map(RD.map((items) => items.find(({ thorchain }) => thorchain > 0)?.thorchain ?? 0))
+    // Same shared (memoized) streams as `useThorchainMimirHalt` / `useMayachainMimirHalt`
+    const haltStatus$ = isThor
+      ? getSharedThorchainMimirHalt$(mimirThor$, thorchainLastblockState$).mimirHaltRD$
+      : getSharedMayachainMimirHalt$(mimirMaya$, mayachainLastblockState$).mimirHaltRD$
+    const mimir$: Rx.Observable<RD.RemoteData<Error, Mimir>> = isThor ? mimirThor$ : mimirMaya$
+    const lastHeight$: Rx.Observable<number> = isThor
+      ? lastSuccess(thorchainLastblockState$).pipe(
+          RxOp.map((items) => items?.find(({ thorchain }) => thorchain > 0)?.thorchain ?? 0)
         )
-      : mayachainLastblockState$.pipe(
-          RxOp.map(RD.map((items) => items.find(({ mayachain }) => mayachain > 0)?.mayachain ?? 0))
+      : lastSuccess(mayachainLastblockState$).pipe(
+          RxOp.map((items) => items?.find(({ mayachain }) => mayachain > 0)?.mayachain ?? 0)
         )
-    const mimir$: Rx.Observable<RD.RemoteData<Error, Record<string, number>>> = isThor ? mimirThor$ : mimirMaya$
     return Rx.combineLatest([
-      withUpdatedAt(mimir$),
-      withUpdatedAt(lastHeight$),
+      haltStatus$,
+      lastSuccess(mimir$),
+      lastHeight$,
       isThor ? haltedChainsThor$ : haltedChainsMaya$,
-      isThor ? pausedLpChainsThor$ : pausedLpChainsMaya$,
-      // re-checks staleness; first tick is synchronous so replayed data is not shown as unknown
-      Rx.interval(staleCheckIntervalMs).pipe(RxOp.startWith(0))
+      isThor ? pausedLpChainsThor$ : pausedLpChainsMaya$
     ]).pipe(
-      RxOp.map(([mimir, lastHeight, haltedChains, pausedLpChains]) =>
-        getPoolHaltSource({ mimir, lastHeight, haltedChains, pausedLpChains, now: Date.now() })
+      RxOp.map(([haltStatus, mimir, lastHeight, haltedChains, pausedLpChains]) =>
+        getPoolHaltSource({ haltStatus, mimir, lastHeight, haltedChains, pausedLpChains })
       ),
       RxOp.distinctUntilChanged()
     )
@@ -122,8 +122,7 @@ export const usePoolStatus = (
     haltedChainsThor$,
     haltedChainsMaya$,
     pausedLpChainsThor$,
-    pausedLpChainsMaya$,
-    staleCheckIntervalMs
+    pausedLpChainsMaya$
   ])
 
   // Starts unknown: the first emission is synchronous for replayed streams

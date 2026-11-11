@@ -12,16 +12,11 @@ import * as PoolHelperMaya from './poolHelperMaya'
  *
  * |           | SWAP | ADD | Source                                                                        |
  * |-----------|------|-----|-------------------------------------------------------------------------------|
- * | `unknown` | NO   | NO  | halt data (mimir, last block, inbound addresses) is loading, failed or stale |
+ * | `unknown` | NO   | NO  | `haltStatusUnknown` of the shared halt hooks, or inbound addresses not loaded  |
  * | `chain`   | NO   | NO  | `disableAllActions` (`HALT{CHAIN}CHAIN`, protocol halt, inbound `halted`)     |
  * | `trading` | NO   | NO  | `disableTradingActions` (`HALT{CHAIN}TRADING`, `HALTTRADING`)                  |
  * | `lp`      | YES  | NO  | `PAUSELP{CHAIN}`, `PAUSELP`, `inbound_addresses.chain_lp_actions_paused`       |
  * | `deposit` | YES  | NO  | `disablePoolActions` per pool (`PAUSELPDEPOSIT-{CHAIN}-{SYMBOL}`, THOR only)   |
- *
- * TODO: switch to the flags of ChainBot's halt-fail-closed branch once it merges (incl. `haltStatusUnknown`
- * instead of the local loading / failed / stale check in `usePoolStatus`). Until then the shared helpers of
- * develop read mimir keys case-sensitively and do not cover `SOLVENCYHALT{CHAIN}CHAIN`, `HALTCHAINGLOBAL`
- * or `NODEPAUSECHAINGLOBAL`.
  */
 export type PoolStatusKind = 'unknown' | 'chain' | 'trading' | 'lp' | 'deposit'
 
