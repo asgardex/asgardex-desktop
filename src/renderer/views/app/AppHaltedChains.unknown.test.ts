@@ -10,7 +10,12 @@ import en from '../../i18n/en/halt'
 import { MimirHalt } from '../../services/thorchain/types'
 import HaltedChainsWarning, { HaltedProtocol } from './AppHaltedChains'
 
-const knownMimir = { HALTTHORCHAIN: false, haltGlobalTrading: false, pauseGlobalLp: false } as MimirHalt
+const knownMimir = {
+  HALTTHORCHAIN: false,
+  haltGlobalTrading: false,
+  pauseGlobalLp: false,
+  haltStatusUnknown: false
+} as MimirHalt
 
 const known = (protocol: string): HaltedProtocol => ({
   protocol,
@@ -90,7 +95,7 @@ describe('views/app/AppHaltedChains: halt status unknown', () => {
 
   it('MAYA-only unknown status: no RUNE send clause (RUNE sends read the THOR halt state only)', () => {
     const { text, unmount } = render('/wallet/assets', [known(THORChain), failedMimir(MAYAChain)])
-    expect(text).toContain('Halt status of MAYA could not be loaded. Liquidity actions are blocked')
+    expect(text).toContain('Halt status of MAYA could not be loaded. Liquidity deposits are blocked')
     expect(text).not.toContain('RUNE')
     unmount()
   })
@@ -103,9 +108,10 @@ describe('views/app/AppHaltedChains: halt status unknown', () => {
     ].forEach((protocols) => {
       const { text, unmount } = render('/pools', protocols)
       expect(text).toContain('could not be loaded')
-      expect(text).toContain('Liquidity actions')
+      expect(text).toContain('Liquidity deposits')
       expect(text).toContain('Swaps remain available if a quote is returned')
       expect(text).not.toMatch(/Swaps[^.]*blocked/)
+      expect(text).not.toMatch(/withdraw[^.]*blocked/i)
       unmount()
     })
   })

@@ -43,8 +43,7 @@ export const createMimirLookup = (mimir: MimirValues, source: string) => {
 
 /**
  * Keys of `/mimir` the app reads for halts (see `getThorchainMimirHalt` / `getMayachainMimirHalt`).
- * Matched case-insensitively. Only these can make a mimir response invalid: a malformed value of any
- * other key (there are hundreds) must not take the halt status down.
+ * Matched case-insensitively. Malformed halt values remain unknown for that key only; unrelated keys are dropped.
  */
 // PAUSELPDEPOSIT: gas (`-CHAIN-SYMBOL`) and token pools (`-CHAIN-SYMBOL-0X…`). Written without nested
 // quantifiers (`(-[A-Z0-9]+)+`) so eslint security/detect-unsafe-regex stays quiet; same match set.
@@ -73,8 +72,8 @@ export const parseMimirValue = (value: unknown): number | undefined => {
 
 /**
  * Parses a `/mimir` response body.
- * - Throws if it is not a plain object, or if a key the app reads for halts has a malformed value
- *   (the halt status is then unknown, never "no halt").
+ * - Throws if it is not an object.
+ * - A malformed halt value is retained as NaN (unknown for this key, never a proven halt).
  * - Malformed values of other keys are dropped.
  */
 export const parseMimir = (data: unknown): MimirValues => {
@@ -87,7 +86,8 @@ export const parseMimir = (data: unknown): MimirValues => {
     if (value !== undefined) {
       result[key] = value
     } else if (isHaltRelevantMimirKey(key)) {
-      throw new Error(`Invalid value for mimir key ${key}: ${JSON.stringify(raw)}`)
+      // Keep the uncertainty local to this key; mappers distinguish it from proven halts.
+      result[key] = Number.NaN
     }
   }
   return result

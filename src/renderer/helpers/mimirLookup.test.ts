@@ -66,22 +66,22 @@ describe('helpers/mimirLookup parseMimir', () => {
   })
 
   it.each([[''], [null], [false], ['abc'], [Number.NaN], [{}], ['1.5']])(
-    'rejects a malformed halt key value %p (status unknown, never "no halt")',
+    'retains a malformed halt key value %p as local uncertainty',
     (raw) => {
-      expect(() => parseMimir({ HALTBTCCHAIN: raw })).toThrow('HALTBTCCHAIN')
+      expect(parseMimir({ HALTBTCCHAIN: raw }).HALTBTCCHAIN).toBeNaN()
     }
   )
 
   it.each([[1.5], [-0.5], [0.1], [Number.MAX_SAFE_INTEGER + 1], [-(Number.MAX_SAFE_INTEGER + 1)], [Infinity]])(
-    'rejects a non-integer or unsafe number %p on a halt key, same as a bad string',
+    'retains a non-integer or unsafe number %p as local uncertainty',
     (raw) => {
-      expect(() => parseMimir({ HALTBTCCHAIN: raw })).toThrow('HALTBTCCHAIN')
+      expect(parseMimir({ HALTBTCCHAIN: raw }).HALTBTCCHAIN).toBeNaN()
       expect(parseMimirValue(raw)).toBeUndefined()
     }
   )
 
-  it('rejects an integer string above Number.MAX_SAFE_INTEGER, same as the number', () => {
-    expect(() => parseMimir({ HALTBTCCHAIN: String(Number.MAX_SAFE_INTEGER + 2) })).toThrow('HALTBTCCHAIN')
+  it('retains an unsafe integer string as local uncertainty', () => {
+    expect(parseMimir({ HALTBTCCHAIN: String(Number.MAX_SAFE_INTEGER + 2) }).HALTBTCCHAIN).toBeNaN()
   })
 
   it.each([[0], [1], [-1], [28483475], [Number.MAX_SAFE_INTEGER], [-Number.MAX_SAFE_INTEGER]])(
@@ -97,7 +97,7 @@ describe('helpers/mimirLookup parseMimir', () => {
   })
 
   it('checks halt keys case-insensitively', () => {
-    expect(() => parseMimir({ haltbtcchain: '' })).toThrow()
+    expect(parseMimir({ haltbtcchain: '' }).haltbtcchain).toBeNaN()
   })
 
   it('drops malformed values of unrelated keys', () => {
@@ -130,12 +130,19 @@ describe('helpers/mimirLookup parseMimir', () => {
     expect(isHaltRelevantMimirKey('MINIMUMBONDINRUNE')).toBe(false)
   })
 
-  it('throws for a malformed token-pool PAUSELPDEPOSIT value (pool must not read as not paused)', () => {
-    expect(() =>
-      parseMimir({
-        'PAUSELPDEPOSIT-ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48': 'not-a-number',
-        HALTBTCCHAIN: 0
-      })
-    ).toThrow(/PAUSELPDEPOSIT-ETH-USDC/)
+  it('retains malformed token-pool PAUSELPDEPOSIT uncertainty without losing other chains', () => {
+    const result = parseMimir({
+      'PAUSELPDEPOSIT-ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48': 'not-a-number',
+      HALTBTCCHAIN: 0
+    })
+    expect(result['PAUSELPDEPOSIT-ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48']).toBeNaN()
+    expect(result.HALTBTCCHAIN).toBe(0)
   })
+})
+
+it('isolates a malformed halt key and preserves every valid key', () => {
+  const result = parseMimir({ HALTBTCCHAIN: 'bad', HALTETHCHAIN: 1, HALTTRADING: 0 })
+  expect(result.HALTBTCCHAIN).toBeNaN()
+  expect(result.HALTETHCHAIN).toBe(1)
+  expect(result.HALTTRADING).toBe(0)
 })
