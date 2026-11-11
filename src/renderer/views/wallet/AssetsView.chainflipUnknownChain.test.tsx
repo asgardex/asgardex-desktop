@@ -1,7 +1,8 @@
 /**
- * Regression: Chainflip mainnet started listing a chain unknown to ASGARDEX
- * (`Bsc`). `cChainToXChain` threw inside AssetsTableCollapsable's render,
- * which blanked the wallet right after unlock (no error boundary).
+ * Regression: Chainflip mainnet started listing `Bsc`. `cChainToXChain` threw
+ * inside AssetsTableCollapsable's render, which blanked the wallet right after
+ * unlock (no error boundary). `Bsc` now maps to the app BSC chain. A chain this
+ * map still does not know must be skipped the same way, without throwing.
  *
  * Renders the real `<App/>` provider tree (real services/contexts) with the
  * wallet assets view, fully OFFLINE:
@@ -29,7 +30,7 @@ const { getAssetsSpy } = vi.hoisted(() => {
       decimals: 6,
       contractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
     },
-    // Chain added to the Chainflip mainnet asset list, unknown to ASGARDEX
+    // Chainflip BSC, mapped to the app BSC chain
     { chain: 'Bsc', asset: 'BNB', symbol: 'BNB', name: 'BNB', decimals: 18 },
     {
       chain: 'Bsc',
