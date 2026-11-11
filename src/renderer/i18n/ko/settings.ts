@@ -133,16 +133,16 @@ const settings: SettingMessages = {
   'settings.wallet.customToken': '사용자 정의 토큰',
   'settings.tab.dex': 'DEX',
   'settings.tab.expert': '전문가 모드',
-  'settings.ledgerMode.enter': '레저 모드 시작',
-  'settings.ledgerMode.exit': '레저 모드 종료',
-  'settings.ledgerMode.lockToEnter': '레저 모드를 시작하려면 지갑을 잠그세요',
+  'settings.ledgerMode.enter': 'Ledger 모드 시작',
+  'settings.ledgerMode.exit': 'Ledger 모드 종료',
+  'settings.ledgerMode.lockToEnter': 'Ledger 모드를 시작하려면 지갑을 잠그세요',
   'settings.slippage.title': '슬리피지 허용치',
   'settings.slippage.streaming': '스트리밍 스왑',
   'settings.slippage.trade': '트레이드 스왑',
   'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
   'settings.wallet.unlock.or': '또는',
   'settings.wallet.unlock.vultisig': 'Vultisig 볼트 잠금 해제',
-  'settings.wallet.noAddresses': '사용 가능한 주소가 없습니다',
+  'settings.wallet.noAddresses': '사용 가능한 주소가 없습니다'
 }
 
 export default settings

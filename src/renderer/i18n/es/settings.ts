@@ -142,7 +142,7 @@ const settings: SettingMessages = {
   'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
   'settings.wallet.unlock.or': 'o',
   'settings.wallet.unlock.vultisig': 'Desbloquear bóveda Vultisig',
-  'settings.wallet.noAddresses': 'No hay direcciones disponibles',
+  'settings.wallet.noAddresses': 'No hay direcciones disponibles'
 }
 
 export default settings

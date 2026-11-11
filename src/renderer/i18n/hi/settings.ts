@@ -141,7 +141,7 @@ const settings: SettingMessages = {
   'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
   'settings.wallet.unlock.or': 'या',
   'settings.wallet.unlock.vultisig': 'वल्टिसिग वॉल्ट अनलॉक करें',
-  'settings.wallet.noAddresses': 'कोई पता उपलब्ध नहीं है',
+  'settings.wallet.noAddresses': 'कोई पता उपलब्ध नहीं है'
 }
 
 export default settings

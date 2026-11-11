@@ -1,6 +1,5 @@
-import { ReactNode } from 'react'
+import { ComponentProps, ReactNode } from 'react'
 
-import { AnchorProps } from '@headlessui/react/dist/internal/floating'
 import clsx from 'clsx'
 
 import { DownIcon } from '../icons'
@@ -12,7 +11,9 @@ export type SettingsSelectProps = {
   valueClassName?: string
   className?: string
   triggerClassName?: string
-  anchor?: AnchorProps
+  anchor?: ComponentProps<typeof Dropdown>['anchor']
+  /** Index of the chosen option (mouse and keyboard), see `Dropdown` */
+  onSelect?: (index: number) => void
 }
 
 /**
@@ -24,12 +25,14 @@ export const SettingsSelect = ({
   valueClassName,
   className,
   triggerClassName,
-  anchor
+  anchor,
+  onSelect
 }: SettingsSelectProps): JSX.Element => (
   <div
     className={clsx('rounded-lg focus-within:ring-2 focus-within:ring-turquoise focus-within:outline-none', className)}>
     <Dropdown
       anchor={anchor}
+      onSelect={onSelect}
       trigger={
         <div
           className={clsx(

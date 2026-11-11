@@ -8,13 +8,19 @@ type Props = {
   trigger: React.ReactNode
   options: React.ReactNode[]
   anchor?: AnchorProps
+  /**
+   * Called with the index of the chosen option. Set on the `MenuItem` element itself, which Headless UI
+   * clicks on Enter / Space, so keyboard and mouse selection run the same handler.
+   */
+  onSelect?: (index: number) => void
 }
 
 export const Dropdown = ({
   className,
   trigger,
   options,
-  anchor = { to: 'bottom start', gap: 4, padding: 8 }
+  anchor = { to: 'bottom start', gap: 4, padding: 8 },
+  onSelect
 }: Props) => {
   return (
     <Menu>
@@ -28,7 +34,11 @@ export const Dropdown = ({
         )}>
         {options.map((option, index) => (
           <MenuItem key={index}>
-            <div className="cursor-pointer rounded-lg hover:bg-bg2 dark:hover:bg-bg2d">{option}</div>
+            <div
+              className="cursor-pointer rounded-lg hover:bg-bg2 dark:hover:bg-bg2d"
+              onClick={onSelect ? () => onSelect(index) : undefined}>
+              {option}
+            </div>
           </MenuItem>
         ))}
       </MenuItems>

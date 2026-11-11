@@ -86,18 +86,23 @@ export const AppGeneralSettings = (props: Props) => {
             className={clsx(
               'flex min-w-[222px] items-center px-10px py-2 font-main text-16 text-text1 dark:text-text1d',
               l === locale ? 'font-main-semi-bold' : 'font-main'
-            )}
-            onClick={() => changeLocale(l)}>
+            )}>
             {LOCALE_LABELS[l]}
           </div>
         ))
       ),
-    [changeLocale, locale]
+    [locale]
   )
 
   const renderLangMenu = useMemo(
-    () => <SettingsSelect value={LOCALE_LABELS[locale]} options={langMenu} />,
-    [langMenu, locale]
+    () => (
+      <SettingsSelect
+        value={LOCALE_LABELS[locale]}
+        options={langMenu}
+        onSelect={(index) => changeLocale(LOCALES[index])}
+      />
+    ),
+    [langMenu, locale, changeLocale]
   )
 
   const networkTextColor = useCallback((network: Network) => {
@@ -123,19 +128,23 @@ export const AppGeneralSettings = (props: Props) => {
             'flex min-w-[222px] items-center px-10px py-2 text-16',
             n === network ? 'font-main-semi-bold' : 'font-main',
             networkTextColor(n)
-          )}
-          onClick={() => changeNetwork(n)}>
+          )}>
           {formatNetwork(n)}
         </div>
       ))
     )
-  }, [changeNetwork, network, networkTextColor])
+  }, [network, networkTextColor])
 
   const renderNetworkMenu = useMemo(
     () => (
-      <SettingsSelect value={formatNetwork(network)} valueClassName={networkTextColor(network)} options={networkMenu} />
+      <SettingsSelect
+        value={formatNetwork(network)}
+        valueClassName={networkTextColor(network)}
+        options={networkMenu}
+        onSelect={(index) => changeNetwork(AVAILABLE_NETWORKS[index])}
+      />
     ),
-    [networkMenu, networkTextColor, network]
+    [networkMenu, networkTextColor, network, changeNetwork]
   )
 
   const checkUpdatesProps = useMemo(() => {

@@ -20,8 +20,8 @@ import { CheckThornodeNodeUrlHandler, CheckThornodeRpcUrlHandler } from '../../s
 import { TextButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import EditableUrl from './EditableUrl'
+import { SettingsRadioGroup } from './SettingsRadioGroup'
 import { SettingsSection, SettingsSubsection } from './SettingsSection'
-import { SETTINGS_FOCUS_RING } from './settingsUi'
 
 export type CheckEvmRpcUrlHandler = (url: string) => LiveData<Error, string>
 
@@ -136,7 +136,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
       </TextButton>
       <SwitchButton
         active={advancedActive[key]}
-        onChange={(active) => setAdvancedActive({ ...advancedActive, [key]: active })}
+        onChange={(active) => setAdvancedActive((prev) => ({ ...prev, [key]: active }))}
       />
     </div>
   )
@@ -296,31 +296,12 @@ export const AppExpertMode = (props: Props): JSX.Element => {
       </SettingsSection>
       <SettingsSection title={intl.formatMessage({ id: 'settings.expert.gasMultiplier.title' })}>
         <SettingsSubsection title={intl.formatMessage({ id: 'settings.expert.gasMultiplier.description' })}>
-          <div
-            role="radiogroup"
-            aria-label={intl.formatMessage({ id: 'settings.expert.gasMultiplier.title' })}
-            className="flex items-center gap-1 rounded-lg bg-bg2 p-1 dark:bg-bg2d/50">
-            {GAS_MULTIPLIER_OPTIONS.map((multiplier) => {
-              const selected = multiplier === gasMultiplier
-              return (
-                <button
-                  key={multiplier}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => onChangeGasMultiplier(multiplier as GasMultiplier)}
-                  className={clsx(
-                    'rounded-md px-2.5 py-1 font-main text-[12px] transition-colors',
-                    SETTINGS_FOCUS_RING,
-                    selected
-                      ? 'bg-bg0 text-text0 shadow-sm dark:bg-bg2d dark:text-text0d'
-                      : 'text-text2 hover:text-text0 dark:text-text2d dark:hover:text-text0d'
-                  )}>
-                  {multiplier}x
-                </button>
-              )
-            })}
-          </div>
+          <SettingsRadioGroup
+            ariaLabel={intl.formatMessage({ id: 'settings.expert.gasMultiplier.title' })}
+            options={GAS_MULTIPLIER_OPTIONS.map((multiplier) => ({ value: multiplier, label: `${multiplier}x` }))}
+            value={gasMultiplier}
+            onChange={(multiplier) => onChangeGasMultiplier(multiplier as GasMultiplier)}
+          />
         </SettingsSubsection>
       </SettingsSection>
     </div>

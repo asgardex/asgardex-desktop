@@ -145,7 +145,7 @@ const settings: SettingMessages = {
   'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
   'settings.wallet.unlock.or': 'oder',
   'settings.wallet.unlock.vultisig': 'Vultisig-Vault entsperren',
-  'settings.wallet.noAddresses': 'Keine Adressen verfügbar',
+  'settings.wallet.noAddresses': 'Keine Adressen verfügbar'
 }
 
 export default settings
