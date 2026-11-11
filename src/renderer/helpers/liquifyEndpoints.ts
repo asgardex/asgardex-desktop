@@ -9,16 +9,14 @@ import { THORNODE_API_BASE_URLS } from '../../shared/thorchain/const'
 // FIRST and only fall back to Liquify. When the public nodes are slow or down —
 // as they regularly are — every request storms the dead host first (a wall of
 // console errors), and the methods that don't fail over (e.g. getQueue) break
-// outright. Making Liquify primary avoids that while keeping a healthy fallback.
+// outright. Making Liquify primary avoids that. `*.thorchain.network` no longer
+// resolves, so it is not kept as a Midgard fallback.
 //
 // Mainnet only: stagenet/testnet keep the xchainjs network defaults.
 // THORNode: Liquify → optional Asgardex-hosted node from VITE_ASGARDEX_THORNODE_API.
 export const LIQUIFY_THORNODE_URLS = THORNODE_API_BASE_URLS
 
-const LIQUIFY_MIDGARD_URLS = [
-  'https://gateway.liquify.com/chain/thorchain_midgard',
-  'https://midgard.thorchain.network'
-]
+const LIQUIFY_MIDGARD_URLS = ['https://gateway.liquify.com/chain/thorchain_midgard']
 const LIQUIFY_MAYANODE_URLS = ['https://api-maya.liquify.com', 'https://mayanode.mayachain.info']
 const LIQUIFY_MAYA_MIDGARD_URLS = ['https://midgard-maya.liquify.com', 'https://midgard.mayachain.info']
 

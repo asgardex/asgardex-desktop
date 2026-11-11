@@ -19,12 +19,16 @@ const NINEREALMS_URL_MAP: Record<string, string> = {
   'https://stagenet-rpc.ninerealms.com': '',
   'https://haskoin.ninerealms.com/btc': 'https://api.haskoin.com/btc',
   'https://haskoin.ninerealms.com/btctest': 'https://api.haskoin.com/btctest',
-  'https://litecoin.ninerealms.com': ''
+  'https://litecoin.ninerealms.com': '',
+  // Public *.thorchain.network API hosts stopped resolving in July 2026.
+  'https://midgard.thorchain.network': 'https://gateway.liquify.com/chain/thorchain_midgard',
+  'https://thornode.thorchain.network': 'https://gateway.liquify.com/chain/thorchain_api',
+  'https://rpc.thorchain.network': 'https://gateway.liquify.com/chain/thorchain_rpc'
 }
 
-const migrateNineRealmsUrls = <T>(data: T): { data: T; changed: boolean } => {
+export const migrateNineRealmsUrls = <T>(data: T): { data: T; changed: boolean } => {
   let json = JSON.stringify(data)
-  if (!json.includes('ninerealms.com')) return { data, changed: false }
+  if (!json.includes('ninerealms.com') && !json.includes('thorchain.network')) return { data, changed: false }
   for (const [oldUrl, newUrl] of Object.entries(NINEREALMS_URL_MAP)) {
     json = json.split(oldUrl).join(newUrl)
   }
@@ -59,7 +63,7 @@ export const getFileContent = async <T extends StorageVersion>(name: StoreFileNa
     const fileContent = await fs.readJSON(path)
     // Combine file content with provided default value
     const merged = { ...defaultValue, ...fileContent }
-    // Migrate retired NineRealms URLs to new endpoints
+    // Migrate retired Nine Realms and *.thorchain.network URLs to Liquify
     const { data: migrated, changed } = migrateNineRealmsUrls(merged)
     if (changed) {
       await fs.writeJSON(path, migrated)
