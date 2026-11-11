@@ -24,6 +24,9 @@ export type PoolHaltSource = {
   pausedLpChains: Chain[]
 }
 
+/** `PoolHaltSource` tagged with the protocol it was built for */
+type TaggedPoolHaltSource = PoolHaltSource & { protocol: Chain }
+
 /**
  * Halt source data of a protocol, or `undefined` (= status unknown, fail closed).
  *
@@ -88,7 +91,7 @@ export const usePoolStatus = (protocol: Chain): ((asset: AnyAsset) => PoolStatus
     }
   } = useMidgardMayaContext()
 
-  const source$ = useMemo((): Rx.Observable<PoolHaltSource | undefined> => {
+  const source$ = useMemo((): Rx.Observable<TaggedPoolHaltSource | undefined> => {
     // Same shared (memoized) streams as `useThorchainMimirHalt` / `useMayachainMimirHalt`
     const haltStatus$ = isThor
       ? getSharedThorchainMimirHalt$(mimirThor$, thorchainLastblockState$).mimirHaltRD$
@@ -108,13 +111,18 @@ export const usePoolStatus = (protocol: Chain): ((asset: AnyAsset) => PoolStatus
       isThor ? haltedChainsThor$ : haltedChainsMaya$,
       isThor ? pausedLpChainsThor$ : pausedLpChainsMaya$
     ]).pipe(
-      RxOp.map(([haltStatus, mimir, lastHeight, haltedChains, pausedLpChains]) =>
-        getPoolHaltSource({ haltStatus, mimir, lastHeight, haltedChains, pausedLpChains })
-      ),
+      RxOp.map(([haltStatus, mimir, lastHeight, haltedChains, pausedLpChains]): TaggedPoolHaltSource | undefined => {
+        const source = getPoolHaltSource({ haltStatus, mimir, lastHeight, haltedChains, pausedLpChains })
+        return source ? { ...source, protocol } : undefined
+      }),
+      // `combineLatest` emits only once every input has emitted: start unknown, so a protocol switch never keeps
+      // the previous protocol's status while the new protocol's streams have not emitted yet
+      RxOp.startWith<TaggedPoolHaltSource | undefined>(undefined),
       RxOp.distinctUntilChanged()
     )
   }, [
     isThor,
+    protocol,
     mimirThor$,
     mimirMaya$,
     thorchainLastblockState$,
@@ -126,7 +134,10 @@ export const usePoolStatus = (protocol: Chain): ((asset: AnyAsset) => PoolStatus
   ])
 
   // Starts unknown: the first emission is synchronous for replayed streams
-  const source = useObservableLayoutState(source$, undefined)
+  const taggedSource = useObservableLayoutState(source$, undefined)
+  // A source of another protocol (state of the previous `source$` before the layout effect resubscribed)
+  // is never used: unknown until this protocol's source is there
+  const source = taggedSource?.protocol === protocol ? taggedSource : undefined
 
   // `MimirHalt` per pool chain, mapped once per chain and source
   const getHaltData = useMemo(() => {

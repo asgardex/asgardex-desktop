@@ -7,7 +7,7 @@ import * as Rx from 'rxjs'
 import { afterEach, beforeEach, vi } from 'vitest'
 
 import { MAYAChain, THORChain } from '../../shared/utils/chainIds'
-import { PoolStatus } from '../helpers/poolStatusHelper'
+import { isAddDisabled, isSwapDisabled, PoolStatus } from '../helpers/poolStatusHelper'
 import { getPoolHaltSource, usePoolStatus } from './usePoolStatus'
 
 // Streams of the contexts, set per test. New subjects per test: the shared halt streams are memoized by
@@ -176,6 +176,51 @@ describe('hooks/usePoolStatus', () => {
     const { get, unmount } = renderStatus(THORChain)
     expect(get(BTC)).toEqual({ kind: 'unknown' })
     unmount()
+  })
+
+  it('THOR -> MAYA switch: unknown (Swap / Add disabled) until MAYAChain inbound data emits, never the THOR status', () => {
+    thorMimir$.next(RD.success({}))
+    const mayaHalted$ = new Rx.Subject<RD.RemoteData<Error, string[]>>()
+    const mayaPausedLp$ = new Rx.Subject<RD.RemoteData<Error, string[]>>()
+    mocks.maya = {
+      mimir$: new Rx.BehaviorSubject<MimirRD>(RD.success({})),
+      mayachainLastblockState$: new Rx.BehaviorSubject<LastblockRD>(RD.success([{ chain: 'BTC', mayachain: 1000 }]))
+    }
+    mocks.midgardMaya = { service: { pools: { haltedChains$: mayaHalted$, pausedLPChains$: mayaPausedLp$ } } }
+
+    // status of BTC seen in every render (also renders before the layout effect resubscribed)
+    const seen: { protocol: string; status: PoolStatus | undefined }[] = []
+    let getStatus: ((asset: AnyAsset) => PoolStatus | undefined) | undefined
+    const Probe = ({ protocol }: { protocol: string }) => {
+      getStatus = usePoolStatus(protocol)
+      seen.push({ protocol, status: getStatus(BTC) })
+      return null
+    }
+    ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+    const root = createRoot(document.createElement('div'))
+    act(() => root.render(createElement(Probe, { protocol: THORChain })))
+    // THORChain known, no halt: Swap / Add enabled
+    expect(getStatus?.(BTC)).toBeUndefined()
+    expect(isSwapDisabled(getStatus?.(BTC))).toBe(false)
+
+    seen.length = 0
+    act(() => root.render(createElement(Probe, { protocol: MAYAChain })))
+    // no render of MAYAChain used the THORChain status
+    expect(seen.length).toBeGreaterThan(0)
+    seen.forEach(({ protocol, status }) => {
+      expect(protocol).toBe(MAYAChain)
+      expect(status).toEqual({ kind: 'unknown' })
+    })
+    expect(isSwapDisabled(getStatus?.(BTC))).toBe(true)
+    expect(isAddDisabled(getStatus?.(BTC))).toBe(true)
+
+    // only one of the inbound streams emitted: still unknown
+    act(() => mayaHalted$.next(RD.success([])))
+    expect(getStatus?.(BTC)).toEqual({ kind: 'unknown' })
+    // all MAYAChain inputs are there: real MAYAChain status
+    act(() => mayaPausedLp$.next(RD.success([])))
+    expect(getStatus?.(BTC)).toBeUndefined()
+    act(() => root.unmount())
   })
 
   it('MAYAChain: reads MAYAChain data', () => {
