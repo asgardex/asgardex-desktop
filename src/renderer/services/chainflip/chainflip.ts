@@ -24,6 +24,7 @@ import { createChainflipTransactionTrackingService } from './transactionTracking
 import {
   cAssetToXAsset,
   cChainToXChain,
+  chainflipAssetVolumeUsd,
   ChainflipVolumeResponse,
   isChainflipSupportedAsset,
   isChainflipSupportedChain,
@@ -48,8 +49,10 @@ const boostDepths = new CachedValue<BoostPoolDepth[]>(() => sdk.getBoostLiquidit
 // Chainflip's swap SDK has no pool volume/liquidity endpoint (it only quotes swaps), so 24h volume is
 // read from Chainflip's public reporting API instead — the same undocumented endpoint asgardex.com's
 // website uses for its protocol-wide totals. Grouping by both source and destination asset (rather than
-// its protocol-wide total) gives genuine per-asset volume, keyed the same as `AssetData.asset`.
+// its protocol-wide total) gives genuine per-asset volume, keyed by `AssetData.chainflipId`
+// (`Btc`, `ArbUsdc`), not the ticker on `AssetData.asset` (`BTC`, `USDC`).
 const REPORTING_SERVICE_URL = 'https://reporting-service.chainflip.io/graphql'
+const CHAINFLIP_VOLUME_TIMEOUT_MS = 15_000
 const VOLUME_24H_QUERY = `
   query Volume24h($since: Datetime!) {
     bySource: allSwapRequests(
@@ -72,7 +75,9 @@ const fetchChainflipVolume24h = async (): Promise<Map<string, number>> => {
   const response = await fetch(REPORTING_SERVICE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: VOLUME_24H_QUERY, variables: { since } })
+    body: JSON.stringify({ query: VOLUME_24H_QUERY, variables: { since } }),
+    // A stalled reporting host must reject. Promise.all below waits on this before the table can render.
+    signal: AbortSignal.timeout(CHAINFLIP_VOLUME_TIMEOUT_MS)
   })
   if (!response.ok) throw new Error(`Chainflip reporting API error: ${response.status}`)
   const body: ChainflipVolumeResponse = await response.json()
@@ -81,7 +86,19 @@ const fetchChainflipVolume24h = async (): Promise<Map<string, number>> => {
 }
 
 // 24h volume moves continuously; refresh it on the same cycle as boost depths.
-const volume24h = new CachedValue(() => fetchChainflipVolume24h(), 5 * 60 * 1000)
+// Resolve failures here. CachedValue only clears `refreshPromise` after a successful await, so a
+// rejection sticks until restart and every later read replays it.
+const volume24h = new CachedValue(
+  async () => {
+    try {
+      return await fetchChainflipVolume24h()
+    } catch (error) {
+      logger.warn('Chainflip API error (24h volume):', error)
+      return new Map<string, number>()
+    }
+  },
+  5 * 60 * 1000
+)
 
 // Create transaction tracking service
 const transactionTrackingService = createChainflipTransactionTrackingService(sdk)
@@ -280,7 +297,7 @@ export const createChainflipService$ = () => {
                 symbol: a.symbol,
                 decimals: a.decimals,
                 minSwapAmount: a.minimumSwapAmount,
-                volume24hUsd: volumeByAsset.get(a.asset),
+                volume24hUsd: chainflipAssetVolumeUsd(volumeByAsset, a),
                 boostAvailable: boostByKey.get(`${a.chain}:${a.asset}`) ?? false
               }
               return { row, source: a }

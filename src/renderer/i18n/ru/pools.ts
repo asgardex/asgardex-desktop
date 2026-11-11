@@ -13,10 +13,12 @@ const pools: PoolsMessages = {
   'pools.status.deposit': 'Депозиты приостановлены',
   'pools.status.chain.info': 'Сеть {chain} остановлена. Обмены, депозиты и выводы недоступны до её возобновления.',
   'pools.status.trading.info': 'Торговля в сети {chain} остановлена. Обмены и новые депозиты недоступны.',
-  'pools.status.lp.info': 'Операции с ликвидностью в сети {chain} приостановлены. Обмены работают; добавление и вывод ликвидности недоступны.',
+  'pools.status.lp.info':
+    'Операции с ликвидностью в сети {chain} приостановлены. Обмены работают; добавление и вывод ликвидности недоступны.',
   'pools.status.deposit.info': 'Новые депозиты в этот пул приостановлены. Обмены и выводы работают.',
   'pools.status.unknown': 'Статус неизвестен',
-  'pools.status.unknown.info': 'Не удалось загрузить статус остановки. Обмен и добавление отключены, пока он неизвестен.',
+  'pools.status.unknown.info':
+    'Не удалось загрузить статус остановки. Обмен и добавление отключены, пока он неизвестен.',
   'pools.summary.liquidity': 'Общая ликвидность',
   'pools.summary.pools': 'Пулов: {count}',
   'pools.summary.volumeShare': '{percent}% ликвидности',
@@ -115,11 +117,13 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.error': 'Не удалось загрузить свопы',
   'pools.chart.tradingPanel.limit': 'Лимит',
   'pools.chart.tradingPanel.limit.beta': 'Бета',
-  'pools.chart.tradingPanel.limit.betaNote': 'Лимитные ордера в бета-версии. Приложение следит за ценой, пока оно открыто, и при достижении вашей цены просит подтвердить рыночный своп. Своп использует вашу настройку проскальзывания, поэтому может исполниться ниже вашего лимита.',
+  'pools.chart.tradingPanel.limit.betaNote':
+    'Лимитные ордера в бета-версии. Приложение следит за ценой, пока оно открыто, и при достижении вашей цены просит подтвердить рыночный своп. Своп использует вашу настройку проскальзывания, поэтому может исполниться ниже вашего лимита.',
   'pools.chart.tradingPanel.market': 'Рынок',
   'pools.chart.tradingPanel.limit.hint':
     'Выставляет покупку или продажу по {price}. Приложение следит за ценой пула и меняет, когда цена её пересекает. Ордер действует, только пока открыт этот график. Уход с графика ставит его на паузу, а закрытие приложения отменяет его.',
-  'pools.chart.tradingPanel.limit.triggered': 'Лимитный ордер сработал: {side, select, buy {покупка на} other {продажа}} {amount} {symbol} по {price} {unit}, оплата с {source, select, trade {торгового счёта} other {кошелька}}. Подтвердите своп по текущей котировке.',
+  'pools.chart.tradingPanel.limit.triggered':
+    'Лимитный ордер сработал: {side, select, buy {покупка на} other {продажа}} {amount} {symbol} по {price} {unit}, оплата с {source, select, trade {торгового счёта} other {кошелька}}. Подтвердите своп по текущей котировке.',
   'pools.chart.tradingPanel.market.hint': 'Меняет сразу по текущей цене.',
   'pools.chart.tradingPanel.placeOrder': 'Разместить ордер',
   'pools.chart.tradingPanel.swapNow': 'Обменять сейчас',

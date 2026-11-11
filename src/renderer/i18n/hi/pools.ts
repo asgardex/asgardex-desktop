@@ -13,7 +13,8 @@ const pools: PoolsMessages = {
   'pools.status.deposit': 'जमा रुके हुए',
   'pools.status.chain.info': '{chain} चेन रुकी हुई है। इसके फिर से शुरू होने तक स्वैप, जमा और निकासी उपलब्ध नहीं हैं।',
   'pools.status.trading.info': '{chain} पर ट्रेडिंग रुकी हुई है। स्वैप और नए जमा उपलब्ध नहीं हैं।',
-  'pools.status.lp.info': '{chain} पर लिक्विडिटी क्रियाएं रुकी हुई हैं। स्वैप अभी भी काम करते हैं; लिक्विडिटी जोड़ना और निकालना उपलब्ध नहीं है।',
+  'pools.status.lp.info':
+    '{chain} पर लिक्विडिटी क्रियाएं रुकी हुई हैं। स्वैप अभी भी काम करते हैं; लिक्विडिटी जोड़ना और निकालना उपलब्ध नहीं है।',
   'pools.status.deposit.info': 'इस पूल में नए जमा रुके हुए हैं। स्वैप और निकासी अभी भी काम करते हैं।',
   'pools.status.unknown': 'स्थिति अज्ञात',
   'pools.status.unknown.info': 'हॉल्ट स्थिति लोड नहीं हो सकी। स्थिति ज्ञात होने तक स्वैप और जोड़ें अक्षम हैं।',
@@ -115,11 +116,13 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.error': 'स्वैप लोड नहीं हो सके',
   'pools.chart.tradingPanel.limit': 'लिमिट',
   'pools.chart.tradingPanel.limit.beta': 'बीटा',
-  'pools.chart.tradingPanel.limit.betaNote': 'लिमिट ऑर्डर बीटा में हैं। ऐप खुले रहने तक कीमत पर नज़र रखता है और आपकी कीमत आने पर मार्केट स्वैप की पुष्टि करने को कहता है। स्वैप आपकी स्लिपेज सेटिंग का उपयोग करता है, इसलिए यह आपकी लिमिट से नीचे भर सकता है।',
+  'pools.chart.tradingPanel.limit.betaNote':
+    'लिमिट ऑर्डर बीटा में हैं। ऐप खुले रहने तक कीमत पर नज़र रखता है और आपकी कीमत आने पर मार्केट स्वैप की पुष्टि करने को कहता है। स्वैप आपकी स्लिपेज सेटिंग का उपयोग करता है, इसलिए यह आपकी लिमिट से नीचे भर सकता है।',
   'pools.chart.tradingPanel.market': 'मार्केट',
   'pools.chart.tradingPanel.limit.hint':
     '{price} पर खरीद या बिक्री का ऑर्डर लगता है। ऐप पूल कीमत देखता है और कीमत पार होने पर स्वैप करता है। ऑर्डर तभी खुला रहता है जब यह चार्ट खुला हो। चार्ट छोड़ने पर ऑर्डर रुकता है, और ऐप बंद करने पर रद्द हो जाता है।',
-  'pools.chart.tradingPanel.limit.triggered': 'लिमिट ऑर्डर ट्रिगर हुआ: {price} {unit} पर {amount} {symbol} {side, select, buy {से खरीद} other {बिक्री}}, भुगतान आपके {source, select, trade {ट्रेड अकाउंट} other {वॉलेट}} से। मौजूदा कोट पर स्वैप करने के लिए पुष्टि करें।',
+  'pools.chart.tradingPanel.limit.triggered':
+    'लिमिट ऑर्डर ट्रिगर हुआ: {price} {unit} पर {amount} {symbol} {side, select, buy {से खरीद} other {बिक्री}}, भुगतान आपके {source, select, trade {ट्रेड अकाउंट} other {वॉलेट}} से। मौजूदा कोट पर स्वैप करने के लिए पुष्टि करें।',
   'pools.chart.tradingPanel.market.hint': 'मौजूदा कीमत पर अभी स्वैप होता है।',
   'pools.chart.tradingPanel.placeOrder': 'ऑर्डर लगाएँ',
   'pools.chart.tradingPanel.swapNow': 'अभी स्वैप करें',

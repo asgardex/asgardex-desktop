@@ -13,7 +13,8 @@ const pools: PoolsMessages = {
   'pools.status.deposit': '입금 일시 중지',
   'pools.status.chain.info': '{chain} 체인이 중단되었습니다. 재개될 때까지 스왑, 입금 및 출금을 사용할 수 없습니다.',
   'pools.status.trading.info': '{chain}의 거래가 중단되었습니다. 스왑과 신규 입금을 사용할 수 없습니다.',
-  'pools.status.lp.info': '{chain}의 유동성 작업이 일시 중지되었습니다. 스왑은 계속 가능하며, 유동성 추가 및 인출은 사용할 수 없습니다.',
+  'pools.status.lp.info':
+    '{chain}의 유동성 작업이 일시 중지되었습니다. 스왑은 계속 가능하며, 유동성 추가 및 인출은 사용할 수 없습니다.',
   'pools.status.deposit.info': '이 풀에 대한 신규 입금이 일시 중지되었습니다. 스왑과 출금은 계속 가능합니다.',
   'pools.status.unknown': '상태 알 수 없음',
   'pools.status.unknown.info': '중단 상태를 불러오지 못했습니다. 상태를 확인할 때까지 스왑과 추가가 비활성화됩니다.',
@@ -115,11 +116,13 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.error': '스왑을 불러오지 못했습니다',
   'pools.chart.tradingPanel.limit': '리밋',
   'pools.chart.tradingPanel.limit.beta': '베타',
-  'pools.chart.tradingPanel.limit.betaNote': '지정가 주문은 베타입니다. 앱이 열려 있는 동안 가격을 확인하고, 지정한 가격에 도달하면 시장가 스왑 확인을 요청합니다. 스왑은 슬리피지 설정을 사용하므로 지정가보다 낮게 체결될 수 있습니다.',
+  'pools.chart.tradingPanel.limit.betaNote':
+    '지정가 주문은 베타입니다. 앱이 열려 있는 동안 가격을 확인하고, 지정한 가격에 도달하면 시장가 스왑 확인을 요청합니다. 스왑은 슬리피지 설정을 사용하므로 지정가보다 낮게 체결될 수 있습니다.',
   'pools.chart.tradingPanel.market': '마켓',
   'pools.chart.tradingPanel.limit.hint':
     '{price}에 매수 또는 매도를 넣습니다. 앱이 풀 가격을 지켜보다가 그 가격을 넘으면 스왑합니다. 주문은 이 차트가 열려 있는 동안에만 유지됩니다. 차트를 나가면 주문이 일시정지되고, 앱을 닫으면 취소됩니다.',
-  'pools.chart.tradingPanel.limit.triggered': '지정가 주문 실행: {price} {unit}에 {amount} {symbol} {side, select, buy {로 매수} other {매도}}, {source, select, trade {트레이드 계정} other {지갑}}에서 지불. 현재 견적으로 스왑하려면 확인하세요.',
+  'pools.chart.tradingPanel.limit.triggered':
+    '지정가 주문 실행: {price} {unit}에 {amount} {symbol} {side, select, buy {로 매수} other {매도}}, {source, select, trade {트레이드 계정} other {지갑}}에서 지불. 현재 견적으로 스왑하려면 확인하세요.',
   'pools.chart.tradingPanel.market.hint': '현재 가격으로 바로 교환합니다.',
   'pools.chart.tradingPanel.placeOrder': '주문 넣기',
   'pools.chart.tradingPanel.swapNow': '지금 교환',

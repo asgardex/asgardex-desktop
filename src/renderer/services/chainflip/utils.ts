@@ -115,6 +115,8 @@ export type ChainflipVolumeResponse = {
 /**
  * Sums `ingressValueUsd` per Chainflip asset key (e.g. `Btc`, `ArbUsdc`) across both the source and
  * destination side of a swap, so an asset's volume counts a swap whether it was bought or sold.
+ *
+ * Keys are `AssetData.chainflipId`, not the ticker on `AssetData.asset` (`BTC`, `USDC`).
  */
 export const sumVolumeByAsset = (response: ChainflipVolumeResponse): Map<string, number> => {
   const volumeByAsset = new Map<string, number>()
@@ -130,3 +132,9 @@ export const sumVolumeByAsset = (response: ChainflipVolumeResponse): Map<string,
   add(response.data?.byDestination?.groupedAggregates)
   return volumeByAsset
 }
+
+/** 24h USD volume for one asset. A ticker lookup collides (`USDC` is both `Usdc` and `ArbUsdc`) and misses. */
+export const chainflipAssetVolumeUsd = (
+  volumeByAsset: ReadonlyMap<string, number>,
+  asset: Pick<AssetData, 'chainflipId'>
+): number | undefined => volumeByAsset.get(asset.chainflipId)

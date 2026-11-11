@@ -11,9 +11,11 @@ const pools: PoolsMessages = {
   'pools.status.trading': 'Trading halted',
   'pools.status.lp': 'LP paused',
   'pools.status.deposit': 'Deposits paused',
-  'pools.status.chain.info': 'The {chain} chain is halted. Swaps, deposits and withdrawals are unavailable until it resumes.',
+  'pools.status.chain.info':
+    'The {chain} chain is halted. Swaps, deposits and withdrawals are unavailable until it resumes.',
   'pools.status.trading.info': 'Trading on {chain} is halted. Swaps and new deposits are unavailable.',
-  'pools.status.lp.info': 'Liquidity actions on {chain} are paused. Swaps still work; adding and withdrawing liquidity are unavailable.',
+  'pools.status.lp.info':
+    'Liquidity actions on {chain} are paused. Swaps still work; adding and withdrawing liquidity are unavailable.',
   'pools.status.deposit.info': 'New deposits to this pool are paused. Swaps and withdrawals still work.',
   'pools.status.unknown': 'Status unknown',
   'pools.status.unknown.info': 'Halt status could not be loaded. Swap and Add are disabled until it is known.',
@@ -115,11 +117,13 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.error': 'Could not load swaps',
   'pools.chart.tradingPanel.limit': 'Limit',
   'pools.chart.tradingPanel.limit.beta': 'Beta',
-  'pools.chart.tradingPanel.limit.betaNote': 'Limit orders are in beta. The app watches the price while it is open and, when your price is reached, asks you to confirm a market swap. The swap uses your slippage setting, so it can fill below your limit.',
+  'pools.chart.tradingPanel.limit.betaNote':
+    'Limit orders are in beta. The app watches the price while it is open and, when your price is reached, asks you to confirm a market swap. The swap uses your slippage setting, so it can fill below your limit.',
   'pools.chart.tradingPanel.market': 'Market',
   'pools.chart.tradingPanel.limit.hint':
     'Places a buy or sell at {price}. The app watches the pool price and swaps when it crosses. The order stays open only while this chart is open. Leaving the chart pauses it, and closing the app cancels it.',
-  'pools.chart.tradingPanel.limit.triggered': 'Limit order triggered: {side, select, buy {buy with} other {sell}} {amount} {symbol} at {price} {unit}, paid from your {source, select, trade {trade account} other {wallet}}. Confirm to swap at the live quote.',
+  'pools.chart.tradingPanel.limit.triggered':
+    'Limit order triggered: {side, select, buy {buy with} other {sell}} {amount} {symbol} at {price} {unit}, paid from your {source, select, trade {trade account} other {wallet}}. Confirm to swap at the live quote.',
   'pools.chart.tradingPanel.market.hint': 'Swaps now at the current price.',
   'pools.chart.tradingPanel.placeOrder': 'Place order',
   'pools.chart.tradingPanel.swapNow': 'Swap now',

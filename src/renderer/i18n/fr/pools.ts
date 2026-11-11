@@ -11,12 +11,17 @@ const pools: PoolsMessages = {
   'pools.status.trading': 'Trading arrêté',
   'pools.status.lp': 'LP en pause',
   'pools.status.deposit': 'Dépôts en pause',
-  'pools.status.chain.info': 'La chaîne {chain} est arrêtée. Les swaps, dépôts et retraits sont indisponibles jusqu’à sa reprise.',
-  'pools.status.trading.info': 'Le trading sur {chain} est arrêté. Les swaps et les nouveaux dépôts sont indisponibles.',
-  'pools.status.lp.info': 'Les actions de liquidité sur {chain} sont en pause. Les swaps fonctionnent toujours ; l’ajout et le retrait de liquidité sont indisponibles.',
-  'pools.status.deposit.info': 'Les nouveaux dépôts dans ce pool sont en pause. Les swaps et les retraits fonctionnent toujours.',
+  'pools.status.chain.info':
+    'La chaîne {chain} est arrêtée. Les swaps, dépôts et retraits sont indisponibles jusqu’à sa reprise.',
+  'pools.status.trading.info':
+    'Le trading sur {chain} est arrêté. Les swaps et les nouveaux dépôts sont indisponibles.',
+  'pools.status.lp.info':
+    'Les actions de liquidité sur {chain} sont en pause. Les swaps fonctionnent toujours ; l’ajout et le retrait de liquidité sont indisponibles.',
+  'pools.status.deposit.info':
+    'Les nouveaux dépôts dans ce pool sont en pause. Les swaps et les retraits fonctionnent toujours.',
   'pools.status.unknown': 'Statut inconnu',
-  'pools.status.unknown.info': 'Le statut d\'arrêt n\'a pas pu être chargé. Swap et Ajouter sont désactivés jusqu\'à ce qu\'il soit connu.',
+  'pools.status.unknown.info':
+    "Le statut d'arrêt n'a pas pu être chargé. Swap et Ajouter sont désactivés jusqu'à ce qu'il soit connu.",
   'pools.summary.liquidity': 'Liquidité totale',
   'pools.summary.pools': '{count} pools',
   'pools.summary.volumeShare': '{percent} % de la liquidité',
@@ -25,7 +30,7 @@ const pools: PoolsMessages = {
   'pools.summary.operational': 'Tous opérationnels',
   'pools.summary.limited': '{count} limités',
   'pools.summary.limited.hint': 'Survolez ou sélectionnez un statut pour les détails',
-  'pools.summary.unknown.hint': 'Swap et Ajouter sont désactivés jusqu\'au chargement',
+  'pools.summary.unknown.hint': "Swap et Ajouter sont désactivés jusqu'au chargement",
   'pools.depth': 'Profondeur',
   'pools.24hvol': 'Volume sur 24h',
   'pools.apy': 'APY',
@@ -115,11 +120,13 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.error': 'Impossible de charger les swaps',
   'pools.chart.tradingPanel.limit': 'Limite',
   'pools.chart.tradingPanel.limit.beta': 'Bêta',
-  'pools.chart.tradingPanel.limit.betaNote': "Les ordres à cours limité sont en bêta. L'app surveille le prix tant qu'elle est ouverte et, lorsque votre prix est atteint, vous demande de confirmer un swap au marché. Le swap utilise votre réglage de slippage, il peut donc s'exécuter sous votre limite.",
+  'pools.chart.tradingPanel.limit.betaNote':
+    "Les ordres à cours limité sont en bêta. L'app surveille le prix tant qu'elle est ouverte et, lorsque votre prix est atteint, vous demande de confirmer un swap au marché. Le swap utilise votre réglage de slippage, il peut donc s'exécuter sous votre limite.",
   'pools.chart.tradingPanel.market': 'Marché',
   'pools.chart.tradingPanel.limit.hint':
     "Place un achat ou une vente à {price}. L'application surveille le prix du pool et échange lorsqu'il est franchi. L'ordre ne reste ouvert que tant que ce graphique est ouvert. Quitter le graphique le met en pause, et fermer l'application l'annule.",
-  'pools.chart.tradingPanel.limit.triggered': 'Ordre limite déclenché : {side, select, buy {achat avec} other {vente de}} {amount} {symbol} à {price} {unit}, payé depuis {source, select, trade {votre compte de trading} other {votre portefeuille}}. Confirmez pour échanger au devis actuel.',
+  'pools.chart.tradingPanel.limit.triggered':
+    'Ordre limite déclenché : {side, select, buy {achat avec} other {vente de}} {amount} {symbol} à {price} {unit}, payé depuis {source, select, trade {votre compte de trading} other {votre portefeuille}}. Confirmez pour échanger au devis actuel.',
   'pools.chart.tradingPanel.market.hint': 'Échange maintenant au prix actuel.',
   'pools.chart.tradingPanel.placeOrder': "Placer l'ordre",
   'pools.chart.tradingPanel.swapNow': 'Échanger maintenant',
