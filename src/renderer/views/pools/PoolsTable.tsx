@@ -46,14 +46,15 @@ export type Props = {
 const HIDE_BELOW_640 = 'hidden @min-[640px]:table-cell'
 const HIDE_BELOW_860 = 'hidden @min-[860px]:table-cell'
 
-const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-turquoise'
+export const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-turquoise'
 
-const HEAD_CELL =
+export const HEAD_CELL =
   'whitespace-nowrap px-3 py-2.5 font-main text-[11px] font-normal uppercase tracking-wider text-gray2 dark:text-gray2d'
 
-const SKELETON_ROWS = 8
+export const SKELETON_ROWS = 8
 
-const ActionButton = ({
+/** Swap / Add button of a pool row; disabled with a reason that stays readable by keyboard */
+export const PoolActionButton = ({
   label,
   onClick,
   disabledReason
@@ -229,13 +230,13 @@ export const PoolsTable = ({
               </button>
             )}
             {isActive && onSwap && (
-              <ActionButton
+              <PoolActionButton
                 label={swapLabel}
                 onClick={() => onSwap(asset)}
                 disabledReason={isSwapDisabled(status) ? statusInfo : undefined}
               />
             )}
-            <ActionButton
+            <PoolActionButton
               label={addLabel}
               onClick={() => onAdd(asset)}
               disabledReason={isAddDisabled(status) ? statusInfo : undefined}

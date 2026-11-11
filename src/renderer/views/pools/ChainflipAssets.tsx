@@ -1,56 +1,28 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ArrowPathIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { assetToString } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
-import clsx from 'clsx'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { AssetBTC } from '../../../shared/utils/asset'
-import BoostIcon from '../../assets/svg/boost.svg'
-import { AssetsFilter } from '../../components/AssetsFilter'
-import { AppColumnDef, Table } from '../../components/table'
-import { AssetData } from '../../components/uielements/assets/assetData'
-import { TextButton } from '../../components/uielements/button'
-import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
-import { Label } from '../../components/uielements/label'
-import { Tooltip } from '../../components/uielements/tooltip'
 import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { eqAsset } from '../../helpers/fp/eq'
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import * as poolsRoutes from '../../routes/pools'
 import { ChainflipAssetRowData } from '../../services/chainflip/poolData.types'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
+import { ChainflipPoolsTable, ChainflipPoolsTableRow } from './ChainflipPoolsTable'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
-
-// Chainflip asset row enriched with the user's watchlist state (favourites).
-type ChainflipAssetRow = ChainflipAssetRowData & { watched: boolean }
-
-const formatUsd = (amount: number | undefined): string => {
-  if (amount === undefined) return '—'
-  if (amount >= 1) return `$${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
-  return `$${amount.toLocaleString(undefined, { maximumFractionDigits: 6 })}`
-}
-
-// Chainflip swap amounts can exceed Number.MAX_SAFE_INTEGER for 18-decimal
-// tokens, so use BigNumber rather than `Number(amount) / 10**decimals`.
-const formatBaseUnits = (amount: string, decimals: number, symbol: string): string => {
-  if (!amount) return '—'
-  const value = new BigNumber(amount).shiftedBy(-decimals)
-  if (!value.isFinite()) return '—'
-  return `${value.decimalPlaces(6, BigNumber.ROUND_DOWN).toFormat()} ${symbol}`
-}
+import { PoolsToolbar } from './PoolsToolbar'
 
 export const ChainflipAssets = (): JSX.Element => {
   const navigate = useNavigate()
@@ -59,7 +31,6 @@ export const ChainflipAssets = (): JSX.Element => {
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
   const { chainflipAssetRows$, reloadChainflipAssetRows } = useChainflipContext()
   const rowsRD = useObservableState(chainflipAssetRows$, RD.pending)
-  const isLargeScreen = useBreakpoint()?.lg ?? false
 
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('active')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
@@ -81,161 +52,66 @@ export const ChainflipAssets = (): JSX.Element => {
     [navigate]
   )
 
-  const columns: AppColumnDef<ChainflipAssetRow>[] = useMemo(
-    () => [
-      {
-        accessorKey: 'watched',
-        header: '',
-        cell: ({ row }) => {
-          const { watched, asset } = row.original
-          return Shared.renderWatchColumn({
-            data: { watched },
-            add: () => addPoolToWatchlist(asset),
-            remove: () => removePoolFromWatchlist(asset)
-          })
-        },
-        size: 50,
-        sortFn: 'basic'
-      },
-      {
-        accessorKey: 'asset',
-        header: intl.formatMessage({ id: 'common.asset' }),
-        cell: ({ row }) => (
-          <div className="flex w-full items-center">
-            <AssetData asset={row.original.asset} network={network} />
-          </div>
-        ),
-        sortFn: (a, b) => a.original.asset.symbol.localeCompare(b.original.asset.symbol)
-      },
-      {
-        accessorKey: 'chain',
-        header: intl.formatMessage({ id: 'common.chain' }),
-        cell: ({ row }) => (
-          <Label className="!text-16" align="left" nowrap>
-            {row.original.chain}
-          </Label>
-        ),
-        sortFn: (a, b) => a.original.chain.localeCompare(b.original.chain)
-      },
-      {
-        accessorKey: 'priceUSD',
-        header: intl.formatMessage({ id: 'common.price' }),
-        cell: ({ row }) => (
-          <Label className="!text-16" align="right" nowrap>
-            {formatUsd(row.original.priceUSD)}
-          </Label>
-        ),
-        sortFn: (a, b) => (a.original.priceUSD ?? 0) - (b.original.priceUSD ?? 0)
-      },
-      ...(isLargeScreen
-        ? ([
-            {
-              accessorKey: 'minSwapAmount',
-              header: intl.formatMessage({ id: 'pools.chainflip.minSwap' }),
-              cell: ({ row }) => (
-                <div className="flex items-center justify-end gap-1.5">
-                  <Label className="!text-16" align="right" nowrap>
-                    {formatBaseUnits(row.original.minSwapAmount, row.original.decimals, row.original.symbol)}
-                  </Label>
-                  {row.original.boostAvailable && (
-                    <Tooltip title={intl.formatMessage({ id: 'pools.chainflip.boostAvailable' })} placement="top">
-                      <img src={BoostIcon} alt="Boost" className="h-4 w-4" />
-                    </Tooltip>
-                  )}
-                </div>
-              ),
-              enableSorting: false
-            }
-          ] as AppColumnDef<ChainflipAssetRow>[])
-        : []),
-      {
-        accessorKey: 'actions',
-        header: () => (
-          <div className="flex items-center justify-center">
-            <TextButton size={isLargeScreen ? 'normal' : 'large'} onClick={reloadChainflipAssetRows}>
-              <div className="flex items-center">
-                <ArrowPathIcon className={clsx('h-4 w-4', { 'mr-2': isLargeScreen })} />
-                {isLargeScreen && intl.formatMessage({ id: 'common.refresh' })}
-              </div>
-            </TextButton>
-          </div>
-        ),
-        cell: ({ row }) => {
-          const { asset } = row.original
-          const actions: ActionButtonAction[] = [
-            {
-              label: intl.formatMessage({ id: 'common.swap' }),
-              callback: () => handleSwap(row.original)
-            }
-          ]
-          return (
-            <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
-              <button
-                onClick={() => navigate(poolsRoutes.detail.path({ asset: assetToString(asset) }))}
-                className="flex items-center justify-center rounded p-1 text-text2 transition-colors hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-                title={intl.formatMessage({ id: 'pools.chart' })}>
-                <ChartBarIcon className="h-5 w-5" />
-              </button>
-              <ActionButton size="normal" actions={actions} />
-            </div>
+  const handleDetail = useCallback(
+    (asset: AnyAsset) => navigate(poolsRoutes.detail.path({ asset: assetToString(asset) })),
+    [navigate]
+  )
+
+  // Keep the last loaded rows on screen while a refresh is running (the stream is pending again on reload)
+  const previousRows = useRef<O.Option<ChainflipAssetRowData[]>>(O.none)
+  const oRows: O.Option<ChainflipAssetRowData[]> = useMemo(() => {
+    if (RD.isSuccess(rowsRD)) previousRows.current = O.some(rowsRD.value)
+    return previousRows.current
+  }, [rowsRD])
+
+  const rows: ChainflipPoolsTableRow[] = useMemo(
+    () =>
+      FP.pipe(
+        oRows,
+        O.getOrElse((): ChainflipAssetRowData[] => []),
+        A.map((row) => ({
+          ...row,
+          watched: FP.pipe(
+            poolWatchList,
+            A.findFirst((asset) => eqAsset.equals(asset, row.asset)),
+            O.isSome
           )
-        },
-        enableSorting: false
-      }
-    ],
-    [
-      intl,
-      network,
-      isLargeScreen,
-      handleSwap,
-      navigate,
-      addPoolToWatchlist,
-      removePoolFromWatchlist,
-      reloadChainflipAssetRows
-    ]
+        }))
+      ),
+    [oRows, poolWatchList]
   )
 
-  const renderTable = useCallback(
-    (data: ChainflipAssetRowData[], loading = false) => {
-      const rows: ChainflipAssetRow[] = data.map((row) => ({
-        ...row,
-        watched: FP.pipe(
-          poolWatchList,
-          A.findFirst((asset) => eqAsset.equals(asset, row.asset)),
-          O.isSome
-        )
-      }))
-      const dataSource = FP.pipe(rows, filterTableData(poolFilter))
+  const filteredRows = useMemo(() => filterTableData(poolFilter)(rows), [poolFilter, rows])
 
-      return (
-        <>
-          <AssetsFilter
-            className="mb-5"
-            activeFilter={poolFilter}
-            setFilter={setPoolFilter}
-            poolFilters={DEFAULT_POOL_FILTERS}
-          />
-          {data.length === 0 && !loading ? (
-            <div className="py-12 text-center text-text2 dark:text-text2d">
-              {intl.formatMessage({ id: 'pools.chainflip.empty' })}
-            </div>
-          ) : (
-            <Table columns={columns} data={dataSource} loading={loading} />
-          )}
-        </>
-      )
-    },
-    [columns, intl, poolFilter, poolWatchList, setPoolFilter]
-  )
+  if (RD.isFailure(rowsRD)) {
+    return Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), reloadChainflipAssetRows)(rowsRD.error)
+  }
+
+  const pending = !RD.isSuccess(rowsRD)
+  // Initial load: skeleton rows. Reload with rows on screen: spinning refresh button.
+  const loading = pending && O.isNone(oRows)
+  const refreshing = pending && O.isSome(oRows)
 
   return (
-    <>
-      {RD.fold(
-        () => renderTable([], true),
-        () => renderTable([], true),
-        Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), reloadChainflipAssetRows),
-        (data: ChainflipAssetRowData[]) => renderTable(data)
-      )(rowsRD)}
-    </>
+    <div className="flex w-full flex-col gap-3">
+      <PoolsToolbar
+        poolFilters={DEFAULT_POOL_FILTERS}
+        activeFilter={poolFilter}
+        setFilter={setPoolFilter}
+        refreshing={refreshing}
+        onRefresh={reloadChainflipAssetRows}
+      />
+      <ChainflipPoolsTable
+        rows={filteredRows}
+        network={network}
+        loading={loading}
+        // "No Chainflip assets" only if Chainflip returned none, otherwise "no result" for the filter / search
+        emptyMessage={rows.length === 0 ? intl.formatMessage({ id: 'pools.chainflip.empty' }) : undefined}
+        onSwap={handleSwap}
+        onDetail={handleDetail}
+        onWatch={addPoolToWatchlist}
+        onUnwatch={removePoolFromWatchlist}
+      />
+    </div>
   )
 }
