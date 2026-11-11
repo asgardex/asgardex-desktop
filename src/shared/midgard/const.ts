@@ -16,10 +16,10 @@ export const DEFAULT_MIDGARD_URLS: ApiUrls = {
   testnet: TESTNET_URL
 }
 
-// Transparent fallback when the configured primary fails its /v2/health check.
-// Use the official thorchain.network endpoint as a known-good default.
+// Optional second Midgard host. Empty by default: `midgard.thorchain.network` no longer
+// resolves, and failing over to it replaces a live Liquify host with a dead name.
 export const FALLBACK_MIDGARD_URLS: ApiUrls = {
-  mainnet: envOrDefault(import.meta.env.VITE_MIDGARD_MAINNET_FALLBACK_URL, 'https://midgard.thorchain.network'),
+  mainnet: envOrDefault(import.meta.env.VITE_MIDGARD_MAINNET_FALLBACK_URL, ''),
   stagenet: '',
   testnet: ''
 }
