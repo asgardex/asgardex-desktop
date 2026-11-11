@@ -193,6 +193,13 @@ export const PoolsTable = ({
             </div>
           </div>
         </td>
+        <td className="px-3">
+          {status ? (
+            <PoolStatusChip status={status} chain={asset.chain} />
+          ) : (
+            <span className="font-main text-[13px] text-gray1 dark:text-gray1d">--</span>
+          )}
+        </td>
         <td className="px-3 text-right whitespace-nowrap text-text0 dark:text-text0d">
           {formatPoolPrice(row.poolPrice, pricePoolAsset)}
         </td>
@@ -211,13 +218,6 @@ export const PoolsTable = ({
         ) : (
           <td className="px-3 text-right whitespace-nowrap text-text0 dark:text-text0d">{getBlocksLeft(row)}</td>
         )}
-        <td className="px-3">
-          {status ? (
-            <PoolStatusChip status={status} chain={asset.chain} />
-          ) : (
-            <span className="font-main text-[13px] text-gray1 dark:text-gray1d">--</span>
-          )}
-        </td>
         <td className="pr-3">
           <div className="flex items-center justify-end gap-1.5 opacity-70 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
             {isActive && onDetail && (
@@ -278,6 +278,9 @@ export const PoolsTable = ({
               <span className="sr-only">{intl.formatMessage({ id: 'pools.watchlist' })}</span>
             </th>
             {renderSortHead('asset', intl.formatMessage({ id: 'common.pool' }), 'text-left')}
+            <th scope="col" className={HEAD_CELL}>
+              {intl.formatMessage({ id: 'common.status' })}
+            </th>
             {renderSortHead('poolPrice', intl.formatMessage({ id: 'common.price' }), 'text-right')}
             {renderSortHead(
               'depthPrice',
@@ -302,9 +305,6 @@ export const PoolsTable = ({
                 {intl.formatMessage({ id: 'pools.blocksleft' })}
               </th>
             )}
-            <th scope="col" className={HEAD_CELL}>
-              {intl.formatMessage({ id: 'common.status' })}
-            </th>
             <th scope="col" className={clsx(HEAD_CELL, 'w-[1%]')}>
               <span className="sr-only">{intl.formatMessage({ id: 'common.action' })}</span>
             </th>

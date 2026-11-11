@@ -88,10 +88,10 @@ describe('views/pools/PoolsTable', () => {
     render()
     expect(rowTexts().map((text) => text.slice(0, 3))).toEqual(['BTC', 'ETH', 'DOG'])
     const cells = rowOf('BTC').querySelectorAll('td')
-    expect(cells[2].textContent).toBe('$2,761,400.00')
-    expect(cells[3].textContent).toBe('$27.61M')
-    expect(cells[4].textContent).toBe('$55.23M')
-    expect(cells[5].textContent).toBe('5.28%')
+    expect(cells[3].textContent).toBe('$2,761,400.00')
+    expect(cells[4].textContent).toBe('$27.61M')
+    expect(cells[5].textContent).toBe('$55.23M')
+    expect(cells[6].textContent).toBe('5.28%')
     expect(container.textContent).toContain('APY 30D')
   })
 
@@ -111,9 +111,11 @@ describe('views/pools/PoolsTable', () => {
     const props = render()
     const btc = rowOf('BTC')
     expect(btc.querySelector('[data-testid="pool-status-chip"]')?.textContent).toBe('Deposits paused')
-    // status chip lives in its own column, not in the Pool cell
+    // status sits between Pool and Price, not in the Pool cell and not after the numbers
+    const headers = Array.from(container.querySelectorAll('thead th')).map((th) => th.textContent?.trim())
+    expect(headers.slice(1, 4)).toEqual(['Pool', 'Status', 'Price'])
     expect(btc.querySelectorAll('td')[1].querySelector('[data-testid="pool-status-chip"]')).toBeNull()
-    expect(btc.querySelectorAll('td')[6].querySelector('[data-testid="pool-status-chip"]')).not.toBeNull()
+    expect(btc.querySelectorAll('td')[2].querySelector('[data-testid="pool-status-chip"]')).not.toBeNull()
     // deposit pause: swap works, add is disabled with its reason
     expect(button(btc, 'Swap').getAttribute('aria-disabled')).toBe('false')
     expect(button(btc, 'Add').getAttribute('aria-disabled')).toBe('true')
@@ -132,7 +134,7 @@ describe('views/pools/PoolsTable', () => {
     // no status: a neutral dash in the status column, all actions enabled
     const eth = rowOf('ETH')
     expect(eth.querySelector('[data-testid="pool-status-chip"]')).toBeNull()
-    expect(eth.querySelectorAll('td')[6].textContent).toBe('--')
+    expect(eth.querySelectorAll('td')[2].textContent).toBe('--')
     act(() => button(eth, 'Add').click())
     expect(props.onAdd).toHaveBeenCalledWith(ASSETS_MAINNET.ETH)
   })
@@ -164,7 +166,7 @@ describe('views/pools/PoolsTable', () => {
   it('renders pending pools with blocks left and add only', () => {
     render({ variant: 'pending', getBlocksLeft: ({ asset }) => (asset.ticker === 'BTC' ? '1,234' : '--') })
     const btc = rowOf('BTC')
-    expect(btc.querySelectorAll('td')[4].textContent).toBe('1,234')
+    expect(btc.querySelectorAll('td')[5].textContent).toBe('1,234')
     expect(button(btc, 'Swap')).toBeUndefined()
     expect(button(btc, 'Add')).toBeDefined()
     expect(container.textContent).not.toContain('APY')
