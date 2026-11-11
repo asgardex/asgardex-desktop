@@ -1,6 +1,36 @@
 import { PoolsMessages } from '../types'
 
 const pools: PoolsMessages = {
+  'pools.incentivependulum.title': 'Incentive-Pendel',
+  'pools.watchlist': 'Merkliste',
+  'pools.watchlist.add': 'Zur Merkliste hinzufügen',
+  'pools.watchlist.remove': 'Von Merkliste entfernen',
+  'pools.filter.stablecoins': 'Stablecoins',
+  'pools.search': 'Pools suchen',
+  'pools.status.chain': 'Chain angehalten',
+  'pools.status.trading': 'Handel angehalten',
+  'pools.status.lp': 'LP pausiert',
+  'pools.status.deposit': 'Einzahlungen pausiert',
+  'pools.status.chain.info':
+    'Die {chain}-Chain ist angehalten. Swaps, Einzahlungen und Auszahlungen sind bis zur Wiederaufnahme nicht verfügbar.',
+  'pools.status.trading.info':
+    'Der Handel auf {chain} ist angehalten. Swaps und neue Einzahlungen sind nicht verfügbar.',
+  'pools.status.lp.info':
+    'Liquiditätsaktionen auf {chain} sind pausiert. Swaps funktionieren weiterhin; Hinzufügen und Abheben von Liquidität ist nicht verfügbar.',
+  'pools.status.deposit.info':
+    'Neue Einzahlungen in diesen Pool sind pausiert. Swaps und Auszahlungen funktionieren weiterhin.',
+  'pools.status.unknown': 'Status unbekannt',
+  'pools.status.unknown.info':
+    'Der Halt-Status konnte nicht geladen werden. Swap und Hinzufügen sind deaktiviert, bis er bekannt ist.',
+  'pools.summary.liquidity': 'Gesamtliquidität',
+  'pools.summary.pools': '{count} Pools',
+  'pools.summary.volumeShare': '{percent} % der Liquidität',
+  'pools.summary.nextPool': 'Nächste Pool-Aktivierung',
+  'pools.summary.status': 'Pool-Status',
+  'pools.summary.operational': 'Alle in Betrieb',
+  'pools.summary.limited': '{count} eingeschränkt',
+  'pools.summary.limited.hint': 'Für Details auf einen Status zeigen oder fokussieren',
+  'pools.summary.unknown.hint': 'Swap und Hinzufügen sind bis zum Laden deaktiviert',
   'pools.depth': 'Tiefe',
   'pools.apy': 'APY',
   'pools.apr': 'APR',
@@ -15,7 +45,6 @@ const pools: PoolsMessages = {
   'pools.available': 'Aktive',
   'pools.pooled': 'Angelegt',
   'pools.limit.info': 'Protokoll-Limit erreicht! {pooled} hinterlegt in Pools, {bonded} bonded in Nodes',
-  'pools.incentivependulum.info': 'Incentive Pendulum: {percentage}%',
   'pools.incentivependulum.tooltip': '{pooled} in Pools, {bonded} in Nodes',
   'pools.incentivependulum.error': 'Fehler beim Laden der Daten des Incentive Pendulums',
   'pools.bondable': 'Bindbar',
@@ -91,11 +120,13 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.error': 'Swaps konnten nicht geladen werden',
   'pools.chart.tradingPanel.limit': 'Limit',
   'pools.chart.tradingPanel.limit.beta': 'Beta',
-  'pools.chart.tradingPanel.limit.betaNote': 'Limit-Orders sind in der Beta. Die App beobachtet den Preis, solange sie geöffnet ist, und bittet dich bei Erreichen deines Preises, einen Markt-Swap zu bestätigen. Der Swap nutzt deine Slippage-Einstellung und kann daher unter deinem Limit ausgeführt werden.',
+  'pools.chart.tradingPanel.limit.betaNote':
+    'Limit-Orders sind in der Beta. Die App beobachtet den Preis, solange sie geöffnet ist, und bittet dich bei Erreichen deines Preises, einen Markt-Swap zu bestätigen. Der Swap nutzt deine Slippage-Einstellung und kann daher unter deinem Limit ausgeführt werden.',
   'pools.chart.tradingPanel.market': 'Market',
   'pools.chart.tradingPanel.limit.hint':
     'Platziert einen Kauf oder Verkauf bei {price}. Die App beobachtet den Poolpreis und tauscht, sobald er gekreuzt wird. Die Order gilt nur, solange dieser Chart geöffnet ist. Verlassen des Charts pausiert sie, und Schließen der App bricht sie ab.',
-  'pools.chart.tradingPanel.limit.triggered': 'Limit-Order ausgelöst: {side, select, buy {Kauf mit} other {Verkauf}} {amount} {symbol} zu {price} {unit}, bezahlt aus {source, select, trade {deinem Trade-Konto} other {deiner Wallet}}. Bestätige, um zum aktuellen Angebot zu tauschen.',
+  'pools.chart.tradingPanel.limit.triggered':
+    'Limit-Order ausgelöst: {side, select, buy {Kauf mit} other {Verkauf}} {amount} {symbol} zu {price} {unit}, bezahlt aus {source, select, trade {deinem Trade-Konto} other {deiner Wallet}}. Bestätige, um zum aktuellen Angebot zu tauschen.',
   'pools.chart.tradingPanel.market.hint': 'Tauscht jetzt zum aktuellen Preis.',
   'pools.chart.tradingPanel.placeOrder': 'Order platzieren',
   'pools.chart.tradingPanel.swapNow': 'Jetzt tauschen',

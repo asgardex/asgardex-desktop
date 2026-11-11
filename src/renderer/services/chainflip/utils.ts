@@ -100,3 +100,41 @@ export const cAssetToXAsset = (asset: AssetData): XAsset | XTokenAsset | null =>
 export const xAssetToCAsset = (asset: XAsset | XTokenAsset): CAsset => {
   return asset.ticker as CAsset
 }
+
+/** One `groupedAggregates` bucket of Chainflip's reporting API, keyed by its `groupBy` field */
+export type ChainflipVolumeAggregate = { keys: [string]; sum: { ingressValueUsd: string | null } }
+
+export type ChainflipVolumeResponse = {
+  data?: {
+    bySource?: { groupedAggregates: ChainflipVolumeAggregate[] }
+    byDestination?: { groupedAggregates: ChainflipVolumeAggregate[] }
+  }
+  errors?: { message: string }[]
+}
+
+/**
+ * Sums `ingressValueUsd` per Chainflip asset key (e.g. `Btc`, `ArbUsdc`) across both the source and
+ * destination side of a swap, so an asset's volume counts a swap whether it was bought or sold.
+ *
+ * Keys are `AssetData.chainflipId`, not the ticker on `AssetData.asset` (`BTC`, `USDC`).
+ */
+export const sumVolumeByAsset = (response: ChainflipVolumeResponse): Map<string, number> => {
+  const volumeByAsset = new Map<string, number>()
+  const add = (aggregates: ChainflipVolumeAggregate[] = []) => {
+    for (const { keys, sum } of aggregates) {
+      const usd = Number(sum.ingressValueUsd ?? 0)
+      if (!isFinite(usd)) continue
+      const [asset] = keys
+      volumeByAsset.set(asset, (volumeByAsset.get(asset) ?? 0) + usd)
+    }
+  }
+  add(response.data?.bySource?.groupedAggregates)
+  add(response.data?.byDestination?.groupedAggregates)
+  return volumeByAsset
+}
+
+/** 24h USD volume for one asset. A ticker lookup collides (`USDC` is both `Usdc` and `ArbUsdc`) and misses. */
+export const chainflipAssetVolumeUsd = (
+  volumeByAsset: ReadonlyMap<string, number>,
+  asset: Pick<AssetData, 'chainflipId'>
+): number | undefined => volumeByAsset.get(asset.chainflipId)

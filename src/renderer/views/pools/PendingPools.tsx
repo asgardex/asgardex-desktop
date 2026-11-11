@@ -4,49 +4,43 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-
-import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { useNavigate } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { THORChain } from '../../../shared/utils/chainIds'
-
-import { AssetsFilter } from '../../components/AssetsFilter'
-import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
-import { AppColumnDef, Table } from '../../components/table'
-import { AssetData } from '../../components/uielements/assets/assetData'
-import { ManageButton } from '../../components/uielements/button'
-import { Label } from '../../components/uielements/label'
+import { ProtocolLimit } from '../../components/pool'
+import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { ordBaseAmount } from '../../helpers/fp/ord'
 import { getPoolTableRowsData, isPoolDetails } from '../../helpers/poolHelper'
 import { getPoolTableRowsData as getPoolTableRowsDataMaya } from '../../helpers/poolHelperMaya'
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
 import { useObservableLayoutState } from '../../hooks/useObservableLayoutState'
 import { usePoolCycle } from '../../hooks/usePoolCycle'
 import { usePoolCycleMaya } from '../../hooks/usePoolCycleMaya'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
+import { usePoolStatus } from '../../hooks/usePoolStatus'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import { useProtocolLimitMaya } from '../../hooks/useProtocolLimitMaya'
+import * as poolsRoutes from '../../routes/pools'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { LastblockItems as MayaLastblockItems } from '../../services/mayachain/types'
-import { PendingPoolsState as PendingPoolsStateMaya } from '../../services/midgard/mayaMidgard/types'
-import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
+import { DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
 import { LastblockItems as ThorLastblockItems } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
-import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
+import { PoolTableRowsData } from './Pools.types'
 import {
   filterTableData,
   getBlocksLeftForPendingPoolAsString,
@@ -54,13 +48,16 @@ import {
   isEmptyPool
 } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
+import { PoolsSummary } from './PoolsSummary'
+import { PoolsTable, PoolsTableRow } from './PoolsTable'
+import { PoolsToolbar } from './PoolsToolbar'
 
 export const PendingPools = (): JSX.Element => {
+  const navigate = useNavigate()
   const { protocol } = useApp()
   const intl = useIntl()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
-
   const {
     service: {
       pools: { pendingPoolsState$, pendingPoolsLoading$, reloadPendingPools }
@@ -75,15 +72,16 @@ export const PendingPools = (): JSX.Element => {
       }
     }
   } = useMidgardMayaContext()
-
   const { thorchainLastblockState$ } = useThorchainContext()
   const { mayachainLastblockState$ } = useMayachainContext()
-
   const isThorProtocol = protocol === THORChain
+
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('pending')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
+  const getPoolStatus = usePoolStatus(protocol)
 
   const poolsRD = useObservableLayoutState(isThorProtocol ? pendingPoolsState$ : pendingPoolStateMaya$, RD.pending)
+
   // timer(0) does not replay. Pending is synchronous, so the layout subscription replaces the
   // other protocol's height before paint instead of handing it to the wrong blocks-left helper.
   const lastblock$ = useMemo(() => {
@@ -100,20 +98,11 @@ export const PendingPools = (): JSX.Element => {
   const reloadLimit = isThorProtocol ? reloadLimitThor : reloadLimitMaya
   const { data: incentivePendulumThorRD } = useIncentivePendulum(isThorProtocol)
   const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya(!isThorProtocol)
-
   const incentivePendulumRD = isThorProtocol ? incentivePendulumThorRD : incentivePendulumMayaRD
-
-  const isDesktopView = useBreakpoint()?.lg ?? false
-  const isXLargeView = useBreakpoint()?.xl ?? false
-
-  // store previous data of pending pools to render these while reloading
-  const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
   const { poolCycle: poolCycleThor, reloadPoolCycle } = usePoolCycle(isThorProtocol)
   const { poolCycle: poolCycleMaya, reloadPoolCycle: reloadPoolCycleMaya } = usePoolCycleMaya(!isThorProtocol)
-
   const poolCycle = isThorProtocol ? poolCycleThor : poolCycleMaya
-
   const oNewPoolCycle = useMemo(() => FP.pipe(poolCycle, RD.toOption), [poolCycle])
 
   // The pending pools state keeps the last Success while reloading, so it can't tell about a running reload.
@@ -121,43 +110,35 @@ export const PendingPools = (): JSX.Element => {
   const refreshing = useObservableLayoutState(isThorProtocol ? pendingPoolsLoading$ : pendingPoolsLoadingMaya$, false)
 
   const refreshHandler = useCallback(() => {
-    if (protocol === THORChain) {
+    if (isThorProtocol) {
       reloadPendingPools()
       reloadPoolCycle()
     } else {
       reloadPendingPoolsMaya()
       reloadPoolCycleMaya()
     }
-
     reloadLimit()
-  }, [protocol, reloadLimit, reloadPendingPools, reloadPendingPoolsMaya, reloadPoolCycle, reloadPoolCycleMaya])
+  }, [isThorProtocol, reloadLimit, reloadPendingPools, reloadPendingPoolsMaya, reloadPoolCycle, reloadPoolCycleMaya])
 
   const pricePoolThor = usePricePool(isThorProtocol)
   const pricePoolMaya = usePricePoolMaya(!isThorProtocol)
   const pricePool = isThorProtocol ? pricePoolThor : pricePoolMaya
 
-  const renderBtnPoolsColumn = useCallback(
-    (_: string, { asset }: PoolTableRowData) => {
-      return (
-        <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
-          <ManageButton
-            className="min-w-[120px]"
-            variant="manage"
-            useBorderButton={true}
-            asset={asset}
-            isTextView={isDesktopView}
-          />
-        </div>
-      )
-    },
-    [isDesktopView]
+  const onAdd = useCallback(
+    (asset: AnyAsset) =>
+      navigate(
+        poolsRoutes.deposit.path({
+          asset: assetToString(asset),
+          assetWalletType: DEFAULT_WALLET_TYPE,
+          dexWalletType: DEFAULT_WALLET_TYPE
+        })
+      ),
+    [navigate]
   )
 
-  const renderBlockLeftColumn = useCallback(
-    (record: PoolTableRowData) => {
-      const { deepest, asset } = record
-
-      const blocksLeft: string = FP.pipe(
+  const getBlocksLeft = useCallback(
+    (asset: AnyAsset): string =>
+      FP.pipe(
         lastblockRD,
         RD.map((lastblockItems) =>
           isThorProtocol
@@ -165,185 +146,92 @@ export const PendingPools = (): JSX.Element => {
             : getBlocksLeftForPendingPoolAsStringMaya(lastblockItems as MayaLastblockItems, asset, oNewPoolCycle)
         ),
         RD.getOrElse(() => '--')
-      )
-
-      return (
-        <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
-          <Label className="inline-block w-24 !text-16" align="right">
-            {deepest ? blocksLeft : '--'}
-          </Label>
-        </div>
-      )
-    },
+      ),
     [isThorProtocol, lastblockRD, oNewPoolCycle]
   )
 
-  const columns: AppColumnDef<PoolTableRowData>[] = useMemo(
-    () => [
-      {
-        accessorKey: 'watched',
-        header: '',
-        cell: ({ row }) => {
-          const { watched, asset } = row.original
-          return Shared.renderWatchColumn({
-            data: { watched },
-            add: () => addPoolToWatchlist(asset),
-            remove: () => removePoolFromWatchlist(asset)
-          })
-        },
-        size: 50,
-        sortFn: 'basic'
-      },
-      {
-        accessorKey: 'asset',
-        header: intl.formatMessage({ id: 'common.pool' }),
-        cell: ({ row }) => (
-          <div className="flex w-full items-center">
-            <AssetData asset={row.original.asset} network={network} />
-          </div>
-        ),
-        sortFn: (rowA, rowB) => rowA.original.asset.symbol.localeCompare(rowB.original.asset.symbol)
-      },
-      {
-        accessorKey: 'poolPrice',
-        header: intl.formatMessage({ id: 'common.price' }),
-        cell: (row) => (
-          <Label className="!text-16" align="right" nowrap>
-            {formatAssetAmountCurrency({
-              amount: baseToAsset(row.getValue()),
-              asset: pricePool.asset,
-              decimal: 3
-            })}
-          </Label>
-        ),
-        sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.poolPrice, rowB.original.poolPrice)
-      },
-      ...(isXLargeView
-        ? ([
-            {
-              accessorKey: 'liquidity',
-              header: intl.formatMessage({ id: 'common.liquidity' }),
-              cell: ({ row }) => {
-                const { asset, depthAmount, depthPrice } = row.original
-                return (
-                  <div className="flex flex-col items-end justify-center font-main">
-                    <div className="text-16 whitespace-nowrap text-text0 dark:text-text0d">
-                      {formatAssetAmountCurrency({
-                        amount: baseToAsset(depthAmount),
-                        asset,
-                        decimal: 2
-                      })}
-                    </div>
-                    <div className="text-14 whitespace-nowrap text-gray2 dark:text-gray2d">
-                      {formatAssetAmountCurrency({
-                        amount: baseToAsset(depthPrice),
-                        asset: pricePool.asset,
-                        decimal: 2
-                      })}
-                    </div>
-                  </div>
-                )
-              },
-              sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
-            },
-            {
-              accessorKey: 'blocks',
-              header: intl.formatMessage({ id: 'pools.blocksleft' }),
-              cell: ({ row }) => renderBlockLeftColumn(row.original),
-              sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
-            }
-          ] as AppColumnDef<PoolTableRowData>[])
-        : []),
-      {
-        accessorKey: 'actions',
-        header: () =>
-          Shared.renderRefreshHeader({
-            onClick: refreshHandler,
-            refreshing,
-            isDesktopView,
-            label: intl.formatMessage({ id: 'common.refresh' })
-          }),
-        cell: ({ row }) => {
-          return renderBtnPoolsColumn('', row.original)
-        },
-        enableSorting: false
-      }
-    ],
-    [
-      addPoolToWatchlist,
-      intl,
-      isDesktopView,
-      isXLargeView,
-      network,
-      pricePool.asset,
-      refreshHandler,
-      refreshing,
-      removePoolFromWatchlist,
-      renderBlockLeftColumn,
-      renderBtnPoolsColumn
-    ]
+  // store previous data of pending pools to render these while reloading
+  const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
+
+  const oPools: O.Option<PoolTableRowsData> = useMemo(() => {
+    if (!RD.isSuccess(poolsRD)) return previousPools.current
+    const { poolDetails } = poolsRD.value
+    // filter out empty pools
+    const poolViewData = isPoolDetails(poolDetails)
+      ? getPoolTableRowsData({
+          poolDetails: A.filter<PoolDetail>(P.not(isEmptyPool))(poolDetails),
+          pricePoolData: pricePool.poolData,
+          watchlist: poolWatchList,
+          network
+        })
+      : getPoolTableRowsDataMaya({
+          poolDetails: A.filter<PoolDetailMaya>(P.not(isEmptyPool))(poolDetails),
+          pricePoolData: pricePool.poolData,
+          watchlist: poolWatchList,
+          network
+        })
+    previousPools.current = O.some(poolViewData)
+    return previousPools.current
+  }, [network, poolWatchList, poolsRD, pricePool.poolData])
+
+  const rows: PoolsTableRow[] = useMemo(
+    () =>
+      FP.pipe(
+        oPools,
+        O.getOrElse(() => [] as PoolTableRowsData),
+        (pools) => pools.map((row) => ({ ...row, poolStatus: getPoolStatus(row.asset) }))
+      ),
+    [getPoolStatus, oPools]
   )
 
-  const renderPoolsTable = useCallback(
-    (tableData: PoolTableRowData[], loading = false) => {
-      const dataSource = FP.pipe(tableData, filterTableData(poolFilter))
+  const filteredRows = useMemo(() => filterTableData(poolFilter)(rows), [poolFilter, rows])
 
-      return (
-        <>
-          <AssetsFilter
-            className="mb-5"
-            setFilter={setPoolFilter}
-            activeFilter={poolFilter}
-            poolFilters={DEFAULT_POOL_FILTERS}
-          />
-          <ProtocolLimit key={protocol} limit={limitRD} protocol={protocol} />
-          <IncentivePendulum key={protocol} incentivePendulum={incentivePendulumRD} protocol={protocol} />
-          <Table key={protocol} columns={columns} data={dataSource} loading={loading} />
-        </>
-      )
-    },
-    [poolFilter, setPoolFilter, limitRD, incentivePendulumRD, protocol, columns]
+  // Blocks left are shown for the deepest pending pool only, which is the next one to become active
+  const deepestRow = useMemo(() => rows.find(({ deepest }) => deepest), [rows])
+  const nextPoolBlocksLeft = deepestRow ? getBlocksLeft(deepestRow.asset) : '--'
+  const getRowBlocksLeft = useCallback(
+    ({ deepest, asset }: PoolsTableRow) => (deepest ? getBlocksLeft(asset) : '--'),
+    [getBlocksLeft]
   )
+
+  if (RD.isFailure(poolsRD)) {
+    return Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler)(poolsRD.error)
+  }
+
+  const loading = !RD.isSuccess(poolsRD)
 
   return (
-    <>
-      {RD.fold(
-        // initial state
-        () => renderPoolsTable([], true),
-        // loading state
-        () => {
-          const pools = O.getOrElse(() => [] as PoolTableRowsData)(previousPools.current)
-          return renderPoolsTable(pools, true)
-        },
-        // render error state
-        Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler),
-        // success state
-        ({ poolDetails }: PendingPoolsState | PendingPoolsStateMaya): JSX.Element => {
-          if (isPoolDetails(poolDetails)) {
-            // filter out empty pools
-            const poolDetailsFiltered = A.filter<PoolDetail>(P.not(isEmptyPool))(poolDetails)
-            const poolViewData = getPoolTableRowsData({
-              poolDetails: poolDetailsFiltered,
-              pricePoolData: pricePool.poolData,
-              watchlist: poolWatchList,
-              network
-            })
-            previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData)
-          } else {
-            // filter out empty pools
-            const poolDetailsFiltered = A.filter<PoolDetailMaya>(P.not(isEmptyPool))(poolDetails)
-            const poolViewData = getPoolTableRowsDataMaya({
-              poolDetails: poolDetailsFiltered,
-              pricePoolData: pricePool.poolData,
-              watchlist: poolWatchList,
-              network
-            })
-            previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData)
-          }
-        }
-      )(poolsRD)}
-    </>
+    <div className="flex w-full flex-col gap-3">
+      <ProtocolLimit key={`limit-${protocol}`} limit={limitRD} protocol={protocol} />
+      <PoolsSummary
+        key={`summary-${protocol}`}
+        variant="pending"
+        rows={rows}
+        pricePoolAsset={pricePool.asset}
+        protocol={protocol}
+        incentivePendulum={incentivePendulumRD}
+        nextPoolBlocksLeft={nextPoolBlocksLeft}
+        loading={loading}
+      />
+      <PoolsToolbar
+        poolFilters={DEFAULT_POOL_FILTERS}
+        activeFilter={poolFilter}
+        setFilter={setPoolFilter}
+        refreshing={refreshing}
+        onRefresh={refreshHandler}
+      />
+      <PoolsTable
+        key={`table-${protocol}`}
+        variant="pending"
+        rows={filteredRows}
+        pricePoolAsset={pricePool.asset}
+        network={network}
+        loading={loading}
+        getBlocksLeft={getRowBlocksLeft}
+        onAdd={onAdd}
+        onWatch={addPoolToWatchlist}
+        onUnwatch={removePoolFromWatchlist}
+      />
+    </div>
   )
 }

@@ -1,6 +1,33 @@
 import { PoolsMessages } from '../types'
 
 const pools: PoolsMessages = {
+  'pools.incentivependulum.title': 'Маятник стимулов',
+  'pools.watchlist': 'Избранное',
+  'pools.watchlist.add': 'Добавить в избранное',
+  'pools.watchlist.remove': 'Удалить из избранного',
+  'pools.filter.stablecoins': 'Стейблкоины',
+  'pools.search': 'Поиск пулов',
+  'pools.status.chain': 'Сеть остановлена',
+  'pools.status.trading': 'Торговля остановлена',
+  'pools.status.lp': 'LP приостановлен',
+  'pools.status.deposit': 'Депозиты приостановлены',
+  'pools.status.chain.info': 'Сеть {chain} остановлена. Обмены, депозиты и выводы недоступны до её возобновления.',
+  'pools.status.trading.info': 'Торговля в сети {chain} остановлена. Обмены и новые депозиты недоступны.',
+  'pools.status.lp.info':
+    'Операции с ликвидностью в сети {chain} приостановлены. Обмены работают; добавление и вывод ликвидности недоступны.',
+  'pools.status.deposit.info': 'Новые депозиты в этот пул приостановлены. Обмены и выводы работают.',
+  'pools.status.unknown': 'Статус неизвестен',
+  'pools.status.unknown.info':
+    'Не удалось загрузить статус остановки. Обмен и добавление отключены, пока он неизвестен.',
+  'pools.summary.liquidity': 'Общая ликвидность',
+  'pools.summary.pools': 'Пулов: {count}',
+  'pools.summary.volumeShare': '{percent}% ликвидности',
+  'pools.summary.nextPool': 'Следующая активация пула',
+  'pools.summary.status': 'Статус пулов',
+  'pools.summary.operational': 'Все работают',
+  'pools.summary.limited': 'Ограничено: {count}',
+  'pools.summary.limited.hint': 'Наведите курсор или фокус на статус для подробностей',
+  'pools.summary.unknown.hint': 'Обмен и добавление отключены до загрузки',
   'pools.depth': 'Глубина',
   'pools.24hvol': 'объёмы за 24ч',
   'pools.apy': 'годовых',
@@ -15,7 +42,6 @@ const pools: PoolsMessages = {
   'pools.available': 'Доступны',
   'pools.pooled': 'заполнено',
   'pools.limit.info': 'Лимит протокола достигнут! {pooled} внесено в пулы, {bonded} заложено в нодах',
-  'pools.incentivependulum.info': 'Маятник поощрения: {percentage}%',
   'pools.incentivependulum.tooltip': '{pooled} внесено в пулы, {bonded} заложено в нодах',
   'pools.incentivependulum.error': 'Ошибка при загрузке данных маятника поощрения',
   'pools.bondable': 'Бондируемо',
@@ -91,11 +117,13 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.error': 'Не удалось загрузить свопы',
   'pools.chart.tradingPanel.limit': 'Лимит',
   'pools.chart.tradingPanel.limit.beta': 'Бета',
-  'pools.chart.tradingPanel.limit.betaNote': 'Лимитные ордера в бета-версии. Приложение следит за ценой, пока оно открыто, и при достижении вашей цены просит подтвердить рыночный своп. Своп использует вашу настройку проскальзывания, поэтому может исполниться ниже вашего лимита.',
+  'pools.chart.tradingPanel.limit.betaNote':
+    'Лимитные ордера в бета-версии. Приложение следит за ценой, пока оно открыто, и при достижении вашей цены просит подтвердить рыночный своп. Своп использует вашу настройку проскальзывания, поэтому может исполниться ниже вашего лимита.',
   'pools.chart.tradingPanel.market': 'Рынок',
   'pools.chart.tradingPanel.limit.hint':
     'Выставляет покупку или продажу по {price}. Приложение следит за ценой пула и меняет, когда цена её пересекает. Ордер действует, только пока открыт этот график. Уход с графика ставит его на паузу, а закрытие приложения отменяет его.',
-  'pools.chart.tradingPanel.limit.triggered': 'Лимитный ордер сработал: {side, select, buy {покупка на} other {продажа}} {amount} {symbol} по {price} {unit}, оплата с {source, select, trade {торгового счёта} other {кошелька}}. Подтвердите своп по текущей котировке.',
+  'pools.chart.tradingPanel.limit.triggered':
+    'Лимитный ордер сработал: {side, select, buy {покупка на} other {продажа}} {amount} {symbol} по {price} {unit}, оплата с {source, select, trade {торгового счёта} other {кошелька}}. Подтвердите своп по текущей котировке.',
   'pools.chart.tradingPanel.market.hint': 'Меняет сразу по текущей цене.',
   'pools.chart.tradingPanel.placeOrder': 'Разместить ордер',
   'pools.chart.tradingPanel.swapNow': 'Обменять сейчас',

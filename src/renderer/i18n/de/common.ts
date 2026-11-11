@@ -138,6 +138,7 @@ const common: CommonMessages = {
   'common.retry': 'Wiederholen',
   'common.reload': 'Neuladen',
   'common.action': 'Aktion',
+  'common.status': 'Status',
   'common.add': 'Einzahlen',
   'common.completeLp': 'abgeschlossene LP',
   'common.swap': 'Swap',

@@ -1,10 +1,8 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ChartBarIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-
-import { AnyAsset, assetToString, baseToAsset, bn, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -13,26 +11,19 @@ import { useNavigate } from 'react-router-dom'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { THORChain } from '../../../shared/utils/chainIds'
 import { WalletType } from '../../../shared/wallet/types'
-import { AssetsFilter } from '../../components/AssetsFilter'
-import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
-import { AppColumnDef, Table } from '../../components/table'
-import { AssetData } from '../../components/uielements/assets/assetData'
-import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
-import { Label } from '../../components/uielements/label'
-import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
+import { ProtocolLimit } from '../../components/pool'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { ordBaseAmount } from '../../helpers/fp/ord'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
 import { useObservableLayoutState } from '../../hooks/useObservableLayoutState'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
+import { usePoolStatus } from '../../hooks/usePoolStatus'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
@@ -44,9 +35,24 @@ import { PoolsState as MayaPoolState } from '../../services/midgard/mayaMidgard/
 import { GetPoolsPeriodEnum, PoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
 import { hasImportedKeystore } from '../../services/wallet/util'
 import { useApp } from '../../store/app/hooks'
-import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
+import { PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
+import { PoolsSummary } from './PoolsSummary'
+import { PoolsTable, PoolsTableRow } from './PoolsTable'
+import { PoolsToolbar } from './PoolsToolbar'
+
+const PERIOD_LABELS: Record<GetPoolsPeriodEnum, string> = {
+  [GetPoolsPeriodEnum._1h]: '1H',
+  [GetPoolsPeriodEnum._24h]: '24H',
+  [GetPoolsPeriodEnum._7d]: '7D',
+  [GetPoolsPeriodEnum._30d]: '30D',
+  [GetPoolsPeriodEnum._90d]: '90D',
+  [GetPoolsPeriodEnum._100d]: '100D',
+  [GetPoolsPeriodEnum._180d]: '180D',
+  [GetPoolsPeriodEnum._365d]: '365D',
+  [GetPoolsPeriodEnum.All]: ''
+}
 
 export const ActivePools = (): JSX.Element => {
   const navigate = useNavigate()
@@ -80,337 +86,141 @@ export const ActivePools = (): JSX.Element => {
   const reloadLimit = isThorProtocol ? reloadLimitThor : reloadLimitMaya
   const { data: incentivePendulumThorRD } = useIncentivePendulum(isThorProtocol)
   const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya(!isThorProtocol)
-
   const incentivePendulumRD = isThorProtocol ? incentivePendulumThorRD : incentivePendulumMayaRD
 
-  const poolsPeriod = useObservableState(
-    protocol === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
-    GetPoolsPeriodEnum._30d
-  )
+  const poolsPeriod = useObservableState(isThorProtocol ? poolsPeriod$ : poolsPeriodMaya$, GetPoolsPeriodEnum._30d)
 
   const keystore = useObservableState(keystoreState$, O.none)
   const hasKeystore = hasImportedKeystore(keystore)
 
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('active')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
+  const getPoolStatus = usePoolStatus(protocol)
 
   const poolsRD = useObservableLayoutState(isThorProtocol ? poolsState$ : mayaPoolsState$, RD.pending)
-
-  const isDesktopView = useBreakpoint()?.lg ?? false
-  const isLargeScreen = useBreakpoint()?.xl ?? false
-  const isXLargeScreen = useBreakpoint()?.xxl ?? false
-
-  // store previous data of pools to render these while reloading
-  const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
   // The pools state keeps the last Success while reloading, so it can't tell about a running reload.
   // Use the state of the request instead to show a refresh while rows stay on screen.
   const refreshing = useObservableLayoutState(isThorProtocol ? poolsLoading$ : mayaPoolsLoading$, false)
 
   const refreshHandler = useCallback(() => {
-    if (protocol === THORChain) {
+    if (isThorProtocol) {
       reloadPools()
     } else {
       reloadMayaPools()
     }
-
     reloadLimit()
-  }, [protocol, reloadLimit, reloadPools, reloadMayaPools])
+  }, [isThorProtocol, reloadLimit, reloadPools, reloadMayaPools])
 
   const pricePoolThor = usePricePool(isThorProtocol)
   const pricePoolMaya = usePricePoolMaya(!isThorProtocol)
   const pricePool = isThorProtocol ? pricePoolThor : pricePoolMaya
 
-  const renderBtnPoolsColumn = useCallback(
-    (asset: AnyAsset) => {
-      const actions: ActionButtonAction[] =
-        protocol === THORChain
-          ? [
-              {
-                label: intl.formatMessage({ id: 'common.swap' }),
-                callback: () => {
-                  navigate(
-                    poolsRoutes.swap.path({
-                      source: assetToString(asset),
-                      target: assetToString(AssetRuneNative),
-                      sourceWalletType: hasKeystore ? DEFAULT_WALLET_TYPE : WalletType.Ledger,
-                      targetWalletType: DEFAULT_WALLET_TYPE
-                    })
-                  )
-                }
-              },
-              {
-                label: intl.formatMessage({ id: 'common.add' }),
-                callback: () => {
-                  navigate(
-                    poolsRoutes.deposit.path({
-                      asset: assetToString(asset),
-                      assetWalletType: DEFAULT_WALLET_TYPE,
-                      dexWalletType: DEFAULT_WALLET_TYPE
-                    })
-                  )
-                }
-              }
-            ]
-          : [
-              {
-                label: intl.formatMessage({ id: 'common.swap' }),
-                callback: () => {
-                  navigate(
-                    poolsRoutes.swap.path({
-                      source: assetToString(asset),
-                      target: assetToString(AssetCacao),
-                      sourceWalletType: DEFAULT_WALLET_TYPE,
-                      targetWalletType: DEFAULT_WALLET_TYPE
-                    })
-                  )
-                }
-              },
-              {
-                label: intl.formatMessage({ id: 'common.add' }),
-                callback: () => {
-                  navigate(
-                    poolsRoutes.deposit.path({
-                      asset: assetToString(asset),
-                      assetWalletType: DEFAULT_WALLET_TYPE,
-                      dexWalletType: DEFAULT_WALLET_TYPE
-                    })
-                  )
-                }
-              }
-            ]
-
-      return (
-        <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
-          <button
-            onClick={() => navigate(poolsRoutes.detail.path({ asset: assetToString(asset) }))}
-            className="flex items-center justify-center rounded p-1 text-text2 transition-colors hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-            title={intl.formatMessage({ id: 'pools.chart' })}>
-            <ChartBarIcon className="h-5 w-5" />
-          </button>
-          <ActionButton size="normal" actions={actions} />
-        </div>
-      )
-    },
-    [protocol, hasKeystore, intl, navigate]
+  const onSwap = useCallback(
+    (asset: AnyAsset) =>
+      navigate(
+        poolsRoutes.swap.path({
+          source: assetToString(asset),
+          target: assetToString(isThorProtocol ? AssetRuneNative : AssetCacao),
+          sourceWalletType: isThorProtocol && !hasKeystore ? WalletType.Ledger : DEFAULT_WALLET_TYPE,
+          targetWalletType: DEFAULT_WALLET_TYPE
+        })
+      ),
+    [hasKeystore, isThorProtocol, navigate]
   )
 
-  const columns: AppColumnDef<PoolTableRowData>[] = useMemo(
-    () => [
-      {
-        accessorKey: 'watched',
-        header: '',
-        cell: ({ row }) => {
-          const { watched, asset } = row.original
-          return Shared.renderWatchColumn({
-            data: { watched },
-            add: () => addPoolToWatchlist(asset),
-            remove: () => removePoolFromWatchlist(asset)
-          })
-        },
-        size: 50,
-        sortFn: 'basic'
-      },
-      {
-        accessorKey: 'asset',
-        header: intl.formatMessage({ id: 'common.pool' }),
-        cell: ({ row }) => (
-          <div className="flex w-full items-center">
-            <AssetData asset={row.original.asset} network={network} />
-          </div>
-        ),
-        sortFn: (rowA, rowB) => rowA.original.asset.symbol.localeCompare(rowB.original.asset.symbol)
-      },
-      {
-        accessorKey: 'poolPrice',
-        header: intl.formatMessage({ id: 'common.price' }),
-        cell: (row) => (
-          <Label className="!text-16" align="right" nowrap>
-            {formatAssetAmountCurrency({
-              amount: baseToAsset(row.getValue()),
-              asset: pricePool.asset,
-              decimal: 3
-            })}
-          </Label>
-        ),
-        sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.poolPrice, rowB.original.poolPrice)
-      },
-      ...(isXLargeScreen
-        ? ([
-            {
-              accessorKey: 'liquidity',
-              header: intl.formatMessage({ id: 'common.liquidity' }),
-              cell: ({ row }) => {
-                const { asset, depthAmount, depthPrice } = row.original
-                return (
-                  <div className="flex flex-col items-end justify-center font-main">
-                    <div className="text-16 whitespace-nowrap text-text0 dark:text-text0d">
-                      {formatAssetAmountCurrency({
-                        amount: baseToAsset(depthAmount),
-                        asset,
-                        decimal: 2
-                      })}
-                    </div>
-                    <div className="text-14 whitespace-nowrap text-gray2 dark:text-gray2d">
-                      {formatAssetAmountCurrency({
-                        amount: baseToAsset(depthPrice),
-                        asset: pricePool.asset,
-                        decimal: 2
-                      })}
-                    </div>
-                  </div>
-                )
-              },
-              sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.depthPrice, rowB.original.depthPrice)
-            },
-            {
-              accessorKey: 'volume',
-              header: intl.formatMessage({ id: 'pools.24hvol' }),
-              cell: ({ row }) => {
-                const { asset, volumeAmount, volumePrice } = row.original
-                return (
-                  <Label className="!text-16" align="right" nowrap>
-                    <div className="flex flex-col items-end justify-center font-main">
-                      <div className="text-16 whitespace-nowrap text-text0 dark:text-text0d">
-                        {formatAssetAmountCurrency({
-                          amount: baseToAsset(volumeAmount),
-                          asset,
-                          decimal: 2
-                        })}
-                      </div>
-                      <div className="text-14 whitespace-nowrap text-gray2 dark:text-gray2d">
-                        {formatAssetAmountCurrency({
-                          amount: baseToAsset(volumePrice),
-                          asset: pricePool.asset,
-                          decimal: 2
-                        })}
-                      </div>
-                    </div>
-                  </Label>
-                )
-              },
-              sortFn: (rowA, rowB) => ordBaseAmount.compare(rowA.original.volumePrice, rowB.original.volumePrice)
-            }
-          ] as AppColumnDef<PoolTableRowData>[])
-        : []),
-      ...(isLargeScreen
-        ? ([
-            {
-              accessorKey: 'apy',
-              header: () => (
-                <div className="flex flex-col items-center">
-                  <div className="font-main text-[12px]">{intl.formatMessage({ id: 'pools.apy' })}</div>
-                  <PoolsPeriodSelector
-                    selectedValue={poolsPeriod}
-                    onChange={protocol === THORChain ? setPoolsPeriod : setPoolsPeriodMaya}
-                  />
-                </div>
-              ),
-              cell: ({ row }) => {
-                const { apy } = row.original
-
-                return (
-                  <Label className="!text-16" align="center" nowrap>
-                    {formatBN(bn(apy), 2)}%
-                  </Label>
-                )
-              }
-            }
-          ] as AppColumnDef<PoolTableRowData>[])
-        : []),
-      {
-        accessorKey: 'actions',
-        header: () =>
-          Shared.renderRefreshHeader({
-            onClick: refreshHandler,
-            refreshing,
-            isDesktopView,
-            label: intl.formatMessage({ id: 'common.refresh' })
-          }),
-        cell: ({ row }) => {
-          const { asset } = row.original
-          return renderBtnPoolsColumn(asset)
-        },
-        enableSorting: false
-      }
-    ],
-    [
-      intl,
-      isDesktopView,
-      isLargeScreen,
-      isXLargeScreen,
-      network,
-      poolsPeriod,
-      pricePool.asset,
-      protocol,
-      addPoolToWatchlist,
-      refreshHandler,
-      refreshing,
-      removePoolFromWatchlist,
-      renderBtnPoolsColumn,
-      setPoolsPeriod,
-      setPoolsPeriodMaya
-    ]
+  const onAdd = useCallback(
+    (asset: AnyAsset) =>
+      navigate(
+        poolsRoutes.deposit.path({
+          asset: assetToString(asset),
+          assetWalletType: DEFAULT_WALLET_TYPE,
+          dexWalletType: DEFAULT_WALLET_TYPE
+        })
+      ),
+    [navigate]
   )
 
-  const renderPoolsTable = useCallback(
-    (tableData: PoolTableRowData[], loading = false) => {
-      const dataSource = FP.pipe(tableData, filterTableData(poolFilter))
-
-      return (
-        <>
-          <AssetsFilter
-            className="mb-5"
-            activeFilter={poolFilter}
-            setFilter={setPoolFilter}
-            poolFilters={DEFAULT_POOL_FILTERS}
-          />
-          <ProtocolLimit key={protocol} limit={limitRD} protocol={protocol} />
-          <IncentivePendulum key={protocol} incentivePendulum={incentivePendulumRD} protocol={protocol} />
-          <Table columns={columns} data={dataSource} loading={loading} />
-        </>
-      )
-    },
-    [poolFilter, setPoolFilter, limitRD, incentivePendulumRD, protocol, columns]
+  const onDetail = useCallback(
+    (asset: AnyAsset) => navigate(poolsRoutes.detail.path({ asset: assetToString(asset) })),
+    [navigate]
   )
+
+  // store previous data of pools to render these while reloading
+  const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
+
+  const oPools: O.Option<PoolTableRowsData> = useMemo(() => {
+    if (!RD.isSuccess(poolsRD)) return previousPools.current
+    const poolViewData = isThorProtocol
+      ? PoolHelpers.getPoolTableRowsData({
+          poolDetails: (poolsRD.value as PoolsState).poolDetails,
+          pricePoolData: pricePool.poolData,
+          watchlist: poolWatchList,
+          network
+        })
+      : PoolHelpersMaya.getPoolTableRowsData({
+          poolDetails: (poolsRD.value as MayaPoolState).poolDetails,
+          pricePoolData: pricePool.poolData,
+          watchlist: poolWatchList,
+          network
+        })
+    previousPools.current = O.some(poolViewData)
+    return previousPools.current
+  }, [isThorProtocol, network, poolWatchList, poolsRD, pricePool.poolData])
+
+  const rows: PoolsTableRow[] = useMemo(
+    () =>
+      FP.pipe(
+        oPools,
+        O.getOrElse(() => [] as PoolTableRowsData),
+        (pools) => pools.map((row) => ({ ...row, poolStatus: getPoolStatus(row.asset) }))
+      ),
+    [getPoolStatus, oPools]
+  )
+
+  const filteredRows = useMemo(() => filterTableData(poolFilter)(rows), [poolFilter, rows])
+
+  if (RD.isFailure(poolsRD)) {
+    return Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler)(poolsRD.error)
+  }
+
+  const loading = !RD.isSuccess(poolsRD)
 
   return (
-    <>
-      {RD.fold(
-        // initial state
-        () => renderPoolsTable([], true),
-        // loading state
-        () => {
-          const pools = O.getOrElse(() => [] as PoolTableRowsData)(previousPools.current)
-          return renderPoolsTable(pools, true)
-        },
-        // render error state
-        Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler),
-        // success state
-        (poolsState) => {
-          if (protocol === THORChain) {
-            const { poolDetails } = poolsState as PoolsState // Cast to the correct type
-            const poolViewData = PoolHelpers.getPoolTableRowsData({
-              poolDetails,
-              pricePoolData: pricePool.poolData,
-              watchlist: poolWatchList,
-              network
-            })
-            previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData)
-          } else {
-            const { poolDetails } = poolsState as MayaPoolState // Cast to the correct type)
-            const poolViewData = PoolHelpersMaya.getPoolTableRowsData({
-              poolDetails,
-              pricePoolData: pricePool.poolData,
-              watchlist: poolWatchList,
-              network
-            })
-            previousPools.current = O.some(poolViewData)
-            return renderPoolsTable(poolViewData)
-          }
-        }
-      )(poolsRD)}
-    </>
+    <div className="flex w-full flex-col gap-3">
+      <ProtocolLimit key={`limit-${protocol}`} limit={limitRD} protocol={protocol} />
+      <PoolsSummary
+        key={`summary-${protocol}`}
+        variant="active"
+        rows={rows}
+        pricePoolAsset={pricePool.asset}
+        protocol={protocol}
+        incentivePendulum={incentivePendulumRD}
+        loading={loading}
+      />
+      <PoolsToolbar
+        poolFilters={DEFAULT_POOL_FILTERS}
+        activeFilter={poolFilter}
+        setFilter={setPoolFilter}
+        period={poolsPeriod}
+        onChangePeriod={isThorProtocol ? setPoolsPeriod : setPoolsPeriodMaya}
+        refreshing={refreshing}
+        onRefresh={refreshHandler}
+      />
+      <PoolsTable
+        key={`table-${protocol}`}
+        variant="active"
+        rows={filteredRows}
+        pricePoolAsset={pricePool.asset}
+        network={network}
+        loading={loading}
+        apyPeriodLabel={PERIOD_LABELS[poolsPeriod]}
+        onSwap={onSwap}
+        onAdd={onAdd}
+        onDetail={onDetail}
+        onWatch={addPoolToWatchlist}
+        onUnwatch={removePoolFromWatchlist}
+      />
+    </div>
   )
 }

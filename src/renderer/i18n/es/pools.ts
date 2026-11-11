@@ -1,6 +1,36 @@
 import { PoolsMessages } from '../types'
 
 const pools: PoolsMessages = {
+  'pools.incentivependulum.title': 'Péndulo de incentivos',
+  'pools.watchlist': 'Favoritos',
+  'pools.watchlist.add': 'Añadir a favoritos',
+  'pools.watchlist.remove': 'Quitar de favoritos',
+  'pools.filter.stablecoins': 'Stablecoins',
+  'pools.search': 'Buscar pools',
+  'pools.status.chain': 'Cadena detenida',
+  'pools.status.trading': 'Trading detenido',
+  'pools.status.lp': 'LP en pausa',
+  'pools.status.deposit': 'Depósitos en pausa',
+  'pools.status.chain.info':
+    'La cadena {chain} está detenida. Los swaps, depósitos y retiros no están disponibles hasta que se reanude.',
+  'pools.status.trading.info':
+    'El trading en {chain} está detenido. Los swaps y los nuevos depósitos no están disponibles.',
+  'pools.status.lp.info':
+    'Las acciones de liquidez en {chain} están en pausa. Los swaps siguen funcionando; añadir y retirar liquidez no está disponible.',
+  'pools.status.deposit.info':
+    'Los nuevos depósitos en este pool están en pausa. Los swaps y retiros siguen funcionando.',
+  'pools.status.unknown': 'Estado desconocido',
+  'pools.status.unknown.info':
+    'No se pudo cargar el estado de pausa. Swap y Añadir están desactivados hasta que se conozca.',
+  'pools.summary.liquidity': 'Liquidez total',
+  'pools.summary.pools': '{count} pools',
+  'pools.summary.volumeShare': '{percent} % de la liquidez',
+  'pools.summary.nextPool': 'Próxima activación de pool',
+  'pools.summary.status': 'Estado de los pools',
+  'pools.summary.operational': 'Todos operativos',
+  'pools.summary.limited': '{count} limitados',
+  'pools.summary.limited.hint': 'Pasa el cursor o enfoca un estado para ver detalles',
+  'pools.summary.unknown.hint': 'Swap y Añadir están desactivados hasta que cargue',
   'pools.depth': 'Profundidad',
   'pools.24hvol': '24h volumen',
   'pools.apy': 'APY',
@@ -15,7 +45,6 @@ const pools: PoolsMessages = {
   'pools.available': 'Disponible',
   'pools.pooled': 'puesta en común',
   'pools.limit.info': '¡Límite de protocolo alcanzado! {pooled} pooled en pools, {bonded} bonded en nodos',
-  'pools.incentivependulum.info': 'Péndulo de incentivos: {percentage}%',
   'pools.incentivependulum.tooltip': '{pooled} agrupados en fondos, {bonded} unido en nodos',
   'pools.incentivependulum.error': 'Error al cargar los datos del péndulo de incentivo',
   'pools.bondable': 'Vinculable',
@@ -91,11 +120,13 @@ const pools: PoolsMessages = {
   'pools.chart.tradingPanel.swaps.error': 'No se han podido cargar los swaps',
   'pools.chart.tradingPanel.limit': 'Límite',
   'pools.chart.tradingPanel.limit.beta': 'Beta',
-  'pools.chart.tradingPanel.limit.betaNote': 'Las órdenes límite están en beta. La app vigila el precio mientras está abierta y, cuando se alcanza tu precio, te pide confirmar un swap de mercado. El swap usa tu ajuste de deslizamiento, así que puede ejecutarse por debajo de tu límite.',
+  'pools.chart.tradingPanel.limit.betaNote':
+    'Las órdenes límite están en beta. La app vigila el precio mientras está abierta y, cuando se alcanza tu precio, te pide confirmar un swap de mercado. El swap usa tu ajuste de deslizamiento, así que puede ejecutarse por debajo de tu límite.',
   'pools.chart.tradingPanel.market': 'Mercado',
   'pools.chart.tradingPanel.limit.hint':
     'Crea una compra o una venta en {price}. La app vigila el precio del pool y cambia cuando lo cruza. La orden solo sigue abierta mientras este gráfico está abierto. Salir del gráfico la pausa, y cerrar la app la cancela.',
-  'pools.chart.tradingPanel.limit.triggered': 'Orden límite activada: {side, select, buy {compra con} other {venta de}} {amount} {symbol} a {price} {unit}, pagada desde tu {source, select, trade {cuenta de trading} other {billetera}}. Confirma para hacer el swap con la cotización actual.',
+  'pools.chart.tradingPanel.limit.triggered':
+    'Orden límite activada: {side, select, buy {compra con} other {venta de}} {amount} {symbol} a {price} {unit}, pagada desde tu {source, select, trade {cuenta de trading} other {billetera}}. Confirma para hacer el swap con la cotización actual.',
   'pools.chart.tradingPanel.market.hint': 'Intercambia ahora al precio actual.',
   'pools.chart.tradingPanel.placeOrder': 'Colocar orden',
   'pools.chart.tradingPanel.swapNow': 'Cambiar ahora',

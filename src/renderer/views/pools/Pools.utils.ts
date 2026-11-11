@@ -10,7 +10,8 @@ import {
   bnOrZero,
   assetToString,
   baseToAsset,
-  AnyAsset
+  AnyAsset,
+  currencySymbolByAsset
 } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 
@@ -19,12 +20,13 @@ import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isChainAsset, isUSDAsset } from '../../helpers/assetHelper'
 import { isArbChain, isAvaxChain, isBaseChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
+import { ordBaseAmount } from '../../helpers/fp/ord'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LastblockItem as LastblockItemMaya } from '../../services/mayachain/types'
 import { GetPoolsStatusEnum, PoolData, PoolFilter } from '../../services/midgard/midgardTypes'
 import { toPoolData } from '../../services/midgard/thorMidgard/utils'
 import { LastblockItem } from '../../services/thorchain/types'
-import { PoolTableRowData } from './Pools.types'
+import { PoolTableRowData, PoolsSort, PoolsSortKey } from './Pools.types'
 
 export const stringToGetPoolsStatus = (status: string): GetPoolsStatusEnum => {
   switch (status) {
@@ -305,3 +307,87 @@ export const isEmptyPool = ({
   runeDepth
 }: Pick<PoolDetail | PoolDetailMaya, 'assetDepth' | 'runeDepth'>): boolean =>
   bnOrZero(assetDepth).isZero() || bnOrZero(runeDepth).isZero()
+
+const COMPACT_UNITS: Array<[number, string]> = [
+  [1e12, 'T'],
+  [1e9, 'B'],
+  [1e6, 'M'],
+  [1e3, 'K']
+]
+
+/**
+ * Adds the currency of `asset` to a formatted value:
+ * single character symbols (`$`, `ᚱ`, `₿`, `Ξ`) as prefix, tickers (`CACAO`) as suffix
+ */
+const withCurrency = (value: string, asset: AnyAsset): string => {
+  const symbol = currencySymbolByAsset(asset)
+  return [...symbol].length === 1 ? `${symbol}${value}` : `${value} ${symbol}`
+}
+
+/**
+ * Formats a number abbreviated with 2 decimals, e.g. `27.61M`, `961.65K`, `12.30`
+ */
+export const formatCompactNumber = (value: number): string => {
+  const abs = Math.abs(value)
+  const unit = COMPACT_UNITS.find(([size]) => abs >= size)
+  if (unit) return `${(value / unit[0]).toFixed(2)}${unit[1]}`
+  return value.toFixed(2)
+}
+
+/**
+ * Formats an amount abbreviated with currency of `asset`, e.g. `$27.61M`, `1.20K CACAO`
+ */
+export const formatCompactAmount = (amount: BaseAmount, asset: AnyAsset): string =>
+  withCurrency(formatCompactNumber(baseToAsset(amount).amount().toNumber()), asset)
+
+/**
+ * Formats a price with currency of `asset`.
+ * Decimals depend on the size of the price: `$75,193.82`, `$241.091`, `$0.9404`, `$0.0003321`
+ */
+export const formatPoolPrice = (amount: BaseAmount, asset: AnyAsset): string => {
+  const value = baseToAsset(amount).amount().toNumber()
+  const abs = Math.abs(value)
+  const format = (options: Intl.NumberFormatOptions) => value.toLocaleString('en-US', options)
+  const formatted =
+    abs === 0
+      ? '0'
+      : abs >= 1000
+        ? format({ minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : abs >= 1
+          ? format({ minimumFractionDigits: 3, maximumFractionDigits: 3 })
+          : abs >= 0.01
+            ? format({ minimumFractionDigits: 4, maximumFractionDigits: 4 })
+            : format({ maximumSignificantDigits: 4 })
+  return withCurrency(formatted, asset)
+}
+
+/**
+ * Formats an APY (in percent) with 2 decimals, e.g. `5.28%`
+ */
+export const formatPoolApy = (apy: number): string => `${apy.toFixed(2)}%`
+
+const comparePoolRows =
+  (key: PoolsSortKey) =>
+  (a: PoolTableRowData, b: PoolTableRowData): number => {
+    switch (key) {
+      case 'asset':
+        return a.asset.ticker.localeCompare(b.asset.ticker) || a.asset.chain.localeCompare(b.asset.chain)
+      case 'poolPrice':
+        return ordBaseAmount.compare(a.poolPrice, b.poolPrice)
+      case 'depthPrice':
+        return ordBaseAmount.compare(a.depthPrice, b.depthPrice)
+      case 'volumePrice':
+        return ordBaseAmount.compare(a.volumePrice, b.volumePrice)
+      case 'apy':
+        return a.apy - b.apy
+    }
+  }
+
+/**
+ * Sorts rows of a pools table by given key and direction.
+ * Equal rows keep their order (stable sort).
+ */
+export const sortPoolRows = <T extends PoolTableRowData>(rows: T[], { key, direction }: PoolsSort): T[] => {
+  const compare = comparePoolRows(key)
+  return [...rows].sort((a, b) => (direction === 'desc' ? compare(b, a) : compare(a, b)))
+}

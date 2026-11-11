@@ -137,6 +137,7 @@ const common: CommonMessages = {
   'common.retry': 'पुनः प्रयास करें',
   'common.reload': 'पुनः लोड करें',
   'common.action': 'क्रिया',
+  'common.status': 'स्थिति',
   'common.add': 'जोड़ें',
   'common.completeLp': 'सामान्य Lp पूरा करें',
   'common.swap': 'स्वैप',
