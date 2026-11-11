@@ -48,6 +48,7 @@ describe('components/settings/SettingsSection', () => {
       </SettingsSubsection>
     )
     const subsection = container.querySelector('[data-testid="settings-subsection"]') as HTMLElement
+    expect(subsection.className).toContain('flex-wrap')
     expect(subsection.querySelector('h3')?.textContent).toBe('Midgard')
     expect(subsection.querySelector('svg')).not.toBeNull()
     expect(container.querySelector('input')).not.toBeNull()

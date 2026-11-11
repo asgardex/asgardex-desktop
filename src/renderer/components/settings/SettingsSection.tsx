@@ -49,12 +49,13 @@ export const SettingsSubsection = ({
   className
 }: SettingsSubsectionProps): JSX.Element => (
   <div
-    className={clsx('flex w-full items-center justify-between gap-3 py-2', className)}
+    className={clsx('flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 py-2', className)}
     data-testid="settings-subsection">
     <div className="flex min-w-0 items-center gap-2">
-      <h3 className={SETTINGS_LABEL}>{title}</h3>
+      <h3 className={clsx(SETTINGS_LABEL, 'break-words')}>{title}</h3>
       {warning ? <ExclamationTriangleIcon className="h-4 w-4 shrink-0 text-warning0" title={warningTooltip} /> : null}
     </div>
-    <div className="flex min-w-0 flex-1 justify-end">{children}</div>
+    {/* basis-72 wraps the control under a long label instead of letting a URL or radio row overflow the card */}
+    <div className="flex max-w-full min-w-0 flex-1 basis-72 justify-end">{children}</div>
   </div>
 )

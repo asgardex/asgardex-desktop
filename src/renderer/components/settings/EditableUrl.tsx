@@ -132,10 +132,10 @@ const EditableUrl = (props: Props): JSX.Element => {
       setEditableUrl(O.some(url))
     }
     return (
-      <div className="flex items-center">
+      <div className="flex max-w-full min-w-0 flex-wrap items-center justify-end gap-2">
         <TextButton
           className={clsx(
-            'flex items-center !p-0 text-[16px] whitespace-nowrap',
+            'flex max-w-full min-w-0 items-center !justify-start !p-0 text-left text-[16px] break-all whitespace-normal',
             loading ? 'cursor-not-allowed' : 'cursor-pointer'
           )}
           color="neutral"
@@ -145,7 +145,7 @@ const EditableUrl = (props: Props): JSX.Element => {
           loading={loading}
           onClick={edit}>
           {url}
-          <PencilSquareIcon className="dark:text0d ml-[5px] h-[20px] w-[20px] text-turquoise" />
+          <PencilSquareIcon className="dark:text0d ml-[5px] h-[20px] w-[20px] shrink-0 text-turquoise" />
         </TextButton>
         <BorderButton
           className="ml-10px"
@@ -170,11 +170,9 @@ const EditableUrl = (props: Props): JSX.Element => {
       }
       const submit = async ({ url: formUrl }: FormData) => {
         resetTestUrlState()
-        // Remove always trailing slash
-        const url = formUrl.replace(/\/$/, '')
-        if (!url) {
-          setError('url', { type: 'custom', message: 'url required' })
-        } else if (!isValidUrlSyntax(url)) {
+        // Remove always trailing slash. Empty is already rejected by `required` before submit.
+        const url = formUrl.trim().replace(/\/$/, '')
+        if (!isValidUrlSyntax(url)) {
           setError('url', { type: 'custom', message: invalidUrlMsg })
         } else {
           testUrlAsPromise(url)
@@ -204,24 +202,29 @@ const EditableUrl = (props: Props): JSX.Element => {
           cancel()
         }
       }
+      // `required: true` sets message to '', so handleSubmit never calls submit and the empty field
+      // shows neither an alert nor a red border. A previous success line would stay up.
+      const submitHandlers = handleSubmit(submit, () => resetTestUrlState())
       return (
-        <form className="flex w-full flex-col" onSubmit={handleSubmit(submit)}>
-          <div className="flex w-full items-center">
-            <Input
-              id="url"
-              className={clsx(
-                'flex w-auto min-w-[300px] grow text-[16px] focus:border-turquoise',
-                RD.isSuccess(testUrlState) ? '!ring-2 !ring-turquoise' : ''
-              )}
-              size="normal"
-              defaultValue={name}
-              autoFocus
-              uppercase={false}
-              {...register('url', { required: true })}
-              error={!!errorMsg}
-              onKeyDown={keyDownHandler}
-            />
-            <BaseButton className="!p-0 text-turquoise" onClick={handleSubmit(submit)} type="submit">
+        <form className="flex w-full min-w-0 flex-col" onSubmit={submitHandlers}>
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-1">
+            <div className="min-w-0 flex-1 basis-48">
+              <Input
+                id="url"
+                className={clsx(
+                  'text-[16px] focus:border-turquoise',
+                  RD.isSuccess(testUrlState) ? '!ring-2 !ring-turquoise' : ''
+                )}
+                size="normal"
+                defaultValue={name}
+                autoFocus
+                uppercase={false}
+                {...register('url', { required: invalidUrlMsg })}
+                error={!!errorMsg}
+                onKeyDown={keyDownHandler}
+              />
+            </div>
+            <BaseButton className="!p-0 text-turquoise" onClick={submitHandlers} type="submit">
               <CheckCircleIcon className="ml-[5px] h-[24px] w-[24px]" />
             </BaseButton>
             <BaseButton className="!p-0 text-error0" onClick={cancel}>
@@ -259,7 +262,7 @@ const EditableUrl = (props: Props): JSX.Element => {
   )
 
   return (
-    <div className={className}>
+    <div className={clsx('max-w-full min-w-0', className)}>
       {FP.pipe(editableUrl, O.fold(renderUrl, renderEditableUrl))}
       {renderTestUrlResult}
     </div>

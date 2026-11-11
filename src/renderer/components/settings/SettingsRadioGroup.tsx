@@ -55,7 +55,7 @@ export const SettingsRadioGroup = <T,>({ options, value, onChange, ariaLabel }: 
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className="flex items-center gap-1 rounded-lg bg-bg2 p-1 dark:bg-bg2d/50">
+      className="flex max-w-full flex-wrap items-center justify-end gap-1 rounded-lg bg-bg2 p-1 dark:bg-bg2d/50">
       {options.map((option, index) => {
         const selected = index === selectedIndex
         return (

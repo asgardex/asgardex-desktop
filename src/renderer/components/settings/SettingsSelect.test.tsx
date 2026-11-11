@@ -53,6 +53,17 @@ describe('components/settings/SettingsSelect', () => {
     expect(onSelect).toHaveBeenCalledWith(1)
   })
 
+  it('closed trigger uses the value color and not body text as well', () => {
+    act(() =>
+      root.render(
+        <SettingsSelect value="Stagenet" valueClassName="text-error1 dark:text-error1d" options={['Stagenet']} />
+      )
+    )
+    const label = container.querySelector('button span') as HTMLElement
+    expect(label.className).toContain('text-error1')
+    expect(label.className).not.toContain('text-text0')
+  })
+
   it('mouse: a click inside an option selects it once', async () => {
     const onSelect = vi.fn()
     act(() =>

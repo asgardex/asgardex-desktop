@@ -43,14 +43,22 @@ export const AppDexSettingsView = (): JSX.Element => {
     getStoredSlipTolerance(`${SLIP_TOLERANCE_KEY}_TRADE`)
   )
 
-  const slipMenu = useCallback((onClick: (slip: SlipTolerance) => void, isStreaming: boolean) => {
-    const slipToleranceOptions: SlipTolerance[] = isStreaming ? [1, 3, 5, 10, 15, 20] : [0.5, 1, 3, 5, 10, 15, 20]
-    return slipToleranceOptions.map((slip) => (
-      <div key={slip} className="flex min-w-[102px] items-center px-2 py-1" onClick={() => onClick(slip)}>
+  const streamingSlipOptions: SlipTolerance[] = [1, 3, 5, 10, 15, 20]
+  const tradeSlipOptions: SlipTolerance[] = [0.5, 1, 3, 5, 10, 15, 20]
+  // No onClick on the row. Headless UI activates the menu item on Enter/Space, which runs `onSelect`.
+  const slipMenu = (options: SlipTolerance[]) =>
+    options.map((slip) => (
+      <div key={slip} className="flex min-w-[102px] items-center px-2 py-1">
         <span className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">{slip} %</span>
       </div>
     ))
-  }, [])
+  const applySlip = (options: SlipTolerance[], index: number, kind: 'streaming' | 'trade') => {
+    const slip = options[index]
+    if (slip === undefined) return
+    if (kind === 'streaming') changeStreamingSlipTolerance(slip)
+    else changeTradeSlipTolerance(slip)
+    localStorage.setItem(`${SLIP_TOLERANCE_KEY}_${kind === 'streaming' ? 'STREAMING' : 'TRADE'}`, slip.toString())
+  }
 
   const onToggleSwitch = useCallback(
     (protocol: Protocol, isActive: boolean) => {
@@ -88,10 +96,8 @@ export const AppDexSettingsView = (): JSX.Element => {
             <SettingsSelect
               value={`${streamingSlipTolerance} %`}
               triggerClassName="min-w-[120px]"
-              options={slipMenu((slip) => {
-                changeStreamingSlipTolerance(slip)
-                localStorage.setItem(`${SLIP_TOLERANCE_KEY}_STREAMING`, slip.toString())
-              }, true)}
+              options={slipMenu(streamingSlipOptions)}
+              onSelect={(index) => applySlip(streamingSlipOptions, index, 'streaming')}
             />
           </div>
           <div className="flex items-center justify-between gap-4">
@@ -102,10 +108,8 @@ export const AppDexSettingsView = (): JSX.Element => {
               value={`${tradeSlipTolerance} %`}
               triggerClassName="min-w-[120px]"
               anchor={{ to: 'bottom', gap: 4, padding: 8 }}
-              options={slipMenu((slip) => {
-                changeTradeSlipTolerance(slip)
-                localStorage.setItem(`${SLIP_TOLERANCE_KEY}_TRADE`, slip.toString())
-              }, false)}
+              options={slipMenu(tradeSlipOptions)}
+              onSelect={(index) => applySlip(tradeSlipOptions, index, 'trade')}
             />
           </div>
         </div>

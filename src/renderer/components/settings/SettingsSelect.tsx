@@ -39,7 +39,12 @@ export const SettingsSelect = ({
             'flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-gray0 bg-bg0 px-3 py-2 dark:border-gray0d dark:bg-bg0d',
             triggerClassName
           )}>
-          <span className={clsx('font-main text-[14px] leading-5 text-text0 dark:text-text0d', valueClassName)}>
+          <span
+            className={clsx(
+              'font-main text-[14px] leading-5',
+              // One text color. `text-text0` plus a network color on the same node loses to stylesheet order.
+              valueClassName || 'text-text0 dark:text-text0d'
+            )}>
             {value}
           </span>
           <DownIcon />

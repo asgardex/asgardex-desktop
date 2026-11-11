@@ -115,6 +115,32 @@ describe('components/settings/EditableUrl', () => {
     expect(checkUrl$).not.toHaveBeenCalled()
   })
 
+  it('empty save shows invalid URL, drops a previous success, and does not test again', async () => {
+    const checkUrl$ = vi.fn(() => Rx.of(RD.success<Error, string>('https://midgard.example.org')))
+    render(checkUrl$)
+    startEditing()
+    typeUrl('https://midgard.example.org')
+    act(() => buttonByText('Test').click())
+    await flush()
+    expect(text()).toContain('Valid Midgard URL')
+    typeUrl('')
+    await submit()
+    expect(alerts()).toEqual([INVALID])
+    expect(text()).not.toContain('Valid Midgard URL')
+    expect(checkUrl$).toHaveBeenCalledTimes(1)
+    expect(container.querySelector('input')?.className).toContain('border-error0')
+  })
+
+  it('a long URL can wrap and the editor is not locked to 300px', () => {
+    render(() => Rx.of(RD.success<Error, string>('ok')))
+    const urlButton = container.querySelector('button') as HTMLButtonElement
+    expect(urlButton.className).toContain('break-all')
+    expect(urlButton.className).not.toContain('whitespace-nowrap')
+    startEditing()
+    const input = container.querySelector('input') as HTMLInputElement
+    expect(input.className).not.toContain('min-w-[300px]')
+  })
+
   it('successful test shows the success message and no error', async () => {
     render(() => Rx.of(RD.success<Error, string>('https://midgard.thorchain.network')))
     act(() => buttonByText('Test').click())
