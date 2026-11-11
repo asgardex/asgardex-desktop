@@ -2,12 +2,15 @@ import { BTCChain, BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
 
-import { assetAmount, assetToBase, baseAmount, bn } from '@xchainjs/xchain-util'
+import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
+import { PoolDetail } from '@xchainjs/xchain-midgard'
+import { assetAmount, assetFromStringEx, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 
+import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBTC, AssetETH, AssetRuneNative, AssetBSC } from '../../../shared/utils/asset'
-import { THORChain } from '../../../shared/utils/chainIds'
+import { AssetCacao, CACAO_DECIMAL, MAYAChain, MAYA_DECIMAL, THORChain } from '../../../shared/utils/chainIds'
 import { WalletType } from '../../../shared/wallet/types'
 import { AssetUSDCBSC, AssetUSDT62E, AssetUSDTERC20Testnet } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
@@ -21,6 +24,10 @@ import {
   maxAmountToSwap,
   maxAmountToSwapMax1e8,
   capNativeRuneDeposit,
+  poolDepthToBaseAmount,
+  capAmountToMax,
+  tradeSwapLockedMax1e8,
+  isAtOrBelowDust,
   assetsInWallet,
   balancesToSwapFrom,
   hasLedgerInBalancesByChain
@@ -448,6 +455,207 @@ describe('components/swap/utils', () => {
     it('leaves an amount that already covers the ante', () => {
       const half = baseAmount(50_000_000, THORCHAIN_DECIMAL)
       expect(eqBaseAmount.equals(capNativeRuneDeposit(half, oneRune), half)).toBeTruthy()
+    })
+  })
+
+  // Locked-wallet / quote-only max. Values: Maya Midgard pools.json, 1 Nov 2026 (ETH.ETH assetDepth/runeDepth).
+  describe('poolDepthToBaseAmount', () => {
+    it('converts an 8-decimal ETH pool depth into 18 decimals (255.56355175 ETH)', () => {
+      const result = poolDepthToBaseAmount('25556355175', THORCHAIN_DECIMAL, ETH_DECIMAL)
+      expect(result.decimal).toEqual(ETH_DECIMAL)
+      expect(result.amount().toFixed()).toEqual('255563551750000000000')
+    })
+
+    it('labels a Maya CACAO depth (1e10) with CACAO_DECIMAL', () => {
+      const result = poolDepthToBaseAmount('49691594688169982', CACAO_DECIMAL, CACAO_DECIMAL)
+      expect(eqBaseAmount.equals(result, baseAmount('49691594688169982', CACAO_DECIMAL))).toBeTruthy()
+    })
+
+    it('scales an 8-decimal depth down for a 4-decimal source asset (MAYA)', () => {
+      const result = poolDepthToBaseAmount('100000000', THORCHAIN_DECIMAL, MAYA_DECIMAL)
+      expect(eqBaseAmount.equals(result, baseAmount(10_000, MAYA_DECIMAL))).toBeTruthy()
+    })
+
+    it('leaves an 8-decimal depth unchanged for an 8-decimal source asset (BTC)', () => {
+      const result = poolDepthToBaseAmount('1986071315', THORCHAIN_DECIMAL, BTC_DECIMAL)
+      expect(eqBaseAmount.equals(result, baseAmount('1986071315', BTC_DECIMAL))).toBeTruthy()
+    })
+  })
+
+  describe('capAmountToMax', () => {
+    const ethDepth1e8 = baseAmount('25556355175', THORCHAIN_DECIMAL) // 255.56355175 ETH
+
+    it('leaves 0.001 ETH (1e15 @18) unchanged against a 255.56 ETH max given in 8 decimals', () => {
+      const amount = baseAmount('1000000000000000', ETH_DECIMAL)
+      expect(eqBaseAmount.equals(capAmountToMax(amount, ethDepth1e8), amount)).toBeTruthy()
+    })
+
+    it('caps 300 ETH at the 255.56 ETH max, in the amount decimals', () => {
+      const amount = baseAmount('300000000000000000000', ETH_DECIMAL)
+      const result = capAmountToMax(amount, ethDepth1e8)
+      expect(eqBaseAmount.equals(result, baseAmount('255563551750000000000', ETH_DECIMAL))).toBeTruthy()
+    })
+
+    it('caps and keeps amounts with matching decimals as before', () => {
+      const max = baseAmount(100_000_000, BTC_DECIMAL)
+      const over = baseAmount(200_000_000, BTC_DECIMAL)
+      const under = baseAmount(50_000_000, BTC_DECIMAL)
+      expect(eqBaseAmount.equals(capAmountToMax(over, max), max)).toBeTruthy()
+      expect(eqBaseAmount.equals(capAmountToMax(under, max), under)).toBeTruthy()
+    })
+
+    it('leaves 0.5 CACAO (@10) unchanged against a 1-unit max given in 8 decimals', () => {
+      const amount = baseAmount(5_000_000_000, CACAO_DECIMAL)
+      expect(eqBaseAmount.equals(capAmountToMax(amount, ONE_RUNE_BASE_AMOUNT), amount)).toBeTruthy()
+    })
+
+    it('caps 2 CACAO at 1 CACAO in CACAO_DECIMAL', () => {
+      const amount = baseAmount(20_000_000_000, CACAO_DECIMAL)
+      const result = capAmountToMax(amount, ONE_RUNE_BASE_AMOUNT)
+      expect(eqBaseAmount.equals(result, baseAmount(10_000_000_000, CACAO_DECIMAL))).toBeTruthy()
+    })
+  })
+
+  // BaseAmount gt/lt/eq compare raw base units and ignore the other side's decimal (xchain-util asset.ts:63-80)
+  describe('8-decimal pool depth vs 18-decimal ETH amount', () => {
+    const ethDepth1e8 = baseAmount('25556355175', THORCHAIN_DECIMAL) // 255.56355175 ETH
+    const smallEth = baseAmount('1000000000000000', ETH_DECIMAL) // 0.001 ETH
+    const bigEth = baseAmount('300000000000000000000', ETH_DECIMAL) // 300 ETH
+    const sameEth = baseAmount('255563551750000000000', ETH_DECIMAL) // 255.56355175 ETH
+
+    it('capAmountToMax keeps an amount equal to the depth, in 18 decimals', () => {
+      expect(eqBaseAmount.equals(capAmountToMax(sameEth, ethDepth1e8), sameEth)).toBeTruthy()
+    })
+
+    it('capAmountToMax caps 300 ETH at the depth, in 18 decimals', () => {
+      expect(eqBaseAmount.equals(capAmountToMax(bigEth, ethDepth1e8), sameEth)).toBeTruthy()
+    })
+
+    it('isAtOrBelowDust: 0.001 ETH and 255.56 ETH are at or below an 8-decimal 255.56 ETH threshold, 300 ETH is not', () => {
+      expect(isAtOrBelowDust(smallEth, ethDepth1e8)).toBe(true)
+      expect(isAtOrBelowDust(sameEth, ethDepth1e8)).toBe(true)
+      expect(isAtOrBelowDust(bigEth, ethDepth1e8)).toBe(false)
+    })
+  })
+
+  describe('tradeSwapLockedMax1e8', () => {
+    const ethTrade = assetFromStringEx('ETH~ETH')
+    const btcTrade = assetFromStringEx('BTC~BTC')
+    // THOR pools (assetDepth and runeDepth @1e8). There is no RUNE pool.
+    const ethPool = {
+      asset: assetToString(AssetETH),
+      assetDepth: '2555635517500',
+      runeDepth: '900000000000000'
+    } as PoolDetail
+    const btcPool = {
+      asset: assetToString(AssetBTC),
+      assetDepth: '198607131500',
+      runeDepth: '123450000000000'
+    } as PoolDetail
+    const poolDetails = [ethPool, btcPool]
+
+    it('caps a trade asset at its SOURCE pool asset depth (ETH~ETH to BTC~BTC)', () => {
+      const result = tradeSwapLockedMax1e8({
+        protocol: THORChain,
+        sourceAsset: ethTrade,
+        targetAsset: btcTrade,
+        sourceAssetDecimal: THORCHAIN_DECIMAL,
+        poolDetails,
+        poolDetailsMaya: []
+      })
+      expect(eqBaseAmount.equals(result, baseAmount(ethPool.assetDepth, THORCHAIN_DECIMAL))).toBeTruthy()
+    })
+
+    it('caps a RUNE source at the TARGET pool RUNE depth, as there is no RUNE pool (THOR.RUNE to BTC~BTC)', () => {
+      const result = tradeSwapLockedMax1e8({
+        protocol: THORChain,
+        sourceAsset: AssetRuneNative,
+        targetAsset: btcTrade,
+        sourceAssetDecimal: THORCHAIN_DECIMAL,
+        poolDetails,
+        poolDetailsMaya: []
+      })
+      expect(eqBaseAmount.equals(result, baseAmount(btcPool.runeDepth, THORCHAIN_DECIMAL))).toBeTruthy()
+    })
+
+    it('caps a CACAO source at the TARGET pool CACAO depth (1e10), returned in 8 decimals (MAYA.CACAO to BTC~BTC)', () => {
+      // Maya pool: runeDepth is CACAO @1e10, 12,345 CACAO
+      const btcPoolMaya = {
+        asset: assetToString(AssetBTC),
+        assetDepth: '198607131500',
+        runeDepth: '123450000000000'
+      } as PoolDetailMaya
+      const result = tradeSwapLockedMax1e8({
+        protocol: MAYAChain,
+        sourceAsset: AssetCacao,
+        targetAsset: btcTrade,
+        sourceAssetDecimal: CACAO_DECIMAL,
+        poolDetails: [],
+        poolDetailsMaya: [btcPoolMaya]
+      })
+      expect(eqBaseAmount.equals(result, baseAmount('1234500000000', THORCHAIN_DECIMAL))).toBeTruthy()
+    })
+
+    it('caps a CACAO source at the MAYA target pool CACAO depth on a THORChain screen, and HALF is half of it (MAYA.CACAO to BTC~BTC)', () => {
+      // The trade route can stay on THORChain for a CACAO source, but CACAO only has Maya pools.
+      // Live depths: THOR BTC runeDepth @1e8, Maya BTC runeDepth = CACAO @1e10.
+      const thorBtcPool = {
+        asset: assetToString(AssetBTC),
+        assetDepth: '19284684716',
+        runeDepth: '2194777830964710'
+      } as PoolDetail
+      const mayaBtcPool = {
+        asset: assetToString(AssetBTC),
+        assetDepth: '1993744534',
+        runeDepth: '133977127590589562'
+      } as PoolDetailMaya
+      const result = tradeSwapLockedMax1e8({
+        protocol: THORChain,
+        sourceAsset: AssetCacao,
+        targetAsset: btcTrade,
+        sourceAssetDecimal: CACAO_DECIMAL,
+        poolDetails: [thorBtcPool],
+        poolDetailsMaya: [mayaBtcPool]
+      })
+      // 13,397,712.75905895 CACAO in 8 decimals, not THOR's 219,477.78 (runeDepth / 1e10)
+      expect(eqBaseAmount.equals(result, baseAmount('1339771275905895', THORCHAIN_DECIMAL))).toBeTruthy()
+      // HALF the way TradeSwap's percent buttons build it (TradeSwap.tsx setAmountToSwapFromPercentValue)
+      const half = baseAmount(result.amount().multipliedBy(50 / 100), result.decimal)
+      expect(eqBaseAmount.equals(half, baseAmount('669885637952948', THORCHAIN_DECIMAL))).toBeTruthy()
+    })
+
+    it('falls back to 1 unit, in at most 8 decimals, when no pool is found', () => {
+      const result = tradeSwapLockedMax1e8({
+        protocol: MAYAChain,
+        sourceAsset: AssetCacao,
+        targetAsset: btcTrade,
+        sourceAssetDecimal: CACAO_DECIMAL,
+        poolDetails,
+        poolDetailsMaya: []
+      })
+      expect(eqBaseAmount.equals(result, baseAmount(100_000_000, THORCHAIN_DECIMAL))).toBeTruthy()
+    })
+  })
+
+  describe('isAtOrBelowDust', () => {
+    it('is true for 0.00005 ETH (@18) against a 0.0001 dust given in 8 decimals', () => {
+      expect(isAtOrBelowDust(baseAmount('50000000000000', ETH_DECIMAL), baseAmount(10_000, 8))).toBe(true)
+    })
+
+    it('is false for 50 USDC (@6) against a 1-unit dust given in 8 decimals', () => {
+      expect(isAtOrBelowDust(baseAmount(50_000_000, 6), baseAmount(100_000_000, 8))).toBe(false)
+    })
+
+    it('is false for 0.01 BTC against a 0.0001 BTC dust (same decimals)', () => {
+      expect(isAtOrBelowDust(baseAmount(1_000_000, BTC_DECIMAL), baseAmount(10_000, BTC_DECIMAL))).toBe(false)
+    })
+
+    it('is true for an amount equal to the dust (same decimals)', () => {
+      expect(isAtOrBelowDust(baseAmount(10_000, BTC_DECIMAL), baseAmount(10_000, BTC_DECIMAL))).toBe(true)
+    })
+
+    it('is false for an empty (zero) amount, so a cleared field shows no dust error', () => {
+      expect(isAtOrBelowDust(baseAmount(0, BTC_DECIMAL), baseAmount(0, BTC_DECIMAL))).toBe(false)
     })
   })
 

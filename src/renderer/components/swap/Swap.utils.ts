@@ -1,20 +1,32 @@
 import { ADAChain } from '@xchainjs/xchain-cardano'
 import { QuoteSwap } from '@xchainjs/xchain-mayachain-query'
+import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 
 import { THORChain, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset, BaseAmount, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
-import { DEFAULT_FEE } from '../../../shared/utils/chainIds'
+import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
+import { CACAO_DECIMAL, DEFAULT_FEE } from '../../../shared/utils/chainIds'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../const'
-import { isChainAsset, isRuneNativeAsset, max1e8BaseAmount, convertBaseAmountDecimal } from '../../helpers/assetHelper'
+import {
+  isCacaoAsset,
+  isChainAsset,
+  isRuneNativeAsset,
+  max1e8BaseAmount,
+  convertBaseAmountDecimal,
+  THORCHAIN_DECIMAL
+} from '../../helpers/assetHelper'
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
-import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/midgardTypes'
+import { PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMidgard/types'
+import { getPoolDetail as getPoolDetailMaya } from '../../services/midgard/mayaMidgard/utils'
+import { PoolAssetDetail, PoolAssetDetails, PoolDetails, PoolsDataMap } from '../../services/midgard/midgardTypes'
+import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
 import { WalletBalances } from '../../services/wallet/types'
 import { AssetsToSwap, QuoteData } from './Swap.types'
 
@@ -77,6 +89,80 @@ export const capNativeRuneDeposit = (amount: BaseAmount, balance: BaseAmount): B
   const amountInBalance = convertBaseAmountDecimal(amount, balance.decimal)
   return amountInBalance.gt(capped) ? capped : amount
 }
+
+/**
+ * Turn a Midgard pool depth into a `BaseAmount` of the source asset.
+ *
+ * Used as the max amount in locked-wallet / quote-only mode.
+ * `depthDecimal` is the depth's own scale; `assetDecimal` is the source asset's decimal.
+ */
+export const poolDepthToBaseAmount = (depth: string, depthDecimal: number, assetDecimal: number): BaseAmount =>
+  convertBaseAmountDecimal(baseAmount(depth, depthDecimal), assetDecimal)
+
+/**
+ * Cap `amount` at `max`. Returns `amount` when it already fits.
+ *
+ * `BaseAmount.gt` compares raw base units and ignores `decimal`, so `max` is
+ * converted to `amount.decimal` first. The capped result keeps `amount.decimal`.
+ */
+export const capAmountToMax = (amount: BaseAmount, max: BaseAmount): BaseAmount => {
+  const maxInAmountDecimal = convertBaseAmountDecimal(max, amount.decimal)
+  return amount.gt(maxInAmountDecimal) ? maxInAmountDecimal : amount
+}
+
+/**
+ * TradeSwap locked-wallet / quote-only max amount (<= 1e8 based).
+ *
+ * The SOURCE asset's pool `assetDepth` (1e8). RUNE / CACAO have no pool of their own, so for them
+ * it is the TARGET pool's `runeDepth` (CACAO 1e10, RUNE 1e8). A CACAO source always reads the Maya
+ * pool, whatever `protocol` is. The depth is converted to the source
+ * asset's decimal. If the pool is not found, the cap is 1 unit of the source asset.
+ *
+ * The result is capped to at most 8 decimals, the scale of `amountToSwapMax1e8` in `TradeSwap`.
+ */
+export const tradeSwapLockedMax1e8 = ({
+  protocol,
+  sourceAsset,
+  targetAsset,
+  sourceAssetDecimal,
+  poolDetails,
+  poolDetailsMaya
+}: {
+  protocol: Chain
+  sourceAsset: AnyAsset
+  targetAsset: AnyAsset
+  sourceAssetDecimal: number
+  poolDetails: PoolDetails
+  poolDetailsMaya: PoolDetailsMaya
+}): BaseAmount => {
+  const poolAsset = isRuneNativeAsset(sourceAsset) || isCacaoAsset(sourceAsset) ? targetAsset : sourceAsset
+  // CACAO only has Maya pools, also when the screen's protocol is THORChain
+  const oPoolDetail: O.Option<Pick<PoolDetail, 'assetDepth' | 'runeDepth'>> =
+    protocol === THORChain && !isCacaoAsset(sourceAsset)
+      ? getPoolDetail(poolDetails, poolAsset)
+      : getPoolDetailMaya(poolDetailsMaya, poolAsset)
+  const max = FP.pipe(
+    oPoolDetail,
+    O.map((detail) =>
+      isCacaoAsset(sourceAsset)
+        ? poolDepthToBaseAmount(detail.runeDepth, CACAO_DECIMAL, sourceAssetDecimal)
+        : isRuneNativeAsset(sourceAsset)
+          ? poolDepthToBaseAmount(detail.runeDepth, THORCHAIN_DECIMAL, sourceAssetDecimal)
+          : poolDepthToBaseAmount(detail.assetDepth, THORCHAIN_DECIMAL, sourceAssetDecimal)
+    ),
+    O.getOrElse(() => convertBaseAmountDecimal(ONE_RUNE_BASE_AMOUNT, sourceAssetDecimal))
+  )
+  return max1e8BaseAmount(max)
+}
+
+/**
+ * Whether `amount` is at or below the quote's dust threshold.
+ *
+ * `BaseAmount.gte` compares raw base units and ignores `decimal`, so `dust` is converted to
+ * `amount.decimal` first. An empty (zero) amount is never reported as dust.
+ */
+export const isAtOrBelowDust = (amount: BaseAmount, dust: BaseAmount): boolean =>
+  !amount.amount().isZero() && convertBaseAmountDecimal(dust, amount.decimal).gte(amount)
 
 /**
  * Helper to get min. amount to swap

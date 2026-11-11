@@ -36,7 +36,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { ASGARDEX_ADDRESS, getAsgardexThorname } from '../../../shared/const'
-import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
 import { AssetRuneNative, THORChain, AssetCacao, MAYAChain } from '../../../shared/utils/chainIds'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -90,9 +89,7 @@ import {
   PoolDetails as PoolDetailsMaya,
   PoolsDataMap as PoolsDataMapMaya
 } from '../../services/midgard/mayaMidgard/types'
-import { getPoolDetail as getPoolDetailMaya } from '../../services/midgard/mayaMidgard/utils'
 import { PoolAddress, PoolsDataMap, PoolDetails } from '../../services/midgard/midgardTypes'
-import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { TradeAccount, TradeAccountRD } from '../../services/thorchain/types'
 import {
@@ -586,7 +583,7 @@ export const TradeSwap = ({
       // dirty check - do nothing if prev. and next amounts are equal
       if (eqBaseAmount.equals(newAmount, amountToSwapMax1e8)) return {}
 
-      const newAmountToSwap = newAmount.gt(maxAmountToSwapMax1e8) ? maxAmountToSwapMax1e8 : newAmount
+      const newAmountToSwap = Utils.capAmountToMax(newAmount, maxAmountToSwapMax1e8)
       /**
        * New object instance of `amountToSwap` is needed to make
        * AssetInput component react to the new value.
@@ -1220,22 +1217,15 @@ export const TradeSwap = ({
   // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
     if (lockedWallet || quoteOnly) {
-      const poolAsset = targetAsset
-      const poolDetail =
-        protocol === THORChain ? getPoolDetail(poolDetails, poolAsset) : getPoolDetailMaya(poolDetailsMaya, poolAsset)
-
-      if (O.isSome(poolDetail)) {
-        const detail = poolDetail.value
-        let amount: BaseAmount
-        if (isRuneNativeAsset(sourceAsset)) {
-          amount = baseAmount(detail.runeDepth)
-        } else {
-          amount = baseAmount(detail.assetDepth)
-        }
-        setLockedAssetAmount(new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), sourceAsset))
-      } else {
-        setLockedAssetAmount(new CryptoAmount(ONE_RUNE_BASE_AMOUNT, sourceAsset))
-      }
+      const amount = Utils.tradeSwapLockedMax1e8({
+        protocol,
+        sourceAsset,
+        targetAsset,
+        sourceAssetDecimal,
+        poolDetails,
+        poolDetailsMaya
+      })
+      setLockedAssetAmount(new CryptoAmount(amount, sourceAsset))
     }
   }, [
     lockedWallet,
@@ -1481,7 +1471,7 @@ export const TradeSwap = ({
     const {
       inFee: { amount: inFeeAmount }
     } = swapFees
-    return inFeeAmount.gt(sourceChainAssetAmount)
+    return convertBaseAmountDecimal(inFeeAmount, sourceChainAssetAmount.decimal).gt(sourceChainAssetAmount)
   }, [isZeroAmountToSwap, minAmountError, swapFees, sourceChainAssetAmount])
 
   const quoteError: JSX.Element = useMemo(() => {
