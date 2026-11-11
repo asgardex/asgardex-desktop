@@ -24,8 +24,10 @@ import { createChainflipTransactionTrackingService } from './transactionTracking
 import {
   cAssetToXAsset,
   cChainToXChain,
+  ChainflipVolumeResponse,
   isChainflipSupportedAsset,
   isChainflipSupportedChain,
+  sumVolumeByAsset,
   xAssetToCAsset,
   xChainToCChain
 } from './utils'
@@ -42,6 +44,44 @@ const sdk = new SwapSDK({
 const assetsData = new CachedValue(() => sdk.getAssets(), 24 * 60 * 60 * 1000)
 // Boost depths refresh on a shorter cycle since liquidity moves
 const boostDepths = new CachedValue<BoostPoolDepth[]>(() => sdk.getBoostLiquidity(), 5 * 60 * 1000)
+
+// Chainflip's swap SDK has no pool volume/liquidity endpoint (it only quotes swaps), so 24h volume is
+// read from Chainflip's public reporting API instead — the same undocumented endpoint asgardex.com's
+// website uses for its protocol-wide totals. Grouping by both source and destination asset (rather than
+// its protocol-wide total) gives genuine per-asset volume, keyed the same as `AssetData.asset`.
+const REPORTING_SERVICE_URL = 'https://reporting-service.chainflip.io/graphql'
+const VOLUME_24H_QUERY = `
+  query Volume24h($since: Datetime!) {
+    bySource: allSwapRequests(
+      condition: { isInProgress: false }
+      filter: { completedBlockTimestamp: { greaterThan: $since } }
+    ) {
+      groupedAggregates(groupBy: [SOURCE_ASSET]) { keys sum { ingressValueUsd } }
+    }
+    byDestination: allSwapRequests(
+      condition: { isInProgress: false }
+      filter: { completedBlockTimestamp: { greaterThan: $since } }
+    ) {
+      groupedAggregates(groupBy: [DESTINATION_ASSET]) { keys sum { ingressValueUsd } }
+    }
+  }
+`
+
+const fetchChainflipVolume24h = async (): Promise<Map<string, number>> => {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const response = await fetch(REPORTING_SERVICE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: VOLUME_24H_QUERY, variables: { since } })
+  })
+  if (!response.ok) throw new Error(`Chainflip reporting API error: ${response.status}`)
+  const body: ChainflipVolumeResponse = await response.json()
+  if (body.errors?.length) throw new Error(`Chainflip reporting API error: ${body.errors[0].message}`)
+  return sumVolumeByAsset(body)
+}
+
+// 24h volume moves continuously; refresh it on the same cycle as boost depths.
+const volume24h = new CachedValue(() => fetchChainflipVolume24h(), 5 * 60 * 1000)
 
 // Create transaction tracking service
 const transactionTrackingService = createChainflipTransactionTrackingService(sdk)
@@ -211,9 +251,16 @@ export const createChainflipService$ = () => {
   const chainflipAssetRows$: Rx.Observable<RD.RemoteData<Error, ChainflipAssetRowData[]>> = reloadAssetRows$.pipe(
     RxOp.switchMap(() =>
       Rx.defer(() =>
-        Promise.all([assetsData.getValue(), boostDepths.getValue().catch(() => [] as BoostPoolDepth[])])
+        Promise.all([
+          assetsData.getValue(),
+          boostDepths.getValue().catch(() => [] as BoostPoolDepth[]),
+          volume24h.getValue().catch((error) => {
+            logger.warn('Chainflip API error (24h volume):', error)
+            return new Map<string, number>()
+          })
+        ])
       ).pipe(
-        RxOp.switchMap(([assets, boost]) => {
+        RxOp.switchMap(([assets, boost, volumeByAsset]) => {
           // Bucket boost depths by asset+chain
           const boostByKey = new Map<string, boolean>()
           for (const bd of boost) {
@@ -233,6 +280,7 @@ export const createChainflipService$ = () => {
                 symbol: a.symbol,
                 decimals: a.decimals,
                 minSwapAmount: a.minimumSwapAmount,
+                volume24hUsd: volumeByAsset.get(a.asset),
                 boostAvailable: boostByKey.get(`${a.chain}:${a.asset}`) ?? false
               }
               return { row, source: a }
@@ -243,16 +291,27 @@ export const createChainflipService$ = () => {
             return Rx.of(RD.success<Error, ChainflipAssetRowData[]>([]))
           }
 
-          // Fire per-asset price quotes with limited concurrency (3 at a time)
-          // so we don't burst-fire 20+ requests at the Chainflip API on first load.
+          const rowKey = (row: Pick<ChainflipAssetRowData, 'chain' | 'symbol'>) => `${row.chain}:${row.symbol}`
+          // The asset list (name, icon, min swap, boost) is known as soon as `assets`/`boost` resolve above;
+          // show it immediately instead of waiting on every price quote below, so the table isn't blank
+          // while prices are still being fetched.
+          const initialRows: ChainflipAssetRowData[] = rowPairs.map(({ row }) => ({ ...row, priceUSD: undefined }))
+
+          // Fire per-asset price quotes with limited concurrency (3 at a time) so we don't burst-fire
+          // 20+ requests at the Chainflip API on first load. Each resolved price updates its own row and
+          // re-emits the full array, rather than buffering everything behind `toArray` until the slowest quote.
           return Rx.from(rowPairs).pipe(
             RxOp.mergeMap(
               ({ row, source }) =>
-                Rx.defer(() => getRowPriceUSD(source)).pipe(RxOp.map((priceUSD) => ({ ...row, priceUSD }))),
+                Rx.defer(() => getRowPriceUSD(source)).pipe(RxOp.map((priceUSD) => ({ key: rowKey(row), priceUSD }))),
               3
             ),
-            RxOp.toArray(),
-            RxOp.map((withPrices) => RD.success<Error, ChainflipAssetRowData[]>(withPrices))
+            RxOp.scan(
+              (rows, { key, priceUSD }) => rows.map((r) => (rowKey(r) === key ? { ...r, priceUSD } : r)),
+              initialRows
+            ),
+            RxOp.map((rows) => RD.success<Error, ChainflipAssetRowData[]>(rows)),
+            RxOp.startWith(RD.success<Error, ChainflipAssetRowData[]>(initialRows))
           )
         }),
         RxOp.catchError((error) => {

@@ -150,7 +150,7 @@ export const PoolsTable = ({
     )
   }
 
-  const columnCount = isActive ? 7 : 6
+  const columnCount = isActive ? 8 : 7
   const nativeLabel = intl.formatMessage({ id: 'common.asset.native' })
 
   const renderRow = (row: PoolsTableRow) => {
@@ -186,10 +186,7 @@ export const PoolsTable = ({
           <div className="flex min-w-0 items-center gap-3">
             <AssetIcon asset={asset} size="small" network={network} />
             <div className="flex min-w-0 flex-col">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">{asset.ticker}</span>
-                {status && <PoolStatusChip status={status} chain={asset.chain} />}
-              </div>
+              <span className="font-main-semi-bold text-[14px] text-text0 dark:text-text0d">{asset.ticker}</span>
               <span className="font-main text-[11px] text-gray1 dark:text-gray1d">
                 {distinctChainId(asset) ?? nativeLabel}
               </span>
@@ -214,6 +211,13 @@ export const PoolsTable = ({
         ) : (
           <td className="px-3 text-right whitespace-nowrap text-text0 dark:text-text0d">{getBlocksLeft(row)}</td>
         )}
+        <td className="px-3">
+          {status ? (
+            <PoolStatusChip status={status} chain={asset.chain} />
+          ) : (
+            <span className="font-main text-[13px] text-gray1 dark:text-gray1d">--</span>
+          )}
+        </td>
         <td className="pr-3">
           <div className="flex items-center justify-end gap-1.5 opacity-70 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
             {isActive && onDetail && (
@@ -298,6 +302,9 @@ export const PoolsTable = ({
                 {intl.formatMessage({ id: 'pools.blocksleft' })}
               </th>
             )}
+            <th scope="col" className={HEAD_CELL}>
+              {intl.formatMessage({ id: 'common.status' })}
+            </th>
             <th scope="col" className={clsx(HEAD_CELL, 'w-[1%]')}>
               <span className="sr-only">{intl.formatMessage({ id: 'common.action' })}</span>
             </th>

@@ -21,12 +21,13 @@ const row = (
   decimals: 8,
   minSwapAmount: '70000',
   priceUSD,
+  volume24hUsd: undefined,
   boostAvailable: false,
   watched: false,
   ...overrides
 })
 
-const BTC = row(ASSETS_MAINNET.BTC, 97_123.45, { boostAvailable: true })
+const BTC = row(ASSETS_MAINNET.BTC, 97_123.45, { boostAvailable: true, volume24hUsd: 27_614_000 })
 const ETH = row(ASSETS_MAINNET.ETH, 3_456.7, {
   decimals: 18,
   // above Number.MAX_SAFE_INTEGER in base units
@@ -80,7 +81,7 @@ describe('views/pools/ChainflipPoolsTable', () => {
     container.remove()
   })
 
-  it('renders only Chainflip fields: price, min swap (BigNumber), boost; no depth / volume / APY / status', () => {
+  it('renders Chainflip fields: price, 24h volume, min swap (BigNumber), boost; no depth / APY / status', () => {
     render()
     expect(tickers()).toEqual(['ETH', 'DOGE', 'BTC'])
     const heads = Array.from(container.querySelectorAll('thead th')).map((th) => th.textContent)
@@ -88,12 +89,16 @@ describe('views/pools/ChainflipPoolsTable', () => {
       en['pools.watchlist'],
       en['common.asset'],
       en['common.price'],
+      en['pools.24hvol'],
       en['pools.chainflip.minSwap'],
       en['common.action']
     ])
     expect(rowOf('BTC').textContent).toContain('$97,123.45')
+    expect(rowOf('BTC').textContent).toContain('$27.61M')
     expect(rowOf('BTC').textContent).toContain('0.0007 BTC')
     expect(rowOf('ETH').textContent).toContain('0.01 ETH')
+    // no volume for this row: a neutral dash, not a crash or `$undefined`
+    expect(rowOf('ETH').querySelectorAll('td')[3].textContent).toBe('—')
     expect(rowOf('DOGE').textContent).toContain('—')
     expect(rowOf('BTC').querySelector('[data-testid="chainflip-boost"]')).not.toBeNull()
     expect(rowOf('ETH').querySelector('[data-testid="chainflip-boost"]')).toBeNull()

@@ -107,10 +107,13 @@ describe('views/pools/PoolsTable', () => {
     expect(sortButton('Pool').closest('th')?.getAttribute('aria-sort')).toBe('ascending')
   })
 
-  it('shows a status chip and disables actions by status', () => {
+  it('shows a status column and disables actions by status', () => {
     const props = render()
     const btc = rowOf('BTC')
     expect(btc.querySelector('[data-testid="pool-status-chip"]')?.textContent).toBe('Deposits paused')
+    // status chip lives in its own column, not in the Pool cell
+    expect(btc.querySelectorAll('td')[1].querySelector('[data-testid="pool-status-chip"]')).toBeNull()
+    expect(btc.querySelectorAll('td')[6].querySelector('[data-testid="pool-status-chip"]')).not.toBeNull()
     // deposit pause: swap works, add is disabled with its reason
     expect(button(btc, 'Swap').getAttribute('aria-disabled')).toBe('false')
     expect(button(btc, 'Add').getAttribute('aria-disabled')).toBe('true')
@@ -126,9 +129,10 @@ describe('views/pools/PoolsTable', () => {
     expect(button(doge, 'Swap').getAttribute('aria-disabled')).toBe('true')
     expect(button(doge, 'Add').getAttribute('aria-disabled')).toBe('true')
 
-    // no status: no chip, all actions enabled
+    // no status: a neutral dash in the status column, all actions enabled
     const eth = rowOf('ETH')
     expect(eth.querySelector('[data-testid="pool-status-chip"]')).toBeNull()
+    expect(eth.querySelectorAll('td')[6].textContent).toBe('--')
     act(() => button(eth, 'Add').click())
     expect(props.onAdd).toHaveBeenCalledWith(ASSETS_MAINNET.ETH)
   })

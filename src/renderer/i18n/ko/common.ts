@@ -137,6 +137,7 @@ const common: CommonMessages = {
   'common.retry': '재시도',
   'common.reload': '새로고침',
   'common.action': '작업',
+  'common.status': '상태',
   'common.add': '추가',
   'common.completeLp': 'LP 완료',
   'common.swap': '교환',

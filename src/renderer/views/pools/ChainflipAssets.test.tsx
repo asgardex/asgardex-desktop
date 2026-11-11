@@ -48,6 +48,7 @@ const row = (asset: ChainflipAssetRowData['asset'], priceUSD: number): Chainflip
   decimals: 8,
   minSwapAmount: '70000',
   priceUSD,
+  volume24hUsd: undefined,
   boostAvailable: false
 })
 const BTC = row(ASSETS_MAINNET.BTC, 97_000)

@@ -131,6 +131,7 @@ export type CommonMessageKey =
   | 'common.retry'
   | 'common.reload'
   | 'common.action'
+  | 'common.status'
   | 'common.add'
   | 'common.store'
   | 'common.completeLp'

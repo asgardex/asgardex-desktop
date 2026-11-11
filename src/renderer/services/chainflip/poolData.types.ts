@@ -8,5 +8,7 @@ export type ChainflipAssetRowData = {
   decimals: number
   minSwapAmount: string
   priceUSD: number | undefined
+  /** USD swap volume over the last 24h, summed across both sides of a swap. `undefined` if not (yet) known. */
+  volume24hUsd: number | undefined
   boostAvailable: boolean
 }

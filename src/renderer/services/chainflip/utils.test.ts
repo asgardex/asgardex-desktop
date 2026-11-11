@@ -2,7 +2,7 @@ import { AssetData } from '@chainflip/sdk/swap'
 import { describe, expect, it } from 'vitest'
 
 import { BSCChain } from '../../../shared/utils/chainIds'
-import { cAssetToXAsset, cChainToXChain, xChainToCChain } from './utils'
+import { cAssetToXAsset, cChainToXChain, ChainflipVolumeResponse, sumVolumeByAsset, xChainToCChain } from './utils'
 
 describe('services/chainflip/utils', () => {
   // Regression: Chainflip mainnet added `Bsc` (BNB, USDT). Treating it as
@@ -33,5 +33,40 @@ describe('services/chainflip/utils', () => {
     const future = { chain: 'FutureChain', symbol: 'FUT' } as unknown as AssetData
     expect(() => cAssetToXAsset(future)).not.toThrow()
     expect(cAssetToXAsset(future)).toBeNull()
+  })
+
+  describe('sumVolumeByAsset', () => {
+    it('sums source and destination volume per asset (a swap counts for both sides)', () => {
+      const response: ChainflipVolumeResponse = {
+        data: {
+          bySource: {
+            groupedAggregates: [
+              { keys: ['Btc'], sum: { ingressValueUsd: '100.50' } },
+              { keys: ['Usdc'], sum: { ingressValueUsd: '200' } }
+            ]
+          },
+          byDestination: {
+            groupedAggregates: [
+              { keys: ['Usdc'], sum: { ingressValueUsd: '100.50' } },
+              { keys: ['Eth'], sum: { ingressValueUsd: '50' } }
+            ]
+          }
+        }
+      }
+      const volumeByAsset = sumVolumeByAsset(response)
+      expect(volumeByAsset.get('Btc')).toBe(100.5)
+      expect(volumeByAsset.get('Usdc')).toBe(300.5)
+      expect(volumeByAsset.get('Eth')).toBe(50)
+      expect(volumeByAsset.has('Flip')).toBe(false)
+    })
+
+    it('treats a null sum as 0, and tolerates a missing data payload', () => {
+      expect(
+        sumVolumeByAsset({
+          data: { bySource: { groupedAggregates: [{ keys: ['Btc'], sum: { ingressValueUsd: null } }] } }
+        }).get('Btc')
+      ).toBe(0)
+      expect(sumVolumeByAsset({}).size).toBe(0)
+    })
   })
 })

@@ -135,6 +135,7 @@ const common: CommonMessages = {
   'common.retry': 'Réessayer',
   'common.reload': 'Recharger',
   'common.action': 'Action',
+  'common.status': 'Statut',
   'common.add': 'Ajouter',
   'common.completeLp': 'compléter LP',
   'common.swap': 'Échanger',

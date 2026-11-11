@@ -13,6 +13,7 @@ import { AssetIcon } from '../../components/uielements/assets/assetIcon'
 import { Tooltip } from '../../components/uielements/tooltip'
 import { distinctChainId } from '../../helpers/assetHelper'
 import { ChainflipAssetRowData } from '../../services/chainflip/poolData.types'
+import { formatCompactNumber } from './Pools.utils'
 import { FOCUS_RING, HEAD_CELL, PoolActionButton, SKELETON_ROWS } from './PoolsTable'
 
 /** Chainflip asset row with the user's watchlist state */
@@ -26,6 +27,10 @@ export const formatChainflipUsd = (amount: number | undefined): string => {
   if (amount >= 1) return `$${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
   return `$${amount.toLocaleString(undefined, { maximumFractionDigits: 6 })}`
 }
+
+/** Compact (`$27.61M`) 24h volume; `undefined` while Chainflip's reporting API hasn't resolved it yet */
+export const formatChainflipVolume = (amountUsd: number | undefined): string =>
+  amountUsd === undefined ? '—' : `$${formatCompactNumber(amountUsd)}`
 
 // Chainflip swap amounts can exceed Number.MAX_SAFE_INTEGER for 18-decimal
 // tokens, so use BigNumber rather than `Number(amount) / 10**decimals`.
@@ -69,11 +74,12 @@ export type Props = {
 
 // Columns are dropped by width of the table (container queries), not by width of the window
 const HIDE_BELOW_640 = 'hidden @min-[640px]:table-cell'
-const COLUMN_COUNT = 5
+const COLUMN_COUNT = 6
 
 /**
  * Chainflip assets in the same layout as the THORChain / MAYAChain `PoolsTable`.
- * Shows only what Chainflip provides (price, minimum swap, boost); no depth, volume, APY or halt status.
+ * Shows price, 24h volume (from Chainflip's reporting API, not the swap SDK), minimum swap and boost;
+ * no depth, APY or halt status — Chainflip has no pool-depth/halt data to derive those from.
  */
 export const ChainflipPoolsTable = ({
   rows,
@@ -168,6 +174,9 @@ export const ChainflipPoolsTable = ({
         <td className="px-3 text-right whitespace-nowrap text-text0 dark:text-text0d">
           {formatChainflipUsd(row.priceUSD)}
         </td>
+        <td className="px-3 text-right whitespace-nowrap text-text2 dark:text-text2d">
+          {formatChainflipVolume(row.volume24hUsd)}
+        </td>
         <td className={clsx('px-3 text-right whitespace-nowrap text-text2 dark:text-text2d', HIDE_BELOW_640)}>
           <div className="flex items-center justify-end gap-1.5">
             {formatChainflipBaseUnits(row.minSwapAmount, row.decimals, row.symbol)}
@@ -222,6 +231,9 @@ export const ChainflipPoolsTable = ({
             </th>
             {renderSortHead('asset', intl.formatMessage({ id: 'common.asset' }), 'text-left')}
             {renderSortHead('priceUSD', intl.formatMessage({ id: 'common.price' }), 'text-right')}
+            <th scope="col" className={clsx(HEAD_CELL, 'text-right')}>
+              {intl.formatMessage({ id: 'pools.24hvol' })}
+            </th>
             <th scope="col" className={clsx(HEAD_CELL, 'text-right', HIDE_BELOW_640)}>
               {intl.formatMessage({ id: 'pools.chainflip.minSwap' })}
             </th>
