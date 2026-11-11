@@ -4,6 +4,7 @@ import {
   AnyAsset,
   Asset,
   CachedValue,
+  Chain as XChain,
   SecuredAsset,
   SynthAsset,
   TokenAsset,
@@ -95,7 +96,8 @@ export const createChainflipService$ = () => {
 
   // Get supported chains from Chainflip
   const chainflipSupportedChains$ = Rx.defer(() => sdk.getChains()).pipe(
-    RxOp.map((chains) => chains.map((chain) => cChainToXChain(chain.chain))),
+    // Skip chains unknown to ASGARDEX (cChainToXChain returns null for them)
+    RxOp.map((chains) => chains.map((chain) => cChainToXChain(chain.chain)).filter((c): c is XChain => c !== null)),
     RxOp.map((chains) => RD.success(chains)),
     RxOp.catchError((error) => {
       // Log 429 and other API errors but don't block the UI

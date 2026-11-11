@@ -21,10 +21,12 @@ export const cChainToXChain = (chain: CChain): XChain | null => {
       return 'SOL'
     case 'Tron':
       return TRONChain
-    case 'Assethub':
-      return null // Assethub is not supported in XChainJS, return null instead of throwing
     default:
-      throw Error('Unsupported chain in XChainJS')
+      // Chains not supported by ASGARDEX/XChainJS (e.g. Assethub, or chains
+      // Chainflip adds later such as Bsc) are skipped. Never throw here: the
+      // asset list comes from the live Chainflip API and callers run inside
+      // React render (useMemo), so throwing blanks the wallet view.
+      return null
   }
 }
 
