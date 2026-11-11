@@ -122,13 +122,31 @@ const toWhitelistRequest = (item: ApiWhitelistRequestItem): WhitelistRequest => 
   expiresDate: item.expiresAt ? new Date(item.expiresAt) : null
 })
 
+const RUNEBOND_DOMAIN = 'runebond.com'
+
+const runebondUrl = (value: string | null, isAllowedHost: (hostname: string) => boolean): string | null => {
+  if (!value) return null
+  try {
+    const { protocol, username, password, port, hostname } = new URL(value)
+    const safe = protocol === 'https:' && username === '' && password === '' && port === '' && isAllowedHost(hostname)
+    return safe ? value : null
+  } catch (_e) {
+    return null
+  }
+}
+
+const isRunebondHost = (hostname: string) => hostname === RUNEBOND_DOMAIN || hostname.endsWith(`.${RUNEBOND_DOMAIN}`)
+
 const toListedNode = (node: ApiListedNode): ListedNode => ({
   nodeAddress: node.nodeAddress,
   operatorAddress: node.operatorAddress,
   name: node.name,
   description: node.description,
-  logoUrl: node.logoUrl,
-  profileUrl: node.profileUrl,
+  logoUrl: runebondUrl(node.logoUrl, isRunebondHost),
+  profileUrl: runebondUrl(
+    node.profileUrl,
+    (hostname) => hostname === `${node.nodeAddress.toLowerCase()}.${RUNEBOND_DOMAIN}`
+  ),
   minBond: parseBaseAmount(node.minBond),
   targetTotalBond: node.targetTotalBond !== null ? parseBaseAmount(node.targetTotalBond) : null,
   feeBps: node.feeBps,

@@ -61,6 +61,7 @@ import { useChainContext } from '../../../contexts/ChainContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
+import { logger } from '../../../helpers/logger'
 import { liveData } from '../../../helpers/rx/liveData'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { useChurnConstants } from '../../../hooks/useChurnConstants'
@@ -276,7 +277,7 @@ export const BondNodeDetailView = (): JSX.Element => {
       : FP.pipe(
           RD.toOption(listedNodesRD),
           O.chain((nodes) => O.fromNullable(nodes.find((listed) => listed.nodeAddress === node.address))),
-          O.map(({ profileUrl }) => profileUrl)
+          O.chain(({ profileUrl }) => O.fromNullable(profileUrl))
         )
     const hiddenByRunebond = FP.pipe(
       listedNodesRD,
@@ -342,7 +343,7 @@ export const BondNodeDetailView = (): JSX.Element => {
                     <BaseButton
                       className="!p-0 opacity-70 hover:opacity-100"
                       title={intl.formatMessage({ id: 'bonds.runebond.provider.profile' })}
-                      onClick={() => window.apiUrl.openExternal(profileUrl)}>
+                      onClick={() => window.apiUrl.openExternal(profileUrl).catch((error) => logger.warn(error))}>
                       <img src={RunebondLogo} alt="" className="h-4 w-4" />
                     </BaseButton>
                   )

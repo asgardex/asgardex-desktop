@@ -26,6 +26,7 @@ import { Spin } from '../../../components/uielements/spin'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { ordBaseAmount } from '../../../helpers/fp/ord'
+import { logger } from '../../../helpers/logger'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { useLastSuccessRD } from '../../../hooks/useLastSuccess'
 import { RunebondDirectoryNode, useRunebondDirectory } from '../../../hooks/useRunebondDirectory'
@@ -149,6 +150,7 @@ export const FindNodeView = (): JSX.Element => {
 
   const renderNodeCell = ({ listing, node }: RunebondDirectoryNode) => {
     const profileLabel = intl.formatMessage({ id: 'bonds.directory.openProfile' })
+    const { profileUrl } = listing
     return (
       <div className="flex min-w-0 items-center gap-3">
         <NodeAvatar name={listing.name} nodeAddress={node.address} logoUrl={listing.logoUrl} />
@@ -157,7 +159,7 @@ export const FindNodeView = (): JSX.Element => {
             <span className="truncate font-main text-[15px] text-text0 group-hover:text-turquoise dark:text-text0d">
               {listing.name ?? truncateAddress(node.address, THORChain, network)}
             </span>
-            {listing.profileUrl && (
+            {profileUrl && (
               <button
                 type="button"
                 title={profileLabel}
@@ -165,7 +167,7 @@ export const FindNodeView = (): JSX.Element => {
                 className="flex shrink-0 cursor-pointer text-gray1 hover:text-turquoise dark:text-gray1d"
                 onClick={(event) => {
                   event.stopPropagation()
-                  window.apiUrl.openExternal(listing.profileUrl)
+                  window.apiUrl.openExternal(profileUrl).catch((error) => logger.warn(error))
                 }}>
                 <ArrowTopRightOnSquareIcon className="h-3 w-3" />
               </button>
