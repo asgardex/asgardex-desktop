@@ -32,7 +32,14 @@ import { getAsgardexAffiliateFee } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
 import { DEFAULT_ENABLED_CHAINS, EnabledChain, isChainOfThor } from '../../../shared/utils/chain'
-import { AssetRuneNative, THORChain, AssetCacao, MAYAChain, BTCChain } from '../../../shared/utils/chainIds'
+import {
+  AssetRuneNative,
+  THORChain,
+  AssetCacao,
+  MAYAChain,
+  BTCChain,
+  CACAO_DECIMAL
+} from '../../../shared/utils/chainIds'
 import { isVultisigWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
@@ -769,8 +776,9 @@ export const Swap = ({
   const setAmountToSwap = useCallback(
     (newAmountToSwap: BaseAmount) => {
       if (eqBaseAmount.equals(newAmountToSwap, amountToSwap)) return
-      const cappedAmount = newAmountToSwap.gt(maxAmountToSwap) ? maxAmountToSwap : newAmountToSwap
-      if (eqBaseAmount.equals(cappedAmount, amountToSwap)) return
+      const cappedAmount = Utils.capAmountToMax(newAmountToSwap, maxAmountToSwap)
+      // Always set a new object (as TradeSwap does), also when the capped amount equals the
+      // current one, so the input re-syncs to the cap after typing over it again.
       _setAmountToSwap({ ...cappedAmount })
     },
     [maxAmountToSwap, amountToSwap]
@@ -958,7 +966,9 @@ export const Swap = ({
           const inFeeAmount = inFee.baseAmount
           const outFeeAmount = convertBaseAmountDecimal(outFee.baseAmount, targetDecimals)
           const affiliateAmount = convertBaseAmountDecimal(affFee.baseAmount, targetDecimals)
-          const slipAmount = priceAmountToSwap.baseAmount.times(swapSlippage / 100)
+          const slipAmount = convertBaseAmountDecimal(priceAmountToSwap.baseAmount, targetDecimals).times(
+            swapSlippage / 100
+          )
           const totalAmount = inFeeAmount.plus(outFeeAmount).plus(affiliateAmount).plus(slipAmount)
           return { asset: inFee.asset, amount: totalAmount }
         })
@@ -1257,7 +1267,7 @@ export const Swap = ({
       oQuoteProtocol,
       O.fold(
         () => false,
-        (quoteSwap) => quoteSwap.dustThreshold.baseAmount.gte(amountToSwap)
+        (quoteSwap) => Utils.isAtOrBelowDust(amountToSwap, quoteSwap.dustThreshold.baseAmount)
       )
     )
   }, [amountToSwap, oQuoteProtocol])
@@ -1275,25 +1285,36 @@ export const Swap = ({
         const detail = poolDetailMaya.value
         let amount: BaseAmount
         if (isCacaoAsset(sourceAsset)) {
-          amount = baseAmount(detail.runeDepth)
+          amount = Utils.poolDepthToBaseAmount(detail.runeDepth, CACAO_DECIMAL, sourceAssetDecimal)
         } else {
-          amount = baseAmount(detail.assetDepth)
+          amount = Utils.poolDepthToBaseAmount(detail.assetDepth, THORCHAIN_DECIMAL, sourceAssetDecimal)
         }
         setLockedAssetAmount(new CryptoAmount(amount, sourceAsset))
       } else if (O.isSome(poolDetailThor)) {
         const detail = poolDetailThor.value
         let amount: BaseAmount
         if (isRuneNativeAsset(sourceAsset)) {
-          amount = baseAmount(detail.runeDepth)
+          amount = Utils.poolDepthToBaseAmount(detail.runeDepth, THORCHAIN_DECIMAL, sourceAssetDecimal)
         } else {
-          amount = baseAmount(detail.assetDepth)
+          amount = Utils.poolDepthToBaseAmount(detail.assetDepth, THORCHAIN_DECIMAL, sourceAssetDecimal)
         }
         setLockedAssetAmount(new CryptoAmount(amount, sourceAsset))
       } else {
-        setLockedAssetAmount(new CryptoAmount(ONE_RUNE_BASE_AMOUNT, sourceAsset))
+        setLockedAssetAmount(
+          new CryptoAmount(convertBaseAmountDecimal(ONE_RUNE_BASE_AMOUNT, sourceAssetDecimal), sourceAsset)
+        )
       }
     }
-  }, [lockedWallet, poolDetailsMaya, poolDetailsThor, quoteOnly, sourceAsset, targetAsset, setQuoteOnly])
+  }, [
+    lockedWallet,
+    poolDetailsMaya,
+    poolDetailsThor,
+    quoteOnly,
+    sourceAsset,
+    sourceAssetDecimal,
+    targetAsset,
+    setQuoteOnly
+  ])
 
   /**
    * Selectable source assets to swap from.
@@ -1532,7 +1553,7 @@ export const Swap = ({
     const {
       inFee: { amount: inFeeAmount }
     } = swapFees
-    return inFeeAmount.gt(sourceChainAssetAmount)
+    return convertBaseAmountDecimal(inFeeAmount, sourceChainAssetAmount.decimal).gt(sourceChainAssetAmount)
   }, [isZeroAmountToSwap, swapFees, sourceChainAssetAmount])
 
   const quoteError: JSX.Element = useMemo(() => {
@@ -1653,7 +1674,7 @@ export const Swap = ({
 
   const isApproveFeeError = useMemo(() => {
     if (O.isNone(needApprovement)) return false
-    return sourceChainAssetAmount.lt(approveFee)
+    return sourceChainAssetAmount.lt(convertBaseAmountDecimal(approveFee, sourceChainAssetAmount.decimal))
   }, [needApprovement, sourceChainAssetAmount, approveFee])
 
   const renderApproveFeeError: JSX.Element = useMemo(() => {
