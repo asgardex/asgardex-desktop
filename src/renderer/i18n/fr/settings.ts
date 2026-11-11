@@ -142,7 +142,9 @@ const settings: SettingMessages = {
   'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
   'settings.wallet.unlock.or': 'ou',
   'settings.wallet.unlock.vultisig': 'Déverrouiller le coffre Vultisig',
-  'settings.wallet.noAddresses': 'Aucune adresse disponible'
+  'settings.wallet.noAddresses': 'Aucune adresse disponible',
+  'settings.url.error.invalid': 'URL invalide. Saisissez une adresse http:// ou https:// complète',
+  'settings.url.error.testFailed': "Le test de l'URL a échoué. Le point de terminaison est injoignable ou n'a pas répondu comme prévu"
 }
 
 export default settings

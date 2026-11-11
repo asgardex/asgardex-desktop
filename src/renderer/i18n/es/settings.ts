@@ -142,7 +142,9 @@ const settings: SettingMessages = {
   'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
   'settings.wallet.unlock.or': 'o',
   'settings.wallet.unlock.vultisig': 'Desbloquear bóveda Vultisig',
-  'settings.wallet.noAddresses': 'No hay direcciones disponibles'
+  'settings.wallet.noAddresses': 'No hay direcciones disponibles',
+  'settings.url.error.invalid': 'URL no válida. Introduzca una dirección http:// o https:// completa',
+  'settings.url.error.testFailed': 'La prueba de la URL falló. No se pudo acceder al endpoint o no respondió como se esperaba'
 }
 
 export default settings

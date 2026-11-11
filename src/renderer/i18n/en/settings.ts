@@ -147,7 +147,9 @@ const settings: SettingMessages = {
   'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
   'settings.wallet.unlock.or': 'or',
   'settings.wallet.unlock.vultisig': 'Unlock Vultisig Vault',
-  'settings.wallet.noAddresses': 'No addresses available'
+  'settings.wallet.noAddresses': 'No addresses available',
+  'settings.url.error.invalid': 'Invalid URL. Enter a full http:// or https:// address',
+  'settings.url.error.testFailed': 'URL test failed. The endpoint could not be reached or did not respond as expected'
 }
 
 export default settings

@@ -1416,6 +1416,8 @@ type SettingMessageKey =
   | 'settings.wallet.unlock.or'
   | 'settings.wallet.unlock.vultisig'
   | 'settings.wallet.noAddresses'
+  | 'settings.url.error.invalid'
+  | 'settings.url.error.testFailed'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 

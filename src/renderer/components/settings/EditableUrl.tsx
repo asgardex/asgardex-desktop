@@ -30,6 +30,18 @@ type Props = {
   className?: string
 }
 
+/**
+ * URL syntax only: an absolute `http(s)://` URL with a host. Says nothing about whether the endpoint works.
+ */
+export const isValidUrlSyntax = (url: string): boolean => {
+  try {
+    const { protocol, hostname } = new URL(url)
+    return (protocol === 'http:' || protocol === 'https:') && hostname.length > 0
+  } catch {
+    return false
+  }
+}
+
 const EditableUrl = (props: Props): JSX.Element => {
   const { url: initialUrl, className, successMsg, loading = false, onChange = FP.constVoid, checkUrl$ } = props
 
@@ -48,8 +60,16 @@ const EditableUrl = (props: Props): JSX.Element => {
     reset,
     handleSubmit,
     getValues,
-    setError
+    setError,
+    clearErrors
   } = useForm<FormData>()
+
+  // Two different causes, one message each:
+  // - invalid: the URL itself is malformed (checked here, before any request)
+  // - test failed: a well-formed URL whose endpoint test failed. The handler's own error text is not shown, it
+  //   may call any failure an "invalid URL" and does not tell the cause.
+  const invalidUrlMsg = intl.formatMessage({ id: 'settings.url.error.invalid' })
+  const testFailedMsg = intl.formatMessage({ id: 'settings.url.error.testFailed' })
 
   const {
     state: testUrlState,
@@ -73,30 +93,42 @@ const EditableUrl = (props: Props): JSX.Element => {
       )
     )
     resetTestUrlState()
+    clearErrors('url')
+    if (!isValidUrlSyntax(urlToTest)) {
+      setError('url', { type: 'custom', message: invalidUrlMsg })
+      return
+    }
     subscribeTestUrlState(testUrl(urlToTest))
-  }, [editableUrl, getValues, resetTestUrlState, subscribeTestUrlState, testUrl, url])
+  }, [
+    clearErrors,
+    editableUrl,
+    getValues,
+    invalidUrlMsg,
+    resetTestUrlState,
+    setError,
+    subscribeTestUrlState,
+    testUrl,
+    url
+  ])
 
-  const renderTestUrlResult = useMemo(
-    () =>
-      FP.pipe(
-        testUrlState,
-        RD.fold(
-          () => <></>,
-          () => <></>,
-          (error) => (
-            <p className="mt-2 font-main text-[13px] text-error0 dark:text-error0d">
-              {error?.message ?? error.toString()}
-            </p>
-          ),
-          (_) => <p className="mt-2 font-main text-[13px] text-turquoise">{successMsg}</p>
-        )
-      ),
-    [successMsg, testUrlState]
-  )
+  // One message area for both modes: a form error (invalid URL, failed test on save) wins over a failed test
+  const errorMsg = errors.url?.message ?? (RD.isFailure(testUrlState) ? testFailedMsg : undefined)
+
+  const renderTestUrlResult = useMemo(() => {
+    if (errorMsg)
+      return (
+        <p role="alert" className="mt-2 font-main text-[13px] text-error0 dark:text-error0d">
+          {errorMsg}
+        </p>
+      )
+    if (RD.isSuccess(testUrlState)) return <p className="mt-2 font-main text-[13px] text-turquoise">{successMsg}</p>
+    return <></>
+  }, [errorMsg, successMsg, testUrlState])
 
   const renderUrl = useCallback(() => {
     const edit = () => {
       resetTestUrlState()
+      clearErrors('url')
       setEditableUrl(O.some(url))
     }
     return (
@@ -126,12 +158,13 @@ const EditableUrl = (props: Props): JSX.Element => {
         </BorderButton>
       </div>
     )
-  }, [intl, loading, resetTestUrlState, runTestUrlHandler, testUrlState, url])
+  }, [clearErrors, intl, loading, resetTestUrlState, runTestUrlHandler, testUrlState, url])
 
   const renderEditableUrl = useCallback(
     (name: string) => {
       const cancel = () => {
         reset()
+        clearErrors('url')
         resetTestUrlState()
         setEditableUrl(O.none)
       }
@@ -141,6 +174,8 @@ const EditableUrl = (props: Props): JSX.Element => {
         const url = formUrl.replace(/\/$/, '')
         if (!url) {
           setError('url', { type: 'custom', message: 'url required' })
+        } else if (!isValidUrlSyntax(url)) {
+          setError('url', { type: 'custom', message: invalidUrlMsg })
         } else {
           testUrlAsPromise(url)
             .then(
@@ -148,7 +183,7 @@ const EditableUrl = (props: Props): JSX.Element => {
                 RD.fold(
                   () => {},
                   () => {},
-                  (error) => setError('url', { type: 'custom', message: error.toString() }),
+                  () => setError('url', { type: 'custom', message: testFailedMsg }),
                   (_) => {
                     setEditableUrl(O.none)
                     onChange(url)
@@ -159,7 +194,7 @@ const EditableUrl = (props: Props): JSX.Element => {
               )
             )
             .catch((_) => {
-              setError('url', { type: 'custom', message: 'invalid url' })
+              setError('url', { type: 'custom', message: testFailedMsg })
             })
         }
       }
@@ -183,7 +218,7 @@ const EditableUrl = (props: Props): JSX.Element => {
               autoFocus
               uppercase={false}
               {...register('url', { required: true })}
-              error={!!errors.url || RD.isFailure(testUrlState)}
+              error={!!errorMsg}
               onKeyDown={keyDownHandler}
             />
             <BaseButton className="!p-0 text-turquoise" onClick={handleSubmit(submit)} type="submit">
@@ -202,22 +237,22 @@ const EditableUrl = (props: Props): JSX.Element => {
               {intl.formatMessage({ id: 'common.test' })}
             </BorderButton>
           </div>
-          {errors.url && (
-            <p className="mt-2 font-main text-[13px] text-error0 dark:text-error0d">{errors.url.message}</p>
-          )}
         </form>
       )
     },
     [
-      errors.url,
+      clearErrors,
+      errorMsg,
       handleSubmit,
       intl,
+      invalidUrlMsg,
       onChange,
       register,
       reset,
       resetTestUrlState,
       runTestUrlHandler,
       setError,
+      testFailedMsg,
       testUrlAsPromise,
       testUrlState
     ]

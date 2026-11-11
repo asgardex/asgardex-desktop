@@ -141,7 +141,9 @@ const settings: SettingMessages = {
   'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
   'settings.wallet.unlock.or': 'या',
   'settings.wallet.unlock.vultisig': 'वल्टिसिग वॉल्ट अनलॉक करें',
-  'settings.wallet.noAddresses': 'कोई पता उपलब्ध नहीं है'
+  'settings.wallet.noAddresses': 'कोई पता उपलब्ध नहीं है',
+  'settings.url.error.invalid': 'अमान्य URL. पूरा http:// या https:// पता दर्ज करें',
+  'settings.url.error.testFailed': 'URL परीक्षण विफल रहा. एंडपॉइंट तक नहीं पहुंचा जा सका या उसने अपेक्षित जवाब नहीं दिया'
 }
 
 export default settings

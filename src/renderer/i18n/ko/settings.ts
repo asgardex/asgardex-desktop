@@ -142,7 +142,9 @@ const settings: SettingMessages = {
   'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
   'settings.wallet.unlock.or': '또는',
   'settings.wallet.unlock.vultisig': 'Vultisig 볼트 잠금 해제',
-  'settings.wallet.noAddresses': '사용 가능한 주소가 없습니다'
+  'settings.wallet.noAddresses': '사용 가능한 주소가 없습니다',
+  'settings.url.error.invalid': '유효하지 않은 URL입니다. 전체 http:// 또는 https:// 주소를 입력하세요',
+  'settings.url.error.testFailed': 'URL 테스트에 실패했습니다. 엔드포인트에 연결할 수 없거나 예상대로 응답하지 않았습니다'
 }
 
 export default settings
