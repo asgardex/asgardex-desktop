@@ -38,6 +38,9 @@ const MIDGARD_CHAIN_PREFIX = '/chain/thorchain_midgard'
 /** Path prefix of the keyless "provider style" THORNode REST route on the gateway. */
 const THORNODE_API_CHAIN_PREFIX = '/chain/thorchain_api'
 
+/** Path prefix of the keyless "provider style" THORNode Tendermint RPC route on the gateway. */
+const THORNODE_RPC_CHAIN_PREFIX = '/chain/thorchain_rpc'
+
 /**
  * Path prefixes -> product. Provider style (`/chain/...`) is what the app uses today.
  * Root style (`/v2/...` Midgard, `/thorchain/...` + `/cosmos/...` THORNode REST) is what the gateway
@@ -49,7 +52,11 @@ const PRODUCT_PREFIXES: ReadonlyArray<readonly [string, LiquifyProduct]> = [
   [THORNODE_API_CHAIN_PREFIX, 'thornodeApi'],
   ['/thorchain', 'thornodeApi'],
   ['/cosmos', 'thornodeApi'],
-  ['/chain/thorchain_rpc', 'thornodeRpc']
+  [THORNODE_RPC_CHAIN_PREFIX, 'thornodeRpc'],
+  // Keyed JSON-RPC is rewritten off `/chain/thorchain_rpc` onto the gateway root.
+  // Exact `/` only (`hasPrefix` does not treat `/` as a prefix of every path), so the
+  // follow-up request still receives the RPC key. `/health` stays untagged: the gateway answers that itself.
+  ['/', 'thornodeRpc']
 ]
 
 const hasPrefix = (pathname: string, prefix: string): boolean =>
@@ -139,15 +146,22 @@ export const getThornodeApiRootUrl = (url: string, keys: LiquifyKeys): string | 
   keys.thornodeApi ? toGatewayRootUrl(url, THORNODE_API_CHAIN_PREFIX, THORNODE_API_ROOT_PATHS) : null
 
 /**
+ * THORNode RPC with a key. The provider path `/chain/thorchain_rpc` answers 404 once `X-API-KEY` is set;
+ * the gateway routes that key at the root (`POST /` for JSON-RPC, `/status`, …). Keyless calls keep the
+ * provider path, which is the public route.
+ */
+export const getThornodeRpcRootUrl = (url: string, keys: LiquifyKeys): string | null =>
+  keys.thornodeRpc ? toGatewayRootUrl(url, THORNODE_RPC_CHAIN_PREFIX) : null
+
+/**
  * Root rewrite for any keyed provider-style route, or `null`.
  *
- * THORNode RPC (`/chain/thorchain_rpc`) is deliberately NOT rewritten (yet): the gateway picks the backend by
- * key, and at the root Tendermint RPC is bare (`/status`, `/abci_info`, JSON-RPC `POST /`, and `/health`, which
- * the gateway itself answers), so the path alone cannot tell RPC apart from other products for the key choice.
- * Decide (incl. the Ledger cosmjs endpoint in `ledger/thorchain/liquifyRpcEndpoints.ts`) once tested with a real RPC key.
+ * RPC included: a keyed `/chain/thorchain_rpc` request is 404. After the rewrite the request is
+ * `POST https://gateway.liquify.com/`, and `getLiquifyProduct` still tags that exact path as `thornodeRpc`
+ * so the RPC key is attached. `/health` is not tagged; the gateway answers it itself.
  */
 export const getLiquifyRootUrl = (url: string, keys: LiquifyKeys): string | null =>
-  getMidgardRootUrl(url, keys) ?? getThornodeApiRootUrl(url, keys)
+  getMidgardRootUrl(url, keys) ?? getThornodeApiRootUrl(url, keys) ?? getThornodeRpcRootUrl(url, keys)
 
 /**
  * Returns the request headers to send: a copy of `requestHeaders` plus `X-API-KEY` when
@@ -200,7 +214,7 @@ export const registerLiquifyAuth = (
 
   const filter = { urls: [`https://${LIQUIFY_GATEWAY_HOST}/*`] }
 
-  if (keys.midgard || keys.thornodeApi) {
+  if (keys.midgard || keys.thornodeApi || keys.thornodeRpc) {
     webRequest.onBeforeRequest(filter, (details, callback) => {
       const redirectURL = getLiquifyRootUrl(details.url, keys)
       callback(redirectURL ? { redirectURL } : {})

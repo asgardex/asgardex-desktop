@@ -1,6 +1,6 @@
 import { Network } from '@xchainjs/xchain-client'
 
-import { getLiquifyProduct, LIQUIFY_API_KEY_HEADER, sanitizeLiquifyKey } from '../../liquifyAuth'
+import { getThornodeRpcRootUrl, LIQUIFY_API_KEY_HEADER, sanitizeLiquifyKey } from '../../liquifyAuth'
 
 /**
  * Shape of a cosmjs `HttpEndpoint` (`@cosmjs/tendermint-rpc`): `{ url, headers }`.
@@ -18,8 +18,8 @@ export type RpcHttpEndpoint = { url: string; headers: Record<string, string> }
  * `{ url, headers: { 'X-API-KEY': key } }` instead of a string. The key therefore stays a header
  * (never in a URL), lives in main memory only and is never persisted, logged or sent over IPC.
  *
- * Only entries for exact `https://gateway.liquify.com` + RPC path get the header; custom URLs and the
- * Asgardex fallback are untouched. Mainnet only. Empty / unsafe key → the URLs are returned unchanged.
+ * The URL is the gateway root, not `/chain/thorchain_rpc`: that path is 404 once the key is sent.
+ * Custom URLs and the Asgardex fallback are untouched. Mainnet only. Empty / unsafe key → unchanged.
  *
  * The result is cast to `string[]` for the xchainjs typings; the object entries are valid at runtime.
  */
@@ -27,8 +27,10 @@ export const withLiquifyRpcHeaderKey = (urls: string[], network: Network, rawKey
   if (network !== Network.Mainnet) return urls
   const key = sanitizeLiquifyKey(rawKey)
   if (!key) return urls
-  const endpoints: Array<string | RpcHttpEndpoint> = urls.map((url) =>
-    getLiquifyProduct(url) === 'thornodeRpc' ? { url, headers: { [LIQUIFY_API_KEY_HEADER]: key } } : url
-  )
+  const keys = { midgard: '', thornodeApi: '', thornodeRpc: key }
+  const endpoints: Array<string | RpcHttpEndpoint> = urls.map((url) => {
+    const root = getThornodeRpcRootUrl(url, keys)
+    return root ? { url: root, headers: { [LIQUIFY_API_KEY_HEADER]: key } } : url
+  })
   return endpoints as unknown as string[]
 }
