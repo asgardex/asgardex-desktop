@@ -350,6 +350,8 @@ type PoolsMessageKey =
   | 'pools.status.deposit.info'
   | 'pools.status.unknown'
   | 'pools.status.unknown.info'
+  | 'pools.status.operational'
+  | 'pools.status.operational.info'
   | 'pools.summary.liquidity'
   | 'pools.summary.pools'
   | 'pools.summary.volumeShare'

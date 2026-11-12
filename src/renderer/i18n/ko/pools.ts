@@ -18,6 +18,8 @@ const pools: PoolsMessages = {
   'pools.status.deposit.info': '이 풀에 대한 신규 입금이 일시 중지되었습니다. 스왑과 출금은 계속 가능합니다.',
   'pools.status.unknown': '상태 알 수 없음',
   'pools.status.unknown.info': '중단 상태를 불러오지 못했습니다. 상태를 확인할 때까지 스왑과 추가가 비활성화됩니다.',
+  'pools.status.operational': '정상',
+  'pools.status.operational.info': '스왑, 입금, 출금이 가능합니다.',
   'pools.summary.liquidity': '총 유동성',
   'pools.summary.pools': '풀 {count}개',
   'pools.summary.volumeShare': '유동성의 {percent}%',

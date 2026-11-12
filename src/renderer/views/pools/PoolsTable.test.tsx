@@ -112,8 +112,9 @@ describe('views/pools/PoolsTable', () => {
     const btc = rowOf('BTC')
     expect(btc.querySelector('[data-testid="pool-status-chip"]')?.textContent).toBe('Deposits paused')
     // status sits between Pool and Price, not in the Pool cell and not after the numbers
-    const headers = Array.from(container.querySelectorAll('thead th')).map((th) => th.textContent?.trim())
-    expect(headers.slice(1, 4)).toEqual(['Pool', 'Status', 'Price'])
+    const headers = Array.from(container.querySelectorAll('thead th'))
+    expect(headers.map((th) => th.textContent?.trim()).slice(1, 4)).toEqual(['Pool', 'Status', 'Price'])
+    expect(headers[2].className).toContain('text-left')
     expect(btc.querySelectorAll('td')[1].querySelector('[data-testid="pool-status-chip"]')).toBeNull()
     expect(btc.querySelectorAll('td')[2].querySelector('[data-testid="pool-status-chip"]')).not.toBeNull()
     // deposit pause: swap works, add is disabled with its reason
@@ -131,10 +132,11 @@ describe('views/pools/PoolsTable', () => {
     expect(button(doge, 'Swap').getAttribute('aria-disabled')).toBe('true')
     expect(button(doge, 'Add').getAttribute('aria-disabled')).toBe('true')
 
-    // no status: a neutral dash in the status column, all actions enabled
+    // no halt: Operational, and actions stay enabled
     const eth = rowOf('ETH')
-    expect(eth.querySelector('[data-testid="pool-status-chip"]')).toBeNull()
-    expect(eth.querySelectorAll('td')[2].textContent).toBe('--')
+    const operational = eth.querySelector('[data-testid="pool-status-chip"]')
+    expect(operational?.getAttribute('data-status')).toBe('operational')
+    expect(operational?.textContent).toBe('Operational')
     act(() => button(eth, 'Add').click())
     expect(props.onAdd).toHaveBeenCalledWith(ASSETS_MAINNET.ETH)
   })

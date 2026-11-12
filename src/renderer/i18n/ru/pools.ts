@@ -19,6 +19,8 @@ const pools: PoolsMessages = {
   'pools.status.unknown': 'Статус неизвестен',
   'pools.status.unknown.info':
     'Не удалось загрузить статус остановки. Обмен и добавление отключены, пока он неизвестен.',
+  'pools.status.operational': 'Работает',
+  'pools.status.operational.info': 'Обмены, депозиты и выводы доступны.',
   'pools.summary.liquidity': 'Общая ликвидность',
   'pools.summary.pools': 'Пулов: {count}',
   'pools.summary.volumeShare': '{percent}% ликвидности',

@@ -18,6 +18,8 @@ const pools: PoolsMessages = {
   'pools.status.deposit.info': 'इस पूल में नए जमा रुके हुए हैं। स्वैप और निकासी अभी भी काम करते हैं।',
   'pools.status.unknown': 'स्थिति अज्ञात',
   'pools.status.unknown.info': 'हॉल्ट स्थिति लोड नहीं हो सकी। स्थिति ज्ञात होने तक स्वैप और जोड़ें अक्षम हैं।',
+  'pools.status.operational': 'चालू',
+  'pools.status.operational.info': 'स्वैप, जमा और निकासी उपलब्ध हैं।',
   'pools.summary.liquidity': 'कुल लिक्विडिटी',
   'pools.summary.pools': '{count} पूल',
   'pools.summary.volumeShare': 'लिक्विडिटी का {percent}%',

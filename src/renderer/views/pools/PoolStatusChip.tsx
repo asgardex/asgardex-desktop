@@ -33,10 +33,38 @@ export const getPoolStatusMessages = (
 /** Chain or trading halts are highlighted (amber); LP / deposit pauses and an unknown status are neutral (grey) */
 export const isHaltStatus = ({ kind }: PoolStatus): boolean => kind === 'chain' || kind === 'trading'
 
+const CHIP =
+  'inline-flex items-center gap-1.5 rounded-full border px-2 py-1 font-main text-[11px] leading-none whitespace-nowrap border-gray0 bg-bg2 dark:border-gray0d dark:bg-bg2d/40'
+
 type Props = {
   status: PoolStatus
   chain: string
   className?: string
+}
+
+/** Healthy pool: same chip shape as a limited status, so the column lines up. */
+export const OperationalStatus = ({ className }: { className?: string }): JSX.Element => {
+  const intl = useIntl()
+  const label = intl.formatMessage({ id: 'pools.status.operational' })
+  const info = intl.formatMessage({ id: 'pools.status.operational.info' })
+  return (
+    <Tooltip title={info} size="big">
+      <span
+        tabIndex={0}
+        aria-label={`${label}. ${info}`}
+        data-testid="pool-status-chip"
+        data-status="operational"
+        className={clsx(
+          CHIP,
+          'text-text2 dark:text-text2d',
+          'focus-visible:ring-2 focus-visible:ring-turquoise focus-visible:outline-none',
+          className
+        )}>
+        <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-turquoise" />
+        {label}
+      </span>
+    </Tooltip>
+  )
 }
 
 /**
@@ -53,8 +81,8 @@ export const PoolStatusChip = ({ status, chain, className }: Props): JSX.Element
         data-testid="pool-status-chip"
         data-status={status.kind}
         className={clsx(
-          'inline-flex cursor-help items-center gap-1.5 rounded-full border px-2 py-1 font-main text-[11px] leading-none whitespace-nowrap',
-          'border-gray0 bg-bg2 text-text2 dark:border-gray0d dark:bg-bg2d/40 dark:text-text2d',
+          CHIP,
+          'cursor-help text-text2 dark:text-text2d',
           'focus-visible:ring-2 focus-visible:ring-turquoise focus-visible:outline-none',
           className
         )}>

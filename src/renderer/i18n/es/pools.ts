@@ -22,6 +22,8 @@ const pools: PoolsMessages = {
   'pools.status.unknown': 'Estado desconocido',
   'pools.status.unknown.info':
     'No se pudo cargar el estado de pausa. Swap y Añadir están desactivados hasta que se conozca.',
+  'pools.status.operational': 'Operativo',
+  'pools.status.operational.info': 'Los swaps, depósitos y retiros están disponibles.',
   'pools.summary.liquidity': 'Liquidez total',
   'pools.summary.pools': '{count} pools',
   'pools.summary.volumeShare': '{percent} % de la liquidez',
