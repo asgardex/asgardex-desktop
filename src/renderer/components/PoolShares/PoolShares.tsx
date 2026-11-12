@@ -3,13 +3,12 @@ import { useMemo } from 'react'
 import { ArrowUpIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 
-import { AnyAsset, baseAmount, baseToAsset, Chain, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
+import { AnyAsset, baseAmount, baseToAsset, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { AssetRuneNative, THORChain, AssetCacao } from '../../../shared/utils/chainIds'
 
-import * as PoolHelpers from '../../helpers/poolHelper'
-import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
+import { isWithdrawDisabled } from '../../helpers/haltedChains'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { MimirHalt as MayaMimirHalt } from '../../services/mayachain/types'
 import { MimirHalt } from '../../services/thorchain/types'
@@ -26,11 +25,14 @@ export type Props = {
   priceAsset: AnyAsset | undefined
   network: Network
   openShareInfo: FP.Lazy<void>
-  haltedChains: Chain[]
-  mimirHalt: MimirHalt | MayaMimirHalt
+  /**
+   * Proven halts only (`withdrawMimirHalt` of the mimir halt hooks). Manage opens the withdraw form, so it follows
+   * the node withdraw rule (chain halt or LP pause); an unknown halt status must not lock LP positions.
+   */
+  withdrawMimirHalt: MimirHalt | MayaMimirHalt
 }
 
-export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, haltedChains, mimirHalt }: Props) => {
+export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, withdrawMimirHalt }: Props) => {
   const { protocol } = useApp()
   const intl = useIntl()
 
@@ -133,14 +135,11 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
         header: '',
         cell: ({ row }) => {
           const { asset, type } = row.original
-          const disablePool =
-            protocol === THORChain
-              ? PoolHelpers.disableAllActions({ chain: asset.chain, haltedChains, mimirHalt: mimirHalt as MimirHalt })
-              : PoolHelpersMaya.disableAllActions({
-                  chain: asset.chain,
-                  haltedChains,
-                  mimirHalt: mimirHalt as MayaMimirHalt
-                })
+          const disablePool = isWithdrawDisabled({
+            chain: asset.chain,
+            protocol,
+            confirmedMimirHalt: withdrawMimirHalt
+          })
 
           return (
             <div className="flex items-center justify-center">
@@ -161,7 +160,7 @@ export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, 
         enableSorting: false
       }
     ],
-    [haltedChains, intl, isDesktopView, isXLargeScreen, mimirHalt, network, priceAsset, protocol, protocolAsset]
+    [intl, isDesktopView, isXLargeScreen, network, priceAsset, protocol, protocolAsset, withdrawMimirHalt]
   )
 
   const renderAnalyticsInfo = useMemo(() => {

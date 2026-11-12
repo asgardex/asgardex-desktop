@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon as SyncOutlined } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 
-import { Address, AnyAsset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, baseAmount, BaseAmount } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -25,17 +25,13 @@ import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { sequenceTOption } from '../../helpers/fpHelpers'
-import { resolveHaltState } from '../../helpers/haltedChains'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useNetwork } from '../../hooks/useNetwork'
-import { useObservableLayoutState } from '../../hooks/useObservableLayoutState'
 import { usePoolShares } from '../../hooks/usePoolShares'
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_MAYA } from '../../services/mayachain/const'
-import { UNKNOWN_MIMIR_HALT as UNKNOWN_MIMIR_HALT_THOR } from '../../services/thorchain/const'
 import { useApp } from '../../store/app/hooks'
 import * as H from './PoolShareView.helper'
 
@@ -52,8 +48,7 @@ export const PoolShareView = (): JSX.Element => {
         poolsState$,
         selectedPricePool$: selectedPricePoolThor$,
         selectedPricePoolAsset$,
-        reloadAllPools,
-        haltedChains$: haltedChainsThor$
+        reloadAllPools
       },
       reloadNetworkInfo
     }
@@ -66,8 +61,7 @@ export const PoolShareView = (): JSX.Element => {
         poolsState$: mayaPoolsState$,
         selectedPricePool$: selectedPricePoolMaya$,
         selectedPricePoolAsset$: selectedPricePoolMayaAsset$,
-        reloadAllPools: reloadAllMayaPools,
-        haltedChains$: haltedMayaChains$
+        reloadAllPools: reloadAllMayaPools
       },
       reloadNetworkInfo: reloadMayaNetworkInfo
     }
@@ -102,25 +96,11 @@ export const PoolShareView = (): JSX.Element => {
   }, [addressByChain$, protocol])
 
   const isThorProtocol = protocol === THORChain
-  const haltedChainsRD$ = useMemo(
-    () =>
-      (isThorProtocol ? haltedChainsThor$ : haltedMayaChains$).pipe(
-        // Synchronous, so a protocol switch does not keep the other protocol's halted list.
-        RxOp.startWith(RD.initial as RD.RemoteData<Error, Chain[]>)
-      ),
-    [haltedChainsThor$, haltedMayaChains$, isThorProtocol]
-  )
-  const haltedChainsRD = useObservableLayoutState(haltedChainsRD$, RD.initial as RD.RemoteData<Error, Chain[]>)
-  const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt(isThorProtocol)
-  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt(!isThorProtocol)
-  // A failed / unloaded `inbound_addresses` is "unknown" (blocks LP actions), never "no halted chains"
-  const { haltedChains, mimirHalt } = useMemo(
-    () =>
-      isThorProtocol
-        ? resolveHaltState(haltedChainsRD, mimirHaltThor, UNKNOWN_MIMIR_HALT_THOR)
-        : resolveHaltState(haltedChainsRD, mimirHaltMaya, UNKNOWN_MIMIR_HALT_MAYA),
-    [haltedChainsRD, isThorProtocol, mimirHaltMaya, mimirHaltThor]
-  )
+  // Manage opens the withdraw form: proven halts only (chain halt or LP pause), like the withdraw form itself.
+  // An unknown halt status (failed lastblock / inbound_addresses) must not lock LP positions.
+  const { withdrawMimirHalt: withdrawMimirHaltThor } = useThorchainMimirHalt(isThorProtocol)
+  const { withdrawMimirHalt: withdrawMimirHaltMaya } = useMayachainMimirHalt(!isThorProtocol)
+  const withdrawMimirHalt = isThorProtocol ? withdrawMimirHaltThor : withdrawMimirHaltMaya
   const poolDetailsRD = useObservableState(allPoolDetails$, RD.pending)
   const { poolData: pricePoolData } = useObservableState(
     selectedPricePool$,
@@ -155,8 +135,7 @@ export const PoolShareView = (): JSX.Element => {
       previousPoolShares.current = O.some(data)
       return (
         <PoolSharesTable
-          haltedChains={haltedChains}
-          mimirHalt={mimirHalt}
+          withdrawMimirHalt={withdrawMimirHalt}
           loading={loading}
           data={data}
           priceAsset={priceAsset}
@@ -165,7 +144,7 @@ export const PoolShareView = (): JSX.Element => {
         />
       )
     },
-    [haltedChains, mimirHalt, priceAsset, openExternalShareInfo, network]
+    [withdrawMimirHalt, priceAsset, openExternalShareInfo, network]
   )
 
   const clickRefreshHandler = useCallback(() => {

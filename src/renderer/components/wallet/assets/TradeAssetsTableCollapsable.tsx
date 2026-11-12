@@ -71,7 +71,7 @@ export type TradeWalletBalance = Balance & {
 }
 export type TradeWalletBalances = TradeWalletBalance[]
 
-const loadingColumns: AppColumnDef<TradeWalletBalance>[] = [{ header: '', cell: () => null }]
+const loadingColumns: AppColumnDef<TradeWalletBalance>[] = [{ id: 'loading', header: '', cell: () => null }]
 
 type Props = {
   chainBalances: Rx.Observable<ChainBalances>

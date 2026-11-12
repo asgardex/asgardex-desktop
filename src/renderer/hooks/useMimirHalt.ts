@@ -48,10 +48,12 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0, includeUncertain = fal
 /**
  * `NodePauseChainGlobal` pauses all chains *until* a block height (not from it, as the other halts do).
  * THORNode: `value >= height` (x/thorchain/keeper/v1/keeper_halt.go, `IsChainHalted`)
- * Without height an unexpired pause cannot be proven; swaps conservatively apply positive values.
+ * Without height it is never active, not even for the conservative swap path: live mimir always carries an
+ * old, expired value, which would otherwise halt every chain. A real pause still reaches swaps through
+ * `inbound_addresses` `halted` (THORNode `IsChainHalted`). Only a malformed value stays uncertain.
  */
 export const isNodePauseActive = (mimir = 0, lastHeight = 0, includeUncertain = false) =>
-  !Number.isFinite(mimir) ? includeUncertain : mimir > 0 && (lastHeight > 0 ? mimir >= lastHeight : includeUncertain)
+  !Number.isFinite(mimir) ? includeUncertain : mimir > 0 && lastHeight > 0 && mimir >= lastHeight
 
 /**
  * Maps THORNode mimir to the `MimirHalt` flags the app reads (`poolHelper`, `AppHaltedChains`).
@@ -136,7 +138,7 @@ export type SharedMimirHaltStreams = {
    * Fresh mimir halts for swaps; uncertain keys or scheduled heights are applied conservatively.
    * - mimir and height known: the full status
    * - mimir known, height unknown (lastblock failed / pending / stalled): positive halts are applied conservatively,
-   *   including scheduled heights and `NODEPAUSECHAINGLOBAL`
+   *   including scheduled heights, but not `NODEPAUSECHAINGLOBAL` (see `isNodePauseActive`)
    * - mimir unknown or stale (`holdLastKnown`): no proven halt
    * `haltStatusUnknown` is `true` unless the full status is known. LP exits use `withdrawMimirHalt$` instead.
    */
