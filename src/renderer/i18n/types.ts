@@ -1406,6 +1406,20 @@ type SettingMessageKey =
   | 'settings.ledgerMode.lockWalletWarning'
   | 'settings.wallet.whitelist'
   | 'settings.wallet.customToken'
+  | 'settings.tab.dex'
+  | 'settings.tab.expert'
+  | 'settings.ledgerMode.enter'
+  | 'settings.ledgerMode.exit'
+  | 'settings.ledgerMode.lockToEnter'
+  | 'settings.slippage.title'
+  | 'settings.slippage.streaming'
+  | 'settings.slippage.trade'
+  | 'settings.expert.mayanodeRpc.title'
+  | 'settings.wallet.unlock.or'
+  | 'settings.wallet.unlock.vultisig'
+  | 'settings.wallet.noAddresses'
+  | 'settings.url.error.invalid'
+  | 'settings.url.error.testFailed'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 

@@ -1,3 +1,6 @@
 export { WalletSettings } from './WalletSettings'
 export { UnlockWalletSettings } from './UnlockWalletSettings'
 export { AppGeneralSettings } from './AppGeneralSettings'
+export { SettingsSection, SettingsSubsection } from './SettingsSection'
+export { SettingsSelect } from './SettingsSelect'
+export { SettingsTabs } from './SettingsTabs'

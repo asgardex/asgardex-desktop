@@ -30,6 +30,18 @@ type Props = {
   className?: string
 }
 
+/**
+ * URL syntax only: an absolute `http(s)://` URL with a host. Says nothing about whether the endpoint works.
+ */
+export const isValidUrlSyntax = (url: string): boolean => {
+  try {
+    const { protocol, hostname } = new URL(url)
+    return (protocol === 'http:' || protocol === 'https:') && hostname.length > 0
+  } catch {
+    return false
+  }
+}
+
 const EditableUrl = (props: Props): JSX.Element => {
   const { url: initialUrl, className, successMsg, loading = false, onChange = FP.constVoid, checkUrl$ } = props
 
@@ -48,8 +60,16 @@ const EditableUrl = (props: Props): JSX.Element => {
     reset,
     handleSubmit,
     getValues,
-    setError
+    setError,
+    clearErrors
   } = useForm<FormData>()
+
+  // Two different causes, one message each:
+  // - invalid: the URL itself is malformed (checked here, before any request)
+  // - test failed: a well-formed URL whose endpoint test failed. The handler's own error text is not shown, it
+  //   may call any failure an "invalid URL" and does not tell the cause.
+  const invalidUrlMsg = intl.formatMessage({ id: 'settings.url.error.invalid' })
+  const testFailedMsg = intl.formatMessage({ id: 'settings.url.error.testFailed' })
 
   const {
     state: testUrlState,
@@ -73,35 +93,49 @@ const EditableUrl = (props: Props): JSX.Element => {
       )
     )
     resetTestUrlState()
+    clearErrors('url')
+    if (!isValidUrlSyntax(urlToTest)) {
+      setError('url', { type: 'custom', message: invalidUrlMsg })
+      return
+    }
     subscribeTestUrlState(testUrl(urlToTest))
-  }, [editableUrl, getValues, resetTestUrlState, subscribeTestUrlState, testUrl, url])
+  }, [
+    clearErrors,
+    editableUrl,
+    getValues,
+    invalidUrlMsg,
+    resetTestUrlState,
+    setError,
+    subscribeTestUrlState,
+    testUrl,
+    url
+  ])
 
-  const renderTestUrlResult = useMemo(
-    () =>
-      FP.pipe(
-        testUrlState,
-        RD.fold(
-          () => <></>,
-          () => <></>,
-          (error) => (
-            <p className="mt-10px font-main text-[14px] text-error0 uppercase">{error?.message ?? error.toString()}</p>
-          ),
-          (_) => <p className="mt-10px font-main text-[14px] text-turquoise uppercase">{successMsg}</p>
-        )
-      ),
-    [successMsg, testUrlState]
-  )
+  // One message area for both modes: a form error (invalid URL, failed test on save) wins over a failed test
+  const errorMsg = errors.url?.message ?? (RD.isFailure(testUrlState) ? testFailedMsg : undefined)
+
+  const renderTestUrlResult = useMemo(() => {
+    if (errorMsg)
+      return (
+        <p role="alert" className="mt-2 font-main text-[13px] text-error0 dark:text-error0d">
+          {errorMsg}
+        </p>
+      )
+    if (RD.isSuccess(testUrlState)) return <p className="mt-2 font-main text-[13px] text-turquoise">{successMsg}</p>
+    return <></>
+  }, [errorMsg, successMsg, testUrlState])
 
   const renderUrl = useCallback(() => {
     const edit = () => {
       resetTestUrlState()
+      clearErrors('url')
       setEditableUrl(O.some(url))
     }
     return (
-      <div className="flex items-center">
+      <div className="flex max-w-full min-w-0 flex-wrap items-center justify-end gap-2">
         <TextButton
           className={clsx(
-            'flex items-center !p-0 text-[16px] whitespace-nowrap',
+            'flex max-w-full min-w-0 items-center !justify-start !p-0 text-left text-[16px] break-all whitespace-normal',
             loading ? 'cursor-not-allowed' : 'cursor-pointer'
           )}
           color="neutral"
@@ -111,7 +145,7 @@ const EditableUrl = (props: Props): JSX.Element => {
           loading={loading}
           onClick={edit}>
           {url}
-          <PencilSquareIcon className="dark:text0d ml-[5px] h-[20px] w-[20px] text-turquoise" />
+          <PencilSquareIcon className="dark:text0d ml-[5px] h-[20px] w-[20px] shrink-0 text-turquoise" />
         </TextButton>
         <BorderButton
           className="ml-10px"
@@ -124,21 +158,22 @@ const EditableUrl = (props: Props): JSX.Element => {
         </BorderButton>
       </div>
     )
-  }, [intl, loading, resetTestUrlState, runTestUrlHandler, testUrlState, url])
+  }, [clearErrors, intl, loading, resetTestUrlState, runTestUrlHandler, testUrlState, url])
 
   const renderEditableUrl = useCallback(
     (name: string) => {
       const cancel = () => {
         reset()
+        clearErrors('url')
         resetTestUrlState()
         setEditableUrl(O.none)
       }
       const submit = async ({ url: formUrl }: FormData) => {
         resetTestUrlState()
-        // Remove always trailing slash
-        const url = formUrl.replace(/\/$/, '')
-        if (!url) {
-          setError('url', { type: 'custom', message: 'url required' })
+        // Remove always trailing slash. Empty is already rejected by `required` before submit.
+        const url = formUrl.trim().replace(/\/$/, '')
+        if (!isValidUrlSyntax(url)) {
+          setError('url', { type: 'custom', message: invalidUrlMsg })
         } else {
           testUrlAsPromise(url)
             .then(
@@ -146,7 +181,7 @@ const EditableUrl = (props: Props): JSX.Element => {
                 RD.fold(
                   () => {},
                   () => {},
-                  (error) => setError('url', { type: 'custom', message: error.toString() }),
+                  () => setError('url', { type: 'custom', message: testFailedMsg }),
                   (_) => {
                     setEditableUrl(O.none)
                     onChange(url)
@@ -157,7 +192,7 @@ const EditableUrl = (props: Props): JSX.Element => {
               )
             )
             .catch((_) => {
-              setError('url', { type: 'custom', message: 'invalid url' })
+              setError('url', { type: 'custom', message: testFailedMsg })
             })
         }
       }
@@ -167,24 +202,29 @@ const EditableUrl = (props: Props): JSX.Element => {
           cancel()
         }
       }
+      // `required: true` sets message to '', so handleSubmit never calls submit and the empty field
+      // shows neither an alert nor a red border. A previous success line would stay up.
+      const submitHandlers = handleSubmit(submit, () => resetTestUrlState())
       return (
-        <form className="flex w-full flex-col" onSubmit={handleSubmit(submit)}>
-          <div className="flex w-full items-center">
-            <Input
-              id="url"
-              className={clsx(
-                'flex w-auto min-w-[300px] grow text-[16px]',
-                RD.isSuccess(testUrlState) ? '!ring-turquoise' : ''
-              )}
-              size="normal"
-              defaultValue={name}
-              autoFocus
-              uppercase={false}
-              {...register('url', { required: true })}
-              error={!!errors.url || RD.isFailure(testUrlState)}
-              onKeyDown={keyDownHandler}
-            />
-            <BaseButton className="!p-0 text-turquoise" onClick={handleSubmit(submit)} type="submit">
+        <form className="flex w-full min-w-0 flex-col" onSubmit={submitHandlers}>
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-1">
+            <div className="min-w-0 flex-1 basis-48">
+              <Input
+                id="url"
+                className={clsx(
+                  'text-[16px] focus:border-turquoise',
+                  RD.isSuccess(testUrlState) ? '!ring-2 !ring-turquoise' : ''
+                )}
+                size="normal"
+                defaultValue={name}
+                autoFocus
+                uppercase={false}
+                {...register('url', { required: invalidUrlMsg })}
+                error={!!errorMsg}
+                onKeyDown={keyDownHandler}
+              />
+            </div>
+            <BaseButton className="!p-0 text-turquoise" onClick={submitHandlers} type="submit">
               <CheckCircleIcon className="ml-[5px] h-[24px] w-[24px]" />
             </BaseButton>
             <BaseButton className="!p-0 text-error0" onClick={cancel}>
@@ -200,27 +240,29 @@ const EditableUrl = (props: Props): JSX.Element => {
               {intl.formatMessage({ id: 'common.test' })}
             </BorderButton>
           </div>
-          {errors.url && <p className="mt-10px font-main text-[14px] text-error0 uppercase">{errors.url.message}</p>}
         </form>
       )
     },
     [
-      errors.url,
+      clearErrors,
+      errorMsg,
       handleSubmit,
       intl,
+      invalidUrlMsg,
       onChange,
       register,
       reset,
       resetTestUrlState,
       runTestUrlHandler,
       setError,
+      testFailedMsg,
       testUrlAsPromise,
       testUrlState
     ]
   )
 
   return (
-    <div className={className}>
+    <div className={clsx('max-w-full min-w-0', className)}>
       {FP.pipe(editableUrl, O.fold(renderUrl, renderEditableUrl))}
       {renderTestUrlResult}
     </div>

@@ -133,7 +133,21 @@ const settings: SettingMessages = {
     'RPC-Endpunkt antwortet nicht. Überprüfe deine Verbindung oder versuche eine andere URL.',
   'settings.ledgerMode.lockWalletWarning': 'Wallet zuerst sperren, um in den Ledger-Modus zu wechseln',
   'settings.wallet.whitelist': 'Whitelist',
-  'settings.wallet.customToken': 'Benutzerdefinierter Token'
+  'settings.wallet.customToken': 'Benutzerdefinierter Token',
+  'settings.tab.dex': 'DEX',
+  'settings.tab.expert': 'Expertenmodus',
+  'settings.ledgerMode.enter': 'Ledger-Modus starten',
+  'settings.ledgerMode.exit': 'Ledger-Modus beenden',
+  'settings.ledgerMode.lockToEnter': 'Wallet sperren, um den Ledger-Modus zu starten',
+  'settings.slippage.title': 'Slippage-Toleranz',
+  'settings.slippage.streaming': 'Streaming-Swaps',
+  'settings.slippage.trade': 'Trade-Swaps',
+  'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
+  'settings.wallet.unlock.or': 'oder',
+  'settings.wallet.unlock.vultisig': 'Vultisig-Vault entsperren',
+  'settings.wallet.noAddresses': 'Keine Adressen verfügbar',
+  'settings.url.error.invalid': 'Ungültige URL. Bitte eine vollständige http://- oder https://-Adresse eingeben',
+  'settings.url.error.testFailed': 'URL-Test fehlgeschlagen. Der Endpunkt war nicht erreichbar oder hat nicht wie erwartet geantwortet'
 }
 
 export default settings

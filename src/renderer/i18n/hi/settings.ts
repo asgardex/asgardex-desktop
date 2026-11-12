@@ -129,7 +129,21 @@ const settings: SettingMessages = {
   'settings.evm.rpc.unhealthy': 'RPC एंडपॉइंट प्रतिक्रिया नहीं दे रहा है। अपना कनेक्शन जांचें या कोई अलग URL आज़माएं।',
   'settings.ledgerMode.lockWalletWarning': 'Ledger मोड में प्रवेश करने के लिए पहले वॉलेट लॉक करें',
   'settings.wallet.whitelist': 'व्हाइटलिस्ट',
-  'settings.wallet.customToken': 'कस्टम टोकन'
+  'settings.wallet.customToken': 'कस्टम टोकन',
+  'settings.tab.dex': 'DEX',
+  'settings.tab.expert': 'विशेषज्ञ मोड',
+  'settings.ledgerMode.enter': 'लेजर मोड में प्रवेश करें',
+  'settings.ledgerMode.exit': 'लेजर मोड से बाहर निकलें',
+  'settings.ledgerMode.lockToEnter': 'लेजर मोड में प्रवेश करने के लिए वॉलेट लॉक करें',
+  'settings.slippage.title': 'स्लिपेज सहनशीलता',
+  'settings.slippage.streaming': 'स्ट्रीमिंग स्वैप',
+  'settings.slippage.trade': 'ट्रेड स्वैप',
+  'settings.expert.mayanodeRpc.title': 'MAYANode RPC',
+  'settings.wallet.unlock.or': 'या',
+  'settings.wallet.unlock.vultisig': 'वल्टिसिग वॉल्ट अनलॉक करें',
+  'settings.wallet.noAddresses': 'कोई पता उपलब्ध नहीं है',
+  'settings.url.error.invalid': 'अमान्य URL. पूरा http:// या https:// पता दर्ज करें',
+  'settings.url.error.testFailed': 'URL परीक्षण विफल रहा. एंडपॉइंट तक नहीं पहुंचा जा सका या उसने अपेक्षित जवाब नहीं दिया'
 }
 
 export default settings

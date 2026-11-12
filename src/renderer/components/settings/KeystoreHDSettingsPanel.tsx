@@ -103,7 +103,7 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
   }
 
   return (
-    <div className="mt-10px flex flex-col gap-1.5 px-40px">
+    <div className="mt-2 flex flex-col gap-1.5 px-2">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Label size="small" color="gray" className="!w-auto !p-0">
           {intl.formatMessage({ id: profileLabelId(chain, settings) })}
@@ -114,7 +114,7 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
       </div>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <label className="flex items-center gap-1.5 text-[11px] tracking-[0.42px] text-text2 dark:text-text2d">
+        <label className="flex items-center gap-1.5 font-main text-[11px] tracking-wider text-gray2 uppercase dark:text-gray2d">
           {intl.formatMessage({ id: 'settings.wallet.account' })}
           <input
             type="text"
@@ -133,7 +133,7 @@ export const KeystoreHDSettingsPanel = ({ chain, network }: Props): JSX.Element 
             className={slotInputClass}
           />
         </label>
-        <label className="flex items-center gap-1.5 text-[11px] tracking-[0.42px] text-text2 dark:text-text2d">
+        <label className="flex items-center gap-1.5 font-main text-[11px] tracking-wider text-gray2 uppercase dark:text-gray2d">
           {intl.formatMessage({ id: 'settings.wallet.index' })}
           <input
             type="text"

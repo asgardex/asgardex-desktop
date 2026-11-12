@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -20,8 +19,9 @@ import {
 import { CheckThornodeNodeUrlHandler, CheckThornodeRpcUrlHandler } from '../../services/thorchain/types'
 import { TextButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
-import { RadioGroup } from '../uielements/radioGroup'
 import EditableUrl from './EditableUrl'
+import { SettingsRadioGroup } from './SettingsRadioGroup'
+import { SettingsSection, SettingsSubsection } from './SettingsSection'
 
 export type CheckEvmRpcUrlHandler = (url: string) => LiveData<Error, string>
 
@@ -62,52 +62,11 @@ type Props = {
   onChangeGasMultiplier: (multiplier: GasMultiplier) => void
 }
 
-type SubSectionProps = {
-  title: string
-  children?: React.ReactNode
-  className?: string
-  warning?: boolean
-  warningTooltip?: string
-}
-
 const expertModeDefault: Record<string, boolean> = {
   thorchain: false,
   mayachain: false,
   evm: false
 }
-
-const SubSection = ({ title, className, children, warning, warningTooltip }: SubSectionProps) => (
-  <div
-    className={clsx(
-      'flex w-full items-center justify-between px-4',
-      'border-solid border-gray0 last:mb-3 last:border-none dark:border-gray0d',
-      className
-    )}>
-    <div className="flex items-center gap-2">
-      <h2 className="mb-5px font-main text-[14px] text-gray1 uppercase dark:text-gray1d">{title}</h2>
-      {warning && <ExclamationTriangleIcon className="h-5 w-5 text-warning0" title={warningTooltip} />}
-    </div>
-    <div className="flex flex-col">{children}</div>
-  </div>
-)
-
-const Section = ({
-  title,
-  toggleHandler,
-  children
-}: {
-  title: string
-  toggleHandler?: React.ReactNode
-  children?: React.ReactNode
-}) => (
-  <div className="flex flex-col border-t border-solid border-gray0 first:border-none dark:border-gray0d">
-    <div className="flex items-center justify-between">
-      <h2 className="mb-5px px-4 py-3 font-main text-[18px] text-text2 uppercase dark:text-text2d">{title}</h2>
-      {toggleHandler}
-    </div>
-    {children}
-  </div>
-)
 
 export const AppExpertMode = (props: Props): JSX.Element => {
   const {
@@ -165,32 +124,34 @@ export const AppExpertMode = (props: Props): JSX.Element => {
     localStorage.setItem(ADVANCED_ACTIVE_STORAGE_KEY, JSON.stringify(advancedActive))
   }, [advancedActive])
 
+  const advancedToggle = (key: 'thorchain' | 'mayachain' | 'evm') => (
+    <div className="flex items-center justify-end gap-2">
+      <TextButton
+        className={clsx(
+          'mb-0 !py-0 !pr-2 !pl-0 font-main !text-14 text-text0 dark:text-text0d',
+          advancedActive[key] ? 'opacity-100' : 'opacity-60'
+        )}
+        onClick={() => setAdvancedActive((prev) => ({ ...prev, [key]: !prev[key] }))}>
+        {intl.formatMessage({ id: 'common.advanced' })}
+      </TextButton>
+      <SwitchButton
+        active={advancedActive[key]}
+        onChange={(active) => setAdvancedActive((prev) => ({ ...prev, [key]: active }))}
+      />
+    </div>
+  )
+
   return (
-    <div className="flex flex-col">
-      <Section
+    <div className="flex flex-col gap-3">
+      <SettingsSection
         title={intl.formatMessage({ id: 'settings.expert.thorchain.title' })}
-        toggleHandler={
-          <div className="flex items-center justify-end px-4 py-6">
-            <TextButton
-              className={clsx(
-                'mb-0 !py-0 !pr-10px !pl-0 font-main !text-14 text-text0 uppercase dark:text-text0d',
-                advancedActive ? 'opacity-100' : 'opacity-60'
-              )}
-              onClick={() => setAdvancedActive((prev) => ({ ...prev, thorchain: !prev.thorchain }))}>
-              {intl.formatMessage({ id: 'common.advanced' })}
-            </TextButton>
-            <SwitchButton
-              active={advancedActive.thorchain}
-              onChange={(active) => setAdvancedActive({ ...advancedActive, thorchain: active })}
-            />
-          </div>
-        }>
+        action={advancedToggle('thorchain')}>
         <div
           className={clsx(
             'flex-col transition-all duration-300 ease-in-out',
             advancedActive.thorchain ? 'flex' : 'hidden'
           )}>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.midgard.title' })}>
+          <SettingsSubsection title={intl.formatMessage({ id: 'settings.expert.midgard.title' })}>
             <EditableUrl
               className="w-full xl:w-3/4"
               url={midgardUrl}
@@ -199,8 +160,8 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               checkUrl$={checkMidgardUrl$}
               successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
             />
-          </SubSection>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeApi.title' })}>
+          </SettingsSubsection>
+          <SettingsSubsection title={intl.formatMessage({ id: 'settings.expert.thornodeApi.title' })}>
             <EditableUrl
               className="w-full xl:w-3/4"
               url={thornodeNodeUrl}
@@ -208,8 +169,8 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               checkUrl$={checkThornodeNodeUrl$}
               successMsg={intl.formatMessage({ id: 'settings.thornode.node.valid' })}
             />
-          </SubSection>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.thornodeRpc.title' })}>
+          </SettingsSubsection>
+          <SettingsSubsection title={intl.formatMessage({ id: 'settings.expert.thornodeRpc.title' })}>
             <EditableUrl
               className="w-full xl:w-3/4"
               url={thornodeRpcUrl}
@@ -217,33 +178,18 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               checkUrl$={checkThornodeRpcUrl$}
               successMsg={intl.formatMessage({ id: 'settings.thornode.rpc.valid' })}
             />
-          </SubSection>
+          </SettingsSubsection>
         </div>
-      </Section>
-      <Section
+      </SettingsSection>
+      <SettingsSection
         title={intl.formatMessage({ id: 'settings.expert.mayachain.title' })}
-        toggleHandler={
-          <div className="flex items-center justify-end px-4 py-6">
-            <TextButton
-              className={clsx(
-                'mb-0 !py-0 !pr-10px !pl-0 font-main !text-14 text-text0 uppercase dark:text-text0d',
-                advancedActive ? 'opacity-100' : 'opacity-60'
-              )}
-              onClick={() => setAdvancedActive((prev) => ({ ...prev, mayachain: !prev.mayachain }))}>
-              {intl.formatMessage({ id: 'common.advanced' })}
-            </TextButton>
-            <SwitchButton
-              active={advancedActive.mayachain}
-              onChange={(active) => setAdvancedActive({ ...advancedActive, mayachain: active })}
-            />
-          </div>
-        }>
+        action={advancedToggle('mayachain')}>
         <div
           className={clsx(
             'flex-col transition-all duration-300 ease-in-out',
             advancedActive.mayachain ? 'flex' : 'hidden'
           )}>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.midgardMaya.title' })}>
+          <SettingsSubsection title={intl.formatMessage({ id: 'settings.expert.midgardMaya.title' })}>
             <EditableUrl
               className="w-full"
               url={midgardMayaUrl}
@@ -252,8 +198,8 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               checkUrl$={checkMidgardMayaUrl$}
               successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
             />
-          </SubSection>
-          <SubSection title={intl.formatMessage({ id: 'settings.expert.mayanodeApi.title' })}>
+          </SettingsSubsection>
+          <SettingsSubsection title={intl.formatMessage({ id: 'settings.expert.mayanodeApi.title' })}>
             <EditableUrl
               className="w-full xl:w-3/4"
               url={mayanodeNodeUrl}
@@ -261,8 +207,8 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               checkUrl$={checkMayanodeNodeUrl$}
               successMsg={intl.formatMessage({ id: 'settings.mayanode.node.valid' })}
             />
-          </SubSection>
-          <SubSection title="MAYANode RPC">
+          </SettingsSubsection>
+          <SettingsSubsection title={intl.formatMessage({ id: 'settings.expert.mayanodeRpc.title' })}>
             <EditableUrl
               className="w-full xl:w-3/4"
               url={mayanodeRpcUrl}
@@ -270,31 +216,14 @@ export const AppExpertMode = (props: Props): JSX.Element => {
               checkUrl$={checkMayanodeRpcUrl$}
               successMsg={intl.formatMessage({ id: 'settings.mayanode.rpc.valid' })}
             />
-          </SubSection>
+          </SettingsSubsection>
         </div>
-      </Section>
-      <Section
-        title={intl.formatMessage({ id: 'settings.expert.evm.title' })}
-        toggleHandler={
-          <div className="flex items-center justify-end px-4 py-6">
-            <TextButton
-              className={clsx(
-                'mb-0 !py-0 !pr-10px !pl-0 font-main !text-14 text-text0 uppercase dark:text-text0d',
-                advancedActive ? 'opacity-100' : 'opacity-60'
-              )}
-              onClick={() => setAdvancedActive((prev) => ({ ...prev, evm: !prev.evm }))}>
-              {intl.formatMessage({ id: 'common.advanced' })}
-            </TextButton>
-            <SwitchButton
-              active={advancedActive.evm}
-              onChange={(active) => setAdvancedActive({ ...advancedActive, evm: active })}
-            />
-          </div>
-        }>
+      </SettingsSection>
+      <SettingsSection title={intl.formatMessage({ id: 'settings.expert.evm.title' })} action={advancedToggle('evm')}>
         <div
           className={clsx('flex-col transition-all duration-300 ease-in-out', advancedActive.evm ? 'flex' : 'hidden')}>
           {ethRpc && (
-            <SubSection
+            <SettingsSubsection
               title={intl.formatMessage({ id: 'settings.expert.evm.eth.title' })}
               warning={ethRpc.healthStatus === 'unhealthy'}
               warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
@@ -305,10 +234,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
                 checkUrl$={ethRpc.checkUrl$}
                 successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
               />
-            </SubSection>
+            </SettingsSubsection>
           )}
           {bscRpc && (
-            <SubSection
+            <SettingsSubsection
               title={intl.formatMessage({ id: 'settings.expert.evm.bsc.title' })}
               warning={bscRpc.healthStatus === 'unhealthy'}
               warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
@@ -319,10 +248,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
                 checkUrl$={bscRpc.checkUrl$}
                 successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
               />
-            </SubSection>
+            </SettingsSubsection>
           )}
           {arbRpc && (
-            <SubSection
+            <SettingsSubsection
               title={intl.formatMessage({ id: 'settings.expert.evm.arb.title' })}
               warning={arbRpc.healthStatus === 'unhealthy'}
               warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
@@ -333,10 +262,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
                 checkUrl$={arbRpc.checkUrl$}
                 successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
               />
-            </SubSection>
+            </SettingsSubsection>
           )}
           {avaxRpc && (
-            <SubSection
+            <SettingsSubsection
               title={intl.formatMessage({ id: 'settings.expert.evm.avax.title' })}
               warning={avaxRpc.healthStatus === 'unhealthy'}
               warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
@@ -347,10 +276,10 @@ export const AppExpertMode = (props: Props): JSX.Element => {
                 checkUrl$={avaxRpc.checkUrl$}
                 successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
               />
-            </SubSection>
+            </SettingsSubsection>
           )}
           {baseRpc && (
-            <SubSection
+            <SettingsSubsection
               title={intl.formatMessage({ id: 'settings.expert.evm.base.title' })}
               warning={baseRpc.healthStatus === 'unhealthy'}
               warningTooltip={intl.formatMessage({ id: 'settings.evm.rpc.unhealthy' })}>
@@ -361,22 +290,20 @@ export const AppExpertMode = (props: Props): JSX.Element => {
                 checkUrl$={baseRpc.checkUrl$}
                 successMsg={intl.formatMessage({ id: 'settings.evm.rpc.valid' })}
               />
-            </SubSection>
+            </SettingsSubsection>
           )}
         </div>
-      </Section>
-      <Section title={intl.formatMessage({ id: 'settings.expert.gasMultiplier.title' })}>
-        <SubSection title={intl.formatMessage({ id: 'settings.expert.gasMultiplier.description' })}>
-          <RadioGroup
-            options={GAS_MULTIPLIER_OPTIONS.map((m) => ({
-              label: `${m}x`,
-              value: m
-            }))}
-            activeIndex={GAS_MULTIPLIER_OPTIONS.indexOf(gasMultiplier)}
-            onChange={(index) => onChangeGasMultiplier(GAS_MULTIPLIER_OPTIONS[index] as GasMultiplier)}
+      </SettingsSection>
+      <SettingsSection title={intl.formatMessage({ id: 'settings.expert.gasMultiplier.title' })}>
+        <SettingsSubsection title={intl.formatMessage({ id: 'settings.expert.gasMultiplier.description' })}>
+          <SettingsRadioGroup
+            ariaLabel={intl.formatMessage({ id: 'settings.expert.gasMultiplier.title' })}
+            options={GAS_MULTIPLIER_OPTIONS.map((multiplier) => ({ value: multiplier, label: `${multiplier}x` }))}
+            value={gasMultiplier}
+            onChange={(multiplier) => onChangeGasMultiplier(multiplier as GasMultiplier)}
           />
-        </SubSection>
-      </Section>
+        </SettingsSubsection>
+      </SettingsSection>
     </div>
   )
 }

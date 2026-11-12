@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { useIntl } from 'react-intl'
 
-import { Tabs } from '../../components/tabs'
+import { SettingsTabs } from '../../components/settings'
 import { WalletSettingsAuth } from '../wallet/WalletSettingsAuth'
 import { AppDexSettingsView } from './AppDexSettingsView'
 import { AppExpertModeView } from './AppExpertModeView'
@@ -28,14 +28,13 @@ export const AppSettings = () => {
       {
         key: 'settings-dex',
         disabled: false,
-        label: 'DEX',
+        label: intl.formatMessage({ id: 'settings.tab.dex' }),
         content: <AppDexSettingsView />
       },
       {
         key: 'settings-expert',
         disabled: false,
-        // TODO: add locale
-        label: 'Expert Mode',
+        label: intl.formatMessage({ id: 'settings.tab.expert' }),
         content: <AppExpertModeView />
       }
     ],
@@ -43,8 +42,8 @@ export const AppSettings = () => {
   )
 
   return (
-    <div className="flex-row rounded-lg bg-bg0 dark:bg-bg0d">
-      <Tabs className="rounded-lg" tabs={tabs} defaultIndex={0} />
+    <div className="rounded-lg bg-bg0 p-4 dark:bg-bg0d">
+      <SettingsTabs tabs={tabs} defaultIndex={0} />
     </div>
   )
 }

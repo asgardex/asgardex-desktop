@@ -22,10 +22,10 @@ export const AutoComplete = ({
         <ListboxButton
           className={clsx(
             'relative block w-full rounded-lg border border-solid bg-bg0 py-1.5 pr-8 pl-3 text-left text-sm/6 text-text0 dark:bg-bg0d dark:text-text0d',
-            'focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25',
-            invalid ? 'border-error0 dark:border-error0d' : 'border-gray0 dark:border-gray0d'
+            'focus-visible:ring-2 focus-visible:ring-turquoise focus-visible:outline-none',
+            invalid ? 'border-error0 dark:border-error0d' : 'border-gray0 focus:border-turquoise dark:border-gray0d'
           )}>
-          <Label>{value ? value : placeholder.toUpperCase()}</Label>
+          <Label>{value ? value : placeholder}</Label>
           <ChevronDownIcon className="group pointer-events-none absolute top-2.5 right-2.5 size-4 stroke-text0 dark:stroke-text0d" />
         </ListboxButton>
       </div>

@@ -16,12 +16,12 @@ import * as walletRoutes from '../../routes/wallet'
 import { AVAILABLE_NETWORKS } from '../../services/const'
 import { isStandaloneLedgerMode } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
-import { DownIcon } from '../icons'
 import { BorderButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import { ExternalLinkIcon } from '../uielements/common'
-import { Dropdown } from '../uielements/dropdown'
 import { Label } from '../uielements/label'
+import { SettingsSection } from './SettingsSection'
+import { SettingsSelect } from './SettingsSelect'
 
 type Props = {
   version: string
@@ -34,27 +34,7 @@ type Props = {
   goToReleasePage: (version: string) => void
 }
 
-type SectionProps = {
-  title: string
-  subtitle: string
-  children?: React.ReactNode
-  className?: string
-}
-
-const Section = ({ title, subtitle, className, children }: SectionProps) => (
-  <div
-    className={clsx(
-      'flex w-full items-center justify-between px-4 py-6',
-      'border-b border-solid border-gray0 last:border-none dark:border-gray0d',
-      className
-    )}>
-    <div className="flex flex-col">
-      <h2 className="mb-5px font-main text-[16px] text-text2 uppercase dark:text-text2d">{title}</h2>
-      <span className="font-main text-gray1 dark:text-gray1d">{subtitle}</span>
-    </div>
-    <div className="flex flex-col">{children}</div>
-  </div>
-)
+const formatNetwork = (network: Network): string => network.charAt(0).toUpperCase() + network.slice(1)
 
 export const AppGeneralSettings = (props: Props) => {
   const {
@@ -106,28 +86,23 @@ export const AppGeneralSettings = (props: Props) => {
             className={clsx(
               'flex min-w-[222px] items-center px-10px py-2 font-main text-16 text-text1 dark:text-text1d',
               l === locale ? 'font-main-semi-bold' : 'font-main'
-            )}
-            onClick={() => changeLocale(l)}>
+            )}>
             {LOCALE_LABELS[l]}
           </div>
         ))
       ),
-    [changeLocale, locale]
+    [locale]
   )
 
   const renderLangMenu = useMemo(
     () => (
-      <Dropdown
-        trigger={
-          <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-            <h3 className="m-0 font-main text-[16px] leading-5 text-text1 dark:text-text1d">{LOCALE_LABELS[locale]}</h3>
-            <DownIcon />
-          </div>
-        }
+      <SettingsSelect
+        value={LOCALE_LABELS[locale]}
         options={langMenu}
+        onSelect={(index) => changeLocale(LOCALES[index])}
       />
     ),
-    [langMenu, locale]
+    [langMenu, locale, changeLocale]
   )
 
   const networkTextColor = useCallback((network: Network) => {
@@ -150,32 +125,26 @@ export const AppGeneralSettings = (props: Props) => {
         <div
           key={n}
           className={clsx(
-            'flex min-w-[222px] items-center px-10px py-2 text-16 uppercase',
+            'flex min-w-[222px] items-center px-10px py-2 text-16',
             n === network ? 'font-main-semi-bold' : 'font-main',
             networkTextColor(n)
-          )}
-          onClick={() => changeNetwork(n)}>
-          {n}
+          )}>
+          {formatNetwork(n)}
         </div>
       ))
     )
-  }, [changeNetwork, network, networkTextColor])
+  }, [network, networkTextColor])
 
   const renderNetworkMenu = useMemo(
     () => (
-      <Dropdown
-        trigger={
-          <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-            <h3 className={clsx('m-0 font-main text-[16px] leading-5 uppercase', networkTextColor(network))}>
-              {network}
-            </h3>
-            <DownIcon />
-          </div>
-        }
+      <SettingsSelect
+        value={formatNetwork(network)}
+        valueClassName={networkTextColor(network)}
         options={networkMenu}
+        onSelect={(index) => changeNetwork(AVAILABLE_NETWORKS[index])}
       />
     ),
-    [networkMenu, networkTextColor, network]
+    [networkMenu, networkTextColor, network, changeNetwork]
   )
 
   const checkUpdatesProps = useMemo(() => {
@@ -230,16 +199,8 @@ export const AppGeneralSettings = (props: Props) => {
             <Label color="error">{intl.formatMessage({ id: 'update.checkFailed' }, { error: message })}</Label>
           ),
           O.fold(
-            () => (
-              <Label color="dark" size="big" textTransform="uppercase">
-                {intl.formatMessage({ id: 'update.noUpdate' })}
-              </Label>
-            ),
-            (version) => (
-              <Label color="dark" size="big" textTransform="uppercase">
-                {intl.formatMessage({ id: 'update.description' }, { version })}
-              </Label>
-            )
+            () => <Label color="dark">{intl.formatMessage({ id: 'update.noUpdate' })}</Label>,
+            (version) => <Label color="dark">{intl.formatMessage({ id: 'update.description' }, { version })}</Label>
           )
         )
       ),
@@ -247,64 +208,73 @@ export const AppGeneralSettings = (props: Props) => {
   )
 
   return (
-    <div>
-      {/* // TODO: locale for subtitle */}
-      <Section
+    <div className="flex flex-col gap-3">
+      <SettingsSection
         title={intl.formatMessage({ id: 'common.network' })}
-        subtitle={intl.formatMessage({ id: 'settings.network.subtitle' })}>
-        {renderNetworkMenu}
-      </Section>
-      <Section
+        subtitle={intl.formatMessage({ id: 'settings.network.subtitle' })}
+        action={renderNetworkMenu}
+      />
+      <SettingsSection
         title={intl.formatMessage({ id: 'settings.language.title' })}
-        subtitle={intl.formatMessage({ id: 'settings.language.subtitle' })}>
-        {renderLangMenu}
-      </Section>
-      <Section
+        subtitle={intl.formatMessage({ id: 'settings.language.subtitle' })}
+        action={renderLangMenu}
+      />
+      <SettingsSection
         title={intl.formatMessage({ id: 'common.privateData' })}
-        subtitle={intl.formatMessage({ id: 'settings.privateData.subtitle' })}>
-        <SwitchButton active={isPrivate} onChange={changePrivateData} />
-      </Section>
-      <Section
+        subtitle={intl.formatMessage({ id: 'settings.privateData.subtitle' })}
+        action={<SwitchButton active={isPrivate} onChange={changePrivateData} />}
+      />
+      <SettingsSection
         title={intl.formatMessage({ id: 'settings.ledgerMode.title' })}
-        subtitle={intl.formatMessage({ id: 'settings.ledgerMode.subtitle' })}>
-        <div className="flex flex-col items-end gap-2">
-          {isInStandaloneLedgerMode && (
-            <BorderButton size="normal" onClick={handleChangeChainClick} className="flex items-center gap-2">
+        subtitle={intl.formatMessage({ id: 'settings.ledgerMode.subtitle' })}
+        action={
+          <div className="flex flex-col items-end gap-2">
+            {isInStandaloneLedgerMode && (
+              <BorderButton size="normal" onClick={handleChangeChainClick} className="flex items-center gap-2">
+                <CpuChipIcon width={16} height={16} />
+                {intl.formatMessage({ id: 'settings.chain.changeButton' })}
+              </BorderButton>
+            )}
+            <BorderButton
+              size="normal"
+              onClick={handleLedgerModeClick}
+              disabled={!isInStandaloneLedgerMode && isUnlocked}
+              className={`flex items-center gap-2 ${
+                !isInStandaloneLedgerMode && isUnlocked ? 'cursor-not-allowed opacity-50' : ''
+              }`}
+              title={
+                !isInStandaloneLedgerMode && isUnlocked
+                  ? intl.formatMessage({ id: 'settings.ledgerMode.lockToEnter' })
+                  : undefined
+              }>
               <CpuChipIcon width={16} height={16} />
-              {intl.formatMessage({ id: 'settings.chain.changeButton' })}
+              {isInStandaloneLedgerMode
+                ? intl.formatMessage({ id: 'settings.ledgerMode.exit' })
+                : intl.formatMessage({ id: 'settings.ledgerMode.enter' })}
             </BorderButton>
-          )}
-          <BorderButton
-            size="normal"
-            onClick={handleLedgerModeClick}
-            disabled={!isInStandaloneLedgerMode && isUnlocked}
-            className={`flex items-center gap-2 ${
-              !isInStandaloneLedgerMode && isUnlocked ? 'cursor-not-allowed opacity-50' : ''
-            }`}
-            title={!isInStandaloneLedgerMode && isUnlocked ? 'Lock wallet to enter Ledger mode' : undefined}>
-            <CpuChipIcon width={16} height={16} />
-            {isInStandaloneLedgerMode ? 'Exit Ledger Mode' : 'Enter Ledger Mode'}
-          </BorderButton>
-          {!isInStandaloneLedgerMode && isUnlocked && (
-            <span className="mt-1 text-xs text-warning0 dark:text-warning0d">
-              {intl.formatMessage({ id: 'settings.ledgerMode.lockWalletWarning' })}
-            </span>
-          )}
-        </div>
-      </Section>
-      <Section
-        title={intl.formatMessage({ id: 'settings.version.title' })}
-        subtitle={intl.formatMessage({ id: 'settings.version.subtitle' })}>
-        <div className="flex max-w-[240px] flex-col space-y-1">
-          <div className="flex min-w-[240px] items-center justify-between">
-            <Label color="dark" size="big" textTransform="uppercase">
-              v{version}
-            </Label>
-            <BorderButton size="normal" className="" {...checkUpdatesProps} />
+            {!isInStandaloneLedgerMode && isUnlocked && (
+              <span className="mt-1 text-xs text-warning0 dark:text-warning0d">
+                {intl.formatMessage({ id: 'settings.ledgerMode.lockWalletWarning' })}
+              </span>
+            )}
           </div>
-          {renderVersionUpdateResult}
-        </div>
-      </Section>
+        }
+      />
+      <SettingsSection
+        title={intl.formatMessage({ id: 'settings.version.title' })}
+        subtitle={intl.formatMessage({ id: 'settings.version.subtitle' })}
+        action={
+          <div className="flex max-w-[240px] flex-col space-y-1">
+            <div className="flex min-w-[240px] items-center justify-between">
+              <Label color="dark" size="big">
+                v{version}
+              </Label>
+              <BorderButton size="normal" className="" {...checkUpdatesProps} />
+            </div>
+            {renderVersionUpdateResult}
+          </div>
+        }
+      />
     </div>
   )
 }
