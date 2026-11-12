@@ -22,7 +22,7 @@ import {
 } from '../helpers/poolHelper'
 import { filterQuotableProtocols, isSwapDisabledForChains } from '../helpers/protocolTradingHalt'
 import { DEFAULT_MIMIR_HALT, UNKNOWN_MIMIR_HALT, getPoolDepositPauseMimirKey } from '../services/thorchain/const'
-import { Mimir } from '../services/thorchain/types'
+import { Mimir, MimirHalt } from '../services/thorchain/types'
 import { isProtocolGloballyHalted } from '../views/app/AppHaltedChains.helpers'
 import thorLastblock from './__fixtures__/thornode-mainnet-chains-halted-lp-paused/lastblock.json'
 import thorMimir from './__fixtures__/thornode-mainnet-chains-halted-lp-paused/mimir.json'
@@ -326,6 +326,36 @@ describe('hooks/useMimirHalt', () => {
     const chainHalted = ['BCH', 'BSC', 'BTC', 'DOGE', 'ETH', 'GAIA', 'LTC', 'TRON', 'ZEC']
     const tradingHalted = [...chainHalted, 'BASE', 'SOL']
 
+    describe('block height unknown (lastblock not loaded, failed or stalled)', () => {
+      // The fixture carries an expired NODEPAUSECHAINGLOBAL (28476550 < 28483475), as live mimir always does
+      const withoutPause: Mimir = { ...mimir, NODEPAUSECHAINGLOBAL: 0 }
+
+      it('the fixture NODEPAUSECHAINGLOBAL is expired at the fixture height', () => {
+        expect(mimir.NODEPAUSECHAINGLOBAL).toBe(28476550)
+        expect(mimir.NODEPAUSECHAINGLOBAL).toBeLessThan(lastHeight)
+      })
+
+      it('the expired NODEPAUSECHAINGLOBAL adds nothing: same result as with the pause key at 0', () => {
+        expect(getThorchainMimirHalt({ mimir, lastHeight: 0, chains })).toEqual(
+          getThorchainMimirHalt({ mimir: withoutPause, lastHeight: 0, chains })
+        )
+      })
+
+      it('chains not halted at the fixture height stay unhalted (AVAX, XRP, THORChain)', () => {
+        const known = getThorchainMimirHalt({ mimir, lastHeight, chains })
+        const unknown = getThorchainMimirHalt({ mimir, lastHeight: 0, chains })
+        ;(['HALTAVAXCHAIN', 'HALTXRPCHAIN', 'HALTTHORCHAIN'] as const).forEach((key) => {
+          expect(known[key]).toBe(false)
+          expect(unknown[key]).toBe(known[key])
+        })
+      })
+
+      it('guard: the chains halted by HALT{CHAIN}CHAIN = 1 stay halted', () => {
+        const unknown = getThorchainMimirHalt({ mimir, lastHeight: 0, chains })
+        chainHalted.forEach((chain) => expect(unknown[`HALT${chain}CHAIN` as keyof MimirHalt]).toBe(true))
+      })
+    })
+
     it('reads the fixture height', () => {
       expect(lastHeight).toBe(28483475)
     })
@@ -442,9 +472,12 @@ describe('hooks/useMimirHalt', () => {
       expect(pause(0).HALTBTCCHAIN).toBe(false)
     })
 
-    it('NODEPAUSECHAINGLOBAL is conservative without height unless proven halts are requested', () => {
+    it('NODEPAUSECHAINGLOBAL is never active without height, not even for the conservative swap path', () => {
+      // Live mimir always carries an old, expired NODEPAUSECHAINGLOBAL, so without a height it can't count as
+      // a pause. A real pause still reaches swaps through inbound_addresses `halted` (THORNode IsChainHalted).
       const input = { mimir: { NODEPAUSECHAINGLOBAL: 100 }, chains }
-      expect(getThorchainMimirHalt(input).HALTBTCCHAIN).toBe(true)
+      expect(getThorchainMimirHalt(input).HALTBTCCHAIN).toBe(false)
+      expect(getThorchainMimirHalt(input).HALTTHORCHAIN).toBe(false)
       expect(getThorchainMimirHalt({ ...input, includeUncertain: false }).HALTBTCCHAIN).toBe(false)
     })
 
@@ -770,11 +803,20 @@ describe('hooks/useMimirHalt', () => {
       }
     )
 
-    it('no halt in mimir + lastblock Failure: unknown (deposits blocked) but swaps are not blocked', () => {
-      setup({}, lastblockDown)
+    it('live fixture mimir + lastblock Failure: unknown (deposits blocked), unhalted chains still quote', () => {
+      // Real mimir, incl. its expired NODEPAUSECHAINGLOBAL (an empty `{}` never happens on mainnet)
+      setup(thorMimir, lastblockDown)
       const { get, unmount } = mount()
       expectDepositsAndRuneBlocked(get())
-      expect(quotable(get())).toEqual(['Thorchain', 'Chainflip'])
+      const quotableFor = (from: string, to: string) =>
+        filterQuotableProtocols(['Thorchain', 'Chainflip'], assetFromStringEx(from), assetFromStringEx(to), {
+          thor: swap(get()),
+          maya: { haltedChains: [], mimirHalt: {} as never }
+        } as never)
+      // AVAX and ARB have no halt key in the fixture
+      expect(quotableFor('AVAX.AVAX', 'ARB.ETH')).toEqual(['Thorchain', 'Chainflip'])
+      // guard: BTC is halted by HALTBTCCHAIN = 1
+      expect(quotable(get())).toEqual(['Chainflip'])
       unmount()
     })
 
@@ -825,14 +867,10 @@ describe('hooks/useMimirHalt', () => {
 })
 
 describe('conservative per-key halt uncertainty', () => {
-  it.each(['HALTBTCCHAIN', 'HALTBTCTRADING', 'PAUSELPBTC', 'NODEPAUSECHAINGLOBAL'])(
-    'applies scheduled %s for swaps without height',
-    (key) => {
-      const result = getThorchainMimirHalt({ mimir: { [key]: 200 }, lastHeight: 0, chains: ['BTC', 'ETH'] })
-      const flag = (key === 'NODEPAUSECHAINGLOBAL' ? 'HALTBTCCHAIN' : key) as keyof typeof result
-      expect(result[flag]).toBe(true)
-    }
-  )
+  it.each(['HALTBTCCHAIN', 'HALTBTCTRADING', 'PAUSELPBTC'])('applies scheduled %s for swaps without height', (key) => {
+    const result = getThorchainMimirHalt({ mimir: { [key]: 200 }, lastHeight: 0, chains: ['BTC', 'ETH'] })
+    expect(result[key as keyof typeof result]).toBe(true)
+  })
   it('confines a malformed chain halt to its chain, and never proves it for withdraw', () => {
     const input = { mimir: { HALTBTCCHAIN: Number.NaN, HALTETHCHAIN: 0 }, lastHeight: 100, chains: ['BTC', 'ETH'] }
     expect(getThorchainMimirHalt(input).HALTBTCCHAIN).toBe(true)

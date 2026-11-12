@@ -128,6 +128,39 @@ describe('hooks/useMimirHaltMaya', () => {
     const lastHeight = mayaLastblock.find(({ mayachain }) => mayachain > 0)?.mayachain ?? 0
     const chains = ['DASH', 'BTC', 'ETH', 'THOR', 'MAYA', 'ARB', 'ZEC', 'ADA']
 
+    describe('block height unknown (lastblock not loaded, failed or stalled)', () => {
+      // The fixture carries an expired NODEPAUSECHAINGLOBAL (16576652 < 19095919), as live mimir always does
+      const withoutPause: Mimir = { ...mimir, NODEPAUSECHAINGLOBAL: 0 }
+
+      it('the fixture NODEPAUSECHAINGLOBAL is expired at the fixture height', () => {
+        expect(mimir.NODEPAUSECHAINGLOBAL).toBe(16576652)
+        expect(mimir.NODEPAUSECHAINGLOBAL).toBeLessThan(lastHeight)
+      })
+
+      it('the expired NODEPAUSECHAINGLOBAL adds nothing: same result as with the pause key at 0', () => {
+        expect(getMayachainMimirHalt({ mimir, lastHeight: 0, chains })).toEqual(
+          getMayachainMimirHalt({ mimir: withoutPause, lastHeight: 0, chains })
+        )
+      })
+
+      it('no chain is halted, as at the fixture height (MAYAChain included)', () => {
+        const known = getMayachainMimirHalt({ mimir, lastHeight, chains })
+        const unknown = getMayachainMimirHalt({ mimir, lastHeight: 0, chains })
+        ;[...chains, 'MAYA'].forEach((chain) => {
+          const key = `HALT${chain}CHAIN` as keyof typeof known
+          expect(known[key]).toBe(false)
+          expect(unknown[key]).toBe(known[key])
+        })
+      })
+
+      it('guard: the BTC, ETH and ZEC trading halts (= 1) stay active', () => {
+        const unknown = getMayachainMimirHalt({ mimir, lastHeight: 0, chains })
+        expect(unknown.HALTBTCTRADING).toBe(true)
+        expect(unknown.HALTETHTRADING).toBe(true)
+        expect(unknown.HALTZECTRADING).toBe(true)
+      })
+    })
+
     it('reads the fixture height', () => {
       expect(lastHeight).toBe(19095919)
     })
@@ -238,7 +271,10 @@ describe('hooks/useMimirHaltMaya', () => {
       expect(pause(101).HALTMAYACHAIN).toBe(true)
       expect(pause(100).HALTBTCCHAIN).toBe(false)
       expect(pause(0).HALTBTCCHAIN).toBe(false)
-      expect(getMayachainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: 100 }, chains }).HALTBTCCHAIN).toBe(true)
+      // Never active without height: live mimir always carries an old, expired NODEPAUSECHAINGLOBAL.
+      // A real pause still reaches swaps through inbound_addresses `halted` (MAYANode IsChainHalted).
+      expect(getMayachainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: 100 }, chains }).HALTBTCCHAIN).toBe(false)
+      expect(getMayachainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: 100 }, chains }).HALTMAYACHAIN).toBe(false)
       expect(
         getMayachainMimirHalt({ mimir: { NODEPAUSECHAINGLOBAL: 100 }, chains, includeUncertain: false }).HALTBTCCHAIN
       ).toBe(false)
@@ -532,11 +568,20 @@ describe('hooks/useMimirHaltMaya', () => {
       }
     )
 
-    it('no halt in mimir + lastblock Failure: unknown (deposits blocked) but swaps are not blocked', () => {
-      setup({}, lastblockDown)
+    it('live fixture mimir + lastblock Failure: unknown (deposits blocked), unhalted chains still quote', () => {
+      // Real mimir, incl. its expired NODEPAUSECHAINGLOBAL (an empty `{}` never happens on mainnet)
+      setup(mayaMimir, lastblockDown)
       const { get, unmount } = mount()
       expectDepositsAndRuneBlocked(get())
-      expect(quotable(get())).toEqual(['Mayachain', 'Chainflip'])
+      const quotableFor = (from: string, to: string) =>
+        filterQuotableProtocols(['Mayachain', 'Chainflip'], assetFromStringEx(from), assetFromStringEx(to), {
+          thor: { haltedChains: [], mimirHalt: {} as never },
+          maya: swap(get())
+        } as never)
+      // DASH and ARB have no halt key in the fixture
+      expect(quotableFor('DASH.DASH', 'ARB.ETH')).toEqual(['Mayachain', 'Chainflip'])
+      // guard: BTC and ETH trading are halted (= 1)
+      expect(quotable(get())).toEqual(['Chainflip'])
       unmount()
     })
 
@@ -587,14 +632,10 @@ describe('hooks/useMimirHaltMaya', () => {
 })
 
 describe('conservative per-key halt uncertainty', () => {
-  it.each(['HALTBTCCHAIN', 'HALTBTCTRADING', 'PAUSELPBTC', 'NODEPAUSECHAINGLOBAL'])(
-    'applies scheduled %s for swaps without height',
-    (key) => {
-      const result = getMayachainMimirHalt({ mimir: { [key]: 200 }, lastHeight: 0, chains: ['BTC', 'ETH'] })
-      const flag = (key === 'NODEPAUSECHAINGLOBAL' ? 'HALTBTCCHAIN' : key) as keyof typeof result
-      expect(result[flag]).toBe(true)
-    }
-  )
+  it.each(['HALTBTCCHAIN', 'HALTBTCTRADING', 'PAUSELPBTC'])('applies scheduled %s for swaps without height', (key) => {
+    const result = getMayachainMimirHalt({ mimir: { [key]: 200 }, lastHeight: 0, chains: ['BTC', 'ETH'] })
+    expect(result[key as keyof typeof result]).toBe(true)
+  })
   it('confines a malformed chain halt to its chain, and never proves it for withdraw', () => {
     const input = { mimir: { HALTBTCCHAIN: Number.NaN, HALTETHCHAIN: 0 }, lastHeight: 100, chains: ['BTC', 'ETH'] }
     expect(getMayachainMimirHalt(input).HALTBTCCHAIN).toBe(true)
