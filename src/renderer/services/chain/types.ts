@@ -71,6 +71,8 @@ export type DepositParams = {
   readonly walletType: WalletType
   readonly hdMode: HDMode
   readonly protocol: Chain
+  /** UTXO and ADA only. Sweep so the network fee comes out of the inputs. */
+  readonly sendMax?: boolean
 }
 
 export type SymDepositAmounts = { rune: BaseAmount; asset: BaseAmount }
