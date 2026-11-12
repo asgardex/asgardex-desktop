@@ -56,11 +56,12 @@ describe('main/api/liquifyAuth', () => {
       [`${GW}/thorchain/lastblock`, 'thornodeApi'],
       [`${GW}/cosmos/bank/v1beta1/balances/thor1abc`, 'thornodeApi'],
       [`${GW}/chain/thorchain_rpc/health`, 'thornodeRpc'],
-      [`${GW}/chain/thorchain_rpc`, 'thornodeRpc']
+      [`${GW}/chain/thorchain_rpc`, 'thornodeRpc'],
+      [`${GW}/`, 'thornodeRpc']
     ])('%s -> %s', (url, product) => {
       expect(getLiquifyProduct(url)).toBe(product)
     })
-    it.each([`${GW}/`, `${GW}/health`, `${GW}/chain/other`, `${GW}/chain/thorchain_midgardx/v2`, `${GW}/v2x/pools`])(
+    it.each([`${GW}/health`, `${GW}/chain/other`, `${GW}/chain/thorchain_midgardx/v2`, `${GW}/v2x/pools`])(
       'no product for %s',
       (url) => {
         expect(getLiquifyProduct(url)).toBeNull()
@@ -78,6 +79,7 @@ describe('main/api/liquifyAuth', () => {
         KEYS.thornodeApi
       )
       expect(withLiquifyAuthHeader(`${GW}/chain/thorchain_rpc/health`, {}, KEYS)['X-API-KEY']).toBe(KEYS.thornodeRpc)
+      expect(withLiquifyAuthHeader(`${GW}/`, {}, KEYS)['X-API-KEY']).toBe(KEYS.thornodeRpc)
       expect(withLiquifyAuthHeader(`${GW}/v2/health`, {}, KEYS)['X-API-KEY']).toBe(KEYS.midgard)
     })
 
@@ -226,14 +228,23 @@ describe('main/api/liquifyAuth', () => {
         redirectURL: `${GW}/thorchain/lastblock`
       })
       expect(runHeaders(`${GW}/thorchain/lastblock`, {}).requestHeaders).toEqual({ 'X-API-KEY': KEYS.thornodeApi })
-      expect(runRequest(`${GW}/chain/thorchain_rpc/status`)).toEqual({})
+      expect(runRequest(`${GW}/chain/thorchain_rpc`)).toEqual({ redirectURL: `${GW}/` })
+      expect(runRequest(`${GW}/chain/thorchain_rpc/status`)).toEqual({ redirectURL: `${GW}/status` })
+      expect(runHeaders(`${GW}/`).requestHeaders['X-API-KEY']).toBe(KEYS.thornodeRpc)
     })
 
-    it('does not register a root redirect with only an RPC key', () => {
-      const { webRequest, onBeforeRequest, onBeforeSendHeaders } = createWebRequest()
+    it('rewrites keyed THORNode RPC to the gateway root and still attaches the RPC key', () => {
+      const { webRequest, onBeforeRequest, onBeforeSendHeaders, runHeaders, runRequest } = createWebRequest()
       expect(registerLiquifyAuth(webRequest, { ...NO_KEYS, thornodeRpc: 'fake-rpc-key' })).toEqual(['thornodeRpc'])
-      expect(onBeforeRequest).not.toHaveBeenCalled()
+      expect(onBeforeRequest).toHaveBeenCalledTimes(1)
       expect(onBeforeSendHeaders).toHaveBeenCalledTimes(1)
+      expect(runRequest(`${GW}/chain/thorchain_rpc`)).toEqual({ redirectURL: `${GW}/` })
+      expect(runRequest(`${GW}/chain/thorchain_rpc/status`)).toEqual({ redirectURL: `${GW}/status` })
+      expect(runRequest(`${GW}/chain/thorchain_midgard/v2/pools`)).toEqual({})
+      expect(runRequest(`${GW}/chain/thorchain_api/thorchain/lastblock`)).toEqual({})
+      expect(runHeaders(`${GW}/`).requestHeaders).toEqual({ 'X-API-KEY': 'fake-rpc-key' })
+      expect(runHeaders(`${GW}/chain/thorchain_api/thorchain/lastblock`).requestHeaders).toEqual({})
+      expect(runHeaders(`${GW}/health`).requestHeaders).toEqual({})
     })
 
     it('does not send keys to other hosts or over http', () => {
@@ -300,5 +311,8 @@ describe('getThornodeApiRootUrl', () => {
     expect(getLiquifyRootUrl(`${GW}/chain/thorchain_api/v2/pools`, all)).toBeNull()
     expect(getLiquifyRootUrl(`${GW}/chain/thorchain_midgard/v2/pools`, all)).toBe(`${GW}/v2/pools`)
     expect(getLiquifyRootUrl(`${GW}/chain/thorchain_api/thorchain/mimir`, all)).toBe(`${GW}/thorchain/mimir`)
+    expect(getLiquifyRootUrl(`${GW}/chain/thorchain_rpc`, all)).toBe(`${GW}/`)
+    expect(getLiquifyRootUrl(`${GW}/chain/thorchain_rpc/status`, all)).toBe(`${GW}/status`)
+    expect(getLiquifyRootUrl(`${GW}/chain/thorchain_rpc`, { ...all, thornodeRpc: '' })).toBeNull()
   })
 })
