@@ -46,8 +46,15 @@ const getFilePath = (fileStoreName: StoreFileName, version: string) =>
   buildJsonFilePath(STORAGE_DIR, fileStoreName, version)
 
 /**
+ * Stores whose renderer must learn that an existing file could not be read.
+ * Falling back to defaults here would let the next save replace the user's data.
+ */
+const STORES_REPORTING_READ_FAILURES: ReadonlySet<StoreFileName> = new Set<StoreFileName>(['assetFavourites'])
+
+/**
  * @returns
- * 1. in case it's impossible to read from file will return Promise.resolve(defaultValue)
+ * 1. in case it's impossible to read from file will return Promise.resolve(defaultValue),
+ *    or Promise.reject for stores listed in `STORES_REPORTING_READ_FAILURES`
  * 2. in case content was read returns Promise.resolve(fileContent)
  */
 export const getFileContent = async <T extends StorageVersion>(name: StoreFileName, defaultValue: T): Promise<T> => {
@@ -69,7 +76,8 @@ export const getFileContent = async <T extends StorageVersion>(name: StoreFileNa
       await fs.writeJSON(path, migrated)
     }
     return migrated
-  } catch {
+  } catch (error) {
+    if (STORES_REPORTING_READ_FAILURES.has(name)) throw error
     // Resolve with default value in case of any error
     return defaultValue
   }
