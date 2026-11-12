@@ -9,10 +9,22 @@ import { getMessagesByLocale } from '../../i18n'
 import { AppDexSettingsView } from './AppDexSettingsView'
 
 const mocks = vi.hoisted(() => {
-  const { BehaviorSubject } = require('rxjs') as typeof import('rxjs')
+  // vi.hoisted runs before imports, so this cannot construct an rxjs BehaviorSubject.
+  // useObservableState treats an object as an observable when it has lift and subscribe,
+  // and reads `.value` for the first render.
+  const slip$ = (value: number) => ({
+    value,
+    lift() {
+      return this
+    },
+    subscribe(observer: { next?: (value: number) => void }) {
+      observer.next?.(value)
+      return { unsubscribe() {} }
+    }
+  })
   return {
-    streaming$: new BehaviorSubject(3),
-    trade$: new BehaviorSubject(1),
+    streaming$: slip$(3),
+    trade$: slip$(1),
     changeStreaming: vi.fn(),
     changeTrade: vi.fn(),
     setAggProtocol: vi.fn()
