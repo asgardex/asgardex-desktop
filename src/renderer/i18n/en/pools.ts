@@ -19,6 +19,8 @@ const pools: PoolsMessages = {
   'pools.status.deposit.info': 'New deposits to this pool are paused. Swaps and withdrawals still work.',
   'pools.status.unknown': 'Status unknown',
   'pools.status.unknown.info': 'Halt status could not be loaded. Swap and Add are disabled until it is known.',
+  'pools.status.operational': 'Operational',
+  'pools.status.operational.info': 'Swaps, deposits and withdrawals are available.',
   'pools.summary.liquidity': 'Total liquidity',
   'pools.summary.pools': '{count} pools',
   'pools.summary.volumeShare': '{percent}% of liquidity',

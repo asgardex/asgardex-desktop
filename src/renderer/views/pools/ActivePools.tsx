@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router-dom'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { THORChain } from '../../../shared/utils/chainIds'
 import { WalletType } from '../../../shared/wallet/types'
-import { ProtocolLimit } from '../../components/pool'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -27,8 +26,6 @@ import { usePoolStatus } from '../../hooks/usePoolStatus'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
-import { useProtocolLimit } from '../../hooks/useProtocolLimit'
-import { useProtocolLimitMaya } from '../../hooks/useProtocolLimitMaya'
 import * as poolsRoutes from '../../routes/pools'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { PoolsState as MayaPoolState } from '../../services/midgard/mayaMidgard/types'
@@ -54,7 +51,7 @@ const PERIOD_LABELS: Record<GetPoolsPeriodEnum, string> = {
   [GetPoolsPeriodEnum.All]: ''
 }
 
-export const ActivePools = (): JSX.Element => {
+export const ActivePools = ({ reloadLimit }: { reloadLimit: () => void }): JSX.Element => {
   const navigate = useNavigate()
   const { protocol } = useApp()
   const intl = useIntl()
@@ -80,10 +77,6 @@ export const ActivePools = (): JSX.Element => {
     }
   } = useMidgardMayaContext()
   const isThorProtocol = protocol === THORChain
-  const { reload: reloadLimitThor, data: limitThorRD } = useProtocolLimit(isThorProtocol)
-  const { reload: reloadLimitMaya, data: limitMayaRD } = useProtocolLimitMaya(!isThorProtocol)
-  const limitRD = isThorProtocol ? limitThorRD : limitMayaRD
-  const reloadLimit = isThorProtocol ? reloadLimitThor : reloadLimitMaya
   const { data: incentivePendulumThorRD } = useIncentivePendulum(isThorProtocol)
   const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya(!isThorProtocol)
   const incentivePendulumRD = isThorProtocol ? incentivePendulumThorRD : incentivePendulumMayaRD
@@ -188,7 +181,6 @@ export const ActivePools = (): JSX.Element => {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <ProtocolLimit key={`limit-${protocol}`} limit={limitRD} protocol={protocol} />
       <PoolsSummary
         key={`summary-${protocol}`}
         variant="active"

@@ -13,7 +13,7 @@ import { distinctChainId } from '../../helpers/assetHelper'
 import { isAddDisabled, isSwapDisabled, PoolStatus } from '../../helpers/poolStatusHelper'
 import { DEFAULT_POOLS_SORT, PoolTableRowData, PoolsSort, PoolsSortKey } from './Pools.types'
 import { formatCompactAmount, formatPoolApy, formatPoolPrice, sortPoolRows } from './Pools.utils'
-import { getPoolStatusMessages, PoolStatusChip } from './PoolStatusChip'
+import { getPoolStatusMessages, OperationalStatus, PoolStatusChip } from './PoolStatusChip'
 
 export type PoolsTableRow = PoolTableRowData & {
   /** Limits of pool actions (halt, pause), `undefined` if all actions are available */
@@ -193,12 +193,8 @@ export const PoolsTable = ({
             </div>
           </div>
         </td>
-        <td className="px-3">
-          {status ? (
-            <PoolStatusChip status={status} chain={asset.chain} />
-          ) : (
-            <span className="font-main text-[13px] text-gray1 dark:text-gray1d">--</span>
-          )}
+        <td className="px-3 whitespace-nowrap">
+          {status ? <PoolStatusChip status={status} chain={asset.chain} /> : <OperationalStatus />}
         </td>
         <td className="px-3 text-right whitespace-nowrap text-text0 dark:text-text0d">
           {formatPoolPrice(row.poolPrice, pricePoolAsset)}
@@ -278,7 +274,9 @@ export const PoolsTable = ({
               <span className="sr-only">{intl.formatMessage({ id: 'pools.watchlist' })}</span>
             </th>
             {renderSortHead('asset', intl.formatMessage({ id: 'common.pool' }), 'text-left')}
-            <th scope="col" className={HEAD_CELL}>
+            {/* text-left: a th is centered by default, which left the label floating over a left-aligned cell.
+                w-[1%] keeps the column as wide as its chip instead of stretching between Pool and Price. */}
+            <th scope="col" className={clsx(HEAD_CELL, 'w-[1%] text-left')}>
               {intl.formatMessage({ id: 'common.status' })}
             </th>
             {renderSortHead('poolPrice', intl.formatMessage({ id: 'common.price' }), 'text-right')}

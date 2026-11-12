@@ -22,6 +22,8 @@ const pools: PoolsMessages = {
   'pools.status.unknown': 'Status unbekannt',
   'pools.status.unknown.info':
     'Der Halt-Status konnte nicht geladen werden. Swap und Hinzufügen sind deaktiviert, bis er bekannt ist.',
+  'pools.status.operational': 'In Betrieb',
+  'pools.status.operational.info': 'Swaps, Einzahlungen und Auszahlungen sind verfügbar.',
   'pools.summary.liquidity': 'Gesamtliquidität',
   'pools.summary.pools': '{count} Pools',
   'pools.summary.volumeShare': '{percent} % der Liquidität',

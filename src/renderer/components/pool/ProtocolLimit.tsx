@@ -5,7 +5,7 @@ import { baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { AssetCacao, AssetRuneNative, THORChain } from '../../../shared/utils/chainIds'
+import { AssetCacao, AssetRuneNative, MAYAChain, THORChain } from '../../../shared/utils/chainIds'
 import { useLastSuccessRD } from '../../hooks/useLastSuccess'
 import { LimitRD } from '../../hooks/useProtocolLimit'
 import { Alert } from '../uielements/alert'
@@ -24,6 +24,8 @@ export const ProtocolLimit = ({ limit: limitPropRD, protocol }: Props) => {
 
   const render = useMemo(() => {
     const empty = <></>
+    // Chainflip has no bond/pool limit. Anything other than THOR would fall through to CACAO.
+    if (protocol !== THORChain && protocol !== MAYAChain) return empty
     return FP.pipe(
       limitRD,
       RD.fold(
@@ -47,11 +49,11 @@ export const ProtocolLimit = ({ limit: limitPropRD, protocol }: Props) => {
             }
           )
 
-          return reached ? <Alert className="mb-[10px] lg:mb-5" type="error" description={msg} /> : empty
+          return reached ? <Alert type="error" description={msg} /> : empty
         }
       )
     )
-  }, [asset, limitRD, intl])
+  }, [asset, limitRD, intl, protocol])
 
   return render
 }
