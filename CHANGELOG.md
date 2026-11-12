@@ -6,6 +6,43 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
+# 1.47.1 (2026-11-12)
+
+PRs merged to `develop` since tag `v1.47.0`.
+
+## Add
+
+- feat(pools): replace the active and pending pool tables with a searchable, sortable table, summary tiles, and a status chip per pool (chain halted, trading halted, LP paused, deposits paused, or status unknown). Swap and Add follow that status [#1301](https://github.com/asgardex/asgardex-desktop/pull/1301)
+- feat(pools): pool pages show the selected protocol's halt banners, and an Operational state when swaps, deposits, and withdrawals are available [#1307](https://github.com/asgardex/asgardex-desktop/pull/1307)
+- feat(settings): restyle the settings tab to match the pools page, and translate the labels that were still hardcoded English [#1300](https://github.com/asgardex/asgardex-desktop/pull/1300)
+- Bond provider refactor, block III part 2: browse nodes listed on RUNEBond, compare fee, minimum bond and free room, and request a whitelist slot (0.1 RUNE, approved by the operator) [#1292](https://github.com/asgardex/asgardex-desktop/pull/1292)
+
+## Update/Fixes
+
+- fix(swap): compare amounts in each asset's own decimals, and use the correct pool depth for a CACAO or trade-asset max [#1302](https://github.com/asgardex/asgardex-desktop/pull/1302)
+- fix(chainflip): map BSC so BNB and BSC USDT stay in the wallet and the swap view, and skip unknown chains instead of blanking the wallet [#1299](https://github.com/asgardex/asgardex-desktop/pull/1299)
+- fix(halt): when halt status cannot be confirmed, treat it as unknown and block swaps, liquidity actions, and RUNE sends [#1297](https://github.com/asgardex/asgardex-desktop/pull/1297)
+- fix(halt): block a withdrawal only for a proven chain halt or LP pause. Unknown status, an inbound trading halt, and a deposit-only pause leave withdrawals open [#1305](https://github.com/asgardex/asgardex-desktop/pull/1305)
+- fix(thorchain): read `HALT{CHAIN}CHAIN` and `HALTTHORCHAIN`, and treat a mimir halt as active from that block on [#1273](https://github.com/asgardex/asgardex-desktop/pull/1273) [#1281](https://github.com/asgardex/asgardex-desktop/pull/1281)
+- fix(mayachain): detect `HALTMAYACHAIN` even when MAYA is not in the user's chains, and ignore unset (negative) mimir values [#1281](https://github.com/asgardex/asgardex-desktop/pull/1281)
+- fix(thorchain): build the LP deposit pause key from the gas asset (`PAUSELPDEPOSIT-BSC-BNB`) and show the LP pause banners [#1286](https://github.com/asgardex/asgardex-desktop/pull/1286)
+- fix(midgard): stay on the saved Liquify host when `midgard.thorchain.network` does not resolve, and treat a short scanner lag as usable [#1306](https://github.com/asgardex/asgardex-desktop/pull/1306)
+- fix(liquify): add the API key as an `X-API-KEY` header in the main process, and send keyed THORNode requests to the gateway root [#1290](https://github.com/asgardex/asgardex-desktop/pull/1290) [#1295](https://github.com/asgardex/asgardex-desktop/pull/1295)
+- fix(bonds): open only plain https links, keep RUNEBond profiles and logos on runebond.com, and require a full THORChain address for the referral [#1298](https://github.com/asgardex/asgardex-desktop/pull/1298)
+- fix(fees): use SUI fees for SUI sends, and error on an unmapped chain instead of quoting a RUNE fee [#1274](https://github.com/asgardex/asgardex-desktop/pull/1274)
+- fix(balances): keep only the latest balance load, and recover a MAYA client stuck after HTTP 429 [#1272](https://github.com/asgardex/asgardex-desktop/pull/1272)
+- fix(ui): keep table rows on screen while they refresh, so the pools page does not jump [#1285](https://github.com/asgardex/asgardex-desktop/pull/1285)
+- fix(icons): point SOL.USDC at the Trust Wallet logo [#1284](https://github.com/asgardex/asgardex-desktop/pull/1284)
+- Remove the Radix wallet client. XRD send, swaps, and liquidity are no longer in the app [#1264](https://github.com/asgardex/asgardex-desktop/pull/1264)
+
+## Chores
+
+- chore(deps): bump `@xchainjs/*` to the 2026-11-02 releases (`xchain-aggregator` 3.2.6, `xchain-evm` 2.1.4, THORChain query 5.0.0, wallet 2.0.39) [#1275](https://github.com/asgardex/asgardex-desktop/pull/1275)
+- chore(deps): bump `@xchainjs/*` to the 2026-11-11 releases (`xchain-aggregator` 3.3.0 adds Chainflip BSC on mainnet; bitcoin, doge, and litecoin pin `bitcoinjs-lib` 6.1.8) [#1304](https://github.com/asgardex/asgardex-desktop/pull/1304)
+- chore(deps): bump `@tanstack/react-table` from 8.21.3 to 9.3.1 [#1266](https://github.com/asgardex/asgardex-desktop/pull/1266)
+- chore(deps): bump `observable-hooks` to 4.2.4, `electron-updater` to 6.8.9, and `@chainflip/sdk` to 2.3.2 [#1265](https://github.com/asgardex/asgardex-desktop/pull/1265) [#1304](https://github.com/asgardex/asgardex-desktop/pull/1304)
+- docs(linux): AppStream metainfo, screenshots, and release notes for Flathub [#1283](https://github.com/asgardex/asgardex-desktop/pull/1283)
+
 # 1.47.0 (2026-10-23)
 
 PRs merged to `develop` since tag `v1.46.1`.
