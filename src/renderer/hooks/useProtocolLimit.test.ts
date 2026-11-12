@@ -1,4 +1,7 @@
-import { getLimit } from './useProtocolLimit'
+import * as RD from '@devexperts/remote-data-ts'
+
+import { MAYAChain, THORChain } from '../../shared/utils/chainIds'
+import { getLimit, selectProtocolLimit } from './useProtocolLimit'
 
 describe('hooks/useProtocolLimit', () => {
   it('non reached + other values', () => {
@@ -31,5 +34,13 @@ describe('hooks/useProtocolLimit', () => {
   it('no reached (no LP)', () => {
     const { reached } = getLimit('', '100')
     expect(reached).toBeFalsy()
+  })
+
+  it('selects the RUNE limit on THOR, the CACAO limit on MAYA, and nothing on Chainflip', () => {
+    const thor = RD.success(getLimit('10', '20'))
+    const maya = RD.success(getLimit('50', '20', 10))
+    expect(selectProtocolLimit(THORChain, thor, maya)).toBe(thor)
+    expect(selectProtocolLimit(MAYAChain, thor, maya)).toBe(maya)
+    expect(selectProtocolLimit('CHAINFLIP', thor, maya)).toEqual(RD.initial)
   })
 })

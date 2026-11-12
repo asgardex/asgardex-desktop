@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
@@ -30,8 +30,21 @@ export type HaltedProtocol = {
   midgardStatusRD: RD.RemoteData<Error, boolean>
 }
 
+// On the pools overview the warning is rendered under the tabs, with the protocol-limit
+// banner. Everywhere else it stays at the top of the page. One element, one place.
+const HaltBannerSlotContext = createContext<JSX.Element | null>(null)
+
+export const HaltBannerSlotProvider = HaltBannerSlotContext.Provider
+
+export const useHaltBannerSlot = (): JSX.Element | null => useContext(HaltBannerSlotContext)
+
 type HaltedChainsWarningProps = {
   protocols: HaltedProtocol[]
+  /**
+   * Protocol chosen on the pools overview (THOR, MAYA, or Chainflip).
+   * Other pages ignore it and keep filtering by the chains in the URL.
+   */
+  poolProtocol?: string
 }
 
 type HaltedChainsState = {
@@ -47,9 +60,12 @@ export type PageContext = {
   isPoolPage: boolean
   isDepositPage: boolean
   // Chains the user is actively engaging with on the current page.
-  // When undefined the page is not asset-scoped (e.g. pools list) and all halts surface.
+  // When undefined the page is not asset-scoped and every relevant protocol surfaces.
   // When defined the alerts are filtered down to messages about these chains only.
   selectedChains?: Chain[]
+  // Pools overview only: the protocol switch. Halt lines for the other protocol are hidden.
+  // Chainflip has no THOR/MAYA halt lines, so both are hidden.
+  poolProtocol?: string
 }
 
 // Placeholder while there is no mimir. NOT "no halt": see `mimirUnknown`
@@ -115,20 +131,29 @@ const isProtocolRelevant = (protocol: Chain, selectedChains?: Chain[]): boolean 
   return selectedChains.some(isChainOfMaya)
 }
 
+/**
+ * Pools overview follows the protocol switch. Swap and deposit keep the chain filter.
+ * With no pool protocol (callers that only classify the route) every protocol stays in scope.
+ */
+export const isHaltProtocolInScope = (protocol: Chain, page: PageContext): boolean => {
+  if (page.isPoolPage && page.poolProtocol) return protocol === page.poolProtocol
+  return isProtocolRelevant(protocol, page.selectedChains)
+}
+
 const buildGlobalHaltMessage = (
   resolvedProtocols: ResolvedProtocolData[],
-  selectedChains: Chain[] | undefined,
+  page: PageContext,
   intl: IntlShape
 ): string | undefined => {
   const halted = resolvedProtocols
     .filter(isProtocolGloballyHalted)
-    .filter((p) => isProtocolRelevant(p.protocol, selectedChains))
+    .filter((p) => isHaltProtocolInScope(p.protocol, page))
   if (halted.length === 0) return undefined
 
   const haltedNames = halted.map((p) => p.protocol)
   // Only advertise routes that can actually serve this page's chains — never
   // "Maya still available" beside Maya per-chain trading halt lines.
-  const alternativesList = intl.formatList(getSwapAlternativeLabels(resolvedProtocols, selectedChains), {
+  const alternativesList = intl.formatList(getSwapAlternativeLabels(resolvedProtocols, page.selectedChains), {
     type: 'disjunction'
   })
 
@@ -147,9 +172,12 @@ const buildGlobalHaltMessage = (
 
 export const buildPerProtocolMessages = (
   { protocol, inboundHaltedChains, mimirHalt }: ResolvedProtocolData,
-  { isSwapPage, isPoolPage, isDepositPage, selectedChains }: PageContext,
+  page: PageContext,
   intl: IntlShape
 ): string[] => {
+  const { isSwapPage, isPoolPage, isDepositPage, selectedChains } = page
+  // Pools overview shows one protocol. Swap/deposit drop a protocol that cannot serve the pair.
+  if (!isHaltProtocolInScope(protocol, page)) return []
   // Skip per-chain messages when the protocol is fully halted globally — covered by the global halt message
   if (isProtocolGloballyHalted({ protocol, inboundHaltedChains, mimirHalt, midgard: true })) return []
 
@@ -213,9 +241,7 @@ export const buildPerProtocolMessages = (
 
     // Global LP pause covers every chain of this protocol, so per-chain LP lines would only repeat it
     if (mimirHalt.pauseGlobalLp) {
-      if (isProtocolRelevant(protocol, selectedChains)) {
-        messages.push(intl.formatMessage({ id: 'halt.chain.pauseall' }))
-      }
+      messages.push(intl.formatMessage({ id: 'halt.chain.pauseall' }))
     } else {
       if (pausedLPs.length > 0) {
         messages.push(intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') }))
@@ -236,13 +262,19 @@ export const buildPerProtocolMessages = (
   return messages
 }
 
-const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
+const HaltedChainsWarning = ({ protocols, poolProtocol }: HaltedChainsWarningProps) => {
   const intl = useIntl()
   const location = useLocation()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [hasRendered, setHasRendered] = useState(false)
 
-  const pageContext: PageContext = useMemo(() => getHaltPageContext(location.pathname), [location.pathname])
+  const pageContext: PageContext = useMemo(() => {
+    const ctx = getHaltPageContext(location.pathname)
+    // Only the pools overview is scoped by the protocol switch. A swap of a
+    // THOR+MAYA pair still needs both, which the chain filter already handles.
+    if (!ctx.isPoolPage || !poolProtocol) return ctx
+    return { ...ctx, poolProtocol }
+  }, [location.pathname, poolProtocol])
 
   const RENDER_DELAY_MS = 200
   useEffect(() => {
@@ -312,7 +344,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
     // so the RUNE wording is used only when THORChain is one of the unknown protocols.
     const unknownProtocols = resolvedProtocols
       .filter(({ mimirUnknown }) => mimirUnknown)
-      .filter(({ protocol }) => isProtocolRelevant(protocol, pageContext.selectedChains))
+      .filter(({ protocol }) => isHaltProtocolInScope(protocol, pageContext))
       .map(({ protocol }) => protocol)
     if (unknownProtocols.length > 0) {
       push(
@@ -325,7 +357,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
 
     // One combined global-halt message (cross-protocol, with alternatives)
     if (pageContext.isSwapPage || pageContext.isPoolPage) {
-      const globalMsg = buildGlobalHaltMessage(resolvedProtocols, pageContext.selectedChains, intl)
+      const globalMsg = buildGlobalHaltMessage(resolvedProtocols, pageContext, intl)
       if (globalMsg) push(globalMsg)
     }
 
@@ -341,7 +373,7 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
     // outage doesn't pop up while the user is depositing on a THOR-only pool (and vice versa).
     if (pageContext.isDepositPage || pageContext.isPoolPage) {
       for (const { protocol, midgard } of resolvedProtocols) {
-        if (!midgard && isProtocolRelevant(protocol, pageContext.selectedChains)) {
+        if (!midgard && isHaltProtocolInScope(protocol, pageContext)) {
           push(intl.formatMessage({ id: 'midgard.status.offline' }, { protocol }))
         }
       }
@@ -350,8 +382,9 @@ const HaltedChainsWarning = ({ protocols }: HaltedChainsWarningProps) => {
     return ordered
   }, [resolvedProtocols, pageContext, intl])
 
+  // Null, not an empty box: the pools slot uses :empty to collapse when neither banner has anything to say.
   if (!hasRendered || !hasAnyData || uniqueMessages.length === 0) {
-    return <div className="h-0" />
+    return null
   }
 
   if (isCollapsed) {

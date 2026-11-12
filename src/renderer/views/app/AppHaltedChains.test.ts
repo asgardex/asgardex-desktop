@@ -1,13 +1,24 @@
-import { createIntl } from 'react-intl'
-import { describe, expect, it } from 'vitest'
+import { act, createElement } from 'react'
+import * as RD from '@devexperts/remote-data-ts'
+import { createRoot } from 'react-dom/client'
+import { createIntl, IntlProvider } from 'react-intl'
+import { MemoryRouter } from 'react-router-dom'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { MAYAChain, THORChain } from '../../../shared/utils/chainIds'
 import thorMimir from '../../hooks/__fixtures__/thornode-mainnet-chains-halted-lp-paused/mimir.json'
 import { getThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import enMessages from '../../i18n/en'
+import haltMessages from '../../i18n/en/halt'
+import midgardMessages from '../../i18n/en/midgard'
 import { MimirHalt } from '../../services/thorchain/types'
-import { buildPerProtocolMessages, getHaltPageContext, PageContext } from './AppHaltedChains'
+import HaltedChainsWarning, {
+  buildPerProtocolMessages,
+  getHaltPageContext,
+  HaltedProtocol,
+  PageContext
+} from './AppHaltedChains'
 import { ResolvedProtocolData } from './AppHaltedChains.helpers'
 
 describe('views/app/AppHaltedChains getHaltPageContext', () => {
@@ -125,5 +136,95 @@ describe('views/app/AppHaltedChains buildPerProtocolMessages (LP banner)', () =>
       'PAUSELPDEPOSIT-GAIA-ATOM': true
     })
     expect(buildPerProtocolMessages(data, poolPage, intl)).toEqual([pause('ETH, BSC'), pauseDeposits('GAIA')])
+  })
+
+  it('hides the other protocol when the pools overview has a protocol selected', () => {
+    const thorHalted = thor({ HALTXRPCHAIN: true, pauseGlobalLp: true })
+    const mayaHalted: ResolvedProtocolData = {
+      ...thor({ HALTDASHCHAIN: true }),
+      protocol: MAYAChain
+    }
+    const thorPage: PageContext = { ...poolPage, poolProtocol: THORChain }
+    const mayaPage: PageContext = { ...poolPage, poolProtocol: MAYAChain }
+    const chainflipPage: PageContext = { ...poolPage, poolProtocol: 'CHAINFLIP' }
+
+    expect(buildPerProtocolMessages(thorHalted, thorPage, intl)).toEqual([
+      intl.formatMessage({ id: 'halt.chain' }, { chain: 'XRP', dex: THORChain }),
+      pauseAll
+    ])
+    expect(buildPerProtocolMessages(mayaHalted, thorPage, intl)).toEqual([])
+    expect(buildPerProtocolMessages(thorHalted, mayaPage, intl)).toEqual([])
+    expect(buildPerProtocolMessages(mayaHalted, mayaPage, intl)).toEqual([
+      intl.formatMessage({ id: 'halt.chain' }, { chain: 'DASH', dex: MAYAChain })
+    ])
+    expect(buildPerProtocolMessages(thorHalted, chainflipPage, intl)).toEqual([])
+    expect(buildPerProtocolMessages(mayaHalted, chainflipPage, intl)).toEqual([])
+  })
+})
+
+describe('views/app/AppHaltedChains pools overview ticker', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+  })
+  afterEach(() => vi.useRealTimers())
+
+  const baseMimir = { HALTTHORCHAIN: false, haltGlobalTrading: false, pauseGlobalLp: false } as MimirHalt
+  const protocolData = (protocol: string, mimirHalt: Partial<MimirHalt>, midgard = true): HaltedProtocol => ({
+    protocol,
+    haltedChainsRD: RD.success([]),
+    mimirHaltRD: RD.success({ ...baseMimir, ...mimirHalt } as MimirHalt),
+    midgardStatusRD: midgard ? RD.success(true) : RD.success(false)
+  })
+
+  const render = (poolProtocol: string) => {
+    const container = document.createElement('div')
+    const root = createRoot(container)
+    act(() => {
+      root.render(
+        createElement(
+          IntlProvider,
+          { locale: 'en', messages: { ...haltMessages, ...midgardMessages } },
+          createElement(
+            MemoryRouter,
+            { initialEntries: ['/pools'] },
+            createElement(HaltedChainsWarning, {
+              poolProtocol,
+              protocols: [
+                protocolData(THORChain, { haltGlobalTrading: true, HALTXRPCHAIN: true }, false),
+                protocolData(MAYAChain, { HALTDASHCHAIN: true })
+              ]
+            })
+          )
+        )
+      )
+    })
+    act(() => {
+      vi.advanceTimersByTime(300)
+    })
+    return {
+      text: container.textContent ?? '',
+      unmount: () => act(() => root.unmount())
+    }
+  }
+
+  it('shows only the selected protocol, and neither THOR nor MAYA on Chainflip', () => {
+    const maya = render(MAYAChain)
+    expect(maya.text).toContain('DASH chain on MAYA has been halted temporarily')
+    expect(maya.text).not.toContain('THOR')
+    expect(maya.text).not.toContain('XRP')
+    expect(maya.text).not.toContain('Midgard for THOR')
+    maya.unmount()
+
+    const thor = render(THORChain)
+    expect(thor.text).toContain('Trading on THOR is halted temporarily')
+    expect(thor.text).toContain('Midgard for THOR is offline')
+    expect(thor.text).not.toContain('DASH')
+    thor.unmount()
+
+    const chainflip = render('CHAINFLIP')
+    expect(chainflip.text).not.toContain('halted')
+    expect(chainflip.text).not.toContain('Midgard')
+    chainflip.unmount()
   })
 })

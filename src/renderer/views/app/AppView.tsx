@@ -31,18 +31,22 @@ import { useTheme } from '../../hooks/useTheme'
 import { noWallet, vultisigCreate, vultisigSecureCreate } from '../../routes/wallet'
 import { base as createWalletBase } from '../../routes/wallet/create'
 import { base as importWalletBase } from '../../routes/wallet/imports'
+import { useApp } from '../../store/app/hooks'
 import { ViewRoutes } from '../ViewRoutes'
-import HaltedChainsWarning from './AppHaltedChains'
+import HaltedChainsWarning, { getHaltPageContext, HaltBannerSlotProvider } from './AppHaltedChains'
 import MidgardErrorAlert from './AppMidgardError'
 import { AppUpdateView } from './AppUpdateView'
 
 export const AppView = (): JSX.Element => {
   const intl = useIntl()
+  const { protocol } = useApp()
 
   const { locale$ } = useI18nContext()
   const currentLocale = useObservableState(locale$, DEFAULT_LOCALE)
 
   const location = useLocation()
+  // Pools overview draws this under its tab row. Every other page keeps it above the view.
+  const haltBannerInPools = getHaltPageContext(location.pathname).isPoolPage
   const { isLight } = useTheme()
 
   const shouldHideLayout = useMemo(() => {
@@ -160,6 +164,28 @@ export const AppView = (): JSX.Element => {
     )
   }, [ledgerAddressesPersistentRD, reloadPersistentLedgerAddresses, intl])
 
+  const haltBanner = (
+    <HaltedChainsWarning
+      poolProtocol={haltBannerInPools ? protocol : undefined}
+      protocols={[
+        {
+          protocol: THORChain,
+          haltedChainsRD: haltedChainsThorRD,
+          mimirHaltRD: mimirHaltThorRD,
+          confirmedMimirHalt: confirmedMimirHaltThor,
+          midgardStatusRD: midgardStatusRD
+        },
+        {
+          protocol: MayaChain,
+          haltedChainsRD: haltedChainsMayaRD,
+          mimirHaltRD: mimirHaltMayaRD,
+          confirmedMimirHalt: confirmedMimirHaltMaya,
+          midgardStatusRD: midgardMayaStatusRD
+        }
+      ]}
+    />
+  )
+
   return (
     <div className="h-screen bg-bg3 p-0 font-main dark:bg-bg3d">
       {shouldHideLayout ? (
@@ -175,27 +201,10 @@ export const AppView = (): JSX.Element => {
               <MidgardErrorAlert apiEndpoint={apiEndpointMaya} reloadHandler={reloadApiEndpointMaya} />
               {renderImportKeystoreWalletsError}
               {renderImportLedgerAddressesError}
-              <div className="mb-4 flex flex-col gap-2">
-                <HaltedChainsWarning
-                  protocols={[
-                    {
-                      protocol: THORChain,
-                      haltedChainsRD: haltedChainsThorRD,
-                      mimirHaltRD: mimirHaltThorRD,
-                      confirmedMimirHalt: confirmedMimirHaltThor,
-                      midgardStatusRD: midgardStatusRD
-                    },
-                    {
-                      protocol: MayaChain,
-                      haltedChainsRD: haltedChainsMayaRD,
-                      mimirHaltRD: mimirHaltMayaRD,
-                      confirmedMimirHalt: confirmedMimirHaltMaya,
-                      midgardStatusRD: midgardMayaStatusRD
-                    }
-                  ]}
-                />
-              </div>
-              <ViewRoutes />
+              <HaltBannerSlotProvider value={haltBannerInPools ? haltBanner : null}>
+                {!haltBannerInPools && <div className="mb-4 flex flex-col gap-2">{haltBanner}</div>}
+                <ViewRoutes />
+              </HaltBannerSlotProvider>
             </div>
           </div>
 

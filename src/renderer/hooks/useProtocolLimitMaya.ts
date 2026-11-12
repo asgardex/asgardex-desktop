@@ -27,5 +27,6 @@ export const useProtocolLimitMaya = (enabled = true): { data: LimitRD; reload: F
 
   const data = useObservableLayoutState(source$, RD.initial)
 
-  return { data, reload: reloadNetworkInfo }
+  // Same as `useProtocolLimit`: a disabled hook must not keep the last CACAO limit.
+  return { data: enabled ? data : RD.initial, reload: reloadNetworkInfo }
 }

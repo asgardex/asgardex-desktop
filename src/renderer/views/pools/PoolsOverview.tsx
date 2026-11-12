@@ -6,11 +6,16 @@ import { function as FP, array as A } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router'
 
+import { THORChain, MAYAChain } from '../../../shared/utils/chainIds'
+import { ProtocolLimit } from '../../components/pool'
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { Protocol } from '../../components/uielements/protocolSwitch/types'
+import { selectProtocolLimit, useProtocolLimit } from '../../hooks/useProtocolLimit'
+import { useProtocolLimitMaya } from '../../hooks/useProtocolLimitMaya'
 import * as poolsRoutes from '../../routes/pools'
 import { PoolType } from '../../services/midgard/midgardTypes'
 import { useApp } from '../../store/app/hooks'
+import { useHaltBannerSlot } from '../app/AppHaltedChains'
 import { ActivePools } from './ActivePools'
 import { ChainflipAssets } from './ChainflipAssets'
 import { PendingPools } from './PendingPools'
@@ -36,6 +41,11 @@ export const PoolsOverview = (): JSX.Element => {
 
   const matchPoolsPendingRoute = useMatch({ path: poolsRoutes.pending.path(), end: false })
   const isChainflip = protocol === Protocol.Chainflip
+  const isThorProtocol = protocol === THORChain
+  const haltBanner = useHaltBannerSlot()
+  const { reload: reloadLimitThor, data: limitThorRD } = useProtocolLimit(isThorProtocol)
+  const { reload: reloadLimitMaya, data: limitMayaRD } = useProtocolLimitMaya(protocol === MAYAChain)
+  const reloadLimit = isThorProtocol ? reloadLimitThor : reloadLimitMaya
 
   // If user lands on /pools/pending while Chainflip is active, redirect to /pools/active
   useEffect(() => {
@@ -57,15 +67,15 @@ export const PoolsOverview = (): JSX.Element => {
       {
         index: TAB_INDEX['active'],
         label: intl.formatMessage({ id: 'pools.available' }),
-        content: isChainflip ? <ChainflipAssets /> : <ActivePools />
+        content: isChainflip ? <ChainflipAssets /> : <ActivePools reloadLimit={reloadLimit} />
       },
       {
         index: TAB_INDEX['pending'],
         label: intl.formatMessage({ id: 'pools.pending' }),
-        content: <PendingPools />
+        content: <PendingPools reloadLimit={reloadLimit} />
       }
     ],
-    [intl, isChainflip]
+    [intl, isChainflip, reloadLimit]
   )
 
   const visibleTabs = useMemo(
@@ -117,6 +127,16 @@ export const PoolsOverview = (): JSX.Element => {
           )}
         </TabList>
         <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
+      </div>
+      {/* Same slot for the network ticker and the protocol limit, under the tabs on every protocol.
+          empty:hidden drops the margin when neither has anything to show. */}
+      <div className="mt-3 flex w-full flex-col gap-2 empty:hidden">
+        {haltBanner}
+        <ProtocolLimit
+          key={`limit-${protocol}`}
+          limit={selectProtocolLimit(protocol, limitThorRD, limitMayaRD)}
+          protocol={protocol}
+        />
       </div>
       <TabPanels className="mt-2 w-full">
         {FP.pipe(
