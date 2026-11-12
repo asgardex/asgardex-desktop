@@ -16,9 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macOS-14
-            os-name: Sonoma
-            os-version: 14
+          # macOS 14 runners were retired on 2026-11-02. Tahoe waits on an
+          # electron-builder bump: 24.13.3 cannot unlock its signing keychain there.
           - os: macOS-15
             os-name: Sequoia
             os-version: 15
