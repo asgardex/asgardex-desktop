@@ -1,14 +1,18 @@
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { FeesWithRates } from '@xchainjs/xchain-client'
 import { DASHChain } from '@xchainjs/xchain-dash'
+import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Chain } from '@xchainjs/xchain-util'
+import { BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 import { describe, expect, it } from 'vitest'
 
 import {
   ChainFeeData,
+  estimateUtxoInboundFee,
+  utxoSendSize,
   getInboundNodeProtocol,
   getUtxoMinFeeRate,
   NodeProtocol,
@@ -126,5 +130,156 @@ describe('getInboundNodeProtocol', () => {
     expect(getInboundNodeProtocol(BCHChain)).toEqual(NodeProtocol.THORCHAIN)
     expect(getInboundNodeProtocol(DASHChain)).toEqual(NodeProtocol.MAYACHAIN)
     expect(getInboundNodeProtocol(BCHChain, BTCChain)).toEqual(NodeProtocol.THORCHAIN)
+  })
+})
+
+describe('estimateUtxoInboundFee', () => {
+  const FLOOR = 1000 // xchainjs MIN_TX_FEE for BTC / LTC
+  // Models xchainjs `getFeeFromUtxos`: fee = max(vbytes * rate, 1000). `fast` is the swap option;
+  // average / fastest sit either side.
+  const withRates = (fast: number, vbytes: number, floor = FLOOR): FeesWithRates => {
+    const rates = { average: fast * 0.5, fast, fastest: fast * 2 }
+    const fee = (rate: number) => baseAmount(Math.max(vbytes * rate, floor), 8)
+    return {
+      rates,
+      fees: { average: fee(rates.average), fast: fee(rates.fast), fastest: fee(rates.fastest) }
+    }
+  }
+  // Realistic: rates and floored fees only; the provider's own size guess is irrelevant when utxoCount is known
+  const flooredRates = (fast: number): FeesWithRates => withRates(fast, 150)
+  const estimate = (
+    chain: Chain,
+    fees: FeesWithRates,
+    data: O.Option<ChainFeeData>,
+    extra: { utxoCount?: number; hasMemo?: boolean; sendMax?: boolean } = {}
+  ) =>
+    estimateUtxoInboundFee({ chain, feesWithRates: fees, oFeeData: data, ...extra })
+      .amount()
+      .toNumber()
+
+  describe('utxoSendSize (mirrors the xchainjs selector: 10 + 68 / input + 31 / output)', () => {
+    it('counts recipient + memo + change for a normal send', () => {
+      expect(utxoSendSize({ inputCount: 1, hasMemo: true, sendMax: false })).toEqual(10 + 68 + 93)
+    })
+    it('has no change output for a MAX sweep (reference tx 90130e97..dfa: 3 inputs, 2 outputs = 276 vB)', () => {
+      expect(utxoSendSize({ inputCount: 3, hasMemo: true, sendMax: true })).toEqual(276)
+    })
+    it('has no memo output for a plain transfer', () => {
+      expect(utxoSendSize({ inputCount: 2, hasMemo: false, sendMax: false })).toEqual(10 + 136 + 62)
+    })
+  })
+
+  describe('UTXO count known', () => {
+    it('MAX sweep of 3 UTXOs at THOR gas_rate 3 matches what the send pays (276 vB * 3 = 828)', () => {
+      expect(estimate(BTCChain, flooredRates(3), feeData(BTCChain, '3'), { utxoCount: 3, sendMax: true })).toEqual(828)
+      // MAYA gas_rate 1 is below the provider rate: the provider rate (3) wins
+      expect(estimate(BTCChain, flooredRates(3), feeData(BTCChain, '1'), { utxoCount: 3, sendMax: true })).toEqual(828)
+    })
+
+    it('normal send of 3 UTXOs is an upper bound that includes change (307 vB * 3 = 921)', () => {
+      expect(estimate(BTCChain, flooredRates(3), feeData(BTCChain, '3'), { utxoCount: 3 })).toEqual(921)
+    })
+
+    it('1 UTXO at rate 3: 171 vB with change (513), 140 vB when swept (420)', () => {
+      expect(estimate(BTCChain, flooredRates(3), feeData(BTCChain, '3'), { utxoCount: 1 })).toEqual(513)
+      expect(estimate(BTCChain, flooredRates(3), feeData(BTCChain, '3'), { utxoCount: 1, sendMax: true })).toEqual(420)
+    })
+
+    it('is not inflated when every provider tier is floored (rates {1,1,1}, plain transfer, min rate 2)', () => {
+      const allFloored: FeesWithRates = {
+        rates: { average: 1, fast: 1, fastest: 1 },
+        fees: { average: baseAmount(1000, 8), fast: baseAmount(1000, 8), fastest: baseAmount(1000, 8) }
+      }
+      // rate raised to the BTC relay minimum 2; 1 UTXO, no memo, with change: 10 + 68 + 62 = 140 vB
+      expect(estimate(BTCChain, allFloored, O.none, { utxoCount: 1, hasMemo: false })).toEqual(280)
+      // the FeesWithRates-only fallback would have said 1000 vB * 2 = 2000
+      expect(estimate(BTCChain, allFloored, O.none)).toEqual(2000)
+    })
+
+    it('scales with many inputs (N = 20 SegWit, non-max): 10 + 1360 + 93 = 1463 vB at rate 4 = 5852', () => {
+      expect(estimate(BTCChain, flooredRates(4), feeData(BTCChain, '2'), { utxoCount: 20 })).toEqual(5852)
+    })
+
+    it('prices Taproot inputs like the selector (68 vB), not below what the send pays', () => {
+      expect(estimate(BTCChain, flooredRates(3), feeData(BTCChain, '3'), { utxoCount: 2, sendMax: true })).toEqual(
+        (10 + 136 + 62) * 3
+      )
+    })
+
+    it('raises the estimate when the vault gas_rate is above the provider rate', () => {
+      expect(estimate(BTCChain, flooredRates(3), feeData(BTCChain, '10'), { utxoCount: 3, sendMax: true })).toEqual(
+        2760
+      )
+    })
+
+    it('rounds a fractional rate up to a whole number, as the send does', () => {
+      expect(estimate(BTCChain, flooredRates(2.4), feeData(BTCChain, '1'), { utxoCount: 3, sendMax: true })).toEqual(
+        828
+      )
+      expect(estimate(BTCChain, flooredRates(3), feeData(BTCChain, '3.4'), { utxoCount: 3, sendMax: true })).toEqual(
+        1104
+      )
+    })
+
+    it('LTC: sub-1 provider rate 0.825 with gas_rate 61 and 25', () => {
+      // 2 UTXOs, memo, change: 10 + 136 + 93 = 239 vB
+      expect(estimate(LTCChain, flooredRates(0.825), feeData(LTCChain, '61'), { utxoCount: 2 })).toEqual(239 * 61)
+      expect(estimate(LTCChain, flooredRates(0.825), feeData(LTCChain, '25'), { utxoCount: 2 })).toEqual(239 * 25)
+    })
+
+    it('BCH uses the same selector constants (no floor)', () => {
+      expect(estimate(BCHChain, withRates(3, 276, 0), O.none, { utxoCount: 3, sendMax: true })).toEqual(828)
+    })
+  })
+
+  describe('UTXO count unknown (size derived from the provider FeesWithRates)', () => {
+    it('reads the exact size when an option is above the floor, ignoring MAYA gas_rate 1 (THOR 3, provider 3)', () => {
+      // 276 vB: fastest (rate 6) = 1656 > floor
+      const fees = withRates(3, 276)
+      expect(fees.fees.fast.amount().toNumber()).toEqual(1000) // provider reports the floor, not 828
+      expect(estimate(BTCChain, fees, feeData(BTCChain, '3'))).toEqual(828)
+      expect(estimate(BTCChain, fees, feeData(BTCChain, '1'))).toEqual(828)
+    })
+
+    it('falls back to the bound floor / highest rate when every option is floored: provider 2, gas_rate 6, 200 vB', () => {
+      // fast 400 and fastest 800 are both reported as 1000: bound 1000 / 4 = 250 vB -> 1500, above the 1200 paid
+      expect(estimate(BTCChain, withRates(2, 200), feeData(BTCChain, '6'))).toEqual(1500)
+    })
+
+    it('uses LTC gas_rate 25 against a sub-1 provider rate (0.825)', () => {
+      // 400 vB: fastest 1.65 -> 660, floored. Bound 1000 / 1.65 -> 607 vB; paid by a 400 vB send: 10000
+      expect(estimate(LTCChain, withRates(0.825, 400), feeData(LTCChain, '25'))).toEqual(15175)
+      // 800 vB lifts fastest above the floor and gives the exact size
+      expect(estimate(LTCChain, withRates(0.825, 800), feeData(LTCChain, '25'))).toEqual(20000)
+    })
+
+    it('plain transfer: provider rate clamped to the chain minimum (BTC 2)', () => {
+      expect(estimate(BTCChain, withRates(3, 276), O.none)).toEqual(828)
+      expect(estimate(BTCChain, withRates(1, 600), O.none)).toEqual(1200) // exact size 600 vB (fastest 1200 > floor)
+    })
+
+    it('has no floor on BCH', () => {
+      expect(estimate(BCHChain, withRates(3, 276, 0), O.none)).toEqual(828)
+    })
+  })
+
+  describe('unusable input', () => {
+    it('returns the provider fee when the reference rate is unusable', () => {
+      const fees = withRates(0, 276)
+      expect(estimateUtxoInboundFee({ chain: BTCChain, feesWithRates: fees, oFeeData: O.none })).toBe(fees.fees.fast)
+    })
+
+    it('returns the provider fee when no option has a usable rate (no Math.max of an empty list)', () => {
+      const nanFee = { ...baseAmount(1, 8), amount: () => ({ toNumber: () => NaN }) } as unknown as BaseAmount
+      const fees: FeesWithRates = {
+        rates: { average: 0, fast: 3, fastest: 0 },
+        fees: { average: baseAmount(1000, 8), fast: nanFee, fastest: baseAmount(1000, 8) }
+      }
+      expect(estimateUtxoInboundFee({ chain: BTCChain, feesWithRates: fees, oFeeData: O.none })).toBe(fees.fees.fast)
+    })
+
+    it('ignores a zero utxoCount and uses the fallback', () => {
+      expect(estimate(BTCChain, withRates(3, 276), feeData(BTCChain, '3'), { utxoCount: 0 })).toEqual(828)
+    })
   })
 })

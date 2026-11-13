@@ -9,7 +9,7 @@ import {
   defaultBTCParams,
   tapRootDerivationPaths
 } from '@xchainjs/xchain-bitcoin'
-import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
+import { FeeOption, FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import { either as E } from 'fp-ts'
@@ -17,6 +17,7 @@ import { either as E } from 'fp-ts'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { HDMode } from '../../../../shared/wallet/types'
+import { resolveLedgerFeeRate } from '../utxoFeeRate'
 import { getDerivationPaths, hdModeToDerivationPathType } from './common'
 
 /**
@@ -28,6 +29,7 @@ export const send = async ({
   sender,
   recipient,
   feeOption,
+  feeRate: passedFeeRate,
   amount,
   memo,
   walletAccount,
@@ -45,6 +47,7 @@ export const send = async ({
   recipient: Address
   amount: BaseAmount
   feeOption: FeeOption
+  feeRate: FeeRate
   memo?: string
   walletAccount: number
   walletIndex: number
@@ -106,8 +109,12 @@ export const send = async ({
       network: network
     })
 
-    const fee = await clientLedger.getFeesWithRates({ sender, memo })
-    const feeRate = fee.rates[feeOption]
+    // Use the rate chosen by the renderer (min/max clamp + protocol gas_rate floor), provider rate only as fallback
+    const feeRate = await resolveLedgerFeeRate(
+      'BTC',
+      passedFeeRate,
+      async () => (await clientLedger.getFeesWithRates({ sender, memo })).rates[feeOption]
+    )
 
     // Ledger's transfer() doesn't accept selectedUtxos/utxoSelectionPreferences — use transferMax() for coin control
     // IPC only sends {hash, index, value} identifiers; re-fetch full UTXOs (with witnessUtxo) from the data provider

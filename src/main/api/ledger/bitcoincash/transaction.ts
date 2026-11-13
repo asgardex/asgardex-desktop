@@ -6,6 +6,7 @@ import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
+import { resolveLedgerFeeRate } from '../utxoFeeRate'
 import { getDerivationPaths } from './common'
 
 /**
@@ -18,6 +19,7 @@ export const send = async ({
   recipient,
   amount,
   feeOption,
+  feeRate: passedFeeRate,
   memo,
   walletAccount,
   walletIndex,
@@ -53,8 +55,12 @@ export const send = async ({
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
-    const fee = await clientLedger.getFeesWithRates({ sender, memo })
-    const feeRate = fee.rates[feeOption]
+    // Use the rate chosen by the renderer (min/max clamp + protocol gas_rate floor), provider rate only as fallback
+    const feeRate = await resolveLedgerFeeRate(
+      'BCH',
+      passedFeeRate,
+      async () => (await clientLedger.getFeesWithRates({ sender, memo })).rates[feeOption]
+    )
 
     // Ledger's transfer() doesn't accept selectedUtxos/utxoSelectionPreferences — use transferMax() for coin control
     // IPC only sends {hash, index, value} identifiers; re-fetch full UTXOs (with witnessUtxo) from the data provider

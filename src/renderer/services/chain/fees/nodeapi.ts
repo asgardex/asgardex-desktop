@@ -1,7 +1,8 @@
-import { FeeOption } from '@xchainjs/xchain-client'
+import { FeeOption, FeesWithRates } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { baseAmount, Chain } from '@xchainjs/xchain-util'
+import { BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
+import { TX_SIZE_CONSTANTS } from '@xchainjs/xchain-utxo'
 import { function as FP, option as O, array as A } from 'fp-ts'
 
 import { isChainOfMaya } from '../../../../shared/utils/chain'
@@ -10,6 +11,7 @@ import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import { inboundAddressesShared$ as mayaInboundAddresses$ } from '../../mayachain'
 import { inboundAddressesShared$ as thorInboundAddresses$ } from '../../thorchain'
 import { InboundAddress as ThorInboundAddress } from '../../thorchain/types'
+import { ChainTxFeeOption } from '../const'
 
 const logger = createScopedLogger('nodeapi')
 
@@ -349,6 +351,99 @@ export const resolveUtxoFeeRate = (chain: Chain, estimatedRate: number, oFeeData
     logger.info(`${chain} fee rate raised ${estimatedRate} -> ${feeRate} (min ${minRate}, max ${maxRate})`)
   }
   return feeRate
+}
+
+/**
+ * Minimum fee (base units) xchainjs' `getFeeFromUtxos` reports, `MIN_TX_FEE` in `xchain-bitcoin` /
+ * `xchain-litecoin`. BCH has no floor. The send itself applies no floor: it pays `ceil(size * rate)`.
+ */
+const UTXO_FEE_FLOORS: Record<string, number> = {
+  BTC: 1000,
+  LTC: 1000
+}
+
+/**
+ * Size (vB) of a UTXO send as xchainjs' selector prices it: `UtxoSelector.calculateFee`
+ * (`node_modules/@xchainjs/xchain-utxo/lib/index.js` ~1014) = BASE 10 + 68 per input + 31 per output, constants in
+ * `TX_SIZE_CONSTANTS` (~248). BTC, LTC and BCH all select through it (`extraOutputs = 1 + memo`, plus one
+ * change output when the selector keeps change; `transferMax` / `calculateMaxSendableAmount`, ~1400, uses
+ * `hasMemo ? 2 : 1` outputs and every UTXO as input).
+ */
+export const utxoSendSize = ({
+  inputCount,
+  hasMemo,
+  sendMax
+}: {
+  inputCount: number
+  hasMemo: boolean
+  sendMax: boolean
+}): number => {
+  const outputs = 1 + (hasMemo ? 1 : 0) + (sendMax ? 0 : 1)
+  return (
+    TX_SIZE_CONSTANTS.BASE_TX_SIZE +
+    inputCount * TX_SIZE_CONSTANTS.BYTES_PER_INPUT +
+    outputs * TX_SIZE_CONSTANTS.BYTES_PER_OUTPUT
+  )
+}
+
+/**
+ * Estimates the inbound fee of a UTXO swap: `ceil(size * resolveUtxoFeeRate)`, the formula the send pays.
+ *
+ * Size, in order of preference:
+ * 1. `utxoCount` known: the send's own size for ALL of the sender's UTXOs (`utxoSendSize`). The selector
+ *    picks at most that many inputs, so this is an upper bound for a normal send (it includes a change output
+ *    unless `sendMax`) and exact for a MAX sweep. Taproot inputs are priced at 68 vB like the selector does.
+ * 2. Unknown count: derived from the provider's `FeesWithRates` (`fee = max(size * rate, floor)`), never by
+ *    scaling a fee, because a floored fee is not linear in the rate. An option above the floor gives the
+ *    size, `fee / rate`; if every option is floored only the bound `size <= floor / highest rate` is known and
+ *    used. This can overshoot the paid fee considerably when all options are floored.
+ *
+ * Pass `O.none` as `oFeeData` for a plain transfer (no node `gas_rate`).
+ * Pure, so the arithmetic is testable without observables.
+ */
+export const estimateUtxoInboundFee = ({
+  chain,
+  feesWithRates,
+  oFeeData,
+  utxoCount,
+  hasMemo = true,
+  sendMax = false
+}: {
+  chain: Chain
+  feesWithRates: FeesWithRates
+  oFeeData: O.Option<ChainFeeData>
+  /** Number of UTXOs the sender holds. Unset / 0: size is derived from `feesWithRates`. */
+  utxoCount?: number
+  hasMemo?: boolean
+  sendMax?: boolean
+}): BaseAmount => {
+  const feeOption = ChainTxFeeOption.SWAP
+  const referenceRate = feesWithRates.rates[feeOption]
+  const referenceFee = feesWithRates.fees[feeOption]
+  if (!(referenceRate > 0)) return referenceFee
+
+  const rate = resolveUtxoFeeRate(chain, referenceRate, oFeeData)
+
+  if (utxoCount !== undefined && Number.isFinite(utxoCount) && utxoCount > 0) {
+    const vbytes = utxoSendSize({ inputCount: utxoCount, hasMemo, sendMax })
+    return baseAmount(Math.ceil(vbytes * rate), referenceFee.decimal)
+  }
+
+  const floor = UTXO_FEE_FLOORS[chain] ?? 0
+  const options = [FeeOption.Average, FeeOption.Fast, FeeOption.Fastest]
+    .map((option) => ({ rate: feesWithRates.rates[option], fee: feesWithRates.fees[option].amount().toNumber() }))
+    .filter(({ rate, fee }) => rate > 0 && Number.isFinite(fee))
+  if (options.length === 0) return referenceFee
+
+  const unfloored = options.filter(({ fee }) => fee > floor)
+  let vbytes: number
+  if (unfloored.length > 0) {
+    const best = unfloored.reduce((a, b) => (b.fee > a.fee ? b : a))
+    vbytes = Math.round(best.fee / best.rate)
+  } else {
+    vbytes = Math.ceil(floor / Math.max(...options.map((option) => option.rate)))
+  }
+  return baseAmount(Math.ceil(vbytes * rate), referenceFee.decimal)
 }
 
 /**
