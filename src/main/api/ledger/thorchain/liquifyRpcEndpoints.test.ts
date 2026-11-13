@@ -15,7 +15,7 @@ describe('main/api/ledger/thorchain/liquifyRpcEndpoints', () => {
 
   it('turns the public Liquify RPC into an {url, headers} endpoint on mainnet (key stays out of the URL)', () => {
     const [endpoint] = asEndpoints(withLiquifyRpcHeaderKey([PUBLIC_LIQUIFY_THORNODE_RPC], Network.Mainnet, FAKE))
-    expect(endpoint).toEqual({ url: PUBLIC_LIQUIFY_THORNODE_RPC, headers: { 'X-API-KEY': FAKE } })
+    expect(endpoint).toEqual({ url: 'https://gateway.liquify.com/', headers: { 'X-API-KEY': FAKE } })
     expect(JSON.stringify((endpoint as RpcHttpEndpoint).url)).not.toContain(FAKE)
   })
 
@@ -56,7 +56,7 @@ describe('main/api/ledger/thorchain/liquifyRpcEndpoints', () => {
     await client.execute({ jsonrpc: '2.0', id: 1, method: 'health', params: {} })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, init] = fetchMock.mock.calls[0]
-    expect(String(url)).toBe(PUBLIC_LIQUIFY_THORNODE_RPC)
+    expect(String(url)).toBe('https://gateway.liquify.com/')
     expect(String(url)).not.toContain(FAKE)
     expect(init.headers['X-API-KEY']).toBe(FAKE)
   })

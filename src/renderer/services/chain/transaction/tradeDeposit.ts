@@ -39,7 +39,8 @@ export const tradeDeposit$ = ({
   walletAccount,
   walletIndex,
   hdMode,
-  protocol
+  protocol,
+  sendMax
 }: DepositParams): DepositState$ => {
   // total of progress
   const total = O.some(100)
@@ -88,7 +89,8 @@ export const tradeDeposit$ = ({
         amount,
         memo,
         feeOption: ChainTxFeeOption.DEPOSIT,
-        protocol
+        protocol,
+        sendMax
       })
     }),
     liveData.chain((txHash) => {

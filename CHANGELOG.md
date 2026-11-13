@@ -6,6 +6,15 @@
   in-repo human changelog — keep it updated when cutting releases.
 -->
 
+# 1.47.2 (2026-11-13)
+
+Patch on `v1.47.1`.
+
+## Update/Fixes
+
+- fix(trade): a chain-asset trade deposit reserves the network fee. Max on a UTXO chain or Cardano sweeps so the fee comes out of the inputs. Token deposits are unchanged. A UTXO failure shows the error message instead of `UtxoError: …` [#1312](https://github.com/asgardex/asgardex-desktop/pull/1312)
+- fix(liquify): send keyed THORNode RPC to the gateway root. `https://gateway.liquify.com/chain/thorchain_rpc` returns 404 once the API key is set, which failed trade-asset sends with `Bad status on response: 404` [#1312](https://github.com/asgardex/asgardex-desktop/pull/1312)
+
 # 1.47.1 (2026-11-12)
 
 PRs merged to `develop` since tag `v1.47.0`.

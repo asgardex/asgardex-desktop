@@ -5,6 +5,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { observableState } from '../../../helpers/stateHelper'
+import { getUtxoErrorMessage } from '../../../helpers/utxoErrorHelper'
 import { TxHashRD, TxHashLD, ErrorId } from '../../wallet/types'
 import { XChainClient$ } from '../types'
 
@@ -39,7 +40,7 @@ export const createTransferService = <Client extends XChainClient>(client$: XCha
       RxOp.catchError((e): TxHashLD =>
         Rx.of(
           RD.failure({
-            msg: e.toString(),
+            msg: getUtxoErrorMessage(e) ?? e?.message ?? e.toString(),
             errorId: ErrorId.SEND_TX
           })
         )

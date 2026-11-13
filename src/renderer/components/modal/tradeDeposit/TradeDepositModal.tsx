@@ -17,6 +17,7 @@ import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import * as Rx from 'rxjs'
 import { THORChain, MAYAChain, AssetCacao, AssetBTC } from '../../../../shared/utils/chainIds'
 
 import { isLedgerWallet } from '../../../../shared/utils/guard'
@@ -24,17 +25,20 @@ import { WalletType } from '../../../../shared/wallet/types'
 import { useEvmContext } from '../../../contexts/EvmContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
-import { getEVMTokenAddressForChain } from '../../../helpers/assetHelper'
+import { getEVMTokenAddressForChain, isChainAsset, sendMaxFromPercent } from '../../../helpers/assetHelper'
 import { isEvmChainToken } from '../../../helpers/evmHelper'
+import { sequenceTOption } from '../../../helpers/fpHelpers'
 import { logger } from '../../../helpers/logger'
 import { useERC20Approval } from '../../../hooks/useERC20Approval'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { INITIAL_DEPOSIT_STATE } from '../../../services/chain/const'
+import { poolInboundFee$ } from '../../../services/chain/fees/common'
 import { tradeDeposit$, generateTradeMemo } from '../../../services/chain/transaction/tradeDeposit'
 import { DepositState } from '../../../services/chain/types'
 import { ApproveParams } from '../../../services/evm/types'
 import { ChainBalance, WalletBalance, ValidatePasswordHandler } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
+import { AssetWithAmount } from '../../../types/asgardex'
 import { AssetInput } from '../../uielements/assets/assetInput'
 import { Button, BaseButton } from '../../uielements/button'
 import { Label } from '../../uielements/label'
@@ -43,6 +47,7 @@ import { ProtocolSwitch } from '../../uielements/protocolSwitch'
 import { ProtocolsLp } from '../../uielements/protocolSwitch/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../confirmation'
 import { UnifiedTxModal, getDepositTimerValue } from '../tx'
+import { tradeDepositSpendable } from './spendable'
 
 // Modal states for transaction flow
 enum ModalState {
@@ -97,6 +102,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
 
   const [selectedAsset, setSelectedAsset] = useState<O.Option<AnyAsset>>(O.none)
   const [amount, setAmount] = useState('')
+  const [sendMax, setSendMax] = useState(false)
   const [selectedWalletType, setSelectedWalletType] = useState<WalletType>(WalletType.Keystore)
   // Chainflip has no trade accounts. Anything other than MAYA starts on THORChain.
   const [selectedProtocol, setSelectedProtocol] = useState<string>(
@@ -193,6 +199,42 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
       )
     )
   }, [selectedAsset, selectedWalletType, availableAssets])
+
+  // Inbound fee for the TRADE+ memo. A chain asset pays this from the amount
+  // being deposited; without it a max BTC deposit fails UTXO selection.
+  const inboundFee$ = useMemo(() => {
+    return FP.pipe(
+      selectedAsset,
+      O.fold(
+        (): Rx.Observable<RD.RemoteData<Error, AssetWithAmount>> => Rx.of(RD.initial),
+        (asset) => {
+          const memo = protocolAddress ? generateTradeMemo(protocolAddress) : ''
+          const sender = FP.pipe(
+            selectedAssetBalance,
+            O.map((balance) => balance.walletAddress),
+            O.toUndefined
+          )
+          return poolInboundFee$(asset, memo, sender)
+        }
+      )
+    )
+  }, [selectedAsset, protocolAddress, selectedAssetBalance])
+  const inboundFeeRD = useObservableState(inboundFee$, RD.initial)
+
+  const maxSpendable = useMemo(
+    () =>
+      FP.pipe(
+        sequenceTOption(selectedAsset, selectedAssetBalance),
+        O.chain(([asset, balance]) =>
+          tradeDepositSpendable(
+            asset,
+            balance.amount,
+            RD.isSuccess(inboundFeeRD) ? O.some(inboundFeeRD.value.amount) : O.none
+          )
+        )
+      ),
+    [selectedAsset, selectedAssetBalance, inboundFeeRD]
+  )
 
   // Get ERC20 services dynamically based on selected asset chain
   const selectedAssetChain = FP.pipe(
@@ -317,6 +359,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     (asset: AnyAsset) => {
       setSelectedAsset(O.some(asset))
       setAmount('')
+      setSendMax(false)
 
       // Find the first available balance for this asset and set the wallet type accordingly
       const assetBalance = FP.pipe(
@@ -343,26 +386,29 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
   const handleWalletTypeSelect = useCallback((walletType: WalletType) => {
     setSelectedWalletType(walletType)
     setAmount('') // Reset amount when wallet type changes
+    setSendMax(false)
   }, [])
 
   const handleAmountInput = useCallback((value: BaseAmount) => {
     const assetAmountValue = baseToAsset(value)
     setAmount(assetAmountValue.amount().toString())
+    setSendMax(false)
   }, [])
 
   const handleAmountPercent = useCallback(
     (percents: number) => {
       FP.pipe(
-        selectedAssetBalance,
-        O.map((balance) => {
-          const assetAmountValue = baseToAsset(balance.amount)
+        sequenceTOption(selectedAsset, maxSpendable),
+        O.map(([asset, spendable]) => {
+          const assetAmountValue = baseToAsset(spendable)
             .amount()
             .multipliedBy(percents / 100)
-          setAmount(assetAmountValue.toFixed(balance.amount.decimal))
+          setAmount(assetAmountValue.toFixed(spendable.decimal))
+          setSendMax(sendMaxFromPercent(asset, percents) === true)
         })
       )
     },
-    [selectedAssetBalance]
+    [selectedAsset, maxSpendable]
   )
 
   const assetInputDecimal = useMemo(
@@ -419,25 +465,27 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
 
   const isValidAmount = useMemo(() => {
     return FP.pipe(
-      selectedAssetBalance,
+      sequenceTOption(selectedAssetBalance, maxSpendable),
       O.fold(
         () => false,
-        (balance) => {
+        ([balance, spendable]) => {
           try {
-            return assetInputAmount.amount.gt(0) && balance.amount.gte(assetInputAmount.amount)
+            const entered = assetInputAmount.amount
+            return entered.gt(0) && balance.amount.gte(entered) && spendable.gte(entered)
           } catch {
             return false
           }
         }
       )
     )
-  }, [selectedAssetBalance, assetInputAmount])
+  }, [selectedAssetBalance, maxSpendable, assetInputAmount])
 
   const handleProtocolChange = useCallback((newProtocol: string) => {
     setSelectedProtocol(newProtocol)
     // Reset form when protocol changes
     setSelectedAsset(O.none)
     setAmount('')
+    setSendMax(false)
     setSelectedWalletType(WalletType.Keystore)
   }, [])
 
@@ -521,7 +569,8 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
                     walletAccount: balance.walletAccount,
                     walletIndex: balance.walletIndex,
                     hdMode: balance.hdMode,
-                    protocol: currentProtocol
+                    protocol: currentProtocol,
+                    sendMax
                   })
                 )
               }
@@ -539,6 +588,7 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
     selectedAssetBalance,
     amount,
     selectedWalletType,
+    sendMax,
     subscribeDepositState
   ])
 
@@ -797,6 +847,25 @@ export const TradeDepositModal = (props: TradeDepositModalProps): JSX.Element =>
             useLedgerHandler={FP.constVoid}
             protocol={currentProtocol}
           />
+
+          {FP.pipe(
+            selectedAsset,
+            O.filter(isChainAsset),
+            O.fold(
+              () => null,
+              () =>
+                RD.isFailure(inboundFeeRD) ? (
+                  <Label size="small" color="error">
+                    {inboundFeeRD.error.message}
+                  </Label>
+                ) : RD.isSuccess(inboundFeeRD) ? (
+                  <Label size="small" color="gray">
+                    {intl.formatMessage({ id: 'common.fee.estimated' })}{' '}
+                    {baseToAsset(inboundFeeRD.value.amount).amount().toFixed()} {inboundFeeRD.value.asset.ticker}
+                  </Label>
+                ) : null
+            )
+          )}
 
           {/* Wallet Type Selection */}
           {O.isSome(selectedAsset) && availableWalletTypes.length > 1 && (
