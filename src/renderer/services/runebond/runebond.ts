@@ -1,3 +1,4 @@
+import { fromBech32, toBech32 } from '@cosmjs/encoding'
 import * as RD from '@devexperts/remote-data-ts'
 import {
   ApiError,
@@ -55,11 +56,27 @@ export const RUNEBOND_LISTING_ADDRESS: Address = 'thor1xazgmh7sv0p393t9ntj6q9p52
 
 export const RUNEBOND_LISTING_MIN_AMOUNT: BaseAmount = baseAmount(10_000_000, THORCHAIN_DECIMAL)
 
-export const RUNEBOND_AFFILIATE_ADDRESS: O.Option<Address> = FP.pipe(
+const THOR_ACCOUNT_BYTES = 20
+
+/**
+ * Mainnet THORChain account address.
+ *
+ * `fromBech32` checks the checksum and rejects mixed case. A `thor1` prefix test
+ * accepts any string that starts that way, including a broken checksum.
+ * The stored value is the lowercase form.
+ */
+export const thorMainnetAddress = (value: string): O.Option<Address> => {
+  try {
+    const { prefix, data } = fromBech32(value.trim())
+    if (prefix !== 'thor' || data.length !== THOR_ACCOUNT_BYTES) return O.none
+    return O.some(toBech32(prefix, data))
+  } catch {
+    return O.none
+  }
+}
+
+export const RUNEBOND_AFFILIATE_ADDRESS: O.Option<Address> = thorMainnetAddress(
   envOrDefault(import.meta.env.VITE_RUNEBOND_AFFILIATE_ADDRESS, '')
-    .trim()
-    .toLowerCase(),
-  O.fromPredicate((address) => address.startsWith('thor1'))
 )
 
 const INTEGRATORS_URL = envOrDefault(import.meta.env.VITE_RUNEBOND_INTEGRATORS_URL, '')

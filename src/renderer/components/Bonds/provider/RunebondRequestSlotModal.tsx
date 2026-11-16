@@ -118,7 +118,7 @@ export const RunebondRequestSlotModal = ({
     [node.address, onFinish, signed]
   )
 
-  const { isLoading, oFee, startSigning, modals } = useRunebondTxFlow({
+  const { isLoading, oFee, startSigning, sendBlockedReason, modals } = useRunebondTxFlow({
     network,
     signer,
     fee: feeRD,
@@ -136,14 +136,16 @@ export const RunebondRequestSlotModal = ({
     oFee,
     O.exists((fee) => balanceByAddress(signer.address).lt(fee.plus(RUNEBOND_LISTING_MIN_AMOUNT)))
   )
-  const error = notEnough
-    ? intl.formatMessage(
-        { id: 'bonds.runebond.requestSlot.error.notEnough' },
-        { amount: formatRuneAmount(RUNEBOND_LISTING_MIN_AMOUNT) }
-      )
-    : intendedBond === null
-      ? intl.formatMessage({ id: 'bonds.runebond.requestSlot.error.empty' })
-      : null
+  const error = sendBlockedReason
+    ? sendBlockedReason
+    : notEnough
+      ? intl.formatMessage(
+          { id: 'bonds.runebond.requestSlot.error.notEnough' },
+          { amount: formatRuneAmount(RUNEBOND_LISTING_MIN_AMOUNT) }
+        )
+      : intendedBond === null
+        ? intl.formatMessage({ id: 'bonds.runebond.requestSlot.error.empty' })
+        : null
 
   const warning =
     intendedBond === null

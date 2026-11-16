@@ -572,6 +572,7 @@ const bonds: BondsMessages = {
   'bonds.runebond.requestSlot.error.notEnough':
     'RUNE이 부족합니다. 이 주소에 {amount} RUNE과 네트워크 수수료가 필요합니다.',
   'bonds.runebond.requestSlot.error.empty': '본딩할 금액을 입력하세요.',
+  'bonds.runebond.sendHalted': 'THORChain이 중단되었거나 중단 상태를 아직 불러오는 동안 RUNE 전송이 차단됩니다.',
   'bonds.provider.pendingRequests.title': '대기 중인 요청 · {count}',
   'bonds.provider.pendingRequests.daysLeft': '{count, plural, other {#일}} 남음',
   'bonds.provider.pendingRequests.requested': '{date} 요청',

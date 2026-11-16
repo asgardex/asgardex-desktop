@@ -1220,6 +1220,7 @@ type BondsMessageKey =
   | 'bonds.runebond.requestSlot.warning.aboveRoom'
   | 'bonds.runebond.requestSlot.error.notEnough'
   | 'bonds.runebond.requestSlot.error.empty'
+  | 'bonds.runebond.sendHalted'
   | 'bonds.provider.pendingRequests.title'
   | 'bonds.provider.pendingRequests.daysLeft'
   | 'bonds.provider.pendingRequests.requested'

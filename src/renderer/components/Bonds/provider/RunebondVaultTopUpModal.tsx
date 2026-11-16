@@ -153,7 +153,7 @@ const RunebondVaultTopUpForm = ({
   const settled: RunebondVaultSettled = useCallback((fresh) => fresh.known && fresh.balance.gt(balance), [balance])
   const finish = useCallback(() => onFinish(settled), [onFinish, settled])
 
-  const { isLoading, oFee, footerLabel, feeError, startSigning, modals } = useRunebondTxFlow({
+  const { isLoading, oFee, footerLabel, feeError, startSigning, sendBlockedReason, modals } = useRunebondTxFlow({
     network,
     signer,
     fee: feeRD,
@@ -166,7 +166,13 @@ const RunebondVaultTopUpForm = ({
   })
 
   const balanceError = amount !== null ? feeError(walletBalance, amount) : null
-  const submitDisabled = isLoading || O.isNone(oFee) || amount === null || balanceError !== null || amountError !== null
+  const submitDisabled =
+    isLoading ||
+    O.isNone(oFee) ||
+    amount === null ||
+    balanceError !== null ||
+    amountError !== null ||
+    sendBlockedReason !== null
 
   const formatVault = (value: BaseAmount) => (isPrivate ? hiddenString : `${formatRuneAmount(value)} RUNE`)
 
@@ -214,8 +220,10 @@ const RunebondVaultTopUpForm = ({
             {amountError && <ErrorLine>{amountError}</ErrorLine>}
           </div>
 
-          {balanceError && (
-            <span className="mt-2 font-main text-[14px] text-error0 dark:text-error0d">{balanceError}</span>
+          {(sendBlockedReason || balanceError) && (
+            <span className="mt-2 font-main text-[14px] text-error0 dark:text-error0d">
+              {sendBlockedReason ?? balanceError}
+            </span>
           )}
 
           <div className="mt-6 flex flex-col rounded-lg bg-bg2 p-4 sm:p-5 dark:bg-bg2d">

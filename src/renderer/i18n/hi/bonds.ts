@@ -579,6 +579,8 @@ const bonds: BondsMessages = {
   'bonds.runebond.requestSlot.warning.aboveRoom': 'ᚱ{amount} की शेष जगह से अधिक। ऑपरेटर इसे शायद स्वीकृत न करे।',
   'bonds.runebond.requestSlot.error.notEnough': 'पर्याप्त RUNE नहीं। इस पते पर {amount} RUNE और नेटवर्क शुल्क चाहिए।',
   'bonds.runebond.requestSlot.error.empty': 'वह बॉन्ड दर्ज करें जो आप करना चाहते हैं।',
+  'bonds.runebond.sendHalted':
+    'THORChain रुका होने पर, या उसका रुकावट-स्थिति अभी लोड हो रही हो, तो RUNE भेजना अवरुद्ध है।',
   'bonds.provider.pendingRequests.title': 'लंबित अनुरोध · {count}',
   'bonds.provider.pendingRequests.daysLeft': '{count, plural, one {# दिन} other {# दिन}} शेष',
   'bonds.provider.pendingRequests.requested': '{date} को अनुरोध किया',

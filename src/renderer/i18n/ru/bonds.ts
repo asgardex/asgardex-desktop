@@ -581,6 +581,8 @@ const bonds: BondsMessages = {
   'bonds.runebond.requestSlot.error.notEnough':
     'Недостаточно RUNE. На этом адресе нужно {amount} RUNE плюс комиссия сети.',
   'bonds.runebond.requestSlot.error.empty': 'Введите планируемый бонд.',
+  'bonds.runebond.sendHalted':
+    'Отправка RUNE заблокирована, пока THORChain остановлен или статус остановки ещё загружается.',
   'bonds.provider.pendingRequests.title': 'Ожидающие запросы · {count}',
   'bonds.provider.pendingRequests.daysLeft':
     '{count, plural, one {остался # день} few {осталось # дня} many {осталось # дней} other {осталось # дня}}',

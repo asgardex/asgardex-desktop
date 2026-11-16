@@ -1,6 +1,7 @@
+import { baseAmount } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 
-import { parseSwapMemoDestination, swapDestinationMatches } from './memoHelper'
+import { getRunebondWhitelistRequestMemo, parseSwapMemoDestination, swapDestinationMatches } from './memoHelper'
 
 describe('helpers/memoHelper', () => {
   describe('parseSwapMemoDestination', () => {
@@ -51,6 +52,24 @@ describe('helpers/memoHelper', () => {
           '0x0000000000000000000000000000000000000000'
         )
       ).toBe(false)
+    })
+  })
+
+  describe('getRunebondWhitelistRequestMemo', () => {
+    it('builds a TB:WHT memo, and leaves the affiliate off when there is none', () => {
+      const node = 'thor1nodeaddress'
+      const provider = 'thor1provideraddress'
+      const intendedBond = baseAmount(250_000_000, 8)
+
+      expect(getRunebondWhitelistRequestMemo(node, provider, intendedBond, 'thor1affiliate')).toBe(
+        'TB:WHT:thor1nodeaddress:thor1provideraddress:250000000:thor1affiliate'
+      )
+      expect(getRunebondWhitelistRequestMemo(node, provider, intendedBond)).toBe(
+        'TB:WHT:thor1nodeaddress:thor1provideraddress:250000000'
+      )
+      expect(getRunebondWhitelistRequestMemo(node, provider, intendedBond, undefined)).toBe(
+        'TB:WHT:thor1nodeaddress:thor1provideraddress:250000000'
+      )
     })
   })
 })

@@ -12,6 +12,8 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { THORChain } from '../../../../shared/utils/chainIds'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../shared/utils/guard'
 import { ZERO_BASE_AMOUNT } from '../../../const'
+import { isRuneSendDisabled } from '../../../helpers/haltedChains'
+import { useThorchainMimirHalt } from '../../../hooks/useMimirHalt'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { FeeRD, SendTxStateHandler } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
@@ -56,7 +58,10 @@ export type BondTxFlow<R extends BondTxRequest = BondTxRequest> = {
   modals: JSX.Element
 }
 
-export type RunebondTxFlow = BondTxFlow<RunebondTxRequest>
+export type RunebondTxFlow = BondTxFlow<RunebondTxRequest> & {
+  /** Set while a native RUNE send would be rejected. The sign button must stay disabled. */
+  sendBlockedReason: string | null
+}
 
 type TxFlowParams<R extends BondTxRequest> = TxFlowCommonParams & {
   txType: 'interact' | 'send'
@@ -267,6 +272,15 @@ export const useBondTxFlow = ({ interact$, ...params }: BondTxFlowParams): BondT
 }
 
 export const useRunebondTxFlow = ({ transfer$, ...params }: RunebondTxFlowParams): RunebondTxFlow => {
+  const intl = useIntl()
+  // Listing, vault top-up, and slot requests are native RUNE `MsgSend`s. THORNode rejects those
+  // while THORChain is halted, and while the halt status has not loaded (`isRuneSendDisabled`).
+  // The shared halt stream is the same one wallet sends use.
+  const { mimirHalt } = useThorchainMimirHalt()
+  const sendBlockedReason = isRuneSendDisabled(mimirHalt)
+    ? intl.formatMessage({ id: 'bonds.runebond.sendHalted' })
+    : null
+
   const { signer } = params
   const submit = useCallback(
     ({ memo, amount }: RunebondTxRequest): Rx.Observable<TxHashRD> =>
@@ -283,11 +297,19 @@ export const useRunebondTxFlow = ({ transfer$, ...params }: RunebondTxFlowParams
       }).pipe(RxOp.map(({ status }) => status)),
     [signer, transfer$]
   )
-  return useTxFlow({
+  const { startSigning: beginSigning, ...flow } = useTxFlow({
     ...params,
     txType: 'send',
     requiredAmount: RUNEBOND_LISTING_MIN_AMOUNT,
     finishOnFailure: false,
     submit
   })
+  const startSigning = useCallback(
+    (request: RunebondTxRequest) => {
+      if (sendBlockedReason !== null) return
+      beginSigning(request)
+    },
+    [beginSigning, sendBlockedReason]
+  )
+  return { ...flow, startSigning, sendBlockedReason }
 }

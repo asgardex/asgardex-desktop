@@ -582,6 +582,8 @@ const bonds: BondsMessages = {
   'bonds.runebond.requestSlot.error.notEnough':
     'RUNE insuficiente. Necesitas {amount} RUNE más la comisión de red en esta dirección.',
   'bonds.runebond.requestSlot.error.empty': 'Introduce el bond que piensas hacer.',
+  'bonds.runebond.sendHalted':
+    'Los envíos de RUNE están bloqueados mientras THORChain esté detenido o su estado de pausa aún se esté cargando.',
   'bonds.provider.pendingRequests.title': 'Solicitudes pendientes · {count}',
   'bonds.provider.pendingRequests.daysLeft': '{count, plural, one {queda # día} other {quedan # días}}',
   'bonds.provider.pendingRequests.requested': 'solicitado el {date}',

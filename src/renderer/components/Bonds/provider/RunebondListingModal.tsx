@@ -212,20 +212,22 @@ export const RunebondListingModal = ({
   )
   const finish = useCallback(() => onFinish(settled), [onFinish, settled])
 
-  const { isLoading, oFee, feeLabel, footerLabel, feeError, startSigning, modals } = useRunebondTxFlow({
-    network,
-    signer,
-    fee: feeRD,
-    transfer$,
-    validatePassword$,
-    openExplorerTxUrl,
-    getExplorerTxUrl,
-    onClose,
-    onFinish: finish
-  })
+  const { isLoading, oFee, feeLabel, footerLabel, feeError, startSigning, sendBlockedReason, modals } =
+    useRunebondTxFlow({
+      network,
+      signer,
+      fee: feeRD,
+      transfer$,
+      validatePassword$,
+      openExplorerTxUrl,
+      getExplorerTxUrl,
+      onClose,
+      onFinish: finish
+    })
 
   const balanceError = feeError(walletBalance, RUNEBOND_LISTING_MIN_AMOUNT)
-  const submitDisabled = isLoading || O.isNone(oFee) || balanceError !== null || !inputComplete
+  const submitDisabled =
+    isLoading || O.isNone(oFee) || balanceError !== null || !inputComplete || sendBlockedReason !== null
 
   const title = intl.formatMessage({
     id: blockedByVault
@@ -357,7 +359,11 @@ export const RunebondListingModal = ({
   const renderForm = () => (
     <>
       {!isDelist && renderFields()}
-      {balanceError && <span className="mt-2 font-main text-[14px] text-error0 dark:text-error0d">{balanceError}</span>}
+      {(sendBlockedReason || balanceError) && (
+        <span className="mt-2 font-main text-[14px] text-error0 dark:text-error0d">
+          {sendBlockedReason ?? balanceError}
+        </span>
+      )}
 
       {renderSummary()}
 
