@@ -54,6 +54,19 @@ export const shortQuoteError = (message: string): string => {
   return `${stripped.slice(0, 177)}...`
 }
 
+/**
+ * Slippage for a direct THOR or MAYA trade quote.
+ *
+ * `tolerance_bps` sets the price limit from the feeless spot rate and checks
+ * it against a non-streaming simulation. A streamed swap whose reported slip
+ * is a few basis points is then rejected once the size crosses that limit,
+ * and the failing size moves with the tolerance. `liquidity_tolerance_bps`
+ * applies the tolerance to the quoted output after fees.
+ */
+export const tradeQuoteTolerance = (slipTolerancePercent: number): { liquidityToleranceBps: number } => ({
+  liquidityToleranceBps: slipTolerancePercent * 100
+})
+
 export const thorTradeQuoteToAggregator = (quote: TxDetails): AggregatorQuoteSwap & QuoteInbound => ({
   protocol: 'Thorchain',
   toAddress: quote.toAddress,

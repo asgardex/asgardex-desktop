@@ -6,7 +6,18 @@ import { describe, expect, it } from 'vitest'
 
 import { THORChain } from '../../shared/utils/chainIds'
 import type { PoolAddress } from '../services/midgard/midgardTypes'
-import { poolAddressForQuote, shortQuoteError, thorTradeQuoteToAggregator } from './tradeQuote'
+import { poolAddressForQuote, shortQuoteError, thorTradeQuoteToAggregator, tradeQuoteTolerance } from './tradeQuote'
+
+describe('tradeQuoteTolerance', () => {
+  it('sends the percent setting as liquidity_tolerance_bps', () => {
+    expect(tradeQuoteTolerance(5)).toEqual({ liquidityToleranceBps: 500 })
+    expect(tradeQuoteTolerance(0.5)).toEqual({ liquidityToleranceBps: 50 })
+  })
+
+  it('does not set tolerance_bps', () => {
+    expect(tradeQuoteTolerance(5)).not.toHaveProperty('toleranceBps')
+  })
+})
 
 describe('shortQuoteError', () => {
   it('drops the contract address and keeps the asset names', () => {

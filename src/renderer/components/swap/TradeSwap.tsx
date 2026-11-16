@@ -62,7 +62,7 @@ import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { liveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
 import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
-import { poolAddressForQuote } from '../../helpers/tradeQuote'
+import { poolAddressForQuote, tradeQuoteTolerance } from '../../helpers/tradeQuote'
 import {
   filterWalletBalancesByAssets,
   getWalletBalanceByAssetAndWalletType,
@@ -665,7 +665,6 @@ export const TradeSwap = ({
           const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : getAsgardexThorname(network)
           const streamingInt = streamingInterval
           const streaminQuant = streamingQuantity
-          const toleranceBps = slipTolerance * 100 // convert to basis points
           return {
             fromAsset: fromAsset,
             destinationAsset: destinationAsset,
@@ -673,7 +672,7 @@ export const TradeSwap = ({
             destinationAddress: address,
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
-            toleranceBps: toleranceBps,
+            ...tradeQuoteTolerance(slipTolerance),
             affiliateAddress: affiliate,
             affiliateBps: 0
           }
@@ -783,7 +782,7 @@ export const TradeSwap = ({
             amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
             streamingInterval: streamingInterval,
             streamingQuantity: streamingQuantity,
-            toleranceBps: slipTolerance * 100, // convert to basis points
+            ...tradeQuoteTolerance(slipTolerance),
             affiliateAddress: affiliateName,
             affiliateBps: 0
           }
