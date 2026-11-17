@@ -25,7 +25,7 @@ import {
   filterQuotableProtocols,
   isBtcTaprootAddress
 } from '../helpers/protocolTradingHalt'
-import { dexTradeQuoteToAggregator, thorTradeQuoteToAggregator } from '../helpers/tradeQuote'
+import { dexTradeQuoteToAggregator, thorTradeQuoteToAggregator, tradeQuoteTolerance } from '../helpers/tradeQuote'
 import { getCurrentNetworkState } from '../services/app/service'
 import { useAggregator } from '../store/aggregator/hooks'
 import { useThorchainMimirHalt } from './useMimirHalt'
@@ -269,7 +269,7 @@ export const useSwapQuote = ({
           destinationAddress: quoteOnly || !destinationAddress ? undefined : destinationAddress,
           streamingInterval: streaming.interval,
           streamingQuantity: streaming.quantity,
-          toleranceBps: slipTolerance * 100,
+          ...tradeQuoteTolerance(slipTolerance),
           affiliateAddress: sourceWalletAddress === ASGARDEX_ADDRESS ? undefined : getAsgardexThorname(network),
           affiliateBps: 0
         }
