@@ -55,7 +55,6 @@ type Props = {
   swapMinResultLabel: string
   streamingInterval: number
   streamingQuantity: number
-  isCausedSlippage: boolean
   sourceChain: Chain
   targetAsset: AnyAsset
   oQuoteProtocol: O.Option<ExtendedQuoteSwap>
@@ -94,7 +93,6 @@ export const SwapDetailsPanel = ({
   swapMinResultLabel,
   streamingInterval,
   streamingQuantity,
-  isCausedSlippage,
   sourceChain,
   targetAsset,
   oQuoteProtocol,
@@ -121,12 +119,12 @@ export const SwapDetailsPanel = ({
   const slippageValue = useMemo(
     () =>
       formatAssetAmountCurrency({
-        amount: priceAmountToSwap.assetAmount.times((swapSlippage > 0 ? swapSlippage : slipTolerance) / 100),
+        amount: priceAmountToSwap.assetAmount.times(swapSlippage / 100),
         asset: priceAmountToSwap.asset,
         decimal: isUSDAsset(priceAmountToSwap.asset) ? 2 : 6,
         trimZeros: !isUSDAsset(priceAmountToSwap.asset)
       }) + ` (${swapSlippage.toFixed(2)}%)`,
-    [priceAmountToSwap.asset, priceAmountToSwap.assetAmount, slipTolerance, swapSlippage]
+    [priceAmountToSwap.asset, priceAmountToSwap.assetAmount, swapSlippage]
   )
 
   const transactionTimeNode = (
@@ -249,12 +247,7 @@ export const SwapDetailsPanel = ({
 
     return (
       <>
-        <div
-          className={clsx(
-            'flex w-full justify-between font-main-bold text-[14px]',
-            { 'pt-10px': showDetails },
-            { 'text-error0 dark:text-error0d': isCausedSlippage }
-          )}>
+        <div className={clsx('flex w-full justify-between font-main-bold text-[14px]', { 'pt-10px': showDetails })}>
           <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'swap.slip.title' })}</div>
           <div className="text-text2 dark:text-text2d">{slippageValue}</div>
         </div>

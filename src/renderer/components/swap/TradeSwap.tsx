@@ -1121,13 +1121,6 @@ export const TradeSwap = ({
     streamingQuantity
   ])
 
-  // Check to see slippage greater than tolerance
-  // This is handled by thornode
-  const isCausedSlippage = useMemo(() => {
-    const result = swapSlippage > slipTolerance
-    return result
-  }, [swapSlippage, slipTolerance])
-
   type RateDirection = 'fromSource' | 'fromTarget'
   const [rateDirection, setRateDirection] = useState<RateDirection>('fromSource')
 
@@ -1620,7 +1613,6 @@ export const TradeSwap = ({
         sourceChainFeeError ||
         RD.isPending(swapFeesRD) ||
         minAmountError ||
-        isCausedSlippage ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax1e8) ||
         O.isNone(oRecipientAddress) ||
         !canSwap ||
@@ -1639,7 +1631,6 @@ export const TradeSwap = ({
       sourceChainFeeError,
       swapFeesRD,
       minAmountError,
-      isCausedSlippage,
       swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax1e8,
       oRecipientAddress,
@@ -1934,15 +1925,12 @@ export const TradeSwap = ({
                     <div
                       className={clsx(
                         'flex w-full justify-between font-main-bold text-[14px]',
-                        showDetails ? 'pt-10px' : '',
-                        isCausedSlippage ? 'text-error0 dark:text-error0d' : ''
+                        showDetails ? 'pt-10px' : ''
                       )}>
                       <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'swap.slip.title' })}</div>
                       <div className="text-text2 dark:text-text2d">
                         {formatAssetAmountCurrency({
-                          amount: priceAmountToSwapMax1e8.assetAmount.times(
-                            (swapSlippage > 0 ? swapSlippage : slipTolerance) / 100
-                          ), // Find the value of swap slippage
+                          amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100),
                           asset: priceAmountToSwapMax1e8.asset,
                           decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
                           trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)

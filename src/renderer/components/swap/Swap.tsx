@@ -1001,9 +1001,6 @@ export const Swap = ({
     )
   }, [oQuoteProtocol, swapResultAmountMax.baseAmount, zeroTargetBaseAmountMax])
 
-  // Check to see slippage greater than tolerance
-  const isCausedSlippage = useMemo(() => swapSlippage > slipTolerance, [swapSlippage, slipTolerance])
-
   const [rateDirection, setRateDirection] = useState(RateDirection.Source)
 
   const rateLabel = useMemo(() => {
@@ -1935,7 +1932,6 @@ export const Swap = ({
         RD.isPending(approveState) ||
         awaitingConfirmation ||
         isApprovalCheckPending ||
-        isCausedSlippage ||
         !swapResultAmountMax.baseAmount ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax) ||
         O.isNone(effectiveRecipientAddress) ||
@@ -1955,7 +1951,6 @@ export const Swap = ({
       approveState,
       awaitingConfirmation,
       isApprovalCheckPending,
-      isCausedSlippage,
       swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax,
       effectiveRecipientAddress,
@@ -2266,7 +2261,6 @@ export const Swap = ({
             swapMinResultLabel={swapMinResultLabel}
             streamingInterval={streamingInterval}
             streamingQuantity={streamingQuantity}
-            isCausedSlippage={isCausedSlippage}
             sourceChain={sourceChain}
             targetAsset={targetAsset}
             oQuoteProtocol={oQuoteProtocol}
