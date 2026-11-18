@@ -216,6 +216,9 @@ const bonds: BondsMessages = {
   'bonds.churn.halted': 'Churn रुका हुआ',
   'bonds.churn.whenResumes': 'churn फिर शुरू होने पर',
   'bonds.churn.haltedThen': 'churn फिर शुरू होने तक कोई नोड न जुड़ता है न निकलता है · फिर: {verdict}',
+  'bonds.paused.title': 'Bonding रुका हुआ',
+  'bonds.paused.description':
+    'THORChain ने bonding रोक दिया है। रोक हटने तक नए bond, bond provider की whitelisting और ऑपरेटर शुल्क में बदलाव अस्वीकार होंगे। Unbond पर कोई असर नहीं है।',
   'bonds.outlook.nextChurnIn': 'अगला churn {time} में',
   'bonds.outlook.loading': 'गणना हो रही है · नोड सूची और नेटवर्क ऊँचाई की प्रतीक्षा',
   'bonds.outlook.ordinal': '{rank}वाँ',

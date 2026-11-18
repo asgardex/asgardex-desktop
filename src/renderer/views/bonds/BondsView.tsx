@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl'
 import { useSearchParams } from 'react-router-dom'
 
 import { SegmentedTabs, formatCountdown } from '../../components/Bonds/provider'
+import { useBondPaused } from '../../hooks/useBondPaused'
 import { useNextChurn } from '../../hooks/useNextChurn'
 import { BondsTab, TAB_QUERY_PARAM, isBondsTab } from '../../routes/bonds'
 import { BondProviderDashboardView } from './provider/BondProviderDashboardView'
@@ -18,6 +19,7 @@ export const BondsView = (): JSX.Element => {
   const [tab, setTab] = useState<BondsTab>(isBondsTab(initialTab) ? initialTab : BondsTab.BondProvider)
 
   const nextChurn = useNextChurn()
+  const bondPaused = useBondPaused()
 
   return (
     <div className="flex w-full flex-col">
@@ -56,6 +58,16 @@ export const BondsView = (): JSX.Element => {
           )
         )}
       </div>
+      {bondPaused && (
+        <div className="mb-6 flex flex-col gap-1 rounded-lg border border-warning0 bg-bg1 px-4 py-3 dark:border-warning0d dark:bg-bg1d">
+          <span className="font-main-semi-bold text-[12px] tracking-[2px] text-warning0 uppercase dark:text-warning0d">
+            {intl.formatMessage({ id: 'bonds.paused.title' })}
+          </span>
+          <span className="font-main text-[14px] text-text0 dark:text-text0d">
+            {intl.formatMessage({ id: 'bonds.paused.description' })}
+          </span>
+        </div>
+      )}
       {tab === BondsTab.BondProvider ? <BondProviderDashboardView /> : <NodeOperatorView />}
     </div>
   )

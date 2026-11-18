@@ -56,6 +56,8 @@ export const getBondMemo = (thorAddress: string, providerAddress?: string, nodeF
 
 export const getOperatorFeeMemo = (nodeAddress: string, feeBps: number) => mkMemo(['BOND', nodeAddress, '', feeBps])
 
+export const isBondMemo = (memo: string): boolean => /^bond(:|$)/i.test(memo.trim())
+
 export const getRunebondListMemo = (
   nodeAddress: string,
   minBond: BaseAmount,

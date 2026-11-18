@@ -45,6 +45,7 @@ import {
 } from '../../../../helpers/memoHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { emptyString } from '../../../../helpers/stringHelper'
+import { useBondPaused } from '../../../../hooks/useBondPaused'
 import { useMimirConstants } from '../../../../hooks/useMimirConstants'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -143,6 +144,7 @@ export const InteractFormThor = ({
   const { walletAddress } = balance
   const pricePool = usePricePool()
   const mimirKeys = useMimirConstants(['RUNEPOOLDEPOSITMATURITYBLOCKS', 'RUNEPOOLENABLED'])
+  const bondPaused = useBondPaused() && (interactType === InteractType.Bond || interactType === InteractType.Whitelist)
 
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
@@ -1064,6 +1066,11 @@ export const InteractFormThor = ({
           />
         )}
       </div>
+      {bondPaused && (
+        <div className="pt-10px font-main text-[14px] text-warning0 dark:text-warning0d">
+          {intl.formatMessage({ id: 'bonds.paused.description' })}
+        </div>
+      )}
       <div className="flex items-center justify-center">
         {interactType === InteractType.RunePool && (
           <FlatButton
@@ -1088,7 +1095,7 @@ export const InteractFormThor = ({
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
-            disabled={isLoading}
+            disabled={isLoading || bondPaused}
             type="submit"
             size="large">
             {submitLabel}

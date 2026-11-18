@@ -216,6 +216,9 @@ const bonds: BondsMessages = {
   'bonds.churn.halted': 'Churn 중단됨',
   'bonds.churn.whenResumes': 'churn 재개 시',
   'bonds.churn.haltedThen': 'churn이 재개될 때까지 어떤 노드도 들어오거나 나가지 않습니다 · 이후: {verdict}',
+  'bonds.paused.title': 'Bonding 일시 중지됨',
+  'bonds.paused.description':
+    'THORChain이 bonding을 일시 중지했습니다. 중지가 해제될 때까지 새 bond, bond provider 화이트리스트 등록, 운영자 수수료 변경이 거부됩니다. Unbond는 영향을 받지 않습니다.',
   'bonds.outlook.nextChurnIn': '다음 churn까지 {time}',
   'bonds.outlook.loading': '계산 중 · 노드 목록과 네트워크 높이를 기다리는 중',
   'bonds.outlook.ordinal': '{rank}번째',
