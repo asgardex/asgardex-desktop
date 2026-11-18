@@ -12,7 +12,7 @@ import { ZERO_BASE_AMOUNT } from '../../../const'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getBondMemo, getUnbondMemo } from '../../../helpers/memoHelper'
-import { useBondPaused } from '../../../hooks/useBondPaused'
+import { bondPauseMessageId, useBondPauseStatus } from '../../../hooks/useBondPaused'
 import { NextChurn } from '../../../hooks/useNextChurn'
 import { FeeRD } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
@@ -63,7 +63,8 @@ export const BondActionModal = ({
 
   const isBond = type === 'bond'
   const { signer } = position
-  const bondPaused = useBondPaused() && isBond
+  const bondPauseStatus = useBondPauseStatus()
+  const bondPaused = bondPauseStatus !== 'active' && isBond
 
   const [amountInput, setAmountInput] = useState<BigNumber>(bn(0))
 
@@ -221,7 +222,7 @@ export const BondActionModal = ({
 
           {bondPaused && (
             <span className="mt-4 font-main text-[14px] text-warning0 dark:text-warning0d">
-              {intl.formatMessage({ id: 'bonds.paused.description' })}
+              {intl.formatMessage({ id: bondPauseMessageId(bondPauseStatus) })}
             </span>
           )}
 

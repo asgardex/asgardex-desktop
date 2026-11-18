@@ -218,6 +218,8 @@ const bonds: BondsMessages = {
   'bonds.paused.title': 'Bonding приостановлен',
   'bonds.paused.description':
     'THORChain приостановил bonding. Новые бонды, добавление bond-провайдеров и изменение комиссии оператора отклоняются, пока пауза не снята. Unbond не затронут.',
+  'bonds.paused.unknown':
+    'Проверяем, не приостановлен ли бондинг в THORChain. Новые бонды, добавление бонд-провайдеров в белый список и изменение комиссии оператора отключены, пока статус неизвестен.',
   'bonds.outlook.nextChurnIn': 'следующий churn через {time}',
   'bonds.outlook.loading': 'Расчёт · ждём список нод и высоту сети',
   'bonds.outlook.ordinal': '{rank}-я',

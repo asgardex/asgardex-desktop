@@ -6,7 +6,7 @@ import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { isBondMemo } from '../../../helpers/memoHelper'
-import { useBondPaused } from '../../../hooks/useBondPaused'
+import { bondPauseMessageId, useBondPauseStatus } from '../../../hooks/useBondPaused'
 import { NextChurn } from '../../../hooks/useNextChurn'
 import { FeeRD } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
@@ -111,7 +111,8 @@ export const NodeOperatorActionModal = ({
   const { error: inputError, complete } = useMemo(() => spec.validate(ctx, input), [ctx, input, spec])
   const memo = useMemo(() => spec.memo(ctx, input), [ctx, input, spec])
 
-  const bondPaused = useBondPaused() && isBondMemo(memo)
+  const bondPauseStatus = useBondPauseStatus()
+  const bondPaused = bondPauseStatus !== 'active' && isBondMemo(memo)
 
   const submitDisabled = bondPaused || isLoading || O.isNone(oFee) || balanceError !== null || !complete
 
@@ -142,7 +143,7 @@ export const NodeOperatorActionModal = ({
 
           {bondPaused && (
             <span className="mt-4 font-main text-[14px] text-warning0 dark:text-warning0d">
-              {intl.formatMessage({ id: 'bonds.paused.description' })}
+              {intl.formatMessage({ id: bondPauseMessageId(bondPauseStatus) })}
             </span>
           )}
 

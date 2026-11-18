@@ -895,6 +895,7 @@ type BondsMessageKey =
   | 'bonds.churn.haltedThen'
   | 'bonds.paused.title'
   | 'bonds.paused.description'
+  | 'bonds.paused.unknown'
   | 'bonds.outlook.nextChurnIn'
   | 'bonds.outlook.loading'
   | 'bonds.outlook.ordinal'

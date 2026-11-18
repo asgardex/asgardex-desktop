@@ -5,7 +5,7 @@ import { useIntl } from 'react-intl'
 import { useSearchParams } from 'react-router-dom'
 
 import { SegmentedTabs, formatCountdown } from '../../components/Bonds/provider'
-import { useBondPaused } from '../../hooks/useBondPaused'
+import { useBondPauseStatus } from '../../hooks/useBondPaused'
 import { useNextChurn } from '../../hooks/useNextChurn'
 import { BondsTab, TAB_QUERY_PARAM, isBondsTab } from '../../routes/bonds'
 import { BondProviderDashboardView } from './provider/BondProviderDashboardView'
@@ -19,7 +19,7 @@ export const BondsView = (): JSX.Element => {
   const [tab, setTab] = useState<BondsTab>(isBondsTab(initialTab) ? initialTab : BondsTab.BondProvider)
 
   const nextChurn = useNextChurn()
-  const bondPaused = useBondPaused()
+  const bondPaused = useBondPauseStatus() === 'paused'
 
   return (
     <div className="flex w-full flex-col">

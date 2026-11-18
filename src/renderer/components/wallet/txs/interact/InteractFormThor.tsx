@@ -45,7 +45,7 @@ import {
 } from '../../../../helpers/memoHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { emptyString } from '../../../../helpers/stringHelper'
-import { useBondPaused } from '../../../../hooks/useBondPaused'
+import { bondPauseMessageId, useBondPauseStatus } from '../../../../hooks/useBondPaused'
 import { useMimirConstants } from '../../../../hooks/useMimirConstants'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -144,7 +144,7 @@ export const InteractFormThor = ({
   const { walletAddress } = balance
   const pricePool = usePricePool()
   const mimirKeys = useMimirConstants(['RUNEPOOLDEPOSITMATURITYBLOCKS', 'RUNEPOOLENABLED'])
-  const bondPaused = useBondPaused() && (interactType === InteractType.Bond || interactType === InteractType.Whitelist)
+  const bondPauseStatus = useBondPauseStatus()
 
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
@@ -152,6 +152,11 @@ export const InteractFormThor = ({
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
   const [runePoolAction, setRunePoolAction] = useState<Action>(Action.add)
   const [whitelisting, setWhitelisting] = useState<boolean>(true)
+
+  // Removing a provider sends UNBOND:, which PAUSEBOND does not block
+  const bondPaused =
+    bondPauseStatus !== 'active' &&
+    (interactType === InteractType.Bond || (interactType === InteractType.Whitelist && whitelisting))
 
   const nodes: NodeInfos = useMemo(
     () =>
@@ -1068,7 +1073,7 @@ export const InteractFormThor = ({
       </div>
       {bondPaused && (
         <div className="pt-10px font-main text-[14px] text-warning0 dark:text-warning0d">
-          {intl.formatMessage({ id: 'bonds.paused.description' })}
+          {intl.formatMessage({ id: bondPauseMessageId(bondPauseStatus) })}
         </div>
       )}
       <div className="flex items-center justify-center">

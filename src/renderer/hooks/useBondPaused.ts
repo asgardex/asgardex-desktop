@@ -1,9 +1,26 @@
-import { useMimirConstants } from './useMimirConstants'
+import { useMemo } from 'react'
 
-const PAUSE_KEYS = ['PAUSEBOND']
+import * as RD from '@devexperts/remote-data-ts'
+import { useObservableState } from 'observable-hooks'
 
-// THORNode rejects every MsgBond (bond, provider whitelist, operator fee) while PAUSEBOND > 0
-export const useBondPaused = (): boolean => {
-  const { PAUSEBOND: pauseBond } = useMimirConstants(PAUSE_KEYS)
-  return Number(pauseBond) > 0
+import { useThorchainContext } from '../contexts/ThorchainContext'
+import { createMimirLookup } from '../helpers/mimirLookup'
+
+export type BondPauseStatus = 'active' | 'paused' | 'unknown'
+
+// THORNode rejects every MsgBond (bond, provider whitelist, operator fee) while PAUSEBOND > 0.
+// Fails closed: while mimir is loading, failed or PAUSEBOND is malformed, the status is 'unknown'.
+export const useBondPauseStatus = (): BondPauseStatus => {
+  const { mimir$ } = useThorchainContext()
+  const [mimirRD] = useObservableState(() => mimir$, RD.initial)
+
+  return useMemo(() => {
+    if (!RD.isSuccess(mimirRD)) return 'unknown'
+    const values = createMimirLookup(mimirRD.value, 'THORNode')('PAUSEBOND').map(Number)
+    if (values.some((value) => !Number.isFinite(value))) return 'unknown'
+    return values.some((value) => value > 0) ? 'paused' : 'active'
+  }, [mimirRD])
 }
+
+export const bondPauseMessageId = (status: BondPauseStatus) =>
+  status === 'paused' ? 'bonds.paused.description' : 'bonds.paused.unknown'

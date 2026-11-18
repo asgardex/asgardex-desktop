@@ -217,6 +217,8 @@ const bonds: BondsMessages = {
   'bonds.paused.title': 'Bonding pausado',
   'bonds.paused.description':
     'THORChain ha pausado el bonding. Los nuevos bonds, el alta de bond providers y los cambios de comisión del operador se rechazan hasta que se levante la pausa. El unbond no se ve afectado.',
+  'bonds.paused.unknown':
+    'Comprobando si THORChain ha pausado el bonding. Los nuevos bonds, el alta de bond providers y los cambios de comisión del operador están desactivados hasta conocer el estado.',
   'bonds.outlook.nextChurnIn': 'próximo churn en {time}',
   'bonds.outlook.loading': 'Calculando · esperando la lista de nodos y la altura de la red',
   'bonds.outlook.ordinal': '{rank}.º',
