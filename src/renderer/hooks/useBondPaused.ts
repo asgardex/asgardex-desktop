@@ -8,8 +8,6 @@ import { createMimirLookup } from '../helpers/mimirLookup'
 
 export type BondPauseStatus = 'active' | 'paused' | 'unknown'
 
-// THORNode rejects every MsgBond (bond, provider whitelist, operator fee) while PAUSEBOND > 0.
-// Fails closed: while mimir is loading, failed or PAUSEBOND is malformed, the status is 'unknown'.
 export const useBondPauseStatus = (): BondPauseStatus => {
   const { mimir$ } = useThorchainContext()
   const [mimirRD] = useObservableState(() => mimir$, RD.initial)
