@@ -216,6 +216,11 @@ const bonds: BondsMessages = {
   'bonds.churn.halted': 'Churn suspendu',
   'bonds.churn.whenResumes': 'à la reprise du churn',
   'bonds.churn.haltedThen': "Aucun nœud n'entre ni ne sort avant la reprise du churn · ensuite : {verdict}",
+  'bonds.paused.title': 'Bonding suspendu',
+  'bonds.paused.description':
+    "THORChain a suspendu le bonding. Les nouveaux bonds, l'ajout de bond providers et les changements de frais d'opérateur sont rejetés jusqu'à la levée de la pause. L'unbond n'est pas concerné.",
+  'bonds.paused.unknown':
+    'Vérification de la pause du bonding sur THORChain. Les nouveaux bonds, l’ajout de bond providers et les modifications des frais d’opérateur sont désactivés tant que l’état est inconnu.',
   'bonds.outlook.nextChurnIn': 'prochain churn dans {time}',
   'bonds.outlook.loading': 'Calcul en cours · en attente de la liste des nœuds et de la hauteur du réseau',
   'bonds.outlook.ordinal': '{rank, selectordinal, one {#er} other {#e}}',

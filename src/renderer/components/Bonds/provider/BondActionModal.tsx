@@ -12,6 +12,7 @@ import { ZERO_BASE_AMOUNT } from '../../../const'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getBondMemo, getUnbondMemo } from '../../../helpers/memoHelper'
+import { bondPauseMessageId, useBondPauseStatus } from '../../../hooks/useBondPaused'
 import { NextChurn } from '../../../hooks/useNextChurn'
 import { FeeRD } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
@@ -62,6 +63,8 @@ export const BondActionModal = ({
 
   const isBond = type === 'bond'
   const { signer } = position
+  const bondPauseStatus = useBondPauseStatus()
+  const bondPaused = bondPauseStatus !== 'active' && isBond
 
   const [amountInput, setAmountInput] = useState<BigNumber>(bn(0))
 
@@ -125,7 +128,8 @@ export const BondActionModal = ({
     [amountToSend, isBond, position.myBond]
   )
 
-  const submitDisabled = isLoading || !feeReady || feeError !== null || amountInput.isZero() || amountError !== null
+  const submitDisabled =
+    bondPaused || isLoading || !feeReady || feeError !== null || amountInput.isZero() || amountError !== null
 
   const nodeLabel = truncateAddress(position.nodeAddress, THORChain, network)
   const subtitle = whitelisted
@@ -215,6 +219,12 @@ export const BondActionModal = ({
           </div>
 
           <MemoPreview memo={memo} />
+
+          {bondPaused && (
+            <span className="mt-4 font-main text-[14px] text-warning0 dark:text-warning0d">
+              {intl.formatMessage({ id: bondPauseMessageId(bondPauseStatus) })}
+            </span>
+          )}
 
           <FlatButton
             className="mt-6 w-full"

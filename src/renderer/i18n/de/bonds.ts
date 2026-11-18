@@ -216,6 +216,11 @@ const bonds: BondsMessages = {
   'bonds.churn.halted': 'Churning angehalten',
   'bonds.churn.whenResumes': 'sobald das Churning wieder läuft',
   'bonds.churn.haltedThen': 'Kein Node tritt bei oder aus, bis das Churning wieder läuft · danach: {verdict}',
+  'bonds.paused.title': 'Bonding pausiert',
+  'bonds.paused.description':
+    'THORChain hat das Bonding pausiert. Neue Bonds, das Whitelisting von Bond-Providern und Änderungen der Operator-Gebühr werden abgelehnt, bis die Pause aufgehoben ist. Unbonding ist nicht betroffen.',
+  'bonds.paused.unknown':
+    'Es wird geprüft, ob THORChain das Bonding pausiert hat. Neue Bonds, das Whitelisting von Bond Providern und Änderungen der Operator-Gebühr sind deaktiviert, bis der Status bekannt ist.',
   'bonds.outlook.nextChurnIn': 'nächster Churn in {time}',
   'bonds.outlook.loading': 'Wird berechnet · warte auf die Node-Liste und die Netzwerkhöhe',
   'bonds.outlook.ordinal': '{rank}.',
