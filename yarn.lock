@@ -7253,7 +7253,7 @@ __metadata:
     dotenv: "npm:17.4.2"
     electron: "npm:35.2.1"
     electron-builder: "npm:^24.13.3"
-    electron-debug: "npm:^3.2.0"
+    electron-debug: "npm:^5.0.0"
     electron-devtools-installer: "npm:^3.2.0"
     electron-log: "npm:^5.4.4"
     electron-updater: "npm:6.8.9"
@@ -8801,7 +8801,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.3, debug@npm:^4.3.4, debug@npm:^4.4.0":
+"debug@npm:4, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.3, debug@npm:^4.3.4, debug@npm:^4.4.0":
   version: 4.4.0
   resolution: "debug@npm:4.4.0"
   dependencies:
@@ -9167,13 +9167,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-debug@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "electron-debug@npm:3.2.0"
+"electron-debug@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "electron-debug@npm:5.0.0"
   dependencies:
-    electron-is-dev: "npm:^1.1.0"
-    electron-localshortcut: "npm:^3.1.0"
-  checksum: 10/40b1669ff7abbbd3ce483f3bbb9620bbc7cffd8073110a53a9a3083249efdcdea2913bf1ae5f6b74f49e4dad761eec872c31cab1b4569b34356ea41f334ce4f2
+    electron-is-dev: "npm:^3.0.1"
+  checksum: 10/1d9def153d1c94f949d7b7acd8ff2bcdd6255e85b477300221c363cfc3208aed98a9537c0a4c5c95ddf163474b9fa3cd0dd026c0464917d66c8827b833d5e6f3
   languageName: node
   linkType: hard
 
@@ -9189,29 +9188,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-is-accelerator@npm:^0.1.0":
-  version: 0.1.2
-  resolution: "electron-is-accelerator@npm:0.1.2"
-  checksum: 10/2bc05a0acf9c252d636b48c716ad0a8c2f29875559b87c666852575310c17fc8350907a6f09412d6cbcc71da42f0228a0869fb68c3ead15e8211d5f13fcdbd17
-  languageName: node
-  linkType: hard
-
-"electron-is-dev@npm:^1.1.0":
-  version: 1.2.0
-  resolution: "electron-is-dev@npm:1.2.0"
-  checksum: 10/73eee7aa7ce90a387bf224ec26aa808237164572641ca41cdca34a046adb72406d4414c3cc5b0b5e335a6d6010886474e1325c0b0af40c9fac95210b00195fdb
-  languageName: node
-  linkType: hard
-
-"electron-localshortcut@npm:^3.1.0":
-  version: 3.2.1
-  resolution: "electron-localshortcut@npm:3.2.1"
-  dependencies:
-    debug: "npm:^4.0.1"
-    electron-is-accelerator: "npm:^0.1.0"
-    keyboardevent-from-electron-accelerator: "npm:^2.0.0"
-    keyboardevents-areequal: "npm:^0.2.1"
-  checksum: 10/c3e9d160f8af45dbeb72917b6d30cb6220b6ba55c94ab578d81e236b054db23ef64abc3ab51d226f693cccf8b6a0d79170331e4fc26dc3c1dfec53e2091013f2
+"electron-is-dev@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "electron-is-dev@npm:3.0.1"
+  checksum: 10/0f3bb1ebac00ab25d541a5e6b2ba9c6cdbcb0875782bffd1b0a7e8d303f837669580febfc696f1ce2b0f79cc4bc529dd71f0bf4da5d934492003c9a9b833ec22
   languageName: node
   linkType: hard
 
@@ -12151,20 +12131,6 @@ __metadata:
     node-gyp-build: "npm:^4.2.0"
     readable-stream: "npm:^3.6.0"
   checksum: 10/45478bb0a57e44d0108646499b8360914b0fbc8b0e088f1076659cb34faaa9eb829c40f6dd9dadb3460bb86cc33153c41fed37fe5ce09465a60e71e78c23fa55
-  languageName: node
-  linkType: hard
-
-"keyboardevent-from-electron-accelerator@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "keyboardevent-from-electron-accelerator@npm:2.0.0"
-  checksum: 10/fbeaac6c54e438ed55a5e26dda639bae450f4483d79561737ed38f36a8b937af05cac958530cef8211125a72293b68f3c3a84f041b8f50480330c71e2217e6eb
-  languageName: node
-  linkType: hard
-
-"keyboardevents-areequal@npm:^0.2.1":
-  version: 0.2.2
-  resolution: "keyboardevents-areequal@npm:0.2.2"
-  checksum: 10/05d846f75170238bbb9ed45d13ca9c6cd3e68ea8ba6b7727971790fa55b44c3386ec8b9c321ae72dae0d0944678d0dc2b922148fe67d3f9720bf30a23999dd65
   languageName: node
   linkType: hard
 
