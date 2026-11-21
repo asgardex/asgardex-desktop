@@ -82,20 +82,32 @@ export const getFileContent = async <T extends StorageVersion>(name: StoreFileNa
     return defaultValue
   }
 }
+const mergeIntoFile = async <T extends StorageVersion>(name: StoreFileName, data: Partial<T>, defaultValue: T) => {
+  const path = getFilePath(name, defaultValue.version)
+  const fileData = await getFileContent(name, defaultValue)
+  // Combine Partial data with previously saved data
+  const targetData: T = { ...fileData, ...data }
+  return fs.writeJSON(path, targetData).then(() => targetData)
+}
+
+// Last pending save per store. Saves to the same store run one after another,
+// so overlapping read-merge-write cycles cannot drop each other's changes.
+const pendingSaves = new Map<StoreFileName, Promise<unknown>>()
+
 /**
  * Saves combined store-file's content with partial provided data to the file.
+ * Saves to the same store are serialised; a failed save does not block later ones.
  * Will return rejected Promise in case if fs.writeJSON was failed to write to the file
  *
  * @returns
  * 1. in case content was written: Promise.resolve(composedContent)
  * 2. in case there was any issue while writing: Promise.reject
  */
-const saveToFile = async <T extends StorageVersion>(name: StoreFileName, data: Partial<T>, defaultValue: T) => {
-  const path = getFilePath(name, defaultValue.version)
-  const fileData = await getFileContent(name, defaultValue)
-  // Combine Partial data with previously saved data
-  const targetData: T = { ...fileData, ...data }
-  return fs.writeJSON(path, targetData).then(() => targetData)
+export const saveToFile = <T extends StorageVersion>(name: StoreFileName, data: Partial<T>, defaultValue: T) => {
+  const previous = pendingSaves.get(name) ?? Promise.resolve()
+  const save = previous.catch(() => undefined).then(() => mergeIntoFile(name, data, defaultValue))
+  pendingSaves.set(name, save)
+  return save
 }
 
 export const getFileStoreService = <T extends StorageVersion>(name: StoreFileName, defaultValue: T) => {
