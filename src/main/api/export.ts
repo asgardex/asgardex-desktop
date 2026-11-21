@@ -1,16 +1,39 @@
+import path from 'path'
+
 import { dialog } from 'electron'
 import * as fs from 'fs-extra'
 
 import { IPCSaveBalancesJsonParams, IPCSaveCsvParams } from '../../shared/api/types'
+import { DEFAULT_STORAGES } from '../../shared/const'
+import { getFileContent, saveToFile } from './fileStore'
+
+const commonDefault = DEFAULT_STORAGES.common
+
+// Start the dialog in the last used export directory, if it still exists
+const getBalancesDefaultPath = async (fileName: string): Promise<string> => {
+  try {
+    const { lastBalancesExportDir } = await getFileContent('common', commonDefault)
+    if (lastBalancesExportDir && (await fs.pathExists(lastBalancesExportDir))) {
+      return path.join(lastBalancesExportDir, fileName)
+    }
+  } catch (_) {
+    // Fall back to the file name only
+  }
+  return fileName
+}
 
 export const saveBalancesJson = async ({ fileName, data }: IPCSaveBalancesJsonParams) => {
   const savePath = await dialog.showSaveDialog({
-    defaultPath: fileName,
+    defaultPath: await getBalancesDefaultPath(fileName),
     filters: [{ name: 'JSON Files', extensions: ['json'] }]
   })
   if (!savePath.canceled && savePath.filePath) {
     await fs.ensureFile(savePath.filePath)
-    return fs.writeJSON(savePath.filePath, data, { spaces: 2 })
+    await fs.writeJSON(savePath.filePath, data, { spaces: 2 })
+    // Remembering the directory is best effort and must not fail the export
+    await saveToFile('common', { lastBalancesExportDir: path.dirname(savePath.filePath) }, commonDefault).catch(
+      () => undefined
+    )
   }
 }
 
