@@ -241,13 +241,13 @@ export const AssetsView = (): JSX.Element => {
     const now = new Date()
     const pad = (n: number) => String(n).padStart(2, '0')
     const datePart = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`
-    const timePart = `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`
+    const timePart = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
     const walletName = O.fold(
       () => 'wallet',
       (w: { name: string }) => w.name
     )(activeWallet)
     const safeName = walletName.replace(/[^a-zA-Z0-9]/g, '-')
-    const fileName = `asgardex-${safeName}-${datePart}-${timePart}.json`
+    const fileName = `${datePart}-${timePart}-${safeName}.json`
 
     const balances: BalanceExportEntry[] = sortedBalances
       .filter(({ balances: b }) => RD.isSuccess(b))

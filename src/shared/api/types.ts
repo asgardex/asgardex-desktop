@@ -75,6 +75,8 @@ export type CommonStorage = Readonly<
     baseRpc: ApiUrls
     // Last opened wallet (keystore or vultisig)
     lastOpenedWallet?: LastOpenedWallet
+    // Directory the balances JSON export was last saved to
+    lastBalancesExportDir?: string
     evmGasMultiplier: GasMultiplier
     // Per-keystore, per-chain HD derivation selections (account/index/hdMode/customPath).
     // Optional: absent → {} → each chain falls back to the default 0/0/'default'.
