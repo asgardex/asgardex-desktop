@@ -14,7 +14,10 @@ const getBalancesDefaultPath = async (fileName: string): Promise<string> => {
   try {
     const { lastBalancesExportDir } = await getFileContent('common', commonDefault)
     if (lastBalancesExportDir && (await fs.pathExists(lastBalancesExportDir))) {
-      return path.join(lastBalancesExportDir, fileName)
+      // Basename only: the directory is a path the user already chose in the save dialog.
+      const safeName = path.basename(fileName)
+      /* trunk-ignore(semgrep/javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal) */
+      return path.join(lastBalancesExportDir, safeName)
     }
   } catch (_) {
     // Fall back to the file name only
